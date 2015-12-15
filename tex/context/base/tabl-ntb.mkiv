@@ -290,9 +290,14 @@
 \def\tabl_ntb_let_dis#1{\global\expandafter\let\csname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
 \def\tabl_ntb_let_aut#1{\global\expandafter\let\csname\??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
 
-\def\tabl_ntb_get_wid#1{\ifcsname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname\csname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname\else\zeropoint\fi}
-\def\tabl_ntb_get_hei#1{\ifcsname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname\csname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname\else\zeropoint\fi}
-\def\tabl_ntb_get_dis#1{\ifcsname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname\csname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname\else\zeropoint\fi}
+%def\tabl_ntb_get_wid#1{\ifcsname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname\csname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname\else\zeropoint\fi}
+%def\tabl_ntb_get_hei#1{\ifcsname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname\csname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname\else\zeropoint\fi}
+%def\tabl_ntb_get_dis#1{\ifcsname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname\csname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname\else\zeropoint\fi}
+%def\tabl_ntb_get_aut#1{\csname  \??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname}
+
+\def\tabl_ntb_get_wid#1{\ifcsname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
+\def\tabl_ntb_get_hei#1{\ifcsname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
+\def\tabl_ntb_get_dis#1{\ifcsname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
 \def\tabl_ntb_get_aut#1{\csname  \??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname}
 
 \def\tabl_ntb_tag_pattern#1#2{\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2}
@@ -320,7 +325,8 @@
 
 \def\tabl_ntb_let_ref   #1#2{\expandafter\glet\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 \def\tabl_ntb_set_ref   #1#2{\expandafter\xdef\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_get_ref   #1#2{\ifcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\fi}
+%def\tabl_ntb_get_ref   #1#2{\ifcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\fi}
+\def\tabl_ntb_get_ref   #1#2{\begincsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
 
 \def\tabl_ntb_set_spn     #1{\expandafter\let\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname \!!plusone}
 \def\tabl_ntb_spn_doifelse#1{\ifcase0\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname\relax % could be inlined
@@ -404,8 +410,11 @@
 \installcorenamespace{naturaltablesetupthree}
 \installcorenamespace{naturaltablesetuptwo}
 
-\def\tabl_ntb_setup_three[#1]{\csname\??naturaltablesetupthree\ifcsname\??naturaltablesetupthree#1\endcsname#1\else\s!unknown\fi\endcsname[#1]}
-\def\tabl_ntb_setup_two  [#1]{\csname\??naturaltablesetuptwo  \ifcsname\??naturaltablesetuptwo  #1\endcsname#1\else\s!unknown\fi\endcsname[#1]}
+%def\tabl_ntb_setup_three[#1]{\csname\??naturaltablesetupthree\ifcsname\??naturaltablesetupthree#1\endcsname#1\else\s!unknown\fi\endcsname[#1]}
+%def\tabl_ntb_setup_two  [#1]{\csname\??naturaltablesetuptwo  \ifcsname\??naturaltablesetuptwo  #1\endcsname#1\else\s!unknown\fi\endcsname[#1]}
+
+\def\tabl_ntb_setup_three[#1]{\ifcsname\??naturaltablesetupthree#1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_un\fi[#1]}
+\def\tabl_ntb_setup_two  [#1]{\ifcsname\??naturaltablesetuptwo  #1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_ux\fi[#1]}
 
 \setvalue{\??naturaltablesetupthree    \v!row}[#1]{\tabl_ntb_setup_xy  [\c!y]}
 \setvalue{\??naturaltablesetupthree \v!column}[#1]{\tabl_ntb_setup_xy  [\c!x]}
@@ -506,6 +515,90 @@
 
 \let\tabl_ntb_setup_section\relax
 
+% \unexpanded\def\tabl_ntb_setup_cell#1#2% cell over col over row
+%   {\tabl_ntb_setup_section % already forgotten
+%    \edef\m_tabl_ntb_positive_row{\number#1}%
+%    \edef\m_tabl_ntb_positive_col{\number#2}%
+%    \edef\m_tabl_ntb_negative_row{\the\numexpr-\c_tabl_ntb_maximum_row+#1+\minusone\relax}%
+%    \edef\m_tabl_ntb_negative_col{\the\numexpr-\c_tabl_ntb_maximum_col+#2+\minusone\relax}%
+%    % saves tokens (no speed gain)
+%    \edef\m_tabl_ntb_prefix{\??naturaltableset\m_tabl_tbl_level:}%
+%    % each each
+%    \csname\m_tabl_ntb_prefix\c!x\v!each\c!y\v!each\endcsname
+%    \csname\m_tabl_ntb_prefix\c!y\v!each\endcsname
+%    \csname\m_tabl_ntb_prefix\c!x\v!each\endcsname
+%    % odd even
+%    \csname\m_tabl_ntb_prefix\c!y\v!oddeven\m_tabl_ntb_positive_row\endcsname
+%    \csname\m_tabl_ntb_prefix\c!x\v!oddeven\m_tabl_ntb_positive_col\endcsname
+%    \csname\m_tabl_ntb_prefix\c!x\v!oddeven\m_tabl_ntb_positive_col\c!y\v!oddeven\m_tabl_ntb_positive_row\endcsname
+%    % row/col number combinations
+%    \ifcsname\m_tabl_ntb_prefix\c!y\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!y\m_tabl_ntb_positive_row\endcsname\fi
+%    \ifcsname\m_tabl_ntb_prefix\c!y\m_tabl_ntb_negative_row\endcsname\csname\m_tabl_ntb_prefix\c!y\m_tabl_ntb_negative_row\endcsname\fi
+%    \naturaltablelocalparameter\c!extras
+%    \letnaturaltablelocalparameter\c!extras\relax % new, see x-fo
+%    \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\endcsname\fi
+%    \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_negative_col\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_negative_col\endcsname\fi
+%    \naturaltablelocalparameter\c!extras
+%    \letnaturaltablelocalparameter\c!extras\relax % new, see x-fo
+%    % first/last combinations
+%    \ifnum\m_tabl_ntb_positive_row=\plusone
+%      \csname\m_tabl_ntb_prefix\c!y\v!first\endcsname
+%      \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\v!first\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\v!first\endcsname\fi
+%    \fi
+%    \ifnum\m_tabl_ntb_positive_col=\plusone
+%      \csname\m_tabl_ntb_prefix\c!x\v!first\endcsname
+%      \ifcsname\m_tabl_ntb_prefix\c!x\v!first\c!y\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!x\v!first\c!y\m_tabl_ntb_positive_row\endcsname\fi
+%    \fi
+%    \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax
+%      \csname\m_tabl_ntb_prefix\c!y\v!last\endcsname
+%      \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\v!last\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\v!last\endcsname\fi
+%    \fi
+%    \ifnum\m_tabl_ntb_positive_col=\c_tabl_ntb_maximum_col\relax
+%      \csname\m_tabl_ntb_prefix\c!x\v!last\endcsname
+%      \ifcsname\m_tabl_ntb_prefix\c!x\v!last\c!y\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!x\v!last\c!y\m_tabl_ntb_positive_row\endcsname\fi
+%    \fi
+%    \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax \ifnum\m_tabl_ntb_positive_col=\c_tabl_ntb_maximum_col\relax
+%      \csname\m_tabl_ntb_prefix\c!x\v!last\c!y\v!last\endcsname
+%    \fi\fi
+%    \ifnum\m_tabl_ntb_positive_row=\plusone \ifnum\m_tabl_ntb_positive_col=\plusone
+%      \csname\m_tabl_ntb_prefix\c!x\v!first\c!y\v!first\endcsname
+%    \fi\fi
+%    \ifnum\m_tabl_ntb_positive_row=\plusone \ifnum\m_tabl_ntb_positive_col=\c_tabl_ntb_maximum_col\relax
+%      \csname\m_tabl_ntb_prefix\c!x\v!last\c!y\v!first\endcsname
+%    \fi\fi
+%    \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax \ifnum\m_tabl_ntb_positive_col=\plusone
+%      \csname\m_tabl_ntb_prefix\c!x\v!first\c!y\v!last\endcsname
+%    \fi\fi
+%    % special case: two rows and last row : two&first and two&last (round corners)
+%    \ifnum\c_tabl_ntb_maximum_row=\plustwo\relax
+%      \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax \ifnum\m_tabl_ntb_positive_col=\plusone
+%        \csname\m_tabl_ntb_prefix\c!x\v!first\c!y\v!two\endcsname
+%      \fi\fi
+%      \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax \ifnum\m_tabl_ntb_positive_col=\c_tabl_ntb_maximum_col\relax
+%        \csname\m_tabl_ntb_prefix\c!x\v!last\c!y\v!two\endcsname
+%      \fi\fi
+%    \fi
+%    \ifnum\tabl_ntb_get_col\m_tabl_ntb_positive_row\m_tabl_ntb_positive_col=\c_tabl_ntb_maximum_col\relax % top span over whole width
+%      \ifnum\m_tabl_ntb_positive_row=\plusone
+%        \csname\m_tabl_ntb_prefix\c!x\v!one\c!y\v!first\endcsname
+%      \fi
+%      \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax
+%        \csname\m_tabl_ntb_prefix\c!x\v!one\c!y\v!last\endcsname
+%      \fi
+%    \fi
+%    % header things
+%    \ifnum#1>\c_tabl_ntb_n_of_hdnx_lines\else
+%      \ifcsname\m_tabl_ntb_prefix\v!header\v!each     \endcsname\csname\m_tabl_ntb_prefix\v!header\v!each     \endcsname\fi
+%      \ifcsname\m_tabl_ntb_prefix\v!header\m_tabl_ntb_positive_col\endcsname\csname\m_tabl_ntb_prefix\v!header\m_tabl_ntb_positive_col\endcsname\fi
+%    \fi
+%    % explicit cells
+%    \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\m_tabl_ntb_positive_row\endcsname\fi
+%    \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_negative_col\c!y\m_tabl_ntb_negative_row\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_negative_col\c!y\m_tabl_ntb_negative_row\endcsname\fi
+%    % local
+%    \ifcsname\m_tabl_ntb_prefix\c!y++\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!y++\m_tabl_ntb_positive_row\endcsname\fi
+%    % done
+%    \relax}
+
 \unexpanded\def\tabl_ntb_setup_cell#1#2% cell over col over row
   {\tabl_ntb_setup_section % already forgotten
    \edef\m_tabl_ntb_positive_row{\number#1}%
@@ -515,78 +608,78 @@
    % saves tokens (no speed gain)
    \edef\m_tabl_ntb_prefix{\??naturaltableset\m_tabl_tbl_level:}%
    % each each
-   \csname\m_tabl_ntb_prefix\c!x\v!each\c!y\v!each\endcsname
-   \csname\m_tabl_ntb_prefix\c!y\v!each\endcsname
-   \csname\m_tabl_ntb_prefix\c!x\v!each\endcsname
+   \begincsname\m_tabl_ntb_prefix\c!x\v!each\c!y\v!each\endcsname
+   \begincsname\m_tabl_ntb_prefix\c!y\v!each\endcsname
+   \begincsname\m_tabl_ntb_prefix\c!x\v!each\endcsname
    % odd even
-   \csname\m_tabl_ntb_prefix\c!y\v!oddeven\m_tabl_ntb_positive_row\endcsname
-   \csname\m_tabl_ntb_prefix\c!x\v!oddeven\m_tabl_ntb_positive_col\endcsname
-   \csname\m_tabl_ntb_prefix\c!x\v!oddeven\m_tabl_ntb_positive_col\c!y\v!oddeven\m_tabl_ntb_positive_row\endcsname
+   \begincsname\m_tabl_ntb_prefix\c!y\v!oddeven\m_tabl_ntb_positive_row\endcsname
+   \begincsname\m_tabl_ntb_prefix\c!x\v!oddeven\m_tabl_ntb_positive_col\endcsname
+   \begincsname\m_tabl_ntb_prefix\c!x\v!oddeven\m_tabl_ntb_positive_col\c!y\v!oddeven\m_tabl_ntb_positive_row\endcsname
    % row/col number combinations
-   \ifcsname\m_tabl_ntb_prefix\c!y\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!y\m_tabl_ntb_positive_row\endcsname\fi
-   \ifcsname\m_tabl_ntb_prefix\c!y\m_tabl_ntb_negative_row\endcsname\csname\m_tabl_ntb_prefix\c!y\m_tabl_ntb_negative_row\endcsname\fi
+   \begincsname\m_tabl_ntb_prefix\c!y\m_tabl_ntb_positive_row\endcsname
+   \begincsname\m_tabl_ntb_prefix\c!y\m_tabl_ntb_negative_row\endcsname
    \naturaltablelocalparameter\c!extras
    \letnaturaltablelocalparameter\c!extras\relax % new, see x-fo
-   \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\endcsname\fi
-   \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_negative_col\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_negative_col\endcsname\fi
+   \begincsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\endcsname
+   \begincsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_negative_col\endcsname
    \naturaltablelocalparameter\c!extras
    \letnaturaltablelocalparameter\c!extras\relax % new, see x-fo
    % first/last combinations
    \ifnum\m_tabl_ntb_positive_row=\plusone
-     \csname\m_tabl_ntb_prefix\c!y\v!first\endcsname
-     \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\v!first\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\v!first\endcsname\fi
+     \begincsname\m_tabl_ntb_prefix\c!y\v!first\endcsname
+     \begincsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\v!first\endcsname
    \fi
    \ifnum\m_tabl_ntb_positive_col=\plusone
-     \csname\m_tabl_ntb_prefix\c!x\v!first\endcsname
-     \ifcsname\m_tabl_ntb_prefix\c!x\v!first\c!y\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!x\v!first\c!y\m_tabl_ntb_positive_row\endcsname\fi
+     \begincsname\m_tabl_ntb_prefix\c!x\v!first\endcsname
+     \begincsname\m_tabl_ntb_prefix\c!x\v!first\c!y\m_tabl_ntb_positive_row\endcsname
    \fi
    \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax
-     \csname\m_tabl_ntb_prefix\c!y\v!last\endcsname
-     \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\v!last\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\v!last\endcsname\fi
+     \begincsname\m_tabl_ntb_prefix\c!y\v!last\endcsname
+     \begincsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\v!last\endcsname
    \fi
    \ifnum\m_tabl_ntb_positive_col=\c_tabl_ntb_maximum_col\relax
-     \csname\m_tabl_ntb_prefix\c!x\v!last\endcsname
-     \ifcsname\m_tabl_ntb_prefix\c!x\v!last\c!y\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!x\v!last\c!y\m_tabl_ntb_positive_row\endcsname\fi
+     \begincsname\m_tabl_ntb_prefix\c!x\v!last\endcsname
+     \begincsname\m_tabl_ntb_prefix\c!x\v!last\c!y\m_tabl_ntb_positive_row\endcsname
    \fi
    \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax \ifnum\m_tabl_ntb_positive_col=\c_tabl_ntb_maximum_col\relax
-     \csname\m_tabl_ntb_prefix\c!x\v!last\c!y\v!last\endcsname
+     \begincsname\m_tabl_ntb_prefix\c!x\v!last\c!y\v!last\endcsname
    \fi\fi
    \ifnum\m_tabl_ntb_positive_row=\plusone \ifnum\m_tabl_ntb_positive_col=\plusone
-     \csname\m_tabl_ntb_prefix\c!x\v!first\c!y\v!first\endcsname
+     \begincsname\m_tabl_ntb_prefix\c!x\v!first\c!y\v!first\endcsname
    \fi\fi
    \ifnum\m_tabl_ntb_positive_row=\plusone \ifnum\m_tabl_ntb_positive_col=\c_tabl_ntb_maximum_col\relax
-     \csname\m_tabl_ntb_prefix\c!x\v!last\c!y\v!first\endcsname
+     \begincsname\m_tabl_ntb_prefix\c!x\v!last\c!y\v!first\endcsname
    \fi\fi
    \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax \ifnum\m_tabl_ntb_positive_col=\plusone
-     \csname\m_tabl_ntb_prefix\c!x\v!first\c!y\v!last\endcsname
+     \begincsname\m_tabl_ntb_prefix\c!x\v!first\c!y\v!last\endcsname
    \fi\fi
    % special case: two rows and last row : two&first and two&last (round corners)
    \ifnum\c_tabl_ntb_maximum_row=\plustwo\relax
      \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax \ifnum\m_tabl_ntb_positive_col=\plusone
-       \csname\m_tabl_ntb_prefix\c!x\v!first\c!y\v!two\endcsname
+       \begincsname\m_tabl_ntb_prefix\c!x\v!first\c!y\v!two\endcsname
      \fi\fi
      \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax \ifnum\m_tabl_ntb_positive_col=\c_tabl_ntb_maximum_col\relax
-       \csname\m_tabl_ntb_prefix\c!x\v!last\c!y\v!two\endcsname
+       \begincsname\m_tabl_ntb_prefix\c!x\v!last\c!y\v!two\endcsname
      \fi\fi
    \fi
    \ifnum\tabl_ntb_get_col\m_tabl_ntb_positive_row\m_tabl_ntb_positive_col=\c_tabl_ntb_maximum_col\relax % top span over whole width
      \ifnum\m_tabl_ntb_positive_row=\plusone
-       \csname\m_tabl_ntb_prefix\c!x\v!one\c!y\v!first\endcsname
+       \begincsname\m_tabl_ntb_prefix\c!x\v!one\c!y\v!first\endcsname
      \fi
      \ifnum\m_tabl_ntb_positive_row=\c_tabl_ntb_maximum_row\relax
-       \csname\m_tabl_ntb_prefix\c!x\v!one\c!y\v!last\endcsname
+       \begincsname\m_tabl_ntb_prefix\c!x\v!one\c!y\v!last\endcsname
      \fi
    \fi
    % header things
    \ifnum#1>\c_tabl_ntb_n_of_hdnx_lines\else
-     \ifcsname\m_tabl_ntb_prefix\v!header\v!each     \endcsname\csname\m_tabl_ntb_prefix\v!header\v!each     \endcsname\fi
-     \ifcsname\m_tabl_ntb_prefix\v!header\m_tabl_ntb_positive_col\endcsname\csname\m_tabl_ntb_prefix\v!header\m_tabl_ntb_positive_col\endcsname\fi
+     \begincsname\m_tabl_ntb_prefix\v!header\v!each\endcsname
+     \begincsname\m_tabl_ntb_prefix\v!header\m_tabl_ntb_positive_col\endcsname
    \fi
    % explicit cells
-   \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\m_tabl_ntb_positive_row\endcsname\fi
-   \ifcsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_negative_col\c!y\m_tabl_ntb_negative_row\endcsname\csname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_negative_col\c!y\m_tabl_ntb_negative_row\endcsname\fi
+   \begincsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_positive_col\c!y\m_tabl_ntb_positive_row\endcsname
+   \begincsname\m_tabl_ntb_prefix\c!x\m_tabl_ntb_negative_col\c!y\m_tabl_ntb_negative_row\endcsname
    % local
-   \ifcsname\m_tabl_ntb_prefix\c!y++\m_tabl_ntb_positive_row\endcsname\csname\m_tabl_ntb_prefix\c!y++\m_tabl_ntb_positive_row\endcsname\fi
+   \begincsname\m_tabl_ntb_prefix\c!y++\m_tabl_ntb_positive_row\endcsname
    % done
    \relax}
 
@@ -872,16 +965,21 @@
    #2%
    \let\tabl_ntb_setup_section\relax}
 
+% \def\tabl_ntb_preset_parameters% each odd|even level / can be sped up but only once per table
+%   {\ifcsname\??naturaltableset\m_tabl_tbl_level:\v!start\v!each\endcsname
+%      \csname\??naturaltableset\m_tabl_tbl_level:\v!start\v!each\endcsname
+%    \fi
+%    \ifcsname\??naturaltableset\m_tabl_tbl_level:\v!start\v!oddeven\m_tabl_tbl_level\endcsname % hm
+%      \csname\??naturaltableset\m_tabl_tbl_level:\v!start\v!oddeven\m_tabl_tbl_level\endcsname
+%    \fi
+%    \ifcsname\??naturaltableset\m_tabl_tbl_level:\v!start\m_tabl_tbl_level\endcsname % hm
+%      \csname\??naturaltableset\m_tabl_tbl_level:\v!start\m_tabl_tbl_level\endcsname
+%    \fi}
+
 \def\tabl_ntb_preset_parameters% each odd|even level / can be sped up but only once per table
-  {\ifcsname\??naturaltableset\m_tabl_tbl_level:\v!start\v!each\endcsname
-     \csname\??naturaltableset\m_tabl_tbl_level:\v!start\v!each\endcsname
-   \fi
-   \ifcsname\??naturaltableset\m_tabl_tbl_level:\v!start\v!oddeven\m_tabl_tbl_level\endcsname % hm
-     \csname\??naturaltableset\m_tabl_tbl_level:\v!start\v!oddeven\m_tabl_tbl_level\endcsname
-   \fi
-   \ifcsname\??naturaltableset\m_tabl_tbl_level:\v!start\m_tabl_tbl_level\endcsname % hm
-     \csname\??naturaltableset\m_tabl_tbl_level:\v!start\m_tabl_tbl_level\endcsname
-   \fi}
+  {\begincsname\??naturaltableset\m_tabl_tbl_level:\v!start\v!each\endcsname
+   \begincsname\??naturaltableset\m_tabl_tbl_level:\v!start\v!oddeven\m_tabl_tbl_level\endcsname
+   \begincsname\??naturaltableset\m_tabl_tbl_level:\v!start\m_tabl_tbl_level\endcsname}
 
 \unexpanded\def\bTABLE
   {\dosingleempty\tabl_ntb_table}
@@ -1812,10 +1910,23 @@
 %
 % nilling the background makes a run upto 25% faster
 
+% \def\tabl_ntb_cell_process_a_check_span_one
+%   {\ifautosqueezeTBLspan
+%      \edef\p_width{\naturaltablelocalparameter\c!width}%
+%      \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
+%    \else
+%      \donetrue
+%    \fi
+%    \ifdone % brr, 0
+%      \ifnum\scratchcounter>\plusone
+%        \tabl_ntb_set_spn\c_tabl_ntb_col
+%      \fi
+%    \fi}
+
 \def\tabl_ntb_cell_process_a_check_span_one
   {\ifautosqueezeTBLspan
      \edef\p_width{\naturaltablelocalparameter\c!width}%
-     \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
+     \ifcsname\??naturaltablesqueeze\p_width\endcsname\lastnamedcs\else\donefalse\fi
    \else
      \donetrue
    \fi
@@ -2090,11 +2201,17 @@
 \let\eTDs\relax
 \let\eTRs\relax
 
+% \unexpanded\def\bTDs[#1]#2\eTDs
+%   {\normalexpanded{\bTD[\ifcsname\??naturaltablesetup#1\endcsname\csname\??naturaltablesetup#1\endcsname\fi]}#2\eTD}
+%
+% \unexpanded\def\bTRs[#1]#2\eTRs
+%   {\normalexpanded{\bTR[\ifcsname\??naturaltablesetup#1\endcsname\csname\??naturaltablesetup#1\endcsname\fi]}#2\eTR}
+
 \unexpanded\def\bTDs[#1]#2\eTDs
-  {\normalexpanded{\bTD[\ifcsname\??naturaltablesetup#1\endcsname\csname\??naturaltablesetup#1\endcsname\fi]}#2\eTD}
+  {\normalexpanded{\bTD[\begincsname\??naturaltablesetup#1\endcsname]}#2\eTD}
 
 \unexpanded\def\bTRs[#1]#2\eTRs
-  {\normalexpanded{\bTR[\ifcsname\??naturaltablesetup#1\endcsname\csname\??naturaltablesetup#1\endcsname\fi]}#2\eTR}
+  {\normalexpanded{\bTR[\begincsname\??naturaltablesetup#1\endcsname]}#2\eTR}
 
 \protect \endinput
 

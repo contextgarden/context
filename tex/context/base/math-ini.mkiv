@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Math Macros / Initializations}
 
+% todo: hpack as we skip math anyway
+
 % Todo in luatex maincontrol.w: also accept a number here:
 %
 %    case set_math_param_cmd:
@@ -1967,31 +1969,57 @@
    \rawprocesscommacommand[#2]\math_style_collect
    \expandafter\let\csname\??mathstyle#1\normalexpanded{\endcsname\math_style_add_to_cache_choice}}
 
+% \def\math_style_set_indeed
+%   {\csname\??mathstyle
+%      \ifcsname\??mathstyle\m_math_style_asked\endcsname
+%        \m_math_style_asked
+%      \else
+%        \??mathstyle
+%      \fi
+%    \endcsname}
+%
+% \setvalue{\??mathstyle\??mathstyle}%
+%   {\csname\??mathstylecache
+%      \ifcsname\??mathstylecache\m_math_style_asked\endcsname
+%        \m_math_style_asked
+%      \else
+%        \??mathstylecache
+%      \fi
+%    \endcsname}
+%
+% \setvalue{\??mathstylecache\??mathstylecache}%
+%   {\c_math_styles_state_style  \zerocount
+%    \c_math_styles_state_cramped\zerocount
+%    \c_math_styles_state_size   \zerocount
+%    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
+%    \global\expandafter\let\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
+%    \csname\??mathstylecache\m_math_style_asked\endcsname}
+
 \def\math_style_set_indeed
-  {\csname\??mathstyle
-     \ifcsname\??mathstyle\m_math_style_asked\endcsname
-       \m_math_style_asked
-     \else
-       \??mathstyle
-     \fi
-   \endcsname}
+  {\ifcsname\??mathstyle\m_math_style_asked\endcsname
+     \lastnamedcs
+   \else
+     \math_style_set_mathstyle_mathstyle
+   \fi}
 
-\setvalue{\??mathstyle\??mathstyle}%
-  {\csname\??mathstylecache
-     \ifcsname\??mathstylecache\m_math_style_asked\endcsname
-       \m_math_style_asked
-     \else
-       \??mathstylecache
-     \fi
-   \endcsname}
+\def\math_style_set_mathstyle_mathstyle
+  {\ifcsname\??mathstylecache\m_math_style_asked\endcsname
+     \lastnamedcs
+   \else
+     \math_style_set_mathstyle_mathstylecache
+     \??mathstylecache
+   \fi}
 
-\setvalue{\??mathstylecache\??mathstylecache}%
+\def\math_style_set_mathstyle_mathstylecache
   {\c_math_styles_state_style  \zerocount
    \c_math_styles_state_cramped\zerocount
    \c_math_styles_state_size   \zerocount
    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
    \global\expandafter\let\csname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
    \csname\??mathstylecache\m_math_style_asked\endcsname}
+
+\letvalue{\??mathstyle     \??mathstyle     }\math_style_set_mathstyle_mathstyle      % still needed?
+\letvalue{\??mathstylecache\??mathstylecache}\math_style_set_mathstyle_mathstylecache % still needed?
 
 %D \startbuffer
 %D $x\begingroup\setupmathstyle[script]x\endgroup x$

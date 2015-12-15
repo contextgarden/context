@@ -305,7 +305,7 @@
    \splittopskip\zeropoint
    \doloop % inner loop
      {\setbox\scratchbox\vsplit\tsplitcontent to \onepoint % \lineheight
-      \setbox\scratchbox\vbox
+      \setbox\scratchbox\vbox % \vpack
         {\unvbox\scratchbox
          \setbox\scratchbox\vbox
            {\splitdiscards

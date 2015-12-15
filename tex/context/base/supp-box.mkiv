@@ -2362,14 +2362,14 @@
 \newdimen\boxhdisplacement
 \newdimen\boxvdisplacement
 
-\unexpanded\def\rightbox      {\hbox\bgroup\dowithnextboxcs\syst_boxes_rightbox_finish      \placedbox}
-\unexpanded\def\leftbox       {\hbox\bgroup\dowithnextboxcs\syst_boxes_leftbox_finish       \placedbox}
-\unexpanded\def\topbox        {\hbox\bgroup\dowithnextboxcs\syst_boxes_topbox_finish        \placedbox}
-\unexpanded\def\bottombox     {\hbox\bgroup\dowithnextboxcs\syst_boxes_bottombox_finish     \placedbox}
-\unexpanded\def\lefttopbox    {\hbox\bgroup\dowithnextboxcs\syst_boxes_lefttopbox_finish    \placedbox}
-\unexpanded\def\righttopbox   {\hbox\bgroup\dowithnextboxcs\syst_boxes_righttopbox_finish   \placedbox}
-\unexpanded\def\leftbottombox {\hbox\bgroup\dowithnextboxcs\syst_boxes_leftbottombox_finish \placedbox}
-\unexpanded\def\rightbottombox{\hbox\bgroup\dowithnextboxcs\syst_boxes_rightbottombox_finish\placedbox}
+\unexpanded\def\rightbox      {\hpack\bgroup\dowithnextboxcs\syst_boxes_rightbox_finish      \placedbox}
+\unexpanded\def\leftbox       {\hpack\bgroup\dowithnextboxcs\syst_boxes_leftbox_finish       \placedbox}
+\unexpanded\def\topbox        {\hpack\bgroup\dowithnextboxcs\syst_boxes_topbox_finish        \placedbox}
+\unexpanded\def\bottombox     {\hpack\bgroup\dowithnextboxcs\syst_boxes_bottombox_finish     \placedbox}
+\unexpanded\def\lefttopbox    {\hpack\bgroup\dowithnextboxcs\syst_boxes_lefttopbox_finish    \placedbox}
+\unexpanded\def\righttopbox   {\hpack\bgroup\dowithnextboxcs\syst_boxes_righttopbox_finish   \placedbox}
+\unexpanded\def\leftbottombox {\hpack\bgroup\dowithnextboxcs\syst_boxes_leftbottombox_finish \placedbox}
+\unexpanded\def\rightbottombox{\hpack\bgroup\dowithnextboxcs\syst_boxes_rightbottombox_finish\placedbox}
 
 \let\topleftbox    \lefttopbox
 \let\toprightbox   \righttopbox
@@ -2435,10 +2435,10 @@
    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
    \egroup}
 
-\unexpanded\def\middlebox        {\hbox\bgroup\dowithnextboxcs\syst_boxes_middlebox_finish        \placedbox}
-\unexpanded\def\baselinemiddlebox{\hbox\bgroup\dowithnextboxcs\syst_boxes_baselinemiddlebox_finish\placedbox}
-\unexpanded\def\baselineleftbox  {\hbox\bgroup\dowithnextboxcs\syst_boxes_baselineleftbox_finish  \placedbox}
-\unexpanded\def\baselinerightbox {\hbox\bgroup\dowithnextboxcs\syst_boxes_baselinerightbox_finish \placedbox}
+\unexpanded\def\middlebox        {\hpack\bgroup\dowithnextboxcs\syst_boxes_middlebox_finish        \placedbox}
+\unexpanded\def\baselinemiddlebox{\hpack\bgroup\dowithnextboxcs\syst_boxes_baselinemiddlebox_finish\placedbox}
+\unexpanded\def\baselineleftbox  {\hpack\bgroup\dowithnextboxcs\syst_boxes_baselineleftbox_finish  \placedbox}
+\unexpanded\def\baselinerightbox {\hpack\bgroup\dowithnextboxcs\syst_boxes_baselinerightbox_finish \placedbox}
 
 \def\syst_boxes_middlebox_finish
   {\global\boxhdisplacement-.5\wd\nextbox

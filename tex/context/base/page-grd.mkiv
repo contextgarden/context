@@ -92,13 +92,13 @@
 \def\page_grids_add_to_one_indeed#1%
   {\begingroup
    \resetvisualizers
-   \global\setbox#1\vbox{\backgroundline[layout:one]{\box#1}}%
+   \global\setbox#1\vpack{\backgroundline[layout:one]{\box#1}}%
    \endgroup}
 
 \def\page_grids_add_to_mix_indeed#1%
   {\begingroup
    \resetvisualizers
-   \global\setbox#1\vbox{\backgroundline[layout:mix]{\box#1}}%
+   \global\setbox#1\vpack{\backgroundline[layout:mix]{\box#1}}%
    \endgroup}
 
 \protect \endinput

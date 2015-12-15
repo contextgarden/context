@@ -368,7 +368,7 @@
    \fi}
 
 \def\pack_framed_background_box_color_indeed
-  {\hbox{\dousecolorparameter\p_framed_backgroundcolor\pack_framed_filled_box}} % maybe \hpack
+  {\hpack{\dousecolorparameter\p_framed_backgroundcolor\pack_framed_filled_box}}
 
 %D \macros
 %D   {defineoverlay, doifoverlayelse, overlayoffset,
@@ -1514,7 +1514,7 @@
 
 \def\pack_framed_profile_box
   {\profilegivenbox\p_profile\b_framed_normal
-   \setbox\b_framed_normal\vbox{\unvbox\b_framed_normal}} % maybe vpack
+   \setbox\b_framed_normal\vpack{\unvbox\b_framed_normal}}
 
 \unexpanded\def\pack_framed_finish
   {%\pack_framed_stop_orientation % hm, wrong place ! should rotate the result (after reshape) .. moved down

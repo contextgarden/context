@@ -39,13 +39,13 @@
 
 \unexpanded\def\convertMPtoPDF#1#2#3% scaling no longer supported at this level (so #2 & #3 are ignored)
   {\dostarttagged\t!mpgraphic\empty
-   \naturalvbox attr \imageattribute 1 \bgroup
+   \naturalvpack attr \imageattribute 1 \bgroup
      \message{[MP to PDF]}%
      \xdef\MPfilename{#1}%
      \resetMPboundingbox
      \forgetall
      \offinterlineskip
-     \setbox\MPbox\vbox\bgroup
+     \setbox\MPbox\vpack\bgroup
        \clf_convertmpstopdf{\MPfilename}%
        \removeunwantedspaces % not that needed
      \egroup

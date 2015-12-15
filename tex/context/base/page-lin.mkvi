@@ -527,14 +527,14 @@
    \fi}
 
 \def\page_lines_reference_show_start_indeed#1%
-  {\setbox\scratchbox\hbox{\llap
-     {\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht\raise.85\strutht\hbox{\llap{\tt\txx#1}}}}%
+  {\setbox\scratchbox\hpack{\llap
+     {\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht\raise.85\strutht\hpack{\llap{\tt\txx#1}}}}%
    \smashbox\scratchbox
    \box\scratchbox}
 
 \def\page_lines_reference_show_stop_indeed#1%
-  {\setbox\scratchbox\hbox{\rlap
-     {\raise.85\strutht\hbox{\rlap{\tt\txx#1}}\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht}}%
+  {\setbox\scratchbox\hpack{\rlap
+     {\raise.85\strutht\hpack{\rlap{\tt\txx#1}}\vrule\s!width\onepoint\s!depth\strutdp\s!height.8\strutht}}%
    \smashbox\scratchbox
    \box\scratchbox}
 

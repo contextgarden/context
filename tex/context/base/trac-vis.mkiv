@@ -54,10 +54,18 @@
 \let\syst_visualizers_vbox\vbox
 \let\syst_visualizers_vtop\vtop
 
+\let\syst_visualizers_hpack\hpack
+\let\syst_visualizers_vpack\vpack
+\let\syst_visualizers_tpack\tpack
+
 \unexpanded\def\ruledhbox{\syst_visualizers_hbox attr \visualattribute \clf_getvisual{simplehbox} }
 \unexpanded\def\ruledvbox{\syst_visualizers_vbox attr \visualattribute \clf_getvisual{simplevbox} }
 \unexpanded\def\ruledvtop{\syst_visualizers_vtop attr \visualattribute \clf_getvisual{simplevtop} } % special case
 \unexpanded\def\ruledtopv{\syst_visualizers_vtop attr \visualattribute \clf_getvisual{vtop}       }
+
+\unexpanded\def\ruledhpack{\syst_visualizers_hpack attr \visualattribute \clf_getvisual{simplehbox} }
+\unexpanded\def\ruledvpack{\syst_visualizers_vpack attr \visualattribute \clf_getvisual{simplevbox} }
+\unexpanded\def\ruledtpack{\syst_visualizers_tpack attr \visualattribute \clf_getvisual{simplevtop} } % special case
 
 \unexpanded\def\ruledmbox#1{\ruledhbox{\startimath#1\stopimath}}
 

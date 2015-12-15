@@ -559,7 +559,7 @@
 
 \unexpanded\def\spac_lines_stop_correction_ongrid
   {\blank[\v!white]%
-   \snaptogrid\hbox{\box\scratchbox}}
+   \snaptogrid\hpack{\box\scratchbox}}
 
 \unexpanded\def\spac_lines_stop_correction_normal
   {\blank[\v!nowhite]%
@@ -836,7 +836,7 @@
 
 \newbox\strutbox
 
-\setbox\strutbox\hbox{\vrule\s!height8.5pt\s!depth3.5pt\s!width\zeropoint} % just a start
+\setbox\strutbox\hpack{\vrule\s!height8.5pt\s!depth3.5pt\s!width\zeropoint} % just a start
 
 \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
 
@@ -890,7 +890,7 @@
    \dosetstrut}
 
 \unexpanded\def\setcharstrut#1%
-  {\setbox\strutbox\hbox{#1}%
+  {\setbox\strutbox\hbox{#1}% hm, maybe hpack i.e. why apply fonts .. conceptual choice
    \strutht\ht\strutbox
    \strutdp\dp\strutbox
    \dosetstrut}
@@ -941,7 +941,7 @@
    \fi}
 
 \def\spac_struts_set_hide
-  {\setbox\strutbox\hbox
+  {\setbox\strutbox\hpack
      {\vrule
         \s!width \zeropoint
         \s!height\strutht
@@ -950,7 +950,7 @@
 \newconstant\c_strut_visual_mode
 
 \def\spac_struts_set_vide
-  {\setbox\strutbox\hbox  % at some time this extra wrapping was needed
+  {\setbox\strutbox\hpack  % at some time this extra wrapping was needed
      {\spac_struts_vide_hbox to \zeropoint
         {\ifcase\c_strut_visual_mode
            \spac_struts_black

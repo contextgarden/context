@@ -60,7 +60,7 @@
      \global\advance\csname\s!num:\s!syncpos:#1\endcsname\plusone
      \setsyncpositions{#1}%
      % option: geen w/h, alleen p 0 0 0 data
-     \setpositionplus{\s!syncpos:#1:\the\csname\s!num:\s!syncpos:#1\endcsname}{#2}\hbox{\strut}%
+     \setpositionplus{\s!syncpos:#1:\the\csname\s!num:\s!syncpos:#1\endcsname}{#2}\hpack{\strut}%
    \else
      \strut
    \fi}

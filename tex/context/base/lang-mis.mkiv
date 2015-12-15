@@ -595,34 +595,65 @@
 %D
 %D In later modules we will see how these commands are used.
 
+% \def\lang_compounds_handle_character_one#1#2%
+%   {\if\string#1\string#2% was: \ifx#1#2%
+%      \def\next{\csname\??compoundnormal\string#1\endcsname}%
+%    \else\ifcsname\??compoundsingle\string#1\string#2\endcsname
+%      \def\next{\csname\??compoundsingle\string#1\string#2\endcsname}%
+%    \else
+%      \def\next{\csname\??compoundnormal\string#1\endcsname#2}%
+%    \fi\fi
+%    \next}
+%
+% \def\lang_compounds_handle_character_two#1#2#3%
+%   {\if\string#1\string#2%
+%      \def\next{\csname\??compoundnormal\string#1\endcsname#3}%
+%    \else\ifcsname\??compoundmultiple\string#1\string#2\string#3\endcsname
+%      \def\next{\csname\??compoundmultiple\string#1\string#2\string#3\endcsname}%
+%    \else\ifcsname\??compoundsingle\string#1\string#2\endcsname
+%      \def\next{\csname\??compoundsingle\string#1\string#2\endcsname#3}%
+%    \else
+%      \def\next{\csname\??compoundnormal\string#1\endcsname#2#3}%
+%    \fi\fi\fi
+%    \next}
+
 \def\lang_compounds_handle_character_one#1#2%
   {\if\string#1\string#2% was: \ifx#1#2%
-     \def\next{\csname\??compoundnormal\string#1\endcsname}%
+    %\expandafter\let\expandafter\next\csname\??compoundnormal\string#1\endcsname
+     \csname\??compoundnormal\string#1\expandafter\endcsname
    \else\ifcsname\??compoundsingle\string#1\string#2\endcsname
-     \def\next{\csname\??compoundsingle\string#1\string#2\endcsname}%
+    %\expandafter\let\expandafter\next\lastnamedcs
+     \expandafter\lastnamedcs
    \else
-     \def\next{\csname\??compoundnormal\string#1\endcsname#2}%
-   \fi\fi
-   \next}
+    %\expandafter\let\expandafter\next\lastnamedcs
+     \expandafter\lastnamedcs
+   \fi\fi}
 
 \def\lang_compounds_handle_character_two#1#2#3%
   {\if\string#1\string#2%
      \def\next{\csname\??compoundnormal\string#1\endcsname#3}%
    \else\ifcsname\??compoundmultiple\string#1\string#2\string#3\endcsname
-     \def\next{\csname\??compoundmultiple\string#1\string#2\string#3\endcsname}%
+     \expandafter\let\expandafter\next\lastnamedcs
    \else\ifcsname\??compoundsingle\string#1\string#2\endcsname
-     \def\next{\csname\??compoundsingle\string#1\string#2\endcsname#3}%
+     \expandafter\let\expandafter\next\lastnamedcs
    \else
-     \def\next{\csname\??compoundnormal\string#1\endcsname#2#3}%
+     \expandafter\let\expandafter\next\lastnamedcs
    \fi\fi\fi
    \next}
 
 %D For very obscure applications (see for an application \type {lang-sla.tex}) we
 %D provide:
 
+% \def\simplifiedcompoundcharacter#1#2%
+%   {\ifcsname\??compoundsingle\string#1\string#2\endcsname
+%      \doubleexpandafter\firstofoneargument\csname\??compoundsingle\string#1\string#2\endcsname
+%    \else
+%      #2%
+%    \fi}
+
 \def\simplifiedcompoundcharacter#1#2%
   {\ifcsname\??compoundsingle\string#1\string#2\endcsname
-     \doubleexpandafter\firstofoneargument\csname\??compoundsingle\string#1\string#2\endcsname
+     \doubleexpandafter\firstofoneargument\lastnamedcs
    \else
      #2%
    \fi}

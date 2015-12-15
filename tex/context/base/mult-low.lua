@@ -194,6 +194,7 @@ return {
         "ruledhss", "ruledhfil", "ruledhfill", "ruledhfilneg", "ruledhfillneg", "normalhfillneg",
         "ruledvss", "ruledvfil", "ruledvfill", "ruledvfilneg", "ruledvfillneg", "normalvfillneg",
         "ruledhbox", "ruledvbox", "ruledvtop", "ruledvcenter", "ruledmbox",
+        "ruledhpack", "ruledvpack", "ruledtpack",
         "ruledhskip", "ruledvskip", "ruledkern", "ruledmskip", "ruledmkern",
         "ruledhglue", "ruledvglue", "normalhglue", "normalvglue",
         "ruledpenalty",
@@ -411,5 +412,7 @@ return {
         "nobreak", "allowbreak", "goodbreak",
         --
         "nospace", "nospacing", "dospacing",
+        --
+        "naturalhbox", "naturalvbox", "naturalhpack", "naturalvpack",
     }
 }

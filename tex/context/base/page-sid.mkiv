@@ -258,7 +258,7 @@
    \doloop
      {\iftracesidefloats
         \dontleavehmode
-        \ruledhbox{\m_pages_strut\kern\d_page_sides_width}%
+        \ruledhpack{\m_pages_strut\kern\d_page_sides_width}%
       \else
         \m_pages_strut
       \fi
@@ -456,7 +456,7 @@
 % The compact way:
 
 \def\page_sides_relocate_float#1%
-  {\global\setbox\floatbox\hbox
+  {\global\setbox\floatbox\hpack
      {\ifnum\c_page_sides_float_type=\plusfour
         \kern\d_page_sided_leftshift
       \else\ifnum\c_page_sides_float_type=\plusone
@@ -487,7 +487,7 @@
      \advance\scratchdimen\noflines\lineheight
      % todo: maybe rounding problem here
      % \global\setbox\floatbox\hbox{\lower\lineheight\box\floatbox}%
-     \global\setbox\floatbox\hbox{\lower\strutdepth\box\floatbox}%
+     \global\setbox\floatbox\hpack{\lower\strutdepth\box\floatbox}%
      \ht\floatbox\scratchdimen
      \dp\floatbox\zeropoint
    \fi
@@ -522,7 +522,7 @@
    \ifnum\c_page_sides_n_of_lines>\zerocount
      \advance\scratchdimen\c_page_sides_n_of_lines\lineheight
    \fi
-   \global\setbox\floatbox\hbox % why extra box
+   \global\setbox\floatbox\hpack % why extra box
      {\vbox
         {\vskip\scratchdimen
          \nointerlineskip
@@ -690,7 +690,7 @@
   {\par
    \begingroup
    \reseteverypar
-   \dontleavehmode\hbox to \zeropoint{\page_sides_anchor\hss\strut}%
+   \dontleavehmode\hpack to \zeropoint{\page_sides_anchor\hss\strut}%
    \vskip-\parskip
    \vskip-\struttotal
    \inhibitblank
@@ -801,7 +801,7 @@
    \divide\scratchcounter \baselineskip
    \advance\scratchcounter \plusone
    \parskip\zeropoint
-   \dorecurse\scratchcounter{\hbox to \hsize{}}%
+   \dorecurse\scratchcounter{\hpack to \hsize{}}%
    \kern-\scratchcounter\baselineskip
    \penalty\zerocount
    \endgroup}

@@ -1114,14 +1114,14 @@
            \box\scratchbox
          \else
            \ifdone
-             \vbox{\box\scratchbox\hbox to \displaywidth{\hss\math_box_llapped_math_no}}% \checkeddisplaymath
+             \vpack{\box\scratchbox\hpack to \displaywidth{\hss\math_box_llapped_math_no}}% \checkeddisplaymath
            \else
              \hss\box\scratchbox\math_box_llapped_math_no % hss makes room for number
            \fi
          \fi
        \else
          \ifdone
-           \vbox{\hbox to \displaywidth{\math_box_rlapped_math_no\hss}\box\scratchbox}% \checkeddisplaymath
+           \vpack{\hpack to \displaywidth{\math_box_rlapped_math_no\hss}\box\scratchbox}% \checkeddisplaymath
          \else
            \math_box_rlapped_math_no\box\scratchbox\hss % hss makes room for number
          \fi

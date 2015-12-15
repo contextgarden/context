@@ -184,7 +184,7 @@
 
 \def\tabulateEQpos
   {\setbox\scratchbox\hbox{\tabulateEQ}%
-   \hbox to \wd\scratchbox{\hss\kern\zeropoint\tabulatepos\hss}%
+   \hbox to \wd\scratchbox{\hss\kern\zeropoint\tabulatepos\hss}% hpack
    \kern-\wd\scratchbox
    \box\scratchbox}
 
@@ -371,11 +371,11 @@
    \dodoubleempty\anch_framed_indeed}
 
 \def\anch_framed_indeed[#1][#2]%
-  {\setbox\scratchbox\hbox
+  {\setbox\scratchbox\hpack
      {\scratchwidth \dimexpr\MPx{e:#1}-\MPx{b:#1}\relax
       \scratchdepth \dimexpr\MPy{b:#1}-\MPy{e:#1}+\MPd{e:#1}\relax
       \scratchheight\dimexpr\scratchdepth+\MPh{b:#1}\relax
-      \lower\scratchdepth\hbox
+      \lower\scratchdepth\hpack
         {\framed[\c!width=\scratchwidth,\c!height=\scratchheight,\c!offset=\v!overlay,#2]{}}}%
    \smashedbox\scratchbox
    \egroup}

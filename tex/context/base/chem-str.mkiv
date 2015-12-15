@@ -198,12 +198,12 @@
      [\c!frame=\chemicalparameter\c!frame,
       \c!rulethickness=\chemicalparameter\c!rulethickness,
       \c!framecolor=\chemicalparameter\c!framecolor]%
-     {\vbox{\box\b_chem_result\vss}}} % remove depth
+     {\vpack{\box\b_chem_result\vss}}} % remove depth
 
 \unexpanded\def\chem_framed_nop
   {\directlocalframed
      [\??chemicalframed]%
-     {\vbox{\box\b_chem_result\vss}}} % remove depth
+     {\vpack{\box\b_chem_result\vss}}} % remove depth
 
 \let\startstructurechemical\startchemical
 \let\stopstructurechemical \stopchemical

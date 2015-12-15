@@ -182,7 +182,7 @@
    %
    \edef\p_mp{\mathradicalparameter\c!mp}%
    %
-   \setbox\scratchbox\hbox\bgroup % todo: tag this box as sqrt
+   \setbox\scratchbox\hpack\bgroup % todo: tag this box as sqrt
      \uniqueMPgraphic
        {\p_mp}%
       %{...}%
@@ -190,7 +190,7 @@
    \scratchdimen       \wd\scratchbox
    \scratchtopoffset   \dimexpr\scratchoffset+\dp\nextbox\relax
    \scratchbottomoffset\dimexpr\scratchoffset+\ht\nextbox/2\relax
-   \hbox to \scratchdimen{\hss\box\nextbox\hskip\scratchoffset}%
+   \hpack to \scratchdimen{\hss\box\nextbox\hskip\scratchoffset}%
    \hskip-\scratchdimen
    \lower\dimexpr\scratchtopoffset\box\scratchbox%
    \ifx\currentmathradicaldegree\empty \else
@@ -241,11 +241,11 @@
    \edef\overlaylinecolor{\mathornamentparameter\c!color}%
    \edef\p_mp{\mathornamentparameter\c!mp}%
    % thw width of the graphic determines the width of the final result
-   \setbox\scratchbox\hbox{\uniqueMPgraphic{\p_mp}}% todo: add code key + tag
+   \setbox\scratchbox\hpack{\uniqueMPgraphic{\p_mp}}% todo: add code key + tag
    \scratchdimen       \wd\scratchbox
  % \scratchtopoffset   \dimexpr\scratchoffset+\dp\nextbox\relax
  % \scratchbottomoffset\dimexpr\scratchoffset+\ht\nextbox/2\relax
-   \hbox to \scratchdimen{\hss\box\nextbox\hss}%
+   \hpack to \scratchdimen{\hss\box\nextbox\hss}%
    \hskip-\scratchdimen
    \box\scratchbox
    \endgroup}

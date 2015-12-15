@@ -178,7 +178,7 @@
 \newbox        \b_page_boxes_saved_page_body
 
 \def\page_boxes_constructed_page_body#1#2%
-  {\ifconditional\c_page_boxes_save_page_body \global\setbox\b_page_boxes_saved_page_body \fi \vbox \bgroup
+  {\ifconditional\c_page_boxes_save_page_body \global\setbox\b_page_boxes_saved_page_body \fi \vpack \bgroup
       \boxmaxdepth\maxdimen % new
       \dontcomplain
       \page_marks_synchronize_page                    {#2}%  we could consider doing this for \pagebox (needs testing)
@@ -220,7 +220,7 @@
 \to \everybeforepagebody
 
 \def\page_boxes_constructed_page#1#2%
-  {\vbox\bgroup % intercept spurious spaces
+  {\vpack\bgroup % intercept spurious spaces
      \the\everybeforepagebody
      \starttextproperties
      \checkmarginblocks

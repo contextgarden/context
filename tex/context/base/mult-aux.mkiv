@@ -356,10 +356,13 @@
      \expandafter\edef\csname#1#4:\s!parent\endcsname{#2}%
    \fi \fi}
 
-\def\mult_interfaces_chain#1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\space\fi}
-\def\getparentchain       #1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\fi}
-\def\getcurrentparentchain#1#2{\csname#1#2:\s!chain\endcsname} % for the moment test:
-\def\getcurrentparentchain#1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\fi}
+%def\mult_interfaces_chain#1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\space\fi}
+%def\getparentchain       #1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\fi}
+%def\getcurrentparentchain#1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\fi}
+
+\def\mult_interfaces_chain#1#2{\ifcsname#1#2:\s!chain\endcsname\lastnamedcs\space\fi}
+\def\getparentchain       #1#2{\begincsname#1#2:\s!chain\endcsname}
+\def\getcurrentparentchain#1#2{\begincsname#1#2:\s!chain\endcsname}
 
 \unexpanded\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8#9% why is \expanded still needed in clones
   {\ifx#4\relax\let#4\empty\fi                                          % see \defineregister
@@ -886,10 +889,17 @@
 \unexpanded\def\showparentchain#1#2%
   {\writestatus\m!system{chain: [ \mult_interfaces_show_parent_chain{#1#2}]}}
 
+% \def\mult_interfaces_show_parent_chain#1%
+%   {#1 => %
+%    \ifcsname#1:\s!parent\endcsname
+%       \expandafter\mult_interfaces_show_parent_chain\csname#1:\s!parent\endcsname
+%    \fi}
+
 \def\mult_interfaces_show_parent_chain#1%
   {#1 => %
    \ifcsname#1:\s!parent\endcsname
-      \expandafter\mult_interfaces_show_parent_chain\csname#1:\s!parent\endcsname
+     %\expandafter\mult_interfaces_show_parent_chain\csname#1:\s!parent\endcsname
+      \expandafter\mult_interfaces_show_parent_chain\lastnamedcs
    \fi}
 
 %D Another helper (needs to be applied):

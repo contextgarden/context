@@ -33,7 +33,7 @@
    \c!background={\v!foreground,system:graphics:epdf}]
 
 \unexpanded\def\grph_epdf_add_overlay
-  {\global\setbox\foundexternalfigure\vbox\bgroup
+  {\global\setbox\foundexternalfigure\vbox\bgroup % vpack ?
      \system_graphics_epdf{\box\foundexternalfigure}%
    \egroup}
 

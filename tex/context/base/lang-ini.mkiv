@@ -86,6 +86,8 @@
 \installcorenamespace{language}
 \installcorenamespace{languagelinked}
 
+\def\currentusedlanguage{\currentlanguage}
+
 \def\defaultlanguage#1%
   {\ifcsname\??language#1\s!default\endcsname
     %\expandafter\defaultlanguage\csname\??language#1\s!default\endcsname
@@ -94,44 +96,90 @@
      #1%
    \fi}
 
+% \def\languageparameter#1%
+%   {\ifcsname\??language\currentlanguage#1\endcsname
+%      \csname\??language\currentlanguage#1\endcsname
+%    \else\ifcsname\??language\currentlanguage\s!default\endcsname
+%      \expandafter\specificlanguageparameter\csname\??language\currentlanguage\s!default\endcsname{#1}%
+%    \else\ifcsname\??language\s!default#1\endcsname
+%      \csname\??language\s!default#1\endcsname
+%    \fi\fi\fi}
+%
+% \def\specificlanguageparameter#1#2%
+%   {\ifcsname\??language#1#2\endcsname
+%      \csname\??language#1#2\endcsname
+%    \else\ifcsname\??language#1\s!default\endcsname
+%      \expandafter\specificlanguageparameter\csname\??language#1\s!default\endcsname{#2}%
+%    \else\ifcsname\??language\s!default#2\endcsname
+%      \csname\??language\s!default#2\endcsname
+%    \fi\fi\fi}
+%
+% \def\mainlanguageparameter#1%
+%   {\ifcsname\??language\currentmainlanguage#1\endcsname
+%      \csname\??language\currentmainlanguage#1\endcsname
+%    \else\ifcsname\??language\currentmainlanguage\s!default\endcsname
+%      \expandafter\specificlanguageparameter\csname\??language\currentmainlanguage\s!default\endcsname{#1}%
+%    \else\ifcsname\??language\s!default#1\endcsname
+%      \csname\??language\s!default#1\endcsname
+%    \fi\fi\fi}
+
 \def\languageparameter#1%
   {\ifcsname\??language\currentlanguage#1\endcsname
-     \csname\??language\currentlanguage#1\endcsname
+    %\csname\??language\currentlanguage#1\endcsname
+     \expandafter\empty\lastnamedcs
    \else\ifcsname\??language\currentlanguage\s!default\endcsname
-     \expandafter\specificlanguageparameter\csname\??language\currentlanguage\s!default\endcsname{#1}%
+    %\expandafter\specificlanguageparameter\csname\??language\currentlanguage\s!default\endcsname{#1}%
+     \expandafter\specificlanguageparameter\lastnamedcs{#1}%
    \else\ifcsname\??language\s!default#1\endcsname
-     \csname\??language\s!default#1\endcsname
+    %\csname\??language\s!default#1\endcsname
+     \expandafter\empty\lastnamedcs
    \fi\fi\fi}
 
 \def\specificlanguageparameter#1#2%
   {\ifcsname\??language#1#2\endcsname
-     \csname\??language#1#2\endcsname
+    %\csname\??language#1#2\endcsname
+     \expandafter\empty\lastnamedcs
    \else\ifcsname\??language#1\s!default\endcsname
-     \expandafter\specificlanguageparameter\csname\??language#1\s!default\endcsname{#2}%
+    %\expandafter\specificlanguageparameter\csname\??language#1\s!default\endcsname{#2}%
+     \expandafter\specificlanguageparameter\lastnamedcs{#2}%
    \else\ifcsname\??language\s!default#2\endcsname
-     \csname\??language\s!default#2\endcsname
+    %\csname\??language\s!default#2\endcsname
+     \expandafter\empty\lastnamedcs
    \fi\fi\fi}
 
 \def\mainlanguageparameter#1%
   {\ifcsname\??language\currentmainlanguage#1\endcsname
-     \csname\??language\currentmainlanguage#1\endcsname
+    %\csname\??language\currentmainlanguage#1\endcsname
+     \expandafter\empty\lastnamedcs
    \else\ifcsname\??language\currentmainlanguage\s!default\endcsname
-     \expandafter\specificlanguageparameter\csname\??language\currentmainlanguage\s!default\endcsname{#1}%
+    %\expandafter\specificlanguageparameter\csname\??language\currentmainlanguage\s!default\endcsname{#1}%
+     \expandafter\specificlanguageparameter\lastnamedcs{#1}%
    \else\ifcsname\??language\s!default#1\endcsname
-     \csname\??language\s!default#1\endcsname
+    %\csname\??language\s!default#1\endcsname
+     \expandafter\empty\lastnamedcs
    \fi\fi\fi}
-
-\def\currentusedlanguage{\currentlanguage}
 
 \let\usedlanguageparameter\languageparameter
 
+% \def\askedlanguageparameter#1% assumes \currentusedlanguage being set
+%   {\ifcsname\??language\currentusedlanguage#1\endcsname
+%      \csname\??language\currentusedlanguage#1\endcsname
+%    \else\ifcsname\??language\currentusedlanguage\s!default\endcsname
+%      \expandafter\specificlanguageparameter\csname\??language\currentusedlanguage\s!default\endcsname{#1}%
+%    \else\ifcsname\??language\s!default#1\endcsname
+%      \csname\??language\s!default#1\endcsname
+%    \fi\fi\fi}
+
 \def\askedlanguageparameter#1% assumes \currentusedlanguage being set
   {\ifcsname\??language\currentusedlanguage#1\endcsname
-     \csname\??language\currentusedlanguage#1\endcsname
+    %\csname\??language\currentusedlanguage#1\endcsname
+     \expandafter\empty\lastnamedcs
    \else\ifcsname\??language\currentusedlanguage\s!default\endcsname
-     \expandafter\specificlanguageparameter\csname\??language\currentusedlanguage\s!default\endcsname{#1}%
+    %\expandafter\specificlanguageparameter\csname\??language\currentusedlanguage\s!default\endcsname{#1}%
+     \expandafter\specificlanguageparameter\lastnamedcs{#1}%
    \else\ifcsname\??language\s!default#1\endcsname
-     \csname\??language\s!default#1\endcsname
+    %\csname\??language\s!default#1\endcsname
+     \expandafter\empty\lastnamedcs
    \fi\fi\fi}
 
 \unexpanded\def\setlanguageparameter#1%
@@ -547,10 +595,22 @@
 
 %D Fast switcher
 
+% \def\lang_basics_switch_asked
+%   {\ifx\askedlanguage\empty \else
+%      \ifcsname\??languagelinked\askedlanguage\endcsname
+%        \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
+%        \ifx\currentlanguage\askedlanguage \else
+%          \setcurrentlanguage\currentmainlanguage\askedlanguage
+%          \lang_basics_synchronize
+%        \fi
+%      \fi
+%    \fi}
+
 \def\lang_basics_switch_asked
   {\ifx\askedlanguage\empty \else
      \ifcsname\??languagelinked\askedlanguage\endcsname
-       \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
+      %\edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
+       \edef\askedlanguage{\lastnamedcs}%
        \ifx\currentlanguage\askedlanguage \else
          \setcurrentlanguage\currentmainlanguage\askedlanguage
          \lang_basics_synchronize
@@ -575,11 +635,30 @@
 
 \newcount\mainlanguagenumber
 
+% \unexpanded\def\mainlanguage[#1]%
+%   {\edef\askedlanguage{#1}%
+%    \ifx\askedlanguage\empty \else
+%      \ifcsname\??languagelinked\askedlanguage\endcsname
+%        \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
+%        \ifx\currentlanguage\askedlanguage
+%          \ifx\currentmainlanguage\askedlanguage \else
+%            \setcurrentlanguage\askedlanguage\askedlanguage
+%            \lang_basics_synchronize
+%          \fi
+%        \else
+%          \setcurrentlanguage\askedlanguage\askedlanguage
+%          \lang_basics_synchronize
+%        \fi
+%      \fi
+%    \fi
+%    \mainlanguagenumber\normallanguage}
+
 \unexpanded\def\mainlanguage[#1]%
   {\edef\askedlanguage{#1}%
    \ifx\askedlanguage\empty \else
      \ifcsname\??languagelinked\askedlanguage\endcsname
-       \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
+      %\edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
+       \edef\askedlanguage{\lastnamedcs}%
        \ifx\currentlanguage\askedlanguage
          \ifx\currentmainlanguage\askedlanguage \else
            \setcurrentlanguage\askedlanguage\askedlanguage

@@ -287,25 +287,47 @@
 
 %D Pushing/popping:
 
+% \unexpanded\def\pushmode[#1]%
+%   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+%    \expandafter\edef\csname\??modestack#1\endcsname{\number\csname\??mode#1\endcsname}%
+%    \expandafter\pushmacro\csname\??modestack#1\endcsname}
+%
+% \unexpanded\def\popmode[#1]%
+%   {\ifcsname\??modestack#1\endcsname
+%      \expandafter\popmacro\csname\??modestack#1\endcsname
+%      \csname\??mode#1\endcsname\csname\??modestack#1\endcsname\relax
+%    \fi}
+%
+% \def\pushsystemmode#1%
+%   {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+%    \expandafter\edef\csname\??modestack\systemmodeprefix#1\endcsname{\number\csname\??mode\systemmodeprefix#1\endcsname}%
+%    \expandafter\pushmacro\csname\??modestack\systemmodeprefix#1\endcsname}
+%
+% \def\popsystemmode#1%
+%   {\ifcsname\??modestack\systemmodeprefix#1\endcsname
+%      \expandafter\popmacro\csname\??modestack\systemmodeprefix#1\endcsname
+%      \csname\??mode\systemmodeprefix#1\endcsname\csname\??modestack\systemmodeprefix#1\endcsname\relax
+%    \fi}
+
 \unexpanded\def\pushmode[#1]%
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \expandafter\edef\csname\??modestack#1\endcsname{\number\csname\??mode#1\endcsname}%
-   \expandafter\pushmacro\csname\??modestack#1\endcsname}
+   \expandafter\edef\csname\??modestack#1\expandafter\endcsname\expandafter{\number\lastnamedcs}%
+   \expandafter\pushmacro\lastnamedcs}
 
 \unexpanded\def\popmode[#1]%
   {\ifcsname\??modestack#1\endcsname
-     \expandafter\popmacro\csname\??modestack#1\endcsname
+     \expandafter\popmacro\lastnamedcs
      \csname\??mode#1\endcsname\csname\??modestack#1\endcsname\relax
    \fi}
 
 \def\pushsystemmode#1%
   {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
-   \expandafter\edef\csname\??modestack\systemmodeprefix#1\endcsname{\number\csname\??mode\systemmodeprefix#1\endcsname}%
-   \expandafter\pushmacro\csname\??modestack\systemmodeprefix#1\endcsname}
+   \expandafter\edef\csname\??modestack\systemmodeprefix#1\expandafter\endcsname\expandafter{\number\lastnamedcs}%
+   \expandafter\pushmacro\lastnamedcs}
 
 \def\popsystemmode#1%
   {\ifcsname\??modestack\systemmodeprefix#1\endcsname
-     \expandafter\popmacro\csname\??modestack\systemmodeprefix#1\endcsname
+     \expandafter\popmacro\lastnamedcs
      \csname\??mode\systemmodeprefix#1\endcsname\csname\??modestack\systemmodeprefix#1\endcsname\relax
    \fi}
 
