@@ -1271,10 +1271,10 @@
    %     {\vss\box#2\vss}%
    % \fi
    % and don't change this any more
-%   \doifdefinedelse{\strippedcsname\OTRSETstoreincolumnslot#1}
-%     {\getvalue{\strippedcsname\OTRSETstoreincolumnslot#1}{#2}}
+%   \doifdefinedelse{\csstring\OTRSETstoreincolumnslot#1}
+%     {\getvalue{\csstring\OTRSETstoreincolumnslot#1}{#2}}
 %     {\OTRSETstoreincolumnslotUNKNOWN{#2}}}
-   \executeifdefined{\strippedcsname\OTRSETstoreincolumnslot#1}
+   \executeifdefined{\csstring\OTRSETstoreincolumnslot#1}
      \OTRSETstoreincolumnslotUNKNOWN} % {#2}}
 
 \def\OTRSETstoreincolumnslotUNKNOWN#1%

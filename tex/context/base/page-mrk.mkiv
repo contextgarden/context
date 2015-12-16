@@ -56,7 +56,7 @@
 
 \def\page_marks_add_color
   {\setlayoutcomponentattribute{\v!print:\v!color}%
-   \setbox\scratchbox\hbox \layoutcomponentboxattribute\bgroup
+   \setbox\scratchbox\hpack \layoutcomponentboxattribute\bgroup
      \uniqueMPgraphic
        {print:color}%
        {w=\the\scratchwidth,h=\the\scratchheight,%
@@ -67,7 +67,7 @@
 
 \def\page_marks_add_marking
   {\setlayoutcomponentattribute{\v!print:\v!marking}%
-   \setbox\scratchbox\hbox \layoutcomponentboxattribute\bgroup
+   \setbox\scratchbox\hpack \layoutcomponentboxattribute\bgroup
      \uniqueMPgraphic
        {print:marking}%
        {w=\the\scratchwidth,h=\the\scratchheight,%
@@ -78,7 +78,7 @@
 
 \def\page_marks_add_lines
   {\setlayoutcomponentattribute{\v!print:\v!lines}%
-   \setbox\scratchbox\hbox \layoutcomponentboxattribute\bgroup
+   \setbox\scratchbox\hpack \layoutcomponentboxattribute\bgroup
      \uniqueMPgraphic
        {print:lines}%
        {w=\the\scratchwidth,h=\the\scratchheight,%
@@ -90,7 +90,7 @@
 
 \def\page_marks_add_number
   {\setlayoutcomponentattribute{\v!print:\v!number}%
-   \setbox\scratchbox\hbox \layoutcomponentboxattribute\bgroup
+   \setbox\scratchbox\hpack \layoutcomponentboxattribute\bgroup
      \useMPgraphic
        {print:number}%
        {w=\the\scratchwidth ,h=\the\scratchheight,%
@@ -101,7 +101,7 @@
    \hskip-\scratchwidth\box\scratchbox}
 
 \def\page_marks_add_page_indeed#1%
-  {\setbox#1\hbox\bgroup
+  {\setbox#1\hpack\bgroup
      \resetvisualizers
      \let\objectoffset\pagecutmarkmargin
     %\infofont
@@ -142,7 +142,7 @@
 
 \installcorenamespace{layoutmarking}
 
-\def\installpagecutmark#1#2%
+\unexpanded\def\installpagecutmark#1#2%
   {\setvalue{\??layoutmarking#1}{#2}}
 
 % \installpagecutmark\v!off
@@ -180,12 +180,13 @@
     \setfalse\c_page_marks_add_more_marking
     \setfalse\c_page_marks_add_more_lines
     \setfalse\c_page_marks_add_more_number
-    \csname\??layoutmarking\layoutparameter\c!marking\endcsname
+    \begincsname\??layoutmarking\layoutparameter\c!marking\endcsname
     \ifconditional\c_page_marks_add_page_lines
       \let\page_marks_add_page\page_marks_add_page_indeed
     \else
       \let\page_marks_add_page\gobbleoneargument
     \fi
+    % we can get a double set of (overlayed) lines .. needs to be redone (too many objects anyway)
     \ifconditional\c_page_marks_add_more_lines
       \let\page_marks_add_more\page_marks_add_more_indeed
     \else\ifconditional\c_page_marks_add_more_color

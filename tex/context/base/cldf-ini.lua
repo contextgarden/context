@@ -903,23 +903,57 @@ else
 end
 
 local generics = { }  context.generics = generics
+local indexer  = nil
 
-local function indexer(parent,k)
-    if type(k) == "string" then
-        local c = "\\" .. tostring(generics[k] or k)
-        local f = function(first,...)
-            if first == nil then
-                flush(currentcatcodes,c)
-            else
-                return writer(parent,c,first,...)
+-- if environment.initex then
+
+    indexer = function(parent,k)
+        if type(k) == "string" then
+            local c = "\\" .. tostring(generics[k] or k)
+            local f = function(first,...)
+                if first == nil then
+                    flush(currentcatcodes,c)
+                else
+                    return writer(parent,c,first,...)
+                end
             end
+            parent[k] = f
+            return f
+        else
+            return context -- catch
         end
-        parent[k] = f
-        return f
-    else
-        return context -- catch
     end
-end
+
+-- else
+--
+--     local create   = token.create
+--     local twrite   = token.write
+--     local setmacro = token.set_macro
+--
+--     indexer = function(parent,k)
+--         if type(k) == "string" then
+--             local s = tostring(generics[k] or k)
+--             local t = create(s)
+--             if t.cmdname == "undefined_cs" then
+--                 report_cld("macro \\%s is not yet defined",s)
+--                 token.set_macro(s,"")
+--                 t = create(s)
+--             end
+--             local i = t.id
+--             local f = function(first,...)
+--                 twrite(t.tok) --= we need to keep t uncollected
+--                 if first ~= nil then
+--                     return writer(parent,first,...)
+--                 end
+--             end
+--             parent[k] = f
+--             return f
+--         else
+--             return context -- catch
+--         end
+--     end
+--
+-- end
 
 -- Potential optimization: after the first call we know if there will be an
 -- argument. Of course there is the side effect that for instance abuse like

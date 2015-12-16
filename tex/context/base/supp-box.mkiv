@@ -1376,7 +1376,7 @@
    \clf_applytobox
      method  {char}%
      box     \scratchbox
-     command {\checkedstrippedcsname#2}%
+     command {\csstring#2}%
      nested  true%
    \relax
    \endgroup}
@@ -1389,7 +1389,7 @@
    \clf_applytobox
      method  {word}%
      box     \scratchbox
-     command {\checkedstrippedcsname#2}%
+     command {\csstring#2}%
      nested  true%
    \relax
    \endgroup}
@@ -1401,7 +1401,7 @@
    \dowithnextbox{\clf_applytobox
      method  {char}%
      box     \nextbox
-     command {\checkedstrippedcsname#1}%
+     command {\csstring#1}%
      nested  true%
    \relax}%
    \hbox}
@@ -1411,7 +1411,7 @@
    \dowithnextbox{\clf_applytobox
      method  {word}%
      box     \nextbox
-     command {\checkedstrippedcsname#1}%
+     command {\csstring#1}%
      nested  true%
    \relax}%
    \hbox}
@@ -1426,28 +1426,28 @@
 \unexpanded\def\applytosplitstringchar#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
-     command {\checkedstrippedcsname#1}%
+     command {\csstring#1}%
      method  {char}%
    \relax}
 
 \unexpanded\def\applytosplitstringword#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
-     command {\checkedstrippedcsname#1}%
+     command {\csstring#1}%
      method  {word}%
    \relax}
 
 \unexpanded\def\applytosplitstringline#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
-     command {\checkedstrippedcsname#1}%
+     command {\csstring#1}%
      method  {line}%
    \relax}
 
 \unexpanded\def\applytosplitstringcharspaced#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
-     command {\checkedstrippedcsname#1}%
+     command {\csstring#1}%
      method  {char}%
      spaced  true%
    \relax}
@@ -1455,7 +1455,7 @@
 \unexpanded\def\applytosplitstringwordspaced#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
-     command {\checkedstrippedcsname#1}%
+     command {\csstring#1}%
      method  {word}%
      spaced  true%
    \relax}
@@ -1463,7 +1463,7 @@
 \unexpanded\def\applytosplitstringlinespaced#1#2%
   {\dontleavehmode\clf_processsplit
      data    {#2}%
-     command {\checkedstrippedcsname#1}%
+     command {\csstring#1}%
      method  {line}%
      spaced  true%
    \relax}
@@ -2773,8 +2773,10 @@
 \unexpanded\def\gsetboxllx#1#2{\expandafter\xdef\csname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
 \unexpanded\def\gsetboxlly#1#2{\expandafter\xdef\csname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
 
-\def\getboxllx#1{\ifcsname\??box_x\number#1\endcsname\csname\??box_x\number#1\endcsname\else\zeropoint\fi}
-\def\getboxlly#1{\ifcsname\??box_y\number#1\endcsname\csname\??box_y\number#1\endcsname\else\zeropoint\fi}
+%def\getboxllx#1{\ifcsname\??box_x\number#1\endcsname\csname\??box_x\number#1\endcsname\else\zeropoint\fi}
+%def\getboxlly#1{\ifcsname\??box_y\number#1\endcsname\csname\??box_y\number#1\endcsname\else\zeropoint\fi}
+\def\getboxllx#1{\ifcsname\??box_x\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
+\def\getboxlly#1{\ifcsname\??box_y\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
 
 \def\directgetboxllx#1{\csname\??box_x\number#1\endcsname} % use when sure existence
 \def\directgetboxlly#1{\csname\??box_y\number#1\endcsname} % use when sure existence

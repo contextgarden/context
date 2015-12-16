@@ -272,7 +272,8 @@
 \let\doiflanguageelse\doifelselanguage
 
 \def\reallanguagetag#1%
-  {\ifcsname\??languagelinked#1\endcsname\csname\??languagelinked#1\endcsname\else#1\fi}
+ %{\ifcsname\??languagelinked#1\endcsname\csname\??languagelinked#1\endcsname\else#1\fi}
+  {\ifcsname\??languagelinked#1\endcsname\lastnamedcs\else#1\fi}
 
 % \language[#1] gave unwanted side effect of loading language specifics
 

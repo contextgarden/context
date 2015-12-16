@@ -165,7 +165,7 @@
 \unexpanded\def\btxcheckdefine#1{\doifelsecommandhandler\??btx{#1}\gobbleoneargument{\btx_check_chain{define}{#1}}} % {#2}
 \unexpanded\def\btxchecksetup #1{\doifelsecommandhandler\??btx{#1}\gobbleoneargument{\btx_check_chain {setup}{#1}}} % {#2}
 
-% fpr the moment experimental:
+% for the moment experimental:
 
 \unexpanded\def\btxenableautodefine
   {\prependtoks
@@ -350,7 +350,7 @@
    \publ_command_yes{#1}}
 
 \unexpanded\def\definebtxcommand#1% {body} #1..#n{body}
-  {\setuvalue{\??btxcommand\strippedcsname#1}}%
+  {\setuvalue{\??btxcommand\csstring#1}}%
 
 % tracing
 

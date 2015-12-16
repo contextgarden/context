@@ -186,6 +186,7 @@
 \installcorenamespace{discretionarytext}
 \installcorenamespace{discretionarymath}
 \installcorenamespace{discretionaryboth}
+\installcorenamespace{discretionarymode}
 
 \unexpanded\def\installdiscretionary#1#2%
   {\setevalue{\??discretionarymath\detokenize{#1}}{\detokenize{#1}}% ?
@@ -194,8 +195,11 @@
    \scratchcounter\expandafter`\detokenize{#1}%
    \expandafter\uedcatcodecommand\expandafter\ctxcatcodes\expandafter\scratchcounter\csname\??discretionaryboth\detokenize{#1}\endcsname}
 
-\unexpanded\def\handlemathmodediscretionary#1{\executeifdefined{\??discretionarymath\detokenize{#1}}\donothing}
-\unexpanded\def\handletextmodediscretionary#1{\executeifdefined{\??discretionarytext\detokenize{#1}}\donothing}
+%unexpanded\def\handlemathmodediscretionary#1{\executeifdefined{\??discretionarymath\detokenize{#1}}\donothing}
+%unexpanded\def\handletextmodediscretionary#1{\executeifdefined{\??discretionarytext\detokenize{#1}}\donothing}
+
+\unexpanded\def\handlemathmodediscretionary#1{\\ifcsname\??discretionarymath\detokenize{#1}\endcsname\lastnamedcs}
+\unexpanded\def\handletextmodediscretionary#1{\\ifcsname\??discretionarytext\detokenize{#1}\endcsname\lastnamedcs}
 
 \unexpanded\def\installdiscretionaries#1#2{\writestatus\m!system{use \string \installdiscretionary}} % obsolete
 
@@ -206,17 +210,18 @@
 
 \def\lang_discretionaries_command
   {% if direct if, we need \relax for lookahead in math mode
-   \csname
+   \csname\??discretionarymode
      \ifcase\discretionarymode
-       \strippedcsname\lang_discretionaries_process_none
+       n% \csstring\lang_discretionaries_process_none
      \else\ifmmode
-       \strippedcsname\lang_discretionaries_process_math
+       m% \csstring\lang_discretionaries_process_math
      \else
-       \strippedcsname\lang_discretionaries_process_text
+       t% \csstring\lang_discretionaries_process_text
      \fi\fi
    \endcsname}
 
-\def\lang_discretionaries_process_none#1%
+% \def\lang_discretionaries_process_none#1%
+\setvalue{\??discretionarymode n}#1%
   {\detokenize{#1}}
 
 %D The macro \type{\lang_discretionaries_check_before} takes care of loners like
@@ -252,9 +257,11 @@
    \ifx          :\nextnext \settrue \punctafterdiscretionary \else
    \ifx          ;\nextnext \settrue \punctafterdiscretionary \fi\fi\fi\fi\fi\fi}
 
-\let\lang_discretionaries_process_math\handlemathmodediscretionary
+%let\lang_discretionaries_process_math\handlemathmodediscretionary
+\letvalue{\??discretionarymode m}\handlemathmodediscretionary
 
-\def\lang_discretionaries_process_text#1% grouped !
+% \def\lang_discretionaries_process_text#1% grouped !
+\setvalue{\??discretionarymode t}#1%
   {\bgroup
    \let\nextnextnext\egroup
    \def\next##1#1%
@@ -318,29 +325,36 @@
 %D use the more direct approach:
 
 \unexpanded\def\directdiscretionary
-  {\csname
+  {\csname\??discretionarymode
      \ifcase\discretionarymode
-       \strippedcsname\lang_discretionaries_process_none
+       n% \csstring\lang_discretionaries_process_none
      \else
-       \strippedcsname\lang_discretionaries_process_direct
+       d% \csstring\lang_discretionaries_process_direct
      \fi
    \endcsname}
 
 \unexpanded\def\indirectdiscretionary
-  {\csname
+  {\csname\??discretionarymode
      \ifcase\discretionarymode
-       \strippedcsname\lang_discretionaries_process_none
+       n% \csstring\lang_discretionaries_process_none
      \else
-       \strippedcsname\lang_discretionaries_process_indirect
+       i% \csstring\lang_discretionaries_process_indirect
      \fi
    \endcsname}
 
-\unexpanded\def\lang_discretionaries_process_direct#1%
+% \unexpanded\def\lang_discretionaries_process_direct#1%
+\setuvalue{\??discretionarymode d}#1%
   {\edef\discretionarytoken{\detokenize{#1}}%
    \let\textmodediscretionary\compoundhyphen
-   \executeifdefined{\??discretionaryaction\discretionarytoken}{\indirectdiscretionary{#1}}}
+  %\executeifdefined{\??discretionaryaction\discretionarytoken}{\indirectdiscretionary{#1}}}
+   \ifcsname\??discretionaryaction\discretionarytoken\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\indirectdiscretionary
+   \fi{#1}}
 
-\unexpanded\unexpanded\def\lang_discretionaries_process_indirect#1%
+% \unexpanded\unexpanded\def\lang_discretionaries_process_indirect#1%
+\setuvalue{\??discretionarymode i}#1%
   {\prewordbreak\discretionary{\hbox{#1}}{}{\hbox{#1}}\allowbreak\postwordbreak}
 
 \unexpanded\def\definetextmodediscretionary #1

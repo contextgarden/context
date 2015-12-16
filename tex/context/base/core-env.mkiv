@@ -722,10 +722,13 @@
 \unexpanded\def\setgvariable#1#2#3{\expandafter\gdef\csname\??variables#1:#2\endcsname{#3}}
 \unexpanded\def\setxvariable#1#2#3{\expandafter\xdef\csname\??variables#1:#2\endcsname{#3}}
 
+% \def\getvariable#1#2%
+%   {\csname
+%      \ifcsname\??variables#1:#2\endcsname\??variables#1:#2\else\s!empty\fi
+%    \endcsname}
+
 \def\getvariable#1#2%
-  {\csname
-     \ifcsname\??variables#1:#2\endcsname\??variables#1:#2\else\s!empty\fi
-   \endcsname}
+  {\begincsname\??variables#1:#2\endcsname}
 
 \def\showvariable#1#2%
   {\showvalue{\ifcsname\??variables#1:#2\endcsname\??variables#1:#2\else\s!empty\fi}}

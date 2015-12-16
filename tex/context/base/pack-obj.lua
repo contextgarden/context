@@ -127,7 +127,7 @@ objects = {
 
 function objects.register(ns,id,b,referenced)
     objects.n = objects.n + 1
-    nodes.handlers.finalize(b)
+    nodes.handlers.finalize(gettexbox(b))
     data[ns][id] = {
         codeinjections.registerboxresource(b), -- a box number
         gettexdimen("objectoff"),

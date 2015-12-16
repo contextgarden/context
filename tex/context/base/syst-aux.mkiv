@@ -48,15 +48,15 @@
 %D \macros
 %D   {unexpanded}
 %D
-%D Because we use this module only in \MKIV, we have removed the
-%D old protection code.
+%D Because we use this module only in \MKIV, we have removed the old protection
+%D code.
 %D
 %D \starttyping
 %D \unexpanded\def\somecommand{... ... ...}
 %D \stoptyping
 %D
-%D This overloads the \ETEX\ primitive but as we already had an \MKII\
-%D solution we keep the same name for a similar mechanism.
+%D This overloads the \ETEX\ primitive but as we already had an \MKII\ solution we
+%D keep the same name for a similar mechanism.
 
 \let\unexpanded\normalprotected
 
@@ -100,8 +100,7 @@
 %D \macros
 %D   {normalspace}
 %D
-%D There is already \type{\space} but just to be sure we also
-%D provide:
+%D There is already \type{\space} but just to be sure we also provide:
 
 \def\normalspace{ }
 
@@ -109,9 +108,8 @@
 %D   {!!count, !!toks, !!dimen, !!box,
 %D    !!width, !!height, !!depth, !!string, !!done}
 %D
-%D We define some more \COUNTERS\ and \DIMENSIONS. We also
-%D define some shortcuts to the local scatchregisters~0, 2, 4,
-%D 6 and~8.
+%D We define some more \COUNTERS\ and \DIMENSIONS. We also define some shortcuts to
+%D the local scatchregisters~0, 2, 4, 6 and~8.
 
 \newcount\!!counta \newtoks\!!toksa \newdimen\!!dimena \newbox\!!boxa
 \newcount\!!countb \newtoks\!!toksb \newdimen\!!dimenb \newbox\!!boxb
@@ -158,9 +156,8 @@
 %D \macros
 %D   {s!,c!,e!,p!,v!,@@,??}
 %D
-%D To save memory, we use constants (sometimes called
-%D variables). Redefining these constants can have disastrous
-%D results.
+%D To save memory, we use constants (sometimes called variables). Redefining these
+%D constants can have disastrous results.
 
 \def\v!prefix! {v!}
 \def\c!prefix! {c!}
@@ -181,8 +178,9 @@
 
 \def\s!empty   {empty}
 
-%D These are not needed any more now that we have wide screens (and
-%D bytes come cheap).
+%D These are not needed any more now that we have wide screens (and bytes come
+%D cheap).
+
 
 \let\@EA          \singleexpandafter
 \let\@EAEAEA      \doubleexpandafter
@@ -265,19 +263,16 @@
 %D \macros
 %D   {doifnextcharelse}
 %D
-%D When we started using \TEX\ in the late eighties, our
-%D first experiences with programming concerned a simple shell
-%D around \LATEX. The commands probably use most at \PRAGMA,
-%D are the itemizing ones. One of those few shell commands took
-%D care of an optional argument, that enabled us to specify
-%D what kind of item symbol we wanted. Without understanding
-%D anything we were able to locate a \LATEX\ macro that could
-%D be used to inspect the next character.
+%D When we started using \TEX\ in the late eighties, our first experiences with
+%D programming concerned a simple shell around \LATEX. The commands probably use
+%D most at \PRAGMA, are the itemizing ones. One of those few shell commands took
+%D care of an optional argument, that enabled us to specify what kind of item symbol
+%D we wanted. Without understanding anything we were able to locate a \LATEX\ macro
+%D that could be used to inspect the next character.
 %D
-%D It's this macro that the ancester of the next one presented
-%D here. It executes one of two actions, dependant of the next
-%D character. Disturbing spaces and line endings, which are
-%D normally interpreted as spaces too, are skipped.
+%D It's this macro that the ancester of the next one presented here. It executes one
+%D of two actions, dependant of the next character. Disturbing spaces and line
+%D endings, which are normally interpreted as spaces too, are skipped.
 %D
 %D \starttyping
 %D \doifnextcharelse {karakter} {then ...} {else ...}
@@ -309,16 +304,14 @@
      \expandafter\m_syst_action_nop
    \fi}
 
-%D Because we will mostly use this macro for testing if the next
-%D character is \type {[}, we also make a slightly faster variant
-%D as it is not uncommon to have tens of thousands of calls to this
-%D test in a run. Of course it also is more convenient to read a
-%D trace then.
+%D Because we will mostly use this macro for testing if the next character is \type
+%D {[}, we also make a slightly faster variant as it is not uncommon to have tens of
+%D thousands of calls to this test in a run. Of course it also is more convenient to
+%D read a trace then.
 
-% We could make variants without the \if_next_blank_space_token but
-% the overhead is only .1 sec on 3.5 for 10^6 tests and often that
-% branch is not entered anyway. The fast variants with less checking
-% do make a difference however:
+% We could make variants without the \if_next_blank_space_token but the overhead is
+% only .1 sec on 3.5 for 10^6 tests and often that branch is not entered anyway. The
+% fast variants with less checking do make a difference however:
 
 % \testfeature{1000000}{\doifnextoptionalelse       \gobbleoneargument\gobbleoneargument[} % 2.902s
 % \testfeature{1000000}{\doifnextoptionalcselse     \gobbleoneargument\gobbleoneargument[} % 2.590s
@@ -2723,8 +2716,10 @@
 %D
 %D This expands to \type{\ifsomething}.
 
-\def\strippedcsname
-  {\expandafter\gobbleoneargument\string}
+% \def\strippedcsname
+%   {\expandafter\gobbleoneargument\string}
+
+\let\strippedcsname\csstring
 
 %D \macros
 %D   {complexorsimple,complexorsimpleempty}
@@ -2770,14 +2765,14 @@
 \unexpanded\def\complexorsimple#1%
   {% \relax % prevents lookahead, brrr
    \doifelsenextoptional
-     {\firstargumenttrue \csname\s!complex\strippedcsname#1\endcsname}
-     {\firstargumentfalse\csname\s!simple \strippedcsname#1\endcsname}}
+     {\firstargumenttrue \csname\s!complex\csstring#1\endcsname}
+     {\firstargumentfalse\csname\s!simple \csstring#1\endcsname}}
 
 \unexpanded\def\complexorsimpleempty#1%
   {% \relax % prevents lookahead, brrr
    \doifelsenextoptional
-     {\firstargumenttrue \csname\s!complex\strippedcsname#1\endcsname}
-     {\firstargumentfalse\csname\s!complex\strippedcsname#1\endcsname[]}}
+     {\firstargumenttrue \csname\s!complex\csstring#1\endcsname}
+     {\firstargumentfalse\csname\s!complex\csstring#1\endcsname[]}}
 
 %D \macros
 %D   {definecomplexorsimple,definecomplexorsimpleempty}
@@ -2794,12 +2789,12 @@
 
 \unexpanded\def\definecomplexorsimple#1%
   {\unexpanded\edef#1{\syst_helpers_complex_or_simple
-     \expandafter\noexpand\csname\s!complex\strippedcsname#1\endcsname
-     \expandafter\noexpand\csname\s!simple \strippedcsname#1\endcsname}}
+     \expandafter\noexpand\csname\s!complex\csstring#1\endcsname
+     \expandafter\noexpand\csname\s!simple \csstring#1\endcsname}}
 
 \unexpanded\def\definecomplexorsimpleempty#1%
   {\unexpanded\edef#1{\syst_helpers_complex_or_simple_empty
-     \expandafter\noexpand\csname\s!complex\strippedcsname#1\endcsname}}
+     \expandafter\noexpand\csname\s!complex\csstring#1\endcsname}}
 
 %D These commands are called as:
 %D
@@ -3463,12 +3458,14 @@
 %D \csname if\strippedcsname\something\endcsname
 %D \stoptyping
 
-\def\checkedstrippedcsname#1% this permits \strippedcsname{\xxx} and \strippedcsname{xxx}
-  {\expandafter\syst_helpers_checked_stripped_csname\string#1}
+% \def\checkedstrippedcsname#1% this permits \strippedcsname{\xxx} and \strippedcsname{xxx}
+%   {\expandafter\syst_helpers_checked_stripped_csname\string#1}
+%
+% \def\syst_helpers_checked_stripped_csname#1%
+%  %{\ifx#1\letterbackslash\else#1\fi}
+%   {\if\noexpand#1\letterbackslash\else#1\fi}
 
-\def\syst_helpers_checked_stripped_csname#1%
- %{\ifx#1\letterbackslash\else#1\fi}
-  {\if\noexpand#1\letterbackslash\else#1\fi}
+\let\checkedstrippedcsname\csstring
 
 %D \macros
 %D   {savenormalmeaning}
@@ -3476,8 +3473,8 @@
 %D We will use this one in:
 
 \unexpanded\def\savenormalmeaning#1%
-  {\ifcsname normal\strippedcsname#1\endcsname \else
-     \expandafter\let\csname normal\strippedcsname#1\endcsname#1%
+  {\ifcsname normal\csstring#1\endcsname \else
+     \expandafter\let\csname normal\csstring#1\endcsname#1%
    \fi}
 
 %D \macros
@@ -3941,18 +3938,15 @@
 %D \macros
 %D   {newevery,everyline,EveryLine,EveryPar}
 %D
-%D Lets skip to something quite different. It's common use
-%D to use \type {\everypar} for special purposes. In \CONTEXT\
-%D we use this primitive for locating sidefloats. This means
-%D that when user assignments to \type {\everypar} can interfere
-%D with those of the package. We therefore introduce
-%D \type {\EveryPar}.
+%D Lets skip to something quite different. It's common use to use \type {\everypar}
+%D for special purposes. In \CONTEXT\ we use this primitive for locating sidefloats.
+%D This means that when user assignments to \type {\everypar} can interfere with
+%D those of the package. We therefore introduce \type {\EveryPar}.
 %D
-%D The same goes for \type {\EveryLine}. Because \TEX\ offers
-%D no \type {\everyline} primitive, we have to call for
-%D \type {\everyline} when we are working on a line by line
-%D basis. Just by calling \type {\EveryPar{}} and
-%D \type {\EveryLine{}} we restore the old situation.
+%D The same goes for \type {\EveryLine}. Because \TEX\ offers no \type {\everyline}
+%D primitive, we have to call for \type {\everyline} when we are working on a line
+%D by line basis. Just by calling \type {\EveryPar{}} and \type {\EveryLine{}} we
+%D restore the old situation.
 
 % \dorecurse{2}{
 %     \expanded{\everypar{before \recurselevel\space}}
@@ -3965,21 +3959,33 @@
 
 \installsystemnamespace{extraevery}
 
+% \unexpanded\def\newevery#1#2%
+%   {\ifx#1\everypar\else\newtoks#1\fi% we test for redefinition elsewhere
+%    \ifx#2\relax\else\ifdefined#2\else
+%      \expandafter\newtoks\csname\??extraevery\csstring#1\endcsname
+%      \def#2{\syst_helpers_every#1}%
+%    \fi\fi}
+%
+% \unexpanded\def\syst_helpers_every#1%
+%   {\expandafter\removetoks\expandafter\the\csname\??extraevery\csstring#1\endcsname\from#1%
+%    \expandafter\appendtoks\expandafter\the\csname\??extraevery\csstring#1\endcsname\to  #1%
+%    \csname\??extraevery\csstring#1\endcsname}
+
 \unexpanded\def\newevery#1#2%
   {\ifx#1\everypar\else\newtoks#1\fi% we test for redefinition elsewhere
    \ifx#2\relax\else\ifdefined#2\else
-     \expandafter\newtoks\csname\??extraevery\strippedcsname#1\endcsname
-     \def#2{\syst_helpers_every#1}%
+     \expandafter\newtoks\csname\??extraevery\csstring#1\endcsname
+     \edef#2{\syst_helpers_every#1\csname\??extraevery\csstring#1\endcsname}%
    \fi\fi}
 
-\unexpanded\def\syst_helpers_every#1%
-  {\expandafter\removetoks\expandafter\the\csname\??extraevery\strippedcsname#1\endcsname\from#1%
-   \expandafter\appendtoks\expandafter\the\csname\??extraevery\strippedcsname#1\endcsname\to  #1%
-   \csname\??extraevery\strippedcsname#1\endcsname}
+\unexpanded\def\syst_helpers_every#1#2%
+  {\removetoks\the#2\from#1%
+   \appendtoks\the#2\to  #1%
+   #2}
 
 %D This one permits definitions like:
 
-\newevery \everypar  \EveryPar % we get a warning which is ok
+\newevery \everypar  \EveryPar  % we get a warning which is ok
 \newevery \everyline \EveryLine
 
 %D and how about:
@@ -5032,13 +5038,13 @@
 \ifdefined\toksapp
 
     \def\appendetoks#1\to#2%
-      {\toksapp#2{#1}%
+      {\etoksapp#2{#1}%
        \ifx\dodoglobal\relax\else
          \global#2#2%
        \fi}
 
     \def\prependetoks#1\to#2%
-      {\tokspre#2{#1}%
+      {\etokspre#2{#1}%
        \ifx\dodoglobal\relax\else
           \global#2#2%
        \fi}
@@ -6566,7 +6572,7 @@
 %D macros mood}.
 
 \def\dofilterfromstr#1#2% max n % no need to be fast
-  {\expandafter \expandafter \expandafter \strippedcsname
+  {\expandafter \expandafter \expandafter \csstring
    \ifcase#1\or \ifcase#2\or
      \firstofoneargument     \else
      \gobbleoneargument      \fi
@@ -6597,7 +6603,7 @@
 \def\filterfromvalue#1#2#3% value max n
   {\expandafter\doubleexpandafter\csname         % we use the fact that an
      \expandafter\ifx\csname#1\endcsname\relax   % undefined cs has become \relax
-       \strippedcsname\gobbleoneargument         % which we then gobble here
+       \csstring\gobbleoneargument               % which we then gobble here
      \else
        \dofilterfromstr{#2}{#3}%
      \fi
@@ -6638,7 +6644,8 @@
   {\the\measured}
 
 \def\measured#1%
-  {\dimexpr\ifcsname\??measure#1\endcsname\csname\??measure#1\endcsname\else\zeropoint\fi\relax}
+ %{\dimexpr\ifcsname\??measure#1\endcsname\csname\??measure#1\endcsname\else\zeropoint\fi\relax}
+  {\dimexpr\ifcsname\??measure#1\endcsname\lastnamedcs\else\zeropoint\fi\relax}
 
 % #2 could be omitted, but we want to support spaces
 %

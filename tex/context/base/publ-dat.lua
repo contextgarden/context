@@ -431,8 +431,7 @@ do
 
     local space     = S(" \t\n\r\f") -- / " "
     local collapsed = space^1/" "
-    ----- csletter  = R("az","AZ")
-    local csletter  = lpegpatterns.csletter
+    local csletter  = lpegpatterns.csletter or R("az","AZ")
 
     ----- command   = P("\\") * Cc("btxcmd{") * (R("az","AZ")^1) * Cc("}")
     ----- command   = P("\\") * (Carg(1) * C(R("az","AZ")^1) / function(list,c) list[c] = (list[c] or 0) + 1 return "btxcmd{" .. c .. "}" end)

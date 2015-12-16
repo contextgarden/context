@@ -65,8 +65,8 @@
    \fi}
 
 \unexpanded\def\newattribute#1%
-  {\attr_basics_define_indeed\s!public[\strippedcsname#1][]%
-   \expandafter\let\expandafter#1\csname\??attributeid\strippedcsname#1\endcsname}
+  {\attr_basics_define_indeed\s!public[\csstring#1][]%
+   \expandafter\let\expandafter#1\csname\??attributeid\csstring#1\endcsname}
 
 % expandable so we can \edef them for speed
 

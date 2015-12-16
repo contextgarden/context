@@ -83,9 +83,8 @@
   {\objectwd\dimexpr\wd\nextbox+2\objectoff\relax
    \objectht\dimexpr\ht\nextbox+ \objectoff\relax
    \objectdp\dimexpr\dp\nextbox+ \objectoff\relax
-   \setbox\objectbox\hbox
+   \setbox\objectbox\hpack
      {\hskip\objectoff
-      \raise\objectoff
       \box\nextbox}%
    \wd\objectbox\objectwd
    \ht\objectbox\objectht
@@ -95,9 +94,8 @@
   {\objectwd\dimexpr\wd\objectbox-2\objectoff\relax
    \objectht\dimexpr\ht\objectbox- \objectoff\relax
    \objectdp\dimexpr\dp\objectbox- \objectoff\relax
-   \setbox\objectbox\hbox
+   \setbox\objectbox\hpack
      {\hskip-\objectoff
-      \lower\objectoff
       \box\objectbox}%
    \wd\objectbox\objectwd
    \ht\objectbox\objectht

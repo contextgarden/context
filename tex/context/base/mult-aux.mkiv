@@ -29,6 +29,8 @@
 
 \unprotect
 
+\edef\??empty{\Uchar25} \letvalue{\Uchar25}\empty % cancel: dec:24 hex:18
+
 %D \starttyping
 %D \unprotect
 %D     \def\????aa{@@@@aa}
@@ -215,7 +217,8 @@
   %\def#3##1{\csname#4{#1#2}{##1}\endcsname}%
    \def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
-   \def#5##1##2{\ifx##1\relax\s!empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
+  %\def#5##1##2{\ifx##1\relax\s!empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
+   \def#5##1##2{\ifx##1\relax\??empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
    \def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
  % \def#7##1{\mult_interfaces_detokenize{\csname#4{#1#2}{##1}\endcsname}}% compact version
@@ -255,7 +258,9 @@
 
 \unexpanded\def\mult_interfaces_install_root_parameter_handler#1#2#3%
   {\def#2##1{\detokenize\expandafter\expandafter\expandafter{\csname#1:##1\endcsname}}% always root
-   \def#3##1{\csname\ifcsname#1:##1\endcsname#1:##1\else\s!empty\fi\endcsname}}
+  %\def#3##1{\csname\ifcsname#1:##1\endcsname#1:##1\else\s!empty\fi\endcsname}}
+  %\def#3##1{\csname\ifcsname#1:##1\endcsname#1:##1\else\??empty\fi\endcsname}}
+   \def#3##1{\begincsname#1:##1\endcsname}}
 
 \unexpanded\def\installrootparameterhandler#1#2%
   {\normalexpanded
@@ -1004,7 +1009,7 @@
    \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
    \newtoks#4%
    \newtoks#7%
-   \edef\m_mult_interface_setup{\strippedcsname#2_}%
+   \edef\m_mult_interface_setup{\csstring#2_}%
    \unexpanded\edef#2{\syst_helpers_double_empty
      \csname\m_mult_interface_setup\s!simple\endcsname
      \csname\m_mult_interface_setup\s!single\endcsname
@@ -1094,7 +1099,7 @@
   {\ifx#3\relax\let#3\empty\fi
    \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}%
    \newtoks#4%
-   \edef\m_mult_interface_setup{\strippedcsname#2_}%
+   \edef\m_mult_interface_setup{\csstring#2_}%
    \unexpanded\edef#2{\syst_helpers_triple_empty
      \csname\m_mult_interface_setup\s!simple\endcsname
      \csname\m_mult_interface_setup\s!single\endcsname

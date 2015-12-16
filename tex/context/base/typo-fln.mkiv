@@ -104,7 +104,7 @@
 \unexpanded\def\applytofirstcharacter#1%
   {\begingroup
    \dowithnextbox
-     {\clf_applytofirstcharacter\nextbox{\strippedcsname#1}%
+     {\clf_applytofirstcharacter\nextbox{\csstring#1}%
       \unhbox\nextbox
       \endgroup}%
    \hbox}

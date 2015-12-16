@@ -417,7 +417,8 @@
 %D This is a checked variant of \type {\getvalue}.
 
 \unexpanded\def\macroname#1% brrr
-  {\csname\ifcsname#1\endcsname#1\else\s!empty\fi\endcsname}
+% {\csname\ifcsname#1\endcsname#1\else\s!empty\fi\endcsname}
+  {\begincsname#1\endcsname}
 
 % %D A weird one that I probably needed once, so it might as well become
 % %D obsolete.

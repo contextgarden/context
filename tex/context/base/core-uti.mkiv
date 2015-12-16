@@ -18,7 +18,7 @@
 \registerctxluafile{core-uti}{1.001}
 
 \def\savecurrentvalue#1#2% immediate, so not \unexpanded
-  {\clf_savevariable{\strippedcsname#1}{#2}}
+  {\clf_savevariable{\csstring#1}{#2}}
 
 \appendtoks
     \clf_setjobcomment

@@ -75,7 +75,7 @@
 
 \unexpanded\def\setoperatorlimits#1#2% operator limits
   {\savenormalmeaning{#1}%
-   \expandafter\def\expandafter#1\expandafter{\csname normal\strippedcsname#1\endcsname#2}}
+   \expandafter\def\expandafter#1\expandafter{\csname normal\csstring#1\endcsname#2}}
 
 \setoperatorlimits \int              \intlimits
 \setoperatorlimits \iint             \intlimits

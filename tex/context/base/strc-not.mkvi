@@ -969,7 +969,8 @@
   {\normalexpanded{\rawprocesscommalist[\noteparameter\c!location]\strc_notes_set_location_step}}
 
 \unexpanded\def\strc_notes_set_location_step#alternative% the insert related one
-  {\ifcsname\??notelocation#alternative\endcsname\csname\??notelocation#alternative\endcsname\fi}
+ %{\ifcsname\??notelocation#alternative\endcsname\csname\??notelocation#alternative\endcsname\fi}
+  {\begincsname\??notelocation#alternative\endcsname}
 
 \appendtoks
     \strc_notes_set_variants

@@ -376,7 +376,7 @@
 % processing instructions
 
 \unexpanded\def\xmlinstalldirective#1#2%
-  {\clf_xmlinstalldirective{#1}{\checkedstrippedcsname#2}}
+  {\clf_xmlinstalldirective{#1}{\csstring#2}}
 
 % \def\xmlcontextdirective#1% kind class key value
 %   {\executeifdefined{xml#1directive}\gobblethreearguments}

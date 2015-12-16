@@ -31,6 +31,7 @@ local specification = {
         -- Vons, Last, Jrs, First
         --
         author      = "author", -- interpreted as name(s)
+        withauthor  = "author",
         editor      = "author",
         artist      = "author",
         composer    = "author",
@@ -89,6 +90,7 @@ categories.article = {
         "author"
     },
     optional = {
+        "withauthor",
         "year",
         "subtitle", "type", "file",
         "journal", "volume", "number", "pages",
@@ -106,6 +108,7 @@ categories.magazine = {
         "journal",
     },
     optional = {
+        "withauthor",
         "subtitle", "type", "file",
         "number",
         "month", "day",
@@ -127,7 +130,7 @@ categories.periodical = {
         "year",
     },
     optional = {
-        "author",
+        "author", "withauthor",
         "subtitle", "file",
         "series", "volume", "number", "month",
         "organization",
@@ -149,6 +152,7 @@ categories.standard = {
         "doi", "note",
     },
     optional = {
+        "withauthor",
     },
 }
 
@@ -162,6 +166,7 @@ categories.book = {
     },
     required = { "author" },
     optional = {
+        "withauthor",
         "year", "month", "day",
         "subtitle", "type",  "file",
         "editionset", "series",
@@ -183,6 +188,7 @@ categories.inbook = {
         "year" ,
     },
     optional = {
+        "withauthor",
         "subtitle", "type", "file",
         "booktitle",
         -- APA ignores this: "chapter",
@@ -208,6 +214,7 @@ categories.incollection = {
         "year",
     },
     optional = {
+        "withauthor",
         "subtitle", "type", "file",
         "editionset", "series",
         -- APA ignores this: "chapter",
@@ -229,6 +236,7 @@ categories.booklet = {
         "author"
     },
     optional = {
+        "withauthor",
         "publisher",
         "year", "month",
         "subtitle", "type", "file",
@@ -251,6 +259,7 @@ categories.proceedings = {
         "year"
     },
     optional = {
+        "withauthor",
         "publisher",
         "subtitle", "file",
         "editionset", "series",
@@ -266,6 +275,7 @@ categories.inproceedings = {
     sets     = categories.incollection.sets,
     required = categories.incollection.required,
     optional = {
+        "withauthor",
         "subtitle", "type", "file",
         "month",
         "edition", "series",
@@ -290,6 +300,7 @@ categories.thesis = {
         "type"
     },
     optional = {
+        "withauthor",
         "subtitle", "file",
         "month",
         "address",
@@ -306,6 +317,7 @@ categories.mastersthesis = {
         "year"
     },
     optional = {
+        "withauthor",
         "type",
         "subtitle", "file",
         "month",
@@ -331,6 +343,7 @@ categories.techreport = {
         "year"
     },
     optional = {
+        "withauthor",
         "publisher",
         "address",
         "subtitle", "file",
@@ -354,6 +367,7 @@ categories.manual = {
     },
     optional = {
         "author", "publisher",
+        "withauthor",
         "address",
         "subtitle", "file",
         "editionset", "month", "year",
@@ -382,6 +396,7 @@ categories.patent = {
         "type",
         --check this: "language",
         "author", "publisher",
+        "withauthor",
         "title", "subtitle", "file",
         "address",
         "day", "month",
@@ -401,6 +416,7 @@ categories.unpublished = {
         "note"
     },
     optional = {
+        "withauthor",
         "subtitle", "file",
         "year", "month",
         "doi"
@@ -419,7 +435,7 @@ categories.electronic = {
     optional = {
         "subtitle", "type", "file",
         "year", "month",
-        "author",
+        "author", "withauthor",
         "address",
         "organization",
         "howpublished",
@@ -441,6 +457,7 @@ categories.film = {
         "address", "publisher", -- aka studio
     },
     optional = {
+        "withauthor",
         "type",
         "note",
         "doi",
@@ -460,6 +477,7 @@ categories.music = {
         "address", "publisher", -- aka label
     },
     optional = {
+        "withauthor",
         "type",
         "note",
         "doi",
@@ -476,7 +494,7 @@ categories.misc = {
         -- nothing is really important here
     },
     optional = {
-        "author",
+        "author", "withauthor",
         "title", "subtitle", "file",
         "year", "month",
         "howpublished",
@@ -496,6 +514,7 @@ categories.other = {
         "year"
     },
     optional = {
+        "withauthor",
         "subtitle", "file",
         "doi", "note",
     },
@@ -513,6 +532,7 @@ categories.literal = {
         "text"
     },
     optional = {
+        "withauthor",
         "doi", "note"
     },
     virtual = false,

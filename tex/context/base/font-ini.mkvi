@@ -382,27 +382,18 @@
 \unexpanded\def\stopfont {\endgroup}
 
 %D \macros
-%D   {everybodyfont,Everybodyfont,everyglobalbodyfont}
+%D   {everybodyfont,everyglobalbodyfont}
 %D
 %D Every change in bodyfont size has conseqences for the baseline
 %D distance and skips between paragraphs. These are initialized
 %D in other modules. Here we only provide the hooks that
 %D garantees their handling.
-
+%D
 %D At the system level one can initialize thing like:
 %D
 %D \starttyping
 %D \appendtoks \setupspacing \to \everybodyfont
 %D \stoptyping
-%D
-%D While users can add their own non standard commands like:
-%D
-%D \starttyping
-%D \EveryBodyFont{\message{changing to bodyfont \the\bodyfontsize}}
-%D \stoptyping
-%D
-%D Personnaly I never felt the need for such extensions, but
-%D at least its possible.
 
 %D \macros
 %D   {globalbodyfontsize,localbodyfontsize,bodyfontsize}

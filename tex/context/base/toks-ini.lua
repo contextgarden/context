@@ -9,6 +9,7 @@ tokens = tokens or { }
 
 local tokens     = tokens
 local newtoken   = newtoken or token
+local tonumber   = tonumber
 local tostring   = tostring
 local utfchar    = utf.char
 local char       = string.char
@@ -69,13 +70,13 @@ local get_next     = newtoken.get_next
 
 local set_macro    = newtoken.set_macro
 
-set_macro = function(k,v,g)
-    if g == "global" then
-        context.setgvalue(k,v or '')
-    else
-        context.setvalue(k,v or '')
-    end
-end
+-- set_macro = function(k,v,g)
+--     if g == "global" then
+--         context.setgvalue(k,v or '')
+--     else
+--         context.setvalue(k,v or '')
+--     end
+-- end
 
 local bits = {
     escape      = 2^ 0,
