@@ -14,6 +14,8 @@ if not modules then modules = { } end modules ['syst-aux'] = {
 local tonumber = tonumber
 local utfsub = utf.sub
 local P, S, R, C, Cc, Cs, Carg, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg, lpeg.match
+local next = next
+local find  = string.find
 
 local context           = context
 local implement         = interfaces.implement
@@ -21,6 +23,7 @@ local formatters        = string.formatters
 local setcatcode        = tex.setcatcode
 local utf8character     = lpeg.patterns.utf8character
 local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_set  = utilities.parsers.settings_to_set
 local setmacro          = interfaces.setmacro
 
 local pattern           = C(utf8character^-1) * C(P(1)^0)
@@ -227,3 +230,247 @@ implement {
     arguments = "integer",
     actions   = function(n,m) context(accuracy[n](m)) end
 }
+
+-- not faster but just less tracing:
+
+local firstoftwoarguments  = context.firstoftwoarguments
+local secondoftwoarguments = context.secondoftwoarguments
+local firstofoneargument   = context.firstofoneargument
+local gobbleoneargument    = context.gobbleoneargument
+
+local hash = utilities.parsers.hashes.settings_to_set
+
+local function doifelsecommon(a,b)
+    if a == b then
+        setmacro("commalistelement",a)
+        if a == "" then
+            secondoftwoarguments()
+        else
+            firstoftwoarguments()
+        end
+        return
+    end
+    local ba = find(a,",")
+    local bb = find(b,",")
+    if ba and bb then
+        local ha = hash[a]
+        local hb = hash[b]
+     -- local ha = settings_to_set(a)
+     -- local hb = settings_to_set(b)
+        for k in next, ha do
+            if hb[k] then
+                setmacro("commalistelement",k)
+                firstoftwoarguments()
+                return
+            end
+        end
+    elseif ba then
+        if hash[a][b] then
+     -- if settings_to_set(a)[b] then
+            setmacro("commalistelement",b)
+            firstoftwoarguments()
+            return
+        end
+    elseif bb then
+        if hash[b][a] then
+     -- if settings_to_set(b)[a] then
+            setmacro("commalistelement",a)
+            firstoftwoarguments()
+            return
+        end
+    end
+    setmacro("commalistelement","")
+    secondoftwoarguments()
+end
+
+local function doifcommon(a,b)
+    if a == b then
+        setmacro("commalistelement",a)
+        if a == "" then
+            gobbleoneargument()
+        else
+            firstofoneargument()
+        end
+        return
+    end
+    local ba = find(a,",")
+    local bb = find(b,",")
+    if ba and bb then
+        local ha = hash[a]
+        local hb = hash[b]
+     -- local ha = settings_to_set(a)
+     -- local hb = settings_to_set(b)
+        for k in next, ha do
+            if hb[k] then
+                setmacro("commalistelement",k)
+                firstofoneargument()
+                return
+            end
+        end
+    elseif ba then
+        if hash[a][b] then
+     -- if settings_to_set(a)[b] then
+            setmacro("commalistelement",b)
+            firstofoneargument()
+            return
+        end
+    elseif bb then
+        if hash[b][a] then
+     -- if settings_to_set(b)[a] then
+            setmacro("commalistelement",a)
+            firstofoneargument()
+            return
+        end
+    end
+    setmacro("commalistelement","")
+    gobbleoneargument()
+end
+
+local function doifnotcommon(a,b)
+    if a == b then
+        setmacro("commalistelement",a)
+        if a == "" then
+            firstofoneargument()
+        else
+            gobbleoneargument()
+        end
+        return
+    end
+    local ba = find(a,",")
+    local bb = find(b,",")
+    if ba and bb then
+        local ha = hash[a]
+        local hb = hash[b]
+     -- local ha = settings_to_set(a)
+     -- local hb = settings_to_set(b)
+        for k in next, ha do
+            if hb[k] then
+                setmacro("commalistelement",k)
+                gobbleoneargument()
+                return
+            end
+        end
+    elseif ba then
+        if hash[a][b] then
+     -- if settings_to_set(a)[b] then
+            setmacro("commalistelement",b)
+            gobbleoneargument()
+            return
+        end
+    elseif bb then
+        if hash[b][a] then
+     -- if settings_to_set(b)[a] then
+            setmacro("commalistelement",a)
+            gobbleoneargument()
+            return
+        end
+    end
+    setmacro("commalistelement","")
+    firstofoneargument()
+end
+
+local function doifelseinset(a,b)
+    if a == b then
+        setmacro("commalistelement",a)
+        if a == "" then
+            secondoftwoarguments()
+        else
+            firstoftwoarguments()
+        end
+        return
+    end
+    local bb = find(b,",")
+    if bb then
+        if hash[b][a] then
+     -- if settings_to_set(b)[a] then
+            setmacro("commalistelement",a)
+            firstoftwoarguments()
+            return
+        end
+    end
+    setmacro("commalistelement","")
+    secondoftwoarguments()
+end
+
+local function doifinset(a,b)
+    if a == b then
+        setmacro("commalistelement",a)
+        if a == "" then
+            gobbleoneargument()
+        else
+            firstofoneargument()
+        end
+        return
+    end
+    local bb = find(b,",")
+    if bb then
+       if hash[b][a] then
+    -- if settings_to_set(b)[a] then
+            setmacro("commalistelement",a)
+            firstofoneargument()
+            return
+        end
+    end
+    setmacro("commalistelement","")
+    gobbleoneargument()
+end
+
+local function doifnotinset(a,b)
+    if a == b then
+        setmacro("commalistelement",a)
+        if a == "" then
+            firstofoneargument()
+        else
+            gobbleoneargument()
+        end
+        return
+    end
+    local bb = find(b,",")
+    if bb then
+        if hash[b][a] then
+     -- if settings_to_set(b)[a] then
+            setmacro("commalistelement",a)
+            gobbleoneargument()
+            return
+        end
+    end
+    setmacro("commalistelement","")
+    firstofoneargument()
+end
+
+interfaces.implement {
+    name      = "doifelsecommon",
+    actions   = doifelsecommon,
+    arguments = { "string", "string" },
+}
+
+interfaces.implement {
+    name      = "doifcommon",
+    actions   = doifcommon,
+    arguments = { "string", "string" },
+}
+
+interfaces.implement {
+    name      = "doifnotcommon",
+    actions   = doifnotcommon,
+    arguments = { "string", "string" },
+}
+
+interfaces.implement {
+    name      = "doifelseinset",
+    actions   = doifelseinset,
+    arguments = { "string", "string" },
+}
+
+interfaces.implement {
+    name      = "doifinset",
+    actions   = doifinset,
+    arguments = { "string", "string" },
+}
+
+interfaces.implement {
+    name      = "doifnotinset",
+    actions   = doifnotinset,
+    arguments = { "string", "string" },
+}
+

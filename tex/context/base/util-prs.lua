@@ -24,6 +24,8 @@ local sortedhash        = table.sortedhash
 local sortedkeys        = table.sortedkeys
 local tohash            = table.tohash
 
+local hashes             = { }
+utilities.parsers.hashes = hashes
 -- we share some patterns
 
 local digit       = R("09")
@@ -315,10 +317,17 @@ end
 
 local pattern = Cf(Ct("") * Cg(C((1-S(", "))^1) * S(", ")^0 * Cc(true))^1,rawset)
 
-function utilities.parsers.settings_to_set(str,t)
+function utilities.parsers.settings_to_set(str)
     return str and lpegmatch(pattern,str) or { }
 end
 
+hashes.settings_to_set =  table.setmetatableindex(function(t,k) -- experiment, not public
+    local v = k and lpegmatch(pattern,k) or { }
+    t[k] = v
+    return v
+end)
+
+getmetatable(hashes.settings_to_set).__mode = "kv" -- could be an option (maybe sharing makes sense)
 
 function parsers.simple_hash_to_string(h, separator)
     local t, tn = { }, 0

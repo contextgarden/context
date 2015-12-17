@@ -19,7 +19,11 @@
 % When issuing two \par\penalty-\plustenthousand's, only the first
 % triggers the otr. Is this an obscure feature or an optimization?
 
+\registerctxluafile{page-otr}{1.001}
+
 \unprotect
+
+\let\triggerpagebuilder\clf_triggerpagebuilder
 
 \def\m!otr{otr} % todo
 

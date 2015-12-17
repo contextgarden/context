@@ -420,7 +420,7 @@
 \installwhitespacemethod \v!medium      {\s_spac_whitespace_parskip   \medskipamount}
 \installwhitespacemethod \v!small       {\s_spac_whitespace_parskip   \smallskipamount}
 
-\installwhitespacemethod \s!default     {\spac_whitespace_setup_nop}
+\installwhitespacemethod \s!default     {\spac_whitespace_setup_nop} % also covers none
 
 \def\spac_whitespace_setup_method#1%
   {\ifcsname\??whitespacemethod#1\endcsname
@@ -444,8 +444,8 @@
 % \def\spac_whitespace_setup_method#1%
 %   {\csname\??whitespacemethod\ifcsname\??whitespacemethod#1\endcsname#1\else\s!unknown\endcsname\relax}
 
-\unexpanded\def\nowhitespace{\vspacing[\v!nowhite]}
-\unexpanded\def\whitespace  {\vspacing[\v!white]}
+\unexpanded\def\nowhitespace{\directcheckedvspacing\v!nowhite} % {\vspacing[\v!nowhite]}
+\unexpanded\def\whitespace  {\directcheckedvspacing\v!white}   % {\vspacing[\v!white]}
 
 \setupwhitespace
   [\v!none]
@@ -466,9 +466,9 @@
    \ifnum\c_spac_packed_level=\plusone \ifvmode
      \begingroup
      \whitespace % not combined
-     \blank[\v!disable]%
+     \directcheckedvspacing\v!disable % \blank[\v!disable]% or \inhibitblank
      \doifelse{#1}\v!blank\settrue\setfalse\c_spac_packed_blank
-     \setupwhitespace[\v!none]%
+     \setupwhitespace[\v!none]% or \forgetparskip
    \fi \fi}
 
 \unexpanded\def\stoppacked
@@ -479,12 +479,12 @@
    \global\advance\c_spac_packed_level\minusone}
 
 \unexpanded\def\startunpacked
-  {\blank
+  {\directdefaultvspacing % \blank
    \begingroup}
 
 \unexpanded\def\stopunpacked
   {\endgroup
-   \blank}
+   \directdefaultvspacing}% \blank}
 
 % \prevdepth crosses pageboundaries!
 %
@@ -509,7 +509,7 @@
 
 \setvalue{\??linesaround\v!blank  }{\blank}
 \letvalue{\??linesaround\empty    }\relax
-\setvalue{\??linesaround\s!unknown}{\blank[\m_spac_lines_around]}
+\setvalue{\??linesaround\s!unknown}{\directcheckedvspacing\m_spac_lines_around} % \blank[\m_spac_lines_around]}
 
 \def\spac_lines_action_around % we used to let this one but it's cleaner this way
   {\csname\??linesaround      % i.e. do it twice
@@ -558,11 +558,11 @@
    \endgroup}
 
 \unexpanded\def\spac_lines_stop_correction_ongrid
-  {\blank[\v!white]%
+  {\directcheckedvspacing\v!white % \blank[\v!white]%
    \snaptogrid\hpack{\box\scratchbox}}
 
 \unexpanded\def\spac_lines_stop_correction_normal
-  {\blank[\v!nowhite]%
+  {\directcheckedvspacing\v!nowhite % \blank[\v!nowhite]%
    \ifdim\parskip>\zeropoint
       % too fuzzy otherwise
    \else
@@ -582,7 +582,8 @@
      \fi
    \fi
    \ifdim\pagegoal<\maxdimen
-     \blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
+    %\blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
+     \directcheckedvspacing{\v!white,\the\d_spac_lines_correction_before}% \blank[\v!white]\dotopbaselinecorrection
    \fi
    \nointerlineskip % new
    \noindent % not \dontleavehmode !
@@ -596,7 +597,8 @@
    \fi
    \box\scratchbox
    \endgraf
-   \blank[\the\d_spac_lines_correction_after]% \dobotbaselinecorrection
+  %\blank[\the\d_spac_lines_correction_after]% \dobotbaselinecorrection
+   \directcheckedvspacing{\the\d_spac_lines_correction_after}% \dobotbaselinecorrection
  % \allowbreak % new, otherwise problems when many in a row
    \prevdepth\strutdp
    \spac_lines_action_around}
@@ -1916,6 +1918,22 @@
 \def\directvspacing#1%
   {\par\clf_vspacing{#1}}
 
+\def\directcheckedvspacing
+  {\ifinpagebody % somewhat weird
+     \expandafter\directvspacing
+   \else\ifconditional\c_spac_packed_blank
+     \doubleexpandafter\directvspacing
+   \else
+     \doubleexpandafter\gobbleoneargument
+   \fi\fi}
+
+\def\directdefaultvspacing
+  {\ifinpagebody % somewhat weird
+     \clf_vspacing{\currentvspacing}%
+   \else\ifconditional\c_spac_packed_blank
+     \clf_vspacing{\currentvspacing}%
+   \fi\fi}
+
 % handy (and faster):
 
 \unexpanded\def\directvpenalty#1%
@@ -1995,7 +2013,7 @@
 \newdimen\d_spac_overlay
 
 \def\spac_overlay_lines
-  {\blank[\v!back,\v!overlay]%
+  {\directcheckedvspacing{\v!back,\v!overlay}% \blank[\v!back,\v!overlay]%
    \nointerlineskip}
 
 % \startitemize[n]

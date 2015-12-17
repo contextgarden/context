@@ -7044,7 +7044,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 22496, stripped down to: 15539
+-- original size: 22839, stripped down to: 15769
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -7068,6 +7068,8 @@ local setmetatableindex=table.setmetatableindex
 local sortedhash=table.sortedhash
 local sortedkeys=table.sortedkeys
 local tohash=table.tohash
+local hashes={}
+utilities.parsers.hashes=hashes
 local digit=R("09")
 local space=P(' ')
 local equal=P("=")
@@ -7286,9 +7288,15 @@ function parsers.array_to_string(a,separator)
   end
 end
 local pattern=Cf(Ct("")*Cg(C((1-S(", "))^1)*S(", ")^0*Cc(true))^1,rawset)
-function utilities.parsers.settings_to_set(str,t)
+function utilities.parsers.settings_to_set(str)
   return str and lpegmatch(pattern,str) or {}
 end
+hashes.settings_to_set=table.setmetatableindex(function(t,k) 
+  local v=k and lpegmatch(pattern,k) or {}
+  t[k]=v
+  return v
+end)
+getmetatable(hashes.settings_to_set).__mode="kv" 
 function parsers.simple_hash_to_string(h,separator)
   local t,tn={},0
   for k,v in sortedhash(h) do
@@ -18352,8 +18360,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 781971
--- stripped bytes    : 283313
+-- original bytes    : 782314
+-- stripped bytes    : 283426
 
 -- end library merge
 

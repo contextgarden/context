@@ -423,9 +423,16 @@
    \c!entities=\v!yes]   % replace entities
 
 \def\xmlmapvalue    #1#2#3{\setvalue{\??xmlmapvalue#1:#2}{#3}} % keep #3 to grab spaces
-\def\xmlvalue       #1#2#3{\executeifdefined{\??xmlmapvalue#1:#2}{#3}}
+%def\xmlvalue       #1#2#3{\executeifdefined{\??xmlmapvalue#1:#2}{#3}}
 %def\xmlvalue         #1#2{\ifcsname\??xmlmapvalue#1:#2\endcsname\csname\??xmlmapvalue#1:#2\expandafter\expandafter\gobbleoneargument\expandafter\endcsname\else\expandafter\firstofoneargument\fi}
 \def\xmldoifelsevalue #1#2{\ifcsname\??xmlmapvalue#1:#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+
+\def\xmlvalue#1#2% #3
+  {\ifcsname\??xmlmapvalue#1:#2\endcsname
+     \expandafter\expandafter\expandafter\lastnamedcs\expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
 \let\xmldoifvalueelse\xmldoifelsevalue
 

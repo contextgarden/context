@@ -775,131 +775,137 @@
 % !5yes=\doifnotinset{}{}{yes}
 % !6yes=\doifnotinset{aaa}{}{yes}
 
-\def\v_syst_helpers_right_optional_bracket{]}
+% \def\v_syst_helpers_right_optional_bracket{]}
+%
+% \def\syst_helpers_do_quit_if_item_in_set_else#1],\relax{\firstoftwoarguments}
+% \def\syst_helpers_do_quit_if_item_in_set     #1],\relax{\firstofoneargument}
+% \def\syst_helpers_do_quit_if_item_not_in_set #1],\relax{\gobbleoneargument}
+%
+% \def\syst_helpers_re_do_if_in_set_else{\expandafter\syst_helpers_do_check_if_item_in_set_else\m_syst_string_two,],\relax}
+% \def\syst_helpers_re_do_if_in_set     {\expandafter\syst_helpers_do_check_if_item_in_set     \m_syst_string_two,],\relax}
+% \def\syst_helpers_re_do_if_not_in_set {\expandafter\syst_helpers_do_check_if_item_not_in_set \m_syst_string_two,],\relax}
+%
+% \unexpanded\def\doifelseinset#1% make this two step too
+%   {\edef\m_syst_string_one{#1}%
+%    \ifx\m_syst_string_one\empty
+%      \expandafter\thirdofthreearguments
+%    \else
+%      \expandafter\syst_helpers_do_if_in_set_else
+%    \fi}
+%
+% \let\doifinsetelse\doifelseinset
+%
+% \def\syst_helpers_do_if_in_set_else#1%
+%   {\edef\m_syst_string_two{#1}%
+%    \ifx\m_syst_string_two\empty
+%      \expandafter\secondoftwoarguments
+%    \else
+%      \expandafter\syst_helpers_re_do_if_in_set_else
+%    \fi}
+%
+% \unexpanded\def\doifinset#1%
+%   {\edef\m_syst_string_one{#1}%
+%    \ifx\m_syst_string_one\empty
+%      \expandafter\gobbletwoarguments
+%    \else
+%      \expandafter\syst_helpers_do_if_in_set
+%    \fi}
+%
+% \def\syst_helpers_do_if_in_set#1%
+%   {\edef\m_syst_string_two{#1}%
+%    \ifx\m_syst_string_two\empty
+%      \expandafter\gobbleoneargument
+%    \else
+%      \expandafter\syst_helpers_re_do_if_in_set
+%    \fi}
+%
+% \unexpanded\def\doifnotinset#1%
+%   {\edef\m_syst_string_one{#1}%
+%    \ifx\m_syst_string_one\empty
+%      \expandafter\secondoftwoarguments
+%    \else
+%      \expandafter\syst_helpers_do_if_not_in_set
+%    \fi}
+%
+% \def\syst_helpers_do_if_not_in_set#1%
+%   {\edef\m_syst_string_two{#1}%
+%    \ifx\m_syst_string_two\empty
+%      \expandafter\firstofoneargument
+%    \else
+%      \expandafter\syst_helpers_re_do_if_not_in_set % ...]{true}
+%    \fi}
+%
+% \def\syst_helpers_do_check_if_item_in_set_else#1,#2% #2 eats up preceding space
+%   {\edef\m_syst_string_two{#1}%
+%    \ifx\m_syst_string_two\empty
+%      \expandafter\syst_helpers_do_check_if_item_in_set_else
+%    \else
+%      \expandafter\syst_helpers_do_do_check_if_item_in_set_else
+%    \fi#2}
+%
+% \def\syst_helpers_do_do_check_if_item_in_set_else
+%   {\ifx\m_syst_string_two\v_syst_helpers_right_optional_bracket
+%      \expandafter\thirdofthreearguments
+%    \else
+%      \expandafter\syst_helpers_do_do_do_check_if_item_in_set_else
+%    \fi}
+%
+% \def\syst_helpers_do_do_do_check_if_item_in_set_else
+%   {\ifx\m_syst_string_one\m_syst_string_two
+%      \expandafter\syst_helpers_do_quit_if_item_in_set_else
+%    \else
+%      \expandafter\syst_helpers_do_check_if_item_in_set_else
+%    \fi}
+%
+% \def\syst_helpers_do_check_if_item_in_set#1,#2% #2 eats up preceding space
+%   {\edef\m_syst_string_two{#1}%
+%    \ifx\m_syst_string_two\empty
+%      \expandafter\syst_helpers_do_check_if_item_in_set
+%    \else
+%      \expandafter\syst_helpers_do_do_check_if_item_in_set
+%    \fi#2}
+%
+% \def\syst_helpers_do_do_check_if_item_in_set
+%   {\ifx\m_syst_string_two\v_syst_helpers_right_optional_bracket
+%      \expandafter\gobbletwoarguments
+%    \else
+%      \expandafter\syst_helpers_do_do_do_check_if_item_in_set
+%    \fi}
+%
+% \def\syst_helpers_do_do_do_check_if_item_in_set
+%   {\ifx\m_syst_string_one\m_syst_string_two
+%      \expandafter\syst_helpers_do_quit_if_item_in_set
+%    \else
+%      \expandafter\syst_helpers_do_check_if_item_in_set
+%    \fi}
+%
+% \def\syst_helpers_do_check_if_item_not_in_set#1,#2% #2 eats up preceding space
+%   {\edef\m_syst_string_two{#1}%
+%    \ifx\m_syst_string_two\empty
+%      \expandafter\syst_helpers_do_check_if_item_not_in_set
+%    \else
+%      \expandafter\syst_helpers_do_do_check_if_item_not_in_set
+%    \fi#2}
+%
+% \def\syst_helpers_do_do_check_if_item_not_in_set
+%   {\ifx\m_syst_string_two\v_syst_helpers_right_optional_bracket
+%      \expandafter\secondoftwoarguments
+%    \else
+%      \expandafter\syst_helpers_do_do_do_check_if_item_not_in_set
+%    \fi}
+%
+% \def\syst_helpers_do_do_do_check_if_item_not_in_set
+%   {\ifx\m_syst_string_one\m_syst_string_two
+%      \expandafter\syst_helpers_do_quit_if_item_not_in_set
+%    \else
+%      \expandafter\syst_helpers_do_check_if_item_not_in_set
+%    \fi}
 
-\def\syst_helpers_do_quit_if_item_in_set_else#1],\relax{\firstoftwoarguments}
-\def\syst_helpers_do_quit_if_item_in_set     #1],\relax{\firstofoneargument}
-\def\syst_helpers_do_quit_if_item_not_in_set #1],\relax{\gobbleoneargument}
-
-\def\syst_helpers_re_do_if_in_set_else{\expandafter\syst_helpers_do_check_if_item_in_set_else\m_syst_string_two,],\relax}
-\def\syst_helpers_re_do_if_in_set     {\expandafter\syst_helpers_do_check_if_item_in_set     \m_syst_string_two,],\relax}
-\def\syst_helpers_re_do_if_not_in_set {\expandafter\syst_helpers_do_check_if_item_not_in_set \m_syst_string_two,],\relax}
-
-\unexpanded\def\doifelseinset#1% make this two step too
-  {\edef\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
-     \expandafter\thirdofthreearguments
-   \else
-     \expandafter\syst_helpers_do_if_in_set_else
-   \fi}
+\unexpanded\def\doifelseinset#1#2{\clf_doifelseinset{#1}{#2}}
+\unexpanded\def\doifinset    #1#2{\clf_doifinset    {#1}{#2}}
+\unexpanded\def\doifnotinset #1#2{\clf_doifnotinset {#1}{#2}}
 
 \let\doifinsetelse\doifelseinset
-
-\def\syst_helpers_do_if_in_set_else#1%
-  {\edef\m_syst_string_two{#1}%
-   \ifx\m_syst_string_two\empty
-     \expandafter\secondoftwoarguments
-   \else
-     \expandafter\syst_helpers_re_do_if_in_set_else
-   \fi}
-
-\unexpanded\def\doifinset#1%
-  {\edef\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
-     \expandafter\gobbletwoarguments
-   \else
-     \expandafter\syst_helpers_do_if_in_set
-   \fi}
-
-\def\syst_helpers_do_if_in_set#1%
-  {\edef\m_syst_string_two{#1}%
-   \ifx\m_syst_string_two\empty
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\syst_helpers_re_do_if_in_set
-   \fi}
-
-\unexpanded\def\doifnotinset#1%
-  {\edef\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
-     \expandafter\secondoftwoarguments
-   \else
-     \expandafter\syst_helpers_do_if_not_in_set
-   \fi}
-
-\def\syst_helpers_do_if_not_in_set#1%
-  {\edef\m_syst_string_two{#1}%
-   \ifx\m_syst_string_two\empty
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\syst_helpers_re_do_if_not_in_set % ...]{true}
-   \fi}
-
-\def\syst_helpers_do_check_if_item_in_set_else#1,#2% #2 eats up preceding space
-  {\edef\m_syst_string_two{#1}%
-   \ifx\m_syst_string_two\empty
-     \expandafter\syst_helpers_do_check_if_item_in_set_else
-   \else
-     \expandafter\syst_helpers_do_do_check_if_item_in_set_else
-   \fi#2}
-
-\def\syst_helpers_do_do_check_if_item_in_set_else
-  {\ifx\m_syst_string_two\v_syst_helpers_right_optional_bracket
-     \expandafter\thirdofthreearguments
-   \else
-     \expandafter\syst_helpers_do_do_do_check_if_item_in_set_else
-   \fi}
-
-\def\syst_helpers_do_do_do_check_if_item_in_set_else
-  {\ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\syst_helpers_do_quit_if_item_in_set_else
-   \else
-     \expandafter\syst_helpers_do_check_if_item_in_set_else
-   \fi}
-
-\def\syst_helpers_do_check_if_item_in_set#1,#2% #2 eats up preceding space
-  {\edef\m_syst_string_two{#1}%
-   \ifx\m_syst_string_two\empty
-     \expandafter\syst_helpers_do_check_if_item_in_set
-   \else
-     \expandafter\syst_helpers_do_do_check_if_item_in_set
-   \fi#2}
-
-\def\syst_helpers_do_do_check_if_item_in_set
-  {\ifx\m_syst_string_two\v_syst_helpers_right_optional_bracket
-     \expandafter\gobbletwoarguments
-   \else
-     \expandafter\syst_helpers_do_do_do_check_if_item_in_set
-   \fi}
-
-\def\syst_helpers_do_do_do_check_if_item_in_set
-  {\ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\syst_helpers_do_quit_if_item_in_set
-   \else
-     \expandafter\syst_helpers_do_check_if_item_in_set
-   \fi}
-
-\def\syst_helpers_do_check_if_item_not_in_set#1,#2% #2 eats up preceding space
-  {\edef\m_syst_string_two{#1}%
-   \ifx\m_syst_string_two\empty
-     \expandafter\syst_helpers_do_check_if_item_not_in_set
-   \else
-     \expandafter\syst_helpers_do_do_check_if_item_not_in_set
-   \fi#2}
-
-\def\syst_helpers_do_do_check_if_item_not_in_set
-  {\ifx\m_syst_string_two\v_syst_helpers_right_optional_bracket
-     \expandafter\secondoftwoarguments
-   \else
-     \expandafter\syst_helpers_do_do_do_check_if_item_not_in_set
-   \fi}
-
-\def\syst_helpers_do_do_do_check_if_item_not_in_set
-  {\ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\syst_helpers_do_quit_if_item_not_in_set
-   \else
-     \expandafter\syst_helpers_do_check_if_item_not_in_set
-   \fi}
 
 %D \macros
 %D   {doifcommon,doifnotcommon,doifcommonelse}
@@ -929,65 +935,71 @@
 % !9yes=\doifcommonelse{,a,}{,,,a,}{yes}{nop}
 % !9yes=\doifcommonelse{,,a,}{,,,a,}{yes}{nop}
 
-\let\m_syst_common_a\empty
-\let\m_syst_common_b\empty
-\let\m_syst_common_c\empty
+% \let\m_syst_common_a\empty
+% \let\m_syst_common_b\empty
+% \let\m_syst_common_c\empty
+%
+% \def\syst_helpers_do_quit_if_common_else#1],\relax#2],\relax{\firstoftwoarguments}
+%
+% \def\syst_helpers_do_check_if_common_else_one#1,#2% hm, why #2 here and passed at end
+%   {\edef\m_syst_common_c{#1}%
+%    \ifx\m_syst_common_c\v_syst_helpers_right_optional_bracket
+%      \expandafter\thirdofthreearguments
+%    \else
+%      \expandafter\syst_helpers_do_common_check
+%    \fi#2}
+%
+% \def\syst_helpers_do_check_if_common_else_two#1,#2% we can do an empty #1 check too
+%   {\edef\commalistelement{#1}%
+%    \ifx\commalistelement\v_syst_helpers_right_optional_bracket
+%      \expandafter\syst_helpers_re_do_check_if_common_else_one
+%    \else
+%      \expandafter\syst_helpers_do_do_check_if_common_else_two
+%    \fi#2}
+%
+% \def\syst_helpers_do_do_check_if_common_else_two
+%   {\ifx\commalistelement\empty
+%      \expandafter\syst_helpers_do_check_if_common_else_two
+%    \else
+%      \expandafter\syst_helpers_do_do_do_check_if_common_else_two
+%    \fi}
+%
+% \def\syst_helpers_do_do_do_check_if_common_else_two
+%   {\ifx\m_syst_common_c\commalistelement
+%      \expandafter\syst_helpers_do_quit_if_common_else
+%    \else
+%      \expandafter\syst_helpers_do_check_if_common_else_two
+%    \fi}
+%
+% \def\syst_helpers_re_do_check_if_common_else_one#1{\syst_helpers_do_check_if_common_else_one}
+%
+% \def\syst_helpers_do_common_check
+%   {\expandafter\syst_helpers_do_check_if_common_else_two\m_syst_common_b,],\relax}%
+%
+% \def\syst_helpers_do_do_do_if_common_else
+%   {\expandafter\syst_helpers_do_check_if_common_else_one\m_syst_common_a,],\relax}
+%
+% \def\syst_helpers_do_do_if_common_else#1#2#3#4%
+%   {\edef\m_syst_common_a{#3}%
+%    \edef\m_syst_common_b{#4}%
+%    \ifx\m_syst_common_a\empty
+%      \expandafter\secondoftwoarguments
+%    \else\ifx\m_syst_common_b\empty
+%      \expandafter\expandafter\expandafter\secondoftwoarguments
+%    \else
+%      \expandafter\expandafter\expandafter\syst_helpers_do_do_do_if_common_else
+%    \fi\fi
+%    #1#2}
 
-\def\syst_helpers_do_quit_if_common_else#1],\relax#2],\relax{\firstoftwoarguments}
+% \unexpanded\def\doifelsecommon{\syst_helpers_do_do_if_common_else\firstoftwoarguments\secondoftwoarguments}
+% \unexpanded\def\doifcommon    {\syst_helpers_do_do_if_common_else\firstofoneargument \gobbleoneargument   }
+% \unexpanded\def\doifnotcommon {\syst_helpers_do_do_if_common_else\gobbleoneargument  \firstofoneargument  }
+%
+% \let\doifcommonelse\doifelsecommon
 
-\def\syst_helpers_do_check_if_common_else_one#1,#2%
-  {\edef\m_syst_common_c{#1}%
-   \ifx\m_syst_common_c\v_syst_helpers_right_optional_bracket
-     \expandafter\thirdofthreearguments
-   \else
-     \expandafter\syst_helpers_do_common_check
-   \fi#2}
-
-\def\syst_helpers_do_check_if_common_else_two#1,#2% we can do an empty #1 check too
-  {\edef\commalistelement{#1}%
-   \ifx\commalistelement\v_syst_helpers_right_optional_bracket
-     \expandafter\syst_helpers_re_do_check_if_common_else_one
-   \else
-     \expandafter\syst_helpers_do_do_check_if_common_else_two
-   \fi#2}
-
-\def\syst_helpers_do_do_check_if_common_else_two
-  {\ifx\commalistelement\empty
-     \expandafter\syst_helpers_do_check_if_common_else_two
-   \else
-     \expandafter\syst_helpers_do_do_do_check_if_common_else_two
-   \fi}
-
-\def\syst_helpers_do_do_do_check_if_common_else_two
-  {\ifx\m_syst_common_c\commalistelement
-     \expandafter\syst_helpers_do_quit_if_common_else
-   \else
-     \expandafter\syst_helpers_do_check_if_common_else_two
-   \fi}
-
-\def\syst_helpers_re_do_check_if_common_else_one#1{\syst_helpers_do_check_if_common_else_one}
-
-\def\syst_helpers_do_common_check
-  {\expandafter\syst_helpers_do_check_if_common_else_two\m_syst_common_b,],\relax}%
-
-\def\syst_helpers_do_do_do_if_common_else
-  {\expandafter\syst_helpers_do_check_if_common_else_one\m_syst_common_a,],\relax}
-
-\def\syst_helpers_do_do_if_common_else#1#2#3#4%
-  {\edef\m_syst_common_a{#3}%
-   \edef\m_syst_common_b{#4}%
-   \ifx\m_syst_common_a\empty
-     \expandafter\secondoftwoarguments
-   \else\ifx\m_syst_common_b\empty
-     \expandafter\expandafter\expandafter\secondoftwoarguments
-   \else
-     \expandafter\expandafter\expandafter\syst_helpers_do_do_do_if_common_else
-   \fi\fi
-   #1#2}
-
-\unexpanded\def\doifelsecommon{\syst_helpers_do_do_if_common_else\firstoftwoarguments\secondoftwoarguments}
-\unexpanded\def\doifcommon    {\syst_helpers_do_do_if_common_else\firstofoneargument \gobbleoneargument   }
-\unexpanded\def\doifnotcommon {\syst_helpers_do_do_if_common_else\gobbleoneargument  \firstofoneargument  }
+\unexpanded\def\doifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}}
+\unexpanded\def\doifcommon    #1#2{\clf_doifcommon    {#1}{#2}}
+\unexpanded\def\doifnotcommon #1#2{\clf_doifnotcommon {#1}{#2}}
 
 \let\doifcommonelse\doifelsecommon
 
@@ -5463,33 +5475,80 @@
 \installsystemnamespace{localpushedmacro}
 \installsystemnamespace{globalpushedmacro}
 
+% \let\m_syst_helpers_push_macro\empty
+%
+% \unexpanded\def\globalpushmacro#1%
+%   {\xdef\m_syst_helpers_push_macro{\string#1}%
+%    \ifcsname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname \else
+%      \expandafter\newcount\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
+%    \fi
+%    \global\advance\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname \plusone
+%    \global\expandafter\let\csname\the\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname#1}
+%
+% \unexpanded\def\globalpopmacro#1%
+%   {\xdef\m_syst_helpers_push_macro{\string#1}%
+%    \global\expandafter\let\expandafter#1\csname\the\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname
+%    \global\advance\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname \minusone}
+%
+% \unexpanded\def\localpushmacro#1% this one can be used to push a value over an \egroup
+%   {\xdef\m_syst_helpers_push_macro{\string#1}%
+%    \ifcsname\??localpushedmacro\m_syst_helpers_push_macro\endcsname \else
+%      \expandafter\newcount\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
+%    \fi
+%    \global\advance\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname \plusone
+%    \global\expandafter\let\csname\the\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname#1}
+%
+% \unexpanded\def\localpopmacro#1%
+%   {\xdef\m_syst_helpers_push_macro{\string#1}%
+%    \expandafter\let\expandafter#1\csname\the\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname
+%    \global\advance\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname \minusone }
+%
+% \let\pushmacro\localpushmacro
+% \let\popmacro \localpopmacro
+%
+% slightly faster but more important: less tracing
+
 \let\m_syst_helpers_push_macro\empty
 
-\unexpanded\def\globalpushmacro#1%
-  {\xdef\m_syst_helpers_push_macro{\string#1}%
-   \ifcsname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname \else
-     \expandafter\newcount\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
-   \fi
-   \global\advance\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname \plusone
-   \global\expandafter\let\csname\the\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname#1}
+\newcount\c_syst_helpers_pop_count
 
-\unexpanded\def\globalpopmacro#1%
-  {\xdef\m_syst_helpers_push_macro{\string#1}%
-   \global\expandafter\let\expandafter#1\csname\the\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname
-   \global\advance\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname \minusone}
+\def\syst_helpers_push_macro_new_global
+  {\expandafter\newcount\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
+   \global\advance\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname\plusone}
+
+\def\syst_helpers_push_macro_new_local
+  {\expandafter\newcount\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
+   \global\advance\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname\plusone}
+
+\unexpanded\def\globalpushmacro#1%
+  {\xdef\m_syst_helpers_push_macro{\csstring#1}%
+   \ifcsname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
+     \global\advance\lastnamedcs\plusone
+   \else
+     \syst_helpers_push_macro_new_global
+   \fi
+   \global\expandafter\let\csname\the\lastnamedcs\m_syst_helpers_push_macro\endcsname#1}
 
 \unexpanded\def\localpushmacro#1% this one can be used to push a value over an \egroup
-  {\xdef\m_syst_helpers_push_macro{\string#1}%
-   \ifcsname\??localpushedmacro\m_syst_helpers_push_macro\endcsname \else
-     \expandafter\newcount\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
+  {\xdef\m_syst_helpers_push_macro{\csstring#1}%
+   \ifcsname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
+     \global\advance\lastnamedcs\plusone
+   \else
+     \syst_helpers_push_macro_new_local
    \fi
-   \global\advance\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname \plusone
-   \global\expandafter\let\csname\the\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname#1}
+   \global\expandafter\let\csname\the\lastnamedcs\m_syst_helpers_push_macro\endcsname#1}
+
+\unexpanded\def\globalpopmacro#1%
+  {\xdef\m_syst_helpers_push_macro{\csstring#1}%
+   \c_syst_helpers_pop_count\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
+   \global\advance\lastnamedcs \minusone
+   \expandafter\let\expandafter#1\csname\the\c_syst_helpers_pop_count\m_syst_helpers_push_macro\endcsname}
 
 \unexpanded\def\localpopmacro#1%
-  {\xdef\m_syst_helpers_push_macro{\string#1}%
-   \expandafter\let\expandafter#1\csname\the\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname\m_syst_helpers_push_macro\endcsname
-   \global\advance\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname \minusone }
+  {\xdef\m_syst_helpers_push_macro{\csstring#1}%
+   \c_syst_helpers_pop_count\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
+   \global\advance\lastnamedcs \minusone
+   \expandafter\let\expandafter#1\csname\the\c_syst_helpers_pop_count\m_syst_helpers_push_macro\endcsname}
 
 \let\pushmacro\localpushmacro
 \let\popmacro \localpopmacro

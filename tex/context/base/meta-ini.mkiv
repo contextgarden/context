@@ -699,8 +699,11 @@
   {\MPllx#2\MPlly#3\MPurx#4\MPury#5%
    \hpack{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
 
+% \unexpanded\def\meta_use_box
+%   {\setobject{MP}}
+
 \unexpanded\def\meta_use_box
-  {\setobject{MP}}
+  {\setunreferencedobject{MP}}
 
 \def\meta_handle_unique_graphic#1#2#3% when there are too many, we can store data at the lua end, although,
   {\begingroup                  % when there are that many they're probably not that unique anyway

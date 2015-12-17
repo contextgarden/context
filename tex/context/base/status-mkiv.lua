@@ -2615,12 +2615,6 @@ return {
  lua = {
   {
    category = "lua",
-   filename = "anch-pgr",
-   loading  = "anch-pgr",
-   status   = "okay",
-  },
-  {
-   category = "lua",
    filename = "anch-pos",
    loading  = "anch-pos",
    status   = "okay",
@@ -4215,6 +4209,12 @@ return {
    category = "lua",
    filename = "pack-rul",
    loading  = "pack-rul",
+   status   = "okay",
+  },
+  {
+   category = "lua",
+   filename = "page-otr",
+   loading  = "page-otr",
    status   = "okay",
   },
   {

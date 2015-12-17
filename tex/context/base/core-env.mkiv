@@ -176,37 +176,13 @@
 
 % check macros
 
-% For some reason the older version had an unprotect for grabbing the
-% mode list (only) which does not really make sense any more so that
-% has been removed. One should (un)protect at the outer level instead.
-
 \newconditional\c_checked_mode
 
 % one
 
-% \def\syst_modes_check_indeed#1%
-%   {\ifcsname\??mode#1\endcsname
-%      \ifcase\csname\??mode#1\endcsname\else
-%        \let\syst_modes_check_step\gobbleoneargument
-%      \fi
-%    \fi}
-%
-% \def\syst_modes_check#1#2#3%
-%   {\let\syst_modes_check_step\syst_modes_check_indeed
-%    \rawprocesscommacommand[#3]\syst_modes_check_step
-%    \ifx\syst_modes_check_step\gobbleoneargument
-%      \expandafter#1%
-%    \else
-%      \expandafter#2%
-%    \fi}
-
-% modes .. twice as fast on defined modes .. we could use definers and make it even faster
-% if needed
-
 \def\syst_modes_check_indeed#1%
   {\ifcsname\??mode#1\endcsname
-    %\ifcase\csname\??mode#1\endcsname\else
-     \ifcase\lastnamedcs
+     \ifcase\lastnamedcs\else
        \let\syst_modes_check_step\gobbleoneargument
      \fi
    \fi}
@@ -221,7 +197,7 @@
    \fi}
 
 \def\syst_modes_check_yes#1#2#3%
-  {\ifcase\csname\??mode#3\endcsname
+  {\ifcase\lastnamedcs
      \expandafter#2%
    \or
      \expandafter#1%
@@ -229,7 +205,14 @@
      \expandafter#2%
    \fi}
 
-\def\syst_modes_check#1#2#3%
+\def\syst_modes_check_lr#1#2#3%
+  {\ifcsname\??mode#3\endcsname
+     \expandafter\syst_modes_check_yes
+   \else
+     \expandafter\syst_modes_check_nop
+   \fi#1#2{#3}}
+
+\def\syst_modes_check_ss#1#2[#3]%
   {\ifcsname\??mode#3\endcsname
      \expandafter\syst_modes_check_yes
    \else
@@ -240,7 +223,6 @@
 
 \def\syst_modes_check_all_indeed#1%
   {\ifcsname\??mode#1\endcsname
-    %\ifcase\csname\??mode#1\endcsname
      \ifcase\lastnamedcs
        \let\syst_modes_check_all_step\gobbleoneargument
      \or
@@ -252,7 +234,7 @@
      \let\syst_modes_check_all_step\gobbleoneargument
    \fi}
 
-\def\syst_modes_check_all#1#2#3%
+\def\syst_modes_check_all_lr#1#2#3%
   {\let\syst_modes_check_all_step\syst_modes_check_all_indeed
    \rawprocesscommacommand[#3]\syst_modes_check_all_step
    \ifx\syst_modes_check_all_step\gobbleoneargument
@@ -261,16 +243,25 @@
      \expandafter#1%
    \fi}
 
-\unexpanded\def\doifelsemode        {\syst_modes_check\firstoftwoarguments\secondoftwoarguments}
-\unexpanded\def\doifmode            {\syst_modes_check\firstofoneargument\gobbleoneargument}
-\unexpanded\def\doifnotmode         {\syst_modes_check\gobbleoneargument\firstofoneargument}
-\unexpanded\def\startmode       [#1]{\syst_modes_check\donothing\syst_modes_stop_yes{#1}}
-\unexpanded\def\startnotmode    [#1]{\syst_modes_check\syst_modes_stop_nop\donothing{#1}}
-\unexpanded\def\doifelseallmodes    {\syst_modes_check_all\firstoftwoarguments\secondoftwoarguments}
-\unexpanded\def\doifallmodes        {\syst_modes_check_all\firstofoneargument\gobbleoneargument}
-\unexpanded\def\doifnotallmodes     {\syst_modes_check_all\gobbleoneargument\firstofoneargument}
-\unexpanded\def\startallmodes   [#1]{\syst_modes_check_all\donothing\syst_modes_stop_all_yes{#1}}
-\unexpanded\def\startnotallmodes[#1]{\syst_modes_check_all\syst_modes_stop_all_nop\donothing{#1}}
+\def\syst_modes_check_all_ss#1#2[#3]%
+  {\let\syst_modes_check_all_step\syst_modes_check_all_indeed
+   \rawprocesscommacommand[#3]\syst_modes_check_all_step
+   \ifx\syst_modes_check_all_step\gobbleoneargument
+     \expandafter#2%
+   \else
+     \expandafter#1%
+   \fi}
+
+\unexpanded\def\doifelsemode    {\syst_modes_check_lr\firstoftwoarguments\secondoftwoarguments}
+\unexpanded\def\doifmode        {\syst_modes_check_lr\firstofoneargument\gobbleoneargument}
+\unexpanded\def\doifnotmode     {\syst_modes_check_lr\gobbleoneargument\firstofoneargument}
+\unexpanded\def\startmode       {\syst_modes_check_ss\donothing\syst_modes_stop_yes}
+\unexpanded\def\startnotmode    {\syst_modes_check_ss\syst_modes_stop_nop\donothing}
+\unexpanded\def\doifelseallmodes{\syst_modes_check_all_lr\firstoftwoarguments\secondoftwoarguments}
+\unexpanded\def\doifallmodes    {\syst_modes_check_all_lr\firstofoneargument\gobbleoneargument}
+\unexpanded\def\doifnotallmodes {\syst_modes_check_all_lr\gobbleoneargument\firstofoneargument}
+\unexpanded\def\startallmodes   {\syst_modes_check_all_ss\donothing\syst_modes_stop_all_yes}
+\unexpanded\def\startnotallmodes{\syst_modes_check_all_ss\syst_modes_stop_all_nop\donothing}
 
 \let\doifmodeelse     \doifelsemode
 \let\doifallmodeselse \doifelseallmodes
@@ -392,7 +383,7 @@
    \fi}
 
 \def\syst_modes_set_check
-  {\syst_modes_check\syst_modes_set_yes\syst_modes_set_nop\m_mode_case}
+  {\syst_modes_check_lr\syst_modes_set_yes\syst_modes_set_nop\m_mode_case}
 
 \def\syst_modes_set_yes#1%
   {\settrue\c_syst_modes_set_done
@@ -433,67 +424,16 @@
 \def\syst_setups_b[#1]{\processcommacommand[#1]\syst_setups} % [..]
 \def\syst_setups_c[#1]{\syst_setups{#1}} % [..]
 
-\letvalue{\??setup:\letterpercent}\gobbleoneargument
-
-% \def\syst_setups#1% the grid option will be extended to other main modes
-%   {\csname\??setup
-%      \ifgridsnapping
-%        \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else\ifcsname\??setup:#1\endcsname:#1\else:\letterpercent\fi\fi
-%      \else
-%                                                            \ifcsname\??setup:#1\endcsname:#1\else:\letterpercent\fi
-%      \fi
-%    \endcsname\empty} % takes one argument
+\letvalue{\??setup:\??empty}\gobbleoneargument
 
 \def\syst_setups#1% the grid option will be extended to other main modes
   {\csname\??setup
      \ifgridsnapping
-       \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else:\ifcsname\??setup:#1\endcsname#1\else\letterpercent\fi\fi
+       \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else:\ifcsname\??setup:#1\endcsname#1\else\??empty\fi\fi
      \else
-                                                           :\ifcsname\??setup:#1\endcsname#1\else\letterpercent\fi
+                                                           :\ifcsname\??setup:#1\endcsname#1\else\??empty\fi
      \fi
    \endcsname\empty} % takes one argument
-
-% not faster but less tracing sometimes:
-%
-% \def\syst_setups% the grid option will be extended to other main modes
-%   {\csname\??setup\ifgridsnapping\expandafter\syst_setups_grid\else\expandafter\syst_setups_normal\fi}
-%
-% \def\syst_setups_grid#1%
-%   {\ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else\ifcsname\??setup:#1\endcsname:#1\else:\letterpercent\fi\fi\endcsname\empty} % takes one argument
-%
-% \def\syst_setups_normal#1%
-%   {:\ifcsname\??setup:#1\endcsname#1\else\letterpercent\fi\endcsname\empty} % takes one argument
-%
-% only makes sense with many setups
-%
-% \def\syst_setups% the grid option will be extended to other main modes
-%   {\ifgridsnapping
-%      \expandafter\syst_setups_grid
-%    \else
-%      \expandafter\syst_setups_normal
-%    \fi}
-%
-% \def\syst_setups_normal#1% the grid option will be extended to other main modes
-%   {\csname\??setup
-%      :\ifcsname\??setup:#1\endcsname#1\else\letterpercent\fi
-%    \endcsname\empty} % takes one argument
-%
-% \def\syst_setups_grid#1% the grid option will be extended to other main modes
-%   {\csname\??setup
-%        \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else:\ifcsname\??setup:#1\endcsname#1\else\letterpercent\fi\fi
-%    \endcsname\empty} % takes one argument
-%
-% \let\directsetup\syst_setups
-% \let\texsetup   \syst_setups % nicer than \directsetup and more en par with xmlsetup and luasetup
-
-% We can consider:
-%
-% \setvalue{\??setup->\v!auto}#1{\ctxcommand{autosetup("#1")}}
-%
-% ":\letterpercent" => "->\v!auto" with "\endcsname{#1}"
-%
-% but it won't work out well with multiple setups (intercepted at the
-% lua end) that then get only one argument.
 
 % no checking and we assume it being defined:
 
@@ -534,10 +474,10 @@
   {\clf_autosetups{#1}}
 
 \edef\setupwithargument#1% saves a few expansions
-  {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#1\endcsname#1\noexpand\else\letterpercent\noexpand\fi\endcsname}
+  {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#1\endcsname#1\noexpand\else\??empty\noexpand\fi\endcsname}
 
 \edef\setupwithargumentswapped#1#2% saves a few expansions (can be \let)
-  {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#2\endcsname#2\noexpand\else\letterpercent\noexpand\fi\endcsname{#1}}
+  {\noexpand\csname\??setup:\noexpand\ifcsname\??setup:#2\endcsname#2\noexpand\else\??empty\noexpand\fi\endcsname{#1}}
 
 \let\directsetup\syst_setups
 \let\texsetup   \syst_setups % nicer than \directsetup and more en par with xmlsetup and luasetup

@@ -113,57 +113,6 @@ function commands.doifelsespaces(str)
     end
 end
 
-local s = lpegtsplitat(",")
-local h = { }
-
-local function doifelsecommon(a,b) -- often the same test
-    local ha = h[a]
-    local hb = h[b]
-    if not ha then
-        ha = lpegmatch(s,a)
-        h[a] = ha
-    end
-    if not hb then
-        hb = lpegmatch(s,b)
-        h[b] = hb
-    end
-    local na = #ha
-    local nb = #hb
-    for i=1,na do
-        for j=1,nb do
-            if ha[i] == hb[j] then
-                ctx_firstoftwoarguments()
-                return
-            end
-        end
-    end
-    ctx_secondoftwoarguments()
-end
-
-local function doifelseinset(a,b)
-    local hb = h[b]
-    if not hb then hb = lpegmatch(s,b) h[b] = hb end
-    for i=1,#hb do
-        if a == hb[i] then
-            ctx_firstoftwoarguments()
-            return
-        end
-    end
-    ctx_secondoftwoarguments()
-end
-
-implement {
-    name      = "doifelsecommon",
-    arguments = two_strings,
-    actions   = doifelsecommon
-}
-
-implement {
-    name      = "doifelseinset",
-    arguments = two_strings,
-    actions   = doifelseinset
-}
-
 local pattern = lpeg.patterns.validdimen
 
 function commands.doifelsedimenstring(str)
