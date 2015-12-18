@@ -31,6 +31,7 @@ local getfont      = nuts.getfont
 local getsubtype   = nuts.getsubtype
 local getchar      = nuts.getchar
 local getlist      = nuts.getlist
+local setlist      = nuts.setlist
 
 local nodecodes    = nodes.nodecodes
 local tasks        = nodes.tasks
@@ -203,7 +204,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                 end
                 local list = getlist(n)
                 if list then
-                    setfield(n,"list",(processwords(attribute,data,flush,list,n))) -- watch ()
+                    setlist(n,(processwords(attribute,data,flush,list,n))) -- watch ()
                 end
             elseif checkdir and id == dir_code then -- only changes in dir, we assume proper boundaries
                 if f and a then

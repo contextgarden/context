@@ -57,6 +57,7 @@ local getfield          = nuts.getfield
 local setfield          = nuts.setfield
 local setlink           = nuts.setlink
 local getlist           = nuts.getlist
+local setlist           = nuts.setlist
 local getbox            = nuts.getbox
 local getskip           = nuts.getskip
 
@@ -450,7 +451,7 @@ local function markregionbox(n,tag,correct)
     else -- we can have a simple push/pop
         setlink(push,pop)
     end
-    setfield(box,"list",push)
+    setlist(box,push)
 end
 
 jobpositions.markregionbox = markregionbox

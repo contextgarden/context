@@ -38,6 +38,7 @@ local getsubtype        = nuts.getsubtype
 local setfield          = nuts.setfield
 local setattr           = nuts.setattr
 local setlink           = nuts.setlink
+local setlist           = nuts.setlist
 
 local traverse          = nuts.traverse
 local traverse_id       = nuts.traverse_id
@@ -60,7 +61,7 @@ local function add_backgrounds(head) -- rather old code .. to be redone
             if list then
                 local head = add_backgrounds(list)
                 if head then
-                    setfield(current,"list",head)
+                    setlist(current,head)
                     list = head
                 end
             end
@@ -90,7 +91,7 @@ local function add_backgrounds(head) -- rather old code .. to be redone
                         if list then
                             setlink(glue,list)
                         end
-                        setfield(current,"list",rule)
+                        setlist(current,rule)
                     end
                 end
             end
@@ -149,7 +150,7 @@ local function add_alignbackgrounds(head)
                             if list then
                                 setlink(glue,list)
                             end
-                            setfield(current,"list",rule)
+                            setlist(current,rule)
                         end
                     end
                 end

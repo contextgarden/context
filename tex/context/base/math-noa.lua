@@ -87,6 +87,8 @@ local setlink              = nuts.setlink
 local setnext              = nuts.setnext
 local setprev              = nuts.setprev
 local setchar              = nuts.setchar
+local setsubtype           = nuts.setsubtype
+local setattr              = nuts.setattr
 
 local getfield             = nuts.getfield
 local getnext              = nuts.getnext
@@ -97,7 +99,6 @@ local getsubtype           = nuts.getsubtype
 local getchar              = nuts.getchar
 local getfont              = nuts.getfont
 local getattr              = nuts.getattr
-local setattr              = nuts.setattr
 
 local insert_node_after    = nuts.insert_after
 local insert_node_before   = nuts.insert_before
@@ -726,7 +727,7 @@ local function makefence(what,char)
         setfield(d,"small_fam", fam)
         free_node(sym)
     end
-    setfield(f,"subtype",what)
+    setsubtype(f,what)
     setfield(f,"delim",d)
     return f
 end
@@ -734,7 +735,7 @@ end
 local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
     local list = new_node(math_sub)
     setfield(list,"head",f_o)
-    setfield(noad,"subtype",noad_inner)
+    setsubtype(noad,noad_inner)
     setfield(noad,"nucleus",list)
     setlink(f_o,o_next)
     setlink(c_prev,f_c)
@@ -1704,7 +1705,7 @@ do
                         setchar(pointer,chr)
                     end
                     if cls and cls ~= getsubtype(parent) then
-                        setfield(parent,"subtype",cls)
+                        setsubtype(parent,cls)
                     end
                 end
             end

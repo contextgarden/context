@@ -323,12 +323,16 @@ local function copyduplicates(fontdata)
         if duplicates then
             for u, d in next, duplicates do
                 local du = descriptions[u]
-                local t  = { f_character(u) }
-                for u in next, d do
-                    descriptions[u] = copy(du)
-                    t[#t+1] = f_character(u)
+                if du then
+                    local t  = { f_character(u) }
+                    for u in next, d do
+                        descriptions[u] = copy(du)
+                        t[#t+1] = f_character(u)
+                    end
+                    report("duplicates: % t",t)
+                else
+                    -- what a mess
                 end
-                report("duplicates: % t",t)
             end
         end
     end
@@ -583,7 +587,20 @@ local function unifyglyphs(fontdata,usenames)
         local glyph   = glyphs[index]
         local unicode = glyph.unicode -- this is the primary one
         if not unicode then
-         -- report("assigning private unicode %U to glyph indexed %05X",index,private)
+         -- report("assigning private unicode %U to glyph indexed %05X (%s)",private,index,"unset")
+            unicode = private
+            -- glyph.unicode  = -1
+            if names then
+                local name     = glyph.name or f_private(unicode)
+                indices[index] = name
+                names[name]    = unicode
+            else
+                indices[index] = unicode
+            end
+            private = private + 1
+        elseif descriptions[unicode] then
+            -- real weird
+report("assigning private unicode %U to glyph indexed %05X (%C)",private,index,unicode)
             unicode = private
             -- glyph.unicode  = -1
             if names then

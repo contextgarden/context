@@ -53,6 +53,8 @@ local getprev        = nuts.getprev
 local getlist        = nuts.getlist
 local getsubtype     = nuts.getsubtype
 
+local setlist        = nuts.setlist
+
 local removables     = {
     [whatsitcodes.open]    = true,
     [whatsitcodes.close]   = true,
@@ -111,7 +113,7 @@ local function cleanup_redundant(head) -- better name is: flatten_page
             if sl then
                 local rl = cleanup_redundant(sl)
                 if rl ~= sl then
-                    setfield(start,"list",rl)
+                    setlist(start,rl)
                 end
             end
             start = getnext(start)
@@ -137,7 +139,7 @@ local function cleanup_flushed(head) -- rough
             if sl then
                 local rl = cleanup_flushed(sl)
                 if rl ~= sl then
-                    setfield(start,"list",rl)
+                    setlist(start,rl)
                 end
             end
             start = getnext(start)
@@ -202,7 +204,7 @@ local function count(head,data,subcategory)
         local dn = data[nodecodes[id]] -- we could use id and then later convert to nodecodes
         dn[subcategory] = dn[subcategory] + 1
         if id == hlist_code or id == vlist_code then
-            count(getfield(n,"list"),data,subcategory)
+            count(getlist(n),data,subcategory)
         end
     end
 end

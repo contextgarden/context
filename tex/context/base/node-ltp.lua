@@ -207,10 +207,12 @@ local getdisc              = nuts.getdisc
 
 local setfield             = nuts.setfield
 local setlink              = nuts.setlink
+local setlist              = nuts.setlist
 local setboth              = nuts.setboth
 local setnext              = nuts.setnext
 local setprev              = nuts.setprev
 local setdisc              = nuts.setdisc
+local setsubtype           = nuts.setsubtype
 
 local slide_nodelist       = nuts.slide -- get rid of this, probably ok > 78.2
 local find_tail            = nuts.tail
@@ -1227,7 +1229,7 @@ local function post_line_break(par)
                     if not (getid(v) == disc_code and getsubtype(v) == second_disc_code) then
                         report_parbuilders('unsupported disc at location %a',4)
                     end
-                    setfield(nextlast,"subtype",regular_disc_code)
+                    setsubtype(nextlast,regular_disc_code)
                     setfield(nextlast,"replace",post)
                     setfield(lastnode,"post")
                 end
@@ -2641,7 +2643,7 @@ end
 --
 --     local hlist             = new_node("hlist")
 --
---     setfield(hlist,"list",head)
+--     setlist(hlist,head)
 --     setfield(hlist,"dir",direction or tex.textdir)
 --     setfield(hlist,"width",width)
 --     setfield(hlist,"height",height)
@@ -2763,7 +2765,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
         setfield(hlist,"width",width)
         return hlist, 0
     else
-        setfield(hlist,"list",head)
+        setlist(hlist,head)
     end
 
     local cal_expand_ratio  = method == "cal_expand_ratio" or method == "subst_ex_font"

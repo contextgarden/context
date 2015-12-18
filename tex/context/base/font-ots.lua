@@ -172,6 +172,7 @@ local setprev            = nuts.setprev
 local setlink            = nuts.setlink
 local setboth            = nuts.setboth
 local setchar            = nuts.setchar
+local setsubtype         = nuts.setsubtype
 
 local ischar             = nuts.is_char
 
@@ -517,7 +518,7 @@ local function markstoligature(head,start,stop,char)
         end
         resetinjection(base)
         setchar(base,char)
-        setfield(base,"subtype",ligature_code)
+        setsubtype(base,ligature_code)
         setfield(base,"components",start)
         setlink(prev,base)
         setlink(base,next)
@@ -580,7 +581,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
     end
     resetinjection(base)
     setchar(base,char)
-    setfield(base,"subtype",ligature_code)
+    setsubtype(base,ligature_code)
     setfield(base,"components",comp) -- start can have components .. do we need to flush?
     if prev then
         setnext(prev,base)

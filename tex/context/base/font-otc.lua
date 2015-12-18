@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-otc'] = {
     license   = "see context related readme files"
 }
 
-local format, insert, sortedkeys = string.format, table.insert, table.sortedkeys
+local format, insert, sortedkeys, tohash = string.format, table.insert, table.sortedkeys, table.tohash
 local type, next = type, next
 local lpegmatch = lpeg.match
 local utfbyte = utf.byte
@@ -93,17 +93,18 @@ local function addfeature(data,feature,specifications)
             end
             local askedfeatures = specification.features or everywhere
             local askedsteps    = specifications.steps or specification.subtables or { specification.data } or { }
-            local featuretype   = normalized[specification.type or "substitution"] or "substitution"
+            local defaulttype   = specification.type or "substitution"
             local featureflags  = specification.flags or noflags
             local featureorder  = specification.order or { feature }
             local added         = false
             local nofsteps      = 0
             local steps         = { }
             for i=1,#askedsteps do
-                local list     = askedsteps[i]
-                local coverage = { }
-                local cover    = coveractions[featuretype]
-                local format   = nil
+                local list        = askedsteps[i]
+                local coverage    = { }
+                local cover       = coveractions[featuretype]
+                local format      = nil
+                local featuretype = normalized[list.type or defaulttype] or "substitution"
                 if not cover then
                     -- unknown
                 elseif featuretype == "substitution" then
@@ -243,7 +244,7 @@ local function addfeature(data,feature,specifications)
                 -- script = { lang1, lang2, lang3 } or script = { lang1 = true, ... }
                 for k, v in next, askedfeatures do
                     if v[1] then
-                        askedfeatures[k] = table.tohash(v)
+                        askedfeatures[k] = tohash(v)
                     end
                 end
                 local sequence = {

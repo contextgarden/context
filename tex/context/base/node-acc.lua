@@ -26,6 +26,7 @@ local setfield       = nuts.setfield
 local setattr        = nuts.setattr
 local setlink        = nuts.setlink
 local setchar        = nuts.setchar
+local setsubtype     = nuts.setsubtype
 
 local traverse_nodes = nuts.traverse
 local traverse_id    = nuts.traverse_id
@@ -65,7 +66,7 @@ local function injectspaces(head)
                 if c then -- it happens that we copied a ligature
                     free_nodelist(c)
                     setfield(g,"components",nil)
-                    setfield(g,"subtype",256)
+                    setsubtype(g,256)
                 end
                 local a = getattr(n,a_characters)
                 setchar(g,32)

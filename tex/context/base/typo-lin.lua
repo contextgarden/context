@@ -84,6 +84,7 @@ local copy_list         = nuts.copy_list
 
 local getsubtype        = nuts.getsubtype
 local getlist           = nuts.getlist
+local setlist           = nuts.setlist
 local getid             = nuts.getid
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
@@ -152,7 +153,7 @@ local function finalize(prop,key) -- delayed calculations
     head = insert_before(head,head,kern1)
     head = insert_before(head,head,pack)
     head = insert_before(head,head,kern2)
-    setfield(line,"list",head)
+    setlist(line,head)
     local where = {
         pack = pack,
         head = nil,
@@ -217,7 +218,7 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
         end
     end
     if head ~= oldhead then
-        setfield(line,"list",head)
+        setlist(line,head)
     end
     noflines = noflines + 1
     local prop = {
@@ -296,7 +297,7 @@ local function addtoline(n,list,option)
             head, tail = insert_after(head,tail,kern)
         else
             head, tail = kern, kern
-            setfield(where.pack,"list",head)
+            setlist(where.pack,head)
         end
         head, tail = insert_after(head,tail,blob)
         local kern = new_kern(-delta)
@@ -332,7 +333,7 @@ local function addanchortoline(n,anchor)
         else
             where.tail = anchor
         end
-        setfield(where.pack,"list",anchor)
+        setlist(where.pack,anchor)
         where.head = anchor
         return line
     end

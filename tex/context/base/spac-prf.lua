@@ -57,6 +57,7 @@ local gettexbox         = nuts.getbox
 
 local setfield          = nuts.setfield
 local setlink           = nuts.setlink
+local setlist           = nuts.setlist
 local setattr           = nuts.setattr
 
 local theprop           = nuts.theprop
@@ -403,7 +404,7 @@ local function addprofile(node,profile,step)
  -- end
 
     setlink(rule,list)
-    setfield(line,"list",rule)
+    setlist(line,rule)
 
 end
 

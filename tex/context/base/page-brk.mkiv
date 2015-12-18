@@ -62,7 +62,7 @@
      \lastnamedcs
    \else\ifcsname\??pagebreaks\page_breaks_current_option\endcsname
     %\expandafter\page_breaks_handle\csname\??pagebreaks\page_breaks_current_option\endcsname
-     \lastnamedcs
+     \expandafter\page_breaks_handle\lastnamedcs
    \else
     %\csname\??pagebreakmethod\s!unknown\endcsname
      \page_breaks_unknown

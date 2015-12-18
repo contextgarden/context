@@ -35,6 +35,7 @@ local getid              = nuts.getid
 local getfield           = nuts.getfield
 local setfield           = nuts.setfield
 local getlist            = nuts.getlist
+local setlist            = nuts.setlist
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local getbox             = nuts.getbox
@@ -289,7 +290,7 @@ local function applytofirstcharacter(box,what)
         break
     end
     if done then
-        setfield(tbox,"list",list)
+        setlist(tbox,list)
         local kind = type(what)
         if kind == "string" then
             context[what](tonode(done))

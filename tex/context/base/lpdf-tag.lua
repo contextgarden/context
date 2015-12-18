@@ -66,6 +66,7 @@ local getlist             = nuts.getlist
 
 local setfield            = nuts.setfield
 local setlink             = nuts.setlink
+local setlist             = nuts.setlist
 
 local traverse_nodes      = nuts.traverse
 local tosequence          = nuts.tosequence
@@ -429,7 +430,7 @@ function nodeinjections.addtags(head)
             end
             setlink(literal,start)
             if list and getlist(list) == start then
-                setfield(list,"list",literal)
+                setlist(list,literal)
             end
             -- use insert instead:
             local literal = pdfliteral("EMC")
@@ -572,7 +573,7 @@ end
 --             end
 --             setlink(literal,start)
 --             if list and getlist(list) == start then
---                 setfield(list,"list",literal)
+--                 setlist(list,literal)
 --             end
 --         end
 --

@@ -29,6 +29,7 @@ local getattr       = nuts.getattr
 local setfield      = nuts.setfield
 local setattr       = nuts.setattr
 local setlink       = nuts.setlink
+local setlist       = nuts.setlist
 local setprev       = nuts.setprev
 local setnext       = nuts.setnext
 
@@ -54,7 +55,7 @@ local function locate(head,first,last,ni,nm)
             local list = getlist(current)
             if list then
                 list, first, last, ni, nm = locate(list,first,last,ni,nm)
-                setfield(current,"list",list)
+                setlist(current,list)
             end
             current = getnext(current)
         elseif migrate_inserts and id == insert_code then

@@ -39,6 +39,7 @@ local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
+local setsubtype         = nuts.setsubtype
 
 local setcolor           = nodes.tracers.colors.set
 
@@ -136,7 +137,7 @@ local function nbsp(head,current)
     local para = fontparameters[getfont(current)]
     if getattr(current,a_alignstate) == 1 then -- flushright
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
-        setfield(current,"subtype",space_skip_code)
+        setsubtype(current,space_skip_code)
     else
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
     end

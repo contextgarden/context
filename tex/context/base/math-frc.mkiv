@@ -169,6 +169,10 @@
 
 \installcorenamespace{mathfractionstrut}
 
+\def\math_frac_no_strut
+  {\let\m_fractions_strut_top\relax
+   \let\m_fractions_strut_bot\relax}
+
 \setvalue{\??mathfractionstrut\v!yes}%
   {\let\m_fractions_strut_top\mathstrut
    \let\m_fractions_strut_bot\mathstrut}
@@ -177,16 +181,13 @@
   {\let\m_fractions_strut_top\mathstrut
    \let\m_fractions_strut_bot\mathstrut}
 
-\setvalue{\??mathfractionstrut\v!no}%
-  {\let\m_fractions_strut_top\relax
-   \let\m_fractions_strut_bot\relax}
+\letvalue{\??mathfractionstrut\v!no}\math_frac_no_strut
 
 \setvalue{\??mathfractionstrut\v!tight}%
   {\let\m_fractions_strut_top\mathbotstrut  % indeed swapped name
    \let\m_fractions_strut_bot\mathtopstrut} % indeed swapped name
 
-\let\m_fractions_strut_top\relax
-\let\m_fractions_strut_bot\relax
+\math_frac_no_strut
 
 \newdimen\d_math_fraction_margin
 
@@ -199,10 +200,11 @@
    \edef\p_math_fractions_color{\mathfractionparameter\c!color}%
    %
    \edef\p_math_fractions_strut{\mathfractionparameter\c!strut}%
-   \csname
-      \??mathfractionstrut
-      \ifcsname\??mathfractionstrut\p_math_fractions_strut\endcsname\p_math_fractions_strut\else\v!no\fi
-   \endcsname
+   \ifcsname\??mathfractionstrut\p_math_fractions_strut\endcsname
+     \lastnamedcs
+   \else
+     \math_frac_no_strut
+   \fi
    %
    \ifx\p_math_fractions_color\empty
      \expandafter\math_frac_normal

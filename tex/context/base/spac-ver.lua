@@ -92,6 +92,7 @@ local setlink             = nuts.setlink
 local getprev             = nuts.getprev
 local getid               = nuts.getid
 local getlist             = nuts.getlist
+local setlist             = nuts.setlist
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local getsubtype          = nuts.getsubtype
@@ -452,7 +453,7 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
                 h, d = ch, cd
                 local shifted = hpack_node(getlist(current))
                 setfield(shifted,"shift",delta)
-                setfield(current,"list",shifted)
+                setlist(current,shifted)
                 done = true
                 if t then
                     t[#t+1] = formatters["first: height %p depth %p shift %p"](ch,cd,delta)
@@ -489,7 +490,7 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
                 h, d = ch, cd
                 local shifted = hpack_node(getlist(current))
                 setfield(shifted,"shift",delta)
-                setfield(current,"list",shifted)
+                setlist(current,shifted)
                 done = true
                 if t then
                     t[#t+1] = formatters["last: height %p depth %p shift %p"](ch,cd,delta)
@@ -554,7 +555,7 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
         end
         local shifted = hpack_node(getlist(current))
         setfield(shifted,"shift",offset)
-        setfield(current,"list",shifted)
+        setlist(current,shifted)
         if t then
             t[#t+1] = formatters["after offset: %p (width %p height %p depth %p)"](offset,getfield(current,"width") or 0,getfield(current,"height"),getfield(current,"depth"))
         end
@@ -1709,9 +1710,9 @@ function vspacing.collapsevbox(n,aslist) -- for boxes but using global a_snapmet
         if list then
             list = collapser(list,"snapper","vbox",trace_vbox_vspacing,true,a_snapmethod)
             if aslist then
-                setfield(box,"list",list) -- beware, dimensions of box are wrong now
+                setlist(box,list) -- beware, dimensions of box are wrong now
             else
-                setfield(box,"list",vpack_node(list))
+                setlist(box,vpack_node(list))
             end
         end
     end

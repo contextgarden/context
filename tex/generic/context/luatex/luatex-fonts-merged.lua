@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/15/15 11:13:13
+-- merge date  : 12/18/15 21:16:32
 
 do -- begin closure to overcome local limits and interference
 
@@ -4007,13 +4007,27 @@ local setfield=direct.setfield
 nuts.getfield=getfield
 nuts.setfield=setfield
 nuts.getnext=direct.getnext
+nuts.setnext=direct.setnext
 nuts.getprev=direct.getprev
+nuts.setprev=direct.setprev
+nuts.getboth=direct.getboth
+nuts.setboth=direct.setboth
 nuts.getid=direct.getid
 nuts.getattr=direct.get_attribute or direct.has_attribute or getfield
 nuts.setattr=setfield
 nuts.getfont=direct.getfont
+nuts.setfont=direct.setfont
 nuts.getsubtype=direct.getsubtype
+nuts.setsubtype=direct.setsubtype or function(n,s) setfield(n,"subtype",s) end
 nuts.getchar=direct.getchar
+nuts.setchar=direct.setchar
+nuts.getdisc=direct.getdisc
+nuts.setdisc=direct.setdisc
+nuts.setlink=direct.setlink
+nuts.getlist=direct.getlist
+nuts.setlist=direct.setlist  or function(n,l) setfield(n,"list",l) end
+nuts.getleader=direct.getleader
+nuts.setleader=direct.setleader or function(n,l) setfield(n,"leader",l) end
 nuts.insert_before=direct.insert_before
 nuts.insert_after=direct.insert_after
 nuts.delete=direct.delete
@@ -11698,7 +11712,9 @@ local tonut=nuts.tonut
 local getfield=nuts.getfield
 local setfield=nuts.setfield
 local getnext=nuts.getnext
+local setnext=nuts.setnext
 local getprev=nuts.getprev
+local setprev=nuts.setprev
 local getid=nuts.getid
 local getattr=nuts.getattr
 local setattr=nuts.setattr
@@ -11706,7 +11722,9 @@ local getprop=nuts.getprop
 local setprop=nuts.setprop
 local getfont=nuts.getfont
 local getsubtype=nuts.getsubtype
+local setsubtype=nuts.setsubtype
 local getchar=nuts.getchar
+local setchar=nuts.setchar
 local insert_node_before=nuts.insert_before
 local insert_node_after=nuts.insert_after
 local delete_node=nuts.delete
@@ -11852,8 +11870,8 @@ local function flattendisk(head,disc)
     if replace then
       if next then
         local tail=find_node_tail(replace)
-        setfield(tail,"next",next)
-        setfield(next,"prev",tail)
+        setnext(tail,next)
+        setprev(next,tail)
       end
       return replace,replace
     elseif next then
@@ -11867,17 +11885,17 @@ local function flattendisk(head,disc)
     if replace then
       local tail=find_node_tail(replace)
       if next then
-        setfield(tail,"next",next)
-        setfield(next,"prev",tail)
+        setnext(tail,next)
+        setprev(next,tail)
       end
-      setfield(prev,"next",replace)
-      setfield(replace,"prev",prev)
+      setnext(prev,replace)
+      setprev(replace,prev)
       return head,replace
     else
       if next then
-        setfield(next,"prev",prev)
+        setprev(next,prev)
       end
-      setfield(prev,"next",next)
+      setnext(prev,next)
       return head,next
     end
   end
@@ -11890,14 +11908,14 @@ local function appenddisc(disc,list)
   local ptail=find_node_tail(post)
   local rtail=find_node_tail(replace)
   if post then
-    setfield(ptail,"next",phead)
-    setfield(phead,"prev",ptail)
+    setnext(ptail,phead)
+    setprev(phead,ptail)
   else
     setfield(disc,"post",phead)
   end
   if replace then
-    setfield(rtail,"next",rhead)
-    setfield(rhead,"prev",rtail)
+    setnext(rtail,rhead)
+    setprev(rhead,rtail)
   else
     setfield(disc,"replace",rhead)
   end
@@ -11908,24 +11926,24 @@ local function markstoligature(kind,lookupname,head,start,stop,char)
   else
     local prev=getprev(start)
     local next=getnext(stop)
-    setfield(start,"prev",nil)
-    setfield(stop,"next",nil)
+    setprev(start,nil)
+    setnext(stop,nil)
     local base=copy_glyph(start)
     if head==start then
       head=base
     end
     resetinjection(base)
-    setfield(base,"char",char)
-    setfield(base,"subtype",ligature_code)
+    setchar(base,char)
+    setsubtype(base,ligature_code)
     setfield(base,"components",start)
     if prev then
-      setfield(prev,"next",base)
+      setnext(prev,base)
     end
     if next then
-      setfield(next,"prev",base)
+      setprev(next,base)
     end
-    setfield(base,"next",next)
-    setfield(base,"prev",prev)
+    setnext(base,next)
+    setprev(base,prev)
     return head,base
   end
 end
@@ -11953,7 +11971,7 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
   end
   if start==stop and getchar(start)==char then
     resetinjection(start)
-    setfield(start,"char",char)
+    setchar(start,char)
     return head,start
   end
   local components=getfield(start,"components")
@@ -11962,24 +11980,24 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
   local prev=getprev(start)
   local next=getnext(stop)
   local comp=start
-  setfield(start,"prev",nil)
-  setfield(stop,"next",nil)
+  setprev(start,nil)
+  setnext(stop,nil)
   local base=copy_glyph(start)
   if start==head then
     head=base
   end
   resetinjection(base)
-  setfield(base,"char",char)
-  setfield(base,"subtype",ligature_code)
+  setchar(base,char)
+  setsubtype(base,ligature_code)
   setfield(base,"components",comp) 
   if prev then
-    setfield(prev,"next",base)
+    setnext(prev,base)
   end
   if next then
-    setfield(next,"prev",base)
+    setprev(next,base)
   end
-  setfield(base,"prev",prev)
-  setfield(base,"next",next)
+  setprev(base,prev)
+  setnext(base,next)
   if not discfound then
     local deletemarks=markflag~="mark"
     local components=start
@@ -12019,41 +12037,41 @@ local function toligature(kind,lookupname,head,start,stop,char,markflag,discfoun
       start=getnext(start)
     end
   else
-    local discprev=getfield(discfound,"prev")
-    local discnext=getfield(discfound,"next")
+    local discprev=getprev(discfound)
+    local discnext=getnext(discfound)
     if discprev and discnext then
       local pre=getfield(discfound,"pre")
       local post=getfield(discfound,"post")
       local replace=getfield(discfound,"replace")
       if not replace then 
-        local prev=getfield(base,"prev")
+        local prev=getprev(base)
         local copied=copy_node_list(comp)
-        setfield(discnext,"prev",nil) 
-        setfield(discprev,"next",nil) 
+        setprev(discnext,nil) 
+        setnext(discprev,nil) 
         if pre then
-          setfield(discprev,"next",pre)
-          setfield(pre,"prev",discprev)
+          setnext(discprev,pre)
+          setprev(pre,discprev)
         end
         pre=comp
         if post then
           local tail=find_node_tail(post)
-          setfield(tail,"next",discnext)
-          setfield(discnext,"prev",tail)
-          setfield(post,"prev",nil)
+          setnext(tail,discnext)
+          setprev(discnext,tail)
+          setprev(post,nil)
         else
           post=discnext
         end
-        setfield(prev,"next",discfound)
-        setfield(discfound,"prev",prev)
-        setfield(discfound,"next",next)
-        setfield(next,"prev",discfound)
-        setfield(base,"next",nil)
-        setfield(base,"prev",nil)
+        setnext(prev,discfound)
+        setprev(discfound,prev)
+        setnext(discfound,next)
+        setprev(next,discfound)
+        setnext(base,nil)
+        setprev(base,nil)
         setfield(base,"components",copied)
         setfield(discfound,"pre",pre)
         setfield(discfound,"post",post)
         setfield(discfound,"replace",base)
-        setfield(discfound,"subtype",discretionary_code)
+        setsubtype(discfound,discretionary_code)
         base=prev 
       end
     end
@@ -12064,19 +12082,19 @@ local function multiple_glyphs(head,start,multiple,ignoremarks)
   local nofmultiples=#multiple
   if nofmultiples>0 then
     resetinjection(start)
-    setfield(start,"char",multiple[1])
+    setchar(start,multiple[1])
     if nofmultiples>1 then
       local sn=getnext(start)
       for k=2,nofmultiples do
         local n=copy_node(start) 
         resetinjection(n)
-        setfield(n,"char",multiple[k])
-        setfield(n,"prev",start)
-        setfield(n,"next",sn)
+        setchar(n,multiple[k])
+        setprev(n,start)
+        setnext(n,sn)
         if sn then
-          setfield(sn,"prev",n)
+          setprev(sn,n)
         end
-        setfield(start,"next",n)
+        setnext(start,n)
         start=n
       end
     end
@@ -12124,7 +12142,7 @@ function handlers.gsub_single(head,start,kind,lookupname,replacement)
     logprocess("%s: replacing %s by single %s",pref(kind,lookupname),gref(getchar(start)),gref(replacement))
   end
   resetinjection(start)
-  setfield(start,"char",replacement)
+  setchar(start,replacement)
   return head,start,true
 end
 function handlers.gsub_alternate(head,start,kind,lookupname,alternative,sequence)
@@ -12135,7 +12153,7 @@ function handlers.gsub_alternate(head,start,kind,lookupname,alternative,sequence
       logprocess("%s: replacing %s by alternative %a to %s, %s",pref(kind,lookupname),gref(getchar(start)),choice,gref(choice),comment)
     end
     resetinjection(start)
-    setfield(start,"char",choice)
+    setchar(start,choice)
   else
     if trace_alternatives then
       logwarning("%s: no variant %a for %s, %s",pref(kind,lookupname),value,gref(getchar(start)),comment)
@@ -12229,7 +12247,7 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
         end
       else
         resetinjection(start)
-        setfield(start,"char",lig)
+        setchar(start,lig)
         if trace_ligatures then
           logprocess("%s: replacing %s by (no real) ligature %s case 3",pref(kind,lookupname),gref(startchar),gref(lig))
         end
@@ -12556,7 +12574,7 @@ function chainprocs.reversesub(head,start,stop,kind,chainname,currentcontext,loo
       logprocess("%s: single reverse replacement of %s by %s",cref(kind,chainname),gref(char),gref(replacement))
     end
     resetinjection(start)
-    setfield(start,"char",replacement)
+    setchar(start,replacement)
     return head,start,true
   else
     return head,start,false
@@ -12588,7 +12606,7 @@ function chainprocs.gsub_single(head,start,stop,kind,chainname,currentcontext,lo
             logprocess("%s: replacing single %s by %s",cref(kind,chainname,chainlookupname,lookupname,chainindex),gref(currentchar),gref(replacement))
           end
           resetinjection(current)
-          setfield(current,"char",replacement)
+          setchar(current,replacement)
         end
       end
       return head,start,true
@@ -12646,7 +12664,7 @@ function chainprocs.gsub_alternate(head,start,stop,kind,chainname,currentcontext
               logprocess("%s: replacing %s by alternative %a to %s, %s",cref(kind,chainname,chainlookupname,lookupname),gref(char),choice,gref(choice),comment)
             end
             resetinjection(start)
-            setfield(start,"char",choice)
+            setchar(start,choice)
           else
             if trace_alternatives then
               logwarning("%s: no variant %a for %s, %s",cref(kind,chainname,chainlookupname,lookupname),value,gref(char),comment)
@@ -13141,13 +13159,13 @@ local function chaindisk(head,start,last,kind,chainname,ck,lookuphash,chainlooku
       local tail=nil
       if prev then
         tail=prev
-        setfield(current,"prev",sweepnode)
+        setprev(current,sweepnode)
       else
         tail=find_node_tail(head)
       end
-      setfield(sweepnode,"next",current)
-      setfield(head,"prev",nil)
-      setfield(tail,"next",nil)
+      setnext(sweepnode,current)
+      setprev(head,nil)
+      setnext(tail,nil)
       appenddisc(sweepnode,head)
     end
   end
@@ -13235,12 +13253,12 @@ local function chaindisk(head,start,last,kind,chainname,ck,lookuphash,chainlooku
       startishead=cf==head
       cprev=getprev(cprev)
     end
-    setfield(lookaheaddisc,"prev",cprev)
+    setprev(lookaheaddisc,cprev)
     if cprev then
-      setfield(cprev,"next",lookaheaddisc)
+      setnext(cprev,lookaheaddisc)
     end
-    setfield(cf,"prev",nil)
-    setfield(cl,"next",nil)
+    setprev(cf,nil)
+    setnext(cl,nil)
     if startishead then
       head=lookaheaddisc
     end
@@ -13262,13 +13280,13 @@ local function chaindisk(head,start,last,kind,chainname,ck,lookuphash,chainlooku
       new,cnew,ok=chainproc(new,cnew,clast,kind,chainname,ck,lookuphash,chainlookup,chainlookupname,nil,sequence)
     end
     if pre then
-      setfield(cl,"next",pre)
-      setfield(pre,"prev",cl)
+      setnext(cl,pre)
+      setprev(pre,cl)
     end
     if replace then
       local tail=find_node_tail(new)
-      setfield(tail,"next",replace)
-      setfield(replace,"prev",tail)
+      setnext(tail,replace)
+      setprev(replace,tail)
     end
     setfield(lookaheaddisc,"pre",cf)   
     setfield(lookaheaddisc,"replace",new) 
@@ -13286,11 +13304,11 @@ local function chaindisk(head,start,last,kind,chainname,ck,lookuphash,chainlooku
       cnext=getnext(cnext)
     end
     if cnext then
-      setfield(cnext,"prev",backtrackdisc)
+      setprev(cnext,backtrackdisc)
     end
-    setfield(backtrackdisc,"next",cnext)
-    setfield(cf,"prev",nil)
-    setfield(cl,"next",nil)
+    setnext(backtrackdisc,cnext)
+    setprev(cf,nil)
+    setnext(cl,nil)
     local replace=getfield(backtrackdisc,"replace")
     local post=getfield(backtrackdisc,"post")
     local new=copy_node_list(cf)
@@ -13310,15 +13328,15 @@ local function chaindisk(head,start,last,kind,chainname,ck,lookuphash,chainlooku
     end
     if post then
       local tail=find_node_tail(post)
-      setfield(tail,"next",cf)
-      setfield(cf,"prev",tail)
+      setnext(tail,cf)
+      setprev(cf,tail)
     else
       post=cf
     end
     if replace then
       local tail=find_node_tail(replace)
-      setfield(tail,"next",new)
-      setfield(new,"prev",tail)
+      setnext(tail,new)
+      setprev(new,tail)
     else
       replace=new
     end
@@ -13997,57 +14015,57 @@ local function kernrun(disc,run)
   if not pre then
   elseif prev then
     local nest=getprev(pre)
-    setfield(pre,"prev",prev)
-    setfield(prev,"next",pre)
+    setprev(pre,prev)
+    setnext(prev,pre)
     run(prevmarks,"preinjections")
-    setfield(pre,"prev",nest)
-    setfield(prev,"next",disc)
+    setprev(pre,nest)
+    setnext(prev,disc)
   else
     run(pre,"preinjections")
   end
   if not post then
   elseif next then
     local tail=find_node_tail(post)
-    setfield(tail,"next",next)
-    setfield(next,"prev",tail)
+    setnext(tail,next)
+    setprev(next,tail)
     run(post,"postinjections",next)
-    setfield(tail,"next",nil)
-    setfield(next,"prev",disc)
+    setnext(tail,nil)
+    setprev(next,disc)
   else
     run(post,"postinjections")
   end
   if not replace and prev and next then
-    setfield(prev,"next",next)
-    setfield(next,"prev",prev)
+    setnext(prev,next)
+    setprev(next,prev)
     run(prevmarks,"injections",next)
-    setfield(prev,"next",disc)
-    setfield(next,"prev",disc)
+    setnext(prev,disc)
+    setprev(next,disc)
   elseif prev and next then
     local tail=find_node_tail(replace)
     local nest=getprev(replace)
-    setfield(replace,"prev",prev)
-    setfield(prev,"next",replace)
-    setfield(tail,"next",next)
-    setfield(next,"prev",tail)
+    setprev(replace,prev)
+    setnext(prev,replace)
+    setnext(tail,next)
+    setprev(next,tail)
     run(prevmarks,"replaceinjections",next)
-    setfield(replace,"prev",nest)
-    setfield(prev,"next",disc)
-    setfield(tail,"next",nil)
-    setfield(next,"prev",disc)
+    setprev(replace,nest)
+    setnext(prev,disc)
+    setnext(tail,nil)
+    setprev(next,disc)
   elseif prev then
     local nest=getprev(replace)
-    setfield(replace,"prev",prev)
-    setfield(prev,"next",replace)
+    setprev(replace,prev)
+    setnext(prev,replace)
     run(prevmarks,"replaceinjections")
-    setfield(replace,"prev",nest)
-    setfield(prev,"next",disc)
+    setprev(replace,nest)
+    setnext(prev,disc)
   elseif next then
     local tail=find_node_tail(replace)
-    setfield(tail,"next",next)
-    setfield(next,"prev",tail)
+    setnext(tail,next)
+    setprev(next,tail)
     run(replace,"replaceinjections",next)
-    setfield(tail,"next",nil)
-    setfield(next,"prev",disc)
+    setnext(tail,nil)
+    setprev(next,disc)
   else
     run(replace,"replaceinjections")
   end
@@ -14094,21 +14112,21 @@ local function testrun(disc,trun,crun)
       local prev=getprev(disc)
       if prev then
         local tail=find_node_tail(replace)
-        setfield(tail,"next",next)
-        setfield(next,"prev",tail)
+        setnext(tail,next)
+        setprev(next,tail)
         if trun(replace,next) then
           setfield(disc,"replace",nil) 
-          setfield(prev,"next",replace)
-          setfield(replace,"prev",prev)
-          setfield(next,"prev",tail)
-          setfield(tail,"next",next)
-          setfield(disc,"prev",nil)
-          setfield(disc,"next",nil)
+          setnext(prev,replace)
+          setprev(replace,prev)
+          setprev(next,tail)
+          setnext(tail,next)
+          setprev(disc,nil)
+          setnext(disc,nil)
           flush_node_list(disc)
           return replace 
         else
-          setfield(tail,"next",nil)
-          setfield(next,"prev",disc)
+          setnext(tail,nil)
+          setprev(next,disc)
         end
       else
       end
@@ -14126,19 +14144,19 @@ local function discrun(disc,drun,krun)
     report_run("disc") 
   end
   if next and prev then
-    setfield(prev,"next",next)
+    setnext(prev,next)
     drun(prev)
-    setfield(prev,"next",disc)
+    setnext(prev,disc)
   end
   local pre=getfield(disc,"pre")
   if not pre then
   elseif prev then
     local nest=getprev(pre)
-    setfield(pre,"prev",prev)
-    setfield(prev,"next",pre)
+    setprev(pre,prev)
+    setnext(prev,pre)
     krun(prev,"preinjections")
-    setfield(pre,"prev",nest)
-    setfield(prev,"next",disc)
+    setprev(pre,nest)
+    setnext(prev,disc)
   else
     krun(pre,"preinjections")
   end

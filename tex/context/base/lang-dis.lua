@@ -25,6 +25,7 @@ local getid              = nuts.getid
 local getfont            = nuts.getfont
 local getattr            = nuts.getattr
 local getsubtype         = nuts.getsubtype
+local setsubtype         = nuts.setsubtype
 local getchar            = nuts.getchar
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
@@ -134,13 +135,11 @@ local expanders = {
                 if prechar and prechar > 0 then
                     done = true
                     pre  = copy_node(template)
-                 -- setfield(pre,"char",prechar)
                     setchar(pre,prechar)
                 end
                 if postchar and postchar > 0 then
                     done = true
                     post = copy_node(template)
-                 -- setfield(post,"char",postchar)
                     setchar(post,postchar)
                 end
                 if done then
@@ -152,7 +151,7 @@ local expanders = {
             return template
         else
             -- maybe also set penalty here
-            setfield(d,"subtype",discretionary_code)
+            setsubtype(d,discretionary_code)
         end
     end,
     [disccodes.first] = function()

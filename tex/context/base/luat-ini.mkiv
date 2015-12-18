@@ -261,9 +261,9 @@
 
 % \def\checkedstrippedcsname#1% this permits \strippedcsname{\xxx} and \strippedcsname{xxx}
 %   {\expandafter\syst_helpers_checked_stripped_csname\string#1}
-
-\def\syst_helpers_checked_stripped_csname#1%
-  {\if\noexpand#1\letterbackslash\else#1\fi}
+%
+% \def\syst_helpers_checked_stripped_csname#1%
+%   {\if\noexpand#1\letterbackslash\else#1\fi}
 
 \normalprotected\def\installctxfunction#1#2%
   {\edef\m_syst_name{\csstring#1}%

@@ -59,6 +59,7 @@ local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getid               = nuts.getid
 local getlist             = nuts.getlist
+local setlist             = nuts.setlist
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local getsubtype          = nuts.getsubtype
@@ -110,7 +111,7 @@ local function vlist_dimensions(start,stop)
     local w = getfield(v,"width")
     local h = getfield(v,"height")
     local d = getfield(v,"depth")
-    setfield(v,"list",nil)
+    setlist(v)
     free_node(v)
     if temp then
         setnext(stop,temp)
@@ -210,7 +211,7 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
                     reference,pardir or "---",txtdir or "---",
                     tosequence(l,nil,true),width,height,depth,resolved)
             end
-            setfield(line,"list",result)
+            setlist(line,result)
             setlink(result,l)
             return head, last
         else
@@ -292,7 +293,7 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
                 reference,pardir or "---",txtdir or "----","[]",width,height,depth,resolved)
         end
         if not first then
-            setfield(current,"list",result)
+            setlist(current,result)
         elseif moveright then -- brr no prevs done
             -- result after first
             local n = getnext(first)
@@ -304,7 +305,7 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
         else
             -- first after result
             setlink(result,first)
-            setfield(current,"list",result)
+            setlist(current,result)
         end
     end
 end
@@ -349,7 +350,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 if list then
                     local h, ok
                     h, ok , pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
-                    setfield(current,"list",h)
+                    setlist(current,h)
                 end
                 if r then
                     done[r] = done[r] - 1
@@ -401,7 +402,7 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
                 end
                 local list = getlist(current)
                 if list then
-                    setfield(current,"list",(inject_area(list,attribute,make,stack,done,current,pardir,txtdir)))
+                    setlist(current,(inject_area(list,attribute,make,stack,done,current,pardir,txtdir)))
                 end
             elseif id == dir_code then
                 txtdir = getfield(current,"dir")

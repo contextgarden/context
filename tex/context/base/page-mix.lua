@@ -53,6 +53,7 @@ local slidenodes          = nuts.slide -- ok here as we mess with prev links int
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
 local setlink             = nuts.setlink
+local setlist             = nuts.setlist
 local setnext             = nuts.setnext
 local setprev             = nuts.setprev
 local setbox              = nuts.setbox
@@ -750,7 +751,7 @@ local kept = head
     specification.overflow       = overflow
     specification.discarded      = discarded
 
-    setfield(getbox(specification.box),"list",nil)
+    setlist(getbox(specification.box),nil)
 
     return specification
 end
@@ -784,7 +785,7 @@ end
                         local l = list[i]
                         local h = new_hlist()
                         t[i] = h
-                        setfield(h,"list",getfield(l,"head"))
+                        setlist(h,getfield(l,"head"))
                         setfield(h,"height",getfield(l,"height"))
                         setfield(h,"depth",getfield(l,"depth"))
                         setfield(l,"head",nil)
@@ -879,7 +880,7 @@ local function getsplit(result,n)
     local isglobal   = result.alternative == v_global
 
     local v = new_vlist()
-    setfield(v,"list",h)
+    setlist(v,h)
 
  -- local v = vpack(h,"exactly",height)
 

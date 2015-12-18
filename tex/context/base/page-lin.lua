@@ -432,9 +432,9 @@ function boxed.stage_two(n,m)
              --     local w = getfield(n,"width")
              --     ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
              -- end
-             -- setfield(ti,"next",l)
-             -- setfield(l,"prev",ti)
-             -- setfield(n,"list",ti)
+             -- setnext(ti,l)
+             -- setprev(l,ti)
+             -- setlist(n,ti)
                 addtoline(n,ti)
                 resolve(n,m)
             else

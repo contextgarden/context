@@ -145,6 +145,7 @@ local setattr            = nuts.setattr
 local getsubtype         = nuts.getsubtype
 local getbox             = nuts.getbox
 local getlist            = nuts.getlist
+local setlist            = nuts.setlist
 
 local nodecodes          = nodes.nodecodes
 local listcodes          = nodes.listcodes
@@ -535,7 +536,7 @@ local function markovershoot(current) -- todo: alleen als offset > line
     cache[v_anchors] = stacked
     local anchor = setanchor(v_anchors)
     local list = hpack_nodes(linked_nodes(anchor,getlist(current)))
-    setfield(current,"list",list)
+    setlist(current,list)
 end
 
 local function getovershoot(location)
@@ -723,7 +724,7 @@ local function flushinline(parent,head)
         elseif id == hlist_code or id == vlist_code then
             -- optional (but sometimes needed)
             list, don, con = flushinline(current,getlist(current))
-            setfield(current,"list",list)
+            setlist(current,list)
             continue = continue or con
             done = done or don
         end
@@ -764,7 +765,7 @@ local function flushed(scope,parent) -- current is hlist
     end
     if nofinlined > 0 then
         if done then
-            setfield(parent,"list",head)
+            setlist(parent,head)
         end
         head, don, con = flushinline(parent,head)
         continue = continue or con
@@ -774,13 +775,13 @@ local function flushed(scope,parent) -- current is hlist
         local a = getattr(head,a_linenumber) -- hack .. we need a more decent critical attribute inheritance mechanism
         if false then
             local l = hpack_nodes(head,getfield(parent,"width"),"exactly")
-            setfield(parent,"list",l)
+            setlist(parent,l)
             if a then
                 setattr(l,a_linenumber,a)
             end
         else
             -- because packing messes up profiling
-            setfield(parent,"list",head)
+            setlist(parent,head)
             if a then
                 setattr(parent,a_linenumber,a)
             end

@@ -89,22 +89,22 @@ function checkers.handler(head)
                         -- special box
                     elseif delta >= max_threshold then
                         local rule = tracedrule(delta,naturalheight,naturaldepth,getfield(list,"glue_set") == 1 and "trace:dr" or "trace:db")
-                        setfield(current,"list",linked_nodes(list,new_hlist(rule)))
+                        setlist(current,linked_nodes(list,new_hlist(rule)))
                     elseif delta <= min_threshold then
                         local alignstate = getattr(list,a_alignstate)
                         if alignstate == 1 then
                             local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dc")
-                            setfield(current,"list",linked_nodes(new_hlist(rule),list))
+                            setlist(current,linked_nodes(new_hlist(rule),list))
                         elseif alignstate == 2 then
                             local lrule = tracedrule(-delta/2,naturalheight,naturaldepth,"trace:dy")
                             local rrule = copy_node(lrule)
-                            setfield(current,"list",linked_nodes(new_hlist(lrule),list,new_kern(delta/2),new_hlist(rrule)))
+                            setlist(current,linked_nodes(new_hlist(lrule),list,new_kern(delta/2),new_hlist(rrule)))
                         elseif alignstate == 3 then
                             local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dm")
-                            setfield(current,"list",linked_nodes(list,new_kern(delta),new_hlist(rule)))
+                            setlist(current,linked_nodes(list,new_kern(delta),new_hlist(rule)))
                         else
                             local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dg")
-                            setfield(current,"list",linked_nodes(list,new_kern(delta),new_hlist(rule)))
+                            setlist(current,linked_nodes(list,new_kern(delta),new_hlist(rule)))
                         end
                     end
                 end

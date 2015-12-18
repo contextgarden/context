@@ -13,6 +13,7 @@ local nuts            = nodes.nuts
 local tonut           = nodes.tonut
 
 local setfield        = nuts.setfield
+local setlist         = nuts.setlist
 
 local new_hlist       = nuts.pool.hlist
 
@@ -27,7 +28,7 @@ end
 function codeinjections.restoreboxresource(index)
     local hbox = new_hlist()
     local list, wd, ht, dp = useboxresource(index)
-    setfield(hbox,"list",   tonut(list))
+    setlist(hbox,tonut(list))
     setfield(hbox,"width",  wd)
     setfield(hbox,"height", ht)
     setfield(hbox,"depth",  dp)

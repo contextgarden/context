@@ -72,6 +72,7 @@ local getlist   = nuts.getlist
 
 local setfield  = nuts.setfield
 local setchar   = nuts.setchar
+local setlist   = nuts.setlist
 
 local copy_nut  = nuts.copy
 local new_nut   = nuts.new
@@ -468,7 +469,7 @@ end
 function nutpool.hlist(list,width,height,depth,shift)
     local n = copy_nut(hlist)
     if list then
-        setfield(n,"list",list)
+        setlist(n,list)
     end
     if width and width ~= 0 then
         setfield(n,"width",width)
@@ -488,7 +489,7 @@ end
 function nutpool.vlist(list,width,height,depth,shift)
     local n = copy_nut(vlist)
     if list then
-        setfield(n,"list",list)
+        setlist(n,list)
     end
     if width and width ~= 0 then
         setfield(n,"width",width)

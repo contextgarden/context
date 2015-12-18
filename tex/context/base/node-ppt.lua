@@ -29,6 +29,7 @@ local getsubtype       = nuts.getsubtype
 local getfield         = nuts.getfield
 local setfield         = nuts.setfield
 local getlist          = nuts.getlist
+local setlist          = nuts.setlist
 local flushnode        = nuts.flush
 local removenode       = nuts.remove
 local traverse         = nuts.traverse
@@ -253,7 +254,7 @@ local function delayed(head,parent) -- direct based
             if list then
                 local done = delayed(list,parent)
                 if done then
-                    setfield(target,"list",done)
+                    setlist(target,done)
                 end
                 if nofdelayed == 0 then
                     return head

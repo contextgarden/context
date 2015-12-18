@@ -40,6 +40,7 @@ local getfield           = nuts.getfield
 local setfield           = nuts.setfield
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
+local setlist            = nuts.setlist
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
 
@@ -95,8 +96,8 @@ local function takebox(id)
         local copy = copy_node(box)
         local list = getlist(box)
         if list then
-            setfield(copy,"list",list)
-            setfield(box,"list",nil)
+            setlist(copy,list)
+            setlist(box,nil)
         end
         texsetbox(id,nil)
         return copy
@@ -118,7 +119,7 @@ tex.takebox  = nodes.takebox -- sometimes more clear
 local function repackhlist(list,...)
     local temp, b = hpack_nodes(list,...)
     list = getlist(temp)
-    setfield(temp,"list",nil)
+    setlist(temp)
     free_node(temp)
     return list, b
 end

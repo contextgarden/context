@@ -86,6 +86,8 @@ local utf16_to_utf8_be  = utf.utf16_to_utf8_be
 
 local report            = logs.reporter("otf reader")
 
+local trace_cmap        = false -- only for checking issues
+
 fonts                   = fonts or { }
 local handlers          = fonts.handlers or { }
 fonts.handlers          = handlers
@@ -1159,6 +1161,9 @@ formatreaders[4] = function(f,fontdata,offset)
         if startchar == 0xFFFF and endchar == 0xFFFF then
             break
         elseif offset == 0 then
+            if trace_cmap then
+                report("format 4.%i from %C to %C at index %H",1,startchar,endchar,mod(startchar + delta,65536))
+            end
             for unicode=startchar,endchar do
                 index = mod(unicode + delta,65536)
                 if index and index > 0 then
@@ -1188,6 +1193,9 @@ formatreaders[4] = function(f,fontdata,offset)
             end
         else
             local shift = (segment-nofsegments+offset/2) - startchar
+            if trace_cmap then
+                report("format 4.%i from %C to %C at index %H",2,startchar,endchar,mod(indices[shift+startchar]+delta,65536))
+            end
             for unicode=startchar,endchar do
                 local slot  = shift + unicode
                 local index = indices[slot]
@@ -1223,13 +1231,20 @@ formatreaders[4] = function(f,fontdata,offset)
 end
 
 formatreaders[6] = function(f,fontdata,offset)
-    setposition(f,offset+2+2+2) -- skip format length language
+    setposition(f,offset) -- + 2 + 2 + 2 -- skip format length language
+    local format     = readushort(f)
+    local length     = readushort(f)
+    local language   = readushort(f)
     local mapping    = fontdata.mapping
     local glyphs     = fontdata.glyphs
     local duplicates = fontdata.duplicates
     local start      = readushort(f)
     local count      = readushort(f)
-    for unicode=start,start+count-1 do
+    local stop       = start+count-1
+    if trace_cmap then
+        report("format 6 from %C to %C",2,start,stop)
+    end
+    for unicode=start,stop do
         local index = readushort(f)
         if index > 0 then
             local glyph = glyphs[index]
@@ -1237,7 +1252,9 @@ formatreaders[6] = function(f,fontdata,offset)
                 local gu = glyph.unicode
                 if not gu then
                     glyph.unicode = unicode
-                else
+                elseif gu ~= unicode then
+                    -- report("format 6 overloading %C to %C",gu,unicode)
+                    -- glyph.unicode = unicode
                     -- no duplicates ... weird side effects in lm
                 end
                 if not mapping[index] then
@@ -1258,6 +1275,9 @@ formatreaders[12] = function(f,fontdata,offset)
         local first = readulong(f)
         local last  = readulong(f)
         local index = readulong(f)
+        if trace_cmap then
+            report("format 12 from %C to %C",first,last)
+        end
         for unicode=first,last do
             local glyph = glyphs[index]
             if glyph then
@@ -1410,7 +1430,8 @@ function readers.cmap(f,fontdata,specification)
             ok = checkcmap(f,fontdata,records,3,10,12) or ok
             ok = checkcmap(f,fontdata,records,0, 3, 4) or ok
             ok = checkcmap(f,fontdata,records,0, 1, 4) or ok
-            ok = checkcmap(f,fontdata,records,1, 0, 6) or ok
+            ok = checkcmap(f,fontdata,records,0, 0, 6) or ok
+            ok = checkcmap(f,fontdata,records,3, 0, 6) or ok
          -- ok = checkcmap(f,fontdata,records,3, 0, 4) or ok -- maybe
             -- 1 0 0
             if not ok then

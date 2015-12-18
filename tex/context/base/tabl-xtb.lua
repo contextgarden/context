@@ -825,8 +825,7 @@ function xtables.construct()
              -- setfield(list,"height",0)
              -- setfield(list,"depth",0)
                 -- faster:
-                local h = new_hlist()
-                setfield(h,"list",list)
+                local h = new_hlist(list)
                 list = h
                 --
                 if start then

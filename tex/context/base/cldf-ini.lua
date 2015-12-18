@@ -320,7 +320,6 @@ local registerfunction, unregisterfunction, reservefunction, knownfunctions, cal
     interfaces.storedscanners = interfaces.storedscanners or { }
     local storedscanners      = interfaces.storedscanners
 
-
     storage.register("interfaces/storedscanners", storedscanners, "interfaces.storedscanners")
 
     local interfacescanners = table.setmetatablenewindex(function(t,k,v)

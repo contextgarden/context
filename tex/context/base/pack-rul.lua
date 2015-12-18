@@ -39,6 +39,7 @@ local setfield        = nuts.setfield
 local getnext         = nuts.getnext
 local getprev         = nuts.getprev
 local getlist         = nuts.getlist
+local setlist         = nuts.setlist
 local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getbox          = nuts.getbox
@@ -111,14 +112,14 @@ local function doreshapeframedbox(n)
                             if subtype == box_code or subtype == line_code then
                                 local p = hpack(l,maxwidth,'exactly',getfield(h,"dir")) -- multiple return value
                                 if false then
-                                    setfield(h,"list",p)
+                                    setlist(h,p)
                                     setfield(h,"shift",0) -- needed for display math, so no width check possible
                                  -- setfield(p,"attr",getfield(h,"attr"))
                                 else
                                     setfield(h,"glue_set",getfield(p,"glue_set"))
                                     setfield(h,"glue_order",getfield(p,"glue_order"))
                                     setfield(h,"glue_sign",getfield(p,"glue_sign"))
-                                    setfield(p,"list",nil)
+                                    setlist(p)
                                     free_node(p)
                                 end
                             end

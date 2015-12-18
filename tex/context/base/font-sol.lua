@@ -70,6 +70,7 @@ local setfield           = nuts.setfield
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setnext            = nuts.setnext
+local setlist            = nuts.setlist
 
 local find_node_tail     = nuts.tail
 local free_node          = nuts.free
@@ -759,7 +760,7 @@ function splitters.optimize(head)
             -- nasty .. we always assume a prev being there .. future luatex will always have a leftskip set
             -- is this assignment ok ? .. needs checking
             list = insert_node_before(list,list,new_leftskip(0)) -- new_glue(0)
-            setfield(current,"list",list)
+            setlist(current,list)
         end
         local temp, badness = repack_hlist(list,width,'exactly',dir) -- it would be nice if the badness was stored in the node
         if badness > 0 then
@@ -819,7 +820,7 @@ function splitters.optimize(head)
                 local words = collect_words(list)
                 for best=lastbest or 1,max do
                     local temp, done, changes, b = optimize(words,list,best,width,badness,line,set,dir)
-                    setfield(current,"list",temp)
+                    setlist(current,temp)
                     if trace_optimize then
                         report_optimizers("line %a, alternative %a, changes %a, badness %a",line,best,changes,b)
                     end
@@ -838,7 +839,7 @@ function splitters.optimize(head)
         end
         -- we pack inside the outer hpack and that way keep the original wd/ht/dp as bonus
         local list = hpack_nodes(getlist(current),width,'exactly',listdir)
-        setfield(current,"list",list)
+        setlist(current,list)
     end
     for i=1,nc do
         local ci = cache[i]

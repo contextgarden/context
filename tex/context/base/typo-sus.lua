@@ -52,6 +52,7 @@ local getlist         = nuts.getlist
 
 local setfield        = nuts.setfield
 local setattr         = nuts.setattr
+local setlist         = nuts.setlist
 
 local setcolor        = nodes.tracers.colors.set
 local insert_before   = nuts.insert_before
@@ -275,7 +276,7 @@ local function showsuspects(head)
             if list then
                 local l = showsuspects(list)
                 if l ~= list then
-                    setfield(current,"list",l)
+                    setlist(current,l)
                 end
             end
         end

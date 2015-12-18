@@ -35,6 +35,7 @@ local getattr            = nuts.getattr
 
 local setfield           = nuts.setfield
 local setchar            = nuts.setchar
+local setlist            = nuts.setlist
 
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
@@ -109,7 +110,7 @@ local function processmath(head)
             -- nothing
 if id == hlist_code or id == vlist_code then
     local list, d = processmath(getlist(current))
-    setfield(current,"list",list)
+    setlist(current,list)
     if d then
         done = true
     end
@@ -122,7 +123,7 @@ end
             -- too often: needs checking
             if id == hlist_code or id == vlist_code then
                 local list, d = processmath(getlist(current))
-                setfield(current,"list",list)
+                setlist(current,list)
                 if d then
                     done = true
                 end

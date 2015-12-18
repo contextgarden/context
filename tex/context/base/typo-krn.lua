@@ -43,6 +43,7 @@ local setfield           = nuts.setfield
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
+local setsubtype         = nuts.setsubtype
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
@@ -229,7 +230,7 @@ local function inject_begin(boundary,prev,keeptogether,krn,ok) -- prev is a glyp
             end
             if inject then
                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                setfield(boundary,"subtype",userkern_code)
+                setsubtype(boundary,userkern_code)
                 setfield(boundary,"kern",getfield(boundary,"kern") + quaddata[getfont(prev)]*krn)
                 return boundary, true
             end
@@ -266,7 +267,7 @@ local function inject_end(boundary,next,keeptogether,krn,ok)
             end
             if inject then
                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                setfield(tail,"subtype",userkern_code)
+                setsubtype(tail,userkern_code)
                 setfield(tail,"kern",getfield(tail,"kern") + quaddata[getfont(next)]*krn)
                 return boundary, true
             end
@@ -318,7 +319,7 @@ local function process_list(head,keeptogether,krn,font,okay)
                         end
                         if inject then
                             -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                            setfield(prev,"subtype",userkern_code)
+                            setsubtype(prev,userkern_code)
                             setfield(prev,"kern",getfield(prev,"kern") + kern)
                             okay = true
                         end
@@ -435,7 +436,7 @@ function kerns.handler(head)
                         end
                         if inject then
                             -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                            setfield(prev,"subtype",userkern_code)
+                            setsubtype(prev,userkern_code)
                             setfield(prev,"kern",getfield(prev,"kern") + quaddata[font]*krn)
                             done = true
                         end

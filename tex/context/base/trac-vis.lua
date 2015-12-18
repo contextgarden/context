@@ -72,6 +72,9 @@ local setfield            = nuts.setfield
 local setboth             = nuts.setboth
 local setlink             = nuts.setlink
 local setdisc             = nuts.setdisc
+local setlist             = nuts.setlist
+local setleader           = nuts.setleader
+local setsubtype          = nuts.setsubtype
 local setattr             = nuts.setattr
 
 local getfield            = nuts.getfield
@@ -507,8 +510,8 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous,trace_o
                     local leader = linked_nodes(new_glue(size),new_rule(3*size,linewidth,0),new_glue(size))
                     leader = hpack_nodes(leader)
                     baseline = new_glue(0)
-                    setfield(baseline,"leader",leader)
-                    setfield(baseline,"subtype",cleaders_code)
+                    setleader(baseline,leader)
+                    setsubtype(baseline,cleaders_code)
                     setfield(baseline,"stretch",65536)
                     setfield(baseline,"stretch_order",2)
                     setlisttransparency(baseline,c_text)
@@ -598,10 +601,10 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous,trace_o
 -- how about dir, so maybe just copy the node
 --
 -- local l = getlist(current)
--- setfield(current,"list",nil)
+-- setlist(current,nil)
 -- local c = copy_node(current)
--- setfield(current,"list",l)
--- setfield(c,"list",info)
+-- setlist(current,l)
+-- setlist(c,info)
 -- info = c
 
         if next then
@@ -658,15 +661,6 @@ local function ruledglyph(head,current,previous)
             new_kern(-wd+doublelinewidth),
             baseline
         )
-
--- local rule = new_rule(wd,ht,dp)
--- setfield(rule,"subtype",4) -- todo
--- local info = linked_nodes(
---     rule,
---     new_kern(-wd),
---     baseline
--- )
-
         local char = chardata[getfont(current)][getchar(current)]
         if char and type(char.unicode) == "table" then -- hackery test
             setlistcolor(info,c_ligature)
@@ -934,7 +928,7 @@ local function visualize(head,vertical,forced,parent)
         elseif id == glue_code then
             local content = getleader(current)
             if content then
-                setfield(current,"leader",visualize(content,false,nil,parent))
+                setleader(current,visualize(content,false,nil,parent))
             elseif trace_glue then
                 head, current = ruledglue(head,current,vertical,parent)
             end
@@ -945,7 +939,7 @@ local function visualize(head,vertical,forced,parent)
         elseif id == hlist_code then
             local content = getlist(current)
             if content then
-                setfield(current,"list",visualize(content,false,nil,current))
+                setlist(current,visualize(content,false,nil,current))
             end
             if trace_hbox then
                 head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous,trace_origin,parent)
@@ -953,7 +947,7 @@ local function visualize(head,vertical,forced,parent)
         elseif id == vlist_code then
             local content = getlist(current)
             if content then
-                setfield(current,"list",visualize(content,true,nil,current))
+                setlist(current,visualize(content,true,nil,current))
             end
             if trace_vtop then
                 head, current = ruledbox(head,current,true,l_vtop,"_T_",trace_simple,previous,trace_origin,parent)
@@ -992,48 +986,54 @@ local function freed(cache)
     end
 end
 
-local function cleanup()
-    local hf, nw, nb, ng_v, ng_h, np_v, np_h, nk_v, nk_h
-    nf,   f_cache   = freed(f_cache)
-    nw,   w_cache   = freed(w_cache)
-    nb,   b_cache   = freed(b_cache)
-    no,   o_cache   = freed(o_cache)
-    ng_v, g_cache_v = freed(g_cache_v)
-    ng_h, g_cache_h = freed(g_cache_h)
-    np_v, p_cache_v = freed(p_cache_v)
-    np_h, p_cache_h = freed(p_cache_h)
-    nk_v, k_cache_v = freed(k_cache_v)
-    nk_h, k_cache_h = freed(k_cache_h)
- -- report_visualize("cache cleanup: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits, %s boxes, %s origins",
- --     nf,ng_v+ng_h,np_v+np_h,nk_v+nk_h,nw,nb,no)
-end
+do
 
-local function handler(head)
-    if usedfont then
-        starttiming(visualizers)
-     -- local l = texgetattribute(a_layer)
-     -- local v = texgetattribute(a_visual)
-     -- texsetattribute(a_layer,unsetvalue)
-     -- texsetattribute(a_visual,unsetvalue)
-        head = visualize(tonut(head),true)
-     -- texsetattribute(a_layer,l)
-     -- texsetattribute(a_visual,v)
-     -- -- cleanup()
-        stoptiming(visualizers)
-        return tonode(head), true
-    else
-        return head, false
+    local function cleanup()
+        local hf, nw, nb, ng_v, ng_h, np_v, np_h, nk_v, nk_h
+        nf,   f_cache   = freed(f_cache)
+        nw,   w_cache   = freed(w_cache)
+        nb,   b_cache   = freed(b_cache)
+        no,   o_cache   = freed(o_cache)
+        ng_v, g_cache_v = freed(g_cache_v)
+        ng_h, g_cache_h = freed(g_cache_h)
+        np_v, p_cache_v = freed(p_cache_v)
+        np_h, p_cache_h = freed(p_cache_h)
+        nk_v, k_cache_v = freed(k_cache_v)
+        nk_h, k_cache_h = freed(k_cache_h)
+     -- report_visualize("cache cleanup: %s fontkerns, %s skips, %s penalties, %s kerns, %s whatsits, %s boxes, %s origins",
+     --     nf,ng_v+ng_h,np_v+np_h,nk_v+nk_h,nw,nb,no)
     end
-end
 
-visualizers.handler = handler
+    local function handler(head)
+        if usedfont then
+            starttiming(visualizers)
+         -- local l = texgetattribute(a_layer)
+         -- local v = texgetattribute(a_visual)
+         -- texsetattribute(a_layer,unsetvalue)
+         -- texsetattribute(a_visual,unsetvalue)
+            head = visualize(tonut(head),true)
+         -- texsetattribute(a_layer,l)
+         -- texsetattribute(a_visual,v)
+         -- -- cleanup()
+            stoptiming(visualizers)
+            return tonode(head), true
+        else
+            return head, false
+        end
+    end
+
+    visualizers.handler = handler
+
+    luatex.registerstopactions(cleanup)
+
+end
 
 function visualizers.box(n)
     if usedfont then
         starttiming(visualizers)
         local box = getbox(n)
         if box then
-            setfield(box,"list",visualize(getlist(box),getid(box) == vlist_code))
+            setlist(box,visualize(getlist(box),getid(box) == vlist_code))
         end
         stoptiming(visualizers)
         return head, true
@@ -1077,8 +1077,6 @@ do
     end
 
 end
-
-luatex.registerstopactions(cleanup)
 
 statistics.register("visualization time",function()
     if enabled then

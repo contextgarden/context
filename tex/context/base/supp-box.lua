@@ -47,6 +47,7 @@ local setlink       = nuts.setlink
 local setboth       = nuts.setboth
 local setnext       = nuts.setnext
 local setbox        = nuts.setbox
+local setlist       = nuts.setlist
 
 local free_node     = nuts.free
 local flush_list    = nuts.flush_list
@@ -329,7 +330,7 @@ implement {
                     if next then
                         local list = getlist(tail)
                         setlink(prev,list)
-                        setfield(tail,"list",nil)
+                        setlist(tail)
                         tail = find_tail(list)
                     else
                         tail = prev
@@ -338,12 +339,12 @@ implement {
                 end
                 -- done
                 setnext(tail)
-                setfield(current,"list",nil)
+                setlist(current)
             end
             current = next
         end
         local result = new_hlist()
-        setfield(result,"list",head)
+        setlist(result,head)
         setbox(target,result)
     end
 }

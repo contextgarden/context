@@ -77,6 +77,7 @@ local setattr             = nuts.setattr
 local getprop             = nuts.getprop
 local setprop             = nuts.setprop
 local getfont             = nuts.getfont
+local setsubtype          = nuts.setsubtype
 
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
@@ -2222,7 +2223,7 @@ do
         return c
     end)
 
-    directives.register("nodes.injections.fontkern", function(v) setfield(kern,"subtype",v and 0 or 1) end)
+    directives.register("nodes.injections.fontkern", function(v) setsubtype(kern,v and 0 or 1) end)
 
 end
 
