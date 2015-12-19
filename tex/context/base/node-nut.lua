@@ -258,6 +258,16 @@ if not direct.mlist_to_hlist then
 
 end
 
+if not direct.setlist then
+
+    local setfield = nuts.setfield
+
+    function direct.setlist   (n,l) setfield(n,"list",l) end
+    function direct.setleader (n,l) setfield(n,"leader",l) end
+    function direct.setsubtype(n,s) setfield(n,"subtype",s) end
+
+end
+
 nuts.getdisc    = direct.getdisc
 nuts.setdisc    = direct.setdisc
 nuts.setchar    = direct.setchar
@@ -266,9 +276,9 @@ nuts.setprev    = direct.setprev
 nuts.setboth    = direct.setboth
 nuts.getboth    = direct.getboth
 nuts.setlink    = direct.setlink
-nuts.setlist    = direct.setlist    or function(n,l) setfield(n,"list",l) end
-nuts.setleader  = direct.setleader  or function(n,l) setfield(n,"leader",l) end
-nuts.setsubtype = direct.setsubtype or function(n,s) setfield(n,"subtype",s) end
+nuts.setlist    = direct.setlist
+nuts.setleader  = direct.setleader
+nuts.setsubtype = direct.setsubtype
 nuts.is_char    = direct.is_char
 
 local d_remove_node     = direct.remove

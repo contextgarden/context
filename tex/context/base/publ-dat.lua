@@ -1140,18 +1140,22 @@ do
         return dataset
     end
 
-    implement {
-        name      = "btxsavedataset",
-        actions   = publications.save,
-        arguments = {
-            {
-                { "dataset" },
-                { "filename" },
-                { "filetype" },
-                { "criterium" },
+    if implement then
+
+        implement {
+            name      = "btxsavedataset",
+            actions   = publications.save,
+            arguments = {
+                {
+                    { "dataset" },
+                    { "filename" },
+                    { "filetype" },
+                    { "criterium" },
+                }
             }
         }
-    }
+
+    end
 
 end
 

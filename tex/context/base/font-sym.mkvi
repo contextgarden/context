@@ -135,7 +135,6 @@
 \def\setscaledstyledsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{\glyphfontfile{#3}} at \the\dimexpr#2\dimexpr\currentfontbodyscale\dimexpr#1}%
    \ifcsname\??symbolfont\askedsymbolfont\endcsname
-    %\csname\??symbolfont\askedsymbolfont\endcsname
      \lastnamedcs
    \else
      \font_basics_define_symbolic_font
@@ -144,7 +143,6 @@
 \def\setscaleddirectsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{#3} at \the\dimexpr#2\dimexpr\currentfontbodyscale\dimexpr#1}%
    \ifcsname\??symbolfont\askedsymbolfont\endcsname
-    %\csname\??symbolfont\askedsymbolfont\endcsname
      \lastnamedcs
    \else
      \font_basics_define_symbolic_font
@@ -153,7 +151,6 @@
 \def\setstyledsymbolicfont#fontname% quite a slowdown, glyphfontfile
   {\edef\askedsymbolfont{\truefontname{\glyphfontfile{#fontname}} at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody}%
    \ifcsname\??symbolfont\askedsymbolfont\endcsname
-    %\csname\??symbolfont\askedsymbolfont\endcsname
      \lastnamedcs
    \else
      \font_basics_define_symbolic_font
@@ -162,7 +159,6 @@
 \def\setdirectsymbolicfont#fontname%
   {\edef\askedsymbolfont{\truefontname{#fontname} at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody}%
    \ifcsname\??symbolfont\askedsymbolfont\endcsname
-    %\csname\??symbolfont\askedsymbolfont\endcsname
      \lastnamedcs
    \else
      \font_basics_define_symbolic_font

@@ -77,7 +77,6 @@
    \fi}
 
 \def\applyalternativestyle#name% public
- %{\ifcsname\??alternativestyles#name\endcsname\csname\??alternativestyles#name\expandafter\endcsname\fi}
   {\begincsname\??alternativestyles#name\endcsname}
 
 %D Maybe too geneneric, but probably ok is the following. (Maybe one
@@ -151,11 +150,9 @@
 \def\font_helpers_do_convert_font
   {\edef\m_current_convert_font_dt{\detokenize\expandafter{\m_current_convert_font}}%
    \ifcsname\??alternativestyles\m_current_convert_font_dt\endcsname
-    %\csname\??alternativestyles\m_current_convert_font_dt\expandafter\endcsname
      \expandafter\lastnamedcs
    \else\ifcsname\m_current_convert_font_dt\endcsname
-     \csname\m_current_convert_font_dt\expandafter\endcsname
-     \expandafter\lastnamedcs
+     \doubleexpandafter\lastnamedcs
    \else
      \doubleexpandafter\m_current_convert_font
    \fi\fi}
@@ -185,7 +182,6 @@
 
 \unexpanded\def\dousestylehashparameter#hash#parameter%
   {\ifcsname#hash#parameter\endcsname
-    %\expandafter\dousestyleparameter\csname#hash#parameter\endcsname
      \expandafter\dousestyleparameter\lastnamedcs
    \fi}
 
@@ -193,10 +189,8 @@
   {\edef\detokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
    \settrue\fontattributeisset % reset is done elsewhere
    \ifcsname\??alternativestyles\detokenizedstyleparameter\endcsname
-    %\csname\??alternativestyles\detokenizedstyleparameter\endcsname
      \lastnamedcs
    \else\ifcsname\detokenizedstyleparameter\endcsname
-    %\csname\detokenizedstyleparameter\endcsname
      \lastnamedcs
    \else
      \currentstyleparameter

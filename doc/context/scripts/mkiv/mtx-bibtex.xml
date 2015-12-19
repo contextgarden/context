@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-bibtex</entry>
+  <entry name="detail">bibtex helpers</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="toxml"><short>convert bibtex database(s) to xml</short></flag>
+    <flag name="tolua"><short>convert bibtex database(s) to lua</short></flag>
+    <flag name="search"><short>seatch bibtex database(s)</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Example</title>
+   <subcategory>
+    <example><command>mtxrun --script bibtex --tolua bibl-001.bib</command></example>
+    <example><command>mtxrun --script bibtex --tolua --simple bibl-001.bib</command></example>
+    <example><command>mtxrun --script bibtex --toxml bibl-001.bib bibl-002.bib bibl-003.bib biblio.xml</command></example>
+    <example><command>mtxrun --script bibtex --search --list --pattern=match(author:foo) bar.bib</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>
