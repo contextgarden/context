@@ -136,7 +136,7 @@ local synctex       = 0
 directives.register("system.synctex", function(v)
     synctex = tonumber(v) or (toboolean(v,true) and 1) or (v == "zipped" and 1) or (v == "unzipped" and -1) or 0
     if synctex ~= 0 then
-        report_system("synctex functionality is enabled (%s)!",tostring(synctex))
+        report_system("synctex functionality is enabled (%s), expect runtime overhead!",tostring(synctex))
     else
         report_system("synctex functionality is disabled!")
     end

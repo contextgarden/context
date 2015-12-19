@@ -90,7 +90,6 @@
 
 \def\defaultlanguage#1%
   {\ifcsname\??language#1\s!default\endcsname
-    %\expandafter\defaultlanguage\csname\??language#1\s!default\endcsname
      \expandafter\defaultlanguage\lastnamedcs
    \else
      #1%
@@ -125,38 +124,29 @@
 
 \def\languageparameter#1%
   {\ifcsname\??language\currentlanguage#1\endcsname
-    %\csname\??language\currentlanguage#1\endcsname
-     \expandafter\empty\lastnamedcs
+     \lastnamedcs
    \else\ifcsname\??language\currentlanguage\s!default\endcsname
-    %\expandafter\specificlanguageparameter\csname\??language\currentlanguage\s!default\endcsname{#1}%
      \expandafter\specificlanguageparameter\lastnamedcs{#1}%
    \else\ifcsname\??language\s!default#1\endcsname
-    %\csname\??language\s!default#1\endcsname
-     \expandafter\empty\lastnamedcs
+     \lastnamedcs
    \fi\fi\fi}
 
 \def\specificlanguageparameter#1#2%
   {\ifcsname\??language#1#2\endcsname
-    %\csname\??language#1#2\endcsname
-     \expandafter\empty\lastnamedcs
+     \lastnamedcs
    \else\ifcsname\??language#1\s!default\endcsname
-    %\expandafter\specificlanguageparameter\csname\??language#1\s!default\endcsname{#2}%
      \expandafter\specificlanguageparameter\lastnamedcs{#2}%
    \else\ifcsname\??language\s!default#2\endcsname
-    %\csname\??language\s!default#2\endcsname
-     \expandafter\empty\lastnamedcs
+     \lastnamedcs
    \fi\fi\fi}
 
 \def\mainlanguageparameter#1%
   {\ifcsname\??language\currentmainlanguage#1\endcsname
-    %\csname\??language\currentmainlanguage#1\endcsname
-     \expandafter\empty\lastnamedcs
+     \lastnamedcs
    \else\ifcsname\??language\currentmainlanguage\s!default\endcsname
-    %\expandafter\specificlanguageparameter\csname\??language\currentmainlanguage\s!default\endcsname{#1}%
      \expandafter\specificlanguageparameter\lastnamedcs{#1}%
    \else\ifcsname\??language\s!default#1\endcsname
-    %\csname\??language\s!default#1\endcsname
-     \expandafter\empty\lastnamedcs
+     \lastnamedcs
    \fi\fi\fi}
 
 \let\usedlanguageparameter\languageparameter
@@ -172,14 +162,11 @@
 
 \def\askedlanguageparameter#1% assumes \currentusedlanguage being set
   {\ifcsname\??language\currentusedlanguage#1\endcsname
-    %\csname\??language\currentusedlanguage#1\endcsname
-     \expandafter\empty\lastnamedcs
+     \lastnamedcs
    \else\ifcsname\??language\currentusedlanguage\s!default\endcsname
-    %\expandafter\specificlanguageparameter\csname\??language\currentusedlanguage\s!default\endcsname{#1}%
      \expandafter\specificlanguageparameter\lastnamedcs{#1}%
    \else\ifcsname\??language\s!default#1\endcsname
-    %\csname\??language\s!default#1\endcsname
-     \expandafter\empty\lastnamedcs
+     \lastnamedcs
    \fi\fi\fi}
 
 \unexpanded\def\setlanguageparameter#1%

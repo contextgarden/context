@@ -162,7 +162,6 @@
 
 \def\booleanmodevalue#1%
   {\ifcsname\??mode#1\endcsname
-    %\ifcase\csname\??mode#1\endcsname
      \ifcase\lastnamedcs
        \s!false
      \or
@@ -671,7 +670,7 @@
   {\begincsname\??variables#1:#2\endcsname}
 
 \def\showvariable#1#2%
-  {\showvalue{\ifcsname\??variables#1:#2\endcsname\??variables#1:#2\else\s!empty\fi}}
+  {\showvalue{\begincsname\??variables#1:#2\endcsname}}
 
 \let\currentvariableclass\empty
 
@@ -690,7 +689,8 @@
 
 \def\syst_variables_check_value#1#2#3%
   {\ifcsname\??variables#1:#2\endcsname
-     \edef\m_syst_variables_temp{\csname\??variables#1:#2\endcsname}%
+    %\edef\m_syst_variables_temp{\csname\??variables#1:#2\endcsname}%
+     \edef\m_syst_variables_temp{\lastnamedcs}%
      \ifx\m_syst_variables_temp\empty
        \expandafter\def\csname\??variables#1:#2\endcsname{#3}%
      \fi

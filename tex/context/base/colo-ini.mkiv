@@ -375,7 +375,8 @@
       \letvalue{\??colorpalet#1}\m_colo_palets_tmp
       \let\m_colo_palets_tmp\empty}
      {\ifcsname\??colorpaletspecification#2\endcsname
-        \normalexpanded{\colo_palets_define[#1][\csname\??colorpaletspecification#2\endcsname]}%
+       %\normalexpanded{\colo_palets_define[#1][\csname\??colorpaletspecification#2\endcsname]}%
+        \normalexpanded{\colo_palets_define[#1][\lastnamedcs]}%
       \fi}}
 
 % \def\colo_palets_define_one#1#2% get rid of { } in #2
@@ -392,7 +393,8 @@
 
 \def\colo_palets_define_three#1#2%
   {\ifcsname\??colorpaletspecification#2\endcsname
-     \processcommacommand[\csname\??colorpaletspecification#2\endcsname]{\colo_palets_define_one{#1}}%
+    %\processcommacommand[\csname\??colorpaletspecification#2\endcsname]{\colo_palets_define_one{#1}}%
+     \processcommacommand[\lastnamedcs]{\colo_palets_define_one{#1}}%
    \fi}
 
 \let\paletsize\!!zerocount
@@ -619,16 +621,19 @@
 
 \def\colo_helpers_fast_activate_yes#1%
   {\ifcsname\??colorsetter\currentcolorprefix#1\endcsname
-     \csname\??colorsetter\currentcolorprefix#1\endcsname
+    %\csname\??colorsetter\currentcolorprefix#1\endcsname
+     \lastnamedcs
      \csname\??transparencysetter\currentcolorprefix#1\endcsname
    \else\ifcsname\??colorsetter#1\endcsname
-     \csname\??colorsetter#1\endcsname
+    %\csname\??colorsetter#1\endcsname
+     \lastnamedcs
      \csname\??transparencysetter#1\endcsname
    \fi\fi}
 
 \def\colo_helpers_fast_activate_nop#1%
   {\ifcsname\??colorsetter#1\endcsname
-     \csname\??colorsetter#1\endcsname
+    %\csname\??colorsetter#1\endcsname
+     \lastnamedcs
      \csname\??transparencysetter#1\endcsname
    \fi}
 
@@ -977,15 +982,28 @@
 \appendtoks \colo_helpers_initialize_maintextcolor \to \everyjob
 \appendtoks \colo_helpers_initialize_maintextcolor \to \everysetupcolors
 
-\def\colo_helpers_inherited_direct_cs#1{\csname\??colorsetter          \ifcsname\??colorsetter          #1\endcsname#1\fi\endcsname}
-\def\colo_helpers_inherited_direct_ca#1{\csname\??colorattribute       \ifcsname\??colorattribute       #1\endcsname#1\fi\endcsname}
-\def\colo_helpers_inherited_direct_ts#1{\csname\??transparencysetter   \ifcsname\??transparencysetter   #1\endcsname#1\fi\endcsname}
-\def\colo_helpers_inherited_direct_ta#1{\csname\??transparencyattribute\ifcsname\??transparencyattribute#1\endcsname#1\fi\endcsname}
+\letvalue{\??colorsetter       }\empty \letvalue{\??colorattribute       }\!!zerocount
+\letvalue{\??transparencysetter}\empty \letvalue{\??transparencyattribute}\!!zerocount
 
-\def\colo_helpers_inherited_palet_ca#1#2{\csname\??colorattribute       \ifcsname\??colorattribute       \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
-\def\colo_helpers_inherited_palet_cs#1#2{\csname\??colorsetter          \ifcsname\??colorsetter          \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
-\def\colo_helpers_inherited_palet_ta#1#2{\csname\??transparencyattribute\ifcsname\??transparencyattribute\??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
-\def\colo_helpers_inherited_palet_ts#1#2{\csname\??transparencysetter   \ifcsname\??transparencysetter   \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
+%def\colo_helpers_inherited_direct_cs#1{\csname\??colorsetter          \ifcsname\??colorsetter          #1\endcsname#1\fi\endcsname}
+%def\colo_helpers_inherited_direct_ca#1{\csname\??colorattribute       \ifcsname\??colorattribute       #1\endcsname#1\fi\endcsname}
+%def\colo_helpers_inherited_direct_ts#1{\csname\??transparencysetter   \ifcsname\??transparencysetter   #1\endcsname#1\fi\endcsname}
+%def\colo_helpers_inherited_direct_ta#1{\csname\??transparencyattribute\ifcsname\??transparencyattribute#1\endcsname#1\fi\endcsname}
+
+\def\colo_helpers_inherited_direct_cs#1{\ifcsname\??colorsetter          #1\endcsname\lastnamedcs\fi}
+\def\colo_helpers_inherited_direct_ca#1{\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\!!zerocount\fi}
+\def\colo_helpers_inherited_direct_ts#1{\ifcsname\??transparencysetter   #1\endcsname\lastnamedcs\fi}
+\def\colo_helpers_inherited_direct_ta#1{\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\!!zerocount\fi}
+
+%def\colo_helpers_inherited_palet_ca#1#2{\csname\??colorattribute       \ifcsname\??colorattribute       \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
+%def\colo_helpers_inherited_palet_cs#1#2{\csname\??colorsetter          \ifcsname\??colorsetter          \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
+%def\colo_helpers_inherited_palet_ta#1#2{\csname\??transparencyattribute\ifcsname\??transparencyattribute\??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
+%def\colo_helpers_inherited_palet_ts#1#2{\csname\??transparencysetter   \ifcsname\??transparencysetter   \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
+
+\def\colo_helpers_inherited_palet_ca#1#2{\ifcsname\??colorattribute       \??colorpalet#1:#2\endcsname\lastnamedcs\fi}
+\def\colo_helpers_inherited_palet_cs#1#2{\ifcsname\??colorsetter          \??colorpalet#1:#2\endcsname\lastnamedcs\else\!!zerocount\fi}
+\def\colo_helpers_inherited_palet_ta#1#2{\ifcsname\??transparencyattribute\??colorpalet#1:#2\endcsname\lastnamedcs\fi}
+\def\colo_helpers_inherited_palet_ts#1#2{\ifcsname\??transparencysetter   \??colorpalet#1:#2\endcsname\lastnamedcs\else\!!zerocount\fi}
 
 \let\colo_helpers_set_value\setvalue
 
@@ -1016,9 +1034,6 @@
         \localundefine{\??transparencysetter   #1:#2}%
         \localundefine{\??transparencyattribute#1:#2}%
       \fi}}
-
-\letvalue{\??colorsetter       }\empty \letvalue{\??colorattribute       }\!!zerocount
-\letvalue{\??transparencysetter}\empty \letvalue{\??transparencyattribute}\!!zerocount
 
 \setvalue{\??colorattribute        currentcolor}{\the\attribute\colorattribute}        % for mpcolor
 \setvalue{\??transparencyattribute currentcolor}{\the\attribute\transparencyattribute} % for mpcolor

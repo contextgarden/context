@@ -198,8 +198,8 @@
 %unexpanded\def\handlemathmodediscretionary#1{\executeifdefined{\??discretionarymath\detokenize{#1}}\donothing}
 %unexpanded\def\handletextmodediscretionary#1{\executeifdefined{\??discretionarytext\detokenize{#1}}\donothing}
 
-\unexpanded\def\handlemathmodediscretionary#1{\\ifcsname\??discretionarymath\detokenize{#1}\endcsname\lastnamedcs}
-\unexpanded\def\handletextmodediscretionary#1{\\ifcsname\??discretionarytext\detokenize{#1}\endcsname\lastnamedcs}
+\unexpanded\def\handlemathmodediscretionary#1{\ifcsname\??discretionarymath\detokenize{#1}\endcsname\lastnamedcs}
+\unexpanded\def\handletextmodediscretionary#1{\ifcsname\??discretionarytext\detokenize{#1}\endcsname\lastnamedcs}
 
 \unexpanded\def\installdiscretionaries#1#2{\writestatus\m!system{use \string \installdiscretionary}} % obsolete
 

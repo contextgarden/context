@@ -113,13 +113,14 @@ local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
 local getnext            = nuts.getnext
+local setnext            = nuts.setnext
 local getprev            = nuts.getprev
+local setprev            = nuts.setprev
 local getid              = nuts.getid
 local getchar            = nuts.getchar
+local setchar            = nuts.setchar
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
-local getfield           = nuts.getfield
-local setfield           = nuts.setfield
 local getprop            = nuts.getprop
 local setprop            = nuts.setprop
 
@@ -716,8 +717,8 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
 							copyinjection(tempcurrent,next)
                             local nextcurrent = copy_node(current)
 							copyinjection(nextcurrent,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
-                            setfield(tempcurrent,"next",nextcurrent)
-                            setfield(nextcurrent,"prev",tempcurrent)
+                            setnext(tempcurrent,nextcurrent)
+                            setprev(nextcurrent,tempcurrent)
                             setprop(tempcurrent,a_state,s_blwf)
                             tempcurrent = processcharacters(tempcurrent,font)
                             setprop(tempcurrent,a_state,unsetvalue)
@@ -725,14 +726,14 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                                 flush_list(tempcurrent)
                                 local n = copy_node(current)
 								copyinjection(n,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
-                                setfield(current,"char",dotted_circle)
+                                setchar(current,dotted_circle)
                                 head = insert_node_after(head, current, n)
                             else
-                                setfield(current,"char",getchar(tempcurrent)) -- we assumes that the result of blwf consists of one node
+                                setchar(current,getchar(tempcurrent)) -- we assumes that the result of blwf consists of one node
                                 local freenode = getnext(current)
-                                setfield(current,"next",tmp)
+                                setnext(current,tmp)
                                 if tmp then
-                                    setfield(tmp,"prev",current)
+                                    setprev(tmp,current)
                                 end
                                 free_node(freenode)
                                 flush_list(tempcurrent)
@@ -786,14 +787,14 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
          -- local np = getprev(n)
             local nn = getnext(n)
             local ln = getnext(lastcons) -- what if lastcons is nn ?
-            setfield(np,"next",nn)
-            setfield(nn,"prev",np)
-            setfield(lastcons,"next",n)
+            setnext(np,nn)
+            setprev(nn,np)
+            setnext(lastcons,n)
             if ln then
-                setfield(ln,"prev",n)
+                setprev(ln,n)
             end
-            setfield(n,"next",ln)
-            setfield(n,"prev",lastcons)
+            setnext(n,ln)
+            setprev(n,lastcons)
             if lastcons == stop then
                 stop = n
             end
@@ -817,14 +818,14 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
         local nn = getnext(n)
         local mn = getnext(matra)
         if sp then
-            setfield(sp,"next",nn)
+            setnext(sp,nn)
         end
-        setfield(nn,"prev",sp)
-        setfield(matra,"next",start)
-        setfield(start,"prev",matra)
-        setfield(n,"next",mn)
+        setprev(nn,sp)
+        setnext(matra,start)
+        setprev(start,matra)
+        setnext(n,mn)
         if mn then
-            setfield(mn,"prev",n)
+            setprev(mn,n)
         end
         if head == start then
             head = nn
@@ -899,20 +900,20 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
             -- move pre-base matras...
             if pre_mark[getchar(cn)] then
                 if bp then
-                    setfield(bp,"next",cn)
+                    setnext(bp,cn)
                 end
                 local next = getnext(cn)
                 local prev = getprev(cn)
                 if next then
-                    setfield(next,"prev",prev)
+                    setprev(next,prev)
                 end
-                setfield(prev,"next",next)
+                setnext(prev,next)
                 if cn == stop then
                     stop = prev
                 end
-                setfield(cn,"prev",bp)
-                setfield(cn,"next",firstcons)
-                setfield(firstcons,"prev",cn)
+                setprev(cn,bp)
+                setnext(cn,firstcons)
+                setprev(firstcons,cn)
                 if firstcons == start then
                     if head == start then
                         head = cn
@@ -958,34 +959,34 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                         end
                         local prev = getprev(current)
                         if prev then
-                            setfield(prev,"next",n)
+                            setnext(prev,n)
                         end
                         if n then
-                            setfield(n,"prev",prev)
+                            setprev(n,prev)
                         end
                         local next = getnext(b)
-                        setfield(c,"next",next)
+                        setnext(c,next)
                         if next then
-                            setfield(next,"prev",c)
+                            setprev(next,c)
                         end
-                        setfield(c,"next",next)
-                        setfield(b,"next",current)
-                        setfield(current,"prev",b)
+                        setnext(c,next)
+                        setnext(b,current)
+                        setprev(current,b)
                     end
                 elseif cns and getnext(cns) ~= current then -- todo: optimize next
                     -- position below-base Ra (vattu) following the consonants on which it is placed (either the base consonant or one of the pre-base consonants)
                     local cp, cnsn = getprev(current), getnext(cns)
                     if cp then
-                        setfield(cp,"next",n)
+                        setnext(cp,n)
                     end
                     if n then
-                        setfield(n,"prev",cp)
+                        setprev(n,cp)
                     end
-                    setfield(cns,"next",current)
-                    setfield(current,"prev",cns)
-                    setfield(c,"next",cnsn)
+                    setnext(cns,current)
+                    setprev(current,cns)
+                    setnext(c,cnsn)
                     if cnsn then
-                        setfield(cnsn,"prev",c)
+                        setprev(cnsn,c)
                     end
                     if c == stop then
                         stop = cp
@@ -1047,11 +1048,11 @@ function handlers.devanagari_reorder_matras(head,start,kind,lookupname,replaceme
             head = remove_node(head,start)
             local next = getnext(current)
             if next then
-                setfield(next,"prev",start)
+                setprev(next,start)
             end
-            setfield(start,"next",next)
-            setfield(current,"next",start)
-            setfield(start,"prev",current)
+            setnext(start,next)
+            setnext(current,start)
+            setprev(start,current)
             start = startnext
             break
         end
@@ -1102,11 +1103,11 @@ function handlers.devanagari_reorder_reph(head,start,kind,lookupname,replacement
             head = remove_node(head,start)
             local next = getnext(current)
             if next then
-                setfield(next,"prev",start)
+                setprev(next,start)
             end
-            setfield(start,"next",next)
-            setfield(current,"next",start)
-            setfield(start,"prev",current)
+            setnext(start,next)
+            setnext(current,start)
+            setprev(start,current)
             start = startnext
             startattr = getprop(start,a_syllabe)
             break
@@ -1120,10 +1121,10 @@ function handlers.devanagari_reorder_reph(head,start,kind,lookupname,replacement
                 startnext = getnext(start)
                 head = remove_node(head,start)
                 local prev = getprev(current)
-                setfield(start,"prev",prev)
-                setfield(prev,"next",start)
-                setfield(start,"next",current)
-                setfield(current,"prev",start)
+                setprev(start,prev)
+                setnext(prev,start)
+                setnext(start,current)
+                setprev(current,start)
                 start = startnext
                 startattr = getprop(start,a_syllabe)
                 break
@@ -1152,10 +1153,10 @@ function handlers.devanagari_reorder_reph(head,start,kind,lookupname,replacement
             startnext = getnext(start)
             head = remove_node(head,start)
             local prev = getprev(c)
-            setfield(start,"prev",prev)
-            setfield(prev,"next",start)
-            setfield(start,"next",c)
-            setfield(c,"prev",start)
+            setprev(start,prev)
+            setnext(prev,start)
+            setnext(start,c)
+            setprev(c,start)
             -- end
             start = startnext
             startattr = getprop(start,a_syllabe)
@@ -1174,11 +1175,11 @@ function handlers.devanagari_reorder_reph(head,start,kind,lookupname,replacement
             head = remove_node(head,start)
             local next = getnext(current)
             if next then
-                setfield(next,"prev",start)
+                setprev(next,start)
             end
-            setfield(start,"next",next)
-            setfield(current,"next",start)
-            setfield(start,"prev",current)
+            setnext(star,next)
+            setnext(current,start)
+            setprev(start,current)
             start = startnext
         end
     end
@@ -1217,11 +1218,11 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start,k
             removenode(start,start)
             local next = getnext(current)
             if next then
-                setfield(next,"prev",start)
+                setprev(next,start)
             end
-            setfield(start,"next",next)
-            setfield(current,"next",start)
-            setfield(start,"prev",current)
+            setnext(start,next)
+            setnext(current,start)
+            setprev(start,current)
             start = startnext
             break
         end
@@ -1235,10 +1236,10 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start,k
                 startnext = getnext(start)
                 removenode(start,start)
                 local prev = getprev(current)
-                setfield(start,"prev",prev)
-                setfield(prev,"next",start)
-                setfield(start,"next",current)
-                setfield(current,"prev",start)
+                setprev(start,prev)
+                setnext(prev,start)
+                setnext(start,current)
+                setprev(current,start)
                 start = startnext
                 break
             end
@@ -1260,12 +1261,12 @@ function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replaceme
         end
     end
     if stop then
-        setfield(getfield(stop,"prev"),"next",nil)
-        setfield(stop,"prev",getprev(start))
+        setnext(getprev(stop),nil)
+        setprev(stop,getprev(start))
     end
     local prev = getprev(start)
     if prev then
-        setfield(prev,"next",stop)
+        setnext(prev,stop)
     end
     if head == start then
     	head = stop
@@ -1566,7 +1567,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         next = getnext(current)
                         local tmp = getnext(next)
                         local changestop = next == stop
-                        setfield(next,"next",nil)
+                        setnext(next,nil)
                         setprop(current,a_state,s_pref)
                         current = processcharacters(current,font)
                         setprop(current,a_state,s_blwf)
@@ -1575,13 +1576,13 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         current = processcharacters(current,font)
                         setprop(current,a_state,unsetvalue)
                         if halant[getchar(current)] then
-                            setfield(getnext(current),"next",tmp)
+                            setnext(getnext(current),tmp)
                             local nc = copy_node(current)
 							copyinjection(nc,current)
-                            setfield(current,"char",dotted_circle)
+                            setchar(current,dotted_circle)
                             head = insert_node_after(head,current,nc)
                         else
-                            setfield(current,"next",tmp) -- assumes that result of pref, blwf, or pstf consists of one node
+                            setnext(current,tmp) -- assumes that result of pref, blwf, or pstf consists of one node
                             if changestop then
                                 stop = current
                             end
@@ -1647,8 +1648,8 @@ if tpm then
     local extra = copy_node(current)
 	copyinjection(extra,current)
     char = tpm[1]
-    setfield(current,"char",char)
-    setfield(extra,"char",tpm[2])
+    setchar(current,char)
+    setchar(extra,tpm[2])
     head = insert_node_after(head,current,extra)
 end
 --
@@ -1658,10 +1659,10 @@ end
                 local prev = getprev(current)
                 local next = getnext(current)
                 if prev then
-                    setfield(prev,"next",next)
+                    setnext(prev,next)
                 end
                 if next then
-                    setfield(next,"prev",prev)
+                    setprev(next,prev)
                 end
                 if current == stop then
                     stop = getprev(current)
@@ -1674,11 +1675,11 @@ end
                 end
                 local prev = getprev(halfpos)
                 if prev then
-                    setfield(prev,"next",current)
+                    setnext(prev,current)
                 end
-                setfield(current,"prev",prev)
-                setfield(halfpos,"prev",current)
-                setfield(current,"next",halfpos)
+                setprev(current,prev)
+                setprev(halfpos,current)
+                setnext(current,halfpos)
                 halfpos = current
             elseif above_mark[char] then    -- After main consonant
                 target = basepos
@@ -1704,21 +1705,21 @@ end
                 if prev ~= target then
                     local next = getnext(current)
                     if prev then -- not needed, already tested with target
-                        setfield(prev,"next",next)
+                        setnext(prev,next)
                     end
                     if next then
-                        setfield(next,"prev",prev)
+                        setprev(next,prev)
                     end
                     if current == stop then
                         stop = prev
                     end
                     local next = getnext(target)
                     if next then
-                        setfield(next,"prev",current)
+                        setprev(next,current)
                     end
-                    setfield(current,"next",next)
-                    setfield(target,"next",current)
-                    setfield(current,"prev",target)
+                    setnext(current,next)
+                    setnext(target,current)
+                    setprev(current,target)
                 end
             end
         end
@@ -1747,17 +1748,17 @@ end
             end
             local prev = getprev(c)
             if prev then
-                setfield(prev,"next",next)
+                setnext(prev,next)
             end
-            setfield(next,"prev",prev)
+            setprev(next,prev)
             local nextnext = getnext(next)
-            setfield(current,"next",nextnext)
+            setnext(current,nextnext)
             local nextnextnext = getnext(nextnext)
             if nextnextnext then
-                setfield(nextnextnext,"prev",current)
+                setprev(nextnextnext,current)
             end
-            setfield(c,"prev",nextnext)
-            setfield(nextnext,"next",c)
+            setprev(c,nextnext)
+            setnext(nextnext,c)
         end
         if stop == current then break end
         current = getnext(current)
@@ -2082,9 +2083,9 @@ local function inject_syntax_error(head,current,mark)
     local signal = copy_node(current)
 	copyinjection(signal,current)
     if mark == pre_mark then
-        setfield(signal,"char",dotted_circle)
+        setchar(signal,dotted_circle)
     else
-        setfield(current,"char",dotted_circle)
+        setchar(current,dotted_circle)
     end
     return insert_node_after(head,current,signal)
 end

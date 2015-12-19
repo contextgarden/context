@@ -142,8 +142,8 @@
    % we keep things local so we can use it as regular note too
    \edef\currentnotation{#1}%
    \edef\currentlinenotereference{#2}%
-   \xdef\m_page_lines_previous_from{\csname\??linenotespreviousfrom\ifcsname\??linenotespreviousfrom\currentnotation\endcsname\currentnotation\fi\endcsname}%
-   \xdef\m_page_lines_previous_to  {\csname\??linenotespreviousto  \ifcsname\??linenotespreviousto  \currentnotation\endcsname\currentnotation\fi\endcsname}%
+   \xdef\m_page_lines_previous_from{\begincsname\??linenotespreviousfrom\currentnotation\endcsname}%
+   \xdef\m_page_lines_previous_to  {\begincsname\??linenotespreviousto  \currentnotation\endcsname}%
    \strc_linenotes_check_compression
    \let\currentnote\currentnotation
    \letnotationparameter\c!numbercommand\linenotelinenumber% todo: deep hook

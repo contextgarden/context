@@ -184,21 +184,24 @@
 
 \def\syst_catcodes_let_b % each time
   {\ifcsname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
-     \csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+    %\csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+     \expandafter\lastnamedcs
    \else
      \expandafter\syst_catcodes_let_c
    \fi}
 
 \def\syst_catcodes_def_b % each time
   {\ifcsname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
-     \csname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+    %\csname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+     \expandafter\lastnamedcs
    \else
      \expandafter\syst_catcodes_def_c
    \fi}
 
 \def\syst_catcodes_ued_b % each time
   {\ifcsname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
-     \csname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+    %\csname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+     \expandafter\lastnamedcs
    \else
      \expandafter\syst_catcodes_ued_c
    \fi}
@@ -302,7 +305,7 @@
 %D \stoptyping
 
 \normalprotected\def\tracecatcodetables
-  {\def\syst_catcodes_trace_set {\syst_catcodes_trace{set  \catcodetablename\space                                  at \number\c_syst_catcodes_level}}%
+  {\def\syst_catcodes_trace_set {\syst_catcodes_trace{set  \catcodetablename\space                                at \number\c_syst_catcodes_level}}%
    \def\syst_catcodes_trace_push{\syst_catcodes_trace{push \catcodetablename\space from \syst_catcodes_prev\space at \number\c_syst_catcodes_level}}%
    \def\syst_catcodes_trace_pop {\syst_catcodes_trace{pop  \catcodetablename\space to   \syst_catcodes_prev\space at \number\c_syst_catcodes_level}}}
 

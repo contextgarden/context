@@ -94,7 +94,8 @@
 \def\page_lines_setup
   {\ifcsname \??linenumberinginstance\currentlinenumbering\endcsname
      \clf_setuplinenumbering
-       \csname\??linenumberinginstance\currentlinenumbering\endcsname
+      %\csname\??linenumberinginstance\currentlinenumbering\endcsname
+       \lastnamedcs
        {%
             continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
             start    \linenumberingparameter\c!start
