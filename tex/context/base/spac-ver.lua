@@ -39,7 +39,7 @@ local allocate = utilities.storage.allocate
 local todimen = string.todimen
 local formatters = string.formatters
 
-local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
+local P, C, R, S, Cc, Carg = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Carg
 
 local nodes        =  nodes
 local node         =  node
@@ -655,20 +655,27 @@ storage.register("builders/vspacing/data/skip", vspacingdata.skip, "builders.vsp
 
 do -- todo: interface.variables
 
-    vspacing.fixed = false
+    vspacing.fixed   = false
 
-    local map  = vspacingdata.map
-    local skip = vspacingdata.skip
+    local map        = vspacingdata.map
+    local skip       = vspacingdata.skip
 
     local multiplier = C(S("+-")^0 * R("09")^1) * P("*")
-    local category   = P(":") * C(P(1)^1)
-    local keyword    = C((1-category)^1)
+    local separator  = S(", ")
+    local category   = P(":") * C((1-separator)^1)
+    local keyword    = C((1-category-separator)^1)
     local splitter   = (multiplier + Cc(1)) * keyword * (category + Cc(false))
 
-    local k_fixed, k_flexible, k_category, k_penalty, k_order = variables.fixed, variables.flexible, "category", "penalty", "order"
+    local k_fixed    = variables.fixed
+    local k_flexible = variables.flexible
+    local k_category = "category"
+    local k_penalty  = "penalty"
+    local k_order    = "order"
 
     -- This will change: just node.write and we can store the values in skips which
-    -- then obeys grouping
+    -- then obeys grouping .. but .. we miss the amounts then as they live at the tex
+    -- end so we then also need to change that bit ... it would be interesting if we
+    -- could store in properties
 
     local ctx_fixedblankskip         = context.fixedblankskip
     local ctx_flexibleblankskip      = context.flexibleblankskip
@@ -680,67 +687,171 @@ do -- todo: interface.variables
     local ctx_addpredefinedblankskip = context.addpredefinedblankskip
     local ctx_addaskedblankskip      = context.addaskedblankskip
 
-    local function analyze(str,oldcategory) -- we could use shorter names
-        for s in gmatch(str,"([^ ,]+)") do
-            local amount, keyword, detail = lpegmatch(splitter,s) -- the comma splitter can be merged
-            if not keyword then
-                report_vspacing("unknown directive %a",s)
+    local ctx_pushlogger             = context.pushlogger
+    local ctx_startblankhandling     = context.startblankhandling
+    local ctx_stopblankhandling      = context.stopblankhandling
+    local ctx_poplogger              = context.poplogger
+
+    --
+
+ -- local function analyze(str,oldcategory) -- we could use shorter names
+ --     for s in gmatch(str,"([^ ,]+)") do
+ --         local amount, keyword, detail = lpegmatch(splitter,s) -- the comma splitter can be merged
+ --         if not keyword then
+ --             report_vspacing("unknown directive %a",s)
+ --         else
+ --             local mk = map[keyword]
+ --             if mk then
+ --                 category = analyze(mk,category) -- category not used .. and we pass crap anyway
+ --             elseif keyword == k_fixed then
+ --                 ctx_fixedblankskip()
+ --             elseif keyword == k_flexible then
+ --                 ctx_flexibleblankskip()
+ --             elseif keyword == k_category then
+ --                 local category = tonumber(detail)
+ --                 if category then
+ --                     ctx_setblankcategory(category)
+ --                     if category ~= oldcategory then
+ --                         ctx_flushblankhandling()
+ --                         oldcategory = category
+ --                     end
+ --                 end
+ --             elseif keyword == k_order and detail then
+ --                 local order = tonumber(detail)
+ --                 if order then
+ --                     ctx_setblankorder(order)
+ --                 end
+ --             elseif keyword == k_penalty and detail then
+ --                 local penalty = tonumber(detail)
+ --                 if penalty then
+ --                     ctx_setblankpenalty(penalty)
+ --                 end
+ --             else
+ --                 amount = tonumber(amount) or 1
+ --                 local sk = skip[keyword]
+ --                 if sk then
+ --                     ctx_addpredefinedblankskip(amount,keyword)
+ --                 else -- no check
+ --                     ctx_addaskedblankskip(amount,keyword)
+ --                 end
+ --             end
+ --         end
+ --     end
+ --     return category
+ -- end
+
+ -- local function analyze(str) -- we could use shorter names
+ --     for s in gmatch(str,"([^ ,]+)") do
+ --         local amount, keyword, detail = lpegmatch(splitter,s) -- the comma splitter can be merged
+ --         if not keyword then
+ --             report_vspacing("unknown directive %a",s)
+ --         else
+ --             local mk = map[keyword]
+ --             if mk then
+ --                 analyze(mk) -- category not used .. and we pass crap anyway
+ --             elseif keyword == k_fixed then
+ --                 ctx_fixedblankskip()
+ --             elseif keyword == k_flexible then
+ --                 ctx_flexibleblankskip()
+ --             elseif keyword == k_category then
+ --                 local category = tonumber(detail)
+ --                 if category then
+ --                     ctx_setblankcategory(category)
+ --                     ctx_flushblankhandling()
+ --                 end
+ --             elseif keyword == k_order and detail then
+ --                 local order = tonumber(detail)
+ --                 if order then
+ --                     ctx_setblankorder(order)
+ --                 end
+ --             elseif keyword == k_penalty and detail then
+ --                 local penalty = tonumber(detail)
+ --                 if penalty then
+ --                     ctx_setblankpenalty(penalty)
+ --                 end
+ --             else
+ --                 amount = tonumber(amount) or 1
+ --                 local sk = skip[keyword]
+ --                 if sk then
+ --                     ctx_addpredefinedblankskip(amount,keyword)
+ --                 else -- no check
+ --                     ctx_addaskedblankskip(amount,keyword)
+ --                 end
+ --             end
+ --         end
+ --     end
+ -- end
+
+ -- function vspacing.analyze(str)
+ --     if trace_vspacing then
+ --         ctx_pushlogger(report_vspacing)
+ --         ctx_startblankhandling()
+ --         analyze(str,1)
+ --         ctx_stopblankhandling()
+ --         ctx_poplogger()
+ --     else
+ --         ctx_startblankhandling()
+ --         analyze(str,1)
+ --         ctx_stopblankhandling()
+ --     end
+ -- end
+
+    -- alternative
+
+    local pattern = nil
+
+    local function handler(amount, keyword, detail)
+        if not keyword then
+            report_vspacing("unknown directive %a",s)
+        else
+            local mk = map[keyword]
+            if mk then
+                lpegmatch(pattern,mk)
+            elseif keyword == k_fixed then
+                ctx_fixedblankskip()
+            elseif keyword == k_flexible then
+                ctx_flexibleblankskip()
+            elseif keyword == k_category then
+                local category = tonumber(detail)
+                if category then
+                    ctx_setblankcategory(category)
+                    ctx_flushblankhandling()
+                end
+            elseif keyword == k_order and detail then
+                local order = tonumber(detail)
+                if order then
+                    ctx_setblankorder(order)
+                end
+            elseif keyword == k_penalty and detail then
+                local penalty = tonumber(detail)
+                if penalty then
+                    ctx_setblankpenalty(penalty)
+                end
             else
-                local mk = map[keyword]
-                if mk then
-                    category = analyze(mk,category)
-                elseif keyword == k_fixed then
-                    ctx_fixedblankskip()
-                elseif keyword == k_flexible then
-                    ctx_flexibleblankskip()
-                elseif keyword == k_category then
-                    local category = tonumber(detail)
-                    if category then
-                        ctx_setblankcategory(category)
-                        if category ~= oldcategory then
-                            ctx_flushblankhandling()
-                            oldcategory = category
-                        end
-                    end
-                elseif keyword == k_order and detail then
-                    local order = tonumber(detail)
-                    if order then
-                        ctx_setblankorder(order)
-                    end
-                elseif keyword == k_penalty and detail then
-                    local penalty = tonumber(detail)
-                    if penalty then
-                        ctx_setblankpenalty(penalty)
-                    end
-                else
-                    amount = tonumber(amount) or 1
-                    local sk = skip[keyword]
-                    if sk then
-                        ctx_addpredefinedblankskip(amount,keyword)
-                    else -- no check
-                        ctx_addaskedblankskip(amount,keyword)
-                    end
+                amount = tonumber(amount) or 1
+                local sk = skip[keyword]
+                if sk then
+                    ctx_addpredefinedblankskip(amount,keyword)
+                else -- no check
+                    ctx_addaskedblankskip(amount,keyword)
                 end
             end
         end
-        return category
     end
 
-    local ctx_pushlogger         = context.pushlogger
-    local ctx_startblankhandling = context.startblankhandling
-    local ctx_stopblankhandling  = context.stopblankhandling
-    local ctx_poplogger          = context.poplogger
+    local splitter = ((multiplier + Cc(1)) * keyword * (category + Cc(false))) / handler
+          pattern  = (splitter + separator^1)^0
 
     function vspacing.analyze(str)
         if trace_vspacing then
             ctx_pushlogger(report_vspacing)
             ctx_startblankhandling()
-            analyze(str,1)
+            lpegmatch(pattern,str)
             ctx_stopblankhandling()
             ctx_poplogger()
         else
             ctx_startblankhandling()
-            analyze(str,1)
+            lpegmatch(pattern,str)
             ctx_stopblankhandling()
         end
     end
@@ -1132,6 +1243,17 @@ end
 
 -- we now look back a lot, way too often
 
+-- userskip
+-- lineskip
+-- baselineskip
+-- parskip
+-- abovedisplayskip
+-- belowdisplayskip
+-- abovedisplayshortskip
+-- belowdisplayshortskip
+-- topskip
+-- splittopskip
+
 local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
     if trace then
         reset_tracing(head)
@@ -1171,16 +1293,16 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
             else
                 head = insert_node_before(head,current,p)
             end
--- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
-    local props = properties[p]
-    if props then
-        props.special_penalty = special_penalty or penalty_data
-    else
-        properties[p] = {
-            special_penalty = special_penalty or penalty_data
-        }
-    end
--- end
+         -- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
+            local props = properties[p]
+            if props then
+                props.special_penalty = special_penalty or penalty_data
+            else
+                properties[p] = {
+                    special_penalty = special_penalty or penalty_data
+                }
+            end
+         -- end
         end
         if glue_data then
             if force_glue then
@@ -1188,8 +1310,22 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 head = forced_skip(head,current,getfield(glue_data,"width") or 0,"before",trace)
                 free_node(glue_data)
             else
-                if trace then trace_done("flushed due to " .. why,glue_data) end
-                head = insert_node_before(head,current,glue_data)
+             --
+             -- local spec = getfield(glue_data,"spec")
+             -- if getfield(spec,"writable") then
+             --   if trace then trace_done("flushed due to " .. why,glue_data) end
+             --   head = insert_node_before(head,current,glue_data)
+             -- else
+             --   free_node(glue_data)
+             -- end
+                local w = getfield(glue_data,"width")
+                if w ~= 0 then
+                    if trace then trace_done("flushed due to " .. why,glue_data) end
+                    head = insert_node_before(head,current,glue_data)
+                else -- i really need to clean this up
+                 -- report_vspacing("needs checking (%s): %p",skipcodes[getsubtype(glue_data)],w)
+                    free_node(glue_data)
+                end
             end
         end
 
@@ -1487,7 +1623,8 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     if trace then trace_natural("ignored parskip",current) end
                     head, current = remove_node(head, current, true)
                 elseif glue_data then
-                    if (getfield(current,"width") or 0) > (getfield(glue_data,"width") or 0) then
+                    local wp = getfield(current,"width") or 0
+                    if ((w ~= 0) and (w > (getfield(glue_data,"width") or 0))) then
                         glue_data = current
                         head, current = remove_node(head, current)
                         if trace then trace_natural("taking parskip",current) end

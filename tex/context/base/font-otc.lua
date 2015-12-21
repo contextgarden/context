@@ -93,18 +93,17 @@ local function addfeature(data,feature,specifications)
             end
             local askedfeatures = specification.features or everywhere
             local askedsteps    = specifications.steps or specification.subtables or { specification.data } or { }
-            local defaulttype   = specification.type or "substitution"
+            local featuretype   = normalized[specification.type or "substitution"] or "substitution"
             local featureflags  = specification.flags or noflags
             local featureorder  = specification.order or { feature }
             local added         = false
             local nofsteps      = 0
             local steps         = { }
             for i=1,#askedsteps do
-                local list        = askedsteps[i]
-                local coverage    = { }
-                local cover       = coveractions[featuretype]
-                local format      = nil
-                local featuretype = normalized[list.type or defaulttype] or "substitution"
+                local list     = askedsteps[i]
+                local coverage = { }
+                local cover    = coveractions[featuretype]
+                local format   = nil
                 if not cover then
                     -- unknown
                 elseif featuretype == "substitution" then

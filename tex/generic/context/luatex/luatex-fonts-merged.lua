@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/20/15 00:29:13
+-- merge date  : 12/21/15 16:29:15
 
 do -- begin closure to overcome local limits and interference
 
@@ -7237,7 +7237,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.819 
+otf.version=2.820 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -9573,7 +9573,7 @@ otf.coverup={
     kern=justset,
   },
   register=function(coverage,lookuptype,format,feature,n,descriptions,resources)
-    local name=formatters["ctx_%s_%s"](feature,n)
+    local name=formatters["ctx_%s_%s_%s"](feature,lookuptype,n) 
     if lookuptype=="kern" then
       resources.lookuptypes[name]="position"
     else

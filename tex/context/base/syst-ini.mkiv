@@ -957,11 +957,8 @@
 
 \def\space{ }
 \def\empty{}
-%def\null {\hbox{}}
 
-\newbox\syst_nullbox \let\nullbox\syst_nullbox
-
-\normalprotected\def\null{\copy\nullbox}
+\normalprotected\def\null{\hpack{}}
 
 %D The following two might be overloaded later on but some modules need then
 %D earlier. These functionality is reflected in the name and will not change.
