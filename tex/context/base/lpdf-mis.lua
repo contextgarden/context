@@ -253,7 +253,7 @@ local pagespecs = {
     [variables.fixed]       = { mode = "UseNone",     layout = "auto",           fit = false, fixed = true,  duplex = false }, -- noscale
     [variables.landscape]   = { mode = "UseNone",     layout = "auto",           fit = false, fixed = true,  duplex = "DuplexFlipShortEdge" },
     [variables.portrait]    = { mode = "UseNone",     layout = "auto",           fit = false, fixed = true,  duplex = "DuplexFlipLongEdge" },
-
+    [variables.page]        = { mode = "UseNone",     layout = "auto",           fit = false, fixed = true,  duplex = "Simplex" },
 }
 
 local pagespec, topoffset, leftoffset, height, width, doublesided = "default", 0, 0, 0, 0, false

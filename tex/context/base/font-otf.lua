@@ -287,7 +287,6 @@ local ordered_enhancers = {
 
     "check glyphs",
     "check metadata",
---     "check extra features", -- after metadata
 
     "prepare tounicode",
 
@@ -296,7 +295,7 @@ local ordered_enhancers = {
 
     "expand lookups", -- a temp hack awaiting the lua loader
 
---     "check extra features", -- after metadata and duplicates
+    "check extra features", -- after metadata and duplicates
 
     "cleanup tables",
 
@@ -600,7 +599,6 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
             applyruntimefixes(filename,data)
         end
         enhance("add dimensions",data,filename,nil,false)
-enhance("check extra features",data,filename)
         if trace_sequences then
             showfeatureorder(data,filename)
         end

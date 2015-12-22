@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['mult-ini'] = {
 
 local format, gmatch, match = string.format, string.gmatch, string.match
 local lpegmatch = lpeg.match
-local serialize = table.serialize
+local serialize, concat = table.serialize, table.concat
 
 local context             = context
 local commands            = commands
@@ -196,49 +196,120 @@ logs.setmessenger(context.verbatim.ctxreport)
 
 -- initialization
 
+-- function interfaces.setuserinterface(interface,response)
+--     sharedstorage.currentinterface, currentinterface = interface, interface
+--     sharedstorage.currentresponse, currentresponse  = response, response
+--     if environment.initex then
+--         local nofconstants = 0
+--         for given, constant in next, complete.constants do
+--             constant = constant[interface] or constant.en or given
+--             constants[constant] = given -- breedte -> width
+--             contextsprint(prtcatcodes,"\\ui_c{",given,"}{",constant,"}") -- user interface constant
+--             nofconstants = nofconstants + 1
+--         end
+--         local nofvariables = 0
+--         for given, variable in next, complete.variables do
+--             variable = variable[interface] or variable.en or given
+--             variables[given] = variable -- ja -> yes
+--             contextsprint(prtcatcodes,"\\ui_v{",given,"}{",variable,"}") -- user interface variable
+--             nofvariables = nofvariables + 1
+--         end
+--         local nofelements = 0
+--         for given, element in next, complete.elements do
+--             element = element[interface] or element.en or given
+--             elements[element] = given
+--             contextsprint(prtcatcodes,"\\ui_e{",given,"}{",element,"}") -- user interface element
+--             nofelements = nofelements + 1
+--         end
+--         local nofcommands = 0
+--         for given, command in next, complete.commands do
+--             command = command[interface] or command.en or given
+--             if command ~= given then
+--                 contextsprint(prtcatcodes,"\\ui_m{",given,"}{",command,"}") -- user interface macro
+--             end
+--             nofcommands = nofcommands + 1
+--         end
+--         local nofformats = 0
+--         for given, format in next, complete.messages.formats do
+--             formats[given] = format[interface] or format.en or given
+--             nofformats = nofformats + 1
+--         end
+--         local noftranslations = 0
+--         for given, translation in next, complete.messages.translations do
+--             translations[given] = translation[interface] or translation.en or given
+--             noftranslations = noftranslations + 1
+--         end
+--         report_interface("definitions: %a constants, %a variables, %a elements, %a commands, %a formats, %a translations",
+--             nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations)
+--     else
+--         report_interface("the language(s) can only be set when making the format")
+--     end
+-- end
+
 function interfaces.setuserinterface(interface,response)
     sharedstorage.currentinterface, currentinterface = interface, interface
     sharedstorage.currentresponse, currentresponse  = response, response
     if environment.initex then
-        local nofconstants = 0
+        local nofconstants    = 0
+        local nofvariables    = 0
+        local nofelements     = 0
+        local nofcommands     = 0
+        local nofformats      = 0
+        local noftranslations = 0
+        local t, n, f, s
+        --
+        t, n, f, s = { }, 0, formatters["\\ui_c{%s}{%s}"], formatters["\\ui_s{%s}"]
         for given, constant in next, complete.constants do
             constant = constant[interface] or constant.en or given
             constants[constant] = given -- breedte -> width
-            contextsprint(prtcatcodes,"\\ui_c{",given,"}{",constant,"}") -- user interface constant
             nofconstants = nofconstants + 1
+            if given == constant then
+                t[nofconstants] = s(given)
+            else
+                t[nofconstants] = f(given,constant)
+            end
         end
-        local nofvariables = 0
+        contextsprint(prtcatcodes,concat(t))
+        --
+        t, n, f = { }, 0, formatters["\\ui_v{%s}{%s}"]
         for given, variable in next, complete.variables do
             variable = variable[interface] or variable.en or given
             variables[given] = variable -- ja -> yes
-            contextsprint(prtcatcodes,"\\ui_v{",given,"}{",variable,"}") -- user interface variable
             nofvariables = nofvariables + 1
+            t[nofvariables] = f(given,variable)
         end
-        local nofelements = 0
+        contextsprint(prtcatcodes,concat(t))
+        --
+        t, n, f = { }, 0, formatters["\\ui_e{%s}{%s}"]
         for given, element in next, complete.elements do
             element = element[interface] or element.en or given
             elements[element] = given
-            contextsprint(prtcatcodes,"\\ui_e{",given,"}{",element,"}") -- user interface element
             nofelements = nofelements + 1
+            t[nofelements] = f(given,element)
         end
-        local nofcommands = 0
+        contextsprint(prtcatcodes,concat(t))
+        --
+        t, n, f = { }, 0, formatters["\\ui_m{%s}{%s}"]
         for given, command in next, complete.commands do
             command = command[interface] or command.en or given
             if command ~= given then
-                contextsprint(prtcatcodes,"\\ui_m{",given,"}{",command,"}") -- user interface macro
+                n = n + 1
+                t[n] = f(given,command)
             end
             nofcommands = nofcommands + 1
         end
-        local nofformats = 0
+        contextsprint(prtcatcodes,concat(t))
+        --
         for given, format in next, complete.messages.formats do
             formats[given] = format[interface] or format.en or given
             nofformats = nofformats + 1
         end
-        local noftranslations = 0
+        --
         for given, translation in next, complete.messages.translations do
             translations[given] = translation[interface] or translation.en or given
             noftranslations = noftranslations + 1
         end
+        --
         report_interface("definitions: %a constants, %a variables, %a elements, %a commands, %a formats, %a translations",
             nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations)
     else
