@@ -1239,9 +1239,9 @@ implement { name = "lpdf_collectedresources",                             action
 implement { name = "lpdf_addtocatalog",          arguments = two_strings, actions = lpdf.addtocatalog }
 implement { name = "lpdf_addtoinfo",             arguments = two_strings, actions = lpdf.addtoinfo }
 implement { name = "lpdf_addtonames",            arguments = two_strings, actions = lpdf.addtonames }
-implement { name = "lpdf_addpageattributes",     arguments = two_strings, actions = lpdf.addtopageattributes }
-implement { name = "lpdf_addpagesattributes",    arguments = two_strings, actions = lpdf.addtopagesattributes }
-implement { name = "lpdf_addpageresources",      arguments = two_strings, actions = lpdf.addtopageresources }
+implement { name = "lpdf_addtopageattributes",   arguments = two_strings, actions = lpdf.addtopageattributes }
+implement { name = "lpdf_addtopagesattributes",  arguments = two_strings, actions = lpdf.addtopagesattributes }
+implement { name = "lpdf_addtopageresources",    arguments = two_strings, actions = lpdf.addtopageresources }
 implement { name = "lpdf_adddocumentextgstate",  arguments = two_strings, actions = function(a,b) lpdf.adddocumentextgstate (a,lpdfverbose(b)) end }
 implement { name = "lpdf_adddocumentcolorspace", arguments = two_strings, actions = function(a,b) lpdf.adddocumentcolorspace(a,lpdfverbose(b)) end }
 implement { name = "lpdf_adddocumentpattern",    arguments = two_strings, actions = function(a,b) lpdf.adddocumentpattern   (a,lpdfverbose(b)) end }

@@ -34,6 +34,13 @@ local textakebox       = nodes.takebox
 floats                 = floats or { }
 local floats           = floats
 
+local context          = context
+local commands         = commands
+local interfaces       = interfaces
+local showmessage      = interfaces.showmessage
+local implement        = interfaces.implement
+local setmacro         = interfaces.setmacro
+
 local noffloats        = 0
 local last             = nil
 local default          = "text"
@@ -118,12 +125,13 @@ function floats.save(which,data)
             box  = b,
         }
         insert(stack,t)
+-- inspect(stacks)
         setcount("global","savednoffloats",#stacks[default])
         if trace_floats then
             report_floats("%s, category %a, number %a, slot %a, width %p, height %p, depth %p","saving",
                 which,noffloats,#stack,b.width,b.height,b.depth)
         else
-            interfaces.showmessage("floatblocks",2,noffloats)
+            showmessage("floatblocks",2,noffloats)
         end
     else
         report_floats("ignoring empty, category %a, number %a",which,noffloats)
@@ -137,12 +145,13 @@ function floats.resave(which)
         local b = textakebox("floatbox")
         last.box = b
         insert(stack,1,last)
+-- inspect(stacks)
         setcount("global","savednoffloats",#stacks[default])
         if trace_floats then
             report_floats("%s, category %a, number %a, slot %a width %p, height %p, depth %p","resaving",
                 which,noffloats,#stack,b.width,b.height,b.depth)
         else
-            interfaces.showmessage("floatblocks",2,noffloats)
+            showmessage("floatblocks",2,noffloats)
         end
     else
         report_floats("unable to resave float")
@@ -151,15 +160,19 @@ end
 
 function floats.flush(which,n,bylabel)
     which = which or default
+-- inspect(stacks)
     local stack = stacks[which]
     local t, b, n = get(stack,n or 1,bylabel)
     if t then
+        if not b then
+            showmessage("floatblocks",1,t.n)
+        end
         if trace_floats then
             local w, h, d = setdimensions(b) -- ?
             report_floats("%s, category %a, number %a, slot %a width %p, height %p, depth %p","flushing",
                 which,t.n,n,w,h,d)
         else
-            interfaces.showmessage("floatblocks",3,t.n)
+            showmessage("floatblocks",3,t.n)
         end
         texsetbox("floatbox",b)
         last = remove(stack,n)
@@ -175,8 +188,8 @@ function floats.consult(which,n)
     local stack = stacks[which]
     local t, b, n = get(stack,n)
     if t then
+        local w, h, d = setdimensions(b)
         if trace_floats then
-            local w, h, d = setdimensions(b)
             report_floats("%s, category %a, number %a, slot %a width %p, height %p, depth %p","consulting",
                 which,t.n,n,w,h,d)
         end
@@ -276,11 +289,6 @@ function floats.analysemethod(str) -- will become a more extensive parser
 end
 
 -- interface
-
-local context   = context
-local commands  = commands
-local implement = interfaces.implement
-local setmacro  = interfaces.setmacro
 
 implement {
     name      = "flushfloat",

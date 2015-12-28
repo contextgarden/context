@@ -192,6 +192,11 @@
     \global\let\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
 \to \everysetuplayout
 
+\appendtoks
+    \global\let\scrn_canvas_synchronize_simple \scrn_canvas_synchronize_simple_indeed
+    \global\let\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
+\to \everysetuplayouttarget
+
 \def\scrn_canvas_synchronize_simple_indeed
   {\clf_setupcanvas
      paperwidth  \printpaperwidth

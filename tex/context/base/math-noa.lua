@@ -100,13 +100,10 @@ local getchar              = nuts.getchar
 local getfont              = nuts.getfont
 local getattr              = nuts.getattr
 
-local insert_node_after    = nuts.insert_after
-local insert_node_before   = nuts.insert_before
 local free_node            = nuts.free
 local new_node             = nuts.new -- todo: pool: math_noad math_sub
 local copy_node            = nuts.copy
 local slide_nodes          = nuts.slide
-local linked_nodes         = nuts.linked
 local set_visual           = nuts.setvisual
 
 local mlist_to_hlist       = nodes.mlist_to_hlist

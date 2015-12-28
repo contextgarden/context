@@ -1038,15 +1038,6 @@
         \fi}%
    \fi}
 
-\let\preferedcolumn\empty
-\let\preferedrow   \empty
-
-\def\OTRSETsetpreferedcolumnslot#1#2%
-  {\doifsomething{#1}{\edef\preferedcolumn{#1}}%
-   \doifsomething{#2}{\edef\preferedrow   {#2}}}
-
-\OTRSETsetpreferedcolumnslot{\nofcolumns}{1} % default ?
-
 \let\pofcolumns\mofcolumns
 \let\qofcolumns\mofcolumns
 
@@ -1118,8 +1109,8 @@
      {\OTRSETprepareforcolumnslot2}{\OTRSETprepareforcolumnslot1}{#1}% % 1/2 dependent of place, todo
    \OTRSETflushtextsofar
    \OTRSETstoreincolumnslotindeed
-     \pofcolumns \pofcolumns    +\currenthcell
-     \preferedrow\columnmaxcells+\currentvcell{#1}}
+     \pofcolumns \pofcolumns +\currenthcell
+     \floatrow\columnmaxcells+\currentvcell{#1}}
 
 \def\OTRSETstoreincolumnslotFXBT#1% fixed column
   {\OTRSETcheckprefered
@@ -1127,8 +1118,8 @@
      {\OTRSETprepareforcolumnslot2}{\OTRSETprepareforcolumnslot3}{#1}% % 3/2 dependent of place, todo
    \OTRSETflushtextsofar
    \OTRSETstoreincolumnslotindeed
-     \pofcolumns    \pofcolumns +\currenthcell
-     \columnmaxcells\preferedrow-\currentvcell{#1}}
+     \pofcolumns    \pofcolumns+\currenthcell
+     \columnmaxcells\floatrow  -\currentvcell{#1}}
 
 \newconstant\OTRSETforcefixedfloats
 
@@ -1179,10 +1170,10 @@
    \page_set_command_set_vsize}
 
 \def\OTRSETcheckprefered
-  {\ifnum\preferedcolumn<\mofcolumns
+  {\ifnum\floatcolumn<\mofcolumns
      \let\pofcolumns\mofcolumns
    \else
-     \let\pofcolumns\preferedcolumn
+     \let\pofcolumns\floatcolumn
    \fi
    \ifquitincurrentcolumn
      \ifnum\mofcolumns=\nofcolumns

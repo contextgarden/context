@@ -490,6 +490,9 @@ return {
             no = "there is nothing to split",
             ro = "there is nothing to split",
         },
+        ["floatblocks:1"] = {
+            en = "%a is empty",
+        },
         ["floatblocks:2"] = {
             cs = "%a ulozeno",
             de = "%a gespeichert",
