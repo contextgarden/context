@@ -464,7 +464,7 @@
   {\doflushatpar{\strc_registers_register_page_entry{#1}{\c!label=#2,#3}{#4}}}
 
 \def\strc_registers_stop[#1][#2]%
-  {\normalexpanded{\ctxlatelua{structures.registers.extend("#1","#2")}}}
+  {\normalexpanded{\ctxlatecommand{structures.registers.extend("#1","#2")}}}
 
 % So far.
 
