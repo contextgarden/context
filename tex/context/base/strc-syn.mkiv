@@ -274,7 +274,7 @@
   {\begingroup
    \edef\currentsynonym{#2}%
    \edef\currentsynonymtag{#3}%
-   \let\currentsimplelist\currentsimplelist
+   \let\currentsimplelist\currentsynonym
    \ifx\currentsynonymtag\empty
      \edef\currentsynonymtag{#4}%
    \fi

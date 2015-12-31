@@ -118,14 +118,14 @@
 \unexpanded\def\strc_rendering_place_head_text
   {\strc_rendering_start_placement
    \setheadmarking
-   \doresettructureheadnumbercontent
+   \doresetstructureheadnumbercontent
    \ifconditional\c_strc_sectioning_empty
      \setbox\b_strc_rendering_head\hbox \headreferenceattributes to \zeropoint{\strut}%
    \else
      \docheckheadreference
      \setbox\b_strc_rendering_head\hbox \headreferenceattributes
        {\spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
-        \doresettructureheadnumbercontent
+        \doresetstructureheadnumbercontent
         \useheadstyleparameter\c!style
         \setinlineheadreferenceattributes
         \strc_rendering_inject_text}%
@@ -136,8 +136,8 @@
   {\strc_rendering_start_placement
    \setheadmarking
    \doifelsetext\getheadnumber
-     \dosettructureheadnumbercontent
-     \doresettructureheadnumbercontent
+     \dosetstructureheadnumbercontent
+     \doresetstructureheadnumbercontent
    \ifconditional\c_strc_sectioning_empty
      \setbox\b_strc_rendering_head\hbox \headreferenceattributes to \zeropoint{\strut}%
    \else % = needed

@@ -43,6 +43,7 @@ local entry        = Cs((unescaped + (1-separator-newline))^0) -- C 10% faster t
 
 local getfirst     = Ct( entry * (separator * (entry+empty))^0) + newline
 local skipfirst    = (1-newline)^1 * newline
+local skipdashes   = P("-")^1 * newline
 local getfirstline = C((1-newline)^0)
 
 local cache        = { }
@@ -105,7 +106,7 @@ local function splitdata(data) -- todo: hash on first line ... maybe move to cli
             end
         end
         p = Cf(Ct("") * p,rawset) * newline^1
-        p = skipfirst * Ct(p^0)
+        p = skipfirst * (skipdashes^-1) * Ct(p^0) -- mssql has a dashed line between the header and data
         cache[first] = { parser = p, keys = keys }
         local entries = lpegmatch(p,data)
         return entries or { }, keys
@@ -121,9 +122,13 @@ end
 helpers.splitdata = splitdata
 helpers.getdata   = getdata
 
-local function dataprepared(specification)
+local function dataprepared(specification,client)
     local query = preparetemplate(specification)
     if query then
+        local preamble = client.preamble
+        if preamble then
+            query = preamble .. "\n" .. query
+        end
         io.savedata(specification.queryfile,query)
         os.remove(specification.resultfile)
         if trace_queries then
@@ -137,7 +142,8 @@ local function dataprepared(specification)
     end
 end
 
-local function datafetched(specification,runner)
+local function datafetched(specification,client)
+    local runner   = client.runner
     local command = replacetemplate(runner,specification)
     if trace_sql then
         local t = osclock()
@@ -191,11 +197,11 @@ local function execute(specification)
         report_state("error in specification")
         return
     end
-    if not dataprepared(specification) then
+    if not dataprepared(specification,methods.client) then
         report_state("error in preparation")
         return
     end
-    if not datafetched(specification,methods.client.runner) then
+    if not datafetched(specification,methods.client) then
         report_state("error in fetching, query: %s",string.collapsespaces(io.loaddata(specification.queryfile)))
         return
     end
@@ -249,6 +255,7 @@ local celltemplate = "cells[%s]"
 
 methods.client = {
     runner       = [[mysql --batch --user="%username%" --password="%password%" --host="%host%" --port=%port% --database="%database%" --default-character-set=utf8 < "%queryfile%" > "%resultfile%"]],
+    preamble     = "",
     execute      = execute,
     usesfiles    = true,
     wraptemplate = wraptemplate,
