@@ -92,10 +92,8 @@
      \def#3{#5#4}%
      \def#5##1##2% ##1=language
        {\ifcsname\??label\currentlabelcategory#1:##1:##2\endcsname
-         %\csname\??label\currentlabelcategory#1:##1:##2\endcsname
           \lastnamedcs
         \else\ifcsname\??label#1:##1:##2\endcsname
-         %\csname\??label#1:##1:##2\endcsname
           \lastnamedcs
       % \else\ifcsname\??language#4\s!default\endcsname
       %   \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
@@ -103,16 +101,12 @@
          %\expandafter#5\csname\??language##1\s!default\endcsname{##2}%
           \expandafter#5\lastnamedcs{##2}%
         \else\ifcsname\??label\currentlabelcategory#1:##2\endcsname
-         %\csname\??label\currentlabelcategory#1:##2\endcsname
           \lastnamedcs
         \else\ifcsname\??label#1:##2\endcsname
-         %\csname\??label#1:##2\endcsname
           \lastnamedcs
         \else\ifcsname\??label\currentlabelcategory#1:\s!en:##2\endcsname
-         %\csname\??label\currentlabelcategory#1:\s!en:##2\endcsname
           \lastnamedcs
         \else\ifcsname\??label#1:\s!en:##2\endcsname
-         %\csname\??label#1:\s!en:##2\endcsname
           \lastnamedcs
         \else
           ##2%
@@ -324,10 +318,8 @@
 \def\lang_translate[#1]%
   {\getparameters[\??translation][#1]%
    \ifcsname\??translation\currentlanguage\endcsname
-    %\csname\??translation\currentlanguage\endcsname
      \lastnamedcs
    \else\ifcsname\??translation\s!en\endcsname
-    %\csname\??translation\s!en\endcsname
      \lastnamedcs
    \else
      [translation #1]%

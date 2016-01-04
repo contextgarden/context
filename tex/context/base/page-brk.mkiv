@@ -58,13 +58,10 @@
 \def\page_breaks_handle_step#1%
   {\edef\page_breaks_current_option{#1}% can be used in handler
    \ifcsname\??pagebreakmethod\page_breaks_current_option\endcsname
-    %\csname\??pagebreakmethod\page_breaks_current_option\endcsname
      \lastnamedcs
    \else\ifcsname\??pagebreaks\page_breaks_current_option\endcsname
-    %\expandafter\page_breaks_handle\csname\??pagebreaks\page_breaks_current_option\endcsname
      \expandafter\page_breaks_handle\lastnamedcs
    \else
-    %\csname\??pagebreakmethod\s!unknown\endcsname
      \page_breaks_unknown
    \fi\fi}
 
@@ -284,7 +281,6 @@
 \def\page_breaks_columns_handle_step#1%
   {\edef\page_breaks_columns_current_option{#1}%
    \ifcsname\??columnbreakmethod\currentoutputroutine:\page_breaks_columns_current_option\endcsname
-    %\csname\??columnbreakmethod\currentoutputroutine:\page_breaks_columns_current_option\endcsname
      \lastnamedcs
    \else\ifcsname\??columnbreaks\page_breaks_columns_current_option\endcsname
     %\expandafter\csname\page_breaks_columns_handle\??columnbreaks\page_breaks_columns_current_option\endcsname

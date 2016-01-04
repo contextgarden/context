@@ -388,7 +388,6 @@
         \let\itemgroupfirst\!!plusone
      \fi
      \ifcsname\??itemgroupkeyword\itemgroupsecond\endcsname
-      %\csname\??itemgroupkeyword\itemgroupsecond\endcsname
        \lastnamedcs
      \else
        \strc_itemgroups_set_symbol\itemgroupconstantvalue
@@ -483,7 +482,6 @@
 
 \def\strc_itemgroups_preset_stage_one_indeed#option%
   {\ifcsname\??itemgroupfirst#option\endcsname
-    %\csname\??itemgroupfirst#option\endcsname
      \lastnamedcs
    \fi}
 
@@ -1431,7 +1429,6 @@
    \ifx\m_strc_itemgroups_text_distance\empty
      %
    \else\ifcsname\??itemgroupdistance\m_strc_itemgroups_text_distance\endcsname
-    %\csname\??itemgroupdistance\m_strc_itemgroups_text_distance\endcsname
      \lastnamedcs
    \else
      \strc_itemgroups_set_text_item_distance_indeed
@@ -1546,7 +1543,6 @@
      \advance\c_strc_itemgroups_collected_current\plusone
    \fi
    \ifcsname\??itemgroupstack\number\c_strc_itemgroups_collected_current\endcsname
-    %\csname\??itemgroupstack\number\c_strc_itemgroups_collected_current\endcsname
      \lastnamedcs
      \letbeundefined{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
      \advance\c_strc_itemgroups_collected_done\plusone

@@ -132,7 +132,7 @@
 \definemathfence [angle]       [\c!left="27E8,\c!right="27E9]
 \definemathfence [doubleangle] [\c!left="27EA,\c!right="27EB]
 \definemathfence [solidus]     [\c!left="2044,\c!right="2044]
-\definemathfence [ceil]        [\c!left="2308,\c!right="2309]
+\definemathfence [ceiling]     [\c!left="2308,\c!right="2309]
 \definemathfence [floor]       [\c!left="230A,\c!right="230B]
 \definemathfence [moustache]   [\c!left="23B0,\c!right="23B1]
 \definemathfence [uppercorner] [\c!left="231C,\c!right="231D]
@@ -153,7 +153,7 @@
 \definemathfence [mirroredangle]       [mirrored] [\c!right="27E8,\c!left="27E9]
 \definemathfence [mirroreddoubleangle] [mirrored] [\c!right="27EA,\c!left="27EB]
 \definemathfence [mirroredsolidus]     [mirrored] [\c!right="2044,\c!left="2044]
-\definemathfence [mirroredceil]        [mirrored] [\c!right="2308,\c!left="2309]
+\definemathfence [mirroredceiling]     [mirrored] [\c!right="2308,\c!left="2309]
 \definemathfence [mirroredfloor]       [mirrored] [\c!right="230A,\c!left="230B]
 \definemathfence [mirroredmoustache]   [mirrored] [\c!right="23B0,\c!left="23B1]
 \definemathfence [mirroreduppercorner] [mirrored] [\c!right="231C,\c!left="231D]
@@ -165,7 +165,7 @@
 
 %D A bonus:
 
-\unexpanded\def\Lparent              {\math_fenced_fenced_start{parenthesis}}          \unexpanded\def\Rparent              {\math_fenced_fenced_stop {parenthesis}}
+\unexpanded\def\Lparenthesis         {\math_fenced_fenced_start{parenthesis}}          \unexpanded\def\Rparenthesis         {\math_fenced_fenced_stop {parenthesis}}
 \unexpanded\def\Lbracket             {\math_fenced_fenced_start{bracket}}              \unexpanded\def\Rbracket             {\math_fenced_fenced_stop {bracket}}
 \unexpanded\def\Lbrace               {\math_fenced_fenced_start{brace}}                \unexpanded\def\Rbrace               {\math_fenced_fenced_stop {brace}}
 \unexpanded\def\Langle               {\math_fenced_fenced_start{angle}}                \unexpanded\def\Rangle               {\math_fenced_fenced_stop {angle}}
@@ -175,7 +175,7 @@
 \unexpanded\def\Ltriplebar           {\math_fenced_fenced_start{triplebar}}            \unexpanded\def\Rtriplebar           {\math_fenced_fenced_stop {triplebar}}
 \unexpanded\def\Lsolidus             {\math_fenced_fenced_start{solidus}}              \unexpanded\def\Rsolidus             {\math_fenced_fenced_stop {solidus}}
 \unexpanded\def\Lfloor               {\math_fenced_fenced_start{floor}}                \unexpanded\def\Rfloor               {\math_fenced_fenced_stop {floor}}
-\unexpanded\def\Lceil                {\math_fenced_fenced_start{ceil}}                 \unexpanded\def\Rceil                {\math_fenced_fenced_stop {ceil}}
+\unexpanded\def\Lceiling             {\math_fenced_fenced_start{ceiling}}              \unexpanded\def\Rceiling             {\math_fenced_fenced_stop {ceiling}}
 \unexpanded\def\Lmoustache           {\math_fenced_fenced_start{moustache}}            \unexpanded\def\Rmoustache           {\math_fenced_fenced_stop {moustache}}
 \unexpanded\def\Luppercorner         {\math_fenced_fenced_start{uppercorner}}          \unexpanded\def\Ruppercorner         {\math_fenced_fenced_stop {uppercorner}}
 \unexpanded\def\Llowercorner         {\math_fenced_fenced_start{lowercorner}}          \unexpanded\def\Rlowercorner         {\math_fenced_fenced_stop {lowercorner}}
@@ -183,7 +183,7 @@
 \unexpanded\def\Lopenbracket         {\math_fenced_fenced_start{openbracket}}          \unexpanded\def\Ropenbracket         {\math_fenced_fenced_stop {openbracket}}
 \unexpanded\def\Lnothing             {\math_fenced_fenced_start{nothing}}              \unexpanded\def\Rnothing             {\math_fenced_fenced_stop {nothing}}
 
-\unexpanded\def\Lparentmirrored      {\math_fenced_fenced_stop {mirroredparenthesis}}  \unexpanded\def\Rparentmirrored      {\math_fenced_fenced_start{mirroredparenthesis}}
+\unexpanded\def\Lparenthesismirrored {\math_fenced_fenced_stop {mirroredparenthesis}}  \unexpanded\def\Rparenthesismirrored {\math_fenced_fenced_start{mirroredparenthesis}}
 \unexpanded\def\Lbracketmirrored     {\math_fenced_fenced_stop {mirroredbracket}}      \unexpanded\def\Rbracketmirrored     {\math_fenced_fenced_start{mirroredbracket}}
 \unexpanded\def\Lbracemirrored       {\math_fenced_fenced_stop {mirroredbrace}}        \unexpanded\def\Rbracemirrored       {\math_fenced_fenced_start{mirroredbrace}}
 \unexpanded\def\Langlemirrored       {\math_fenced_fenced_stop {mirroredangle}}        \unexpanded\def\Ranglemirrored       {\math_fenced_fenced_start{mirroredangle}}
@@ -193,7 +193,7 @@
 \unexpanded\def\Ltriplebarmirrored   {\math_fenced_fenced_stop {mirroredtriplebar}}    \unexpanded\def\Rtriplebarmirrored   {\math_fenced_fenced_start{mirroredtriplebar}}
 \unexpanded\def\Lsolidusmirrored     {\math_fenced_fenced_stop {mirroredsolidus}}      \unexpanded\def\Rsolidusmirrored     {\math_fenced_fenced_start{mirroredsolidus}}
 \unexpanded\def\Lfloormirrored       {\math_fenced_fenced_stop {mirroredfloor}}        \unexpanded\def\Rfloormirrored       {\math_fenced_fenced_start{mirroredfloor}}
-\unexpanded\def\Lceilmirrored        {\math_fenced_fenced_stop {mirroredceil}}         \unexpanded\def\Rceilmirrored        {\math_fenced_fenced_start{mirroredceil}}
+\unexpanded\def\Lceilingmirrored     {\math_fenced_fenced_stop {mirroredceiling}}      \unexpanded\def\Rceilingmirrored     {\math_fenced_fenced_start{mirroredceiling}}
 \unexpanded\def\Lmoustachemirrored   {\math_fenced_fenced_stop {mirroredmoustache}}    \unexpanded\def\Rmoustachemirrored   {\math_fenced_fenced_start{mirroredmoustache}}
 \unexpanded\def\Luppercornermirrored {\math_fenced_fenced_stop {mirroreduppercorner}}  \unexpanded\def\Ruppercornermirrored {\math_fenced_fenced_start{mirroreduppercorner}}
 \unexpanded\def\Llowercornermirrored {\math_fenced_fenced_stop {mirroredlowercorner}}  \unexpanded\def\Rlowercornermirrored {\math_fenced_fenced_start{mirroredlowercorner}}
@@ -336,7 +336,7 @@
 \installmathfencepair [ \Lbracket            ] \Rbracket
 \installmathfencepair ] \Rbracketmirrored    [ \Lbracketmirrored
 
-\installmathfencepair ( \Lparent             ) \Rparent
+\installmathfencepair ( \Lparenthesis        ) \Rparenthesis
 \installmathfencepair ) \Rparentmirrored     ( \Lparentmirrored
 
 \installmathfencepair < \Langle              > \Rangle
@@ -350,8 +350,8 @@
 
 \installmathfencepair ⌊ \Lfloor              ⌋ \Rfloor
 \installmathfencepair ⌋ \Rfloormirrored      ⌊ \Lfloormirrored
-\installmathfencepair ⌈ \Lceil               ⌉ \Rceil
-\installmathfencepair ⌉ \Rceilmirrored       ⌈ \Lceilmirrored
+\installmathfencepair ⌈ \Lceiling            ⌉ \Rceiling
+\installmathfencepair ⌉ \Rceilingmirrored    ⌈ \Lceilingmirrored
 
 \installmathfencepair ⟨ \Langle              ⟩ \Rangle
 \installmathfencepair ⟩ \Ranglemirrored      ⟨ \Langlemirrored
@@ -372,46 +372,72 @@
     \ignorediscretionaries % so $\mtext{a|b}$ works, this is ok because it's an \hbox
 \to \everymathematics
 
-% todo paren parent
+% We unofficial support some synonyms as we need them for some fuzzy web related math.
 
-\let\lbrack\lbracket
-\let\rbrack\rbracket
+% The names in char-def.lua (historic mess):
 
-\installmathfencepair \lbrace     \Lbrace       \rbrace     \Rbrace
-\installmathfencepair \lbracket   \Lbracket     \rbracket   \Rbracket
-\installmathfencepair \lparen     \Lparen       \rparen     \Rparen
-\installmathfencepair \lparent    \Lparent      \rparent    \Rparent
-\installmathfencepair \langle     \Langle       \rangle     \Rangle
-\installmathfencepair \lrangle    \Ldoubleangle \rrangle    \Rdoubleangle
-\installmathfencepair \lbar       \Lbar         \rbar       \Rbar
-\installmathfencepair \lVert      \Ldoublebar   \rVert      \Rdoublebar
-\installmathfencepair \vert       \Lbar         \vert       \Rbar
-\installmathfencepair \solidus    \Lsolidus     \solidus    \Rsolidus
-\installmathfencepair \lfloor     \Lfloor       \rfloor     \Rfloor
-\installmathfencepair \lceil      \Lceil        \rceil      \Rceil
+\let\lbrack      \lbracket
+\let\rbrack      \rbracket
+\let\lceiling    \lceil
+\let\rceiling    \rceil
+\let\lparenthesis\lparent
+\let\rparenthesis\rparent
+\let\lparen      \lparent
+\let\rparen      \rparent
 
-\installmathfencepair \ulcorner   \Luppercorner \urcorner   \Ruppercorner
-\installmathfencepair \llcorner   \Llowercorner \lrcorner   \Rlowercorner
-\installmathfencepair \lmoustache \Lmoustache   \rmoustache \Rmoustache
-\installmathfencepair \llbracket  \Lopenbracket \lrbracket  \Ropenbracket
-\installmathfencepair \lgroup     \Lgroup       \rgroup     \Rgroup
+% Just defined:
+
+\let\Lceil  \Lceiling
+\let\Rceil  \Rceiling
+\let\Lparent\Lparenthesis
+\let\Rparent\Rparenthesis
+\let\Lparen \Lparenthesis
+\let\Rparen \Rparenthesis
+
+\installmathfencepair \lbrace       \Lbrace       \rbrace       \Rbrace
+\installmathfencepair \lbracket     \Lbracket     \rbracket     \Rbracket
+\installmathfencepair \lbrack       \Lbracket     \rbracket     \Rbracket
+\installmathfencepair \lparenthesis \Lparenthesis \rparenthesis \Rparenthesis
+\installmathfencepair \lparent      \Lparenthesis \rparent      \Rparenthesis
+\installmathfencepair \lparen       \Lparenthesis \rparen       \Rparenthesis
+\installmathfencepair \langle       \Langle       \rangle       \Rangle
+\installmathfencepair \llangle      \Ldoubleangle \rrangle      \Rdoubleangle
+%installmathfencepair \lbar         \Lbar         \rbar         \Rbar
+\installmathfencepair \lVert        \Ldoublebar   \rVert        \Rdoublebar
+\installmathfencepair \vert         \Lbar         \vert         \Rbar
+\installmathfencepair \solidus      \Lsolidus     \solidus      \Rsolidus
+\installmathfencepair \lfloor       \Lfloor       \rfloor       \Rfloor
+\installmathfencepair \lceiling     \Lceiling     \rceiling     \Rceiling
+\installmathfencepair \lceil        \Lceiling     \rceil        \Rceiling
+
+\installmathfencepair \ulcorner     \Luppercorner \urcorner     \Ruppercorner
+\installmathfencepair \llcorner     \Llowercorner \lrcorner     \Rlowercorner
+\installmathfencepair \lmoustache   \Lmoustache   \rmoustache   \Rmoustache
+\installmathfencepair \llbracket    \Lopenbracket \rrbracket    \Ropenbracket
+\installmathfencepair \lgroup       \Lgroup       \rgroup       \Rgroup
+
+\let\textlbar\lbar \let\mathlbar\Lbar
+\let\textrbar\lbar \let\mathrbar\Rbar
+
+\unexpanded\def\lbar{\mathortext\mathlbar\textlbar}
+\unexpanded\def\rbar{\mathortext\mathrbar\textrbar}
 
 % \setupmathfences[color=darkgreen]
 
-\unexpanded\def\{{\mathortext\lbrace  \letterleftbrace   } % or maybe a chardef
-\unexpanded\def\}{\mathortext\rbrace  \letterrightbrace  } % or maybe a chardef
-\unexpanded\def\[{\mathortext\lbracket\letterleftbracket } % or maybe a chardef
-\unexpanded\def\]{\mathortext\rbracket\letterrightbracket} % or maybe a chardef
-\unexpanded\def\({\mathortext\lparent \letterleftparent  } % or maybe a chardef
-\unexpanded\def\){\mathortext\rparent \letterrightparent } % or maybe a chardef
-\unexpanded\def\|{\mathortext\vert    \letterbar         } % or maybe a chardef
-%unexpanded\def\/{\mathortext\solidus \letterslash       } % or maybe a chardef
+\unexpanded\def\{{\mathortext\lbrace      \letterleftbrace       } % or maybe a chardef
+\unexpanded\def\}{\mathortext\rbrace      \letterrightbrace      } % or maybe a chardef
+\unexpanded\def\[{\mathortext\lbracket    \letterleftbracket     } % or maybe a chardef
+\unexpanded\def\]{\mathortext\rbracket    \letterrightbracket    } % or maybe a chardef
+\unexpanded\def\({\mathortext\lparenthesis\letterleftparenthesis } % or maybe a chardef
+\unexpanded\def\){\mathortext\rparenthesis\letterrightparenthesis} % or maybe a chardef
+\unexpanded\def\|{\mathortext\vert        \letterbar             } % or maybe a chardef
+%unexpanded\def\/{\mathortext\solidus     \letterslash           } % or maybe a chardef
 
-\installmathfencepair \{ \Lbrace   \} \Rbrace
-\installmathfencepair \[ \Lbracket \] \Rbracket
-\installmathfencepair \( \Lparent  \) \Rparent
-\installmathfencepair \< \Langle   \> \Rangle
-\installmathfencepair \| \Lbar     \| \Rbar
+\installmathfencepair \{ \Lbrace        \} \Rbrace
+\installmathfencepair \[ \Lbracket      \] \Rbracket
+\installmathfencepair \( \Lparenthesis  \) \Rparenthesis
+\installmathfencepair \< \Langle        \> \Rangle
+\installmathfencepair \| \Lbar          \| \Rbar
 
 %D As we have overloaded \type {\left} and \type {\right} we also need a more
 %D clever version of the following:

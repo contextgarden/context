@@ -1247,3 +1247,27 @@ implement { name = "x_table_set_reflow_height",         actions = xtables.set_re
 implement { name = "x_table_set_construct",             actions = xtables.set_construct }
 implement { name = "x_table_r",                         actions = function() context(data.currentrow    or 0) end }
 implement { name = "x_table_c",                         actions = function() context(data.currentcolumn or 0) end }
+
+-- experiment:
+
+do
+
+    local context         = context
+
+    local startxtable     = context.startxtable
+    local stopxtable      = context.stopxtable
+
+    local startcollecting = context.startcollecting
+    local stopcollecting  = context.stopcollecting
+
+    function context.startxtable(...)
+        startcollecting()
+        startxtable(...)
+    end
+
+    function context.stopxtable()
+        stopxtable()
+        stopcollecting()
+    end
+
+end

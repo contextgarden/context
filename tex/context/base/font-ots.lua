@@ -2632,7 +2632,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                         local chainlookup = chainlookups[1] -- should be i when they can be different
                         if not chainlookup then
                             -- we just advance
-                            i = i + 1
+                            i = i + 1 -- shouldn't that be #current
                         else
                             local chainkind = chainlookup.type
                             local chainproc = chainprocs[chainkind]

@@ -304,7 +304,7 @@
   {\setgvalue{\??layoutarranger#1}}
 
 \def\checkinstalledpagearrangement#1% can be empty: aaa,,bbb
-  {\executeifdefined{\??layoutarranger#1}\donothing}
+  {\begincsname\??layoutarranger#1\endcsname}
 
 \let\poparrangedpages\relax
 \let\pusharrangedpage\relax

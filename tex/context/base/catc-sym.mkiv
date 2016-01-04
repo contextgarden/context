@@ -11,12 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% we now have loaded syst-* so we have all @@catcode constants
-
-%D We want to have access to the raw alternatives of the
-%D special characters. We use a \type {\xdef} instead of
-%D \type {\let} because we need an expandable token in a
-%D \type {\write}.
+%D We want to have access to the raw alternatives of the special characters. We
+%D use a \type {\xdef} instead of \type {\let} because we need an expandable token
+%D in a \type {\write}.
 
 \bgroup
 
@@ -24,32 +21,37 @@
 \catcode`E=\endgroupcatcode
 \catcode`.=\escapecatcode
 
-.catcode `.{ 12 .xdef .letteropenbrace       B.string{E
-.catcode `.} 12 .xdef .letterclosebrace      B.string}E
-.catcode `.& 12 .xdef .letterampersand       B.string&E
-.catcode `.< 12 .xdef .letterless            B.string<E
-.catcode `.> 12 .xdef .lettermore            B.string>E
-.catcode `.# 12 .xdef .letterhash            B.string#E
-.catcode `." 12 .xdef .letterdoublequote     B.string"E
-.catcode `.' 12 .xdef .lettersinglequote     B.string'E
-.catcode `.$ 12 .xdef .letterdollar          B.string$E
-.catcode `.% 12 .xdef .letterpercent         B.string%E
-.catcode `.^ 12 .xdef .letterhat             B.string^E
-.catcode `._ 12 .xdef .letterunderscore      B.string_E
-.catcode `.| 12 .xdef .letterbar             B.string|E
-.catcode `.~ 12 .xdef .lettertilde           B.string~E
-.catcode `.\ 12 .xdef .letterbackslash       B.string\E
-.catcode `./ 12 .xdef .letterslash           B.string/E
-.catcode `.? 12 .xdef .letterquestionmark    B.string?E
-.catcode `.! 12 .xdef .letterexclamationmark B.string!E
-.catcode `.@ 12 .xdef .letterat              B.string@E
-.catcode `.: 12 .xdef .lettercolon           B.string:E
+.catcode `.{ 12 .xdef .letterleftbrace        B.string{E
+.catcode `.} 12 .xdef .letterrightbrace       B.string}E
+.catcode `.& 12 .xdef .letterampersand        B.string&E
+.catcode `.< 12 .xdef .letterless             B.string<E
+.catcode `.> 12 .xdef .lettermore             B.string>E
+.catcode `.# 12 .xdef .letterhash             B.string#E
+.catcode `." 12 .xdef .letterdoublequote      B.string"E
+.catcode `.' 12 .xdef .lettersinglequote      B.string'E
+.catcode `.$ 12 .xdef .letterdollar           B.string$E
+.catcode `.% 12 .xdef .letterpercent          B.string%E
+.catcode `.^ 12 .xdef .letterhat              B.string^E
+.catcode `._ 12 .xdef .letterunderscore       B.string_E
+.catcode `.| 12 .xdef .letterbar              B.string|E
+.catcode `.~ 12 .xdef .lettertilde            B.string~E
+.catcode `.\ 12 .xdef .letterbackslash        B.string\E
+.catcode `./ 12 .xdef .letterslash            B.string/E
+.catcode `.? 12 .xdef .letterquestionmark     B.string?E
+.catcode `.! 12 .xdef .letterexclamationmark  B.string!E
+.catcode `.@ 12 .xdef .letterat               B.string@E
+.catcode `.: 12 .xdef .lettercolon            B.string:E
+
+.catcode `.( 12 .xdef .letterleftparenthesis  B.string(E
+.catcode `.) 12 .xdef .letterrightparenthesis B.string)E
+.catcode `.[ 12 .xdef .letterleftbracket      B.string[E
+.catcode `.] 12 .xdef .letterrightbracket     B.string]E
 
          .global .let .letterescape     .letterbackslash
-         .global .let .letterbgroup     .letteropenbrace
-         .global .let .letteregroup     .letterclosebrace
-         .global .let .letterleftbrace  .letteropenbrace
-         .global .let .letterrightbrace .letterclosebrace
+         .global .let .letterbgroup     .letterleftbrace
+         .global .let .letteregroup     .letterrightbrace
+         .global .let .letteropenbrace  .letterleftbrace
+         .global .let .letterclosebrace .letterrightbrace
 
 .egroup
 

@@ -2361,11 +2361,9 @@
     \edef\mmlovercommand {\utfmathcommandabove\mmlovertoken}
     \edef\mmlbasecommand {\mmlovercommand\mmlundercommand}
     \ifcsname\mmlbasecommand\endcsname
-       %\csname\mmlbasecommand\endcsname{\mmlfencedfirst{#1}}
         \lastnamedcs {\mmlfencedfirst{#1}}
     \else\ifcsname\mmlundercommand\endcsname
         \ifcsname\mmlovercommand\endcsname
-           %\csname\mmlovercommand\endcsname{\csname\mmlundercommand\endcsname{\mmlfencedfirst{#1}}}
             \lastnamedcs {\csname\mmlundercommand\endcsname{\mmlfencedfirst{#1}}}
         \else
             \mmldoubletriplet {\csname\mmlundercommand\endcsname{\mmlfencedfirst{#1}}} {\mmlfencedthird{#1}\mmlfencedthird{#1}} {}
@@ -2380,7 +2378,6 @@
     \edef\mmlundercommand{\utfmathcommandbelow\mmlundertoken}
     \edef\mmlbasecommand {\mmlundercommand text}
     \ifcsname\mmlbasecommand\endcsname
-       %\csname\mmlbasecommand\endcsname {\mmlfencedfirst{#1}} {\mmlfencedthird{#1}}
         \lastnamedcs {\mmlfencedfirst{#1}} {\mmlfencedthird{#1}}
     \else\ifcsname\mmlundercommand\endcsname
         \mmldoubletriplet {\csname\mmlundercommand\endcsname{\mmlfencedfirst{#1}}} {\mmlfencedthird{#1}} {}
@@ -2392,7 +2389,6 @@
     \edef\mmlovercommand{\utfmathcommandabove\mmlovertoken}
     \edef\mmlbasecommand{\mmlovercommand text}
     \ifcsname\mmlbasecommand\endcsname
-       %\csname\mmlbasecommand\endcsname {\mmlfencedfirst{#1}} {\mmlfencedsecond{#1}}
         \lastnamedcs {\mmlfencedfirst{#1}} {\mmlfencedsecond{#1}}
     \else\ifcsname\mmlovercommand\endcsname
         \mmldoubletriplet {\csname\mmlovercommand\endcsname{\mmlfencedfirst{#1}}} {} {\mmlfencedsecond{#1}}

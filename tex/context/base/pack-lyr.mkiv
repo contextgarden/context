@@ -209,12 +209,6 @@
   {\edef\currentlayerwidth {\thelayerwidth {#2#1}}%
    \edef\currentlayerheight{\thelayerheight{#2#1}}}
 
-% \def\thelayerwidth #1{\the\wd\executeifdefined{\??layerbox#1}\emptybox}
-% \def\thelayerheight#1{\the\ht\executeifdefined{\??layerbox#1}\emptybox}
-
-%def\thelayerwidth #1{\the\ifcsname\??layerbox#1\endcsname\wd\csname\??layerbox#1\endcsname\else\zeropoint\fi}
-%def\thelayerheight#1{\the\ifcsname\??layerbox#1\endcsname\ht\csname\??layerbox#1\endcsname\else\zeropoint\fi}
-
 \def\thelayerwidth #1{\the\ifcsname\??layerbox#1\endcsname\wd\lastnamedcs\else\zeropoint\fi}
 \def\thelayerheight#1{\the\ifcsname\??layerbox#1\endcsname\ht\lastnamedcs\else\zeropoint\fi}
 
@@ -326,7 +320,6 @@
    \edef\p_pack_layers_preset   {\layerparameter\c!preset  }%
    %
    \ifcsname\??layerpreset\p_pack_layers_preset\endcsname
-    %\csname\??layerpreset\p_pack_layers_preset\endcsname
      \lastnamedcs
      \setupcurrentlayer[#1]% postroll
    \fi
@@ -570,7 +563,6 @@
    \offinterlineskip
    \edef\p_pack_layers_preset{\layerparameter\c!preset}%
    \ifcsname\??layerpreset\p_pack_layers_preset\endcsname
-    %\csname\??layerpreset\p_pack_layers_preset\endcsname
      \lastnamedcs
    \fi
    \edef\p_pack_layers_method{\layerparameter\c!method}%

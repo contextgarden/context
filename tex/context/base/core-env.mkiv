@@ -504,6 +504,24 @@
      \expandafter\firstofoneargument
    \fi}
 
+% maybe some day:
+%
+% \unexpanded\def\fastsetupfallback#1#2%
+%   {\ifcsname\??setup:#1\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \csname\??setup:#2\expandafter\endcsname
+%    \fi}
+%
+% or
+%
+% \unexpanded\def\fastsetupfallback#1#2#3% prefix preferred fallback
+%   {\ifcsname\??setup:#1#2\endcsname
+%      \expandafter\lastnamedcs
+%    \else
+%      \csname\??setup:#1#3\expandafter\endcsname
+%    \fi}
+
 % \startluasetups oeps
 %     context("DONE")
 %     a = 1

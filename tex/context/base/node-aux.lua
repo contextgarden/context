@@ -520,7 +520,7 @@ end
 
 nuts.locate = locate
 
-nodes.locate = function(start,wantedid,wantedsubtype)
+function nodes.locate(start,wantedid,wantedsubtype)
     local found = locate(tonut(start),wantedid,wantedsubtype)
     return found and tonode(found)
 end
@@ -543,4 +543,3 @@ end
 --         return 0
 --     end
 -- end
-

@@ -132,7 +132,6 @@
 
 \def\spac_linespacing_setup_relative_interlinespace#1%
   {\ifcsname\??interlinespacerelative#1\endcsname
-    %\csname\??interlinespacerelative#1\endcsname
      \lastnamedcs
    \else
      \spac_linespacing_set_specified_relative_interlinespace{#1}%
@@ -371,7 +370,6 @@
 
 \def\spac_whitespace_setup % quick test for no list
   {\ifcsname\??whitespacemethod\v_spac_whitespace_current\endcsname
-    %\csname\??whitespacemethod\v_spac_whitespace_current\endcsname
      \lastnamedcs
    \else
      \expandafter\processcommalist\expandafter[\v_spac_whitespace_current]\spac_whitespace_setup_method % can be raw
@@ -424,7 +422,6 @@
 
 \def\spac_whitespace_setup_method#1%
   {\ifcsname\??whitespacemethod#1\endcsname
-    %\csname\??whitespacemethod#1\endcsname
      \lastnamedcs
    \else
      \s_spac_whitespace_parskip#1\fi
@@ -1066,7 +1063,6 @@
 \def\spac_struts_setup[#1]%
   {\edef\m_strut{#1}%
    \ifcsname\??struts\m_strut\endcsname
-    %\csname\??struts\m_strut\endcsname % these are defined later
      \lastnamedcs
    \else
      \setcharstrut\m_strut
@@ -1075,7 +1071,6 @@
 \unexpanded\def\synchronizestrut#1% no [] parsing, faster for internal
   {\edef\m_strut{#1}%
    \ifcsname\??struts\m_strut\endcsname
-    %\csname\??struts\m_strut\endcsname
      \lastnamedcs
    \else
      \setcharstrut\m_strut
@@ -1083,7 +1078,6 @@
 
 \unexpanded\def\dosynchronizestrut#1% no [] parsing, faster for internal
   {\ifcsname\??struts#1\endcsname
-    %\csname\??struts#1\endcsname
      \lastnamedcs
    \else
      \setcharstrut{#1}%
@@ -1467,12 +1461,10 @@
 
 \def\spac_grids_snap_value_set#1%
   {%\gridsnappingtrue
-  %\ifcsname\??gridsnappers#1\endcsname\csname\??gridsnappers#1\endcsname\fi}
    \begincsname\??gridsnappers#1\endcsname}
 
 \def\spac_grids_snap_value_auto#1%
   {\ifcsname\??gridsnappers#1\endcsname
-    %\csname\??gridsnappers#1\endcsname
      \lastnamedcs
    \else
      \installsnapvalues\s!dummy{#1}%

@@ -113,13 +113,13 @@
   {\textdir TRT\relax
    \setfalse\inlinelefttoright}
 
-\def\currentdirectionparameters
-  {\ifconditional\inlinelefttoright \else
-      idir="r2l",
-   \fi
-   \ifconditional\displaylefttoright \else
-      ddir="r2l",
-   \fi}
+% \def\currentdirectionparameters
+%   {\ifconditional\inlinelefttoright \else
+%       idir {r2l}%
+%    \fi
+%    \ifconditional\displaylefttoright \else
+%       ddir {r2l}%
+%    \fi}
 
 \unexpanded\def\synchronizelayoutdirection
   {\ifconditional\layoutlefttoright
@@ -514,7 +514,6 @@
    \c_spac_align_state_direction \zerocount % what is default ?
    \c_spac_align_state_page      \zerocount
    \ifcsname\??aligncommand\m_spac_align_asked\endcsname
-    %\csname\??aligncommand\m_spac_align_asked\endcsname % not much gain in new method
      \lastnamedcs
    \else
      \rawprocesscommacommand[\m_spac_align_asked]\spac_align_collect
@@ -754,14 +753,12 @@
 
 \def\spac_align_set_ragged_vbox#1%
   {\ifcsname\??alignvertical#1\endcsname
-    %\csname\??alignvertical#1\endcsname
      \lastnamedcs
      \quitcommalist
    \fi}
 
 \def\spac_align_set_ragged_hbox#1%
   {\ifcsname\??alignhorizontal#1\endcsname
-    %\csname\??alignhorizontal#1\endcsname
      \lastnamedcs
      \quitcommalist
    \fi}

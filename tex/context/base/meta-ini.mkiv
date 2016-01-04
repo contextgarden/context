@@ -1142,9 +1142,9 @@
   {\defconvertedargument\ascii{#2}%
    \dodoglobal\letvalue{\??mptext#1}\ascii}
 
-\def\MPtext  #1{\executeifdefined{\??mptext#1}\empty}
-\def\MPstring#1{"\executeifdefined{\??mptext#1}\empty"}
-\def\MPbetex #1{btex \executeifdefined{\??mptext#1}\empty\space etex}
+\def\MPtext  #1{\begincsname\??mptext#1\endcsname\empty}
+\def\MPstring#1{"\begincsname\??mptext#1\endcsname\empty"}
+\def\MPbetex #1{btex \begincsname\??mptext#1\endcsname\space etex}
 
 %D In order to communicate conveniently with the \TEX\
 %D engine, we introduce some typesetting variables.
@@ -1209,7 +1209,7 @@
 
 \appendtoks
     \disablediscretionaries
-    \disablecompoundcharacters
+   %\disablecompoundcharacters
 \to \everyMPgraphic
 
 % \appendtoks % before color, inefficient, replace by low level copy

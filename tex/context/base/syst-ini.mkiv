@@ -298,30 +298,12 @@
 %D strings instead of tokens that take more memory. It's a trick to trick to force
 %D strings. This macro is never used in \CONTEXT.
 
-\normalprotected\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
+%normalprotected\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
+\normalprotected\def\newhelp#1#2{\newtoks#1#1\expandafter{\detokenize{#2}}}
 
-%D For the moment:
-
-% for the moment (till 0.82)
-
-\ifdefined\outputmode                 \else \let\outputmode                 \pdfoutput           \fi
-
-\ifdefined\pagewidth                  \else \let\pagewidth                  \pdfpagewidth        \let\normalpagewidth                  \pdfpagewidth                \fi
-\ifdefined\pageheight                 \else \let\pageheight                 \pdfpageheight       \let\normalpageheight                 \pdfpageheight               \fi
-
-\ifdefined\adjustspacing              \else \let\adjustspacing              \pdfadjustspacing    \let\normaladjustspacing              \adjustspacing               \fi
-\ifdefined\protrudechars              \else \let\protrudechars              \pdfprotrudechars    \let\normalprotrudechars              \protrudechars               \fi
-
-\ifdefined\saveboxresource            \else \let\saveboxresource            \pdfxform            \let\normalsaveboxresource            \saveboxresource             \fi
-\ifdefined\lastsavedboxresourceindex  \else \let\lastsavedboxresourceindex  \pdflastxform        \let\normallastsavedboxresourceindex  \lastsavedboxresourceindex   \fi
-\ifdefined\useboxresource             \else \let\useboxresource             \pdfrefxform         \let\normaluseboxresource             \useboxresource              \fi
-
-\ifdefined\saveimageresource          \else \let\saveimageresource          \pdfximage           \let\normalsaveimageresource          \saveimageresource           \fi
-\ifdefined\lastsavedimageresourceindex\else \let\lastsavedimageresourceindex\pdflastximage       \let\normallastsavedimageresourceindex\lastsavedimageresourceindex \fi
-\ifdefined\lastsavedimageresourcepages\else \let\lastsavedimageresourcepages\pdflastximagepages  \let\normallastsavedimageresourcepages\lastsavedimageresourcepages \fi
-\ifdefined\useimageresource           \else \let\useimageresource           \pdfrefximage        \let\normaluseimageresource           \useimageresource            \fi
-
-% for the moment, this will move to the backend module
+% For the moment we define some \pdf... helpers but this will move to the backend
+% module after which the official interfaces have to be used. This is needed for
+% modules not made by ctx developers.
 
 \ifdefined\pdfextension
 
@@ -352,32 +334,35 @@
 
 \fi
 
-\ifdefined\pdfextension
+\ifdefined\pdffeedback
 
-    \def\pdftexversion             {\numexpr\pdffeedback version}
-    \def\pdftexrevision                    {\pdffeedback revision}
-    \def\pdflastlink               {\numexpr\pdffeedback lastlink}
-    \def\pdfretval                 {\numexpr\pdffeedback retval}
-    \def\pdflastobj                {\numexpr\pdffeedback lastobj}
-    \def\pdflastannot              {\numexpr\pdffeedback lastannot}
-    \def\pdfxformname              {\numexpr\pdffeedback xformname}
-    \def\pdfcreationdate                   {\pdffeedback creationdate}
-    \def\pdffontname               {\numexpr\pdffeedback fontname}
-    \def\pdffontobjnum             {\numexpr\pdffeedback fontobjnum}
-    \def\pdffontsize               {\dimexpr\pdffeedback fontsize}
-    \def\pdfpageref                {\numexpr\pdffeedback pageref}
-    \def\pdfcolorstackinit                 {\pdffeedback colorstackinit}
+    \def\pdftexversion     {\numexpr\pdffeedback version}
+    \def\pdftexrevision            {\pdffeedback revision}
+    \def\pdflastlink       {\numexpr\pdffeedback lastlink}
+    \def\pdfretval         {\numexpr\pdffeedback retval}
+    \def\pdflastobj        {\numexpr\pdffeedback lastobj}
+    \def\pdflastannot      {\numexpr\pdffeedback lastannot}
+    \def\pdfxformname      {\numexpr\pdffeedback xformname}
+    \def\pdfcreationdate           {\pdffeedback creationdate}
+    \def\pdffontname       {\numexpr\pdffeedback fontname}
+    \def\pdffontobjnum     {\numexpr\pdffeedback fontobjnum}
+    \def\pdffontsize       {\dimexpr\pdffeedback fontsize}
+    \def\pdfpageref        {\numexpr\pdffeedback pageref}
+    \def\pdfcolorstackinit         {\pdffeedback colorstackinit}
 
 \fi
 
 \ifdefined\pdfxform \else
-    \let \pdfxform            \saveboxresource
-    \let \pdflastxform        \lastsavedboxresourceindex
-    \let \pdfrefxform         \useboxresource
-    \let \pdfximage           \saveimageresource
-    \let \pdflastximage       \lastsavedimageresourceindex
-    \let \pdflastximagepages  \lastsavedimageresourcepages
-    \let \pdfrefximage        \useimageresource
+    \let\pdfxform           \saveboxresource
+    \let\pdflastxform       \lastsavedboxresourceindex
+    \let\pdfrefxform        \useboxresource
+    \let\pdfximage          \saveimageresource
+    \let\pdflastximage      \lastsavedimageresourceindex
+    \let\pdflastximagepages \lastsavedimageresourcepages
+    \let\pdfrefximage       \useimageresource
+    \let\pdfsavepos         \savepos
+    \let\pdflastxpos        \lastxpos
+    \let\pdflastypos        \lastypos
 \fi
 
 \ifdefined\pdfvariable

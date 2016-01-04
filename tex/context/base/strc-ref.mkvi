@@ -2130,13 +2130,10 @@
 
 \def\referencestructureprefixparameter#kind#name#category#parameter%
   {\ifcsname\??referencingprefix#name:#category#parameter\endcsname
-    %\csname\??referencingprefix#name:#category#parameter\endcsname
      \lastnamedcs
    \else\ifcsname\??referencingprefix#kind:#category#parameter\endcsname
-    %\csname     \??referencingprefix#kind:#category#parameter\endcsname
      \lastnamedcs
    \else\ifcsname\??referencingprefix:#category#parameter\endcsname
-    %\csname     \??referencingprefix:#category#parameter\endcsname
      \lastnamedcs
    \fi\fi\fi}
 

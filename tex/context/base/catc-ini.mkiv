@@ -18,10 +18,10 @@
 
 \unprotect
 
-%D A long standing wish has been the availability of catcode
-%D arrays. Because traditional \TEX\ does not provide this we
-%D implement a fake method in the \MKII\ file. There is some
-%D overlap in code with \MKII\ but we take that for granted.
+%D A long standing wish has been the availability of catcode arrays. Because
+%D traditional \TEX\ does not provide this we implement a fake method in the
+%D \MKII\ file. There is some overlap in code with \MKII\ but we take that
+%D for granted. Also, in \MKIV\ less active characters are used.
 
 \setnewconstant\escapecatcode             0
 \setnewconstant\begingroupcatcode         1
@@ -82,7 +82,7 @@
 
 % rather special and used in writing to file: \let\par\outputnewlinechar
 
-\def\initializenewlinechar % operating system dependent
+\normalprotected\def\initializenewlinechar % operating system dependent
   {\begingroup
    \newlinechar\newlineasciicode
    \xdef\outputnewlinechar{^^J}%
@@ -163,16 +163,15 @@
 %    \catcodetable\scratchcounter
 %    \egroup}
 
-%D The next command can be defined in a cleaner way in the
-%D Mk IV file but we want to have a fast one with a minimal
-%D chance for interference. Do we still need this complex
-%D mechanism? Future versions of \MKIV\ might only use
+%D The next command can be defined in a cleaner way in the MkIV way but we want
+%D to have a fast one with a minimal chance for interference. Do we still need
+%D this complex mechanism? Probably not. Future versions of \MKIV\ might only use
 %D active characters for very special cases.
 
 \setnewconstant\c_syst_catcodes_hack\tildeasciicode
 
-%D Once a catcode is assigned, the next assignments will happen
-%D faster.
+%D Once a catcode is assigned, the next assignments will happen faster. However,
+%D redefinitions probably happen seldom so it's sort of overkill.
 
 \def\letcatcodecommand{\afterassignment\syst_catcodes_let_a\c_syst_catcodes_a}
 \def\defcatcodecommand{\afterassignment\syst_catcodes_def_a\c_syst_catcodes_a}
@@ -184,7 +183,6 @@
 
 \def\syst_catcodes_let_b % each time
   {\ifcsname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
-    %\csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\syst_catcodes_let_c
@@ -192,7 +190,6 @@
 
 \def\syst_catcodes_def_b % each time
   {\ifcsname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
-    %\csname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\syst_catcodes_def_c
@@ -200,7 +197,6 @@
 
 \def\syst_catcodes_ued_b % each time
   {\ifcsname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
-    %\csname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\syst_catcodes_ued_c
@@ -211,7 +207,6 @@
      {\expandafter\let\csname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}%
    \syst_catcodes_reinstate_unexpanded
    \csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
-
 
 \def\syst_catcodes_def_c % only first time (we could use \normalexpanded here)
   {\expandafter\gdef\csname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
@@ -229,18 +224,33 @@
 
 \def\reinstatecatcodecommand{\afterassignment\syst_catcodes_reinstate_normal\c_syst_catcodes_b}
 
-\def\syst_catcodes_reinstate_normal % can be used when a direct definition has been done
-  {\begingroup                        % and the selector has been lost
-   \uccode\c_syst_catcodes_hack\c_syst_catcodes_b
-   \catcode\uccode\c_syst_catcodes_hack\activecatcode
-   \uppercase{\xdef~{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}}%
+% \def\syst_catcodes_reinstate_normal % can be used when a direct definition has been done
+%   {\begingroup                      % and the selector has been lost
+%    \uccode\c_syst_catcodes_hack\c_syst_catcodes_b
+%    \catcode\uccode\c_syst_catcodes_hack\activecatcode
+%    \uppercase{\xdef~{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}}%
+%    \endgroup}
+
+% \def\syst_catcodes_reinstate_unexpanded % can be used when a direct definition has been done
+%   {\begingroup                          % and the selector has been lost
+%    \uccode\c_syst_catcodes_hack\c_syst_catcodes_b
+%    \catcode\uccode\c_syst_catcodes_hack\activecatcode
+%    \uppercase{\normalprotected\xdef~{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}}%
+%    \endgroup}
+
+%D This can be used when a direct definition has been done and the selector has been
+%D lost.
+
+\def\syst_catcodes_reinstate_normal
+  {\begingroup
+   \edef\next{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+   \global\letcharcode\c_syst_catcodes_b\next
    \endgroup}
 
-\def\syst_catcodes_reinstate_unexpanded % can be used when a direct definition has been done
-  {\begingroup                            % and the selector has been lost
-   \uccode\c_syst_catcodes_hack\c_syst_catcodes_b
-   \catcode\uccode\c_syst_catcodes_hack\activecatcode
-   \uppercase{\normalprotected\xdef~{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}}%
+\def\syst_catcodes_reinstate_unexpanded
+  {\begingroup
+   \normalprotected\edef\next{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+   \global\letcharcode\c_syst_catcodes_b\next
    \endgroup}
 
 \newconstant\defaultcatcodetable
@@ -255,15 +265,14 @@
 %D \macros
 %D   {restorecatcodes,pushcatcodetable,popcatcodetable}
 %D
-%D We're not finished dealing \CATCODES\ yet. In \CONTEXT\ we
-%D use only one auxiliary file, which deals with tables of
-%D contents, registers, two pass tracking, references etc. This
-%D file, as well as files concerning graphics, is processed when
-%D needed, which can be in the mid of typesetting verbatim.
-%D However, when reading in data in verbatim mode, we should
-%D temporary restore the normal \CATCODES, and that's exactly
-%D what the next macros do. Saving the catcodes can be
-%D disabled by saying \type{\localcatcodestrue}.
+%D We're not finished dealing \CATCODES\ yet. In \CONTEXT\ we use only one auxiliary
+%D file, which deals with tables of contents, registers, two pass tracking, references
+%D etc. This file, as well as files concerning graphics, is processed when needed,
+%D which can be in the mid of typesetting verbatim. However, when reading in data in
+%D verbatim mode, we should temporary restore the normal \CATCODES, and that's exactly
+%D what the next macros do. Saving the catcodes can be disabled by saying \type
+%D {\localcatcodestrue}. In \MKIV\ instead we can push and pop catcode tables and as
+%D we keep track of used tables users seldom need to deal with this themselves.
 
 \newcount\c_syst_catcodes_level
 

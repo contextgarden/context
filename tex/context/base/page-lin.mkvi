@@ -94,7 +94,6 @@
 \def\page_lines_setup
   {\ifcsname \??linenumberinginstance\currentlinenumbering\endcsname
      \clf_setuplinenumbering
-      %\csname\??linenumberinginstance\currentlinenumbering\endcsname
        \lastnamedcs
        {%
             continue {\ifnum\c_page_lines_mode=\zerocount\v!yes\else\v!no\fi}%
@@ -379,7 +378,7 @@
         \fi
      \fi
      %
-     \executeifdefined{\??linenumberinghandler\p_location}\relax
+     \begincsname\??linenumberinghandler\p_location\endcsname
    \fi
    \egroup}
 

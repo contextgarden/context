@@ -281,7 +281,6 @@
 
 \def\syst_boxes_smash_process_option#1%
   {\ifx#1\relax\else
-    %\csname\??smashoptions#1\endcsname\csname\??smashoptions#1\endcsname\fi
      \begincsname\??smashoptions#1\endcsname
      \expandafter\syst_boxes_smash_process_option
    \fi}
@@ -2882,6 +2881,10 @@
 
 \let\getnaturaldimensions\clf_getnaturaldimensions % sets three dimensions
 \let\naturalwd           \clf_naturalwd            % calculates and returns wd
+
+\unexpanded\def\doifelserighttoleftinbox{\clf_doifelserighttoleftinbox}
+
+\let\doifrighttoleftinboxelse\doifelserighttoleftinbox
 
 \protect \endinput
 

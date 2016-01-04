@@ -256,19 +256,6 @@
    \strc_constructions_finalize
    \normalexpanded{\endgroup\noteparameter\c!next}}
 
-% \unexpanded\def\strc_notations_start#tag#stoptag%
-%   {\begingroup
-%    \edef\currentnote{#tag}%
-%    \strc_constructions_initialize{#tag}%
-%    \strc_notes_synchronize
-%    \ifnotesenabled
-%      \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
-%    \fi
-%    \normalexpanded % not that efficient but also not that frequently used (\normaldef for parser)
-%      {\normaldef\noexpand\strc_pickup_yes[##1]##2\csname\e!stop#stoptag\endcsname{\strc_notations_command_yes[##1]{##2}}%
-%       \normaldef\noexpand\strc_pickup_nop     ##1\csname\e!stop#stoptag\endcsname{\strc_notations_command_nop     {##1}}}%
-%    \doifnextoptionalcselse\strc_pickup_yes\strc_pickup_nop}
-
 \unexpanded\def\strc_notations_start#tag#stoptag%
   {\begingroup
    \edef\currentnote{#tag}%
@@ -461,13 +448,11 @@
          \global\settrue\postponednote
        \else\ifconditional\inlocalnotes % todo: per note class
          \global\settrue\postponednote
+       \else\ifconditional\c_strc_notes_delayed
+         % probably end notes
        \else
-\ifconditional\c_strc_notes_delayed
-    % probably end notes
-\else
          \handlenoteinsert\currentnote\currentnotenumber % either an insert or just delayed
-\fi
-       \fi\fi
+       \fi\fi\fi
        \endgroup
      \fi
    \fi
@@ -674,7 +659,7 @@
      \strc_notes_inject_separator
    \fi
    \nobreak
-   \hbox to .5\emwidth{}%
+   \hpack to .5\emwidth{}%
    \globallet\lastnotesymbol\relax}
 
 \unexpanded\def\strc_notes_inject_separator % patch by WS due to request on list
@@ -816,8 +801,8 @@
 \installcorenamespace{notepenalty}
 \installcorenamespace{noterule}
 
-\def\currentnoterulecommand{\csname\??notecommand\currentnote\endcsname}
-\def\currentnoterulealign  {\csname\??notealign  \currentnote\endcsname}
+\def\currentnoterulecommand{\begincsname\??notecommand\currentnote\endcsname}
+\def\currentnoterulealign  {\begincsname\??notealign  \currentnote\endcsname}
 
 \def\currentnoterulecommandcommand{\noteparameter\c!rulecommand}
 \def\currentnoterulecommandnormal {\normalnoterule} % no let as it can be changed afterwards
@@ -833,18 +818,25 @@
 
 \def\strc_notes_set_rule
   {\letcurrentnoterulecommand\relax % so we default to nothing
+   \letcurrentnoterulealign  \relax
    \processcommacommand[\noteparameter\c!rule]\strc_notes_set_rule_step}
 
 \def\strc_notes_set_rule_step#alternative%
-  {\csname\??noterule\ifcsname\??noterule#alternative\endcsname#alternative\else\s!unknown\fi\endcsname}
+  {\begincsname\??noterule#alternative\endcsname}
 
-\setvalue{\??noterule\v!command}{\letcurrentnoterulecommand\currentnoterulecommandcommand}
-\setvalue{\??noterule     \v!on}{\letcurrentnoterulecommand\currentnoterulecommandnormal}
-\setvalue{\??noterule \v!normal}{\letcurrentnoterulecommand\currentnoterulecommandnormal}
-\setvalue{\??noterule   \v!left}{\letcurrentnoterulealign  \lefttoright}
-\setvalue{\??noterule  \v!right}{\letcurrentnoterulealign  \righttoleft}
-\setvalue{\??noterule    \v!off}{\letcurrentnoterulecommand\relax}
-%setvalue{\??noterule\s!unknown}{\letcurrentnoterulecommand\currentnoterulecommandunknown} % obsolete
+\def\strc_notes_set_rule_autodir
+  {\doifelserighttoleftinbox\currentnoteinsertionnumber\righttoleft\lefttoright}
+
+\setvalue{\??noterule  \v!command}{\letcurrentnoterulecommand\currentnoterulecommandcommand}
+\setvalue{\??noterule       \v!on}{\letcurrentnoterulecommand\currentnoterulecommandnormal}
+\setvalue{\??noterule   \v!normal}{\letcurrentnoterulecommand\currentnoterulecommandnormal}
+\setvalue{\??noterule     \v!left}{\letcurrentnoterulecommand\currentnoterulecommandnormal
+                                   \letcurrentnoterulealign  \lefttoright}
+\setvalue{\??noterule    \v!right}{\letcurrentnoterulecommand\currentnoterulecommandnormal
+                                   \letcurrentnoterulealign  \righttoleft}
+\setvalue{\??noterule\v!paragraph}{\letcurrentnoterulecommand\currentnoterulecommandnormal
+                                   \letcurrentnoterulealign  \strc_notes_set_rule_autodir}
+\setvalue{\??noterule      \v!off}{\letcurrentnoterulecommand\relax}
 
 \appendtoks
     \strc_notes_set_rule
@@ -852,7 +844,7 @@
 
 \def\currentnotepenalty
   {\ifcsname\??notepenalty\noteparameter\c!split\endcsname
-     \csname\??notepenalty\noteparameter\c!split\endcsname
+     \lastnamedcs
    \else
      \numexpr\noteparameter\c!split\relax
    \fi}
@@ -1301,11 +1293,7 @@
        \whitespace
        \noteparameter\c!before
      \fi
-      %        \bgroup
-      %        \usealignparameter\noteparameter
-     \placenoterule  % alleen in ..mode
-      %        \par
-      %        \egroup
+     \placenoterule
      \bgroup
      \strc_notes_set_bodyfont
      \setbox\scratchbox\hbox
@@ -1319,12 +1307,12 @@
            \c!strut=\v!no,
            \c!offset=\v!overlay]%
         \inheritednoteframed
-          {\ifdim\dp\scratchbox=\zeropoint         % this hack is needed because \vadjust
-             \hbox{\lower\strutdp\box\scratchbox}% % in margin number placement
-           \else                                   % hides the (always) present depth
+          {\ifdim\dp\scratchbox=\zeropoint          % this hack is needed because \vadjust
+             \hpack{\lower\strutdp\box\scratchbox}% % in margin number placement
+           \else                                    % hides the (always) present depth
              \box\scratchbox
            \fi}}%
-     \setbox\scratchbox\hbox{\lower\strutdepth\box\scratchbox}%
+     \setbox\scratchbox\hpack{\lower\strutdepth\box\scratchbox}%
      \dp\scratchbox\strutdepth % so we know that it has the note bodyfont depth
      \ifvmode
        \nointerlineskip % else sometimes empty line

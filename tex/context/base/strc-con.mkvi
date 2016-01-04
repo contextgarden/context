@@ -493,7 +493,7 @@
         \advance\ifx#1\v!flushleft\rightskip\else\leftskip\fi\constructionsheaddistance % only difference and wrong anyway
       \fi
       \flushconstructionheadbox}%
-   \setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
+   \setbox\constructionheadbox\hpack{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
    \ht\constructionheadbox\strutht
    \dp\constructionheadbox\strutdp}
 
@@ -508,7 +508,7 @@
         \setupalign[\p_strc_constructions_headalign]% use fast one
       \fi
       \flushconstructionheadbox}%
-   \setbox\constructionheadbox\hbox{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
+   \setbox\constructionheadbox\hpack{\box\constructionheadbox}% needed in case of e.g. a real big head font, see descriptions-006.tex
    \ht\constructionheadbox\strutht
    \dp\constructionheadbox\strutdp}
 
@@ -568,9 +568,10 @@
     \leftskip\dimexpr\leftconstructionskip+\constructionsheadwidth+\constructionsheaddistance\relax
     \rightskip\rightconstructionskip\relax
     \llap {
-        \hbox to \leftskip {
+        \hpack to \leftskip {
             \hskip\leftconstructionskip
-            \copy\constructionheadbox\hss
+            \box\constructionheadbox % was copy
+            \hss
         }
     }
     \nobreak
@@ -617,8 +618,8 @@
     \noindent
     \strc_constructions_set_pure_box\v!flushleft
     \llap {
-        \hbox to \constructionsheadwidth {
-            \copy\constructionheadbox
+        \hpack to \constructionsheadwidth {
+            \box\constructionheadbox % was copy
             \hss
         }
         \hskip\constructionsheaddistance
@@ -633,8 +634,9 @@
     \strc_constructions_set_pure_box\v!flushright
     \rlap {
         \hskip\constructionsheaddistance
-        \hbox to \constructionsheadwidth {
-            \copy\constructionheadbox\hss
+        \hpack to \constructionsheadwidth {
+            \box\constructionheadbox % was copy
+            \hss
         }
     }
     \useconstructionstyleandcolor\c!style\c!color
@@ -649,7 +651,7 @@
     \strc_constructions_set_hang\v!left
     \noindent
     \llap {
-        \vtop to \zeropoint {
+        \tpack to \zeropoint {
             \box\constructionheadbox
         }
     }
@@ -666,9 +668,9 @@
     \strc_constructions_set_hang\v!right
     \noindent
     \rlap {
-        \hbox to \dimexpr\hsize-\leftskip-\rightskip\relax {
+        \hpack to \dimexpr\hsize-\leftskip-\rightskip\relax {
             \hss
-            \vtop to \zeropoint {
+            \tpack to \zeropoint {
                 \box\constructionheadbox
             }
         }
@@ -956,7 +958,6 @@
             name     {\currentconstructionmain}
           % level    structures.sections.currentlevel()
             catcodes \catcodetable
-         %  \currentdirectionparameters
         }
         references {
             internal  \nextinternalreference

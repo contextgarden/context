@@ -283,7 +283,6 @@
    \uselayoutelementstyleandcolor#style#color%
    \csname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
    \ifcsname\??layouttextspecial\m_page_layouts_element_content\endcsname
-    %\csname\??layouttextspecial\m_page_layouts_element_content\endcsname
      \lastnamedcs
    \else
      \edef\currentlayoutelementwidth{\layoutelementparameter#width}%
@@ -357,7 +356,6 @@
 
 \unexpanded\def\page_layouts_place_text_line#vertical%
   {\page_layouts_set_element_status#vertical\relax
-  %\csname\??layouttextsline\ifcsname\??layouttextsline\textlinestatus\endcsname\textlinestatus\else\s!unknown\fi\endcsname#vertical}
    \ifcsname\??layouttextsline\textlinestatus\endcsname
      \expandafter\lastnamedcs
    \else

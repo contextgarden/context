@@ -33,6 +33,7 @@ local report_lists      = logs.reporter("structure","lists")
 local context           = context
 local commands          = commands
 local implement         = interfaces.implement
+local conditionals      = tex.conditionals
 
 local structures        = structures
 local lists             = structures.lists
@@ -219,6 +220,14 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
     if not metadata.level then
         metadata.level = structures.sections.currentlevel() -- this is not used so it will go away
     end
+    --
+ -- if not conditionals.inlinelefttoright then
+ --     metadata.idir = "r2l"
+ -- end
+ -- if not conditionals.displaylefttoright then
+ --     metadata.ddir = "r2l"
+ -- end
+    --
     if numberdata then
         local numbers = numberdata.numbers
         if type(numbers) == "string" then
@@ -247,18 +256,20 @@ function lists.addto(t) -- maybe more more here (saves parsing at the tex end)
         r.section = structures.sections.currentid()
     end
     local i = r and r.internal or 0 -- brrr
-if r and kind and name then
-    local tag = tags.getid(kind,name)
-    if tag and tag ~= "?" then
-        r.tag = tag -- todo: use internal ... is unique enough
+    if r and kind and name then
+        local tag = tags.getid(kind,name)
+        if tag and tag ~= "?" then
+            r.tag = tag -- todo: use internal ... is unique enough
+        end
     end
-end
     local p = pushed[i]
     if not p then
         p = #cached + 1
         cached[p] = helpers.simplify(t)
         pushed[i] = p
-        r.listindex = p
+        if r then
+            r.listindex = p
+        end
     end
     if group then
         groupindices[name][group] = p

@@ -122,7 +122,6 @@
 %   {\ifcsname\??indentingpreset#1\endcsname
 %      \spac_indentation_apply_step_two_nested{#1}%
 %    \else\ifcsname\??indentingmethod#1\endcsname
-%     %\csname\??indentingmethod#1\endcsname
 %      \lastnamedcs
 %    \else
 %      % case one
@@ -149,7 +148,6 @@
   {\ifcsname\??indentingpreset#1\endcsname
      \spac_indentation_apply_step_two_nested
    \else\ifcsname\??indentingmethod#1\endcsname
-    %\csname\??indentingmethod#1\endcsname
      \lastnamedcs
    \else
      % case one
@@ -303,13 +301,11 @@
 \installcorenamespace{indentnext}
 
 \unexpanded\def\checknextindentation[#1]%
- %{\csname\??indentnext\ifcsname\??indentnext#1\endcsname#1\fi\endcsname}
   {\begincsname\??indentnext#1\endcsname}
 
 \unexpanded\def\useindentnextparameter#1% new, the more efficient variant
   {\edef\p_indentnext{#1\c!indentnext}%
    \ifx\p_indentnext\empty\else
-    %\csname\??indentnext\ifcsname\??indentnext\p_indentnext\endcsname\p_indentnext\fi\endcsname
      \begincsname\??indentnext\p_indentnext\endcsname
    \fi}
 
@@ -638,7 +634,6 @@
 
 \unexpanded\def\spac_narrower_method_analyze#1%
   {\ifcsname\??narrowermethod#1\endcsname
-    %\csname\??narrowermethod#1\endcsname
      \lastnamedcs
    \else
      \global\advance\s_spac_narrower_mid#1\relax

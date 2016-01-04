@@ -1661,7 +1661,6 @@
   {\ifcsname\??fontdefinitions\s!default:#style\endcsname
      \edef\m_font_asked_body{#body}%
      \edef\m_font_asked_style{#style}%
-    %\csname\??fontdefinitions\s!default:#style\endcsname % {#body}{#style}%
      \lastnamedcs
      \settrue\c_font_defining_state
    \fi}
@@ -1700,7 +1699,6 @@
 
 \unexpanded\def\font_basics_switch_style#style%
   {\ifcsname\??fontstyle#style\endcsname
-    %\csname\??fontstyle#style\endcsname
      \lastnamedcs
      \edef\fontstyle{#style}%
      \ifmmode\mr\fi % in order to be compatible with \rm in math mode

@@ -195,9 +195,6 @@
    \scratchcounter\expandafter`\detokenize{#1}%
    \expandafter\uedcatcodecommand\expandafter\ctxcatcodes\expandafter\scratchcounter\csname\??discretionaryboth\detokenize{#1}\endcsname}
 
-%unexpanded\def\handlemathmodediscretionary#1{\executeifdefined{\??discretionarymath\detokenize{#1}}\donothing}
-%unexpanded\def\handletextmodediscretionary#1{\executeifdefined{\??discretionarytext\detokenize{#1}}\donothing}
-
 \unexpanded\def\handlemathmodediscretionary#1{\ifcsname\??discretionarymath\detokenize{#1}\endcsname\lastnamedcs}
 \unexpanded\def\handletextmodediscretionary#1{\ifcsname\??discretionarytext\detokenize{#1}\endcsname\lastnamedcs}
 
@@ -276,7 +273,6 @@
    \ifx\discretionarytoken\empty
      \ifx#1\nextnext % takes care of ||| and +++ and ......
        \ifcsname\??discretionaryaction\string#1\endcsname
-        %\csname\??discretionaryaction\string#1\endcsname
          \lastnamedcs
        \else\ifconditional\spaceafterdiscretionary
          \prewordbreak\hbox{\string#1}\relax
@@ -292,7 +288,6 @@
        % \prewordbreak\hbox{\textmodediscretionary\nextnext}\allowbreak\postwordbreak
        % but an hbox blocks a possible \discretionary
        \ifcsname\??discretionaryaction\endcsname
-        %\csname\??discretionaryaction\endcsname
          \lastnamedcs
        \else\ifconditional\spaceafterdiscretionary
          \prewordbreak\textmodediscretionary\relax
@@ -304,7 +299,6 @@
      %  \prewordbreak\textmodediscretionary\nextnext\allowbreak\postwordbreak
      \fi
    \else\ifcsname\??discretionaryaction\discretionarytoken\endcsname
-    %\csname\??discretionaryaction\discretionarytoken\endcsname
      \lastnamedcs
    \else
      \lang_discretionaries_check_before
@@ -485,192 +479,175 @@
      \discretionary{-}{}{}%
    \fi\fi\fi}
 
-%D \macros
-%D   {installcompoundcharacter}
-%D
-%D When Tobias Burnus started translating the dutch manual of \PPCHTEX\ into german,
-%D he suggested to let \CONTEXT\ support the \type{german.sty} method of handling
-%D compound characters, especially the umlaut. This package is meant for use with
-%D \PLAIN\ \TEX\ as well as \LATEX.
-%D
-%D I decided to implement compound character support as versatile as possible. As a
-%D result one can define his own compound character support, like:
-%D
-%D \starttyping
-%D \installcompoundcharacter "a {\"a}
-%D \installcompoundcharacter "e {\"e}
-%D \installcompoundcharacter "i {\"i}
-%D \installcompoundcharacter "u {\"u}
-%D \installcompoundcharacter "o {\"o}
-%D \installcompoundcharacter "s {\SS}
-%D \stoptyping
-%D
-%D or even
-%D
-%D \starttyping
-%D \installcompoundcharacter "ck {\discretionary {k-}{k}{ck}}
-%D \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
-%D \stoptyping
-%D
-%D The support is not limited to alphabetic characters, so the next definition is
-%D also valid.
-%D
-%D \starttyping
-%D \installcompoundcharacter ". {.\doifnextcharelse{\spacetoken}{}{\kern.125em}}
-%D \stoptyping
-%D
-%D The implementation looks familiar and uses the same tricks as mentioned earlier
-%D in this module. We take care of two arguments, which complicates things a bit.
+% As this is rather mkii-ish we keep the mkiv definition around for educational
+% purposes but consider this feature obsolete in post mkii versions.
 
-\installcorenamespace{compoundnormal}
-\installcorenamespace{compoundsingle}
-\installcorenamespace{compoundmultiple}
-\installcorenamespace{compounddefinition}
+% %D \macros
+% %D   {installcompoundcharacter}
+% %D
+% %D When Tobias Burnus started translating the dutch manual of \PPCHTEX\ into german,
+% %D he suggested to let \CONTEXT\ support the \type{german.sty} method of handling
+% %D compound characters, especially the umlaut. This package is meant for use with
+% %D \PLAIN\ \TEX\ as well as \LATEX.
+% %D
+% %D I decided to implement compound character support as versatile as possible. As a
+% %D result one can define his own compound character support, like:
+% %D
+% %D \starttyping
+% %D \installcompoundcharacter "a {\"a}
+% %D \installcompoundcharacter "e {\"e}
+% %D \installcompoundcharacter "i {\"i}
+% %D \installcompoundcharacter "u {\"u}
+% %D \installcompoundcharacter "o {\"o}
+% %D \installcompoundcharacter "s {\SS}
+% %D \stoptyping
+% %D
+% %D or even
+% %D
+% %D \starttyping
+% %D \installcompoundcharacter "ck {\discretionary {k-}{k}{ck}}
+% %D \installcompoundcharacter "ff {\discretionary{ff-}{f}{ff}}
+% %D \stoptyping
+% %D
+% %D The support is not limited to alphabetic characters, so the next definition is
+% %D also valid.
+% %D
+% %D \starttyping
+% %D \installcompoundcharacter ". {.\doifnextcharelse{\spacetoken}{}{\kern.125em}}
+% %D \stoptyping
+% %D
+% %D The implementation looks familiar and uses the same tricks as mentioned earlier
+% %D in this module. We take care of two arguments, which complicates things a bit.
+%
+% \installcorenamespace{compoundnormal}
+% \installcorenamespace{compoundsingle}
+% \installcorenamespace{compoundmultiple}
+% \installcorenamespace{compounddefinition}
+%
+% %D When I started working on \MKIV\ code, we needed a different approach for
+% %D defining the active character itself. In \MKII\ as well as in \MKIV\ we now use
+% %D the catcode vectors.
+%
+% \setnewconstant\compoundcharactermode\plusone
+%
+% \newcount\c_lang_compounds_character
+%
+% \def\installcompoundcharacter #1#2#3 #4% {#4} no grouping
+%   {\ifcase\compoundcharactermode
+%       % ignore mode
+%    \else
+%      \chardef\c_lang_compounds_character`#1%
+%      \expandafter\chardef\csname\??compoundnormal\string#1\endcsname\c_lang_compounds_character
+%      \def\!!stringa{#3}%
+%      \expandafter\def\csname\ifx\!!stringa\empty\??compoundsingle\else\??compoundmultiple\fi\detokenize{#1#2#3}\endcsname{#4}%
+%      \setevalue{\??compounddefinition\detokenize{#1}}{\noexpand\lang_compounds_handle_character{\detokenize{#1}}}% beter nr's
+%      \expandafter\letcatcodecommand\expandafter\ctxcatcodes\expandafter\c_lang_compounds_character\csname\??compounddefinition\detokenize{#1}\endcsname
+%    \fi}
+%
+% %D We can also ignore definitions (needed in for instance \XML). Beware, this macro
+% %D is supposed to be used grouped!
+%
+% \def\ignorecompoundcharacter
+%   {\compoundcharactermode\zerocount}
 
-%D When I started working on \MKIV\ code, we needed a different approach for
-%D defining the active character itself. In \MKII\ as well as in \MKIV\ we now use
-%D the catcode vectors.
+\let\ignorecompoundcharacter\relax
 
-\setnewconstant\compoundcharactermode\plusone
-
-\newcount\c_lang_compounds_character
-
-\def\installcompoundcharacter #1#2#3 #4% {#4} no grouping
-  {\ifcase\compoundcharactermode
-      % ignore mode
-   \else
-     \chardef\c_lang_compounds_character`#1%
-     \expandafter\chardef\csname\??compoundnormal\string#1\endcsname\c_lang_compounds_character
-     \def\!!stringa{#3}%
-     \expandafter\def\csname\ifx\!!stringa\empty\??compoundsingle\else\??compoundmultiple\fi\detokenize{#1#2#3}\endcsname{#4}%
-     \setevalue{\??compounddefinition\detokenize{#1}}{\noexpand\lang_compounds_handle_character{\detokenize{#1}}}% beter nr's
-     \expandafter\letcatcodecommand\expandafter\ctxcatcodes\expandafter\c_lang_compounds_character\csname\??compounddefinition\detokenize{#1}\endcsname
-   \fi}
-
-%D We can also ignore definitions (needed in for instance \XML). Beware, this macro
-%D is supposed to be used grouped!
-
-\def\ignorecompoundcharacter
-  {\compoundcharactermode\zerocount}
-
-%D In handling the compound characters we have to take care of \type {\bgroup} and
-%D \type {\egroup} tokens, so we end up with a multi||step interpretation macro. We
-%D look ahead for a \type {\bgroup}, \type {\egroup} or \type {\blankspace}. Being
-%D no user of this mechanism, the credits for testing them goes to Tobias Burnus,
-%D the first german user of \CONTEXT.
-%D
-%D We need to look into the future with \type{\futurelet} to prevent spaces from
-%D disappearing.
-
-\def\lang_compounds_handle_character#1%
-  {\def\lang_compounds_handle_character_finish{\lang_compounds_handle_character_finish_indeed{#1}}%
-   \futurelet\nexttoken\xhandlecompoundcharacter}
-
-\def\lang_compounds_handle_character_finish_indeed
-  {\ifx\nexttoken\bgroup
-    %\expandafter\lang_compounds_handle_character_pickup % handle "{ee} -> \"ee
-    %\expandafter\gobbleoneargument                          % forget "{ee} -> ee
-     \expandafter\lang_compounds_handle_character_one    % ignore "{ee} -> "ee
-   \else\ifx\nexttoken\egroup
-     \doubleexpandafter\lang_compounds_handle_character_normal
-   \else\ifx\nexttoken\blankspace
-     \tripleexpandafter\lang_compounds_handle_character_normal
-   \else
-     \tripleexpandafter\lang_compounds_handle_character_pickup
-   \fi\fi\fi}
-
-\def\lang_compounds_handle_character_normal#1%
-  {\csname\??compoundnormal\string#1\endcsname}
-
-\def\lang_compounds_handle_character_pickup#1#2% preserve space
-  {\def\lang_compounds_handle_character_finish{\lang_compounds_handle_character_finish_indeed#1#2}%
-   \futurelet\nexttoken\lang_compounds_handle_character_finish}
-
-\def\lang_compounds_handle_character_finish_indeed
-  {\ifx\nexttoken\bgroup
-     \expandafter\lang_compounds_handle_character_one
-   \else\ifx\nexttoken\egroup
-     \doubleexpandafter\lang_compounds_handle_character_one
-   \else\ifx\nexttoken\blankspace
-     \tripleexpandafter\lang_compounds_handle_character_one
-   \else
-     \tripleexpandafter\lang_compounds_handle_character_two
-   \fi\fi\fi}
-
-%D Besides taken care of the grouping and space tokens, we have to deal with three
-%D situations. First we look if the next character equals the first one, if so, then
-%D we just insert the original. Next we look if indeed a compound character is
-%D defined. We either execute the compound character or just insert the first. So we
-%D have
-%D
-%D \starttyping
-%D <key><key>  <key><known>  <key><unknown>
-%D \stoptyping
-%D
-%D In later modules we will see how these commands are used.
-
+% %D In handling the compound characters we have to take care of \type {\bgroup} and
+% %D \type {\egroup} tokens, so we end up with a multi||step interpretation macro. We
+% %D look ahead for a \type {\bgroup}, \type {\egroup} or \type {\blankspace}. Being
+% %D no user of this mechanism, the credits for testing them goes to Tobias Burnus,
+% %D the first german user of \CONTEXT.
+% %D
+% %D We need to look into the future with \type{\futurelet} to prevent spaces from
+% %D disappearing.
+%
+% \def\lang_compounds_handle_character#1%
+%   {\def\lang_compounds_handle_character_finish{\lang_compounds_handle_character_finish_indeed{#1}}%
+%    \futurelet\nexttoken\xhandlecompoundcharacter}
+%
+% \def\lang_compounds_handle_character_finish_indeed
+%   {\ifx\nexttoken\bgroup
+%     %\expandafter\lang_compounds_handle_character_pickup % handle "{ee} -> \"ee
+%     %\expandafter\gobbleoneargument                          % forget "{ee} -> ee
+%      \expandafter\lang_compounds_handle_character_one    % ignore "{ee} -> "ee
+%    \else\ifx\nexttoken\egroup
+%      \doubleexpandafter\lang_compounds_handle_character_normal
+%    \else\ifx\nexttoken\blankspace
+%      \tripleexpandafter\lang_compounds_handle_character_normal
+%    \else
+%      \tripleexpandafter\lang_compounds_handle_character_pickup
+%    \fi\fi\fi}
+%
+% \def\lang_compounds_handle_character_normal#1%
+%   {\csname\??compoundnormal\string#1\endcsname}
+%
+% \def\lang_compounds_handle_character_pickup#1#2% preserve space
+%   {\def\lang_compounds_handle_character_finish{\lang_compounds_handle_character_finish_indeed#1#2}%
+%    \futurelet\nexttoken\lang_compounds_handle_character_finish}
+%
+% \def\lang_compounds_handle_character_finish_indeed
+%   {\ifx\nexttoken\bgroup
+%      \expandafter\lang_compounds_handle_character_one
+%    \else\ifx\nexttoken\egroup
+%      \doubleexpandafter\lang_compounds_handle_character_one
+%    \else\ifx\nexttoken\blankspace
+%      \tripleexpandafter\lang_compounds_handle_character_one
+%    \else
+%      \tripleexpandafter\lang_compounds_handle_character_two
+%    \fi\fi\fi}
+%
+% %D Besides taken care of the grouping and space tokens, we have to deal with three
+% %D situations. First we look if the next character equals the first one, if so, then
+% %D we just insert the original. Next we look if indeed a compound character is
+% %D defined. We either execute the compound character or just insert the first. So we
+% %D have
+% %D
+% %D \starttyping
+% %D <key><key>  <key><known>  <key><unknown>
+% %D \stoptyping
+% %D
+% %D In later modules we will see how these commands are used.
+%
 % \def\lang_compounds_handle_character_one#1#2%
 %   {\if\string#1\string#2% was: \ifx#1#2%
-%      \def\next{\csname\??compoundnormal\string#1\endcsname}%
+%     %\expandafter\let\expandafter\next\csname\??compoundnormal\string#1\endcsname
+%      \csname\??compoundnormal\string#1\expandafter\endcsname
 %    \else\ifcsname\??compoundsingle\string#1\string#2\endcsname
-%      \def\next{\csname\??compoundsingle\string#1\string#2\endcsname}%
+%     %\expandafter\let\expandafter\next\lastnamedcs
+%      \expandafter\lastnamedcs
 %    \else
-%      \def\next{\csname\??compoundnormal\string#1\endcsname#2}%
-%    \fi\fi
-%    \next}
+%     %\expandafter\let\expandafter\next\lastnamedcs
+%      \expandafter\lastnamedcs
+%    \fi\fi}
 %
 % \def\lang_compounds_handle_character_two#1#2#3%
 %   {\if\string#1\string#2%
 %      \def\next{\csname\??compoundnormal\string#1\endcsname#3}%
 %    \else\ifcsname\??compoundmultiple\string#1\string#2\string#3\endcsname
-%      \def\next{\csname\??compoundmultiple\string#1\string#2\string#3\endcsname}%
+%      \expandafter\let\expandafter\next\lastnamedcs
 %    \else\ifcsname\??compoundsingle\string#1\string#2\endcsname
-%      \def\next{\csname\??compoundsingle\string#1\string#2\endcsname#3}%
+%      \expandafter\let\expandafter\next\lastnamedcs
 %    \else
-%      \def\next{\csname\??compoundnormal\string#1\endcsname#2#3}%
+%      \expandafter\let\expandafter\next\lastnamedcs
 %    \fi\fi\fi
 %    \next}
-
-\def\lang_compounds_handle_character_one#1#2%
-  {\if\string#1\string#2% was: \ifx#1#2%
-    %\expandafter\let\expandafter\next\csname\??compoundnormal\string#1\endcsname
-     \csname\??compoundnormal\string#1\expandafter\endcsname
-   \else\ifcsname\??compoundsingle\string#1\string#2\endcsname
-    %\expandafter\let\expandafter\next\lastnamedcs
-     \expandafter\lastnamedcs
-   \else
-    %\expandafter\let\expandafter\next\lastnamedcs
-     \expandafter\lastnamedcs
-   \fi\fi}
-
-\def\lang_compounds_handle_character_two#1#2#3%
-  {\if\string#1\string#2%
-     \def\next{\csname\??compoundnormal\string#1\endcsname#3}%
-   \else\ifcsname\??compoundmultiple\string#1\string#2\string#3\endcsname
-     \expandafter\let\expandafter\next\lastnamedcs
-   \else\ifcsname\??compoundsingle\string#1\string#2\endcsname
-     \expandafter\let\expandafter\next\lastnamedcs
-   \else
-     \expandafter\let\expandafter\next\lastnamedcs
-   \fi\fi\fi
-   \next}
-
-%D For very obscure applications (see for an application \type {lang-sla.tex}) we
-%D provide:
-
+%
+% %D For very obscure applications (see for an application \type {lang-sla.tex}) we
+% %D provide:
+%
+% % \def\simplifiedcompoundcharacter#1#2%
+% %   {\ifcsname\??compoundsingle\string#1\string#2\endcsname
+% %      \doubleexpandafter\firstofoneargument\csname\??compoundsingle\string#1\string#2\endcsname
+% %    \else
+% %      #2%
+% %    \fi}
+%
 % \def\simplifiedcompoundcharacter#1#2%
 %   {\ifcsname\??compoundsingle\string#1\string#2\endcsname
-%      \doubleexpandafter\firstofoneargument\csname\??compoundsingle\string#1\string#2\endcsname
+%      \doubleexpandafter\firstofoneargument\lastnamedcs
 %    \else
 %      #2%
 %    \fi}
-
-\def\simplifiedcompoundcharacter#1#2%
-  {\ifcsname\??compoundsingle\string#1\string#2\endcsname
-     \doubleexpandafter\firstofoneargument\lastnamedcs
-   \else
-     #2%
-   \fi}
 
 %D \macros
 %D   {disablediscretionaries,disablecompoundcharacter}
@@ -713,7 +690,7 @@
 %D Here we hook some code into the clean up mechanism needed for verbatim data.
 
 \appendtoks
-    \disablecompoundcharacters
+   %\disablecompoundcharacters
     \disablediscretionaries
 \to \everycleanupfeatures
 

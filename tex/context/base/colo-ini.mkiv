@@ -621,18 +621,15 @@
 
 \def\colo_helpers_fast_activate_yes#1%
   {\ifcsname\??colorsetter\currentcolorprefix#1\endcsname
-    %\csname\??colorsetter\currentcolorprefix#1\endcsname
      \lastnamedcs
      \csname\??transparencysetter\currentcolorprefix#1\endcsname
    \else\ifcsname\??colorsetter#1\endcsname
-    %\csname\??colorsetter#1\endcsname
      \lastnamedcs
      \csname\??transparencysetter#1\endcsname
    \fi\fi}
 
 \def\colo_helpers_fast_activate_nop#1%
   {\ifcsname\??colorsetter#1\endcsname
-    %\csname\??colorsetter#1\endcsname
      \lastnamedcs
      \csname\??transparencysetter#1\endcsname
    \fi}
@@ -651,11 +648,9 @@
 \def\colo_helpers_activate_yes#1%
   {\edef\currentcolorname{#1}%
    \ifcsname\??colorsetter\currentcolorprefix\currentcolorname\endcsname
-    %\csname\??colorsetter\currentcolorprefix\currentcolorname\endcsname
      \lastnamedcs
      \csname\??transparencysetter\currentcolorprefix\currentcolorname\endcsname
    \else\ifcsname\??colorsetter\currentcolorname\endcsname
-    %\csname\??colorsetter\currentcolorname\endcsname
      \lastnamedcs
      \csname\??transparencysetter\currentcolorname\endcsname
    \fi\fi}
@@ -663,7 +658,6 @@
 \def\colo_helpers_activate_nop#1%
   {\edef\currentcolorname{#1}%
    \ifcsname\??colorsetter\currentcolorname\endcsname
-    %\csname\??colorsetter\currentcolorname\endcsname
      \lastnamedcs
      \csname\??transparencysetter\currentcolorname\endcsname
    \fi}
@@ -682,11 +676,9 @@
 \unexpanded\def\dousecurrentcolorparameter
   {\let\currentcolorname\currentcolorparameter % maybe only when success
    \ifcsname\??colorsetter\currentcolorprefix\currentcolorparameter\endcsname
-    %\csname\??colorsetter\currentcolorprefix\currentcolorparameter\endcsname
      \lastnamedcs
      \csname\??transparencysetter\currentcolorprefix\currentcolorparameter\endcsname
    \else\ifcsname\??colorsetter\currentcolorparameter\endcsname
-    %\csname\??colorsetter\currentcolorparameter\endcsname
      \lastnamedcs
      \csname\??transparencysetter\currentcolorparameter\endcsname
    \fi\fi}

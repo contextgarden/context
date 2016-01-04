@@ -511,6 +511,6 @@ implement {
 
 implement {
     name      = "settaggedmetadata",
-    actions   = structures.tags.registermetadata,
+    actions   = tags.registermetadata,
     arguments = "string"
 }

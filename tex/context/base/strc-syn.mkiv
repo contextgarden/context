@@ -344,6 +344,8 @@
    \let \currentsynonym\currentsimplelist % for a while
    \def \currentsynonymtag{#2}%
    \edef\currentsimplelistalternative{\simplelistparameter\c!alternative}%
+   \doifnotcommandhandler\??simplelistalternative\currentsimplelistalternative
+     {\let\currentsimplelistalternative\v!normal}%
    \fastsetup{\??simplelistrenderings:\v!synonym:\currentsimplelistalternative}%
    \normalexpanded{\endgroup\simplelistparameter\c!next}}
 
@@ -550,8 +552,16 @@
    \def \currentsortingtag{#2}%
    \let \currentsimplelist\currentsorting
    \edef\currentsimplelistalternative{\simplelistparameter\c!alternative}%
+   \doifnotcommandhandler\??simplelistalternative\currentsimplelistalternative
+     {\let\currentsimplelistalternative\v!normal}%
    \fastsetup{\??simplelistrenderings:\v!sorting:\currentsimplelistalternative}%
    \normalexpanded{\endgroup\simplelistparameter\c!next}}
+
+% or:
+%
+% \doifelsesetups{\??simplelistrenderings:\v!sorting:\currentsimplelistalternative}
+%    {\fastsetup{\??simplelistrenderings:\v!sorting:\currentsimplelistalternative}}
+%    {\fastsetup{\??simplelistrenderings:\v!sorting:\v!normal}}
 
 \startsetups [\??simplelistrenderings:\v!sorting:\v!normal]
    \fastsetup{\??simplelistrenderings::\v!sorting}%

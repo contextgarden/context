@@ -394,3 +394,27 @@ interfaces.implement {
         context.lastnaturalboxwd(false)
     end
 }
+
+local function firstdirinbox(n)
+    local b = getbox(n)
+    if b then
+        local l = getlist(b)
+        if l then
+            for h in traverse_id(hlist_code,l) do
+                return getfield(h,"dir")
+            end
+        end
+    end
+end
+
+nodes.firstdirinbox = firstdirinbox
+
+local doifelse = commands.doifelse
+
+interfaces.implement {
+    name      = "doifelserighttoleftinbox",
+    arguments = "integer",
+    actions   = function(n)
+        doifelse(firstdirinbox(n) == "TRT")
+    end
+}

@@ -40,7 +40,7 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 -- context(string.formatters["%!tex!"]("${}"))
 -- context("%!tex!","${}")
 
-local format, validstring, stripstring = string.format, string.valid, string.strip
+local format, stripstring = string.format, string.strip
 local next, type, tostring, tonumber, setmetatable, unpack, select, rawset = next, type, tostring, tonumber, setmetatable, unpack, select, rawset
 local insert, remove, concat = table.insert, table.remove, table.concat
 local lpegmatch, lpegC, lpegS, lpegP, lpegV, lpegCc, lpegCs, patterns = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.V, lpeg.Cc, lpeg.Cs, lpeg.patterns
@@ -57,12 +57,15 @@ local interfaces        = interfaces
 local loaddata          = io.loaddata
 
 local tex               = tex
-local texsprint         = tex.sprint
-local texprint          = tex.print
-local texwrite          = tex.write
+local texsprint         = tex.sprint    -- just appended (no space,eol treatment)
+local texprint          = tex.print     -- each arg a separate line (not last in directlua)
+----- texwrite          = tex.write     -- all 'space' and 'character'
 local texgetcount       = tex.getcount
 
-local isnode            = node.is_node -- after 0.65 just node.type
+-- local function texsprint(...) print("sprint",...) tex.sprint(...) end
+-- local function texprint (...) print("print", ...) tex.print (...) end
+
+local isnode            = node.is_node
 local writenode         = node.write
 local copynodelist      = node.copy_list
 
@@ -75,9 +78,9 @@ local txtcatcodes       = catcodenumbers.txtcatcodes
 local vrbcatcodes       = catcodenumbers.vrbcatcodes
 local xmlcatcodes       = catcodenumbers.xmlcatcodes
 
-local flush             = texsprint
-local flushdirect       = texprint
-local flushraw          = texwrite
+local flush             = texsprint   -- snippets
+local flushdirect       = texprint    -- lines
+----- flushraw          = texwrite
 
 local report_context    = logs.reporter("cld","tex")
 local report_cld        = logs.reporter("cld","stack")
@@ -677,20 +680,6 @@ function context.printlines(str,raw)     -- todo: see if via file is useable
     end
 end
 
--- This is the most reliable way to deal with nested buffers and other
--- catcode sensitive data.
-
-local methodhandler = resolvers.methodhandler
-
-function context.viafile(data,tag)
-    if data and data ~= "" then
-        local filename = resolvers.savers.byscheme("virtual",validstring(tag,"viafile"),data)
-     -- context.startregime { "utf" }
-        context.input(filename)
-     -- context.stopregime()
-    end
-end
-
 -- -- -- "{" .. ti .. "}" is somewhat slower in a cld-mkiv run than "{",ti,"}"
 
 local containseol = patterns.containseol
@@ -1196,7 +1185,7 @@ local trace_stack   = { }
 
 local normalflush       = flush
 local normalflushdirect = flushdirect
-local normalflushraw    = flushraw
+----- normalflushraw    = flushraw
 local normalwriter      = writer
 local currenttrace      = nil
 local nofwriters        = 0
@@ -1348,6 +1337,88 @@ function context.getlogger()
 end
 
 local trace_cld = false  trackers.register("context.files", function(v) trace_cld = v end)
+
+do
+
+    -- This is the most reliable way to deal with nested buffers and other
+    -- catcode sensitive data.
+
+    local resolve     = resolvers.savers.byscheme
+    local validstring = string.valid
+    local input       = context.input
+
+    local function viafile(data,tag)
+        if data and data ~= "" then
+            local filename = resolve("virtual",validstring(tag,"viafile"),data)
+         -- context.startregime { "utf" }
+            context.input(filename)
+         -- context.stopregime()
+        end
+    end
+
+    context.viafile    = viafile
+
+    -- experiment for xtables, don't use it elsewhere yet
+
+    local collected    = nil
+    local nofcollected = 0
+    local sentinel     = string.char(26) -- endoffileasciicode : ignorecatcode
+    local level        = 0
+
+    local function collect(c,...) -- can be optimized
+        -- snippets
+        for i=1,select("#",...) do
+            nofcollected = nofcollected + 1
+            collected[nofcollected] = (select(i,...))
+        end
+    end
+
+    -- local function collectdirect(c,...) -- can be optimized
+    --     -- lines
+    --     for i=1,select("#",...) do
+    --         n = n + 1
+    --         t[n] = (select(i,...))
+    --         n = n + 1
+    --         t[n] = "\r"
+    --     end
+    -- end
+
+    local collectdirect = collect
+
+    function context.startcollecting()
+        if level == 0 then
+            collected    = { }
+            nofcollected = 0
+            --
+            flush       = collect
+            flushdirect = collectdirect
+            --
+            context.__flush       = flush
+            context.__flushdirect = flushdirect
+        end
+        level = level + 1
+    end
+
+    function context.stopcollecting()
+        level = level - 1
+        if level < 1 then
+            flush       = normalflush
+            flushdirect = normalflushdirect
+            --
+            context.__flush       = flush
+            context.__flushdirect = flushdirect
+            --
+            viafile(concat(collected,sentinel))
+            --
+            collected    = nil
+            nofcollected = 0
+            level        = 0
+        end
+    end
+
+end
+
+--
 
 function context.runfile(filename)
     local foundname = resolvers.findtexfile(file.addsuffix(filename,"cld")) or ""

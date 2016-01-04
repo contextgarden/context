@@ -1618,6 +1618,7 @@ do
                         elseif not next(rlookups) then
                             local name = sequence.name
                             if not reported[name] then
+                                -- can be ok as it aborts a chain sequence
                                 report("rule %i in %s lookup %a has %s lookups",i,what,name,"empty")
                                 reported[name] = true
                             end
@@ -1657,9 +1658,12 @@ do
         end
 
         for i, n in sortedhash(sublookupcheck) do
-            local t = lookups[i].type
+            local l = lookups[i]
+            local t = l.type
             if n == 0 and t ~= "extension" then
-                report("%s lookup %i of type %a is not used",what,i,t)
+                local d = l.done
+                report("%s lookup %s of type %a is not used",what,d and d.name or l.name,t)
+             -- inspect(l)
             end
         end
 
@@ -1873,7 +1877,7 @@ function readers.gdef(f,fontdata,specification)
                     for i=1,nofsets do
                         local offset = sets[i]
                         if offset ~= 0 then
-                            marksets[i] = readcoverage(f,offset)
+                            marksets[i] = readcoverage(f,marksetsoffset+offset)
                         end
                     end
                 end

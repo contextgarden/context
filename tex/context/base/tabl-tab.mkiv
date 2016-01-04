@@ -1424,8 +1424,8 @@
    \egroup}
 
 \def\dousetabletemplate#1#2#3%
-  {\gdef\dotablehead{\executeifdefined{\??tablehead#2}\empty}%
-   \gdef\dotabletail{\executeifdefined{\??tabletail#3}\empty}%
+  {\gdef\dotablehead{\begincsname\??tablehead#2\endcsname}%
+   \gdef\dotabletail{\begincsname\??tabletail#3\endcsname}%
    \secondstagestarttable[#1]}
 
 %D The optional third and fourth arguments define which table
@@ -1670,11 +1670,11 @@
 % \def\dosettabletail[#1][#2]#3\end{\setvalue{\??tabletail#1}{\tablenoalign{\global\settrue\hassometabletail}#3}}
 
 \def\dosettablehead[#1][#2]#3\end
-  {\gdef\dotablehead{\executeifdefined{\??tablehead#1}\empty}% new
+  {\gdef\dotablehead{\begincsname\??tablehead#1\endcsname}% new
    \setvalue{\??tablehead#1}{\tablenoalign{\global\settrue\hassometablehead}#3}}
 
 \def\dosettabletail[#1][#2]#3\end
-  {\gdef\dotabletail{\executeifdefined{\??tabletail#1}\empty}% new
+  {\gdef\dotabletail{\begincsname\??tabletail#1\endcsname}% new
    \setvalue{\??tabletail#1}{\tablenoalign{\global\settrue\hassometabletail}#3}}
 
 \normalexpanded
