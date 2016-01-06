@@ -456,7 +456,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38157, stripped down to: 20990
+-- original size: 38185, stripped down to: 20990
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -493,7 +493,7 @@ local uppercase=R("AZ")
 local underscore=P("_")
 local hexdigit=digit+lowercase+uppercase
 local cr,lf,crlf=P("\r"),P("\n"),P("\r\n")
-local newline=P("\r")*(P("\n")+P(true))+P("\n")
+local newline=P("\r")*(P("\n")+P(true))+P("\n") 
 local escaped=P("\\")*anything
 local squote=P("'")
 local dquote=P('"')
@@ -18360,8 +18360,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 782314
--- stripped bytes    : 283426
+-- original bytes    : 782342
+-- stripped bytes    : 283454
 
 -- end library merge
 

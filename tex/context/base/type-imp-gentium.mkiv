@@ -1,0 +1,34 @@
+%D \module
+%D   [       file=type-gentium,
+%D        version=2013.05.02,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Typescript file for Gentium,
+%D         author={Thomas A. Schmitz and Mojca Miklavec},
+%D           date=\currentdate,
+%D      copyright={Mojca and Thomas}]
+
+\starttypescript [serif] [gentium]
+    \definefontsynonym [Gentium-Roman]       [file:GentiumPlus-R]  [features=default]
+    \definefontsynonym [Gentium-Italic]      [file:GentiumPlus-I]  [features=default]
+    \definefontsynonym [Gentium-Bold]        [file:GenBasB]        [features=default]
+    \definefontsynonym [Gentium-BoldItalic]  [file:GenBasBI]       [features=default]
+    \definefontsynonym [Gentium-Slanted]     [Gentium-Italic]
+    \definefontsynonym [Gentium-BoldSlanted] [Gentium-BoldItalic]
+    \definefontsynonym [Gentium-RomanCaps]   [file:GentiumPlus-R]  [features=smallcaps]
+\stoptypescript
+
+\starttypescript [serif] [gentium] [name]
+    \definefontsynonym [Serif]            [Gentium-Roman]
+    \definefontsynonym [SerifItalic]      [Gentium-Italic]
+    \definefontsynonym [SerifBold]        [Gentium-Bold]
+    \definefontsynonym [SerifBoldItalic]  [Gentium-BoldItalic]
+    \definefontsynonym [SerifSlanted]     [Gentium-Slanted]
+    \definefontsynonym [SerifBoldSlanted] [Gentium-BoldSlanted]
+    \definefontsynonym [SerifCaps]        [Serif]
+    \definefontsynonym [OldStyle]         [Serif]
+    \definefontsynonym [SerifCaps]        [Gentium-RomanCaps]
+\stoptypescript
+
+\starttypescript [gentium]
+    \definetypeface [gentium] [rm] [serif] [gentium] [default] [features=default]
+\stoptypescript

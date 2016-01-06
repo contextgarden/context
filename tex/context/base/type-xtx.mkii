@@ -3,13 +3,16 @@
 %D        version=2004.11.15, % prereleased earlier
 %D          title=\CONTEXT\ Typescript Macros,
 %D       subtitle=\XETEX's font treasures,
-%D         author=Adam T. Lindsay,
+%D         author=Adam T. Lindsay etc,
 %D           date=\currentdate,
-%D      copyright={Adam Lindsay \& Hans Hagen}]
+%D      copyright={Adam Lindsay \& Hans Hagen \& ...}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
+
+%D Note HH: this file probably needs to be adapted to the current names and
+%D so but as I don't use \XETEX\ myself others have to provide information.
 
 %D Here are some fonts definitions that can get you started with
 %D \XETEX\ (for more details see Adam's MyWay documents).
@@ -363,7 +366,7 @@
 
 \starttypescript[serif,handwriting][zapfino][uc]
 
-\definefontsynonym[ZapfinoOne]  [name:Zapfino\xetexcolon mapping=tex-text]                  [encoding=uc]
+\definefontsynonym[ZapfinoOne]  [name:Zapfino\xetexcolon mapping=tex-text]   [encoding=uc]
 \definefontsynonym[ZapfinoTwo]  [name:Zapfino\xetexcolon mapping=tex-text;%
                                  Stylistic Variants=First variant glyph set] [encoding=uc]
 \definefontsynonym[ZapfinoThree][name:Zapfino\xetexcolon mapping=tex-text;%
@@ -430,8 +433,7 @@
 
 \stoptypescript
 
-% MS Office 2004 for Mac has impressive Unicode coverage in
-% many of its fonts.
+% MS Office 2004 for Mac has impressive Unicode coverage in many of its fonts.
 
 \starttypescript[serif][timesnewroman][uc]
 
@@ -475,9 +477,8 @@
 
 \stoptypescript
 
-%D MS Office comes with an installation of the Lucida family in
-%D TrueType form. It's nice, except\dots\ no math, no slanted, no caps
-%D and some other auxiliary fonts.
+%D MS Office comes with an installation of the Lucida family in TrueType form. It's nice,
+%D except\dots\ no math, no slanted, no caps and some other auxiliary fonts.
 
 \starttypescript [serif] [lucida] [uc]
 
@@ -535,27 +536,33 @@
 
 \stoptypescript
 
-%D Gentium is from SIL, the fine makers of \XETEX, and it's not only
-%D very complete with Roman and Italic Unicode support, but very
-%D attractive.
+%D Gentium is from SIL, the fine makers of \XETEX, and it's not only very complete with
+%D Roman and Italic Unicode support, but very attractive.
 
-\starttypescript[serif][gentium][uc]
-
-\definefontsynonym[Gentium]      [name:Gentium]       [features=default]
-\definefontsynonym[GentiumItalic][name:Gentium Italic][features=default]
-
+\starttypescript [serif] [gentium]
+    \definefontsynonym [Gentium-Roman]       [file:GentiumPlus-R] [features=default]
+    \definefontsynonym [Gentium-Italic]      [file:GentiumPlus-I] [features=default]
+    \definefontsynonym [Gentium-Bold]        [file:GenBasB]       [features=default]
+    \definefontsynonym [Gentium-BoldItalic]  [file:GenBasBI]      [features=default]
+    \definefontsynonym [Gentium-Slanted]     [Gentium-Italic]
+    \definefontsynonym [Gentium-BoldSlanted] [Gentium-BoldItalic]
+    \definefontsynonym [Gentium-RomanCaps]   [file:GentiumPlus-R] [features=smallcaps]
 \stoptypescript
 
-\starttypescript[serif][gentium][name]
+\starttypescript [serif] [gentium] [name]
+    \definefontsynonym [Serif]            [Gentium-Roman]
+    \definefontsynonym [SerifItalic]      [Gentium-Italic]
+    \definefontsynonym [SerifBold]        [Gentium-Bold]
+    \definefontsynonym [SerifBoldItalic]  [Gentium-BoldItalic]
+    \definefontsynonym [SerifSlanted]     [Gentium-Slanted]
+    \definefontsynonym [SerifBoldSlanted] [Gentium-BoldSlanted]
+    \definefontsynonym [SerifCaps]        [Serif]
+    \definefontsynonym [OldStyle]         [Serif]
+    \definefontsynonym [SerifCaps]        [Gentium-RomanCaps]
+\stoptypescript
 
-\definefontsynonym[Serif]           [Gentium]
-\definefontsynonym[SerifBold]       [Gentium]
-\definefontsynonym[SerifItalic]     [GentiumItalic]
-\definefontsynonym[SerifBoldItalic] [GentiumItalic]
-\definefontsynonym[SerifSlanted]    [GentiumItalic]
-\definefontsynonym[SerifBoldSlanted][GentiumItalic]
-\definefontsynonym[SerifCaps]       [Gentium]
-
+\starttypescript [gentium]
+    \definetypeface [gentium] [rm] [serif] [gentium] [default] [features=default]
 \stoptypescript
 
 \stoptypescriptcollection

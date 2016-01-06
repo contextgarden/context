@@ -554,7 +554,7 @@
 \def\font_typefaces_setup[#class][#settings]%
   {\setcurrentfontclass{#class}%
    \let\globalfontclass\fontclass
-   \iffourthargument
+   \ifsecondargument
      \setupbodyfont[#settings]%
    \else\ifx\fontclass\empty
      \setupbodyfont[\s!rm]%
@@ -569,7 +569,7 @@
 \def\font_typefaces_switch[#class][#settings]%
   {\setcurrentfontclass{#class}%
    \let\globalfontclass\globalfontclass
-   \iffourthargument
+   \ifsecondargument
      \switchtobodyfont[#settings]%
    \else\ifx\fontclass\empty
      \switchtobodyfont[\s!rm]%

@@ -141,20 +141,13 @@
 % \definecolor[f:y:t][a=1,t=.25,y=1]
 % \definecolor[f:k:t][a=1,t=.25,s=0]
 
-% \def\node_backgrounds_boxes_add#1[#2]%
-%   {\node_backgrounds_boxes_initialize
-%    #1\backgroundcolorattr{#2}}
-
-\def\syst_visualizers_filled_hbox#1%
-  {\node_backgrounds_boxes_initialize\hbox\backgroundcolorattr{#1}}
-
-\unexpanded\def\filledhboxr{\syst_visualizers_filled_hbox{f:r:t}}
-\unexpanded\def\filledhboxg{\syst_visualizers_filled_hbox{f:g:t}}
-\unexpanded\def\filledhboxb{\syst_visualizers_filled_hbox{f:b:t}}
-\unexpanded\def\filledhboxc{\syst_visualizers_filled_hbox{f:c:t}}
-\unexpanded\def\filledhboxm{\syst_visualizers_filled_hbox{f:m:t}}
-\unexpanded\def\filledhboxy{\syst_visualizers_filled_hbox{f:y:t}}
-\unexpanded\def\filledhboxk{\syst_visualizers_filled_hbox{f:k:t}}
+\unexpanded\def\filledhboxr{\node_backgrounds_boxes_add\hbox[f:r:t]}
+\unexpanded\def\filledhboxg{\node_backgrounds_boxes_add\hbox[f:g:t]}
+\unexpanded\def\filledhboxb{\node_backgrounds_boxes_add\hbox[f:b:t]}
+\unexpanded\def\filledhboxc{\node_backgrounds_boxes_add\hbox[f:c:t]}
+\unexpanded\def\filledhboxm{\node_backgrounds_boxes_add\hbox[f:m:t]}
+\unexpanded\def\filledhboxy{\node_backgrounds_boxes_add\hbox[f:y:t]}
+\unexpanded\def\filledhboxk{\node_backgrounds_boxes_add\hbox[f:k:t]}
 
 %D Overload:
 

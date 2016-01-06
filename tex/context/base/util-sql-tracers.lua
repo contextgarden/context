@@ -12,35 +12,51 @@ sql.tracers   = tracers
 
 sql.setmethod("swiglib")
 
+local t_names = {
+    mysql = [[SHOW TABLES FROM `%database%`]],
+    mssql = [[SELECT table_name FROM %database%.information_schema.tables;]],
+    mssql = [[SELECT "name" FROM "%database%"."sys"."databases" ORDER BY "name";]],
+    mssql = [[SELECT name FROM "%database%"."sys"."objects" WHERE "type" IN ('P', 'U', 'V', 'TR', 'FN', 'TF');]],
+}
+
+local t_fields = {
+    mysql = [[SHOW FIELDS FROM `%database%`.`%table%` ]],
+    mssql = [[SELECT column_name "field", data_type "type", column_default "default", is_nullable "null" FROM %database%.information_schema.columns WHERE table_name='%table%']],
+}
+
 function sql.tracers.gettables(presets)
+    local servertype = sql.getserver()
+
     local results, keys = sql.execute {
         presets   = presets,
-        template  = "SHOW TABLES FROM `%database%`",
+        template  = t_names[servertype],
         variables = {
             database = presets.database,
         },
     }
 
-    local key    = keys[1]
+    local key    = keys and keys[1]
     local tables = { }
 
-    for i=1,#results do
-        local name = results[i][key]
-        local results, keys = sql.execute {
-            presets   = presets,
-            template  = "SHOW FIELDS FROM `%database%`.`%table%` ",
-            variables = {
-                database = presets.database,
-                table    = name
-            },
-        }
-        if #results > 0 then
-            for i=1,#results do
-                results[i] = table.loweredkeys(results[i])
+    if keys then
+        for i=1,#results do
+            local name = results[i][key]
+            local results, keys = sql.execute {
+                presets   = presets,
+                template  = t_fields[servertype],
+                variables = {
+                    database = presets.database,
+                    table    = name
+                },
+            }
+            if #results > 0 then
+                for i=1,#results do
+                    results[i] = table.loweredkeys(results[i])
+                end
+                tables[name] = results
+            else
+                -- a view
             end
-            tables[name] = results
-        else
-            -- a view
         end
     end
 

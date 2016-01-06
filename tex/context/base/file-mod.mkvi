@@ -20,16 +20,14 @@
 %D \macros
 %D   {usemodule}
 %D
-%D Most of \CONTEXT is preloaded in the format file. Some very
-%D domain specific typesetting topics are however dealt with in
-%D separate modules, e.g. typesetting of chemical structure
-%D formulas. These modules are loaded by:
+%D Most of \CONTEXT is preloaded in the format file. Some very domain specific
+%D typesetting topics are however dealt with in separate modules, e.g. typesetting
+%D of chemical structure formulas. These modules are loaded by:
 %D
 %D \showsetup{usemodule}
 %D
-%D More information on the specific modules can be found in
-%D their dedicated manuals. We use \type {\next} so that we
-%D can \type {\end} in modules.
+%D More information on the specific modules can be found in their dedicated manuals.
+%D We use \type {\next} so that we can \type {\end} in modules.
 
 \unexpanded\def\usemodules
   {\dotripleempty\strc_modules_use}
@@ -64,7 +62,11 @@
    \popmacro\currentmodule}
 
 \def\strc_modules_use_indeed#category#name%
-  {\clf_usemodules{#category}{#name}}
+  {\ifx\currentmoduleparameters\empty\else
+     \scratchtoks\expandafter{\currentmoduleparameters}%
+     \normalexpanded{\getparameters[\??module#name:][\the\scratchtoks]}%
+   \fi
+   \clf_usemodules{#category}{#name}}
 
 \installcorenamespace{module}
 
@@ -91,15 +93,34 @@
 \unexpanded\def\setupmodule
   {\dodoubleempty\syst_modules_setup}
 
-\def\syst_modules_setup[#name][#parameters]%
+\def\syst_modules_setup_indeed
+  {\ifx\currentmoduleparameters\empty
+      \expandafter\syst_modules_setup_indeed_nop
+   \else
+      \expandafter\syst_modules_setup_indeed_yes
+   \fi}
+
+\def\syst_modules_setup_indeed_nop[#name][#parameters]%
+  {\ifsecondargument
+     \getparameters[\??module#name:][#parameters]% internal (defaults)
+   \else\iffirstargument
+     \doifassignmentelse{#name}{\getparameters[\??module\currentmodule:][#name]}\donothing
+   \fi\fi
+   \the\everysetupmodule}
+
+\def\syst_modules_setup_indeed_yes[#name][#parameters]%
   {\scratchtoks\expandafter{\currentmoduleparameters}%
    \ifsecondargument
      \getparameters[\??module#name:][#parameters]% internal (defaults)
      \normalexpanded{\getparameters[\??module#name:][\the\scratchtoks]}% loadtime (user)
+   \else\iffirstargument
+     \doifassignmentelse{#name}
+       {\getparameters[\??module\currentmodule:][#name]% internal (defaults)
+        \normalexpanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}}% loadtime (user)
+       {\normalexpanded{\getparameters[\??module#1:][\the\scratchtoks]}}% loadtime (user)
    \else
-     \getparameters[\??module\currentmodule:][#name]% internal (defaults)
-     \normalexpanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}% loadtime (user)
-   \fi
+     \normalexpanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}%
+   \fi\fi
    \let\currentmoduleparameters\empty
    \the\everysetupmodule}
 
@@ -114,11 +135,6 @@
 %      \normalexpanded{\getparameters[\??module\currentmodule:][\normalunexpanded\expandafter{\currentmoduleparameters}]}% loadtime (user)
 %    \fi
 %    \let\currentmoduleparameters\empty}
-
-% \def\moduleparameter#name#parameter% should have been \namedmoduleparameter
-%   {\csname\??module
-%      \ifcsname\??module#name:#parameter\endcsname#name:#parameter\fi
-%    \endcsname}
 
 \def\moduleparameter#name#parameter% should have been \namedmoduleparameter
   {\begincsname\??module#name:#parameter\endcsname}

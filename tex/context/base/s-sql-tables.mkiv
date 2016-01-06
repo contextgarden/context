@@ -11,11 +11,17 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% for the moment no helpers
-
 \startmodule[sql-tables]
 
 \registerctxluafile{s-sql-tables}{}
+
+\doifsomething {\currentmoduleparameter{method}}{
+    \ctxlua{utilities.sql.setmethod("\currentmoduleparameter{method}")}
+}
+
+\doifsomething {\currentmoduleparameter{server}} {
+    \ctxlua{utilities.sql.setserver("\currentmoduleparameter{server}")}
+}
 
 \installmodulecommandluasingle \showdefinedsqltables {moduledata.sql.tables.showdefined}
 

@@ -283,6 +283,7 @@ helpers.preparetemplate = preparetemplate
 -- -- -- we delay setting this -- -- --
 
 local currentmethod
+local currentserver
 
 local function firstexecute(...)
     local execute = methods[currentmethod].execute
@@ -295,7 +296,20 @@ function sql.setmethod(method)
     sql.execute = firstexecute
 end
 
+function sql.setserver(server)
+    currentserver = server
+end
+
+function sql.getmethod()
+    return currentmethod
+end
+
+function sql.getserver()
+    return currentserver
+end
+
 sql.setmethod("library")
+sql.setserver("mysql")
 
 -- helper:
 

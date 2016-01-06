@@ -24,6 +24,7 @@ local splitdata          = helpers.splitdata
 local replacetemplate    = utilities.templates.replace
 local serialize          = sql.serialize
 local deserialize        = sql.deserialize
+local getserver          = sql.getserver
 
 -- Experiments with an p/action demonstrated that there is not much gain. We could do a runtime
 -- capture but creating all the small tables is not faster and it doesn't work well anyway.
@@ -43,7 +44,7 @@ local entry        = Cs((unescaped + (1-separator-newline))^0) -- C 10% faster t
 
 local getfirst     = Ct( entry * (separator * (entry+empty))^0) + newline
 local skipfirst    = (1-newline)^1 * newline
-local skipdashes   = P("-")^1 * newline
+local skipdashes   = (P("-")+separator)^1 * newline
 local getfirstline = C((1-newline)^0)
 
 local cache        = { }
@@ -106,7 +107,11 @@ local function splitdata(data) -- todo: hash on first line ... maybe move to cli
             end
         end
         p = Cf(Ct("") * p,rawset) * newline^1
-        p = skipfirst * (skipdashes^-1) * Ct(p^0) -- mssql has a dashed line between the header and data
+if getserver() == "mssql" then
+        p = skipfirst * skipdashes * Ct(p^0)
+else
+        p = skipfirst * Ct(p^0)
+end
         cache[first] = { parser = p, keys = keys }
         local entries = lpegmatch(p,data)
         return entries or { }, keys
@@ -122,11 +127,29 @@ end
 helpers.splitdata = splitdata
 helpers.getdata   = getdata
 
+local t_runner = {
+    mysql = [[mysql --batch --user="%username%" --password="%password%" --host="%host%" --port=%port% --database="%database%" --default-character-set=utf8 < "%queryfile%" > "%resultfile%"]],
+    mssql = [[sqlcmd -S %host% %?U: -U "%username%" ?% %?P: -P "%password%" ?% -I -W -w 65535 -s"]] .. "\t" .. [[" -m 1 -i "%queryfile%" -o "%resultfile%"]],
+}
+
+local t_preamble = {
+    mysql = [[
+SET GLOBAL SQL_MODE=ANSI_QUOTES;
+    ]],
+    mssql = [[
+:setvar SQLCMDERRORLEVEL 1
+SET QUOTED_IDENTIFIER ON;
+SET NOCOUNT ON;
+%?database: USE %database%; ?%
+    ]],
+}
+
 local function dataprepared(specification,client)
     local query = preparetemplate(specification)
     if query then
-        local preamble = client.preamble
+        local preamble = t_preamble[getserver()] or t_preamble.mysql
         if preamble then
+            preamble = replacetemplate(preamble,specification.variables,'sql')
             query = preamble .. "\n" .. query
         end
         io.savedata(specification.queryfile,query)
@@ -143,7 +166,7 @@ local function dataprepared(specification,client)
 end
 
 local function datafetched(specification,client)
-    local runner   = client.runner
+    local runner  = t_runner[getserver()] or t_runner.mysql
     local command = replacetemplate(runner,specification)
     if trace_sql then
         local t = osclock()
@@ -254,8 +277,6 @@ end
 local celltemplate = "cells[%s]"
 
 methods.client = {
-    runner       = [[mysql --batch --user="%username%" --password="%password%" --host="%host%" --port=%port% --database="%database%" --default-character-set=utf8 < "%queryfile%" > "%resultfile%"]],
-    preamble     = "",
     execute      = execute,
     usesfiles    = true,
     wraptemplate = wraptemplate,

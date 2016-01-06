@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/05/16 19:20:37
+-- merge date  : 01/06/16 17:29:42
 
 do -- begin closure to overcome local limits and interference
 
@@ -144,7 +144,7 @@ local uppercase=R("AZ")
 local underscore=P("_")
 local hexdigit=digit+lowercase+uppercase
 local cr,lf,crlf=P("\r"),P("\n"),P("\r\n")
-local newline=P("\r")*(P("\n")+P(true))+P("\n")
+local newline=P("\r")*(P("\n")+P(true))+P("\n") 
 local escaped=P("\\")*anything
 local squote=P("'")
 local dquote=P('"')
