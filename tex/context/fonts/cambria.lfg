@@ -1,0 +1,16 @@
+return {
+    name = "cambria",
+    version = "1.00",
+    comment = "Goodies that complement cambria.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name = "kern", -- adds to kerns
+            type = "pair",
+            data = {
+                [0x0153] = { [0x0301] = { false, { -500, 0, 0, 0 } } },
+            }
+        }
+    }
+}

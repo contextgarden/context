@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/06/16 17:29:42
+-- merge date  : 01/07/16 19:13:17
 
 do -- begin closure to overcome local limits and interference
 
@@ -9571,6 +9571,8 @@ otf.coverup={
     multiple=justset,
     ligature=justset,
     kern=justset,
+    chainsubstitution=justset,
+    chainposition=justset,
   },
   register=function(coverage,lookuptype,format,feature,n,descriptions,resources)
     local name=formatters["ctx_%s_%s_%s"](feature,lookuptype,n) 

@@ -447,6 +447,24 @@ local function setextrafeatures(tfmdata)
     end
 end
 
+local function setextensions(tfmdata)
+    local goodies = tfmdata.goodies
+    if goodies then
+        for i=1,#goodies do
+            local g = goodies[i]
+            local e = g.extensions
+            if e then
+                local goodie = g.name or "unknown"
+                for i=1,#e do
+                    local name = "extension-" .. i
+                 -- report_goodies("adding extension %s from %s",name,goodie)
+                    otf.enhancers.addfeature(tfmdata.shared.rawdata,name,e[i])
+                end
+            end
+        end
+    end
+end
+
 -- installation (collected to keep the overview) -- also for type 1
 
 registerotffeature {
@@ -467,6 +485,17 @@ registerotffeature {
         position = 2,
         base     = setextrafeatures,
         node     = setextrafeatures,
+    }
+}
+
+registerotffeature {
+    name        = "extensions",
+    description = "extensions to features",
+    default     = true,
+    initializers = {
+        position = 2,
+        base     = setextensions,
+        node     = setextensions,
     }
 }
 

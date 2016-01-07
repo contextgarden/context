@@ -57,9 +57,9 @@
    \fi\fi
    \useblackrulesstyleandcolor\c!style\c!color
    \vrule
-     \s!width \ifx\p_width \v!max\emwidth\else\p_width \fi
-     \s!height\ifx\p_height\v!max\strutht\else\p_height\fi
-     \s!depth \ifx\p_depth \v!max\strutdp\else\p_depth \fi
+     \ifx\p_width \v!max\s!width \emwidth\else\ifx\p_width \empty\else\s!width \p_width \fi\fi
+     \ifx\p_height\v!max\s!height\strutht\else\ifx\p_height\empty\else\s!height\p_height\fi\fi
+     \ifx\p_depth \v!max\s!depth \strutdp\else\ifx\p_depth \empty\else\s!depth \p_depth \fi\fi
    \egroup}
 
 \setupblackrules

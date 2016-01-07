@@ -29,6 +29,7 @@
     <flag name="trackers" value="list"><short>enable trackers</short></flag>
     <flag name="statistics"><short>some info about the database</short></flag>
     <flag name="names"><short>use name instead of unicodes</short></flag>
+    <flag name="cache" value="str"><short>use specific cache (otl or otf)</short></flag>
    </subcategory>
   </category>
  </flags>

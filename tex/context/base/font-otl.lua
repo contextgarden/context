@@ -803,12 +803,14 @@ end
 otf.coverup = {
     stepkey = "steps",
     actions = {
-        substitution = justset,
-        alternate    = justset,
-        multiple     = justset,
-        kern         = justset,
-        pair         = justset,
-        ligature     = function(coverage,unicode,ligature)
+        chainsubstitution = justset,
+        chainposition     = justset,
+        substitution      = justset,
+        alternate         = justset,
+        multiple          = justset,
+        kern              = justset,
+        pair              = justset,
+        ligature          = function(coverage,unicode,ligature)
             local first = ligature[1]
             local tree  = coverage[first]
             if not tree then

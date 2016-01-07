@@ -11,6 +11,7 @@ local setargument = environment.setargument
 local givenfiles  = environment.files
 
 local otfversion  = 2.819
+local otlversion  = 3.012
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -44,6 +45,7 @@ local helpinfo = [[
     <flag name="trackers" value="list"><short>enable trackers</short></flag>
     <flag name="statistics"><short>some info about the database</short></flag>
     <flag name="names"><short>use name instead of unicodes</short></flag>
+    <flag name="cache" value="str"><short>use specific cache (otl or otf)</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -424,7 +426,8 @@ end
 function scripts.fonts.unpack()
     local name = file.removesuffix(file.basename(givenfiles[1] or ""))
     if name and name ~= "" then
-        local cache = containers.define("fonts", getargument("cache") or "otf", otfversion, true) -- cache is temp
+        local cacheid   = getargument("cache") or "otl"
+        local cache     = containers.define("fonts", cacheid, otlversion, true) -- cache is temp
         local cleanname = containers.cleanname(name)
         local data = containers.read(cache,cleanname)
         if data then
@@ -437,7 +440,7 @@ function scripts.fonts.unpack()
             end
             io.savedata(savename,table.serialize(data,true))
         else
-            report("unknown file %a",name)
+            report("unknown file %a in cache %a",name,cacheid)
         end
     end
 end

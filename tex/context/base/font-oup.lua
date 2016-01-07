@@ -1904,7 +1904,7 @@ function readers.expand(data)
             -- we also need to do sublookups
             for i=1,#sequences do
                 local sequence = sequences[i]
-                local steps = sequence.steps
+                local steps    = sequence.steps
                 if steps then
                     local kind = sequence.type
                     local markclass = sequence.markclass
@@ -1922,8 +1922,7 @@ function readers.expand(data)
                         if baseclasses then
                             local coverage = step.coverage
                             for k, v in next, coverage do
-    --                             v[1] = baseclasses[v[2]] -- slot 1 is a placeholder
-                                v[1] = baseclasses[v[1]]
+                                v[1] = baseclasses[v[1]] -- slot 1 is a placeholder
                             end
                         elseif kind == "gpos_cursive" then
                             local coverage = step.coverage
@@ -1943,7 +1942,7 @@ function readers.expand(data)
                                 local current      = rule.current
                                 local before       = rule.before
                                 local after        = rule.after
-                                local replacements = rule.replacements
+                                local replacements = rule.replacements or false
                                 local sequence     = { }
                                 local nofsequences = 0
                                 if before then
@@ -1964,7 +1963,7 @@ function readers.expand(data)
                                         sequence[nofsequences] = after[n]
                                     end
                                 end
-                                local lookups = rule.lookups
+                                local lookups = rule.lookups or false
                                 local subtype = nil
                                 if lookups then
                                     for k, v in next, lookups do
@@ -1987,7 +1986,7 @@ function readers.expand(data)
                                         sequence,     -- 3
                                         start,        -- 4
                                         stop,         -- 5
-                                        rule.lookups, -- 6
+                                        lookups,      -- 6 (6/7 also signal of what to do)
                                         replacements, -- 7
                                         subtype,      -- 8
                                     }
@@ -1995,8 +1994,6 @@ function readers.expand(data)
                                         local cu = coverage[unic]
                                         if not cu then
                                             coverage[unic] = rulehash -- can now be done cleaner i think
--- else
---     sequence[start] = nil
                                         end
                                     end
                                 end

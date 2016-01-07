@@ -120,10 +120,10 @@
    \c!distance=\zeropoint,
    \c!stretch=\v!no,
    \c!align=\c!right,
-   \c!leftoffset=.25ex,
+   \c!leftoffset=.25\exheight,
    \c!rightoffset=\linetableparameter\c!leftoffset,
    \c!maxwidth=\zeropoint,
-   \c!width=5em,
+   \c!width=5\emwidth,
    \c!height=\v!fit, % \v!line = faster
    \c!background=,
    \c!backgroundcolor=]
@@ -171,21 +171,21 @@
    \endcsname}
 
 \def\setnoftableslines
-  {\doifelse{\linetableparameter\c!lines}\v!fit
-     {% whitespace already added by vertical strut
-      \ifdim\pagegoal<\maxdimen
-        \scratchdimen\pagegoal
-        \advance\scratchdimen -\pagetotal
-      \else
-        \scratchdimen\textheight
-      \fi
-      \getrawnoflines\scratchdimen
-      \xdef\noflinetablelines{\the\noflines}
-\iflinetablepreroll \else \ifnum\noflinetablelines<\plustwo
-  \page \setnoftableslines
-\fi \fi
-}
-     {\xdef\noflinetablelines{\linetableparameter\c!lines}}}
+  {\xdef\noflinetablelines{\linetableparameter\c!lines}%
+   \ifx\noflinetablelines\v!fit
+     % whitespace already added by vertical strut
+     \ifdim\pagegoal<\maxdimen
+       \scratchdimen\pagegoal
+       \advance\scratchdimen -\pagetotal
+     \else
+       \scratchdimen\textheight
+     \fi
+     \getrawnoflines\scratchdimen
+     \xdef\noflinetablelines{\the\noflines}
+     \iflinetablepreroll \else \ifnum\noflinetablelines<\plustwo
+       \page \setnoftableslines
+     \fi \fi
+   \fi}
 
 \unexpanded\def\startlinetablecell
   {\dosingleempty\dostartlinetablecell}
@@ -270,10 +270,12 @@
    \else
      \doifelse{\linetablecparameter\c!background}\v!color
        {\ifconditional\linetableautoheight
+          \edef\p_height{\linetablerparameter\c!height}%
+          \edef\p_depth {\linetablerparameter\c!depth}%
           \hbox{\blackrule
             [ \c!color=\linetablecparameter\c!backgroundcolor,
-             \c!height=\linetablerparameter{x\c!height},
-              \c!depth=\linetablerparameter{x\c!depth},
+             \c!height=\ifx\p_height\empty\ht\scratchbox\else\p_height\fi,
+              \c!depth=\ifx\p_depth \empty\dp\scratchbox\else\p_depth \fi,
               \c!width=\wd\scratchbox]%
            \hskip-\wd\scratchbox\box\scratchbox}%
          \else

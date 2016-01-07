@@ -1797,7 +1797,7 @@ end
 -- elseif char == zwnj and sequence[n][32] then -- brrr
 
 local function show_skip(dataset,sequence,char,ck,class)
-    logwarning("%s: skipping char %s, class %a, rule %a, lookuptype %a",cref(dataset,sequence),gref(char),class,ck[1],ck[8])
+    logwarning("%s: skipping char %s, class %a, rule %a, lookuptype %a",cref(dataset,sequence),gref(char),class,ck[1],ck[8] or ck[2])
 end
 
 -- A previous version had disc collapsing code in the (single sub) handler plus some
@@ -2169,12 +2169,14 @@ end
 --     end
 -- end
 
+local noflags = { false, false, false, false }
+
 local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
     local sweepnode    = sweepnode
     local sweeptype    = sweeptype
     local diskseen     = false
     local checkdisc    = getprev(head)
-    local flags        = sequence.flags
+    local flags        = sequence.flags or noflags
     local done         = false
     local skipmark     = flags[1]
     local skipligature = flags[2]
@@ -2581,7 +2583,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             local diskchain = diskseen or sweepnode
             if trace_contexts then
                 local rule       = ck[1]
-                local lookuptype = ck[8]
+                local lookuptype = ck[8] or ck[2]
                 local first      = ck[4]
                 local last       = ck[5]
                 local char       = getchar(start)

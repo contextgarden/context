@@ -1494,7 +1494,7 @@ do
                 -- this is expected in th efont handler (faster checking)
                 if flags[1] then flags[1] = "mark" end
                 if flags[2] then flags[2] = "ligature" end
-                if flags[3] then flags[2] = "base" end
+                if flags[3] then flags[3] = "base" end
                 --
                 local markclass    = lookup.markclass
              -- local chain        = lookup.chain

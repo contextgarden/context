@@ -55,6 +55,9 @@ some info about the database
 .TP
 .B --names
 use name instead of unicodes
+.TP
+.B --cache=str
+use specific cache (otl or otf)
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

@@ -2950,11 +2950,13 @@ end
 otf.coverup = {
     stepkey = "subtables",
     actions = {
-        substitution = justset,
-        alternate    = justset,
-        multiple     = justset,
-        ligature     = justset,
-        kern         = justset,
+        substitution      = justset,
+        alternate         = justset,
+        multiple          = justset,
+        ligature          = justset,
+        kern              = justset,
+        chainsubstitution = justset,
+        chainposition     = justset,
     },
     register = function(coverage,lookuptype,format,feature,n,descriptions,resources)
         local name = formatters["ctx_%s_%s_%s"](feature,lookuptype,n) -- we can have a mix of types
