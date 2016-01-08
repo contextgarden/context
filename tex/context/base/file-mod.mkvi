@@ -93,14 +93,14 @@
 \unexpanded\def\setupmodule
   {\dodoubleempty\syst_modules_setup}
 
-\def\syst_modules_setup_indeed
+\def\syst_modules_setup
   {\ifx\currentmoduleparameters\empty
-      \expandafter\syst_modules_setup_indeed_nop
+      \expandafter\syst_modules_setup_nop
    \else
-      \expandafter\syst_modules_setup_indeed_yes
+      \expandafter\syst_modules_setup_yes
    \fi}
 
-\def\syst_modules_setup_indeed_nop[#name][#parameters]%
+\def\syst_modules_setup_nop[#name][#parameters]%
   {\ifsecondargument
      \getparameters[\??module#name:][#parameters]% internal (defaults)
    \else\iffirstargument
@@ -108,7 +108,7 @@
    \fi\fi
    \the\everysetupmodule}
 
-\def\syst_modules_setup_indeed_yes[#name][#parameters]%
+\def\syst_modules_setup_yes[#name][#parameters]%
   {\scratchtoks\expandafter{\currentmoduleparameters}%
    \ifsecondargument
      \getparameters[\??module#name:][#parameters]% internal (defaults)

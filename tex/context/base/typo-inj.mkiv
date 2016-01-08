@@ -44,16 +44,19 @@
 %D     \startsection[title=Delta] fourth \index{fourth} \stopsection
 %D \stoptext
 
-\unexpanded\def\resetinjector              [#1]{\clf_resetinjector{#1}}
-\unexpanded\def\markinjector               [#1]{\dontleavehmode\clf_markinjector{#1}}
-\unexpanded\def\checkinjector              [#1]{\clf_checkinjector{#1}}
-\unexpanded\def\checknextinjector              {\clf_checknextinjector}
-\unexpanded\def\checkpreviousinjector          {\clf_checkpreviousinjector}
-\unexpanded\def\dosetinjector      [#1][#2][#3]{\clf_setinjector{#1}{#2}{#3}}
-\unexpanded\def\doshowinjector             [#1]{\clf_showinjector{#1}}
+\unexpanded\def\resetinjector                [#1]{\clf_resetinjector{#1}}
+\unexpanded\def\markinjector                 [#1]{\dontleavehmode\clf_markinjector{#1}}
+\unexpanded\def\docheckinjector          [#1][#2]{\clf_checkinjector{#1}{#2}}
+\unexpanded\def\checknextinjector            [#1]{\clf_checkinjector{#1}{\v!next}}
+\unexpanded\def\checkpreviousinjector        [#1]{\clf_checkinjector{#1}{\v!previous}}
+%unexpanded\def\checknextinjector            [#1]{\clf_checknextinjector{#1}}
+%unexpanded\def\checkpreviousinjector        [#1]{\clf_checkpreviousinjector{#1}}
+\unexpanded\def\dosetinjector        [#1][#2][#3]{\clf_setinjector{#1}{#2}{#3}}
+\unexpanded\def\doshowinjector               [#1]{\clf_showinjector{#1}}
 
-\unexpanded\def\setinjector {\dotripleargument\dosetinjector}
-\unexpanded\def\showinjector{\dosingleempty\doshowinjector}
+\unexpanded\def\checkinjector{\dodoubleempty   \docheckinjector}
+\unexpanded\def\setinjector  {\dotripleargument\dosetinjector}
+\unexpanded\def\showinjector {\dosingleempty   \doshowinjector}
 
 \unexpanded\def\domarkinjector#1#2% called at the lua end
   {\dontleavehmode\llap{\infofont\ifcase#1\else\red\fi<#2>\quad}}

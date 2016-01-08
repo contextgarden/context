@@ -437,3 +437,11 @@ function tokens.scantable(t,data)
     end
     return data
 end
+
+function tokens.constant(s)
+    if type(s) == "string" then
+        return "'" .. s .. "'"
+    else
+        return s
+    end
+end

@@ -8,16 +8,20 @@ if not modules then modules = { } end modules ['typo-inj'] = { -- was node-par
 
 local tonumber = tonumber
 
-local context         = context
-local implement       = interfaces.implement
+local context           = context
+local implement         = interfaces.implement
 
-local injectors       = { }
-typesetters.injectors = injectors
-local list            = { }
-injectors.list        = list
-local showall         = false
+local injectors         = { }
+typesetters.injectors   = injectors
+local list              = { }
+injectors.list          = list
+local showall           = false
 
-local settings_to_array      = utilities.parsers.settings_to_array
+local settings_to_array = utilities.parsers.settings_to_array
+
+local variables         = interfaces.variables
+local v_next            = variables.next
+local v_previous        = variables.previous
 
 local ctx_domarkinjector     = context.domarkinjector
 local ctx_doactivateinjector = context.doactivateinjector
@@ -72,10 +76,10 @@ end
 
 function injectors.check(name,n) -- we could also accent n = number : +/- 2
     local injector = list[name]
-    if n == false then
+    if not n or n == "" or n == v_next then
+        n = injector.counter + 1
+    elseif n == v_previous then
         n = injector.counter
-    elseif n == nil then
-        n = injector.counter + 1 -- next (upcoming)
     else
         n = tonumber(n) or 0
     end
@@ -89,6 +93,6 @@ implement { name = "resetinjector",         actions = injectors.reset, arguments
 implement { name = "showinjector",          actions = injectors.show,  arguments = "string" }
 implement { name = "setinjector",           actions = injectors.set,   arguments = { "string", "string", "string" } }
 implement { name = "markinjector",          actions = injectors.mark,  arguments = "string" }
-implement { name = "checkinjector",         actions = injectors.check, arguments = "string" }
-implement { name = "checkpreviousinjector", actions = injectors.check, arguments = { "string", true } }
-implement { name = "checknextinjector",     actions = injectors.check }
+implement { name = "checkinjector",         actions = injectors.check, arguments = { "string", "string" } }
+--------- { name = "checkpreviousinjector", actions = injectors.check, arguments = { "string", tokens.constant(v_previous) } }
+--------- { name = "checknextinjector",     actions = injectors.check, arguments = { "string", tokens.constant(v_next) } }
