@@ -884,7 +884,7 @@ local baselines = allocate {
     ['icft'] = 'ideographic character face tope edige baseline',
     ['ideo'] = 'ideographic em-box bottom edge baseline',
     ['idtp'] = 'ideographic em-box top edge baseline',
-    ['math'] = 'mathmatical centered baseline',
+    ['math'] = 'mathematical centered baseline',
     ['romn'] = 'roman baseline'
 }
 

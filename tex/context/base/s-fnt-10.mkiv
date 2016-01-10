@@ -28,6 +28,9 @@ local fontdata = fonts.hashes.identifiers
 --     end
 -- end
 
+local context = context
+local escaped = context.escaped
+
 function fonts.tracers.show_all()
     local tfmdata = fontdata[font.current()]
     if tfmdata then
@@ -79,9 +82,9 @@ function fonts.tracers.show_all()
             NC() tttf() context("U+%05X",unicode)
             NC()        char(unicode)
             NC() tttf() context("%05X",index)
-            NC() tttf() context(gname)
-            NC() tttf() context(aname)
-            NC() tttf() context(cname)
+            NC() if gname ~= "" then tttf() escaped(gname) end
+            NC() if aname ~= "" then tttf() context(aname) end
+            NC() if cname ~= "" then tttf() context(cname) end
             NC() NR()
         end
         context.stoptabulate()

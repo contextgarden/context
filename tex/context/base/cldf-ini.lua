@@ -1721,6 +1721,12 @@ function context.concat(...)
     context(concat(...))
 end
 
+local p_texescape = patterns.texescape
+
+function context.escaped(s)
+    return lpegmatch(p_texescape,s) or s
+end
+
 -- templates
 
 local single  = lpegP("%")
