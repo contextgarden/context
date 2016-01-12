@@ -1,0 +1,217 @@
+%D \module
+%D   [       file=m-educat,
+%D        version=2003.03.05,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Educational Extras,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module will collect a few macros cq.\ definitions
+%D meant for educational use. Most of the code has been laying
+%D around for some time and has been (or is still) used in
+%D \PRAGMA\ projects.
+
+\unprotect
+
+\definesystemvariable{iv}
+
+\definecolor [answerareacolor] [s=.90]
+\definecolor [answerlinecolor] [white]
+
+\definetextbackground
+  [\v!answerarea]
+  [\c!location=\v!text,
+   \c!n=0,
+   \c!frame=\v!off,
+   \c!framecolor=answerlinecolor,
+   \c!rulethickness=2pt,
+   \c!background=\v!color,
+   \c!backgroundcolor=answerareacolor,
+   \c!alternative=2] % betweenline
+
+% n=gedwongen
+% m=extra auto
+
+\def\setupanswerarea
+  {\setuptextbackground[\v!answerarea]}
+
+\setvalue\e!answerspace
+  {\dosingleempty\doanswerspace}
+
+\def\doanswerspace[#1]%
+  {\begingroup
+   \dontcomplain
+   \setupanswerarea
+     [\c!n=0,\c!m=,#1,\c!location=\v!text]%
+   \doifelsenothing{\textbackgroundparameter\c!m}
+     {\expandafter\donoanswerspace}
+     {\expandafter\dodoanswerspace}%
+   [#1]}
+
+\def\donoanswerspace[#1]#2%
+  {\setupthinrules
+     [\c!alternative=\textbackgroundparameter\c!alternative,
+      \c!color=\textbackgroundparameter\c!framecolor,
+      \c!background=\textbackgroundparameter\c!background,
+      \c!backgroundcolor=\textbackgroundparameter\c!backgroundcolor,
+      \c!rulethickness=\textbackgroundparameter\c!rulethickness]%
+   \doifelse{\textbackgroundparameter\c!n}{*}
+     {\thinrule
+      \par}
+     {\scratchcounter0\textbackgroundparameter\c!n\relax
+      % tricky, guess
+      \def\processisolatedword##1%
+        {\setbox\scratchbox=\hbox{##1}%
+         \vbox{\hsize\wd\scratchbox\thinrule
+         \ifcase\scratchcounter\else
+           \setbox\scratchbox=\hbox{\space}%
+           \nobreak\hskip\zeropoint \!!minus \wd\scratchbox
+           \vbox{\hsize\wd\scratchbox\thinrule}%
+         \fi}}%
+      \processisolatedwords{#2}\processisolatedword
+      % so far
+      \ifcase\scratchcounter \else \ifnum\scratchcounter<3
+        \nobreak \vbox{\hsize\scratchcounter em\thinrule}%
+      \else % more
+        \advance \scratchcounter -2
+        \dorecurse\scratchcounter{\allowbreak\vbox{\hsize1em\thinrule}}%
+        \nobreak \vbox{\hsize2em\thinrule}%
+      \fi \fi}%
+   \endgroup}
+
+\def\dodoanswerspace[#1]#2% m case
+  {\getvalue{\e!start\v!answerarea}%
+   #2%
+   \doifelse{\textbackgroundparameter\c!m}{*}
+     {\hfill\strut
+      \getvalue{\e!stop\v!answerarea}%
+      \par}
+     {\scratchcounter0\textbackgroundparameter\c!m\relax
+      \ifcase\scratchcounter \else \ifnum\scratchcounter<3
+        \nobreak \hbox to \scratchcounter em{\strut\hss}%
+      \else % more
+        \advance \scratchcounter -2
+        \dorecurse\scratchcounter{\allowbreak\hbox to 1em{\strut\hss}}%
+        \nobreak \hbox to 2em{\strut\hss}%
+      \fi \fi
+      \getvalue{\e!stop\v!answerarea}}%
+   \endgroup}
+
+\setvalue{\e!start\e!answerlines}%
+  {\dosingleempty\dostartanswerlines}
+
+\def\dostartanswerlines[#1]%
+  {\begingroup
+   \dontcomplain
+   \setupanswerarea
+     [\c!n=0,\c!m=,#1,\c!location=\v!text]%
+   \doifnot{\textbackgroundparameter\c!option}\v!joinedup\softbreak
+   \doifelsenothing{\textbackgroundparameter\c!m}
+     {\expandafter\donostartanswerlines}
+     {\expandafter\dodostartanswerlines}%
+   [#1]}
+
+\def\donostartanswerlines[#1]%
+  {\setupthinrules
+     [\c!alternative=\textbackgroundparameter\c!alternative,
+      \c!color=\textbackgroundparameter\c!framecolor,
+      \c!background=\textbackgroundparameter\c!background,
+      \c!backgroundcolor=\textbackgroundparameter\c!backgroundcolor,
+      \c!rulethickness=\textbackgroundparameter\c!rulethickness]%
+   \thinrules[\c!n=\textbackgroundparameter\c!n]\par
+   \endgroup
+   \grabuntil{\e!stop\e!answerlines}}
+
+\def\dodostartanswerlines[#1]%
+  {\begingroup
+   \getvalue{\e!start\v!answerarea}%
+   \ignorespaces}
+
+\setvalue{\e!stop\e!answerlines}%
+  {\scratchcounter0\textbackgroundparameter\c!m\relax
+   % a \softbreak is more efficient in pos dan \par
+   \ifcase\scratchcounter
+     % nothing
+   \or
+     \softbreak
+   \else
+     \softbreak
+     \advance \scratchcounter \minusone
+     \dorecurse\scratchcounter{\strut\hfill\strut\softbreak}%
+   \fi
+   \strut\hfill\strut
+   \getvalue{\e!stop\v!answerarea}%
+   \par\endgroup\endgroup}
+
+\setvalue\e!answerlines
+  {\dosingleempty\doanswerlines}
+
+\def\doanswerlines[#1]#2%
+  {\getvalue{\e!start\e!answerlines}[#1]%
+   #2%
+   \getvalue{\e!stop\e!answerlines}}
+
+\protect \doifnotmode{demo}{\endinput}
+
+%D Test materiaal.
+
+\starttext
+
+\startnotmode[answers]
+
+  \setupanswerarea[level=+1]
+
+\stopnotmode
+
+\setupcolors[state=start]
+
+test test test \answerspace [n=10] {Whow}. test test test
+test tets test test \answerspace [n=10] {Whow}. test test
+test test tets test test \answerspace [n=10] {Whow}. test
+test test test tets test test \answerspace [n=10] {Whow}.
+test test test test test test \answerspace [n=*] {Whow.}
+
+test test test test test test test \startanswerlines
+[n=3] What A Junk Answer \stopanswerlines
+
+test test test test test test test \startanswerlines
+[n=3,alternative=0] What A Junk Answer \stopanswerlines
+
+test test test test test test test \startanswerlines
+[n=3,alternative=1] What A Junk Answer \stopanswerlines
+
+test test test test test test test \startanswerlines
+[n=3,alternative=2] What A Junk Answer \stopanswerlines
+
+\startitemize[paragraph]
+\item \startanswerlines [option=seried,n=2] xxx \stopanswerlines
+\stopitemize
+
+test test test \answerspace [m=10] {Whow}. test test test
+test tets test test \answerspace [m=10] {Whow}. test test
+test test tets test test \answerspace [m=10] {Whow}. test
+test test test tets test test \answerspace [m=10] {Whow}.
+test test test test test test \answerspace [m=*] {Whow.}
+
+test test test test test test test \startanswerlines
+[m=2] What A Junk Answer \stopanswerlines
+
+test test test test test test test \startanswerlines
+[m=2,alternative=0] What A Junk Answer \stopanswerlines
+
+test test test test test test test \startanswerlines
+[m=2,alternative=1] What A Junk Answer \stopanswerlines
+
+test test test test test test test \startanswerlines
+[m=2,alternative=2] What A Junk Answer \stopanswerlines
+
+\startitemize[paragraph]
+\item \startanswerlines [option=seried,m=2] xxx \stopanswerlines
+\stopitemize
+
+\stoptext

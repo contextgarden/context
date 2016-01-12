@@ -1,0 +1,130 @@
+%D \module
+%D   [      file=x-dir-02,
+%D        version=2003.05.10, % around that time -)
+%D          title=\CONTEXT\ Directory Handling,
+%D       subtitle=Overview (2),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   backspace=.5cm,
+   topspace=.5cm,
+   header=1cm,
+   footer=0cm]
+
+\definehead
+  [directory]
+  [subject]
+
+\setuphead
+  [directory]
+  [style=\tfa]
+
+\setupbodyfont
+  [tt]
+
+\setuptabulate
+  [before=,after=]
+
+\setupcombinations
+  [location=top]
+
+\defineXMLenvironment [files] [root=.,url=]
+  {\doifelsenothing{\XMLop{url}}
+     {\xdef\XMLDIRurl{}}
+     {\xdef\XMLDIRurl{\XMLop{url}/}}
+   \startXMLignore}
+  {\stopXMLignore}
+
+\newcounter\NOfEntries
+
+\startsetups[xmldir:file:normal]
+
+  \doglobal\increment\NOfEntries
+
+  \startfiguretext
+    [left,none]
+    []
+    {}
+    {\hbox
+       {\externalfigure
+          [\XMLpar{files}{root}{.}/\XMLpar{directory}{name}{.}/\XMLop{name}]
+          [frame=on,width=6cm]
+        \quad
+        \framed[width=\figurewidth,height=\figureheight]{}}}
+    \strut \vskip-\lineheight
+    \starttabulate[|l|l|]
+      \NC base   \NC \XMLflush{base}                    \NC \NR
+      \NC type   \NC \XMLflush{type}                    \NC \NR
+      \NC width  \NC \figurenaturalwidth                \NC \NR
+      \NC height \NC \figurenaturalheight               \NC \NR
+      \NC date   \NC \XMLflush{date}                    \NC \NR
+      \NC size   \NC \XMLflush{size}                    \NC \NR
+    \stoptabulate
+  \stopfiguretext
+
+\stopsetups
+
+\startsetups[xmldir:file:small]
+
+  \doglobal\increment\NOfEntries
+
+  \startlinecorrection
+
+  \startcombination
+    {\externalfigure
+       [\XMLpar{files}{root}{.}/\XMLpar{directory}{name}{.}/\XMLop{name}]
+       [frame=on,width=3cm]}
+    {}
+    {\vbox{\starttabulate[|l|l|]
+       \NC base \NC \XMLflush{base} \NC \NR
+       \NC type \NC \XMLflush{type} \NC \NR
+       \NC date \NC \XMLflush{date} \NC \NR
+     \stoptabulate}}
+    {}
+  \stopcombination
+
+  \stoplinecorrection
+
+\stopsetups
+
+\defineXMLenvironment [directory] [name=]
+  {\directory{Path \XMLop{name}}}
+  {}
+
+\defineXMLenvironment [file] [name=]
+  {\bgroup}
+  {% the next quick hack is really needed
+   \expanded{\defconvertedargument\noexpand\asciia{./\jobfilename}.pdf}%
+   \expanded{\defconvertedargument\noexpand\asciib{\XMLpar{directory}{name}{.}/\XMLop{name}}}%
+   % else we can not do an overview of the curent path
+   \doifnot\asciia\asciib
+     {\doifmodeelse{alternative-small}
+        {\setups[xmldir:file:small]}
+        {\setups[xmldir:file:normal]}
+      \endgraf}
+   \egroup}
+
+\defineXMLsave[base]
+\defineXMLsave[type]
+\defineXMLsave[size]
+\defineXMLsave[date]
+
+\starttext
+
+  \doifmode{alternative-small}{\startcolumns[balance=no]}
+
+  \processXMLfilegrouped{\inputfilename}
+
+  \doifmode{alternative-small}{\stopcolumns}
+
+  \ifnum\NOfEntries=0 There are no files found that match the pattern. \fi
+
+\stoptext

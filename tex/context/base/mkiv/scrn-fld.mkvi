@@ -1,0 +1,1038 @@
+%D \module
+%D   [       file=scrn-fld,
+%D        version=1997.05.18,
+%D          title=\CONTEXT\ Screen Macros,
+%D       subtitle=Fields,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% There is still some leftover code from mkii, where we need to
+% be sparse with hash entries and so have a somewhat complex
+% setup mechanism.
+
+% interaction checking
+
+\writestatus{loading}{ConTeXt Screen Macros / Fields}
+
+\unprotect
+
+\registerctxluafile{scrn-fld}{1.001}
+
+%D In \MKII\ we had to cheat a bit with setups in order not to run
+%D out of memory with thousands of fields, which we happen to need at
+%D that time. In \MKIV\ we can store some data at the \LUA\ end and
+%D use a somewhat slower but quite okay inheritance mechanism. For
+%D this reason we now have split definitions, although the old method
+%D is still somewhat supported. The clone and copy commands are
+%D somewhat obsolete for several reasons: we can now use inheritance
+%D and autocloning has been supported for a while. In most cases
+%D cloning (especially with check boxes) the acrobat browser is not
+%D stable enough with respect to appearance handling.
+%D
+%D A fieldcategory is nothing more than a collection of settings.
+%D
+%D \starttyping
+%D \definefieldcategory
+%D   [all-email]
+%D   [height=1cm,
+%D    width=14cm,
+%D    style=sstf]
+%D \stoptyping
+%D
+%D A definition can refer to this category:
+%D
+%D \starttyping
+%D \definefieldbody [email] [type=line,category=all-email,default=pragma@wxs.nl]
+%D \stoptyping
+%D
+%D A copy of a field is made as follows:
+%D
+%D \starttyping
+%D \definefieldbody [xmail] [email]
+%D \stoptyping
+%D
+%D You can also be more specific:
+%D
+%D \starttyping
+%D \definefieldbody[buttona][type=check,values={one,two}]
+%D \definefieldbody[buttonb][type=check,values={three,four}]
+%D \definefieldbody[buttonc][buttona][values={three,four}]
+%D \stoptyping
+%D
+%D Actually typesetting a field happens this way:
+%D
+%D \starttyping
+%D \fieldbody [Email]
+%D \fieldbody [Email] [width=6cm]
+%D \fieldbody [eMAIL]
+%D \fieldbody [eMAIL] [width=7cm]
+%D
+%D \fieldbody [buttona]
+%D \fieldbody [buttona]
+%D \fieldbody [buttonb]
+%D \fieldbody [buttonb]
+%D \fieldbody [buttonc]
+%D \fieldbody [buttonc]
+%D \stoptyping
+%D
+%D So, you can call up a field many times and quite some parameters
+%D can be set.
+%D
+%D Because there are persistent problems with acrobat rendering
+%D associated appearance streams (some messy /MK interferende) we
+%D also support native (built-in dingbat) symbols: check, circle,
+%D cross, diamond, square and star.
+%D
+%D \starttyping
+%D \definefield[test1][check]
+%D \definefield[test2][check]
+%D
+%D \fieldbody[test1][width=1em,height=\strutht,depth=\strutdp,symbol=check]
+%D \fieldbody[test1][width=1em,height=\strutht,depth=\strutdp,symbol=circle]
+%D \fieldbody[test2][width=1em,height=\strutht,depth=\strutdp,symbol=square]
+%D \stoptyping
+%D
+%D When submitting a form, we need to tell the driver module
+%D that we want \FDF\ or \HTML.
+
+\installcorenamespace {forms}
+
+\installdirectcommandhandler \??forms {forms}
+
+\appendtoks
+    \clf_setformsmethod{\formsparameter\c!method}%
+\to \everysetupforms
+
+\setupforms
+  [\c!method=XML] % no need for everyjob initialization as this is the default
+
+\appendtoks
+    \iflocation
+      \clf_exportformdata{\formsparameter\c!export}%
+    \fi
+\to \everystoptext
+
+%D We need to initialize symbols in a special way so that they
+%D can be used as rendering for a widget.
+
+\unexpanded\def\presetfieldsymbols[#list]% slow
+  {\processcommacommand[#list]\scrn_symbols_preset}
+
+\def\scrn_symbols_preset#set%
+  {\processcommalist[#set]\scrn_symbols_preset_indeed}%
+
+\def\scrn_symbols_preset_indeed#tag%
+  {\doifelseobjectfound{SYM}{#tag}
+     {}
+     {\settightobject{SYM}{#tag}\hbox{\symbol[#tag]}%                        % todo: set this as immediate xform
+      \page_otr_add_special_content{\hskip-\maxdimen\getobject{SYM}{#tag}}}} % and then force it into the file
+
+\let\dosetfieldsymbol\scrn_symbols_preset_indeed
+
+\def\dogetfieldsymbol#tag%
+  {\getobject{SYM}{#tag}}
+
+\unexpanded\def\definedefaultsymbols % used ?
+  {\definesymbol[defaultyes][\mathematics{\times}]%
+   \definesymbol[defaultno] [\mathematics{\cdot }]}
+
+%D Now comes the real code:
+
+\installcorenamespace{fieldcategory}
+\installcorenamespace{fieldbody}
+
+\installcommandhandler \??fieldcategory {fieldcategory} \??fieldcategory
+\installcommandhandler \??fieldbody     {fieldbody}     \??fieldbody
+
+\newbox\b_scrn_field_body
+
+\setupfieldcategory
+  [\c!alternative=\v!normal, % normal clone copy
+   \c!type=\v!line,          % line text ...
+   \c!width=5em,
+   \c!height=1em,
+   \c!depth=\zeropoint,
+   \c!align=\v!flushleft,
+   \c!option=\v!printable, % maybe we need a globaloptions and marge them
+   \c!n=1024]
+
+\def\scrn_field_check_category
+  {\edef\currentfieldbodycategory{\fieldbodyparameter\c!category}%
+   \ifx\currentfieldbodycategory\empty
+     \letfieldbodyparameter\s!parent\??fieldcategory
+    %\setevalue{\currentfieldbodyhash\s!parent}{\namedfieldcategoryhash\empty}% to WS: not hash !
+   \else
+     \normalexpanded{\setfieldbodyparameter{\s!parent}{\??fieldcategory\currentfieldbodycategory}}%
+    %\setevalue{\currentfieldbodyhash\s!parent}{\namedfieldcategoryhash\currentfieldbodycategory}% to WS: not hash !
+   \fi}
+
+\appendtoks % we cannot use parent .. maybe s!parent has to change
+    \ifx\currentfieldbodyparent\empty
+        \scrn_field_check_category
+        \clf_definefield
+            name        {\currentfieldbody}%
+            alternative {normal}%
+            type        {\fieldbodyparameter\c!type}%
+            category    {\fieldbodyparameter\c!category}%
+            values      {\fieldbodyparameter\c!values}%
+            default     {\fieldbodyparameter\c!default}%
+        \relax
+    \else
+        \clf_clonefield
+            children    {\currentfieldbody}%
+            alternative {clone}%
+            parent      {\currentfieldbodyparent}%
+            category    {\fieldbodyparameter\c!category}%
+            values      {\fieldbodyparameter\c!values}%
+            default     {\fieldbodyparameter\c!default}%
+        \relax
+    \fi
+\to \everydefinefieldbody
+
+\unexpanded\def\fieldbody
+  {\dodoubleempty\scrn_field_body}
+
+\def\scrn_field_body[#tag][#settings]%
+  {\iflocation
+     \hbox\bgroup
+       \edef\currentfieldbody{#tag}%
+       \ifsecondargument
+         \setupcurrentfieldbody[#settings]%
+       \fi
+       \scrn_field_body_typeset
+       \box\b_scrn_field_body
+       \egroup
+   \fi}
+
+\def\scrn_field_body_typeset % todo: fieldsymbol (checkfields /MK mess)
+  {\edef\currentfieldframecolor{\fieldbodyparameter\c!fieldframecolor}%
+   \ifx\currentfieldframecolor\empty\else
+     \getcolorattributevalue\currentfieldframecolor\currentfieldframecolorvalue
+    % == \edef\currentfieldframecolorvalue{\thecolorattribute\currentfieldframecolor}%
+   \fi
+   \edef\currentfieldbackgroundcolor{\fieldbodyparameter\c!fieldbackgroundcolor}%
+   \ifx\currentfieldbackgroundcolor\empty\else
+     \getcolorattributevalue\currentfieldbackgroundcolor\currentfieldbackgroundcolorvalue
+    % == \edef\currentfieldbackgroundcolorvalue{\thecolorattribute\currentfieldbackgroundcolor}%
+   \fi
+   \usefieldbodystyleandcolor\c!style\c!color
+   \clf_insertfield
+     {\currentfieldbody}%
+     {%
+       title                {\currentfieldbody}
+       width                \dimexpr\fieldbodyparameter\c!width \relax
+       height               \dimexpr\fieldbodyparameter\c!height\relax
+       depth                \dimexpr\fieldbodyparameter\c!depth \relax
+       align                {\fieldbodyparameter\c!align}%
+       length               {\fieldbodyparameter\c!n}%
+       fontstyle            {\fontstyle}%
+       fontalternative      {\fontalternative}%
+       fontsize             {\fontbody}%
+       fontsymbol           {\fieldbodyparameter\c!symbol}%
+       color                {\fieldbodyparameter\c!color}%
+       colorvalue           \attribute\colorattribute
+   \ifx\currentfieldbackgroundcolor\empty \else
+       backgroundcolor      {\currentfieldbackgroundcolor}%
+       backgroundcolorvalue \numexpr\currentfieldbackgroundcolorvalue\relax
+   \fi
+   \ifx\currentfieldframecolor\empty \else
+       framecolor           {\currentfieldframecolor}%
+       framecolorvalue      \numexpr\currentfieldframecolorvalue\relax
+   \fi
+       layer                {\fieldbodyparameter\c!fieldlayer}%
+       option               {\fieldbodyparameter\c!option}%
+       align                {\fieldbodyparameter\c!align}%
+       clickin              {\fieldbodyparameter\c!clickin}%
+       clickout             {\fieldbodyparameter\c!clickout}%
+       regionin             {\fieldbodyparameter\c!regionin}%
+       regionout            {\fieldbodyparameter\c!regionout}%
+       afterkey             {\fieldbodyparameter\c!afterkey}%
+       format               {\fieldbodyparameter\c!format}%
+       validate             {\fieldbodyparameter\c!validate}%
+       calculate            {\fieldbodyparameter\c!calculate}%
+       focusin              {\fieldbodyparameter\c!focusin}%
+       focusout             {\fieldbodyparameter\c!focusout}%
+       openpage             {\fieldbodyparameter\c!openpage}%
+       closepage            {\fieldbodyparameter\c!closepage}%
+      }%
+    \relax}
+
+%D The sets are used in grouped calculations.
+%D
+%D [name] [set]
+
+\unexpanded\def\definefieldbodyset
+  {\dodoubleempty\scrn_field_define_set}
+
+\def\scrn_field_define_set[#tag][#list]%
+  {\clf_definefieldset{#tag}{#list}}
+
+\let\dodefinefieldset\definefieldbodyset % compatibility
+
+%D A few testing macros:
+
+\def\doifelsefieldbody    #tag{\clf_doifelsefield{#tag}}
+\def\doifelsefieldcategory#tag{\clf_doifelsefieldcategory{#tag}}
+
+\let\doiffieldbodyelse    \doifelsefieldbody
+\let\doiffieldcategoryelse\doifelsefieldcategory
+
+\let\doiffieldelse        \doifelsefieldbody % compatibility / will be dropped
+\let\doifelsefield        \doifelsefieldbody % compatibility / will be dropped
+
+%D We still support the traditional method of defining fields:
+%D
+%D \starttyping
+%D \definefield [name] [type] [category] [values] [default]
+%D
+%D \definefield [WWWW] [text]  [textsetup]            [default text]
+%D \definefield [XXXX] [push]  [pushsetup]  [yes,no]  [yes]
+%D \definefield [XXXX] [check] [checksetup] [yes,no]  [yes]
+%D \definefield [YYYY] [combo] [combosetup] [a,b,c,d] [b]
+%D \definefield [ZZZZ] [radio] [radiosetup] [W,X,Y,Z] [Y]
+%D
+%D \definesubfield [W]   [subsetup] [p,q]
+%D \definesubfield [X,Y] [subsetup] [p,r]
+%D \definesubfield [Z]   [subsetup] [y,z]
+%D
+%D evt \definemainfield ... wanneer geplaatst voor subs gegeven
+%D
+%D \clonefield [XXXX] [XX,YY] [mysetup]      [on,off]
+%D \clonefield [Z]    [AA,BB] [somesetup]    [true,false]
+%D \clonefield [Z]    [CC,DD] [anothersetup]
+%D
+%D \copyfield [XXXX] [PP,QQ,RR]
+%D \stoptyping
+%D
+%D Keep in mind that you can also use \type {\definefieldbody} to
+%D achieve the same.
+
+\unexpanded\def\definefield   {\doquintupleempty\scrn_field_define_field}
+\unexpanded\def\definesubfield{\dotripleempty   \scrn_field_define_subfield}
+\unexpanded\def\clonefield    {\doquadrupleempty\scrn_field_clone_field}
+\unexpanded\def\copyfield     {\dodoubleempty   \scrn_field_copy_field}
+
+\let\definemainfield\definefield % obsolete !
+
+\def\scrn_field_define_field[#tag][#type][#category][#values][#default]%
+  {\definefieldbody[#tag][\c!type=#type,\c!category=#category,\c!values={#values},\c!default={#default}]}
+
+\def\scrn_field_define_subfield[#tag][#category][#values]%
+  {\definefieldbody[#tag][\c!type=sub,\c!category=#category,\c!values={#values}]}
+
+\def\scrn_field_clone_field[#parent][#tag][#category][#values]%
+  {\definefieldbody[#tag][#parent][\c!category=#category,\c!values={#values}]}
+
+\def\scrn_field_copy_field[#parent][#tag]%
+  {\definefieldbody[#tag][#parent]}
+
+%D We hook fields into the (viewer based) layering mechanism
+%D (implemented as properties).
+
+\appendtoks
+    \let\currentfieldcategory\empty
+    \doifelse{\interactionparameter\c!fieldlayer}\v!auto
+      {\setupcurrentfieldcategory[\c!fieldlayer=\currentviewerlayer]}%
+      {\setupcurrentfieldcategory[\c!fieldlayer=]}%
+\to \everysetupinteraction
+
+\setupinteraction
+  [\c!fieldlayer=\v!auto] % auto by default
+
+%D The \type {\fieldbody} is the more bare one. One step further goes
+%D \type {\fitfield}, in fact it (now) uses a dedicated instance of
+%D framed: \type {fitfieldframed}.
+%D
+%D \starttyping
+%D \ruledhbox{\fieldbody[Email][height=\strutht,depth=\strutdp,style=normal]}
+%D \ruledhbox{\fitfield[Email][height=\strutht,depth=\strutdp,style=normal]}
+%D \ruledhbox{\fitfield[buttona]}
+%D \stoptyping
+
+\newbox\b_scrn_field_fit_symbol
+
+\defineframed
+  [fitfieldframed]
+  [\c!strut=\v!no,
+   \c!frame=off,
+   \c!offset=\v!overlay,
+   \c!align=]
+
+\unexpanded\def\fitfield
+  {\dodoubleempty\scrn_field_fit}
+
+\def\scrn_field_fit[#tag][#settings]%
+  {\iflocation
+     \begingroup
+       \edef\currentdefaultfieldvalue{\clf_getdefaultfieldvalue{#tag}}%
+       \setbox\b_scrn_field_fit_symbol\hbox{\symbol[\currentdefaultfieldvalue]}%
+       \fitfieldframed
+         {\fieldbody[#tag]
+            [\c!width=\wd\b_scrn_field_fit_symbol,
+             \c!height=\ht\b_scrn_field_fit_symbol,
+             \c!depth=\dp\b_scrn_field_fit_symbol,
+             #settings]}%
+     \endgroup
+   \fi}
+
+%D The traditional field command does some labeling and
+%D boxing:
+
+\installcorenamespace{fieldlabel}
+\installcorenamespace{fieldcontent}
+\installcorenamespace{fieldtotal}
+
+\installparameterhandler     \??fieldlabel   {fieldlabelframed}
+\installparameterhandler     \??fieldcontent {fieldcontentframed}
+\installparameterhandler     \??fieldtotal   {fieldtotalframed}
+
+\installsetuphandler         \??fieldlabel   {fieldlabelframed}
+\installsetuphandler         \??fieldcontent {fieldcontentframed}
+\installsetuphandler         \??fieldtotal   {fieldtotalframed}
+
+\installinheritedframed                      {fieldlabelframed}
+\installinheritedframed                      {fieldcontentframed}
+\installinheritedframed                      {fieldtotalframed}
+
+\unexpanded\def\setupfield {\doquintupleempty\scrn_field_setup_field}
+\unexpanded\def\setupfields{\doquadrupleempty\scrn_field_setup_fields}
+
+\setupfieldcontentframed
+  [\c!align=\v!flushleft,
+   \c!strut=\v!no,
+   \s!parent=\??regularframed] % needs checking
+
+\setupfieldcontentframed % independent
+  [\c!alternative=\v!normal,
+   \c!type=\v!line,
+   \c!width=5em,
+   \c!height=\lineheight,
+   \c!depth=\zeropoint,
+   \c!align=\v!flushleft,
+   \c!option=\v!printable,
+   \c!n=1024]
+
+\setupfieldlabelframed
+  [\c!style=,
+   \c!color=,
+   \c!align=\v!flushleft,
+   \s!parent=\??regularframed] % needs checking
+
+\setupfieldtotalframed
+  [%\c!alternative={\v!label,\v!frame,\v!horizontal},
+   \c!strut=\v!no,
+   \c!align=,
+   \s!parent=\??regularframed] % needs checking
+
+% \setupcurrent
+
+\def\scrn_field_setup_field[#tag][#variant][#totalsettings][#labelsettings][#fieldsettings]%
+  {\iffifthargument
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#fieldsettings]%
+     \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal,\c!alternative={#variant},#totalsettings]%
+     \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel,#labelsettings]%
+     \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#fieldsettings]%
+   \else\iffourthargument
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#labelsettings]%
+     \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal,\c!alternative={#variant},#totalsettings]%
+     \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel]%
+     \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#labelsettings]%
+   \else\ifthirdargument
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#totalsettings]%
+     \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal,\c!alternative={#variant}]%
+     \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel]%
+     \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#totalsettings]%
+   \else\ifsecondargument
+     \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#variant]%
+     \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal]%
+     \setupfieldlabelframed  [#tag][\s!parent=\??fieldlabel]%
+     \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#variant]%
+   \fi\fi\fi\fi}
+
+\def\scrn_field_setup_fields[#variant][#totalsettings][#labelsettings][#fieldsettings]%
+  {\iffourthargument
+     \setupfieldtotalframed  [\c!alternative={#variant},#totalsettings]%
+     \setupfieldlabelframed  [#labelsettings]%
+     \setupfieldcontentframed[#fieldsettings]%
+   \else\ifthirdargument
+     \setupfieldtotalframed  [#variant]%
+     \setupfieldlabelframed  [#totalsettings]%
+     \setupfieldcontentframed[#labelsettings]%
+   \else\ifsecondargument
+     \setupfieldtotalframed  [#variant]%
+     \setupfieldcontentframed[#totalsettings]%
+   \else
+     \setupfieldtotalframed  [#variant]%
+   \fi\fi\fi}
+
+% just to get the chain right for no category:
+
+\definefieldcategory    [][\s!parent=\??fieldcontent]
+%setupfieldtotalframed  [][\s!parent=\??fieldtotal]
+%setupfieldlabelframed  [][\s!parent=\??fieldlabel]
+%setupfieldcontentframed[][\s!parent=\??fieldcontent]
+
+% no longer supported:
+
+\let\resetfields\relax
+
+\def\scrn_field_load_scripts{\useJSscripts[fld]\globallet\scrn_field_load_scripts\relax}
+
+\newconditional\fieldlabelshown
+\newconditional\fieldframeshown
+\newconditional\fieldisvertical
+\newconditional\fieldishorizontal
+
+\unexpanded\def\field
+  {\dodoubleempty\scrn_field_direct}
+
+\def\scrn_field_direct[#tag][#label]% can be sped up with \setupcurrentfieldtotalframed etc
+  {\iflocation
+     \dontleavehmode
+     \begingroup
+     \scrn_field_load_scripts
+     \edef\currentfieldbody    {#tag}%
+     \edef\currentfieldlabel   {#label}%
+     \edef\currentfieldcategory{\clf_getfieldcategory{#tag}}%
+     \ifx\currentfieldlabel\empty
+       \let\currentfieldlabel\currentfieldbody
+     \fi
+     \ifx\currentfieldcategory\empty
+       \setupfieldtotalframed  [\currentfieldbody][\s!parent=\??fieldtotal]%
+       \setupfieldlabelframed  [\currentfieldbody][\s!parent=\??fieldlabel]%
+       \setupfieldcontentframed[\currentfieldbody][\s!parent=\??fieldcontent]%
+       \definefieldcategory    [\currentfieldbody]%
+       \setupfieldbody         [\currentfieldbody][\c!category=\currentfieldbody]%
+       \let\currentfieldcategory\currentfieldbody
+     \fi
+     \let\currentfieldtotalframed  \currentfieldcategory
+     \let\currentfieldlabelframed  \currentfieldcategory
+     \let\currentfieldcontentframed\currentfieldcategory
+     \scrn_field_analyze_setups
+     \ifconditional\fieldframeshown
+       \inheritedfieldtotalframedframed % lower framedoffset
+       \bgroup
+     \else
+       \vbox
+       \bgroup
+     \fi
+     \dontcomplain
+     \ifconditional\fieldlabelshown
+       \scrn_field_set_label_box
+     \fi
+     \scrn_field_set_content_box
+     \ifconditional\fieldlabelshown
+       \ifconditional\fieldisvertical
+         \scrn_field_flush_vertical
+       \else
+         \scrn_field_flush_horizontal
+       \fi
+     \else
+       \scrn_field_flush_content
+     \fi
+     \egroup
+     \endgroup
+   \fi}
+
+% opties: veld, label, kader, vertikaal/horizontaal
+
+\newbox\b_scrn_field_label
+\newbox\b_scrn_field_content
+
+% lower framedoffset
+
+\def\scrn_field_set_label_box
+  {\setbox\b_scrn_field_label\hbox
+      {\reshapeframeboxtrue % else wrong dimensions % still needed?
+       \inheritedfieldlabelframedframed
+         {\currentfieldlabel}}}
+
+% \c!fieldoffset=-\framedoffset,\c!fieldbackgroundcolor=,
+% \hbox{\lower\@@fdfieldoffset\hbox{\typesetfield}}
+
+\def\scrn_field_set_content_box
+  {\setbox\b_scrn_field_content\hbox
+     {\reshapeframeboxtrue % else wrong dimensions (to be checked)
+      \doifnothing{\fieldcontentframedparameter\c!height}
+        {\ifconditional\fieldisvertical
+           \setfieldcontentframedparameter\c!height{6ex}%
+         \else\ifconditional\fieldishorizontal
+           \setfieldcontentframedparameter\c!height{\vsize}%
+         \else
+           \setfieldcontentframedparameter\c!height{2cm}%
+         \fi\fi}%
+      \doifnothing{\fieldcontentframedparameter\c!width}
+        {\ifconditional\fieldisvertical
+           \setfieldcontentframedparameter\c!width{\hsize}%
+         \else\ifconditional\fieldishorizontal
+           \setfieldcontentframedparameter\c!width{20em}%
+         \else
+           \setfieldcontentframedparameter\c!width{2cm}%
+         \fi\fi}%
+      \inheritedfieldcontentframedframed % lower framedoffset
+        {\fieldbody
+           [\currentfieldbody]
+           [\c!width=\framedwidth,\c!height=\framedheight]}}}
+
+
+\def\scrn_field_flush_vertical
+  {\vbox
+     {\copy\b_scrn_field_label
+      \fieldtotalframedparameter\c!inbetween
+      \copy\b_scrn_field_content}}
+
+\def\scrn_field_flush_horizontal
+   {\hbox
+      {\vbox \ifdim\ht\b_scrn_field_content>\ht\b_scrn_field_label to \ht\b_scrn_field_content \fi
+         {\fieldtotalframedparameter\c!before
+          \copy\b_scrn_field_label
+          \fieldtotalframedparameter\c!after}%
+       \hskip\fieldtotalframedparameter\c!distance
+       \vbox \ifdim\ht\b_scrn_field_label>\ht\b_scrn_field_content to \ht\b_scrn_field_label \fi
+         {\fieldtotalframedparameter\c!before
+          \box\b_scrn_field_content
+          \fieldtotalframedparameter\c!after}}}
+
+\def\scrn_field_flush_content
+  {\box\b_scrn_field_content}
+
+%D todo: replace \processallactionsinset
+
+\def\scrn_field_analyze_setups
+  {\setfalse\fieldlabelshown
+   \setfalse\fieldframeshown
+   \setfalse\fieldishorizontal
+   \setfalse\fieldisvertical
+   \normalexpanded{\processallactionsinset[\fieldtotalframedparameter\c!alternative]}
+     [      \v!reset=>\setfalse\fieldlabelshown
+                      \setfalse\fieldframeshown
+                      \setfalse\fieldishorizontal
+                      \setfalse\fieldisvertical,
+            \v!label=>\settrue\fieldlabelshown,
+            \v!frame=>\settrue\fieldframeshown,
+       \v!horizontal=>\settrue\fieldishorizontal,
+         \v!vertical=>\settrue\fieldisvertical]%
+   \ifconditional\fieldisvertical
+     \setupfieldtotalframed[\c!distance=\zeropoint,\c!inbetween=\vskip\d_framed_local_offset,\c!align=\v!right,\c!width=20em]%
+   \else\ifconditional\fieldishorizontal
+     \setupfieldtotalframed[\c!distance=\d_framed_local_offset,\c!inbetween=,\c!align=\c!left,\c!height=10ex]%
+   \else
+     \setupfieldtotalframed[\c!distance=\zeropoint,\c!inbetween=,\c!align=\c!left]%
+   \fi\fi
+   \setupfieldtotalframed[\c!n=,\c!before=,\c!after=\vss,\c!style=,\c!color=]}
+
+%D Common stuff (obsolete)
+
+\newcount\c_scrn_field_system_n
+
+\def\nextsystemfield
+  {\global\advance\c_scrn_field_system_n\plusone
+   \def\currentsystemfield{sys::\number\c_scrn_field_system_n}}
+
+%D \CONTEXT\ had tooltips right from the moment that it
+%D supported fields. Due to the at that moment somewhat
+%D limited \PDF\ specification, they were implemented
+%D using \JAVASCRIPT, but nowadays more kind of actions
+%D are supported, so we can do without. The \MKIV\ version
+%D also supports definition of tooltips and configuration.
+%D
+%D \starttyping
+%D before \tooltip[right]{inbetween}{a very nice tip} after\par
+%D before \tooltip[align=normal]{inbetween}{a very\\nice tip} after\par
+%D before \tooltip[middle]{inbetween}{a very nice tip} after\par
+%D before \tooltip[left]{inbetween}{a very nice tip} after\par
+%D \stoptyping
+
+\newbox  \b_scrn_tooltip_anchor
+\newbox  \b_scrn_tooltip_text
+\newcount\c_scrn_tooltip_n
+
+\installcorenamespace{tooltip}
+
+\installframedcommandhandler \??tooltip {tooltip} \??tooltip
+
+\setuptooltip
+  [\c!location=\v!right,
+   \c!frame=\v!off,
+   \c!offset=.1ex,
+   \c!background=\v!color,
+   \c!backgroundcolor=gray]
+
+\appendtoks
+    \setuevalue\currenttooltip{\scrn_tooltip_direct{\currenttooltip}}%
+\to \everydefinetooltip
+
+\unexpanded\def\scrn_tooltip_direct#tag%
+  {\def\currenttooltip{#tag}%
+   \doifelselocation
+     {\dosingleempty\scrn_tooltip_indeed}
+     {\dosingleempty\scrn_tooltip_ignore}}
+
+\def\scrn_tooltip_ignore[#settings]#anchortext#tiptext%
+  {#anchortext}
+
+\def\scrn_tooltip_indeed[#settings]#anchortext#tiptext% a more modern aproach (push buttons)
+  {\dontleavehmode \hbox \bgroup
+     \dontcomplain
+     \global\advance\c_scrn_tooltip_n\plusone
+     \edef\currenttooltipname{tooltip:\number\c_scrn_tooltip_n}%
+     \setbox\b_scrn_tooltip_anchor\hbox
+       {\strut#anchortext}%
+     \doifelseassignment{#settings}
+       {\setupcurrenttooltip[#settings]}%
+       {\setupcurrenttooltip[\c!location=#settings]}%
+     \setbox\b_scrn_tooltip_text\hbox
+       {\lettooltipparameter\c!location\empty
+        \inheritedtooltipframed{#tiptext}}%
+     \definesymbol
+       [\currenttooltipname:txt]
+       [\copy\b_scrn_tooltip_text]%
+     \definefieldbody
+       [\currenttooltipname:txt]
+       [\c!type=push,
+        \c!width=\wd\b_scrn_tooltip_text,
+        \c!height=\ht\b_scrn_tooltip_text,
+        \c!depth=\dp\b_scrn_tooltip_text,
+        \c!option=\v!hidden,
+        \c!values=\currenttooltipname:txt]%
+     \setbox\b_scrn_tooltip_text\hbox
+       {\fieldbody[\currenttooltipname:txt]}%
+     \setbox\b_scrn_tooltip_text\hbox
+       {\strut\lower\dimexpr.25ex+\ht\b_scrn_tooltip_text\relax\box\b_scrn_tooltip_text}%
+     \edef\currenttooltiplocation{\tooltipparameter\c!location}%
+     \ifx\currenttooltiplocation\v!left
+       \hsmashed{\hskip\wd\b_scrn_tooltip_anchor\llap{\box\b_scrn_tooltip_text}}%
+     \else\ifx\currenttooltiplocation\v!middle
+       \hsmashed to \wd\b_scrn_tooltip_anchor{\hss\box\b_scrn_tooltip_text\hss}%
+     \else
+       \hsmashed{\box\b_scrn_tooltip_text}%
+     \fi\fi
+     \definesymbol
+       [\currenttooltipname:but]
+       [\hphantom{\copy\b_scrn_tooltip_anchor}]%
+     \definefieldbody
+       [\currenttooltipname:but]
+       [\c!type=push,
+        \c!regionin=action(show{\currenttooltipname:txt}),
+        \c!regionout=action(hide{\currenttooltipname:txt}),
+        \c!width=\wd\b_scrn_tooltip_anchor,
+        \c!height=\ht\b_scrn_tooltip_anchor,
+        \c!depth=\dp\b_scrn_tooltip_anchor]%
+     \hsmashed{\fieldbody[\currenttooltipname:but]}%
+   \egroup
+   #anchortext}% when hyphenated the text wil stick out ... such are fields and we cannot use a link here
+
+\definetooltip[tooltip]
+
+%D From messages on the mailing list we can conclude that
+%D fieldstacks are used so we keep them in the core:
+%D
+%D \starttyping
+%D \definesymbol[one]  [one]
+%D \definesymbol[two]  [two]
+%D \definesymbol[three][three]
+%D
+%D \definefieldstack[mine][one,two,three]
+%D \fieldstack[mine]
+%D \fieldstack[mine]
+%D
+%D \goto{walk field}[Walk{mine}]
+%D \stoptyping
+
+% todo: expand #symbols
+
+\installcorenamespace {fieldstack}
+
+\unexpanded\def\definefieldstack
+  {\dotripleargument\scrn_fieldstack_define}
+
+\def\scrn_fieldstack_define[#tag][#symbols][#settings]%
+  {\ifcsname\??fieldstack#tag\endcsname
+     % already done
+   \else
+     \setgvalue{\??fieldstack#tag}{\scrn_fieldstack_construct[#tag][#symbols][#settings]}%
+   \fi}
+
+\unexpanded\def\fieldstack
+  {\dotripleempty\scrn_fieldstack_direct}
+
+\def\scrn_fieldstack_direct[#tag][#symbols][#settings]%
+  {\ifsecondargument
+     \scrn_fieldstack_define[#tag][#symbols][#settings]%
+   \fi
+   \csname\??fieldstack#tag\endcsname}
+
+\newbox\b_scrn_fieldstack_box
+
+\def\scrn_fieldstack_add#tag#settings#symbol%
+  {\advance\scratchcounter\plusone
+   \edef\currentfieldstackname{#tag:\number\scratchcounter}%
+   \ifnum\scratchcounter=\fieldcategoryparameter\c!start\relax
+     \definefieldbody[\currentfieldstackname][\c!type=check,\c!values={#symbol,\empty},\c!default={#symbol}]%
+   \else
+     \definefieldbody[\currentfieldstackname][\c!type=check,\c!values={#symbol,\empty},\c!default=]%
+   \fi
+   \setbox\b_scrn_fieldstack_box\hbox{\symbol[#symbol]}%
+   \setcollector
+     [fieldstack]
+     {\fieldbody
+        [\currentfieldstackname]
+        [\c!option=\v!readonly,
+         \c!width=\wd\b_scrn_fieldstack_box,
+         \c!height=\ht\b_scrn_fieldstack_box,
+         \c!depth=\dp\b_scrn_fieldstack_box,
+         #settings]}}
+
+\def\scrn_fieldstack_construct[#tag][#symbols][#settings]% start=n, 0 == leeg
+  {\iflocation
+     \dontleavehmode
+     \begingroup
+     \setupfieldcategory[\c!start=1,#settings]% was just \??fieldcategory
+     \scrn_field_load_scripts
+     \definecollector
+       [fieldstack]%
+       [\c!corner=\v!middle,
+        \c!location=\v!middle]%
+     \scratchcounter\zerocount
+     \processcommalist[#symbols]{\scrn_fieldstack_add{#tag}{#settings}}%
+     \flushcollector[fieldstack]%
+     \endgroup
+   \fi}
+
+%D Another goodie. Two actions can be hookes into an overlay.
+%D
+%D \starttyping
+%D \defineviewerlayer[test]
+%D
+%D \startviewerlayer[test]Hide Me\stopviewerlayer
+%D
+%D \defineoverlay
+%D   [WithTest]
+%D   [{\overlayrollbutton[HideLayer{test}][VideLayer{test}]}]
+%D
+%D \framed[background=WithTest]{toggle}
+%D \stoptyping
+
+\newcount\c_scrn_rollbutton_n
+
+\unexpanded\def\overlayrollbutton
+  {\dodoubleargument\scrn_rollbutton_overlay}
+
+\def\scrn_rollbutton_overlay[#regionin][#regionout]%
+  {\iflocation
+     \bgroup
+     \global\advance\c_scrn_rollbutton_n\plusone
+     \definesymbol
+       [rollbutton:\number\c_scrn_rollbutton_n]
+       [{\framed[\c!frame=\v!off,\c!width=\overlaywidth,\c!height=\overlayheight]{}}]%
+     \definefieldbody
+       [rollbutton:\number\c_scrn_rollbutton_n]
+       [\c!type=push,
+        \c!regionin={#regionin},
+        \c!regionout={#regionout},
+        \c!values=\currentsystemfield,
+        \c!default=\currentsystemfield]%
+     \fitfield[\currentsystemfield]%
+     \egroup
+   \fi}
+
+% \protect \endinput % THE FOLLOWING CODE IS NOT CHECKED
+
+%D I will redo these when I need them.
+
+% \setupinteraction[state=start]
+%
+% \definepushbutton [reset]
+%
+% \startuniqueMPgraphic{whatever}{color}
+%     fill fullcircle xysized (OverlayWidth,OverlayHeight) withcolor \MPvar{color} ;
+% \stopuniqueMPgraphic
+%
+% \definepushsymbol [reset] [n] [\uniqueMPgraphic{whatever}{color=red}]
+% \definepushsymbol [reset] [r] [\uniqueMPgraphic{whatever}{color=green}]
+% \definepushsymbol [reset] [d] [\uniqueMPgraphic{whatever}{color=blue}]
+%
+% \starttext
+%     \startTEXpage
+%         \pushbutton [reset] [page(2)]
+%     \stopTEXpage
+%     \startTEXpage
+%         \pushbutton [reset] [page(1)]
+%     \stopTEXpage
+% \stoptext
+
+\newcount\c_scrn_pushbutton_n
+
+\unexpanded\def\definepushbutton % name optional setup
+  {\dodoubleempty\scrn_pushbutton_define}
+
+\def\scrn_pushbutton_define[#tag][#settings]%
+  {\scrn_pushbutton_define_variant{#tag}{n}{push}%
+   \scrn_pushbutton_define_variant{#tag}{r}{\symbol[pushsymbol:#tag:n]}%
+   \scrn_pushbutton_define_variant{#tag}{d}{\symbol[pushsymbol:#tag:r]}%
+   \setvalue{pushbutton:#tag}{\scrn_pushbutton_handle{#tag}{#settings}}}
+
+\def\scrn_pushbutton_define_variant#tag#variant#content%
+  {\doifelsesymboldefined{pushsymbol:#tag:#variant}
+     \donothing
+     {\definesymbol[pushsymbol:#tag:#variant][{#content}]}}
+
+\def\scrn_pushbutton_handle#tag#settings#reference%
+  {\bgroup
+   \global\advance\c_scrn_pushbutton_n\plusone
+   \setupfield
+     [pushbutton]
+     [\c!frame=\v!overlay,
+      \c!offset=\v!overlay,
+      \c!clickout={#reference},
+      #settings]%
+   \definefield
+     [pushbutton:\number\c_scrn_pushbutton_n]%
+     [push]
+     [pushbutton]
+     [pushsymbol:#tag:n,pushsymbol:#tag:r,pushsymbol:#tag:d]%
+   \fitfield
+     [pushbutton:\number\c_scrn_pushbutton_n]%
+   \egroup}
+
+\unexpanded\def\definepushsymbol
+  {\dotripleargument\scrn_pushsymbol_define}
+
+\def\scrn_pushsymbol_define[#tag][#variant]% [#reference]
+  {\definesymbol[pushsymbol:#tag:#variant]}
+
+\def\pushbutton
+  {\dodoubleargument\scrn_pushbutton_direct}
+
+\def\scrn_pushbutton_direct[#tag][#variant]%
+  {\executeifdefined{pushbutton:#tag}\gobbleoneargument{#variant}}
+
+%D We plug into the menu system
+
+\unexpanded\def\scrn_menu_psh_start[#reference]#text\stoppsh
+  {\starttxt\pushbutton[\currentmenu][#reference]\stoptxt}
+
+\unexpanded\def\scrn_menu_psh_direct[#reference]#text\\
+  {\scrn_menu_psh_start[#reference]\stoprob}
+
+\appendtoks
+    \let\startpsh\scrn_menu_psh_start
+    \let\stoppsh \relax
+    \let\psh     \scrn_menu_psh_direct
+\to \everysetmenucommands
+
+%D Another goodie: (unchecked in \MKIV)
+
+% calls:
+%              {..} [JS..]
+% [left]       {..} [JS..]
+%        [a=b] {..} [JS..]
+% [left] [a=b] {..} [JS..]
+%
+% \setupbuttons[offset=0pt,frame=off] % alternative=hidden
+%
+% \rollbutton {Manuals}       [JS(Goto_File{show-man.pdf})]
+% \rollbutton {Articles}      [JS(Goto_File{show-art.pdf})]
+% \rollbutton {Papers}        [JS(Goto_File{show-pap.pdf})]
+% \rollbutton {Presentations} [JS(Goto_File{show-pre.pdf})]
+% \rollbutton {Resources}     [JS(Goto_File{show-res.pdf})]
+%
+% \rob [JS(...)] bla bla \\
+
+% \definecolor[rollover:n][red]
+% \definecolor[rollover:r][green]
+% \definecolor[rollover:d][blue]
+
+\definepalet
+  [rollover]
+  [n=red,
+   r=green,
+   d=blue]
+
+\newcount\c_scrn_rollbutton_n_button
+\newcount\c_scrn_rollbutton_n_symbol
+
+\unexpanded\def\rollbutton
+  {\dodoubleempty\scrn_rollbutton}
+
+\def\scrn_rollbutton_symbol_m
+  {\scrn_rollbutton_symbol_indeed
+     \interactionmenuparameter
+     \inheritedinteractionmenuframed
+     \setinteractionmenuparameter
+     \useinteractionmenustyleandcolor}
+
+\def\scrn_rollbutton_symbol_b
+  {\scrn_rollbutton_symbol_indeed
+     \buttonparameter
+     \inheritedbuttonframed
+     \setbuttonparameter
+     \usebuttonstyleandcolor}
+
+\def\scrn_rollbutton[#tag][#settings]#text[#reference]%
+  {\dontleavehmode
+   \bgroup
+   \advance\c_scrn_rollbutton_n_button\plusone
+   \advance\c_scrn_rollbutton_n_symbol\plusone
+   \iffirstargument
+     \ifsecondargument
+       \edef\currentinteractionmenu{#tag}%
+       \setupcurrentinteractionmenu[#settings]%
+       \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_m
+     \else
+       \doifelseassignment{#tag}
+         {\let\currentbutton\empty
+          \setupcurrentbutton[#tag]%
+          \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_b}%
+         {\edef\currentinteractionmenu{#tag}%
+          \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_m}%
+     \fi
+   \else
+     \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_b
+   \fi
+   % todo: share symbols, tricky since different dimensions
+   \definesymbol[rollsymbol:\number\c_scrn_rollbutton_n_symbol:n][\scrn_rollbutton_symbol{n}{#text}]%
+   \definesymbol[rollsymbol:\number\c_scrn_rollbutton_n_symbol:r][\scrn_rollbutton_symbol{r}{#text}]%
+   \definesymbol[rollsymbol:\number\c_scrn_rollbutton_n_symbol:d][\scrn_rollbutton_symbol{d}{#text}]%
+   \setupfield
+     [rollbutton]
+     [\c!frame=\v!off,
+      \c!offset=\v!overlay,
+      \c!clickout={#reference}]%
+   \definefield
+     [rollbutton:\number\c_scrn_rollbutton_n_button][push][rollbutton]
+     [rollsymbol:\number\c_scrn_rollbutton_n_symbol:n,%
+      rollsymbol:\number\c_scrn_rollbutton_n_symbol:r,%
+      rollsymbol:\number\c_scrn_rollbutton_n_symbol:d]%
+   \fitfield[rollbutton:\number\c_scrn_rollbutton_n_button]%
+   \egroup}
+
+\unexpanded\def\scrn_rollbutton_symbol_indeed#getparameter#inheritedframed#setparameter#usestyleandcolor#what#text%
+  {\definecolor[rollover][rollover:#what]%
+   \doifelse{#what}{n}% ?
+     {\doifelse{#getparameter\c!alternative}\v!hidden\phantom\hbox}\hbox
+        {#setparameter\c!framecolor     {rollover}%
+         #setparameter\c!backgroundcolor{rollover}%
+         #setparameter\c!color          {rollover}%
+         #inheritedframed{#usestyleandcolor\c!style\c!color{#text}}}}
+
+%D We plug into the menu system
+
+\unexpanded\def\scrn_menu_rob_start[#reference]#text\stoprob
+  {\starttxt\rollbutton[\currentmenu]{\ignorespaces#text\unskip}[#reference]\stoptxt}
+
+\unexpanded\def\scrn_menu_rob_direct[#reference]#text\\
+  {\scrn_menu_rob_start[#reference]#text\stoprob}
+
+\appendtoks
+    \let\startrob\scrn_menu_rob_start
+    \let\stoprob \relax
+    \let\rob     \scrn_menu_rob_direct
+\to \everysetmenucommands
+
+\protect \endinput

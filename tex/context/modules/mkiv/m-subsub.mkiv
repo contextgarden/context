@@ -1,0 +1,76 @@
+%D \module
+%D   [       file=m-subsub,
+%D        version=2000.12.14,
+%D          title=\CONTEXT\ Private Modules,
+%D       subtitle=More Section Levels,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. This module is not public.
+
+\unprotect
+
+\definesection[\s!section-8]
+\definesection[\s!section-9]
+\definesection[\s!section-10]
+\definesection[\s!section-11]
+\definesection[\s!section-12]
+
+\definehead
+  [\v!subsubsubsubsubsection]
+  [\c!section=\s!section-8,
+   \c!default=\v!subsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsection]
+  [\c!section=\s!section-9,
+   \c!default=\v!subsubsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsection]
+  [\c!section=\s!section-10,
+   \c!default=\v!subsubsubsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubsection]
+  [\c!section=\s!section-11,
+   \c!default=\v!subsubsubsubsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubsubsection]
+  [\c!section=\s!section-12,
+   \c!default=\v!subsubsubsubsubsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsubsection,
+   \c!default=\v!subsubsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsubsubsection,
+   \c!default=\v!subsubsubsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsubsubsubsection,
+   \c!default=\v!subsubsubsubsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsubsubsubsubsection,
+   \c!default=\v!subsubsubsubsubsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubsubsubject]
+  [\c!coupling=\v!subsubsubsubsubsubsubsubsubsection,
+   \c!default=\v!subsubsubsubsubsubsubsubsubsection,
+   \c!incrementnumber=\v!no]
+
+\protect \endinput

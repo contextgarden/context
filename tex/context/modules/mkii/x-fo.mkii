@@ -1,0 +1,4057 @@
+%D \module
+%D   [      file=x-fo,
+%D        version=2004.03.12, % based on earlier experiments
+%D          title=\FOXET,
+%D       subtitle=Formatting Objects,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \showframe
+
+% This is a first implementation, maybe I will write another one with mixed
+% element indifferent vars and something 'when set, act upon it, and forget',
+% for instance: in each element check if font set, if so, change font and
+% reset font attributes. I'm not sure if this is wise.
+
+% todo: global assignment in order to limit restore
+% todo: combine mp graphics (see end) saves 30%
+% todo: using contants and variables (for internal use)
+
+% todo: language at more levels
+
+% beware: aftergroup vs egroup/endgroup
+
+\useXMLfilter[prs,run]
+
+\unprotect
+
+% syst-new.tex
+
+\long\def\unstringed#1% " ' space
+  {\csname\ifcsname @u@s@#1\endcsname @u@s@#1\else\s!empty\fi\endcsname#1}
+
+\long\setvalue{@u@s@"}#1#2"{#2}
+\long\setvalue{@u@s@'}#1#2'{#2}
+\long\setvalue{@u@s@ }#1#2 {#2}
+
+% xtag-ini
+
+\def\letXMLpar #1#2{\@EA \let\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLpar #1#2{\@EA \def\csname\@@XMLvariable:#1:#2\endcsname}
+\def\setXMLepar#1#2{\@EA\edef\csname\@@XMLvariable:#1:#2\endcsname}
+
+\protect
+
+%D Most time went into figuring out the specifications, especially
+%D because there are no examples included. Samples that circulate on the
+%D web are often border cases and torture test and don't have much to do
+%D with real live. Another complication lays in the inheritance model:
+%D some of the attributes are inherited. This also  leaves some room for
+%D interpretation, for instance do values that  are used at a certain
+%D point migrate downwards or not.
+%D
+%D The \CONTEXT\ \XML handler can deal with attributes in several ways
+%D and for this purpose I have played with a few experimental mechanisms
+%D just to end up with the existing begin/end mechanism combined with
+%D a recursive attribute resolver which means that one has to implicitly
+%D ask for an inherited attributes. This approach is probably one of the
+%D most efficient ways of dealing with formatting objects in \CONTEXT,
+%D unless of course I start adding rather specific support to the kernel.
+%D
+%D This module is rather experimental. More information about its usage
+%D can be found in the \FOXET\ manual.
+
+%D Since we're not dealing with the fine points of typesetting here, we
+%D can safely ignore \TEX's warnings about overful or underful boxes.
+
+\dontcomplain
+
+%D We will use fonts that have the characters in the normal (ascii)
+%D slots. We will also use the stupid verbatim handler.
+
+\chardef\XMLtokensreduction = 2
+\chardef\XMLcdatamethod     = 2
+
+%D For the purpose of testing.
+
+\startmode[fo-verbose]
+  \def\writeFOstatus{\writestatus{XML-FO}}
+\stopmode
+
+\startnotmode[fo-verbose]
+  \let\writeFOstatus\gobbleoneargument
+\stopnotmode
+
+%D For the moment we stick to utf-8.
+
+\useXMLfilter[utf]
+
+%D This will be sorted out later (esp in relation to mathml).
+
+\setupbodyfont[pos,10pt]
+
+%D There are a couple of predefined colors. Don't ask me why, but
+%D formatting objects are not a fresh start but a mix of existing
+%D technologies. Color support is poluted by cascading stylesheets.
+%D
+%D Because hexadecimal color specifications are not enabled by
+%D default, this feature has to be enables by loading the appropriate
+%D color module. Here we define colors in \RGB\ values because we
+%D don't want to loose accuracy.
+
+\setupcolors[state=start] \setupcolor[hex]
+
+\definecolor [black]   [s=0]       % [h=000000]
+\definecolor [gray]    [s=.5]      % [h=808080]
+\definecolor [silver]  [s=.75]     % [h=C0C0C0]
+\definecolor [white]   [s=1]       % [h=FFFFFF]
+\definecolor [maroon]  [r=.5]      % [h=800000]
+\definecolor [red]     [r=1]       % [h=FF0000]
+\definecolor [purple]  [r=.5,b=.5] % [h=800080]
+\definecolor [fuchsia] [r=1,b=1]   % [h=FF00FF]
+\definecolor [green]   [g=.5]      % [h=008000]
+\definecolor [lime]    [g=1]       % [h=00FF00]
+\definecolor [olive]   [r=.5,g=.5] % [h=808000]
+\definecolor [yellow]  [r=1,g=1]   % [h=FFFF00]
+\definecolor [navy]    [r=1,g=1]   % [h=000080]
+\definecolor [blue]    [b=1]       % [h=0000FF]
+\definecolor [teal]    [g=.5,b=.5] % [h=008080]
+\definecolor [aqua]    [g=1,b=1]   % [h=00FFFF]
+
+%D The layout is rather basic. Of the 25 available areas we
+%D only use the text area. Maybe some day I will plug in a
+%D more dedicated page builder.
+
+\setuplayout
+  [backspace=0pt,
+   topspace=0pt,
+   header=0pt,
+   footer=0pt,
+   width=middle,
+   height=middle,
+   % marking=on,
+   location=middle]
+
+\setuppagenumbering
+  [alternative={doublesided,singlesided}, % sic
+   location=]
+
+\setuptolerance
+  [verytolerant,stretch]
+
+%D We will position the regions using layers.
+
+\definelayer[regions][width=\paperwidth,height=\paperheight]
+
+\definelayer[xsl-region-before]
+\definelayer[xsl-region-after]
+\definelayer[xsl-region-start]
+\definelayer[xsl-region-end]
+\definelayer[xsl-region-body]
+
+\setupbackgrounds[page][background=regions]
+
+%D We now enter the part of this module where the action takes
+%D place. As usual we provide some tracing options.
+
+\newif\iftracingFO \readsysfile{page-run}\donothing\donothing
+
+%D We will organize the attribute definitions in a similar fashion  as in
+%D the specification. Unfortunately there are more sets defined  in there
+%D than are actually used, so the definitions later on will  look a bit
+%D messy.
+%D
+%D Quite some attributes can be inherited, which means that they can
+%D end up in all elements and influence those way down the tree.
+
+\defineXMLattributeset
+  [fo:inherited]
+
+%D The properties:
+
+% \defineXMLattributeset
+%   [fe:tracing]
+%   [tracing=]
+
+\defineXMLattributeset
+  [fo:accessibility]
+  [source-document=none,
+   role=none]
+
+\defineXMLattributeset
+  [fo:absolute-position]
+  [absolute-position=auto,
+   top=auto,
+   right=auto,
+   bottom=auto,
+   left=auto]
+
+% \defineXMLattributeset
+%   [fo:aural]
+%   [azitmuth=,
+%    cue-after=,
+%    cue-before=,
+%    elevation=,
+%    pause-after=,
+%    pause-before=,
+%    pitch=,
+%    pitch-range=,
+%    play-during=,
+%    richness=,
+%    speak=,
+%    speak-header=,
+%    speak-numeral=,
+%    speak-punctuation=,
+%    speech-rate=,
+%    stress=,
+%    voice-family=,
+%    volume=]
+
+\defineXMLattributeset
+  [fo:border-padding-background]
+  [background-attachment=scroll,
+   background-color=transparent,
+   background-image=none,
+   background-repeat=repeat,
+   background-position-horizontal=left,
+   background-position-vertical=top,
+   border-color=transparent,
+   border-style=none,
+   border-width=medium,
+   background-position=,
+   border-top=,
+   border-bottom=,
+   border-left=,
+   border-right=,
+   border-before-color=\XMLop{border-color},
+   border-before-style=\XMLop{border-style},
+   border-before-width=\XMLop{border-width},
+   border-after-color=\XMLop{border-color},
+   border-after-style=\XMLop{border-style},
+   border-after-width=\XMLop{border-width},
+   border-start-color=\XMLop{border-color},
+   border-start-style=\XMLop{border-style},
+   border-start-width=\XMLop{border-width},
+   border-end-color=\XMLop{border-color},
+   border-end-style=\XMLop{border-style},
+   border-end-width=\XMLop{border-width},
+   border-top-color=\XMLop{border-before-color},
+   border-top-style=\XMLop{border-before-style},
+   border-top-width=\XMLop{border-before-width},
+   border-bottom-color=\XMLop{border-after-color},
+   border-bottom-style=\XMLop{border-after-style},
+   border-bottom-width=\XMLop{border-after-width},
+   border-left-color=\XMLop{border-start-color},
+   border-left-style=\XMLop{border-start-style},
+   border-left-width=\XMLop{border-start-width},
+   border-right-color=\XMLop{border-end-color},
+   border-right-style=\XMLop{border-end-style},
+   border-right-width=\XMLop{border-end-width},
+   padding=,% 0pt,
+   padding-before=0pt,%\XMLop{padding},
+   padding-after=0pt,%\XMLop{padding},
+   padding-start=0pt,%\XMLop{padding},
+   padding-end=0pt,%\XMLop{padding},
+   padding-top=\XMLop{padding-before},
+   padding-bottom=\XMLop{padding-after},
+   padding-left=\XMLop{padding-start},
+   padding-right=\XMLop{padding-end}]
+
+\extendXMLattributeset
+  [fo:border-padding-background]
+  [fe:background-height=,
+   fe:background-width=]
+
+\defineXMLattributeset
+  [fo:font]
+  []
+
+\extendXMLattributeset
+  [fo:inherited]
+  [font=,
+   font-family=,% Times,
+   font-selection-strategy=,
+   font-size=,% 12pt,
+   font-size-adjust=, % 1,
+   font-style=, % normal,
+   font-variant=, % normal,
+   font-weight=] % normal]
+
+\defineXMLattributeset
+  [fo:hyphenation]
+  []
+
+\extendXMLattributeset
+  [fo:inherited]
+  [country=,
+   language=,
+   script=,
+   hyphenate=,
+   hyphenation-character=,
+   hyphenation-push-character-count=,
+   hyphenation-remain-character-count=]
+
+\defineXMLattributeset
+  [fo:margin-block]
+  [margin=, % 0pt,
+   margin-top=0pt,% \XMLop{margin},
+   margin-bottom=0pt,% \XMLop{margin},
+   margin-left=0pt,% \XMLop{margin},
+   margin-right=0pt,% \XMLop{margin},
+   space-before=0pt,
+   space-after=0pt,
+   space-before.precedence=,
+   space-before.conditionality=,
+   space-before.minimum=,
+   space-before.optimum=,
+   space-before.maximum=,
+   space-after.precedence=,
+   space-after.conditionality=,
+   space-after.minimum=,
+   space-after.optimum=,
+   space-after.maximum=]
+
+\extendXMLattributeset
+  [fo:inherited]
+  [start-indent=,
+   end-indent=]
+
+\defineXMLattributeset
+  [fo:margin-inline]
+  [space-start=,
+   space-end=]
+
+\defineXMLattributeset
+  [fo:relative-position]
+  [relative-position=,
+   top=auto,
+   right=auto,
+   bottom=auto,
+   left=auto]
+
+\defineXMLattributeset
+  [fo:area-alignment]
+  [alignment-adjust=,
+   alignment-baseline=,
+   baseline-shift=,
+   dominant-baseline=]
+
+\extendXMLattributeset
+  [fo:inherited]
+  [display-align=,
+   relative-align=]
+
+\defineXMLattributeset
+  [fo:area-dimension]
+  [block-progression-dimension=,
+   inline-progression-dimension=,
+   content-height=,
+   content-width=,
+   height=,
+   width=,
+   max-height=,
+   max-width=,
+   min-height=,
+   min-width=,
+   scaling=,
+   scaling-method=]
+
+\defineXMLattributeset
+  [fo:block-and-line]
+  []
+
+\extendXMLattributeset
+  [fo:inherited]
+  [hyphenation-keep=,
+   hyphenation-ladder-count=,
+   last-line-end-indent=,
+   line-height=,
+   line-height-shift-adjustment=,
+   line-stacking-strategy=,
+   linefeed-treatment=,
+   white-space-treatment=,
+   text-align=,
+   text-align-last=,
+   text-indent=,
+   white-space-collapse=,
+   wrap-option=]
+
+\defineXMLattributeset
+  [fo:character]
+  [character=,
+   suppress-at-line-break=,
+   text-decoration=,
+   text-shadow=,
+   treat-as-word-space=]
+
+\extendXMLattributeset
+  [fo:inherited]
+  [letter-spacing=,
+   text-transform=,
+   word-spacing=]
+
+\defineXMLattributeset
+  [fo:color]
+  [color-profile-name=,
+   rendering-intent=]
+
+\extendXMLattributeset
+  [fo:inherited]
+  [color=]
+
+\defineXMLattributeset
+  [fo:float]
+  [clear=,
+   float=]
+
+\extendXMLattributeset
+  [fo:inherited]
+  [intrusion-displace=]
+
+\defineXMLattributeset
+  [fo:keeps-and-breaks]
+  [break-after=,
+   break-before=,
+   keep-with-next.within-line=,
+   keep-with-next.within-column=,
+   keep-with-next.within-page=,
+   keep-with-previous.within-line=,
+   keep-with-previous.within-column=,
+   keep-with-previous.within-page=]
+
+\extendXMLattributeset
+  [fo:inherited]
+  [keep-together.within-line=,
+   keep-together.within-column=,
+   keep-together.within-page=,
+   orphans=,
+   widows=]
+
+\defineXMLattributeset
+  [fo:layout]
+  [clip=,
+   overflow=
+   span=]
+
+\extendXMLattributeset
+  [fo:inherited]
+  [reference-orientation=]
+
+\defineXMLattributeset
+  [fo:leader-and-rule]
+  []
+
+\extendXMLattributeset
+  [fo:inherited]
+  [leader-alignment=,
+   leader-pattern=,
+   leader-pattern-width=,
+   leader-pattern-width=,
+   leader-length=,
+   rule-style=,
+   rule-thickness=]
+
+\defineXMLattributeset
+  [fo:dynamic-effects]
+  [active-state=,
+   case-name=,
+   case-title=,
+   destination-placement-offset=,
+   external-destination=,
+   indicate-destination=,
+   internal-destination=,
+   show-destination=,
+   starting-state=,
+   switch-to=,
+   target-presentation-context=,
+   target-processing-context=,
+   target-stylesheet=]
+
+\extendXMLattributeset
+  [fo:inherited]
+  [auto-restore=]
+
+\defineXMLattributeset
+  [fo:markers]
+  [marker-class-name=,
+   retrieve-class-name=,
+   retrieve-position=,
+   retrieve-boundary=]
+
+\defineXMLattributeset
+  [fo:number-to-string]
+  [country=,
+   language=,
+   format=,
+   grouping-separator=,
+   grouping-size=,
+   letter-value=]
+
+% \defineXMLattributeset
+%   [fo:pagination-and-layout]
+%   [black-or-not-blank=,
+%    column-count=1,
+%    column-gap=12pt,
+%    extent=,
+%    flow-name=,
+%    force-page-count=,
+%    initial-page-number=,
+%    master-name=,
+%    master-reference=,
+%    maximum-repeats=,
+%    media-usage=,
+%    odd-or-even=,
+%    page-height=,
+%    page-position=,
+%    page-width=,
+%    precedence=,
+%    region-name=]
+
+\defineXMLattributeset
+  [fo:table]
+  [border-after-precedence=,
+   border-before-precedence=,
+   border-end-precedence=,
+   border-start-precedence=,
+   column-number=,
+   column-width=,
+   ends-row=,
+   number-columns-repeated=,
+   number-columns-spanned=,
+   number-rows-spanned=,
+   starts-row=,
+   table-layout=,
+   table-omit-footer-at-break=,
+   table-omit-header-at-break=]
+
+\extendXMLattributeset
+  [fo:inherited]
+  [border-collapse=,
+   border-separation=,
+   caption-side=,
+   empty-cells=]
+
+\defineXMLattributeset
+  [fo:writing-mode]
+  [%text-altitude=,
+   %text-depth=,
+   unicode-bidi=]
+
+\extendXMLattributeset % for practical reasons we inherit along the whole chain
+  [fo:inherited]       % unless we implement relax skipping
+  [text-altitude=,
+   text-depth=]
+
+\extendXMLattributeset
+  [fo:inherited]
+  [direction=,
+   glyph-orientation-horizontal=,
+   glyph-orientation-vertical=,
+   writing-mode=]
+
+\defineXMLattributeset
+  [fo:list-block]
+  []
+
+\extendXMLattributeset
+  [fo:inherited]
+  [provisional-label-separation=,
+   provisional-distance-between-starts=]
+
+% \starttext
+% \setuplayout[topspace=1cm,height=middle,header=0pt,footer=0pt]
+% \setupbodyfont[small,tt]
+% \expanded{\processcommalist[\XMLattributeset{fo:inherited}]}\endgraf
+% \stoptext
+
+% content-type
+% id
+
+% ref-id
+% score-spaces % inherited
+% src
+% visibility % inherited
+% z-index
+
+% shorthands:
+%
+% background
+% background-position
+% border
+% border-bottom
+% border-left
+% border-top
+% border-right
+% border-style
+% border-color
+% border-spacing  % inherited
+% border-width
+% cue
+% font % inherited
+% margin
+% padding
+% page-break-after
+% page-break-before
+% page-break-inside % inherited
+% pause
+% position
+% size
+% vertical-align
+% white-space % inherited
+
+%D We will speed up the process of setting up attributes by compiling the
+%D definitions. Sometimes we need to access attributes explicitly by
+%D element (for instance when handling regions). We also need to deal
+%D with nested elements  (for instance blocks) or a sequence of similar
+%D ones, while we may not always want to use grouping. As a result, the
+%D next series of definitions and macros are quite ugly. The begin|/|end
+%D is needed in order to comfortably fetch attribute values from
+%D ancestors.
+
+\startXMLcompiling[inherit]
+
+%D Element: fo:root
+
+%D todo: set defaults here
+
+\defineXMLenvironment
+  [fo:root]
+  [\XMLattributeset{fo:inherited},
+leader-pattern=spaces,
+leader-pattern-width=12pt,
+   media-usage=]
+  {\directsetup{fo:root:start}}
+  {\directsetup{fo:root:stop}}
+
+\startsetups fo:root:start
+  \starttext \beginXMLelement \startXMLignore
+  \doifsomething{\XMLop{language}}{\mainlanguage[\XMLop{language}]}% todo, everywhere
+\stopsetups
+
+\startsetups fo:root:stop
+  \stopXMLignore \endXMLelement \stoptext
+\stopsetups
+
+%D Element: fo:declarations
+
+\defineXMLprocess
+  [fo:declarations]
+
+%D Element: fo:color-profile
+
+\defineXMLignore
+  [fo:color-profile]
+  [src=,
+   color-profile-name=,
+   rendering-intent=]
+
+%D Element: fo:page-sequence
+
+% master-name and master-reference are often mixed up in examples
+
+\defineXMLenvironment
+  [fo:page-sequence]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fe:tracing},
+   \XMLattributeset{fo:number-to-string},
+   initial-page-number=auto,
+   master-reference=any,
+   force-page-count=auto]
+  {\beginXMLelement\directsetup{fo:page-sequence:start}}
+  {\directsetup{fo:page-sequence:stop}\endXMLelement}
+
+\mapXMLvalue {fo:page-initial} {auto}        {\relax}
+\mapXMLvalue {fo:page-initial} {auto-odd}    {\ifodd\pageno     \expanded{\setuppagenumber[number=\the\dimexpr(\pageno+1)]}\fi}
+\mapXMLvalue {fo:page-initial} {auto-even}   {\ifodd\pageno\else\expanded{\setuppagenumber[number=\the\dimexpr(\pageno+1)]}\fi}
+
+% todo: blokkeer left/right/etc in geval van blank
+
+\mapXMLvalue {fo:page-start}   {auto}        {\page}
+\mapXMLvalue {fo:page-start}   {even}        {\page\setuplayout[blank]\page[even]}
+\mapXMLvalue {fo:page-start}   {odd}         {\page\setuplayout[blank]\page[odd]}
+\mapXMLvalue {fo:page-end}     {end-on-even} {\page\setuplayout[blank]\page[even]}
+\mapXMLvalue {fo:page-end}     {end-on-odd}  {\page\setuplayout[blank]\page[odd]}
+\mapXMLvalue {fo:page-start}   {no-force}    {\page}
+
+\startsetups fo:page-sequence:start
+
+  % we're still in the previous page-sequence
+
+  \XMLval{fo:page-start}{\XMLop{force-page-count}}{\page} \begingroup
+
+  \directsetup{fe:setup}
+
+  \iftracingFO \showframe[text] \fi
+
+  \xdef\SavedPageNumber{\the\realpageno}
+
+  % now we enter the new page-sequence
+
+  % todo: check on number
+
+  \doifXMLvalelse{fo:page-initial}{\XMLop{initial-page-number}}
+    {\XMLval{fo:page-initial}{\XMLop{initial-page-number}}{}}
+    {\doifnot{\XMLop{initial-page-number}}{auto}
+       {\expanded{\setuppagenumber[number=\XMLop{initial-page-number}]}}}
+
+  \doifsomething{\XMLpar{fo:page-sequence}{master-reference}{}}
+    {\doifelseXMLelement{fo:page-sequence-master:\XMLpar{fo:page-sequence}{master-reference}{}}
+       {%[starting page sequence master: \XMLpar{fo:page-sequence}{master-reference}{}]\endgraf
+        \flushXMLelement{fo:page-sequence-master:\XMLpar{fo:page-sequence}{master-reference}{}}}
+       {%[starting simple page master: \XMLpar{fo:page-sequence}{master-reference}{any}]\endgraf
+        \flushXMLelement{fo:simple-page-master:\XMLpar{fo:page-sequence}{master-reference}{any}}}}
+
+  \doif{\XMLpar{fo:simple-page-master-do}{fe:option}{}}{fit}
+    {\directsetup{fe:page:option:fit:start}}
+
+  \doifnot{\XMLpar{fo:region-body}{column-count}{1}}{1}
+    {\directsetup{fo:columns:start}}
+
+\stopsetups
+
+\startsetups fo:page-sequence:stop
+
+  \doifnot{\XMLpar{fo:region-body}{column-count}{1}}{1}
+    {\directsetup{fo:columns:stop}}
+
+  \doif{\XMLpar{fo:simple-page-master-do}{fe:option}{}}{fit}
+    {\directsetup{fe:page:option:fit:stop}}
+
+  % \XMLval{fo:page-end}{\XMLop{force-page-count}}{\page} \endgroup
+
+  \ifnum\SavedPageNumber=\realpageno
+
+    \ifdim\pagetotal<.5\textheight \null \vfill \fi % force a page with only containers
+
+  \fi
+
+  \XMLval{fo:page-end}{\XMLpar{fo:page-sequence}{force-page-count}{}}{\page} \endgroup
+
+\stopsetups
+
+\newdimen\FOcolumngap
+
+\startsetups fo:columns:start
+
+  \FOcolumngap\textwidth
+
+  \setpercentdimen\FOcolumngap{\XMLpar{fo:region-body}{column-gap}{12pt}}
+
+  % we need to freeze the lineheight here
+
+  \expanded{\definecolumnset
+    [fo:set]
+    [n=\XMLpar{fo:region-body}{column-count}{1},
+     distance=\FOcolumngap]}
+
+  \expanded{\definecolumnsetspan
+    [fo:set]
+    [n=\XMLpar{fo:region-body}{column-count}{1}]}
+
+  \directsetup{fo:font:setup} % else problems
+
+  \directsetup{fo:line-height:setup}
+
+%   \parseXMLattributes{fo:flow}{line-height='normal'}
+
+  \startcolumnset[fo:set]
+
+  % \startcolumns[\XMLpar{fo:region-body}{column-count}{1}]
+
+\stopsetups
+
+\startsetups fo:columns:stop
+
+  % \stopcolumns
+
+  \stopcolumnset
+
+\stopsetups
+
+%D Element: fo:layout-master-set
+
+\defineXMLprocess
+  [fo:layout-master-set]
+
+%D Element: fo:page-sequence-master
+
+\defineXMLenvironmentsave
+  [fo:page-sequence-master]
+  [\XMLattributeset{fo:inherited},
+   master-name=any]
+  {}
+  {%[saved page sequence master: \XMLop{master-name}]\endgraf
+   \gsaveXMLdatainelement
+     {fo:page-sequence-master:\XMLop{master-name}}
+     {fo:page-sequence-master-do}
+     {fo:page-sequence-master}}
+
+\defineXMLprocess
+  [fo:page-sequence-master-do]
+  [\XMLattributeset{fo:inherited}]
+
+%D Element: fo:single-page-master-reference
+
+% makeup - one page
+
+\defineXMLcommand
+  [fo:single-page-master-reference]
+  [master-reference=any]
+  {\flushXMLelement{fo:simple-page-master:\XMLop{master-reference}}}
+
+%D Element: fo:repeatable-page-master-reference
+
+\defineXMLcommand
+  [fo:repeatable-page-master-reference]
+  [master-reference=any,
+   maximum-repeats=]
+  {\flushXMLelement{fo:simple-page-master:\XMLop{master-reference}}}
+
+%D Element: fo:repeatable-page-master-alternatives
+
+\defineXMLprocess
+  [fo:repeatable-page-master-alternatives]
+  [maximum-repeats=]
+
+%D Element: fo:conditional-page-master-reference
+
+% page-position : first last rest any
+% odd-or-even : odd even any
+% blank-or-not-blank : blank not-blank
+
+% The page-position default is needed (else possible loops)
+
+\defineXMLcommand
+  [fo:conditional-page-master-reference]
+  [master-reference=any,
+   page-position=\XMLpar{fo:conditional-page-master-reference}{master-reference}{any},
+   blank-or-not-blank=,
+   odd-or-even=]
+  {\flushXMLelement{fo:simple-page-master:\XMLpar{fo:conditional-page-master-reference}{master-reference}{}}}
+
+%D Element: fo:simple-page-master
+
+% first-page left-page right-page blank-page
+
+% default dimensions
+
+\defineXMLenvironmentsave
+  [fo:simple-page-master]
+  [master-name=any]
+  {}
+  {%[saved simple page master: \XMLop{master-name}]\endgraf
+   \gsaveXMLdatainelement
+     {fo:simple-page-master:\XMLop{master-name}}
+     {fo:simple-page-master-do}
+     {fo:simple-page-master}}
+
+% reference-orientation=0deg,
+% writing-mode=
+
+\defineXMLenvironment
+  [fo:simple-page-master-do]
+  [\XMLattributeset{fo:inherited}, % added
+   \XMLattributeset{fo:margin-block},
+   page-height=29.7cm,
+   page-width=21cm]
+  {\directsetup{fo:simple-page-master:start}}
+  {\directsetup{fo:simple-page-master:stop}}
+
+% not needed any more:
+
+\mapXMLvalue {fo:reference-orientation}    {0deg}    {0}
+\mapXMLvalue {fo:reference-orientation}   {90deg}   {90}
+\mapXMLvalue {fo:reference-orientation}  {180deg}  {180}
+\mapXMLvalue {fo:reference-orientation}  {270deg}  {270}
+\mapXMLvalue {fo:reference-orientation}  {-90deg}  {270}
+\mapXMLvalue {fo:reference-orientation} {-180deg}  {180}
+\mapXMLvalue {fo:reference-orientation} {-270deg}   {90}
+
+\startsetups fo:simple-page-master:start
+
+  % nothing
+
+\stopsetups
+
+% can be low level tex
+
+\startsetups fo:simple-page-master:stop
+
+  \writeFOstatus{defining papersize '\directsetup{fo:layout:kind}'}
+
+  \expanded
+    {\definepapersize
+       [\directsetup{fo:layout:kind}]
+       [width=\XMLop{page-width},
+        height=\XMLop{page-height}]}
+
+  \checkFOpadding {fo:region-body}
+  \checkFOmargin  {fo:region-body}
+  \checkFOmargin  {fo:simple-page-master-do}
+
+  \writeFOstatus{defining layout '\directsetup{fo:layout:kind}'}
+
+  \FOscratchMT\paperheight \setpercentdimen\FOscratchMT{\XMLpar{fo:simple-page-master-do}{margin-top}   \zeropoint}
+  \FOscratchMB\paperheight \setpercentdimen\FOscratchMB{\XMLpar{fo:simple-page-master-do}{margin-bottom}\zeropoint}
+  \FOscratchML\paperwidth  \setpercentdimen\FOscratchML{\XMLpar{fo:simple-page-master-do}{margin-left}  \zeropoint}
+  \FOscratchMR\paperwidth  \setpercentdimen\FOscratchMR{\XMLpar{fo:simple-page-master-do}{margin-right} \zeropoint}
+
+  \FOscratchRB\paperheight \setpercentdimen\FOscratchRB{\XMLpar{fo:region-body}{margin-top}   \zeropoint}
+  \FOscratchRA\paperheight \setpercentdimen\FOscratchRA{\XMLpar{fo:region-body}{margin-bottom}\zeropoint}
+  \FOscratchRS\paperwidth  \setpercentdimen\FOscratchRS{\XMLpar{fo:region-body}{margin-left}  \zeropoint}
+  \FOscratchRE\paperwidth  \setpercentdimen\FOscratchRE{\XMLpar{fo:region-body}{margin-right} \zeropoint}
+
+  \FOscratchPB\paperheight \setpercentdimen\FOscratchPB{\XMLpar{fo:region-body}{padding-top}   \zeropoint}
+  \FOscratchPA\paperheight \setpercentdimen\FOscratchPA{\XMLpar{fo:region-body}{padding-bottom}\zeropoint}
+  \FOscratchPS\paperwidth  \setpercentdimen\FOscratchPS{\XMLpar{fo:region-body}{padding-left}  \zeropoint}
+  \FOscratchPE\paperwidth  \setpercentdimen\FOscratchPE{\XMLpar{fo:region-body}{padding-right} \zeropoint}
+
+  \expanded
+    {\definelayout
+       [\directsetup{fo:layout:kind}]
+       [       page={\directsetup{fo:layout:kind},\XMLval{fo:reference-orientation}{\XMLop{reference-orientation}}{}},
+              paper=\directsetup{fo:layout:kind},
+          backspace=\the\dimexpr(\FOscratchML+\FOscratchPS+\FOscratchRS),
+           cutspace=\the\dimexpr(\FOscratchMR+\FOscratchPE+\FOscratchRE),
+           topspace=\the\dimexpr(\FOscratchMT+\FOscratchPB+\FOscratchRB),
+        bottomspace=\the\dimexpr(\FOscratchMB+\FOscratchPA+\FOscratchRA)]}
+
+  \expanded{\setuplayout[\directsetup{fo:layout:kind}]}
+
+  % this is a nasty bit of code: this local setup stores some data that
+  % needs to be used later
+
+  \startexpanded
+    \noexpand \startlocalsetups[layout:\directsetup{fo:layout:kind}]
+    \noexpand   \writeFOstatus{processing simple page master '\XMLpar{fo:simple-page-master-do}{master-name}{any}'}
+    \noexpand   \resetsetups[fo:simple-page-master:start]
+    \noexpand   \resetsetups[fo:simple-page-master:stop]
+    \noexpand   \flushXMLelement{fo:simple-page-master:\XMLpar{fo:simple-page-master-do}{master-name}{any}}
+    \noexpand \stoplocalsetups
+  \stopexpanded
+
+\stopsetups
+
+% \defineXMLcommand[fo:simple-page-master-do-do]
+%   {\writeFOstatus{setting up master \XMLop{master-name} in page body}}
+
+%D Element: fo:region-body
+
+% display-align=,
+% reference-orientation=,
+% writing-mode=,
+
+\defineXMLcommand % or process
+  [fo:region-body]
+  [\XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:margin-block},
+   fe:z-order=above,
+   clip=,
+   column-count=1,
+   column-gap=12pt,
+   overflow=,
+   region-name=]
+  {\directsetup{fo:region-body:process}}
+
+\startsetups fo:region-body:process
+  \writeFOstatus{refreshing region-body parameters}
+\stopsetups
+
+% todo: naar realfolio handelen ipv folio
+
+\mapXMLvalue {fo:odd-or-even}   {odd}   {odd}
+\mapXMLvalue {fo:odd-or-even}   {even}  {even}
+
+\mapXMLvalue {fo:page-position} {any}   {rest}    % todo
+\mapXMLvalue {fo:page-position} {first} {current}
+\mapXMLvalue {fo:page-position} {last}  {last}    % todo
+\mapXMLvalue {fo:page-position} {rest}  {rest}    % todo
+
+%mapXMLvalue {fo:blank-or-not-blank} {any}       {} % todo
+%mapXMLvalue {fo:blank-or-not-blank} {not-blank} {} % todo
+%mapXMLvalue {fo:blank-or-not-blank} {blank}     {} % todo
+
+% check this one esp default value
+
+\startsetups fo:layout:kind
+
+  \XMLpav
+    {fo:odd-or-even}
+    {fo:conditional-page-master-reference}
+    {odd-or-even}
+    {\XMLpav
+       {fo:page-position}
+       {fo:conditional-page-master-reference}
+       {page-position}
+       {\XMLpar{fo:page-sequence-master}{master-reference}{any}}}
+
+\stopsetups
+
+% common border things
+
+% clip
+% display-align
+% extent
+% overflow
+% precedence
+% region-name
+% reference-orientation
+% writing-mode
+
+%D Element: fo:region-before fo:region-after fo:region-start fo:region-end
+
+% border-before-color : <color> | inherit
+% border-before-style : <border style> | inherit
+% border-before-width.length|conditional : <border width> | <length conditional> | inherit
+%
+% style: none hidden dotted dashed solid double groove ridge inset outset
+% width: thin medium thick length
+
+\mapXMLvalue {fo:display-align} {auto}   {before} % todo: related to relative-align
+\mapXMLvalue {fo:display-align} {before} {high}
+\mapXMLvalue {fo:display-align} {after}  {low}
+\mapXMLvalue {fo:display-align} {center} {lohi}
+
+% display-align=,
+% reference-orientation=,
+% writing-mode=,
+
+\defineXMLcommand % will become process when stable
+  [fo:region-before]
+  [\XMLattributeset{fo:border-padding-background},
+   clip=,
+   extent=,
+   overflow=,
+   precedence=,
+   region-name=]
+  {\directsetup{fo:region-before:process}}
+
+\startsetups fo:region-before:process
+  \writeFOstatus{refreshing region-before parameters}
+\stopsetups
+
+\defineXMLprocess
+  [fo:region-after]
+  [\XMLattributeset{fo:border-padding-background},
+   clip=,
+   extent=,
+   overflow=,
+   precedence=,
+   region-name=]
+
+\defineXMLprocess
+  [fo:region-start]
+  [\XMLattributeset{fo:border-padding-background},
+   clip=,
+   extent=,
+   overflow=,
+   region-name=]
+
+\defineXMLprocess
+  [fo:region-end]
+  [\XMLattributeset{fo:border-padding-background},
+   clip=,
+   extent=,
+   overflow=,
+   region-name=]
+
+\mapXMLvalue {fo:border-style} {none}   {0}
+\mapXMLvalue {fo:border-style} {hidden} {1}
+\mapXMLvalue {fo:border-style} {dotted} {2}
+\mapXMLvalue {fo:border-style} {dashed} {3}
+\mapXMLvalue {fo:border-style} {solid}  {4}
+\mapXMLvalue {fo:border-style} {double} {5}
+\mapXMLvalue {fo:border-style} {groove} {6}
+\mapXMLvalue {fo:border-style} {ridge}  {7}
+\mapXMLvalue {fo:border-style} {inset}  {8}
+\mapXMLvalue {fo:border-style} {outset} {9}
+
+\mapXMLvalue {fo:border-width} {thin}   {.25pt}
+\mapXMLvalue {fo:border-width} {medium} {.5pt}
+\mapXMLvalue {fo:border-width} {thick}  {1pt}
+
+\startsetups fo:regions:check
+
+  \startprocesscommalist[body,before,after,start,end]
+
+    \checkFOborder{fo:region-\currentcommalistitem}{bottom}
+    \checkFOborder{fo:region-\currentcommalistitem}{top}
+    \checkFOborder{fo:region-\currentcommalistitem}{left}
+    \checkFOborder{fo:region-\currentcommalistitem}{right}
+
+    \checkhexcolor[\XMLpar{fo:region-\currentcommalistitem}{border-bottom-color}{}]
+    \checkhexcolor[\XMLpar{fo:region-\currentcommalistitem}{border-top-color}{}]
+    \checkhexcolor[\XMLpar{fo:region-\currentcommalistitem}{border-left-color}{}]
+    \checkhexcolor[\XMLpar{fo:region-\currentcommalistitem}{border-right-color}{}]
+    \checkhexcolor[\XMLpar{fo:region-\currentcommalistitem}{background-color}{}]
+
+    \checkFOposition{fo:region-\currentcommalistitem}{background}
+    \checkFOpadding {fo:region-\currentcommalistitem}
+    \checkFOmargin  {fo:region-\currentcommalistitem}
+
+  \stopprocesscommalist
+
+\stopsetups
+
+%D Element: fo:flow
+
+\defineXMLenvironment
+  [fo:flow]
+  [\XMLattributeset{fo:inherited},
+   flow-name=unknown]
+  {\beginXMLelement\directsetup{fo:flow:start}}
+  {\directsetup{fo:flow:stop}\endXMLelement}
+
+\startsetups fo:flow:start
+    \begingroup
+\stopsetups
+
+\startsetups fo:flow:stop
+    \endgroup
+\stopsetups
+
+%D Element: fo:static-content
+
+% \beginXMLelement \endXMLelement - maybe save with attributes
+
+\defineXMLenvironmentsave
+  [fo:static-content]
+  [flow-name=unknown]
+  {}
+  {\directsetup{fo:static-content:process}}
+
+\startsetups fo:static-content:process
+
+  \gsaveXMLdata{fo:static-content:\XMLop{flow-name}}{fo:static-content}
+
+\stopsetups
+
+\newdimen\FOscratchML \newdimen\FOscratchMR \newdimen\FOscratchMT \newdimen\FOscratchMB
+\newdimen\FOscratchPB \newdimen\FOscratchPA \newdimen\FOscratchPS \newdimen\FOscratchPE
+\newdimen\FOscratchRB \newdimen\FOscratchRA \newdimen\FOscratchRS \newdimen\FOscratchRE
+
+\mapXMLvalue {fo:background-repeat} {no-repeat} {0}
+\mapXMLvalue {fo:background-repeat} {repeat}    {1}
+\mapXMLvalue {fo:background-repeat} {repeat-x}  {2}
+\mapXMLvalue {fo:background-repeat} {repeat-y}  {3}
+
+\expanded {\mapXMLvalue {fo:background-location} {left}     {0\letterpercent}}
+\expanded {\mapXMLvalue {fo:background-location} {right}  {100\letterpercent}}
+\expanded {\mapXMLvalue {fo:background-location} {top}      {0\letterpercent}}
+\expanded {\mapXMLvalue {fo:background-location} {bottom} {100\letterpercent}}
+\expanded {\mapXMLvalue {fo:background-location} {center}  {50\letterpercent}}
+
+\newdimen\FObgpositionH
+\newdimen\FObgpositionV
+
+\def\FObackgroundimage#1#2#3%
+  {\doifnot{\XMLpar{fo:#1}{background-image}{none}}{none}
+     {\setFOimagename{\XMLpar{fo:#1}{background-image}{dummy}}%
+      \FObgpositionH#2%
+      \setpercentdimen\FObgpositionH{\XMLpav
+        {fo:background-location}
+        {fo:#1}
+        {background-position-horizontal}
+        {\XMLpar{fo:#1}{background-position-horizontal}{}}}%
+      \ifpercentdimendone
+        \skip0\zeropoint plus \FObgpositionH
+        \skip2\zeropoint plus \dimexpr(#2-\FObgpositionH)%
+      \else
+        \skip0\FObgpositionH
+        \skip2\zeropoint plus 1fill\relax
+      \fi
+      \FObgpositionV#3%
+      \setpercentdimen\FObgpositionV{\XMLpav
+        {fo:background-location}{fo:#1}{background-position-vertical}
+        {\XMLpar{fo:#1}{background-position-vertical}{}}}%
+      \ifpercentdimendone
+        \skip4\zeropoint plus \FObgpositionV
+        \skip6\zeropoint plus \dimexpr(#3-\FObgpositionV)%
+      \else
+        \skip4\FObgpositionV
+        \skip6\zeropoint plus 1fill\relax
+      \fi
+      \vbox to #3 \bgroup
+        \vskip\skip4\relax
+        \hbox to #2 \bgroup
+          \hskip\skip0\relax
+          \backgroundimage
+            {\XMLpav{fo:background-repeat}{fo:#1}{background-repeat}{}}{#2}{#3}%
+            {\externalfigure
+               [\FOimagename]
+               [width=\XMLpar{fo:#1}{fe:background-width}{},
+                height=\XMLpar{fo:#1}{fe:background-height}{}]}%
+          \hskip\skip2\relax
+        \egroup
+        \vskip\skip6\relax
+      \egroup}}
+
+\def\checkFOclipping#1%
+  {\doifsomething{\XMLpar{#1}{clip}{}}
+     {\analyzefunction{\XMLpar{#1}{clip}{}}%
+      \doif\functionname{rect}
+        {\def\postprocessframebox##1%
+           {\edef\next{\dimen0=\the\wd##1\dimen2=\the\ht##1\dimen4=\the\dp##1}%
+            \setbox##1\hbox
+              {\clip % expanded?
+                 [topoffset=-\functionA,
+                  bottomoffset=-\functionC,
+                  leftoffset=-\functionD,
+                  rightoffset=-\functionB]
+                 {\box##1}}%
+            \next}}}}
+
+\def\clipFOarea#1%
+  {\doifsomething{\XMLpar{#1}{clip}{}}%
+     {\analyzefunction{\XMLpar{#1}{clip}{}}%
+      \doif\functionname{rect}
+        {\setbox\scratchbox\hbox{\foregroundbox}%
+         \edef\next{\dimen0=\the\wd\scratchbox\dimen2=\the\ht\scratchbox\dimen4=\the\dp\scratchbox}%
+         \setbox\scratchbox\hbox
+           {\clip % expanded?
+              [topoffset=-\functionA,
+               bottomoffset=-\functionC,
+               leftoffset=-\functionD,
+               rightoffset=-\functionB]
+              {\box\scratchbox}}%
+         \next
+         \box\scratchbox}}}
+
+\defineoverlay
+  [text]
+  [\clipFOarea{fo:region-body}]
+
+\setupbackgrounds
+  [text]
+  [background=text]
+
+\def\FOregionbuilder#1#2#3#4#5#6% #1=location #2=preset #3=x #4=y #5=width #6=height
+  {\writeFOstatus{building region #1}%
+   \defineoverlay
+     [image]
+     [{\framed
+         [frame=off,
+          orientation=\XMLpav{fo:reference-orientation}{fo:#1}{reference-orientation}{0},
+          offset=overlay,
+          height=\overlayheight,
+          width=\overlaywidth]
+         {\FObackgroundimage{#1}\hsize\vsize}}]%
+   \setlayerframed
+     [regions]
+     [preset=#2,x=\dimexpr(#3),y=\dimexpr(#4)]
+     [frame=off,
+      offset=overlay,background={#1-graphic,image,xsl-#1},
+      width=\dimexpr(#5),height=\dimexpr(#6)]
+     {\lrtbbox
+        {\XMLpar{fo:#1}{padding-left}\zeropoint}%
+        {\XMLpar{fo:#1}{padding-right}\zeropoint}%
+        {\XMLpar{fo:#1}{padding-top}\zeropoint}%
+        {\XMLpar{fo:#1}{padding-bottom}\zeropoint}%
+        {\checkFOclipping{fo:#1}%
+         \framed
+           [frame=off,
+            offset=overlay,
+            orientation=\XMLpav{fo:reference-orientation}{fo:#1}{reference-orientation}{0},
+            align={\XMLpav{fo:display-align}{fo:#1}{display-align}{high},\XMLpav{fo:align-key}{fo:#1}{text-align}{normal}},
+            width=\hsize,height=\vsize]
+           {\doFObeforeskip{fo:#1}%
+            \flushXMLelement{fo:static-content:\XMLpar{fo:#1}{region-name}{xsl-#1}}}%
+            \doFOafterskip{fo:#1}}}}
+
+\startsetups fo:regions:process
+
+  \directsetup{fo:regions:check}
+
+  \checkFOmargin{fo:simple-page-master-do}
+
+  \FOscratchMT\paperheight \setpercentdimen\FOscratchMT{\XMLpar{fo:simple-page-master-do}{margin-top}   \zeropoint}
+  \FOscratchMB\paperheight \setpercentdimen\FOscratchMB{\XMLpar{fo:simple-page-master-do}{margin-bottom}\zeropoint}
+  \FOscratchML\paperwidth  \setpercentdimen\FOscratchML{\XMLpar{fo:simple-page-master-do}{margin-left}  \zeropoint}
+  \FOscratchMR\paperwidth  \setpercentdimen\FOscratchMR{\XMLpar{fo:simple-page-master-do}{margin-right} \zeropoint}
+
+  \doif{\XMLpar{fo:region-body}{fe:z-order}{above}}{below}{\directsetup{fo:regions:process:body}}
+
+  \FOscratchRB\paperheight \setpercentdimen\FOscratchRB{\XMLpar{fo:region-before}{extent}\zeropoint}
+  \FOscratchRA\paperheight \setpercentdimen\FOscratchRA{\XMLpar{fo:region-after} {extent}\zeropoint}
+  \FOscratchRS\paperwidth  \setpercentdimen\FOscratchRS{\XMLpar{fo:region-start} {extent}\zeropoint}
+  \FOscratchRE\paperwidth  \setpercentdimen\FOscratchRE{\XMLpar{fo:region-end}   {extent}\zeropoint}
+
+  \doifelse{\XMLpar{fo:region-before}{precedence}{false}}{true}
+    {\doifelse{\XMLpar{fo:region-after}{precedence}{false}}{true}
+       {\directsetup{fo:regions:process:true:true}}
+       {\directsetup{fo:regions:process:true:false}}}
+    {\doifelse{\XMLpar{fo:region-after}{precedence}{false}}{true}
+       {\directsetup{fo:regions:process:false:true}}
+       {\directsetup{fo:regions:process:false:false}}}
+
+  \doif{\XMLpar{fo:region-body}{fe:z-order}{above}}{above}{\directsetup{fo:regions:process:body}}
+
+\stopsetups
+
+\newdimen\FOscratchEB
+\newdimen\FOscratchEA
+
+\chardef\FOregionmode\zerocount
+
+\startmode[fo-pt]
+  \chardef\FOregionmode\plusone  % fotex mode -)
+\stopmode
+
+\startsetups fo:regions:modes
+
+  \ifcase\FOregionmode
+    \FOscratchEB\zeropoint
+    \FOscratchEA\zeropoint
+  \or
+    \FOscratchEB\paperheight \setpercentdimen\FOscratchEB{\XMLpar{fo:region-before}{extent}\zeropoint}
+    \FOscratchEA\paperheight \setpercentdimen\FOscratchEA{\XMLpar{fo:region-after} {extent}\zeropoint}
+  \else
+    \FOscratchEB\zeropoint
+    \FOscratchEA\zeropoint
+  \fi
+
+\stopsetups
+
+\startsetups fo:regions:process:body
+
+  \bgroup
+
+  \FOscratchRB\paperheight \setpercentdimen\FOscratchRB{\XMLpar{fo:region-body}{margin-top}   \zeropoint}
+  \FOscratchRA\paperheight \setpercentdimen\FOscratchRA{\XMLpar{fo:region-body}{margin-bottom}\zeropoint}
+  \FOscratchRS\paperwidth  \setpercentdimen\FOscratchRS{\XMLpar{fo:region-body}{margin-left}  \zeropoint}
+  \FOscratchRE\paperwidth  \setpercentdimen\FOscratchRE{\XMLpar{fo:region-body}{margin-right} \zeropoint}
+
+  \FOregionbuilder
+    {region-body}
+    {lefttop}
+    {\FOscratchML+\FOscratchRS}
+    {\FOscratchMT+\FOscratchRA}
+    {\paperwidth -\FOscratchML-\FOscratchMR-\FOscratchRS-\FOscratchRE}
+    {\paperheight-\FOscratchMT-\FOscratchMB-\FOscratchRB-\FOscratchRA}
+
+  \egroup
+
+\stopsetups
+
+\startsetups fo:regions:process:true:true
+
+  \directsetup{fo:regions:modes}
+
+  \ifdim\FOscratchRB>\zeropoint \FOregionbuilder
+      {region-before}{lefttop}
+      {\FOscratchML}{\FOscratchMT-\FOscratchEB}
+      {\paperwidth-\FOscratchML-\FOscratchMR}{\FOscratchRB}
+  \fi \ifdim\FOscratchRA>\zeropoint \FOregionbuilder
+      {region-after}{leftbottom}
+      {\FOscratchML}{\FOscratchMB-\FOscratchEA}
+      {\paperwidth-\FOscratchML-\FOscratchMR}{\FOscratchRA}
+  \fi \ifdim\FOscratchRS>\zeropoint \FOregionbuilder
+      {region-start}{lefttop}
+      {\FOscratchML}{\FOscratchMT+\FOscratchRB}
+      {\FOscratchRS}{\paperheight-\FOscratchMT-\FOscratchMB-\FOscratchRA-\FOscratchRB}
+  \fi \ifdim\FOscratchRE>\zeropoint \FOregionbuilder
+      {region-end}{righttop}
+      {\FOscratchMR}{\FOscratchMT+\FOscratchRA}
+      {\FOscratchRE}{\paperheight-\FOscratchMT-\FOscratchMB-\FOscratchRA-\FOscratchRB}
+  \fi
+
+\stopsetups
+
+\startsetups fo:regions:process:false:true
+
+  \directsetup{fo:regions:modes}
+
+  \ifdim\FOscratchRB>\zeropoint \FOregionbuilder
+      {region-before}{lefttop}
+      {\FOscratchML+\FOscratchRS}{\FOscratchMT-\FOscratchEB}
+      {\paperwidth-\FOscratchML-\FOscratchMR-\FOscratchRS-\FOscratchRE}{\FOscratchRB}
+  \fi \ifdim\FOscratchRA>\zeropoint \FOregionbuilder
+      {region-after}{leftbottom}
+      {\FOscratchML}{\FOscratchMB-\FOscratchEA}
+      {\paperwidth-\FOscratchML-\FOscratchMR}{\FOscratchRA}
+  \fi \ifdim\FOscratchRS>\zeropoint \FOregionbuilder
+      {region-start}{lefttop}
+      {\FOscratchML}{\FOscratchMT}
+      {\FOscratchRS}{\paperheight-\FOscratchMB-\FOscratchRA-\FOscratchRB}
+  \fi \ifdim\FOscratchRE>\zeropoint \FOregionbuilder
+      {region-end}{righttop}
+      {\FOscratchMR}{\FOscratchMT}
+      {\FOscratchRE}{\paperheight-\FOscratchMB-\FOscratchRA-\FOscratchRB}
+  \fi
+
+\stopsetups
+
+\startsetups fo:regions:process:true:false
+
+  \directsetup{fo:regions:modes}
+
+  \ifdim\FOscratchRB>\zeropoint \FOregionbuilder
+      {region-before}{lefttop}
+      {\FOscratchML}{\FOscratchMT-\FOscratchEB}
+      {\paperwidth-\FOscratchML-\FOscratchMR}{\FOscratchRB}
+  \fi \ifdim\FOscratchRA>\zeropoint \FOregionbuilder
+      {region-after}{leftbottom}
+      {\FOscratchML+\FOscratchRS}{\FOscratchMB-\FOscratchEA}
+      {\paperwidth-\FOscratchML-\FOscratchMR-\FOscratchRS-\FOscratchRE}{\FOscratchRA}
+  \fi \ifdim\FOscratchRS>\zeropoint \FOregionbuilder
+      {region-start}{lefttop}
+      {\FOscratchML}{\FOscratchMT+\FOscratchRB}
+      {\FOscratchRS}{\paperheight-\FOscratchMT-\FOscratchMB-\FOscratchRB}
+  \fi \ifdim\FOscratchRE>\zeropoint \FOregionbuilder
+      {region-end}{righttop}
+      {\FOscratchMR}{\FOscratchMT+\FOscratchRA}
+      {\FOscratchRE}{\paperheight-\FOscratchMT-\FOscratchMB-\FOscratchRB}
+  \fi
+
+\stopsetups
+
+\startsetups fo:regions:process:false:false
+
+  \directsetup{fo:regions:modes}
+
+  \ifdim\FOscratchRB>\zeropoint \FOregionbuilder
+      {region-before}{lefttop}
+      {\FOscratchML+\FOscratchRS}{\FOscratchMT-\FOscratchEB}
+      {\paperwidth-\FOscratchML-\FOscratchMR-\FOscratchRS-\FOscratchRE}{\FOscratchRB}
+  \fi \ifdim\FOscratchRA>\zeropoint \FOregionbuilder
+      {region-after}{leftbottom}
+      {\FOscratchML+\FOscratchRS}{\FOscratchMB-\FOscratchEA}
+      {\paperwidth-\FOscratchML-\FOscratchMR-\FOscratchRS-\FOscratchRE}{\FOscratchRA}
+  \fi \ifdim\FOscratchRS>\zeropoint \FOregionbuilder
+      {region-start}{lefttop}
+      {\FOscratchML}{\FOscratchMT}
+      {\FOscratchRS}{\paperheight-\FOscratchMT-\FOscratchMB}
+  \fi \ifdim\FOscratchRE>\zeropoint \FOregionbuilder
+      {region-end}{righttop}
+      {\FOscratchMR}{\FOscratchMT}
+      {\FOscratchRE}{\paperheight-\FOscratchMT-\FOscratchMB}
+  \fi
+
+\stopsetups
+
+\startsetups fo:before:each:page
+
+  \writeFOstatus{setting up layout \currentlayout}
+  \directsetup{layout:\currentlayout}
+  \directsetup{fo:regions:process}
+
+\stopsetups
+
+\prependtoks
+  \directsetup{fo:before:each:page}%
+\to \everybeforepagebody
+
+%D Element: fo:title
+
+% \XMLattributeset{fo:aural},
+% color=,
+% line-height=,
+
+\defineXMLignore
+  [fo:title]
+  [\XMLattributeset{fo:inherited},\XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:font},
+   \XMLattributeset{fo:margin-inline},
+   visibility=]
+
+%D Element: fo:block
+
+\defineXMLenvironment
+  [fo:block]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fe:tracing},
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:font},
+   \XMLattributeset{fo:hyphenation},
+   \XMLattributeset{fo:margin-block},
+   \XMLattributeset{fo:relative-position},
+   \XMLattributeset{fo:keeps-and-breaks},
+%    text-depth=,
+%    text-altitude=,
+   span=,
+   visibility=]
+  {\beginXMLelement\directsetup{fo:block:start}}
+  {\directsetup{fo:block:stop}\endXMLelement}
+
+\startsetups fo:block:start
+
+  \endgraf
+
+  \writeFOstatus{fo:block in line \the\inputlineno}
+
+\doif{\XMLpar{fo:block}{span}{}}{all}{\ifinsidecolumns \startcolumnsetspan[fo:set] \fi}
+
+  \begingroup
+
+  \directsetup{fe:setup}
+
+  \directsetup{fo:break-and-space:before}
+
+  \begingroup
+
+  \setFOreference{fo:block}
+
+  \increment\FOblocklevel
+
+  \directsetup{fo:font:setup}
+
+  % \setupinterlinespace % no, interferes with columnset and lineheight
+
+  \directsetup{fo:line-height:setup}
+
+  \directsetup{fo:indent:setup}% hier ?
+
+  \doifsomething{\XMLop{background-color}}
+    {\checkhexcolor[\XMLop{background-color}]
+     \doifcolorelse{\XMLop{background-color}}
+        \donothing
+        {\setXMLpar{fo:block}{background-color}{}}}
+
+  \doifsomething{\XMLop{color}}
+    {\checkhexcolor[\XMLop{color}]
+     \doifcolorelse{\XMLop{color}}
+       \donothing
+       {\setXMLpar{fo:block}{color}{}}}
+
+  \doifsomething{\XMLop{background-color}}
+    {\expanded
+       {\definetextbackground
+          [FOattribute-\FOblocklevel]
+          [location=paragraph,
+           color=\XMLop{color},
+           style=,
+           before=,
+           after=,
+           background=color,
+           backgroundcolor=\XMLop{background-color}]}}
+
+  \endgraf
+
+  \getvalue{startFOattribute-\FOblocklevel}
+
+  \directsetup{fo:hyphenation:setup}
+  \directsetup{fo:align:setup}
+  \directsetup{fo:margin:setup}
+
+  \doif{\XMLop{wrap-option}}{no-wrap}
+    {\obeylines}
+
+  \doif{\XMLop{white-space-collapse}}{false}
+    {\obeyspaces}
+
+  % todo : remember old one and do like fonts
+
+  \directsetup{fo:textindent:setup}
+
+\stopsetups
+
+\startsetups fo:block:stop
+
+  \endstrut \endgraf
+
+  \getvalue{stopFOattribute-\FOblocklevel}
+
+  \endgraf
+
+  \endgroup
+
+  \directsetup{fo:break-and-space:after}
+
+  \endgroup
+
+  \doif{\XMLpar{fo:block}{span}{}}{all}{\ifinsidecolumns \stopcolumnsetspan \fi}
+
+\stopsetups
+
+\startsetups fo:textindent:setup
+
+  \edefXMLinh\xFOtextindent{text-indent}
+
+  \doifsomething\xFOtextindent
+    {\scratchdimen\hsize
+     \setpercentdimen\scratchdimen\xFOtextindent
+     \expanded{\setupindenting[\the\scratchdimen]}}
+
+\stopsetups
+
+\indenting[always] % can be zero points
+
+% todo: map
+
+\mapXMLvalue {fo:break} {column}    {\column}
+\mapXMLvalue {fo:break} {page}      {\page}
+\mapXMLvalue {fo:break} {even-page} {\page[even]}
+\mapXMLvalue {fo:break} {odd-page}  {\page[odd]}
+
+% keep-together : either vbox or something \interlinepenalty\maxdimen ?
+%
+% nasty interference with accumulated skips
+
+\mapXMLvalue {fo:keep-next}  {auto}   {}
+\mapXMLvalue {fo:keep-next}  {always} {\nobreak}
+
+\mapXMLvalue {fo:keep-prev}  {auto}   {}
+\mapXMLvalue {fo:keep-prev}  {always} {\nobreak}
+
+\mapXMLvalue {fo:keep-start} {auto}   {}
+\mapXMLvalue {fo:keep-start} {always} {\interlinepenalty\maxdimen}
+
+\mapXMLvalue {fo:keep-stop}  {auto}   {}
+\mapXMLvalue {fo:keep-stop}  {always} {}
+
+\newskip\FOsavedlastskip
+
+\startsetups fo:break-and-space:before
+
+  \XMLval{fo:break}{\XMLop{break-before}}{}
+
+  \FOsavedlastskip \lastskip \ifdim\FOsavedlastskip>\zeropoint \vskip-\FOsavedlastskip \fi
+
+  \XMLval{fo:keep-start}{\XMLop{keep-together}}\empty
+  \XMLval{fo:keep-start}{\XMLop{keep-together.within-column}}\empty
+  \XMLval{fo:keep-start}{\XMLop{keep-together.within-page}}\empty
+
+  \XMLval{fo:keep-prev} {\XMLop{keep-with-previous}}\empty
+  \XMLval{fo:keep-prev} {\XMLop{keep-with-previous.within-column}}\empty
+  \XMLval{fo:keep-prev} {\XMLop{keep-with-previous.within-page}}\empty
+
+  \ifdim\FOsavedlastskip>\zeropoint \vskip\FOsavedlastskip \fi
+
+  \doFObeforeskip\currentXMLelement
+
+\stopsetups
+
+\startsetups fo:break-and-space:after
+
+%   \doFOafterskip\currentXMLelement
+
+  \FOsavedlastskip \lastskip \ifdim\FOsavedlastskip>\zeropoint \vskip-\FOsavedlastskip \fi
+
+  \XMLval{fo:keep-stop}{\XMLop{keep-together}}\empty
+  \XMLval{fo:keep-stop}{\XMLop{keep-together.within-column}}\empty
+  \XMLval{fo:keep-stop}{\XMLop{keep-together.within-page}}\empty
+
+  \XMLval{fo:keep-next}{\XMLop{keep-with-next}}\empty
+  \XMLval{fo:keep-next}{\XMLop{keep-with-next.within-column}}\empty
+  \XMLval{fo:keep-next}{\XMLop{keep-with-next.within-page}}\empty
+
+  \ifdim\FOsavedlastskip>\zeropoint \vskip\FOsavedlastskip \fi
+
+  \doFOafterskip\currentXMLelement
+
+  \XMLval{fo:break}{\XMLop{break-after}}{}
+
+\stopsetups
+
+\startsetups fo:space:start
+  \doFOstartspace\currentXMLelement
+\stopsetups
+
+\startsetups fo:space:end
+  \doFOendspace\currentXMLelement
+\stopsetups
+
+\startsetups fo:indent:setup
+
+  \doifsomething{\XMLop{start-indent}}{\advance\leftskip \XMLop{start-indent}\relax}
+  \doifsomething{\XMLop{end-indent}}  {\advance\rightskip\XMLop{end-indent}  \relax}
+
+%    \FOattributeT
+%    \FOattributeR
+%    \FOattributeB
+%    \FOattributeL
+
+
+\stopsetups
+
+\mapXMLvalue {fo:align} {center} {\raggedcenter}
+\mapXMLvalue {fo:align} {left}   {\raggedright}
+\mapXMLvalue {fo:align} {right}  {\raggedleft}
+\mapXMLvalue {fo:align} {begin}  {\raggedright}
+\mapXMLvalue {fo:align} {start}  {\raggedright}
+\mapXMLvalue {fo:align} {end}    {\raggedleft}
+
+\mapXMLvalue {fo:align-key} {center} {middle}
+\mapXMLvalue {fo:align-key} {left}   {flushleft}
+\mapXMLvalue {fo:align-key} {right}  {flushright}
+\mapXMLvalue {fo:align-key} {begin}  {flushleft}
+\mapXMLvalue {fo:align-key} {start}  {flushleft}
+\mapXMLvalue {fo:align-key} {end}    {flushright}
+
+\startsetups fo:align:setup
+
+  \XMLval{fo:align}{\XMLop{text-align}}{}
+
+\stopsetups
+
+\startsetups fo:margin:setup
+
+  \checkFOmargin{fo:block}
+
+  \FOscratchML \XMLpar{fo:block}{margin-left}  \zeropoint
+  \FOscratchMR \XMLpar{fo:block}{margin-right} \zeropoint
+  \FOscratchMT \XMLpar{fo:block}{margin-top}   \zeropoint
+  \FOscratchMB \XMLpar{fo:block}{margin-bottom}\zeropoint
+
+  \advance\leftskip \FOscratchML
+  \advance\rightskip\FOscratchMR
+
+\stopsetups
+
+% todo: font-stretch
+%
+% ultra-condensed
+% extra-condensed
+% condensed
+% semi-condensed
+% expanded
+% extra-expanded
+% ultra-expanded
+%
+% wider narrower
+
+\mapXMLvalue {fo:font-size} {xx-small} {\dFOfontsize0.58\dFOfontsize}
+\mapXMLvalue {fo:font-size} {x-small}  {\dFOfontsize0.69\dFOfontsize}
+\mapXMLvalue {fo:font-size} {small}    {\dFOfontsize0.83\dFOfontsize}
+\mapXMLvalue {fo:font-size} {medium}   {\relax}
+\mapXMLvalue {fo:font-size} {large}    {\dFOfontsize1.20\dFOfontsize}
+\mapXMLvalue {fo:font-size} {x-large}  {\dFOfontsize1.44\dFOfontsize}
+\mapXMLvalue {fo:font-size} {xx-large} {\dFOfontsize1.73\dFOfontsize}
+
+\mapXMLvalue {fo:font-size} {smaller}  {\dFOfontsize0.83\dFOfontsize}
+\mapXMLvalue {fo:font-size} {larger}   {\dFOfontsize1.20\dFOfontsize}
+
+\newdimen\dFOfontsize
+
+% evt class Times Helvetica
+
+\definefontsynonym [FO:Times]                             [Times-Roman]
+\definefontsynonym [FO:Times:bold]                        [Times-Bold]
+\definefontsynonym [FO:Times:italic]                      [Times-Italic]
+\definefontsynonym [FO:Times:bold:italic]                 [Times-BoldItalic]
+
+\definefontsynonym [FO:Times:small-caps]                  [Times-Roman]
+\definefontsynonym [FO:Times:bold:small-caps]             [Times-Bold]
+\definefontsynonym [FO:Times:italic:small-caps]           [Times-Italic]
+\definefontsynonym [FO:Times:bold:italic:small-caps]      [Times-BoldItalic]
+
+\definefontsynonym [FO:Helvetica]                         [Helvetica]
+\definefontsynonym [FO:Helvetica:bold]                    [Helvetica-Bold]
+\definefontsynonym [FO:Helvetica:italic]                  [Helvetica-Italic]
+\definefontsynonym [FO:Helvetica:bold:italic]             [Helvetica-BoldItalic]
+
+\definefontsynonym [FO:Helvetica:small-caps]              [Helvetica]
+\definefontsynonym [FO:Helvetica:bold:small-caps]         [Helvetica-Bold]
+\definefontsynonym [FO:Helvetica:italic:small-caps]       [Helvetica-Italic]
+\definefontsynonym [FO:Helvetica:bold:italic:small-caps]  [Helvetica-BoldItalic]
+
+\definefontsynonym [FO:Courier]                           [Courier]
+\definefontsynonym [FO:Courier:bold]                      [Courier-Bold]
+\definefontsynonym [FO:Courier:italic]                    [Courier-Oblique]
+\definefontsynonym [FO:Courier:bold:italic]               [Courier-BoldOblique]
+
+\definefontsynonym [FO:Courier:small-caps]                [Courier]
+\definefontsynonym [FO:Courier:bold:small-caps]           [Courier-Bold]
+\definefontsynonym [FO:Courier:italic:small-caps]         [Courier-Oblique]
+\definefontsynonym [FO:Courier:bold:italic:small-caps]    [Courier-BoldOblique]
+
+\definefontsynonym [FO:Symbol]                            [ZapfDingbats]
+
+\definefontsynonym [FO:Computer-Modern-Typewriter]        [ComputerModernMono]
+\definefontsynonym [FO:Computer-Modern-Typewriter:italic] [ComputerModernMono-Slanted]
+
+\definefontsynonym [*Times Roman*]       [Times]
+
+% nasty: no FO prefix
+
+\definefontsynonym [*serif*]       [Times]
+\definefontsynonym [*sans-serif*]  [Helvetica]
+\definefontsynonym [*monospace*]   [Courier]
+
+\definefontsynonym [*cursive*]     [Times]
+\definefontsynonym [*fantasy*]     [Helvetica]
+
+\definefontsynonym [*Arial*]       [Helvetica]
+\definefontsynonym [*Times Roman*] [Times]
+\definefontsynonym [*Wingdings*]   [ZapfDingbats]
+
+% \definefontsynonym [Computer-Modern-Typewriter] [ComputerModernMono]
+% \definefontsynonym [monospace]                  [ComputerModernMono]
+
+\startsetups fo:fonts:reset
+
+  \dFOfontsize=\bodyfontsize
+
+  \def\FOfontsize      {10pt}% {12pt}
+  \def\FOfontfamily    {Times}
+  \def\FOfontweight    {normal}
+  \def\FOfontstyle     {normal}
+  \def\FOfontvariant   {normal}
+  \def\FOfontsizeadjust{1}
+
+  \def\FOtextdepth     {}
+  \def\FOtextaltitude  {}
+  \def\FOlineheight    {}
+
+  \def\FOfontdefinition{}
+  \def\FOfontname      {}
+
+\stopsetups
+
+\def\FOfontdefinition{}
+\def\FOfontname      {}
+
+\directsetup{fo:fonts:reset}
+
+% test for \FOfontvariant: normal or else
+
+\def\setFOfontname
+  {\edef\xFOfontname{FO:\FOfontfamily:\FOfontweight:\FOfontstyle:\FOfontvariant}%
+   %\begingroup\infofont\xFOfontname]\endgroup
+   \doifelsefontsynonym\xFOfontname
+     {\let\FOfontname\xFOfontname}
+     {\edef\xFOfontname{FO:\FOfontfamily:\FOfontweight:\FOfontstyle}%
+      \doifelsefontsynonym\xFOfontname
+        {\let\FOfontname\xFOfontname}
+        {\edef\xFOfontname{FO:\FOfontfamily:\FOfontstyle}%
+         \doifelsefontsynonym\xFOfontname
+           {\let\FOfontname\xFOfontname}
+           {\edef\xFOfontname{FO:\FOfontfamily:\FOfontweight}%
+            \doifelsefontsynonym\xFOfontname
+              {\let\FOfontname\xFOfontname}
+              {\edef\xFOfontname{FO:\FOfontfamily}%
+               \doifelsefontsynonym\xFOfontname
+                 {\let\FOfontname\xFOfontname}
+                 {}}}}}}
+
+% \unprotected \def\doifelseFOfontsynonym#1#2#3#4#5% family weight style variant default
+%   {\edef\FOfontname
+%      {\ifcsname     \??ff\fontclass FO:#1:#2:#3:#4\endcsname FO:#1:#2:#3:#4%
+%       \else\ifcsname\??ff\fontclass FO:#1:#2:#3\endcsname    FO:#1:#2:#3%
+%       \else\ifcsname\??ff\fontclass FO:#1:#3\endcsname       FO:#1:#3%
+%       \else\ifcsname\??ff\fontclass FO:#1:#2\endcsname       FO:#1:#2%
+%       \else\ifcsname\??ff\fontclass FO:#1\endcsname          FO:#1%
+%       \else                                                  #5%
+%       \fi\fi\fi\fi\fi}}
+
+\startsetups fo:font:family:check
+
+    \doifelsefontsynonym{*\FOfontfamily*}
+      {\expandfontsynonym\FOfontfamily{*\FOfontfamily*}}
+      {}
+
+\stopsetups
+
+\let\FOfont\empty
+
+\startsetups fo:font:setup
+
+  % todo: optimize, define fonts first time and do that global
+
+  \edefXMLinh\xFOfont          {font}
+  \edefXMLinh\xFOfontsize      {font-size}
+  \edefXMLinh\xFOfontsizeadjust{font-size-adjust}
+  \edefXMLinh\xFOfontfamily    {font-family}
+  \edefXMLinh\xFOfontweight    {font-weight}
+  \edefXMLinh\xFOfontstyle     {font-style}
+  \edefXMLinh\xFOfontvariant   {font-variant}
+
+%   \edef\xFOfont          {\XMLpar{fo}{font}{}}
+%   \edef\xFOfontsize      {\XMLpar{fo}{font-size}{}}
+%   \edef\xFOfontsizeadjust{\XMLpar{fo}{font-size-adjust}{}}
+%   \edef\xFOfontfamily    {\XMLpar{fo}{font-family}{}}
+%   \edef\xFOfontweight    {\XMLpar{fo}{font-weight}{}}
+%   \edef\xFOfontstyle     {\XMLpar{fo}{font-style}{}}
+%   \edef\xFOfontvariant   {\XMLpar{fo}{font-variant}{}}
+
+  \donefalse
+
+  \ifx\xFOfont\empty \else \ifx\xFOfont\relax \else
+    \let\FOfont\xFOfont
+    \checkFOfont\FOfont
+  \fi \fi
+
+  \ifx\xFOfontsize\empty \else \ifx\xFOfontsize\FOfontsize \else
+    \let\FOfontsize\xFOfontsize
+    \doifXMLvalelse{fo:font-size}\FOfontsize
+      {\XMLval{fo:font-size}\FOfontsize\empty}
+      {\setpercentdimen\dFOfontsize\FOfontsize}
+  \fi \fi
+
+  \ifx\xFOfontsizeadjust\empty \else
+    \doifelse\xFOfontsizeadjust{none}
+      {\def\FOfontsizeadjust{1}}
+      {\let\FOfontsizeadjust\xFOfontsizeadjust}
+  \fi
+
+  \ifx\xFOfontfamily\empty \else \ifx\xFOfontfamily\FOfontfamily \else
+    \donetrue \let\FOfontfamily\xFOfontfamily \directsetup{fo:font:family:check}
+  \fi \fi
+  \ifx\xFOfontweight\empty \else \ifx\xFOfontweight\FOfontweight \else
+    \donetrue \let\FOfontweight\xFOfontweight
+  \fi \fi
+  \ifx\xFOfontstyle\empty \else \ifx\xFOfontstyle\FOfontstyle \else
+    \donetrue \let\FOfontstyle\xFOfontstyle
+  \fi \fi
+  \ifx\xFOfontvariant\empty \else \ifx\xFOfontvariant\FOfontvariant \else
+    \donetrue \let\FOfontvariant\xFOfontvariant
+  \fi \fi
+
+  \ifdone
+    \setFOfontname
+    \ifx\FOfontname\empty % klopt dit
+      \edef\xFOfontdefinition{\purefontname{\font} at \the\dimexpr(\FOfontsizeadjust\dFOfontsize)}
+%        \let\xFOfontdefinition\empty
+    \else
+      \edef\xFOfontdefinition{\FOfontname\space at \the\dimexpr(\FOfontsizeadjust\dFOfontsize)}
+    \fi
+  \else
+    \edef\xFOfontdefinition{\purefontname{\font} at \the\dimexpr(\FOfontsizeadjust\dFOfontsize)}
+  \fi
+
+  \ifx\xFOfontdefinition\empty \else
+    \ifx\FOfontdefinition\xFOfontdefinition
+    \else
+      \let\FOfontdefinition\xFOfontdefinition
+      \expanded{\definedfont[\FOfontdefinition]}
+    \fi
+  \fi
+
+\stopsetups
+
+\newdimen\dFOlineheight
+\newdimen\dFOdepth
+\newdimen\dFOaltitude
+
+\let\FOlineheight  \empty
+\let\FOtextdepth   \empty
+\let\FOtextaltitude\empty
+
+\startsetups fo:line-height:setup
+
+  \edefXMLinh\xFOtextdepth   {text-depth}
+  \edefXMLinh\xFOtextaltitude{text-altitude}
+  \edefXMLinh\xFOlineheight  {line-height}
+
+%   \edef\xFOtextdepth   {\XMLpar{fo}{text-depth}{}}
+%   \edef\xFOtextaltitude{\XMLpar{fo}{text-altitude}{}}
+%   \edef\xFOlineheight  {\XMLpar{fo}{line-height}{}}
+
+  \ifx\xFOtextdepth\empty \else \ifx\xFOtextdepth\FOtextdepth \else
+    \let\FOtextdepth\xFOtextdepth
+    \doifnot\FOtextdepth{use-font-metrics}
+      {\setstrut \dFOdepth\strutdepth
+       \setpercentdimen\dFOdepth\FOtextdepth
+       \setupinterlinespace[mindepth=\dFOdepth]}
+  \fi \fi
+
+  \ifx\xFOtextaltitude\empty \else \ifx\xFOtextaltitude\FOtextaltitude \else
+    \let\FOtextaltitude\xFOtextaltitude
+    \doifnot\FOtextaltitude{use-font-metrics}
+      {\setstrut \dFOaltitude\strutheight \advance\dFOaltitude\strutdepth
+       \setpercentdimen\dFOaltitude\FOtextaltitude
+       \setupinterlinespace[minheight=\dFOaltitude]}
+  \fi \fi
+
+\ifinsidecolumns \else
+
+  \ifx\xFOlineheight\empty \else \ifx\xFOlineheight\FOlineheight \else
+    \let\FOlineheight\xFOlineheight
+    \doifelse\FOlineheight{normal}
+      {\dFOlineheight2.8ex
+       \setupinterlinespace[line=\dFOlineheight]}
+      {\doifnot\FOlineheight{use-font-metrics}
+         {\setstrut \dFOlineheight\strutheight \advance\dFOlineheight\strutdepth
+          \setpercentdimen\dFOlineheight\FOlineheight
+          \setupinterlinespace[line=\dFOlineheight]}}
+  \fi \fi
+
+\fi
+
+\stopsetups
+
+\let\orphanpenalty  \clubpenalty
+\let\orphanpenalties\clubpenalties
+
+\newcount\FOwidows  \FOwidows =2
+\newcount\FOorphans \FOorphans=2
+
+\mapXMLvalue {fo:hyphens} {false} {\nohyphens}
+\mapXMLvalue {fo:hyphens} {true}  {\dohyphens}
+
+\startsetups fo:hyphenation:setup
+
+  \edefXMLinh\xFOhyphenate {hyphenate}
+  \edefXMLinh\xFOwidows    {widows}
+  \edefXMLinh\xFOorphans   {orphans}
+
+%   \edef\xFOhyphenate {\XMLpar{fo}{hyphenate}{}}
+%   \edef\xFOwidows    {\XMLpar{fo}{widows}{}}
+%   \edef\xFOorphans   {\XMLpar{fo}{orphans}{}}
+
+  \ifx\xFOhyphenate\empty \else
+    \XMLval{fo:hyphens}{\xFOhyphenate}\empty
+  \fi
+  \ifx\xFOwidows\empty \else \ifnum\xFOwidows=\FOwidows \else
+     \FOwidows\xFOwidows  \setpenalties\widowpenalties\FOwidows\maxdimen
+  \fi \fi
+  \ifx\xFOorphans\empty \else \ifnum\xFOorphans=\FOorphans \else
+    \FOorphans\xFOorphans \setpenalties\clubpenalties\FOorphans\maxdimen
+  \fi \fi
+
+  % hyphenation-character
+
+\stopsetups
+
+%D fo:block-container
+
+% todo: potential optimization: set fonts and spacing at container level
+
+% display-align=,
+% intrusion-displace=,
+% reference-orientation=,
+% writing-mode=,
+
+\defineXMLenvironment
+  [fo:block-container]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fe:tracing},
+   \XMLattributeset{fo:absolute-positioning},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:margin-block},
+   \XMLattributeset{fo:keeps-and-breaks},
+   block-progression-dimension=,
+   inline-progression-dimension=,
+   clip=,
+   height=,
+   overflow=,
+   span=,
+   width=,
+   z-index=]
+  {\beginXMLelement\directsetup{fo:block-container:start}}
+  {\directsetup{fo:block-container:stop}\endXMLelement}
+
+\mapXMLvalue {fo:block-container:start} {absolute} {\directsetup{fo:block-container:start:pos}}
+\mapXMLvalue {fo:block-container:start} {fixed}    {\directsetup{fo:block-container:start:pos}}
+
+\mapXMLvalue {fo:block-container:stop}  {absolute} {\directsetup{fo:block-container:stop:pos}}
+\mapXMLvalue {fo:block-container:stop}  {fixed}    {\directsetup{fo:block-container:stop:pos}}
+
+\startsetups fo:block-container:start
+
+   \XMLval{fo:block-container:start}{\XMLpar{fo:block-container}{absolute-position}{}}{}
+
+   \setFOreference{fo:block-container}
+
+\stopsetups
+
+\startsetups fo:block-container:stop
+
+   \XMLval{fo:block-container:stop}{\XMLpar{fo:block-container}{absolute-position}{}}{}
+
+\stopsetups
+
+% i need to figure out the details (specs are a bit fuzzy)
+
+% replaced, see position
+
+\newdimen\FOcontainerW \newdimen\FOcontainerX \newdimen\FOcontainerL \newdimen\FOcontainerR \newdimen\FOcontainerWW
+\newdimen\FOcontainerH \newdimen\FOcontainerY \newdimen\FOcontainerT \newdimen\FOcontainerB \newdimen\FOcontainerHH
+
+\startsetups fo:block-container:start:pos
+
+   % todo: textwidth -> region dimensions
+
+   \begingroup % \forgetall
+
+   \FOcontainerWW\textwidth
+   \FOcontainerHH\textheight
+   \def\FOlayername{\XMLpar{fo:flow}{flow-name}{xsl-region-body}}
+
+   \iftracingFO \tracelayerstrue \fi
+
+   \directsetup{fo:preset:layer}
+
+   \setlayerframed
+     [\XMLpar{fo:flow}{flow-name}{xsl-region-body}]
+     [frame=off,
+      width=\FOcontainerW,
+      height=\FOcontainerH]
+
+   \bgroup
+
+\stopsetups
+
+\startsetups fo:block-container:stop:pos
+
+   \egroup
+
+   \endgroup
+
+\stopsetups
+
+%D fo:bidi-override
+
+% \XMLattributeset{aural},
+% color=,
+% direction=,
+% letter-spacing=,
+% line-height=,
+% word-spacing=,
+
+\defineXMLenvironment
+  [fo:bidi-override]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:font},
+   \XMLattributeset{fo:relative-position},
+   score-spaces=,
+   unicode-bidi=]
+  {\beginXMLelement}
+  {\endXMLelement}
+
+% todo
+
+%D fo:character
+
+% \XMLattributeset{fo:aural},
+% color=,
+% glyph-orientation-horizontal=,
+% glyph-orientation-vertical=,
+% line-height=,
+
+\defineXMLsingular
+  [fo:character]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fe:tracing},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:font},
+   \XMLattributeset{fo:hyphenation},
+   \XMLattributeset{fo:margin-inline},
+   \XMLattributeset{fo:relative-position},
+   \XMLattributeset{fo:character},
+   alignment-adjust=,
+   baseline-shift=,
+   dominant-baseline=,
+%    text-depth=,
+%    text-altitude=,
+   keep-with-next=,
+   keep-with-previous=,
+   score-spaces=,
+   visibility=]
+  {\directsetup{fo:character:process}}
+
+\mapXMLvalue {fo:vertical-align} {baseline} {\hbox}
+\mapXMLvalue {fo:vertical-align} {sub}      {\low}
+\mapXMLvalue {fo:vertical-align} {super}    {\high}
+\mapXMLvalue {fo:vertical-align} {inherit}  {\firstofoneargument}
+
+\startsetups fo:character:process
+
+  % border
+  % font
+  % margin
+  % positioning
+  % baseline
+  % color
+  % depth and altitude
+  % keep-with
+  % lineheight
+
+  \dontleavehmode \begingroup
+
+  \directsetup{fe:setup}
+  \directsetup{fo:font:setup}
+
+  \iftracingFO \ruledhbox \else \hbox \fi \bgroup
+
+  \doifsomethingXMLop{vertical-align}
+    {\doifXMLvalelse{fo:vertical-align}{\XMLop{vertical-align}}
+       {\XMLval{fo:vertical-align}{\XMLop{vertical-align}}{}}
+       {\wordshiftamount\lineheight
+        \setpercentdimen\wordshiftamount{\XMLop{vertical-align}}
+        \shiftedword}}
+
+  {\directsetup{fo:character:orient}}
+
+  \egroup \endgroup
+
+\stopsetups
+
+\startsetups fo:character:orient
+
+%   \rotate[rotation=-\XMLop{glyph-orientation-horizontal}]
+
+  \doifsomethingXMLop{glyph-orientation-horizontal}
+    {\rotate[rotation=\XMLval{fo:reference-orientation}{\XMLop{glyph-orientation-horizontal}}{0}]}
+    {\XMLop{character}}
+
+\stopsetups
+
+%D fo:initial-property-set
+
+% \XMLattributeset{fo:aural},
+% color=,
+% letter-spacing=,
+% line-height=,
+% text-transform=,
+% word-spacing=,
+
+\defineXMLprocess
+  [fo:initial-property-set]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:font},
+   \XMLattributeset{fo:relative-position},
+   score-spaces=,
+   text-decoration=,
+   text-shadow=]
+
+%D fo:external-graphic
+
+\useMPlibrary[dum]
+
+% \XMLattributeset{fo:aural},
+% display-align=,
+% height=,
+% text-align=,
+
+\defineXMLenvironmentsave
+  [fo:external-graphic]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:margin-inline},
+   \XMLattributeset{fo:relative-position},
+   alignment-adjust=,
+   alignment-baseline=,
+   baseline-shift=,
+   block-progression-dimension=,
+   clip=,
+   content-height=,
+   content-type=,
+   content-width=,
+   dominant-baseline=,
+   height=,
+   inline-progression-dimension=,
+   keep-with-next=,
+   keep-with-previous=,
+   overflow=,
+   scaling=,
+   scaling-method=,
+   src=dummy,
+   width=]
+  {}
+  {\directsetup{fo:external-graphic:process}}
+
+\newdimen\FOgraphicwidth
+\newdimen\FOgraphicheight
+
+\mapXMLvalue {external-graphic:align} {top}    {\tbox}
+\mapXMLvalue {external-graphic:align} {bottom} {\bbox}
+\mapXMLvalue {external-graphic:align} {center} {\cbox}
+
+\startsetups fo:external-graphic:process
+
+  \doifelsenothing{\XMLop{content-height}}
+    {\FOgraphicheight\zeropoint}
+    {\doifelse{\XMLop{content-height}}{scale-to-fit}% is this official ?
+       {\FOgraphicwidth\zeropoint}
+       {\doifelse{\XMLop{content-height}}{auto}
+          {\FOgraphicheight\zeropoint}
+          {\FOgraphicheight\lineheight
+           \setpercentdimen\FOgraphicheight{\XMLop{content-height}}}}}
+
+  \doifelsenothing{\XMLop{content-width}}
+    {\FOgraphicwidth\zeropoint}
+    {\doifelse{\XMLop{content-width}}{scale-to-fit}% is this official ?
+       {\FOgraphicwidth\zeropoint}
+       {\doifelse{\XMLop{content-width}}{auto}
+          {\FOgraphicwidth\zeropoint}
+          {\FOgraphicwidth1em
+           \setpercentdimen\FOgraphicwidth {\XMLop{content-width}}}}}
+
+  % leeg maken vars gaat ook goed, dan een \externalfigure
+
+  % todo : height/width scale-to-fit: factor=...
+
+  \setbox\scratchbox\hbox
+    {\setFOimagename{\XMLpar{fo:external-graphic}{src}{dummy}}
+     \ifdim\FOgraphicheight>\zeropoint
+       \ifdim\FOgraphicwidth>\zeropoint
+         \externalfigure[\FOimagename][height=\FOgraphicheight,width=\FOgraphicwidth]
+       \else
+         \externalfigure[\FOimagename][height=\FOgraphicheight]
+       \fi
+     \else
+       \ifdim\FOgraphicwidth>\zeropoint
+         \externalfigure[\FOimagename][width=\FOgraphicwidth]
+       \else
+         \externalfigure[\FOimagename]
+       \fi
+     \fi}
+
+  \dontleavehmode \XMLval{external-graphic:align}{\XMLop{vertical-align}}{}{\box\scratchbox}
+
+\stopsetups
+
+%D fo:instream-foreign-object
+
+% like external-graphic, only no src
+
+% \XMLattributeset{fo:aural},
+% display-align=,
+% line-height=,
+% text-align=,
+
+\defineXMLprocess
+  [fo:instream-foreign-object]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:margin-inline},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:relative-position},
+   alignment-adjust=,
+   alignment-baseline=,
+   baseline-shift=,
+   block-progression-dimension=,
+   clip=,
+   content-height=,
+   content-type=,
+   content-width=,
+   dominant-baseline=,
+   height=,
+   inline-progression-dimension=,
+   keep-with-next=,
+   keep-with-previous=,
+   overflow=,
+   scaling=,
+   scaling-method=,
+   width=]
+
+%D Element: fo:inline
+
+% \XMLattributeset{fo:aural},
+% line-height=,
+% wrap-option=,
+% color=,
+% keep-together=,
+
+\defineXMLnestedenvironmentsave
+  [fo:inline]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:font},
+   \XMLattributeset{fo:margin-inline},
+   \XMLattributeset{fo:relative-position},
+   alignment-adjust=,
+   alignment-baseline=,
+   baseline-shift=,
+   block-progression-dimension=,
+   dominant-baseline=,
+   height=,
+   inline-progression-dimension=,
+   keep-with-next=,
+   keep-with-previous=,
+   text-decoration=,
+   visibility=,
+   width=]
+  {\beginXMLelement}
+  {\directsetup{fo:inline:process}\endXMLelement}
+
+\defineXMLsingular
+  [fo:inline]
+  {}
+
+% baseline-shift: baseline sub super % dimen inherit
+
+\chardef\isolatedwordsmode=1
+
+\newdimen\wordshiftamount
+
+\def\shiftedword{\raise\wordshiftamount\hbox}
+
+\long\def\shiftedwords#1{\processisolatedwords{#1}\shiftedword}
+\long\def\normalwords #1{\processisolatedwords{#1}\hbox}
+\long\def\highwords   #1{\processisolatedwords{#1}\high}
+\long\def\lowwords    #1{\processisolatedwords{#1}\low}
+
+\mapXMLvalue {fo:baseline-shift} {baseline} {\normalwords}
+\mapXMLvalue {fo:baseline-shift} {sub}      {\lowwords}
+\mapXMLvalue {fo:baseline-shift} {super}    {\highwords}
+\mapXMLvalue {fo:baseline-shift} {inherit}  {\firstofoneargument}
+
+\startsetups fo:inline:process
+
+  \directsetup{fo:position:start}
+
+  \dontleavehmode
+
+  \doFOreference{fo:inline}
+
+  \begingroup
+
+  \directsetup{fe:setup}
+  \directsetup{fo:space:start}
+
+  \begingroup
+
+  \directsetup{fo:hyphenation:setup}
+  \directsetup{fo:font:setup}
+
+  \doifelsenothing{\XMLop{baseline-shift}}
+    {\XMLflushself}
+    {\doifXMLvalelse{fo:baseline-shift}{\XMLop{baseline-shift}}
+       {\XMLval{fo:baseline-shift}{\XMLop{baseline-shift}}{}{\XMLflushself}}
+       {\wordshiftamount\lineheight
+        \setpercentdimen\wordshiftamount{\XMLop{baseline-shift}}
+        \shiftedwords{\XMLflushself}}}
+
+  \endgroup
+
+  \directsetup{fo:space:end}
+
+  \endgroup
+
+  \directsetup{fo:position:stop}
+
+\stopsetups
+
+\startsetups fo:position:start
+  \begingroup
+  \directsetup{fo:position:\XMLop{position}:start}
+  \begingroup
+\stopsetups
+
+\startsetups fo:position:stop
+  \endgroup
+  \directsetup{fo:position:\XMLop{position}:stop}
+  \endgroup
+\stopsetups
+
+\startsetups fo:position:static:start
+\stopsetups
+
+\startsetups fo:position:static:stop
+\stopsetups
+
+\startsetups fo:position:fixed:start
+  \FOcontainerWW\paperwidth
+  \FOcontainerHH\paperheight
+  \def\FOlayername{regions}
+  \directsetup{fo:preset:layer}
+  \setlayer[regions]{\vbox \bgroup \setlocalhsize}
+\stopsetups
+
+\startsetups fo:position:fixed:stop
+  \egroup
+\stopsetups
+
+\enableparpositions % slows down but who uses fo anyway ...
+
+\startsetups fo:position:absolute:start
+  \setbox\FOpositionbox\hbox\bgroup
+\stopsetups
+
+\startsetups fo:position:absolute:stop
+  \egroup
+  % evt uitstellen tot otr, zodat text/realfolio is solved
+  \edef\FOpartag{p:\number\parposcounter}
+  \edef\FOtxttag{text:\realfolio}
+  \FOcontainerWW\MPplus\FOpartag{1}{0pt}
+  \FOcontainerHH\zeropoint % todo: add anchors to each 'object'
+  \directsetup{fo:preset:position}
+  \setlayer
+    [xsl-region-body]
+    [preset=lefttop,
+     hoffset=\dimexpr(\MPx\FOtxttag-\MPx\FOpartag),
+     voffset=\dimexpr(\MPy\FOtxttag+\MPh\FOtxttag-\MPy\FOpartag-\MPh\FOpartag)]
+    {\iftracingFO \ruledhbox \bgroup \fi
+     \offset
+       [method=fixed,
+        leftoffset=\FOcontainerL,
+        rightoffset=\FOcontainerR,
+        topoffset=\FOcontainerT,
+        bottomoffset=\FOcontainerB]
+       {\box\FOpositionbox}
+     \iftracingFO \egroup \fi}
+\stopsetups
+
+\newbox\FOpositionbox
+
+\startsetups fo:position:relative:start
+  \setbox\FOpositionbox\hbox\bgroup
+\stopsetups
+
+\startsetups fo:position:relative:stop
+  \egroup
+  \FOcontainerWW\wd\FOpositionbox
+  \FOcontainerHH\dimexpr(\ht\FOpositionbox+\dp\FOpositionbox)
+  \directsetup{fo:preset:position}
+  \iftracingFO \ruledhbox \bgroup \fi
+  \offset
+    [method=fixed,
+     leftoffset=\FOcontainerL,
+     rightoffset=\FOcontainerR,
+     topoffset=\FOcontainerT,
+     bottomoffset=\FOcontainerB]
+    {\box\FOpositionbox}
+  \iftracingFO \egroup \fi
+\stopsetups
+
+%
+
+\startsetups fo:preset:position
+
+   \FOcontainerW\zeropoint \FOcontainerL\zeropoint \FOcontainerR\zeropoint
+   \FOcontainerH\zeropoint \FOcontainerT\zeropoint \FOcontainerB\zeropoint
+
+   \doifnot{\XMLop{left}}  {auto}{\FOcontainerL\FOcontainerWW\setpercentdimen\FOcontainerL{\XMLop{left}}}
+   \doifnot{\XMLop{right}} {auto}{\FOcontainerR\FOcontainerWW\setpercentdimen\FOcontainerR{\XMLop{right}}}
+   \doifnot{\XMLop{top}}   {auto}{\FOcontainerT\FOcontainerHH\setpercentdimen\FOcontainerT{\XMLop{top}}}
+   \doifnot{\XMLop{bottom}}{auto}{\FOcontainerB\FOcontainerHH\setpercentdimen\FOcontainerB{\XMLop{bottom}}}
+
+   \doifnot{\XMLop{width}} {auto}{\FOcontainerW\FOcontainerWW\setpercentdimen\FOcontainerW{\XMLop{width}}}
+   \doifnot{\XMLop{height}}{auto}{\FOcontainerH\FOcontainerHH\setpercentdimen\FOcontainerH{\XMLop{height}}}
+
+\stopsetups
+
+\startsetups fo:preset:layer
+
+   \directsetup{fo:preset:position}
+
+   \setuplayer
+     [\FOlayername]
+     [width=\FOcontainerWW,
+      height=\FOcontainerHH]
+
+   \ifzeropt\FOcontainerW
+     \FOcontainerW\dimexpr(\FOcontainerWW-\FOcontainerL-\FOcontainerR)
+   \fi
+   \ifzeropt\FOcontainerH
+     \FOcontainerH\dimexpr(\FOcontainerHH-\FOcontainerT-\FOcontainerB)
+   \fi
+
+   \ifzeropt\FOcontainerB
+     \ifzeropt\FOcontainerL
+       \setuplayer[\FOlayername][preset=righttop,   x=\FOcontainerR,y=\FOcontainerT]
+     \else
+       \setuplayer[\FOlayername][preset=lefttop,    x=\FOcontainerL,y=\FOcontainerT]
+     \fi
+   \else
+     \ifzeropt\FOcontainerL
+       \setuplayer[\FOlayername][preset=rightbottom,x=\FOcontainerR,y=\FOcontainerB]
+     \else
+       \setuplayer[\FOlayername][preset=leftbottom, x=\FOcontainerL,y=\FOcontainerB]
+     \fi
+   \fi
+
+\stopsetups
+
+%D Element: fo:inline-container
+
+% display-align=,
+% line-height=,
+% reference-orientation=,
+% writing-mode=,
+% keep-together=,
+
+\defineXMLenvironment
+  [fo:inline-container]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:margin-inline},
+   \XMLattributeset{fo:relative-position},
+   alignment-adjust=,
+   alignment-baseline=,
+   baseline-shift=,
+   block-progression-dimension=,
+   clip=,
+   dominant-baseline=,
+   height=,
+   inline-progression-dimension=,
+   keep-with-next=,
+   keep-with-previous=,
+   overflow=,
+   width=]
+  {\beginXMLelement\begingroup}
+  {\endgroup\endXMLelement}
+
+%D Element: fo:leader
+
+% also a kind of fake fill
+
+% \XMLattributeset{fo:aural},
+% color=,
+% line-height=,
+% word-spacing=,
+
+\defineXMLenvironmentsave
+  [fo:leader]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:font},
+   \XMLattributeset{fo:margin-inline},
+   \XMLattributeset{fo:relative-position},
+   \XMLattributeset{fo:leader-and-rule},
+   alignment-adjust=,
+   alignment-baseline=,
+   baseline-shift=,
+   dominant-baseline=,
+    %    text-depth=,
+    %    text-altitude=,
+   keep-with-next=,
+   keep-with-previous=,
+   letter-spacing=,
+   text-shadow=,
+   visibility=]
+  {\beginXMLelement}
+  {\directsetup{fo:leader:process}\endXMLelement}
+
+\mapXMLvalue {fo:leader-pattern} {space}       {\hfill}
+\mapXMLvalue {fo:leader-pattern} {dots}        {.}
+\mapXMLvalue {fo:leader-pattern} {rule}        {\hrulefill}
+\mapXMLvalue {fo:leader-pattern} {use-content} {\XMLflushself}
+
+% todo: speed up
+
+\startsetups fo:leader:process
+
+    %tracebackXMLattribute{leader-pattern-width}
+
+    \strut \leaders
+    %edefXMLinh \FOlepatwd {leader-pattern-width}
+    \hbox to \XMLinh{leader-pattern-width}
+      {\hss\XMLval{fo:leader-pattern}{\XMLinh{leader-pattern}}{\hfill}\hss}
+    \hfill \strut
+
+\stopsetups
+
+%D Element: fo:pagenumber
+
+% \XMLattributeset{fo:aural},
+% line-height=,
+% wrap-option=,
+% letter-spacing=,
+% text-transform=,
+% word-spacing=,
+
+\defineXMLsingular
+  [fo:page-number]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:font},
+   \XMLattributeset{fo:margin-inline},
+   \XMLattributeset{fo:relative-position},
+   alignment-adjust=,
+   alignment-baseline=,
+   baseline-shift=,
+   dominant-baseline=,
+   keep-with-next=,
+   keep-with-previous=,
+   score-spaces=,
+%    text-altitude=,
+   text-decoration=,
+%    text-depth=,
+   text-shadow=,
+   visibility=]
+  {\directsetup{fo:page-number:process}}
+
+\newcount\FOpnrefcounter
+
+\startsetups fo:page-number:process
+
+  \doifelsenothing{\XMLpar{fo:page-sequence}{format}{}}
+    {\pagenumber}
+    {\ifinotr
+       \globallet\FOpnrefnumber\folio
+     \else
+        \global\advance\FOpnrefcounter\plusone
+        \pagereference[pnref:\the\FOpnrefcounter]
+        \doifreferencefoundelse{pnref:\the\FOpnrefcounter}
+          {\globallet\FOpnrefnumber\currentfolioreference}
+          {\globallet\FOpnrefnumber\folio}
+     \fi
+     \expanded{\handletokens\XMLpar{fo:page-sequence}{format}{}}\with{\handleFOformat{\FOpnrefnumber}}}
+
+\stopsetups
+
+\defineconversion[1][\numbers]
+
+\long\def\handleFOformat#1#2%
+  {\defconvertedargument\ascii{#2}%
+   \doifconversiondefinedelse\ascii{\convertnumber\ascii{#1}}{#2}}
+
+%D Element: fo:pagenumber-citation
+
+% same as page-number
+
+% \XMLattributeset{fo:aural},
+% line-height=,
+% wrap-option=,
+% letter-spacing=,
+% text-transform=,
+% word-spacing=,
+
+\defineXMLsingular
+  [fo:page-number-citation]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   ref-id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:font},
+   \XMLattributeset{fo:margin-inline},
+   \XMLattributeset{fo:relative-position},
+   alignment-adjust=,
+   alignment-baseline=,
+   baseline-shift=,
+   dominant-baseline=,
+   keep-with-next=,
+   keep-with-previous=,
+   score-spaces=,
+%    text-altitude=,
+   text-decoration=,
+%    text-depth=,
+   text-shadow=,
+   visibility=]
+  {\directsetup{fo:page-number-citation:process}}
+
+\startsetups fo:page-number-citation:process
+
+  \doifreferencefoundelse{\XMLop{ref-id}}
+    {\globallet\FOpnrefnumber\currentfolioreference
+     \globallet\FOpnrefformat\currenttextreference}
+    {\gdef\FOpnrefnumber{?}
+     \gdef\FOpnrefformat{}}
+
+  \doifelsenothing{\FOpnrefformat}
+    {\FOpnrefnumber}
+    {\expanded{\handletokens\FOpnrefformat}\with{\handleFOformat{\FOpnrefnumber}}}
+
+\stopsetups
+
+%D Element: fo:table-and-caption
+
+% \XMLattributeset{fo:aural},
+% text-align=,
+% caption-side=,
+% intrusion-displace=,
+% keep-together=,
+
+\defineXMLenvironment
+  [fo:table-and-caption]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:margin-block},
+   \XMLattributeset{fo:relative-position},
+   break-after=,
+   break-before=,
+   keep-with-next=,
+   keep-with-previous=]
+  {\beginXMLelement}
+  {\endXMLelement}
+
+%D Element: fo:table fo:table-caption fo:table-header fo:table-footer
+%D          to:table-column fo:table-body fo:table-row fo:table-cell
+
+% \XMLattributeset{fo:aural},
+% border-collapse=,
+% border-separation=,
+% intrusion-displace=,
+% keep-together=,
+% writing-mode=,
+
+\defineXMLenvironment
+  [fo:table]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:margin-block},
+   \XMLattributeset{fo:relative-position},
+   block-progression-dimension=,
+   border-after-precedence=,
+   border-before-precedence=,
+   border-start-precedence=,
+   border-end-precedence=,
+   break-after=,
+   break-before=,
+   inline-progression-dimension=,
+   height=,
+   keep-with-next=,
+   keep-with-previous=,
+   table-layout=,
+   table-omit-footer-at-break=,
+   table-omit-header-at-break=,
+% text-indent=0pt, % yes or no?
+   width=]
+  {\beginXMLelement
+   \bTABLE % [option=stretch] %
+   \newcounter\FOtablecolumn}
+  {\eTABLE
+   \endXMLelement}
+
+\newdimen\FOtableW
+\newdimen\FOtableH
+
+\defineXMLsingular
+  [fo:table-column]
+  [\XMLattributeset{fo:inherited},
+   \XMLattributeset{fo:border-padding-background}, % only background, not the rest, make subset
+   border-after-precedence=,
+   border-before-precedence=,
+   border-end-precedence=,
+   border-start-precedence=,
+   column-width=,
+   column-number=,
+   number-columns-repeated=,
+   number-columns-spanned=,
+   visibility=]
+  {\directsetup{fo:table-column:action}}
+
+% \XMLattributeset{fo:aural},
+% intrusion-displace=,
+% keep-together=,
+
+\defineXMLprocess
+  [fo:table-caption]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:relative-position},
+   block-progression-dimension=,
+   height=,
+   inline-progression-dimension=,
+   width=]
+
+% \XMLattributeset{fo:aural},
+
+\defineXMLnested
+  [fo:table-header]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:relative-position},
+   border-after-precedence=,
+   border-before-precedence=,
+   border-end-precedence=,
+   border-start-precedence=,
+   visibility=]
+  {\beginXMLelement\bTABLEhead}
+  {\eTABLEhead\endXMLelement}
+
+% \XMLattributeset{fo:aural},
+
+\defineXMLnested
+  [fo:table-footer]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:relative-position},
+   border-after-precedence=,
+   border-before-precedence=,
+   border-end-precedence=,
+   border-start-precedence=,
+   visibility=]
+  {\beginXMLelement\bTABLEfoot}
+  {\eTABLEfoot\endXMLelement}
+
+% \XMLattributeset{fo:aural},
+
+\defineXMLnested
+  [fo:table-body]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:relative-position},
+   border-after-precedence=,
+   border-before-precedence=,
+   border-end-precedence=,
+   border-start-precedence=,
+   visibility=]
+  {\beginXMLelement\bTABLEbody}
+  {\eTABLEbody\endXMLelement}
+
+% TODO: when stretch and when not
+
+% \XMLattributeset{fo:aural},
+% keep-together=,
+
+\defineXMLnested
+  [fo:table-row]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:relative-position},
+   border-after-precedence=,
+   border-before-precedence=,
+   border-end-precedence=,
+   border-start-precedence=,
+   break-after=,
+   break-before=,
+   height=,
+   keep-with-next=,
+   keep-with-previous=,
+   visibility=]
+  {\beginXMLelement
+   \directsetup{fo:table-row:start}%
+   \expanded{\bTR[\the\scratchtoks]}%
+   \beginXMLelement}
+  {\endXMLelement
+   \eTR
+   \directsetup{fo:table-row:stop}
+   \endXMLelement}
+
+\startsetups fo:table-row:start
+
+   \inTABLErowtrue
+
+   \scratchtoks\emptytoks
+
+   \doifsomething{\XMLop{height}}
+     {\FOtableH\textheight
+      \setpercentdimen\FOtableH{\XMLop{height}}
+      \appendetoks
+        height=\the\FOtableH
+      \to \scratchtoks}
+
+   \appendetoks
+     ,extras={\rescanXMLattributes{fo:table-row}}
+   \to\scratchtoks
+
+\stopsetups
+
+\startsetups fo:table-row:stop
+
+   \inTABLErowfalse
+
+\stopsetups
+
+% \XMLattributeset{fo:aural},
+% display-align=,
+% relative-align=,
+% empty-cells=,
+
+\newif\ifinTABLErow
+\newdimen\FOtablecellwidth
+\newdimen\FOtablecellheight
+
+\defineXMLnested
+  [fo:table-cell]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:relative-position},
+   border-after-precedence=,
+   border-before-precedence=,
+   border-end-precedence=,
+   border-start-precedence=,
+   column-number=,
+   ends-row=,
+   height=,
+   inline-progression-dimension=,
+   number-columns-spanned=1,
+   number-rows-spanned=1,
+   starts-row=,
+   width=]
+  {\directsetup{fo:table-cell:start}%
+   \expanded{\bTD[\the\scratchtoks]}%
+   \beginXMLelement}
+  {\endXMLelement
+   \eTD
+   \directsetup{fo:table-cell:stop}}
+
+\startsetups fo:table-column:action
+
+  \doifelsenothing{\XMLop{column-number}}
+    {\increment\FOtablecolumn}
+    {\edef\FOtablecolumn{\XMLop{column-number}}
+     \expanded{\setupTABLE[column][\FOtablecolumn][n=\FOtablecolumn]}}
+
+  \doifsomething{\XMLop{column-width}}
+    {%\setlocalhsize
+     %\FOtableW\localhsize
+     \analyzefunction{\XMLop{column-width}}%
+     % hm, we need to set localhsize earlier
+     \doifelse\functionname{proportional-column-width}
+       {\FOtableW\functionA\textwidth}
+       {\FOtableW\textwidth
+        \setpercentdimen\FOtableW{\XMLop{column-width}}}%
+     \expanded{\setupTABLE[column][\FOtablecolumn][width=\the\FOtableW]}}
+
+  \doif{\XMLop{border-style}}{none}
+    {\expanded{\setupTABLE[column][\FOtablecolumn][frame=off]}}
+
+  \doifelsenothing{\XMLop{display-align}}
+    {\doifsomething{\XMLop{text-align}}
+       {\expanded{\setupTABLE[column][\FOtablecolumn]
+            [align=\XMLpav{fo:align-key}{fo:table-column}{text-align}{normal}]}}}
+    {\doifsomething{\XMLop{text-align}}
+        {\expanded{\setupTABLE[column][\FOtablecolumn]
+            [align={\XMLpav{fo:display-align}{fo:table-column}{display-align}{high},\XMLpav{fo:align-key}{fo:table-column}{text-align}{normal}}]}}
+        {\expanded{\setupTABLE[column][\FOtablecolumn]
+            [align=\XMLpav{fo:display-align}{fo:table-column}{display-align}{high}]}}}
+
+\expanded{\setupTABLE[column][\FOtablecolumn][extras={\rescanXMLattributes{fo:table-column}}]}
+
+\stopsetups
+
+\startsetups fo:table-cell:start
+
+  \doif{\XMLop{starts-row}}{true}{\ifinTABLErow\eTR\inTABLErowfalse\fi}
+
+  \ifinTABLErow\else\bTR\inTABLErowtrue\fi
+
+  \doifelsenothing{\XMLop{background-color}}
+    {\let\FoTableBG\empty}
+    {\checkhexcolor[\XMLop{background-color}]
+     \doifcolorelse{\XMLop{background-color}}
+       {\def\FoTableBG{color}}
+       {\setXMLpar{fo:table-cell}{background-color}{}
+        \let\FoTableBG\empty}}
+
+%   \doifelse{\XMLpar{fo:table-cell}{width}{}}{}
+%     {\def\pFOtablewidth{fit}}
+%     {\FOtablecellwidth\textwidth % probably must be localhsize or frozen at an outer level
+%      \setpercentdimen\FOtablecellwidth{\XMLpar{fo:table-cell}{width}{0pt}}%
+%      \edef\pFOtablewidth{\the\FOtablecellwidth}}%
+
+%   \doifelse{\XMLpar{fo:table-cell}{height}{}}{}
+%     {\def\pFOtableheight{fit}}
+%     {\FOtablecellheight\textheight % probably must be localhsize or frozen at an outer level
+%      \setpercentdimen\FOtablecellheight{\XMLpar{fo:table-cell}{height}{0pt}}%
+%      \edef\pFOtableheight{\the\FOtablecellheight}}%
+
+  \scratchtoks\emptytoks \appendetoks
+%     style=\noexpand\directsetup{fo:font:setup}, % else not expanded
+    nx=\XMLop{number-columns-spanned},
+    ny=\XMLop{number-rows-spanned},
+    n=\XMLop{column-number},
+    background=\FoTableBG
+  \to \scratchtoks
+
+  \doifnot{\XMLop{border-style}}{none}
+    {\appendetoks
+       ,frame=on
+     \to\scratchtoks}
+
+  \doifsomething{\XMLop{background-color}}
+    {\appendetoks
+       ,backgroundcolor=\XMLop{background-color}
+     \to \scratchtoks}
+
+  % todo : padding
+
+  \doifsomething{\XMLop{padding}}
+    {\appendetoks
+       ,offset=\XMLop{padding}
+     \to \scratchtoks}
+
+  % todo: interference with presets in column (outer level) -> \setupcolumn[column] ...;
+  % misschien meerdere align switches
+
+  \doifelsenothing{\XMLop{display-align}}
+    {\doifsomething{\XMLop{text-align}}
+       {\appendetoks
+          ,align=\XMLpav{fo:align-key}{fo:table-cell}{text-align}{normal}
+        \to \scratchtoks}}
+    {\doifsomething{\XMLop{text-align}}
+       {\appendetoks
+          ,align={\XMLpav{fo:display-align}{fo:table-cell}{display-align}{high},\XMLpav{fo:align-key}{fo:table-cell}{text-align}{normal}},
+        \to \scratchtoks}
+       {\appendetoks
+          ,align=\XMLpav{fo:display-align}{fo:table-cell}{display-align}{high}
+        \to \scratchtoks}}
+
+   \appendetoks
+     ,extras={\rescanXMLattributes{fo:table-cell}}
+   \to\scratchtoks
+
+\stopsetups
+
+% \startsetups fo:table-cell:setup
+
+%   [\XMLpar{fo:table-cell}{text-indent}{}]
+
+%   \edefXMLinhpar\xFOtextindent{fo:table-cell}{text-indent}
+
+%   \doifsomething\xFOtextindent
+%     {\scratchdimen\hsize
+%      \setpercentdimen\scratchdimen\xFOtextindent
+%      \expanded{\setupindenting[\the\scratchdimen]}}
+
+% \stopsetups
+
+\startsetups fo:table-cell:stop
+
+  \doif{\XMLop{ends-row}}{true}{\eTR\inTABLErowfalse}
+
+\stopsetups
+
+%D Element: fo:list-block fo:list-item fo:list-body fo:list-item-label
+
+% \XMLattributeset{fo:aural},
+% intrusion-displace=,
+% keep-together=,
+% provisional-distance-between-starts=24pt,
+% provisional-label-separation=6pt,
+
+\defineXMLenvironment
+  [fo:list-block]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fe:tracing},
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:margin-block},
+   \XMLattributeset{fo:relative-position},
+   break-after=,
+   break-before=,
+   keep-with-next=,
+%  space-between-list-rows=, % ? mentioned in bradley
+text-indent=0pt, % yes
+   keep-with-previous=]
+  {\beginXMLelement\directsetup{fo:list:start}}
+  {\directsetup{fo:list:stop}\endXMLelement}
+
+\startsetups fo:list:start
+  \endgraf
+  \begingroup
+  \directsetup{fe:setup}
+  \disablemode[fo:in-list]
+  % \forgetall, no!
+%   \directsetup{fo:break-and-space:before}
+  \directsetup{fo:indent:setup}
+  \begingroup
+\stopsetups
+
+\startsetups fo:list:stop
+  \endgraf
+  \endgroup
+%   \directsetup{fo:break-and-space:after}
+  \endgroup
+\stopsetups
+
+% \XMLattributeset{fo:aural},
+% relative-align=,
+% intrusion-displace=,
+% keep-together=,
+
+% The list model is plain stupid. Instead of just defining a few mechanism
+% or using some kind of type attribute, a strange mechanism of functions is
+% used. Why on the one hand introduce redundant attributes and on the other
+% hand safe a few elements. A proper segmentation of the problem would have
+% brought better solutions.
+
+\defineXMLenvironment
+  [fo:list-item]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fe:tracing},
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:margin-block},
+   \XMLattributeset{fo:relative-position},
+   break-after=,
+   break-before=,
+   keep-with-next=,
+   keep-with-previous=]
+  {\beginXMLelement\directsetup{fo:list-item:start}}
+  {\directsetup{fo:list-item:stop}\endXMLelement}
+
+% check what is needed
+
+\newdimen\FOlistitemlabelhsize      \newdimen\FOlistitembodyhsize     \newdimen\FOlistitemdistance
+\newdimen\FOlistitemlabelleftskip   \newdimen\FOlistitembodyleftskip
+\newdimen\FOlistitemlabelrightskip  \newdimen\FOlistitembodyrightskip
+
+\defineXMLnestedsave
+  [fo:list-item-body]
+  [\XMLattributeset{fo:inherited},
+   id=, % keep-together=,
+   \XMLattributeset{fo:accessibility}]
+
+\defineXMLnestedsave
+  [fo:list-item-label]
+  [\XMLattributeset{fo:inherited},
+   id=, % keep-together=,
+   \XMLattributeset{fo:accessibility}]
+
+\startsetups fo:list-item:start
+
+  \bgroup
+
+%   \startmode[fo:in-list]
+%    \doifsomething{\XMLpar{fo:list-block}{space-between-list-rows}{}}
+%      {\vskip\XMLpar{fo:list-block}{space-between-list-rows}{}} % todo ! ! ! !
+%   \stopmode
+
+  \enablemode[fo:in-list]
+
+\stopsetups
+
+% todo : relative-align in list item
+
+\newif\ifFOlabelend
+\newif\ifFObodystart
+
+\startsetups fo:list-item:stop
+
+  % 24pt en 6pt in fo:root instellen
+
+  % \tracebackXMLattribute{provisional-distance-between-starts}
+
+  \edefXMLinh \FOprodis {provisional-distance-between-starts}
+  \edefXMLinh \FOprolab {provisional-label-separation}
+
+%   \edef\FOprodis{\XMLpar{fo}{provisional-distance-between-starts}{}}
+%   \edef\FOprolab{\XMLpar{fo}{provisional-label-separation}{}}
+
+  \edef\FOprodis{\ifx\FOprodis\empty24pt\else\FOprodis\fi}
+  \edef\FOprolab{\ifx\FOprolab\empty 6pt\else\FOprolab\fi}
+
+  \setlocalhsize
+
+  \FOlistitemlabelleftskip \zeropoint
+  \FOlistitemlabelrightskip\zeropoint
+  \FOlistitembodyleftskip  \zeropoint
+  \FOlistitembodyrightskip \zeropoint
+
+  \doifelse{\XMLpar{fo:list-item-label}{end-indent}  {}}{label-end()} \FOlabelendtrue \FOlabelendfalse
+  \doifelse{\XMLpar{fo:list-item-body} {start-indent}{}}{body-start()}\FObodystarttrue\FObodystartfalse
+
+  \setpercentdimen\FOlistitemlabelleftskip {\XMLpar{fo:list-item-label}{start-indent}{0pt}}
+  \setpercentdimen\FOlistitembodyrightskip {\XMLpar{fo:list-item-body} {end-indent}  {0pt}}
+
+  % maybe i need to implement something configurable
+
+  \ifFObodystart
+    \ifFOlabelend
+      \FOlistitemlabelrightskip\dimexpr(\localhsize-\FOlistitemlabelleftskip-\FOprodis+\FOprolab)
+      \FOlistitembodyleftskip\dimexpr(\FOlistitemlabelleftskip+\FOprodis)
+      \FOlistitemlabelhsize\dimexpr(\FOprodis-\FOprolab)
+    \else
+      \setpercentdimen\FOlistitemlabelrightskip{\XMLpar{fo:list-item-label}{end-indent}{0pt}}
+      \FOlistitemlabelhsize\dimexpr(\localhsize-\FOlistitemlabelleftskip-\FOlistitemlabelrightskip)
+      \FOlistitembodyleftskip\dimexpr(\FOlistitemlabelleftskip+\FOlistitemlabelhsize+\FOprolab)
+    \fi
+    \FOlistitemdistance  \dimexpr(\FOprolab)
+  \else
+    \setpercentdimen\FOlistitembodyleftskip{\XMLpar{fo:list-item-body}{start-indent}{0pt}}
+    \ifFOlabelend
+      \FOlistitemlabelrightskip\dimexpr(\localhsize-\FOlistitembodyleftskip+\FOprolab)
+      \FOlistitemlabelhsize\dimexpr(\localhsize-\FOlistitemlabelleftskip-\FOlistitemlabelrightskip)
+      \FOlistitemdistance  \dimexpr(\FOprolab)
+    \else
+      \setpercentdimen\FOlistitemlabelrightskip{\XMLpar{fo:list-item-label}{end-indent}{0pt}}
+      \FOlistitemlabelhsize\dimexpr(\localhsize-\FOlistitemlabelleftskip-\FOlistitemlabelrightskip)
+      \FOlistitemdistance  \dimexpr(\FOlistitembodyleftskip-\FOlistitemlabelleftskip-\FOlistitemlabelhsize)
+    \fi
+  \fi
+
+  % is this fall back permitted ?
+
+  \ifzeropt\FOlistitemlabelleftskip \ifzeropt\FOlistitemlabelrightskip
+    \FOlistitembodyleftskip\FOprodis
+    \FOlistitemdistance\FOprolab
+    \FOlistitemlabelhsize\dimexpr(\FOlistitembodyleftskip-\FOlistitemdistance)
+  \fi \fi
+
+  %
+
+  \FOlistitembodyhsize\localhsize
+
+  \advance\FOlistitembodyhsize-\FOlistitembodyleftskip
+  \advance\FOlistitembodyhsize-\FOlistitembodyrightskip
+
+  \doifelse{\XMLpar{fo:list-item}{display-align}{}}{center}
+    {\directsetup{fo:list-item:display}}
+    {\directsetup{fo:list-item:text}}
+
+  \egroup
+
+\stopsetups
+
+% todo: textindent
+
+\startsetups fo:list-item:display
+
+  \endgraf
+
+  \advance\leftskip \FOlistitemlabelleftskip
+  \advance\rightskip\FOlistitembodyrightskip
+
+  \dontleavehmode \valign\bgroup\forgetall\vss##\vss\cr
+    \iftracingFO\ruledvtop\else\vbox\fi{\hsize\FOlistitemlabelhsize\directsetup{fo:list-item-label:setup}\XMLflush{fo:list-item-label}}\cr
+    \iftracingFO\ruledvtop\else\vbox\fi{\hsize\FOlistitembodyhsize \directsetup{fo:list-item-body:setup}\XMLflush{fo:list-item-body}}\cr
+  \egroup
+
+% \dontleavehmode \placesidebyside % or maybe paired boxes (legends)
+%   {\ruledvtop{\forgetall\hsize\FOlistitemlabelhsize\XMLflush{fo:list-item-label}}}
+%   {\ruledvtop{\forgetall\hsize\FOlistitembodyhsize \XMLflush{fo:list-item-body}}}
+
+  \endgraf
+
+\stopsetups
+
+\newtoks\savedeverypar \savedeverypar\everypar
+
+\startsetups fo:list-item:text
+
+  \everypar\savedeverypar % \appendtoksonce\insertparagraphintro\to\everypar % hack, binnen footnote ...
+
+  \advance\leftskip \FOlistitembodyleftskip
+  \advance\rightskip\FOlistitembodyrightskip
+
+  \setupparagraphintro[first][\directsetup{fo:list-item-label:process}]
+  \setupparagraphintro[next] [\begstrut\resetpenalties\clubpenalties]
+  \directsetup{fo:list-item-body:setup}
+  \XMLflush{fo:list-item-body}\endstrut
+
+\stopsetups
+
+\startsetups fo:list-item-label:setups
+
+  \edefXMLinhpar\xFOtextindent{fo:item-label}{text-indent}
+
+  \doifsomething\xFOtextindent
+    {\scratchdimen\hsize
+     \setpercentdimen\scratchdimen\xFOtextindent
+     \expanded{\setupindenting[\the\scratchdimen]}}
+
+\stopsetups
+
+\startsetups fo:list-item-body:setups
+
+  \edefXMLinh\xFOtextindent{fo:item-body}{text-indent}
+
+  \doifsomething\xFOtextindent
+    {\scratchdimen\hsize
+     \setpercentdimen\scratchdimen\xFOtextindent
+     \expanded{\setupindenting[\the\scratchdimen]}}
+
+\stopsetups
+
+\newbox\FOitembox
+
+\startsetups fo:list-item-label:process
+
+  \setbox \FOitembox \iftracingFO \ruledvtop \else \vtop \fi \bgroup
+    \forgetall
+    \postponenotes
+    \hsize\FOlistitemlabelhsize
+    \directsetup{fo:list-item-label:setup}
+    \XMLflush{fo:list-item-label}
+  \egroup
+  \getnoflines{\dimexpr(\ht\FOitembox+\dp\FOitembox)}
+  \setpenalties\clubpenalties\noflines\maxdimen
+  \strut\llap{\box\FOitembox\hskip\FOlistitemdistance}
+
+\stopsetups
+
+% \setlocalhsize \hsize\localhsize
+
+%D Element: fo:basic-link
+
+% \XMLattributeset{fo:aural},
+% keep-together=,
+% line-height=,
+
+\defineXMLenvironmentsave
+  [fo:basic-link]
+  [\XMLattributeset{fo:inherited},
+   id=,
+   \XMLattributeset{fo:accessibility},
+   \XMLattributeset{fo:border-padding-background},
+   \XMLattributeset{fo:margin-inline},
+   \XMLattributeset{fo:relative-position},
+   alignment-adjust=,
+   alignment-baseline=,
+   baseline-shift=,
+   destination-placement-offset=,
+   dominant-baseline=,
+   external-destination=,
+   indicate-destination=,
+   internal-destination=,
+   keep-with-next=,
+   keep-with-previous=,
+   show-destination=,
+   target-processing-context=,
+   target-presentation-context=,
+   target-stylesheet=]
+  {}
+  {\directsetup{fo:basic-link}}
+
+\startsetups fo:basic-link
+
+   \goto{\XMLflushself}[unknown]
+
+\stopsetups
+
+%D Element: fo:multi-switch fo:multi-case fo:multi-toggle fo:multi-properties fo:multi-property-set
+
+\defineXMLprocess[fo:multi-switch]
+\defineXMLprocess[fo:multi-case]
+\defineXMLprocess[fo:multi-toggle]
+\defineXMLprocess[fo:multi-properties]
+\defineXMLprocess[fo:multi-property-set]
+
+%D Element: fo:float
+
+\defineXMLenvironmentsave
+  [fo:float]
+  [\XMLattributeset{fo:inherited},
+   float=before,
+   clear=]
+  {}
+  {\directsetup{fo:float:process}}
+
+% clear: start end left right both none inherit
+% float: before start end left right none
+
+\mapXMLvalue {fo:float-position} {before} {here}   % todo
+\mapXMLvalue {fo:float-position}  {start} {here}   % todo
+\mapXMLvalue {fo:float-position}    {end} {here}   % todo
+\mapXMLvalue {fo:float-position}   {left} {left}
+\mapXMLvalue {fo:float-position}  {right} {right}
+\mapXMLvalue {fo:float-position}   {none} {here}   % todo
+
+\startsetups fo:float:process
+
+  \placefigure
+    [\XMLval{fo:float-position}{\XMLop{float}},none]
+    {}
+    {\XMLflushself}
+
+\stopsetups
+
+%D Element: fo:footnote fo:footnote-body
+
+% Let's assume that 'whatever' contains the number or footnote marker.
+%
+% <fo:footnote>whatever<fo:footnote-body>note</fo:footnote-body></fo:footnote>
+
+% todo xsl-footnote area
+
+\defineXMLprocess
+  [fo:footnote]
+  [\XMLattributeset{fo:accessibility}]
+
+\defineXMLargument
+  [fo:footnote-body]
+  [\XMLattributeset{fo:accessibility}]
+  {\footnote[-]}
+
+%D Element: fo:wrapper
+
+\defineXMLenvironment % todo: all inheritable
+  [fo:wrapper]
+  [\XMLattributeset{fo:inherited},
+   \XMLattributeset{fe:tracing},
+   \XMLattributeset{fo:fonts},
+   \XMLattributeset{fo:hyphenation}]
+  {\beginXMLelement\begingroup\directsetup{fo:wrapper}}
+  {\endgroup\endXMLelement}
+
+\startsetups fo:wrapper
+
+  \directsetup{fe:setup}
+  \directsetup{fo:hyphenation:setup}
+  \directsetup{fo:font:setup}
+
+\stopsetups
+
+%D Element: fo:marker fo:retrieve-marker
+
+% In order to support 'retrieve-boundary' (page, page-sequence,
+% document) I need to extend the context mark handler.
+
+% This object will probably interfere with a too spacy layout since
+% it is unaware if its surrounding.
+
+\defineXMLenvironmentsave
+  [fo:marker]
+  [marker-class-name=unknown]
+  {}
+  {\directsetup{fo:marker:process}}
+
+\startsetups fo:marker:process
+
+  \doifelsemarking{fo:\XMLop{marker-class-name}}
+    {} {\definerawmarking[fo:\XMLop{marker-class-name}]}
+
+  \expanded{\marking[fo:\XMLop{marker-class-name}]{\XMLflushself}}
+
+\stopsetups
+
+\defineXMLcommand
+  [fo:retrieve-marker]
+  [retrieve-class-name=unknown,
+   retrieve-position=first-starting-within-page,
+   retrieve-boundary=]
+  {\directsetup{fo:retrieve-marker:process}}
+
+\mapXMLvalue {fo:marker-position} {first-starting-within-page} {first}    % first mark
+\mapXMLvalue {fo:marker-position} {first-including-carryover}  {previous} % top mark
+\mapXMLvalue {fo:marker-position} {last-starting-within-page}  {first}    % dunno
+\mapXMLvalue {fo:marker-position} {last-ending-within-page}    {last}     % bot mark
+
+\startsetups fo:retrieve-marker:process
+
+   \expanded{\getmarking
+     [fo:\XMLop{retrieve-class-name}]
+     [\XMLval{fo:marker-position}{\XMLop{retrieve-position}}{first}]}
+
+\stopsetups
+
+%D Auxiliary macros
+
+\unprotect
+
+\long\def\noFOchecks#1\od{}
+
+\def\FOassignskip#1#2#3%
+  {\edef\!!stringa{\XMLpar{#1}{#2}\empty}%
+   \edef\!!stringb{\XMLpar{#1}{#2.optimum}\empty}%
+   \edef\!!stringc{\XMLpar{#1}{#2.minimum}\empty}%
+   \edef\!!stringd{\XMLpar{#1}{#2.maximum}\empty}%
+   \dimen0=\ifx\!!stringa\empty\zeropoint\else\!!stringa\fi
+   \dimen2=\ifx\!!stringb\empty\dimen0   \else\!!stringb\fi
+   \dimen4=\dimexpr(\ifx\!!stringd\empty\dimen0 \else\!!stringd\fi-\dimen2)\relax
+   \dimen6=\dimexpr(\ifx\!!stringc\empty\dimen0 \else\!!stringc\fi-\dimen2)\relax
+   #3=\dimen2 \ifzeropt\dimen4 \else\!!plus\dimen4 \fi\ifzeropt\dimen6 \else\!!minus\dimen6 \fi\relax}
+
+\mapXMLvalue{fo:space:conditionality} {retain}  {\let\next\retainedskip }
+\mapXMLvalue{fo:space:conditionality} {discard} {\let\next\discardedskip}
+\mapXMLvalue{fo:space:conditionality} {}        {\let\next\discardedskip}
+
+\mapXMLvalue{fo:space:precedence}     {force}   {\let\next\forcedskip}
+
+\def\FOdoskip#1#2%
+  {\begingroup
+   \iftracingFO\showskips\fi
+   \FOassignskip{#1}{#2}\scratchskip
+   \XMLval{fo:space:conditionality}{\XMLpar{#1}{#2.conditionality}\empty}\empty
+   \XMLval{fo:space:precedence}{\XMLpar{#1}{#2.precedence}\empty}\empty
+   \ifdim\scratchskip=\zeropoint
+     \ifdim\gluestretch\scratchskip=\zeropoint
+       \ifdim\glueshrink\scratchskip=\zeropoint
+         \let\next\gobbleoneargument
+       \fi
+     \fi
+   \fi
+   \next\scratchskip
+   \endgroup}
+
+\def\doFObeforeskip#1{\FOdoskip{#1}{space-before}}
+\def\doFOafterskip #1{\FOdoskip{#1}{space-after}}
+
+\def\FOassignspace#1#2#3%
+  {\edef\!!stringa{\XMLpar{#1}{#2}\empty}%
+   \ifx\!!stringa\empty
+     #3=\zeropoint
+   \else
+     #3=1em% ?
+     \setpercentdimen#3\!!stringa
+   \fi
+   \relax}
+
+\def\FOdospace#1#2%
+  {\begingroup
+   \iftracingFO\showskips\fi
+   \FOassignspace{#1}{#2}\scratchskip
+   \ifdim\scratchskip=\zeropoint \else
+     \hskip\scratchskip
+   \fi
+   \endgroup}
+
+\def\doFOstartspace#1{\FOdospace{#1}{space-start}}
+\def\doFOendspace  #1{\FOdospace{#1}{space-end}}
+
+\def\checkFOborder#1#2%
+  {\edef\FOattribute{\XMLpar{#1}{border-#2}\empty}%
+   \ifx\FOattribute\empty\else
+     \edef\FOtag{#1}%
+     \edef\FOatt{border-#2}%
+     \expanded{\docheckFOborder\FOattribute\space\relax\space\relax}\od
+   \fi}
+
+\def\docheckFOborder#1#2 #3%
+  {\ifx#1\relax
+     \expandafter\noFOchecks
+   \else
+     \doifhexcolorelse{#1#2}
+       {\setXMLpar\FOtag{\FOatt-color}{#1#2}}
+       {\doifelsenothing{\XMLval{fo:border-style}{#1#2}\empty}
+          {\doifcolorelse{#1#2}
+             {\setXMLpar\FOtag{\FOatt-color}{#1#2}}
+             {\setXMLpar\FOtag{\FOatt-width}{#1#2}}}
+          {\setXMLpar\FOtag{\FOatt-style}{#1#2}}}%
+     \expandafter\docheckFOborder
+   \fi#3}
+
+\def\checkFOposition#1#2%
+  {\edef\FOattribute{\XMLpar{#1}{#2-position}\empty}%
+   \ifx\FOattribute\empty\else
+     \edef\FOtag{#1}%
+     \edef\FOatt{#2-position}%
+     \scratchcounter\zerocount
+     \expanded{\docheckFOposition\FOattribute\space\relax\space\relax}\od
+   \fi}
+
+\def\docheckFOposition#1#2 #3%
+  {\ifx#1\relax
+     \expandafter\noFOchecks
+   \else
+     \advance\scratchcounter\plusone
+     \ifcase\scratchcounter
+     \or
+       \setXMLpar\FOtag{\FOatt-vertical}{#1#2}%
+     \or
+       \setXMLpar\FOtag{\FOatt-horizontal}{#1#2}%
+     \fi
+     \expandafter\docheckFOposition
+   \fi#3}
+
+\def\checkFOpadding{\def\FOatt{padding}\checkFOquadruple}
+\def\checkFOmargin {\def\FOatt{margin}\checkFOquadruple}
+
+\def\checkFOquadruple#1%
+  {\edef\FOattribute{\XMLpar{#1}\FOatt\empty}%
+   \ifx\FOattribute\empty\else
+     \edef\FOtag{#1}%
+     \scratchcounter\zerocount
+     \expanded{\docheckFOquadruple\FOattribute\space\relax\space\relax}\od
+     \ifcase\scratchcounter
+       \let\FOattributeT\FOattribute
+       \let\FOattributeR\FOattribute
+       \let\FOattributeB\FOattribute
+       \let\FOattributeL\FOattribute
+     \or % (tblr)
+       \let\FOattributeT\FOattribute
+       \let\FOattributeR\FOattribute
+       \let\FOattributeB\FOattribute
+       \let\FOattributeL\FOattribute
+     \or % (tb)(lr)
+       \let\FOattributeB\FOattributeT
+       \let\FOattributeL\FOattributeR
+     \or % (t)(lr)(b)
+       \let\FOattributeL\FOattributeR
+     \or % (t)(r)(b)(l)
+       % already ok
+     \fi
+     \letXMLpar\FOtag{\FOatt-top}\FOattributeT
+     \letXMLpar\FOtag{\FOatt-right}\FOattributeR
+     \letXMLpar\FOtag{\FOatt-bottom}\FOattributeB
+     \letXMLpar\FOtag{\FOatt-left}\FOattributeL
+   \fi}
+
+\def\docheckFOquadruple#1#2 #3%
+  {\ifx#1\relax
+     \expandafter\noFOchecks
+   \else
+     \advance\scratchcounter\plusone
+     \ifcase\scratchcounter
+     \or
+      \edef\FOattributeT{#1#2}%
+     \or
+      \edef\FOattributeR{#1#2}%
+     \or
+      \edef\FOattributeB{#1#2}%
+     \or
+      \edef\FOattributeL{#1#2}%
+     \fi
+     \expandafter\docheckFOquadruple
+   \fi#3}
+
+% \def\setFOimagename#1%
+%   {\edef\FOimagename{#1}%
+%    \aftersplitstring \FOimagename\at url('\to\xFOimagename
+%    \ifx\xFOimagename\empty \else
+%      \beforesplitstring\xFOimagename\at ')\to\FOimagename
+%    \fi
+%    \aftersplitstring \FOimagename\at url("\to\xFOimagename
+%    \ifx\xFOimagename\empty \else
+%      \beforesplitstring\xFOimagename\at ")\to\FOimagename
+%    \fi}
+%
+% let's overkill:
+
+\def\setFOimagename#1%
+  {\analyzefunction{#1}%
+   \doifelse\functionname{url}
+     {\edef\FOimagename{\@EA\unstringed\functionA}}
+     {\ifx\functionname\empty
+        \def\FOimagename{#1}%
+      \else
+        \def\FOimagename{dummy}%
+      \fi}}
+
+% font
+
+\mapXMLvalue {fo:weight}  {normal}  {}
+\mapXMLvalue {fo:weight}  {bold}    {bold}
+\mapXMLvalue {fo:weight}  {bolder}  {bold}
+\mapXMLvalue {fo:weight}  {lighter} {normal}
+\mapXMLvalue {fo:weight}  {100}     {normal}
+\mapXMLvalue {fo:weight}  {200}     {normal}
+\mapXMLvalue {fo:weight}  {300}     {normal}
+\mapXMLvalue {fo:weight}  {400}     {normal}
+\mapXMLvalue {fo:weight}  {500}     {normal}
+\mapXMLvalue {fo:weight}  {600}     {normal}
+\mapXMLvalue {fo:weight}  {700}     {normal}
+\mapXMLvalue {fo:weight}  {800}     {normal}
+\mapXMLvalue {fo:weight}  {900}     {normal}
+
+\mapXMLvalue {fo:variant} {normal}     {}
+\mapXMLvalue {fo:variant} {small-caps} {small-caps}
+
+\mapXMLvalue {fo:style}   {normal}    {normal}
+\mapXMLvalue {fo:style}   {italic}    {italic}
+\mapXMLvalue {fo:style}   {oblique}   {oblique}
+\mapXMLvalue {fo:style}   {backslant} {normal}
+
+% we can get crap like: 10pt/1.5 bold "Times Roman" ; i'm really puzzled why an
+% otherwise rather verbose coding occasionally packs attributes; a design flaw
+
+\newtoks\FOfonttoks
+
+\def\checkFOfontSS#1'{}
+\def\checkFOfontDD#1"{}
+\def\checkFOfontII#1 {}
+
+\bgroup
+\catcode`\'=\active
+\catcode`\"=\active
+\catcode`\/=\active
+\gdef\setcheckFOfontX
+  {\catcode`\'=\active
+   \catcode`\"=\active
+   \catcode`\/=\active
+   \def'##1'{\global\FOfonttoks\expandafter{\the\FOfonttoks\def\FOfontfamily{##1}}}%
+   \def"##1"{\global\FOfonttoks\expandafter{\the\FOfonttoks\def\FOfontfamily{##1}}}%
+   \def/##1 {}}% todo linespacing
+\gdef\setcheckFOfontXX
+  {\catcode`\'=\active
+   \catcode`\"=\active
+   \catcode`\/=\active
+   \def'##1'{}%
+   \def"##1"{}%
+   \def/##1 {}}% todo linespacing
+\egroup
+
+\globallet\xFOattribute\empty
+
+\def\checkFOfont#1%
+  {\FOfonttoks\emptytoks
+   \bgroup
+   \catcode`\\=\@@escape
+   \catcode`\{=\@@begingroup
+   \catcode`\}=\@@endgroup
+% \catcode`\:=\@@letter
+% \catcode`\-=\@@letter
+   \setcheckFOfontX
+   \xdef\xFOattribute{#1 }%
+   \setbox\scratchbox\hbox{\scantokens\@EA{\xFOattribute}}%
+   \setcheckFOfontXX
+   \scantokens\@EA{\@EA\xdef\@EA\xFOattribute\@EA{\xFOattribute}}%
+   \egroup
+   \the\FOfonttoks
+   \ifx\xFOattribute\empty\else
+      \expanded{\docheckFOfont\xFOattribute\space\relax\space\relax}\od
+   \fi
+   \directsetup{fo:font:family:check}}
+
+\def\docheckFOfont#1#2 #3%
+  {\ifx#1\relax
+     \expandafter\noFOchecks
+   \else
+     \directsetup{fo:fonts:reset}%
+     \doifelsefontsynonym{#1#2}
+       {\def\FOfontfamily{#1#2}}
+       {\doifelsenothing{\XMLval{fo:weight}{#1#2}{}}
+          {\doifelsenothing{\XMLval{fo:variant}{#1#2}{}}
+             {\doifelsenothing{\XMLval{fo:style}{#1#2}{}}
+                {\setpercentdimen\dFOfontsize{#1#2}}
+                {\edef\FOfontstyle{\XMLval{fo:style}{#1#2}{}}}}
+             {\edef\FOfontvariant{\XMLval{fo:variant}{#1#2}{}}}}
+          {\edef\FOfontweight{\XMLval{fo:weight}{#1#2}{}}}}%
+     \expandafter\docheckFOfont
+   \fi#3}
+
+\protect
+
+\newtoks\FOreferences
+
+\def\setFOreference#1%
+  {\doifsomething{\XMLpar{#1}{id}{}}
+     {\expanded{\appendtoks
+        \noexpand\reference[\XMLpar{#1}{id}{}]{\XMLpar{fo:page-sequence}{format}{}}}%
+      \to\FOreferences}}
+
+\def\flushFOreferences
+  {\the\FOreferences
+   \global\FOreferences\emptytoks}
+
+\def\doFOreference#1%
+  {\doifsomething{\XMLpar{#1}{id}{}}
+     {\expanded{\reference[\XMLpar{#1}{id}{}]{\XMLpar{fo:page-sequence}{format}{}}}}}
+
+\appendtoks \flushFOreferences \to \everypar
+\appendtoks \flushFOreferences \to \neverypar % check !
+
+%D Graphics: static frames
+
+\startMPinclusions
+  input mp-fobg.mpii ;
+\stopMPinclusions
+
+\def\unknownMPcolor{FoNoColor}
+
+% todo: combine into one en alleen tweede run, immers toch geen invloed; is
+% aangezien de referentiepunten vast liggen
+
+\def\FoRegionWidth#1%
+  {\XMLpav
+     {fo:border-width}
+     {fo:region-\MPvar{location}}
+     {border-#1-width}
+     {FoMedium}}
+
+\def\FoRegionStyle#1%
+  {\XMLpav
+     {fo:border-style}
+     {fo:region-\MPvar{location}}
+     {border-#1-style}
+     {FoNone}}
+
+\def\FoRegionColor#1%
+  {\MPcolor{\XMLpar
+     {fo:region-\MPvar{location}}
+     {border-#1-color}
+     {black}}}
+
+\def\FoRegionBackgroundColor
+  {\MPcolor{\XMLpar
+     {fo:region-\MPvar{location}}
+     {background-color}
+     {FoNoColor}}}
+
+% todo: when connected and same color : one draw
+
+\startuseMPgraphic{region-do}
+  FoBackgroundColor     := \FoRegionBackgroundColor ;
+  FoLineColor[FoTop]    := \FoRegionColor{top} ;
+  FoLineColor[FoBottom] := \FoRegionColor{bottom} ;
+  FoLineColor[FoLeft]   := \FoRegionColor{left} ;
+  FoLineColor[FoRight]  := \FoRegionColor{right} ;
+  FoLineStyle[FoTop]    := \FoRegionStyle{top} ;
+  FoLineStyle[FoBottom] := \FoRegionStyle{bottom} ;
+  FoLineStyle[FoLeft]   := \FoRegionStyle{left} ;
+  FoLineStyle[FoRight]  := \FoRegionStyle{right} ;
+  FoLineWidth[FoTop]    := \FoRegionWidth{top} ;
+  FoLineWidth[FoBottom] := \FoRegionWidth{bottom} ;
+  FoLineWidth[FoLeft]   := \FoRegionWidth{left} ;
+  FoLineWidth[FoRight]  := \FoRegionWidth{right} ;
+  if FoBackgroundColor <> FoNoColor :
+    fill OverlayBox
+      withcolor FoBackgroundColor ;
+  fi ;
+  path OverlayFrameBox ;
+  interim linecap := butt ;
+  OverlayFrameBox := OverlayBox
+      topenlarged    -.5FoLineWidth[FoTop]
+      bottomenlarged -.5FoLineWidth[FoBottom]
+      leftenlarged   -.5FoLineWidth[FoLeft]
+      rightenlarged  -.5FoLineWidth[FoRight] ;
+  DrawFoFrame(FoTop,    topboundary    OverlayFrameBox) ;
+  DrawFoFrame(FoBottom, bottomboundary OverlayFrameBox) ;
+  DrawFoFrame(FoLeft,   leftboundary   OverlayFrameBox) ;
+  DrawFoFrame(FoRight,  rightboundary  OverlayFrameBox) ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{region-body}   \includeMPgraphic{region-do} \stopuseMPgraphic
+\startuseMPgraphic{region-before} \includeMPgraphic{region-do} \stopuseMPgraphic
+\startuseMPgraphic{region-after}  \includeMPgraphic{region-do} \stopuseMPgraphic
+\startuseMPgraphic{region-start}  \includeMPgraphic{region-do} \stopuseMPgraphic
+\startuseMPgraphic{region-end}    \includeMPgraphic{region-do} \stopuseMPgraphic
+
+\startnotmode[fo-no-bg]
+
+\defineoverlay[region-body-graphic]  [\useMPgraphic{region-body}{location=body}]
+\defineoverlay[region-before-graphic][\useMPgraphic{region-before}{location=before}]
+\defineoverlay[region-after-graphic] [\useMPgraphic{region-after}{location=after}]
+\defineoverlay[region-start-graphic] [\useMPgraphic{region-start}{location=start}]
+\defineoverlay[region-end-graphic]   [\useMPgraphic{region-end}{location=end}]
+
+\stopnotmode
+
+% more efficient: todo: relocate and move to page background
+
+% \def\FoRegionWidth#1#2%
+%   {\XMLpav
+%      {fo:border-width}
+%      {fo:region-#2}
+%      {border-#1-width}
+%      {FoMedium}}
+
+% \def\FoRegionStyle#1#2%
+%   {\XMLpav
+%      {fo:border-style}
+%      {fo:region-#2}
+%      {border-#1-style}
+%      {FoNone}}
+
+% \def\FoRegionColor#1#2%
+%   {\MPcolor{\XMLpar
+%      {fo:region-#2}
+%      {border-#1-color}
+%      {black}}}
+
+% \def\FoRegionBackgroundColor#1%
+%   {\MPcolor{\XMLpar
+%      {fo:region-#1}
+%      {background-color}
+%      {FoNoColor}}}
+
+% \def\combinedFOgraphic#1%
+%  {FoBackgroundColor     := \FoRegionBackgroundColor{#1} ;
+%   FoLineColor[FoTop]    := \FoRegionColor{top}{#1} ;
+%   FoLineColor[FoBottom] := \FoRegionColor{bottom}{#1} ;
+%   FoLineColor[FoLeft]   := \FoRegionColor{left}{#1} ;
+%   FoLineColor[FoRight]  := \FoRegionColor{right}{#1} ;
+%   FoLineStyle[FoTop]    := \FoRegionStyle{top}{#1} ;
+%   FoLineStyle[FoBottom] := \FoRegionStyle{bottom}{#1} ;
+%   FoLineStyle[FoLeft]   := \FoRegionStyle{left}{#1} ;
+%   FoLineStyle[FoRight]  := \FoRegionStyle{right}{#1} ;
+%   FoLineWidth[FoTop]    := \FoRegionWidth{top}{#1} ;
+%   FoLineWidth[FoBottom] := \FoRegionWidth{bottom}{#1} ;
+%   FoLineWidth[FoLeft]   := \FoRegionWidth{left}{#1} ;
+%   FoLineWidth[FoRight]  := \FoRegionWidth{right}{#1} ;
+%   if FoBackgroundColor <> FoNoColor :
+%     fill OverlayBox
+%       withcolor FoBackgroundColor ;
+%   fi ;
+%   path OverlayFrameBox ;
+%   interim linecap := butt ;
+%   OverlayFrameBox := OverlayBox
+%       topenlarged    -.5FoLineWidth[FoTop]
+%       bottomenlarged -.5FoLineWidth[FoBottom]
+%       leftenlarged   -.5FoLineWidth[FoLeft]
+%       rightenlarged  -.5FoLineWidth[FoRight] ;
+%   DrawFoFrame(FoTop,    topboundary    OverlayFrameBox) ;
+%   DrawFoFrame(FoBottom, bottomboundary OverlayFrameBox) ;
+%   DrawFoFrame(FoLeft,   leftboundary   OverlayFrameBox) ;
+%   DrawFoFrame(FoRight,  rightboundary  OverlayFrameBox) ;}
+
+% \startuseMPgraphic{region-body}
+%   \combinedFOgraphic{before}
+%   \combinedFOgraphic{body}
+%   \combinedFOgraphic{after}
+%   \combinedFOgraphic{start}
+%   \combinedFOgraphic{end}
+% \stopuseMPgraphic
+
+% \defineoverlay[region-body-graphic]  [\useMPgraphic{region-body}{location=body}]
+% \defineoverlay[region-before-graphic][]
+% \defineoverlay[region-after-graphic] []
+% \defineoverlay[region-start-graphic] []
+% \defineoverlay[region-end-graphic]   []
+
+\stopXMLcompiling
+
+\endinput
+
+% we can follow two approaches: set the attributes global, using
+%
+% \defineXML...[tag][prefix][empty]
+%
+% in that case we trust the fo-file to be correct, i.e. the xslt style
+% sheets should not put attributes in the wrong places; however, we need
+% to do that with care, since for instance the attributes of some objects
+% (regions) are used mixed
+%
+% \defineXMLprocess [fo:root] [XMLFO] [test=unset]
+%
+% \defineXMLenvironment [fo:block-container] [XMLFO]
+%   {\begingroup}
+%   {\endgroup}
+%
+% \defineXMLenvironment [fo:block] [XMLFO]
+%   {\begingroup\getXMLparameters[XMLFO]\begingroup}
+%   {\endgroup\XMLFOtest\endgraf\endgroup}
+%
+% \startXMLdata
+% <fo:root>
+%     <fo:block-container test='first'><fo:block test='second'>second:</fo:block></fo:block-container>
+%     <fo:block>unset:</fo:block>
+%     <fo:block test='outer'><fo:block test='nested'>nested:</fo:block>outer:</fo:block>
+%     <fo:block test='last'>last:</fo:block>
+% </fo:root>
+% \stopXMLdata
+%
+% the other approach is to set the attributes explicitly for each
+% element, which is slower but more robust
+%
+% A mix is:
+%
+% \defineXMLenvironment
+%   [fo:root]
+%   [test=unset]
+%   {\beginXMLelement}
+%   {\endXMLelement}
+%
+% \defineXMLenvironment
+%   [fo:block-container]
+%   [test=\XMLpar\XMLpureparent{test}{}]
+%   {\beginXMLelement}
+%   {\endXMLelement}
+%
+% \defineXMLenvironment
+%   [fo:block]
+%   [test=\XMLpar\XMLpureparent{test}{}]
+%   {\beginXMLelement
+%    \begingroup}
+%   {\endgroup
+%    \XMLpar{fo:block}{test}{}
+%    \endXMLelement}
+%
+% \startXMLdata
+% <fo:root>
+%     <fo:block-container test='first'><fo:block test='second'>second:</fo:block></fo:block-container>
+%     <fo:block>unset:</fo:block>
+%     <fo:block test='outer'><fo:block test='nested'>nested:</fo:block>outer:</fo:block>
+%     <fo:block test='last'>last:</fo:block>
+% </fo:root>
+% \stopXMLdata

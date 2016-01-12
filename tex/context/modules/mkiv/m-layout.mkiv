@@ -1,0 +1,102 @@
+%D \module
+%D   [       file=m-layout,
+%D        version=2004.01.16,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Additional Layouts,
+%D         author={Hans Hagen \& Ton Otten},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% layout-preset - thf th tf
+
+%D This is a preliminary module, don't depend on these dimensions yet.
+
+\readsysfile{lang-frq}\donothing\donothing
+\readsysfile{lang-frd}\donothing\donothing
+
+\unprotect
+
+% \def\layouthwratio{\withoutpt\the\dimexpr8\paperheight/\dimexpr(\paperwidth/ 8192)\relax}
+% \def\layouthwratio{\withoutpt\the\dimexpr4\paperheight/\dimexpr(\paperwidth/16384)\relax}
+% \def\layouthwratio{\withoutpt\the\dimexpr2\paperheight/\dimexpr(\paperwidth/32768)\relax}
+
+\def\layouthwratio
+  {\withoutpt\the\dimexpr2\paperheight/(\paperwidth/32768)\relax}
+
+\def\layouthfheight
+  {\dimexpr\layoutparameter\c!header+\layoutparameter\c!headerdistance+
+           \layoutparameter\c!footer+\layoutparameter\c!footerdistance\relax}
+
+\startsetups[preset-1]
+
+  \xdef\layoutwidth {\dimexpr\layoutparameter\c!width\relax}
+  \gdef\layoutheight{\dimexpr\layouthwratio\dimexpr\layoutwidth\relax+\layouthfheight\relax}
+
+\stopsetups
+
+\definelayout
+  [preset-1-1]
+  [\c!preset=preset-1,
+   \c!backspace=\dimexpr(\paperwidth-\layoutwidth)/2\relax,
+   \c!width=\dimexpr2\paperwidth/3\relax,
+   \c!cutspace=\dimexpr(\paperwidth-\layoutwidth)/2\relax,
+   \c!margin=\dimexpr(\paperwidth-\layoutwidth)/3\relax,
+   \c!header=2\lineheight,
+   \c!headerdistance=\lineheight,
+   \c!height=\v!middle, % \layoutheight
+   \c!footerdistance=\layoutparameter\c!headerdistance, % \lineheight,
+   \c!footer=\layoutparameter\c!header, % 2\lineheight,
+   \c!topspace=\dimexpr1\dimexpr\paperheight-(\layoutheight+\layouthfheight)\relax/3\relax,
+   \c!bottomspace=\dimexpr2\dimexpr\paperheight-(\layoutheight+\layouthfheight)\relax/3\relax]
+
+\startsetups[preset-2]
+
+  \gdef\layouthstep{\dimexpr\paperwidth /\layoutparameter\c!columns\relax}
+  \gdef\layoutvstep{\dimexpr\paperheight/\layoutparameter\c!columns\relax}
+
+\stopsetups
+
+\definelayout
+  [preset-2-1]
+  [\c!preset=preset-2,
+   \c!columns=12,
+   \c!backspace=\layouthstep,
+   \c!width=\v!middle,
+   \c!cutspace=2\layouthstep,
+   \c!margin=\layouthstep,
+   \c!header=2\lineheight,
+   \c!headerdistance=\lineheight,
+   \c!height=\v!middle, % \layoutheight
+   \c!footerdistance=\layoutparameter\c!headerdistance,
+   \c!footer=\layoutparameter\c!header,
+   \c!topspace=\dimexpr\layoutvstep-\layoutparameter\c!header-\layoutparameter\c!headerdistance\relax,
+   \c!bottomspace=\dimexpr(2\layoutvstep)-\layoutparameter\c!header-\layoutparameter\c!headerdistance\relax]
+
+\definelayout
+  [preset-2-2]
+  [\c!preset=preset-2,
+   \c!columns=12,
+   \c!backspace=\layouthstep,
+   \c!width=\v!middle,
+   \c!cutspace=2\layouthstep,
+   \c!margin=\layouthstep,
+   \c!header=2\lineheight,
+   \c!headerdistance=\lineheight,
+   \c!height=\v!middle, % \layoutheight
+   \c!footerdistance=\layoutparameter\c!headerdistance,
+   \c!footer=\layoutparameter\c!header,
+   \c!topspace=\layoutvstep,
+   \c!bottomspace=\layoutvstep] % maybe 1.5
+
+%                                                     \setuplayout[preset-1-1] test \showframe \page
+% \setuplayout[preset-1-1][width=65\averagecharwidth] \setuplayout[preset-1-1] test \showframe \page
+%                                                     \setuplayout[preset-2-1] test \showframe \page
+% \setuplayout[preset-2-1][columns=10]                \setuplayout[preset-2-1] test \showframe \page
+%                                                     \setuplayout[preset-2-2] test \showframe \page
+% \setuplayout[preset-2-2][columns=10]                \setuplayout[preset-2-2] test \showframe \page
+
+\protect \endinput

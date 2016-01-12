@@ -1,0 +1,239 @@
+%D \module
+%D   [       file=m-pictex,
+%D        version=1997.01.15,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=\PICTEX\ Loading Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is one big hack. This hack is not needed when
+%D using \ETEX, so there we simply load \PICTEX\ and quit.
+
+%D Not every package defines \type{\fiverm}, \PICTEX's pixel,
+%D so let's take care of that omision here. The actual loading
+%D of \PICTEX\ depends on the package. For \LATEX\ users we
+%D take care of loading the auxiliary ones too.
+
+\def\loadpictex
+  {\ifx\grid\undefined \else \let\normalgrid\grid \fi
+   \ifx\axis\undefined \else \let\normalaxis\axis \fi
+   \ifx\undefined\fiverm
+     \font\fiverm=cmr5
+   \fi
+   \ifx\beginpicture\undefined
+     \ifx\newenvironment\undefined
+       \loadmarkfile{thrd-pic}%
+     \else
+       \input prepictex.tex  \relax
+       \input pictex.tex     \relax
+       \input postpictex.tex \relax
+     \fi
+   \fi
+   \ifx\normalgrid\undefined \else
+     \let\pictexgrid\grid
+     \let\grid\normalgrid
+   \fi
+   \ifx\normalaxis\undefined \else
+     \let\pictexaxis\axis
+     \let\axis\normalaxis
+   \fi}
+
+\ifx\eTeXversion\undefined \else \loadpictex \expandafter \endinput \fi
+
+%D When not in \ETEX\ and not in \CONTEXT, we load a few
+%D auxiliary macros.
+
+\ifx \undefined \writestatus \input supp-mis.tex \relax \fi
+
+\unprotect
+
+%D \TEX\ provides 256 \DIMENSIONS\ and 256 \SKIPS. In \CONTEXT\
+%D this is no problem, but in packages that have many
+%D authors, one can be quite sure that a lot of \DIMENSIONS\ are
+%D allocated. Packages that use \PICTEX\ can therefore run out
+%D of \DIMENSIONS\ quite fast. This module was written as a
+%D reaction to persistent problems with loading \PPCHTEX\ in
+%D \LATEX\ and \PICTEX\ deserves a solution. I therefore
+%D dedicate this module to Tobias Burnus and Dirk Kuypers, who
+%D use \PPCHTEX\ in a \LATEX\ environment and suggested a lot
+%D of extensions to the repertoire of \PPCHTEX\ commands.
+%D
+%D This module presents a solution that is quite effective: all
+%D \DIMENSIONS\ are drawn from the pool of \DIMENSIONS\ and
+%D \SKIPS, depending on the availability. This is possible
+%D because \DIMENSIONS\ are \SKIPS\ without a glue component.
+%D Therefore we can use \SKIPS\ as \DIMENSIONS. However, some
+%D incompatibility can result from assignments that look like:
+%D
+%D \starttyping
+%D \somedimen=\someskip
+%D \stoptyping
+%D
+%D In such cases the \DIMENSION\ equals the fixed part of the
+%D \SKIP\ or in other words: this assignment strips off the
+%D glue. Because \PICTEX\ uses no glue components, I thought
+%D I could interchange both register types without problems,
+%D but alas, this didn't hold for all \DIMENSIONS.
+
+%D In \PLAIN\ \TEX\ the allocation macros are defined with (as)
+%D \type{\outer}. This means that they cannot appear inside
+%D macros, not even in an indirect way. We therefore have to
+%D redefine both \type{\newdimen} and \type{\newskip} to
+%D non||\type{\outer} alternatives. In most macro packages this
+%D redefinition already took place. We save the original
+%D meanings, so we can restores them afterwards.
+
+% \def\temporarynewdimen {\alloc@1\dimen\dimendef\insc@unt}
+% \def\temporarynewskip  {\alloc@2\skip \skipdef \insc@unt}
+
+\let\normalnewdimen   \newdimen
+\let\normalnewskip    \newskip
+
+\let\temporarynewdimen\newdimen
+\let\temporarynewskip \newskip
+
+%D Here comes the trick. Depending on how many \DIMENSIONS\ and
+%D \SKIPS\ are allocated, the \type{\newdimen} assigns a
+%D \DIMENSIONS\ or \SKIP. \PLAIN\ \TEX\ allocates 15 \DIMENSIONS\
+%D and 17 \SKIPS. After loading \PICTEX, 71 \DIMENSIONS\ and
+%D and 71 \SKIPS\ are allocated. Indeed, \PICTEX\ needs 110
+%D \DIMENSIONS !
+%D
+%D \starttyping
+%D \def\newdimen
+%D   {\ifnum\count11>\count12
+%D      \let\next\temporarynewskip
+%D    \else
+%D      \let\next\temporarynewdimen
+%D    \fi
+%D    \next}
+%D \stoptyping
+%D
+%D When I was testing a new version of \PPCHTEX\ in \PLAIN\
+%D \TEX\ I had to find out that this exchange of registers
+%D sometimes leads to unwanted results. It took me some hours
+%D to find out that the source of errors originated in
+%D constructions like:
+%D
+%D \starttyping
+%D \ifdim\DimenOne<\DimenTwo whatever you want \else or not \fi
+%D \stoptyping
+%D
+%D When \type{\DimenOne} is a \SKIP\ and \type{\DimenTwo} is a
+%D \DIMENSION, \TEX\ scans for some optional glue component,
+%D like in:
+%D
+%D \starttyping
+%D \skip0=\dimen0 plus 10pt minus 5pt
+%D \stoptyping
+%D
+%D The most robust solution to this problem is:
+%D
+%D \starttyping
+%D \ifdim\DimenOne<\DimenTwo\relax right \else wrong \fi
+%D \stoptyping
+%D
+%D Some close reading of the \PICTEX\ source however learned me
+%D that this problem could be solved best by just honoring the
+%D allocation of \DIMENSIONS\ when the name of the macro
+%D explictly stated the character sequence \type{dimen}. A next
+%D implementation therefore automatically declared all
+%D \DIMENSIONS\ with this sequence in their names with
+%D \type{\dimen}. Again I was too optimistic, so now we do it
+%D this way (the comments are from \PICTEX, which like \TABLE,
+%D is an example of a well documented package):
+
+\temporarynewdimen\!dimenA       %.AW.X.DVEUL..OYQRST
+\temporarynewdimen\!dimenB       %....X.DVEU...O.QRS.
+\temporarynewdimen\!dimenC       %..W.X.DVEU......RS.
+\temporarynewdimen\!dimenD       %..W.X.DVEU....Y.RS.
+\temporarynewdimen\!dimenE       %..W........G..YQ.S.
+\temporarynewdimen\!dimenF       %...........G..YQ.S.
+\temporarynewdimen\!dimenG       %...........G..YQ.S.
+\temporarynewdimen\!dimenH       %...........G..Y..S.
+\temporarynewdimen\!dimenI       %...BX.........Y....
+\temporarynewdimen\!dxpos        %..W......U..P....S.
+\temporarynewdimen\!dypos        %..WB.....U..P......
+\temporarynewdimen\!xloc         %..WB.....U.......S.
+\temporarynewdimen\!xpos         %..........L.P..Q.ST
+\temporarynewdimen\!yloc         %..WB.....U.......S.
+\temporarynewdimen\!ypos         %..........L.P..Q.ST
+\temporarynewdimen\!zpt          %.AWBX.DVEULGP.YQ.ST
+
+%D Tobias tested this module in all kind of \LATEX\ dialects
+%D so we were able to find out that we also needed to declare:
+
+\temporarynewdimen\linethickness
+
+%D After all, the new definition of \type{\newdimen} became:
+
+\def\newdimen#1%
+  {\ifx#1\undefined
+     \ifnum\count11>\count12\relax
+       \temporarynewskip#1\relax
+     \else
+       \temporarynewdimen#1\relax
+     \fi
+     %\edef\ascii{\meaning#1}%
+     %\immediate\write20{\string#1 becomes \ascii}%
+   \else
+     %\edef\ascii{\meaning#1}%
+     %\immediate\write20{\string#1 already is \ascii}%
+   \fi}
+
+% This macro is as unreadable, inefficient and as compact as
+% can be, but uses no extra hash entries, which sometimes are
+% scarce too. A more readable alternative, that also takes
+% explicit \SKIPS\ into account, is included in the source.
+%
+% \def\doifregisterpreferenceelse#1#2#3#4%
+%   {\def\dodoifregisterpreferenceelse##1#1##2##3\war{\if##2@}%
+%    \expandafter\dodoifregisterpreferenceelse\string#2#1@@\war
+%      #4%
+%    \else
+%      #3%
+%    \fi}
+%
+% \def\newdimen#1%
+%   {\bgroup
+%    \escapechar=-1
+%    \expandafter\doifregisterpreferenceelse\expandafter{\string\dimen}#1
+%      {\egroup
+%       \temporarynewdimen#1}
+%      {\expandafter\doifregisterpreferenceelse\expandafter{\string\skip}#1
+%         {\egroup
+%          \temporarynewskip#1}
+%         {\egroup
+%          \ifnum\count11>\count12
+%            \temporarynewskip#1\relax
+%          \else
+%            \temporarynewdimen#1\relax
+%          \fi}}}
+
+%D Curious readers can still find the previous solution in
+%D the source. The next macro is used instead of
+%D \type{\input}. This macro also reports some statistics.
+
+\def\dimeninput#1 %
+  {\message{[before: d=\the\count11,s=\the\count12]}%
+   \input #1 \relax
+   \message{[after: d=\the\count11,s=\the\count12]}}%
+
+%D Now we can load \PICTEX:
+
+\loadpictex
+
+%D Finally we restore the old definitions of \type{\newdimen}
+%D and \type{\newskip}:
+
+\let\newdimen=\normalnewdimen
+\let\newskip =\normalnewskip
+
+%D and just hope for the best.
+
+\protect \endinput

@@ -1,0 +1,46 @@
+%D \module
+%D   [       file=m-pictex,
+%D        version=1997.01.15,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=\PICTEX\ Loading Macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Just in case someone still uses \PICTEX:
+
+\ifdefined\beginpicture \else
+
+    \ifdefined\grid \else
+        \let\normalgrid\grid
+    \fi
+
+    \ifdefined\axis \else
+        \let\normalaxis\axis
+    \fi
+
+    \ifdefined\fiverm \else
+        \font\fiverm=cmr5
+    \fi
+
+    \input prepictex.tex  \relax
+    \input pictex.tex     \relax
+    \input postpictex.tex \relax
+
+    \ifdefined\normalgrid
+        \let\pictexgrid\grid
+        \let\grid\normalgrid
+    \fi
+
+    \ifdefined\normalaxis
+        \let\pictexaxis\axis
+        \let\axis\normalaxis
+    \fi
+
+\fi
+
+\protect \endinput

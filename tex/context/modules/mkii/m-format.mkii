@@ -1,0 +1,411 @@
+%D \module
+%D   [       file=m-formay,
+%D        version=ancient,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Ancient Formatting Code,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Here is some code that I had laying around and had forgotten
+%D about. Let's make it a module and see if there is interest in
+%D such things.
+
+% \defineformatblock   [poem]
+% \defineformatsegment [verse] % [poem]
+% \defineformatline    [line]  % [verse]
+%
+% \startpoem  [title] [author]
+% \startverse [ref]
+% \startline  [ref]
+%
+% block   : voor na tussen *tekstletter *tekstkleur
+%
+% segment : voor na tussen *tekstletter *tekstkleur
+%         : links rechts linkeroffset rechteroffset
+%         : ?marge *evenmarge *onevenmarge breedte
+%         : nummer *nummercommando *conversie
+%         : nummerletter nummerkleur *label
+%
+% line    : voor na tussen *tekstletter *tekstkleur
+%         : nummer *nummercommando *conversie
+%         : nummerletter nummerkleur *label
+%
+% * = todo
+
+\unprotect
+
+\definesystemvariable {fx}   % format block
+\definesystemvariable {fy}   % format segment
+\definesystemvariable {fz}   % format line
+
+\def\defineformatblock
+  {\dodoubleempty\dodefineformatblock}
+
+\def\dodefineformatblock[#1][#2]%
+  {\setupformatblock
+     [#1]
+     [\c!before=\blank,\c!after=\blank,\c!inbetween=\blank,
+      \c!textstyle=,\c!textcolor=,#2]%
+   \setvalue{\e!start#1}{\startformatblock[#1]}%
+   \setvalue{\e!stop #1}{\stopformatblock}}
+
+\def\setupformatblock
+  {\dodoubleempty\dosetupformatblock}
+
+\def\setupformatblock[#1]%
+  {\getparameters[\??fx#1]}
+
+\def\startformatblock[#1]%
+  {\dotriplegroupempty\dostartformatblock{#1}}
+
+\def\dostartformatblock#1#2#3
+  {\bgroup
+   \getvalue{\??fx#1\c!before}
+   \doglobal\newcounter\formatsegmentcounter
+   \doglobal\newcounter\formatlinecounter
+   \doglobal\newcounter\formatlinesubcounter
+   \doglobal\newcounter\formatlinemaxcounter
+   \doifsomething{#2}{\leftaligned{#2}\getvalue{\??fx#1\c!inbetween}}
+   \def\stopformatblock%
+     {\doifsomething{#3}{\getvalue{\??fx#1\c!inbetween}\leftaligned{#3}}
+      \getvalue{\??fx#1\c!after}
+      \egroup}}
+
+\def\defineformatsegment
+  {\dodoubleempty\dodefineformatsegment}
+
+\def\dodefineformatsegment[#1][#2]%
+  {\setupformatsegment
+     [#1]
+     [\c!before=\blank,\c!after=\blank,\c!inbetween=\blank,
+      \c!textstyle=,\c!textcolor=,\c!left=,\c!right=,
+      \c!leftoffset=\!!zeropoint,\c!rightoffset=\!!zeropoint,
+     %\c!margin=\!!zeropoint,\c!evenmargin=\!!zeropoint,\c!oddmargin=\hsize,
+      \c!width=\hsize,\c!numberstyle=,\c!numbercolor=,\c!number=\v!no,
+      \c!numbercommand=,\c!conversion=,\c!label=,
+      #2]%
+   \setvalue{\e!start#1}{\startformatsegment[#1]}%
+   \setvalue{\e!stop #1}{\stopformatsegment}}
+
+\def\setupformatsegment
+  {\dodoubleempty\dosetupformatsegment}
+
+\def\setupformatsegment[#1]%
+  {\getparameters[\??fy#1]}
+
+\def\placeformatsegmentcounter
+  {\formatsegmentcounter\quad\hphantom{\placeformatlinecounter}}
+
+\def\placeformatlinecounter
+  {\formatlinecounter}
+
+\def\startformatsegment[#1]%
+  {\bgroup
+   \doifelsevalue{\??fy#1\c!number}\v!yes
+     {\def\doplaceformatsegmentcounter
+        {\inleftmargin
+           {\doattributes{\??fy#1}\c!numberstyle\c!numbercolor
+              {\placeformatsegmentcounter}}}}
+     {\let\doplaceformatsegmentcounter\relax}%
+   \getvalue{\??fy#1\c!before}
+   \doglobal\increment\formatsegmentcounter
+   \def\formatrightoffset{\getvalue{\??fy#1\c!rightoffset}}
+   \def\formatleftoffset {\getvalue{\??fy#1\c!leftoffset}}
+   \def\formatminwidth   {\getvalue{\??fy#1\c!minwidth}}
+   \def\formatwidth      {\getvalue{\??fy#1\c!width}}
+  %\def\formatmargin     {\getvalue{\??fy#1\c!margin}}
+   \def\formatbefore     {\getvalue{\??fy#1\c!before}}
+   \def\formatinbetween  {\getvalue{\??fy#1\c!inbetween}}
+   \def\formatafter      {\getvalue{\??fy#1\c!after}}
+   \def\formatleft       {\getvalue{\??fy#1\c!left}}
+   \def\formatright      {\getvalue{\??fy#1\c!right}}
+   \@@segmentvarianta
+   \getvalue{@@segmentvariant\getvalue{\??fy#1\c!alternative}}
+   \def\stopformatsegment
+     {\getvalue{\??fy#1\c!after}
+      \egroup}}
+
+\newif\iftraceformatblock
+
+\def\@@segmentvarianta % ragged right, symbols
+  {\let\formatraggedness\raggedright
+   \let\dostartformatline\dostartformatlineab
+   \let\formatleftfirst\relax \let\formatrightfirst\hfill
+   \let\formatleftnext \hfill \let\formatrightnext \relax}
+
+\def\@@segmentvariantb % ragged right, equal parts, symbols
+  {\let\formatraggedness\raggedcenter
+   \let\dostartformatline\dostartformatlineab
+   \let\formatleftfirst\relax \let\formatrightfirst\hfill
+   \let\formatleftnext \hfill \let\formatrightnext \relax}
+
+\def\@@segmentvariantc % ragged right
+  {\let\formatraggedness\veryraggedright
+   \let\dostartformatline\dostartformatlinecde
+   \let\formatleftnext\relax \let\formatrightnext\hfill}
+
+\def\@@segmentvariantd % ragged center
+  {\let\formatraggedness\veryraggedcenter
+   \let\dostartformatline\dostartformatlinecde
+   \let\formatleftnext\hfill \let\formatrightnext\hfill}
+
+\def\@@segmentvariante % ragged left
+  {\let\formatraggedness\veryraggedleft
+   \let\dostartformatline\dostartformatlinecde
+   \let\formatleftnext\hfill \let\formatrightnext\relax}
+
+\def\defineformatline
+  {\dodoubleempty\dodefineformatline}
+
+\def\dodefineformatline[#1][#2]%
+  {\setupformatline
+     [#1]
+     [\c!before=\blank,\c!after=\blank,\c!inbetween=\blank,
+      \c!textstyle=,\c!textcolor=,
+      \c!number=\v!no,\c!numbercommand=,\c!conversion=,
+      \c!numberstyle=,\c!numbercolor=,\c!label=,
+      #2]%
+   \setvalue{\e!start#1}{\startformatline[#1]}%
+   \setvalue{\e!stop #1}{\stopformatline}}
+
+\def\setupformatline
+  {\dodoubleempty\dosetupformatline}
+
+\def\setupformatline[#1]%
+  {\getparameters[\??fz#1]}
+
+\newconditional\formatforcedbreak
+
+\def\startformatline[#1]%
+  {\bgroup
+   \doifelsevalue{\??fz#1\c!number}\v!yes
+    {\def\doplaceformatlinecounter
+       {\inleftmargin
+          {\doattributes{\??fz#1}\c!numberstyle\c!numbercolor
+             {\placeformatlinecounter}}}}
+     {\let\doplaceformatlinecounter\relax}%
+   \global\setfalse\formatforcedbreak
+   \def\\{\break\global\settrue\formatforcedbreak}%
+   \hsize\formatwidth
+   \doglobal\increment\formatlinecounter
+   \par
+   \nobreak
+   \def\stopformatline
+     {\unskip\unskip\unskip\unskip\unskip\egroup
+      \let\doplaceformatsegmentcounter\relax}
+   \postponenotes
+   \dowithnextbox{\dostartformatline}\hbox\bgroup\ignorespaces}
+
+\def\dostartformatlineab
+  {%\dosetleftskipadaption\formatmargin
+   %\advance\hsize-\leftskipadaption\relax
+   \ifdim\nextboxwd>\hsize
+     \beginofshapebox
+       \forgetall
+       \hangafter\plusone
+       \hangindent\formatleftoffset
+       \formatraggedness
+       \hskip\formatrightoffset
+       \unhbox\nextbox\par
+     \endofshapebox
+    %\advance\hsize \leftskipadaption
+     \doglobal\newcounter\formatlinesubcounter
+     \reshapebox
+       {\doglobal\increment\formatlinesubcounter}
+     \global\let\formatlinemaxcounter\formatlinesubcounter
+     \reshapebox
+       {\doglobal\decrement\formatlinesubcounter
+        \ifnum\formatlinesubcounter=\zerocount
+          \doplaceformatsegmentcounter
+          \doplaceformatlinecounter
+          \hskip-\formatrightoffset
+         %\hskip\leftskipadaption
+          \formatleftfirst
+          \unhbox\shapebox
+          \ifnum\formatlinemaxcounter>\plusone
+            \ifx\formatright\empty\else
+              \shapedhbox to \zeropoint{\formatright\hss}%
+            \fi
+          \fi
+          \formatrightfirst
+          \iftraceformatblock
+            \ruledhskip\formatrightoffset\hskip-\formatrightoffset
+          \fi
+        \else
+         %\hskip\leftskipadaption
+          \iftraceformatblock
+            \ruledhskip\formatleftoffset\hskip-\formatleftoffset
+          \fi
+          \formatleftnext
+          \ifx\formatleft\empty\else
+            \shapedhbox to \zeropoint{\hss\formatleft}%
+          \fi
+          \unhbox\shapebox
+          \formatrightnext
+        \fi}
+     \flushshapebox
+   \else
+     \dontleavehmode\hbox
+       {\doplaceformatsegmentcounter
+        \doplaceformatlinecounter
+       %\hskip\leftskipadaption
+        \formatleftfirst
+        \unhbox\nextbox
+        \formatrightfirst}
+   \fi
+   \par
+   \egroup}
+
+\def\dostartformatlinecde
+  {%\dosetleftskipadaption\formatmargin
+   %\advance\hsize -\leftskipadaption\relax
+   \dimen0=\hsize
+   \ifconditional\formatforcedbreak\else
+     \ifdim\formatminwidth>\zeropoint\relax
+       \ifdim\nextboxwd>\hsize
+         \doloop
+           {\global\dimen1=\dimen0
+            \beginofshapebox
+              \hsize\dimen0
+              \forgetall
+              \formatraggedness
+              \unhcopy\nextbox\par
+            \endofshapebox
+            \reshapebox
+              {\setbox\scratchbox=\hbox{\unhbox\shapebox}%
+               \ifdim\wd\scratchbox<\dimen1
+                 \global\dimen1=\wd\scratchbox
+               \fi}
+            \ifdim\dimen1<\formatminwidth\relax
+              \advance\dimen0 by -.25em
+            \else
+              \exitloop
+            \fi
+            \ifdim\dimen0<10em
+              \dimen0=\hsize
+              \exitloop
+            \fi}
+       \fi
+     \fi
+   \fi
+   \beginofshapebox
+     \hsize\dimen0
+     \forgetall
+     \formatraggedness
+     \unhcopy\nextbox\par
+   \endofshapebox
+  %\advance\hsize \leftskipadaption
+   \doglobal\newcounter\formatlinesubcounter
+   \reshapebox
+     {\doglobal\increment\formatlinesubcounter}%
+   \global\let\formatlinemaxcounter\formatlinesubcounter
+   \reshapebox
+     {\doglobal\decrement\formatlinesubcounter
+      \ifnum\formatlinesubcounter=\zerocount
+        \doplaceformatsegmentcounter
+        \doplaceformatlinecounter
+      \fi
+     %\hskip\leftskipadaption
+      \formatleftnext
+      \unhbox\shapebox
+      \formatrightnext\strut}% strut prevents unskip
+   \flushshapebox
+   \par
+   \egroup}
+
+\defineformatblock[poem]
+  [\c!before=\blank,
+   \c!inbetween={\blank[\v!medium]},
+   \c!after=\blank]
+
+\defineformatsegment[verse]
+  [\c!alternative=\v!left,
+   \c!width=\hsize,
+  %\c!margin=\!!zeropoint,
+   \c!before={\blank[\v!medium]},
+   \c!after={\blank[\v!medium]},
+   \c!inbetween={\blank[\v!medium]},
+   \c!leftoffset=3em,
+   \c!rightoffset=2em,
+   \c!minwidth=5em,
+   \c!left={$[$\enspace},
+   \c!right={\enspace$]$}]
+
+\defineformatline[line]
+  []
+
+\protect
+
+\doifnotmode{demo} {\endinput}
+
+% evt defineblank[formatbefore,formatinbetween,formatafter]
+
+%\showframe \traceformatblocktrue
+
+\usemodule[visual]
+
+\setuplayout[height=middle,topspace=1cm,header=0pt,footer=0pt]
+\setupbodyfont[10pt]
+
+% All interfaces supported, but testing with english; todo:
+% more options, more alternatives, inheritance and mixed
+% definitions, and so.
+
+\starttext
+
+\startbuffer
+\startbuffer[poem]
+\startpoem{A Random Poem}{Hans Hagen}
+  \startverse
+    \startline \fakewords{4}{8} \stopline
+    \startline \fakewords{4}{8} \stopline
+    \startline \fakewords{4}{8} \stopline
+    \startline \fakewords{4}{8} \stopline
+  \stopverse
+  \startverse
+    \startline \fakewords{4}{8} \stopline
+    \startline \fakewords{4}{8} \stopline
+    \startline \fakewords{4}{8} \stopline
+    \startline \fakewords{4}{8} \stopline
+  \stopverse
+\stoppoem
+\stopbuffer
+
+\setupformatsegment[verse][width=.4\hsize,number=yes,numberstyle=slanted]
+\setupformatline   [line] [number=yes,numberstyle=smallslanted]
+
+\startbuffer[x]
+\setupformatsegment[verse][leftoffset=0pt,rightoffset=0pt,left=,right=]
+\stopbuffer
+
+\section{Alternative A}
+
+\setupformatsegment[verse][alternative=a] {\getbuffer[poem]}
+\setupformatsegment[verse][alternative=a] {\getbuffer[x,poem]}
+
+\section{Alternative B}
+
+\setupformatsegment[verse][alternative=b] {\getbuffer[poem]}
+\setupformatsegment[verse][alternative=b] {\getbuffer[x,poem]}
+
+\section{Alternative C}
+
+\setupformatsegment[verse][alternative=c] {\getbuffer[poem]}
+
+\section{Alternative D}
+
+\setupformatsegment[verse][alternative=d] {\getbuffer[poem]}
+
+\section{Alternative E}
+
+\setupformatsegment[verse][alternative=e] {\getbuffer[poem]}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stoptext

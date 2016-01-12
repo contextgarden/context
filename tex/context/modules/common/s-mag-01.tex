@@ -1,0 +1,438 @@
+%D \module
+%D   [      file=s-mag-01,
+%D        version=2002.12.14,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=\CONTEXT\ Magazine Base Style,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% This style is used for producing explanationary documents.
+% Don't misuse it for other purposes, since it may confuse
+% users. Don't change the title either, since it provides a
+% way to categorize documents. Numbers are disabled in
+% instances produced outside PRAGMA ADE.
+%
+% The layout setup is such that one has several text areas
+% available: headers and footers, margins and edges as well
+% as the main text area. The surrounding (gray) makes the
+% main page stand out and is suitable for viewing in spread
+% mode.
+%
+% Since this style is under constant construction, messing
+% around with settings will produce unwanted side effects.
+% So, if some feature or settings is needed, let me know.
+
+% todo: mp frames
+
+\setvariables[magazine][number=0]
+\setvariables[magazine][author=]
+\setvariables[magazine][title={Zero Issue}]
+\setvariables[magazine][date=\currentdate]
+
+% These are reserved for PRAGMA-ADE, don't use them yourself!
+
+% \setvariables[magazine][main=Tricky]
+% \setvariables[magazine][main=Update]
+% \setvariables[magazine][main=HOWTO]
+
+% \setvariables[magazine][main=This Way]      % preludes to a/the manual
+% \setvariables[magazine][main=A Better Way]  % dirty versus clean
+% \setvariables[magazine][main=No Way]        % how users should not do it
+% \setvariables[magazine][main=Your Way]      % how users do it
+% \setvariables[magazine][main=My Way]        % how users do it
+% \setvariables[magazine][main=Our Way]       % how we do things at pragma
+% \setvariables[magazine][main=Their Way]     % how to do latex things in context
+
+\setvariables[magazine][main=My Way]
+
+\startmode[atpragma]
+  \setvariables[magazine][main=This Way]
+\stopmode
+
+\definepapersize
+  [magazine]
+  [width=\dimexpr\paperwidth-.1\paperwidth\relax,
+   height=\dimexpr\paperheight-.1\paperheight\relax]
+
+\setuppapersize
+  [magazine]
+  [A4]
+
+\setupinteractionscreen
+  [option=doublesided]
+
+\definecolor[OuterColor][s=.3]
+\definecolor[InnerColor][s=.8]
+\definecolor[MainColor] [s=.2]
+\definecolor[TitleColor][s=.7]
+
+\definecolor[MyRed]  [r=.6]
+\definecolor[MyGreen][g=.6]
+\definecolor[MyBlue] [b=.6]
+
+\startuseMPgraphic{paper}
+  sh := define_circular_shade(a,a,0,bbheight(OverlayBox),
+   \MPcolor{InnerColor},\MPcolor{OuterColor}) ;
+  fill OverlayBox withshade sh ;
+\stopuseMPgraphic
+
+\startreusableMPgraphic{middlepaper}
+  pair a ; a := center OverlayBox ;
+  \includeMPgraphic{paper}
+\stopreusableMPgraphic
+
+\startreusableMPgraphic{rightpaper}
+  pair a ; a := .5[urcorner OverlayBox,lrcorner OverlayBox] ;
+  \includeMPgraphic{paper}
+\stopreusableMPgraphic
+
+\startreusableMPgraphic{leftpaper}
+  pair a ; a := .5[ulcorner OverlayBox,llcorner OverlayBox] ;
+  \includeMPgraphic{paper}
+\stopreusableMPgraphic
+
+\startreusableMPgraphic{page}
+  fill OverlayBox withcolor white ;
+\stopreusableMPgraphic
+
+\startusableMPgraphic{text}
+  StartPage ;
+    for i = Header,Text,Footer :
+      for j = LeftEdge, LeftMargin, Text, RightMargin, RightEdge :
+        draw Field[i][j] withpen pencircle scaled .5pt ;
+      endfor ;
+    endfor ;
+  StopPage ;
+  setbounds currentpicture to Field[Text][Text] ;
+\stopusableMPgraphic
+
+\startsetups[paper]
+
+  \doifmodeelse{*makeup}
+    {\reuseMPgraphic{middlepaper}}
+    {\doifoddpageelse
+       {\reuseMPgraphic{rightpaper}}
+       {\reuseMPgraphic{leftpaper}}}
+
+\stopsetups
+
+\defineoverlay[paper] [\setups{paper}]
+\defineoverlay[page]  [\reuseMPgraphic{page}]
+\defineoverlay[text]  [\doifmode{frame}{\useMPgraphic{text}}]
+
+\setupbackgrounds [paper] [background=paper]
+\setupbackgrounds [page]  [background={page,title}]
+\setupbackgrounds [text]  [background=text]
+
+\definelayer
+  [title]
+  [state=repeat,
+   hoffset=-1cm,
+   voffset=1cm,
+   width=\paperwidth,
+   height=\paperheight]
+
+\setupoutput
+  [pdftex]
+
+\setuplayout
+  [width=middle,
+   topspace=1.5cm,
+   height=middle,
+   header=1.5cm,
+   footer=1cm,
+  %grid=yes,
+   headerdistance=.25cm,
+   footerdistance=.5cm,
+   backspace=3cm,
+   margin=1.5cm,
+   margindistance=.25cm,
+   edge=.75cm,
+   edgedistance=.25cm,
+   bottomdistance=1.5cm,
+   bottom=.1\printpaperheight]
+
+\definelayout
+  [makeup]
+  [topspace=1cm,
+   backspace=1cm,
+   header=0pt,
+   footer=0pt,
+   bottom=0pt]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setupcolors
+  [state=start]
+
+\usetypescript
+  [palatino][\defaultencoding]
+
+\setupbodyfont
+  [palatino,10pt]
+
+\setuptolerance
+  [verytolerant,stretch]
+
+\appendtoks\setups[papershift]\to\beforeeverypage
+
+\startsetups[papershift]
+
+  \setuppapersize[top=\vskip.5cm,bottom=\vss]
+
+  \doifmodeelse{*makeup}
+    {\setuppapersize[left=\hfill,right=\hfill]}
+    {\doifoddpageelse
+       {\setuppapersize[right=\hfill]}
+       {\setuppapersize[left=\hfill]}}
+
+\stopsetups
+
+\setupbottomtexts
+  [\setups{rightbanner}] []
+  [] [\setups{leftbanner}]
+
+\startsetups [leftbanner]
+
+  \definedfont[Regular at \the\bottomheight]
+  \setbox\scratchbox\hbox{\TitleColor\getvariable{magazine}{main}}
+  \ht\scratchbox1ex
+  \dp\scratchbox\zeropoint
+  \MainColor
+  \definedfont[Regular sa 2]
+  \doifsomething{\getvariable{magazine}{number}}
+    {\doifnot{\getvariable{magazine}{number}}{0}
+       {\#\getvariable{magazine}{number}}}
+  \quad
+  \currentdate
+  \quad
+  \scale[height=.25\bottomheight]{\box\scratchbox}
+  \quad
+  \hbox to 1.5em{\hss\pagenumber\hss}
+  \quad
+  \hskip-\backspace
+
+\stopsetups
+
+\startsetups [rightbanner]
+
+  \definedfont[Regular at \the\bottomheight]
+  \setbox\scratchbox\hbox{\TitleColor\getvariable{magazine}{main}}
+  \ht\scratchbox1ex
+  \dp\scratchbox\zeropoint
+  \MainColor
+  \hskip-\backspace
+  \definedfont[Regular sa 2]
+  \quad
+  \hbox to 1.5em{\hss\pagenumber\hss}
+  \quad
+  \scale[height=.25\bottomheight]{\box\scratchbox}
+  \quad
+  \currentdate
+  \quad
+  \doifmode{atpragma}{\#\getvariable{magazine}{number}}
+
+\stopsetups
+
+\startsetups[titlepage]
+
+  \disablemode[frame]
+
+  \setuplayout[makeup]
+
+  \startstandardmakeup[doublesided=no]
+
+  \dontcomplain
+
+  \definelayer
+    [makeup]
+    [width=\textwidth,
+     height=\textheight]
+
+  \setlayerframed
+    [makeup]
+    [corner={left,top},location={right,bottom}]
+    [frame=off,
+     foregroundcolor=MainColor]
+    {\scale
+       [width=\makeupwidth]
+       {\definedfont[Regular sa 10]%
+        \getvariable{magazine}{main}}}
+
+  \setlayerframed
+    [makeup]
+    [corner={right,top},location={left},y=.4\textheight]
+    [frame=off,
+     foregroundcolor=MainColor,
+     width=\textwidth,
+     align=left]
+    {\definedfont[Regular sa 2.5]\setupinterlinespace
+     \startmode[atpragma]
+       \strut \ConTeXt\ magazine \#\getvariable{magazine}{number}\endgraf
+     \stopmode
+     \strut \getvariable{magazine}{date} \endgraf
+     \blank
+     \strut \getvariable{magazine}{title}\endgraf
+     \doifsomething{\getvariable{magazine}{author}}
+       {\strut \getvariable{magazine}{author}\endgraf}
+     \doifsomething{\getvariable{magazine}{affiliation}}
+       {\strut \getvariable{magazine}{affiliation}\endgraf}}
+
+  \setlayerframed
+    [makeup]
+    [corner={right,bottom},location={left,top}]
+    [frame=off,
+     align=normal,
+     width=.8\textwidth,
+     foregroundcolor=MainColor]
+    {\getbuffer[abstract]}
+
+  \flushlayer[makeup]
+
+  \stopstandardmakeup
+
+  \setuplayout[reset]
+
+\stopsetups
+
+\startsetups[listing]
+
+  \page \disablemode[frame]
+
+  \setuptexttexts  [][] \setuptexttexts  []
+  \setupheadertexts[][] \setupheadertexts[source code of this document]
+  \setupfootertexts[][] \setupfootertexts[]
+
+  \start \dontcomplain
+
+    \typefile[TEX]{\inputfilename}
+
+  \stop
+
+\stopsetups
+
+\startsetups[lastpage]
+
+  \page \disablemode[frame] \page[even]
+
+  \doifoddpageelse
+    {}
+    {\setuplayout[makeup]
+     \startstandardmakeup[doublesided=no,page=]
+     \stopstandardmakeup
+     \setuplayout[reset]}
+
+\stopsetups
+
+\startsetups[title]
+
+  \disablemode[frame]
+
+  \setlayerframed
+    [title]
+    [corner={left,top},location={left,bottom},
+     rotation=90]
+    [frame=off,
+     foregroundcolor=MainColor]
+    {\definedfont[RegularBold sa 2]\strut\getvariable{magazine}{title}}
+
+  \setlayerframed
+    [title]
+    [corner={right,top},
+     rotation=270]
+    [frame=off,
+     foregroundcolor=MainColor]
+    {\definedfont[RegularBold sa 2]\strut\getvariable{magazine}{title}}
+
+\stopsetups
+
+\startbuffer[abstract]
+  % no abstract
+\stopbuffer
+
+\setuphead
+  [chapter]
+  [page=yes,
+   after={\blank[2*big]},
+   color=MainColor,
+   style=\bfc]
+
+\setuphead
+  [section]
+  [before={\blank[2*big]},
+   after=\blank,
+   color=MainColor,
+   style=\bfb]
+
+\setuphead
+  [subsection]
+  [before=\blank,
+   after=,
+   color=MainColor,
+   style=\bf]
+
+\setupwhitespace
+  [big]
+
+\definetyping[xtyping] [style=\ttx]
+\definetyping[xxtyping][style=\ttxx]
+
+\definetypeface
+  [narrowtt] [tt]
+  [mono] [modern-cond] [default] [encoding=\defaultencoding]
+
+\definetyping[ntyping] \setuptyping[ntyping][style=\narrowtt]
+\definetype  [ntype]   \setuptype  [ntype]  [style=\narrowtt]
+
+\doifnotmode{demo}{\endinput}
+
+% \usemodule[mag-01]
+
+\setvariables
+  [magazine]
+  [title={Introduction},
+   author=Hans Hagen,
+   affiliation=PRAGMA ADE,
+   date=Januari 2003,
+   number=0]
+
+\startbuffer[abstract]
+  This is the zero issue of a semi periodical. The
+  associated style can be used by \CONTEXT\ users to
+  typeset and publish their own issues.
+\stopbuffer
+
+\starttext \setups [titlepage] \setups [title]
+
+\setupheadertexts[welcome]
+
+This is the zero issue of a range of \CONTEXT\ related
+publications, in most cases short introductions to new
+functionality. The style may be used by users for providing
+similar documents, but preferably not for other purposes,
+since it may confuse readers in their expectations.
+
+We've chosen a layout which is more functional than
+beautiful. This layout provides several text areas: headers
+and footers, margins and edges as well as a main text area.
+The surrounding (gray) makes the main page (which is
+slightly smaller than A4) stand out and is suitable for
+viewing in spread mode.
+
+The documents produced at \PRAGMA\ are called {\bf This
+Way}, user documents gets the title {\bf My Way}. The
+\PRAGMA\ issues are numbered. We strongly advise you not to
+use the \type {mag-} prefix for your issues, since this may
+lead to clashes with files distributed by \PRAGMA.
+
+\setups [listing]
+
+\setups [lastpage]
+
+\stoptext
