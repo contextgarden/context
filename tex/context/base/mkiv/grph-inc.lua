@@ -132,7 +132,7 @@ function images.check(figure)
             report_inclusion("limiting natural dimensions of %a, old %p * %p, new %p * %p",
                 figure.filename,width,height,figure.width,figure.height)
         end
-        if width >=maxdimen or height >= maxdimen then
+        if width >= maxdimen or height >= maxdimen then
             report_inclusion("image %a is too large (%p,%p), discarding",
                 figure.filename,width,height)
             return false, "dimensions too large"
@@ -582,7 +582,23 @@ local function get(category,tag,default)
     end
 end
 
+local function setdimensions(box)
+    local status = lastfiguredata and lastfiguredata.status
+    local used   = lastfiguredata and lastfiguredata.used
+    if status and used then
+        local b = texgetbox(box)
+        local w = b.width
+        local h = b.height + b.depth
+        status.width  = w
+        status.height = h
+        used.width    = w
+        used.height   = h
+        status.status = 10
+    end
+end
+
 figures.get = get
+figures.set = setdimensions
 
 implement { name = "figurestatus",   actions = { get, context }, arguments = { "'status'",  "string", "string" } }
 implement { name = "figurerequest",  actions = { get, context }, arguments = { "'request'", "string", "string" } }
@@ -591,6 +607,8 @@ implement { name = "figureused",     actions = { get, context }, arguments = { "
 implement { name = "figurefilepath", actions = { get, file.dirname,  context }, arguments = { "'used'", "'fullname'" } }
 implement { name = "figurefilename", actions = { get, file.nameonly, context }, arguments = { "'used'", "'fullname'" } }
 implement { name = "figurefiletype", actions = { get, file.extname,  context }, arguments = { "'used'", "'fullname'" } }
+
+implement { name = "figuresetdimensions", actions = setdimensions, arguments = { "integer" } }
 
 -- todo: local path or cache path
 
@@ -1345,13 +1363,13 @@ local function checkers_nongeneric(data,command) -- todo: macros and context.*
     local hash = name
     if dr.object then
         -- hm, bugged ... waiting for an xform interface
-        if not job.objects.get("FIG::"..hash) then
+        if not objects.data["FIG"][hash] then
             if type(command) == "function" then
                 command()
             end
-            context.dosetfigureobject(hash)
+            context.dosetfigureobject("FIG",hash)
         end
-        context.doboxfigureobject(hash)
+        context.doboxfigureobject("FIG",hash)
     elseif type(command) == "function" then
         command()
     end

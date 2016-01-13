@@ -122,13 +122,19 @@ local ownlist = {
     '.',
     ownpath ,
     ownpath .. "/../sources", -- HH's development path
+    --
+    owntree .. "/../../texmf-local/tex/context/base/mkiv",
+    owntree .. "/../../texmf-context/tex/context/base/mkiv",
+    owntree .. "/../../texmf/tex/context/base/mkiv",
+    owntree .. "/../../../texmf-local/tex/context/base/mkiv",
+    owntree .. "/../../../texmf-context/tex/context/base/mkiv",
+    owntree .. "/../../../texmf/tex/context/base/mkiv",
+    --
     owntree .. "/../../texmf-local/tex/context/base",
     owntree .. "/../../texmf-context/tex/context/base",
-    owntree .. "/../../texmf-dist/tex/context/base",
     owntree .. "/../../texmf/tex/context/base",
     owntree .. "/../../../texmf-local/tex/context/base",
     owntree .. "/../../../texmf-context/tex/context/base",
-    owntree .. "/../../../texmf-dist/tex/context/base",
     owntree .. "/../../../texmf/tex/context/base",
 }
 

@@ -18462,13 +18462,21 @@ local ownlibs = { -- order can be made better
 
 }
 
--- c:/data/develop/tex-context/tex/texmf-win64/bin/../../texmf-context/tex/context/base/data-tmf.lua
+-- c:/data/develop/tex-context/tex/texmf-win64/bin/../../texmf-context/tex/context/base/mkiv/data-tmf.lua
 -- c:/data/develop/context/sources/data-tmf.lua
 
 local ownlist = {
  -- '.',
  -- ownpath ,
     owntree .. "/../../../../context/sources", -- HH's development path
+    --
+    owntree .. "/../../texmf-local/tex/context/base/mkiv",
+    owntree .. "/../../texmf-context/tex/context/base/mkiv",
+    owntree .. "/../../texmf/tex/context/base/mkiv",
+    owntree .. "/../../../texmf-local/tex/context/base/mkiv",
+    owntree .. "/../../../texmf-context/tex/context/base/mkiv",
+    owntree .. "/../../../texmf/tex/context/base/mkiv",
+    --
     owntree .. "/../../texmf-local/tex/context/base",
     owntree .. "/../../texmf-context/tex/context/base",
     owntree .. "/../../texmf/tex/context/base",

@@ -34,7 +34,7 @@ local formatters    = string.formatters
 
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 0.62",
+    banner   = "ConTeXt Process Management 0.63",
  -- helpinfo = helpinfo, -- table with { category_a = text_1, category_b = text_2 } or helpstring or xml_blob
     helpinfo = "mtx-context.xml",
 }
@@ -284,7 +284,7 @@ end
 
 local f_tempfile = formatters["%s-%s-%02d.tmp"]
 
-local function backup(run,kind,filename)
+local function backup(jobname,run,kind,filename)
     if run == 1 then
         for i=1,10 do
             local tmpname = f_tempfile(jobname,kind,i)
@@ -307,7 +307,7 @@ local function multipass_copyluafile(jobname,run)
     local tuaname, tucname = jobname..".tua", jobname..".tuc"
     if validfile(tuaname) then
         if run then
-            backup(run,"tuc",tucname)
+            backup(jobname,run,"tuc",tucname)
             report("copying %a into %a",tuaname,tucname)
             report()
         end
@@ -320,7 +320,7 @@ local function multipass_copylogfile(jobname,run)
     local logname = jobname..".log"
     if validfile(logname) then
         if run then
-            backup(run,"log",logname)
+            backup(jobname,run,"log",logname)
             report()
         end
     end
@@ -1556,7 +1556,7 @@ function scripts.context.update()
         report("quiting, no 'context.mkiv' found")
         return
     end
-    local basetree = basepath.match(basepath,"^(.-)tex/context/base/context.mkiv$") or ""
+    local basetree = basepath.match(basepath,"^(.-)tex/context/base/.*context.mkiv$") or ""
     if basetree == "" then
         report("quiting, no proper tds structure (%s)",basepath)
         return
@@ -1598,7 +1598,7 @@ function scripts.context.update()
             report("quiting, unable to open '%s'",zipname)
             return
         end
-        local newfile = zip.loaddata(zipfile,"tex/context/base/context.mkiv")
+        local newfile = zip.loaddata(zipfile,"tex/context/base/mkiv/context.mkiv")
         if not newfile then
             report("quiting, unable to open '%s'","context.mkiv")
             return

@@ -206,7 +206,16 @@ implement {
     arguments = { "string", "string" },
     actions   = function(ns,id)
         ctx_doifelse(data[ns][id])
---         ctx_doifelse(objects.reference(ns,id))
+     -- ctx_doifelse(objects.reference(ns,id))
+    end,
+}
+
+implement {
+    name      = "doifelseobjectreference",
+    arguments = { "string", "string" },
+    actions   = function(ns,id)
+     -- ctx_doifelse(data[ns][id])
+        ctx_doifelse(objects.reference(ns,id))
     end,
 }
 

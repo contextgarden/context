@@ -543,15 +543,15 @@
 %D Internal graphics are handled at the \TEX\ end:
 
 \def\grph_include_process_tex#1%
-  {\global\setbox\foundexternalfigure\vbox\framed % no \vpack
+  {\framed
      [\c!strut=\v!no,\c!align=\v!normal,\c!frame=\v!off,
       \c!offset=\v!overlay,\c!width=\v!fit,\c!height=\v!fit]
      {\blank[\v!disable]#1\endgraf\removelastskip}} % disable should stay here!
 
 % used al lua end:
 
-\unexpanded\def\docheckfigurebuffer  #1{\grph_include_process_tex{\getbuffer[#1]}}
-\unexpanded\def\docheckfiguretex     #1{\grph_include_process_tex{\input{#1}}}
+\unexpanded\def\docheckfigurebuffer  #1{\global\setbox\foundexternalfigure\vpack{\grph_include_process_tex{\getbuffer[#1]}}}
+\unexpanded\def\docheckfiguretex     #1{\global\setbox\foundexternalfigure\vpack{\grph_include_process_tex{\input{#1}}}}
 \unexpanded\def\docheckfigurecld     #1{\global\setbox\foundexternalfigure\vbox {\cldprocessfile{#1}}}
 \unexpanded\def\docheckfiguremps     #1{\global\setbox\foundexternalfigure\vpack{\convertMPtoPDF{#1}11}}
 \unexpanded\def\docheckfiguremprun #1#2{\global\setbox\foundexternalfigure\vpack{\useMPrun{#1}{#2}}}
@@ -664,13 +664,14 @@
      \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
    \stopnointerference}
 
-% Helpers (will be replaced when xforms are accessible at the lua end)
+% Helpers will be replaced when xforms are accessible at the lua end but then
+% we need to do the object offset there too.
 
-\unexpanded\def\dosetfigureobject#1%
-  {\setobject{FIG}{#1}\vpack{\box\foundexternalfigure}}
+\unexpanded\def\dosetfigureobject#1#2%
+  {\setobject{#1}{#2}\vpack{\box\foundexternalfigure}}
 
-\unexpanded\def\doboxfigureobject#1%
-  {\global\setbox\foundexternalfigure\vpack{\getobject{FIG}{#1}}} % probably one vbox too many
+\unexpanded\def\doboxfigureobject#1#2%
+  {\global\setbox\foundexternalfigure\vpack{\getobject{#1}{#2}}} % probably one vbox too many
 
 % Figure bases
 

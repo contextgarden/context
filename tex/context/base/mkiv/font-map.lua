@@ -82,7 +82,7 @@ local f_double = formatters["%04X%04X"]
 --     local s
 --     if unicode < 0x10000 then
 --         s = f_single(unicode)
---     elseif unicode < 0x1FFFFFFFFF then
+--     elseif unicode < 0x1FFFFFFF then
 --         s = f_double(floor(unicode/1024),unicode%1024+0xDC00)
 --     else
 --         s = false
@@ -142,7 +142,7 @@ local f_double = formatters["%04X%04X"]
 local function tounicode16(unicode,name)
     if unicode < 0x10000 then
         return f_single(unicode)
-    elseif unicode < 0x1FFFFFFFFF then
+    elseif unicode < 0x1FFFFFFFF then
         return f_double(floor(unicode/1024),unicode%1024+0xDC00)
     else
         report_fonts("can't convert %a in %a into tounicode",unicode,name)
@@ -155,7 +155,7 @@ local function tounicode16sequence(unicodes,name)
         local u = unicodes[l]
         if u < 0x10000 then
             t[l] = f_single(u)
-        elseif unicode < 0x1FFFFFFFFF then
+        elseif unicode < 0x1FFFFFFFF then
             t[l] = f_double(floor(u/1024),u%1024+0xDC00)
         else
             report_fonts ("can't convert %a in %a into tounicode",u,name)
@@ -172,7 +172,7 @@ local function tounicode(unicode,name)
             local u = unicode[l]
             if u < 0x10000 then
                 t[l] = f_single(u)
-            elseif u < 0x1FFFFFFFFF then
+            elseif u < 0x1FFFFFFFF then
                 t[l] = f_double(floor(u/1024),u%1024+0xDC00)
             else
                 report_fonts ("can't convert %a in %a into tounicode",u,name)
@@ -183,7 +183,7 @@ local function tounicode(unicode,name)
     else
         if unicode < 0x10000 then
             return f_single(unicode)
-        elseif unicode < 0x1FFFFFFFFF then
+        elseif unicode < 0x1FFFFFFFF then
             return f_double(floor(unicode/1024),unicode%1024+0xDC00)
         else
             report_fonts("can't convert %a in %a into tounicode",unicode,name)
