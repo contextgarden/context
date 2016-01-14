@@ -2172,7 +2172,7 @@
 
 % links rechts => odd, even, n, named
 
-\definesystemvariable {mt}   % MulTicolumn
+\installcorenamespace{columnsetarea}
 
 \unexpanded\def\definecolumntextarea
   {\dotripleempty\dodefinecolumntextarea}
@@ -2187,11 +2187,11 @@
              {\definecolumntextarea[#1][\v!right][\c!type=#2,#3]}
              {\definecolumntextarea[#1][\v!left ][\c!type=#2,#3]}}
           {\presetlocalframed
-             [\??mt#1#2]%
+             [\??columnsetarea#1#2]%
            \processaction[#2] % \doglobal voorkomt stack build up
              [ \v!left=>\doglobal\addtocommalist{#1}\columnleftareas,
               \v!right=>\doglobal\addtocommalist{#1}\columnrightareas]%
-           \getparameters[\??mt#1#2]
+           \getparameters[\??columnsetarea#1#2]
              [\c!x=1,\c!y=1,\c!nx=1,\c!ny=1,\c!clipoffset=2\lineheight,
               \c!leftoffset=\zeropoint,\c!rightoffset=\zeropoint,
               \c!offset=\v!overlay,\c!strut=\v!no,\c!frame=\v!off,
@@ -2212,18 +2212,18 @@
           {\doifelseoddpage
              {\setupcolumntextarea[#1][\v!right][#3]}
              {\setupcolumntextarea[#1][\v!left][#3]}}
-          {\getparameters[\??mt#1#2][#3]}}%
+          {\getparameters[\??columnsetarea#1#2][#3]}}%
    \else
      \setupcolumntextarea[#1][\v!next][#2]%
    \fi}
 
 \def\docheckcolumnsetareapage#1#2%
-  {\ifnum\getvalue{\??mt#1\c!page}>\plusone
-     \doifelsevalue{\??mt#1\c!type}\v!fixed
-       {\ifnum\columnsetpage=\getvalue{\??mt#1\c!page}\relax
+  {\ifnum\getvalue{\??columnsetarea#1\c!page}>\plusone
+     \doifelsevalue{\??columnsetarea#1\c!type}\v!fixed
+       {\ifnum\columnsetpage=\getvalue{\??columnsetarea#1\c!page}\relax
           \donetrue\else\donefalse
         \fi}
-       {\ifnum\columnsetpage<\getvalue{\??mt#1\c!page}\relax
+       {\ifnum\columnsetpage<\getvalue{\??columnsetarea#1\c!page}\relax
           \donefalse\else\donetrue
         \fi}%
    \else
@@ -2243,7 +2243,7 @@
       \ifdone
         \donefalse
         \processaction
-          [\getvalue{\??mt##1#2\c!state}]
+          [\getvalue{\??columnsetarea##1#2\c!state}]
           [  \v!start=>\donetrue,
             \v!repeat=>\donetrue,
            \s!unknown=>\doperformtest\commalistelement\donetrue\donefalse]%
@@ -2254,8 +2254,8 @@
 \def\dodoinitializecolumntextareas#1#2%
   {\doOTRSETsetgridcells
      {\copy\placeholderboxd}
-     {\getvalue{\??mt#1#2\c!x }}{\getvalue{\??mt#1#2\c!y }}
-     {\getvalue{\??mt#1#2\c!nx}}{\getvalue{\??mt#1#2\c!ny}}
+     {\getvalue{\??columnsetarea#1#2\c!x }}{\getvalue{\??columnsetarea#1#2\c!y }}
+     {\getvalue{\??columnsetarea#1#2\c!nx}}{\getvalue{\??columnsetarea#1#2\c!ny}}
      {\copy\placeholderboxd}}
 
 \unexpanded\def\placecolumntextareas
@@ -2273,7 +2273,7 @@
       \ifdone
         \donefalse
         \processaction
-          [\getvalue{\??mt##1#2\c!state}]
+          [\getvalue{\??columnsetarea##1#2\c!state}]
           [  \v!start=>\donetrue\doglobal\removefromcommalist{##1}#1,
             \v!repeat=>\donetrue,
            \s!unknown=>\doperformtest\commalistelement\donetrue\donefalse]%
@@ -2300,7 +2300,7 @@
 % beware, we have clipping offsets of 2\lineheight by default
 
 \def\columntextareaparameter#1%
-  {\csname\??mt\currentcolumntestarea#1\endcsname}
+  {\csname\??columnsetarea\currentcolumntestarea#1\endcsname}
 
 \def\dodoplacecolumntextareas#1#2%
   {\def\currentcolumntestarea{#1#2}%
@@ -2321,7 +2321,7 @@
    %
    \setbox\scratchbox\vbox
      {\donetrue\localframed
-        [\??mt\currentcolumntestarea]
+        [\??columnsetarea\currentcolumntestarea]
         [\c!location=,% new (*)
             \c!width=\!!widtha,\c!height=\!!heighta,\c!lines=]
         {\columntextareaparameter\empty{}}}% messy
@@ -2377,13 +2377,13 @@
 \def\dosetupcolumntextareatext[#1][#2][#3]%
   {\ifthirdargument
      \doifelse{#2}\v!both
-       {\setvalue{\??mt#1\v!left }{#3}%
-        \setvalue{\??mt#1\v!right}{#3}}
+       {\setvalue{\??columnsetarea#1\v!left }{#3}%
+        \setvalue{\??columnsetarea#1\v!right}{#3}}
        {\doifelse{#2}\v!next
           {\doifelseoddpage
-             {\setvalue{\??mt#1\v!right}{#3}}%
-             {\setvalue{\??mt#1\v!left }{#3}}}%
-          {\setvalue{\??mt#1#2}{#3}}}%
+             {\setvalue{\??columnsetarea#1\v!right}{#3}}%
+             {\setvalue{\??columnsetarea#1\v!left }{#3}}}%
+          {\setvalue{\??columnsetarea#1#2}{#3}}}%
    \else
      \setupcolumntextareatext[#1][\v!next][{#2}]%
    \fi}
@@ -2437,13 +2437,15 @@
        \d_strc_float_temp_width
      \fi}
 
+\installcorenamespace{columnsetspan}
+
 \unexpanded\def\definecolumnsetspan
   {\dodoubleempty\dodefinecolumnsetspan}
 
 \def\dodefinecolumnsetspan[#1][#2]%
   {%\ifsecondargument
      \defineframedtext % we can have a parent
-       [cs:#1]
+       [\??columnsetspan#1]
        [\c!frame=\v!off,
         \c!before=,
         \c!after=,
@@ -2469,7 +2471,7 @@
 
 \def\dosetupcolumnsetspan[#1][#2]%
   {\ifsecondargument
-     \setupframedtexts[cs:#1][#2]%
+     \setupframedtexts[\??columnsetspan#1][#2]%
    \else
      \setupcolumnsetspan[\s!default][#1]%
    \fi}
@@ -2490,13 +2492,13 @@
      \nofcolumns\plusone
      \mofcolumns\plusone
    \fi
-   \setupframedtexts[cs:#1]
+   \setupframedtexts[\??columnsetspan#1]
      [\c!width=\columnsetspanhsize,
       \c!linecorrection=\v!off,
       \c!depthcorrection=\v!off,
       #2]%
    % determine widths
-   \!!countc\namedframedtextparameter{cs:#1}\c!n
+   \!!countc\namedframedtextparameter{\??columnsetspan#1}\c!n
     % \!!countd\numexpr(\nofcolumns-\mofcolumns+\plusone)%
    \!!countd\nofcolumns
    % n <= n of columns
@@ -2504,16 +2506,16 @@
    \advance\!!countd -\mofcolumns
    \advance\!!countd \plusone
    % n <= n of available columns (alternative a)
-   \doif{\namedframedtextparameter{cs:#1}\c!alternative}\v!a
+   \doif{\namedframedtextparameter{\??columnsetspan#1}\c!alternative}\v!a
      {\ifnum\!!countc>\!!countd \!!countc\!!countd \fi}%
    % here it all starts
    \setcolumnsetspanhsize\mofcolumns\!!countc % a/b used
    \hsize\columnsetspanhsize
    \setbox\scratchbox\vbox\bgroup
-     \pack_framed_text_start{cs:#1}[\v!none]% geen nils placement
+     \pack_framed_text_start{\??columnsetspan#1}[\v!none]% geen nils placement
      % spoils spacing : \vskip-\struttotal\par\verticalstrut\par
      \ifnum\columnsetlevel>\zerocount
-       \namedframedtextparameter{cs:#1}\c!before
+       \namedframedtextparameter{\??columnsetspan#1}\c!before
      \fi
      \unexpanded\def\stopcolumnsetspan{\dostopcolumnsetspan{#1}}}
 
@@ -2523,8 +2525,8 @@
    \kern-2\struttotal
    \verticalstrut
    \ifnum\columnsetlevel>\zerocount
-     \doifsomething{\namedframedtextparameter{cs:#1}\c!after}
-       {\namedframedtextparameter{cs:#1}\c!after
+     \doifsomething{\namedframedtextparameter{\??columnsetspan#1}\c!after}
+       {\namedframedtextparameter{\??columnsetspan#1}\c!after
         \kern\zeropoint}% otherwise blanks disappear, better be a switch
    \else
      \endgraf
@@ -2533,7 +2535,7 @@
    \egroup
    \setbox\scratchbox\frozenhbox to \hsize
      {\dontcomplain
-      \alignedline{\namedframedtextparameter{cs:#1}\c!location}\v!middle{\lower\strutdepth\box\scratchbox}}%
+      \alignedline{\namedframedtextparameter{\??columnsetspan#1}\c!location}\v!middle{\lower\strutdepth\box\scratchbox}}%
    \dp\scratchbox\zeropoint % else wrong snap insidefloat
 %
 % to be tested first (strange in grid mode)
@@ -2541,7 +2543,7 @@
 % \setbox\scratchbox\frozenhbox to \hsize
 %   {\dontcomplain
 %    \alignstrutmode\zerocount
-%    \alignedline{\namedframedtextparameter{cs:#1}\c!plaats}\v!midden
+%    \alignedline{\namedframedtextparameter{\??columnsetspan#1}\c!plaats}\v!midden
 %      {\box\scratchbox}}%
 %
    \ifinsidefloat
@@ -2549,23 +2551,23 @@
    \else\ifnum\columnsetlevel>\zerocount
      % we only set \columnsetspacing when asked for, else bottom problems
      % don't change this any more (test naw)
-     \columnslotspacing\namedframedtextparameter{cs:#1}\c!nlines\relax
+     \columnslotspacing\namedframedtextparameter{\??columnsetspan#1}\c!nlines\relax
      % todo: nboven/onder
      %\OTRSETstoreincolumnslotHERE\scratchbox
-     \edef\floatmethod{\namedframedtextparameter{cs:#1}\c!default}%
+     \edef\floatmethod{\namedframedtextparameter{\??columnsetspan#1}\c!default}%
      \@EA\uppercasestring\floatmethod\to\floatmethod
      % todo : \v!here -> here enzovoorts
      \OTRSETstoreincolumnslot\floatmethod\scratchbox
-     \checknextindentation[\namedframedtextparameter{cs:#1}\c!indentnext]%
+     \checknextindentation[\namedframedtextparameter{\??columnsetspan#1}\c!indentnext]%
    \else
      % of course we needed a one-column fall back for tm; brrr, the box has now too
      % much height (try \ruledvbox); don't change this without testing techniek
      \scratchdimen\ht\scratchbox
      \advance\scratchdimen-\strutdp
      \ht\scratchbox\scratchdimen
-     \namedframedtextparameter{cs:#1}\c!before
+     \namedframedtextparameter{\??columnsetspan#1}\c!before
      \snaptogrid\vbox{\box\scratchbox}%
-     \namedframedtextparameter{cs:#1}\c!after
+     \namedframedtextparameter{\??columnsetspan#1}\c!after
    \fi\fi
    \egroup
    \endgraf}

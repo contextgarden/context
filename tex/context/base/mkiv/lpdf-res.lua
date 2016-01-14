@@ -22,7 +22,7 @@ local useboxresource  = tex.useboxresource
 local getboxresource  = tex.getboxresourcedimensions
 
 function codeinjections.registerboxresource(n)
-    return saveboxresource(n,nil,lpdf.collectedresources,true) -- direct
+    return saveboxresource(n,nil,lpdf.collectedresources(),true) -- direct, todo: accept functions as attr/resources
 end
 
 function codeinjections.restoreboxresource(index)

@@ -579,7 +579,7 @@
      \fi
    \fi
    \ifdim\pagegoal<\maxdimen
-    %\blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
+   % \blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
      \directcheckedvspacing{\v!white,\the\d_spac_lines_correction_before}% \blank[\v!white]\dotopbaselinecorrection
    \fi
    \nointerlineskip % new
@@ -594,12 +594,15 @@
    \fi
    \box\scratchbox
    \endgraf
-  %\blank[\the\d_spac_lines_correction_after]% \dobotbaselinecorrection
-   \directcheckedvspacing{\the\d_spac_lines_correction_after}% \dobotbaselinecorrection
+   %
+   % eventually i'll get it right ... (i also need to check all whitespace code elsewhere)
+   %
+ % \blank[\the\d_spac_lines_correction_after]% \dobotbaselinecorrection
+ % \directcheckedvspacing{\the\d_spac_lines_correction_after}% \dobotbaselinecorrection
+   \directcheckedvspacing{\v!white,\the\d_spac_lines_correction_after}% \dobotbaselinecorrection
  % \allowbreak % new, otherwise problems when many in a row
    \prevdepth\strutdp
    \spac_lines_action_around}
-
 
 \let\stoplinecorrection     \spac_lines_stop_correction
 \let\stoplocallinecorrection\spac_lines_stop_correction
