@@ -1170,10 +1170,15 @@
    \page_set_command_set_vsize}
 
 \def\OTRSETcheckprefered
-  {\ifnum\floatcolumn<\mofcolumns
+  {\ifx\floatcolumn\empty
+     \let\pofcolumns\nofcolumns
+   \else\ifnum\floatcolumn<\mofcolumns
      \let\pofcolumns\mofcolumns
    \else
      \let\pofcolumns\floatcolumn
+   \fi\fi
+   \ifx\floatrow\empty
+     \let\pofcolumns\plusone
    \fi
    \ifquitincurrentcolumn
      \ifnum\mofcolumns=\nofcolumns

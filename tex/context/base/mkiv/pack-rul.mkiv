@@ -3052,4 +3052,13 @@
    \c!foregroundstyle=\framedparameter\c!style,
    \c!foregroundcolor=\framedparameter\c!color]
 
+%D Bonus (as defined in \type {pack-rul.lua}):
+%D
+%D \starttyping
+%D \setbox\scratchbox\vbox{a\par aa\par aaa\par}
+%D \the\dimexpr\themaxboxwidth\scratchbox\relax
+%D \stoptyping
+
+\let\themaxboxwidth\clf_themaxboxwidth
+
 \protect \endinput

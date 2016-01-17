@@ -41,6 +41,7 @@ implement { name = "xmldoifelseselfempty",    actions = lxml.doifelseempty,     
 --------- { name = "xmlflushstripped",        actions = lxml.strip,             arguments = { "string", true } }
 implement { name = "xmlall",                  actions = lxml.all,               arguments = { "string", "string" } }
 implement { name = "xmlatt",                  actions = lxml.att,               arguments = { "string", "string" } }
+implement { name = "xmllastatt",              actions = lxml.lastatt }
 implement { name = "xmlattdef",               actions = lxml.att,               arguments = { "string", "string", "string" } }
 implement { name = "xmlattribute",            actions = lxml.attribute,         arguments = { "string", "string", "string" } }
 implement { name = "xmlattributedef",         actions = lxml.attribute,         arguments = { "string", "string", "string", "string" } }

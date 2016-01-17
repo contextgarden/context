@@ -464,8 +464,8 @@ function xml.load(filename,settings)
     return xmltable
 end
 
-local function entityconverter(id,str)
-    return xmlentities[str] or xmlprivatetoken(str) or "" -- roundtrip handler
+local function entityconverter(id,str,ent) -- todo ent optional
+    return xmlentities[str] or ent[str] or xmlprivatetoken(str) or "" -- roundtrip handler
 end
 
 local function lxmlconvert(id,data,compress,currentresource)
@@ -473,7 +473,7 @@ local function lxmlconvert(id,data,compress,currentresource)
         unify_predefined_entities   = true,
         utfize_entities             = true,
         resolve_predefined_entities = true,
-        resolve_entities            = function(str) return entityconverter(id,str) end, -- needed for mathml
+        resolve_entities            = function(str,ent) return entityconverter(id,str,ent) end, -- needed for mathml
         currentresource             = tostring(currentresource or id),
     }
     if compress and compress == variables.yes then
@@ -1617,44 +1617,81 @@ end
 --
 -- no need for an assignment so:
 
-function lxml.att(id,a,default)
-    local e = getid(id)
-    if e then
-        local at = e.at
-        if at then
-            -- normally always true
-            local str = at[a]
-            if not str then
-                if default and default ~= "" then
-                    contextsprint(notcatcodes,default)
+-- function lxml.att(id,a,default)
+--     local e = getid(id)
+--     if e then
+--         local at = e.at
+--         if at then
+--             -- normally always true
+--             local str = at[a]
+--             if not str then
+--                 if default and default ~= "" then
+--                     contextsprint(notcatcodes,default)
+--                 end
+--             elseif str ~= "" then
+--                 contextsprint(notcatcodes,str)
+--             else
+--                 -- explicit empty is valid
+--             end
+--         elseif default and default ~= "" then
+--             contextsprint(notcatcodes,default)
+--         end
+--     elseif default and default ~= "" then
+--         contextsprint(notcatcodes,default)
+--     end
+-- end
+
+do
+
+    local att
+
+    function lxml.att(id,a,default)
+        local e = getid(id)
+        if e then
+            local at = e.at
+            if at then
+                -- normally always true
+                att = at[a]
+                if not att then
+                    if default and default ~= "" then
+                        att = default
+                        contextsprint(notcatcodes,default)
+                    end
+                elseif att ~= "" then
+                    contextsprint(notcatcodes,att)
+                else
+                    -- explicit empty is valid
                 end
-            elseif str ~= "" then
-                contextsprint(notcatcodes,str)
-            else
-                -- explicit empty is valid
+            elseif default and default ~= "" then
+                att = default
+                contextsprint(notcatcodes,default)
             end
         elseif default and default ~= "" then
+            att = default
             contextsprint(notcatcodes,default)
         end
-    elseif default and default ~= "" then
-        contextsprint(notcatcodes,default)
     end
-end
 
-function lxml.refatt(id,a)
-    local e = getid(id)
-    if e then
-        local at = e.at
-        if at then
-            local str = at[a]
-            if str and str ~= "" then
-                str = gsub(str,"^#+","")
-                if str ~= "" then
-                    contextsprint(notcatcodes,str)
+    function lxml.refatt(id,a)
+        local e = getid(id)
+        if e then
+            local at = e.at
+            if at then
+                att = at[a]
+                if str and str ~= "" then
+                    str = gsub(str,"^#+","")
+                    if str ~= "" then
+                        contextsprint(notcatcodes,str)
+                    end
                 end
             end
         end
     end
+
+    function lxml.lastatt()
+        contextsprint(notcatcodes,att)
+    end
+
 end
 
 function lxml.name(id) -- or remapped name? -> lxml.info, combine

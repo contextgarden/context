@@ -589,3 +589,19 @@ implement {
     actions   = { collectcontent, context.printlines },
     arguments = "string"
 }
+
+local startbuffer     = context.startbuffer
+local stopbuffer      = context.stopbuffer
+
+local startcollecting = context.startcollecting
+local stopcollecting  = context.stopcollecting
+
+function context.startbuffer(...)
+    startcollecting()
+    startbuffer(...)
+end
+
+function context.stopbuffer()
+    stopbuffer()
+    stopcollecting()
+end

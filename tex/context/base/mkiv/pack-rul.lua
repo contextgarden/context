@@ -181,7 +181,7 @@ end
 implement { name = "doreshapeframedbox", actions = doreshapeframedbox, arguments = "integer" }
 implement { name = "doanalyzeframedbox", actions = doanalyzeframedbox, arguments = "integer" }
 
-function nodes.maxboxwidth(box)
+local function maxboxwidth(box)
     local boxwidth = getfield(box,"width")
     if boxwidth == 0 then
         return 0
@@ -219,4 +219,13 @@ function nodes.maxboxwidth(box)
     for v in traverse_id(vlist_code,list) do -- no dir etc needed
         check(v,false)
     end
+    return maxwidth
 end
+
+nodes.maxboxwidth = maxboxwidth
+
+implement {
+    name      = "themaxboxwidth",
+    actions   = function(n) context("%isp",maxboxwidth(getbox(n))) end,
+    arguments = "integer"
+}

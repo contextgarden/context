@@ -951,14 +951,6 @@
         <cd:constant type="cd:name"/>
       </cd:keywords>
       <cd:assignments n="2" list="yes">
-        <cd:parameter name="فضا">
-          <cd:constant type="روی"/>
-          <cd:constant type="خاموش"/>
-        </cd:parameter>
-        <cd:parameter name="صفحه">
-          <cd:constant type="بله"/>
-          <cd:constant type="نه"/>
-        </cd:parameter>
         <cd:parameter name="گزینه">
           <cd:constant type="خوابیده"/>
           <cd:constant type="نرمال"/>

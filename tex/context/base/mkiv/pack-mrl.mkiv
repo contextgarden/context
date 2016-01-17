@@ -353,8 +353,8 @@
    \directthinrulesparameter\c!before
    \scratchcounter\directthinrulesparameter\c!n\relax
    \dorecurse\scratchcounter
-     {\ifnum\recurselevel=\scratchcounter \penalty500 \else
-      \ifnum\recurselevel=\plustwo        \penalty500 \fi\fi
+     {\ifnum\recurselevel=\scratchcounter \directvspacing\v!samepage \else   % \penalty500
+      \ifnum\recurselevel=\plustwo        \directvspacing\v!samepage \fi\fi  % \penalty500
       \thinrule
       \ifnum\recurselevel<\scratchcounter\relax
         % test needed, else messed up whitespace

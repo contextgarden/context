@@ -951,14 +951,6 @@
         <cd:constant type="cd:name"/>
       </cd:keywords>
       <cd:assignments n="2" list="yes">
-        <cd:parameter name="mezera">
-          <cd:constant type="zap"/>
-          <cd:constant type="vyp"/>
-        </cd:parameter>
-        <cd:parameter name="stranka">
-          <cd:constant type="ano"/>
-          <cd:constant type="ne"/>
-        </cd:parameter>
         <cd:parameter name="volba">
           <cd:constant type="sklonene"/>
           <cd:constant type="normalni"/>

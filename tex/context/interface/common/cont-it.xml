@@ -951,14 +951,6 @@
         <cd:constant type="cd:name"/>
       </cd:keywords>
       <cd:assignments n="2" list="yes">
-        <cd:parameter name="spazio">
-          <cd:constant type="attivo"/>
-          <cd:constant type="disattivo"/>
-        </cd:parameter>
-        <cd:parameter name="pagina">
-          <cd:constant type="si"/>
-          <cd:constant type="no"/>
-        </cd:parameter>
         <cd:parameter name="opzione">
           <cd:constant type="inclinato"/>
           <cd:constant type="normale"/>

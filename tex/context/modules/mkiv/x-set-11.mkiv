@@ -70,6 +70,7 @@
       triplet:  triplet
          word:  woord
       content:  tekst
+     language:  taal
 \stopmessages
 
 \startmessages  english  library: setup
@@ -108,6 +109,7 @@
       triplet:  triplet
          word:  word
       content:  text
+     language:  language
 \stopmessages
 
 \startmessages  german library: setup
@@ -146,6 +148,7 @@
       triplet:  triplet
          word:  word
       content:  text
+     language:  sprache
 \stopmessages
 
 \startmessages  czech  library: setup
@@ -184,6 +187,8 @@
       triplet:  triplet
          word:  word
       content:  text
+             %
+     language:  language
 \stopmessages
 
 \startmessages  italian library: setup
@@ -222,6 +227,8 @@
       triplet:  triplet
          word:  word
       content:  text
+             %
+     language:  language
 \stopmessages
 
 \startmessages  romanian library: setup
@@ -260,6 +267,7 @@
       triplet:  triplet
          word:  word
       content:  text
+     language:  language
 \stopmessages
 
 \startmessages  french  library: setup
@@ -298,6 +306,8 @@
       triplet:  triplet
          word:  mot
       content:  texte
+             %
+     language:  language
 \stopmessages
 
 \unprotect
@@ -312,28 +322,31 @@
 \unexpanded\def\setupalwcolor{}
 \unexpanded\def\setupoptcolor{darkgray}
 
-\def\c!setup!definereserved#1#2%
-  {\setvalue{c!setup!:r:#1}{#2}}
+\installcorenamespace{interfacesetup}
+\installcorenamespace{interfacesetupreserved}
 
-\def\c!setup!reserved!#1%
-  {\executeifdefined{c!setup!:r:#1}{#1}}
+\installsetuponlycommandhandler \??interfacesetup {setup} % \??interfacesetup
 
-\def\c!setup!internal!#1%
+\unexpanded\def\c!setup!definereserved#1#2%
+  {\setvalue{\??interfacesetupreserved#1}{#2}}
+
+\unexpanded\def\c!setup!reserved!#1%
+  {\executeifdefined{\??interfacesetupreserved#1}{#1}}
+
+\unexpanded\def\c!setup!internal!#1%
   {\dontleavehmode
    \begingroup
    \setupintfont{#1}%
    \endgroup}
 
-\def\c!setup!text!#1%
+\unexpanded\def\c!setup!text!#1%
   {\dontleavehmode
    \begingroup
    \setupvarfont{#1}%
    \endgroup}
 
-\def\c!setup!command!#1%
+\unexpanded\def\c!setup!command!#1%
   {{\setupvarfont{\texescape...#1}}}
-
-\def\??stp{@@stp}
 
 \defineregister
   [texmacro]
@@ -346,7 +359,7 @@
 \setupsorting
   [texcommand]
   [\c!command=\showsetupinlist,
-   \c!criterium=\@@stpcriterium]
+   \c!criterium=\setupparameter\c!criterium]
 
 \pushmacro\setuptext
 
@@ -369,8 +382,7 @@
     } {
         \let\currentSETUPprefix\empty
     }
-  % \edef\currentSETUPname{\xmlatt{#1}{name}}
-    \edef\currentSETUPname{\xmlattribute{#1}{/sequence/string[1]}{value}}%
+    \edef\currentSETUPname{\xmlatt{#1}{name}}
     \doifelse {\xmlatt{#1}{generated}} {yes} {
         \def\currentSETUPgenerated{*}
     } {
@@ -379,7 +391,8 @@
     \doifelsenothing {\xmlatt{#1}{variant}} {
         \let\currentSETUPvariant\empty
     } {
-        \def\currentSETUPvariant{:\xmlatt{#1}{variant}}
+      %\def\currentSETUPvariant{:\xmlatt{#1}{variant}}
+       \def\currentSETUPvariant{:\xmllastatt}
     }
     \edef\currentSETUPfullname {
         \currentSETUPprefix
@@ -395,13 +408,38 @@
     \expanded{\texcommand[stp:x:\currentSETUPfullname]{#1}}
 \stopxmlsetups
 
+\startluacode
+
+    -- normally a lookup is fast enough but here we can have many setups
+    -- spread over many files so we do a little speedup here
+
+    local setups       = moduledata.setups or { }
+    moduledata.setups  = setups
+    local definitions  = { }
+    setups.definitions = definitions
+
+    function xml.functions.setups_define(id)
+        local x = lxml.getid(id)
+        for c in xml.collected(x,"/cd:interface/cd:define") do
+            definitions[c.at.name] = c
+        end
+    end
+
+    function moduledata.setups.resolved(name)
+        lxml.flush(definitions[name])
+    end
+
+\stopluacode
+
 \startxmlsetups xml:setups:basics
     \xmlinclude{#1}{include}{filename}%
     \xmlsetsetup {#1} {
-        sequence|string|variable|assignments|keywords|content|displaymath|index|math|
+        sequence|string|variable|assignments|keywords|content|displaymath|index|math|argument|
         nothing|file|position|reference|csname|destination|triplet|word|
-        resolve|parameter|constant|inherit|parameter|define
+        resolve|define|
+        parameter|constant|inherit|parameter
     } {xml:setups:*}
+    \xmlfunction{#1}{setups_define}
 \stopxmlsetups
 
 \xmlregisterdocumentsetup{setups}{xml:setups:basics}
@@ -425,14 +463,13 @@
 \unexpanded\def\setup     {\shortsetupfalse\doshowsetup}
 \unexpanded\def\showsetup {\shortsetupfalse\doshowsetup}
 \unexpanded\def\shortsetup{\shortsetuptrue \doshowsetup}
-\unexpanded\def\setupsetup{\dodoubleargument\getparameters[\??stp]}
 
 %unexpanded\def\showsetupinlist#1#2#3{\shortsetupfalse\showsetupindeed{#3}\par}
 \unexpanded\def\showsetupinlist#1#2#3{\shortsetupfalse\xmlsetup{#3}{xml:setups:typeset}\par}
 
 % todo: only references in lists
 
-\def\doshowsetup
+\unexpanded\def\doshowsetup
   {\dosingleempty\dodoshowsetup}
 
 \def\dodoshowsetup[#1]%
@@ -446,19 +483,11 @@
   {\registersort[texcommand][stp:x:#1]%
    \showsetupindeed{#1}}
 
-% \def\showsetupindeed#1%
-%   {\xmlfilterlist{\loadedsetups}{interface/command[@name='#1']/command(xml:setups:typeset)}}
-
-% \def\showsetupindeed#1%
-%   {\xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and 'start' or '') .. @name]/command(xml:setups:typeset)}}
-
-% \setelementnature[setup][display]
-% \setelementnature[setup][mixed]
-
 \def\showsetupindeed#1%
   {\startelement[setup][name=#1]%
      \startelement[noexport][comment={setup definition #1}]
-       \xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and '\e!start' or '') .. @name]/command(xml:setups:typeset)}%
+       \xmlsetup{\rawsynonymname{texcommand}{stp:x:#1}}{xml:setups:typeset}
+   % \xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and '\e!start' or '') .. @name]/command(xml:setups:typeset)}%
      \stopelement
    \stopelement}
 
@@ -470,8 +499,7 @@
 %D Typesetting:
 
 \setupxml
-  [%\c!method=mkiv,       % mixed mode
-   \c!default=\v!hidden, % ignore elements that are not defined
+  [\c!default=\v!hidden, % ignore elements that are not defined
    \c!compress=\v!yes,   % strip comment
    \c!entities=\v!yes]   % replace entities
 
@@ -495,7 +523,11 @@
             }
             \letterbackslash
             \doif {\xmlatt{#1}{type}} {environment} {
-                \e!start
+                \doifsomethingelse {\xmlatt{#1}{begin}} {
+                    \xmllastatt
+                } {
+                    \e!start
+                }
             }
             \xmlfilter{#1}{/sequence/first()}
             \ignorespaces
@@ -518,7 +550,12 @@
                     \doif {\xmlatt{#1}{generated}} {yes} {
                         \ttsl
                     }
-                    \tex{\e!stop}
+                    \letterbackslash
+                    \doifsomethingelse {\xmlatt{#1}{end}} {
+                        \xmllastatt
+                    } {
+                        \e!stop
+                    }
                     \xmlfilter{#1}{/sequence/first()}
                     \ignorespaces
                 \egroup
@@ -544,9 +581,12 @@
    \c!command=\setup,
    \c!criterium=\v!used]
 
+% slow ... also hash this
+
 \startxmlsetups xml:setups:resolve
     \ignorespaces
-    \xmlfilterlist{\loadedsetups}{/interface/define[@name='\xmlatt{#1}{name}']/first()}
+    \ctxlua{moduledata.setups.resolved('\xmlatt{#1}{name}')}
+  % \xmlfilterlist{\loadedsetups}{/interface/define[@name='\xmlatt{#1}{name}']/first()}
 \stopxmlsetups
 
 %D This is the first pass; here we generate the top line.
@@ -565,6 +605,7 @@
 
 \startxmlsetups xml:setups:content     \showSETUPcomponent{#1}{content}    {content}     \stopxmlsetups
 \startxmlsetups xml:setups:displaymath \showSETUPcomponent{#1}{displaymath}{display math}\stopxmlsetups
+\startxmlsetups xml:setups:argument    \showSETUPcomponent{#1}{argument}   {argument}    \stopxmlsetups
 \startxmlsetups xml:setups:index       \showSETUPcomponent{#1}{index}      {index}       \stopxmlsetups
 \startxmlsetups xml:setups:math        \showSETUPcomponent{#1}{math}       {math}        \stopxmlsetups
 \startxmlsetups xml:setups:nothing     \showSETUPcomponent{#1}{nothing}    {nothing}     \stopxmlsetups
@@ -576,7 +617,7 @@
 \startxmlsetups xml:setups:triplet     \showSETUPcomponent{#1}{triplet}    {triplet}     \stopxmlsetups
 \startxmlsetups xml:setups:word        \showSETUPcomponent{#1}{word}       {word}        \stopxmlsetups
 
-\def\showSETUPcomponent#1#2#3%
+\unexpanded\def\showSETUPcomponent#1#2#3%
   {\doifelsemode{setups-pass-one}
      {\getvalue{showSETUP#2}{#1}}
      {\simpleSETUPargument{#3}}}
@@ -585,8 +626,9 @@
 
 \unexpanded\def\startfirstSETUPcolumn#1%
   {\bgroup
-   \advance\leftskip 2em
-   \noindent\llap{\hbox to 2em{#1\hss}}}
+   \scratchdimen2\emwidth
+   \advance\leftskip \scratchdimen
+   \noindent\llap{\hbox to \scratchdimen{#1\hss}}}
 
 \unexpanded\def\stopfirstSETUPcolumn
   {\endgraf
@@ -594,34 +636,32 @@
 
 \unexpanded\def\startsecondSETUPcolumn#1#2%
   {\bgroup
-   \advance\hangindent\dimexpr\currentSETUPwidth+2.5em\relax
-   \noindent \hbox to \hangindent{#1\hss\hbox to 2.5em{\hss#2\hss}}}
+   \scratchdimen2.5\emwidth
+   \advance\hangindent\dimexpr\currentSETUPwidth+\scratchdimen\relax
+   \noindent \hbox to \hangindent{#1\hss\hbox to \scratchdimen{\hss#2\hss}}}
 
 \unexpanded\def\stopsecondSETUPcolumn
   {\endgraf
    \egroup}
 
-\def\secondSETUPcolumn#1#2%
+\unexpanded\def\secondSETUPcolumn#1#2%
   {\startsecondSETUPcolumn{#1}{#2}\stopsecondSETUPcolumn}
 
 \def\previousSETUPargument{\currentSETUPargument}
-
-\startxmlsetups xml:setups:parameter:measure
-    \setbox0=\hbox{\c!setup!reserved!{\xmlatt{#1}{name}}}
-    \ifdim\wd0>\currentSETUPwidth\xdef\currentSETUPwidth{\the\wd0}\fi
-\stopxmlsetups
 
 \startxmlsetups xml:setups:assignments
     \doifelsemode{setups-pass-one} {
         \showSETUPassignment{#1}
     } {
         \xdef\currentSETUPwidth{0pt}%
-        \bgroup
-            \xmlfilter{#1}{/parameter/command(xml:setups:parameter:measure)}
+        \setbox\scratchbox\vbox\bgroup
+            \setmode{setups-measure}
+            \xmlall{#1}{/(parameter|resolve)}
         \egroup
+        \xdef\currentSETUPwidth{\themaxboxwidth\scratchbox}%
         \startfirstSETUPcolumn{\showSETUPnumber}%
             \ignorespaces
-            \xmldoifelse{#1}{/(parameter|inherit)}{
+            \xmldoifelse {#1} {/(parameter|inherit)} {
                 \xmlflush{#1}
             } {
              ...
@@ -648,32 +688,45 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:parameter
-    \startsecondSETUPcolumn{\c!setup!reserved!{\xmlatt{#1}{name}}}{=}
-        \ignorespaces
-        \xmlflush{#1}
-        \doifmode{interface:setup:defaults} {
-            \ifx\currentSETUPhash\empty \else
-                \begingroup
-                    % todo, make a one level expansion of parameter
-                    \let\emwidth \relax
-                    \let\exheight\relax
-                    \edef\currentSETUPvalue{\csname named\currentSETUPhash parameter\endcsname\empty{\xmlatt{#1}{name}}}
-                    \ifx\currentSETUPvalue\empty \else
-                        =\space
-                        \detokenize\expandafter{\currentSETUPvalue}
-                    \fi
-                \endgroup
-            \fi
-        }
-    \stopsecondSETUPcolumn
+    \doifmodeelse {setups-measure} {
+        \c!setup!reserved!{\xmlatt{#1}{name}}\par
+    } {
+        \startsecondSETUPcolumn{\c!setup!reserved!{\xmlatt{#1}{name}}}{=}
+            \ignorespaces
+            \xmlflush{#1}
+            \doifmode{interface:setup:defaults} {
+                \ifx\currentSETUPhash\empty \else
+                    \begingroup
+                        % todo, make a one level expansion of parameter
+                        \let\emwidth \relax
+                        \let\exheight\relax
+                        \edef\currentSETUPvalue{\csname named\currentSETUPhash parameter\endcsname\empty{\xmlatt{#1}{name}}}
+                        \ifx\currentSETUPvalue\empty \else
+                            =\space
+                            \detokenize\expandafter{\currentSETUPvalue}
+                        \fi
+                    \endgroup
+                \fi
+            }
+        \stopsecondSETUPcolumn
+    }
     \ignorespaces
 \stopxmlsetups
+
+\xmlmapvalue{setups:method}{class}{:}
+\xmlmapvalue{setups:method}{apply}{->}
+\xmlmapvalue{setups:method}{none} {}
 
 \startxmlsetups xml:setups:constant
     \doifelsemode {setups-pass-one} {
     } {
-        \doif {\xmlatt{#1}{default}} {yes} {
-            \underbar % next needs to be {braced}
+        \doifsomethingelse{\xmlatt{#1}{prefix}} {
+            \c!setup!reserved!{\xmllastatt}
+            \xmlmappedvalue{setups:method}{\xmlatt{#1}{method}}{none}
+        } {
+            \doif {\xmlatt{#1}{default}} {yes} {
+                \underbar % next needs to be {braced}
+            }
         }
         {\c!setup!reserved!{\xmlatt{#1}{type}}}
         \space
@@ -701,7 +754,7 @@
     \ignorespaces
 \stopxmlsetups
 
-\def\simpleSETUPargument#1%
+\unexpanded\def\simpleSETUPargument#1%
   {\startfirstSETUPcolumn{\showSETUPnumber}%
       \c!setup!internal!{#1}%
    \stopfirstSETUPcolumn
@@ -724,11 +777,15 @@
 \c!setup!definereserved {cd:matrix}         {\c!setup!internal!{\getmessage{setup}{matrix}}}
 \c!setup!definereserved {cd:list}           {\c!setup!internal!{\getmessage{setup}{list}}}
 \c!setup!definereserved {cd:section}        {\c!setup!internal!{\getmessage{setup}{section}}}
+\c!setup!definereserved {cd:language}       {\c!setup!internal!{\getmessage{setup}{language}}}
+\c!setup!definereserved {cd:section}        {\c!setup!internal!{\getmessage{setup}{section}}}
 
 \c!setup!definereserved {cd:noargument}     {\c!setup!command! {}}
 \c!setup!definereserved {cd:oneargument}    {\c!setup!command! {\#1}}
 \c!setup!definereserved {cd:twoarguments}   {\c!setup!command! {\#1\#2}}
 \c!setup!definereserved {cd:threearguments} {\c!setup!command! {\#1\#2\#3}}
+
+\c!setup!definereserved {cd:sign}           {[-+]}
 
 %D Auxiliary.
 
@@ -739,25 +796,27 @@
      {\doifelse{\xmlatt{#1}{list}}{yes}{#3}{#2}}%
    \setbox2=\hbox to \wd0
      {\hss
-      \raise1ex\hbox
+      \raise\exheight\hbox
         {\tx\ifcase\maximumSETUPargument\relax
            \or*\else\currentSETUPargument
          \fi}%
       \hss}%
    \setbox4=\hbox to \wd0
      {\hss
-      \lower2ex\hbox
+      \lower2\exheight\hbox
         \bgroup
-          \txx\doif{\xmlatt{#1}{optional}}{yes}{\c!setup!internal!{\getmessage{setup}{optional}}}%
+          \txx
+          \doif {\xmlatt{#1}{optional}} {yes}
+            {\c!setup!internal!{\getmessage{setup}{optional}}}%
         \egroup
       \hss}%
    \ht2\ht\strutbox
    \dp4\dp\strutbox
-   \hskip.5em\hsmash{\box0}\hsmash{\box4}\box2%
+   \hskip.5\emwidth\hsmash{\box0}\hsmash{\box4}\box2\relax
    \egroup
    \ignorespaces}
 
-\def\showSETUPnumber
+\unexpanded\def\showSETUPnumber
   {\doglobal\increment\currentSETUPargument
    \hbox to 2em
      {\ifcase\maximumSETUPargument\relax
@@ -765,27 +824,29 @@
       \fi
       \hss}}
 
-\def\showSETUPassignment #1{\showSETUP{#1}{[.\lower.5ex\hbox{=}.]}              {[..,.\lower.5ex\hbox{=}.,..]}}
-\def\showSETUPkeyword    #1{\showSETUP{#1}{[...]}                               {[...,...]}}
-\def\showSETUPargument   #1{\showSETUP{#1}{\leftargument..\rightargument}       {\leftargument..,...,..\rightargument}}
-\def\showSETUPdisplaymath#1{\showSETUP{#1}{\$\$...\$\$}                         {\$\$...\$\$}}
-\def\showSETUPindex      #1{\showSETUP{#1}{\leftargument...\rightargument}      {\leftargument..+...+..\rightargument}}
-\def\showSETUPmath       #1{\showSETUP{#1}{\$...\$}                             {\$...\$}}
-\def\showSETUPnothing    #1{\showSETUP{#1}{...}                                 {}}
-\def\showSETUPfile       #1{\showSETUP{#1}{~...~}                               {}}
-\def\showSETUPposition   #1{\showSETUP{#1}{(...)}                               {(...,...)}}
-\def\showSETUPreference  #1{\showSETUP{#1}{[...]}                               {[...,...]}}
-\def\showSETUPcsname     #1{\showSETUP{#1}{{\c!setup!command!{}}}               {}}
-\def\showSETUPdestination#1{\showSETUP{#1}{[\leftargument..[ref]\rightargument]}{[..,\leftargument..[ref,..]\rightargument,..]}}
-\def\showSETUPtriplet    #1{\showSETUP{#1}{[x:y:z=]}                            {[x:y:z=,..]}}
-\def\showSETUPword       #1{\showSETUP{#1}{\leftargument...\rightargument}      {\leftargument.. ... ..\rightargument}}
-\def\showSETUPcontent    #1{\showSETUP{#1}{\leftargument...\rightargument}      {\leftargument.. ... ..\rightargument}}
+\unexpanded\def\showSETUPassignment #1{\showSETUP{#1}{[.\lower.5ex\hbox{=}.]}              {[..,.\lower.5ex\hbox{=}.,..]}}
+\unexpanded\def\showSETUPkeyword    #1{\showSETUP{#1}{[...]}                               {[...,...]}}
+\unexpanded\def\showSETUPargument   #1{\showSETUP{#1}{\leftargument..\rightargument}       {\leftargument..,...,..\rightargument}}
+\unexpanded\def\showSETUPdisplaymath#1{\showSETUP{#1}{\$\$...\$\$}                         {\$\$...\$\$}}
+\unexpanded\def\showSETUPindex      #1{\showSETUP{#1}{\leftargument...\rightargument}      {\leftargument..+...+..\rightargument}}
+\unexpanded\def\showSETUPmath       #1{\showSETUP{#1}{\$...\$}                             {\$...\$}}
+\unexpanded\def\showSETUPnothing    #1{\showSETUP{#1}{...}                                 {}}
+\unexpanded\def\showSETUPfile       #1{\showSETUP{#1}{~...~}                               {}}
+\unexpanded\def\showSETUPposition   #1{\showSETUP{#1}{(...)}                               {(...,...)}}
+\unexpanded\def\showSETUPreference  #1{\showSETUP{#1}{[...]}                               {[...,...]}}
+\unexpanded\def\showSETUPcsname     #1{\showSETUP{#1}{{\c!setup!command!{}}}               {}}
+\unexpanded\def\showSETUPdestination#1{\showSETUP{#1}{[\leftargument..[ref]\rightargument]}{[..,\leftargument..[ref,..]\rightargument,..]}}
+\unexpanded\def\showSETUPtriplet    #1{\showSETUP{#1}{[x:y:z=]}                            {[x:y:z=,..]}}
+\unexpanded\def\showSETUPword       #1{\showSETUP{#1}{\leftargument...\rightargument}      {\leftargument.. ... ..\rightargument}}
+\unexpanded\def\showSETUPcontent    #1{\showSETUP{#1}{\leftargument...\rightargument}      {\leftargument.. ... ..\rightargument}}
 
 % A prelude to a rewrite and some more:
 
 % \definetype[parametercommand][\v!type]
 % \definetype[parameterkey]    [\v!type]
 % \definetype[parametervalue]  [\v!type][\c!space=\v!on]
+
+% todo: no list but hash ..
 
 \definetype[parametercommand]
 \definetype[parameterkey]
@@ -796,7 +857,7 @@
 
 \startxmlsetups xml:setups:parameters:value
     \edef\currentsetupparameterkey  {\xmlatt{#1}{name}}
-    \edef\currentsetupparametervalue{\csname named\currentsetupparametercategory parameter\endcsname\currentsetupparameterinstance\currentsetupparameterkey}
+    \edef\currentsetupparametervalue{\begincsname named\currentsetupparametercategory parameter\endcsname\currentsetupparameterinstance\currentsetupparameterkey}
     \ifx\currentsetupparameterinstance\empty
         \expanded {
             \NC \parameterkey  {\currentsetupparameterkey}
@@ -805,7 +866,7 @@
         }
     \else\ifx\currentsetupparametervalue\empty
     \else
-        \edef\currentsetupparameterdefault{\csname named\currentsetupparametercategory parameter\endcsname\empty\currentsetupparameterkey}
+        \edef\currentsetupparameterdefault{\begincsname named\currentsetupparametercategory parameter\endcsname\empty\currentsetupparameterkey}
         \ifx\currentsetupparametervalue\currentsetupparameterdefault
             % skip
         \else
@@ -835,7 +896,7 @@
     \starttabulate[|l|p|]
         \xmlall
             {#1}
-            {/interface/command[@name=='\currentsetupparametercommand']/arguments/assignments/parameter/command(xml:setups:parameters:value)}
+            {/interface/command[@name=='\currentsetupparametercommand' or @handler=='\currentsetupparametercommand']/arguments/assignments/parameter/command(xml:setups:parameters:value)}
         \ifnum\noftabulaterows = \zerocount
             \NC \parameterkey{no specific settings} \NC \NC \NR
         \fi

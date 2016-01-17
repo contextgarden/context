@@ -528,7 +528,7 @@ local function handle_any_entity(str)
                 end
             else
                 if type(resolve) == "function" then
-                    a = resolve(str) or entities[str]
+                    a = resolve(str,entities) or entities[str]
                 else
                     a = entities[str]
                 end
@@ -1146,14 +1146,16 @@ local function serialize(e,handlers,...)
 end
 
 local function xserialize(e,handlers)
-    local functions = handlers.functions
-    local etg = e.tg
-    if etg then
-        (functions[etg] or functions["@el@"])(e,handlers)
- -- elseif type(e) == "string" then
- --     functions["@tx@"](e,handlers)
-    else
-        functions["@dc@"](e,handlers)
+    if e then
+        local functions = handlers.functions
+        local etg = e.tg
+        if etg then
+            (functions[etg] or functions["@el@"])(e,handlers)
+     -- elseif type(e) == "string" then
+     --     functions["@tx@"](e,handlers)
+        else
+            functions["@dc@"](e,handlers)
+        end
     end
 end
 

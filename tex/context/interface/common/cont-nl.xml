@@ -951,14 +951,6 @@
         <cd:constant type="cd:name"/>
       </cd:keywords>
       <cd:assignments n="2" list="yes">
-        <cd:parameter name="spatie">
-          <cd:constant type="aan"/>
-          <cd:constant type="uit"/>
-        </cd:parameter>
-        <cd:parameter name="pagina">
-          <cd:constant type="ja"/>
-          <cd:constant type="nee"/>
-        </cd:parameter>
         <cd:parameter name="optie">
           <cd:constant type="schuin"/>
           <cd:constant type="normaal"/>
