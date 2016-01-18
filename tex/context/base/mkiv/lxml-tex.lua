@@ -233,9 +233,13 @@ local _, ctxtextcapture_nop = context.newtexthandler {
     catcodes  = ctxcatcodes,
 }
 
-local xmltextcapture, xmlspacecapture, xmllinecapture, ctxtextcapture
+local xmltextcapture    = xmltextcapture_yes
+local xmlspacecapture   = xmlspacecapture_yes
+local xmllinecapture    = xmllinecapture_yes
+local ctxtextcapture    = ctxtextcapture_yes
+local prefertexentities = true
 
-function lxml.setescapedentities(v)
+directives.register("lxml.entities.escaped",function(v)
     if v then
         xmltextcapture  = xmltextcapture_yes
         xmlspacecapture = xmlspacecapture_yes
@@ -247,11 +251,11 @@ function lxml.setescapedentities(v)
         xmllinecapture  = xmllinecapture_nop
         ctxtextcapture  = ctxtextcapture_nop
     end
-end
+end)
 
-lxml.setescapedentities() -- off by default (for now)
-
-directives.register("lxml.escapedentities",lxml.setescapedentities)
+directives.register("lxml.entities.prefertex",function(v)
+    prefertex = v
+end)
 
 -- cdata
 
@@ -464,8 +468,16 @@ function xml.load(filename,settings)
     return xmltable
 end
 
-local function entityconverter(id,str,ent) -- todo ent optional
-    return xmlentities[str] or ent[str] or xmlprivatetoken(str) or "" -- roundtrip handler
+-- local function entityconverter(id,str,ent) -- todo ent optional
+--     return xmlentities[str] or ent[str] or xmlprivatetoken(str) or "" -- roundtrip handler
+-- end
+
+local function entityconverter(id,str,ent) -- todo: disable tex entities when raw
+    if prefertexentities then
+        return xmlentities[str] or (texentities[str] and xmlprivatetoken(str)) or ent[str] or xmlprivatetoken(str) or "" -- roundtrip handler
+    else
+        return xmlentities[str] or ent[str] or (texentities[str] and xmlprivatetoken(str)) or xmlprivatetoken(str) or "" -- roundtrip handler
+    end
 end
 
 local function lxmlconvert(id,data,compress,currentresource)

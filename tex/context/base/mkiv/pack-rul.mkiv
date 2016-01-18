@@ -507,19 +507,19 @@
 %D \macros
 %D   {overlayfakebox}
 
-\unexpanded\def\overlayfakebox
-  {\hpack
-     {\setbox\scratchbox\emptyhbox
-      \wd\scratchbox\d_overlay_width
-      \ht\scratchbox\d_overlay_height
-      \box\scratchbox}}
-
 % \unexpanded\def\overlayfakebox
-%   {\hpack % redundant but needs testing
-%      {\novrule
-%         \s!width \d_overlay_width
-%         \s!height\d_overlay_height
-%         \s!depth \zeropoint}}
+%   {\hpack
+%      {\setbox\scratchbox\emptyhbox
+%       \wd\scratchbox\d_overlay_width
+%       \ht\scratchbox\d_overlay_height
+%       \box\scratchbox}}
+
+\unexpanded\def\overlayfakebox
+  {\hpack % redundant but needs testing
+     {\novrule
+        \s!width \d_overlay_width
+        \s!height\d_overlay_height
+        \s!depth \zeropoint}}
 
 %D For testing we provide:
 
@@ -697,41 +697,17 @@
       \box\b_framed_normal
       \box\b_framed_extra}}
 
-\def\pack_framed_stroked_box_normal
-  {\setbox\scratchbox\emptyhbox
-   \wd\scratchbox\d_framed_target_wd
-   \ht\scratchbox\d_framed_target_ht
-   \dp\scratchbox\d_framed_target_dp
-   \setbox\scratchbox\vpack \bgroup
-     \csname   \??framedtop\p_framed_frame\framedparameter\c!topframe   \endcsname
-     \nointerlineskip % new (needed for fences)
-     \hbox \bgroup
-       \csname \??framedleft\p_framed_frame\framedparameter\c!leftframe  \endcsname
-       \box\scratchbox
-       \csname \??framedright\p_framed_frame\framedparameter\c!rightframe \endcsname
-     \egroup
-     \nointerlineskip % new (needed for fences)
-     \csname   \??framedbottom\p_framed_frame\framedparameter\c!bottomframe\endcsname
-   \egroup
-   \wd\scratchbox\d_framed_target_wd
-   \ht\scratchbox\d_framed_target_ht
-   \dp\scratchbox\d_framed_target_dp
-   \box\scratchbox}
-
 % \def\pack_framed_stroked_box_normal
-%   {%\setbox\scratchbox\emptyhbox
-%    %\wd\scratchbox\d_framed_target_wd
-%    %\ht\scratchbox\d_framed_target_ht
-%    %\dp\scratchbox\d_framed_target_dp
+%   {\setbox\scratchbox\emptyhbox
+%    \wd\scratchbox\d_framed_target_wd
+%    \ht\scratchbox\d_framed_target_ht
+%    \dp\scratchbox\d_framed_target_dp
 %    \setbox\scratchbox\vpack \bgroup
 %      \csname   \??framedtop\p_framed_frame\framedparameter\c!topframe   \endcsname
 %      \nointerlineskip % new (needed for fences)
 %      \hbox \bgroup
 %        \csname \??framedleft\p_framed_frame\framedparameter\c!leftframe  \endcsname
-%        \novrule
-%          \s!width \d_framed_target_wd
-%          \s!height\d_framed_target_ht
-%          \s!depth \d_framed_target_dp
+%        \box\scratchbox
 %        \csname \??framedright\p_framed_frame\framedparameter\c!rightframe \endcsname
 %      \egroup
 %      \nointerlineskip % new (needed for fences)
@@ -741,6 +717,26 @@
 %    \ht\scratchbox\d_framed_target_ht
 %    \dp\scratchbox\d_framed_target_dp
 %    \box\scratchbox}
+
+\def\pack_framed_stroked_box_normal
+  {\setbox\scratchbox\vpack \bgroup
+     \csname   \??framedtop\p_framed_frame\framedparameter\c!topframe   \endcsname
+     \nointerlineskip % new (needed for fences)
+     \hbox \bgroup
+       \csname \??framedleft\p_framed_frame\framedparameter\c!leftframe  \endcsname
+       \novrule
+         \s!width \d_framed_target_wd
+         \s!height\d_framed_target_ht
+         \s!depth \d_framed_target_dp
+       \csname \??framedright\p_framed_frame\framedparameter\c!rightframe \endcsname
+     \egroup
+     \nointerlineskip % new (needed for fences)
+     \csname   \??framedbottom\p_framed_frame\framedparameter\c!bottomframe\endcsname
+   \egroup
+   \wd\scratchbox\d_framed_target_wd
+   \ht\scratchbox\d_framed_target_ht
+   \dp\scratchbox\d_framed_target_dp
+   \box\scratchbox}
 
 \def\pack_framed_t_rule{\hrule\s!height\d_framed_linewidth\kern-\d_framed_linewidth}
 \def\pack_framed_b_rule{\kern-\d_framed_linewidth\hrule\s!height\d_framed_linewidth}

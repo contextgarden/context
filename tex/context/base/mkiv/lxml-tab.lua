@@ -168,6 +168,7 @@ local entities           = { }
 local strip              = false
 local cleanup            = false
 local utfize             = false
+local resolve            = false
 local resolve_predefined = false
 local unify_predefined   = false
 
@@ -635,8 +636,8 @@ local spacing          = C(space^0)
 
 ----- entitycontent    = (1-open-semicolon)^0
 local anyentitycontent = (1-open-semicolon-space-close-ampersand)^0
-local hexentitycontent = R("AF","af","09")^0
-local decentitycontent = R("09")^0
+local hexentitycontent = R("AF","af","09")^1
+local decentitycontent = R("09")^1
 local parsedentity     = P("#")/"" * (
                                 P("x")/"" * (hexentitycontent/handle_hex_entity) +
                                             (decentitycontent/handle_dec_entity)

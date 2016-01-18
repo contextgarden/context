@@ -297,7 +297,7 @@
   [\c!location=\v!margin, % \v!text \v!paragraph
    \c!spacebefore=,
    \c!spaceafter=\delimitedtextparameter\c!spacebefore,
-   \c!style=\v!normal,
+   \c!style=,
    \c!color=,
    \c!leftmargin=\zeropoint,
    \c!rightmargin=\delimitedtextparameter\c!leftmargin,
@@ -650,6 +650,7 @@
 \unexpanded\def\typo_delimited_par
   {\groupedcommand
      {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext % block?
+      \usedelimitedtextstyleandcolor\c!style\c!color
       \typo_delimited_handle_left\c!left
       \dostarttagged\t!delimitedcontent\empty}
      {\dostoptagged
@@ -657,38 +658,6 @@
       \removelastskip
       \dostoptagged
       \typo_delimited_pop}}
-
-% \unexpanded\def\typo_delimited_txt
-%   {\doifelse{\delimitedtextparameter\c!style}\v!normal
-%      \typo_delimited_quoted
-%      \typo_delimited_attributed}
-%
-% \def\typo_delimited_quoted_b
-%   {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
-%    \typo_delimited_handle_left\c!left}
-%
-% \def\typo_delimited_quoted_e
-%   {\typo_delimited_handle_right\c!right
-%    \removelastskip
-%    \dostoptagged
-%    \typo_delimited_pop}
-%
-% \def\typo_delimited_attributed_b
-%   {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
-%    \usedelimitedtextstyleandcolor\c!style\c!color}
-%
-% \def\typo_delimited_attributed_e
-%   {\dostoptagged
-%    \typo_delimited_pop}
-%
-% \def\typo_delimited_fontdriven_b
-%   {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
-%    \languageparameter{\c!left\currentparentdelimitedtext}}% was: \currentdelimitedtext
-%
-% \def\typo_delimited_fontdriven_e
-%   {\languageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
-%    \dostoptagged
-%    \typo_delimited_pop}
 
 \unexpanded\def\typo_delimited_txt
   {\edef\p_left_right{\delimitedtextparameter\c!left\delimitedtextparameter\c!right}%
