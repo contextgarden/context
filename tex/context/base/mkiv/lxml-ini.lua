@@ -138,6 +138,8 @@ implement { name = "xmlsetcommandtonone",     actions = lxml.setcommandtonone,  
 implement { name = "xmlstarttiming",          actions = function() statistics.starttiming(lxml) end }
 implement { name = "xmlstoptiming",           actions = function() statistics.stoptiming (lxml) end }
 
+implement { name = "xmlloadentities",         actions = characters.registerentities, onceonly = true }
+
 -- kind of special (3rd argument is a function)
 
 commands.xmlsetfunction = lxml.setaction

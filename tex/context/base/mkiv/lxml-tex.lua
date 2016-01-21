@@ -90,9 +90,15 @@ storage.register("lxml/entities",lxml.entities,"lxml.entities")
 
 -- xml.placeholders.unknown_any_entity = nil -- has to be per xml
 
-local xmlentities  = xml.entities
-local texentities  = lxml.entities
-local parsedentity = xml.parsedentitylpeg
+local xmlentities  = xml.entities          -- these are more or less standard entities
+local texentities  = lxml.entities         -- these are specific for a tex run
+local parsedentity = xml.parsedentitylpeg  -- ...
+
+local useelement   = false
+
+directives.register("lxml.entities.useelement",function(v)
+    useelement = v
+end)
 
 function lxml.registerentity(key,value)
     texentities[key] = value
@@ -151,12 +157,20 @@ function lxml.resolvedentity(str)
                 report_xml("passing faulty entity %a as %a",str,err)
             end
             context(err)
-        else
+        elseif useelement then
             local tag = upperchars(str)
             if trace_entities then
                 report_xml("passing entity %a to \\xmle using tag %a",str,tag)
             end
-            context.xmle(str,tag) -- we need to use our own upper
+         -- context.xmle(str,tag) -- we need to use our own upper
+            contextsprint(texcatcodes,"\\xmle{")
+            contextsprint(notcatcodes,e)
+            contextsprint(texcatcodes,"}")
+        else
+            if trace_entities then
+                report_xml("passing entity %a as %a using %a",str,str,"notcatcodes")
+            end
+            contextsprint(notcatcodes,str)
         end
     end
 end
@@ -181,11 +195,11 @@ local texfinalizers = finalizers.tex
 
 -- serialization with entity handling
 
-local exceptions = false
-
 local ampersand  = P("&")
 local semicolon  = P(";")
-local entity     = ampersand * C((1-semicolon)^1) * semicolon / lxml.resolvedentity -- context.bold
+local entity     = (ampersand * C((1-semicolon)^1) * semicolon) / lxml.resolvedentity -- context.bold
+
+entity = nil
 
 local _, xmltextcapture_yes = context.newtexthandler {
     catcodes  = notcatcodes,
@@ -237,7 +251,6 @@ local xmltextcapture    = xmltextcapture_yes
 local xmlspacecapture   = xmlspacecapture_yes
 local xmllinecapture    = xmllinecapture_yes
 local ctxtextcapture    = ctxtextcapture_yes
-local prefertexentities = true
 
 directives.register("lxml.entities.escaped",function(v)
     if v then
@@ -251,10 +264,6 @@ directives.register("lxml.entities.escaped",function(v)
         xmllinecapture  = xmllinecapture_nop
         ctxtextcapture  = ctxtextcapture_nop
     end
-end)
-
-directives.register("lxml.entities.prefertex",function(v)
-    prefertex = v
 end)
 
 -- cdata
@@ -468,24 +477,32 @@ function xml.load(filename,settings)
     return xmltable
 end
 
--- local function entityconverter(id,str,ent) -- todo ent optional
---     return xmlentities[str] or ent[str] or xmlprivatetoken(str) or "" -- roundtrip handler
--- end
-
 local function entityconverter(id,str,ent) -- todo: disable tex entities when raw
-    if prefertexentities then
-        return xmlentities[str] or (texentities[str] and xmlprivatetoken(str)) or ent[str] or xmlprivatetoken(str) or "" -- roundtrip handler
-    else
-        return xmlentities[str] or ent[str] or (texentities[str] and xmlprivatetoken(str)) or xmlprivatetoken(str) or "" -- roundtrip handler
+    -- tex driven entity
+    local t = texentities[str]
+    if t then
+        return xmlprivatetoken(str)
     end
+    -- dtd determined entity
+    local e = ent and ent[str]
+    if e then
+        return e
+    end
+    -- predefined entity (mathml and so)
+    local x = xmlentities[str]
+    if x then
+        return x
+    end
+    -- keep original somehow
+    return xmlprivatetoken(str)
 end
 
 local function lxmlconvert(id,data,compress,currentresource)
     local settings = { -- we're now roundtrip anyway
-        unify_predefined_entities   = true,
-        utfize_entities             = true,
-        resolve_predefined_entities = true,
-        resolve_entities            = function(str,ent) return entityconverter(id,str,ent) end, -- needed for mathml
+        unify_predefined_entities   = false, -- is also default
+        utfize_entities             = true,  -- is also default
+        resolve_predefined_entities = true,  -- is also default
+        resolve_entities            = function(str,ent) return entityconverter(id,str,ent) end,
         currentresource             = tostring(currentresource or id),
     }
     if compress and compress == variables.yes then

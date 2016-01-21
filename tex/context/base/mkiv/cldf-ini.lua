@@ -485,17 +485,37 @@ local catcodes = {
     xml = xmlcatcodes, xmlcatcodes = xmlcatcodes,
 }
 
+-- maybe just increment / decrement
+
+-- local function pushcatcodes(c)
+--     insert(catcodestack,currentcatcodes)
+--     currentcatcodes = (c and catcodes[c] or tonumber(c)) or currentcatcodes
+--     contentcatcodes = currentcatcodes
+-- end
+--
+-- local function popcatcodes()
+--     currentcatcodes = remove(catcodestack) or currentcatcodes
+--     contentcatcodes = currentcatcodes
+-- end
+
+local catcodelevel = 0
+
 local function pushcatcodes(c)
-    insert(catcodestack,currentcatcodes)
+    catcodelevel = catcodelevel + 1
+    catcodestack[catcodelevel] = currentcatcodes
     currentcatcodes = (c and catcodes[c] or tonumber(c)) or currentcatcodes
     contentcatcodes = currentcatcodes
 end
 
 local function popcatcodes()
-    currentcatcodes = remove(catcodestack) or currentcatcodes
+    if catcodelevel > 0 then
+        currentcatcodes = catcodestack[catcodelevel] or currentcatcodes
+        catcodelevel = catcodelevel - 1
+    end
     contentcatcodes = currentcatcodes
 end
 
+context.catcodes     = catcodes
 context.pushcatcodes = pushcatcodes
 context.popcatcodes  = popcatcodes
 

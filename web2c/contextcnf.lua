@@ -83,6 +83,7 @@ return {
             ENCFONTS        = ".;$TEXMF/fonts/data//;$TEXMF/fonts/enc/{dvips,pdftex}//",
             VFFONTS         = ".;$TEXMF/fonts/{data,vf}//",
             TFMFONTS        = ".;$TEXMF/fonts/{data,tfm}//",
+            PKFONTS         = ".;$TEXMF/fonts/{data,pk}//",
             T1FONTS         = ".;$TEXMF/fonts/{data,type1}//;$OSFONTDIR",
             AFMFONTS        = ".;$TEXMF/fonts/{data,afm}//;$OSFONTDIR",
             TTFONTS         = ".;$TEXMF/fonts/{data,truetype}//;$OSFONTDIR",

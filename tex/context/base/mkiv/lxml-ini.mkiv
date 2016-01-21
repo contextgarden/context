@@ -421,7 +421,11 @@
 \setupxml
   [\c!default=,          % flush all
    \c!compress=\v!no,    % strip comment
-   \c!entities=\v!yes]   % replace entities
+   \c!entities=\v!no]    % load big entity file
+
+\appendtoks
+    \doif{\directxmlparameter\c!entities}\clf_xmlloadentities
+\to \everysetupxml
 
 \def\xmlmapvalue    #1#2#3{\setvalue{\??xmlmapvalue#1:#2}{#3}} % keep #3 to grab spaces
 %def\xmlvalue       #1#2#3{\executeifdefined{\??xmlmapvalue#1:#2}{#3}}
@@ -491,6 +495,22 @@
    \else
      #1%
    \fi\fi}
+
+% \def\lxml_e_upper#1#2% can be abbreviation
+%   {\ifcsname\detokenize{#2}\endcsname
+%      \lastnamedcs
+%    \else
+%      \detokenize{#1}%
+%    \fi}
+
+% \def\lxml_e_upperlower#1#2% can be anything, so unsafe
+%   {\ifcsname\detokenize{#2}\endcsname
+%      \expandafter\lastnamedcs
+%    \else\ifcsname\detokenize{#1}\endcsname
+%      \doubleexpandafter\lastnamedcs
+%    \else
+%      \detokenize{#1}%
+%    \fi\fi}
 
 % handy helpers (analogue to MP and LUA and TEX and also MkII)
 

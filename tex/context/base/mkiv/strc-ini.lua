@@ -233,6 +233,13 @@ local tags = {
 --
 --  local command = formatters["\\xmlprocessbuffer{%s}{%s}{}"](metadata.xmlroot or "main",tag)
 
+local overload_catcodes = false
+
+directives.register("typesetters.processors.overloadcatcodes",function(v)
+    -- number | true | false | string
+    overload_catcodes = v
+end)
+
 local experiment = true
 
 function helpers.title(title,metadata) -- coding is xml is rather old and not that much needed now
@@ -265,12 +272,7 @@ function helpers.title(title,metadata) -- coding is xml is rather old and not th
                 ctx_xmlsetup(title,metadata.xmlsetup)
             else
                 local catcodes = metadata.catcodes
-                if catcodes == notcatcodes or catcodes == xmlcatcodes then
-                    if trace_processors then
-                        report_processors("catcodetable %a, overloads %a, text %a",ctxcatcodes,catcodes,title)
-                    end
-                    context(title) -- nasty
-                else
+                if overload_catcodes == false then
                     if trace_processors then
                         report_processors("catcodetable %a, text %a",catcodes,title)
                     end
@@ -283,10 +285,30 @@ function helpers.title(title,metadata) -- coding is xml is rather old and not th
                     ctx_pushcatcodes(catcodes)
                     context(title)
                     ctx_popcatcodes()
+                elseif overload_catcodes == true then
+                    if catcodes == notcatcodes or catcodes == xmlcatcodes then
+                        -- when was this needed
+                        if trace_processors then
+                            report_processors("catcodetable %a, overloads %a, text %a",ctxcatcodes,catcodes,title)
+                        end
+                        context(title)
+                    else
+                        ctx_pushcatcodes(catcodes)
+                        context(title)
+                        ctx_popcatcodes()
+                    end
+                else
+                    if trace_processors then
+                        report_processors("catcodetable %a, overloads %a, text %a",catcodes,overload_catcodes,title)
+                    end
+                    ctx_pushcatcodes(overload_catcodes)
+                    context(title)
+                    ctx_popcatcodes()
                 end
             end
         else
-            context(title) -- no catcode switch, was: texsprint(title)
+            -- no catcode switch, was: texsprint(title)
+            context(title)
         end
     end
 end

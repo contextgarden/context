@@ -139,6 +139,11 @@ local relations = allocate { -- todo: handlers also here
             names    = { 'fontconfig', 'fontconfig file', 'fontconfig files' },
             variable = 'FONTCONFIG_PATH',
         },
+        pk = {
+            names    = { "pk" },
+            variable = 'PKFONTS',
+            suffixes = { 'pk' },
+        },
     },
     obsolete = {
         enc = {

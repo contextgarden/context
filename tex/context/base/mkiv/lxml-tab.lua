@@ -159,12 +159,15 @@ element.</p>
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
 local stack              = { }
+local level              = 0
 local top                = { }
 local dt                 = { }
+local nt                 = 0   -- some 5% faster than #dt on cont-en.xml
 local at                 = { }
 local xmlns              = { }
 local errorstr           = nil
 local entities           = { }
+local parameters         = { }
 local strip              = false
 local cleanup            = false
 local utfize             = false
@@ -176,7 +179,7 @@ local dcache             = { }
 local hcache             = { }
 local acache             = { }
 
-local mt = { }
+local mt                 = { }
 
 local function initialize_mt(root)
     mt = { __index = root } -- will be redefined later
@@ -191,7 +194,7 @@ function xml.checkerror(top,toclose)
 end
 
 local function add_attribute(namespace,tag,value)
-    if cleanup and #value > 0 then
+    if cleanup and value ~= "" then
         value = cleanup(value) -- new
     end
     if tag == "xmlns" then
@@ -209,14 +212,16 @@ local function add_attribute(namespace,tag,value)
 end
 
 local function add_empty(spacing, namespace, tag)
-    if #spacing > 0 then
-        dt[#dt+1] = spacing
+    if spacing ~= "" then
+        nt = nt + 1
+        dt[nt] = spacing
     end
     local resolved = namespace == "" and xmlns[#xmlns] or nsremap[namespace] or namespace
-    top = stack[#stack]
+    top = stack[level]
     dt = top.dt
+    nt = #dt + 1
     local t = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = top }
-    dt[#dt+1] = t
+    dt[nt] = t
     setmetatable(t, mt)
     if at.xmlns then
         remove(xmlns)
@@ -225,24 +230,29 @@ local function add_empty(spacing, namespace, tag)
 end
 
 local function add_begin(spacing, namespace, tag)
-    if #spacing > 0 then
-        dt[#dt+1] = spacing
+    if spacing ~= "" then
+        nt = nt + 1
+        dt[nt] = spacing
     end
     local resolved = namespace == "" and xmlns[#xmlns] or nsremap[namespace] or namespace
-    top = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = stack[#stack] }
+    top = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = stack[level] }
     setmetatable(top, mt)
     dt = top.dt
-    stack[#stack+1] = top
+    nt = #dt
+    level = level + 1
+    stack[level] = top
     at = { }
 end
 
 local function add_end(spacing, namespace, tag)
-    if #spacing > 0 then
-        dt[#dt+1] = spacing
+    if spacing ~= "" then
+        nt = nt + 1
+        dt[nt] = spacing
     end
-    local toclose = remove(stack)
-    top = stack[#stack]
-    if #stack < 1 then
+    local toclose = stack[level]
+    level = level - 1
+    top = stack[level]
+    if level < 1 then
         errorstr = formatters["unable to close %s %s"](tag,xml.checkerror(top,toclose) or "")
         report_xml(errorstr)
     elseif toclose.tg ~= tag then -- no namespace check
@@ -250,65 +260,65 @@ local function add_end(spacing, namespace, tag)
         report_xml(errorstr)
     end
     dt = top.dt
-    dt[#dt+1] = toclose
+    nt = #dt + 1
+    dt[nt] = toclose
  -- dt[0] = top -- nasty circular reference when serializing table
     if toclose.at.xmlns then
         remove(xmlns)
     end
 end
 
--- local function add_text(text)
---     if cleanup and #text > 0 then
---         dt[#dt+1] = cleanup(text)
---     else
---         dt[#dt+1] = text
---     end
--- end
-
-local spaceonly = lpegpatterns.whitespace^0 * P(-1)
-
-local function add_text(text)
-    local n = #dt
+-- local spaceonly = lpegpatterns.whitespace^0 * P(-1)
 --
 -- will be an option: dataonly
 --
 -- if #text == 0 or lpegmatch(spaceonly,text) then
 --     return
 -- end
---
-    if cleanup and #text > 0 then
-        if n > 0 then
-            local s = dt[n]
+
+local function add_text(text)
+    if text == "" then
+        return
+    end
+    if cleanup then
+        if nt > 0 then
+            local s = dt[nt]
             if type(s) == "string" then
-                dt[n] = s .. cleanup(text)
+                dt[nt] = s .. cleanup(text)
             else
-                dt[n+1] = cleanup(text)
+                nt = nt + 1
+                dt[nt] = cleanup(text)
             end
         else
+            nt = 1
             dt[1] = cleanup(text)
         end
     else
-        if n > 0 then
-            local s = dt[n]
+        if nt > 0 then
+            local s = dt[nt]
             if type(s) == "string" then
-                dt[n] = s .. text
+                dt[nt] = s .. text
             else
-                dt[n+1] = text
+                nt = nt + 1
+                dt[nt] = text
             end
         else
+            nt = 1
             dt[1] = text
         end
     end
 end
 
 local function add_special(what, spacing, text)
-    if #spacing > 0 then
-        dt[#dt+1] = spacing
+    if spacing ~= "" then
+        nt = nt + 1
+        dt[nt] = spacing
     end
     if strip and (what == "@cm@" or what == "@dt@") then
         -- forget it
     else
-        dt[#dt+1] = { special=true, ns="", tg=what, dt={ text } }
+        nt = nt + 1
+        dt[nt] = { special=true, ns="", tg=what, dt={ text } }
     end
 end
 
@@ -371,9 +381,15 @@ local p_rest = (1-P(";"))^0
 local p_many = P(1)^0
 local p_char = lpegpatterns.utf8character
 
+-- local parsedentity =
+--     P("&") * (P("#x")*(p_rest/fromhex) + P("#")*(p_rest/fromdec)) * P(";") * P(-1) +
+--              (P("#x")*(p_many/fromhex) + P("#")*(p_many/fromdec))
+
 local parsedentity =
-    P("&") * (P("#x")*(p_rest/fromhex) + P("#")*(p_rest/fromdec)) * P(";") * P(-1) +
-             (P("#x")*(p_many/fromhex) + P("#")*(p_many/fromdec))
+    P("&#") * (P("x")*(p_rest/fromhex) + (p_rest/fromdec)) * P(";") * P(-1) +
+    P ("#") * (P("x")*(p_many/fromhex) + (p_many/fromdec))
+
+local parsedentity_text = parsedentity
 
 -- parsing in the xml file
 
@@ -409,37 +425,6 @@ local privates_p = {
 local privates_n = {
     -- keeps track of defined ones
 }
-
--- -- local escaped      = utf.remapper(privates_u) -- can't be used as it freezes
--- -- local unprivatized = utf.remapper(privates_p) -- can't be used as it freezes
---
--- local p_privates_u = false
--- local p_privates_p = false
---
--- table.setmetatablenewindex(privates_u,function(t,k,v) rawset(t,k,v) p_privates_u = false end)
--- table.setmetatablenewindex(privates_p,function(t,k,v) rawset(t,k,v) p_privates_p = false end)
---
--- local function escaped(str)
---     if not str or str == "" then
---         return ""
---     else
---         if not p_privates_u then
---             p_privates_u = Cs((lpeg.utfchartabletopattern(privates_u)/privates_u + p_char)^0)
---         end
---         return lpegmatch(p_privates_u,str)
---     end
--- end
---
--- local function unprivatized(str)
---     if not str or str == "" then
---         return ""
---     else
---         if not p_privates_p then
---             p_privates_p = Cs((lpeg.utfchartabletopattern(privates_p)/privates_p + p_char)^0)
---         end
---         return lpegmatch(p_privates_p,str)
---     end
--- end
 
 local escaped      = utf.remapper(privates_u,"dynamic")
 local unprivatized = utf.remapper(privates_p,"dynamic")
@@ -518,58 +503,52 @@ end
 
 xml.parsedentitylpeg = parsedentity
 
-local function handle_any_entity(str)
+local grammar_parsed_text_one
+local grammar_parsed_text_two
+
+local function handle_any_entity_dtd(str)
     if resolve then
-        local a = acache[str] -- per instance ! todo
-        if not a then
-            a = resolve_predefined and predefined_simplified[str]
+        local a = resolve_predefined and predefined_simplified[str] -- true by default
+        if a then
+            if trace_entities then
+                report_xml("resolving entity &%s; to predefined %a",str,a)
+            end
+        else
+            if type(resolve) == "function" then
+                a = resolve(str,entities) or entities[str]
+            else
+                a = entities[str]
+            end
             if a then
+                if type(a) == "function" then
+                    if trace_entities then
+                        report_xml("expanding entity &%s; to function call",str)
+                    end
+                    a = a(str) or ""
+                end
+                a = lpegmatch(parsedentity,a) or a -- for nested
                 if trace_entities then
-                    report_xml("resolving entity &%s; to predefined %a",str,a)
+                    report_xml("resolving entity &%s; to internal %a",str,a)
                 end
             else
-                if type(resolve) == "function" then
-                    a = resolve(str,entities) or entities[str]
-                else
-                    a = entities[str]
+                local unknown_any_entity = placeholders.unknown_any_entity
+                if unknown_any_entity then
+                    a = unknown_any_entity(str) or ""
                 end
                 if a then
-                    if type(a) == "function" then
-                        if trace_entities then
-                            report_xml("expanding entity &%s; to function call",str)
-                        end
-                        a = a(str) or ""
-                    end
-                    a = lpegmatch(parsedentity,a) or a -- for nested
                     if trace_entities then
-                        report_xml("resolving entity &%s; to internal %a",str,a)
+                        report_xml("resolving entity &%s; to external %s",str,a)
                     end
                 else
-                    local unknown_any_entity = placeholders.unknown_any_entity
-                    if unknown_any_entity then
-                        a = unknown_any_entity(str) or ""
+                    if trace_entities then
+                        report_xml("keeping entity &%s;",str)
                     end
-                    if a then
-                        if trace_entities then
-                            report_xml("resolving entity &%s; to external %s",str,a)
-                        end
+                    if str == "" then
+                        a = badentity
                     else
-                        if trace_entities then
-                            report_xml("keeping entity &%s;",str)
-                        end
-                        if str == "" then
-                            a = badentity
-                        else
-                            a = "&" .. str .. ";"
-                        end
+                        a = "&" .. str .. ";"
                     end
                 end
-            end
-            acache[str] = a
-        elseif trace_entities then
-            if not acache[str] then
-                report_xml("converting entity &%s; to %a",str,a)
-                acache[str] = a
             end
         end
         return a
@@ -602,9 +581,88 @@ local function handle_any_entity(str)
     end
 end
 
--- local function handle_end_entity(chr)
---     report_xml("error in entity, %a found instead of %a",chr,";")
--- end
+local function handle_any_entity_text(str)
+    if resolve then
+        local a = resolve_predefined and predefined_simplified[str]
+        if a then
+            if trace_entities then
+                report_xml("resolving entity &%s; to predefined %a",str,a)
+            end
+        else
+            if type(resolve) == "function" then
+                a = resolve(str,entities) or entities[str]
+            else
+                a = entities[str]
+            end
+            if a then
+                if type(a) == "function" then
+                    if trace_entities then
+                        report_xml("expanding entity &%s; to function call",str)
+                    end
+                    a = a(str) or ""
+                end
+                a = lpegmatch(grammar_parsed_text_two,a) or a
+                if type(a) == "number" then
+                    return ""
+                else
+                    a = lpegmatch(parsedentity_text,a) or a -- for nested
+                    if trace_entities then
+                        report_xml("resolving entity &%s; to internal %a",str,a)
+                    end
+                end
+                if trace_entities then
+                    report_xml("resolving entity &%s; to internal %a",str,a)
+                end
+            else
+                local unknown_any_entity = placeholders.unknown_any_entity
+                if unknown_any_entity then
+                    a = unknown_any_entity(str) or ""
+                end
+                if a then
+                    if trace_entities then
+                        report_xml("resolving entity &%s; to external %s",str,a)
+                    end
+                else
+                    if trace_entities then
+                        report_xml("keeping entity &%s;",str)
+                    end
+                    if str == "" then
+                        a = badentity
+                    else
+                        a = "&" .. str .. ";"
+                    end
+                end
+            end
+        end
+        return a
+    else
+        local a = acache[str]
+        if not a then
+            a = resolve_predefined and predefined_simplified[str]
+            if a then
+                -- one of the predefined
+                acache[str] = a
+                if trace_entities then
+                    report_xml("entity &%s; becomes %a",str,a)
+                end
+            elseif str == "" then
+                if trace_entities then
+                    report_xml("invalid entity &%s;",str)
+                end
+                a = badentity
+                acache[str] = a
+            else
+                if trace_entities then
+                    report_xml("entity &%s; is made private",str)
+                end
+             -- a = "&" .. str .. ";"
+                a = unescaped(str)
+                acache[str] = a
+            end
+        end
+        return a
+    end
+end
 
 local function handle_end_entity(str)
     report_xml("error in entity, %a found without ending %a",str,";")
@@ -641,13 +699,19 @@ local decentitycontent = R("09")^1
 local parsedentity     = P("#")/"" * (
                                 P("x")/"" * (hexentitycontent/handle_hex_entity) +
                                             (decentitycontent/handle_dec_entity)
-                            ) +             (anyentitycontent/handle_any_entity)
+                            ) +             (anyentitycontent/handle_any_entity_dtd) -- can be Cc(true)
+local parsedentity_text= P("#")/"" * (
+                                P("x")/"" * (hexentitycontent/handle_hex_entity) +
+                                            (decentitycontent/handle_dec_entity)
+                            ) +             (anyentitycontent/handle_any_entity_text) -- can be Cc(false)
 ----- entity           = ampersand/"" * parsedentity * ( (semicolon/"") + #(P(1)/handle_end_entity))
-local entity           = (ampersand/"") * parsedentity * (semicolon/"")
+local entity           = (ampersand/"") * parsedentity   * (semicolon/"")
+                       + ampersand * (anyentitycontent / handle_end_entity)
+local entity_text      = (ampersand/"") * parsedentity_text * (semicolon/"")
                        + ampersand * (anyentitycontent / handle_end_entity)
 
 local text_unparsed    = C((1-open)^1)
-local text_parsed      = Cs(((1-open-ampersand)^1 + entity)^1)
+local text_parsed      = (Cs((1-open-ampersand)^1)/add_text + Cs(entity_text)/add_text)^1
 
 local somespace        = space^1
 local optionalspace    = space^0
@@ -669,7 +733,7 @@ local attribute        = (somespace * name * optionalspace * equal * optionalspa
 
 local attributes       = (attribute + somespace^-1 * (((1-endofattributes)^1)/attribute_specification_error))^0
 
-local parsedtext       = text_parsed   / add_text
+local parsedtext       = text_parsed   -- / add_text
 local unparsedtext     = text_unparsed / add_text
 local balanced         = P { "[" * ((1 - S"[]") + V(1))^0 * "]" } -- taken from lpeg manual, () example
 
@@ -690,9 +754,30 @@ local someinstruction  = C((1 - endinstruction)^0)
 local somecomment      = C((1 - endcomment    )^0)
 local somecdata        = C((1 - endcdata      )^0)
 
-local function normalentity(k,v  ) entities[k] = v end
-local function systementity(k,v,n) entities[k] = v end
-local function publicentity(k,v,n) entities[k] = v end
+local function weirdentity(k,v)
+    if trace_entities then
+        report_xml("registering %s entity %a as %a","weird",k,v)
+    end
+    parameters[k] = v
+end
+local function normalentity(k,v)
+    if trace_entities then
+        report_xml("registering %s entity %a as %a","normal",k,v)
+    end
+    entities[k] = v
+end
+local function systementity(k,v,n)
+    if trace_entities then
+        report_xml("registering %s entity %a as %a","system",k,v)
+    end
+    entities[k] = v
+end
+local function publicentity(k,v,n)
+    if trace_entities then
+        report_xml("registering %s entity %a as %a","public",k,v)
+    end
+    entities[k] = v
+end
 
 -- todo: separate dtd parser
 
@@ -700,19 +785,34 @@ local begindoctype     = open * P("!DOCTYPE")
 local enddoctype       = close
 local beginset         = P("[")
 local endset           = P("]")
+local wrdtypename      = C((1-somespace-P(";"))^1)
 local doctypename      = C((1-somespace-close)^0)
 local elementdoctype   = optionalspace * P("<!ELEMENT") * (1-close)^0 * close
 
 local basiccomment     = begincomment * ((1 - endcomment)^0) * endcomment
 
-local normalentitytype = (doctypename * somespace * value)/normalentity
+local weirdentitytype  = P("%") * (somespace * doctypename * somespace * value) / weirdentity
+local normalentitytype = (doctypename * somespace * value) / normalentity
 local publicentitytype = (doctypename * somespace * P("PUBLIC") * somespace * value)/publicentity
 local systementitytype = (doctypename * somespace * P("SYSTEM") * somespace * value * somespace * P("NDATA") * somespace * doctypename)/systementity
-local entitydoctype    = optionalspace * P("<!ENTITY") * somespace * (systementitytype + publicentitytype + normalentitytype) * optionalspace * close
+local entitydoctype    = optionalspace * P("<!ENTITY") * somespace * (systementitytype + publicentitytype + normalentitytype + weirdentitytype) * optionalspace * close
+
+local function weirdresolve(s)
+    lpegmatch(entitydoctype,parameters[s])
+end
+
+local function normalresolve(s)
+    lpegmatch(entitydoctype,entities[s])
+end
+
+local entityresolve    = P("%") * (wrdtypename/weirdresolve ) * P(";")
+                       + P("&") * (wrdtypename/normalresolve) * P(";")
+
+entitydoctype          = entitydoctype + entityresolve
 
 -- we accept comments in doctypes
 
-local doctypeset       = beginset * optionalspace * P(elementdoctype + entitydoctype + basiccomment + space)^0 * optionalspace * endset
+local doctypeset       = beginset * optionalspace * P(elementdoctype + entitydoctype + entityresolve + basiccomment + space)^0 * optionalspace * endset
 local definitiondoctype= doctypename * somespace * doctypeset
 local publicdoctype    = doctypename * somespace * P("PUBLIC") * somespace * value * somespace * value * somespace * doctypeset
 local systemdoctype    = doctypename * somespace * P("SYSTEM") * somespace * value * somespace * doctypeset
@@ -724,13 +824,11 @@ local comment          = (spacing * begincomment     * somecomment     * endcomm
 local cdata            = (spacing * begincdata       * somecdata       * endcdata      ) / function(...) add_special("@cd@",...) end
 local doctype          = (spacing * begindoctype     * somedoctype     * enddoctype    ) / function(...) add_special("@dt@",...) end
 
--- local text_unparsed    = C((1-open)^1)
--- local text_parsed      = Cs(((1-open-ampersand)^1 + entity)^1)
-
 local crap_parsed     = 1 - beginelement - endelement - emptyelement - begininstruction - begincomment - begincdata - ampersand
 local crap_unparsed   = 1 - beginelement - endelement - emptyelement - begininstruction - begincomment - begincdata
-local parsedcrap      = Cs((crap_parsed^1 + entity)^1) / handle_crap_error
-local unparsedcrap    = Cs((crap_unparsed         )^1) / handle_crap_error
+local parsedcrap      = Cs((crap_parsed^1 + entity_text)^1) / handle_crap_error
+local parsedcrap      = Cs((crap_parsed^1 + entity_text)^1) / handle_crap_error
+local unparsedcrap    = Cs((crap_unparsed              )^1) / handle_crap_error
 
 --  nicer but slower:
 --
@@ -745,8 +843,18 @@ local trailer = space^0 * (text_unparsed/set_message)^0
 --  text + comment + emptyelement + cdata + instruction + V("parent"), -- 5.8
 --  text + V("parent") + emptyelement + comment + cdata + instruction, -- 5.5
 
-local grammar_parsed_text = P { "preamble",
-    preamble = utfbom^0 * instruction^0 * (doctype + comment + instruction)^0 * V("parent") * trailer,
+-- local grammar_parsed_text = P { "preamble",
+--     preamble = utfbom^0 * instruction^0 * (doctype + comment + instruction)^0 * V("parent") * trailer,
+--     parent   = beginelement * V("children")^0 * endelement,
+--     children = parsedtext + V("parent") + emptyelement + comment + cdata + instruction + parsedcrap,
+-- }
+
+grammar_parsed_text_one = P { "preamble",
+    preamble = utfbom^0 * instruction^0 * (doctype + comment + instruction)^0,
+}
+
+grammar_parsed_text_two = P { "followup",
+    followup = V("parent") * trailer,
     parent   = beginelement * V("children")^0 * endelement,
     children = parsedtext + V("parent") + emptyelement + comment + cdata + instruction + parsedcrap,
 }
@@ -764,22 +872,24 @@ local function _xmlconvert_(data, settings)
     --
     strip              = settings.strip_cm_and_dt
     utfize             = settings.utfize_entities
-    resolve            = settings.resolve_entities
+    resolve            = settings.resolve_entities            -- enable this in order to apply the dtd
     resolve_predefined = settings.resolve_predefined_entities -- in case we have escaped entities
-    unify_predefined   = settings.unify_predefined_entities -- &#038; -> &amp;
+    unify_predefined   = settings.unify_predefined_entities   -- &#038; -> &amp;
     cleanup            = settings.text_cleanup
     entities           = settings.entities or { }
+    parameters         = { }
     --
     if utfize == nil then
         settings.utfize_entities = true
         utfize = true
     end
+    --
     if resolve_predefined == nil then
         settings.resolve_predefined_entities = true
         resolve_predefined = true
     end
     --
-    stack, top, at, xmlns, errorstr = { }, { }, { }, { }, nil
+    stack, level, top, at, xmlns, errorstr = { }, 0, { }, { }, { }, nil
     acache, hcache, dcache = { }, { }, { } -- not stored
     reported_attribute_errors = { }
     if settings.parent_root then
@@ -787,13 +897,20 @@ local function _xmlconvert_(data, settings)
     else
         initialize_mt(top)
     end
-    stack[#stack+1] = top
+    level = level + 1
+    stack[level] = top
     top.dt = { }
     dt = top.dt
+    nt = 0
     if not data or data == "" then
         errorstr = "empty xml file"
     elseif utfize or resolve then
-        if lpegmatch(grammar_parsed_text,data) then
+        local m = lpegmatch(grammar_parsed_text_one,data)
+        if m then
+            m = lpegmatch(grammar_parsed_text_two,data,m)
+        end
+     -- local m = lpegmatch(grammar_parsed_text,data)
+        if m then
          -- errorstr = "" can be set!
         else
             errorstr = "invalid xml file - parsed text"
@@ -810,8 +927,8 @@ local function _xmlconvert_(data, settings)
     local result
     if errorstr and errorstr ~= "" then
         result = { dt = { { ns = "", tg = "error", dt = { errorstr }, at={ }, er = true } } }
-setmetatable(result, mt)
-setmetatable(result.dt[1], mt)
+        setmetatable(result, mt)
+        setmetatable(result.dt[1], mt)
         setmetatable(stack, mt)
         local errorhandler = settings.error_handler
         if errorhandler == false then
@@ -851,14 +968,15 @@ setmetatable(result.dt[1], mt)
     result.statistics = {
         errormessage = errorstr,
         entities = {
-            decimals     = dcache,
-            hexadecimals = hcache,
-            names        = acache,
+            decimals      = dcache,
+            hexadecimals  = hcache,
+            names         = acache,
+            intermediates = parameters,
         }
     }
     strip, utfize, resolve, resolve_predefined = nil, nil, nil, nil
-    unify_predefined, cleanup, entities = nil, nil, nil
-    stack, top, at, xmlns, errorstr = nil, nil, nil, nil, nil
+    unify_predefined, cleanup, entities, parameters = nil, nil, nil, nil
+    stack, level, top, at, xmlns, errorstr = nil, 0, nil, nil, nil, nil
     acache, hcache, dcache = nil, nil, nil
     reported_attribute_errors, mt, errorhandler = nil, nil, nil
     return result
@@ -1097,7 +1215,7 @@ local function verbose_cdata(e,handlers)
 end
 
 local function verbose_doctype(e,handlers)
-    handlers.handle("<!DOCTYPE ",e.dt[1],">")
+    handlers.handle("<!DOCTYPE",e.dt[1],">") -- has space at end of string
 end
 
 local function verbose_root(e,handlers)

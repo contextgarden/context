@@ -10,6 +10,7 @@ local type, next, tonumber =  type, next, tonumber
 local byte, format = string.byte, string.format
 local utfchar = utf.char
 local lpegmatch = lpeg.match
+local setmetatableindex = table.setmetatableindex
 
 --[[ldx--
 <p>We provide (at least here) two entity handlers. The more extensive
@@ -41,17 +42,25 @@ end
 
 if characters and characters.entities then
 
+    -- the big entity table also has amp, quot, apos, lt, gt in them
+
+    local loaded = false
+
     function characters.registerentities(forcecopy)
+        if loaded then
+            return
+        end
         if forcecopy then
-            table.setmetatableindex(entities,nil)
+            setmetatableindex(entities,nil)
             for name, value in next, characters.entities do
                 if not entities[name] then
                     entities[name] = value
                 end
             end
         else
-            table.setmetatableindex(entities,characters.entities)
+            setmetatableindex(entities,characters.entities)
         end
+        loaded = true
     end
 
 end

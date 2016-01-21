@@ -17,15 +17,21 @@ if not modules then modules = { } end modules ['lang-rep'] = {
 
 local type, tonumber = type, tonumber
 local utfbyte, utfsplit = utf.byte, utf.split
-local P, C, U, Cc, Ct, lpegmatch = lpeg.P, lpeg.C, lpeg.patterns.utf8character, lpeg.Cc, lpeg.Ct, lpeg.match
+local P, C, U, Cc, Ct, Cs, lpegmatch = lpeg.P, lpeg.C, lpeg.patterns.utf8character, lpeg.Cc, lpeg.Ct, lpeg.Cs, lpeg.match
 local find = string.find
 
+local zwnj     =  0x200C
 local grouped  = P("{") * ( Ct((U/utfbyte-P("}"))^1) + Cc(false) ) * P("}")-- grouped
 local splitter = Ct((
-                    Ct(Cc("discretionary") * grouped * grouped * grouped)
-                  + Ct(Cc("noligature")    * grouped)
+                    #P("{") * (
+                        P("{}") / function() return zwnj end
+                      + Ct(Cc("discretionary") * grouped * grouped * grouped)
+                      + Ct(Cc("noligature")    * grouped)
+                    )
                   + U/utfbyte
                 )^1)
+
+local stripper = P("{") * Cs((1-P(-2))^0) * P("}") * P(-1)
 
 local trace_replacements = false  trackers.register("languages.replacements",        function(v) trace_replacements = v end)
 local trace_detail       = false  trackers.register("languages.replacements.detail", function(v) trace_detail       = v end)
@@ -93,6 +99,7 @@ lists[v_reset].attribute = unsetvalue -- so we discard 0
 -- todo: glue kern attr
 
 local function add(root,word,replacement)
+    local replacement = lpegmatch(stripper,replacement) or replacement
     local list = utfsplit(word,true)
     local size = #list
     for i=1,size do
@@ -229,10 +236,16 @@ function replacements.handler(head)
                                 elseif method == "noligature" then
                                     -- not that efficient to copy but ok for testing
                                     local list = codes[2]
-                                    for i=1,#list do
+                                    if list then
+                                        for i=1,#list do
+                                            new = copy_node(last)
+                                            setchar(new,list[i])
+                                            setattr(new,a_noligature,1)
+                                            head, current = insert_after(head,current,new)
+                                        end
+                                    else
                                         new = copy_node(last)
-                                        setchar(new,list[i])
-                                        setattr(new,a_noligature,1)
+                                        setchar(new,zwnj)
                                         head, current = insert_after(head,current,new)
                                     end
                                 else
@@ -247,9 +260,13 @@ function replacements.handler(head)
                         end
                         flush_list(list)
                     elseif oldlength == newlength then -- #old == #new
-                        for i=1,newlength do
-                            setchar(current,newcodes[i])
-                            current = getnext(current)
+                        if final.word == final.replacement then
+                            -- nothing to do but skip
+                        else
+                            for i=1,newlength do
+                                setchar(current,newcodes[i])
+                                current = getnext(current)
+                            end
                         end
                     elseif oldlength < newlength then -- #old < #new
                         for i=1,newlength-oldlength do

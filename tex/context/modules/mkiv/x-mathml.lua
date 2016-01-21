@@ -62,7 +62,7 @@ local ctx_right                = context.right
 
 -- todo: handle opening/closing mo's here ... presentation mml is such a mess ...
 
-characters.registerentities()
+-- characters.registerentities()
 
 local doublebar = utfchar(0x2016)
 

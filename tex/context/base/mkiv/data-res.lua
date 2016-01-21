@@ -1558,11 +1558,21 @@ local function findfiles(filename,filetype,allresults)
 end
 
 function resolvers.findfiles(filename,filetype)
-    return findfiles(filename,filetype,true)
+    if not filename or filename == "" then
+        -- weird ... why called then
+        return ""
+    else
+        return findfiles(filename,filetype,true)
+    end
 end
 
 function resolvers.findfile(filename,filetype)
-    return findfiles(filename,filetype,false)[1] or ""
+    if not filename or filename == "" then
+        -- weird ... why called then
+        return ""
+    else
+        return findfiles(filename,filetype,false)[1] or ""
+    end
 end
 
 function resolvers.findpath(filename,filetype)

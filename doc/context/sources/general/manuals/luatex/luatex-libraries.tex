@@ -176,15 +176,16 @@ Like \type {find_font_file}, but for subfont definition files.
 
 \subsubsection{\type {find_pk_file}}
 
-Like \type {find_font_file}, but for pk bitmap files. The argument \type
-{asked_name} is a bit special in this case. Its form is
+Like \type {find_font_file}, but for pk bitmap files. This callback takes two
+arguments: \type {name} and \type {dpi}. In your callback you can decide to
+look for:
 
 \starttyping
 <base res>dpi/<fontname>.<actual res>pk
 \stoptyping
 
-So you may be asked for \type {600dpi/manfnt.720pk}. It is up to you to find a
-\quote {reasonable} bitmap file to go with that specification.
+but other strategies are possible. It is up to you to find a \quote {reasonable}
+bitmap file to go with that specification.
 
 \subsubsection{\type {find_data_file}}
 
@@ -4379,7 +4380,8 @@ the maximum is~9.
 
 \subsection{\type {pdf.setdecimaldigits} and \type {pdf.getdecimaldigits}}
 
-These two functions set the accuracy of floats written to the \PDF file.
+These two functions set the accuracy of floats written to the \PDF file. You can
+set any value but the backend will not go below 3 and above 6.
 
 \subsection{\type {pdf.lastobj}, \type {pdf.lastlink}, \type {pdf.lastannot},
 and \type {pdf.retval}}
@@ -4401,7 +4403,7 @@ pdf.setorigin(tex.sp("1in"),tex.sp("1in"))
 The counterpart of this function returns two values.
 
 \subsection{\type {pdf.setlinkmargin}, \type {pdf.getlinkmargin} \type
-{pdf.setdestmargin}, \type {pdf.getdestmargin}} \type {pdf.setthreadmargin},
+{pdf.setdestmargin}, \type {pdf.getdestmargin} \type {pdf.setthreadmargin},
 \type {pdf.getthreadmargin} \type {pdf.setxformmargin}, \type
 {pdf.getxformmargin}}
 
@@ -6385,7 +6387,7 @@ in the input.
 The creator function can be used as follows:
 
 \starttyping
-local t = token("relax")
+local t = token.create("relax")
 \stoptyping
 
 This gives back a token object that has the properties of the \type {\relax}

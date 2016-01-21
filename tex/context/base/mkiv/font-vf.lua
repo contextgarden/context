@@ -39,18 +39,18 @@ vf.version              = 1.000 -- same as tfm
 --             if trace_defining then
 --                 report_defining("locating vf for %a",name)
 --             end
---             return findbinfile(name,"ovf")
+--             return findbinfile(name,"ovf") or ""
 --         else
 --             if trace_defining then
 --                 report_defining("vf for %a is already taken care of",name)
 --             end
---             return nil -- ""
+--             return ""
 --         end
 --     else
 --         if trace_defining then
 --             report_defining("locating vf for %a",name)
 --         end
---         return findbinfile(name,"ovf")
+--         return findbinfile(name,"ovf") or ""
 --     end
 -- end
 --
