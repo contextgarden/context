@@ -1199,12 +1199,17 @@ end
 
 do
 
-    local f_actual_text_one = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ %s EMC ET"]
-    local f_actual_text_two = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ %s EMC ET"]
-    local f_actual_text     = formatters["/Span <</ActualText %s >> BDC"]
+    local f_actual_text_one   = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ %s EMC ET"]
+    local f_actual_text_one_b = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ "]
+    local f_actual_text_two   = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ %s EMC ET"]
+    local f_actual_text_two_b = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ "]
+    local s_actual_text_e     = " EMC ET"
+    local f_actual_text       = formatters["/Span <</ActualText %s >> BDC"]
 
-    local context           = context
-    local pdfdirect         = nodes.pool.pdfdirect
+    local context   = context
+    local pdfdirect = nodes.pool.pdfdirect
+
+    -- todo: use tounicode from the font mapper
 
     function codeinjections.unicodetoactualtext(unicode,pdfcode)
         if unicode < 0x10000 then
@@ -1212,6 +1217,18 @@ do
         else
             return f_actual_text_two(unicode/1024+0xD800,unicode%1024+0xDC00,pdfcode)
         end
+    end
+
+    function codeinjections.startunicodetoactualtext(unicode)
+        if unicode < 0x10000 then
+            return f_actual_text_one_b(unicode)
+        else
+            return f_actual_text_two_b(unicode/1024+0xD800,unicode%1024+0xDC00)
+        end
+    end
+
+    function codeinjections.stopunicodetoactualtext()
+        return s_actual_text_e
     end
 
     implement {

@@ -233,7 +233,7 @@ local tags = {
 --
 --  local command = formatters["\\xmlprocessbuffer{%s}{%s}{}"](metadata.xmlroot or "main",tag)
 
-local overload_catcodes = false
+local overload_catcodes = true
 
 directives.register("typesetters.processors.overloadcatcodes",function(v)
     -- number | true | false | string

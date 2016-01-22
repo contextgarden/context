@@ -31,6 +31,8 @@
 % todo: { } mandate
 % avoid #
 
+\unexpanded\def\U#1{\Uchar"#1\relax}
+
 \def\ctxlxml                #1{\ctxlua{lxml.#1}}
 
 %def\xmlall               #1#2{\clf_xmlall              {#1}{#2}}
@@ -204,6 +206,8 @@
 
 \let\xmlstartraw\clf_xmlstartraw
 \let\xmlstopraw \clf_xmlstopraw
+\let\xmlstarttex\clf_xmlstarttex
+\let\xmlstoptex \clf_xmlstoptex
 
 % these are expandable! todo: \xmldoifelseattribute
 
@@ -557,6 +561,8 @@
 \stopsetups
 
 \let\xmlapplyselectors\clf_xmlapplyselectors
+
+% \let\xmlcatcodes\notcatcodes
 
 \protect \endinput
 

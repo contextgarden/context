@@ -90,6 +90,7 @@ implement { name = "xmlnamespace",            actions = lxml.namespace,         
 implement { name = "xmlnonspace",             actions = lxml.nonspace,          arguments = { "string", "string" } }
 implement { name = "xmlpos",                  actions = lxml.pos,               arguments = "string" }
 implement { name = "xmlraw",                  actions = lxml.raw,               arguments = { "string", "string" } }
+implement { name = "xmlrawtex",               actions = lxml.rawtex,            arguments = { "string", "string" } }
 implement { name = "xmlregisterns",           actions =  xml.registerns,        arguments = { "string", "string" } }
 implement { name = "xmlremapname",            actions =  xml.remapname,         arguments = { "lxmlid", "string","string","string" } }
 implement { name = "xmlremapnamespace",       actions =  xml.renamespace,       arguments = { "lxmlid", "string", "string" } }
@@ -112,6 +113,8 @@ implement { name = "xmlverbatim",             actions = lxml.verbatim,          
 
 implement { name = "xmlstartraw",             actions = lxml.startraw }
 implement { name = "xmlstopraw",              actions = lxml.stopraw  }
+implement { name = "xmlstarttex",             actions = lxml.starttex }
+implement { name = "xmlstoptex",              actions = lxml.stoptex  }
 
 implement { name = "xmlprependsetup",         actions = lxml.installsetup,      arguments = { 1, "string", "string" } }           -- 2:*
 implement { name = "xmlappendsetup",          actions = lxml.installsetup,      arguments = { 2, "string", "string" } }           -- 2:*

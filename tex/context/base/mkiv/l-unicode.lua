@@ -528,9 +528,10 @@ end
 --     end, pattern
 -- end
 
-function utf.remapper(mapping,option) -- static also returns a pattern
+function utf.remapper(mapping,option,action) -- static also returns a pattern
     local variant = type(mapping)
     if variant == "table" then
+        action = action or mapping
         if option == "dynamic" then
             local pattern = false
             table.setmetatablenewindex(mapping,function(t,k,v) rawset(t,k,v) pattern = false end)
@@ -539,16 +540,16 @@ function utf.remapper(mapping,option) -- static also returns a pattern
                     return ""
                 else
                     if not pattern then
-                        pattern = Cs((tabletopattern(mapping)/mapping + p_utf8char)^0)
+                        pattern = Cs((tabletopattern(mapping)/action + p_utf8char)^0)
                     end
                     return lpegmatch(pattern,str)
                 end
             end
         elseif option == "pattern" then
-            return Cs((tabletopattern(mapping)/mapping + p_utf8char)^0)
+            return Cs((tabletopattern(mapping)/action + p_utf8char)^0)
      -- elseif option == "static" then
         else
-            local pattern = Cs((tabletopattern(mapping)/mapping + p_utf8char)^0)
+            local pattern = Cs((tabletopattern(mapping)/action + p_utf8char)^0)
             return function(str)
                 if not str or str == "" then
                     return ""

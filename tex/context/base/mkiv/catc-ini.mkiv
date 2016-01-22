@@ -224,34 +224,36 @@
 
 \def\reinstatecatcodecommand{\afterassignment\syst_catcodes_reinstate_normal\c_syst_catcodes_b}
 
-% \def\syst_catcodes_reinstate_normal % can be used when a direct definition has been done
-%   {\begingroup                      % and the selector has been lost
-%    \uccode\c_syst_catcodes_hack\c_syst_catcodes_b
-%    \catcode\uccode\c_syst_catcodes_hack\activecatcode
-%    \uppercase{\xdef~{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}}%
-%    \endgroup}
+\def\syst_catcodes_reinstate_normal % can be used when a direct definition has been done
+  {\begingroup                      % and the selector has been lost
+   \uccode\c_syst_catcodes_hack\c_syst_catcodes_b
+   \catcode\uccode\c_syst_catcodes_hack\activecatcode
+   \uppercase{\xdef~{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}}%
+   \endgroup}
 
-% \def\syst_catcodes_reinstate_unexpanded % can be used when a direct definition has been done
-%   {\begingroup                          % and the selector has been lost
-%    \uccode\c_syst_catcodes_hack\c_syst_catcodes_b
-%    \catcode\uccode\c_syst_catcodes_hack\activecatcode
-%    \uppercase{\normalprotected\xdef~{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}}%
-%    \endgroup}
+\def\syst_catcodes_reinstate_unexpanded % can be used when a direct definition has been done
+  {\begingroup                          % and the selector has been lost
+   \uccode\c_syst_catcodes_hack\c_syst_catcodes_b
+   \catcode\uccode\c_syst_catcodes_hack\activecatcode
+   \uppercase{\normalprotected\xdef~{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}}%
+   \endgroup}
 
 %D This can be used when a direct definition has been done and the selector has been
 %D lost.
 
-\def\syst_catcodes_reinstate_normal
-  {\begingroup
-   \edef\next{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
-   \global\letcharcode\c_syst_catcodes_b\next
-   \endgroup}
-
-\def\syst_catcodes_reinstate_unexpanded
-  {\begingroup
-   \normalprotected\edef\next{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
-   \global\letcharcode\c_syst_catcodes_b\next
-   \endgroup}
+% problem: \next needs to be unique (as it gets bound)
+%
+% \def\syst_catcodes_reinstate_normal
+%   {\begingroup
+%    \edef\next{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+%    \global\letcharcode\c_syst_catcodes_b\next
+%    \endgroup}
+%
+% \def\syst_catcodes_reinstate_unexpanded
+%   {\begingroup
+%    \normalprotected\edef\next{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+%    \global\letcharcode\c_syst_catcodes_b\next
+%    \endgroup}
 
 \newconstant\defaultcatcodetable
 

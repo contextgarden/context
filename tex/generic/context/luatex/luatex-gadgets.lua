@@ -73,3 +73,32 @@ function marking.remove(str)
         end
     end
 end
+
+-- local imgscan = img.scan
+--
+-- local valid = {
+--     ["png"] = "^" .. string.char(0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A),
+--     ["jpg"] = "^" .. string.char(0xFF,0xD8,0xFF),
+--     ["jp2"] = "^" .. string.char(0x00,0x00,0x00,0x0C,0x6A,0x50,0x20,0x20,0x0D,0x0A),
+--     ["pdf"] = "^" .. ".-%%PDF",
+-- }
+--
+-- function img.scan(t)
+--     if t and t.filename then
+--         local f = io.open(t.filename,"rb")
+--         if f then
+--             local d = f:read(4096)
+--             for k, v in next,valid do
+--                 if string.find(d,v) then
+--                     f:close() -- be nice
+--                     return imgscan(t)
+--                 end
+--             end
+--             f:close() -- be nice
+--         end
+--     end
+-- end
+--
+-- print(img.scan({filename = "hacker1b.tif"}))
+-- print(img.scan({filename = "cow.pdf"}))
+-- print(img.scan({filename = "mill.png"}))

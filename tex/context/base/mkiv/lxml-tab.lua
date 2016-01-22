@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['lxml-tab'] = {
 -- maybe when letter -> utf, else name .. then we need an option to the serializer .. a bit
 -- of work so we delay this till we cleanup
 
-local trace_entities = false  trackers.register("xml.entities", function(v) trace_entities = v end)
+local trace_entities = false  trackers  .register("xml.entities",    function(v) trace_entities = v end)
 
 local report_xml = logs and logs.reporter("xml","core") or function(...) print(string.format(...)) end
 
@@ -158,28 +158,67 @@ element.</p>
 
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
-local stack              = { }
-local level              = 0
-local top                = { }
-local dt                 = { }
-local nt                 = 0   -- some 5% faster than #dt on cont-en.xml
-local at                 = { }
-local xmlns              = { }
-local errorstr           = nil
-local entities           = { }
-local parameters         = { }
-local strip              = false
-local cleanup            = false
-local utfize             = false
-local resolve            = false
-local resolve_predefined = false
-local unify_predefined   = false
+local stack, level, top, at, xmlnms, errorstr
+local entities, parameters
+local strip, utfize, resolve, cleanup, resolve_predefined, unify_predefined
+local dcache, hcache, acache
+local mt, dt, nt
 
-local dcache             = { }
-local hcache             = { }
-local acache             = { }
-
-local mt                 = { }
+local function preparexmlstate(settings)
+    if settings then
+        stack              = { }
+        level              = 0
+        top                = { }
+        at                 = { }
+        mt                 = { }
+        dt                 = { }
+        nt                 = 0   -- some 5% faster than #dt on cont-en.xml
+        xmlns              = { }
+        errorstr           = nil
+        strip              = settings.strip_cm_and_dt
+        utfize             = settings.utfize_entities
+        resolve            = settings.resolve_entities            -- enable this in order to apply the dtd
+        resolve_predefined = settings.resolve_predefined_entities -- in case we have escaped entities
+        unify_predefined   = settings.unify_predefined_entities   -- &#038; -> &amp;
+        cleanup            = settings.text_cleanup
+        entities           = settings.entities or { }
+        parameters         = { }
+        reported_at_errors = { }
+        dcache             = { }
+        hcache             = { }
+        acache             = { }
+        if utfize == nil then
+            settings.utfize_entities = true
+            utfize = true
+        end
+        if resolve_predefined == nil then
+            settings.resolve_predefined_entities = true
+            resolve_predefined = true
+        end
+    else
+        stack              = nil
+        level              = nil
+        top                = nil
+        at                 = nil
+        mt                 = nil
+        dt                 = nil
+        nt                 = nil
+        xmlns              = nil
+        errorstr           = nil
+        strip              = nil
+        utfize             = nil
+        resolve            = nil
+        resolve_predefined = nil
+        unify_predefined   = nil
+        cleanup            = nil
+        entities           = nil
+        parameters         = nil
+        reported_at_errors = nil
+        dcache             = nil
+        hcache             = nil
+        acache             = nil
+    end
+end
 
 local function initialize_mt(root)
     mt = { __index = root } -- will be redefined later
@@ -326,343 +365,436 @@ local function set_message(txt)
     errorstr = "garbage at the end of the file: " .. gsub(txt,"([ \n\r\t]*)","")
 end
 
-local reported_attribute_errors = { }
-
 local function attribute_value_error(str)
-    if not reported_attribute_errors[str] then
+    if not reported_at_errors[str] then
         report_xml("invalid attribute value %a",str)
-        reported_attribute_errors[str] = true
+        reported_at_errors[str] = true
         at._error_ = str
     end
     return str
 end
 
 local function attribute_specification_error(str)
-    if not reported_attribute_errors[str] then
+    if not reported_at_errors[str] then
         report_xml("invalid attribute specification %a",str)
-        reported_attribute_errors[str] = true
+        reported_at_errors[str] = true
         at._error_ = str
     end
     return str
 end
 
-local badentity = "&error;"
-local badentity = "&"
-
-xml.placeholders = {
-    unknown_dec_entity = function(str) return str == "" and badentity or formatters["&%s;"](str) end,
-    unknown_hex_entity = function(str) return formatters["&#x%s;"](str) end,
-    unknown_any_entity = function(str) return formatters["&#x%s;"](str) end,
-}
-
-local placeholders = xml.placeholders
-
-local function fromhex(s)
-    local n = tonumber(s,16)
-    if n then
-        return utfchar(n)
-    else
-        return formatters["h:%s"](s), true
-    end
-end
-
-local function fromdec(s)
-    local n = tonumber(s)
-    if n then
-        return utfchar(n)
-    else
-        return formatters["d:%s"](s), true
-    end
-end
-
--- one level expansion (simple case), no checking done
-
-local p_rest = (1-P(";"))^0
-local p_many = P(1)^0
-local p_char = lpegpatterns.utf8character
-
--- local parsedentity =
---     P("&") * (P("#x")*(p_rest/fromhex) + P("#")*(p_rest/fromdec)) * P(";") * P(-1) +
---              (P("#x")*(p_many/fromhex) + P("#")*(p_many/fromdec))
-
-local parsedentity =
-    P("&#") * (P("x")*(p_rest/fromhex) + (p_rest/fromdec)) * P(";") * P(-1) +
-    P ("#") * (P("x")*(p_many/fromhex) + (p_many/fromdec))
-
-local parsedentity_text = parsedentity
-
--- parsing in the xml file
-
-local predefined_unified = {
-    [38] = "&amp;",
-    [42] = "&quot;",
-    [47] = "&apos;",
-    [74] = "&lt;",
-    [76] = "&gt;",
-}
-
-local predefined_simplified = {
-    [38] = "&", amp  = "&",
-    [42] = '"', quot = '"',
-    [47] = "'", apos = "'",
-    [74] = "<", lt   = "<",
-    [76] = ">", gt   = ">",
-}
-
-local nofprivates = 0xF0000 -- shared but seldom used
-
-local privates_u = { -- unescaped
-    [ [[&]] ] = "&amp;",
-    [ [["]] ] = "&quot;",
-    [ [[']] ] = "&apos;",
-    [ [[<]] ] = "&lt;",
-    [ [[>]] ] = "&gt;",
-}
-
-local privates_p = {
-}
-
-local privates_n = {
-    -- keeps track of defined ones
-}
-
-local escaped      = utf.remapper(privates_u,"dynamic")
-local unprivatized = utf.remapper(privates_p,"dynamic")
-
-xml.unprivatized = unprivatized
-
-local function unescaped(s)
-    local p = privates_n[s]
-    if not p then
-        nofprivates = nofprivates + 1
-        p = utfchar(nofprivates)
-        privates_n[s] = p
-        s = "&" .. s .. ";" -- todo: use char-ent to map to hex
-        privates_u[p] = s
-        privates_p[p] = s
-    end
-    return p
-end
-
-xml.privatetoken = unescaped
-xml.privatecodes = privates_n
-
-local function handle_hex_entity(str)
-    local h = hcache[str]
-    if not h then
-        local n = tonumber(str,16)
-        h = unify_predefined and predefined_unified[n]
-        if h then
-            if trace_entities then
-                report_xml("utfize, converting hex entity &#x%s; into %a",str,h)
-            end
-        elseif utfize then
-            h = (n and utfchar(n)) or xml.unknown_hex_entity(str) or ""
-            if not n then
-                report_xml("utfize, ignoring hex entity &#x%s;",str)
-            elseif trace_entities then
-                report_xml("utfize, converting hex entity &#x%s; into %a",str,h)
-            end
-        else
-            if trace_entities then
-                report_xml("found entity &#x%s;",str)
-            end
-            h = "&#x" .. str .. ";"
-        end
-        hcache[str] = h
-    end
-    return h
-end
-
-local function handle_dec_entity(str)
-    local d = dcache[str]
-    if not d then
-        local n = tonumber(str)
-        d = unify_predefined and predefined_unified[n]
-        if d then
-            if trace_entities then
-                report_xml("utfize, converting dec entity &#%s; into %a",str,d)
-            end
-        elseif utfize then
-            d = (n and utfchar(n)) or placeholders.unknown_dec_entity(str) or ""
-            if not n then
-                report_xml("utfize, ignoring dec entity &#%s;",str)
-            elseif trace_entities then
-                report_xml("utfize, converting dec entity &#%s; into %a",str,d)
-            end
-        else
-            if trace_entities then
-                report_xml("found entity &#%s;",str)
-            end
-            d = "&#" .. str .. ";"
-        end
-        dcache[str] = d
-    end
-    return d
-end
-
-xml.parsedentitylpeg = parsedentity
+-- these will be set later
 
 local grammar_parsed_text_one
 local grammar_parsed_text_two
 
-local function handle_any_entity_dtd(str)
-    if resolve then
-        local a = resolve_predefined and predefined_simplified[str] -- true by default
-        if a then
-            if trace_entities then
-                report_xml("resolving entity &%s; to predefined %a",str,a)
-            end
+local handle_hex_entity
+local handle_dec_entity
+local handle_any_entity_dtd
+local handle_any_entity_text
+
+-- in order to overcome lua limitations we wrap entity stuff in a
+-- closure
+
+do
+
+    local badentity = "&error;"
+    local badentity = "&"
+
+    xml.placeholders = {
+        unknown_dec_entity = function(str) return str == "" and badentity or formatters["&%s;"](str) end,
+        unknown_hex_entity = function(str) return formatters["&#x%s;"](str) end,
+        unknown_any_entity = function(str) return formatters["&#x%s;"](str) end,
+    }
+
+    local function fromhex(s)
+        local n = tonumber(s,16)
+        if n then
+            return utfchar(n)
         else
-            if type(resolve) == "function" then
-                a = resolve(str,entities) or entities[str]
-            else
-                a = entities[str]
-            end
-            if a then
-                if type(a) == "function" then
-                    if trace_entities then
-                        report_xml("expanding entity &%s; to function call",str)
-                    end
-                    a = a(str) or ""
-                end
-                a = lpegmatch(parsedentity,a) or a -- for nested
+            return formatters["h:%s"](s), true
+        end
+    end
+
+    local function fromdec(s)
+        local n = tonumber(s)
+        if n then
+            return utfchar(n)
+        else
+            return formatters["d:%s"](s), true
+        end
+    end
+
+    local p_rest = (1-P(";"))^0
+    local p_many = P(1)^0
+    local p_char = lpegpatterns.utf8character
+
+    local parsedentity =
+        P("&#") * (P("x")*(p_rest/fromhex) + (p_rest/fromdec)) * P(";") * P(-1) +
+        P ("#") * (P("x")*(p_many/fromhex) + (p_many/fromdec))
+
+    xml.parsedentitylpeg = parsedentity
+
+    -- parsing in the xml file
+
+    local predefined_unified = {
+        [38] = "&amp;",
+        [42] = "&quot;",
+        [47] = "&apos;",
+        [74] = "&lt;",
+        [76] = "&gt;",
+    }
+
+    local predefined_simplified = {
+        [38] = "&", amp  = "&",
+        [42] = '"', quot = '"',
+        [47] = "'", apos = "'",
+        [74] = "<", lt   = "<",
+        [76] = ">", gt   = ">",
+    }
+
+    local nofprivates = 0xF0000 -- shared but seldom used
+
+    local privates_u = { -- unescaped
+        [ [[&]] ] = "&amp;",
+        [ [["]] ] = "&quot;",
+        [ [[']] ] = "&apos;",
+        [ [[<]] ] = "&lt;",
+        [ [[>]] ] = "&gt;",
+    }
+
+    local privates_p = {
+        -- needed for roundtrip as well as serialize to tex
+    }
+
+    local privates_s = {
+        [ [["]] ] = "&U+22;",
+        [ [[#]] ] = "&U+23;",
+        [ [[$]] ] = "&U+24;",
+        [ [[%]] ] = "&U+25;",
+        [ [[&]] ] = "&U+26;",
+        [ [[']] ] = "&U+27;",
+        [ [[<]] ] = "&U+3C;",
+        [ [[>]] ] = "&U+3E;",
+        [ [[\]] ] = "&U+5C;",
+        [ [[{]] ] = "&U+7B;",
+        [ [[|]] ] = "&U+7C;",
+        [ [[}]] ] = "&U+7D;",
+        [ [[~]] ] = "&U+7E;",
+    }
+
+    local privates_n = {
+        -- keeps track of defined ones
+    }
+
+    local escaped       = utf.remapper(privates_u,"dynamic")
+    local unprivatized  = utf.remapper(privates_p,"dynamic")
+    local unspecialized = utf.remapper(privates_s,"dynamic")
+
+    xml.unprivatized  = unprivatized
+    xml.unspecialized = unspecialized
+    xml.escaped       = escaped
+
+    local function unescaped(s)
+        local p = privates_n[s]
+        if not p then
+            nofprivates = nofprivates + 1
+            p = utfchar(nofprivates)
+            privates_n[s] = p
+            s = "&" .. s .. ";" -- todo: use char-ent to map to hex
+            privates_u[p] = s
+            privates_p[p] = s
+            privates_s[p] = s
+        end
+        return p
+    end
+
+    xml.privatetoken = unescaped
+    xml.privatecodes = privates_n
+    xml.specialcodes = privates_s
+
+    function xml.addspecialcode(key,value)
+        privates_s[key] = value or "&" .. s .. ";"
+    end
+
+    handle_hex_entity = function(str)
+        local h = hcache[str]
+        if not h then
+            local n = tonumber(str,16)
+            h = unify_predefined and predefined_unified[n]
+            if h then
                 if trace_entities then
-                    report_xml("resolving entity &%s; to internal %a",str,a)
+                    report_xml("utfize, converting hex entity &#x%s; into %a",str,h)
+                end
+            elseif utfize then
+                h = (n and utfchar(n)) or xml.unknown_hex_entity(str) or ""
+                if not n then
+                    report_xml("utfize, ignoring hex entity &#x%s;",str)
+                elseif trace_entities then
+                    report_xml("utfize, converting hex entity &#x%s; into %a",str,h)
                 end
             else
-                local unknown_any_entity = placeholders.unknown_any_entity
-                if unknown_any_entity then
-                    a = unknown_any_entity(str) or ""
+                if trace_entities then
+                    report_xml("found entity &#x%s;",str)
+                end
+                h = "&#x" .. str .. ";"
+            end
+            hcache[str] = h
+        end
+        return h
+    end
+
+    handle_dec_entity = function(str)
+        local d = dcache[str]
+        if not d then
+            local n = tonumber(str)
+            d = unify_predefined and predefined_unified[n]
+            if d then
+                if trace_entities then
+                    report_xml("utfize, converting dec entity &#%s; into %a",str,d)
+                end
+            elseif utfize then
+                d = (n and utfchar(n)) or placeholders.unknown_dec_entity(str) or ""
+                if not n then
+                    report_xml("utfize, ignoring dec entity &#%s;",str)
+                elseif trace_entities then
+                    report_xml("utfize, converting dec entity &#%s; into %a",str,d)
+                end
+            else
+                if trace_entities then
+                    report_xml("found entity &#%s;",str)
+                end
+                d = "&#" .. str .. ";"
+            end
+            dcache[str] = d
+        end
+        return d
+    end
+
+    handle_any_entity_dtd = function(str)
+        if resolve then
+            local a = resolve_predefined and predefined_simplified[str] -- true by default
+            if a then
+                if trace_entities then
+                    report_xml("resolving entity &%s; to predefined %a",str,a)
+                end
+            else
+                if type(resolve) == "function" then
+                    a = resolve(str,entities) or entities[str]
+                else
+                    a = entities[str]
                 end
                 if a then
-                    if trace_entities then
-                        report_xml("resolving entity &%s; to external %s",str,a)
+                    if type(a) == "function" then
+                        if trace_entities then
+                            report_xml("expanding entity &%s; to function call",str)
+                        end
+                        a = a(str) or ""
                     end
-                else
-                    if trace_entities then
-                        report_xml("keeping entity &%s;",str)
-                    end
-                    if str == "" then
-                        a = badentity
-                    else
-                        a = "&" .. str .. ";"
-                    end
-                end
-            end
-        end
-        return a
-    else
-        local a = acache[str]
-        if not a then
-            a = resolve_predefined and predefined_simplified[str]
-            if a then
-                -- one of the predefined
-                acache[str] = a
-                if trace_entities then
-                    report_xml("entity &%s; becomes %a",str,a)
-                end
-            elseif str == "" then
-                if trace_entities then
-                    report_xml("invalid entity &%s;",str)
-                end
-                a = badentity
-                acache[str] = a
-            else
-                if trace_entities then
-                    report_xml("entity &%s; is made private",str)
-                end
-             -- a = "&" .. str .. ";"
-                a = unescaped(str)
-                acache[str] = a
-            end
-        end
-        return a
-    end
-end
-
-local function handle_any_entity_text(str)
-    if resolve then
-        local a = resolve_predefined and predefined_simplified[str]
-        if a then
-            if trace_entities then
-                report_xml("resolving entity &%s; to predefined %a",str,a)
-            end
-        else
-            if type(resolve) == "function" then
-                a = resolve(str,entities) or entities[str]
-            else
-                a = entities[str]
-            end
-            if a then
-                if type(a) == "function" then
-                    if trace_entities then
-                        report_xml("expanding entity &%s; to function call",str)
-                    end
-                    a = a(str) or ""
-                end
-                a = lpegmatch(grammar_parsed_text_two,a) or a
-                if type(a) == "number" then
-                    return ""
-                else
-                    a = lpegmatch(parsedentity_text,a) or a -- for nested
+                    a = lpegmatch(parsedentity,a) or a -- for nested
                     if trace_entities then
                         report_xml("resolving entity &%s; to internal %a",str,a)
                     end
-                end
-                if trace_entities then
-                    report_xml("resolving entity &%s; to internal %a",str,a)
-                end
-            else
-                local unknown_any_entity = placeholders.unknown_any_entity
-                if unknown_any_entity then
-                    a = unknown_any_entity(str) or ""
-                end
-                if a then
-                    if trace_entities then
-                        report_xml("resolving entity &%s; to external %s",str,a)
+                else
+                    local unknown_any_entity = placeholders.unknown_any_entity
+                    if unknown_any_entity then
+                        a = unknown_any_entity(str) or ""
                     end
+                    if a then
+                        if trace_entities then
+                            report_xml("resolving entity &%s; to external %s",str,a)
+                        end
+                    else
+                        if trace_entities then
+                            report_xml("keeping entity &%s;",str)
+                        end
+                        if str == "" then
+                            a = badentity
+                        else
+                            a = "&" .. str .. ";"
+                        end
+                    end
+                end
+            end
+            return a
+        else
+            local a = acache[str]
+            if not a then
+                a = resolve_predefined and predefined_simplified[str]
+                if a then
+                    -- one of the predefined
+                    acache[str] = a
+                    if trace_entities then
+                        report_xml("entity &%s; becomes %a",str,a)
+                    end
+                elseif str == "" then
+                    if trace_entities then
+                        report_xml("invalid entity &%s;",str)
+                    end
+                    a = badentity
+                    acache[str] = a
                 else
                     if trace_entities then
-                        report_xml("keeping entity &%s;",str)
+                        report_xml("entity &%s; is made private",str)
                     end
-                    if str == "" then
-                        a = badentity
-                    else
-                        a = "&" .. str .. ";"
-                    end
+                 -- a = "&" .. str .. ";"
+                    a = unescaped(str)
+                    acache[str] = a
                 end
             end
+            return a
         end
-        return a
-    else
-        local a = acache[str]
-        if not a then
-            a = resolve_predefined and predefined_simplified[str]
-            if a then
-                -- one of the predefined
-                acache[str] = a
-                if trace_entities then
-                    report_xml("entity &%s; becomes %a",str,a)
-                end
-            elseif str == "" then
-                if trace_entities then
-                    report_xml("invalid entity &%s;",str)
-                end
-                a = badentity
-                acache[str] = a
-            else
-                if trace_entities then
-                    report_xml("entity &%s; is made private",str)
-                end
-             -- a = "&" .. str .. ";"
-                a = unescaped(str)
-                acache[str] = a
-            end
-        end
-        return a
     end
+
+    handle_any_entity_text = function(str)
+        if resolve then
+            local a = resolve_predefined and predefined_simplified[str]
+            if a then
+                if trace_entities then
+                    report_xml("resolving entity &%s; to predefined %a",str,a)
+                end
+            else
+                if type(resolve) == "function" then
+                    a = resolve(str,entities) or entities[str]
+                else
+                    a = entities[str]
+                end
+                if a then
+                    if type(a) == "function" then
+                        if trace_entities then
+                            report_xml("expanding entity &%s; to function call",str)
+                        end
+                        a = a(str) or ""
+                    end
+                    a = lpegmatch(grammar_parsed_text_two,a) or a
+                    if type(a) == "number" then
+                        return ""
+                    else
+                        a = lpegmatch(parsedentity,a) or a -- for nested
+                        if trace_entities then
+                            report_xml("resolving entity &%s; to internal %a",str,a)
+                        end
+                    end
+                    if trace_entities then
+                        report_xml("resolving entity &%s; to internal %a",str,a)
+                    end
+                else
+                    local unknown_any_entity = placeholders.unknown_any_entity
+                    if unknown_any_entity then
+                        a = unknown_any_entity(str) or ""
+                    end
+                    if a then
+                        if trace_entities then
+                            report_xml("resolving entity &%s; to external %s",str,a)
+                        end
+                    else
+                        if trace_entities then
+                            report_xml("keeping entity &%s;",str)
+                        end
+                        if str == "" then
+                            a = badentity
+                        else
+                            a = "&" .. str .. ";"
+                        end
+                    end
+                end
+            end
+            return a
+        else
+            local a = acache[str]
+            if not a then
+                a = resolve_predefined and predefined_simplified[str]
+                if a then
+                    -- one of the predefined
+                    acache[str] = a
+                    if trace_entities then
+                        report_xml("entity &%s; becomes %a",str,a)
+                    end
+                elseif str == "" then
+                    if trace_entities then
+                        report_xml("invalid entity &%s;",str)
+                    end
+                    a = badentity
+                    acache[str] = a
+                else
+                    if trace_entities then
+                        report_xml("entity &%s; is made private",str)
+                    end
+                 -- a = "&" .. str .. ";"
+                    a = unescaped(str)
+                    acache[str] = a
+                end
+            end
+            return a
+        end
+    end
+
+    -- for tex
+
+    local p_rest = (1-P(";"))^1
+
+    local spec = {
+        [0x23] = "\\U{23}", -- "\\char35 ",  "\\letterhash ",
+        [0x24] = "\\U{24}", -- "\\char36 ",  "\\letterdollar ",
+        [0x25] = "\\U{25}", -- "\\char37 ",  "\\letterpercent ",
+        [0x5C] = "\\U{5C}", -- "\\char92 ",  "\\letterbackslash ",
+        [0x7B] = "\\U{7B}", -- "\\char123 ", "\\letterleftbrace ",
+        [0x7C] = "\\U{7C}", -- "\\char124 ", "\\letterbar ",
+        [0x7D] = "\\U{7D}", -- "\\char125 ", "\\letterrightbrace ",
+        [0x7E] = "\\U{7E}", -- "\\char126 ", "\\lettertilde ",
+    }
+
+    local hash = table.setmetatableindex(spec,function(t,k)
+        local v = utfchar(k)
+        t[k] = v
+        return v
+    end)
+
+    local function fromuni(s)
+        local n = tonumber(s,16)
+        if n then
+            return hash[n]
+        else
+            return formatters["u:%s"](s), true
+        end
+    end
+
+    local function fromhex(s)
+        local n = tonumber(s,16)
+        if n then
+            return hash[n]
+        else
+            return formatters["h:%s"](s), true
+        end
+    end
+
+    local function fromdec(s)
+        local n = tonumber(s)
+        if n then
+            return hash[n]
+        else
+            return formatters["d:%s"](s), true
+        end
+    end
+
+    local reparsedentity =
+        P("U+") * (p_rest/fromuni)
+      + P("#")  * (
+            P("x") * (p_rest/fromhex)
+          + p_rest/fromdec
+        )
+
+    xml.reparsedentitylpeg = reparsedentity
+
 end
+
+-- we use these later on
+
+local escaped      = xml.escaped
+local unescaped    = xml.unescaped
+local placeholders = xml.placeholders
+
+--
 
 local function handle_end_entity(str)
     report_xml("error in entity, %a found without ending %a",str,";")
@@ -868,30 +1000,8 @@ local grammar_unparsed_text = P { "preamble",
 -- maybe we will add settings to result as well
 
 local function _xmlconvert_(data, settings)
-    settings           = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
-    --
-    strip              = settings.strip_cm_and_dt
-    utfize             = settings.utfize_entities
-    resolve            = settings.resolve_entities            -- enable this in order to apply the dtd
-    resolve_predefined = settings.resolve_predefined_entities -- in case we have escaped entities
-    unify_predefined   = settings.unify_predefined_entities   -- &#038; -> &amp;
-    cleanup            = settings.text_cleanup
-    entities           = settings.entities or { }
-    parameters         = { }
-    --
-    if utfize == nil then
-        settings.utfize_entities = true
-        utfize = true
-    end
-    --
-    if resolve_predefined == nil then
-        settings.resolve_predefined_entities = true
-        resolve_predefined = true
-    end
-    --
-    stack, level, top, at, xmlns, errorstr = { }, 0, { }, { }, { }, nil
-    acache, hcache, dcache = { }, { }, { } -- not stored
-    reported_attribute_errors = { }
+    settings = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
+    preparexmlstate(settings)
     if settings.parent_root then
         mt = getmetatable(settings.parent_root)
     else
@@ -974,11 +1084,7 @@ local function _xmlconvert_(data, settings)
             intermediates = parameters,
         }
     }
-    strip, utfize, resolve, resolve_predefined = nil, nil, nil, nil
-    unify_predefined, cleanup, entities, parameters = nil, nil, nil, nil
-    stack, level, top, at, xmlns, errorstr = nil, 0, nil, nil, nil, nil
-    acache, hcache, dcache = nil, nil, nil
-    reported_attribute_errors, mt, errorhandler = nil, nil, nil
+    preparexmlstate() -- resets
     return result
 end
 
