@@ -11,7 +11,7 @@ local setargument = environment.setargument
 local givenfiles  = environment.files
 
 local otfversion  = 2.819
-local otlversion  = 3.012
+local otlversion  = 3.013
 
 local helpinfo = [[
 <?xml version="1.0"?>

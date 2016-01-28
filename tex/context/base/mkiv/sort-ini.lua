@@ -509,10 +509,11 @@ end
 
 local pattern = nil
 
-local function prepare()
+local function prepare() -- todo: test \Ux{hex}
     pattern = Cs( (
         characters.tex.toutfpattern()
       + lpeg.patterns.whitespace / "\000"
+      + (P("\\Ux{") / "" * ((1-P("}"))^1/function(s) return utfchar(tonumber(s,16)) end) * (P("}")/""))
       + (P("\\") / "") * R("AZ")^0 * (P(-1) + #(1-R("AZ")))
       + (P("\\") * P(1) * R("az","AZ")^0) / ""
       + S("[](){}$\"'") / ""

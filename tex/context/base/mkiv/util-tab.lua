@@ -833,5 +833,5 @@ end
 table.serialize = serialize
 
 if setinspector then
-    setinspector("table",function(v) if type(v) == "table" then print(serialize(v,"table")) return true end end)
+    setinspector("table",function(v) if type(v) == "table" then print(serialize(v,"table",{})) return true end end)
 end

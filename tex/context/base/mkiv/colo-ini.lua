@@ -576,10 +576,13 @@ local function mpcolor(model,ca,ta,default)
                 return formatters["(%s,%s,%s)"](cv[3],cv[4],cv[5])
             end
         end
-    else
-        default = default or 0 -- rgb !
-        return formatters["(%s,%s,%s)"](default,default,default)
     end
+    local tv = transparencyvalues[ta]
+    if tv then
+        return formatters["(%s,%s)"](tv[1],tv[2])
+    end
+    default = default or 0 -- rgb !
+    return formatters["(%s,%s,%s)"](default,default,default)
 end
 
 local function mpnamedcolor(name)

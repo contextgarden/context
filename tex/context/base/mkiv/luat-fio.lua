@@ -33,7 +33,7 @@ if not resolvers.instance then
 
     if callback then
 
-        local register = callbacks.register
+        local register  = callbacks.register
 
         local addsuffix = file.addsuffix
         local join      = file.join
@@ -69,10 +69,7 @@ if not resolvers.instance then
             local temp = join(dpi..".dpi",name)
             local okay = findbinfile(temp,"pk")
          -- print(temp,okay)
-            if okay and okay ~= "" then
-                return okay
-            end
-            return ""
+            return okay or ""
         end
 
      -- register('process_jobname'     , function(name) return name end, true)

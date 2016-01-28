@@ -5905,7 +5905,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 28677, stripped down to: 18633
+-- original size: 28680, stripped down to: 18636
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6566,7 +6566,7 @@ local function serialize(root,name,specification)
 end
 table.serialize=serialize
 if setinspector then
-  setinspector("table",function(v) if type(v)=="table" then print(serialize(v,"table")) return true end end)
+  setinspector("table",function(v) if type(v)=="table" then print(serialize(v,"table",{})) return true end end)
 end
 
 
@@ -9985,7 +9985,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 55495, stripped down to: 34901
+-- original size: 55622, stripped down to: 34927
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -10006,6 +10006,7 @@ local utfchar=utf.char
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local P,S,R,C,V,C,Cs=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.V,lpeg.C,lpeg.Cs
 local formatters=string.formatters
+do 
 xml.xmlns=xml.xmlns or {}
 local check=P(false)
 local parse=check
@@ -10021,6 +10022,7 @@ function xml.checkns(namespace,url)
 end
 function xml.resolvens(url)
    return lpegmatch(parse,lower(url)) or ""
+end
 end
 local nsremap,resolvens=xml.xmlns,xml.resolvens
 local stack,level,top,at,xmlnms,errorstr
@@ -10092,6 +10094,7 @@ end
 function xml.checkerror(top,toclose)
   return "" 
 end
+local checkns=xml.checkns
 local function add_attribute(namespace,tag,value)
   if cleanup and value~="" then
     value=cleanup(value) 
@@ -10102,7 +10105,7 @@ local function add_attribute(namespace,tag,value)
   elseif namespace=="" then
     at[tag]=value
   elseif namespace=="xmlns" then
-    xml.checkns(tag,value)
+    checkns(tag,value)
     at["xmlns:"..tag]=value
   else
     at[namespace..":"..tag]=value
@@ -10117,7 +10120,14 @@ local function add_empty(spacing,namespace,tag)
   top=stack[level]
   dt=top.dt
   nt=#dt+1
-  local t={ ns=namespace or "",rn=resolved,tg=tag,at=at,dt={},__p__=top }
+  local t={
+    ns=namespace or "",
+    rn=resolved,
+    tg=tag,
+    at=at,
+    dt={},
+    __p__=top
+  }
   dt[nt]=t
   setmetatable(t,mt)
   if at.xmlns then
@@ -10131,7 +10141,14 @@ local function add_begin(spacing,namespace,tag)
     dt[nt]=spacing
   end
   local resolved=namespace=="" and xmlns[#xmlns] or nsremap[namespace] or namespace
-  top={ ns=namespace or "",rn=resolved,tg=tag,at=at,dt={},__p__=stack[level] }
+  top={
+    ns=namespace or "",
+    rn=resolved,
+    tg=tag,
+    at=at,
+    dt={},
+    __p__=stack[level]
+  }
   setmetatable(top,mt)
   dt=top.dt
   nt=#dt
@@ -10230,8 +10247,7 @@ local handle_dec_entity
 local handle_any_entity_dtd
 local handle_any_entity_text
 do
-  local badentity="&error;"
-  local badentity="&"
+  local badentity="&" 
   xml.placeholders={
     unknown_dec_entity=function(str) return str=="" and badentity or formatters["&%s;"](str) end,
     unknown_hex_entity=function(str) return formatters["&#x%s;"](str) end,
@@ -10280,9 +10296,9 @@ do
     [ [[<]] ]="&lt;",
     [ [[>]] ]="&gt;",
   }
-  local privates_p={
+  local privates_p={ 
   }
-  local privates_s={
+  local privates_s={ 
     [ [["]] ]="&U+22;",
     [ [[#]] ]="&U+23;",
     [ [[$]] ]="&U+24;",
@@ -10297,7 +10313,7 @@ do
     [ [[}]] ]="&U+7D;",
     [ [[~]] ]="&U+7E;",
   }
-  local privates_n={
+  local privates_n={ 
   }
   local escaped=utf.remapper(privates_u,"dynamic")
   local unprivatized=utf.remapper(privates_p,"dynamic")
@@ -10530,14 +10546,14 @@ do
   end
   local p_rest=(1-P(";"))^1
   local spec={
-    [0x23]="\\U{23}",
-    [0x24]="\\U{24}",
-    [0x25]="\\U{25}",
-    [0x5C]="\\U{5C}",
-    [0x7B]="\\U{7B}",
-    [0x7C]="\\U{7C}",
-    [0x7D]="\\U{7D}",
-    [0x7E]="\\U{7E}",
+    [0x23]="\\Ux{23}",
+    [0x24]="\\Ux{24}",
+    [0x25]="\\Ux{25}",
+    [0x5C]="\\Ux{5C}",
+    [0x7B]="\\Ux{7B}",
+    [0x7C]="\\Ux{7C}",
+    [0x7D]="\\Ux{7D}",
+    [0x7E]="\\Ux{7E}",
   }
   local hash=table.setmetatableindex(spec,function(t,k)
     local v=utfchar(k)
@@ -10856,15 +10872,15 @@ function xml.toxml(data)
     return data
   end
 end
-local function copy(old,tables)
+local function copy(old)
   if old then
-    tables=tables or {}
     local new={}
-    if not tables[old] then
-      tables[old]=new
-    end
     for k,v in next,old do
-      new[k]=(type(v)=="table" and (tables[v] or copy(v,tables))) or v
+      if type(v)=="table" then
+        new[k]=table.copy(v)
+      else
+        new[k]=v
+      end
     end
     local mt=getmetatable(old)
     if mt then
@@ -11245,7 +11261,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 50461, stripped down to: 31497
+-- original size: 51229, stripped down to: 31529
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -11622,13 +11638,27 @@ local lp_noequal=P("!=")/"~="+P("<=")+P(">=")+P("==")
 local lp_doequal=P("=")/"=="
 local lp_or=P("|")/" or "
 local lp_and=P("&")/" and "
-local lp_builtin=P (
-    P("text")/"(ll.dt[1] or '')"+
-    P("content")/"ll.dt"+
-    P("name")/"((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)"+P("tag")/"ll.tg"+P("position")/"l"+
-    P("firstindex")/"1"+P("lastindex")/"(#ll.__p__.dt or 1)"+P("firstelement")/"1"+P("lastelement")/"(ll.__p__.en or 1)"+P("first")/"1"+P("last")/"#list"+P("rootposition")/"order"+P("order")/"order"+P("element")/"(ll.ei or 1)"+P("index")/"(ll.ni or 1)"+P("match")/"(ll.mi or 1)"+
-    P("ns")/"ll.ns"
-  )*((spaces*P("(")*spaces*P(")"))/"")
+local builtin={
+  text="(ll.dt[1] or '')",
+  content="ll.dt",
+  name="((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)",
+  tag="ll.tg",
+  position="l",
+  firstindex="1",
+  firstelement="1",
+  first="1",
+  lastindex="(#ll.__p__.dt or 1)",
+  lastelement="(ll.__p__.en or 1)",
+  last="#list",
+  rootposition="order",
+  order="order",
+  element="(ll.ei or 1)",
+  index="(ll.ni or 1)",
+  match="(ll.mi or 1)",
+  namespace="ll.ns",
+  ns="ll.ns",
+}
+local lp_builtin=lpeg.utfchartabletopattern(builtin)/builtin*((spaces*P("(")*spaces*P(")"))/"")
 local lp_attribute=(P("@")+P("attribute::"))/""*Cc("(ll.at and ll.at['")*((R("az","AZ")+S("-_:"))^1)*Cc("'])")
 local lp_fastpos_p=P("+")^0*R("09")^1*P(-1)/"l==%0"
 local lp_fastpos_n=P("-")*R("09")^1*P(-1)/"(%0<0 and (#list+%0==l))"
@@ -18608,8 +18638,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 790923
--- stripped bytes    : 285616
+-- original bytes    : 791821
+-- stripped bytes    : 286453
 
 -- end library merge
 

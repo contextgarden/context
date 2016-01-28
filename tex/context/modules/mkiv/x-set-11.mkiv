@@ -84,15 +84,19 @@
              node:  node
             lpath:  lpath
          xmlsetup:  xmlsetup
+      luafunction:  luafunction
           marking:  markering
      sectionblock:  sectieblok
               row:  rij
            column:  kolom
               url:  url
-       noargument:  \texescape...
-      oneargument:  \texescape...\texthash1
-     twoarguments:  \texescape...\texthash1\texthash2
-   threearguments:  \texescape...\texthash1\texthash2\texthash3
+            first:  eerste
+             last:  laatste
+            setup:  setup
+           buffer:  buffer
+             true:  true
+            false:  false
+         category:  category
 \stopmessages
 
 \startmessages  english  library: setup
@@ -145,15 +149,19 @@
              node:  node
             lpath:  lpath
          xmlsetup:  xmlsetup
+      luafunction:  luafunction
           marking:  marking
      sectionblock:  sectionblock
               row:  row
            column:  column
               url:  url
-       noargument:  \texescape...
-      oneargument:  \texescape...\texthash1
-     twoarguments:  \texescape...\texthash1\texthash2
-   threearguments:  \texescape...\texthash1\texthash2\texthash3
+            first:  first
+             last:  last
+            setup:  setup
+           buffer:  buffer
+             true:  true
+            false:  false
+         category:  category
 \stopmessages
 
 \startmessages  german library: setup
@@ -206,15 +214,19 @@
              node:  node
             lpath:  lpath
          xmlsetup:  xmlsetup
+      luafunction:  luafunction
           marking:  marking
      sectionblock:  sectionblock
               row:  row
            column:  column
               url:  url
-       noargument:  \texescape...
-      oneargument:  \texescape...\texthash1
-     twoarguments:  \texescape...\texthash1\texthash2
-   threearguments:  \texescape...\texthash1\texthash2\texthash3
+            first:  first
+             last:  last
+            setup:  setup
+           buffer:  buffer
+             true:  true
+            false:  false
+         category:  category
 \stopmessages
 
 \startmessages  czech  library: setup
@@ -267,15 +279,19 @@
              node:  node
             lpath:  lpath
          xmlsetup:  xmlsetup
+      luafunction:  luafunction
           marking:  marking
      sectionblock:  sectionblock
               row:  row
            column:  column
               url:  url
-       noargument:  \texescape...
-      oneargument:  \texescape...\texthash1
-     twoarguments:  \texescape...\texthash1\texthash2
-   threearguments:  \texescape...\texthash1\texthash2\texthash3
+            first:  first
+             last:  last
+            setup:  setup
+           buffer:  buffer
+             true:  true
+            false:  false
+         category:  category
 \stopmessages
 
 \startmessages  italian library: setup
@@ -328,15 +344,19 @@
              node:  node
             lpath:  lpath
          xmlsetup:  xmlsetup
+      luafunction:  luafunction
           marking:  marking
      sectionblock:  sectionblock
               row:  row
            column:  column
               url:  url
-       noargument:  \texescape...
-      oneargument:  \texescape...\texthash1
-     twoarguments:  \texescape...\texthash1\texthash2
-   threearguments:  \texescape...\texthash1\texthash2\texthash3
+            first:  first
+             last:  last
+            setup:  setup
+           buffer:  buffer
+             true:  true
+            false:  false
+         category:  category
 \stopmessages
 
 \startmessages  romanian library: setup
@@ -389,15 +409,19 @@
              node:  node
             lpath:  lpath
          xmlsetup:  xmlsetup
+      luafunction:  luafunction
           marking:  marking
      sectionblock:  sectionblock
               row:  row
            column:  column
               url:  url
-       noargument:  \texescape...
-      oneargument:  \texescape...\texthash1
-     twoarguments:  \texescape...\texthash1\texthash2
-   threearguments:  \texescape...\texthash1\texthash2\texthash3
+            first:  first
+             last:  last
+            setup:  setup
+           buffer:  buffer
+             true:  true
+            false:  false
+         category:  category
 \stopmessages
 
 \startmessages  french  library: setup
@@ -450,15 +474,19 @@
              node:  node
             lpath:  lpath
          xmlsetup:  xmlsetup
+      luafunction:  luafunction
           marking:  marking
      sectionblock:  sectionblock
               row:  row
            column:  column
               url:  url
-       noargument:  \texescape...
-      oneargument:  \texescape...\texthash1
-     twoarguments:  \texescape...\texthash1\texthash2
-   threearguments:  \texescape...\texthash1\texthash2\texthash3
+            first:  first
+             last:  last
+            setup:  setup
+           buffer:  buffer
+             true:  true
+            false:  false
+         category:  category
 \stopmessages
 
 \unprotect
@@ -519,7 +547,7 @@
   [\c!width=\hsize,
    \c!height=\v!fit,
    \c!align=\v!right,
-   \c!offset=0.75em]
+   \c!offset=0.75\emwidth]
 
 \popmacro\setuptext
 
@@ -580,16 +608,37 @@
         lxml.flush(definitions[name])
     end
 
+    function xml.finalizers.s_count(collected)
+        local n = 0
+        for i=1,#collected do
+            local c = collected[i]
+            if c.tg == "resolve" then
+                local d = definitions[c.at.name]
+                n = n + xml.count(d,"/*")
+            else
+                n = n + 1
+            end
+        end
+        context(n)
+    end
+
 \stopluacode
+
+% \startxmlsetups xml:setups:basics
+%     \xmlinclude{#1}{include}{filename}%
+%     \xmlsetsetup {#1} {*} {-}
+%     \xmlsetsetup {#1} {
+%         sequence|string|variable|assignments|keywords|content|displaymath|index|math|argument|
+%         nothing|file|position|reference|csname|destination|triplet|word|
+%         resolve|define|
+%         parameter|constant|inherit|parameter
+%     } {xml:setups:*}
+%     \xmlfunction{#1}{setups_define}
+% \stopxmlsetups
 
 \startxmlsetups xml:setups:basics
     \xmlinclude{#1}{include}{filename}%
-    \xmlsetsetup {#1} {
-        sequence|string|variable|assignments|keywords|content|displaymath|index|math|argument|
-        nothing|file|position|reference|csname|destination|triplet|word|
-        resolve|define|
-        parameter|constant|inherit|parameter
-    } {xml:setups:*}
+    \xmlsetsetup {#1} {*} {xml:setups:*}
     \xmlfunction{#1}{setups_define}
 \stopxmlsetups
 
@@ -606,17 +655,21 @@
   {\doifsomething{#1}
      {\doonlyonce{setups:#1}
         {\doglobal\prependtocommalist{setups:#1}\loadedsetups % last overloads first
+% \setupxml
+%   [\c!default=\v!hidden, % ignore elements that are not defined
+%    \c!compress=\v!yes]
          \xmlloadonly{setups:#1}{#1}{setups}%
          \xmlfilter{setups:#1}{/interface/command/command(xml:setups:register)}}}} % qualified path saves > 50% runtime
 
-\newif\ifshortsetup
+\newconstant\kindofsetup
 
-\unexpanded\def\setup     {\shortsetupfalse\doshowsetup}
-\unexpanded\def\showsetup {\shortsetupfalse\doshowsetup}
-\unexpanded\def\shortsetup{\shortsetuptrue \doshowsetup}
+\unexpanded\def\basicsetup{\kindofsetup\zerocount\doshowsetup}
+\unexpanded\def\shortsetup{\kindofsetup\plusone  \doshowsetup}
+\unexpanded\def\setup     {\kindofsetup\plustwo  \doshowsetup}
+\unexpanded\def\showsetup {\kindofsetup\plustwo  \doshowsetup}
 
-%unexpanded\def\showsetupinlist#1#2#3{\shortsetupfalse\showsetupindeed{#3}\par}
-\unexpanded\def\showsetupinlist#1#2#3{\shortsetupfalse\xmlsetup{#3}{xml:setups:typeset}\par}
+%unexpanded\def\showsetupinlist#1#2#3{\kindofsetup\plustwo\showsetupindeed{#3}\par}
+\unexpanded\def\showsetupinlist#1#2#3{\kindofsetup\plustwo\xmlsetup{#3}{xml:setups:typeset}\par}
 
 % todo: only references in lists
 
@@ -636,7 +689,8 @@
 
 \def\showsetupindeed#1%
   {\startelement[setup][name=#1]%
-     \startelement[noexport][comment={setup definition #1}]
+     \startelement[noexport][comment={setup definition #1}]%
+%      \nospaces\plusone
        \xmlsetup{\rawsynonymname{texcommand}{stp:x:#1}}{xml:setups:typeset}
    % \xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and '\e!start' or '') .. @name]/command(xml:setups:typeset)}%
      \stopelement
@@ -649,10 +703,9 @@
 
 %D Typesetting:
 
-\setupxml
-  [\c!default=\v!hidden, % ignore elements that are not defined
-   \c!compress=\v!yes,   % strip comment
-   \c!entities=\v!yes]   % replace entities
+% \setupxml
+%   [\c!default=\v!hidden, % ignore elements that are not defined
+%    \c!compress=\v!yes]
 
 \newcounter\currentSETUPargument
 \newcounter\maximumSETUPargument
@@ -673,71 +726,146 @@
     \blank
 \stopxmlsetups
 
-\startxmlsetups xml:setups:typeset:yes
-    \getvalue{\e!start setuptext}
-        \tttf
-        \nohyphens
-        \veryraggedright
-        \doglobal\newcounter\currentSETUPargument
-        \xdef\maximumSETUPargument{\xmlcount{#1}{/arguments/*}}
-        \edef\currentSETUPhash{\xmlatt{#1}{hash}}
+\startxmlsetups xml:setups:typeset:line
+    \ttbf
+    \nohyphens
+    \edef\currentSETUPhash{\xmlatt{#1}{hash}}
+    \bgroup
+        \enablemode[setups-pass-one]%
+        \doif {\xmlatt{#1}{generated}} {yes} {
+            \ttbs
+        }
+        \letterbackslash
+        \doif {\xmlatt{#1}{type}} {environment} {
+            \doifsomethingelse {\xmlatt{#1}{begin}} {
+                \xmllastatt
+            } {
+                \e!start
+            }
+        }
+        \xmldoifelseempty{#1}{/sequence} {
+            \xmlatt{#1}{name}
+        } {
+            \xmlfilter{#1}{/sequence/first()}
+        }
+        \ignorespaces
+    \egroup
+    \xmldoif{#1}{/arguments} {
+        \bgroup
+            \enablemode[setups-pass-one]
+            \doglobal\newcounter\currentSETUPargument
+            \ignorespaces
+            \xmlfilter{#1}{/arguments/text()}
+        \egroup
+    }
+    \doif {\xmlatt{#1}{type}} {environment} {
         \bgroup
             \enablemode[setups-pass-one]%
+            \hskip.5em\unknown\hskip.5em
+            \doif {\xmlatt{#1}{generated}} {yes} {
+                \bssl
+            }
+            \letterbackslash
+            \doifsomethingelse {\xmlatt{#1}{end}} {
+                \xmllastatt
+            } {
+                \e!stop
+            }
+            \xmldoifelseempty{#1}{/sequence} {
+                \xmlatt{#1}{name}
+            } {
+                \xmlfilter{#1}{/sequence/first()}
+            }
+            \ignorespaces
+        \egroup
+    }
+\stopxmlsetups
+
+\startxmlsetups xml:setups:typeset:raw
+    \tttf
+    \nohyphens
+    \veryraggedright
+    \doglobal\newcounter\currentSETUPargument
+    \xdef\maximumSETUPargument{\xmlfilter{#1}{/arguments/*/s_count()}}
+    \edef\currentSETUPhash{\xmlatt{#1}{hash}}
+    \bgroup
+        \enablemode[setups-pass-one]%
+        \doif {\xmlatt{#1}{generated}} {yes} {
+            \ttsl
+        }
+        \letterbackslash
+        \doif {\xmlatt{#1}{type}} {environment} {
+            \doifsomethingelse {\xmlatt{#1}{begin}} {
+                \xmllastatt
+            } {
+                \e!start
+            }
+        }
+        \xmldoifelseempty{#1}{/sequence} {
+            \xmlatt{#1}{name}
+        } {
+            \xmlfilter{#1}{/sequence/first()}
+        }
+        \ignorespaces
+    \egroup
+    \xmldoif{#1}{/arguments} {
+        \bgroup
+            \enablemode[setups-pass-one]
+            \doglobal\newcounter\currentSETUPargument
+            \ignorespaces
+            \xmlfilter{#1}{/arguments/text()}
+        \egroup
+    }
+    \doif {\xmlatt{#1}{type}} {environment} {
+        \bgroup
+            \enablemode[setups-pass-one]%
+            \hskip.5em\unknown\hskip.5em
             \doif {\xmlatt{#1}{generated}} {yes} {
                 \ttsl
             }
             \letterbackslash
-            \doif {\xmlatt{#1}{type}} {environment} {
-                \doifsomethingelse {\xmlatt{#1}{begin}} {
-                    \xmllastatt
-                } {
-                    \e!start
-                }
+            \doifsomethingelse {\xmlatt{#1}{end}} {
+                \xmllastatt
+            } {
+                \e!stop
             }
-            \xmlfilter{#1}{/sequence/first()}
+            \xmldoifelseempty{#1}{/sequence} {
+                \xmlatt{#1}{name}
+            } {
+                \xmlfilter{#1}{/sequence/first()}
+            }
             \ignorespaces
         \egroup
-        \xmldoif{#1}{/arguments} {
-            \bgroup
-                \enablemode[setups-pass-one]
-                \doglobal\newcounter\currentSETUPargument
-                \ignorespaces
-                \xmlfilter{#1}{/arguments/text()}
-            \egroup
-        }
-        \doif {\xmlatt{#1}{type}} {environment} {
-            \bgroup
-                \enablemode[setups-pass-one]%
-                \hskip.5em\unknown\hskip.5em
-                \doif {\xmlatt{#1}{generated}} {yes} {
-                    \ttsl
-                }
-                \letterbackslash
-                \doifsomethingelse {\xmlatt{#1}{end}} {
-                    \xmllastatt
-                } {
-                    \e!stop
-                }
-                \xmlfilter{#1}{/sequence/first()}
-                \ignorespaces
-            \egroup
-        }
+    }
+\stopxmlsetups
+
+\startxmlsetups xml:setups:typeset:detail
+    \xmldoif{#1}{/arguments} {
+        \bgroup
+            \enablemode[setups-pass-two]
+            \doglobal\newcounter\currentSETUPargument
+           %\blank[\v!line] % packed mode (we could do \startunpacked ...)
+            \godown[.75\lineheight]
+            \switchtobodyfont[\v!small]
+            \ignorespaces\xmlfilter{#1}{/arguments/text()}\endgraf
+        \egroup
+    }
+\stopxmlsetups
+
+\startxmlsetups xml:setups:typeset:yes
+    \ifcase\kindofsetup
+        \xmlsetup{#1}{xml:setups:typeset:line}
+    \or
+        \getvalue{\e!start setuptext}
+        \xmlsetup{#1}{xml:setups:typeset:raw}
+        \getvalue{\e!stop setuptext}
+    \or
+        \getvalue{\e!start setuptext}
+        \xmlsetup{#1}{xml:setups:typeset:raw}
         \endgraf
-        \ifshortsetup
-            % nothing
-        \else
-            \xmldoif{#1}{/arguments} {
-                \bgroup
-                    \enablemode[setups-pass-two]
-                    \doglobal\newcounter\currentSETUPargument
-                   %\blank[\v!line] % packed mode (we could do \startunpacked ...)
-                    \godown[.75\lineheight]
-                    \switchtobodyfont[\v!small]
-                    \ignorespaces\xmlfilter{#1}{/arguments/text()}\endgraf
-                \egroup
-            }
-        \fi
-    \getvalue{\e!stop setuptext}
+        \xmlsetup{#1}{xml:setups:typeset:detail}
+        \getvalue{\e!stop setuptext}
+    \fi
 \stopxmlsetups
 
 \setupsetup
@@ -883,6 +1011,10 @@
 \xmlmapvalue{setups:method}{apply}{->}
 \xmlmapvalue{setups:method}{none} {}
 
+\startxmlsetups xml:setups:constant:value
+    \c!setup!reserved!{\xmlatt{#1}{type}}
+\stopxmlsetups
+
 \startxmlsetups xml:setups:constant
     \doifelsemode {setups-pass-one} {
     } {
@@ -927,31 +1059,62 @@
    \blank[\v!halfline]
    \ignorespaces}
 
-\c!setup!definereserved {cd:command}        {\c!setup!internal!{\getmessage{setup}{command}}}
-\c!setup!definereserved {cd:dimension}      {\c!setup!internal!{\getmessage{setup}{dimension}}}
-\c!setup!definereserved {cd:file}           {\c!setup!internal!{\getmessage{setup}{file}}}
-\c!setup!definereserved {cd:name}           {\c!setup!internal!{\getmessage{setup}{identifier}}}
-\c!setup!definereserved {cd:character}      {\c!setup!internal!{\getmessage{setup}{character}}}
-\c!setup!definereserved {cd:mark}           {\c!setup!internal!{\getmessage{setup}{mark}}}
-\c!setup!definereserved {cd:number}         {\c!setup!internal!{\getmessage{setup}{number}}}
-\c!setup!definereserved {cd:reference}      {\c!setup!internal!{\getmessage{setup}{reference}}}
-\c!setup!definereserved {cd:plural}         {\c!setup!internal!{\getmessage{setup}{plural}}}
-\c!setup!definereserved {cd:singular}       {\c!setup!internal!{\getmessage{setup}{singular}}}
-\c!setup!definereserved {cd:text}           {\c!setup!internal!{\getmessage{setup}{text}}}
-\c!setup!definereserved {cd:formula}        {\c!setup!internal!{\getmessage{setup}{formula}}}
-\c!setup!definereserved {cd:file}           {\c!setup!internal!{\getmessage{setup}{file}}}
-\c!setup!definereserved {cd:matrix}         {\c!setup!internal!{\getmessage{setup}{matrix}}}
-\c!setup!definereserved {cd:list}           {\c!setup!internal!{\getmessage{setup}{list}}}
-\c!setup!definereserved {cd:section}        {\c!setup!internal!{\getmessage{setup}{section}}}
-\c!setup!definereserved {cd:language}       {\c!setup!internal!{\getmessage{setup}{language}}}
-\c!setup!definereserved {cd:section}        {\c!setup!internal!{\getmessage{setup}{section}}}
+\c!setup!definereserved {cd:command}               {\c!setup!internal!{\getmessage{setup}{command}}}
+\c!setup!definereserved {cd:dimension}             {\c!setup!internal!{\getmessage{setup}{dimension}}}
+\c!setup!definereserved {cd:file}                  {\c!setup!internal!{\getmessage{setup}{file}}}
+\c!setup!definereserved {cd:buffer}                {\c!setup!internal!{\getmessage{setup}{buffer}}}
+\c!setup!definereserved {cd:name}                  {\c!setup!internal!{\getmessage{setup}{identifier}}}
+\c!setup!definereserved {cd:character}             {\c!setup!internal!{\getmessage{setup}{character}}}
+\c!setup!definereserved {cd:mark}                  {\c!setup!internal!{\getmessage{setup}{mark}}}
+\c!setup!definereserved {cd:number}                {\c!setup!internal!{\getmessage{setup}{number}}}
+\c!setup!definereserved {cd:first}                 {\c!setup!internal!{\getmessage{setup}{first}}}
+\c!setup!definereserved {cd:last}                  {\c!setup!internal!{\getmessage{setup}{last}}}
+\c!setup!definereserved {cd:reference}             {\c!setup!internal!{\getmessage{setup}{reference}}}
+\c!setup!definereserved {cd:plural}                {\c!setup!internal!{\getmessage{setup}{plural}}}
+\c!setup!definereserved {cd:singular}              {\c!setup!internal!{\getmessage{setup}{singular}}}
+\c!setup!definereserved {cd:text}                  {\c!setup!internal!{\getmessage{setup}{text}}}
+\c!setup!definereserved {cd:formula}               {\c!setup!internal!{\getmessage{setup}{formula}}}
+\c!setup!definereserved {cd:file}                  {\c!setup!internal!{\getmessage{setup}{file}}}
+\c!setup!definereserved {cd:matrix}                {\c!setup!internal!{\getmessage{setup}{matrix}}}
+\c!setup!definereserved {cd:list}                  {\c!setup!internal!{\getmessage{setup}{list}}}
+\c!setup!definereserved {cd:section}               {\c!setup!internal!{\getmessage{setup}{section}}}
+\c!setup!definereserved {cd:language}              {\c!setup!internal!{\getmessage{setup}{language}}}
+\c!setup!definereserved {cd:section}               {\c!setup!internal!{\getmessage{setup}{section}}}
+\c!setup!definereserved {cd:language}              {\c!setup!internal!{\getmessage{setup}{language}}}
+\c!setup!definereserved {cd:processor}             {\c!setup!internal!{\getmessage{setup}{processor}}}
+\c!setup!definereserved {cd:style}                 {\c!setup!internal!{\getmessage{setup}{style}}}
+\c!setup!definereserved {cd:font}                  {\c!setup!internal!{\getmessage{setup}{font}}}
+\c!setup!definereserved {cd:character}             {\c!setup!internal!{\getmessage{setup}{character}}}
+\c!setup!definereserved {cd:userdata}              {\c!setup!internal!{\getmessage{setup}{userdata}}}
+\c!setup!definereserved {cd:key}                   {\c!setup!internal!{\getmessage{setup}{key}}}
+\c!setup!definereserved {cd:value}                 {\c!setup!internal!{\getmessage{setup}{value}}}
+\c!setup!definereserved {cd:color}                 {\c!setup!internal!{\getmessage{setup}{color}}}
+\c!setup!definereserved {cd:template}              {\c!setup!internal!{\getmessage{setup}{template}}}
+\c!setup!definereserved {cd:node}                  {\c!setup!internal!{\getmessage{setup}{node}}}
+\c!setup!definereserved {cd:lpath}                 {\c!setup!internal!{\getmessage{setup}{lpath}}}
+\c!setup!definereserved {cd:setup}                 {\c!setup!internal!{\getmessage{setup}{setup}}}
+\c!setup!definereserved {cd:xmlsetup}              {\c!setup!internal!{\getmessage{setup}{xmlsetup}}}
+\c!setup!definereserved {cd:luafunction}           {\c!setup!internal!{\getmessage{setup}{luafunction}}}
+\c!setup!definereserved {cd:marking}               {\c!setup!internal!{\getmessage{setup}{marking}}}
+\c!setup!definereserved {cd:sectionblock}          {\c!setup!internal!{\getmessage{setup}{sectionblock}}}
+\c!setup!definereserved {cd:row}                   {\c!setup!internal!{\getmessage{setup}{row}}}
+\c!setup!definereserved {cd:column}                {\c!setup!internal!{\getmessage{setup}{column}}}
+\c!setup!definereserved {cd:url}                   {\c!setup!internal!{\getmessage{setup}{url}}}
+\c!setup!definereserved {cd:true}                  {\c!setup!internal!{\getmessage{setup}{true}}}
+\c!setup!definereserved {cd:false}                 {\c!setup!internal!{\getmessage{setup}{false}}}
+\c!setup!definereserved {cd:category}              {\c!setup!internal!{\getmessage{setup}{category}}}
 
-\c!setup!definereserved {cd:noargument}     {\c!setup!command! {}}
-\c!setup!definereserved {cd:oneargument}    {\c!setup!command! {\#1}}
-\c!setup!definereserved {cd:twoarguments}   {\c!setup!command! {\#1\#2}}
-\c!setup!definereserved {cd:threearguments} {\c!setup!command! {\#1\#2\#3}}
+\c!setup!definereserved {cd:noargument}            {\c!setup!command! {\texescape}}
+\c!setup!definereserved {cd:oneargument}           {\c!setup!command! {\texescape\texthash1}}
+\c!setup!definereserved {cd:twoarguments}          {\c!setup!command! {\texescape\texthash1\texthash2}}
+\c!setup!definereserved {cd:threearguments}        {\c!setup!command! {\texescape\texthash1\texthash2\texthash3}}
 
-\c!setup!definereserved {cd:sign}           {[-+]}
+\c!setup!definereserved {cd:noargumentwrapped}     {\c!setup!command! {\texescape...}}
+\c!setup!definereserved {cd:oneargumentwrapped}    {\c!setup!command! {\texescape...\texthash1}}
+\c!setup!definereserved {cd:twoargumentswrapped}   {\c!setup!command! {\texescape...\texthash1\texthash2}}
+\c!setup!definereserved {cd:threeargumentswrapped} {\c!setup!command! {\texescape...\texthash1\texthash2\texthash3}}
+
+\c!setup!definereserved {cd:sign}                  {[-+]}
 
 %D Auxiliary.
 
@@ -978,32 +1141,58 @@
       \hss}%
    \ht2\ht\strutbox
    \dp4\dp\strutbox
-   \hskip.5\emwidth\hsmash{\box0}\hsmash{\box4}\box2\relax
+   \hskip.5\emwidth
+   \wd0\zeropoint
+   \box0
+   \wd2\zeropoint
+   \box2
+   \box4%
    \egroup
+   \ignorespaces}
+
+\unexpanded\def\showSETUPline#1%
+  {\kern.25\emwidth
+   #1%
    \ignorespaces}
 
 \unexpanded\def\showSETUPnumber
   {\doglobal\increment\currentSETUPargument
-   \hbox to 2em
+   \hbox to 2\emwidth
      {\ifcase\maximumSETUPargument\relax
         \or*\else\currentSETUPargument
       \fi
       \hss}}
 
 \unexpanded\def\showSETUPassignment#1%
-    {\showSETUP{#1}
-        {[.\lower.5ex\hbox{=}.]}
-        {[..,.\lower.5ex\hbox{=}.,..]}}
+    {\ifcase\kindofsetup
+       \showSETUPline{[.=.]}%
+     \else
+       \showSETUP{#1}
+          {[.=.]}
+          {[..,.=.,..]}%
+     \fi}
 
 \unexpanded\def\showSETUPkeyword#1%
-    {\showSETUP{#1}
-        {[...]}
-        {[...,...]}}
+    {\ifcase\kindofsetup
+       \showSETUPline{[...]}%
+     \else
+       \showSETUP{#1}
+         {[...]}
+         {[...,...]}%
+     \fi}
 
 \unexpanded\def\showSETUPargument#1%
-    {\showSETUP{#1}
-        {\letterleftbrace..\letterrightbrace}
-        {\letterleftbrace..,...,..\letterrightbrace}}
+    {\ifcase\kindofsetup
+       \showSETUPline{%
+         \letterleftbrace
+         \xmlfilter{#1}{/cd:constant/command(xml:setups:constant:value)}% always one
+         \letterrightbrace
+       }
+     \else
+       \showSETUP{#1}
+          {\letterleftbrace..\letterrightbrace}
+          {\letterleftbrace..,...,..\letterrightbrace}%
+     \fi}
 
 \unexpanded\def\showSETUPdisplaymath#1%
     {\showSETUP{#1}
@@ -1181,5 +1370,14 @@
     \edef\currentsetupparameterinstance{#3}
     \xmlsetup{\loadedsetups}{xml:setups:parameters:values}
 \stoptexdefinition
+
+% official interface
+
+\unexpanded\def\cmdinternal#1%
+  {{\tttf\c!setup!reserved!{#1}}} % todo color .. highlight
+
+\let\cmdbasicsetup\basicsetup
+\let\cmdshortsetup\shortsetup
+\let\cmdfullsetup \showsetup
 
 \protect \endinput

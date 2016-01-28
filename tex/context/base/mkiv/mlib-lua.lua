@@ -296,16 +296,14 @@ function metapost.runscript(code)
         if result then
             local t = type(result)
             if t == "number" then
-                t = f_numeric(result)
-            elseif t == "string" then
-                t = result
-            else
-                t = tostring(result)
+                result = f_numeric(result)
+            elseif t ~= "string" then
+                result = tostring(result)
             end
             if trace then
-                report_luarun("result: %s",code)
+                report_luarun("result: %s",result)
             end
-            return t
+            return result
         elseif trace then
             report_luarun("no result")
         end

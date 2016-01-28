@@ -4904,120 +4904,78 @@
 
 % no longer \def but \let to target toks .. the space gobbling \relax will go
 
-\unexpanded\def\appendtoks     {\syst_helpers_append_toks      \relax}
-\unexpanded\def\prependtoks    {\syst_helpers_prepend_toks     \relax}
-\unexpanded\def\appendtoksonce {\syst_helpers_append_toks_once \relax}
-\unexpanded\def\prependtoksonce{\syst_helpers_prepend_toks_once\relax}
+% \unexpanded\def\appendtoks     {\syst_helpers_append_toks      \relax}
+% \unexpanded\def\prependtoks    {\syst_helpers_prepend_toks     \relax}
+% \unexpanded\def\appendtoksonce {\syst_helpers_append_toks_once \relax}
+% \unexpanded\def\prependtoksonce{\syst_helpers_prepend_toks_once\relax}
+%
+% \def\syst_helpers_append_toks_indeed
+%   {\dodoglobal\m_syst_helpers_scratch\doubleexpandafter{\expandafter\the\expandafter\m_syst_helpers_scratch\the\t_syst_helpers_scratch}}
+%
+% \def\syst_helpers_prepend_toks_indeed
+%   {\dodoglobal\m_syst_helpers_scratch\doubleexpandafter{\expandafter\the\expandafter\t_syst_helpers_scratch\the\m_syst_helpers_scratch}}
+%
+% \def\syst_helpers_append_toks#1\to#2%
+%   {\let\m_syst_helpers_scratch#2%
+%    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
+%    \syst_helpers_append_toks_indeed}
+%
+% \def\syst_helpers_prepend_toks#1\to#2%
+%   {\let\m_syst_helpers_scratch#2%
+%    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
+%    \syst_helpers_prepend_toks_indeed}
+%
+% \def\syst_helpers_append_toks_once#1\to#2%
+%   {\let\m_syst_helpers_scratch#2%
+%    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
+%    \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
+%      \donothing
+%      \syst_helpers_append_toks_indeed}
+%
+% \def\syst_helpers_prepend_toks_once#1\to#2%
+%   {\let\m_syst_helpers_scratch#2%
+%    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
+%    \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
+%      \donothing
+%      \syst_helpers_prepend_toks_indeed}
+
+\unexpanded\def\appendtoks#1\to#2%
+  {\toksapp#2{#1}%
+   \ifx\dodoglobal\relax\else
+     \global#2#2%
+   \fi}
+
+\unexpanded\def\prependtoks#1\to#2%
+  {\tokspre#2{#1}%
+   \ifx\dodoglobal\relax\else
+      \global#2#2%
+   \fi}
 
 \def\syst_helpers_append_toks_indeed
-  {\dodoglobal\m_syst_helpers_scratch\doubleexpandafter{\expandafter\the\expandafter\m_syst_helpers_scratch\the\t_syst_helpers_scratch}}
+  {\toksapp\m_syst_helpers_scratch\t_syst_helpers_scratch
+   \ifx\dodoglobal\relax\else
+     \global\m_syst_helpers_scratch\m_syst_helpers_scratch
+   \fi}
 
 \def\syst_helpers_prepend_toks_indeed
-  {\dodoglobal\m_syst_helpers_scratch\doubleexpandafter{\expandafter\the\expandafter\t_syst_helpers_scratch\the\m_syst_helpers_scratch}}
+  {\tokspre\m_syst_helpers_scratch\t_syst_helpers_scratch
+   \ifx\dodoglobal\relax\else
+     \global\m_syst_helpers_scratch\m_syst_helpers_scratch
+   \fi}
 
-\def\syst_helpers_append_toks#1\to#2%
+\unexpanded\def\appendtoksonce#1\to#2%
   {\let\m_syst_helpers_scratch#2%
-   \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
-   \syst_helpers_append_toks_indeed}
-
-\def\syst_helpers_prepend_toks#1\to#2%
-  {\let\m_syst_helpers_scratch#2%
-   \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
-   \syst_helpers_prepend_toks_indeed}
-
-\def\syst_helpers_append_toks_once#1\to#2%
-  {\let\m_syst_helpers_scratch#2%
-   \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
+   \t_syst_helpers_scratch{#1}%
    \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
      \donothing
      \syst_helpers_append_toks_indeed}
 
-\def\syst_helpers_prepend_toks_once#1\to#2%
+\unexpanded\def\prependtoksonce#1\to#2%
   {\let\m_syst_helpers_scratch#2%
-   \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
+   \t_syst_helpers_scratch{#1}%
    \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
      \donothing
      \syst_helpers_prepend_toks_indeed}
-
-\ifdefined\toksapp
-
-  % \def\syst_helpers_append_toks#1\to#2%
-  %   {\toksapp#2\expandafter{\gobbleoneargument#1}%
-  %    \ifx\dodoglobal\relax\else
-  %      \global#2#2%
-  %    \fi}
-  %
-  % \def\syst_helpers_prepend_toks#1\to#2%
-  %   {\tokspre#2\expandafter{\gobbleoneargument#1}%
-  %    \ifx\dodoglobal\relax\else
-  %       \global#2#2%
-  %    \fi}
-  %
-  % \def\syst_helpers_append_toks_indeed
-  %   {\toksapp\m_syst_helpers_scratch\t_syst_helpers_scratch
-  %    \ifx\dodoglobal\relax\else
-  %      \global\m_syst_helpers_scratch\m_syst_helpers_scratch
-  %    \fi}
-  %
-  % \def\syst_helpers_prepend_toks_indeed
-  %   {\tokspre\m_syst_helpers_scratch\t_syst_helpers_scratch
-  %    \ifx\dodoglobal\relax\else
-  %      \global\m_syst_helpers_scratch\m_syst_helpers_scratch
-  %    \fi}
-  %
-  % \def\syst_helpers_append_toks_once#1\to#2%
-  %   {\let\m_syst_helpers_scratch#2%
-  %    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
-  %    \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
-  %      \donothing
-  %      \syst_helpers_append_toks_indeed}
-  %
-  % \def\syst_helpers_prepend_toks_once#1\to#2%
-  %   {\let\m_syst_helpers_scratch#2%
-  %    \t_syst_helpers_scratch\expandafter{\gobbleoneargument#1}%
-  %    \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
-  %      \donothing
-  %      \syst_helpers_prepend_toks_indeed}
-
-    \unexpanded\def\appendtoks#1\to#2%
-      {\toksapp#2{#1}%
-       \ifx\dodoglobal\relax\else
-         \global#2#2%
-       \fi}
-
-    \unexpanded\def\prependtoks#1\to#2%
-      {\tokspre#2{#1}%
-       \ifx\dodoglobal\relax\else
-          \global#2#2%
-       \fi}
-
-    \def\syst_helpers_append_toks_indeed
-      {\toksapp\m_syst_helpers_scratch\t_syst_helpers_scratch
-       \ifx\dodoglobal\relax\else
-         \global\m_syst_helpers_scratch\m_syst_helpers_scratch
-       \fi}
-
-    \def\syst_helpers_prepend_toks_indeed
-      {\tokspre\m_syst_helpers_scratch\t_syst_helpers_scratch
-       \ifx\dodoglobal\relax\else
-         \global\m_syst_helpers_scratch\m_syst_helpers_scratch
-       \fi}
-
-    \unexpanded\def\appendtoksonce#1\to#2%
-      {\let\m_syst_helpers_scratch#2%
-       \t_syst_helpers_scratch{#1}%
-       \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
-         \donothing
-         \syst_helpers_append_toks_indeed}
-
-    \unexpanded\def\prependtoksonce#1\to#2%
-      {\let\m_syst_helpers_scratch#2%
-       \t_syst_helpers_scratch{#1}%
-       \doifelseintoks\t_syst_helpers_scratch\m_syst_helpers_scratch
-         \donothing
-         \syst_helpers_prepend_toks_indeed}
-
-\fi
 
 %D The test macro:
 
@@ -5027,6 +4985,36 @@
    \doifelsestringinstring\asciia\asciib}
 
 \let\doifintokselse\doifelseintoks
+
+%D Moved from \type{lxml-ini.tex} to here. This one is for generators that
+%D collect stuff piecewise, which is sometimes hard on mechanisms that
+%D grab content using delimiters:
+%D
+%D \starttyping
+%D \startcollecting
+%D \startcollect \bTABLE \stopcollect
+%D     \startcollect \bTR \stopcollect
+%D         \startcollect \bTD \stopcollect
+%D         \startcollect   foo\stopcollect
+%D         \startcollect \eTD \stopcollect
+%D         \startcollect \bTD \stopcollect
+%D         \startcollect   bar\stopcollect
+%D         \startcollect \eTD \stopcollect
+%D     \startcollect \eTR \stopcollect
+%D \startcollect \eTABLE \stopcollect
+%D \stopcollecting
+%D \stoptyping
+
+\newtoks \collectingtoks
+
+\unexpanded\def\startcollect        #1\stopcollect        {\toksapp \collectingtoks{#1}}
+\unexpanded\def\startexpandedcollect#1\stopexpandedcollect{\etoksapp\collectingtoks{#1}}
+
+\unexpanded\def\startcollecting{\collectingtoks\emptytoks}
+\unexpanded\def\stopcollecting {\the\collectingtoks}
+
+\unexpanded\def\collect        {\toksapp \collectingtoks}
+\unexpanded\def\collectexpanded{\etoksapp\collectingtoks}
 
 %D A nice one too:
 
@@ -5044,28 +5032,24 @@
 
 %D Also:
 
-\unexpanded\def\appendetoks #1\to{\normalexpanded{\appendtoks #1}\to}
-\unexpanded\def\prependetoks#1\to{\normalexpanded{\prependtoks#1}\to}
+% \unexpanded\def\appendetoks #1\to{\normalexpanded{\appendtoks #1}\to}
+% \unexpanded\def\prependetoks#1\to{\normalexpanded{\prependtoks#1}\to}
 
-\ifdefined\toksapp
+\unexpanded\def\appendetoks#1\to#2%
+  {\etoksapp#2{#1}%
+   \ifx\dodoglobal\relax\else
+     \global#2#2%
+   \fi}
 
-    \def\appendetoks#1\to#2%
-      {\etoksapp#2{#1}%
-       \ifx\dodoglobal\relax\else
-         \global#2#2%
-       \fi}
-
-    \def\prependetoks#1\to#2%
-      {\etokspre#2{#1}%
-       \ifx\dodoglobal\relax\else
-          \global#2#2%
-       \fi}
-
-\fi
+\unexpanded\def\prependetoks#1\to#2%
+  {\etokspre#2{#1}%
+   \ifx\dodoglobal\relax\else
+      \global#2#2%
+   \fi}
 
 %D Hm.
 
-\unexpanded\def\flushtoks#1% nb: can reassing to #1 again, hence the indirectness
+\unexpanded\def\flushtoks#1% nb: can reassign to #1 again, hence the indirectness
   {\t_syst_helpers_scratch#1\relax
    \dodoglobal#1\emptytoks
    \the\t_syst_helpers_scratch\relax}

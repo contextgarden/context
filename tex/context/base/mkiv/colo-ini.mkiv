@@ -1087,6 +1087,17 @@
      \colo_helpers_inherited_current_ca{#1} %
      \colo_helpers_inherited_current_ta{#1} }
 
+\def\MPcoloronly#1%
+  {\clf_mpcolor
+     \attribute\colormodelattribute
+     \colo_helpers_inherited_current_ca{#1} %
+     \zerocount}
+
+\def\MPtransparency#1%
+  {\clf_mpcolor
+     \zerocount
+     \zerocount
+     \colo_helpers_inherited_current_ta{#1} }
 
 \def\MPoptions#1%
   {\clf_mpoptions

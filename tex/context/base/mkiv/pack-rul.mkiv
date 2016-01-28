@@ -1114,6 +1114,10 @@
 
 \def\c!fr!analyze{fr:analyze} % private option
 
+\let\delayedbegstrut\relax
+\let\delayedendstrut\relax
+\let\delayedstrut   \relax
+
 \unexpanded\def\pack_framed_process_indeed
   {\d_framed_frameoffset\framedparameter\c!frameoffset
    \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%

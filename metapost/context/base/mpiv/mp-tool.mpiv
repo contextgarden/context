@@ -2150,7 +2150,7 @@ if unknown darkcyan    : color darkcyan    ; darkcyan    := .625(0,1,1) fi ;
 if unknown darkmagenta : color darkmagenta ; darkmagenta := .625(1,0,1) fi ;
 if unknown darkyellow  : color darkyellow  ; darkyellow  := .625(1,1,0) fi ;
 if unknown darkgray    : color darkgray    ; darkgray    := .625(1,1,1) fi ;
-if unknown lightgray   : color lightgray   ; lightgray   := .875(1,1,1) fi ;
+if unknown lightgray   : color lightgray   ; lightgray   := .850(1,1,1) fi ;
 
 % an improved plain mp macro
 

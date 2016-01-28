@@ -131,6 +131,8 @@ return {
         "figurespace", "punctuationspace", "hairspace",
         "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
         "optionalspace", "asciispacechar",
+        --
+        "Ux",
     },
     ["helpers"] = {
         --
@@ -409,7 +411,7 @@ return {
         --
         "Ucheckedstartdisplaymath", "Ucheckedstopdisplaymath",
         --
-        "nobreak", "allowbreak", "goodbreak",
+        "break", "nobreak", "allowbreak", "goodbreak",
         --
         "nospace", "nospacing", "dospacing",
         --

@@ -45,6 +45,8 @@
 \def\utfchar #1{\clf_utfchar \numexpr#1\relax}
 \def\safechar#1{\clf_safechar\numexpr#1\relax}
 
+\unexpanded\def\Ux#1{\Uchar"#1\relax} % used in xml
+
 \def\checkedchar        {\relax\ifmmode\expandafter\checkedmathchar\else\expandafter\checkedtextchar\fi} % #1#2
 \def\checkedmathchar#1#2{#2}
 %def\checkedtextchar  #1{\iffontchar\font#1 \expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi{\char#1}}

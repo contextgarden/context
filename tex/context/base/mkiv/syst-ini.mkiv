@@ -301,105 +301,6 @@
 %normalprotected\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
 \normalprotected\def\newhelp#1#2{\newtoks#1#1\expandafter{\detokenize{#2}}}
 
-% For the moment we define some \pdf... helpers but this will move to the backend
-% module after which the official interfaces have to be used. This is needed for
-% modules not made by ctx developers.
-
-\ifdefined\pdfextension
-
-    \normalprotected\def\pdfliteral        {\pdfextension literal }
-    \normalprotected\def\pdfcolorstack     {\pdfextension colorstack }
-    \normalprotected\def\pdfsetmatrix      {\pdfextension setmatrix }
-    \normalprotected\def\pdfsave           {\pdfextension save\relax}
-    \normalprotected\def\pdfrestore        {\pdfextension restore\relax}
-    \normalprotected\def\pdfobj            {\pdfextension obj }
-    \normalprotected\def\pdfrefobj         {\pdfextension refobj }
-    \normalprotected\def\pdfannot          {\pdfextension annot }
-    \normalprotected\def\pdfstartlink      {\pdfextension startlink }
-    \normalprotected\def\pdfendlink        {\pdfextension endlink\relax}
-    \normalprotected\def\pdfoutline        {\pdfextension outline }
-    \normalprotected\def\pdfdest           {\pdfextension dest }
-    \normalprotected\def\pdfthread         {\pdfextension thread }
-    \normalprotected\def\pdfstartthread    {\pdfextension startthread }
-    \normalprotected\def\pdfendthread      {\pdfextension endthread\relax}
-    \normalprotected\def\pdfinfo           {\pdfextension info }
-    \normalprotected\def\pdfcatalog        {\pdfextension catalog }
-    \normalprotected\def\pdfnames          {\pdfextension names }
-    \normalprotected\def\pdfincludechars   {\pdfextension includechars }
-    \normalprotected\def\pdffontattr       {\pdfextension fontattr }
-    \normalprotected\def\pdfmapfile        {\pdfextension mapfile }
-    \normalprotected\def\pdfmapline        {\pdfextension mapline }
-    \normalprotected\def\pdftrailer        {\pdfextension trailer }
-    \normalprotected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
-
-\fi
-
-\ifdefined\pdffeedback
-
-    \def\pdftexversion     {\numexpr\pdffeedback version}
-    \def\pdftexrevision            {\pdffeedback revision}
-    \def\pdflastlink       {\numexpr\pdffeedback lastlink}
-    \def\pdfretval         {\numexpr\pdffeedback retval}
-    \def\pdflastobj        {\numexpr\pdffeedback lastobj}
-    \def\pdflastannot      {\numexpr\pdffeedback lastannot}
-    \def\pdfxformname      {\numexpr\pdffeedback xformname}
-    \def\pdfcreationdate           {\pdffeedback creationdate}
-    \def\pdffontname       {\numexpr\pdffeedback fontname}
-    \def\pdffontobjnum     {\numexpr\pdffeedback fontobjnum}
-    \def\pdffontsize       {\dimexpr\pdffeedback fontsize}
-    \def\pdfpageref        {\numexpr\pdffeedback pageref}
-    \def\pdfcolorstackinit         {\pdffeedback colorstackinit}
-
-\fi
-
-\ifdefined\pdfxform \else
-    \let\pdfxform           \saveboxresource
-    \let\pdflastxform       \lastsavedboxresourceindex
-    \let\pdfrefxform        \useboxresource
-    \let\pdfximage          \saveimageresource
-    \let\pdflastximage      \lastsavedimageresourceindex
-    \let\pdflastximagepages \lastsavedimageresourcepages
-    \let\pdfrefximage       \useimageresource
-    \let\pdfsavepos         \savepos
-    \let\pdflastxpos        \lastxpos
-    \let\pdflastypos        \lastypos
-\fi
-
-\ifdefined\pdfvariable
-
-    \edef\pdfcompresslevel       {\pdfvariable compresslevel}       \pdfcompresslevel         9
-    \edef\pdfobjcompresslevel    {\pdfvariable objcompresslevel}    \pdfobjcompresslevel      1
-    \edef\pdfdecimaldigits       {\pdfvariable decimaldigits}       \pdfdecimaldigits         6 % for ctx, 4 is default
-    \edef\pdfgamma               {\pdfvariable gamma}               \pdfgamma              1000
-    \edef\pdfimageresolution     {\pdfvariable imageresolution}     \pdfimageresolution      71
-    \edef\pdfimageapplygamma     {\pdfvariable imageapplygamma}     \pdfimageapplygamma       0
-    \edef\pdfimagegamma          {\pdfvariable imagegamma}          \pdfimagegamma         2200
-    \edef\pdfimagehicolor        {\pdfvariable imagehicolor}        \pdfimagehicolor          1
-    \edef\pdfimageaddfilename    {\pdfvariable imageaddfilename}    \pdfimageaddfilename      1
-    \edef\pdfpkresolution        {\pdfvariable pkresolution}        \pdfpkresolution         72
-    \edef\pdfinclusioncopyfonts  {\pdfvariable inclusioncopyfonts}  \pdfinclusioncopyfonts    0
-    \edef\pdfinclusionerrorlevel {\pdfvariable inclusionerrorlevel} \pdfinclusionerrorlevel   0
-    \edef\pdfgentounicode        {\pdfvariable gentounicode}        \pdfgentounicode          0
-    \edef\pdfpagebox             {\pdfvariable pagebox}             \pdfpagebox               0
-    \edef\pdfminorversion        {\pdfvariable minorversion}        \pdfminorversion          4
-    \edef\pdfuniqueresname       {\pdfvariable uniqueresname}       \pdfuniqueresname         0
-
-    \edef\pdfhorigin             {\pdfvariable horigin}             \pdfhorigin             1in
-    \edef\pdfvorigin             {\pdfvariable vorigin}             \pdfvorigin             1in
-    \edef\pdflinkmargin          {\pdfvariable linkmargin}          \pdflinkmargin          0pt
-    \edef\pdfdestmargin          {\pdfvariable destmargin}          \pdfdestmargin          0pt
-    \edef\pdfthreadmargin        {\pdfvariable threadmargin}        \pdfthreadmargin        0pt
-  % \edef\pdfxformmargin         {\pdfvariable xformmargin}         \pdfxformmargin         0pt
-
-    \edef\pdfpagesattr           {\pdfvariable pagesattr}
-    \edef\pdfpageattr            {\pdfvariable pageattr}
-    \edef\pdfpageresources       {\pdfvariable pageresources}
-    \edef\pdfxformattr           {\pdfvariable xformattr}
-    \edef\pdfxformresources      {\pdfvariable xformresources}
-    \edef\pdfpkmode              {\pdfvariable pkmode}
-
-\fi
-
 %D \macros
 %D   {scratchcounter,
 %D    scratchdimen,scratchskip,scratchmuskip,
@@ -1043,25 +944,102 @@
        \spanomit \advance\mscount\minusone
    \repeat}
 
-%D We need to make sure that we start up in \DVI\ mode, so, after testing for running
-%D \PDFTEX, we default to \DVI. Why?
+%D Backend:
 
-\outputmode             \zerocount
-\pdfminorversion        \plusseven
-\pdfgentounicode        \plusone
-\pdfinclusioncopyfonts  \plusone
-\pdfinclusionerrorlevel \zerocount
-\pdfdecimaldigits       \plussix
-\pdfhorigin             1 true in
-\pdfvorigin             \pdfhorigin
-\pdfimageresolution     300
-\pdfpkresolution        600
+% For the moment we define some \pdf... helpers but this will move to the backend
+% module after which the official interfaces have to be used. This is needed for
+% modules not made by ctx developers.
+
+\normalprotected\def\pdfliteral        {\pdfextension literal }
+\normalprotected\def\pdfcolorstack     {\pdfextension colorstack }
+\normalprotected\def\pdfsetmatrix      {\pdfextension setmatrix }
+\normalprotected\def\pdfsave           {\pdfextension save\relax}
+\normalprotected\def\pdfrestore        {\pdfextension restore\relax}
+\normalprotected\def\pdfobj            {\pdfextension obj }
+\normalprotected\def\pdfrefobj         {\pdfextension refobj }
+\normalprotected\def\pdfannot          {\pdfextension annot }
+\normalprotected\def\pdfstartlink      {\pdfextension startlink }
+\normalprotected\def\pdfendlink        {\pdfextension endlink\relax}
+\normalprotected\def\pdfoutline        {\pdfextension outline }
+\normalprotected\def\pdfdest           {\pdfextension dest }
+\normalprotected\def\pdfthread         {\pdfextension thread }
+\normalprotected\def\pdfstartthread    {\pdfextension startthread }
+\normalprotected\def\pdfendthread      {\pdfextension endthread\relax}
+\normalprotected\def\pdfinfo           {\pdfextension info }
+\normalprotected\def\pdfcatalog        {\pdfextension catalog }
+\normalprotected\def\pdfnames          {\pdfextension names }
+\normalprotected\def\pdfincludechars   {\pdfextension includechars }
+\normalprotected\def\pdffontattr       {\pdfextension fontattr }
+\normalprotected\def\pdfmapfile        {\pdfextension mapfile }
+\normalprotected\def\pdfmapline        {\pdfextension mapline }
+\normalprotected\def\pdftrailer        {\pdfextension trailer }
+\normalprotected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
+
+\def\pdftexversion     {\numexpr\pdffeedback version}
+\def\pdftexrevision            {\pdffeedback revision}
+\def\pdflastlink       {\numexpr\pdffeedback lastlink}
+\def\pdfretval         {\numexpr\pdffeedback retval}
+\def\pdflastobj        {\numexpr\pdffeedback lastobj}
+\def\pdflastannot      {\numexpr\pdffeedback lastannot}
+\def\pdfxformname      {\numexpr\pdffeedback xformname}
+\def\pdfcreationdate           {\pdffeedback creationdate}
+\def\pdffontname       {\numexpr\pdffeedback fontname}
+\def\pdffontobjnum     {\numexpr\pdffeedback fontobjnum}
+\def\pdffontsize       {\dimexpr\pdffeedback fontsize}
+\def\pdfpageref        {\numexpr\pdffeedback pageref}
+\def\pdfcolorstackinit         {\pdffeedback colorstackinit}
+
+\let\pdfxform           \saveboxresource
+\let\pdflastxform       \lastsavedboxresourceindex
+\let\pdfrefxform        \useboxresource
+\let\pdfximage          \saveimageresource
+\let\pdflastximage      \lastsavedimageresourceindex
+\let\pdflastximagepages \lastsavedimageresourcepages
+\let\pdfrefximage       \useimageresource
+\let\pdfsavepos         \savepos
+\let\pdflastxpos        \lastxpos
+\let\pdflastypos        \lastypos
+
+\edef\pdfcompresslevel       {\pdfvariable compresslevel}       \pdfcompresslevel         \plusnine
+\edef\pdfobjcompresslevel    {\pdfvariable objcompresslevel}    \pdfobjcompresslevel      \plusone
+\edef\pdfdecimaldigits       {\pdfvariable decimaldigits}       \pdfdecimaldigits         \plussix
+\edef\pdfgamma               {\pdfvariable gamma}               \pdfgamma                 \plusthousand
+\edef\pdfimageresolution     {\pdfvariable imageresolution}     \pdfimageresolution       300
+\edef\pdfimageapplygamma     {\pdfvariable imageapplygamma}     \pdfimageapplygamma       \zerocount
+\edef\pdfimagegamma          {\pdfvariable imagegamma}          \pdfimagegamma            2200
+\edef\pdfimagehicolor        {\pdfvariable imagehicolor}        \pdfimagehicolor          \plusone
+\edef\pdfimageaddfilename    {\pdfvariable imageaddfilename}    \pdfimageaddfilename      \plusone
+\edef\pdfpkresolution        {\pdfvariable pkresolution}        \pdfpkresolution          1200
+\edef\pdfpkfixeddpi          {\pdfvariable pkfixeddpi}          \pdfpkfixeddpi            1
+\edef\pdfinclusioncopyfonts  {\pdfvariable inclusioncopyfonts}  \pdfinclusioncopyfonts    \plusone
+\edef\pdfinclusionerrorlevel {\pdfvariable inclusionerrorlevel} \pdfinclusionerrorlevel   \zerocount
+\edef\pdfignoreunknownimages {\pdfvariable ignoreunknownimages} \pdfignoreunknownimages   \zerocount
+\edef\pdfgentounicode        {\pdfvariable gentounicode}        \pdfgentounicode          \plusone
+\edef\pdfpagebox             {\pdfvariable pagebox}             \pdfpagebox               \zerocount
+\edef\pdfminorversion        {\pdfvariable minorversion}        \pdfminorversion          \plusseven
+\edef\pdfuniqueresname       {\pdfvariable uniqueresname}       \pdfuniqueresname         \zerocount
+
+\edef\pdfhorigin             {\pdfvariable horigin}             \pdfhorigin               1in
+\edef\pdfvorigin             {\pdfvariable vorigin}             \pdfvorigin               \pdfhorigin
+\edef\pdflinkmargin          {\pdfvariable linkmargin}          \pdflinkmargin            \zeropoint
+\edef\pdfdestmargin          {\pdfvariable destmargin}          \pdfdestmargin            \zeropoint
+\edef\pdfthreadmargin        {\pdfvariable threadmargin}        \pdfthreadmargin          \zeropoint
+\edef\pdfxformmargin         {\pdfvariable xformmargin}         \pdfxformmargin           \zeropoint
+
+\edef\pdfpagesattr           {\pdfvariable pagesattr}
+\edef\pdfpageattr            {\pdfvariable pageattr}
+\edef\pdfpageresources       {\pdfvariable pageresources}
+\edef\pdfxformattr           {\pdfvariable xformattr}
+\edef\pdfxformresources      {\pdfvariable xformresources}
+\edef\pdfpkmode              {\pdfvariable pkmode}
 
 \normalprotected\def\nopdfcompression     {\pdfobjcompresslevel\zerocount \pdfcompresslevel\zerocount}
 \normalprotected\def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }
 \normalprotected\def\normalpdfcompression {\pdfobjcompresslevel\plusthree \pdfcompresslevel\plusthree}
 
 \normalpdfcompression
+
+\outputmode \zerocount % we generate the format in this mode
 
 %D Basic status stuff.
 

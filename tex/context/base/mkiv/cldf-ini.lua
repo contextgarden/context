@@ -1371,7 +1371,7 @@ do
         if data and data ~= "" then
             local filename = resolve("virtual",validstring(tag,"viafile"),data)
          -- context.startregime { "utf" }
-            context.input(filename)
+            input(filename)
          -- context.stopregime()
         end
     end
@@ -1382,7 +1382,7 @@ do
 
     local collected    = nil
     local nofcollected = 0
-    local sentinel     = string.char(26) -- endoffileasciicode : ignorecatcode
+    local sentinel     = string.char(26) -- ASCII SUB character : endoffileasciicode : ignorecatcode
     local level        = 0
 
     local function collect(c,...) -- can be optimized
@@ -1405,13 +1405,15 @@ do
 
     local collectdirect = collect
 
+    -- doesn't work well with tracing do we need to avoid that then
+
     function context.startcollecting()
         if level == 0 then
             collected    = { }
             nofcollected = 0
             --
-            flush       = collect
-            flushdirect = collectdirect
+            flush        = collect
+            flushdirect  = collectdirect
             --
             context.__flush       = flush
             context.__flushdirect = flushdirect

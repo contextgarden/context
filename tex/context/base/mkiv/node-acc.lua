@@ -72,6 +72,7 @@ local function injectspaces(head)
                 setchar(g,32)
                 setlink(p,g)
                 setlink(g,n)
+-- we could cache as we now create many nodes
                 setfield(n,"width",getfield(n,"width") - getfield(g,"width"))
                 if a then
                     setattr(g,a_characters,a)

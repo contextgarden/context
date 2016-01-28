@@ -301,7 +301,9 @@
      \ifdim\constructionsheaddistance=\zeropoint
        \ifx\p_strc_constructions_width\v!broad
          \constructionsheaddistance\emwidth
-       \fi
+       \else\ifx\p_strc_constructions_width\v!line
+         \constructionsheaddistance\emwidth
+       \fi\fi
      \fi
    \fi
    % inefficient and not always needed, for instance not with margins so we will make checkers
@@ -752,6 +754,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!serried]
+    % already set?
     \edef\p_strc_constructions_width{\constructionparameter\c!width}% CHECK ! ! ! wrong parameter namespace
     \doifelsesetups{\??constructionrenderings:\v!serried:\p_strc_constructions_width} {
         \directsetup{\??constructionrenderings:\v!serried:\p_strc_constructions_width}
@@ -776,7 +779,7 @@
     \flushconstructionheadbox
     \ifconditional\c_strc_constructions_distance_none \else
         \nobreak
-        \hskip\constructionsheaddistance \!!plus .5\constructionsheaddistance \!!minus .25\constructionsheaddistance\relax
+        \hskip\constructionsheaddistance \s!plus .5\constructionsheaddistance \s!minus .25\constructionsheaddistance\relax
     \fi
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
@@ -824,7 +827,13 @@
       \s!plus .25\scratchdistance
       \s!minus.25\scratchdistance
     \fi
-    \allowbreak % new
+    \ifhmode
+        \ifx\p_strc_constructions_width\v!line
+            \hfill\break
+        \else
+            \allowbreak
+        \fi
+    \fi
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups

@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['mult-ini'] = {
 local format, gmatch, match = string.format, string.gmatch, string.match
 local lpegmatch = lpeg.match
 local serialize, concat = table.serialize, table.concat
+local rawget, type = rawget, type
 
 local context             = context
 local commands            = commands
@@ -156,7 +157,7 @@ function interfaces.getmessage(category,tag,default)
 end
 
 function interfaces.doifelsemessage(category,tag)
-    return formats[fulltag(category,tag)]
+    return rawget(formats,fulltag(category,tag))
 end
 
 local splitter = lpeg.splitat(",")

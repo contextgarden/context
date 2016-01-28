@@ -145,11 +145,15 @@
 
 \def\assign_width_direct#value#dimension#content#extra{#dimension=#value\relax}
 
+% line is like fit but can be used later as signal for ...
+
 \setvalue{\??dimensionwidth          }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
                                                                      \setbox\b_assign_width\emptybox}
 \setvalue{\??dimensionwidth\v!fit    }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
                                                                      \setbox\b_assign_width\emptybox}
 \setvalue{\??dimensionwidth\v!broad  }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\dimexpr\wd\b_assign_width+#extra\relax
+                                                                     \setbox\b_assign_width\emptybox}
+\setvalue{\??dimensionwidth\v!line   }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
                                                                      \setbox\b_assign_width\emptybox}
 \letvalue{\??dimensionwidth\s!unknown}\assign_width_direct
 

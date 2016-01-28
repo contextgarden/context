@@ -24,14 +24,6 @@ handles comment and processing instructions, has a different structure, provides
 parent access; a first version used different trickery but was less optimized to we
 went this route. First we had a find based parser, now we have an <l n='lpeg'/> based one.
 The find based parser can be found in l-xml-edu.lua along with other older code.</p>
-
-<p>Beware, the interface may change. For instance at, ns, tg, dt may get more
-verbose names. Once the code is stable we will also remove some tracing and
-optimize the code.</p>
-
-<p>I might even decide to reimplement the parser using the latest <l n='lpeg'/> trickery
-as the current variant was written when <l n='lpeg'/> showed up and it's easier now to
-build tables in one go.</p>
 --ldx]]--
 
 if lpeg.setmaxstack then lpeg.setmaxstack(1000) end -- deeply nested xml files
@@ -57,10 +49,9 @@ find based solution where we loop over an array of patterns. Less code and
 much cleaner.</p>
 --ldx]]--
 
-xml.xmlns = xml.xmlns or { }
+do -- begin of namespace closure (we ran out of locals)
 
-local check = P(false)
-local parse = check
+xml.xmlns = xml.xmlns or { }
 
 --[[ldx--
 <p>The next function associates a namespace prefix with an <l n='url'/>. This
@@ -70,6 +61,9 @@ normally happens independent of parsing.</p>
 xml.registerns("mml","mathml")
 </typing>
 --ldx]]--
+
+local check = P(false)
+local parse = check
 
 function xml.registerns(namespace, pattern) -- pattern can be an lpeg
     check = check + C(P(lower(pattern))) / namespace
@@ -112,6 +106,8 @@ end
 <p>A namespace in an element can be remapped onto the registered
 one efficiently by using the <t>xml.xmlns</t> table.</p>
 --ldx]]--
+
+end -- end of namespace closure
 
 --[[ldx--
 <p>This version uses <l n='lpeg'/>. We follow the same approach as before, stack and top and
@@ -232,6 +228,8 @@ function xml.checkerror(top,toclose)
     return "" -- can be set
 end
 
+local checkns = xml.checkns
+
 local function add_attribute(namespace,tag,value)
     if cleanup and value ~= "" then
         value = cleanup(value) -- new
@@ -242,7 +240,7 @@ local function add_attribute(namespace,tag,value)
     elseif namespace == "" then
         at[tag] = value
     elseif namespace == "xmlns" then
-        xml.checkns(tag,value)
+        checkns(tag,value)
         at["xmlns:" .. tag] = value
     else
         -- for the moment this way:
@@ -259,7 +257,14 @@ local function add_empty(spacing, namespace, tag)
     top = stack[level]
     dt = top.dt
     nt = #dt + 1
-    local t = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = top }
+    local t = {
+        ns = namespace or "",
+        rn = resolved,
+        tg = tag,
+        at = at,
+        dt = { },
+        __p__ = top
+    }
     dt[nt] = t
     setmetatable(t, mt)
     if at.xmlns then
@@ -274,7 +279,14 @@ local function add_begin(spacing, namespace, tag)
         dt[nt] = spacing
     end
     local resolved = namespace == "" and xmlns[#xmlns] or nsremap[namespace] or namespace
-    top = { ns=namespace or "", rn=resolved, tg=tag, at=at, dt={}, __p__ = stack[level] }
+    top = {
+        ns = namespace or "",
+        rn = resolved,
+        tg = tag,
+        at = at,
+        dt = {},
+        __p__ = stack[level]
+    }
     setmetatable(top, mt)
     dt = top.dt
     nt = #dt
@@ -398,8 +410,7 @@ local handle_any_entity_text
 
 do
 
-    local badentity = "&error;"
-    local badentity = "&"
+    local badentity = "&" -- was "&error;"
 
     xml.placeholders = {
         unknown_dec_entity = function(str) return str == "" and badentity or formatters["&%s;"](str) end,
@@ -463,11 +474,10 @@ do
         [ [[>]] ] = "&gt;",
     }
 
-    local privates_p = {
-        -- needed for roundtrip as well as serialize to tex
+    local privates_p = { -- needed for roundtrip as well as serialize to tex
     }
 
-    local privates_s = {
+    local privates_s = { -- for tex
         [ [["]] ] = "&U+22;",
         [ [[#]] ] = "&U+23;",
         [ [[$]] ] = "&U+24;",
@@ -483,8 +493,7 @@ do
         [ [[~]] ] = "&U+7E;",
     }
 
-    local privates_n = {
-        -- keeps track of defined ones
+    local privates_n = { -- keeps track of defined ones
     }
 
     local escaped       = utf.remapper(privates_u,"dynamic")
@@ -734,14 +743,14 @@ do
     local p_rest = (1-P(";"))^1
 
     local spec = {
-        [0x23] = "\\U{23}", -- "\\char35 ",  "\\letterhash ",
-        [0x24] = "\\U{24}", -- "\\char36 ",  "\\letterdollar ",
-        [0x25] = "\\U{25}", -- "\\char37 ",  "\\letterpercent ",
-        [0x5C] = "\\U{5C}", -- "\\char92 ",  "\\letterbackslash ",
-        [0x7B] = "\\U{7B}", -- "\\char123 ", "\\letterleftbrace ",
-        [0x7C] = "\\U{7C}", -- "\\char124 ", "\\letterbar ",
-        [0x7D] = "\\U{7D}", -- "\\char125 ", "\\letterrightbrace ",
-        [0x7E] = "\\U{7E}", -- "\\char126 ", "\\lettertilde ",
+        [0x23] = "\\Ux{23}", -- #
+        [0x24] = "\\Ux{24}", -- $
+        [0x25] = "\\Ux{25}", -- %
+        [0x5C] = "\\Ux{5C}", -- \
+        [0x7B] = "\\Ux{7B}", -- {
+        [0x7C] = "\\Ux{7C}", -- |
+        [0x7D] = "\\Ux{7D}", -- }
+        [0x7E] = "\\Ux{7E}", -- ~
     }
 
     local hash = table.setmetatableindex(spec,function(t,k)
@@ -1189,15 +1198,37 @@ generic table copier. Since we know what we're dealing with we
 can speed up things a bit. The second argument is not to be used!</p>
 --ldx]]--
 
-local function copy(old,tables)
+-- local function copy(old,tables)
+--     if old then
+--         if not tables then
+--             tables = { }
+--         end
+--         local new = { }
+--         if not tables[old] then
+--             tables[old] = new
+--         end
+--         for k,v in next, old do
+--             new[k] = (type(v) == "table" and (tables[v] or copy(v, tables))) or v
+--         end
+--         local mt = getmetatable(old)
+--         if mt then
+--             setmetatable(new,mt)
+--         end
+--         return new
+--     else
+--         return { }
+--     end
+-- end
+
+local function copy(old)
     if old then
-        tables = tables or { }
         local new = { }
-        if not tables[old] then
-            tables[old] = new
-        end
         for k,v in next, old do
-            new[k] = (type(v) == "table" and (tables[v] or copy(v, tables))) or v
+            if type(v) == "table" then
+                new[k] = table.copy(v)
+            else
+                new[k] = v
+            end
         end
         local mt = getmetatable(old)
         if mt then

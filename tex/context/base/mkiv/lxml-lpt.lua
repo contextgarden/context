@@ -518,27 +518,49 @@ local lp_doequal = P("=")  / "=="
 local lp_or      = P("|")  / " or "
 local lp_and     = P("&")  / " and "
 
-local lp_builtin = P (
-        P("text")         / "(ll.dt[1] or '')" + -- fragile
-        P("content")      / "ll.dt" +
-    --  P("name")         / "(ll.ns~='' and ll.ns..':'..ll.tg)" +
-        P("name")         / "((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)" +
-        P("tag")          / "ll.tg" +
-        P("position")     / "l" + -- is element in finalizer
-        P("firstindex")   / "1" +
-        P("lastindex")    / "(#ll.__p__.dt or 1)" +
-        P("firstelement") / "1" +
-        P("lastelement")  / "(ll.__p__.en or 1)" +
-        P("first")        / "1" +
-        P("last")         / "#list" +
-        P("rootposition") / "order" +
-        P("order")        / "order" +
-        P("element")      / "(ll.ei or 1)" +
-        P("index")        / "(ll.ni or 1)" +
-        P("match")        / "(ll.mi or 1)" +
-     -- P("namespace")    / "ll.ns" +
-        P("ns")           / "ll.ns"
-    ) * ((spaces * P("(") * spaces * P(")"))/"")
+-- local lp_builtin = (
+--         P("text")         / "(ll.dt[1] or '')" + -- fragile
+--         P("content")      / "ll.dt" +
+--         P("name")         / "((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)" +
+--         P("tag")          / "ll.tg" +
+--         P("position")     / "l" + -- is element in finalizer
+--         P("firstindex")   / "1" +
+--         P("lastindex")    / "(#ll.__p__.dt or 1)" +
+--         P("firstelement") / "1" +
+--         P("lastelement")  / "(ll.__p__.en or 1)" +
+--         P("first")        / "1" +
+--         P("last")         / "#list" +
+--         P("rootposition") / "order" +
+--         P("order")        / "order" +
+--         P("element")      / "(ll.ei or 1)" +
+--         P("index")        / "(ll.ni or 1)" +
+--         P("match")        / "(ll.mi or 1)" +
+--         P("namespace")    / "ll.ns" +
+--         P("ns")           / "ll.ns"
+--     ) * ((spaces * P("(") * spaces * P(")"))/"")
+
+local builtin = {
+    text         = "(ll.dt[1] or '')", -- fragile
+    content      = "ll.dt",
+    name         = "((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)",
+    tag          = "ll.tg",
+    position     = "l", -- is element in finalizer
+    firstindex   = "1",
+    firstelement = "1",
+    first        = "1",
+    lastindex    = "(#ll.__p__.dt or 1)",
+    lastelement  = "(ll.__p__.en or 1)",
+    last         = "#list",
+    rootposition = "order",
+    order        = "order",
+    element      = "(ll.ei or 1)",
+    index        = "(ll.ni or 1)",
+    match        = "(ll.mi or 1)",
+    namespace    = "ll.ns",
+    ns           = "ll.ns",
+}
+
+local lp_builtin   = lpeg.utfchartabletopattern(builtin)/builtin * ((spaces * P("(") * spaces * P(")"))/"")
 
 -- for the moment we keep namespaces with attributes
 

@@ -1384,6 +1384,7 @@ do
             width = nominalwidth + width
         end
         --
+index = index - 1
         local glyph = glyphs[index] -- can be autodefined in otr
         if not glyph then
             glyphs[index] = {
