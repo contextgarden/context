@@ -369,36 +369,38 @@ if context and _cldo_ then
     local setfield_node = nodes.setfield
     local setfield_nut  = nuts .setfield
 
-    function nodepool.lateluafunction(f)
-        local n = copy_node(latelua_node)
-        setfield_node(n,"string",f_cldo(register(f)))
-        return n
-    end
-    function nutpool.lateluafunction(f)
-        local n = copy_nut(latelua_nut)
-        setfield_nut(n,"string",f_cldo(register(f)))
-        return n
-    end
+ -- function nodepool.lateluafunction(f)
+ --     local n = copy_node(latelua_node)
+ --     setfield_node(n,"string",f_cldo(register(f)))
+ --     return n
+ -- end
+
+ -- function nutpool.lateluafunction(f)
+ --     local n = copy_nut(latelua_nut)
+ --     setfield_nut(n,"string",f_cldo(register(f)))
+ --     return n
+ -- end
 
     -- when function in latelua:
 
- -- function nodepool.lateluafunction(f)
- --     local n = copy_node(latelua_node)
- --     setfield_node(n,"string",f)
- --     return n
- -- end
- -- function nutpool.lateluafunction(f)
- --     local n = copy_nut(latelua_nut)
- --     setfield_nut(n,"string",f)
- --     return n
- -- end
+    function nodepool.lateluafunction(f)
+        local n = copy_node(latelua_node)
+        setfield_node(n,"string",f)
+        return n
+    end
+
+    function nutpool.lateluafunction(f)
+        local n = copy_nut(latelua_nut)
+        setfield_nut(n,"string",f)
+        return n
+    end
 
     local latefunction = nodepool.lateluafunction
     local flushnode    = context.flushnode
 
-    function context.lateluafunction(f)
-        flushnode(latefunction(f)) -- hm, quite some indirect calls
-    end
+ -- function context.lateluafunction(f)
+ --     flushnode(latefunction(f)) -- hm, quite some indirect calls
+ -- end
 
     -- when function in latelua:
 
@@ -420,11 +422,11 @@ if context and _cldo_ then
 
     -- when function in latelua:
 
- -- function context.lateluafunction(f)
- --     local n = copy_node(latelua_node)
- --     setfield_node(n,"string",f)
- --     contextsprint(ctxcatcodes,"\\cldl",storenode(n)," ")
- -- end
+    function context.lateluafunction(f)
+        local n = copy_node(latelua_node)
+        setfield_node(n,"string",f)
+        contextsprint(ctxcatcodes,"\\cldl",storenode(n)," ")
+    end
 
 end
 

@@ -1010,21 +1010,26 @@
 \edef\pdfimagehicolor        {\pdfvariable imagehicolor}        \pdfimagehicolor          \plusone
 \edef\pdfimageaddfilename    {\pdfvariable imageaddfilename}    \pdfimageaddfilename      \plusone
 \edef\pdfpkresolution        {\pdfvariable pkresolution}        \pdfpkresolution          1200
-\edef\pdfpkfixeddpi          {\pdfvariable pkfixeddpi}          \pdfpkfixeddpi            1
 \edef\pdfinclusioncopyfonts  {\pdfvariable inclusioncopyfonts}  \pdfinclusioncopyfonts    \plusone
 \edef\pdfinclusionerrorlevel {\pdfvariable inclusionerrorlevel} \pdfinclusionerrorlevel   \zerocount
-\edef\pdfignoreunknownimages {\pdfvariable ignoreunknownimages} \pdfignoreunknownimages   \zerocount
 \edef\pdfgentounicode        {\pdfvariable gentounicode}        \pdfgentounicode          \plusone
 \edef\pdfpagebox             {\pdfvariable pagebox}             \pdfpagebox               \zerocount
 \edef\pdfminorversion        {\pdfvariable minorversion}        \pdfminorversion          \plusseven
 \edef\pdfuniqueresname       {\pdfvariable uniqueresname}       \pdfuniqueresname         \zerocount
-
 \edef\pdfhorigin             {\pdfvariable horigin}             \pdfhorigin               1in
 \edef\pdfvorigin             {\pdfvariable vorigin}             \pdfvorigin               \pdfhorigin
 \edef\pdflinkmargin          {\pdfvariable linkmargin}          \pdflinkmargin            \zeropoint
 \edef\pdfdestmargin          {\pdfvariable destmargin}          \pdfdestmargin            \zeropoint
 \edef\pdfthreadmargin        {\pdfvariable threadmargin}        \pdfthreadmargin          \zeropoint
 \edef\pdfxformmargin         {\pdfvariable xformmargin}         \pdfxformmargin           \zeropoint
+
+\ifnum\luatexversion>88
+    \edef\pdfpkfixeddpi          {\pdfvariable pkfixeddpi}          \pdfpkfixeddpi            \plusone
+    \edef\pdfignoreunknownimages {\pdfvariable ignoreunknownimages} \pdfignoreunknownimages   \zerocount
+\else
+    \newcount\pdfpkfixeddpi
+    \newcount\pdfignoreunknownimages
+\fi
 
 \edef\pdfpagesattr           {\pdfvariable pagesattr}
 \edef\pdfpageattr            {\pdfvariable pageattr}

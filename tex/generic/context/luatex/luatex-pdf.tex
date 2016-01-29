@@ -127,6 +127,11 @@
     \xdef\pdfminorversion             {\pdfvariable minorversion}
     \xdef\pdfuniqueresname            {\pdfvariable uniqueresname}
 
+    \ifnum\luatexversion>88
+        \edef\pdfpkfixeddpi           {\pdfvariable pkfixeddpi}
+        \edef\pdfignoreunknownimages  {\pdfvariable ignoreunknownimages}
+    \fi
+
     \xdef\pdfhorigin                  {\pdfvariable horigin}
     \xdef\pdfvorigin                  {\pdfvariable vorigin}
     \xdef\pdflinkmargin               {\pdfvariable linkmargin}

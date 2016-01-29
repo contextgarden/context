@@ -52,6 +52,9 @@ local xmlinclusion      = xml.inclusion
 local xmlinclusions     = xml.inclusions
 local xmlbadinclusions  = xml.badinclusions
 local xmlcontent        = xml.content
+local xmllastmatch      = xml.lastmatch
+
+directives.enable("xml.path.keeplastmatch")
 
 local variables         = interfaces and interfaces.variables or { }
 
@@ -1846,6 +1849,13 @@ function lxml.flush(id)
         if dt then
             xmlsprint(dt)
         end
+    end
+end
+
+function lxml.lastmatch()
+    local collected = xmllastmatch()
+    if collected then
+        all(collected)
     end
 end
 

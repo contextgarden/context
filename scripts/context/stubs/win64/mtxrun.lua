@@ -11261,7 +11261,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 51229, stripped down to: 31529
+-- original size: 53877, stripped down to: 32495
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -11276,10 +11276,23 @@ local format,upper,lower,gmatch,gsub,find,rep=string.format,string.upper,string.
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
-local trace_lpath=false if trackers then trackers.register("xml.path",function(v) trace_lpath=v end) end
-local trace_lparse=false if trackers then trackers.register("xml.parse",function(v) trace_lparse=v end) end
-local trace_lprofile=false if trackers then trackers.register("xml.profile",function(v) trace_lpath=v trace_lparse=v trace_lprofile=v end) end
+local trace_lpath=false
+local trace_lparse=false
+local trace_lprofile=false
 local report_lpath=logs.reporter("xml","lpath")
+if trackers then
+  trackers.register("xml.path",function(v)
+    trace_lpath=v
+  end)
+  trackers.register("xml.parse",function(v)
+    trace_lparse=v
+  end)
+  trackers.register("xml.profile",function(v)
+    trace_lpath=v
+    trace_lparse=v
+    trace_lprofile=v
+  end)
+end
 local xml=xml
 local lpathcalls=0 function xml.lpathcalls () return lpathcalls end
 local lpathcached=0 function xml.lpathcached() return lpathcached end
@@ -11716,6 +11729,7 @@ local template_f_y=[[
 local template_f_n=[[
     return xml.finalizers['%s']['%s']
 ]]
+local register_last_match={ kind="axis",axis="last-match"       } 
 local register_self={ kind="axis",axis="self"          } 
 local register_parent={ kind="axis",axis="parent"         } 
 local register_descendant={ kind="axis",axis="descendant"       } 
@@ -11793,7 +11807,7 @@ local pathparser=Ct { "patterns",
               ),
   protocol=Cg(V("letters"),"protocol")*P("://")+Cg(Cc(nil),"protocol"),
   step=((V("shortcuts")+P("/")+V("axis"))*spaces*V("nodes")^0+V("error"))*spaces*V("expressions")^0*spaces*V("finalizer")^0,
-  axis=V("descendant")+V("child")+V("parent")+V("self")+V("root")+V("ancestor")+V("descendant_or_self")+V("following_sibling")+V("following")+V("reverse_sibling")+V("preceding_sibling")+V("preceding")+V("ancestor_or_self")+#(1-P(-1))*Cc(register_auto_child),
+  axis=V("last_match")+V("descendant")+V("child")+V("parent")+V("self")+V("root")+V("ancestor")+V("descendant_or_self")+V("following_sibling")+V("following")+V("reverse_sibling")+V("preceding_sibling")+V("preceding")+V("ancestor_or_self")+#(1-P(-1))*Cc(register_auto_child),
   special=special_1+special_2+special_3,
   initial=(P("/")*spaces*Cc(register_initial_child))^-1,
   error=(P(1)^1)/register_error,
@@ -11819,6 +11833,7 @@ local pathparser=Ct { "patterns",
   preceding=P('preceding::')*Cc(register_preceding     ),
   preceding_sibling=P('preceding-sibling::')*Cc(register_preceding_sibling ),
   reverse_sibling=P('reverse-sibling::')*Cc(register_reverse_sibling  ),
+  last_match=P('last-match::')*Cc(register_last_match     ),
   nodes=(V("nodefunction")*spaces*P("(")*V("nodeset")*P(")")+V("nodetest")*V("nodeset"))/register_nodes,
   expressions=expression/register_expression,
   letters=R("az")^1,
@@ -11936,140 +11951,168 @@ lpath=function (pattern)
   end
 end
 xml.lpath=lpath
-local profiled={} xml.profiled=profiled
-local function profiled_apply(list,parsed,nofparsed,order)
-  local p=profiled[parsed.pattern]
-  if p then
-    p.tested=p.tested+1
-  else
-    p={ tested=1,matched=0,finalized=0 }
-    profiled[parsed.pattern]=p
+do
+  local profiled={}
+  xml.profiled=profiled
+  local lastmatch=nil 
+  local keepmatch=nil 
+  if directives then
+    directives.register("xml.path.keeplastmatch",function(v)
+      keepmatch=v
+      lastmatch=nil
+    end)
   end
-  local collected=list
-  for i=1,nofparsed do
-    local pi=parsed[i]
-    local kind=pi.kind
-    if kind=="axis" then
-      collected=apply_axis[pi.axis](collected)
-    elseif kind=="nodes" then
-      collected=apply_nodes(collected,pi.nodetest,pi.nodes)
-    elseif kind=="expression" then
-      collected=apply_expression(collected,pi.evaluator,order)
-    elseif kind=="finalizer" then
-      collected=pi.finalizer(collected) 
-      p.matched=p.matched+1
-      p.finalized=p.finalized+1
-      return collected
+  apply_axis["last-match"]=function()
+    return lastmatch or {}
+  end
+  local function profiled_apply(list,parsed,nofparsed,order)
+    local p=profiled[parsed.pattern]
+    if p then
+      p.tested=p.tested+1
+    else
+      p={ tested=1,matched=0,finalized=0 }
+      profiled[parsed.pattern]=p
     end
-    if not collected or #collected==0 then
-      local pn=i<nofparsed and parsed[nofparsed]
-      if pn and pn.kind=="finalizer" then
-        collected=pn.finalizer(collected)
+    local collected=list
+    for i=1,nofparsed do
+      local pi=parsed[i]
+      local kind=pi.kind
+      if kind=="axis" then
+        collected=apply_axis[pi.axis](collected)
+      elseif kind=="nodes" then
+        collected=apply_nodes(collected,pi.nodetest,pi.nodes)
+      elseif kind=="expression" then
+        collected=apply_expression(collected,pi.evaluator,order)
+      elseif kind=="finalizer" then
+        collected=pi.finalizer(collected) 
+        p.matched=p.matched+1
         p.finalized=p.finalized+1
         return collected
       end
-      return nil
+      if not collected or #collected==0 then
+        local pn=i<nofparsed and parsed[nofparsed]
+        if pn and pn.kind=="finalizer" then
+          collected=pn.finalizer(collected) 
+          p.finalized=p.finalized+1
+          return collected
+        end
+        return nil
+      end
     end
-  end
-  if collected then
-    p.matched=p.matched+1
-  end
-  return collected
-end
-local function traced_apply(list,parsed,nofparsed,order)
-  if trace_lparse then
-    lshow(parsed)
-  end
-  report_lpath("collecting: %s",parsed.pattern)
-  report_lpath("root tags : %s",tagstostring(list))
-  report_lpath("order     : %s",order or "unset")
-  local collected=list
-  for i=1,nofparsed do
-    local pi=parsed[i]
-    local kind=pi.kind
-    if kind=="axis" then
-      collected=apply_axis[pi.axis](collected)
-      report_lpath("% 10i : ax : %s",(collected and #collected) or 0,pi.axis)
-    elseif kind=="nodes" then
-      collected=apply_nodes(collected,pi.nodetest,pi.nodes)
-      report_lpath("% 10i : ns : %s",(collected and #collected) or 0,nodesettostring(pi.nodes,pi.nodetest))
-    elseif kind=="expression" then
-      collected=apply_expression(collected,pi.evaluator,order)
-      report_lpath("% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
-    elseif kind=="finalizer" then
-      collected=pi.finalizer(collected)
-      report_lpath("% 10i : fi : %s : %s(%s)",(type(collected)=="table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
-      return collected
+    if collected then
+      p.matched=p.matched+1
     end
-    if not collected or #collected==0 then
-      local pn=i<nofparsed and parsed[nofparsed]
-      if pn and pn.kind=="finalizer" then
-        collected=pn.finalizer(collected)
-        report_lpath("% 10i : fi : %s : %s(%s)",(type(collected)=="table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pn.name,pn.arguments or "")
+    return collected
+  end
+  local function traced_apply(list,parsed,nofparsed,order)
+    if trace_lparse then
+      lshow(parsed)
+    end
+    report_lpath("collecting: %s",parsed.pattern)
+    report_lpath("root tags : %s",tagstostring(list))
+    report_lpath("order     : %s",order or "unset")
+    local collected=list
+    for i=1,nofparsed do
+      local pi=parsed[i]
+      local kind=pi.kind
+      if kind=="axis" then
+        collected=apply_axis[pi.axis](collected)
+        report_lpath("% 10i : ax : %s",(collected and #collected) or 0,pi.axis)
+      elseif kind=="nodes" then
+        collected=apply_nodes(collected,pi.nodetest,pi.nodes)
+        report_lpath("% 10i : ns : %s",(collected and #collected) or 0,nodesettostring(pi.nodes,pi.nodetest))
+      elseif kind=="expression" then
+        collected=apply_expression(collected,pi.evaluator,order)
+        report_lpath("% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
+      elseif kind=="finalizer" then
+        collected=pi.finalizer(collected)
+        report_lpath("% 10i : fi : %s : %s(%s)",(type(collected)=="table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
         return collected
       end
-      return nil
-    end
-  end
-  return collected
-end
-local function normal_apply(list,parsed,nofparsed,order)
-  local collected=list
-  for i=1,nofparsed do
-    local pi=parsed[i]
-    local kind=pi.kind
-    if kind=="axis" then
-      local axis=pi.axis
-      if axis~="self" then
-        collected=apply_axis[axis](collected)
+      if not collected or #collected==0 then
+        local pn=i<nofparsed and parsed[nofparsed]
+        if pn and pn.kind=="finalizer" then
+          collected=pn.finalizer(collected)
+          report_lpath("% 10i : fi : %s : %s(%s)",(type(collected)=="table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pn.name,pn.arguments or "")
+          return collected
+        end
+        return nil
       end
-    elseif kind=="nodes" then
-      collected=apply_nodes(collected,pi.nodetest,pi.nodes)
-    elseif kind=="expression" then
-      collected=apply_expression(collected,pi.evaluator,order)
-    elseif kind=="finalizer" then
-      return pi.finalizer(collected)
     end
-    if not collected or #collected==0 then
-      local pf=i<nofparsed and parsed[nofparsed].finalizer
-      if pf then
-        return pf(collected) 
+    return collected
+  end
+  local function normal_apply(list,parsed,nofparsed,order)
+    local collected=list
+    for i=1,nofparsed do
+      local pi=parsed[i]
+      local kind=pi.kind
+      if kind=="axis" then
+        local axis=pi.axis
+        if axis~="self" then
+          collected=apply_axis[axis](collected)
+        end
+      elseif kind=="nodes" then
+        collected=apply_nodes(collected,pi.nodetest,pi.nodes)
+      elseif kind=="expression" then
+        collected=apply_expression(collected,pi.evaluator,order)
+      elseif kind=="finalizer" then
+        return pi.finalizer(collected)
       end
-      return nil
+      if not collected or #collected==0 then
+        local pf=i<nofparsed and parsed[nofparsed].finalizer
+        if pf then
+          return pf(collected) 
+        end
+        return nil
+      end
     end
+    return collected
   end
-  return collected
+  local apply=normal_apply
+  if trackers then
+    trackers.register("xml.path,xml.parse,xml.profile",function()
+      if trace_lprofile then
+        apply=profiled_apply
+      elseif trace_lpath then
+        apply=traced_apply
+      else
+        apply=normal_apply
+      end
+    end)
+  end
+  function xml.applylpath(list,pattern)
+    if not list then
+      lastmatch=nil
+      return
+    end
+    local parsed=cache[pattern]
+    if parsed then
+      lpathcalls=lpathcalls+1
+      lpathcached=lpathcached+1
+    elseif type(pattern)=="table" then
+      lpathcalls=lpathcalls+1
+      parsed=pattern
+    else
+      parsed=lpath(pattern) or pattern
+    end
+    if not parsed then
+      lastmatch=nil
+      return
+    end
+    local nofparsed=#parsed
+    if nofparsed==0 then
+      lastmatch=nil
+      return 
+    end
+    local collected=apply({ list },parsed,nofparsed,list.mi)
+    lastmatch=keepmatch and collected or nil
+    return collected
+  end
+  function xml.lastmatch()
+    return lastmatch
+  end
 end
-local function applylpath(list,pattern)
-  if not list then
-    return
-  end
-  local parsed=cache[pattern]
-  if parsed then
-    lpathcalls=lpathcalls+1
-    lpathcached=lpathcached+1
-  elseif type(pattern)=="table" then
-    lpathcalls=lpathcalls+1
-    parsed=pattern
-  else
-    parsed=lpath(pattern) or pattern
-  end
-  if not parsed then
-    return
-  end
-  local nofparsed=#parsed
-  if nofparsed==0 then
-    return 
-  end
-  if not trace_lpath then
-    return normal_apply ({ list },parsed,nofparsed,list.mi)
-  elseif trace_lprofile then
-    return profiled_apply({ list },parsed,nofparsed,list.mi)
-  else
-    return traced_apply ({ list },parsed,nofparsed,list.mi)
-  end
-end
-xml.applylpath=applylpath
+local applylpath=xml.applylpath
 function xml.filter(root,pattern) 
   return applylpath(root,pattern)
 end
@@ -18638,8 +18681,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 791821
--- stripped bytes    : 286453
+-- original bytes    : 794469
+-- stripped bytes    : 288135
 
 -- end library merge
 

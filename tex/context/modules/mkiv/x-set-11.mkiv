@@ -557,7 +557,11 @@
 
 \startxmlsetups xml:setups:assemblename
     \doifelse {\xmlatt{#1}{type}} {environment} {
-        \let\currentSETUPprefix\e!start
+        \doifsomethingelse {\xmlatt{#1}{begin}} {
+            \edef\currentSETUPprefix{\xmllastatt}%
+        } {
+            \let\currentSETUPprefix\e!start
+        }
     } {
         \let\currentSETUPprefix\empty
     }
