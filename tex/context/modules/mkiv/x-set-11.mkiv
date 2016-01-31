@@ -628,18 +628,6 @@
 
 \stopluacode
 
-% \startxmlsetups xml:setups:basics
-%     \xmlinclude{#1}{include}{filename}%
-%     \xmlsetsetup {#1} {*} {-}
-%     \xmlsetsetup {#1} {
-%         sequence|string|variable|assignments|keywords|content|displaymath|index|math|argument|
-%         nothing|file|position|reference|csname|destination|triplet|word|
-%         resolve|define|
-%         parameter|constant|inherit|parameter
-%     } {xml:setups:*}
-%     \xmlfunction{#1}{setups_define}
-% \stopxmlsetups
-
 \startxmlsetups xml:setups:basics
     \xmlinclude{#1}{include}{filename}%
     \xmlsetsetup {#1} {*} {xml:setups:*}
@@ -767,7 +755,7 @@
             \enablemode[setups-pass-one]%
             \hskip.5em\unknown\hskip.5em
             \doif {\xmlatt{#1}{generated}} {yes} {
-                \bssl
+                \ttbs
             }
             \letterbackslash
             \doifsomethingelse {\xmlatt{#1}{end}} {
@@ -902,7 +890,6 @@
 
 \startxmlsetups xml:setups:content     \showSETUPcomponent{#1}{content}    {content}     \stopxmlsetups
 \startxmlsetups xml:setups:displaymath \showSETUPcomponent{#1}{displaymath}{display math}\stopxmlsetups
-\startxmlsetups xml:setups:argument    \showSETUPcomponent{#1}{argument}   {argument}    \stopxmlsetups
 \startxmlsetups xml:setups:index       \showSETUPcomponent{#1}{index}      {index}       \stopxmlsetups
 \startxmlsetups xml:setups:math        \showSETUPcomponent{#1}{math}       {math}        \stopxmlsetups
 \startxmlsetups xml:setups:nothing     \showSETUPcomponent{#1}{nothing}    {nothing}     \stopxmlsetups
@@ -913,6 +900,13 @@
 \startxmlsetups xml:setups:destination \showSETUPcomponent{#1}{destination}{destination} \stopxmlsetups
 \startxmlsetups xml:setups:triplet     \showSETUPcomponent{#1}{triplet}    {triplet}     \stopxmlsetups
 \startxmlsetups xml:setups:word        \showSETUPcomponent{#1}{word}       {word}        \stopxmlsetups
+\startxmlsetups xml:setups:template    \showSETUPcomponent{#1}{template}   {template}    \stopxmlsetups
+\startxmlsetups xml:setups:angles      \showSETUPcomponent{#1}{angles}     {angles}      \stopxmlsetups
+\startxmlsetups xml:setups:apply       \showSETUPcomponent{#1}{apply}      {apply}       \stopxmlsetups
+\startxmlsetups xml:setups:twowords    \showSETUPcomponent{#1}{twowords}   {twowords}    \stopxmlsetups
+\startxmlsetups xml:setups:threewords  \showSETUPcomponent{#1}{threewords} {threewords}  \stopxmlsetups
+\startxmlsetups xml:setups:text        \showSETUPcomponent{#1}{text}       {text}        \stopxmlsetups
+\startxmlsetups xml:setups:to          \showSETUPcomponent{#1}{to}         {to}          \stopxmlsetups
 
 \unexpanded\def\showSETUPcomponent#1#2#3%
   {\doifelsemode{setups-pass-one}
@@ -1108,15 +1102,10 @@
 \c!setup!definereserved {cd:false}                 {\c!setup!internal!{\getmessage{setup}{false}}}
 \c!setup!definereserved {cd:category}              {\c!setup!internal!{\getmessage{setup}{category}}}
 
-\c!setup!definereserved {cd:noargument}            {\c!setup!command! {\texescape}}
-\c!setup!definereserved {cd:oneargument}           {\c!setup!command! {\texescape\texthash1}}
-\c!setup!definereserved {cd:twoarguments}          {\c!setup!command! {\texescape\texthash1\texthash2}}
-\c!setup!definereserved {cd:threearguments}        {\c!setup!command! {\texescape\texthash1\texthash2\texthash3}}
-
-\c!setup!definereserved {cd:noargumentwrapped}     {\c!setup!command! {\texescape...}}
-\c!setup!definereserved {cd:oneargumentwrapped}    {\c!setup!command! {\texescape...\texthash1}}
-\c!setup!definereserved {cd:twoargumentswrapped}   {\c!setup!command! {\texescape...\texthash1\texthash2}}
-\c!setup!definereserved {cd:threeargumentswrapped} {\c!setup!command! {\texescape...\texthash1\texthash2\texthash3}}
+%c!setup!definereserved {cd:noargument}            {\c!setup!command! {}}
+\c!setup!definereserved {cd:oneargument}           {\c!setup!command! {\texthash1}}
+\c!setup!definereserved {cd:twoarguments}          {\c!setup!command! {\texthash1\texthash2}}
+\c!setup!definereserved {cd:threearguments}        {\c!setup!command! {\texthash1\texthash2\texthash3}}
 
 \c!setup!definereserved {cd:sign}                  {[-+]}
 
@@ -1129,7 +1118,7 @@
      {\doifelse{\xmlatt{#1}{list}}{yes}{#3}{#2}}%
    \setbox2=\hbox to \wd0
      {\hss
-      \raise\exheight\hbox
+      \raise1.25\exheight\hbox
         {\tx\ifcase\maximumSETUPargument\relax
            \or*\else\currentSETUPargument
          \fi}%
@@ -1167,41 +1156,94 @@
       \fi
       \hss}}
 
-\unexpanded\def\showSETUPassignment#1%
-    {\ifcase\kindofsetup
-       \showSETUPline{[.=.]}%
-     \else
-       \showSETUP{#1}
-          {[.=.]}
-          {[..,.=.,..]}%
-     \fi}
+% assignments
 
-\unexpanded\def\showSETUPkeyword#1%
-    {\ifcase\kindofsetup
-       \showSETUPline{[...]}%
-     \else
-       \showSETUP{#1}
-         {[...]}
-         {[...,...]}%
-     \fi}
+\xmlmapvalue {setups:assignment} {braces}   {\showSETUPassignmentbraces}
+\xmlmapvalue {setups:assignment} {brackets} {\showSETUPassignmentbrackets}
 
-\unexpanded\def\showSETUPargument#1%
-    {\ifcase\kindofsetup
-       \showSETUPline{%
-         \letterleftbrace
-         \xmlfilter{#1}{/cd:constant/command(xml:setups:constant:value)}% always one
-         \letterrightbrace
-       }
-     \else
-       \showSETUP{#1}
-          {\letterleftbrace..\letterrightbrace}
-          {\letterleftbrace..,...,..\letterrightbrace}%
-     \fi}
+\starttexdefinition unexpanded showSETUPassignmentbraces #1
+    \ifcase\kindofsetup
+        \showSETUPline{\letterleftbrace.=.\letterrightbrace}
+    \else
+        \showSETUP{#1}
+            {\letterleftbrace.=.\letterrightbrace}
+            {\letterleftbrace.=.,.=.\letterrightbrace}
+    \fi
+\stoptexdefinition
+
+\starttexdefinition unexpanded showSETUPassignmentbrackets #1
+    \ifcase\kindofsetup
+        \showSETUPline{[.=.]}
+    \else
+        \showSETUP{#1}
+            {[.=.]}
+            {[.=.,.=.]}
+    \fi
+\stoptexdefinition
+
+\starttexdefinition unexpanded showSETUPassignment #1
+    \xmlvalue
+        {setups:assignment}
+        {\xmlattdef{#1}{delimiters}{brackets}}
+        {\showSETUPkeywordbrackets}
+        {#1}
+\stoptexdefinition
+
+% we could also add specifying separatos (default comma) but let's do
+% this stepwise
+
+% keywords
+
+\xmlmapvalue {setups:keyword} {braces}   {\showSETUPkeywordbraces}
+\xmlmapvalue {setups:keyword} {brackets} {\showSETUPkeywordbrackets}
+
+\starttexdefinition unexpanded showSETUPkeywordbraces #1
+    \ifcase\kindofsetup
+        \showSETUPline{\letterleftbrace...\letterrightbrace}
+    \else
+        \showSETUP{#1}
+            {\letterleftbrace...\letterrightbrace}
+            {\letterleftbrace...,...\letterrightbrace}
+    \fi
+\stoptexdefinition
+
+\starttexdefinition unexpanded showSETUPkeywordbrackets #1
+    \ifcase\kindofsetup
+        \showSETUPline{[...]}
+    \else
+        \showSETUP{#1}
+            {[...]}
+            {[...,...]}
+    \fi
+\stoptexdefinition
+
+\starttexdefinition unexpanded showSETUPkeyword #1
+    \xmlvalue
+        {setups:keyword}
+        {\xmlattdef{#1}{delimiters}{brackets}}
+        {\showSETUPkeywordbrackets}
+        {#1}
+\stoptexdefinition
+
+% arguments
+
+% \unexpanded\def\showSETUPargument#1%
+%     {\ifcase\kindofsetup
+%        \showSETUPline{%
+%          \letterleftbrace
+%          \xmlfilter{#1}{/cd:constant/command(xml:setups:constant:value)}% always one
+%          \letterrightbrace
+%        }
+%      \else
+%        \showSETUP{#1}
+%           {\letterleftbrace..\letterrightbrace}
+%           {\letterleftbrace..,...,..\letterrightbrace}%
+%      \fi}
 
 \unexpanded\def\showSETUPdisplaymath#1%
     {\showSETUP{#1}
         {\letterdollar\letterdollar...\letterdollar\letterdollar}
-        {\letterdollar\letterdollar...\$\$}}
+        {\letterdollar\letterdollar...\letterdollar\letterdollar}}
 
 \unexpanded\def\showSETUPindex#1%
     {\showSETUP{#1}

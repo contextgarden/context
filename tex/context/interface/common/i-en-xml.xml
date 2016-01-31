@@ -5,25 +5,25 @@
     <!-- some common definitions -->
 
     <cd:define name="xml-node">
-        <cd:argument><cd:constant type="cd:node"/></cd:argument>
+        <cd:keywords delimiters="braces"><cd:constant type="cd:node"/></keywords>
     </cd:define>
 
     <cd:define name="xml-path">
-        <cd:argument><cd:constant type="cd:path"/></cd:argument>
+        <cd:keywords delimiters="braces"><cd:constant type="cd:path"/></keywords>
     </cd:define>
 
     <cd:define name="xml-node-path">
-        <cd:argument><cd:constant type="cd:node"/></cd:argument>
-        <cd:argument><cd:constant type="cd:lpath"/></cd:argument>
+        <cd:keywords delimiters="braces"><cd:constant type="cd:node"/></keywords>
+        <cd:keywords delimiters="braces"><cd:constant type="cd:lpath"/></keywords>
     </cd:define>
 
     <cd:define name="xml-true">
-        <cd:argument><cd:constant type="cd:true"/></cd:argument>
+        <cd:keywords delimiters="braces"><cd:constant type="cd:true"/></keywords>
     </cd:define>
 
     <cd:define name="xml-true-false">
-        <cd:argument><cd:constant type="cd:true"/></cd:argument>
-        <cd:argument><cd:constant type="cd:false"/></cd:argument>
+        <cd:keywords delimiters="braces"><cd:constant type="cd:true"/></cd:keywords>
+        <cd:keywords delimiters="braces"><cd:constant type="cd:false"/></cd:keywords>
     </cd:define>
 
     <!-- the definitions themselves -->
@@ -32,7 +32,7 @@
 
     <cd:command name="xmlmain">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
@@ -109,14 +109,14 @@
     <cd:command name="xmlposition">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:number"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:number"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlelement">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:number"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:number"/></keywords>
         </cd:arguments>
     </cd:command>
 
@@ -129,30 +129,30 @@
     <cd:command name="xmlsnippet">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:number"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:number"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlconcat">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:text"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:text"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlconcatrange">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:text"/></cd:argument>
-            <cd:argument><cd:constant type="cd:first"/></cd:argument>
-            <cd:argument><cd:constant type="cd:last"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:text"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:first"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:last"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlcommand">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:xmlsetup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:xmlsetup"/></keywords>
         </cd:arguments>
     </cd:command>
 
@@ -187,70 +187,70 @@
     <cd:command name="xmlprettyprint">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlloadfile">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:file"/></cd:argument>
-            <cd:argument><cd:constant type="cd:xmlsetup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:file"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:xmlsetup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlloadbuffer">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:buffer"/></cd:argument>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:xmlsetup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:buffer"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:xmlsetup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlloaddata">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:text"/></cd:argument>
-            <cd:argument><cd:constant type="cd:xmlsetup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:text"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:xmlsetup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlloadonly">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:file"/></cd:argument>
-            <cd:argument><cd:constant type="cd:xmlsetup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:file"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:xmlsetup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlprocessfile">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:file"/></cd:argument>
-            <cd:argument><cd:constant type="cd:xmlsetup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:file"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:xmlsetup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlprocessbuffer">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:buffer"/></cd:argument>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:xmlsetup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:buffer"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:xmlsetup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlprocessdata">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:text"/></cd:argument>
-            <cd:argument><cd:constant type="cd:xmlsetup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:text"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:xmlsetup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlinclude">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
@@ -273,22 +273,22 @@
     <cd:command name="xmlatt">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlattdef">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:text"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:text"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlrefatt">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
@@ -297,30 +297,30 @@
     <cd:command name="xmlattribute">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlattributedef">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:text"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:text"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlchainatt">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlchainattdef">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:text"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:text"/></keywords>
         </cd:arguments>
     </cd:command>
 
@@ -344,103 +344,103 @@
     <cd:command name="xmlsetup">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlsetsetup">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:lpath"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:lpath"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlremovesetup">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlremovedocumentsetup">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlflushdocumentsetups">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlresetsetups">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlresetdocumentsetups">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlprependsetup">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlappendsetup">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlbeforesetup">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlaftersetup">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlprependdocumentsetup">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlappenddocumentsetup">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlbeforedocumentsetup">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlafterdocumentsetup">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
@@ -449,15 +449,15 @@
 
     <cd:command name="xmlregistereddocumentsetups">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:setup"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:setup"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlsetfunction">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:luafunction"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:luafunction"/></keywords>
         </cd:arguments>
     </cd:command>
 
@@ -533,96 +533,96 @@
 
     <cd:command name="xmlregisterns">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:url"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:url"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlregisterns">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlremapname">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlremapnamespace">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlchecknamespace">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlmapvalue">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:category"/></cd:argument>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:text"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:category"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:text"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlvalue">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:category"/></cd:argument>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:text"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:category"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:text"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmldoifelsevalue">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:category"/></cd:argument>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:category"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
             <cd:resolve name="xml-true-false"/>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlloaddirectives">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:file"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:file"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlsave">
         <cd:arguments>
             <cd:resolve name="xml-node"/>
-            <cd:argument><cd:constant type="cd:file"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:file"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmltofile">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:file"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:file"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmltobuffer">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:buffer"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:buffer"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmltobufferverbose">
         <cd:arguments>
             <cd:resolve name="xml-node-path"/>
-            <cd:argument><cd:constant type="cd:buffer"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:buffer"/></keywords>
         </cd:arguments>
     </cd:command>
 
@@ -631,7 +631,7 @@
         <cd:command name="xmltoparameters">
             <cd:arguments>
                 <cd:resolve name="xml-node-path"/>
-                <cd:argument><cd:constant type="cd:buffer"/></cd:argument>
+                <cd:keywords delimiters="braces"><cd:constant type="cd:buffer"/></keywords>
             </cd:arguments>
         </cd:command>
 
@@ -671,13 +671,13 @@
 
     <cd:command name="xmlinjector">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmlapplyselectors">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:node"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:node"/></keywords>
         </cd:arguments>
     </cd:command>
 
@@ -685,15 +685,15 @@
 
     <cd:command name="xmlsetentity">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:text"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:text"/></keywords>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="xmltexentity">
         <cd:arguments>
-            <cd:argument><cd:constant type="cd:name"/></cd:argument>
-            <cd:argument><cd:constant type="cd:text"/></cd:argument>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:name"/></keywords>
+            <cd:keywords delimiters="braces"><cd:constant type="cd:text"/></keywords>
         </cd:arguments>
     </cd:command>
 

@@ -1913,13 +1913,19 @@
 
 % these could be \??floatpreparesidecaption
 
+% \setupfloat[figure][location=left]
+% \setupcaption[figure][width=max]
+%
+% \placefigure{my figure caption my figure caption}{\framed[width=4cm,height=1cm]{}} \input tufte
+% \placefigure{my figure caption}                  {\framed[width=4cm,height=1cm]{}} \input tufte
+
 \def\strc_floats_prepare_side_caption_max
   {\setbox\b_strc_floats_caption\vbox
      {\strc_floats_caption_set_align
       \hsize\wd\b_strc_floats_content
       \strc_floats_make_complete_caption}}
 
-\def\strc_floats_prepare_side_caption_fit
+\def\strc_floats_prepare_side_caption_fit % or center when smaller
   {\ifdim\wd\b_strc_floats_caption>\wd\b_strc_floats_content\relax
      \setbox\b_strc_floats_caption\vbox
        {\forgetall % needed?

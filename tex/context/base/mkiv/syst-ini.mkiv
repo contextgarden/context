@@ -452,17 +452,17 @@
 %D Some expected plain variants follow. We don't reuse registers because we
 %D don't want clashes.
 
-\newdimen\p@       \p@   \onepoint
-\newcount\m@ne     \m@ne \minusone
-\newdimen\z@       \z@   \zeropoint
+\let     \p@             \onepoint
+\let     \m@ne           \minusone
+\let     \z@             \zeropoint
 \let     \@ne            \plusone
 \let     \tw@            \plustwo
 \let     \thr@@          \plusthree
 \let     \sixt@@n        \plussixteen
 \let     \@cclv          \pluscclv
 \let     \@cclvi         \pluscclvi
-\newbox  \voidb@x
-\newtoks \toks@
+\let     \voidb@x        \voidbox
+\newtoks \toks@        % \scratchtoks
 
 %D We define \type {\newif} a la plain \TEX, but will redefine it later. As
 %D Knuth says:

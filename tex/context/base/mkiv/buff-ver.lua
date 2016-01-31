@@ -627,6 +627,17 @@ local function getstrip(lines,first,last)
     return first, last, last - first + 1
 end
 
+-- we look for text (todo):
+--
+-- "foo"  : start after line with "foo"
+-- "="    : ignore first blob
+-- "=foo" : start at "foo"
+-- "!foo" : maybe a not "foo"
+
+-- % - # lines start a comment
+
+local comment = "^[%%%-#]"
+
 local function getrange(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
     local noflines = #lines
     local first    = first or 1
@@ -634,7 +645,7 @@ local function getrange(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
     if last < 0 then
         last = noflines + last
     end
-    local what = settings_to_array(range)
+    local what = settings_to_array(range) -- maybe also n:m
     local r_first = what[1]
     local r_last  = what[2]
     local f       = tonumber(r_first)
@@ -644,11 +655,26 @@ local function getrange(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
             if f > first then
                 first = f
             end
-        else
+        elseif r_first == "=" then
+            for i=first,last do
+                if find(lines[i],comment) then
+                    first = i + 1
+                else
+                    break
+                end
+            end
+        elseif r_first ~= "" then
+            local exact, r_first = match(r_first,"^([=]?)(.*)")
             for i=first,last do
                 if find(lines[i],r_first) then
-                    first = i + 1
+                    if exact == "=" then
+                        first = i
+                    else
+                        first = i + 1
+                    end
                     break
+                else
+                    first = i
                 end
             end
         end
@@ -664,11 +690,24 @@ local function getrange(lines,first,last,range) -- 1,3 1,+3 fromhere,tothere
             if l < last then
                 last = l
             end
-        else
+        elseif r_first == "=" then
+            for i=first,last do
+                if find(lines[i],comment) then
+                    break
+                else
+                    last = i
+                end
+            end
+        elseif r_last ~= "" then
+            local exact, r_last = match(r_last,"^([=]?)(.*)")
             for i=first,last do
                 if find(lines[i],r_last) then
-                    last = i - 1
+                    if exact == "=" then
+                        last = i
+                    end
                     break
+                else
+                    last = i
                 end
             end
         end
