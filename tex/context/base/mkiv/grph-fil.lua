@@ -35,6 +35,7 @@ end
 job.register('job.files.collected', tobesaved, initializer)
 
 function jobfiles.run(name,action)
+    file.addsuffix(name,"tex") -- we assume tex if not set
     local oldchecksum = collected[name]
     local newchecksum = file.checksum(name)
     if jobfiles.forcerun or not oldchecksum or oldchecksum ~= newchecksum then

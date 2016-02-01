@@ -46,6 +46,7 @@ implement { name = "xmllastatt",           actions = lxml.lastatt }
 implement { name = "xmlattdef",            actions = lxml.att,               arguments = { "string", "string", "string" } }
 implement { name = "xmlattribute",         actions = lxml.attribute,         arguments = { "string", "string", "string" } }
 implement { name = "xmlattributedef",      actions = lxml.attribute,         arguments = { "string", "string", "string", "string" } }
+implement { name = "xmlpath",              actions = lxml.path,              arguments = { "string", "'/'" } }
 implement { name = "xmlchainatt",          actions = lxml.chainattribute,    arguments = { "string", "'/'", "string" } }
 implement { name = "xmlchainattdef",       actions = lxml.chainattribute,    arguments = { "string", "'/'", "string", "string"  } }
 implement { name = "xmlrefatt",            actions = lxml.refatt,            arguments = { "string", "string" } }

@@ -258,6 +258,10 @@
         <cd:arguments><cd:resolve name="xml-node"/></cd:arguments>
     </cd:command>
 
+    <cd:command name="xmlpath">
+        <cd:arguments><cd:resolve name="xml-node"/></cd:arguments>
+    </cd:command>
+
     <cd:command name="xmlnamespace">
         <cd:arguments><cd:resolve name="xml-node"/></cd:arguments>
     </cd:command>

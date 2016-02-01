@@ -44,8 +44,8 @@ return {
         "withshade", "withcircularshade", "withlinearshade", -- old but kept
         "defineshade", "shaded",
      -- "withshading", "withlinearshading", "withcircularshading", "withfromshadecolor", "withtoshadecolor",
-        "shadedinto", "withshadecolors", "withshadedomain", "withshademethod", "withshadefactor", "withshadevector", "withshadecenter",
-        "withshadestep", "withshadefraction",
+        "shadedinto", "withshadecolors", "withshadedomain", "withshademethod", "withshadefactor", "withshadevector",
+        "withshadecenter", "withshadedirection", "withshadestep", "withshadefraction",
         "cmyk", "spotcolor", "multitonecolor", "namedcolor",
         "drawfill", "undrawfill",
         "inverted", "uncolored", "softened", "grayed", "greyed",
@@ -129,5 +129,7 @@ return {
         "area",
         --
         "addbackground",
+        --
+        "shadedup", "shadeddown", "shadedleft", "shadedright",
     },
 }

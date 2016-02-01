@@ -542,6 +542,16 @@ def withshadevector expr a =
     withprescript "sh_center_b=" & ddecimal (point ypart a of mfun_shade_path)
 enddef ;
 
+def withshadedirection expr a =
+    withprescript "sh_center_a=" & ddecimal (point xpart a of boundingbox(mfun_shade_path))
+    withprescript "sh_center_b=" & ddecimal (point ypart a of boundingbox(mfun_shade_path))
+enddef ;
+
+pair shadedup    ; shadedup    := (0.5,2.5) ;
+pair shadeddown  ; shadeddown  := (2.5,0.5) ;
+pair shadedleft  ; shadedleft  := (1.5,3.5) ;
+pair shadedright ; shadedright := (3.5,1.5) ;
+
 def withshadecenter expr a =
     withprescript "sh_center_a=" & ddecimal (
         center mfun_shade_path shifted (

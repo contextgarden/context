@@ -85,7 +85,7 @@
 
 \def\grph_typesetting_process[#1][#2][#3]% <name> filename settings-b | filename options settings
   {\ifcsname\??typesettingfile#1\endcsname
-     \csname\??typesettingfile#1\endcsname{#2}{#3}%
+     \lastnamedcs{#2}{#3}%
    \else\ifthirdargument % filename options settings
      \grph_typesetting_process_indeed{#2}{#3}{#1}{}%
    \else\ifsecondargument % filename settings

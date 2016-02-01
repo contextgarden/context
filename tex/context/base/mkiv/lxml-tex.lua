@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['lxml-tex'] = {
 -- be an cldf-xml helper library.
 
 local utfchar = utf.char
-local concat, insert, remove, sortedkeys = table.concat, table.insert, table.remove, table.sortedkeys
+local concat, insert, remove, sortedkeys, reversed = table.concat, table.insert, table.remove, table.sortedkeys, table.reverse
 local format, sub, gsub, find, gmatch, match = string.format, string.sub, string.gsub, string.find, string.gmatch, string.match
 local type, next, tonumber, tostring, select = type, next, tonumber, tostring, select
 local lpegmatch = lpeg.match
@@ -1396,6 +1396,35 @@ local function chainattribute(collected,arguments) -- todo: optional levels
     end
 end
 
+local function chainpath(collected,nonamespace)
+    if collected and #collected > 0 then
+        local e = collected[1]
+        local t = { }
+        while e do
+            local tg = e.tg
+            local rt = e.__p__
+            local ns = e.ns
+            if tg == "@rt@" then
+                break
+            elseif rt.tg == "@rt@" then
+                if nonamespace or not ns or ns == "" then
+                    t[#t+1] = tg
+                else
+                    t[#t+1] = ns .. ":" .. tg
+                end
+            else
+                if nonamespace or not ns or ns == "" then
+                    t[#t+1] = tg .. "[" .. e.ei .. "]"
+                else
+                    t[#t+1] = ns .. ":" .. tg .. "[" .. e.ei .. "]"
+                end
+            end
+            e = rt
+        end
+        contextsprint(notcatcodes,concat(reversed(t),"/"))
+    end
+end
+
 local function text(collected)
     if collected then
         local nc = #collected
@@ -1513,6 +1542,7 @@ texfinalizers.index          = index
 texfinalizers.concat         = concat
 texfinalizers.concatrange    = concatrange
 texfinalizers.chainattribute = chainattribute
+texfinalizers.chainpath      = chainpath
 texfinalizers.default        = all -- !!
 
 local concat = table.concat
@@ -1688,6 +1718,10 @@ end
 
 function lxml.chainattribute(id,pattern,a,default)
     chainattribute(xmlapplylpath(getid(id),pattern),a,default)
+end
+
+function lxml.path(id,pattern,nonamespace)
+    chainpath(xmlapplylpath(getid(id),pattern),nonamespace)
 end
 
 function lxml.concatrange(id,pattern,start,stop,separator,lastseparator,textonly) -- test this on mml

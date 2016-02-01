@@ -375,7 +375,7 @@ implement {
 implement {
     name    = "analysefloatmethod",
     actions = function(str)
-        local method, label, row, column = floats.analysemethod(str)
+        local method, label, column, row = floats.analysemethod(str)
         setmacro("floatmethod",method or "")
         setmacro("floatlabel", label  or "")
         setmacro("floatrow",   row    or "")

@@ -311,7 +311,7 @@
      \hss
      \starttextproperties
      \usemixedcolumnscolorparameter\c!rulecolor
-     \csname\??mixedcolumnsseparator\p_separator\endcsname % was \c!rule
+     \begincsname\??mixedcolumnsseparator\p_separator\endcsname % was \c!rule
      \stoptextproperties
      \hss
    \egroup
@@ -361,11 +361,11 @@
   {\edef\currentmixedcolumns{#1}%
    \edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
    \mixedcolumnsparameter\c!before\relax
-   \csname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
+   \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup
    \setupcurrentmixedcolumns[#2]%
    \page_mix_initialize_columns
-   \csname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname}
+   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname}
 
 \def\page_mix_start_columns_b[#1][#2]%
   {\doifelseassignment{#1}%
@@ -375,13 +375,13 @@
       \firstargumentfalse}%
    \edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
    \mixedcolumnsparameter\c!before\relax % so, it doesn't listen to local settings !
-   \csname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
+   \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup
    \iffirstargument
      \setupcurrentmixedcolumns[#1]%
    \fi
    \page_mix_initialize_columns
-   \csname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname} % no \relax
+   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname} % no \relax
 
 \def\page_mix_error_b
   {\writestatus\m!columns{best use an instance of mixed columns}}
@@ -390,10 +390,10 @@
   {\let\currentmixedcolumns\empty
    \edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
    \mixedcolumnsparameter\c!before\relax
-   \csname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
+   \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup
    \page_mix_initialize_columns
-   \csname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname}
+   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname}
 
 \unexpanded\def\page_mix_fast_columns_start#1%
   {\pushmacro\currentmixedcolumns
@@ -401,27 +401,27 @@
    \edef\currentmixedcolumns{#1}%
    \edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
    \mixedcolumnsparameter\c!before\relax % so, it doesn't list to local settings !
-   \csname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
+   \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup
    \page_mix_initialize_columns
-   \csname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname} % no \relax
+   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname} % no \relax
 
 %D When we stop, we switch over to the balancing routine. After we're done we
 %D make sure to set the sizes are set, a somewhat redundant action when we
 %D already have flushed but better be safe.
 
 \unexpanded\def\stopmixedcolumns
-  {\csname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
+  {\begincsname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
    \endgroup
-   \csname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
+   \begincsname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
    \mixedcolumnsparameter\c!after\relax
    \popmacro\currentmixedcolumnsmethod
    \popmacro\currentmixedcolumns}
 
 % \unexpanded\def\stopmixedcolumns
-%   {\csname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
+%   {\begincsname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
 %    \endgroup
-%    \csname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
+%    \begincsname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
 %    \mixedcolumnsparameter\c!after\relax
 % \ifx\currentmixedcolumnsmethod\s!otr
 %    \popmacro\currentmixedcolumnsmethod

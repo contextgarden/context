@@ -257,7 +257,7 @@ Hasselt NL
 
 We use a very simple document structure for demonstrating how a converter is
 defined. In practice a mapping will be more complex, especially when we have a
-style with complect chapter openings using data coming from all kind of places,
+style with complex chapter openings using data coming from all kind of places,
 different styling of sections with the same name, selectively (out of order)
 flushed content, special formatting, etc.
 
@@ -311,10 +311,10 @@ but as well:
 \xmlflush{demo::6}\endgraf
 \stoptyping
 
-Keep in mind that the actual node references are abstractions, you never see
-those \type {<id>::<number>}'s, because we will use either the abstract \type
-{#1} (any node) or an explicit reference like \type {demo}. The previous setup
-when issued will be like:
+Keep in mind that the references tor the actual nodes (elements) are
+abstractions, you never see those \type {<id>::<number>}'s, because we will use
+either the abstract \type {#1} (any node) or an explicit reference like \type
+{demo}. The previous setup when issued will be like:
 
 \starttyping
 \startchapter[title=\xmlfirst{demo::3}{/title}]
@@ -333,7 +333,7 @@ Doing that with transformations or filtering is often more complex than leaving
 that to \TEX. As soon as the list gets typeset, the reference (\type {demo::#3})
 is used for the lookup. This is because by default the title is stored as given.
 So, as long as we make sure the \XML\ source is loaded before the table of
-contents is typeset we're ok. Later we will look into this on more detail, for
+contents is typeset we're ok. Later we will look into this in more detail, for
 now it's enough to know that in most cases the abstract \type {#1} reference will
 work out ok.
 
@@ -664,8 +664,8 @@ ignored in the definition. This means that we don't have to worry about so calle
 spurious spaces but it also means that when we do want a space, we have to use
 the \type {\space} command.
 
-The only difference between setups and \XML\ setups is that the later ones get an
-argument (\type {#1}) that reflects the current node in the \XML\ tree.
+The only difference between setups and \XML\ setups is that the following ones
+get an argument (\type {#1}) that reflects the current node in the \XML\ tree.
 
 \stopsection
 
@@ -722,7 +722,7 @@ code there are several ways to deal with these issues. Take the following docume
 When the file is read the \type {&lt;} entity will be replaced by \type {<} and
 the \type {&gt;} by \type {>}. The numeric entities will be replaced by the
 characters they refer to. The \type {&mess} is kind of special. We do preload
-a huge list of more of less standardized entities but \type {mess} is not in
+a huge list of more or less standardized entities but \type {mess} is not in
 there. However, it is possible to have it defined in the document preamble, like:
 
 \starttyping
@@ -980,7 +980,7 @@ the current document id. There is also \type {\xmlself} which expands to the
 current node number (\type {#1} in setups).
 
 \startxmlcmd {\cmdbasicsetup{xmlmain}}
-    returns the whole documents
+    returns the whole document
 \stopxmlcmd
 
 Normally such a flush will trigger a chain reaction of setups associated with the
@@ -1035,7 +1035,7 @@ for users.
 
 When we flush an element, the associated \XML\ setups are expanded. The most
 straightforward way to flush an element is the following. Keep in mind that the
-returned valus itself can trigger setups and therefore flushes.
+returned values itself can trigger setups and therefore flushes.
 
 \startxmlcmd {\cmdbasicsetup{xmlflush}}
     returns all nodes under \cmdinternal {cd:node}
@@ -1142,7 +1142,7 @@ You can restrict flushing by using commands that accept a specification.
 \stopxmlcmd
 
 \startxmlcmd {\cmdbasicsetup{xmlinlineverbatim}}
-    return the content of the node as inline verbatim code, that is no further
+    return the content of the node as inline verbatim code; no further
     interpretation (expansion) takes place and spaces are honoured; it uses the
     following wrapper
 \stopxmlcmd
@@ -1153,7 +1153,7 @@ You can restrict flushing by using commands that accept a specification.
 \stopxmlcmd
 
 \startxmlcmd {\cmdbasicsetup{xmldisplayverbatim}}
-    return the content the node as display verbatim code, that is no further
+    return the content of the node as display verbatim code; no further
     interpretation (expansion) takes place and leading and trailing spaces and
     newlines are treated special; it uses the following wrapper
 \stopxmlcmd
@@ -1347,8 +1347,8 @@ something that users of \XSLT\ might recognize as templates.
 \stopxmlcmd
 
 \startxmlcmd {\cmdbasicsetup{xmlsetsetup}}
-    associates setups (\TEX\ code) \cmdinternal {cd:setup} to the elements to
-    \cmdinternal {cd:node} that match \cmdinternal {cd:lpath}
+    associates setups \cmdinternal {cd:setup} (\TEX\ code) with the matching
+    nodes of \cmdinternal {cd:lpath} or root \cmdinternal {cd:node}
 \stopxmlcmd
 
 \startxmlcmd {\cmdbasicsetup{xmlprependsetup}}
@@ -1381,7 +1381,8 @@ something that users of \XSLT\ might recognize as templates.
 
 \startxmlcmd {\cmdbasicsetup{xmlappenddocumentsetup}}
     adds \cmdinternal {cd:setup} to the list of setups to be applied to
-    \cmdinternal {cd:name} (alias: \type{\xmlregisterdocumentsetup})
+    \cmdinternal {cd:name} (you can also use the alias: \type
+    {\xmlregisterdocumentsetup})
 \stopxmlcmd
 
 \startxmlcmd {\cmdbasicsetup{xmlbeforedocumentsetup}}
@@ -1438,7 +1439,7 @@ and an \cmdinternal {cd:lpath} as second:
     at node \cmdinternal {cd:node}
 \stopxmlcmd
 
-\startxmlcmd {\cmdbasicsetup{xmldoifelse}{yes}}
+\startxmlcmd {\cmdbasicsetup{xmldoifelse}}
     expands to \cmdinternal {cd:true} when \cmdinternal {cd:lpath} matches at
     node \cmdinternal {cd:node} and to \cmdinternal {cd:false} otherwise
 \stopxmlcmd
@@ -1497,8 +1498,7 @@ hidden. You can apply the default yourself using:
 \stopxmlcmd
 
 You can set \type {compress} to \type {yes} in which case comment is stripped
-from the tree when the file is read. When \type {entities} is set to \type {yes}
-(this is the default) entities are replaced.
+from the tree when the file is read.
 
 \startxmlcmd {\cmdbasicsetup{xmlregisterns}}
     associates an internal namespace (like \type {mml}) with one given in the
@@ -1702,23 +1702,23 @@ You can pass your own functions too. Such functions are defined in the the \type
 {xml.expressions} namespace. We have defined a few shortcuts:
 
 \starttabulate[|l|l|]
-\type {find(str,pattern)} \NC \type{string.find}      \NC \NR
-\type {contains(str)}     \NC \type{string.find}      \NC \NR
-\type {oneof(str,...)}    \NC is \type{str} in list   \NC \NR
-\type {upper(str)}        \NC \type{characters.upper} \NC \NR
-\type {lower(str)}        \NC \type{characters.lower} \NC \NR
-\type {number(str)}       \NC \type{tonumber}         \NC \NR
-\type {boolean(str)}      \NC \type{toboolean}        \NC \NR
-\type {idstring(str)}     \NC removes leading hash    \NC \NR
-\type {name(index)}       \NC full tag name           \NC \NR
-\type {tag(index)}        \NC tag name                \NC \NR
-\type {namespace(index)}  \NC namespace of tag        \NC \NR
-\type {text(index)}       \NC content                 \NC \NR
-\type {error(str)}        \NC quit and show error     \NC \NR
-\type {quit()}            \NC quit                    \NC \NR
-\type {print()}           \NC print message           \NC \NR
-\type {count(pattern)}    \NC number of matches       \NC \NR
-\type {child(pattern)}    \NC take child that matches \NC \NR
+\NC \type {find(str,pattern)} \NC \type{string.find}      \NC \NR
+\NC \type {contains(str)}     \NC \type{string.find}      \NC \NR
+\NC \type {oneof(str,...)}    \NC is \type{str} in list   \NC \NR
+\NC \type {upper(str)}        \NC \type{characters.upper} \NC \NR
+\NC \type {lower(str)}        \NC \type{characters.lower} \NC \NR
+\NC \type {number(str)}       \NC \type{tonumber}         \NC \NR
+\NC \type {boolean(str)}      \NC \type{toboolean}        \NC \NR
+\NC \type {idstring(str)}     \NC removes leading hash    \NC \NR
+\NC \type {name(index)}       \NC full tag name           \NC \NR
+\NC \type {tag(index)}        \NC tag name                \NC \NR
+\NC \type {namespace(index)}  \NC namespace of tag        \NC \NR
+\NC \type {text(index)}       \NC content                 \NC \NR
+\NC \type {error(str)}        \NC quit and show error     \NC \NR
+\NC \type {quit()}            \NC quit                    \NC \NR
+\NC \type {print()}           \NC print message           \NC \NR
+\NC \type {count(pattern)}    \NC number of matches       \NC \NR
+\NC \type {child(pattern)}    \NC take child that matches \NC \NR
 \stoptabulate
 
 
@@ -1734,7 +1734,7 @@ functions.
 \stoptabulate
 
 The given expression between \type {[]} is converted to a \LUA\ expression so you
-can use the usual ingredients:
+can use the usual operators:
 
 \starttyping
 == ~= <= >= < > not and or ()
@@ -1780,12 +1780,13 @@ filters to the expression, for instance:
 a/(b|c)/!d/e/text()
 \stoptyping
 
-In a filter, the last part of the \cmdinternal {cd:lpath} expression is a function call.
-The previous example returns the text of each element \type {e} that results from
-matching the expression. When running \TEX\ the following functions are available.
-Some are also also available when using pure \LUA. In \TEX\ you can often use one of
-the macros like \type {\xmlfirst} instead of a \type {\xmlfilter} with finalizer
-\type {first()}. The filter can be somewhat faster but that is hardly noticeable.
+In a filter, the last part of the \cmdinternal {cd:lpath} expression is a
+function call. The previous example returns the text of each element \type {e}
+that results from matching the expression. When running \TEX\ the following
+functions are available. Some are also available when using pure \LUA. In \TEX\
+you can often use one of the macros like \type {\xmlfirst} instead of a \type
+{\xmlfilter} with finalizer \type {first()}. The filter can be somewhat faster
+but that is hardly noticeable.
 
 \starttabulate[|l|l|p|]
 \NC \type {context()}                \NC string  \NC the serialized text with \TEX\ catcode regime \NC \NR
@@ -1793,8 +1794,8 @@ the macros like \type {\xmlfirst} instead of a \type {\xmlfilter} with finalizer
 \NC \type {function()}               \NC string  \NC depends on the function \NC \NR
 %
 \NC \type {name()}                   \NC string  \NC the (remapped) namespace \NC \NR
-\NC \type {tag()}                    \NC string  \NC the name of the element \NR
-\NC \type {tags()}                   \NC list    \NC the names of the element \NR
+\NC \type {tag()}                    \NC string  \NC the name of the element \NC \NR
+\NC \type {tags()}                   \NC list    \NC the names of the element \NC \NR
 %
 \NC \type {text()}                   \NC string  \NC the serialized text \NC \NR
 \NC \type {upper()}                  \NC string  \NC the serialized text uppercased \NC \NR
@@ -2004,7 +2005,7 @@ interface unless mentioned in this manual.
 
 \startchapter[title={Tips and tricks}]
 
-\startsection[title={Tracing}]
+\startsection[title={tracing}]
 
 It can be hard to debug code as much happens kind of behind the screens.
 Therefore we have a couple of tracing options. Of course you can typeset some
@@ -2017,6 +2018,65 @@ status information, using for instance:
 \startxmlcmd {\cmdbasicsetup{xmlinfo}}
     typeset the name if the element given by \cmdinternal {cd:node}
 \stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlpath}}
+    returns the complete path (including namespace prefix and index) of the
+    given \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startbuffer[demo]
+<?xml version "1.0"?>
+<document>
+    <section>
+        <content>
+            <p>first</p>
+            <p><b>second</b></p>
+        </content>
+    </section>
+    <section>
+        <content>
+            <p><b>third</b></p>
+            <p>fourth</p>
+        </content>
+    </section>
+</document>
+\stopbuffer
+
+Say that we have the following \XML:
+
+\typebuffer[demo]
+
+and the next definitions:
+
+\startbuffer
+\startxmlsetups xml:demo:base
+    \xmlsetsetup{#1}{p|b}{xml:demo:*}
+\stopxmlsetups
+
+\startxmlsetups xml:demo:p
+    \xmlflush{#1}
+    \par
+\stopxmlsetups
+
+\startxmlsetups xml:demo:b
+    \par
+    \xmlpath{#1} : \xmlflush{#1}
+    \par
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{example-10}{xml:demo:base}
+
+\xmlprocessbuffer{example-10}{demo}{}
+\stopbuffer
+
+\typebuffer
+
+This will give us:
+
+\blank \startpacked \getbuffer \stoppacked \blank
+
+If you use \type {\xmlshow} you will get a complete subtree which can
+be handy for tracing but can also lead to large documents.
 
 We also have a bunch of trackers that can be enabled, like:
 
@@ -2053,7 +2113,7 @@ trace the filename.
     returns the list of files where the node comes from
 \stopxmlcmd
 
-\startxmlcmd {\cmdbasicsetup{xmlinclusions}}
+\startxmlcmd {\cmdbasicsetup{xmlbadinclusions}}
     returns a list of files that were not included due to some problem
 \stopxmlcmd
 
@@ -2062,14 +2122,14 @@ instance in the margin.
 
 \stopsection
 
-\startsection[title={Expansion}]
+\startsection[title={expansion}]
 
 For novice users the concept of expansion might sound frightening and to some
 extend it is. However, it is important enough to spend some words on it here.
 
 It is good to realize that most setups are sort of immediate. When one setup is
 issued, it can call another one and so on. Normally you won't notice that but
-there are cases where that can be an problem. In \TEX\ you can define a macro,
+there are cases where that can be a problem. In \TEX\ you can define a macro,
 take for instance:
 
 \starttyping
@@ -2106,7 +2166,7 @@ Here we get something like:
 \foobar => {\def\barfoo{...}}
 \stoptyping
 
-When \type {\barfoo} is not defined we get an error and when it is know and expands
+When \type {\barfoo} is not defined we get an error and when it is known and expands
 to something weird we might also get an error.
 
 Especially when you don't know what content can show up, this can result in errors
@@ -2131,7 +2191,7 @@ call to the macro, think of:
 \stoptyping
 
 But this is often not needed, most \CONTEXT\ commands can handle the expansions
-quite well but it's good to know that there is a away out. So, now to some
+quite well but it's good to know that there is a way out. So, now to some
 examples. Imagine that we have an \XML\ file that looks as follows:
 
 \starttyping
@@ -2262,7 +2322,7 @@ We need to deal with emphasis and the content of the chapter.
 
 A similar approach is followed with the index entries. Watch how we use the
 numbered entries variant (in this case we could also have used just \type
-{entries} and \type {keys}.
+{entries} and \type {keys}).
 
 \starttyping
 \startxmlsetups xml:index
@@ -2327,7 +2387,7 @@ dealt with in a similar way.}
 
 \stopsection
 
-\startsection[title={Special cases}]
+\startsection[title={special cases}]
 
 Normally the content will be flushed under a special (so called) catcode regime.
 This means that characters that have a special meaning in \TEX\ will have no such
@@ -2402,10 +2462,10 @@ A simple mapping is:
 \stopxmlsetups
 \stoptyping
 
-The \type {\bTD} command is a so called delimited command which means that
-it picks up its argument by looking for an \type {\eTD}. For a simple case
-like here this works quite well because the flush is inside the pair. This
-is not the case in the following variant:
+The \type {\bTD} command is a so called delimited command which means that it
+picks up its argument by looking for an \type {\eTD}. For the simple case here
+this works quite well because the flush is inside the pair. This is not the case
+in the following variant:
 
 \starttyping
 \startxmlsetups xml:td:start
@@ -2477,9 +2537,9 @@ another weird one:
 
 \stopsection
 
-\startsection[title={Selectors and injectors}]
+\startsection[title={selectors and injectors}]
 
-This chapter describes a bit special feature, one that we needed for a project
+This section describes a bit special feature, one that we needed for a project
 where we could not touch the original content but could add specific sections for
 our own purpose. Hopefully the example demonstrates its useability.
 
@@ -2574,12 +2634,12 @@ We can define a message handler as follows:
 
 \typebuffer \getbuffer
 
-When this file is process you will see this on the console:
+When this file is processed you will see this on the console:
 
-\startbuffer
+\starttyping
 info > 1: this is a demo file
 info > 2: this is a demo file
-\stopbuffer
+\stoptyping
 
 The file has some sections that can be used or ignored. The recipe for
 obeying \type {t1} and \type {t4} is the following:
@@ -2623,7 +2683,7 @@ This typesets:
 \stopnarrower
 
 The include coding is kind of special: it permits adding content (in a comment)
-and ignoring the rest so that we indeed can add something withou tinterfering
+and ignoring the rest so that we indeed can add something without interfering
 with the original. Of course in a normal workflow such messy solutions are
 not needed, but alas, often workflows are not that clean, especially when one
 has no real control over the source.
@@ -2668,8 +2728,8 @@ In the example we see:
 <?context-directive injector page t7 t8 ?>
 \stoptyping
 
-When we \type {\xmlsetinjector[t7]} a pagebreak will injected in that spot. Tags
-like \type {t7}, \type {t8} etc.\ can represent versions.
+When we set \type {\xmlsetinjector[t7]} a pagebreak will injected in that spot.
+Tags like \type {t7}, \type {t8} etc.\ can represent versions.
 
 \stopsection
 
@@ -2680,7 +2740,7 @@ like \type {t7}, \type {t8} etc.\ can represent versions.
 \startsection[title={introduction}]
 
 There is not that much system in the following examples. They resulted from tests
-with different documents. The current implementation evolved out if the
+with different documents. The current implementation evolved out of the
 experimental code. For instance, I decided to add the multiple expressions in row
 handling after a few email exchanges with Jean|-|Michel Huffen.
 
@@ -2950,7 +3010,7 @@ This gives:
 
 \stopsection
 
-\startsection[title=Conditional setups]
+\startsection[title=conditional setups]
 
 Say that we have this code:
 
@@ -2972,7 +3032,7 @@ being named \type {what}. A faster solution which also takes less code is this:
 
 \stopsection
 
-\startsection[title=Manipulating]
+\startsection[title=manipulating]
 
 Assume that we have the following \XML\ data:
 
@@ -3032,7 +3092,7 @@ The result is: \start \inlinebuffer \stop
 
 \stopsection
 
-\startsection[title=Cross referencing]
+\startsection[title=cross referencing]
 
 A rather common way to add cross references to \XML\ files is to borrow the
 asymmetrical id's from \HTML. This means that one cannot simply use a value
@@ -3096,7 +3156,7 @@ This will typeset two footnotes.
 
 \getbuffer
 
-The second variant collects the references so that the tiem spend on lookups is
+The second variant collects the references so that the time spend on lookups is
 less.
 
 \startbuffer
@@ -3253,7 +3313,7 @@ The processor code is:
 
 \typebuffer
 
-We color a sequence of the same titles (numbers here) in red. The first
+We color a sequence of the same titles (numbers here) differently. The first
 solution remembers the last title:
 
 \startbuffer
@@ -3291,12 +3351,12 @@ end
 \stopluacode
 \stopbuffer
 
-\typebuffer
+\typebuffer \getbuffer
 
 The \type {embeddedxtable} environment is needed because the table is picked up
 as argument.
 
-\getbuffer \getbuffer[process]
+\startlinecorrection \getbuffer[process] \stoplinecorrection
 
 The second implemetation remembers what titles are already processed so here we
 can color the last one too.
@@ -3341,7 +3401,9 @@ end
 \stopluacode
 \stopbuffer
 
-\typebuffer \getbuffer \getbuffer[process]
+\typebuffer \getbuffer
+
+\startlinecorrection \getbuffer[process] \stoplinecorrection
 
 A solution without any state variable is given below.
 
@@ -3378,7 +3440,9 @@ end
 \stopluacode
 \stopbuffer
 
-\typebuffer \getbuffer \getbuffer[process]
+\typebuffer \getbuffer
+
+\startlinecorrection \getbuffer[process] \stoplinecorrection
 
 Here is a solution that delegates even more to \LUA. The previous variants were
 actually not that safe with repect to special characters and didn't handle
@@ -3454,7 +3518,9 @@ end
 \xmlprocessbuffer{example-5}{demo}{}
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer
+
+\startlinecorrection \getbuffer \stoplinecorrection
 
 The question is, do we really need \LUA ? Often we don't, apart maybe from an
 occasional special finalizer. A pure \TEX\ solution is given next:
@@ -3513,7 +3579,9 @@ occasional special finalizer. A pure \TEX\ solution is given next:
 \xmlprocessbuffer{example-5}{demo}{}
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer
+
+\startlinecorrection \getbuffer \stoplinecorrection
 
 You can even save a few lines of code:
 
@@ -3533,6 +3601,7 @@ You can even save a few lines of code:
 
 Or if you prefer:
 
+\starttyping
 \startxmlsetups xml:c
     \xdef\MyCurrentTitle{\xmltext{#1}{.}}
     \doifelse {\MyPreviousTitle} {\MyCurrentTitle} {
@@ -3562,6 +3631,7 @@ Or if you prefer:
     \stopxcell
     \global\let\MyPreviousTitle\MyCurrentTitle
 \stopxmlsetups
+\stoptyping
 
 These examples demonstrate that it doesn't hurt to know a little bit of \TEX\
 programming: defining macros and basic comparisons can come in handy. There are
@@ -3570,7 +3640,7 @@ the wiki or you can just ask on the list.
 
 \stopsection
 
-\startsection[title=Last match]
+\startsection[title=last match]
 
 For the next example we use the following \XML\ input:
 
