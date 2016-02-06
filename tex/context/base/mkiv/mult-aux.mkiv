@@ -713,6 +713,9 @@
 \unexpanded\def\relateparameterhandlers#1#2#3#4% {from} {instance} {to} {instance}
   {\expandafter\edef\csname\csname#1namespace\endcsname#2:\s!parent\endcsname{\csname#3namespace\endcsname#4}}
 
+\unexpanded\def\relateparameterhandlersbyns#1#2#3#4% {from} {instance} {to} {instance}
+  {\expandafter\edef\csname#1#2:\s!parent\endcsname{#3#4}}
+
 %D Here is another experiment:
 
 \unexpanded\def\installactionhandler#1%

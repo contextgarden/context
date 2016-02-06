@@ -168,6 +168,7 @@ table.setmetatableindex(penaltycodes,function(t,k) return "userpenalty" end) -- 
 --     [0] = "fontkern",
 --     [1] = "userkern",
 --     [2] = "accentkern",
+--     [3] = "italiccorrection",
 -- }
 
 local kerncodes = mark(getsubtypes("kern"))
@@ -286,8 +287,9 @@ nodes.leadercodes  = leadercodes
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment
 
-kerncodes.italiccorrection = kerncodes.userkern
 kerncodes.kerning          = kerncodes.fontkern
+
+kerncodes.italiccorrection = kerncodes.italiccorrection or 1 -- new
 
 nodes.codes = allocate { -- mostly for listing
     glue    = skipcodes,

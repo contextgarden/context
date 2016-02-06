@@ -31,11 +31,11 @@
    \begingroup
    \directcolored[fakerulecolor]%
    \iffakebaseline
-     \vrule\s!height1.25ex\s!depth-.05ex\s!width#1%
+     \vrule\s!height1.25\exheight\s!depth-.05\exheight\s!width#1%
      \kern-#1%
-     \vrule\s!height-.05ex\s!depth .25ex\s!width#1%
+     \vrule\s!height-.05\exheight\s!depth .25\exheight\s!width#1%
    \else
-     \vrule\s!height1.25ex\s!depth .25ex\s!width#1%
+     \vrule\s!height1.25\exheight\s!depth .25\exheight\s!width#1%
    \fi
    \endgroup
    \allowbreak}
@@ -134,8 +134,8 @@
 \unexpanded\def\fakedroppedcaps#1%
   {\ifnum#1>0
      \def\dofakedroppedcaps
-       {\setbox\scratchbox\hbox
-          {\setbox\scratchbox\hbox{W}%
+       {\setbox\scratchbox\hpack
+          {\setbox\scratchbox\hpack{W}%
            \scratchdimen#1\lineheight
            \advance\scratchdimen -\lineheight
            \advance\scratchdimen \dp\strutbox
@@ -209,25 +209,25 @@
 
 \def\dosmashedgrid[#1]%
   {\hsmashed
-     {\setbox\scratchbox=\hbox
+     {\setbox\scratchbox=\hpack
         {\basegrid
            [\c!nx=10,\c!ny=10,\c!dx=1,\c!dy=1,
             \c!unit=\bodyfontsize,#1]}%
-      \hbox to \zeropoint
+      \hpack to \zeropoint
         {\hss\lower.5\ht\scratchbox\box\scratchbox\hss}%
-      \hbox to \zeropoint
+      \hpack to \zeropoint
         {\hss
          \black\vrule\s!width6\linewidth\s!height3\linewidth\s!depth3\linewidth
          \hss}}}
 
 \unexpanded\def\bodyfontgrid
-  {\hbox
+  {\hpack
      {{\linewidth.1pt\yellow\smashedgrid[\c!nx=30,\c!ny=30,\c!scale=.3333]}%
       {\linewidth.2pt\green \smashedgrid[\c!nx=20,\c!ny=20,\c!scale=.5]}%
       {\linewidth.3pt\red   \smashedgrid[\c!nx=10,\c!ny=10,\c!scale=1]}}}
 
 \unexpanded\def\emexgrid
-  {\hbox
+  {\hpack
      {{\linewidth.15pt\green\smashedgrid[\c!nx=20,\c!ny=20,\c!unit=ex]}%
       {\linewidth.15pt\red  \smashedgrid[\c!nx=10,\c!ny=10,\c!unit=em]}}}
 
@@ -484,7 +484,7 @@
   {\fastcolored[#1]{\hrule\s!width3em\s!height\scratchdimen\s!depth\zeropoint}}
 
 \def\docolorrangeA#1 #2 %
-  {\vbox
+  {\vpack
      {\hsize3em % \scratchdimen
       \ifcase#1\or
         \dodocolorrangeA{c=#2}\or
@@ -495,12 +495,12 @@
         \dodocolorrangeA{c=#2,m=#2}\fi
       \ifdim\scratchdimen>1ex
         \vskip-\scratchdimen
-        \vbox to \scratchdimen
-          {\vss\hbox to 3em{\hss#2\hss}\vss}%
+        \vpack to \scratchdimen
+          {\vss\hpack to 3em{\hss#2\hss}\vss}%
       \fi}}
 
 \def\colorrangeA#1%
-  {\vbox
+  {\vpack
      {\startcolor[\s!white]%
       \scratchdimen\dimexpr(-\colormarklength*4+\tractempheight+\tractempdepth)/21\relax
       \offinterlineskip
@@ -517,12 +517,12 @@
     {\vrule\s!width\scratchdimen\s!height\colormarklength\s!depth\zeropoint}%
    \ifdim\scratchdimen>2em
      \hskip-\scratchdimen
-     \vbox to \colormarklength
-       {\vss\hbox to \scratchdimen{\hss#1\hss}\vss}%
+     \vpack to \colormarklength
+       {\vss\hpack to \scratchdimen{\hss#1\hss}\vss}%
    \fi}
 
 \def\colorrangeB
-  {\hbox
+  {\hpack
      {\startcolor[\s!white]%
       \scratchdimen\dimexpr(-\colormarklength*\plustwo+\tractempwidth)/11\relax
       \docolorrangeB .5~C .5  0  0  0
@@ -544,12 +544,12 @@
      {\vrule\s!width\scratchdimen\s!height\colormarklength\s!depth\zeropoint}%
    \ifdim\scratchdimen>2em
      \hskip-\scratchdimen
-     \vbox to \colormarklength
-       {\vss\hbox to \scratchdimen{\hss#1\hss}\vss}%
+     \vpack to \colormarklength
+       {\vss\hpack to \scratchdimen{\hss#1\hss}\vss}%
    \fi}
 
 \def\colorrangeC
-  {\hbox
+  {\hpack
      {\startcolor[\s!white]%
       \scratchdimen\dimexpr(-\colormarklength*2+\tractempwidth)/14\relax
       \docolorrangeC  1  \docolorrangeC .95
@@ -569,36 +569,36 @@
   {\tractempheight\ht#2%
    \tractempdepth \dp#2%
    \tractempwidth \wd#2%
-   \setbox#2\hbox
+   \setbox#2\hpack
      {\scratchdimen\dimexpr\colormarklength/2\relax
       \forgetall
       \ssxx
-      \setbox\scratchbox\vbox
+      \setbox\scratchbox\vpack
         {\offinterlineskip
          \vskip\dimexpr-\colormarkoffset\scratchdimen-2\scratchdimen\relax
          \ifcase#1\relax
            \vskip\dimexpr\colormarklength+\scratchdimen+\tractempheight\relax
          \else
-           \hbox to \tractempwidth{\hss\hbox{\colorrangeB}\hss}%
+           \hpack to \tractempwidth{\hss\hpack{\colorrangeB}\hss}%
            \vskip\colormarkoffset\scratchdimen
-           \vbox to \tractempheight
+           \vpack to \tractempheight
              {\vss
-              \hbox to \tractempwidth
+              \hpack to \tractempwidth
                 {\llap{\colorrangeA1\hskip\colormarkoffset\scratchdimen}\hfill
                  \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA4}}%
               \vss
-              \hbox to \tractempwidth
+              \hpack to \tractempwidth
                 {\llap{\colorrangeA2\hskip\colormarkoffset\scratchdimen}\hfill
                  \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA5}}%
               \vss
-              \hbox to \tractempwidth
+              \hpack to \tractempwidth
                 {\llap{\colorrangeA3\hskip\colormarkoffset\scratchdimen}\hfill
                  \rlap{\hskip\colormarkoffset\scratchdimen\colorrangeA6}}%
               \vss}%
          \fi
          \vskip\colormarkoffset\scratchdimen
-         \hbox to \tractempwidth
-           {\hss\lower\tractempdepth\hbox{\colorrangeC}\hss}}%
+         \hpack to \tractempwidth
+           {\hss\lower\tractempdepth\hpack{\colorrangeC}\hss}}%
       \ht\scratchbox\tractempheight
       \dp\scratchbox\tractempdepth
       \wd\scratchbox\zeropoint
@@ -668,13 +668,13 @@
    \dontshowwhatsits
    \ttx
    \ifvmode\donetrue\else\donefalse\fi
-   \setbox\scratchbox\hbox
+   \setbox\scratchbox\hpack
      {\ifdone
         \colored[r=#1,g=#2,b=#3]{#5}% temp hack
       \else
         \colored[s=0]{#5}% temp hack
       \fi}%
-   \setbox\scratchbox\hbox
+   \setbox\scratchbox\hpack
      {\ifdone
         \colored[r=#1,g=#2,b=#3]{\vrule\s!width\wd\scratchbox}% temp hack
       \else
@@ -682,7 +682,7 @@
       \fi
       \hskip-\wd\scratchbox\box\scratchbox}%
    \scratchdimen1ex
-   \setbox\scratchbox\hbox
+   \setbox\scratchbox\hpack
      {\ifdone\hskip\else\raise#4\fi\scratchdimen\box\scratchbox}%
    \smashbox\scratchbox
    \ifdone\nointerlineskip\fi
@@ -735,7 +735,7 @@
 
 \def\dodotagbox#1#2#3% can be reimplemented
   {\def\next##1##2##3##4%
-     {\vbox to \ht#2{##3\hbox to \wd#2{##1#3##2}##4}}%
+     {\vpack to \ht#2{##3\hpack to \wd#2{##1#3##2}##4}}%
    \processaction
      [#1]
      [        l=>\next\relax\hfill\vfill\vfill,
@@ -757,7 +757,7 @@
   {\bgroup
    \dowithnextbox
      {\setbox\scratchbox\flushnextbox
-      \setbox\nextbox\ifhbox\nextbox\hbox\else\vbox\fi
+      \setbox\nextbox\ifhbox\nextbox\hpack\else\vpack\fi
         \bgroup
           \startoverlay
             {\copy\scratchbox}
@@ -786,16 +786,16 @@
 \definecolor[strutcolor] [r=.5,g=.25,b=.25]
 
 \unexpanded\def\coloredbox#1%
-  {\dowithnextbox{#1{\hbox
+  {\dowithnextbox{#1{\hpack
      {\blackrule[\c!width=\nextboxwd,\c!height=\nextboxht,\c!depth=\zeropoint,\c!color=boxcolor:ht]%
       \hskip-\nextboxwd
       \blackrule[\c!width=\nextboxwd,\c!height=\zeropoint,\c!depth=\nextboxdp,\c!color=boxcolor:dp]%
       \hskip-\nextboxwd
       \box\nextbox}}}#1}
 
-\unexpanded\def\coloredhbox{\coloredbox\hbox}
-\unexpanded\def\coloredvbox{\coloredbox\vbox}
-\unexpanded\def\coloredvtop{\coloredbox\vtop}
+\unexpanded\def\coloredhbox{\coloredbox\hpack}
+\unexpanded\def\coloredvbox{\coloredbox\vpack}
+\unexpanded\def\coloredvtop{\coloredbox\tpack}
 
 \unexpanded\def\coloredstrut
   {\color[strutcolor]{\def\strutwidth{2\points}\setstrut\strut}}

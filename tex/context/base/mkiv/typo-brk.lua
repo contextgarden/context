@@ -40,6 +40,7 @@ local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setchar            = nuts.setchar
 local setdisc            = nuts.setdisc
+local setsubtype         = nuts.setsubtype
 
 local copy_node          = nuts.copy
 local copy_nodelist      = nuts.copy_list
@@ -47,6 +48,7 @@ local free_node          = nuts.free
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
+local traverse_id        = nuts.traverse_id
 
 local tonodes            = nuts.tonodes
 
@@ -70,7 +72,9 @@ local kerncodes          = nodes.kerncodes
 local glyph_code         = nodecodes.glyph
 local kern_code          = nodecodes.kern
 
-local kerning_code       = kerncodes.kerning
+local fontkern_code      = kerncodes.fontkern
+local userkern_code      = kerncodes.userkern
+local italickern_code    = kerncodes.italiccorrection
 
 local typesetters        = typesetters
 
@@ -95,17 +99,19 @@ for i=1,#mapping do
     numbers[m.name] = m
 end
 
-local function insert_break(head,start,before,after)
-    insert_node_before(head,start,new_penalty(before))
-    insert_node_before(head,start,new_glue(0))
+local function insert_break(head,start,before,after,kern)
+    if not kern then
+        insert_node_before(head,start,new_penalty(before))
+        insert_node_before(head,start,new_glue(0))
+    end
     insert_node_after(head,start,new_glue(0))
     insert_node_after(head,start,new_penalty(after))
 end
 
-methods[1] = function(head,start)
+methods[1] = function(head,start,_,kern)
     local p, n = getboth(start)
     if p and n then
-        insert_break(head,start,10000,0)
+        insert_break(head,start,10000,0,kern)
     end
     return head, start
 end
@@ -191,75 +197,190 @@ methods[5] = function(head,start,settings) -- x => p q r
     return head, start
 end
 
+-- function breakpoints.handler(head)
+--     head = tonut(head)
+--     local done, numbers = false, languages.numbers
+--     local start, n = head, 0
+--     while start do
+--         local id = getid(start)
+--         if id == glyph_code then
+--             local attr = getattr(start,a_breakpoints)
+--             if attr and attr > 0 then
+--                 setattr(start,a_breakpoints,unsetvalue) -- maybe test for subtype > 256 (faster)
+--                 -- look ahead and back n chars
+--                 local data = mapping[attr]
+--                 if data then
+--                     local map = data.characters
+--                     local cmap = map[getchar(start)]
+--                     if cmap then
+--                         local lang = getfield(start,"lang")
+--                         -- we do a sanity check for language
+--                         local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
+--                         if smap then
+--                             if n >= smap.nleft then
+--                                 local m = smap.nright
+--                                 local next = getnext(start)
+--                                 while next do -- gamble on same attribute (not that important actually)
+--                                     local id = getid(next)
+--                                     if id == glyph_code then -- gamble on same attribute (not that important actually)
+--                                         if map[getchar(next)] then
+--                                             break
+--                                         elseif m == 1 then
+--                                             local method = methods[smap.type]
+--                                             if method then
+--                                                 head, start = method(head,start,smap)
+--                                                 done = true
+--                                             end
+--                                             break
+--                                         else
+--                                             m = m - 1
+--                                             next = getnext(next)
+--                                         end
+--                                     elseif id == kern_code and getsubtype(next) == fontkern_code then
+--                                         next = getnext(next)
+--                                         -- ignore intercharacter kerning, will go way
+--                                     else
+--                                         -- we can do clever and set n and jump ahead but ... not now
+--                                         break
+--                                     end
+--                                 end
+--                             end
+--                             n = 0
+--                         else
+--                             n = n + 1
+--                         end
+--                     else
+--                          n = n + 1
+--                     end
+--                 else
+--                     n = 0
+--                 end
+--             else
+--              -- n = n + 1 -- if we want single char handling (|-|) then we will use grouping and then we need this
+--             end
+--         elseif id == kern_code and getsubtype(start) == fontkern_code then
+--             -- ignore intercharacter kerning, will go way
+--         else
+--             n = 0
+--         end
+--         start = getnext(start)
+--     end
+--     return tonode(head), done
+-- end
+
+-- we know we have a limited set
+-- what if characters are replaced by the font handler
+-- do we need to go into disc nodes (or do it as first step but then we need a pre/post font handler)
+
 function breakpoints.handler(head)
-    head = tonut(head)
-    local done, numbers = false, languages.numbers
-    local start, n = head, 0
-    while start do
-        local id = getid(start)
-        if id == glyph_code then
-            local attr = getattr(start,a_breakpoints)
-            if attr and attr > 0 then
-                setattr(start,a_breakpoints,unsetvalue) -- maybe test for subtype > 256 (faster)
-                -- look ahead and back n chars
-                local data = mapping[attr]
+    local done = false
+    local nead = tonut(head)
+    local attr = nil
+    local map  = nil
+    for n in traverse_id(glyph_code,nead) do -- could be a traverse_chars at some point
+        local a = getattr(n,a_breakpoints)
+        if a and a > 0 then
+            if a ~= attr then
+                local data = mapping[a]
                 if data then
-                    local map = data.characters
-                    local cmap = map[getchar(start)]
-                    if cmap then
-                        local lang = getfield(start,"lang")
-                        -- we do a sanity check for language
-                        local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
-                        if smap then
-                            if n >= smap.nleft then
-                                local m = smap.nright
-                                local next = getnext(start)
-                                while next do -- gamble on same attribute (not that important actually)
-                                    local id = getid(next)
-                                    if id == glyph_code then -- gamble on same attribute (not that important actually)
-                                        if map[getchar(next)] then
-                                            break
-                                        elseif m == 1 then
-                                            local method = methods[smap.type]
-                                            if method then
-                                                head, start = method(head,start,smap)
-                                                done = true
-                                            end
-                                            break
-                                        else
-                                            m = m - 1
-                                            next = getnext(next)
-                                        end
-                                    elseif id == kern_code and getsubtype(next) == kerning_code then
-                                        next = getnext(next)
-                                        -- ignore intercharacter kerning, will go way
-                                    else
-                                        -- we can do clever and set n and jump ahead but ... not now
-                                        break
-                                    end
-                                end
-                            end
-                            n = 0
+                    map = data.characters
+                else
+                    map = nil
+                end
+                attr = a
+            end
+            if map then
+                local cmap = map[getchar(n)]
+                if cmap then
+                    -- for now we collect but when found ok we can move the handler here
+                    -- although it saves nothing in terms of performance
+                    local d = { n, cmap }
+                    if done then
+                        done[#done+1] = d
+                    else
+                        done = { d }
+                    end
+                    setattr(n,a_breakpoints,unsetvalue)
+                end
+            end
+        end
+    end
+    if not done then
+        return head, false
+    end
+    -- we have hits
+    local numbers = languages.numbers
+    for i=1,#done do
+        local data    = done[i]
+        local current = data[1]
+        local cmap    = data[2]
+        local lang    = getfield(current,"lang")
+        -- we do a sanity check for language
+        local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
+        if smap then
+            local nleft = smap.nleft
+            local cleft = 0
+            local prev  = getprev(current)
+            local kern   = nil
+            while prev and nleft ~= cleft do
+                local id = getid(prev)
+                if id == glyph_code then
+                    cleft = cleft + 1
+                    prev  = getprev(prev)
+                elseif id == kern_code then
+                    local s = getsubtype(prev)
+                    if s == fontkern_code or s == italickern_code then
+                        if cleft == 0 then
+                            kern = prev
+                            prev = getprev(prev)
                         else
-                            n = n + 1
+                            break
                         end
                     else
-                         n = n + 1
+                        break
                     end
                 else
-                    n = 0
+                    break
                 end
-            else
-             -- n = n + 1 -- if we want single char handling (|-|) then we will use grouping and then we need this
             end
-        elseif id == kern_code and getsubtype(start) == kerning_code then
-            -- ignore intercharacter kerning, will go way
-        else
-            n = 0
+            if nleft == cleft then
+                local nright = smap.nright
+                local cright = 0
+                local next   = getnext(current)
+                while next and nright ~= cright do
+                    local id = getid(next)
+                    if id == glyph_code then
+                        if cright == 1 and cmap[getchar(next)] then
+                            -- let's not make it too messy
+                            break
+                        end
+                        cright = cright + 1
+                        next   = getnext(next)
+                    elseif id == kern_code then
+                        local s = getsubtype(next)
+                        if s == fontkern_code or s == italickern_code then
+                            if cleft == 0 then
+                                next = getnext(next)
+                            else
+                                break
+                            end
+                        else
+                            break
+                        end
+                    else
+                        break
+                    end
+                end
+                if nright == cright then
+                    local method = methods[smap.type]
+                    if method then
+                        nead, start = method(nead,current,smap,kern)
+                    end
+                end
+            end
         end
-        start = getnext(start)
     end
-    return tonode(head), done
+    return tonode(nead), true
 end
 
 local enabled = false
@@ -343,8 +464,8 @@ implement {
         "string",
         {
             { "type", "integer" },
-            { "nleft" },
-            { "nright" },
+            { "nleft", "integer" },
+            { "nright", "integer" },
             { "right" },
             { "left" },
             { "middle" },

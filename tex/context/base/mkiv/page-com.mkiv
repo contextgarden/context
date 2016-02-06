@@ -54,7 +54,7 @@
     \expandnamespacemacro\??pagecommentstates\p_page_commands_state\v!none
 \to \everysetuppagecomment
 
-\ifdefined\scrn_canvas_synchronize_simple
+% \ifdefined\scrn_canvas_synchronize_simple
 
     \appendtoks
         \ifx\p_page_commands_state\v!start
@@ -64,7 +64,7 @@
         \fi
     \to \everyshipout
 
-\fi
+% \fi
 
 \setvalue{\??pagecommentstates\v!start}%
   {\d_page_comments_offset  \directpagecommentparameter\c!offset  \relax

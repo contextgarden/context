@@ -20,6 +20,7 @@ if not modules then modules = { } end modules ['node-par'] = {
 -- todo: fix line numbers (cur_list.pg_field needed)
 -- todo: check and improve protrusion
 -- todo: arabic etc (we could use pretty large scales there) .. marks and cursive
+-- todo: see: we need to check this with the latest patches to the tex kernel
 
 -- todo: optimize a bit more (less par.*)
 
@@ -263,6 +264,7 @@ local localpar_code        = nodecodes.localpar
 
 local kerning_code         = kerncodes.kerning -- font kern
 local userkern_code        = kerncodes.userkern
+local italickern_code      = kerncodes.italiccorrection
 
 local ligature_code        = glyphcodes.ligature
 
@@ -785,7 +787,8 @@ local function compute_break_width(par,break_type,p) -- split in two
         elseif id == penalty_code then
             -- do nothing
         elseif id == kern_code then
-            if getsubtype(p) == userkern_code then
+            local s = getsubtype(p)
+            if s == userkern_code or s == italickern_code then
                 break_width.size = break_width.size - getfield(p,"kern")
             else
                 return
@@ -1419,7 +1422,7 @@ local function post_line_break(par)
                     -- keep the math node
                     setfield(next,"surround",0)
                     break
-                elseif id == kern_code and (subtype ~= userkern_code and not getattr(next,a_fontkern)) then
+                elseif id == kern_code and (subtype ~= userkern_code and subtype ~= italickern_code and not getattr(next,a_fontkern)) then
                     -- fontkerns and accent kerns as well as otf injections
                     break
                 end
@@ -2209,10 +2212,14 @@ function constructors.methods.basic(head,d)
                     local prev_p = getprev(current)
                     if prev_p and prev_p ~= temp_head then
                         local id = getid(prev_p)
-                        if (id == glyph_code) or -- dir_code is < math
-                           (id < math_code) or -- was: precedes_break(prev_p)
-                           (id == kern_code and getsubtype(prev_p) ~= userkern_code) then
+                        -- we need to check this with the latest patches to the tex kernel
+                        if (id == glyph_code) or (id < math_code) then
                             p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
+                        elseif id == kern_code then
+                            local s = getsubtype(prev_p)
+                            if s ~= userkern_code and s ~= italickern_code then
+                                p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
+                            end
                         end
                     end
                 end
@@ -2301,7 +2308,8 @@ function constructors.methods.basic(head,d)
                     end
                 end
             elseif id == kern_code then
-                if getsubtype(current) == userkern_code then
+                local s = getsubtype(current)
+                if s == userkern_code or s == italickern_code then
                     local v = getnext(current)
                --   if par.auto_breaking and getid(v) == glue_code then
                     if auto_breaking and getid(v) == glue_code then
@@ -2468,11 +2476,16 @@ local function short_display(target,a,font_in_short_display)
             if getfield(getfield(a,"spec"),"writable") then
                 write(target," ")
             end
-        elseif id == kern_code and (getsubtype(a) == userkern_code or getattr(a,a_fontkern)) then
-            if verbose then
-                write(target,"[|]")
+        elseif id == kern_code then
+            local s = getsubtype(a)
+            if s == userkern_code or s == italickern_code or getattr(a,a_fontkern) then
+                if verbose then
+                    write(target,"[|]")
+             -- else
+             --     write(target,"")
+                end
             else
-                write(target,"")
+                write(target,"[]")
             end
         elseif id == math_code then
             write(target,"$")

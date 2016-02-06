@@ -78,9 +78,7 @@ local traverse_id       = nuts.traverse_id
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
 local find_tail         = nuts.tail
-local remove_node       = nuts.remove
-local hpack_nodes       = nuts.hpack
-local copy_list         = nuts.copy_list
+----- remove_node       = nuts.remove
 
 local getsubtype        = nuts.getsubtype
 local getlist           = nuts.getlist
@@ -187,10 +185,10 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
         current = getnext(head)
         id      = getid(current)
     end
--- no:
---     if id == localpar_code then
---         head = remove_node(head,head,true)
---     end
+    -- no:
+ -- if id == localpar_code then
+ --     head = remove_node(head,head,true)
+ -- end
     local tail    = find_tail(head)
     local current = tail
     local id      = getid(current)

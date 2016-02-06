@@ -22,7 +22,7 @@ local type, tonumber = type, tonumber
 local utfbyte = utf.byte
 local format, gsub = string.format, string.gsub
 local concat, sortedkeys, sortedpairs = table.concat, table.sortedkeys, table.sortedpairs
-local utfbytes = string.utfvalues
+local utfbytes, strip = string.utfvalues, string.strip
 
 local context   = context
 local commands  = commands
@@ -193,10 +193,8 @@ local function loaddefinitions(tag,specification)
                     local loaded = table.load(fullname,gzipped and gzip.load)
                     if loaded then -- todo: version test
                         ok, nofloaded = true, nofloaded + 1
-if sethjcodes then -- for now
                         sethjcodes(instance,loaded,"patterns")
                         sethjcodes(instance,loaded,"exceptions")
-end
                         instance:patterns   (validdata(loaded,"patterns",  tag) or "")
                         instance:hyphenation(validdata(loaded,"exceptions",tag) or "")
                         resources[#resources+1] = loaded -- so we can use them otherwise
@@ -367,7 +365,7 @@ end
 function languages.setexceptions(tag,str)
     local data, instance = resolve(tag)
     if data then
-        instance:hyphenation(string.strip(str)) -- we need to strip leading spaces
+        instance:hyphenation(strip(str)) -- we need to strip leading spaces
     end
 end
 

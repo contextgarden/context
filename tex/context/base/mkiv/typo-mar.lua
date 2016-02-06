@@ -535,7 +535,10 @@ local function markovershoot(current) -- todo: alleen als offset > line
     v_anchors = v_anchors + 1
     cache[v_anchors] = stacked
     local anchor = setanchor(v_anchors)
-    local list = hpack_nodes(linked_nodes(anchor,getlist(current)))
+ -- local list = hpack_nodes(linked_nodes(anchor,getlist(current))) -- not ok, we need to retain width
+    local list = hpack_nodes(linked_nodes(anchor,getlist(current)),getfield(current,"width"),"exactly")--
+ -- why not:
+ -- local list = linked_nodes(anchor,getlist(current))
     setlist(current,list)
 end
 

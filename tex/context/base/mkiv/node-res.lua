@@ -138,6 +138,7 @@ nutpool.register  = register_node -- could be register_nut
 local disc              = register_nut(new_nut("disc"))
 local kern              = register_nut(new_nut("kern",kerncodes.userkern))
 local fontkern          = register_nut(new_nut("kern",kerncodes.fontkern))
+local italickern        = register_nut(new_nut("kern",kerncodes.italiccorrection))
 local penalty           = register_nut(new_nut("penalty"))
 local glue              = register_nut(new_nut("glue")) -- glue.spec = nil
 local glue_spec         = register_nut(new_nut("glue_spec"))
@@ -201,6 +202,12 @@ end
 
 function nutpool.fontkern(k)
     local n = copy_nut(fontkern)
+    setfield(n,"kern",k)
+    return n
+end
+
+function nutpool.italickern(k)
+    local n = copy_nut(italickern)
     setfield(n,"kern",k)
     return n
 end

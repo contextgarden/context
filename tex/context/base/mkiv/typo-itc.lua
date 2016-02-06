@@ -53,7 +53,7 @@ local a_mathitalics       = attributes.private("mathitalics")
 
 local unsetvalue          = attributes.unsetvalue
 
-local new_correction_kern = nodepool.fontkern
+local new_correction_kern = nodepool.italickern
 local new_correction_glue = nodepool.glue
 
 local fonthashes          = fonts.hashes

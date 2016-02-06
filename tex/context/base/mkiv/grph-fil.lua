@@ -11,6 +11,11 @@ local type = type
 local trace_run  = false  trackers.register("graphic.runfile",function(v) trace_run = v end)
 local report_run = logs.reporter("graphics","run")
 
+local isfile        = lfs.isfile
+local replacesuffix = file.replacesuffix
+local addsuffix     = file.addsuffix
+local checksum      = file.checksum
+
 -- Historically running files is part of graphics processing, so this is why it
 -- sits here but is part of the job namespace.
 
@@ -27,6 +32,9 @@ local jobfiles = {
 
 job.files = jobfiles
 
+local inputsuffix  = "tex"
+local resultsuffix = "pdf"
+
 local function initializer()
     tobesaved = jobfiles.tobesaved
     collected = jobfiles.collected
@@ -35,10 +43,11 @@ end
 job.register('job.files.collected', tobesaved, initializer)
 
 function jobfiles.run(name,action)
-    file.addsuffix(name,"tex") -- we assume tex if not set
-    local oldchecksum = collected[name]
-    local newchecksum = file.checksum(name)
-    if jobfiles.forcerun or not oldchecksum or oldchecksum ~= newchecksum then
+    local usedname    = addsuffix(name,inputsuffix) -- we assume tex if not set
+    local oldchecksum = collected[usedname]
+    local newchecksum = checksum(usedname)
+    local resultfile  = replacesuffix(usedname,resultsuffix)
+    if jobfiles.forcerun or not oldchecksum or oldchecksum ~= newchecksum or not isfile(resultfile) then
         if trace_run then
             report_run("processing file, changes in %a, processing forced",name)
         end
@@ -68,7 +77,7 @@ function jobfiles.context(name,options)
         end
         return result
     else
-        local result = file.replacesuffix(name,"pdf")
+        local result = replacesuffix(name,resultsuffix)
         if not done[result] then
             jobfiles.run(name,"context ".. (options or "") .. " " .. name)
             done[result] = true

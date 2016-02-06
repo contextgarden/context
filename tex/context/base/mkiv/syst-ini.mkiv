@@ -1002,7 +1002,7 @@
 
 \edef\pdfcompresslevel       {\pdfvariable compresslevel}       \pdfcompresslevel         \plusnine
 \edef\pdfobjcompresslevel    {\pdfvariable objcompresslevel}    \pdfobjcompresslevel      \plusone
-\edef\pdfdecimaldigits       {\pdfvariable decimaldigits}       \pdfdecimaldigits         \plussix
+\edef\pdfdecimaldigits       {\pdfvariable decimaldigits}       \pdfdecimaldigits         \plusfive
 \edef\pdfgamma               {\pdfvariable gamma}               \pdfgamma                 \plusthousand
 \edef\pdfimageresolution     {\pdfvariable imageresolution}     \pdfimageresolution       300
 \edef\pdfimageapplygamma     {\pdfvariable imageapplygamma}     \pdfimageapplygamma       \zerocount
@@ -1022,14 +1022,8 @@
 \edef\pdfdestmargin          {\pdfvariable destmargin}          \pdfdestmargin            \zeropoint
 \edef\pdfthreadmargin        {\pdfvariable threadmargin}        \pdfthreadmargin          \zeropoint
 \edef\pdfxformmargin         {\pdfvariable xformmargin}         \pdfxformmargin           \zeropoint
-
-\ifnum\luatexversion>88
-    \edef\pdfpkfixeddpi          {\pdfvariable pkfixeddpi}          \pdfpkfixeddpi            \plusone
-    \edef\pdfignoreunknownimages {\pdfvariable ignoreunknownimages} \pdfignoreunknownimages   \zerocount
-\else
-    \newcount\pdfpkfixeddpi
-    \newcount\pdfignoreunknownimages
-\fi
+\edef\pdfpkfixeddpi          {\pdfvariable pkfixeddpi}          \pdfpkfixeddpi            \plusone
+\edef\pdfignoreunknownimages {\pdfvariable ignoreunknownimages} \pdfignoreunknownimages   \zerocount
 
 \edef\pdfpagesattr           {\pdfvariable pagesattr}
 \edef\pdfpageattr            {\pdfvariable pageattr}

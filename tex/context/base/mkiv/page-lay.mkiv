@@ -584,7 +584,13 @@
       \endgroup
    \fi
   %\writestatus{layout target}{(\the\paperwidth,\the\paperheight) -> (\the\printpaperwidth,\the\printpaperheight)}%
-   \page_layouts_synchronize}
+   \page_layouts_synchronize
+   % new but we assume \setuplayout
+   \scrn_canvas_synchronize_only}
+
+\ifdefined\scrn_canvas_synchronize_only \else
+    \let\scrn_canvas_synchronize_only\relax
+\fi
 
 \ifdefined\page_paper_set_offsets \else
 

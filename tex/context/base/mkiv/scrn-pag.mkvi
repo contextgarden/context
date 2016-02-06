@@ -197,6 +197,12 @@
     \global\let\scrn_canvas_synchronize_complex\scrn_canvas_synchronize_complex_indeed
 \to \everysetuplayouttarget
 
+\def\scrn_canvas_synchronize_only
+  {\clf_setupcanvas
+     paperwidth  \printpaperwidth
+     paperheight \printpaperheight
+   \relax}
+
 \def\scrn_canvas_synchronize_simple_indeed
   {\clf_setupcanvas
      paperwidth  \printpaperwidth

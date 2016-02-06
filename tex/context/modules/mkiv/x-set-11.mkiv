@@ -628,9 +628,23 @@
 
 \stopluacode
 
+% <?xml version="1.0" encoding="UTF-8"?>
+%
+% <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+%
+%     <cd:interfacefile filename="i-document.xml"/>
+%     <cd:interfacefile filename="i-file.xml"/>
+%
+% </cd:interface>
+
+\startxmlsetups xml:setups:interfacefile
+    \loadsetups[\xmlatt{#1}{filename}]
+\stopxmlsetups
+
 \startxmlsetups xml:setups:basics
-    \xmlinclude{#1}{include}{filename}%
-    \xmlsetsetup {#1} {*} {xml:setups:*}
+    \xmlinclude {#1}{include}{filename}
+    \xmlcommand {#1}{/interface/interfacefile}{xml:setups:interfacefile}
+    \xmlsetsetup{#1}{*}{xml:setups:*}
     \xmlfunction{#1}{setups_define}
 \stopxmlsetups
 
@@ -647,11 +661,13 @@
   {\doifsomething{#1}
      {\doonlyonce{setups:#1}
         {\doglobal\prependtocommalist{setups:#1}\loadedsetups % last overloads first
-% \setupxml
-%   [\c!default=\v!hidden, % ignore elements that are not defined
-%    \c!compress=\v!yes]
+         % \setupxml
+         %   [\c!default=\v!hidden, % ignore elements that are not defined
+         %    \c!compress=\v!yes]
          \xmlloadonly{setups:#1}{#1}{setups}%
-         \xmlfilter{setups:#1}{/interface/command/command(xml:setups:register)}}}} % qualified path saves > 50% runtime
+         % qualified path saves > 50% runtime
+         \xmlfilter{setups:#1}{/interface//command/command(xml:setups:register)}%
+      }}}
 
 \newconstant\kindofsetup
 
@@ -1158,8 +1174,10 @@
 
 % assignments
 
-\xmlmapvalue {setups:assignment} {braces}   {\showSETUPassignmentbraces}
-\xmlmapvalue {setups:assignment} {brackets} {\showSETUPassignmentbrackets}
+\xmlmapvalue {setups:assignment} {braces}      {\showSETUPassignmentbraces}
+\xmlmapvalue {setups:assignment} {brackets}    {\showSETUPassignmentbrackets}
+\xmlmapvalue {setups:keyword}    {parentheses} {\showSETUPkeywordparentheses}
+\xmlmapvalue {setups:keyword}    {none}        {\showSETUPkeywordnone}
 
 \starttexdefinition unexpanded showSETUPassignmentbraces #1
     \ifcase\kindofsetup
@@ -1178,6 +1196,26 @@
         \showSETUP{#1}
             {[.=.]}
             {[.=.,.=.]}
+    \fi
+\stoptexdefinition
+
+\starttexdefinition unexpanded showSETUPkeywordparentheses #1
+    \ifcase\kindofsetup
+        \showSETUPline{(...)}
+    \else
+        \showSETUP{#1}
+            {(...)}
+            {(...,...)}
+    \fi
+\stoptexdefinition
+
+\starttexdefinition unexpanded showSETUPkeywordnone #1
+    \ifcase\kindofsetup
+        \showSETUPline{...}
+    \else
+        \showSETUP{#1}
+            {...}
+            {.. ... ..}
     \fi
 \stoptexdefinition
 

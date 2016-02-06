@@ -38,15 +38,15 @@
 
 \def\typo_breakpoints_define_character[#1][#2][#3]% name char settings
   {\begingroup
-   \getdummyparameters[\c!type=1,\c!nleft=3,\c!nright=3,\s!language=,\c!left=,\c!right=,\c!middle=,#3]%
+   \getdummyparameters[\c!type=\plusone,\c!nleft=\plusthree,\c!nright=\plusthree,\s!language=,\c!left=,\c!right=,\c!middle=,#3]%
    \clf_definebreakpoint
      {#1}%
      {#2}%
      {\reallanguagetag{\directdummyparameter\s!language}}%
      {% maybe deal with #3 at the lua end
           type \directdummyparameter\c!type
-         nleft {\directdummyparameter\c!nleft}%
-        nright {\directdummyparameter\c!nright}%
+         nleft \directdummyparameter\c!nleft
+        nright \directdummyparameter\c!nright
          right {\directdummyparameter\c!right}%
           left {\directdummyparameter\c!left}%
         middle {\directdummyparameter\c!middle}%
