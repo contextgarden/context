@@ -24,6 +24,7 @@ local nodepool     = nodes.pool
 local whatsitcodes = nodes.whatsitcodes
 local skipcodes    = nodes.skipcodes
 local kerncodes    = nodes.kerncodes
+local rulecodes    = nodes.rulecodes
 local nodecodes    = nodes.nodecodes
 
 local glyph_code   = nodecodes.glyph
@@ -164,9 +165,10 @@ local noad              = register_nut(new_nut("noad"))
 
 -- the dir field needs to be set otherwise crash:
 
-local rule              = register_nut(new_nut("rule"))  setfield(rule, "dir","TLT")
-local hlist             = register_nut(new_nut("hlist")) setfield(hlist,"dir","TLT")
-local vlist             = register_nut(new_nut("vlist")) setfield(vlist,"dir","TLT")
+local rule              = register_nut(new_nut("rule"))                  setfield(rule, "dir","TLT")
+local emptyrule         = register_nut(new_nut("rule",rulecodes.empty))  setfield(rule, "dir","TLT")
+local hlist             = register_nut(new_nut("hlist"))                 setfield(hlist,"dir","TLT")
+local vlist             = register_nut(new_nut("vlist"))                 setfield(vlist,"dir","TLT")
 
 function nutpool.zeroglue(n)
     if n then
@@ -340,6 +342,23 @@ end
 
 function nutpool.rule(width,height,depth,dir) -- w/h/d == nil will let them adapt
     local n = copy_nut(rule)
+    if width then -- also 0 else adapt
+        setfield(n,"width",width)
+    end
+    if height then -- also 0 else adapt
+        setfield(n,"height",height)
+    end
+    if depth then -- also 0 else adapt
+        setfield(n,"depth",depth)
+    end
+    if dir then
+        setfield(n,"dir",dir)
+    end
+    return n
+end
+
+function nutpool.emptyrule(width,height,depth,dir) -- w/h/d == nil will let them adapt
+    local n = copy_nut(emptyrule)
     if width then -- also 0 else adapt
         setfield(n,"width",width)
     end

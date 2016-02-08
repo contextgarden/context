@@ -1482,11 +1482,11 @@ includers.buffers = includers.nongeneric
 function existers.auto(askedname)
     local name = gsub(askedname, ".auto$", "")
     local format = figures.guess(name)
-    if format then
-        report_inclusion("format guess %a for %a",format,name)
-    else
-        report_inclusion("format guess for %a is not possible",name)
-    end
+ -- if format then
+ --     report_inclusion("format guess %a for %a",format,name)
+ -- else
+ --     report_inclusion("format guess for %a is not possible",name)
+ -- end
     return format and name, true, format
 end
 
