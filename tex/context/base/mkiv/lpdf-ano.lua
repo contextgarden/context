@@ -388,9 +388,7 @@ local defaultaction = destinationactions[defaultview]
 -- end up with a mix. A previous versions just output multiple destinations but not
 -- that we noved all to here we can be more sparse.
 
-local pagedestinations = { }
-
-table.setmetatableindex(pagedestinations,function(t,k)
+local pagedestinations = table.setmetatableindex(function(t,k)
     local v = pdfdelayedobject(f_fit(k))
     t[k] = v
     return v

@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['toks-ini'] = {
 tokens = tokens or { }
 
 local tokens     = tokens
-local newtoken   = newtoken or token
+local token      = token -- the built in one
 local tonumber   = tonumber
 local tostring   = tostring
 local utfchar    = utf.char
@@ -18,7 +18,7 @@ local concat     = table.concat
 
 if setinspector then
 
-    local istoken = newtoken.is_token
+    local istoken = token.is_token
     local simple  = { letter = "letter", other_char = "other" }
 
     local function astable(t)
@@ -54,21 +54,27 @@ if setinspector then
 
 end
 
-local scan_toks    = newtoken.scan_toks
-local scan_string  = newtoken.scan_string
-local scan_int     = newtoken.scan_int
-local scan_code    = newtoken.scan_code
-local scan_dimen   = newtoken.scan_dimen
-local scan_glue    = newtoken.scan_glue
-local scan_keyword = newtoken.scan_keyword
-local scan_token   = newtoken.scan_token
-local scan_word    = newtoken.scan_word
-local scan_number  = newtoken.scan_number
-local scan_csname  = newtoken.scan_csname
+local scan_toks    = token.scan_toks
+local scan_string  = token.scan_string
+local scan_int     = token.scan_int
+local scan_code    = token.scan_code
+local scan_dimen   = token.scan_dimen
+local scan_glue    = token.scan_glue
+local scan_keyword = token.scan_keyword
+local scan_token   = token.scan_token
+local scan_word    = token.scan_word
+local scan_number  = token.scan_number
+local scan_csname  = token.scan_csname
 
-local get_next     = newtoken.get_next
+local get_next     = token.get_next
 
-local set_macro    = newtoken.set_macro
+local set_macro    = token.set_macro
+local get_cmdname  = token.get_cmdname
+local create_token = token.create
+
+function tokens.defined(name)
+    return get_cmdname(create_token(name)) ~= "undefined_cs"
+end
 
 -- set_macro = function(k,v,g)
 --     if g == "global" then

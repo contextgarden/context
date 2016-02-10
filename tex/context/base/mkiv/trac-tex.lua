@@ -13,7 +13,7 @@ local next = next
 local texhashtokens = tex.hashtokens
 
 local trackers = trackers
-local newtoken = newtoken or token
+local token    = token
 local saved    = { }
 
 function trackers.savehash()
@@ -23,7 +23,7 @@ end
 function trackers.dumphashtofile(filename,delta)
     local list   = { }
     local hash   = tex.hashtokens()
-    local create = newtoken.create
+    local create = token.create
     for name, token in next, hash do
         if not delta or not saved[name] then
             if token[2] ~= 0 then -- still old interface

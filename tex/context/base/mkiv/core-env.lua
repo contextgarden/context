@@ -13,7 +13,6 @@ if not modules then modules = { } end modules ['core-env'] = {
 
 local P, C, S, Cc, lpegmatch, patterns = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc, lpeg.match, lpeg.patterns
 
-local newtoken          = newtoken or token
 local context           = context
 
 local texgetcount       = tex.getcount
@@ -22,6 +21,8 @@ local texsetcount       = tex.setcount
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local setmetatablecall  = table.setmetatablecall
+
+local createtoken       = token.create
 
 tex.modes               = allocate { }
 tex.systemmodes         = allocate { }
@@ -38,10 +39,9 @@ local systemmodes       = { }
 
 -- undefined: mode == 0 or cmdname = "undefined_cs"
 
-local create = newtoken.create
 
 local cache = table.setmetatableindex(function(t,k)
-    local v = create(k)
+    local v = createtoken(k)
     t[k] = v
     return v
 end)

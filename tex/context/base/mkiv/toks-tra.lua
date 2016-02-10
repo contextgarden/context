@@ -11,7 +11,7 @@ local format, gsub = string.format, string.gsub
 local tostring = tostring
 
 local tokens   = tokens
-local newtoken = newtoken or token
+local token    = token -- the built in one
 local tex      = tex
 local context  = context
 local commands = commands
@@ -33,8 +33,8 @@ local report          = logs.reporter("tokens","collectors")
 -- flush    : print back to tex
 -- test     : fancy stuff
 
-local get_next = newtoken.get_next
-local create   = newtoken.create
+local get_next     = token.get_next
+local create_token = token.create
 
 function collectors.install(tag,end_cs)
     local data, d = { }, 0
@@ -261,20 +261,20 @@ collectors.dowithwords = collectors.test
 
 -- This is only used in old articles ... will move to a module:
 
-tokens.vbox   = create("vbox")
-tokens.hbox   = create("hbox")
-tokens.vtop   = create("vtop")
-tokens.bgroup = create(utfbyte("{"),1)
-tokens.egroup = create(utfbyte("}"),2)
+tokens.vbox   = create_token("vbox")
+tokens.hbox   = create_token("hbox")
+tokens.vtop   = create_token("vtop")
+tokens.bgroup = create_token(utfbyte("{"),1)
+tokens.egroup = create_token(utfbyte("}"),2)
 
-tokens.letter = function(chr) return create(utfbyte(chr),11) end
-tokens.other  = function(chr) return create(utfbyte(chr),12) end
+tokens.letter = function(chr) return create_token(utfbyte(chr),11) end
+tokens.other  = function(chr) return create_token(utfbyte(chr),12) end
 
 tokens.letters = function(str)
     local t, n = { }, 0
     for chr in utfvalues(str) do
         n = n + 1
-        t[n] = create(chr, 11)
+        t[n] = create_token(chr, 11)
     end
     return t
 end
@@ -283,7 +283,7 @@ function collectors.defaultwords(t,str)
     if t then
         local n = #t
         n = n + 1 ; t[n] = tokens.bgroup
-        n = n + 1 ; t[n] = create("red")
+        n = n + 1 ; t[n] = create_token("red")
         for i=1,#str do
             n = n + 1 ; t[n] = tokens.other('*')
         end

@@ -106,6 +106,7 @@ local dimenfactor        = fonts.helpers.dimenfactor
 local splitdimen         = number.splitdimen
 
 local v_yes              = variables.yes
+local v_all              = variables.all
 local v_foreground       = variables.foreground
 
 local nodecodes          = nodes.nodecodes
@@ -125,6 +126,7 @@ local dir_code           = nodecodes.dir
 local userskip_code      = skipcodes.userskip
 local spaceskip_code     = skipcodes.spaceskip
 local xspaceskip_code    = skipcodes.xspaceskip
+local leader_code        = skipcodes.leaders
 
 local kerning_code       = kerncodes.kern
 
@@ -156,7 +158,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
     local n = head
     if n then
         local f, l, a, d, i, class
-        local continue, done, strip, level = false, false, true, -1
+        local continue, leaders, done, strip, level = false, false, false, true, -1
         while n do
             local id = getid(n)
             if id == glyph_code or id == rule_code then
@@ -181,7 +183,9 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                         f, l, a = n, n, aa
                         level, class = newlevel, newclass
                         d = data[class]
-                        continue = d.continue == v_yes
+                        local c = d.continue
+                        leaders = c == v_all
+                        continue = leaders or c == v_yes
                     end
                 else
                     if f then
@@ -219,7 +223,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     elseif id == glue_code then
                         -- catch \underbar{a} \underbar{a} (subtype test is needed)
                         local subtype = getsubtype(n)
-                        if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code) then
+                        if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code or (leaders and subtype >= leader_code)) then
                             l = n
                         else
                             head, done = flush(head,f,l,d,level,parent,strip), true

@@ -132,7 +132,7 @@ return {
         "zerowidthspace", "zerowidthnonjoiner", "zerowidthjoiner", "zwnj", "zwj",
         "optionalspace", "asciispacechar",
         --
-        "Ux",
+        "Ux", "eUx",
     },
     ["helpers"] = {
         --

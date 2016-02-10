@@ -71,6 +71,7 @@ local kerncodes          = nodes.kerncodes
 
 local glyph_code         = nodecodes.glyph
 local kern_code          = nodecodes.kern
+local math_code          = nodecodes.math
 
 local fontkern_code      = kerncodes.fontkern
 local userkern_code      = kerncodes.userkern

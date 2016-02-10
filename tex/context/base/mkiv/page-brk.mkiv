@@ -113,6 +113,20 @@
      \endgroup
    \fi}
 
+\unexpanded\def\usepageparameter#1%
+  {\edef\m_page_breaks_asked{#1\c!page}%
+   \ifx\m_page_breaks_asked\empty\else
+     \firstargumenttrue
+     \page_breaks_process[\m_page_breaks_asked]%
+   \fi}
+
+\unexpanded\def\dousepageparameter#1%
+  {\edef\m_page_breaks_asked{#1}%
+   \ifx\m_spac_align_asked\empty\else
+     \firstargumenttrue
+     \page_breaks_process[\m_page_breaks_asked]%
+   \fi}
+
 \unexpanded\def\resetpagebreak % used elsewhere too
   {\global\settrue\c_page_breaks_enabled}
 
@@ -270,6 +284,7 @@
 
 \newtoks\everybeforecolumnbreak
 \newtoks\everyaftercolumnbreak
+\newtoks\everysynchronizecolumn
 
 \let\page_breaks_columns_current_option \empty
 \let\page_breaks_columns_current_options\empty
@@ -320,7 +335,13 @@
    \fi
    \relax
    \the\everyaftercolumnbreak
-   \endgroup}
+   \endgroup
+   % outside group e.g. setting hsize
+   \the\everysynchronizecolumn}
+
+\appendtoks
+    \page_otr_command_set_hsize
+\to \everysynchronizecolumn
 
 %D Test page breaks.
 

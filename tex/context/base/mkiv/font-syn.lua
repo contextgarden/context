@@ -73,7 +73,7 @@ fonts.treatments           = treatments
 
 names.data                 = names.data or allocate { }
 
-names.version              = 1.125
+names.version              = 1.130
 names.basename             = "names"
 names.saved                = false
 names.loaded               = false

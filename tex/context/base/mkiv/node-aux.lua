@@ -111,6 +111,24 @@ function nodes.takebox(id)
     end
 end
 
+local splitbox = tex.splitbox
+nodes.splitbox = splitbox
+
+function nuts.splitbox(id,height)
+    return tonut(splitbox(id,height))
+end
+
+-- function nodes.takelist(n)
+--     -- when we need it
+-- end
+
+function nuts.takelist(n)
+    local l = getlist(n)
+    setlist(n)
+    free_node(n)
+    return l
+end
+
 nuts.takebox = takebox
 tex.takebox  = nodes.takebox -- sometimes more clear
 

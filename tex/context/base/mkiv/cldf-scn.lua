@@ -149,6 +149,8 @@ end
 
 -- it's convenient to have copies here:
 
+interfaces.defined  = tokens.defined
+
 interfaces.setmacro = tokens.setters.macro
 interfaces.setcount = tokens.setters.count
 interfaces.setdimen = tokens.setters.dimen

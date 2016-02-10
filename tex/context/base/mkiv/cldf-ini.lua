@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
     license   = "see context related readme files"
 }
 
--- see cldf-tod.* !
+-- also see cldf-tod.* !
+-- old code moved to cldf-old.lua
 
 -- maybe:
 --
@@ -704,18 +705,21 @@ end
 
 local containseol = patterns.containseol
 
-local writer
+local writer    = nil
+local prtwriter = nil
 
 -- if luafunctions then
 
-    writer = function (parent,command,first,...) -- already optimized before call
-        local t = { first, ... }
+    writer = function (parent,command,...) -- already optimized before call
         flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
         local direct = false
-        for i=1,#t do
-            local ti = t[i]
-            local typ = type(ti)
+     -- local t = { ... }
+     -- for i=1,#t do
+     --     local ti = t[i]
+        for i=1,select("#",...) do
+            local ti = (select(i,...))
             if direct then
+                local typ = type(ti)
                 if typ == "string" or typ == "number" then
                     flush(currentcatcodes,ti)
                 else -- node.write
@@ -726,93 +730,124 @@ local writer
                 -- nothing
             elseif ti == "" then
                 flush(currentcatcodes,"{}")
-            elseif typ == "string" then
-                -- is processelines seen ?
-                if processlines and lpegmatch(containseol,ti) then
-                    flush(currentcatcodes,"{")
-                    local flushlines = parent.__flushlines or flushlines
-                    flushlines(ti)
-                    flush(currentcatcodes,"}")
-                elseif currentcatcodes == contentcatcodes then
-                    flush(currentcatcodes,"{",ti,"}")
-                else
-                    flush(currentcatcodes,"{")
-                    flush(contentcatcodes,ti)
-                    flush(currentcatcodes,"}")
-                end
-            elseif typ == "number" then
-                -- numbers never have funny catcodes
-                flush(currentcatcodes,"{",ti,"}")
-            elseif typ == "table" then
-                local tn = #ti
-                if tn == 0 then
-                    local done = false
-                    for k, v in next, ti do
-                        if done then
-                            if v == "" then
-                                flush(currentcatcodes,",",k,'=')
-                            else
-                                flush(currentcatcodes,",",k,"={",v,"}")
-                            end
-                        else
-                            if v == "" then
-                                flush(currentcatcodes,"[",k,"=")
-                            else
-                                flush(currentcatcodes,"[",k,"={",v,"}")
-                            end
-                            done = true
-                        end
-                    end
-                    if done then
-                        flush(currentcatcodes,"]")
-                    else
-                        flush(currentcatcodes,"[]")
-                    end
-                elseif tn == 1 then -- some 20% faster than the next loop
-                    local tj = ti[1]
-                    if type(tj) == "function" then
-                        flush(currentcatcodes,"[\\cldl",storefunction(tj),"]")
-                     -- flush(currentcatcodes,"[",storefunction(tj),"]")
-                    else
-                        flush(currentcatcodes,"[",tj,"]")
-                    end
-                else -- is concat really faster than flushes here? probably needed anyway (print artifacts)
-                    flush(currentcatcodes,"[")
-                    for j=1,tn do
-                        local tj = ti[j]
-                        if type(tj) == "function" then
-                            if j == tn then
-                                flush(currentcatcodes,"\\cldl",storefunction(tj),"]")
-                             -- flush(currentcatcodes,"",storefunction(tj),"]")
-                            else
-                                flush(currentcatcodes,"\\cldl",storefunction(tj),",")
-                             -- flush(currentcatcodes,"",storefunction(tj),",")
-                            end
-                        else
-                            if j == tn then
-                                flush(currentcatcodes,tj,"]")
-                            else
-                                flush(currentcatcodes,tj,",")
-                            end
-                        end
-                    end
-                end
-            elseif typ == "function" then
-                flush(currentcatcodes,"{\\cldl ",storefunction(ti),"}") -- todo: ctx|prt|texcatcodes
-             -- flush(currentcatcodes,"{",storefunction(ti),"}") -- todo: ctx|prt|texcatcodes
-            elseif typ == "boolean" then
-                if ti then
-                    flushdirect(currentcatcodes,"\r")
-                else
-                    direct = true
-                end
-            elseif typ == "thread" then
-                report_context("coroutines not supported as we cannot yield across boundaries")
-            elseif isnode(ti) then -- slow
-                flush(currentcatcodes,"{\\cldl",storenode(ti),"}")
-             -- flush(currentcatcodes,"{",storenode(ti),"}")
             else
-                report_context("error: %a gets a weird argument %a",command,ti)
+                local typ = type(ti)
+                if typ == "string" then
+                    -- is processlines seen ?
+                    if processlines and lpegmatch(containseol,ti) then
+                        flush(currentcatcodes,"{")
+                        local flushlines = parent.__flushlines or flushlines
+                        flushlines(ti)
+                        flush(currentcatcodes,"}")
+                    elseif currentcatcodes == contentcatcodes then
+                        flush(currentcatcodes,"{",ti,"}")
+                    else
+                        flush(currentcatcodes,"{")
+                        flush(contentcatcodes,ti)
+                        flush(currentcatcodes,"}")
+                    end
+                elseif typ == "number" then
+                    -- numbers never have funny catcodes
+                    flush(currentcatcodes,"{",ti,"}")
+                elseif typ == "table" then
+                    local tn = #ti
+                    if tn == 0 then
+                        local done = false
+                        for k, v in next, ti do
+                            if done then
+                                if v == "" then
+                                    flush(currentcatcodes,",",k,'=')
+                                else
+                                    flush(currentcatcodes,",",k,"={",v,"}")
+                                end
+                            else
+                                if v == "" then
+                                    flush(currentcatcodes,"[",k,"=")
+                                else
+                                    flush(currentcatcodes,"[",k,"={",v,"}")
+                                end
+                                done = true
+                            end
+                        end
+                        if done then
+                            flush(currentcatcodes,"]")
+                        else
+                            flush(currentcatcodes,"[]")
+                        end
+                    elseif tn == 1 then -- some 20% faster than the next loop
+                        local tj = ti[1]
+                        if type(tj) == "function" then
+                            flush(currentcatcodes,"[\\cldl",storefunction(tj),"]")
+                         -- flush(currentcatcodes,"[",storefunction(tj),"]")
+                        else
+                            flush(currentcatcodes,"[",tj,"]")
+                        end
+                    else -- is concat really faster than flushes here? probably needed anyway (print artifacts)
+                        flush(currentcatcodes,"[")
+                        for j=1,tn do
+                            local tj = ti[j]
+                            if type(tj) == "function" then
+                                if j == tn then
+                                    flush(currentcatcodes,"\\cldl",storefunction(tj),"]")
+                                 -- flush(currentcatcodes,"",storefunction(tj),"]")
+                                else
+                                    flush(currentcatcodes,"\\cldl",storefunction(tj),",")
+                                 -- flush(currentcatcodes,"",storefunction(tj),",")
+                                end
+                            else
+                                if j == tn then
+                                    flush(currentcatcodes,tj,"]")
+                                else
+                                    flush(currentcatcodes,tj,",")
+                                end
+                            end
+                        end
+                    end
+                elseif typ == "function" then
+                    flush(currentcatcodes,"{\\cldl ",storefunction(ti),"}") -- todo: ctx|prt|texcatcodes
+                 -- flush(currentcatcodes,"{",storefunction(ti),"}") -- todo: ctx|prt|texcatcodes
+                elseif typ == "boolean" then
+                    if ti then
+                        flushdirect(currentcatcodes,"\r")
+                    else
+                        direct = true
+                    end
+                elseif typ == "thread" then
+                    report_context("coroutines not supported as we cannot yield across boundaries")
+                elseif isnode(ti) then -- slow
+                    flush(currentcatcodes,"{\\cldl",storenode(ti),"}")
+                 -- flush(currentcatcodes,"{",storenode(ti),"}")
+                else
+                    report_context("error: %a gets a weird argument %a",command,ti)
+                end
+            end
+        end
+    end
+
+    -- if performance really matters we can consider a compiler but it will never
+    -- pay off
+
+    prtwriter = function (command,...) -- already optimized before call
+        flush(prtcatcodes,command)
+        for i=1,select("#",...) do
+            local ti = (select(i,...))
+            if ti == nil then
+                -- nothing
+            elseif ti == "" then
+                flush(prtcatcodes,"{}")
+            else
+                local tp = type(ti)
+                if tp == "string" or tp == "number"then
+                    flush(prtcatcodes,"{",ti,"}")
+                elseif tp == "function" then
+                    flush(prtcatcodes,"{\\cldl ",storefunction(ti),"}")
+                 -- flush(currentcatcodes,"{",storefunction(ti),"}") -- todo: ctx|prt|texcatcodes
+                elseif isnode(ti) then
+                    flush(prtcatcodes,"{\\cldl",storenode(ti),"}")
+                 -- flush(currentcatcodes,"{",storenode(ti),"}")
+                else
+                    report_context("fatal error: prt %a gets a weird argument %a",command,ti)
+                end
             end
         end
     end
@@ -915,8 +950,9 @@ local writer
 --
 -- end
 
-local generics = { }  context.generics = generics
-local indexer  = nil
+local generics   = { }  context.generics = generics
+local indexer    = nil
+local prtindexer = nil
 
 -- if environment.initex then
 
@@ -1016,7 +1052,7 @@ function context.constructcs(k)
         if first == nil then
             flush(prtcatcodes,c)
         else
-            return writer(context,c,first,...)
+            return prtwriter(c,first,...)
         end
     end
     rawset(context,k,v)
