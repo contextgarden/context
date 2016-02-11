@@ -259,7 +259,13 @@
        \strc_references_flush_destination_nodes
      \egroup
      \strc_references_inject_after % new
-   \fi}
+   \else\ifvoid\b_strc_destination_nodes\else
+     \strc_references_inject_before % new
+     \dontleavehmode\hbox \bgroup
+       \strc_references_flush_destination_nodes
+     \egroup
+     \strc_references_inject_after % new
+   \fi\fi}
 
 \def\strc_references_set_page_only_destination_attribute#labels% could in fact be fully expandable
   {\ifreferencing
@@ -333,7 +339,13 @@
        \strc_references_flush_destination_nodes
      \egroup
      \strc_references_inject_after % new
-   \fi}
+   \else\ifvoid\b_strc_destination_nodes\else
+     \strc_references_inject_before % new
+     \dontleavehmode\hbox \bgroup
+       \strc_references_flush_destination_nodes
+     \egroup
+     \strc_references_inject_after % new
+   \fi\fi}
 
 \unexpanded\def\strc_references_direct_full
   {\strc_references_direct_full_user\empty}
@@ -1438,16 +1450,16 @@
 
 \unexpanded\def\directgoto
   {\ifconditional\uselocationstrut
-     \expandafter\dodirectgoto
+     \expandafter\strc_references_direct_goto
    \else
-     \expandafter\dodirectgotohtdp
+     \expandafter\strc_references_direct_goto_htdp
    \fi}
 
 \unexpanded\def\goto
   {\ifconditional\uselocationstrut
-     \expandafter\dogoto
+     \expandafter\strc_references_goto
    \else
-     \expandafter\dogotohtdp
+     \expandafter\strc_references_goto_htdp
    \fi}
 
 % The unbox trick is needed in order to permit \par inside a reference. Otherwise
@@ -1460,7 +1472,7 @@
 \def\revivesavedreferenceattribute % sometimes handy as no test etc needed
   {\attribute\referenceattribute\lastsavedreferenceattribute}
 
-\def\dodirectgoto#content[#label]% no test for valid references
+\def\strc_references_direct_goto#content[#label]% no test for valid references
   {\dontleavehmode
    \begingroup
    \attribute\referenceattribute\attributeunsetvalue
@@ -1487,7 +1499,7 @@
    \fi
    \endgroup}
 
-\def\dodirectgotohtdp#content[#label]% no test for valid references
+\def\strc_references_direct_goto_htdp#content[#label]% no test for valid references
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
@@ -1513,7 +1525,7 @@
    \fi
    \endgroup}
 
-\def\dogoto#content#dummy[#label]% #dummy gobbles spaces
+\def\strc_references_goto#content#dummy[#label]% #dummy gobbles spaces
   {\dontleavehmode
    \begingroup
   %\setbox\referencebox\hbox\bgroup % experiment, might change again to non \par support
@@ -1545,19 +1557,19 @@
    \begingroup
    \iflocation
      \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
-       {\expandafter\startgoto_yes}%
-       {\expandafter\startgoto_nop}%
+       {\expandafter\strc_references_start_goto_yes}%
+       {\expandafter\strc_references_start_goto_nop}%
    \else
-     \expandafter\startgoto_nop
+     \expandafter\strc_references_start_goto_nop
    \fi}
 
-\unexpanded\def\startgoto_nop
-  {\let\stopgoto\stopgoto_nop}
+\unexpanded\def\strc_references_start_goto_nop
+  {\let\stopgoto\strc_references_stop_goto_nop}
 
-\unexpanded\def\stopgoto_nop
+\unexpanded\def\strc_references_stop_goto_nop
   {\endgroup}
 
-\unexpanded\def\startgoto_yes
+\unexpanded\def\strc_references_start_goto_yes
   {\expandtexincurrentreference
    \clf_injectcurrentreferencehtdp
      \ht\strutbox
@@ -1568,13 +1580,13 @@
    \global\lastsavedreferenceattribute\lastreferenceattribute
    \attribute\referenceattribute\lastreferenceattribute
    \dostarttagged\t!link\empty
-   \let\stopgoto\stopgoto_yes}
+   \let\stopgoto\strc_references_stop_goto_yes}
 
-\unexpanded\def\stopgoto_yes
+\unexpanded\def\strc_references_stop_goto_yes
   {\dostoptagged
    \endgroup}
 
-\def\dogotohtdp#content#dummy[#label]% dummy gobbles spaces
+\def\strc_references_goto_htdp#content#dummy[#label]% dummy gobbles spaces
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue

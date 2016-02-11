@@ -50,6 +50,8 @@ local v_file             = variables.file
 local v_unknown          = variables.unknown
 local v_page             = variables.page
 local v_auto             = variables.auto
+local v_yes              = variables.yes
+local v_name             = variables.name
 
 local context            = context
 local commands           = commands
@@ -1877,8 +1879,10 @@ local defaultinnermethod = defaultinnermethod
 references.innermethod   = innermethod  -- don't mess with this one directly
 
 function references.setinnermethod(m)
-    if toboolean(m) or m == v_page then
+    if toboolean(m) or m == v_page or m == v_yes then
         innermethod = v_page
+    elseif m == v_name then
+        innermethod = v_name
     else
         innermethod = v_auto
     end
@@ -1910,7 +1914,7 @@ local destinationattributes = { }
 local function setinternalreference(specification)
     local internal    = specification.internal
     local destination = unsetvalue
-    if innermethod == v_auto then
+    if innermethod == v_auto or innermethod == v_name then
         local t, tn = { }, 0 -- maybe add to current (now only used for tracing)
         local reference = specification.reference
         if reference then
@@ -1932,9 +1936,13 @@ local function setinternalreference(specification)
         end
         -- ugly .. later we decide to ignore it when we have a real one
         -- but for testing we might want to see them all
-        if internal then
-            tn = tn + 1
-            t[tn] = internal -- when number it's internal
+
+        if innermethod == v_page then
+            -- we dont' want too many #1 #2 #3 etc
+            if internal then
+                tn = tn + 1
+                t[tn] = internal -- when number it's internal
+            end
         end
         destination = references.mark(t,nil,nil,specification.view) -- returns an attribute
     end
@@ -2002,7 +2010,7 @@ function references.setandgetattribute(data) -- maybe do internal automatically 
         if done then
             attr = setinternalreference {
                 prefix    = prefix,
-                reference = tag,
+                reference = rdat.reference,
                 internal  = rdat.internal,
                 view      = rdat.view
             } or unsetvalue

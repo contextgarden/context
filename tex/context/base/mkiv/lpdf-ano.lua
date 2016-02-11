@@ -34,6 +34,7 @@ local report_bookmark         = logs.reporter("backend","bookmarks")
 local variables               = interfaces.variables
 local v_auto                  = variables.auto
 local v_page                  = variables.page
+local v_name                  = variables.name
 
 local factor                  = number.dimenfactors.bp
 
@@ -368,6 +369,7 @@ local destinationactions = {
  -- [v_minheight] = function(r,w,h,d) return f_fitbv(r,(getvpos()+h)*factor) end,                  -- left coordinate, fit height of content in window
     [v_minheight] = function(r,w,h,d) return f_fitbv(r,gethpos()*factor) end,                      -- left coordinate, fit height of content in window    [v_fit]       =                          f_fit,                                                 -- fit page in window
     [v_tight]     =                          f_fitb,                                               -- fit content in window
+    [v_fit]       =                          f_fit,
 }
 
 local mapping = {
@@ -386,7 +388,7 @@ local defaultaction = destinationactions[defaultview]
 
 -- A complication is that we need to use named destinations when we have views so we
 -- end up with a mix. A previous versions just output multiple destinations but not
--- that we noved all to here we can be more sparse.
+-- that we moved all to here we can be more sparse.
 
 local pagedestinations = table.setmetatableindex(function(t,k)
     local v = pdfdelayedobject(f_fit(k))
@@ -396,7 +398,7 @@ end)
 
 local function flushdestination(width,height,depth,names,view)
     local r = pdfpagereference(texgetcount("realpageno"))
-    if view == defaultview or not view or view == "" then
+    if (references.innermethod ~= v_name) and (view == defaultview or not view or view == "") then
         r = pagedestinations[r]
     else
         local action = view and destinationactions[view] or defaultaction
@@ -422,33 +424,92 @@ function nodeinjections.destination(width,height,depth,names,view)
     -- we could save some aut's by using a name when given but it doesn't pay off apart
     -- from making the code messy and tracing hard .. we only save some destinations
     -- which we already share anyway
-    for n=1,#names do
-        local name = names[n]
-        if usedviews[name] then
-            -- already done, maybe a warning
-        elseif type(name) == "number" then
-            if noview then
-                usedviews[name] = view
-                names[n] = false
-            elseif method == v_page then
-                usedviews[name] = view
-                names[n] = false
-            else
-                local used = usedinternals[name]
-                if used and used ~= defaultview then
+ -- for n=1,#names do
+ --     local name = names[n]
+ --     if usedviews[name] then
+ --         -- already done, maybe a warning
+ --     elseif type(name) == "number" then
+ --         if noview then
+ --             usedviews[name] = view
+ --             names[n] = false
+ --         elseif method == v_page then
+ --             usedviews[name] = view
+ --             names[n] = false
+ --         else
+ --             local used = usedinternals[name]
+ --             if used and used ~= defaultview then
+ --                 usedviews[name] = view
+ --                 names[n] = autoprefix .. name
+ --                 doview = true
+ --             else
+ --              -- names[n] = autoprefix .. name
+ --                 names[n] = false
+ --             end
+ --         end
+ --     elseif method == v_page then
+ --         usedviews[name] = view
+ --     else
+ --         usedviews[name] = view
+ --         doview = true
+ --     end
+ -- end
+
+    if method == v_page then
+        for n=1,#names do
+            local name = names[n]
+            if usedviews[name] then
+                -- already done, maybe a warning
+            elseif type(name) == "number" then
+                if noview then
                     usedviews[name] = view
-                    names[n] = autoprefix .. name
-                    doview = true
+                    names[n] = false
                 else
-                 -- names[n] = autoprefix .. name
+                    usedviews[name] = view
                     names[n] = false
                 end
+            else
+                usedviews[name] = view
             end
-        elseif method == v_page then
-            usedviews[name] = view
-        else
-            usedviews[name] = view
-            doview = true
+        end
+    elseif method == v_name then
+        for n=1,#names do
+            local name = names[n]
+            if usedviews[name] then
+                -- already done, maybe a warning
+            elseif type(name) == "number" then
+                local used = usedinternals[name]
+                usedviews[name] = view
+                names[n] = autoprefix .. name
+                doview = true
+            else
+                usedviews[name] = view
+                doview = true
+            end
+        end
+    else
+        for n=1,#names do
+            local name = names[n]
+            if usedviews[name] then
+                -- already done, maybe a warning
+            elseif type(name) == "number" then
+                if noview then
+                    usedviews[name] = view
+                    names[n] = false
+                else
+                    local used = usedinternals[name]
+                    if used and used ~= defaultview then
+                        usedviews[name] = view
+                        names[n] = autoprefix .. name
+                        doview = true
+                    else
+                     -- names[n] = autoprefix .. name
+                        names[n] = false
+                    end
+                end
+            else
+                usedviews[name] = view
+                doview = true
+            end
         end
     end
     if doview then
@@ -459,7 +520,8 @@ end
 -- we could share dictionaries ... todo
 
 local function somedestination(destination,internal,page) -- no view anyway
-    if references.innermethod ~= v_page then
+    local method = references.innermethod
+    if method == v_auto then
         if type(destination) == "number" then
             if not internal then
                 internal = destination
@@ -479,9 +541,21 @@ local function somedestination(destination,internal,page) -- no view anyway
                 S = pdf_goto,
                 D = destination,
             }
+        elseif destination then
+            -- hopefully this one is flushed
+            return pdfdictionary {
+                S = pdf_goto,
+                D = destination,
+            }
+        end
+    elseif method == v_name then
+        if not destination and internal then
+            flaginternals[internal] = true -- for bookmarks and so
+            if type(destination) ~= "string" then
+                destination = autoprefix .. internal
+            end
         end
         if destination then
-            -- hopefully this one is flushed
             return pdfdictionary {
                 S = pdf_goto,
                 D = destination,
@@ -710,7 +784,8 @@ end)
 runners["inner"] = function(var,actions)
     local internal = false
     local inner    = nil
-    if references.innermethod == v_auto then
+    local method   = references.innermethod
+    if method == v_auto or method == v_name then
         local vi = var.i
         if vi then
             local vir = vi.references
