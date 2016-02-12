@@ -1037,26 +1037,47 @@ local prtindexer = nil
 
 -- only for internal usage:
 
-function context.constructcsonly(k) -- not much faster than the next but more mem efficient
-    local c = "\\" .. tostring(generics[k] or k)
-    local v = function()
-        flush(prtcatcodes,c)
-    end
-    rawset(context,k,v)
-    return v
-end
+do
 
-function context.constructcs(k)
-    local c = "\\" .. tostring(generics[k] or k)
-    local v = function(first,...)
-        if first == nil then
+    function context.constructcsonly(k) -- not much faster than the next but more mem efficient
+        local c = "\\" .. tostring(generics[k] or k)
+        local v = function()
             flush(prtcatcodes,c)
-        else
-            return prtwriter(c,first,...)
         end
+        rawset(context,k,v) -- context namespace
+        return v
     end
-    rawset(context,k,v)
-    return v
+
+    function context.constructcs(k)
+        local c = "\\" .. tostring(generics[k] or k)
+        local v = function(first,...)
+            if first == nil then
+                flush(prtcatcodes,c)
+            else
+                return prtwriter(c,first,...)
+            end
+        end
+        rawset(context,k,v) -- context namespace
+        return v
+    end
+
+    local function prtindexer(t,k)
+        local c = "\\" .. tostring(generics[k] or k)
+        local v = function(first,...)
+            if first == nil then
+                flush(prtcatcodes,c)
+            else
+                return prtwriter(c,first,...)
+            end
+        end
+        rawset(t,k,v) -- protected namespace
+        return v
+    end
+
+    context.protected = { } -- we could check for _ in the context namespace
+
+    setmetatable(context.protected, { __index = prtindexer, __call = prtwriter } )
+
 end
 
 -- local splitformatters = utilities.strings.formatters.new(true) -- not faster (yet)

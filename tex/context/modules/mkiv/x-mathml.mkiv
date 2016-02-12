@@ -1729,7 +1729,7 @@
         } {
             \xmldoifelse {#1} {.[oneof(@encoding,'asciimath','am')]} {
                 \ifdefined\asciimath
-                    \expanded{\asciimath{\xmlflush{#1}}}
+                    \expanded{\asciimath{\xmlflushpure{#1}}}
                 \else
                     \hbox{\tt no am loaded}
                 \fi

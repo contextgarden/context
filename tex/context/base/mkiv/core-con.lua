@@ -264,11 +264,6 @@ function converters.Character (n) return chr (n,upper_offset) end
 function converters.characters(n) return chrs(n,lower_offset) end
 function converters.Characters(n) return chrs(n,upper_offset) end
 
-converters['a']  = converters.characters
-converters['A']  = converters.Characters
-converters['AK'] = converters.Characters
-converters['KA'] = converters.Characters
-
 implement { name = "alphabetic", actions = { alphabetic, context }, arguments = { "integer", "string" } }
 implement { name = "Alphabetic", actions = { Alphabetic, context }, arguments = { "integer", "string" } }
 
@@ -577,6 +572,11 @@ implement {
 -- this is a temporary solution: we need a better solution when we have
 -- more languages
 
+converters['a']  = converters.characters
+converters['A']  = converters.Characters
+converters['AK'] = converters.Characters -- obsolete
+converters['KA'] = converters.Characters -- obsolete
+
 function converters.spanishnumerals(n) return alphabetic(n,"es") end
 function converters.Spanishnumerals(n) return Alphabetic(n,"es") end
 function converters.sloviannumerals(n) return alphabetic(n,"sl") end
@@ -587,6 +587,15 @@ converters['characters:sl'] = converters.sloveniannumerals
 
 converters['Characters:es'] = converters.Spanishnumerals
 converters['Characters:sl'] = converters.Sloveniannumerals
+
+-- bonus
+
+converters['a:es']  = converters.spanishnumerals
+converters['a:sl']  = converters.sloveniannumerals
+converters['A:es']  = converters.Spanishnumerals
+converters['A:sl']  = converters.Sloveniannumerals
+
+-- end of bonus
 
 converters.sequences = converters.sequences or { }
 local sequences      = converters.sequences

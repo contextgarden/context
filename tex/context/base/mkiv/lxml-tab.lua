@@ -793,7 +793,48 @@ do
           + p_rest/fromdec
         )
 
-    xml.reparsedentitylpeg = reparsedentity
+    local hash = table.setmetatableindex(function(t,k)
+        local v = utfchar(k)
+        t[k] = v
+        return v
+    end)
+
+    local function fromuni(s)
+        local n = tonumber(s,16)
+        if n then
+            return hash[n]
+        else
+            return formatters["u:%s"](s), true
+        end
+    end
+
+    local function fromhex(s)
+        local n = tonumber(s,16)
+        if n then
+            return hash[n]
+        else
+            return formatters["h:%s"](s), true
+        end
+    end
+
+    local function fromdec(s)
+        local n = tonumber(s)
+        if n then
+            return hash[n]
+        else
+            return formatters["d:%s"](s), true
+        end
+    end
+
+    local unescapedentity =
+        P("U+") * (p_rest/fromuni)
+      + P("#")  * (
+            P("x") * (p_rest/fromhex)
+          + p_rest/fromdec
+        )
+
+    xml.reparsedentitylpeg  = reparsedentity   -- with \Ux{...} for special tex entities
+    xml.unescapedentitylpeg = unescapedentity  -- normal characters
 
 end
 

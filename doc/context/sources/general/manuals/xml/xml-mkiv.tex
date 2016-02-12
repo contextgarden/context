@@ -1048,6 +1048,20 @@ You can restrict flushing by using commands that accept a specification.
     {cd:node}
 \stopxmlcmd
 
+\startxmlcmd {\cmdbasicsetup{xmlpure}}
+    returns the text of the matching \cmdinternal {cd:lpath} under \cmdinternal
+    {cd:node} without \type {\Ux} escaped special \TEX\ characters
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlflushtext}}
+    returns the text of the \cmdinternal {cd:node}
+\stopxmlcmd
+
+\startxmlcmd {\cmdbasicsetup{xmlflushpure}}
+    returns the text of the \cmdinternal {cd:node} without \type {\Ux} escaped
+    special \TEX\ characters
+\stopxmlcmd
+
 \startxmlcmd {\cmdbasicsetup{xmlnonspace}}
     returns the text of the matching \cmdinternal {cd:lpath} under \cmdinternal
     {cd:node} without embedded spaces

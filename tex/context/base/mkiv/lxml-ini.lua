@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['lxml-ini'] = {
+    if not modules then modules = { } end modules ['lxml-ini'] = {
     version   = 1.001,
     comment   = "this module is the basis for the lxml-* ones",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -104,6 +104,9 @@ implement { name = "xmlstripped",          actions = lxml.stripped,          arg
 implement { name = "xmlstrippednolines",   actions = lxml.stripped,          arguments = { "string", "string", true } }
 implement { name = "xmltag",               actions = lxml.tag,               arguments = "string" }
 implement { name = "xmltext",              actions = lxml.text,              arguments = { "string", "string" } }
+implement { name = "xmlpure",              actions = lxml.pure,              arguments = { "string", "string" } }
+implement { name = "xmlflushtext",         actions = lxml.text,              arguments = "string" }
+implement { name = "xmlflushpure",         actions = lxml.pure,              arguments = "string" }
 implement { name = "xmltobuffer",          actions = lxml.tobuffer,          arguments = { "string", "string", "string" } }
 implement { name = "xmltobufferverbose",   actions = lxml.tobuffer,          arguments = { "string", "string", "string", true } }
 implement { name = "xmltofile",            actions = lxml.tofile,            arguments = { "string", "string", "string" } }

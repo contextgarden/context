@@ -104,11 +104,15 @@
 \let\xmlstrippednolines        \clf_xmlstrippednolines
 \let\xmltag                    \clf_xmltag
 \let\xmltext                   \clf_xmltext
+\let\xmlpure                   \clf_xmlpure
 \let\xmltobuffer               \clf_xmltobuffer           % id pattern name
 \let\xmltobufferverbose        \clf_xmltobufferverbose    % id pattern name
 \let\xmltofile                 \clf_xmltofile             % id pattern filename
 \let\xmltoparameters           \clf_xmltoparameters
 \let\xmlverbatim               \clf_xmlverbatim
+
+\let\xmlflushtext              \clf_xmlflushtext
+\let\xmlflushpure              \clf_xmlflushpure
 
 \unexpanded\def\xmlinfo                #1{\hbox{\ttxx[\clf_xmlname{#1}]}}
 \unexpanded\def\xmlshow                #1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}

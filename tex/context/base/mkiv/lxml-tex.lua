@@ -91,11 +91,20 @@ lxml.entities = lxml.entities or { }
 
 storage.register("lxml/entities",lxml.entities,"lxml.entities")
 
-local xmlentities  = xml.entities          -- these are more or less standard entities
-local texentities  = lxml.entities         -- these are specific for a tex run
-local parsedentity = xml.reparsedentitylpeg
+local xmlentities     = xml.entities             -- these are more or less standard entities
+local texentities     = lxml.entities            -- these are specific for a tex run
+local reparsedentity  = xml.reparsedentitylpeg   -- \Ux{...}
+local unescapedentity = xml.unescapedentitylpeg
+local parsedentity    = reparsedentity
+local useelement      = false                    -- probably no longer needed / used
 
-local useelement   = false -- probably no longer needed / used
+function lxml.startunescaped()
+    parsedentity = unescapedentity
+end
+
+function lxml.stopunescaped()
+    parsedentity = reparsedentity
+end
 
 directives.register("lxml.entities.useelement",function(v)
     useelement = v
@@ -150,10 +159,17 @@ function lxml.resolvedentity(str)
         -- normally this is already solved while loading the file
         local chr, err = lpegmatch(parsedentity,str)
         if chr then
-            if trace_entities then
-                report_xml("passing entity %a as %a using %a",str,chr,"ctxcatcodes")
+            if parsedentity == reparsedentity then
+                if trace_entities then
+                    report_xml("passing entity %a as %a using %a",str,chr,"ctxcatcodes")
+                end
+                context(chr)
+            else
+                contextsprint(notcatcodes,chr)
+                if trace_entities then
+                    report_xml("passing entity %a as %a using %a",str,chr,"notcatcodes")
+                end
             end
-            context(chr)
         elseif err then
             if trace_entities then
                 report_xml("passing faulty entity %a as %a",str,err)
@@ -284,6 +300,14 @@ lxml.toverbatim = context.newverbosehandler {
 }
 
 -- raw flushing
+
+function lxml.startraw()
+    forceraw = true
+end
+
+function lxml.stopraw()
+    forceraw = false
+end
 
 function lxml.startraw()
     forceraw = true
@@ -1704,9 +1728,34 @@ function lxml.context(id,pattern) -- the content, untouched by commands
 end
 
 function lxml.text(id,pattern)
-    local collected = (pattern and xmlapplylpath(getid(id),pattern)) or getid(id)
-    if collected and #collected > 0 then
-        text(collected)
+    if pattern then
+        local collected = xmlapplylpath(getid(id),pattern)
+        if collected and #collected > 0 then
+            text(collected)
+        end
+    else
+        local e = getid(id)
+        if e then
+            text(e.dt)
+        end
+    end
+end
+
+function lxml.pure(id,pattern)
+    if pattern then
+        local collected = xmlapplylpath(getid(id),pattern)
+        if collected and #collected > 0 then
+            parsedentity = unescapedentity
+            text(collected)
+            parsedentity = reparsedentity
+        end
+    else
+        parsedentity = unescapedentity
+        local e = getid(id)
+        if e then
+            text(e.dt)
+        end
+        parsedentity = reparsedentity
     end
 end
 

@@ -44,6 +44,18 @@
         <cd:arguments><cd:resolve name="xml-node-path"/></cd:arguments>
     </cd:command>
 
+    <cd:command name="xmlpure">
+        <cd:arguments><cd:resolve name="xml-node-path"/></cd:arguments>
+    </cd:command>
+
+    <cd:command name="xmlflushtext">
+        <cd:arguments><cd:resolve name="xml-node"/></cd:arguments>
+    </cd:command>
+
+    <cd:command name="xmlflushpure">
+        <cd:arguments><cd:resolve name="xml-node"/></cd:arguments>
+    </cd:command>
+
     <cd:command name="xmlnonspace">
         <cd:arguments><cd:resolve name="xml-node-path"/></cd:arguments>
     </cd:command>
