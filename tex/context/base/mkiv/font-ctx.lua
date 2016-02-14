@@ -2044,7 +2044,7 @@ do
 
     implement {
         name      = "doifelsecurrentfonthasfeature",
-        actions   = { currentfonthasfeature, commands.doifelse },
+        actions   = { constructors.currentfonthasfeature, commands.doifelse },
         arguments = "string"
     }
 

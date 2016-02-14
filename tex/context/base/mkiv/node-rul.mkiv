@@ -119,12 +119,13 @@
         order         {\barparameter\c!order}%
         rulethickness {\barparameter\c!rulethickness}%
         method        \barparameter\c!method
+        max           \barparameter\c!max\space % number
+        mp           {\includeMPgraphic{\barparameter\c!mp}}
         ma            \thecolormodelattribute
         ca            \thecolorattribute\p_node_rules_color
         ta            \thetransparencyattribute\p_node_rules_color
         offset        \barparameter\c!offset\space % number
         dy            \barparameter\c!dy\space % number
-        max           \barparameter\c!max
      \relax}}
 
 \unexpanded\def\node_rules_redefine#1%
@@ -254,6 +255,52 @@
 
 \unexpanded\def\setupunderbar[#1]% too incompatible for the moment
   {}
+
+%D Experimental new feature:
+
+\startuseMPgraphic{rules:under:random}
+    draw
+        ((0,RuleDepth) ... (RuleWidth,RuleDepth)) randomized (4*RuleThickness)
+        shifted (0,RuleFactor*RuleOffset)
+        withpen pencircle scaled RuleThickness
+        withcolor RuleColor ;
+    setbounds currentpicture to unitsquare xysized(RuleWidth,RuleHeight) ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{rules:under:dash}
+    draw
+        ((0,RuleDepth) ... (RuleWidth,RuleDepth))
+        shifted (0,RuleFactor*RuleOffset)
+        dashed dashpattern(off 5/RuleFactor on 0 off 5/RuleFactor)
+        withpen pencircle scaled RuleThickness
+        withcolor RuleColor ;
+    setbounds currentpicture to unitsquare xysized(RuleWidth,RuleHeight) ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{rules:under:dots}
+    draw
+        ((0,RuleDepth) ... (RuleWidth,RuleDepth))
+        shifted (0,RuleFactor*RuleOffset)
+        dashed evenly
+        withpen pencircle scaled RuleThickness
+        withcolor RuleColor ;
+    setbounds currentpicture to unitsquare xysized(RuleWidth,RuleHeight) ;
+\stopuseMPgraphic
+
+\definebar
+  [undergraphic]
+  [\c!mp=rules:under:dash,
+   \c!offset=-.2,
+   \c!order=\v!background]
+
+\definebar[underrandom] [undergraphic][\c!mp=rules:under:random]
+\definebar[underrandoms][underrandom] [\c!continue=\v!yes]
+
+\definebar[underdash]   [undergraphic][\c!mp=rules:under:dash]
+\definebar[underdashes] [underdash]   [\c!continue=\v!yes]
+
+\definebar[underdot]    [undergraphic][\c!mp=rules:under:dots]
+\definebar[underdots]   [underdot]    [\c!continue=\v!yes]
 
 %D This will move: (a bit duplicated)
 

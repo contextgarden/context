@@ -428,13 +428,19 @@ function metapost.flush(result,flusher,askedfig)
                         result[#result+1] = "q"
                         if objects then
                             resetplugins(result) -- we should move the colorinitializer here
-local savedpath = nil
-local savedhtap = nil
+                            local savedpath = nil
+                            local savedhtap = nil
                             for o=1,#objects do
                                 local object = objects[o]
                                 local objecttype = object.type
-                                if objecttype == "start_bounds" or objecttype == "stop_bounds" then
-                                    -- skip
+                                if objecttype == "text" then
+                                    result[#result+1] = "q"
+                                    local ot = object.transform -- 3,4,5,6,1,2
+                                    result[#result+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: formatters["%F %F m %F %F %F %F 0 0 cm"](unpack(ot))
+                                    flushfigure(result) -- flush accumulated literals
+                                    result = { }
+                                    textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
+                                    result[#result+1] = "Q"
                                 elseif objecttype == "special" then
                                     if processspecial then
                                         processspecial(object.prescript)
@@ -447,14 +453,8 @@ local savedhtap = nil
                                 elseif objecttype == "stop_clip" then
                                     result[#result+1] = "Q"
                                     miterlimit, linecap, linejoin, dashed = -1, -1, -1, "" -- was false
-                                elseif objecttype == "text" then
-                                    result[#result+1] = "q"
-                                    local ot = object.transform -- 3,4,5,6,1,2
-                                    result[#result+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2]) -- TH: formatters["%F %F m %F %F %F %F 0 0 cm"](unpack(ot))
-                                    flushfigure(result) -- flush accumulated literals
-                                    result = { }
-                                    textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)
-                                    result[#result+1] = "Q"
+                                elseif objecttype == "start_bounds" or objecttype == "stop_bounds" then
+                                    -- skip
                                 else
                                     -- we use an indirect table as we want to overload
                                     -- entries but this is not possible in userdata

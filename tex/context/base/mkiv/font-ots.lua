@@ -1542,6 +1542,8 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                     end
                     done = true
                     break
+                else
+                    break
                 end
             end
             return head, start, done
@@ -1893,6 +1895,8 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
             else
                 break
             end
+        else
+            break -- added
         end
     end
 

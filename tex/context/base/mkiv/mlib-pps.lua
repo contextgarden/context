@@ -741,9 +741,9 @@ function metapost.graphic_base_pass(specification) -- name will change (see mlib
     context(stopjob)
 end
 
-function metapost.process(...)
-    startjob(false)
-    processmetapost(...)
+function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig, plugmode) -- overloads
+    startjob(plugmode)
+    processmetapost(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig)
     stopjob()
 end
 

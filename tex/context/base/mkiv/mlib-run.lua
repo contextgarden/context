@@ -525,7 +525,7 @@ end
 
 -- goodie
 
-function metapost.quickanddirty(mpxformat,data)
+function metapost.quickanddirty(mpxformat,data,plugmode)
     if not data then
         mpxformat = "metafun"
         data      = mpxformat
@@ -545,7 +545,7 @@ function metapost.quickanddirty(mpxformat,data)
         end
     }
     local data = formatters["; beginfig(1) ;\n %s\n ; endfig ;"](data)
-    metapost.process(mpxformat, { data }, false, flusher, false, false, "all")
+    metapost.process(mpxformat, { data }, false, flusher, false, false, "all", plugmode)
     if code then
         return {
             bbox = bbox or { 0, 0, 0, 0 },
@@ -572,4 +572,39 @@ function metapost.getstatistics(memonly)
         end
         return t
     end
+end
+
+do
+
+    local result = { }
+    local width  = 0
+    local height = 0
+    local depth  = 0
+    local mpx    = false
+
+    local flusher = {
+        startfigure = function(n,llx,lly,urx,ury)
+            result = { }
+            width  = urx - llx
+            height = ury
+            depth  = -lly
+        end,
+        flushfigure = function(t)
+            for i=1,#t do
+                result[#result+1] = t[i]
+            end
+        end,
+        stopfigure = function()
+        end
+    }
+
+    function metapost.simple(format,code) -- even less than metapost.quickcanddirty
+        local mpx = metapost.format(format or "metafun","metafun")
+     -- metapost.setoutercolor(2)
+        metapost.process(mpx,code,false,flusher,false,false,1,true) -- last true is plugmode !
+        local stream = concat(result," ")
+        result = nil -- cleanup
+        return stream, width, height, depth
+    end
+
 end

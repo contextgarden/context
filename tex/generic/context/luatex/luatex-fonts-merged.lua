@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/08/16 15:35:20
+-- merge date  : 02/14/16 18:46:32
 
 do -- begin closure to overcome local limits and interference
 
@@ -13146,6 +13146,8 @@ local function chaindisk(head,start,last,kind,chainname,ck,lookuphash,chainlooku
       else
         break
       end
+    else
+      break 
     end
   end
   if sweepoverflow then
@@ -16183,7 +16185,7 @@ local filename_1=P("file:")/isfile*(namespec/thename)
 local filename_2=P("[")*P(true)/isname*(((1-P("]"))^0)/thename)*P("]")
 local fontname_1=P("name:")/isname*(namespec/thename)
 local fontname_2=P(true)/issome*(namespec/thename)
-local sometext=(R("az","AZ","09")+S("+-."))^1
+local sometext=(R("az","AZ","09")+S("+-.{}"))^1
 local truevalue=P("+")*spaces*(sometext/istrue)
 local falsevalue=P("-")*spaces*(sometext/isfalse)
 local keyvalue=(C(sometext)*spaces*P("=")*spaces*C(sometext))/iskey

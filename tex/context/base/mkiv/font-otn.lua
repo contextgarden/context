@@ -1929,6 +1929,8 @@ local function chaindisk(head,start,last,kind,chainname,ck,lookuphash,chainlooku
             else
                 break
             end
+        else
+            break -- added
         end
     end
 

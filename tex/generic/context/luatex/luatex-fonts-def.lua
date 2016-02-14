@@ -47,7 +47,7 @@ local filename_1 = P("file:")/isfile * (namespec/thename)
 local filename_2 = P("[") * P(true)/isname * (((1-P("]"))^0)/thename) * P("]")
 local fontname_1 = P("name:")/isname * (namespec/thename)
 local fontname_2 = P(true)/issome * (namespec/thename)
-local sometext   = (R("az","AZ","09") + S("+-."))^1
+local sometext   = (R("az","AZ","09") + S("+-.{}"))^1
 local truevalue  = P("+") * spaces * (sometext/istrue)
 local falsevalue = P("-") * spaces * (sometext/isfalse)
 local keyvalue   = (C(sometext) * spaces * P("=") * spaces * C(sometext))/iskey
