@@ -416,5 +416,7 @@ return {
         "nospace", "nospacing", "dospacing",
         --
         "naturalhbox", "naturalvbox", "naturalhpack", "naturalvpack",
+        --
+        "frule",
     }
 }

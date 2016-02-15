@@ -6,10 +6,20 @@ if not modules then modules = { } end modules ['grph-rul'] = {
     license   = "see context related readme files"
 }
 
+local attributes     = attributes
+local nodes          = nodes
+local context        = context
 
-local ruleactions = nodes.rules.ruleactions
-local bpfactor    = number.dimenfactors.bp
-local pdfprint    = pdf.print
+local ruleactions    = nodes.rules.ruleactions
+local userrule       = nodes.rules.userrule
+local bpfactor       = number.dimenfactors.bp
+local pdfprint       = pdf.print
+
+local getattribute   = tex.getattribute
+
+local a_color        = attributes.private('color')
+local a_transparency = attributes.private('transparency')
+local a_colorspace   = attributes.private('colormodel')
 
 do
 
@@ -110,7 +120,7 @@ do
 end
 
 interfaces.implement {
-    name      = "framerule",
+    name      = "frule",
     arguments = { {
         { "width",  "dimension" },
         { "height", "dimension" },
@@ -120,5 +130,14 @@ interfaces.implement {
         { "type",   "string" },
         { "data",   "string" },
     } } ,
-    actions = { nodes.rules.userrule, context },
+    actions = function(t)
+        if t.type == "mp" then
+            t.ma = getattribute(a_colorspace) or 1
+            t.ca = getattribute(a_color)
+            t.ta = getattribute(a_transparency)
+        end
+        local r = userrule(t)
+        context(r)
+    end
 }
+

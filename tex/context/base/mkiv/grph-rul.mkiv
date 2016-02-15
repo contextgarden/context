@@ -17,6 +17,23 @@
 
 \unprotect
 
-\unexpanded\def\frule{\relax\clf_framerule} % kind of low level
+\unexpanded\def\frule{\relax\clf_frule} % kind of low level
+
+% just for fun:
+
+% \defineoverlay[normalframe]
+%   [\frule
+%      width \overlaywidth
+%      height\overlayheight
+%      line  \overlaylinewidth
+%    \relax]
+
+% \defineoverlay[ovalframe]
+%   [\frule
+%      width  \overlaywidth
+%      height \overlayheight
+%      line   \overlaylinewidth
+%      radius \framedparameter\c!frameradius % \p_framed_backgroundradius % \framedradius
+%    \relax]
 
 \protect \endinput

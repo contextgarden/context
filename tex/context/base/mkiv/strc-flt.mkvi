@@ -950,13 +950,13 @@
      \ifsinglesided
        \doubleexpandafter\firstoftwoarguments
      \else
-       \doubleexpandafter\doifelseoddfloatpage
+       \doubleexpandafter\doifelseoddpagefloat
      \fi
    \else
      \expandafter\firstoftwoarguments
    \fi}
 
-\def\doifelseoddfloatpage
+\def\doifelseoddpagefloat
   {\ifodd\purenumber\strc_float_realpage\space
      \expandafter\firstoftwoarguments
    \else

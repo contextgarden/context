@@ -281,7 +281,7 @@
     draw
         ((0,RuleDepth) ... (RuleWidth,RuleDepth))
         shifted (0,RuleFactor*RuleOffset)
-        dashed evenly
+        dashed dashpattern(on RuleFactor/2 off RuleFactor/2)
         withpen pencircle scaled RuleThickness
         withcolor RuleColor ;
     setbounds currentpicture to unitsquare xysized(RuleWidth,RuleHeight) ;

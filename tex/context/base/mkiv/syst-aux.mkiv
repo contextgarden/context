@@ -6851,7 +6851,7 @@
 \unexpanded\def\addvalue#1#2% cs item
   {\ifcsname#1\endcsname\else\expandafter\let\csname#1\endcsname\empty\fi
    \normalexpanded{\noexpand\addtocommalist{#2}\expandafter\noexpand\csname#1\endcsname}}
-
+
 \def\unspaced#1%
   {\syst_helpers_unspaced#1\end}
 
@@ -6954,7 +6954,7 @@
 \unexpanded\def\getrawxparameters     {\dogetparameters\dosetrawxvalue}
 
 \unexpanded\def\globalgetrawparameters{\dogetparameters\dosetrawgvalue} % obsolete
-
+
 %D Sort of obsolete:
 
 \newcount\c_syst_helpers_mod
@@ -6968,14 +6968,14 @@
 
 \unexpanded\def\DoMod#1by#2to#3{\dosetmodulo  {#1}{#2}{#3}}
 \unexpanded\def\DoDiv#1by#2to#3{\dosetdivision{#1}{#2}{#3}}
-
+
 \def\syst_helpers_unprotected#1\par
   {#1\protect}
 
 \unexpanded\def\unprotected
   {\unprotect
    \syst_helpers_unprotected}
-
+
 % awaiting the definitive implementation
 
 % \ifdefined\resettimer \else
@@ -6989,11 +6989,17 @@
 \let\elapsedseconds \elapsedtime
 
 \newcount\c_syst_helpers_test_feature_n
+\chardef \c_syst_helpers_test_feature_m\zerocount
+
+\def\currentfeaturetest{\number\c_syst_helpers_test_feature_n}
 
 \unexpanded\def\testfeature#1#2%
-  {\def\syst_helpers_test_feature_step
+  {\chardef\c_syst_helpers_test_feature_m#1\relax
+   \def\syst_helpers_test_feature_step
      {\advance\c_syst_helpers_test_feature_n\plusone
-      \ifnum\c_syst_helpers_test_feature_n>#1\else#2\expandafter\syst_helpers_test_feature_step\fi}%
+      \ifnum\c_syst_helpers_test_feature_n>\c_syst_helpers_test_feature_m\else
+        #2\expandafter\syst_helpers_test_feature_step
+      \fi}%
    \retestfeature}
 
 \unexpanded\def\retestfeature % timer support is new per 10/5/2005
@@ -7003,7 +7009,7 @@
    \resettimer
    \c_syst_helpers_test_feature_n\zerocount
    \syst_helpers_test_feature_step
-   \writestatus\m!system{feature test done (\elapsedseconds s)}%
+   \writestatus\m!system{\number\c_syst_helpers_test_feature_m\space feature tests done (\elapsedseconds s)}%
    \wait
    \egroup}
 
@@ -7015,7 +7021,7 @@
    \let\wait\relax
    \testfeature{#1}{#2}%
    \endgroup}
-
+
 %D \macros
 %D   {freezedimenmacro}
 %D
@@ -7027,7 +7033,7 @@
 
 \unexpanded\def\freezedimenmacro#1%
   {\edef#1{\the\dimexpr#1}}
-
+
 %D The next macro negates a macro (dimension or number, or actually, whatever.
 %D It's a typical example of \type {\if} usage:
 %D
@@ -7037,12 +7043,12 @@
 %D \stoptyping
 
 \def\negated#1{\if-#1\else-#1\fi} % does only work in macros or text
-
+
 \def\gobbleassigndimen#1\\{}
 
 \def\assigndimen#1#2%
   {\afterassignment\gobbleassigndimen#1=#2\zeropoint\\}
-
+
 \unexpanded\def\appended#1#2#3{\expandafter#1\expandafter#2\expandafter{#2#3}}
 \unexpanded\def\appendvalue #1{\expandafter\appended\expandafter \def\csname#1\endcsname}
 \unexpanded\def\appendgvalue#1{\expandafter\appended\expandafter\gdef\csname#1\endcsname}
@@ -7054,7 +7060,7 @@
 
 \unexpanded\def\prependvalue #1{\expandafter\prepended\expandafter \def\csname#1\endcsname}
 \unexpanded\def\prependgvalue#1{\expandafter\prepended\expandafter\gdef\csname#1\endcsname}
-
+
 %D \macros
 %D   {dowithrange}
 %D
@@ -7113,7 +7119,7 @@
   {\syst_helpers_process_word#1 \_e_o_w_}% no \unskip
 
 \let\processword\relax
-
+
 %D \macros
 %D   {startnointerference}
 %D
