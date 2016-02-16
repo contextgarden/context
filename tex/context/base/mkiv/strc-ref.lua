@@ -1896,7 +1896,7 @@ implement {
     name      = "setinnerreferencemethod",
     actions   = references.setinnermethod,
     arguments = "string",
-    onlyonce  = true
+ -- onlyonce  = true
 }
 
 function references.getinnermethod()

@@ -76,16 +76,18 @@
    \mathsurround\zeropoint
    \muskip0=\muexpr\m_math_arrows_factor\muexpr\thirdoffourarguments #2\onemuskip\relax+\m_math_arrows_extra\onemuskip+\firstoffourarguments #2\onemuskip\relax
    \muskip2=\muexpr\m_math_arrows_factor\muexpr\fourthoffourarguments#2\onemuskip\relax+\m_math_arrows_extra\onemuskip+\secondoffourarguments#2\onemuskip\relax
-   \setbox0\hbox{$\scriptstyle
-                  \mkern\muskip0\relax
-                  #5\relax
-                  \mkern\muskip2\relax
-                 $}%
-   \setbox2\hbox{$\scriptstyle
-                  \mkern\muskip0\relax
-                  #4\relax
-                  \mkern\muskip2\relax
-                 $}%
+   \setbox0\hbox{\normalstartimath
+                 \scriptstyle
+                 \mkern\muskip0\relax
+                 #5\relax
+                 \mkern\muskip2\relax
+                 \normalstopimath}%
+   \setbox2\hbox{\normalstartimath
+                 \scriptstyle
+                 \mkern\muskip0\relax
+                 #4\relax
+                 \mkern\muskip2\relax
+                 \normalstopimath}%
    \setbox4\hbox{#3\displaystyle}%
    \dimen0\wd0\relax
    \ifdim\wd2>\dimen0
@@ -118,11 +120,11 @@
 \def\math_arrows_construct_double#1#2#3#4#5#6#7% opt l r sp rs top bot
   {\mathrel
      {\scratchdimen.32\exheight\relax % was .22, todo: make configurable
-      \setbox0\hbox{$\math_arrows_construct{#1}{#2}{#4}{\phantom{#6}}{#7}$}%
-      \setbox2\hbox{$\math_arrows_construct{#1}{#3}{#5}{#6}{\phantom{#7}}$}%
-      \raise\scratchdimen\box0
-      \kern-\wd2
-      \lower\scratchdimen\box2}}
+      \setbox\scratchboxone\hbox{\normalstartimath\math_arrows_construct{#1}{#2}{#4}{\phantom{#6}}{#7}\normalstopimath}%
+      \setbox\scratchboxtwo\hbox{\normalstartimath\math_arrows_construct{#1}{#3}{#5}{#6}{\phantom{#7}}\normalstopimath}%
+      \raise\scratchdimen\box\scratchboxone
+      \kern-\wd\scratchboxtwo
+      \lower\scratchdimen\box\scratchboxtwo}}
 
 %D \macros{definematharrow}
 %D
@@ -254,12 +256,14 @@
 %D different set of values need to be determined.
 
 \def\mtharrowfill#1#2#3#4#5#6#7#8%
-  {$\mathsurround\zeropoint
-    \thickmuskip\zeromuskip\medmuskip\thickmuskip\thinmuskip\thickmuskip
-    \relax#8#5%
-    \mkern-#1\onemuskip
-    \cleaders\hbox{$#8\mkern-#2\onemuskip#6\mkern-#3\onemuskip$}\hfill
-    \mkern-#4\onemuskip#7$}
+  {\normalstartimath
+   \mathsurround\zeropoint
+   \thickmuskip\zeromuskip\medmuskip\thickmuskip\thinmuskip\thickmuskip
+   \relax#8#5%
+   \mkern-#1\onemuskip
+   \cleaders\hbox{\normalstartimath#8\mkern-#2\onemuskip#6\mkern-#3\onemuskip\normalstopimath}\hfill
+   \mkern-#4\onemuskip#7%
+   \normalstopimath}
 
 \def\defaultmtharrowfill{\mtharrowfill 7227}
 
@@ -383,10 +387,17 @@
 %D for harpoons.
 
 \def\math_arrows_over_handle_indeed#1#2#3#4%
-  {\vbox{\ialign{##\crcr
-   #2#3\crcr
-   \noalign{\kern#1\nointerlineskip}%
-   $\mathsurround\zeropoint\hfil#3#4\hfil$\crcr}}}
+  {\vbox{\ialign{%
+     \alignmark\alignmark
+     \crcr
+     #2#3%
+     \crcr
+     \noalign{\kern#1\nointerlineskip}%
+     \normalstartimath
+     \mathsurround\zeropoint\hfil#3#4\hfil
+     \normalstopimath
+     \crcr
+  }}}
 
 %D Now the under arrows
 
@@ -406,10 +417,15 @@
   {\mathpalette{\math_arrows_under_handle_indeed{#1}{#2}}}
 
 \def\math_arrows_under_handle_indeed#1#2#3#4%
-  {\vtop{\ialign{##\crcr
-   $\mathsurround\zeropoint\hfil#3#4\hfil$\crcr
-   \noalign{\nointerlineskip\kern#1}%
-   #2#3\crcr}}}
+  {\vtop{\ialign{%
+     \alignmark\alignmark
+     \crcr
+     \normalstartimath\mathsurround\zeropoint\hfil#3#4\hfil\normalstopimath
+     \crcr
+     \noalign{\nointerlineskip\kern#1}%
+     #2#3%
+     \crcr
+  }}}
 
 %D Now we define the arrows
 

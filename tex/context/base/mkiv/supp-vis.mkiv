@@ -1415,7 +1415,9 @@
   {\dontinterfere
    \dontcomplain
    \setbox\boxrulescratchbox\normalhbox
-     {$\normalmkern\ifnegative-\fi\scratchskip$}%
+     {\normalstartimath
+      \normalmkern\ifnegative-\fi\scratchskip
+      \normalstopimath}%
    \setbox\boxrulescratchbox\normalhbox to \wd\boxrulescratchbox
      {\visualvrule
         \s!height16\testrulewidth

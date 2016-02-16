@@ -30,7 +30,17 @@
    X%
    \endgroup}
 
-\unexpanded\def\ConTeXt{Con\TeX t}
+\unexpanded\def\ConTeXt
+  {\dontleavehmode
+   \begingroup
+   Con%
+   \setbox\scratchboxone\hbox{T\kern\zeropoint e}%
+   \setbox\scratchboxtwo\hbox{Te}%
+   \discretionary{-}{}{\kern\dimexpr\wd\scratchboxtwo-\wd\scratchboxone\relax}%
+   \TeX
+   t%
+   \endgroup}
+
 \unexpanded\def\PPCHTeX{ppch\TeX}
 \unexpanded\def\PRAGMA {Pragma ADE}
 
@@ -59,7 +69,9 @@
    \kern-.11\emwidth\TeX}
 
 \def\syst_logos_ams_script#1%
-  {$\cal\ifdim\bodyfontsize>1.1\emwidth\scriptstyle\fi#1$}
+  {\normalstartimath
+   \cal\ifdim\bodyfontsize>1.1\emwidth\scriptstyle\fi#1%
+   \normalstopimath}
 
 \unexpanded\def\AmSTeX
   {\dontleavehmode
@@ -93,9 +105,24 @@
 \unexpanded\def\Context % wrong usage of \getscaledglyph
   {\dontleavehmode
    \begingroup
-   C\kern -.0667\emwidth\getscaledglyph{.8}\empty{O\kern -.0667\emwidth N\kern
-   -.0549\emwidth T\doifelseitalic{\kern-.1\emwidth}{\kern-.1667\emwidth}\lower.5\exheight\hbox
-   {E}\doifelseitalic\empty{\kern-.11em}X\kern-.055\emwidth T}%
+   C%
+   \kern -.0667\emwidth
+   \getscaledglyph{.8}\empty{%
+     O\kern-.0667\emwidth
+     N%
+     \discretionary{-}{}{\kern-.0549\emwidth}%
+     T%
+     \doifelseitalic
+       {\kern-.1\emwidth}%
+       {\kern-.1667\emwidth}%
+     \lower.5\exheight\hbox{E}%
+     \doifelseitalic
+       \empty
+       {\kern-.11em}%
+     X%
+     \kern-.055\emwidth
+     T%
+   }%
    \endgroup}
 
 %D The \METAFONT\ and \METAPOST\ logos adapt themselves to the current fontsize, an

@@ -2196,7 +2196,9 @@
 % new:
 
 \unexpanded\def\smallmathsymbol#1%
-  {\mathematics{\mathbin{\normalexpanded{\raise.15\exheight\hbox{$\triggermathstyle{\the\numexpr\normalmathstyle+2\relax}#1$}}}}}
+  {\mathematics{\mathbin{\normalexpanded{\raise.15\exheight\hbox{\normalstartimath
+     \triggermathstyle{\the\numexpr\normalmathstyle+2\relax}#1%
+   \normalstopimath}}}}}
 
 % this should be a primitive:
 

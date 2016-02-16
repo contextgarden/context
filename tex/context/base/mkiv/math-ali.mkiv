@@ -715,10 +715,13 @@
 \def\math_matrix_process#1#2%
   {\dowithnextbox
      {\scratchdimen\dimexpr(\nextboxdp-\nextboxht)/2 \ifcase#2\or+\mathaxisheight\textfont2\fi\relax
-      \ifcase#1\relax\or\lower\scratchdimen\or\or\raise\scratchdimen\fi
-      \hbox{$\mathmatrixparameter\c!left
-            \vcenter{\unvbox\nextbox}%
-            \mathmatrixparameter\c!right$}}%
+      \ifcase#1\relax\or\lower\scratchdimen\or\or\raise\scratchdimen\fi\hbox\bgroup
+        \normalstartimath
+        \mathmatrixparameter\c!left
+        \vcenter{\unvbox\nextbox}%
+        \mathmatrixparameter\c!right
+        \normalstopimath
+      \egroup}%
    \vbox}
 
 \unexpanded\def\installmathmatrixalignmethod#1#2%
@@ -936,7 +939,7 @@
       \crcr}%
    \mathsurround\zeropoint
    \everycr\emptytoks
-   \halign\bgroup\hfil$\scriptstyle\alignmark\alignmark$\hfil\crcr}
+   \halign\bgroup\hfil\normalstartimath\scriptstyle\alignmark\alignmark\normalstopimath\hfil\crcr}
 
 \def\stopsubstack
   {\crcr
@@ -998,9 +1001,9 @@
      {\thinmuskip   0mu
       \medmuskip   -1mu
       \thickmuskip -1mu
-      \setbox\scratchbox\hbox{$#1\mathsurround\zeropoint$}%
+      \setbox\scratchbox\hbox{\normalstartimath#1\mathsurround\zeropoint\normalstopimath}%
       \kern-\wd\scratchbox
-      ${}#1{}\mathsurround\zeropoint$}%
+      \normalstartimath{}#1{}\mathsurround\zeropoint\normalstopimath}%
    \ifdim\wd\scratchbox<\zeropoint
      \endgroup
      \expandafter\mathbin

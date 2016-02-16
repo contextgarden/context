@@ -131,10 +131,13 @@
 \def\!tfSetWidth
   {\ifx\!tfRowOfWidths\empty            % true if no prior "w" keys
      \ifnum\!taColumnNumber>\zerocount  % true if "w" key is to right of first "|"
-       \begingroup                      % RowOfWidths={&\omit || n copies of &\omit&\omit}, where n = number of column to the left of this one
-       \scratchcounter\plusone
-       \aftergroup \edef \aftergroup \!tfRowOfWidths \aftergroup {%
-         \aftergroup &\aftergroup \omit
+       \begingroup                      % RowOfWidths={\aligntab\omit || n copies of \aligntab\omit\aligntab#\omit}, where n = number of column to the left of this one
+         \scratchcounter\plusone
+         \aftergroup\edef
+         \aftergroup\!tfRowOfWidths
+         \aftergroup{%
+         \aftergroup\aligntab
+         \aftergroup\omit
          \!thLoop
            \ifnum \scratchcounter<\!taColumnNumber
            \advance\scratchcounter\plusone
@@ -150,7 +153,7 @@
      \expandafter\!tfSetWidthValue
    \fi}
 
-\def\!tfAOAO{&\omit&\omit}
+\def\!tfAOAO{\aligntab\omit\aligntab\omit}
 
 \def\!tfSetWidthText[#1]%
   {\def\!tfWidthText{#1}%
@@ -201,7 +204,7 @@
       \else
         \!tgValue
       \fi
-      ####%
+      \alignmark\alignmark\alignmark\alignmark
       \hfil
       \the\!taRuleColumnTemplate}%
   \!tfAdjoinPriorColumn}
@@ -223,13 +226,13 @@
        \!tfUpdateRowOfWidths
      \fi
      \!thToksEdef\!taDataColumnTemplate{\the\!taLeftGlue\the\!taDataColumnTemplate\the\!taRightGlue}%
-     \!thToksEdef\!taPreamble{\the\!taPreamble&\the\!taDataColumnTemplate&\the\!taRuleColumnTemplate}%
+     \!thToksEdef\!taPreamble{\the\!taPreamble\aligntab\the\!taDataColumnTemplate\aligntab\the\!taRuleColumnTemplate}%
   \fi
   \advance \!taColumnNumber \plusone
   \if!taOnceOnlyTabskip
-    \!thToksEdef\!taDataColumnTemplate{####\tabskip \the\!taLastRegularTabskip}%
+    \!thToksEdef\!taDataColumnTemplate{\alignmark\alignmark\alignmark\alignmark\tabskip\the\!taLastRegularTabskip}%
   \else
-    \!taDataColumnTemplate{##}%
+    \!taDataColumnTemplate{\alignmark\alignmark}%
   \fi
   \!taRuleColumnTemplate\emptytoks
   \!taLeftGlue{\hfil}%
@@ -245,12 +248,12 @@
    \fi
    \edef\!tfRowOfWidths
      {\!tfRowOfWidths
-      &%
+      \aligntab
       \omit
       \ifdim \!taMinimumColumnWidth>\zeropoint
         \hskip \the\!taMinimumColumnWidth
       \fi
-      &
+      \aligntab
       \omit}}
 
 \def\!tfComputeMinColWidth
@@ -261,13 +264,18 @@
    \!taMinimumColumnWidth=\wd0 }
 
 \def\!tfFinishFormat
-  {\!thToksEdef\!taPreamble{####\tabskip\tablelefttabskip&\the\!taPreamble \tabskip\tablerighttabskip&####\tabskip\zeropoint\cr}
+  {\!thToksEdef\!taPreamble{%
+     \alignmark\alignmark\alignmark\alignmark\tabskip\tablelefttabskip
+     \aligntab
+     \the\!taPreamble\tabskip\tablerighttabskip
+     \aligntab
+     \alignmark\alignmark\alignmark\alignmark\tabskip\zeropoint\cr}
    \!taBeginFormatfalse
    \!ttDoHalign}
 
 \def\dotablereformat[#1]% will become local
   {\omit
-   \!taDataColumnTemplate{##}%
+   \!taDataColumnTemplate{\alignmark\alignmark}%
    \!taLeftGlue\emptytoks
    \!taRightGlue\emptytoks
    \begingroup
@@ -393,7 +401,7 @@
       \fi}%
    \!ttemp}
 
-\def\newtableformatkey  #1{\setvalue{!tk<\string#1>}}
+\def\newtableformatkey    #1{\setvalue{!tk<\string#1>}}
 \def\doreadtableformatkeys#1{\getvalue{!tk<\string#1>}}
 
 % Key "b":  b{TOKENS} adds TOKENS to the left of (before) the template
@@ -498,12 +506,12 @@
 % Key "m": Math mode.
 
 \newtableformatkey m%
-  {\doreadtableformatkeys b$ a$}
+  {\doreadtableformatkeys b{\normalstartimath} a{\normalstopimath}}
 
 % Key "M": Displaymath mode.
 
 \newtableformatkey M%
-  {\doreadtableformatkeys \{ b{$\displaystyle} a$}
+  {\doreadtableformatkeys \{ b{\normalstartimath\displaystyle} a{\normalstopimath}}
 
 % Key "\m": Template ${}#\hfil$
 \newtableformatkey \m%
@@ -777,7 +785,7 @@
    \!TsFinishEnlarge}
 
 \def\!TsEnlargeMath#1#2%
-  {\setbox\scratchbox\hbox{$\mathsurround\zeropoint#1{#2}$}%
+  {\setbox\scratchbox\hbox{\normalstartimath\mathsurround\zeropoint#1{#2}\normalstopimath}%
    \!TsFinishEnlarge}
 
 \def\!TsFinishEnlarge
@@ -814,9 +822,12 @@
      \else\if#1b%
        \vbox
      \else
-       \def\dotablestandardend{\egroup$\egroup}%
-       %$\vcenter
-       \scratchtoks\everymath\everymath\emptytoks$\everymath\scratchtoks\vcenter
+       \def\dotablestandardend{\egroup\normalstopimath\egroup}%
+       \scratchtoks\everymath
+       \everymath\emptytoks
+       \normalstartimath
+       \everymath\scratchtoks
+       \vcenter
      \fi\fi
      \bgroup % for the \vtop, \vbox, or \vcenter
    \fi
@@ -903,10 +914,10 @@
    \hskip\@VLd}
 
 \def\donormaltablesimplebar
-  {\unskip\!ttRightGlue&&}
+  {\unskip\!ttRightGlue\aligntab\aligntab}
 
 \def\donormaltablecomplexbar
-  {\unskip\!ttRightGlue&\omit
+  {\unskip\!ttRightGlue\aligntab\omit
    \hfil
    \ifx\tablecurrentvrulecolor\empty\else
      \switchtocolor[\tablecurrentvrulecolor]%
@@ -921,16 +932,16 @@
    \fi
    \global\let\tablecurrentvrulecolor\empty
    \hfil
-   &}
+   \aligntab}
 
 \def\donormaltablenobar
-  {\unskip\!ttRightGlue&\omit&}
+  {\unskip\!ttRightGlue\aligntab\omit\aligntab}
 
 \def\donormaltablesinglerule
-  {&\donormaltablelongrule&}
+  {\aligntab\donormaltablelongrule\aligntab}
 
 \def\donormaltablemultirule
-  {&\!ttuse\tabledrulespan\donormaltablelongrule&}
+  {\aligntab\!ttuse\tabledrulespan\donormaltablelongrule\aligntab}
 
 % USE
 
@@ -1039,7 +1050,7 @@
    \!thFinishVCS}
 
 \def\!thDoMathVCS#1#2%
-  {\setbox\zerocount\hbox{$\mathsurround\zeropoint#1{#2}$}%
+  {\setbox\zerocount\hbox{\normalstartimath\mathsurround\zeropoint#1{#2}\normalstopimath}%
    \!thFinishVCS}
 
 \def\!thFinishVCS
@@ -1078,7 +1089,7 @@
    \!thFinishRaise} % From Plain TeX: \ht0=0pt \dp0=0pt \box0
 
 \def\!thDoMathRaise#1#2%
-  {\setbox\zerocount\hbox{\raise \!taDimenA\hbox{$\mathsurround\zeropoint#1{#2}$}}%
+  {\setbox\zerocount\hbox{\raise \!taDimenA\hbox{\normalstartimath\mathsurround\zeropoint#1{#2}\normalstopimath}}%
    \!thFinishRaise}
 
 \def\!thFinishRaise

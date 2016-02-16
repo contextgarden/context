@@ -24,14 +24,12 @@
 \unprotect
 
 \startxmlsetups xml:cml:process
-    \xmlstrip {#1} {cml:chem|cml:ichem|cml:dchem|cml:reaction|cml:molecule|cml:ion|cml:structure}
-
-    \xmlgrab {#1} {cml:*}                                                  {cml:*}
-    \xmlgrab {#1} {cml:gives|cml:equilibrium|cml:mesomeric}                {cml:arrow}
-    \xmlgrab {#1} {cml:plus|cml:minus|cml:equal}                           {cml:operator}
-    \xmlgrab {#1} {cml:bond|cml:singlebond|cml:doublebound|cml:triplebond} {cml:bond}
-
-    \xmlgrab {#1} {pi::chemml} {cml:pi}
+    \xmlstrip    {#1} {cml:chem|cml:ichem|cml:dchem|cml:reaction|cml:molecule|cml:ion|cml:structure}
+    \xmlsetsetup {#1} {cml:*}                                                  {cml:*}
+    \xmlsetsetup {#1} {cml:gives|cml:equilibrium|cml:mesomeric}                {cml:arrow}
+    \xmlsetsetup {#1} {cml:plus|cml:minus|cml:equal}                           {cml:operator}
+    \xmlsetsetup {#1} {cml:bond|cml:singlebond|cml:doublebound|cml:triplebond} {cml:bond}
+    \xmlsetsetup {#1} {pi::chemml} {cml:pi}
 \stopxmlsetups
 
 \xmlregistersetup{xml:cml:process}
@@ -97,15 +95,23 @@
 \startxmlsetups cml:atom
     \doCMLtext {
             \lohi {
-                $\tfxx\xmlatt{#1}{protons}$
+                \normalstartimath
+                \tfxx\xmlatt{#1}{protons}%
+                \normalstopimath
             } {
-                $\tfxx\xmlatt{#1}{weight}$
+                \normalstartimath
+                \tfxx\xmlatt{#1}{weight}%
+                \normalstopimath
             }
             \xmlflush{#1}
             \lohi {
-                $\tfxx\xmlatt{#1}{n}$
+                \normalstartimath
+                \tfxx\xmlatt{#1}{n}%
+                \normalstopimath
             } {
-                $\tfxx\xmlatt{#1}{charge}$%
+                \normalstartimath
+                \tfxx\xmlatt{#1}{charge}%
+                \normalstopimath
             }
         }
         {\xmlindex{#1}{cml:caption}{2}}
@@ -167,7 +173,7 @@
 
 \def\dodoCMLbond#1#2#3%
   {\begingroup
-   \setbox\scratchbox\hbox{$M$}%
+   \setbox\scratchbox\hbox{\normalstartimath M\normalstopimath}%
    \vbox to \ht\scratchbox
      {\hsize\wd\scratchbox
       \vskip.1\wd\scratchbox

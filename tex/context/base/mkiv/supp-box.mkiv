@@ -217,7 +217,7 @@
 
 \unexpanded\def\syst_boxes_math_set_nextbox#1%
   {\c_boxes_math_style\mathstyle
-   \setbox\nextbox\hbox{$\mathsurround\zeropoint\triggermathstyle\c_boxes_math_style{#1}$}}
+   \setbox\nextbox\hbox{\normalstartimath\mathsurround\zeropoint\triggermathstyle\c_boxes_math_style{#1}\normalstopimath}}
 
 %D \macros
 %D   {smash}
@@ -734,9 +734,9 @@
 \def\dollap{\begingroup\dowithnextboxcs\dodollap\hbox}
 \def\doclap{\begingroup\dowithnextboxcs\dodoclap\hbox}
 
-\def\domathclap{\mathpalette\dodomathclap} \def\dodomathclap#1#2{\doclap{$\mathsurround\zeropoint#1#2$}}
-\def\domathllap{\mathpalette\dodomathllap} \def\dodomathllap#1#2{\dollap{$\mathsurround\zeropoint#1#2$}}
-\def\domathrlap{\mathpalette\dodomathrlap} \def\dodomathrlap#1#2{\dorlap{$\mathsurround\zeropoint#1#2$}}
+\def\domathclap{\mathpalette\dodomathclap} \def\dodomathclap#1#2{\doclap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
+\def\domathllap{\mathpalette\dodomathllap} \def\dodomathllap#1#2{\dollap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
+\def\domathrlap{\mathpalette\dodomathrlap} \def\dodomathrlap#1#2{\dorlap{\normalstartimath\mathsurround\zeropoint#1#2\normalstopimath}}
 
 \unexpanded\def\rlap{\mathortext\domathrlap\dorlap}
 \unexpanded\def\llap{\mathortext\domathllap\dollap}
@@ -2735,7 +2735,7 @@
    \dowithnextboxcs\syst_boxes_vcenter_finish\vbox}
 
 \def\syst_boxes_vcenter_finish
-  {\hpack{$\normalvcenter{\box\nextbox}$}%
+  {\hpack{\normalstartimath\normalvcenter{\box\nextbox}\normalstopimath}%
    \egroup}
 
 % could be \everymathematics

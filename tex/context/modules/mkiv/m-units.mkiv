@@ -260,7 +260,9 @@
        {\iftextdimensions
           \tx\thedimensionpower
         \else
-          $\scriptstyle\thedimensionpower$%
+          \normalstartimath
+          \scriptstyle\thedimensionpower
+          \normalstopimath
         \fi}%
      \ht\scratchbox=\zeropoint
      \dodimensionpower{\box\scratchbox}%

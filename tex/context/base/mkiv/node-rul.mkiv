@@ -256,7 +256,15 @@
 \unexpanded\def\setupunderbar[#1]% too incompatible for the moment
   {}
 
-%D Experimental new feature:
+%D An experimental new feature:
+%D
+%D \startbuffer
+%D test {\red\underrandoms{test me}} and \underrandom{test} or \underrandom{grep} \blank
+%D test {\red\underdashes {test me}} and \underdash  {test} or \underdash  {grep} \blank
+%D test {\red\underdots   {test me}} and \underdot   {test} or \underdot   {grep} \blank
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 \startuseMPgraphic{rules:under:random}
     draw
@@ -271,7 +279,7 @@
     draw
         ((0,RuleDepth) ... (RuleWidth,RuleDepth))
         shifted (0,RuleFactor*RuleOffset)
-        dashed dashpattern(off 5/RuleFactor on 0 off 5/RuleFactor)
+        dashed dashpattern(on RuleFactor/2 off RuleFactor/2)
         withpen pencircle scaled RuleThickness
         withcolor RuleColor ;
     setbounds currentpicture to unitsquare xysized(RuleWidth,RuleHeight) ;
@@ -281,8 +289,8 @@
     draw
         ((0,RuleDepth) ... (RuleWidth,RuleDepth))
         shifted (0,RuleFactor*RuleOffset)
-        dashed dashpattern(on RuleFactor/2 off RuleFactor/2)
-        withpen pencircle scaled RuleThickness
+        dashed dashpattern(off 3/RuleFactor on 0 off 3/RuleFactor)
+        withpen pencircle scaled 2RuleThickness
         withcolor RuleColor ;
     setbounds currentpicture to unitsquare xysized(RuleWidth,RuleHeight) ;
 \stopuseMPgraphic

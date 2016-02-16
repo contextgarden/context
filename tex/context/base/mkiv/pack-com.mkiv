@@ -936,10 +936,14 @@
 \unexpanded\def\placeontopofeachother{\bgroup\dowithnextboxcs\pack_topofeachother_one\hbox}
 \unexpanded\def\placesidebyside      {\bgroup\dowithnextboxcs\pack_sidebyside_one    \hbox}
 
-\def\pack_topofeachother_one{\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_topofeachother_two\hbox}
-\def\pack_sidebyside_one    {\bgroup\setbox0\box\nextbox\dowithnextboxcs\pack_sidebyside_two    \hbox}
+\def\pack_topofeachother_one{\bgroup\setbox\scratchboxone\box\nextbox\dowithnextboxcs\pack_topofeachother_two\hbox}
+\def\pack_sidebyside_one    {\bgroup\setbox\scratchboxone\box\nextbox\dowithnextboxcs\pack_sidebyside_two    \hbox}
 
-\def\pack_topofeachother_two{\setbox2\box\nextbox\halign{\hss##\hss\cr\box0\cr\box2\cr}\egroup\egroup}
-\def\pack_sidebyside_two    {\setbox2\box\nextbox\valign{\vss##\vss\cr\box0\cr\box2\cr}\egroup\egroup}
+\def\pack_topofeachother_two{\setbox\scratchboxtwo\box\nextbox
+                             \halign{\hss\alignmark\alignmark\hss\cr\box\scratchboxone\cr\box\scratchboxtwo\cr}%
+                             \egroup\egroup}
+\def\pack_sidebyside_two    {\setbox\scratchboxtwo\box\nextbox
+                             \valign{\vss\alignmark\alignmark\vss\cr\box\scratchboxone\cr\box\scratchboxtwo\cr}%
+                             \egroup\egroup}
 
 \protect \endinput

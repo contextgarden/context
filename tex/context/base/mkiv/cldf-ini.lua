@@ -1325,7 +1325,7 @@ end
 -- we could reuse collapsed
 
 local traced = function(one,two,...)
-    if two then
+    if two ~= nil then
         -- only catcodes if 'one' is number
         local catcodes = type(one) == "number" and one
         local arguments = catcodes and { two, ... } or { one, two, ... }
@@ -1343,7 +1343,7 @@ local traced = function(one,two,...)
             end
         end
         currenttrace(concat(collapsed))
-    else
+    elseif one ~= nil then
         -- no catcodes
         local argtype = type(one)
         if argtype == "string" then
@@ -1358,25 +1358,25 @@ end
 
 local tracedflush = function(one,two,...)
     nofflushes = nofflushes + 1
-    if two then
+    if two ~= nil then
         normalflush(one,two,...)
     else
         normalflush(one)
     end
     if tracingpermitted then
-        traced(...)
+        traced(one,two,...)
     end
 end
 
 local tracedflushdirect = function(one,two,...)
     nofflushes = nofflushes + 1
-    if two then
+    if two ~= nil then
         normalflushdirect(one,two,...)
     else
         normalflushdirect(one)
     end
     if tracingpermitted then
-        traced(...)
+        traced(one,two,...)
     end
 end
 
