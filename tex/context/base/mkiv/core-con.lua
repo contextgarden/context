@@ -122,7 +122,7 @@ local counters = allocate {
         0x3142, 0x3145, 0x3147, 0x3148, 0x314A,
         0x314B, 0x314C, 0x314D, 0x314E
     },
-    ['korean-parent'] = { -- parenthesed
+    ['korean-parenthesis'] = { --
         0x3200, 0x3201, 0x3202, 0x3203, 0x3204,
         0x3205, 0x3206, 0x3207, 0x3208, 0x3209,
         0x320A, 0x320B, 0x320C, 0x320D
@@ -136,30 +136,30 @@ local counters = allocate {
 
 languages.counters = counters
 
-counters['ar']                   = counters['arabic']
-counters['gr']                   = counters['greek']
-counters['g']                    = counters['greek']
-counters['sl']                   = counters['slovenian']
-counters['es']                   = counters['spanish']
-counters['kr']                   = counters['korean']
-counters['kr-p']                 = counters['korean-parent']
-counters['kr-c']                 = counters['korean-circle']
+counters['ar']                        = counters['arabic']
+counters['gr']                        = counters['greek']
+counters['g']                         = counters['greek']
+counters['sl']                        = counters['slovenian']
+counters['es']                        = counters['spanish']
+counters['kr']                        = counters['korean']
+counters['kr-p']                      = counters['korean-parenthesis']
+counters['kr-c']                      = counters['korean-circle']
 
-counters['thainumerals']         = counters['thai']
-counters['devanagarinumerals']   = counters['devanagari']
-counters['gurmurkhinumerals']    = counters['gurmurkhi']
-counters['gujaratinumerals']     = counters['gujarati']
-counters['tibetannumerals']      = counters['tibetan']
-counters['greeknumerals']        = counters['greek']
-counters['arabicnumerals']       = counters['arabic']
-counters['persiannumerals']      = counters['persian']
-counters['arabicexnumerals']     = counters['persian']
-counters['koreannumerals']       = counters['korean']
-counters['koreanparentnumerals'] = counters['korean-parent']
-counters['koreancirclenumerals'] = counters['korean-circle']
+counters['thainumerals']              = counters['thai']
+counters['devanagarinumerals']        = counters['devanagari']
+counters['gurmurkhinumerals']         = counters['gurmurkhi']
+counters['gujaratinumerals']          = counters['gujarati']
+counters['tibetannumerals']           = counters['tibetan']
+counters['greeknumerals']             = counters['greek']
+counters['arabicnumerals']            = counters['arabic']
+counters['persiannumerals']           = counters['persian']
+counters['arabicexnumerals']          = counters['persian']
+counters['koreannumerals']            = counters['korean']
+counters['koreanparenthesisnumerals'] = counters['korean-parenthesis']
+counters['koreancirclenumerals']      = counters['korean-circle']
 
-counters['sloveniannumerals']    = counters['slovenian']
-counters['spanishnumerals']      = counters['spanish']
+counters['sloveniannumerals']         = counters['slovenian']
+counters['spanishnumerals']           = counters['spanish']
 
 local decimals = allocate {
     ['arabic'] = {
@@ -582,11 +582,11 @@ function converters.Spanishnumerals(n) return Alphabetic(n,"es") end
 function converters.sloviannumerals(n) return alphabetic(n,"sl") end
 function converters.Sloviannumerals(n) return Alphabetic(n,"sl") end
 
-converters['characters:es'] = converters.spanishnumerals
-converters['characters:sl'] = converters.sloveniannumerals
+converters['alphabetic:es'] = converters.spanishnumerals
+converters['alphabetic:sl'] = converters.sloveniannumerals
 
-converters['Characters:es'] = converters.Spanishnumerals
-converters['Characters:sl'] = converters.Sloveniannumerals
+converters['Alphabetic:es'] = converters.Spanishnumerals
+converters['Alphabetic:sl'] = converters.Sloveniannumerals
 
 -- bonus
 

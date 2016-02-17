@@ -261,7 +261,7 @@ function characters.remap_hangul_syllabe(t)
     end
 end
 
-local hangul_syllable_extender = function(k,v)
+local hangul_syllable_extender = function(k)
     local t = {
         unicodeslot = k,
     }
@@ -270,6 +270,7 @@ local hangul_syllable_extender = function(k,v)
 end
 
 local hangul_syllable_range = {
+    name     = "hangul",
     first    = 0xAC00,
     last     = 0xD7A3,
     extender = hangul_syllable_extender,
@@ -1207,7 +1208,7 @@ local variants = setmetatableindex(function(t,k)
     return kv
 end)
 
-local cjk_ideograph_extender = function(k,v)
+local cjk_ideograph_extender = function(k)
     local t = {
      -- shcode      = shcode,
         unicodeslot = k,
@@ -1218,6 +1219,7 @@ local cjk_ideograph_extender = function(k,v)
 end
 
 local cjk_ideograph_range = {
+    name     = "cjk ideograph",
     first    = 0x4E00,
     last     = 0x9FBB,
     extender = cjk_ideograph_extender,
@@ -1235,7 +1237,7 @@ local cjk_ideograph_extension_a_metatable = {
     }
 }
 
-local cjk_ideograph_extension_a_extender = function(k,v)
+local cjk_ideograph_extension_a_extender = function(k)
     local t = {
      -- shcode      = shcode,
         unicodeslot = k,
@@ -1246,6 +1248,7 @@ local cjk_ideograph_extension_a_extender = function(k,v)
 end
 
 local cjk_ideograph_extension_a_range = {
+    name     = "cjk ideograph extension a",
     first    = 0x3400,
     last     = 0x4DB5,
     extender = cjk_ideograph_extension_a_extender,
@@ -1263,7 +1266,7 @@ local cjk_ideograph_extension_b_metatable = {
     }
 }
 
-local cjk_ideograph_extension_b_extender = function(k,v)
+local cjk_ideograph_extension_b_extender = function(k)
     local t = {
      -- shcode      = shcode,
         unicodeslot = k,
@@ -1274,6 +1277,7 @@ local cjk_ideograph_extension_b_extender = function(k,v)
 end
 
 local cjk_ideograph_extension_b_range = {
+    name     = "cjk ideograph extension b",
     first    = 0x20000,
     last     = 0x2A6D6,
     extender = cjk_ideograph_extension_b_extender,

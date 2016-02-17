@@ -12492,7 +12492,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 29785, stripped down to: 21310
+-- original size: 30339, stripped down to: 21584
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -12826,55 +12826,59 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
       local ek=collected[c]
       local name=nil
       local ekdt=ek.dt
-      local ekat=ek.at
-      local ekrt=ek.__p__
-      local epdt=ekrt.dt
-      if not attribute or attribute=="" then
-        name=(type(ekdt)=="table" and ekdt[1]) or ekdt 
-      end
-      if not name then
-        for a in gmatch(attribute or "href","([^|]+)") do
-          name=ekat[a]
-          if name then
-            break
+      if ekdt then
+        local ekat=ek.at
+        local ekrt=ek.__p__
+        if ekrt then
+          local epdt=ekrt.dt
+          if not attribute or attribute=="" then
+            name=(type(ekdt)=="table" and ekdt[1]) or ekdt 
           end
-        end
-      end
-      local data=nil
-      if name and name~="" then
-        data=loaddata(name) or ""
-        if trace_inclusions then
-          report_xml("including %s bytes from %a at level %s by pattern %a and attribute %a (%srecursing)",#data,name,level,pattern,attribute or "",recursive and "" or "not ")
-        end
-      end
-      if not data or data=="" then
-        epdt[ek.ni]="" 
-      elseif ekat["parse"]=="text" then
-        epdt[ek.ni]=xml.escaped(data) 
-      else
-        local xi=xmlinheritedconvert(data,xmldata)
-        if not xi then
-          epdt[ek.ni]="" 
-        else
-          if recursive then
-            include(xi,pattern,attribute,recursive,loaddata,level+1)
+          if not name then
+            for a in gmatch(attribute or "href","([^|]+)") do
+              name=ekat[a]
+              if name then
+                break
+              end
+            end
           end
-          local child=xml.body(xi) 
-          child.__p__=ekrt
-          child.__f__=name 
-          epdt[ek.ni]=child
-          local inclusions=xmldata.settings.inclusions
-          if inclusions then
-            inclusions[#inclusions+1]=name
+          local data=nil
+          if name and name~="" then
+            data=loaddata(name) or ""
+            if trace_inclusions then
+              report_xml("including %s bytes from %a at level %s by pattern %a and attribute %a (%srecursing)",#data,name,level,pattern,attribute or "",recursive and "" or "not ")
+            end
+          end
+          if not data or data=="" then
+            epdt[ek.ni]="" 
+          elseif ekat["parse"]=="text" then
+            epdt[ek.ni]=xml.escaped(data) 
           else
-            xmldata.settings.inclusions={ name }
-          end
-          if child.er then
-            local badinclusions=xmldata.settings.badinclusions
-            if badinclusions then
-              badinclusions[#badinclusions+1]=name
+            local xi=xmlinheritedconvert(data,xmldata)
+            if not xi then
+              epdt[ek.ni]="" 
             else
-              xmldata.settings.badinclusions={ name }
+              if recursive then
+                include(xi,pattern,attribute,recursive,loaddata,level+1)
+              end
+              local child=xml.body(xi) 
+              child.__p__=ekrt
+              child.__f__=name 
+              epdt[ek.ni]=child
+              local inclusions=xmldata.settings.inclusions
+              if inclusions then
+                inclusions[#inclusions+1]=name
+              else
+                xmldata.settings.inclusions={ name }
+              end
+              if child.er then
+                local badinclusions=xmldata.settings.badinclusions
+                if badinclusions then
+                  badinclusions[#badinclusions+1]=name
+                else
+                  xmldata.settings.badinclusions={ name }
+                end
+              end
             end
           end
         end
@@ -18714,8 +18718,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 795474
--- stripped bytes    : 288398
+-- original bytes    : 796028
+-- stripped bytes    : 288678
 
 -- end library merge
 

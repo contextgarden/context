@@ -353,8 +353,8 @@ Differences between \LUATEX\ and \TEX82 that are a direct result of that:
     discretionaries (instead of \TEX82's empty discretionary).
 \stopitem
 \startitem
-    The value of the two counters related to hyphenation, \type {hyphenpenalty}
-    and \type {exhyphenpenalty}, are now stored in the discretionary nodes. This
+    The value of the two counters related to hyphenation, \type {\hyphenpenalty}
+    and \type {\exhyphenpenalty}, are now stored in the discretionary nodes. This
     permits a local overload for explicit \type {\discretionary} commands. The
     value current when the hyphenation pass is applied is used. When no callbacks
     are used this is compatible with traditional \TEX. When you apply the \LUA\

@@ -170,6 +170,7 @@
 		<cd:variable name='down' value='omlaag'/>
 		<cd:variable name='each' value='elk'/>
 		<cd:variable name='edge' value='rand'/>
+		<cd:variable name='eight' value='acht'/>
 		<cd:variable name='embed' value='sluitin'/>
 		<cd:variable name='empty' value='leeg'/>
 		<cd:variable name='end' value='eind'/>
@@ -357,6 +358,7 @@
 		<cd:variable name='nextoddpage' value='volgendeonevenpagina'/>
 		<cd:variable name='nextpage' value='volgendepagina'/>
 		<cd:variable name='nextsubpage' value='volgendesubpagina'/>
+		<cd:variable name='nine' value='negen'/>
 		<cd:variable name='no' value='nee'/>
 		<cd:variable name='nocheck' value='geencontrole'/>
 		<cd:variable name='nodepth' value='nodepth'/>
@@ -473,6 +475,7 @@
 		<cd:variable name='serifnormal' value='serifnormal'/>
 		<cd:variable name='serried' value='aanelkaar'/>
 		<cd:variable name='setups' value='setups'/>
+		<cd:variable name='seven' value='zeven'/>
 		<cd:variable name='sheet' value='sheet'/>
 		<cd:variable name='shiftdown' value='shiftdown'/>
 		<cd:variable name='shiftup' value='shiftup'/>
@@ -480,6 +483,7 @@
 		<cd:variable name='simplefonts' value='simplefonts'/>
 		<cd:variable name='simplelist' value='simplelist'/>
 		<cd:variable name='singlesided' value='enkelzijdig'/>
+		<cd:variable name='six' value='zes'/>
 		<cd:variable name='slanted' value='schuin'/>
 		<cd:variable name='slantedbold' value='schuinvet'/>
 		<cd:variable name='small' value='klein'/>

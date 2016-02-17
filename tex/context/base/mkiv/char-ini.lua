@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['char-ini'] = {
 -- we can remove the tag range starting at 0xE0000 (special applications)
 
 local utfchar, utfbyte, utfvalues, ustring, utotable = utf.char, utf.byte, utf.values, utf.ustring, utf.totable
-local concat, unpack, tohash = table.concat, table.unpack, table.tohash
+local concat, unpack, tohash, insert = table.concat, table.unpack, table.tohash, table.insert
 local next, tonumber, type, rawget, rawset = next, tonumber, type, rawget, rawset
 local format, lower, gsub = string.format, string.lower, string.gsub
 local P, R, S, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.Cs
@@ -128,7 +128,7 @@ setmetatableindex(data, function(t,k)
             if k >= rr.first and k <= rr.last then
                 local extender = rr.extender
                 if extender then
-                    local v = extender(k,v)
+                    local v = extender(k)
                     t[k] = v
                     return v
                 end
@@ -137,6 +137,45 @@ setmetatableindex(data, function(t,k)
     end
     return private -- handy for when we loop over characters in fonts and check for a property
 end)
+
+local variant_selector_metatable = {
+    category  = "mn",
+    cjkwd     = "a",
+    direction = "nsm",
+    linebreak = "cm",
+}
+
+-- This saves a bit of memory and also serves as example.
+
+local f_variant = string.formatters["VARIATION SELECTOR-0x%04X"]
+
+insert(characters.ranges,{
+    first    = 0xFE00,
+    last     = 0xFE0F,
+    name     = "variant selector",
+    extender = function(k)
+        local t = {
+            description = f_variant(k - 0xFE00 + 0x0001),
+            unicodeslot = k,
+        }
+        setmetatable(t,variant_selector_metatable)
+        return t
+    end,
+})
+
+insert(characters.ranges,{
+    first    = 0xE0100,
+    last     = 0xE01EF,
+    name     = "variant selector extension",
+    extender = function(k)
+        local t = {
+            description = f_variant(k - 0xE0100 + 0x0011),
+            unicodeslot = k,
+        }
+        setmetatable(t,variant_selector_metatable)
+        return t
+    end,
+})
 
 local blocks = allocate {
     ["aegeannumbers"]                              = { first = 0x10100, last = 0x1013F,             description = "Aegean Numbers" },

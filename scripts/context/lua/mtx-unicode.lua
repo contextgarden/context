@@ -75,6 +75,15 @@ local split_space_two   = lpeg.splitat (" ")
 local split_range_two   = lpeg.splitat ("..")
 local split_colon_table = lpeg.tsplitat(lpeg.P(" ")^0 * lpeg.P(";") * lpeg.P(" ")^0)
 
+
+local skipped = {
+    [0x002C6] = true, -- MODIFIER LETTER CIRCUMFLEX ACCENT
+    [0x002C7] = true, -- CARON
+}
+
+for i=0x0FE00,0x0FE0F do skipped[i] = true end -- variant selector
+for i=0xE0100,0xE01EF do skipped[i] = true end -- variant selector extension
+
 function scripts.unicode.update()
     local unicodedata          = texttables.unicodedata
     local bidimirroring        = texttables.bidimirroring
@@ -85,234 +94,236 @@ function scripts.unicode.update()
     local characterdata        = characters.data
     --
     for unicode, ud in table.sortedpairs(unicodedata) do
-        local char = rawget(characterdata,unicode)
-        local description = ud[2] or formatters["UNICODE ENTRY %U"](unicode)
-        if not find(description,"^<") then
-            local ld        = linebreak[unicode]
-            local bd        = bidimirroring[unicode]
-            local ed        = eastasianwidth[unicode]
-            local category  = lower(ud[3] or "?")
-            local combining = tonumber(ud[4])
-            local direction = lower(ud[5] or "l") -- we could omit 'l' being the default
-            local linebreak = ld and lower(ld[2] or "xx")
-            local specials  = ud[6] or ""
-            local cjkwd     = ed and lower(ed[2] or "n")
-            local mirror    = bd and tonumber(bd[2],16)
-            local arabic    = nil
-            if sparse and direction == "l" then
-                direction = nil
-            end
-            if linebreak == "xx" then
-                linebreak = nil
-            end
-            if specials == "" then
-                specials = nil
-            else
-                specials = lpegmatch(split_space_table,specials) -- split(specials," ")
-                if tonumber(specials[1],16) then
-                    for i=#specials,1,-1 do
-                        specials[i+1] = tonumber(specials[i],16)
-                    end
-                    specials[1] = "char"
-                else
-                    specials[1] = lower(gsub(specials[1],"[<>]",""))
-                    for i=2,#specials do
-                        specials[i] = tonumber(specials[i],16)
-                    end
+        if not skipped[unicode] then
+            local char = rawget(characterdata,unicode)
+            local description = ud[2] or formatters["UNICODE ENTRY %U"](unicode)
+            if not find(description,"^<") then
+                local ld        = linebreak[unicode]
+                local bd        = bidimirroring[unicode]
+                local ed        = eastasianwidth[unicode]
+                local category  = lower(ud[3] or "?")
+                local combining = tonumber(ud[4])
+                local direction = lower(ud[5] or "l") -- we could omit 'l' being the default
+                local linebreak = ld and lower(ld[2] or "xx")
+                local specials  = ud[6] or ""
+                local cjkwd     = ed and lower(ed[2] or "n")
+                local mirror    = bd and tonumber(bd[2],16)
+                local arabic    = nil
+                if sparse and direction == "l" then
+                    direction = nil
                 end
-            end
-            if cjkwd == "n" then
-                cjkwd = nil
-            end
-            local comment
-            if find(description,"MATHEMATICAL") then
-                comment = "check math properties"
-            end
-            -- there are more than arabic
-            local as = arabicshaping[unicode]
-            if as then
-                arabic = lower(as[3])
-            end
-            --
-            if not combining or combining == 0 then
-                combining = nil
-            end
-            if not char then
-                report("%U : adding entry %a",unicode,description)
-                char = {
-                 -- adobename   = ,
-                    category    = category,
-                    comment     = comment,
-                    cjkwd       = cjkwd,
-                    description = description,
-                    direction   = direction,
-                    mirror      = mirror,
-                    linebreak   = linebreak,
-                    unicodeslot = unicode,
-                    specials    = specials,
-                    arabic      = arabic,
-                    combining   = combining,
-                }
-                characterdata[unicode] = char
-            else
-                if direction then
-                    if char.direction ~= direction then
-                        report("%U : setting direction to %a, %a",unicode,direction,description)
-                        char.direction = direction
-                    end
-                else
-                    if char.direction then
-                        report("%U : resetting direction from %a, %a",unicode,char.direction,description)
-                        char.direction = nil
-                    end
+                if linebreak == "xx" then
+                    linebreak = nil
                 end
-                if mirror then
-                    if mirror ~= char.mirror then
-                        report("%U : setting mirror to %a, %a",unicode,mirror,description)
-                        char.mirror = mirror
-                    end
+                if specials == "" then
+                    specials = nil
                 else
-                    if char.mirror then
-                        report("%U : resetting mirror from %a, %a",unicode,char.mirror,description)
-                        char.mirror = nil
-                    end
-                end
-                if linebreak then
-                    if linebreak ~= char.linebreak then
-                        report("%U : setting linebreak to %a, %a",unicode,linebreak,description)
-                        char.linebreak = linebreak
-                    end
-                else
-                    if char.linebreak then
-                        report("%U : resetting linebreak from %a, %a",unicode,char.linebreak,description)
-                        char.linebreak = nil
-                    end
-                end
-                if cjkwd then
-                    if cjkwd ~= char.cjkwd then
-                        report("%U : setting cjkwd of to %a, %a",unicode,cjkwd,description)
-                        char.cjkwd = cjkwd
-                    end
-                else
-                    if char.cjkwd then
-                        report("%U : resetting cjkwd of from %a, %a",unicode,char.cjkwd,description)
-                        char.cjkwd = nil
-                    end
-                end
-                if arabic then
-                    if arabic ~= char.arabic then
-                        report("%U : setting arabic to %a, %a",unicode,arabic,description)
-                        char.arabic = arabic
-                    end
-                else
-                    if char.arabic then
-                        report("%U : resetting arabic from %a, %a",unicode,char.arabic,description)
-                        char.arabic = nil
-                    end
-                end
-                if combining then
-                    if combining ~= char.combining then
-                        report("%U : setting combining to %a, %a",unicode,combining,description)
-                        char.combining = combining
-                    end
-                else
-                    if char.combining then
-                        report("%U : resetting combining from %a, %a",unicode,char.combining,description)
-                    end
-                end
-                if specials then
-                    if not char.specials or not are_equal(specials,char.specials) then
-                        local t = { specials[1] } for i=2,#specials do t[i] = formatters["%U"](specials[i]) end
-                        report("%U : setting specials to % + t, %a",unicode,t,description)
-                        char.specials = specials
-                    end
-                else
-                    local specials = char.specials
-                    if specials then
-                        local t = { } for i=2,#specials do t[i] = formatters["%U"](specials[i]) end
-                        if false then
-                            char.comment = nil
-                            report("%U : resetting specials from % + t, %a",unicode,t,description)
-                        else
-                            local comment = char.comment
-                            if not comment then
-                                char.comment = "check special"
-                            elseif not find(comment,"check special") then
-                                char.comment = comment .. ", check special"
-                            end
-                            report("%U : check specials % + t, %a",unicode,t,description)
+                    specials = lpegmatch(split_space_table,specials) -- split(specials," ")
+                    if tonumber(specials[1],16) then
+                        for i=#specials,1,-1 do
+                            specials[i+1] = tonumber(specials[i],16)
+                        end
+                        specials[1] = "char"
+                    else
+                        specials[1] = lower(gsub(specials[1],"[<>]",""))
+                        for i=2,#specials do
+                            specials[i] = tonumber(specials[i],16)
                         end
                     end
                 end
-            end
-            --
-            local visual = char.visual
-            if not visual and find(description,"MATH") then
-                if find(description,"BOLD ITALIC") then
-                    visual = "bi"
-                elseif find(description,"ITALIC") then
-                    visual = "it"
-                elseif find(description,"BOLD") then
-                    visual = "bf"
+                if cjkwd == "n" then
+                    cjkwd = nil
                 end
-                if visual then
-                    report("%U : setting visual to %a, %a",unicode,visual,description)
-                    char.visual = visual
+                local comment
+                if find(description,"MATHEMATICAL") then
+                    comment = "check math properties"
                 end
-            end
-            -- mathextensible
-            if category == "sm" or (category == "so" and char.mathclass) then
-                local mathextensible = char.mathextensible
-                if mathextensible then
-                    -- already done
-                elseif find(description,"ABOVE") then
-                    -- skip
-                elseif find(description,"ARROWHEAD") then
-                    -- skip
-                elseif find(description,"HALFWIDTH") then
-                    -- skip
-                elseif find(description,"ANGLE") then
-                    -- skip
-                elseif find(description,"THROUGH") then
-                    -- skip
-                elseif find(description,"ARROW") then
+                -- there are more than arabic
+                local as = arabicshaping[unicode]
+                if as then
+                    arabic = lower(as[3])
+                end
+                --
+                if not combining or combining == 0 then
+                    combining = nil
+                end
+                if not char then
+                    report("%U : adding entry %a",unicode,description)
+                    char = {
+                     -- adobename   = ,
+                        category    = category,
+                        comment     = comment,
+                        cjkwd       = cjkwd,
+                        description = description,
+                        direction   = direction,
+                        mirror      = mirror,
+                        linebreak   = linebreak,
+                        unicodeslot = unicode,
+                        specials    = specials,
+                        arabic      = arabic,
+                        combining   = combining,
+                    }
+                    characterdata[unicode] = char
+                else
+                    if direction then
+                        if char.direction ~= direction then
+                            report("%U : setting direction to %a, %a",unicode,direction,description)
+                            char.direction = direction
+                        end
+                    else
+                        if char.direction then
+                            report("%U : resetting direction from %a, %a",unicode,char.direction,description)
+                            char.direction = nil
+                        end
+                    end
+                    if mirror then
+                        if mirror ~= char.mirror then
+                            report("%U : setting mirror to %a, %a",unicode,mirror,description)
+                            char.mirror = mirror
+                        end
+                    else
+                        if char.mirror then
+                            report("%U : resetting mirror from %a, %a",unicode,char.mirror,description)
+                            char.mirror = nil
+                        end
+                    end
+                    if linebreak then
+                        if linebreak ~= char.linebreak then
+                            report("%U : setting linebreak to %a, %a",unicode,linebreak,description)
+                            char.linebreak = linebreak
+                        end
+                    else
+                        if char.linebreak then
+                            report("%U : resetting linebreak from %a, %a",unicode,char.linebreak,description)
+                            char.linebreak = nil
+                        end
+                    end
+                    if cjkwd then
+                        if cjkwd ~= char.cjkwd then
+                            report("%U : setting cjkwd of to %a, %a",unicode,cjkwd,description)
+                            char.cjkwd = cjkwd
+                        end
+                    else
+                        if char.cjkwd then
+                            report("%U : resetting cjkwd of from %a, %a",unicode,char.cjkwd,description)
+                            char.cjkwd = nil
+                        end
+                    end
+                    if arabic then
+                        if arabic ~= char.arabic then
+                            report("%U : setting arabic to %a, %a",unicode,arabic,description)
+                            char.arabic = arabic
+                        end
+                    else
+                        if char.arabic then
+                            report("%U : resetting arabic from %a, %a",unicode,char.arabic,description)
+                            char.arabic = nil
+                        end
+                    end
+                    if combining then
+                        if combining ~= char.combining then
+                            report("%U : setting combining to %a, %a",unicode,combining,description)
+                            char.combining = combining
+                        end
+                    else
+                        if char.combining then
+                            report("%U : resetting combining from %a, %a",unicode,char.combining,description)
+                        end
+                    end
+                    if specials then
+                        if not char.specials or not are_equal(specials,char.specials) then
+                            local t = { specials[1] } for i=2,#specials do t[i] = formatters["%U"](specials[i]) end
+                            report("%U : setting specials to % + t, %a",unicode,t,description)
+                            char.specials = specials
+                        end
+                    else
+                        local specials = char.specials
+                        if specials then
+                            local t = { } for i=2,#specials do t[i] = formatters["%U"](specials[i]) end
+                            if false then
+                                char.comment = nil
+                                report("%U : resetting specials from % + t, %a",unicode,t,description)
+                            else
+                                local comment = char.comment
+                                if not comment then
+                                    char.comment = "check special"
+                                elseif not find(comment,"check special") then
+                                    char.comment = comment .. ", check special"
+                                end
+                                report("%U : check specials % + t, %a",unicode,t,description)
+                            end
+                        end
+                    end
+                end
+                --
+                local visual = char.visual
+                if not visual and find(description,"MATH") then
+                    if find(description,"BOLD ITALIC") then
+                        visual = "bi"
+                    elseif find(description,"ITALIC") then
+                        visual = "it"
+                    elseif find(description,"BOLD") then
+                        visual = "bf"
+                    end
+                    if visual then
+                        report("%U : setting visual to %a, %a",unicode,visual,description)
+                        char.visual = visual
+                    end
+                end
+                -- mathextensible
+                if category == "sm" or (category == "so" and char.mathclass) then
+                    local mathextensible = char.mathextensible
+                    if mathextensible then
+                        -- already done
+                    elseif find(description,"ABOVE") then
                         -- skip
-                    local u = find(description,"UP")
-                    local d = find(description,"DOWN")
-                    local l = find(description,"LEFT")
-                    local r = find(description,"RIGHT")
-                    if find(description,"ARROWHEAD") then
+                    elseif find(description,"ARROWHEAD") then
                         -- skip
                     elseif find(description,"HALFWIDTH") then
                         -- skip
-                    elseif u and d then
-                        if l or r then
-                            mathextensible = 'm' -- mixed
-                        else
-                            mathextensible = 'v' -- vertical
+                    elseif find(description,"ANGLE") then
+                        -- skip
+                    elseif find(description,"THROUGH") then
+                        -- skip
+                    elseif find(description,"ARROW") then
+                            -- skip
+                        local u = find(description,"UP")
+                        local d = find(description,"DOWN")
+                        local l = find(description,"LEFT")
+                        local r = find(description,"RIGHT")
+                        if find(description,"ARROWHEAD") then
+                            -- skip
+                        elseif find(description,"HALFWIDTH") then
+                            -- skip
+                        elseif u and d then
+                            if l or r then
+                                mathextensible = 'm' -- mixed
+                            else
+                                mathextensible = 'v' -- vertical
+                            end
+                        elseif u then
+                            if l or r then
+                                mathextensible = 'm' -- mixed
+                            else
+                                mathextensible = "u"     -- up
+                            end
+                        elseif d then
+                            if l or r then
+                                mathextensible = 'm' -- mixed
+                            else
+                                mathextensible = "d"     -- down
+                            end
+                        elseif l and r then
+                            mathextensible = "h"     -- horizontal
+                        elseif r then
+                            mathextensible = "r"     -- right
+                        elseif l then
+                            mathextensible = "l"     -- left
                         end
-                    elseif u then
-                        if l or r then
-                            mathextensible = 'm' -- mixed
-                        else
-                            mathextensible = "u"     -- up
+                        if mathextensible then
+                            report("%U : setting mathextensible to %a, %a",unicode,mathextensible,description)
+                            char.mathextensible = mathextensible
                         end
-                    elseif d then
-                        if l or r then
-                            mathextensible = 'm' -- mixed
-                        else
-                            mathextensible = "d"     -- down
-                        end
-                    elseif l and r then
-                        mathextensible = "h"     -- horizontal
-                    elseif r then
-                        mathextensible = "r"     -- right
-                    elseif l then
-                        mathextensible = "l"     -- left
-                    end
-                    if mathextensible then
-                        report("%U : setting mathextensible to %a, %a",unicode,mathextensible,description)
-                        char.mathextensible = mathextensible
                     end
                 end
             end

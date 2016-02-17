@@ -97,11 +97,12 @@
 \let\arabicexnumerals     \persiannumerals
 
 \def\koreannumerals    #1{\clf_alphabetic\numexpr#1\relax{korean}}
-\def\koreannumeralsp   #1{\clf_alphabetic\numexpr#1\relax{korean-parent}}
+\def\koreannumeralsp   #1{\clf_alphabetic\numexpr#1\relax{korean-parenthesis}}
 \def\koreannumeralsc   #1{\clf_alphabetic\numexpr#1\relax{korean-circle}}
 
-\let\koreanparentnumerals\koreannumeralsp
-\let\koreancirclenumerals\koreannumeralsc
+\let\koreanparentnumerals     \koreannumeralsp
+\let\koreanparenthesisnumerals\koreannumeralsp
+\let\koreancirclenumerals     \koreannumeralsc
 
 \def\chinesenumerals   #1{\clf_chinesenumerals\numexpr#1\relax{normal}}
 \def\chinesecapnumerals#1{\clf_chinesenumerals\numexpr#1\relax{cap}}
@@ -640,8 +641,8 @@
 \defineconversion [\v!characters]        [\characters]
 \defineconversion [\v!Characters]        [\Characters]
 
-\defineconversion [a]                    [\characters]
-\defineconversion [A]                    [\Characters]
+\defineconversion [a]                    [\alphabeticnumerals]
+\defineconversion [A]                    [\Alphabeticnumerals]
 \defineconversion [AK]                   [\smallcappedcharacters]
 \defineconversion [KA]                   [\smallcappedcharacters]
 
@@ -704,7 +705,9 @@
 \defineconversion [persiandecimals]      [\persiandecimals]
 
 \defineconversion [koreannumerals]       [\koreannumerals]
-\defineconversion [koreanparentnumerals] [\koreanparentnumerals]
+\defineconversion [koreanparennumerals]  [\koreanparenthesisnumerals] % for old times sake (for a while)
+\defineconversion [koreanparenthesisnumerals]
+                                         [\koreanparenthesisnumerals]
 \defineconversion [koreancirclenumerals] [\koreancirclenumerals]
 
 \defineconversion [kr]                   [\koreannumerals]
@@ -733,20 +736,26 @@
 \def\spanishnumerals  #1{\clf_alphabetic\numexpr#1\relax{es}}
 \def\spanishNumerals  #1{\clf_Alphabetic\numexpr#1\relax{es}}
 
-\defineconversion [\s!sl] [character]  [\sloveniannumerals]
-\defineconversion [\s!sl] [Character]  [\slovenianNumerals]
-\defineconversion [\s!sl] [characters] [\sloveniannumerals]
-\defineconversion [\s!sl] [Characters] [\slovenianNumerals]
+%defineconversion [\s!sl] [character]  [\sloveniannumerals]
+%defineconversion [\s!sl] [Character]  [\slovenianNumerals]
+%defineconversion [\s!sl] [characters] [\sloveniannumerals]
+%defineconversion [\s!sl] [Characters] [\slovenianNumerals]
+
+\defineconversion [\s!sl] [alphabetic] [\sloveniannumerals]
+\defineconversion [\s!sl] [Alphabetic] [\slovenianNumerals]
 
 \defineconversion [\s!sl] [a]          [\sloveniannumerals]
 \defineconversion [\s!sl] [A]          [\slovenianNumerals]
 \defineconversion [\s!sl] [AK]         [\smallcapped\sloveniannumerals]
 \defineconversion [\s!sl] [KA]         [\smallcapped\sloveniannumerals]
 
-\defineconversion [\s!es] [character]  [\spanishnumerals]
-\defineconversion [\s!es] [Character]  [\spanishNumerals]
-\defineconversion [\s!es] [characters] [\spanishnumerals]
-\defineconversion [\s!es] [Characters] [\spanishNumerals]
+%defineconversion [\s!es] [character]  [\spanishnumerals]
+%defineconversion [\s!es] [Character]  [\spanishNumerals]
+%defineconversion [\s!es] [characters] [\spanishnumerals]
+%defineconversion [\s!es] [Characters] [\spanishNumerals]
+
+\defineconversion [\s!es] [alphabetic] [\spanishnumerals]
+\defineconversion [\s!es] [Alphabetic] [\spanishNumerals]
 
 \defineconversion [\s!es] [a]          [\spanishnumerals]
 \defineconversion [\s!es] [A]          [\spanishNumerals]

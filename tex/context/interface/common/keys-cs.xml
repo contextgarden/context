@@ -170,6 +170,7 @@
 		<cd:variable name='down' value='down'/>
 		<cd:variable name='each' value='kazdy'/>
 		<cd:variable name='edge' value='hrana'/>
+		<cd:variable name='eight' value='eight'/>
 		<cd:variable name='embed' value='embed'/>
 		<cd:variable name='empty' value='prazdne'/>
 		<cd:variable name='end' value='end'/>
@@ -357,6 +358,7 @@
 		<cd:variable name='nextoddpage' value='dalsilichastranka'/>
 		<cd:variable name='nextpage' value='dalsistranka'/>
 		<cd:variable name='nextsubpage' value='dalsipodstranka'/>
+		<cd:variable name='nine' value='nine'/>
 		<cd:variable name='no' value='ne'/>
 		<cd:variable name='nocheck' value='nocheck'/>
 		<cd:variable name='nodepth' value='nodepth'/>
@@ -473,6 +475,7 @@
 		<cd:variable name='serifnormal' value='serifnormal'/>
 		<cd:variable name='serried' value='semknuto'/>
 		<cd:variable name='setups' value='setups'/>
+		<cd:variable name='seven' value='seven'/>
 		<cd:variable name='sheet' value='sheet'/>
 		<cd:variable name='shiftdown' value='shiftdown'/>
 		<cd:variable name='shiftup' value='shiftup'/>
@@ -480,6 +483,7 @@
 		<cd:variable name='simplefonts' value='simplefonts'/>
 		<cd:variable name='simplelist' value='simplelist'/>
 		<cd:variable name='singlesided' value='jednostranne'/>
+		<cd:variable name='six' value='six'/>
 		<cd:variable name='slanted' value='sklonene'/>
 		<cd:variable name='slantedbold' value='sklonenetucne'/>
 		<cd:variable name='small' value='male'/>
