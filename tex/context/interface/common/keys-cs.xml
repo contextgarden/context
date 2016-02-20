@@ -31,6 +31,7 @@
 		<cd:variable name='NextPage' value='DalsiStrana'/>
 		<cd:variable name='Numbers' value='Cisla'/>
 		<cd:variable name='OpenNamedDocument' value='OpenNamedDocument'/>
+		<cd:variable name='Ordinal' value='Ordinal'/>
 		<cd:variable name='Paragraph' value='Odstavec'/>
 		<cd:variable name='PauseMovie' value='PozastavitFilm'/>
 		<cd:variable name='PauseRendering' value='PauseRendering'/>
@@ -83,6 +84,7 @@
 		<cd:variable name='appendices' value='dodatky'/>
 		<cd:variable name='appendix' value='dodatek'/>
 		<cd:variable name='april' value='duben'/>
+		<cd:variable name='aside' value='aside'/>
 		<cd:variable name='atleftmargin' value='atleftmargin'/>
 		<cd:variable name='atmargin' value='naokraji'/>
 		<cd:variable name='atpage' value='nastrance'/>
@@ -392,6 +394,7 @@
 		<cd:variable name='on' value='zap'/>
 		<cd:variable name='one' value='jedna'/>
 		<cd:variable name='opposite' value='naproti'/>
+		<cd:variable name='ordinal' value='ordinal'/>
 		<cd:variable name='outer' value='vnejsi'/>
 		<cd:variable name='outeredge' value='outeredge'/>
 		<cd:variable name='outermargin' value='outermargin'/>

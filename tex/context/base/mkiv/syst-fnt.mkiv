@@ -40,6 +40,12 @@
 
 \def\currentspaceskip    {\interwordspace\s!plus\interwordstretch\s!minus\interwordshrink\relax}
 
+\def\currentspacevalue   {\the\interwordspace
+  \ifzeropt\interwordstretch\else{ plus  }\the\interwordstretch\fi
+  \ifzeropt\interwordshrink \else{ minus }\the\interwordshrink \fi}
+
+\def\usedspacevalue      {\ifzeropt\spaceskip\the\spaceskip\else\currentspacevalue\fi}
+
 \def\mathstacktotal      {\dimexpr\Umathstacknumup\scriptstyle+\Umathstackdenomdown\scriptstyle\relax}
 \def\mathstackvgap       {\Umathstackvgap\scriptstyle}
 

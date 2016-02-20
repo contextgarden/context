@@ -21,6 +21,11 @@ local a_color        = attributes.private('color')
 local a_transparency = attributes.private('transparency')
 local a_colorspace   = attributes.private('colormodel')
 
+local mpcolor        = attributes.colors.mpcolor
+
+local floor          = math.floor
+local random         = math.random
+
 do
 
     local simplemetapost = metapost.simple
@@ -63,16 +68,27 @@ do
         endfig ;
     ]]
 
+    local predefined = {
+        ["fake:word"] = [[
+fill unitsquare xscaled RuleWidth yscaled RuleHeight withcolor RuleColor ;
+draw (0,RuleDepth+RuleThickness/2) -- (RuleWidth,RuleDepth+RuleThickness/2) withpen pencircle scaled RuleThickness withcolor white ;
+        ]],
+        ["fake:rule"] = [[
+fill unitsquare xscaled RuleWidth yscaled RuleHeight withcolor RuleColor ;
+        ]],
+    }
+
     ruleactions.mp = function(p,h,v,i,n)
+        local name = p.name
         local code = makecode {
-            data   = p.data,
+            data   = name and predefined[name] or p.data or "",
             width  = p.width * bpfactor,
             height = p.height * bpfactor,
             depth  = p.depth * bpfactor,
             factor = (p.factor or 0) * bpfactor, -- needs checking
             offset = p.offset or 0,
             line   = (p.line or 65536) * bpfactor,
-            color  = attributes.colors.mpcolor(p.ma,p.ca,p.ta),
+            color  = mpcolor(p.ma,p.ca,p.ta),
         }
         local m = cache[code]
         if m and m ~= "" then
@@ -129,6 +145,7 @@ interfaces.implement {
         { "line",   "dimension" },
         { "type",   "string" },
         { "data",   "string" },
+        { "name",   "string" },
     } } ,
     actions = function(t)
         if t.type == "mp" then
@@ -140,4 +157,31 @@ interfaces.implement {
         context(r)
     end
 }
+
+interfaces.implement {
+    name      = "fakeword",
+    arguments = { {
+        { "factor", "dimension" },
+        { "name",   "string" }, -- can be type
+        { "min",    "dimension" },
+        { "max",    "dimension" },
+        { "n",      "integer" },
+    } } ,
+    actions = function(t)
+        local factor = t.factor or 0
+        local rule   = userrule {
+            height = 1.25*factor,
+            depth  = 0.25*factor,
+            width  = floor(random(t.min,t.max)/10000) * 10000,
+            line   = 0.10*factor,
+            ma     = getattribute(a_colorspace) or 1,
+            ca     = getattribute(a_color),
+            ta     = getattribute(a_transparency),
+            type   = "mp",
+            name   = t.name,
+        }
+        context(rule)
+    end
+}
+
 

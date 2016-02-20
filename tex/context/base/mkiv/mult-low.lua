@@ -230,6 +230,7 @@ return {
         "scratchboxone", "scratchboxtwo", "scratchboxthree",
         "scratchnx", "scratchny", "scratchmx", "scratchmy",
         "scratchunicode",
+        "scratchmin", "scratchmax",
         --
         "scratchleftskip", "scratchrightskip", "scratchtopskip", "scratchbottomskip",
         --

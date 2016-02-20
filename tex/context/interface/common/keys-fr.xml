@@ -31,6 +31,7 @@
 		<cd:variable name='NextPage' value='PageSuivante'/>
 		<cd:variable name='Numbers' value='Numeros'/>
 		<cd:variable name='OpenNamedDocument' value='OuvreDocumentNomme'/>
+		<cd:variable name='Ordinal' value='Ordinal'/>
 		<cd:variable name='Paragraph' value='Paragraphe'/>
 		<cd:variable name='PauseMovie' value='PauseFilm'/>
 		<cd:variable name='PauseRendering' value='PauseRendering'/>
@@ -83,6 +84,7 @@
 		<cd:variable name='appendices' value='annexes'/>
 		<cd:variable name='appendix' value='annexe'/>
 		<cd:variable name='april' value='avril'/>
+		<cd:variable name='aside' value='aside'/>
 		<cd:variable name='atleftmargin' value='atleftmargin'/>
 		<cd:variable name='atmargin' value='alamarge'/>
 		<cd:variable name='atpage' value='alapage'/>
@@ -392,6 +394,7 @@
 		<cd:variable name='on' value='actif'/>
 		<cd:variable name='one' value='un'/>
 		<cd:variable name='opposite' value='opposition'/>
+		<cd:variable name='ordinal' value='ordinal'/>
 		<cd:variable name='outer' value='exterieur'/>
 		<cd:variable name='outeredge' value='bordexterieur'/>
 		<cd:variable name='outermargin' value='margeexterieure'/>

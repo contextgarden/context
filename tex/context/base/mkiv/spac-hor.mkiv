@@ -415,7 +415,7 @@
   {\doifelsenextoptionalcs\spac_spacecodes_setup_yes\spac_spacecodes_setup_nop}
 
 \def\spac_spacecodes_setup_yes[#1]%
-  {\csname\??spacecodemethod#1\endcsname
+  {\begincsname\??spacecodemethod#1\endcsname
    \updateraggedskips}
 
 \def\spac_spacecodes_setup_nop
@@ -452,16 +452,25 @@
 
 \let\normalspaceprimitive=\ % space-comment is really needed
 
-% hm ...
+%D As the \type{\ } is convenient in:
+%D
+%D \starttyping
+%D \TEX\space x\crlf
+%D \TEX\      x\crlf
+%D \TEX{}     x\crlf
+%D \stoptyping
+%D
+%D from now on we treat it as anormal space and not as a space with \type
+%D {sfcode} 1000.
 
-% \unexpanded\def\normalnotobeyedspace{\mathortext\normalspaceprimitive\space} % no \dontleavehmode\space (else no frenchspacing)
-% \let\ =\normalnotobeyedspace
+\unexpanded\def\normalnotobeyedspace{\mathortext\normalspaceprimitive\space} % no \dontleavehmode\space (else no frenchspacing)
+\let\ =\normalnotobeyedspace
 
 % Because I strip spaces at the end of lines (in the editor) we need a bit of
 % a trick to define slash+newline, so \space and \<newline> are the same
 
 % We need to be careful with \ and \space and the definition of ~ which uses \ as
-% we need to associate unicode spacing with it. There is some messy thing that that
+% we need to associate unicode spacing with it. There is some messy aspect that
 % I forgot to note down so I will revision the \ once I ran into it again.
 
 % \ruledhbox spread 10pt {\frenchspacing    xx xx\ X}

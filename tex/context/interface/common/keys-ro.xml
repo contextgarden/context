@@ -31,6 +31,7 @@
 		<cd:variable name='NextPage' value='PaginaUrmatoare'/>
 		<cd:variable name='Numbers' value='Numere'/>
 		<cd:variable name='OpenNamedDocument' value='OpenNamedDocument'/>
+		<cd:variable name='Ordinal' value='Ordinal'/>
 		<cd:variable name='Paragraph' value='Paragraf'/>
 		<cd:variable name='PauseMovie' value='PauzaFilm'/>
 		<cd:variable name='PauseRendering' value='PauseRendering'/>
@@ -83,6 +84,7 @@
 		<cd:variable name='appendices' value='apendixuri'/>
 		<cd:variable name='appendix' value='apendix'/>
 		<cd:variable name='april' value='aprilie'/>
+		<cd:variable name='aside' value='aside'/>
 		<cd:variable name='atleftmargin' value='atleftmargin'/>
 		<cd:variable name='atmargin' value='lamargine'/>
 		<cd:variable name='atpage' value='lapagina'/>
@@ -392,6 +394,7 @@
 		<cd:variable name='on' value='on'/>
 		<cd:variable name='one' value='unu'/>
 		<cd:variable name='opposite' value='opus'/>
+		<cd:variable name='ordinal' value='ordinal'/>
 		<cd:variable name='outer' value='extern'/>
 		<cd:variable name='outeredge' value='outeredge'/>
 		<cd:variable name='outermargin' value='outermargin'/>

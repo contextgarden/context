@@ -72,6 +72,7 @@
    \c!internalgrid=\v!line,
    \c!step=.25\lineheight, % needs some experimenting
   %\c!splitmethod=\v!fixed, % will be default
+   \c!direction=\v!normal, % new (also todo in the new columnsets)
    \c!method=\ifinner\s!box\else\s!otr\fi] % automatic as suggested by WS
 
 \let\startmixedcolumns\relax % defined later
@@ -604,14 +605,13 @@
    % the framed needs a reset of strut, align, setups etc
    \mixedcolumnseparatorheight\ht\scratchbox
    \mixedcolumnseparatordepth \dp\scratchbox
-   \inheritedmixedcolumnsframedbox\currentmixedcolumns\scratchbox
-   % optional
-   \ifnum\recurselevel<\c_page_mix_n_of_columns
-     \ifcsname\??mixedcolumnsseparator\p_separator\endcsname
-       \page_mix_command_inject_separator
-     \else
-       \hss
-     \fi
+   \inheritedmixedcolumnsframedbox\currentmixedcolumns\scratchbox}
+
+\def\page_mix_routine_package_separate
+  {\ifcsname\??mixedcolumnsseparator\p_separator\endcsname
+     \page_mix_command_inject_separator
+   \else
+     \hss
    \fi}
 
 \unexpanded\def\page_mix_routine_package
@@ -631,7 +631,20 @@
      \page_mix_hbox to \d_page_mix_max_width \bgroup
        \edef\p_separator{\mixedcolumnsparameter\c!separator}%
        \mixedcolumnseparatorwidth\d_page_mix_distance % \mixedcolumnsparameter\c!rulethickness\relax
-       \dorecurse\c_page_mix_n_of_columns\page_mix_routine_package_step
+       \edef\p_direction{\mixedcolumnsparameter\c!direction}%
+       \ifx\p_direction\v!reverse
+         \dostepwiserecurse\c_page_mix_n_of_columns\plusone\minusone
+            {\page_mix_routine_package_step
+             \ifnum\recurselevel>\plusone
+               \page_mix_routine_package_separate
+             \fi}%
+       \else
+         \dorecurse\c_page_mix_n_of_columns
+            {\page_mix_routine_package_step
+             \ifnum\recurselevel>\c_page_mix_n_of_columns
+               \page_mix_routine_package_separate
+             \fi}%
+       \fi
      \egroup
    \egroup}
 

@@ -242,8 +242,8 @@
 %D \showsetup{weekday}
 %D \showsetup{WEEKDAY}
 
-\unexpanded\def\weekday#1{\clf_day\numexpr#1\relax}
-\unexpanded\def\WEEKDAY#1{\WORD{\clf_day\numexpr#1\relax}}
+\unexpanded\def\weekday#1{\clf_dayname\numexpr#1\relax}
+\unexpanded\def\WEEKDAY#1{\WORD{\clf_dayname\numexpr#1\relax}}
 
 %D \macros
 %D   {getdayoftheweek, dayoftheweek}
@@ -325,8 +325,8 @@
 %D This macro takes care of proper spacing and delivers for instance:
 %D
 %D \startbuffer
-%D \currentdate[weekday,day,month,year] % still dutch example
-%D \currentdate[WEEKDAY,day,MONTH,year] % still dutch example
+%D \currentdate[weekday,day,month,year]
+%D \currentdate[WEEKDAY,day,MONTH,year]
 %D \stopbuffer
 %D
 %D \startlines
@@ -467,7 +467,6 @@
 \unexpanded\def\syst_converters_current_time_nop
   {\normalexpanded{\syst_converters_current_time_yes[\currenttimespecification]}}
 
-
 %D Because we're dealing with dates, we also introduce a few day loops:
 %D
 %D \starttyping
@@ -607,14 +606,15 @@
 % \doloop{\doifelseconversionnumber{ctx}{\recurselevel}{[\recurselevel]}{\exitloop}}
 
 %D \macros
-%D   {ordinaldaynumber, highordinalstr, ordinalstr}
+%D   {ordinalnumber, highordinalstr, ordinalstr}
 %D
 %D Efficient general ordinal number converters are sometimes difficult to
 %D implement. Fortunately dates never exceed the number~31.
 
 \def\highordinalstr     #1{\high{\notsmallcapped{#1}}}
 \def\ordinalstr         #1{\notsmallcapped{#1}}
-\def\ordinaldaynumber   #1{\clf_ordinal\numexpr#1\relax{\currentlanguage}}
+\def\ordinalnumber      #1{\clf_ordinal\numexpr#1\relax{\currentlanguage}}
+\def\Ordinalnumber      #1{\Words{\clf_ordinal\numexpr#1\relax{\currentlanguage}}}
 
 \def\verbosenumber      #1{\clf_verbose\numexpr#1\relax{\currentlanguage}}
 \def\VerboseNumber      #1{\Words{\clf_verbose\numexpr#1\relax{\currentlanguage}}}
@@ -659,6 +659,9 @@
 
 \defineconversion [\v!Word]              [\VerboseNumber]
 \defineconversion [\v!Words]             [\VerboseNumber]
+
+\defineconversion[\v!ordinal]            [\ordinalnumber]
+\defineconversion[\v!Ordinal]            [\Ordinalnumber]
 
 \defineconversion [n]                    [\numbers]
 \defineconversion [N]                    [\Numbers]

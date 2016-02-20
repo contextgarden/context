@@ -341,7 +341,7 @@
 \def\typo_delimited_start_other
   {\edef\p_delimited_repeat{\delimitedtextparameter\c!repeat}%
    \ifx\p_delimited_repeat\v!yes
-     \let\typo_delimited_repeat\typo_delimited_repeat_ideed
+     \let\typo_delimited_repeat\typo_delimited_repeat_indeed
    \else
      \let\typo_delimited_repeat\relax
    \fi
@@ -756,6 +756,11 @@
    \c!left={\symbol[\c!leftspeech]},
    \c!middle={\symbol[\c!middlespeech]},
    \c!right={\symbol[\c!rightspeech]}]
+
+\definedelimitedtext
+  [\v!aside]
+  [\c!left={\symbol[\c!leftsentence]},
+   \c!right={\symbol[\c!rightsentence]}]
 
 % how do we call an tight quote
 %

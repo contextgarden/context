@@ -17,7 +17,7 @@ slower but look nicer this way.</p>
 --ldx]]--
 
 local floor, date, time, concat = math.floor, os.date, os.time, table.concat
-local lower, rep, match, gsub = string.lower, string.rep, string.match, string.gsub
+local lower, upper, rep, match, gsub = string.lower, string.upper, string.rep, string.match, string.gsub
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring = tonumber, tostring
 local P, C, Cs, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.match
@@ -1132,6 +1132,9 @@ local v_weekday  = variables.weekday
 local v_referral = variables.referral
 local v_space    = variables.space
 
+local v_MONTH    = upper(v_month)
+local v_WEEKDAY  = upper(v_weekday)
+
 local convert = converters.convert
 
 local days = { -- not variables.sunday
@@ -1205,6 +1208,16 @@ implement {
 -- day:ord month:mmem
 -- j and jj obsolete
 
+local spaced = {
+    [v_year]    = true,
+    [v_month]   = true,
+    [v_MONTH]   = true,
+    [v_day]     = true,
+    [v_weekday] = true,
+    [v_WEEKDAY] = true,
+    [v_day]     = true,
+}
+
 local function currentdate(str,currentlanguage) -- second argument false : no label
     local list       = utilities.parsers.settings_to_array(str)
     local splitlabel = languages.labels.split or string.itself -- we need to get the loading order right
@@ -1229,16 +1242,14 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
         elseif plus == "mnem" then
             mnemonic = true
         end
-        if not auto and (tag == v_year or tag == v_month or tag == v_day or tag == v_weekday) then
+        if not auto and spaced[tag] then
             context.space()
         end
         auto = false
-        if tag == v_year or tag == "y" then
+        if tag == v_year or tag == "y" or tag == "Y" then
             context(year)
-        elseif tag == "yy" then
+        elseif tag == "yy" or tag == "YY" then
             context("%02i",year % 100)
-        elseif tag == "Y" then
-            context(year)
         elseif tag == v_month or tag == "m" then
             if currentlanguage == false then
                 context(months[month] or "unknown")
@@ -1246,6 +1257,14 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
                 context.labeltext(monthmnem(month))
             else
                 context.labeltext(monthname(month))
+            end
+        elseif tag == v_MONTH then
+            if currentlanguage == false then
+                context.WORD(months[month] or "unknown")
+            elseif mnemonic then
+                context.LABELTEXT(monthmnem(month))
+            else
+                context.LABELTEXT(monthname(month))
             end
         elseif tag == "mm" then
             context("%02i",month)
@@ -1270,6 +1289,13 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
                 context(days[wd] or "unknown")
             else
                 context.labeltext(days[wd] or "unknown")
+            end
+        elseif tag == v_WEEKDAY then
+            local wd = weekday(day,month,year)
+            if currentlanguage == false then
+                context.WORD(days[wd] or "unknown")
+            else
+                context.LABELTEXT(days[wd] or "unknown")
             end
         elseif tag == "W" then
             context(weekday(day,month,year))

@@ -281,6 +281,10 @@
 
 % some more
 
+\ifdefined\softhyphen \else
+    \let\softhyphen\-
+\fi
+
 \def\hyphen           {\softhyphen}
 \def\compoundwordmark {\hyphen}
 \def\cwm              {\hyphen}

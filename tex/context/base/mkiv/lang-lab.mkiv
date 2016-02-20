@@ -151,16 +151,12 @@
 \def\dummytextprefix     {\empty\empty}
 
 %D \macros
-%D   {headtext,
-%D    labeltext, leftlabeltext, rightlabeltext, labeltexts,
-%D    LABELTEXT, LEFTLABELTEXT, RIGHTLABELTEXT, LABELTEXTS}
+%D   {headtext, labeltext, leftlabeltext, rightlabeltext, labeltexts}
 %D
 %D Once defined, head and label texts can be called upon using:
 %D
 %D \showsetup{headtext}
 %D \showsetup{labeltext}
-%D
-%D The latter one has an upcased alternative \type{\LABELTEXT}.
 %D
 %D \macros
 %D   {presetheadtext,presetlabeltext}
@@ -381,5 +377,9 @@
 \setuplabeltext [\s!en] [and-1={{, }}, and-2={{, }}]     % 1, 2, 3
 \setuplabeltext [\s!de] [and-1={{, }}, and-2={{ und }}]  % 1, 2 und 3
 \setuplabeltext [\s!hr] [and-1={{, }}, and-2={{ i }}]    % 1, 2 i 3
+
+%D Goodie (handy at \LUA\ end):
+
+\unexpanded\def\LABELTEXT#1{\WORD{\labeltext{#1}}} % only for simple cases!
 
 \protect \endinput

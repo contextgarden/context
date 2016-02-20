@@ -31,6 +31,7 @@
 		<cd:variable name='NextPage' value='صفحه‌بعدی'/>
 		<cd:variable name='Numbers' value='شماره‌ها'/>
 		<cd:variable name='OpenNamedDocument' value='بازکردن‌نوشتار‌ذخیره‌شده'/>
+		<cd:variable name='Ordinal' value='Ordinal'/>
 		<cd:variable name='Paragraph' value='پاراگراف'/>
 		<cd:variable name='PauseMovie' value='ایست‌فیلم'/>
 		<cd:variable name='PauseRendering' value='توقف‌تعبیر'/>
@@ -83,6 +84,7 @@
 		<cd:variable name='appendices' value='پیوستها'/>
 		<cd:variable name='appendix' value='پیوست'/>
 		<cd:variable name='april' value='آوریل'/>
+		<cd:variable name='aside' value='aside'/>
 		<cd:variable name='atleftmargin' value='درحاشیه‌چپ'/>
 		<cd:variable name='atmargin' value='درحاشیه'/>
 		<cd:variable name='atpage' value='درصفحه'/>
@@ -392,6 +394,7 @@
 		<cd:variable name='on' value='روی'/>
 		<cd:variable name='one' value='یک'/>
 		<cd:variable name='opposite' value='مخالف'/>
+		<cd:variable name='ordinal' value='ordinal'/>
 		<cd:variable name='outer' value='خارجی'/>
 		<cd:variable name='outeredge' value='لبه‌خارجی'/>
 		<cd:variable name='outermargin' value='حاشیه‌خارجی'/>

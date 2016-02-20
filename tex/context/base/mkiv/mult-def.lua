@@ -11640,6 +11640,15 @@ return {
   },
  },
  ["variables"]={
+  ["aside"]={
+    ["en"]="aside",
+  },
+  ["ordinal"]={
+    ["en"]="ordinal",
+  },
+  ["Ordinal"]={
+    ["en"]="Ordinal",
+  },
   ["Addition"]={
    ["cs"]="Pridavek",
    ["de"]="Zusatz",
