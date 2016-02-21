@@ -234,6 +234,7 @@ local syntax = {
     space          = { direct = 'chem_symbol("\\chemicalsymbol[space]");' },
     plus           = { direct = 'chem_symbol("\\chemicalsymbol[plus]");' },
     minus          = { direct = 'chem_symbol("\\chemicalsymbol[minus]");' },
+    equals         = { direct = 'chem_symbol("\\chemicalsymbol[equals]");' },
     gives          = { direct = formatters['chem_symbol("\\chemicalsymbol[gives]{%s}{%s}");'], arguments = 2 },
     equilibrium    = { direct = formatters['chem_symbol("\\chemicalsymbol[equilibrium]{%s}{%s}");'], arguments = 2 },
     mesomeric      = { direct = formatters['chem_symbol("\\chemicalsymbol[mesomeric]{%s}{%s}");'], arguments = 2 },
@@ -846,17 +847,22 @@ implement {
 }
 
 -- todo: top / bottom
--- maybe add "=" for double and "≡" for triple?
+-- note that "<->" here differs from ppchtex
 
 local inline = {
-    ["single"]      = "\\chemicalsinglebond",  ["-"]   = "\\chemicalsinglebond",
-    ["double"]      = "\\chemicaldoublebond",  ["--"]  = "\\chemicaldoublebond",
-    ["triple"]      = "\\chemicaltriplebond",  ["---"] = "\\chemicaltriplebond",
-    ["gives"]       = "\\chemicalgives",       ["->"]  = "\\chemicalgives",
-    ["equilibrium"] = "\\chemicalequilibrium", ["<->"] = "\\chemicalequilibrium",
-    ["mesomeric"]   = "\\chemicalmesomeric",   ["<>"]  = "\\chemicalmesomeric",
-    ["plus"]        = "\\chemicalplus",        ["+"]   = "\\chemicalplus",
+    ["single"]      = "\\chemicalsinglebond",  ["-"]    = "\\chemicalsinglebond",
+    ["double"]      = "\\chemicaldoublebond",  ["--"]   = "\\chemicaldoublebond",
+                                               ["="]    = "\\chemicaldoublebond",
+    ["triple"]      = "\\chemicaltriplebond",  ["---"]  = "\\chemicaltriplebond",
+                                               ["≡"]    = "\\chemicaltriplebond",
+    ["gives"]       = "\\chemicalgives",       ["->"]   = "\\chemicalgives",
+    ["equilibrium"] = "\\chemicalequilibrium", ["<-->"] = "\\chemicalequilibrium",
+                                               ["<=>"]  = "\\chemicalequilibrium",
+    ["mesomeric"]   = "\\chemicalmesomeric",   ["<>"]   = "\\chemicalmesomeric",
+                                               ["<->"]  = "\\chemicalmesomeric",
+    ["plus"]        = "\\chemicalplus",        ["+"]    = "\\chemicalplus",
     ["minus"]       = "\\chemicalminus",
+    ["equals"]      = "\\chemicalequals",
     ["space"]       = "\\chemicalspace",
 }
 

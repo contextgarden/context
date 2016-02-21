@@ -431,8 +431,8 @@
 
 \unexpanded\def\chemicaloxidationplus {\dotriplegroupempty\chemicaloxidation{\textplus }} % {} needed!
 \unexpanded\def\chemicaloxidationminus{\dotriplegroupempty\chemicaloxidation{\textminus}} % {} needed!
-\unexpanded\def\chemicalforeveropen   {\dotriplegroupempty\chemicalleft     {\normalstartimath\big[\normalstopimath}}    % {} needed!
-\unexpanded\def\chemicalforeverclose  {\dotriplegroupempty\chemicalright    {\normalstartimath\big]\normalstopimath}}    % {} needed!
+\unexpanded\def\chemicalforeveropen   {\dotriplegroupempty\chemicalleft     {$\big[$}}    % {} needed!
+\unexpanded\def\chemicalforeverclose  {\dotriplegroupempty\chemicalright    {$\big]$}}    % {} needed!
 \unexpanded\def\chemicaloxidationone  {\chemicaloxidation\relax1}
 \unexpanded\def\chemicaloxidationtwo  {\chemicaloxidation\relax2}
 \unexpanded\def\chemicaloxidationthree{\chemicaloxidation\relax3}
@@ -545,6 +545,7 @@
 \definechemicalsymbol[i:space]       [\enspace\quad\enspace]
 \definechemicalsymbol[i:plus]        [\enspace\mathematics{+}\enspace]
 \definechemicalsymbol[i:minus]       [\enspace\mathematics{-}\enspace]
+\definechemicalsymbol[i:equals]      [\enspace\mathematics{=}\enspace]
 \definechemicalsymbol[i:gives]       [\enspace\mathematics{\xrightarrow{}{}}\enspace]
 \definechemicalsymbol[i:equilibrium] [\enspace\mathematics{\xrightoverleftarrow{}{}}\enspace]
 \definechemicalsymbol[i:mesomeric]   [\enspace\mathematics{\xleftrightarrow{}{}}\enspace]
@@ -560,6 +561,7 @@
 \unexpanded\def\chemicalequilibrium{\chemicalsymbol[i:equilibrium]}
 \unexpanded\def\chemicalplus       {\chemicalsymbol[i:plus]}
 \unexpanded\def\chemicalminus      {\chemicalsymbol[i:minus]}
+\unexpanded\def\chemicalequals     {\chemicalsymbol[i:equals]}
 \unexpanded\def\chemicalspace      {\chemicalsymbol[i:space]}
 \unexpanded\def\chemicalinline   #1{#1}
 
@@ -610,6 +612,7 @@
 \definechemicalsymbol[d:space]       [\enspace\quad\enspace]
 \definechemicalsymbol[d:plus]        [\enspace+\enspace]
 \definechemicalsymbol[d:minus]       [\enspace-\enspace]
+\definechemicalsymbol[d:equals]      [\enspace=\enspace]
 \definechemicalsymbol[d:gives]       [\rightarrowfill]          % \chem_arrow_construct\xrightarrow
 \definechemicalsymbol[d:equilibrium] [\rightoverleftarrowfill]  % \chem_arrow_construct\xrightoverleftarrow
 \definechemicalsymbol[d:mesomeric]   [\leftarrowfill]           % \chem_arrow_construct\xleftrightarrow
@@ -622,6 +625,7 @@
 \definechemicalsymbol[d:SPACE]       [{\chemicalsymbol[d:space]}]
 \definechemicalsymbol[d:PLUS]        [{\chemicalsymbol[d:plus]}]
 \definechemicalsymbol[d:MINUS]       [{\chemicalsymbol[d:minus]}]
+\definechemicalsymbol[d:EQUALS]      [{\chemicalsymbol[d:equals]}]
 \definechemicalsymbol[d:GIVES]       [{\chemicalsymbol[d:gives]}]
 \definechemicalsymbol[d:EQUILIBRIUM] [{\chemicalsymbol[d:equilibrium]}]
 \definechemicalsymbol[d:MESOMERIC]   [{\chemicalsymbol[d:mesomeric]}]
