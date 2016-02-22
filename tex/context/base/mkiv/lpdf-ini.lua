@@ -586,9 +586,9 @@ local function pdfnull()
     return p_null
 end
 
---~ print(pdfboolean(false),pdfboolean(false,false),pdfboolean(false,true))
---~ print(pdfboolean(true),pdfboolean(true,false),pdfboolean(true,true))
---~ print(pdfboolean(nil,true),pdfboolean(nil,false))
+-- print(pdfboolean(false),pdfboolean(false,false),pdfboolean(false,true))
+-- print(pdfboolean(true),pdfboolean(true,false),pdfboolean(true,true))
+-- print(pdfboolean(nil,true),pdfboolean(nil,false))
 
 local function pdfboolean(b,default)
     if type(b) == "boolean" then

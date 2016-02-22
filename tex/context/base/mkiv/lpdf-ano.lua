@@ -153,10 +153,7 @@ end)
 -- the caching is somewhat memory intense on the one hand but
 -- it saves many small temporary tables so it might pay off
 
-local pagedestinations = allocate()
-local pagereferences   = allocate() -- annots are cached themselves
-
-setmetatableindex(pagedestinations, function(t,k)
+local pagedestinations = setmetatableindex(function(t,k)
     k = tonumber(k)
     if not k or k <= 0 then
         return pdfnull()
@@ -174,7 +171,7 @@ setmetatableindex(pagedestinations, function(t,k)
     return v
 end)
 
-setmetatableindex(pagereferences,function(t,k)
+local pagereferences = setmetatableindex(function(t,k)
     k = tonumber(k)
     if not k or k <= 0 then
         return nil
@@ -190,9 +187,6 @@ setmetatableindex(pagereferences,function(t,k)
     t[k] = v
     return v
 end)
-
-lpdf.pagereferences   = pagereferences   -- table
-lpdf.pagedestinations = pagedestinations -- table
 
 local defaultdestination = pdfarray { 0, pdf_fit }
 
@@ -369,6 +363,7 @@ local destinationactions = {
  -- [v_minheight] = function(r,w,h,d) return f_fitbv(r,(getvpos()+h)*factor) end,                  -- left coordinate, fit height of content in window
     [v_minheight] = function(r,w,h,d) return f_fitbv(r,gethpos()*factor) end,                      -- left coordinate, fit height of content in window    [v_fit]       =                          f_fit,                                                 -- fit page in window
     [v_tight]     =                          f_fitb,                                               -- fit content in window
+	-- new:
     [v_fit]       =                          f_fit,
 }
 
@@ -387,10 +382,10 @@ local defaultview   = v_fit
 local defaultaction = destinationactions[defaultview]
 
 -- A complication is that we need to use named destinations when we have views so we
--- end up with a mix. A previous versions just output multiple destinations but not
+-- end up with a mix. A previous versions just output multiple destinations but now
 -- that we moved all to here we can be more sparse.
 
-local pagedestinations = table.setmetatableindex(function(t,k)
+local pagedestinations = setmetatableindex(function(t,k) -- not the same as the one above!
     local v = pdfdelayedobject(f_fit(k))
     t[k] = v
     return v
@@ -424,49 +419,19 @@ function nodeinjections.destination(width,height,depth,names,view)
     -- we could save some aut's by using a name when given but it doesn't pay off apart
     -- from making the code messy and tracing hard .. we only save some destinations
     -- which we already share anyway
- -- for n=1,#names do
- --     local name = names[n]
- --     if usedviews[name] then
- --         -- already done, maybe a warning
- --     elseif type(name) == "number" then
- --         if noview then
- --             usedviews[name] = view
- --             names[n] = false
- --         elseif method == v_page then
- --             usedviews[name] = view
- --             names[n] = false
- --         else
- --             local used = usedinternals[name]
- --             if used and used ~= defaultview then
- --                 usedviews[name] = view
- --                 names[n] = autoprefix .. name
- --                 doview = true
- --             else
- --              -- names[n] = autoprefix .. name
- --                 names[n] = false
- --             end
- --         end
- --     elseif method == v_page then
- --         usedviews[name] = view
- --     else
- --         usedviews[name] = view
- --         doview = true
- --     end
- -- end
-
     if method == v_page then
         for n=1,#names do
             local name = names[n]
             if usedviews[name] then
                 -- already done, maybe a warning
             elseif type(name) == "number" then
-                if noview then
+             -- if noview then
+             --     usedviews[name] = view
+             --     names[n] = false
+             -- else
                     usedviews[name] = view
                     names[n] = false
-                else
-                    usedviews[name] = view
-                    names[n] = false
-                end
+             -- end
             else
                 usedviews[name] = view
             end
@@ -519,55 +484,54 @@ end
 
 -- we could share dictionaries ... todo
 
-local function somedestination(destination,internal,page) -- no view anyway
-    local method = references.innermethod
-    if method == v_auto then
-        if type(destination) == "number" then
-            if not internal then
-                internal = destination
-            end
-            destination = nil
-        end
-        if internal then
-            flaginternals[internal] = true -- for bookmarks and so
-            local used = usedinternals[internal]
-            if used == defaultview or used == true then
-                return pagereferences[page]
-            end
-            if type(destination) ~= "string" then
-                destination = autoprefix .. internal
-            end
-            return pdfdictionary {
-                S = pdf_goto,
-                D = destination,
-            }
-        elseif destination then
-            -- hopefully this one is flushed
-            return pdfdictionary {
-                S = pdf_goto,
-                D = destination,
-            }
-        end
-    elseif method == v_name then
-        if not destination and internal then
-            flaginternals[internal] = true -- for bookmarks and so
-            if type(destination) ~= "string" then
-                destination = autoprefix .. internal
-            end
-        end
-        if destination then
-            return pdfdictionary {
-                S = pdf_goto,
-                D = destination,
-            }
-        end
-    end
+local function pdflinkpage(page)
     return pagereferences[page]
 end
 
--- annotations
+local function pdflinkinternal(internal,page)
+    local method = references.innermethod
+    if internal then
+        flaginternals[internal] = true -- for bookmarks and so
+        local used = usedinternals[internal]
+        if used == defaultview or used == true then
+            return pagereferences[page]
+        end
+        if type(internal) ~= "string" then
+            internal = autoprefix .. internal
+        end
+        return pdfdictionary {
+            S = pdf_goto,
+            D = internal,
+        }
+    else
+        return pagereferences[page]
+    end
+end
 
-local pdflink = somedestination
+local function pdflinkname(destination,internal,page)
+    local method = references.innermethod
+    if method == v_auto then
+        flaginternals[internal] = true -- for bookmarks and so
+        local used = usedinternals[internal]
+        if used == defaultview then -- or used == true then
+            return pagereferences[page]
+        end
+        return pdfdictionary {
+            S = pdf_goto,
+            D = destination,
+        }
+    elseif method == v_name then
+     -- flaginternals[internal] = true -- for bookmarks and so
+        return pdfdictionary {
+            S = pdf_goto,
+            D = destination,
+        }
+    else
+        return pagereferences[page]
+    end
+end
+
+-- annotations
 
 local function pdffilelink(filename,destination,page,actions)
     if not filename or filename == "" or file.basename(filename) == tex.jobname then
@@ -701,7 +665,7 @@ local f_annot = formatters["<< /Type /Annot %s /Rect [ %0.3F %0.3F %0.3F %0.3F ]
 
 directives.register("refences.sharelinks", function(v) share = v end)
 
-table.setmetatableindex(hashed,function(t,k)
+setmetatableindex(hashed,function(t,k)
     local v = pdfdelayedobject(k)
     if share then
         t[k] = v
@@ -781,37 +745,46 @@ end)
 
 -- runners and specials
 
+local splitter = lpeg.splitat(",",true)
+
 runners["inner"] = function(var,actions)
     local internal = false
-    local inner    = nil
+    local name     = nil
     local method   = references.innermethod
-    if method == v_auto or method == v_name then
-        local vi = var.i
-        if vi then
-            local vir = vi.references
-            if vir then
-                -- todo: no need for it when we have a real reference
-                local reference = vir.reference
-                if reference and reference ~= "" then
-                    var.inner = reference
-                    local prefix = var.p
-                    if prefix and prefix ~= "" then
-                        var.prefix = prefix
-                        inner = prefix .. ":" .. reference
-                    else
-                        inner = reference
-                    end
-                end
-                internal = vir.internal
-                if internal then
-                    flaginternals[internal] = true
+    local vi       = var.i
+    local page     = var.page
+    if vi then
+        local vir = vi.references
+        if vir then
+            -- todo: no need for it when we have a real reference ... although we need
+            -- this mess for prefixes anyway
+            local reference = vir.reference
+            if reference and reference ~= "" then
+                reference = lpegmatch(splitter,reference) or reference
+                var.inner = reference
+                local prefix = var.p
+                if prefix and prefix ~= "" then
+                    var.prefix = prefix
+                    name = prefix .. ":" .. reference
+                else
+                    name = reference
                 end
             end
+            internal = vir.internal
+            if internal then
+                flaginternals[internal] = true
+            end
         end
-    else
-        var.inner = nil
     end
-    return pdflink(inner,internal,var.r)
+    if name then
+        return pdflinkname(name,internal,page)
+    elseif internal then
+        return pdflinkinternal(internal,page)
+    elseif page then
+        return pdflinkpage(page)
+    else
+        -- real bad
+    end
 end
 
 runners["inner with arguments"] = function(var,actions)
@@ -878,7 +851,7 @@ function specials.internal(var,actions) -- better resolve in strc-ref
         report_reference("no internal reference %a",i or "<unset>")
     else
         flaginternals[i] = true
-        return pdflink(nil,i,v.references.realpage)
+        return pdflinkinternal(i,v.references.realpage)
     end
 end
 
@@ -902,7 +875,7 @@ function specials.page(var,actions)
                 p = references.realpageofpage(tonumber(p))
             end
         end
-        return pdflink(nil,nil,p or var.operation)
+        return pdflinkpage(p or var.operation)
     end
 end
 
@@ -911,7 +884,7 @@ function specials.realpage(var,actions)
     if file then
         return pdffilelink(references.checkedfile(file),nil,var.operation,actions)
     else
-        return pdflink(nil,nil,var.operation)
+        return pdflinkpage(var.operation)
     end
 end
 
@@ -930,7 +903,7 @@ function specials.userpage(var,actions)
          --     var.r = p
          -- end
         end
-        return pdflink(nil,nil,p or var.operation)
+        return pdflinkpage(p or var.operation)
     end
 end
 
@@ -938,7 +911,7 @@ function specials.deltapage(var,actions)
     local p = tonumber(var.operation)
     if p then
         p = references.checkedrealpage(p + texgetcount("realpageno"))
-        return pdflink(nil,nil,p)
+        return pdflinkpage(p)
     end
 end
 
@@ -1195,7 +1168,7 @@ local function build(levels,start,parent,method,nested)
                 end
                 local action = nil
                 if variant == "list" then
-                    action = somedestination(reference.internal,reference.internal,reference.realpage)
+                    action = pdflinkinternal(reference.internal,reference.realpage)
                 elseif variant == "realpage" then
                     action = pagereferences[realpage]
                 else
@@ -1207,7 +1180,7 @@ local function build(levels,start,parent,method,nested)
                     Prev   = prev and pdfreference(prev),
                     A      = action,
                 }
-             -- entry.Dest = somedestination(reference.internal,reference.internal,reference.realpage)
+             -- entry.Dest = pdflinkinternal(reference.internal,reference.realpage)
                 if not first then
                     first, last = child, child
                 end

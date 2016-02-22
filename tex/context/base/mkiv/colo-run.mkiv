@@ -58,13 +58,16 @@
       \setuppalet[#1]
       \tabskip\zeropoint
       \def\colo_palets_show_palet##1%
-        {\doifelseinset\v!number{#2}{##1\hskip.5em}{}&
-         \color[##1]{\vrule\s!width3em\s!height\strutht\s!depth\strutdp}%
-         \graycolor[##1]{\vrule\s!width3em\s!height\strutht\s!depth\strutdp}&
-         \doifinset\v!value{#2}{\hskip.5em\colorvalue{##1}}\crcr}
+        {\doifelseinset\v!number{#2}{##1\hskip.5\emwidth}{}%
+         \aligntab
+         \color    [##1]{\vrule\s!width3\emwidth\s!height\strutht\s!depth\strutdp}%
+         \graycolor[##1]{\vrule\s!width3\emwidth\s!height\strutht\s!depth\strutdp}%
+         \aligntab
+         \doifinset\v!value{#2}{\hskip.5\emwidth\colorvalue{##1}}%
+         \crcr}
       \halign
-        {\hss##&\hss##\hss&##\cr
-         &\doifinset\v!name{#2}{\strut#1}&\cr%
+        {\hss\alignmark\alignmark\aligntab\hss\alignmark\alignmark\hss\aligntab\alignmark\alignmark\cr
+         \aligntab\doifinset\v!name{#2}{\strut#1}\aligntab\cr
          \colo_palets_process[#1]\colo_palets_show_palet\crcr}}}
 
 \gdef\colo_palets_show_horizontal[#1][#2]% todo: bTABLE etc
@@ -75,34 +78,36 @@
       \offinterlineskip
       \setuppalet[#1]
       \tabskip\zeropoint
-      \!!widtha\zeropoint
+      \scratchwidth\zeropoint
       \doifinset\v!number{#2}
         {\def\colo_palets_show_palet##1%
-           {\setbox0\hbox{##1}%
-            \ifdim\!!widtha<\wd0\!!widtha\wd0\fi}%
+           {\setbox\scratchbox\hbox{##1}%
+            \ifdim\scratchwidth<\wd\scratchbox
+              \scratchwidth\wd\scratchbox
+            \fi}%
          \colo_palets_process[#1]\colo_palets_show_palet}%
-      \advance\!!widtha 1em
-      \ifdim\!!widtha<5em
-        \!!widtha5em
+      \advance\scratchwidth\emwidth
+      \ifdim\scratchwidth<5\emwidth
+        \scratchwidth5\emwidth
       \fi
       \halign
-        {##&&\hbox to \!!widtha{\hss##\hss}\cr
+        {\alignmark\alignmark\aligntab\aligntab\hbox to \scratchwidth{\hss\alignmark\alignmark\hss}\cr
          \doifinset\v!number{#2}
-           {\def\colo_palets_show_palet##1{&\strut##1}%
+           {\def\colo_palets_show_palet##1{\aligntab\strut##1}%
             \colo_palets_process[#1]\colo_palets_show_palet}\cr
-         \doifinset\v!name{#2}{#1\hskip.5em}%
+         \doifinset\v!name{#2}{#1\hskip.5\emwidth}%
          \def\colo_palets_show_palet##1%
-           {&\strut\color[##1]{\vrule\s!width\!!widtha\s!height\strutht\s!depth\zeropoint}}%
+           {\aligntab\strut\color[##1]{\vrule\s!width\scratchwidth\s!height\strutht\s!depth\zeropoint}}%
          \colo_palets_process[#1]\colo_palets_show_palet\crcr
          \noalign{\vskip-\strutdepth}%
          \def\colo_palets_show_palet##1%
-           {&\graycolor[##1]{\vrule\s!width\!!widtha\s!height\zeropoint\s!depth\strutdp}}%
+           {\aligntab\graycolor[##1]{\vrule\s!width\scratchwidth\s!height\zeropoint\s!depth\strutdp}}%
          \colo_palets_process[#1]\colo_palets_show_palet\crcr
          \doifinset\v!value{#2}
            {\def\colo_palets_show_palet##1%
-             {&\vbox
-                {\hsize\!!widtha
-                 \vskip.25ex
+             {\aligntab\vbox
+                {\hsize\scratchwidth
+                 \vskip.25\exheight
                  \everypar{\strut}
                  \veryraggedcenter
                  \let\colorformatseparator\endgraf
@@ -132,8 +137,8 @@
       \offinterlineskip
       \setuppalet[#2]
       \getcommacommandsize[\getvalue{\??colorpalet#2}]
-      \!!widtha2em\relax
-      \hsize\commalistsize\!!widtha
+      \scratchwidth2\emwidth\relax
+      \hsize\commalistsize\scratchwidth
       \def\colo_palets_compare##1%
         {\hbox
            {\setbox0\hbox
@@ -142,8 +147,8 @@
             \box0
             \hbox to \hsize
               {\def\colo_palets_compare####1%
-                 {\hbox to \!!widtha
-                    {\hss#1[####1]{\vrule\s!width.5\!!widtha\s!height2.25ex\s!depth-.75ex}\hss}}%
+                 {\hbox to \scratchwidth
+                    {\hss#1[####1]{\vrule\s!width.5\scratchwidth\s!height2.25\exheight\s!depth-.75\exheight}\hss}}%
                \processcommacommand[\getvalue{\??colorpalet#2}]\colo_palets_compare}}
          \endgraf}
       \processcommacommand[\getvalue{\??colorpalet#2}]\colo_palets_compare}}
@@ -155,7 +160,10 @@
 
 \gdef\colo_groups_show[#1][#2]%
   {\doifcolor{#1:1}
-     {\doifelseinset\v!vertical{#2} \colo_groups_show_vertical \colo_groups_show_horizontal [#1][#2]}}
+     {\doifelseinset\v!vertical{#2}
+        \colo_groups_show_vertical
+        \colo_groups_show_horizontal
+        [#1][#2]}}
 
 \gdef\colo_groups_show_horizontal[#1][#2]%
   {\vbox
@@ -169,18 +177,18 @@
       \def\colo_groups_show_group##1%
         {\doifcolor{#1:##1}{\vbox
            {\halign
-              {\hss####\hss\cr
+              {\hss\alignmark\alignmark\alignmark\alignmark\hss\cr
                \doifinset\v!number{#2}{\strut##1}\cr
-               \color[#1:##1]{\vrule\s!width4em\s!height\strutht\s!depth\zeropoint}\cr
-               \graycolor[#1:##1]{\vrule\s!width4em\s!height\zeropoint\s!depth\strutdp}\cr
+               \color    [#1:##1]{\vrule\s!width4\emwidth\s!height\strutht  \s!depth\zeropoint}\cr
+               \graycolor[#1:##1]{\vrule\s!width4\emwidth\s!height\zeropoint\s!depth\strutdp  }\cr
                \doifinset\v!value{#2}{\colorvalue{#1:##1}\strut}\crcr}}}}%
       \hbox
         {\doifinset\v!name{#2}
            {\strut
             \doifelseinset\v!value{#2}
-              {\raise3\lineheight\hbox{#1\hskip.5em}}
+              {\raise3\lineheight\hbox{#1\hskip.5\emwidth}}
               {#1}%
-            \hskip.5em}%
+            \hskip.5\emwidth}%
          \colo_groups_show_group1\colo_groups_show_group2\colo_groups_show_group3\colo_groups_show_group4%
          \colo_groups_show_group5\colo_groups_show_group6\colo_groups_show_group7\colo_groups_show_group8}}}
 
@@ -194,13 +202,17 @@
       \tabskip\zeropoint
       \def\colo_groups_show_group##1%
         {\doifcolor{#1:##1}
-           {\doifinset\v!number{#2}{##1\hskip.5em}&
-            \color[#1:##1]{\vrule\s!width2.5em\s!height\strutht\s!depth\strutdp}%
-            \graycolor[#1:##1]{\vrule\s!width2.5em\s!height\strutht\s!depth\strutdp}&
-            \doifinset\v!value{#2}{\hskip.5em\colorvalue{#1:##1}}\crcr}}%
+           {\doifinset\v!number{#2}
+              {##1\hskip.5\emwidth}%
+            \aligntab
+            \color    [#1:##1]{\vrule\s!width2.5\emwidth\s!height\strutht\s!depth\strutdp}%
+            \graycolor[#1:##1]{\vrule\s!width2.5\emwidth\s!height\strutht\s!depth\strutdp}
+            \aligntab
+            \doifinset\v!value{#2}{\hskip.5\emwidth\colorvalue{#1:##1}}%
+            \crcr}}%
       \halign
-        {\hss##&\hss##\hss&##\hss\cr
-         &\doifinset\v!name{#2}{\strut#1}&\crcr
+        {\hss\alignmark\alignmark\aligntab\hss\alignmark\alignmark\hss\aligntab\alignmark\alignmark\hss\cr
+         \aligntab\doifinset\v!name{#2}{\strut#1}\aligntab\crcr
          \colo_groups_show_group1\colo_groups_show_group2\colo_groups_show_group3\colo_groups_show_group4%
          \colo_groups_show_group5\colo_groups_show_group6\colo_groups_show_group7\colo_groups_show_group8}}}
 
@@ -210,8 +222,7 @@
 \gdef\colo_groups_compare[#1]%
   {\doifcolor{#1:1}
      {\hbox
-        {\colo_groups_compare_indeed\color[#1]%
-         \quad
+        {\colo_groups_compare_indeed\color    [#1]\quad
          \colo_groups_compare_indeed\graycolor[#1]}}}
 
 \gdef\colo_groups_compare_indeed#1[#2]%
@@ -219,20 +230,23 @@
      {\forgetall
       \setlocalhsize
       \hsize\localhsize
-      \!!counta\zerocount
-      \dorecurse{15}{\doifcolor{#2:\recurselevel}{\advance\!!counta\plusone}}
-      \!!widtha2em\relax
-      \hsize\!!counta\!!widtha
-      \dorecurse\!!counta{\colo_groups_compare_step{#1}{#2}\recurselevel}}}
+      \scratchcounter\zerocount
+      \dorecurse{15}{\doifcolor{#2:\recurselevel}{\advance\scratchcounter\plusone}}
+      \scratchwidth2\emwidth\relax
+      \hsize\scratchcounter\scratchwidth
+      \dorecurse\scratchcounter{\colo_groups_compare_step{#1}{#2}\recurselevel}}}
 
 \def\colo_groups_compare_step#1#2#3%
   {\hbox to \hsize
-     {\setbox0\hbox
-        {#1[#2:#3]{\vrule\s!width\hsize\s!height3ex}}%
-      \wd0\zeropoint
-      \box0
+     {\setbox\scratchbox\hbox
+        {#1[#2:#3]{\vrule\s!width\hsize\s!height3\exheight}}%
+      \wd\scratchbox\zeropoint
+      \box\scratchbox
       \hbox to \hsize
-        {\hss\dorecurse\!!counta{#1[#2:\recurselevel]{\vrule\s!width.5\!!widtha\s!height2.25ex\s!depth-.75ex}\hss}}}
+        {\hss
+         \dorecurse\scratchcounter
+            {#1[#2:\recurselevel]{\vrule\s!width.5\scratchwidth\s!height2.25\exheight\s!depth-.75\exheight}%
+         \hss}}}
    \endgraf}
 
 \protect \endinput

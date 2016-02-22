@@ -19,6 +19,7 @@
         context.start()
         context.forcesymbolset { collection }
         context.starttabulate { "|lT|l|l|" }
+        local option = { framecolor = "orange", rulethickness = ".8pt", offset = interfaces.variables.overlay }
         for i=1,#symbols do
             local symbol = symbols[i]
             context.NC()
@@ -26,15 +27,8 @@
             context.NC()
             context.symbol(symbol)
             context.NC()
-            context.color (
-                { "red" },
-                context.nested.ruledhbox(
-                    context.nested.color (
-                        { "black" },
-                        context.nested.symbol(symbol)
-                    )
-                )
-            )
+            context.framed(options,context.nested.symbol(symbol))
+            context.NC()
             context.NR()
         end
         context.stoptabulate()

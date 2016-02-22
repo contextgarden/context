@@ -630,10 +630,10 @@ end
 
 local bpfactor =  number.dimenfactors.bp
 
-callback.register("process_rule",function(n,h,v)
-    local p = string.formatters["0 0 %0.6F %0.6F re f"](h*bpfactor,v*bpfactor)
-    pdf.print("direct",p)
-end)
+-- callback.register("process_rule",function(n,h,v)
+--     local p = string.formatters["0 0 %0.6F %0.6F re f"](h*bpfactor,v*bpfactor)
+--     pdf.print("direct",p)
+-- end)
 
 local function ruledglyph(head,current,previous)
     local wd = getfield(current,"width")
@@ -651,7 +651,7 @@ local function ruledglyph(head,current,previous)
             baseline = new_rule(wd-2*linewidth,linewidth,0)
         end
         local doublelinewidth = 2*linewidth
-        -- could be a pdf rule
+        -- could be a pdf rule (or a user rule now)
         local info = linked_nodes(
             new_rule(linewidth,ht,dp),
             new_rule(wd-doublelinewidth,-dp+linewidth,dp),

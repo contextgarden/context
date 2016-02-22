@@ -1640,7 +1640,7 @@ setmetatable(delayed, { __index = indexer, __call = caller } )
 
 local nested = { } context.nested = nested -- creates strings
 
-local function indexer(parent,k)
+local function indexer(parent,k) -- not ok when traced
     local f = function(...)
         local t, savedflush, n = { }, flush, 0
         flush = function(c,f,s,...) -- catcodes are ignored

@@ -167,6 +167,7 @@
 \definemixedcolumns
   [\s!itemgroupcolumns]
   [\c!n=\itemgroupparameter\c!n,
+   \c!direction=\itemgroupparameter\c!direction,
    \c!separator=\v!none,
    \c!splitmethod=\v!none,
    \c!grid=\v!tolerant,
@@ -641,7 +642,7 @@
        \else
          \dorecurse\c_page_mix_n_of_columns
             {\page_mix_routine_package_step
-             \ifnum\recurselevel>\c_page_mix_n_of_columns
+             \ifnum\recurselevel<\c_page_mix_n_of_columns
                \page_mix_routine_package_separate
              \fi}%
        \fi

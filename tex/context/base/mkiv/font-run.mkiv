@@ -13,14 +13,14 @@
 %C details.
 
 %D [This code is hooked into the core macros and saves some format
-%D space. It needs a cleanup.]
+%D space. It needs a cleanup as it's real old derioved \MKII\ code]
 
 \unprotect
 
-\gdef\@@onlyenglish#1%
+\gdef\font_show_only_english#1%
   {\blank{\tttf \type {#1} is only available in the english interface}\blank}
 
-\gdef\dosetshowfonttitle#1%
+\gdef\font_show_title#1%
   {\tabskip\zeropoint
    \parindent\zeropoint
    \setlocalhsize
@@ -32,12 +32,12 @@
         {\edef\title{[\fontclass]\space\title}}}}
 
 \unexpanded\gdef\showbodyfont
-  {\dosingleempty\doshowbodyfont}
+  {\dosingleempty\font_show_bodyfont}
 
-\gdef\doshowbodyfont[#1]%
+\gdef\font_show_bodyfont[#1]%
   {\ifinsidefloat\else\startbaselinecorrection\fi
    \vbox
-     {\dosetshowfonttitle{#1}%
+     {\font_show_title{#1}%
       \def\bigstrut##1##2%
         {\hbox{\vrule
            \s!height##1\strutht
@@ -61,7 +61,7 @@
          \tabskip=\zeropoint\cr
          \noalign{\hrule}
          &\multispan{29}{\vrule\hfil\tttf\strut\title\hfil
-          \llap{\string\mr\hbox to 1em{\hss:\hss}\normalstartimath\mr\languageparameter\c!text\normalstopimath\quad}\vrule}\cr
+          \llap{\string\mr\hpack to \emwidth{\hss:\hss}\normalstartimath\mr\languageparameter\c!text\normalstopimath\quad}\vrule}\cr
          \noalign{\hrule}\next{}{\tt\string}{}
          \noalign{\hrule}\next{\tt\string\rm}\rm{\languageparameter\c!text}
          \noalign{\hrule}\next{\tt\string\ss}\ss{\languageparameter\c!text}
@@ -70,12 +70,12 @@
    \ifinsidefloat\else\stopbaselinecorrection\fi}
 
 \unexpanded\gdef\showbodyfontenvironment
-  {\dosingleempty\doshowbodyfontenvironment}
+  {\dosingleempty\font_show_bodyfont_environment}
 
-\gdef\doshowbodyfontenvironment[#1]%
+\gdef\font_show_bodyfont_environment[#1]%
   {\ifinsidefloat\else\startbaselinecorrection\fi
    \vbox
-     {\dosetshowfonttitle{#1}%
+     {\font_show_title{#1}%
       \def\next##1%
         {&&\bodyfontsizevariable{##1}\s!text
          &&\bodyfontsizevariable{##1}\s!script
@@ -105,133 +105,151 @@
    \ifinsidefloat\else\stopbaselinecorrection\fi}
 
 \unexpanded\gdef\showfont
-  {\dodoubleempty\doshowfont}
+  {\dodoubleempty\font_show_font}
 
-\gdef\doshowfont[#1][#2]%
+\gdef\font_show_font[#1][#2]% doing this in lua is much faster
   {\bgroup
    \iffirstargument
      \definefont[\s!dummy][#1]\dummy
    \fi
    \doifelsenothing{#2}
-     {\dodoshowfont{#1}{0}}
+     {\font_show_font_indeed{#1}\zerocount}
      {\doifelse{#2}\v!all
-        {\dostepwiserecurse{0}{255}{1}
-           {\donefalse
-            \let\charplane\recurselevel
-            \dostepwiserecurse{0}{255}{1}
-              {\iffontchar\font\numexpr\charplane*256+\recurselevel\relax
-                 \donetrue
+        {\dostepwiserecurse\zerocount{255}\plusone
+           {\scratchcounterone  \recurselevel
+            \scratchcountertwo  \numexpr\scratchcounterone*256\relax
+            \scratchcounterthree\numexpr\scratchcountertwo+255\relax
+            \doloop
+              {\iffontchar\font\scratchcountertwo
+                 \font_show_font_indeed{#1}\scratchcounterone
                  \exitloop
-               \fi}%
-               \ifdone
-                 \dodoshowfont{#1}\charplane
-               \fi}}
-        {\processcommalist[#2]{\dodoshowfont{#1}}}}%
+               \else\ifnum\scratchcountertwo=\scratchcounterthree
+                 \exitloop
+               \else
+                 \advance\scratchcountertwo\plusone
+               \fi\fi}}}
+        {\processcommalist[#2]{\font_show_font_indeed{#1}}}}%
    \egroup}
 
-\gdef\dodoshowfont#1#2%
+\gdef\font_show_font_indeed#1#2% made some 50% faster but still slow
   {\bgroup
-   \edef\charplane{\number#2}%
    \iffirstargument
-%      \definefont[\s!dummy][#1]\dummy
-   \else\ifdim2.5em>.05\hsize \tx
-        \ifdim2.5em>.05\hsize \txx
+    % \definefont[\s!dummy][#1]\dummy
+   \else\ifdim2.5\emwidth>.05\hsize \tx
+        \ifdim2.5\emwidth>.05\hsize \txx
    \fi\fi\fi
    \ifinsidefloat\else\startbaselinecorrection\fi
    \vbox\bgroup
+   \scratchdimenone  2.5\emwidth
+   \scratchdimentwo  2.4\emwidth
+   \scratchdimenthree2.3\emwidth
+   \edef\charplane{\number#2}%
    \forgetall
    \startoverlay % easier in cld
      {\vbox
-        {\tf \setstrut \dummy
+        {\tf
+         \setstrut
+         \dummy
          \offinterlineskip
-         \dostepwiserecurse{0}{15}{1}
-           {\let\row\recurselevel
-            \hbox
-              {\red
-               \dostepwiserecurse{0}{15}{1}
-                 {\let\col\recurselevel
-                  \@EA\scratchcounter\string"\hexnumber\row\hexnumber\col\relax
-                  \edef\rowcol{\the\scratchcounter}%
-                  \iffontchar\font\scratchcounter
-                    \setbox\scratchbox\ruledhbox{\black\char\numexpr\charplane*256+\scratchcounter\relax}%
-                    \ifdim\wd\scratchbox>\zeropoint
-                      \donetrue \else \donefalse
-                    \fi
+         \unexpanded\def\wrapbox##1%
+           {\vpack to \scratchdimenone
+              {\vss
+               \hpack to \scratchdimenone
+                 {\dummy
+                  \ifdim\interwordspace=\zeropoint
+                    \setbox##1\hpack
+                      {\raise.5\dp##1\hpack
+                         {\lower.5\ht##1\copy##1}}%
+                    \ht##1\zeropoint
+                    \dp##1\zeropoint
                   \else
-                    \setbox\scratchbox\hbox{\gray\vrule\s!width1ex\s!height.5ex\s!depth.5ex}%
+                    \ht##1\strutht
+                    \dp##1\strutdp
+                    \strut
                   \fi
-                  \startoverlay
-                    {\tf\vbox to 2.5em
-                       {\vss
-                        \hbox to 2.5em
-                          {\dummy\ifdim\interwordspace=\zeropoint
-                             \setbox\scratchbox\hbox
-                               {\raise.5\dp\scratchbox\hbox
-                                  {\lower.5\ht\scratchbox\copy\scratchbox}}%
-                             \ht\scratchbox\zeropoint
-                             \dp\scratchbox\zeropoint
-                           \else
-                             \ht\scratchbox\strutht
-                             \dp\scratchbox\strutdp
-                             \strut
-                           \fi
-                           \hss\copy\scratchbox\hss}
-                        \vss}}
-                    {\tf\vbox to 2.3em
-                       {\ifdone
-                          \hsize2.4em
-                          \blue
-                          \tinyfont
-                          \hfill\number\rowcol
-                          \vfill
-                          \octnumber\rowcol\hfill\lchexnumbers\rowcol
-                          \par
-                        \fi}}
-                  \stopoverlay}}}
+                  \hss\copy##1\hss}
+               \vss}}%
+         \unexpanded\def\textbox##1%
+           {\vpack to \scratchdimentwo
+              {\hsize\scratchdimenthree
+               ##1%
+               \par}}%
+         \unexpanded\def\scratchnum
+           {\blue
+            \tinyfont
+            \hfill
+            \number\scratchcounter
+            \vfill
+            \octnumber\scratchcounter
+            \hfill
+            \lchexnumbers\scratchcounter}%
+         \setbox\scratchboxone\hpack{\tf\textbox{}}%
+         \setbox\scratchboxtwo\hpack{\tf\gray\vrule\s!width\exheight\s!height.5\exheight\s!depth.5\exheight}%
+         \setbox\scratchboxtwo\wrapbox\scratchboxtwo
+         \setbox\scratchboxthree\hpack
+           {\startoverlay
+              {\box\scratchboxtwo}
+              {\box\scratchboxone}
+            \stopoverlay}%
+         \dostepwiserecurse\zerocount{15}\plusone
+           {\scratchcounterone\recurselevel
+            \hpack
+              {\dostepwiserecurse\zerocount{15}\plusone
+                 {\scratchcountertwo  \recurselevel
+                  \scratchcounter     \numexpr\scratchcounterone*16+\scratchcountertwo\relax
+                  \scratchcounterthree\numexpr\charplane*256+\scratchcounter\relax
+                  \iffontchar\font\scratchcounterthree
+                    \setbox\scratchbox\ruledhpack{\char\scratchcounterthree}%
+                    \tf
+                    \startoverlay
+                      {\wrapbox\scratchbox}
+                      {\textbox\scratchnum}
+                    \stopoverlay
+                  \else
+                    \copy\scratchboxthree
+                  \fi}}}%
           \par}}
      {\tf\basegrid[\c!nx=16,\c!ny=16,\c!dx=2.5,\c!dy=2.5,\c!unit=em]}
    \stopoverlay
    \nointerlineskip
-   \vskip2pt
+   \vskip2\points
    % the \noexpand before \blank is needed for non etex
-   \edef\ascii{name: {\noexpand\black\fontname\font}}
-   \def\do##1##2{\ifx##1\undefined\else\ifx##1\empty\else##2\fi\fi}%
    \edef\theshowfontspecs{name: {\noexpand\black\fontname\font}\quad plane: \charplane\enspace"\hexnumber\charplane}%
    \tf % also sets em
-   \hbox to 40em{\blue\hfill\tinyfont\setstrut\strut\theshowfontspecs}
+   \hbox to 40\emwidth{\blue\hfill\tinyfont\setstrut\strut\theshowfontspecs}
    \egroup
    \ifinsidefloat\else\stopbaselinecorrection\fi
    \egroup}
 
 % \showfontstyle[modern][rm][tf][all] % #2, #3 and #4 can be 'all'
 
-\unexpanded\gdef\showfontstyle      {\dodoubleempty   \dodoshowfontstyle}
-\unexpanded\gdef\redoshowfontstyle  {\dotripleempty   \dododoshowfontstyle}
-\unexpanded\gdef\redodoshowfontstyle{\doquadrupleempty\dodododoshowfontstyle}
+\unexpanded\gdef\showfontstyle    {\dodoubleempty   \font_show_style}
+\unexpanded\gdef\font_show_style_a{\dotripleempty   \font_show_style_b}
+\unexpanded\gdef\font_show_style_c{\doquadrupleempty\font_show_style_d}
 
 % no lists any more, so no 'all' any longer
 
-\gdef\dodoshowfontstyle[#1][#2]%
+\gdef\font_show_style[#1][#2]%
   {\doifelsenothing{#2}
-     {\redoshowfontstyle[#1][\s!rm,\s!ss,\s!tt,\s!mm]}
-     {\redoshowfontstyle[#1][#2]}}
+     {\font_show_style_a[#1][\s!rm,\s!ss,\s!tt,\s!mm]}
+     {\font_show_style_a[#1][#2]}}
 
-\gdef\dododoshowfontstyle[#1][#2][#3]%
+\gdef\font_show_style_b[#1][#2][#3]%
   {\doifelsenothing{#3}
-     {\redodoshowfontstyle[#1][#2][\s!tf,\s!bf,\s!it,\s!sl,\s!bs,\s!bi]}
-     {\redodoshowfontstyle[#1][#2][#3]}}
+     {\font_show_style_c[#1][#2][\s!tf,\s!bf,\s!it,\s!sl,\s!bs,\s!bi]}
+     {\font_show_style_c[#1][#2][#3]}}
 
-\gdef\dodododoshowfontstyle[#1][#2][#3][#4]%
-  {\doshowfontstyleindeed[#1][#2][#3][#4]}
+\gdef\font_show_style_d[#1][#2][#3][#4]%
+  {\font_show_style_e[#1][#2][#3][#4]}
 
 % so far
 
-\gdef\doshowfontstyleindeed[#1][#2][#3][#4]%
+\gdef\font_show_style_e[#1][#2][#3][#4]%
   {\bgroup
    \raggedright
    \switchtobodyfont[#1]
    \def\dododocommand##1%
-     {\dostepwiserecurse{0}{255}{1}
+     {\dostepwiserecurse\zerocount{255}\plusone
         {\scratchcounter\numexpr##1*256+\recurselevel\relax
          \iffontchar\font\scratchcounter\relax
            \char\scratchcounter
@@ -241,9 +259,9 @@
      {\starttextrule{\tttf #1 ##1 ##2}
       \nobreak\getvalue{##2}%
       \doifelsenothing{#4}
-        {\dododocommand{0}}
+        {\dododocommand\zerocount}
         {\doifelse{#4}\v!all
-           {\dostepwiserecurse{0}{255}{1}{\expanded{\dododocommand{\recurselevel}}}}
+           {\dostepwiserecurse\zerocount{255}\plusone{\expanded{\dododocommand{\recurselevel}}}}
            {\processcommalist[#4]{\dododocommand}}}%
       \par \nobreak
       \stoptextrule}
@@ -256,89 +274,105 @@
 \unexpanded\gdef\showligature#1%
   {\hbox{\type{#1}\enspace\red\ruledhbox{\black#1}}}
 
-\unexpanded\gdef\showligatures[#1]%
+\unexpanded\gdef\showligatures[#1]% we keep it around for compatibility reasons
   {\ifx\starttabulate\undefined
-     \@@onlyenglish\showligatures
+     \font_show_only_english\showligatures
    \else
      \bgroup
-     \def\show##1{\hbox{\red\ruledhbox{\black##1}}}%
-     \definefont[\s!dummy][#1]\dummy
-     \starttabulate[|*{9}{c|}]
-     \NC\type{ff}\NC\type{fi}\NC\type{fl}\NC\type{ffi}\NC\type{ffl}\NC
-        \type{``}\NC\type{''}\NC\type{--}\NC\type{---}\NC\NR
-     \NC\show{ff}\NC\show{fi}\NC\show{fl}\NC\show{ffi}\NC\show{ffl}\NC
-        \show{``}\NC\show{''}\NC\show{--}\NC\show{---}\NC\NR
+     \def\font_show_ligature##1{\hbox{\red\ruledhbox{\black##1}}}%
+     \definedfont[#1*default]%
+     %starttabulate[|*{9}{c|}]
+     \starttabulate[|*{7}{c|}]
+     \NC\type{ff}
+     \NC\type{fi}
+     \NC\type{fl}
+     \NC\type{ffi}
+     \NC\type{ffl}
+     %NC\type{``}
+     %NC\type{''}
+     \NC\type{--}
+     \NC\type{---}
+     \NC\NR
+     \NC\font_show_ligature{ff}
+     \NC\font_show_ligature{fi}
+     \NC\font_show_ligature{fl}
+     \NC\font_show_ligature{ffi}
+     \NC\font_show_ligature{ffl}
+     %NC\font_show_ligature{``}
+     %NC\font_show_ligature{''}
+     \NC\font_show_ligature{--}
+     \NC\font_show_ligature{---}
+     \NC\NR
      \stoptabulate
      \egroup
    \fi}
 
 \unexpanded\gdef\showfontstrip
-  {\dosingleempty\doshowfontstrip}
+  {\dosingleempty\font_show_strip}
 
-\gdef\doshowfontstrip[#1]%
+\gdef\font_show_strip[#1]%
   {\ifx\starttabulate\undefined
-     \@@onlyenglish\showfontstrip
+     \font_show_only_english\showfontstrip
    \else
      \bgroup
-     \def\dofontstripa##1##2%
+     \def\font_show_strip_a##1##2%
        {\tttf\string##1}
-     \def\dofontstripb##1##2%
+     \def\font_show_strip_b##1##2%
        {\ruledhbox{\switchtobodyfont[#1]##1{##2}}}
-     \def\dofontstripc##1##2%
+     \def\font_show_strip_c##1##2%
        {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
         \tt\tfx\the\ht\scratchbox}%
-     \def\dofontstripd##1##2%
+     \def\font_show_strip_d##1##2%
        {\setbox\scratchbox\hbox{\switchtobodyfont[#1]##1{##2}}%
         \tt\tfx\the\wd\scratchbox}%
-     \def\fontstrip##1##2##3%
+     \def\font_show_strip_indeed##1##2##3%
        {\NC##2\rm{##3}\NC
            ##2\ss{##3}\NC
            ##2\tt{##3}\NC
            ##2\mathematics{##3}\NC
            \tttf##1\NR}
      \starttabulate[|c|c|c|c|c|]
-       \fontstrip\relax\dofontstripa\empty
+       \font_show_strip_indeed\relax\font_show_strip_a\empty
        \TB
-       \fontstrip\relax\dofontstripb{xxxx}
-       \fontstrip\relax\dofontstripb{12345}
-       \fontstrip\relax\dofontstripb{(Agw)}
+       \font_show_strip_indeed\relax\font_show_strip_b{xxxx}
+       \font_show_strip_indeed\relax\font_show_strip_b{12345}
+       \font_show_strip_indeed\relax\font_show_strip_b{(Agw)}
        \TB
-       \fontstrip{(x height)}\dofontstripc{x}
-       \fontstrip{(m  width)}\dofontstripd{m}
+       \font_show_strip_indeed{(x height)}\font_show_strip_c{x}
+       \font_show_strip_indeed{(m  width)}\font_show_strip_d{m}
      \stoptabulate
      \egroup
    \fi}
 
 \ifdefined\databox \else \newbox\databox \fi
 
-\unexpanded\gdef\testminimalbaseline#1% to be used in a tabulate
+\unexpanded\gdef\testminimalbaseline#1% to be used in a 10 column tabulate
   {\setbox\databox\ruledhbox{#1}%
-   \scratchdimen\ht\databox
-   \advance\scratchdimen\dp\databox
-   \scratchtoks{#1}%
-   \expanded
-     {\NC \ruledhbox{\the\scratchtoks}
-      \noexpand \NC ->
-      \noexpand \NC \the\scratchdimen
-      \noexpand \NC =
-      \noexpand \NC \the\ht\databox
-      \noexpand \NC +
-      \noexpand \NC \the\dp\databox
-      \noexpand \NC \ifdim\scratchdimen<\baselineskip <
-                    \else\ifdim\scratchdimen=\baselineskip =
-                    \else > \fi\fi
-      \noexpand \NC \the\baselineskip
-      \noexpand \NC (\ifdim\scratchdimen>\baselineskip not \fi ok)
-      \noexpand \NC \noexpand \NR }}
+   \scratchdimen\htdp\databox
+   \normalexpanded {
+     \NC \ruledhbox{#1}%
+     \NC ->
+     \NC \the\htdp\databox
+     \NC =
+     \NC \the\ht\databox
+     \NC +
+     \NC \the\dp\databox
+     \NC \ifdim\scratchdimen<\baselineskip <
+         \else\ifdim\scratchdimen=\baselineskip =
+         \else > \fi\fi
+     \NC \the\baselineskip
+     \NC (\ifdim\scratchdimen>\baselineskip not \fi ok)
+     \NC \NR}
+    }
 
 \unexpanded\gdef\showminimalbaseline
   {\ifx\starttabulate\undefined
-     \@@onlyenglish\showminimalbaseline
+     \font_show_only_english\showminimalbaseline
    \else
-     \starttabulate[||T|T|T|T|T|T|T|T|T|]
-     \testminimalbaseline{\hbox to 1em{\hss\showstruts\strut\hss}}%
-     \testminimalbaseline{(/)}%
-     \testminimalbaseline{\normalstartimath\frac{1}{2}x\normalsuperscript2\normalsubscript3\normalstopimath}
+     \starttabulate[|l|T|T|T|T|T|T|T|T|T|]
+       \testminimalbaseline{\hbox to \emwidth{\hss\showstruts\strut\hss}}%
+       \testminimalbaseline{(/)}%
+       \testminimalbaseline{\normalstartimath\frac{1}{2}x\normalsuperscript2\normalsubscript3\normalstopimath}
      \stoptabulate
    \fi}
 

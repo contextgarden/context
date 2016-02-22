@@ -174,7 +174,7 @@ return {
         --
         "donothing", "dontcomplain", "forgetall",
         --
-        "donetrue", "donefalse",
+        "donetrue", "donefalse", "foundtrue", "foundfalse",
         --
         "inlineordisplaymath","indisplaymath","forcedisplaymath","startforceddisplaymath","stopforceddisplaymath","reqno",
         --

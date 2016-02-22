@@ -11,6 +11,7 @@ return {
      -- "originlength", "tickstep ", "ticklength",
      -- "autoarrows", "ahfactor",
      -- "angleoffset", anglelength", anglemethod",
+        "ahvariant", "ahdimple", "ahfactor",
         "metapostversion",
         "maxdimensions",
         "drawoptionsfactor",

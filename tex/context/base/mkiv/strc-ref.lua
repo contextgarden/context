@@ -1937,12 +1937,10 @@ local function setinternalreference(specification)
         -- ugly .. later we decide to ignore it when we have a real one
         -- but for testing we might want to see them all
 
-        if innermethod == v_page then
-            -- we dont' want too many #1 #2 #3 etc
-            if internal then
-                tn = tn + 1
-                t[tn] = internal -- when number it's internal
-            end
+        if internal and innermethod ~= v_name then 
+         -- we dont' want too many #1 #2 #3 etc
+            tn = tn + 1
+            t[tn] = internal -- when number it's internal
         end
         destination = references.mark(t,nil,nil,specification.view) -- returns an attribute
     end
