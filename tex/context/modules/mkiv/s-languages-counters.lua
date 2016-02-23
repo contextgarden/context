@@ -14,7 +14,7 @@ local data = converters.verbose.data
 function moduledata.languages.counters.showverbose(specification)
     specification = interfaces.checkedspecification(specification)
     local list = utilities.parsers.settings_to_array(specification.language or "")
-    if #list == 0then
+    if #list == 0 then
         return
     end
     local used = { }

@@ -1451,6 +1451,8 @@ vardef formatted(expr f, x) = textext(varfmt(f, x)) enddef ;
 
 % new
 
+def both   text t = draw t withpostscript "both"    enddef ; % we use draw because we need the proper boundingbox
+def eoboth text t = draw t withpostscript "eoboth"  enddef ; % we use draw because we need the proper boundingbox
 def eofill text t = fill t withpostscript "evenodd" enddef ;
 def nofill text t = fill t withpostscript "collect" enddef ;
 %%% eoclip text t = clip t withpostscript "evenodd" enddef ; % no postscripts yet

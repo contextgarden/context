@@ -468,8 +468,21 @@ function metapost.flush(result,flusher,askedfig)
                                     })
                                     -- first we analyze
                                     local before, after = processplugins(object)
-                                    local evenodd = not object.istext and object.postscript == "evenodd"
-                                    local collect = not object.istext and object.postscript == "collect"
+                                    local evenodd, collect, both = false, false, false
+                                    local postscript = object.postscript
+                                    if not object.istext then
+                                        if postscript == "evenodd" then
+                                            evenodd = true
+                                        elseif postscript == "collect" then
+                                            collect = true
+                                        elseif postscript == "both" then
+                                            both = true
+                                        elseif postscript == "eoboth" then
+                                            evenodd = true
+                                            both    = true
+                                        end
+                                    end
+                                    --
                                     if collect then
                                         if not savedpath then
                                             savedpath = { object.path or false }
@@ -498,16 +511,23 @@ function metapost.flush(result,flusher,askedfig)
                                             linecap = lc
                                             result[#result+1] = f_J(lc)
                                         end
-                                        local dl = object.dash
-                                        if dl then
-                                            local d = f_d(concat(dl.dashes or {}," "),dl.offset)
-                                            if d ~= dashed then
-                                                dashed = d
-                                                result[#result+1] = d
+                                        if both then
+                                            if dashed ~= false then -- was just dashed test
+                                               result[#result+1] = "[] 0 d"
+                                               dashed = false
                                             end
-                                        elseif dashed ~= false then -- was just dashed test
-                                           result[#result+1] = "[] 0 d"
-                                           dashed = false
+                                        else
+                                            local dl = object.dash
+                                            if dl then
+                                                local d = f_d(concat(dl.dashes or {}," "),dl.offset)
+                                                if d ~= dashed then
+                                                    dashed = d
+                                                    result[#result+1] = d
+                                                end
+                                            elseif dashed ~= false then -- was just dashed test
+                                               result[#result+1] = "[] 0 d"
+                                               dashed = false
+                                            end
                                         end
                                         local path = object.path -- newpath
                                         local transformed, penwidth = false, 1
@@ -547,7 +567,11 @@ function metapost.flush(result,flusher,askedfig)
                                             if objecttype == "fill" then
                                                 result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
                                             elseif objecttype == "outline" then
-                                                result[#result+1] = open and "S" or "h S"
+                                                if both then
+                                                    result[#result+1] = evenodd and "h B*" or "h B" -- f* = eo
+                                                else
+                                                    result[#result+1] = open and "S" or "h S"
+                                                end
                                             elseif objecttype == "both" then
                                                 result[#result+1] = evenodd and "h B*" or "h B"-- B* = eo -- b includes closepath
                                             end

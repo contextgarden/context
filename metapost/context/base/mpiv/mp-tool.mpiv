@@ -1376,7 +1376,10 @@ enddef ;
 %D \METAPOST\ definitions.
 
 vardef arrowpath expr p = % patch by Peter Rolf: supports squared pen and shifting (hh: maybe just use center of head as first)
-    (p cutafter makepath(pencircle scaled 2(ahlength*cosd(.5ahangle)) shifted point length p of p))
+    (p cutafter makepath(pencircle
+        scaled (if ahvariant > 0 : (1-ahdimple)* fi 2ahlength*cosd(ahangle/2))
+        shifted point length p of p
+    ))
 enddef;
 
 % def _finarr text t =
@@ -1385,18 +1388,24 @@ enddef;
 %     filldraw arrowhead _apth t ;
 % enddef;
 
-def _finarr text t =
-    if autoarrows : set_ahlength (t) fi ;
-    draw arrowpath _apth t ; % arrowpath added
-    fill arrowhead _apth t ;
-    draw arrowhead _apth t ;
-enddef;
+% def _finarr text t =
+%     if autoarrows : set_ahlength (t) fi ;
+%     draw arrowpath _apth t ; % arrowpath added
+%     fill arrowhead _apth t ;
+%     draw arrowhead _apth t ;
+% enddef;
+
+% def _finarr text t =
+%     if autoarrows : set_ahlength (t) fi ;
+%     draw arrowpath _apth t ; % arrowpath added
+%     fill arrowhead _apth t ;
+%     draw arrowhead _apth t undashed ;
+% enddef;
 
 def _finarr text t =
     if autoarrows : set_ahlength (t) fi ;
     draw arrowpath _apth t ; % arrowpath added
-    fill arrowhead _apth t ;
-    draw arrowhead _apth t undashed ;
+    both arrowhead _apth t ;
 enddef;
 
 %D Handy too ......

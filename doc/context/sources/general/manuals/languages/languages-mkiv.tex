@@ -1,0 +1,38 @@
+\enablemode[simple] % ,oversized
+
+\startproduct languages-mkiv
+
+\environment languages-environment
+
+\setupbackgrounds[page][background=]
+
+\component languages-cover
+
+% \startcovermatter
+
+\page[dummy] \setupbackgrounds[page][background=page] \resetuserpagenumber
+
+% \stopcovermatter
+
+\startfrontmatter
+    \component languages-contents
+    \component languages-introduction
+\stopfrontmatter
+
+\startbodymatter
+    \component languages-basics
+    \component languages-hyphenation
+    \component languages-labels
+    \component languages-numbering
+    \component languages-typesetting
+    \component languages-goodies
+    \component languages-sorting
+\stopbodymatter
+
+\startappendices
+    \component languages-appendix
+\stopappendices
+
+\component languages-back
+
+\stopproduct

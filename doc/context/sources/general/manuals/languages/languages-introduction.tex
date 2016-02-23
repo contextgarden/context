@@ -1,0 +1,69 @@
+% language=uk
+
+\startcomponent languages-introduction
+
+\environment languages-environment
+
+\startchapter[title=Introduction][color=darkgray]
+
+This document describes an important property of the \TEX\ typesetting system and
+\CONTEXT\ in particular: the ability to deal with different languages at the same
+time. With languages we refer to natural languages. So, we're not going to
+discuss the \TEX\ language itself, not \METAPOST, nor \LUA.
+
+The original application of \TEX\ was English that uses the Latin script. The
+fonts that came with \TEX\ were suitable for that usage. When lines became too
+long they could be hyphenated using so called hyphenation patterns. Due to the
+implementation for many years there was a close relationship between fonts and
+hyphenation. Although at some point many more languages and scripts were
+supported, it was only when the \UNICODE\ aware variants showed up that
+hyphenation and fonts were decoupled. This makes it much more easier to mix
+languages that use different scripts. Although Greek, Cyrillic, Arabic, Chinese,
+Japanese, Korean and other languages have been supported for a while using
+(sometimes dirty) tricks, we now have cleaner implementations.
+
+We can hyphenate words in all languages (and scripts) that have a need for it,
+that is, split it at the end of a line and add a symbol before and|/|or after the
+break. The way words are broken into parts is called hyphenation and so called
+patterns are used to achieve that goal. The way these patterns are constructed
+and applied was part of the research related to \TEX\ development. The method
+used is also applied in other programs and is probably one of the few popular
+ways to deal with hyphenation. There have been ideas about extensions that cover
+the demands of certain languages but so far nothing better has shown up. In the
+end \TEX\ does a pretty decent job and more advanced tricks don't necessarily
+lead to better results.
+
+Hyphenation is driven by a language number and that's about it. This means that
+one cannot claim that \TEX\ in its raw form supports languages, other than that
+it can hyphenate and use fonts that provide the glyphs. It's upto a macro package
+to wrap this into a mechanism that provides the user an interface. So, when we
+speak about language support, hyphenation is only one aspect. Labels, like the
+\type {figure} in {\em figure~1.2} need to adapt to the main document language.
+When dates are shown they can be language specific. Scientific units and math
+function names can also be subjected to translation. Registers and other lists
+have to be sorted according to specific rules. Spacing dan differ per language.
+
+In this manual we will cover some of functionality in \CONTEXT\ \MKIV\ that
+relates to languages (and scripts). This manual is a compliment to other manuals,
+articles and documentation. Here we mostly focus on the language aspects. Some of
+the content (or maybe most) might looks alien and complex to you. This is because
+one purpose of this manual is to provide a place to wrap up some aspects of
+\CONTEXT. If you're not interested in that, just stick to the more general
+manuals that also cover language aspects.
+
+\startnotabene
+    This document is still under construction. The functionality discussed here
+    will stay and more might show up. Of course there are errors, and they're all
+    mine. The text is not checked for spelling errors. Feel free to let me know
+    what should get added.
+\stopnotabene
+
+\startlines
+Hans Hagen
+PRAGMA ADE, Hasselt NL
+2013 \emdash\ 2016
+\stoplines
+
+\stopchapter
+
+\stopcomponent

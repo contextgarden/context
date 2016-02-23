@@ -167,6 +167,8 @@
 \newconditional\c_strc_itemgroups_head
 \newconditional\c_strc_itemgroups_intro
 \newconditional\c_strc_itemgroups_randomize
+\newconditional\c_strc_itemgroups_horizontal
+\newconditional\c_strc_itemgroups_collecting
 \newconditional\c_strc_itemgroups_auto_intro
 \newconditional\c_strc_itemgroups_pack
 \newconditional\c_strc_itemgroups_paragraph
@@ -444,10 +446,26 @@
 \setvalue{\??itemgroupkeyword\v!seven    }{\letitemgroupparameter\c!n\plusseven}
 \setvalue{\??itemgroupkeyword\v!eight    }{\letitemgroupparameter\c!n\pluseight}
 \setvalue{\??itemgroupkeyword\v!nine     }{\letitemgroupparameter\c!n\plusnine}
-\setvalue{\??itemgroupkeyword\v!standard }{\setupcurrentitemgroup
-                                             [\c!width=1.5em,\c!factor=0,\c!distance=.5em,\c!inner=,\c!factor=0,%
-                                              \c!beforehead=,\c!afterhead=\blank,%
-                                              \c!before=\blank,\c!inbetween=\blank,\c!after=\blank]}
+%setvalue{\??itemgroupkeyword\v!standard }{\setupcurrentitemgroup
+%                                            [\c!width     =1.5\emwidth,%
+%                                             \c!distance  =.5\emwidth,%
+%                                             \c!factor    =0,%
+%                                             \c!inner     =,%
+%                                             \c!beforehead=,%
+%                                             \c!afterhead =\blank,%
+%                                             \c!before    =\blank,%
+%                                             \c!inbetween =\blank,%
+%                                             \c!after     =\blank]}
+\setvalue{\??itemgroupkeyword\v!standard }{\setitemgroupparameter\c!width     {1.5\emwidth}%
+                                           \setitemgroupparameter\c!distance  {.5\emwidth}%
+                                           \letitemgroupparameter\c!factor    \!!zerocount
+                                           \letitemgroupparameter\c!inner     \empty
+                                           \letitemgroupparameter\c!beforehead\empty
+                                           \letitemgroupparameter\c!afterhead \blank
+                                           \letitemgroupparameter\c!before    \blank
+                                           \letitemgroupparameter\c!inbetween \blank
+                                           \letitemgroupparameter\c!after     \blank}
+
 
 \def\strc_itemgroups_initialize_local
   {\setfalse\c_strc_itemgroups_inline
@@ -461,6 +479,8 @@
    \setfalse\c_strc_itemgroups_after
    \setfalse\c_strc_itemgroups_nowhite
    \setfalse\c_strc_itemgroups_randomize
+   \setfalse\c_strc_itemgroups_horizontal
+   \setfalse\c_strc_itemgroups_collecting
    \setfalse\c_strc_itemgroups_intro
    \setfalse\c_strc_itemgroups_continue
    % this will be a constant
@@ -477,9 +497,15 @@
    \global\letitemgroupparameter\c!maxwidth\!!zeropoint
    }
 
-\setvalue{\??itemgroupfirst\v!intro   }{\settrue\c_strc_itemgroups_intro    }
-\setvalue{\??itemgroupfirst\v!random  }{\settrue\c_strc_itemgroups_randomize}
-\setvalue{\??itemgroupfirst\v!continue}{\settrue\c_strc_itemgroups_continue }
+\setvalue{\??itemgroupfirst\v!intro       }{\settrue\c_strc_itemgroups_intro}
+\setvalue{\??itemgroupfirst\v!continue    }{\settrue\c_strc_itemgroups_continue}
+\setvalue{\??itemgroupfirst\v!random      }{\settrue\c_strc_itemgroups_randomize
+                                            \settrue\c_strc_itemgroups_collecting}
+\setvalue{\??itemgroupkeyword\v!horizontal}{\settrue\c_strc_itemgroups_horizontal
+                                            \settrue\c_strc_itemgroups_collecting
+                                            \settrue\c_strc_itemgroups_inline
+                                            \settrue\c_strc_itemgroups_joined
+                                            \strc_itemgroups_process_set_option_pack}
 
 \def\strc_itemgroups_preset_stage_one#options%
   {\processcommacommand[#options]\strc_itemgroups_preset_stage_one_indeed}
@@ -1536,9 +1562,32 @@
 \newcount\c_strc_itemgroups_collected_done
 \newcount\c_strc_itemgroups_collected_current
 
-\@EA\def\@EA\strc_itemgroups_collected_store\@EA#\@EA1\csname\e!stop\v!item\endcsname % use grabuntil
+% \expandafter\def\expandafter\strc_itemgroups_collected_store\expandafter#\expandafter1\csname\e!stop\v!item\endcsname % use grabuntil
+%   {\advance\c_strc_itemgroups_collected_stored\plusone
+%    \setvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_stored}{\startitemgroupitem#1\stopitemgroupitem}}
+
+\let\strc_itemgroups_collected_store\relax
+
+\normalexpanded{\def\strc_itemgroups_collected_store#1\csname\e!stop\v!item\endcsname}%
   {\advance\c_strc_itemgroups_collected_stored\plusone
    \setvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_stored}{\startitemgroupitem#1\stopitemgroupitem}}
+
+\def\strc_itemgroups_collected_flush_randomize
+  {\collecteditemgroupitem}
+
+\def\strc_itemgroups_collected_flush_horizontal
+  {\begingroup
+   \scratchcounter\itemgroupparameter\c!n\relax
+   \ifnum\c_strc_itemgroups_collected_done>\plusone
+     \ifcase\modulonumber\scratchcounter\c_strc_itemgroups_collected_done\relax
+       % compensate for rounding errors
+       \hfill % \hskip\zeropoint plus \scaledpoint minus \scaledpoint
+       \allowbreak
+     \fi
+   \fi
+   \noindent % no \dontleavehmode
+   \hbox to \dimexpr\availablehsize/\scratchcounter\relax{\collecteditemgroupitem}%
+   \endgroup}
 
 \def\strc_itemgroups_collected_flush
   {\ifconditional\c_strc_itemgroups_randomize
@@ -1547,8 +1596,12 @@
      \advance\c_strc_itemgroups_collected_current\plusone
    \fi
    \ifcsname\??itemgroupstack\number\c_strc_itemgroups_collected_current\endcsname
-     \lastnamedcs
-     \letbeundefined{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
+     \edef\collecteditemgroupitem{\lastnamedcs}%
+     \ifconditional\c_strc_itemgroups_horizontal
+       \strc_itemgroups_collected_flush_horizontal
+     \else
+       \collecteditemgroupitem
+     \fi
      \advance\c_strc_itemgroups_collected_done\plusone
    \fi
    \ifnum\c_strc_itemgroups_collected_done<\c_strc_itemgroups_collected_stored
@@ -1556,7 +1609,7 @@
    \fi}
 
 \unexpanded\def\stopcollectitems
-  {\ifconditional\c_strc_itemgroups_randomize
+  {\ifconditional\c_strc_itemgroups_collecting
      \c_strc_itemgroups_collected_done   \zerocount
      \c_strc_itemgroups_collected_current\zerocount
      \ifnum\c_strc_itemgroups_collected_stored>\zerocount
@@ -1565,7 +1618,7 @@
    \fi}
 
 \unexpanded\def\startcollectitems
-  {\ifconditional\c_strc_itemgroups_randomize
+  {\ifconditional\c_strc_itemgroups_collecting
      \c_strc_itemgroups_collected_stored\zerocount
      \letvalue{\e!start\v!item}\strc_itemgroups_collected_store
    \fi}

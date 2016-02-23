@@ -8,9 +8,9 @@ if not modules then modules = { } end modules ['lang-wrd'] = {
 
 local lower = string.lower
 local utfchar = utf.char
-local concat = table.concat
+local concat, setmetatableindex = table.concat, table.setmetatableindex
 local lpegmatch = lpeg.match
-local P, S, Cs = lpeg.P, lpeg.S, lpeg.Cs
+local P, S, Cs, Cf, Cg, Cc, C = lpeg.P, lpeg.S, lpeg.Cs, lpeg.Cf, lpeg.Cg, lpeg.Cc, lpeg.C
 
 local report_words = logs.reporter("languages","words")
 
@@ -40,6 +40,7 @@ local getchar         = nuts.getchar
 local setattr         = nuts.setattr
 
 local traverse_nodes  = nuts.traverse
+local traverse_ids    = nuts.traverse_id
 
 local wordsdata       = words.data
 local chardata        = characters.data
@@ -63,13 +64,41 @@ local colist          = attributes.list[a_color]
 local is_letter       = characters.is_letter -- maybe is_character as variant
 
 local spacing = S(" \n\r\t")
-local markup  = S("-=")
-local lbrace  = P("{")
-local rbrace  = P("}")
-local disc    = (lbrace * (1-rbrace)^0 * rbrace)^1 -- or just 3 times, time this
-local word    = Cs((markup/"" + disc/"" + (1-spacing))^1)
+local markup  = S("-=") / ""
+local lbrace  = P("{") / ""
+local rbrace  = P("}") / ""
+local snippet = lbrace * (1-rbrace)^0 * rbrace
+local disc    = snippet/"" -- pre
+              * snippet/"" -- post
+              * snippet    -- replace
+local word    = Cs((markup + disc + (1-spacing))^1)
 
-local loaded = { } -- we share lists
+-- lpegmatch((spacing + word/function(s) print(s) end)^0,"foo foo-bar bar{}{}{}foo  bar{}{}{foo}")
+
+local loaded  = { } -- we share lists
+local loaders = {
+    txt = function(list,fullname)
+        local data = io.loaddata(fullname)
+        if data and data ~= "" then
+            local parser = (spacing + word/function(s) list[s] = true end)^0
+         -- local parser = Cf(Cc(list) * Cg(spacing^0 * word * Cc(true))^1,rawset) -- not better
+            lpegmatch(parser,data)
+        end
+    end,
+    lua = function(list,fullname)
+        local data = dofile(fullname)
+        if data and type(data) == "table" then
+            local words = data.words
+            if words then
+                for k, v in next, words do
+                    list[k] = true
+                end
+            end
+        end
+    end,
+}
+
+loaders.luc = loaders.lua
 
 function words.load(tag,filename)
     local fullname = resolvers.findfile(filename,'other text file') or ""
@@ -79,8 +108,9 @@ function words.load(tag,filename)
         local list = loaded[fullname]
         if not list then
             list = wordsdata[tag] or { }
-            local parser = (spacing + word/function(s) list[s] = true end)^0
-            lpegmatch(parser,io.loaddata(fullname) or "")
+            local suffix = file.suffix(fullname)
+            local loader = loaders[suffix] or loaders.txt
+            loader(list,fullname)
             loaded[fullname] = list
         end
         wordsdata[tag] = list
@@ -125,6 +155,8 @@ local function mark_words(head,whenfound) -- can be optimized and shared
         end
         n, s = 0, 0
     end
+    -- we haven't done the fonts yet so we have characters (otherwise
+    -- we'd have to use the tounicodes)
     while current do
         local id = getid(current)
         if id == glyph_code then
@@ -140,30 +172,28 @@ local function mark_words(head,whenfound) -- can be optimized and shared
                 action()
                 language = a
             end
-            local components = getfield(current,"components")
-            if components then
+            local code = getchar(current)
+            local data = chardata[code]
+            if is_letter[data.category] then
                 n = n + 1
                 nds[n] = current
-                for g in traverse_nodes(components) do
-                    s = s + 1
-                    str[s] = utfchar(getchar(g))
-                end
-            else
-                local code = getchar(current)
-                local data = chardata[code]
-                if is_letter[data.category] then
-                    n = n + 1
-                    nds[n] = current
-                    s = s + 1
-                    str[s] = utfchar(code)
-                elseif s > 0 then
-                    action()
-                end
+                s = s + 1
+                str[s] = utfchar(code)
+            elseif s > 0 then
+                action()
             end
         elseif id == disc_code then -- take the replace
             if n > 0 then
-                n = n + 1
-                nds[n] = current
+                local r = getfield(current,"replace")
+                if r then
+                    for current in traverse_ids(glyph_code,r) do
+                        local code = getchar(current)
+                        n = n + 1
+                        nds[n] = current
+                        s = s + 1
+                        str[s] = utfchar(code)
+                    end
+                end
             end
         elseif id == kern_code and getsubtype(current) == kerning_code and s > 0 then
             -- ok
@@ -201,7 +231,9 @@ function words.enable(settings)
     local method = settings.method
     wordmethod = method and tonumber(method) or wordmethod or 1
     local e = enablers[wordmethod]
-    if e then e(settings) end
+    if e then
+        e(settings)
+    end
     tasks.enableaction("processors","languages.words.check")
     enabled = true
 end
@@ -254,35 +286,29 @@ local dumpthem   = false
 local listname   = "document"
 
 local category   = { }
-local categories = { }
 
-setmetatable(categories, {
-    __index = function(t,k)
-        local languages = { }
-        setmetatable(languages, {
-            __index = function(t,k)
-                local r = registered[k]
-                local v = {
-                    number   = language,
-                    parent   = r and r.parent   or nil,
-                    patterns = r and r.patterns or nil,
-                    tag      = r and r.tag      or nil,
-                    list     = { },
-                    total    = 0,
-                    unique   = 0,
-                }
-                t[k] = v
-                return v
-            end
-        } )
+local categories = setmetatableindex(function(t,k)
+    local languages = setmetatableindex(function(t,k)
+        local r = registered[k]
         local v = {
-            languages = languages,
-            total     = 0,
+            number   = language,
+            parent   = r and r.parent   or nil,
+            patterns = r and r.patterns or nil,
+            tag      = r and r.tag      or nil,
+            list     = { },
+            total    = 0,
+            unique   = 0,
         }
         t[k] = v
         return v
-    end
-} )
+    end)
+    local v = {
+        languages = languages,
+        total     = 0,
+    }
+    t[k] = v
+    return v
+end)
 
 local collected  = {
     total      = 0,
@@ -330,7 +356,7 @@ local function dumpusedwords()
 end
 
 directives.register("languages.words.dump", function(v)
-    dumpname = type(v) == "string" and v ~= "" and v
+    dumpname = (type(v) == "string" and v ~= "" and v) or dumpname
 end)
 
 luatex.registerstopactions(dumpusedwords)

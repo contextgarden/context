@@ -1,0 +1,48 @@
+% language=uk
+
+\startcomponent languages-appendix
+
+\environment languages-environment
+
+\startchapter[title=Appendix][color=darkgray]
+
+\startsection[title=The language files]
+
+    Todo.
+
+\stopsection
+
+\startsection[title=The \type {mtx-patterns} script]
+
+    Todo.
+
+\stopsection
+
+\startsection[title=Installed sorters]
+
+\startbuffer
+\usemodule[s-languages-sorting]
+
+\showinstalledsorting
+\stopbuffer
+
+\typebuffer \blank[2*line] \getbuffer
+
+\stopsection
+
+\startsection[title=Verbose counters]
+
+\startbuffer
+\usemodule[s-languages-counters]
+
+\showverbosecounters[language={en,es}]
+\stopbuffer
+
+\typebuffer \blank[2*line] \getbuffer
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
