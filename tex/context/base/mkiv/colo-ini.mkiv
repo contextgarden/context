@@ -168,7 +168,7 @@
 \unexpanded\def\startcolorpage   {\startcolor[\ifx\maintextcolor\empty\defaulttextcolor\else\maintextcolor\fi]}
 \unexpanded\def\stopcolorpage    {\stopcolor}
 
-\def\getcolorattributevalue#1#2% obsolete, use \thecolorattribute instead ...
+\unexpanded\def\getcolorattributevalue#1#2% obsolete, use \thecolorattribute instead ...
   {\begingroup
    \colo_helpers_activate{#1}%
    \normalexpanded{\endgroup\edef\noexpand#2%

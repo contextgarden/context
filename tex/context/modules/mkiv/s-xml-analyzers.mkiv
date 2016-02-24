@@ -1,0 +1,37 @@
+%D \module
+%D   [      file=s-xml-analyzers,
+%D        version=2013.05.28,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Analyze XML Content,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[xml-analyzers]
+
+\registerctxluafile{s-xml-analyzers}{}
+
+\installmodulecommandluasingle \showxmlstructure  {moduledata.xml.analyzers.structure}
+\installmodulecommandluasingle \showxmlcharacters {moduledata.xml.analyzers.characters}
+
+\stopmodule
+
+\continueifinputfile{s-xml-analyzers.mkiv}
+
+\usemodule[art-01]
+
+\setupbodyfont[tt,10pt]
+
+\edef\FileName{\cldcontext{resolvers.findfile("music-collection.xml")}}
+
+\setupheadertexts[\FileName\space\emdash\space\pagenumber]
+
+\starttext
+
+    \showxmlcharacters[\FileName]
+
+\stoptext

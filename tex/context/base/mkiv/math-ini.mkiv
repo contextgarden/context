@@ -628,15 +628,20 @@
 %D Todo:
 
 \unexpanded\def\mf
-  {\csname\fontalternative\endcsname}
+  {\begincsname\fontalternative\endcsname}
 
-\let\normalmathop\mathop
+% \let\normalmathop\mathop % already defined
 
-\unexpanded\def\mathop
-  {\normalmathop
-   \bgroup
-  % no: \let\rm\mf
-   \let\nexttoken=}
+% no longer needed as we no longer switch fonts
+%
+% \unexpanded\def\mathop
+%   {\normalmathop
+%    \bgroup
+%   % no: \let\rm\mf
+%    \afterassignment\math_op\let\nexttoken=}
+%
+% \def\math_op{\ifx\nexttoken\bgroup\else\nexttoken\egroup\fi}
+
 
 % this one too: \letvalue{\??mathcodecommand op}\mathop ?
 
