@@ -601,10 +601,17 @@ do
     function metapost.simple(format,code) -- even less than metapost.quickcanddirty
         local mpx = metapost.format(format or "metafun","metafun")
      -- metapost.setoutercolor(2)
-        metapost.process(mpx,code,false,flusher,false,false,1,true) -- last true is plugmode !
-        local stream = concat(result," ")
-        result = nil -- cleanup
-        return stream, width, height, depth
+        metapost.process(mpx,
+            { "beginfig(1);", code, "endfig;" },
+            false, flusher, false, false, 1, true -- last true is plugmode !
+        )
+        if result then
+            local stream = concat(result," ")
+            result = nil -- cleanup
+            return stream, width, height, depth
+        else
+            return "", 0, 0, 0
+        end
     end
 
 end

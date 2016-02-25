@@ -495,14 +495,15 @@ local function pdflinkinternal(internal,page)
         local used = usedinternals[internal]
         if used == defaultview or used == true then
             return pagereferences[page]
+        else
+            if type(internal) ~= "string" then
+                internal = autoprefix .. internal
+            end
+            return pdfdictionary {
+                S = pdf_goto,
+                D = internal,
+            }
         end
-        if type(internal) ~= "string" then
-            internal = autoprefix .. internal
-        end
-        return pdfdictionary {
-            S = pdf_goto,
-            D = internal,
-        }
     else
         return pagereferences[page]
     end
@@ -515,11 +516,12 @@ local function pdflinkname(destination,internal,page)
         local used = usedinternals[internal]
         if used == defaultview then -- or used == true then
             return pagereferences[page]
+        else
+            return pdfdictionary {
+                S = pdf_goto,
+                D = destination,
+            }
         end
-        return pdfdictionary {
-            S = pdf_goto,
-            D = destination,
-        }
     elseif method == v_name then
      -- flaginternals[internal] = true -- for bookmarks and so
         return pdfdictionary {
@@ -752,7 +754,7 @@ runners["inner"] = function(var,actions)
     local name     = nil
     local method   = references.innermethod
     local vi       = var.i
-    local page     = var.page
+    local page     = var.r
     if vi then
         local vir = vi.references
         if vir then

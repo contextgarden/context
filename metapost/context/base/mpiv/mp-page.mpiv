@@ -662,3 +662,32 @@ def Enlarged (expr p, d) =
        urEnlarged (p,d) --
        ulEnlarged (p,d) -- cycle)
 enddef ;
+
+% for the moment we put these here:
+
+numeric RuleWidth     ; RuleWidth     := 0 ;
+numeric RuleHeight    ; RuleHeight    := 0 ;
+numeric RuleDepth     ; RuleDepth     := 0 ;
+numeric RuleThickness ; RuleThickness := 0 ;
+numeric RuleFactor    ; RuleFactor    := 0 ;
+numeric RuleOffset    ; RuleOffset    := 0 ;
+                    def RuleColor      = (.5white) enddef ;
+
+def FakeWord(expr RuleWidth, RuleHeight, RuleDepth, RuleThickness) (text RuleColor) =
+    fill unitsquare
+        xscaled RuleWidth
+        yscaled (RuleDepth-RuleThickness/2)
+        withcolor RuleColor ;
+    fill unitsquare
+        xscaled RuleWidth
+        yscaled (RuleHeight-RuleDepth-RuleThickness/2)
+        shifted (0,RuleDepth+RuleThickness)
+        withcolor RuleColor ;
+enddef ;
+
+def FakeRule(expr RuleWidth, RuleHeight, RuleDepth, RuleThickness) (text RuleColor) =
+    fill unitsquare
+        xscaled RuleWidth
+        yscaled RuleHeight
+        withcolor RuleColor ;
+enddef ;

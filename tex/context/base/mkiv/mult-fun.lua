@@ -126,7 +126,7 @@ return {
         "passvariable", "passarrayvariable", "tostring", "format", "formatted",
         "startpassingvariable", "stoppassingvariable",
         --
-        "eofill", "eoclip", "nofill",
+        "eofill", "eoclip", "nofill", "fillup", "eofillup",
         "area",
         --
         "addbackground",

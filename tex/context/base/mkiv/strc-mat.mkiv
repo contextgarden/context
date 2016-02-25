@@ -885,10 +885,10 @@
 \unexpanded\def\formulanumber
  {\strc_formulas_number} % for the moment
 
-\def\strc_formulas_number
+\unexpanded\def\strc_formulas_number
   {\dosingleempty\strc_formulas_number_again}
 
-\def\strc_formulas_number_again[#1]%
+\unexpanded\def\strc_formulas_number_again[#1]%
   {\def\currentformulareference{#1}%
    \strc_formulas_number_indeed}
 
@@ -902,27 +902,80 @@
    \setfalse\c_strc_formulas_increment
    \dosingleempty\strc_formulas_place}
 
-\def\strc_formulas_place[#1]%
+\unexpanded\def\strc_formulas_place[#1]%
   {\def\currentplaceformulareference{#1}%
    \let\currentplaceformulasuffix\empty
    \doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop} % [ref]{}
 
-\def\strc_formulas_place_yes#1%
+\unexpanded\def\strc_formulas_place_yes#1%
   {\def\currentplaceformulasuffix{#1}%
    \strc_formulas_place_nop}
 
-\def\strc_formulas_place_nop
+\unexpanded\def\strc_formulas_place_nop
   {\doifelsenextchar$\strc_formulas_place_pickup\strc_formulas_place_indeed} % [ref]$$ [ref]\start
 
-\def\strc_formulas_place_indeed
+\unexpanded\def\strc_formulas_place_indeed
   {\strc_formulas_place_numbering}
 
-\def\strc_formulas_place_pickup$$#1$$%
+\unexpanded\def\strc_formulas_place_pickup$$#1$$%
   {\strc_formulas_place_numbering
    \strc_formulas_start_formula{}#1\strc_formulas_stop_formula}
 
-\let\startplaceformula\placeformula
-\let\stopplaceformula \relax
+% \let\startplaceformula\placeformula
+% \let\stopplaceformula \relax
+
+% \startplaceformula                 \startformula e=mc^2 \stopformula \stopplaceformula
+% \startplaceformula[-]              \startformula e=mc^2 \stopformula \stopplaceformula
+% \startplaceformula[x]              \startformula e=mc^2 \stopformula \stopplaceformula
+% \startplaceformula[reference=foo]  \startformula e=mc^2 \stopformula \stopplaceformula
+% \startplaceformula[title=whatever] \startformula e=mc^2 \stopformula \stopplaceformula
+% \startplaceformula[suffix=x]       \startformula e=mc^2 \stopformula \stopplaceformula
+
+\unexpanded\def\startplaceformula{\dosingleempty\strc_formulas_start_place}
+\unexpanded\def\stopplaceformula {\strc_formulas_stop_place}
+
+\let\currentplaceformulareference\empty
+\let\currentplaceformulasuffix   \empty
+
+\def\strc_formulas_start_place
+  {\begingroup
+   \global\settrue\c_strc_formulas_inside_place
+   \iffirstargument
+     \expandafter\strc_formulas_start_place_yes
+   \else
+     \expandafter\strc_formulas_start_place_nop
+   \fi}
+
+\def\strc_formulas_start_place_yes[#1]%
+  {\doifassignmentelse{#1}\strc_formulas_start_place_parameters\strc_formulas_start_place_reference[#1]}
+
+\def\strc_formulas_start_place_nop
+  {\let\currentplaceformulareference\empty
+   \let\currentplaceformulasuffix   \empty
+   \strc_formulas_place_nop}
+
+\def\strc_formulas_start_place_reference[#1]%
+  {\edef\currentplaceformulareference{#1}%
+   \let\currentplaceformulasuffix\empty
+  %\doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop} % [ref]{}
+   \strc_formulas_place_nop}
+
+\def\strc_formulas_start_place_parameters[#1]%
+  {\letdummyparameter\c!name     \empty
+   \letdummyparameter\c!reference\empty
+   \letdummyparameter\c!suffix   \empty
+   \getdummyparameters[#1]%
+   \edef\currentplaceformulatitle    {\dummyparameter\c!title}%
+   \edef\currentplaceformulareference{\dummyparameter\c!reference}%
+   \edef\currentplaceformulasuffix   {\dummyparameter\c!suffix}%
+   \ifx\currentplaceformulatitle\empty\else
+     \normalexpanded{\setformulalistentry{\currentplaceformulatitle}}%
+   \fi
+   \doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop} % [ref]{}
+
+\def\strc_formulas_stop_place
+  {\relax
+   \endgroup}
 
 % to be checked
 
@@ -955,7 +1008,7 @@
 \unexpanded\def\placenamedformula
   {\dosingleempty\strc_formulase_place_named}
 
-\def\strc_formulase_place_named
+\unexpanded\def\strc_formulase_place_named
   {\iffirstargument
      \expandafter\strc_formulase_place_named_yes
    \else

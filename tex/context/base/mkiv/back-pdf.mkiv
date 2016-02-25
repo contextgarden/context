@@ -136,10 +136,11 @@
 
 \unexpanded\def\dostartrotation#1%
   {\forcecolorhack
-   \clf_pdfstartrotation#1\relax}
+   \clf_pdfstartrotation#1\relax} % todo: implement without Q q
 
 \unexpanded\def\dostoprotation
-  {\clf_pdfstoprotation}
+  {\clf_pdfstoprotation
+   \forcecolorhack}
 
 % scaling
 
@@ -148,7 +149,8 @@
    \clf_pdfstartscaling rx #1 ry #2\relax}
 
 \unexpanded\def\dostopscaling
-  {\clf_pdfstopscaling}
+  {\clf_pdfstopscaling
+   \forcecolorhack}
 
 % mirroring
 

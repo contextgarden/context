@@ -55,33 +55,31 @@ do
         return v
     end)
 
-    local makecode = utilities.templates.replacer [[
-        beginfig(1);
-            RuleWidth := %width% ;
-            RuleHeight := %height% ;
-            RuleDepth := %depth% ;
-            RuleThickness := %line% ;
-            RuleFactor := %factor% ;
-            RuleOffset := %offset% ;
-            def RuleColor = %color% enddef ;
-            %data%;
-        endfig ;
-    ]]
+    local replacer = utilities.templates.replacer
 
     local predefined = {
-        ["fake:word"] = [[
-fill unitsquare xscaled RuleWidth yscaled RuleHeight withcolor RuleColor ;
-draw (0,RuleDepth+RuleThickness/2) -- (RuleWidth,RuleDepth+RuleThickness/2) withpen pencircle scaled RuleThickness withcolor white ;
+        ["fake:word"] = replacer [[
+FakeWord(%width%,%height%,%depth%,%line%,%color%);
         ]],
-        ["fake:rule"] = [[
-fill unitsquare xscaled RuleWidth yscaled RuleHeight withcolor RuleColor ;
+        ["fake:rule"] = replacer[[
+FakeRule(%width%,%height%,%depth%,%line%,%color%);
         ]],
+        ["fake:rest"] = replacer [[
+RuleWidth := %width% ;
+RuleHeight := %height% ;
+RuleDepth := %depth% ;
+RuleThickness := %line% ;
+RuleFactor := %factor% ;
+RuleOffset := %offset% ;
+def RuleColor = %color% enddef ;
+%data%;
+        ]]
     }
 
     ruleactions.mp = function(p,h,v,i,n)
-        local name = p.name
-        local code = makecode {
-            data   = name and predefined[name] or p.data or "",
+        local name = p.name or "fake:rest"
+        local code = (predefined[name] or predefined["fake:rest"]) {
+            data   = p.data or "",
             width  = p.width * bpfactor,
             height = p.height * bpfactor,
             depth  = p.depth * bpfactor,
