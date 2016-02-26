@@ -430,9 +430,6 @@
        \settrue\processingnote
        \ifconditional\c_strc_notes_skip
          \globallet\lastnotesymbol\strc_notes_inject_symbol_nop
-         \ifconditional\c_strc_notes_delayed
-           \strc_notes_inject_symbol_snc
-         \fi
        \else
          \iftypesettinglines % otherwise problems with \type <crlf> {xxx}
            \ignorelines % makes footnotes work in \startlines ... \stoplines
@@ -493,6 +490,9 @@
 \newconstant\a_strc_notes_text_reference
 \newconstant\a_strc_notes_text_destination
 
+\let\strc_notes_get_reference_attribute_symbol  \empty
+\let\strc_notes_get_destination_attribute_symbol\empty
+
 \def\strc_notes_interaction_check_inline
   {\edef\p_interaction{\noteparameter\c!interaction}%
    \csname\??noteinteractioninline
@@ -505,58 +505,111 @@
      \ifcsname\??noteinteractiondisplay\p_interaction\endcsname\p_interaction\else\v!no\fi
    \endcsname}
 
-\setvalue{\??noteinteractioninline\v!yes}%
-  {\strc_references_get_simple_page_reference{page(\clf_notenumberpage{\currentnote}\currentnotenumber)}%
-   \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
-   \let \strc_notes_set_style_color_inline        \strc_notes_set_style_color_inline_yes}
+\def\currentnotenumber{0}
 
-\setvalue{\??noteinteractioninline\v!all}%
-  {%\strc_references_get_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
-   \strc_references_get_simple_page_reference{note:\currentnote:\currentnotenumber}%
-   \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
-   \let \strc_notes_set_style_color_inline        \strc_notes_set_style_color_inline_yes}
+\let\strc_notes_get_reference_attribute_symbol  \empty
+\let\strc_notes_get_destination_attribute_symbol\empty
 
-\setvalue{\??noteinteractioninline\v!no}%
+\let\strc_notes_set_reference_attribute_number\donothing
+\let\strc_notes_set_reference_attribute_text  \donothing
+\let\strc_notes_set_destination_attribute_text\donothing
+
+% inline
+
+\def\strc_references_prepare_inline_references_nop
   {\let\strc_notes_get_reference_attribute_symbol\empty
-   \let\strc_notes_set_style_color_inline        \strc_notes_set_style_color_inline_nop}
+   \let\strc_notes_get_destination_attribute_symbol\empty
+   \let\strc_notes_set_style_color_inline\strc_notes_set_style_color_inline_nop}
 
-\expandafter\let\csname\??noteinteractioninline\v!number\expandafter\endcsname\csname\??noteinteractioninline\v!yes\endcsname
-\expandafter\let\csname\??noteinteractioninline\v!text  \expandafter\endcsname\csname\??noteinteractioninline\v!yes\endcsname
+% \def\strc_references_prepare_inline_references_yes
+%   {\strc_references_set_simple_page_reference{symb:\currentnote:\currentnotenumber}% destination
+%    \strc_references_get_simple_page_reference{internal(\clf_noteinternal{\currentnote}\currentnotenumber)}% reference
+%    \edef\strc_notes_get_destination_attribute_symbol{attr\destinationattribute\currentdestinationattribute}%
+%    \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
+%    \let\strc_notes_set_style_color_inline\strc_notes_set_style_color_inline_yes}
 
-% page(...) : we could have a dedicated one
+\def\strc_references_prepare_inline_references_yes
+  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \strc_references_set_simple_page_reference{*\currentnoteinternal}% destination
+   \strc_references_get_simple_page_reference{internal(\currentnoteinternal)}% reference
+   \edef\strc_notes_get_destination_attribute_symbol{attr\destinationattribute\currentdestinationattribute}%
+   \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
+   \let\strc_notes_set_style_color_inline\strc_notes_set_style_color_inline_yes}
 
-\setvalue{\??noteinteractiondisplay\v!yes}%
-  {\strc_references_get_simple_page_reference{page(\clf_notesymbolpage{\currentnote}\currentnotenumber)}%
-   \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
-   \let \strc_notes_set_reference_attribute_text  \donothing
-   \let \strc_notes_set_destination_attribute_text\donothing
-   \let \strc_notes_set_style_color_display       \strc_notes_set_style_color_display_yes}
+\letvalue{\??noteinteractioninline\v!no    }\strc_references_prepare_inline_references_nop
+\letvalue{\??noteinteractioninline\v!all   }\strc_references_prepare_inline_references_yes
+\letvalue{\??noteinteractioninline\v!number}\strc_references_prepare_inline_references_yes
+\letvalue{\??noteinteractioninline\v!text  }\strc_references_prepare_inline_references_yes
+\letvalue{\??noteinteractioninline\v!yes   }\strc_references_prepare_inline_references_yes
 
-\setvalue{\??noteinteractiondisplay\v!no}%
+% display (for 'all' we need unique text and number attributes so we resolve twice
+% as we otherwise don't get the number one which is lapped in the margin so we need
+% to explicitly visit it)
+
+\def\strc_references_prepare_display_references_nop
   {\let\strc_notes_set_reference_attribute_number\donothing
-   \let\strc_notes_set_reference_attribute_text  \donothing
+   \let\strc_notes_set_reference_attribute_text\donothing
    \let\strc_notes_set_destination_attribute_text\donothing
-   \let\strc_notes_set_style_color_display       \strc_notes_set_style_color_display_nop}
+   \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_nop}
 
-\setvalue{\??noteinteractiondisplay\v!all}%
-  {\strc_references_get_simple_page_reference{page(\clf_notesymbolpage{\currentnote}\currentnotenumber)}%
-   \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
-  %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
-   \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
-   \edef\strc_notes_set_destination_attribute_text{\attribute\destinationattribute\currentdestinationattribute}%
-   \let \strc_notes_set_reference_attribute_number\strc_notes_set_reference_attribute_text
-   \let \strc_notes_set_style_color_display       \strc_notes_set_style_color_display_yes}
+% \def\strc_references_prepare_display_references_yes_number
+%   {\let\strc_notes_set_reference_attribute_text\donothing
+%    \strc_references_get_simple_page_reference{symb:\currentnote:\currentnotenumber}% reference
+%    \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+%    \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes}
 
-\setvalue{\??noteinteractiondisplay\v!text}%
-  {\strc_references_get_simple_page_reference{page(\clf_notesymbolpage{\currentnote}\currentnotenumber)}%
-   \edef\strc_notes_set_reference_attribute_text  {\attribute\referenceattribute\currentreferenceattribute}%
-  %\strc_references_set_simple_page_reference{note:\cldcontext{structures.notes.internalid("\currentnote",\currentnotenumber)}}%
-   \strc_references_set_simple_page_reference{note:\currentnote:\currentnotenumber}%
-   \edef\strc_notes_set_destination_attribute_text{\attribute\destinationattribute\currentdestinationattribute}%
-   \let \strc_notes_set_reference_attribute_number\donothing
-   \let \strc_notes_set_style_color_display       \strc_notes_set_style_color_display_yes}
+% \def\strc_references_prepare_display_references_yes_text
+%   {\strc_references_get_simple_page_reference{symb:\currentnote:\currentnotenumber}% reference
+%    \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+%    \let\strc_notes_set_reference_attribute_number\donothing
+%    \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes}
 
-\expandafter\let\csname\??noteinteractiondisplay\v!number\expandafter\endcsname\csname\??noteinteractiondisplay\v!yes\endcsname
+% \def\strc_references_prepare_display_references_yes_all
+%   {\strc_references_get_simple_page_reference{symb:\currentnote:\currentnotenumber}% reference
+%    \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+%    \strc_references_get_simple_page_reference{symb:\currentnote:\currentnotenumber}% reference
+%    \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+%    \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes}
+
+\def\strc_references_prepare_display_references_yes_number
+  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \ifcase\currentnoteinternal\relax
+     \strc_references_prepare_display_references_nop
+   \else
+     \let\strc_notes_set_reference_attribute_text\donothing
+     \strc_references_get_simple_page_reference{*\currentnoteinternal}% reference
+     \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+     \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
+   \fi}
+
+\def\strc_references_prepare_display_references_yes_text
+  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \ifcase\currentnoteinternal\relax
+     \strc_references_prepare_display_references_nop
+   \else
+     \strc_references_get_simple_page_reference{*\currentnoteinternal}% reference
+     \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+     \let\strc_notes_set_reference_attribute_number\donothing
+     \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
+   \fi}
+
+\def\strc_references_prepare_display_references_yes_all
+  {\edef\currentnoteinternal{\clf_noteinternal{\currentnote}\currentnotenumber}%
+   \ifcase\currentnoteinternal\relax
+     \strc_references_prepare_display_references_nop
+   \else
+     \strc_references_get_simple_page_reference{*\currentnoteinternal}% reference
+     \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+     \strc_references_get_simple_page_reference{*\currentnoteinternal}% reference
+     \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+     \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
+   \fi}
+
+\letvalue{\??noteinteractiondisplay\v!no    }\strc_references_prepare_display_references_nop
+\letvalue{\??noteinteractiondisplay\v!all   }\strc_references_prepare_display_references_yes_all
+\letvalue{\??noteinteractiondisplay\v!number}\strc_references_prepare_display_references_yes_number
+\letvalue{\??noteinteractiondisplay\v!text  }\strc_references_prepare_display_references_yes_text
+\letvalue{\??noteinteractiondisplay\v!yes   }\strc_references_prepare_display_references_yes_number
 
 \let\strc_notes_set_style_color_inline_nop \usenotestyleandcolor
 \let\strc_notes_set_style_color_display_nop\usenotationstyleandcolor
@@ -603,26 +656,32 @@
      \noteparameter\c!symbolcommand{\symbol[\v!note:\v!previouspage]}%
    \fi}
 
-\unexpanded\def\strc_notes_register_note_page % called more often than needed
-  {\iftrialtypesetting \else
-     \normalexpanded{\noexpand\ctxlatecommand{setnotesymbolpage("\currentnote",\currentnotenumber)}}%
-   \fi}
-
 \unexpanded\def\strc_notes_inject_symbol_yes
   {\strc_notes_inject_symbol_indeed\conditionaltrue}
 
 \unexpanded\def\strc_notes_inject_symbol_nop
   {\strc_notes_inject_symbol_indeed\conditionalfalse}
 
-% % this flushes the data to the list
-%
-% \unexpanded\def\strc_notes_inject_symbol_snc
-%   {\currentconstructionsynchronize}
-%
-% but instead we need to do this with the content
+\definemargindata
+  [strc_notes_destination_margin]
+  [\v!left]
+  [\c!margin=\zeropoint,
+   \c!width=\zeropoint,
+   \c!style=,
+   \c!color=]
 
-\unexpanded\def\strc_notes_inject_symbol_snc % so this will go away probably
-  {}
+% \unexpanded\def\strc_notes_destination_hack
+%   {\ifx\strc_notes_get_destination_attribute_symbol\empty\else
+%      \strc_notes_destination_hack_indeed
+%    \fi}
+%
+% \unexpanded\def\strc_notes_destination_hack_indeed % can be a helper
+%   {\strc_notes_destination_margin
+%      {\setbox\scratchbox\hpack \strc_notes_get_destination_attribute_symbol{}%
+%       \wd\scratchbox\makeupwidth
+%       \ht\scratchbox\strutht
+%       \dp\scratchbox\strutdp
+%       \hpack to \zeropoint{\box\scratchbox\hss}}}
 
 \unexpanded\def\strc_notes_inject_symbol_indeed#synchronize%
   {\removeunwantedspaces
@@ -633,22 +692,19 @@
    \fi
    \nobreak
    \begingroup
-   \ifconditional#synchronize\relax
-     \strc_notes_inject_symbol_snc % this flushes the data to the list
-   \fi
-   \strc_notes_register_note_page % this registers the symbol page number (late)
    \strc_notes_interaction_check_inline
    \strc_notes_set_style_color_inline\c!textstyle\c!textcolor
-   \hbox \strc_notes_get_reference_attribute_symbol \bgroup
-   \dostarttagged\t!descriptionsymbol\currentnote
-   \dotagsetnotesymbol
-   \noteparameter\c!textcommand{\clf_noteprefixednumber{\currentnote}\currentnotenumber\relax}%
-   % the next one can cycle so we need to make sure it has no advance width
-   \doif{\noteparameter\c!indicator}\v!yes\strc_notes_inject_pointer
-   \dostoptagged
+   \hbox \strc_notes_get_reference_attribute_symbol \strc_notes_get_destination_attribute_symbol \bgroup
+  % \hbox \strc_notes_get_reference_attribute_symbol \bgroup \strc_notes_destination_hack
+     \strc_references_flush_destination_nodes % a bit late but ok
+     \dostarttagged\t!descriptionsymbol\currentnote
+     \dotagsetnotesymbol
+     \noteparameter\c!textcommand{\clf_noteprefixednumber{\currentnote}\currentnotenumber\relax}%
+     % the next one can cycle so we need to make sure it has no advance width
+     \doif{\noteparameter\c!indicator}\v!yes\strc_notes_inject_pointer
+     \dostoptagged
    \egroup
    \endgroup
-%    \dostoptagged % check
    \globallet\lastnotesymbol\relax}
 
 \unexpanded\def\strc_notes_inject_dummy % temp hack
@@ -1207,7 +1263,7 @@
    \reinstateconstructionnumberentry\currentconstructionlistentry % we could store the number in the entry (e.g. needed when local notes in table)
    %
    \dontcomplain
-%  \begingroup
+   %begingroup
    \strc_notes_interaction_check_display
    \strc_notes_set_reference_attribute_text
    \strc_constructions_stored_start
@@ -1217,7 +1273,7 @@
    \strc_notes_inject_text\relax
    \ifvmode\obeydepth\else\endstrut\fi % \obeydepth is new per 2015-01-10
    \strc_constructions_stored_stop
-%  \endgroup
+   %endgroup
    }
 
 \unexpanded\def\strc_notes_inject_text % hm main?

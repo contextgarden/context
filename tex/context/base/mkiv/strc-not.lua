@@ -302,85 +302,51 @@ implement {
     actions = notes.postpone
 }
 
-function notes.setsymbolpage(tag,n,l)
-    local l = l or listindex(tag,n)
-    if l then
-        local p = texgetcount("realpageno")
-        if trace_notes or trace_references then
-            report_notes("note %a of %a with list index %a gets symbol page %a",n,tag,l,p)
-        end
-        local entry = lists.cached[l]
-        if entry then
-            entry.references.symbolpage = p
-        else
-            report_notes("internal error: note %a of %a is not flushed",n,tag)
-        end
-    else
-        report_notes("internal error: note %a of %a is not initialized",n,tag)
-    end
-end
-
-implement {
-    name      = "setnotesymbolpage",
-    actions   = notes.setsymbolpage,
-    arguments = { "string", "integer" }
-}
-
-local function getsymbolpage(tag,n)
-    local li = internal(tag,n)
-    li = li and li.references
-    li = li and (li.symbolpage or li.realpage) or 0
-    if trace_notes or trace_references then
-        report_notes("page number of note symbol %a of %a is %a",n,tag,li)
-    end
-    return li
-end
-
-local function getnumberpage(tag,n)
-    local li = internal(tag,n)
-    li = li and li.references
-    li = li and li.realpage or 0
-    if trace_notes or trace_references then
-        report_notes("page number of note number %s of %a is %a",n,tag,li)
-    end
-    return li
-end
-
-local function getdeltapage(tag,n)
-    -- 0:unknown 1:textbefore, 2:textafter, 3:samepage
-    local what = 0
- -- references.internals[lists.tobesaved[nd].internal]
+local function getinternal(tag,n)
     local li = internal(tag,n)
     if li then
         local references = li.references
         if references then
-            local symbolpage = references.symbolpage or 0
-            local notepage   = references.realpage   or 0
+            return references.internal or 0
+        end
+    end
+    return 0
+end
+
+local function getdeltapage(tag,n)
+    -- 0:unknown 1:textbefore, 2:textafter, 3:samepage
+    local li = internal(tag,n)
+    if li then
+        local references = li.references
+        if references then
+
+         -- local symb = structures.references.collected[""]["symb:"..tag..":"..n]
+            local symb = structures.references.collected[""]["*"..(references.internal or 0)]
+            local notepage   = references.realpage or 0
+            local symbolpage = symb and symb.references.realpage or -1
             if trace_references then
                 report_notes("note number %a of %a points from page %a to page %a",n,tag,symbolpage,notepage)
             end
             if notepage < symbolpage then
-                what = 3 -- after
+                return 3 -- after
             elseif notepage > symbolpage then
-                what = 2 -- before
+                return 2 -- before
             elseif notepage > 0 then
-                what = 1 -- same
+                return 1 -- same
             end
         else
             -- might be a note that is not flushed due to to deep
             -- nesting in a vbox
         end
     end
-    return what
+    return 0
 end
 
-notes.getsymbolpage = getsymbolpage
-notes.getnumberpage = getnumberpage
-notes.getdeltapage  = getdeltapage
+notes.getinternal  = getinternal
+notes.getdeltapage = getdeltapage
 
-implement { name = "notesymbolpage", actions = { getsymbolpage, context }, arguments = { "string", "integer" } }
-implement { name = "notenumberpage", actions = { getnumberpage, context }, arguments = { "string", "integer" } }
-implement { name = "notedeltapage",  actions = { getdeltapage,  context }, arguments = { "string", "integer" } }
+implement { name = "noteinternal",  actions = { getinternal,  context }, arguments = { "string", "integer" } }
+implement { name = "notedeltapage", actions = { getdeltapage, context }, arguments = { "string", "integer" } }
 
 local function flushnotes(tag,whatkind,how) -- store and postpone
     local state = notestates[tag]

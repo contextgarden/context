@@ -101,24 +101,6 @@ local implement           = interfaces.implement
 -- a paragraph we have a problem: we cannot calculate the height well. This happens
 -- with footnotes or content broken across a page.
 
-local function vlist_dimensions(start,stop)
-    local temp
-    if stop then
-        temp = getnext(stop)
-        setnext(stop,nil)
-    end
-    local v = vpack_list(start)
-    local w = getfield(v,"width")
-    local h = getfield(v,"height")
-    local d = getfield(v,"depth")
-    setlist(v)
-    free_node(v)
-    if temp then
-        setnext(stop,temp)
-    end
-    return w, h, d
-end
-
 local function hlist_dimensions(start,stop,parent)
     local last = stop and getnext(stop)
     if parent then
@@ -128,10 +110,28 @@ local function hlist_dimensions(start,stop,parent)
     end
 end
 
+local function vlist_dimensions(start,stop) -- also needs the stretch and so
+    local temp
+    if stop then
+        temp = getnext(stop)
+        setnext(stop,nil)
+    end
+    local v = vpack_list(start)
+    local w = getfield(v,"width")
+    local h = getfield(v,"height")
+    local d = getfield(v,"depth")
+    setlist(v) -- not needed
+    free_node(v)
+    if temp then
+        setnext(stop,temp)
+    end
+    return w, h, d
+end
+
 local function dimensions(parent,start,stop) -- in principle we could move some to the caller
     local id = getid(start)
     if start == stop then
-        if id == hlist_code or id == vlist_code or id == glyph_code or id == rule_code then -- or image
+        if id == hlist_code or id == vlist_code or id == glyph_code or id == rule_code then
             if trace_areas then
                 report_area("dimensions taken of %a",nodecodes[id])
             end
@@ -156,29 +156,77 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
         -- todo: if no prev and no next and parent
         -- todo: we need a a list_dimensions for a vlist
         if getid(parent) == vlist_code then
-            local l = getlist(parent)
-            local c = l
-            local ok = false
-            while c do
-                if c == start then
-                    ok = true
+            if false then
+                local l = getlist(parent)
+                local c = l
+                local ok = false
+                while c do
+                    if c == start then
+                        ok = true
+                    end
+                    if ok and getid(c) == hlist_code then
+                        break
+                    else
+                        c = getnext(c)
+                    end
                 end
-                if ok and getid(c) == hlist_code then
-                    break
+                if ok and c then
+                    if trace_areas then
+                        report_area("dimensions taken of first line in vlist")
+                    end
+                    return getfield(c,"width"), getfield(c,"height"), getfield(c,"depth"), c
                 else
-                    c = getnext(c)
+                    if trace_areas then
+                        report_area("dimensions taken of vlist (probably wrong)")
+                    end
+                    return hlist_dimensions(start,stop,parent)
                 end
-            end
-            if ok and c then
-                if trace_areas then
-                    report_area("dimensions taken of first line in vlist")
-                end
-                return getfield(c,"width"), getfield(c,"height"), getfield(c,"depth"), c
             else
-                if trace_areas then
-                    report_area("dimensions taken of vlist (probably wrong)")
+                --
+                -- we can as well calculate here because we only have kerns and glue
+                --
+                local first    = nil
+                local last     = nil
+                local current  = start
+                local noflines = 0
+                while current do
+                    local id = getid(current)
+                    if id == hlist_code or id == vlist_code or id == rule_code then
+                        if noflines == 0 then
+                            first    = current
+                            noflines = 1
+                        else
+                            noflines = noflines + 1
+                        end
+                        last = current
+                    end
+                    if current == stop then
+                        break
+                    else
+                        current = getnext(current)
+                    end
                 end
-                return hlist_dimensions(start,stop,parent)
+                if noflines > 1 then
+                    if trace_areas then
+                        report_area("dimensions taken of vlist")
+                    end
+                    local w, h, d = vlist_dimensions(first,last,parent)
+                    local ht = getfield(first,"height")
+                    return w, ht, d + h - ht, first
+                else
+                 -- return hlist_dimensions(start,stop,parent)
+                    if first then
+                        if trace_areas then
+                            report_area("dimensions taken of first line in vlist")
+                        end
+                        return getfield(first,"width"), getfield(first,"height"), getfield(first,"depth"), first
+                    else
+                        if trace_areas then
+                            report_area("dimensions taken of vlist (probably wrong)")
+                        end
+                        return hlist_dimensions(start,stop,parent)
+                    end
+                end
             end
         else
             if trace_areas then
@@ -207,7 +255,7 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
             -- special case, we only treat the first line in a vlist
             local l = getlist(line)
             if trace_areas then
-                report_area("%s: %04i %s %s %s => w=%p, h=%p, d=%p, c=%S","line",
+                report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p, c=%S","line",
                     reference,pardir or "---",txtdir or "---",
                     tosequence(l,nil,true),width,height,depth,resolved)
             end
@@ -217,7 +265,7 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
         else
             if head == first then
                 if trace_areas then
-                    report_area("%s: %04i %s %s %s => w=%p, h=%p, d=%p, c=%S","head",
+                    report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p, c=%S","head",
                         reference,pardir or "---",txtdir or "---",
                         tosequence(first,last,true),width,height,depth,resolved)
                 end
@@ -225,7 +273,7 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
                 return result, last
             else
                 if trace_areas then
-                    report_area("%s: %04i %s %s %s => w=%p, h=%p, d=%p, c=%S","middle",
+                    report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p, c=%S","middle",
                         reference,pardir or "---",txtdir or "---",
                         tosequence(first,last,true),width,height,depth,resolved)
                 end
@@ -234,9 +282,6 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
                     setlink(prev,result)
                 end
                 setlink(result,first)
-             -- if first == getnext(head) then
-             --     setnext(head,result) -- hm, weird
-             -- end
                 return head, last
             end
         end
@@ -312,6 +357,12 @@ end
 
 -- skip is somewhat messy
 
+-- todo: when line we can look at the next line
+
+-- see dimensions: this is tricky with split off boxes like inserts
+-- where we can end up with a first and last spanning lines so maybe
+-- we need to do vlists differently
+
 local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
     if head then
         local current, first, last, firstdir, reference = head, nil, nil, nil, nil
@@ -320,10 +371,6 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
         while current do
             local id = getid(current)
             if id == hlist_code or id == vlist_code then
-
-                -- see dimensions: this is tricky with split off boxes like inserts
-                -- where we can end up with a first and last spanning lines
-
                 local r = getattr(current,attribute)
                 -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
                 -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]
@@ -350,7 +397,9 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                 if list then
                     local h, ok
                     h, ok , pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
-                    setlist(current,h)
+                    if h ~= current then
+                        setlist(current,h)
+                    end
                 end
                 if r then
                     done[r] = done[r] - 1
@@ -402,7 +451,10 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
                 end
                 local list = getlist(current)
                 if list then
-                    setlist(current,(inject_area(list,attribute,make,stack,done,current,pardir,txtdir)))
+                    local h = inject_area(list,attribute,make,stack,done,current,pardir,txtdir)
+                    if h ~= current then
+                        setlist(current,h)
+                    end
                 end
             elseif id == dir_code then
                 txtdir = getfield(current,"dir")
@@ -776,12 +828,27 @@ function references.mark(reference,h,d,view)
 end
 
 function references.inject(prefix,reference,specification) -- todo: use currentreference is possible
--- print(prefix,reference,h,d,highlight,newwindow,layer)
     local set, bug = references.identify(prefix,reference)
     if bug or #set == 0 then
         -- unknown ref, just don't set it and issue an error
     else
+        -- nil prefix when ""
         -- check
+        set.highlight = specification.highlight
+        set.newwindow = specification.newwindow
+        set.layer     = specification.layer
+        setreference(specification.height,specification.depth,set) -- sets attribute / todo: for set[*].error
+    end
+end
+
+function references.injectinternal(internal,specification) -- todo: use currentreference is possible
+    local set = references.internals[internal]
+    if set then
+        -- unknown ref, just don't set it and issue an error
+    else
+        -- nil prefix when ""
+        -- check
+        set = { set }
         set.highlight = specification.highlight
         set.newwindow = specification.newwindow
         set.layer     = specification.layer
@@ -802,6 +869,21 @@ implement {
     arguments = {
         "string",
         "string",
+        {
+            { "highlight", "boolean" },
+            { "newwindow", "boolean" },
+            { "layer" },
+            { "height", "dimen" },
+            { "depth", "dimen" },
+        }
+    }
+}
+
+implement {
+    name      = "injectinternalreference",
+    actions   = references.injectinternal,
+    arguments = {
+        "integer",
         {
             { "highlight", "boolean" },
             { "newwindow", "boolean" },

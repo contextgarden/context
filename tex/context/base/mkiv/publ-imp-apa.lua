@@ -33,6 +33,7 @@ local specification = {
         author      = "author", -- interpreted as name(s)
         withauthor  = "author",
         editor      = "author",
+        translator  = "author",
         artist      = "author",
         composer    = "author",
         producer    = "author",
@@ -90,7 +91,7 @@ categories.article = {
         "author"
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "year",
         "subtitle", "type", "file",
         "journal", "volume", "number", "pages",
@@ -108,7 +109,7 @@ categories.magazine = {
         "journal",
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "subtitle", "type", "file",
         "number",
         "month", "day",
@@ -130,7 +131,7 @@ categories.periodical = {
         "year",
     },
     optional = {
-        "author", "withauthor",
+        "author", "withauthor", "translator",
         "subtitle", "file",
         "series", "volume", "number", "month",
         "organization",
@@ -152,7 +153,7 @@ categories.standard = {
         "doi", "note",
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
     },
 }
 
@@ -166,7 +167,7 @@ categories.book = {
     },
     required = { "author" },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "year", "month", "day",
         "subtitle", "type",  "file",
         "editionset", "series",
@@ -188,7 +189,7 @@ categories.inbook = {
         "year" ,
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "subtitle", "type", "file",
         "booktitle",
         -- APA ignores this: "chapter",
@@ -214,7 +215,7 @@ categories.incollection = {
         "year",
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "subtitle", "type", "file",
         "editionset", "series",
         -- APA ignores this: "chapter",
@@ -236,7 +237,7 @@ categories.booklet = {
         "author"
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "publisher",
         "year", "month",
         "subtitle", "type", "file",
@@ -259,7 +260,7 @@ categories.proceedings = {
         "year"
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "publisher",
         "subtitle", "file",
         "editionset", "series",
@@ -275,7 +276,7 @@ categories.inproceedings = {
     sets     = categories.incollection.sets,
     required = categories.incollection.required,
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "subtitle", "type", "file",
         "month",
         "edition", "series",
@@ -300,7 +301,7 @@ categories.thesis = {
         "type"
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "subtitle", "file",
         "month",
         "address",
@@ -317,7 +318,7 @@ categories.mastersthesis = {
         "year"
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "type",
         "subtitle", "file",
         "month",
@@ -343,7 +344,7 @@ categories.techreport = {
         "year"
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "publisher",
         "address",
         "subtitle", "file",
@@ -367,7 +368,7 @@ categories.manual = {
     },
     optional = {
         "author", "publisher",
-        "withauthor",
+        "withauthor", "translator",
         "address",
         "subtitle", "file",
         "editionset", "month", "year",
@@ -396,7 +397,7 @@ categories.patent = {
         "type",
         --check this: "language",
         "author", "publisher",
-        "withauthor",
+        "withauthor", "translator",
         "title", "subtitle", "file",
         "address",
         "day", "month",
@@ -416,7 +417,7 @@ categories.unpublished = {
         "note"
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "subtitle", "file",
         "year", "month",
         "doi"
@@ -435,7 +436,7 @@ categories.electronic = {
     optional = {
         "subtitle", "type", "file",
         "year", "month",
-        "author", "withauthor",
+        "author", "withauthor", "translator",
         "address",
         "organization",
         "howpublished",
@@ -457,7 +458,7 @@ categories.film = {
         "address", "publisher", -- aka studio
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "type",
         "note",
         "doi",
@@ -477,7 +478,7 @@ categories.music = {
         "address", "publisher", -- aka label
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "type",
         "note",
         "doi",
@@ -494,7 +495,7 @@ categories.misc = {
         -- nothing is really important here
     },
     optional = {
-        "author", "withauthor",
+        "author", "withauthor", "translator",
         "title", "subtitle", "file",
         "year", "month",
         "howpublished",
@@ -514,7 +515,7 @@ categories.other = {
         "year"
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "subtitle", "file",
         "doi", "note",
     },
@@ -532,7 +533,7 @@ categories.literal = {
         "text"
     },
     optional = {
-        "withauthor",
+        "withauthor", "translator",
         "doi", "note"
     },
     virtual = false,

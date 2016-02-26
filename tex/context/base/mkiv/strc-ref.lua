@@ -507,7 +507,6 @@ local function register_from_lists(collected,derived,pages,sections)
             end
         end
     end
- -- inspect(derived)
 end
 
 references.registerinitializer(function() register_from_lists(lists.collected,derived) end)
@@ -1253,7 +1252,6 @@ function references.loadpresets(product,component) -- we can consider a special 
                 loadproductvariables (product,component,utilitydata)
                 loadproductreferences(product,component,utilitydata)
                 loadproductcomponents(product,component,utilitydata)
-             -- inspect(productdata)
             end
         end
     end
@@ -1937,7 +1935,7 @@ local function setinternalreference(specification)
         -- ugly .. later we decide to ignore it when we have a real one
         -- but for testing we might want to see them all
 
-        if internal and innermethod ~= v_name then 
+        if internal and innermethod ~= v_name then
          -- we dont' want too many #1 #2 #3 etc
             tn = tn + 1
             t[tn] = internal -- when number it's internal

@@ -949,7 +949,7 @@
 \def\strc_formulas_start_place_yes[#1]%
   {\doifassignmentelse{#1}\strc_formulas_start_place_parameters\strc_formulas_start_place_reference[#1]}
 
-\def\strc_formulas_start_place_nop
+\def\strc_formulas_start_place_nop[#1]%
   {\let\currentplaceformulareference\empty
    \let\currentplaceformulasuffix   \empty
    \strc_formulas_place_nop}
@@ -961,7 +961,7 @@
    \strc_formulas_place_nop}
 
 \def\strc_formulas_start_place_parameters[#1]%
-  {\letdummyparameter\c!name     \empty
+  {\letdummyparameter\c!title    \empty
    \letdummyparameter\c!reference\empty
    \letdummyparameter\c!suffix   \empty
    \getdummyparameters[#1]%

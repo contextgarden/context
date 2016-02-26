@@ -512,8 +512,11 @@ end
 local function pdflinkname(destination,internal,page)
     local method = references.innermethod
     if method == v_auto then
-        flaginternals[internal] = true -- for bookmarks and so
-        local used = usedinternals[internal]
+        local used = defaultview
+        if internal then
+            flaginternals[internal] = true -- for bookmarks and so
+            used = usedinternals[internal] or defaultview
+        end
         if used == defaultview then -- or used == true then
             return pagereferences[page]
         else

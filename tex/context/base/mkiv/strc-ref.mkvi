@@ -222,7 +222,9 @@
                     internal  \nextinternalreference
                   % block     {\currentsectionblock}%
                     view      {\interactionparameter\c!focus}%
+                \ifx\referenceprefix\empty\else
                     prefix    {\referenceprefix}%
+                \fi
                     reference {\currentreferencelabels}%
                 }%
                 metadata {%
@@ -282,7 +284,9 @@
                     internal  \nextinternalreference
                  %  block     {\currentsectionblock}%
                     view      {\interactionparameter\c!focus}%
+                \ifx\referenceprefix\empty\else
                     prefix    {\referenceprefix}%
+                \fi
                     reference {\currentreferencelabels}%
                 }%
                 metadata {%
@@ -309,7 +313,9 @@
                 internal  \nextinternalreference
               % block     {\currentsectionblock}%
                 view      {\interactionparameter\c!focus}%
+            \ifx\referenceprefix\empty\else
                 prefix    {\referenceprefix}%
+            \fi
                 reference {#labels}%
             }%
             metadata {%
@@ -386,13 +392,40 @@
 \def\strc_references_set_simple_page_reference#label%
   {\iflocation
      \strc_references_start_destination_nodes
+     \setnextinternalreference
      \clf_setreferenceattribute
         {%
             references {%
               % block     {\currentsectionblock}%
                 view      {\interactionparameter\c!focus}%
+            \ifx\referenceprefix\empty\else
                 prefix    {\referenceprefix}%
+            \fi
                 reference {#label}%
+                internal  \nextinternalreference
+            }%
+            metadata {%
+                kind {\s!page}%
+            }%
+        }%
+     \relax
+     \strc_references_stop_destination_nodes
+     \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   \else
+     \setbox\b_strc_destination_nodes\emptyhbox
+     \xdef\currentdestinationattribute{\number\attributeunsetvalue}%
+   \fi}
+
+\def\strc_references_set_simple_internal_reference#label% no prefix
+  {\iflocation
+     \strc_references_start_destination_nodes
+     \setnextinternalreference
+     \clf_setreferenceattribute
+        {%
+            references {%
+                view      {\interactionparameter\c!focus}%
+                reference {#label}%
+                internal  \nextinternalreference
             }%
             metadata {%
                 kind {\s!page}%
@@ -411,6 +444,21 @@
      \clf_injectreference
         {\referenceprefix}%
         {#label}%
+        {%
+            height \ht\strutbox
+            depth  \dp\strutbox
+            \extrareferencearguments
+        }%
+     \relax
+     \xdef\currentreferenceattribute{\number\lastreferenceattribute}%
+   \else
+     \xdef\currentreferenceattribute{\number\attributeunsetvalue}%
+   \fi}
+
+\def\strc_references_get_simple_internal_reference#internal%
+  {\iflocation
+     \clf_injectinternalreference
+        #internal
         {%
             height \ht\strutbox
             depth  \dp\strutbox

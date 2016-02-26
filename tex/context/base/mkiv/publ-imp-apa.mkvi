@@ -81,6 +81,11 @@
   [apa:\s!list:author]
 
 \definebtx
+  [apa:\s!list:translator]
+  [apa:\s!list:author]
+  [\c!authorconversion=normalshort]
+
+\definebtx
   [apa:\s!list:suffix]
   [apa:\s!list]
 
@@ -482,7 +487,7 @@
    apa:Directors=Directors,
    apa:Recordedby={Recorded by},
    apa:Author=Author,
-   apa:Translator={Trans.},           % Translator(s) (not used?)
+   apa:Translator={Trans.},           % Translator(s)
    apa:Advanced={Advanced online publication},
    apa:Retrieved={Available from},    % {Retrieved from},
    apa:In=In]
@@ -792,6 +797,13 @@
         \texdefinition{btx:apa:composed-title}{title}
     }
     \btxdoif {title} {
+        \btxdoif {translator} {
+            \btxleftparenthesis
+                \btxflush{translator}
+                \btxcomma
+                \btxlabeltext{apa:Translator}
+            \btxrightparenthesis
+        }
         \btxperiod
         % TODO: this period may NOT be wanted, as in: Title (2nd ed.).
     }
