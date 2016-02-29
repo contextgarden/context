@@ -25,6 +25,7 @@
 \definecolor[fakeparindentcolor][blue]
 
 \newif\iffakebaseline \fakebaselinetrue
+\newif\iffaketrigger  \faketriggerfalse
 
 \unexpanded\def\fakerule#1%
   {\strut
@@ -89,7 +90,8 @@
 \def\dofakewords#1%
   {\bgroup
    \dorecurse{#1}
-     {\getrandomcount\scratchcounter{1}{5}%
+     {\iffaketrigger\char\zerocount\fi % so that e.g. line numbering works
+      \getrandomcount\scratchcounter{1}{5}%
       \dorecurse\scratchcounter
         {\getrandomdimen\scratchdimen{.5em}{1.25em}%
          \fakerule\scratchdimen}%

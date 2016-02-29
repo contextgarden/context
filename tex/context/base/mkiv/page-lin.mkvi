@@ -310,7 +310,6 @@
    \b_page_lines_number     #box\relax
    \c_page_lines_column     #column\relax
    \c_page_lines_last_column#max\relax
-   \c_page_lines_nesting    #nesting\relax
    \fullrestoreglobalbodyfont
    \let\makelinenumber\page_lines_make_number % used at lua end
    \setbox\b_page_lines_scratch\vbox
@@ -318,7 +317,7 @@
       \offinterlineskip
       \clf_linenumbersstageone
         \b_page_lines_number
-        \ifcase\c_page_lines_nesting false\else true\fi
+        #nesting%
       \relax}%
    \clf_linenumbersstagetwo
      \b_page_lines_number

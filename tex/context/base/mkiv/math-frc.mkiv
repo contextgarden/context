@@ -393,9 +393,6 @@
 %     $$ {{a}\abovewithdelims()#1pt{b}} $$
 % }
 
-% \unexpanded\def\dfrac #1#2{{\displaystyle     {{#1}\normalover                       {#2}}}}
-% \unexpanded\def\tfrac #1#2{{\textstyle        {{#1}\normalover                       {#2}}}}
-
 \definemathfraction[i:frac] [\c!alternative=\v!inner,\c!mathstyle=]  % was script and then small but nothing needed
 \definemathfraction[i:tfrac][\c!alternative=\v!inner,\c!mathstyle=\s!text] % was script (before luatex fix)
 \definemathfraction[i:sfrac][\c!alternative=\v!inner,\c!mathstyle=\s!scriptscript]
@@ -426,6 +423,25 @@
 \unexpanded\def\tfrac{\csname\inlineordisplaymath id:tfrac\endcsname}
 \unexpanded\def\sfrac{\csname\inlineordisplaymath id:sfrac\endcsname}
 \unexpanded\def\dfrac{\csname\inlineordisplaymath id:dfrac\endcsname}
+
+\definemathfraction[ams]            [\c!strut=\v!no,\c!alternative=\v!outer]
+\definemathfraction[i:ams:frac][ams][\c!mathstyle={\s!cramped,\s!text}]
+\definemathfraction[d:ams:frac][ams][\c!mathstyle={\s!cramped,\s!display}]
+
+\unexpanded\def\ctxfrac{\csname\inlineordisplaymath id:frac\endcsname}
+\unexpanded\def\amsfrac{\csname\inlineordisplaymath id:ams:frac\endcsname}
+
+% \appendtoks
+%     \doifelse{\mathfractionparameter\c!option}{ams}%
+%       {\let\frac\amsfrac}%
+%       {\let\frac\ctxfrac}%
+% \to \everysetupmathfraction
+
+\appendtoks
+    \doifelse{\mathematicsparameter\c!fractions}{ams}%
+      {\let\frac\amsfrac}%
+      {\let\frac\ctxfrac}%
+\to \everysetupmathematics
 
 % \definemathfraction[ddfrac][\c!mathstyle=\s!display]
 % \definemathfraction[ttfrac][\c!mathstyle=\s!text]

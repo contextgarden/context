@@ -32,7 +32,7 @@ lists.enhancers        = lists.enhancers or { }
 storage.register("structures/notes/states", notes.states, "structures.notes.states")
 
 local notestates = notes.states
-local notedata   = { }
+local notedata   = table.setmetatableindex("table")
 
 local variables  = interfaces.variables
 local context    = context
@@ -51,10 +51,6 @@ local function store(tag,n)
     end
     --
     local nd = notedata[tag]
-    if not nd then
-        nd = { }
-        notedata[tag] = nd
-    end
     local nnd = #nd + 1
     nd[nnd] = n
     local state = notestates[tag]
@@ -66,7 +62,7 @@ local function store(tag,n)
         end
         state.start = state.start or nnd
     end
-    return #nd
+    return nnd
 end
 
 notes.store = store
@@ -79,25 +75,22 @@ implement {
 
 local function get(tag,n) -- tricky ... only works when defined
     local nd = notedata[tag]
+    if not n then
+        n = #nd
+    end
+    nd = nd[n]
     if nd then
-        n = n or #nd
-        nd = nd[n]
-        if nd then
-            if trace_notes then
-                report_notes("getting note %a of %a with listindex %a",n,tag,nd)
-            end
-            -- is this right?
---             local newdata = lists.collected[nd]
-            local newdata = lists.cached[nd]
---             local newdata = lists.tobesaved[nd]
-            return newdata
+        if trace_notes then
+            report_notes("getting note %a of %a with listindex %a",n,tag,nd)
         end
+        -- is this right?
+        local newdata = lists.cached[nd]
+        return newdata
     end
 end
 
 local function getn(tag)
-    local nd = notedata[tag]
-    return nd and #nd or 0
+    return #notedata[tag]
 end
 
 notes.get  = get

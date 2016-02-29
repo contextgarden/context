@@ -107,7 +107,7 @@
   {\doifelseassignment{#1}\strc_descriptions_start_yes_assignment\strc_descriptions_start_yes_reference[#1]}
 
 \unexpanded\def\strc_descriptions_start_yes_assignment[#1]% todo userdata
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_start_yes_reference
@@ -124,11 +124,11 @@
       \strc_descriptions_start_yes_normal[#1]}}
 
 \unexpanded\def\strc_descriptions_start_yes_titled_indeed[#1]#2% todo userdata
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_start_yes_normal[#1]% todo userdata
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_start_nop
@@ -145,11 +145,11 @@
       \strc_descriptions_start_nop_normal}}%
 
 \unexpanded\def\strc_descriptions_start_nop_titled_indeed#1%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_start_nop_normal
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_stop
@@ -171,7 +171,7 @@
    \fi}
 
 \unexpanded\def\strc_descriptions_yes_titled[#1]#2%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_yes_titled[#1]%
@@ -181,11 +181,11 @@
       \strc_descriptions_yes_normal[#1]}}
 
 \unexpanded\def\strc_descriptions_yes_titled_indeed[#1]#2%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_yes_normal[#1]%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_nop
@@ -202,11 +202,11 @@
       \strc_descriptions_nop_normal}}
 
 \unexpanded\def\strc_descriptions_nop_titled_indeed#1%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#1},\c!bookmark=,\c!list=]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_descriptions_nop_normal
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 
 %D Handlers:

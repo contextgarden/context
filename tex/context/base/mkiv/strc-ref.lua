@@ -2059,11 +2059,24 @@ function references.getinternallistreference(n) -- n points into list (todo: reg
     return i and destinationattributes[i] or 0
 end
 
+function references.getinternalcachedlistreference(n) -- n points into list (todo: registers)
+    local l = lists.cached[n]
+    local i = l and l.references.internal
+    return i and destinationattributes[i] or 0
+end
+
 implement {
     name      = "getinternallistreference",
     actions   = { references.getinternallistreference, context },
     arguments = "integer"
 }
+
+implement {
+    name      = "getinternalcachedlistreference",
+    actions   = { references.getinternalcachedlistreference, context },
+    arguments = "integer"
+}
+
 
 --
 

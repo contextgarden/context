@@ -6463,6 +6463,10 @@ return {
   },
  },
  ["constants"]={
+  ["fractions"]={
+   ["en"]="fractions",
+   ["nl"]="breuken",
+  },
   ["action"]={
    ["cs"]="akce",
    ["de"]="aktion",

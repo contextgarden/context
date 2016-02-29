@@ -809,6 +809,7 @@
 		<cd:constant name='foregroundcolor' value='voorgrondkleur'/>
 		<cd:constant name='foregroundstyle' value='voorgrondletter'/>
 		<cd:constant name='format' value='formatteer'/>
+		<cd:constant name='fractions' value='breuken'/>
 		<cd:constant name='frame' value='kader'/>
 		<cd:constant name='framecolor' value='kaderkleur'/>
 		<cd:constant name='framecorner' value='kaderhoek'/>

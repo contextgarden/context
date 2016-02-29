@@ -286,7 +286,7 @@ function lists.discard(n)
         -- maybe an error message
     elseif n == #cached then
         cached[n] = nil
-        n = n -1
+        n = n - 1
         while n > 0 and cached[n] == false do
             cached[n] = nil -- collect garbage
             n = n - 1
@@ -330,7 +330,7 @@ function lists.enhance(n)
         local kind = metadata.kind
         local name = metadata.name
         if trace_lists then
-            report_lists("enhancing %a, name %a",n,name)
+            report_lists("enhancing %a, name %a, page %a",n,name,references.realpage or 0)
         end
 --         if references then
 --             -- is this used ?

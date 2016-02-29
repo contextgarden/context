@@ -236,7 +236,7 @@
    \doifelsenextoptionalcs\strc_notations_command_yes\strc_notations_command_nop}
 
 \unexpanded\def\strc_notations_command_nop#title%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#title},\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#title},\c!bookmark=,\c!list=]%
    \csname\??constructionnotehandler\currentconstructionhandler\endcsname
    \strc_constructions_finalize
    \normalexpanded{\endgroup\noteparameter\c!next}}
@@ -245,13 +245,13 @@
   {\doifelseassignment{#optional}\strc_notations_command_assignment\strc_notations_command_argument[#optional]}
 
 \unexpanded\def\strc_notations_command_assignment[#settings]%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#settings][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#settings]%
    \csname\??constructionnotehandler\currentconstructionhandler\endcsname
    \strc_constructions_finalize
    \normalexpanded{\endgroup\noteparameter\c!next}}
 
 \unexpanded\def\strc_notations_command_argument[#reference]#title%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#reference},\c!title={#title},\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#reference},\c!title={#title},\c!bookmark=,\c!list=]%
    \csname\??constructionnotehandler\currentconstructionhandler\endcsname
    \strc_constructions_finalize
    \normalexpanded{\endgroup\noteparameter\c!next}}
@@ -270,13 +270,13 @@
    \doifelsenextoptionalcs\strc_pickup_yes\strc_pickup_nop}
 
 \unexpanded\def\strc_notations_start_yes[#reference]#title%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference={#reference},\c!title={#title},\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#reference},\c!title={#title},\c!bookmark=,\c!list=]%
    \csname\??constructionnotehandler\currentconstructionhandler\endcsname
    \strc_constructions_finalize
    \normalexpanded{\endgroup\noteparameter\c!next}}
 
 \unexpanded\def\strc_notations_start_nop#title%
-  {\strc_constructions_register[\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#title},\c!bookmark=,\c!list=][]%
+  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#title},\c!bookmark=,\c!list=]%
    \csname\??constructionnotehandler\currentconstructionhandler\endcsname
    \strc_constructions_finalize
    \normalexpanded{\endgroup\noteparameter\c!next}}
@@ -1260,7 +1260,7 @@
    % as we can have collected notes (e.g. in tables) we need to recover
    % \currentdescriptionattribute and \currentdescriptionsynchronize
    %
-   \reinstateconstructionnumberentry\currentconstructionlistentry % we could store the number in the entry (e.g. needed when local notes in table)
+   \reinstatecachedconstructionnumberentry\currentconstructionlistentry % we could store the number in the entry (e.g. needed when local notes in table)
    %
    \dontcomplain
    %begingroup

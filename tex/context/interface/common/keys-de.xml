@@ -809,6 +809,7 @@
 		<cd:constant name='foregroundcolor' value='foregroundcolor'/>
 		<cd:constant name='foregroundstyle' value='foregroundstyle'/>
 		<cd:constant name='format' value='formatieren'/>
+		<cd:constant name='fractions' value='fractions'/>
 		<cd:constant name='frame' value='rahmen'/>
 		<cd:constant name='framecolor' value='rahmenfarbe'/>
 		<cd:constant name='framecorner' value='rahmenwinkel'/>

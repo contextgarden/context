@@ -809,6 +809,7 @@
 		<cd:constant name='foregroundcolor' value='رنگ‌پیش‌زمینه'/>
 		<cd:constant name='foregroundstyle' value='سبک‌پیش‌زمینه'/>
 		<cd:constant name='format' value='شمایل'/>
+		<cd:constant name='fractions' value='fractions'/>
 		<cd:constant name='frame' value='قالب'/>
 		<cd:constant name='framecolor' value='رنگ‌قالب'/>
 		<cd:constant name='framecorner' value='گوشه‌قالب'/>

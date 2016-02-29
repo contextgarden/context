@@ -135,7 +135,7 @@
    \dodoubleempty\strc_constructions_start_regular}
 
 \unexpanded\def\strc_constructions_start_regular[#1][#2]%
-  {\strc_constructions_register[\c!label={\constructionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1][#2]%
+  {\strc_constructions_register[#2][\c!label={\constructionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,#1]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \unexpanded\def\strc_constructions_stop
@@ -877,14 +877,14 @@
 
 \let\currentconstructionlistentry\!!zerocount
 
-\def\strc_constructions_register
+\unexpanded\def\strc_constructions_register
   {\clf_doifelselisthasentry\numexpr\currentconstructionlistentry\relax
      \strc_constructions_register_nop
      \strc_constructions_register_yes}
 
 % \def\strc_constructions_register{\strc_constructions_register_yes}
 
-\def\strc_constructions_register_nop[#1][#2]% #1=interfaced-settings, #2=optional user data
+\def\strc_constructions_register_nop[#1][#2]% #1=optional user data #2=interfaced-settings
  %{\writestatus{constructions}{reusing \currentconstruction: \number\currentconstructionlistentry}}
   {}
 
@@ -898,9 +898,9 @@
 \let\currentconstructionsynchronize\relax
 \let\currentconstructionattribute  \attributeunsetvalue
 
-\def\strc_constructions_register_yes[#1][#2]% #1=interfaced-settings, #2=optional user data
+\def\strc_constructions_register_yes[#1][#2]% #1=optional user data #2=interfaced-settings
   {\begingroup                              % similar to structure so we might generalize this
-   \setupcurrentconstruction[#1]%           % xdef's will become edef's
+   \setupcurrentconstruction[#2]%           % xdef's will become edef's
    \xdef\currentconstructionexpansion      {\constructionparameter\c!expansion}%
    \xdef\currentconstructionxmlsetup       {\constructionparameter\c!xmlsetup}%
    \xdef\currentconstructioncatcodes       {\constructionparameter\s!catcodes}%
@@ -1008,7 +1008,7 @@
     \or
        % symbol
     \fi
-        userdata {\detokenize{#2}}
+        userdata {\detokenize{#1}}
      \relax
    % \writestatus{constructions}{registering \currentconstruction: \number\scratchcounter}%
      \clf_setinternalreference
@@ -1031,6 +1031,10 @@
 
 \def\reinstateconstructionnumberentry#1% was xdef
   {\edef\currentconstructionattribute  {\clf_getinternallistreference#1}%
+   \edef\currentconstructionsynchronize{\ctxlatecommand{enhancelist(#1)}}}
+
+\def\reinstatecachedconstructionnumberentry#1% was xdef | #1 = cached index can be different from real
+  {\edef\currentconstructionattribute  {\clf_getinternalcachedlistreference#1}% destination
    \edef\currentconstructionsynchronize{\ctxlatecommand{enhancelist(#1)}}}
 
 \installstructurelistprocessor{construction}{\usestructurelistprocessor{number+title}}

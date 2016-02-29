@@ -40,6 +40,8 @@ local v_next             = variables.next
 local v_page             = variables.page
 local v_no               = variables.no
 
+local properties         = nodes.properties
+
 local nodecodes          = nodes.nodecodes
 local skipcodes          = nodes.skipcodes
 local whatcodes          = nodes.whatcodes
@@ -346,73 +348,130 @@ end
 -- store first and last per page
 -- maybe just set marks directly
 
-function boxed.stage_one(n,nested)
-    current_list = { }
-    local box = getbox(n)
-    if box then
-        local list = getlist(box)
-        if not list then
-            return
-        end
-        if nested then
-            local id = getid(box)
-            if id == vlist_code then
-                if listisnumbered(list) then
-                    -- ok
-                else
-                    list = findnumberedlist(list)
+local function findcolumngap(list)
+    -- we assume wrapped boxes, only one with numbers
+    local n = list
+    while n do
+        local id = getid(n)
+        if id == hlist_code or id == vlist_code then
+            local p = properties[n]
+            if p and p.columngap then
+                if trace_numbers then
+                    report_lines("first column gap %a",p.columngap)
                 end
-            else -- hlist
-                list = findnumberedlist(list)
-            end
-        end
-        -- we assume we have a vlist
-        if list then
-            local last_a = nil
-            local last_v = -1
-            local skip   = false
-            for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
-                local subtype = getsubtype(n)
-                if subtype ~= line_code then
-                    -- go on
-                elseif getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
-                    -- skip funny hlists -- todo: check line subtype
-                else
-                    local a = lineisnumbered(n)
-                    if a then
-                        if last_a ~= a then
-                            local da = data[a]
-                            local ma = da.method
-                            if ma == v_next then
-                                skip = true
-                            elseif ma == v_page then
-                                da.start = 1 -- eventually we will have a normal counter
-                            end
-                            last_a = a
-                            if trace_numbers then
-                                report_lines("starting line number range %s: start %s, continue %s",a,da.start,da.continue or v_no)
-                            end
-                        end
-                        if getattr(n,a_displaymath) then
-                            if is_display_math(n) then
-                                check_number(n,a,skip)
-                            end
-                        else
-                            local v = getattr(list,a_verbatimline)
-                            if not v or v ~= last_v then
-                                last_v = v
-                                check_number(n,a,skip)
-                            else
-                                check_number(n,a,skip,true)
-                            end
-                        end
-                        skip = false
+                return n
+            else
+                local list = getlist(n)
+                if list then
+                    local okay = findcolumngap(list)
+                    if okay then
+                        return okay
                     end
                 end
             end
         end
+        n = getnext(n)
     end
 end
+
+function boxed.stage_one(n,nested)
+    current_list = { }
+    local box = getbox(n)
+    if not box then
+        return
+    end
+    local list = getlist(box)
+    if not list then
+        return
+    end
+    local last_a = nil
+    local last_v = -1
+    local skip   = false
+
+    local function check()
+        for n in traverse_id(hlist_code,list) do -- attr test here and quit as soon as zero found
+            local subtype = getsubtype(n)
+            if subtype ~= line_code then
+                -- go on
+            elseif getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
+                -- skip funny hlists -- todo: check line subtype
+            else
+                local a = lineisnumbered(n)
+                if a then
+                    if last_a ~= a then
+                        local da = data[a]
+                        local ma = da.method
+                        if ma == v_next then
+                            skip = true
+                        elseif ma == v_page then
+                            da.start = 1 -- eventually we will have a normal counter
+                        end
+                        last_a = a
+                        if trace_numbers then
+                            report_lines("starting line number range %s: start %s, continue %s",a,da.start,da.continue or v_no)
+                        end
+                    end
+                    if getattr(n,a_displaymath) then
+                        if is_display_math(n) then
+                            check_number(n,a,skip)
+                        end
+                    else
+                        local v = getattr(list,a_verbatimline)
+                        if not v or v ~= last_v then
+                            last_v = v
+                            check_number(n,a,skip)
+                        else
+                            check_number(n,a,skip,true)
+                        end
+                    end
+                    skip = false
+                end
+            end
+        end
+    end
+
+    if nested == 0 then
+        if list then
+            check()
+        end
+    elseif nested == 1 then
+        local id = getid(box)
+        if id == vlist_code then
+            if listisnumbered(list) then
+                -- ok
+            else
+                list = findnumberedlist(list)
+            end
+        else -- hlist
+            list = findnumberedlist(list)
+        end
+        if list then
+            check()
+        end
+    elseif nested == 2 then
+        list = findcolumngap(list)
+        -- we assume we have a vlist
+        if not list then
+            return
+        end
+        for n in traverse_id(vlist_code,list) do
+            local p = properties[n]
+            if p and p.columngap then
+                if trace_numbers then
+                    report_lines("found column gap %a",p.columngap)
+                end
+                list = getlist(n)
+                if list then
+                    check()
+                end
+            end
+        end
+    else
+        -- bad call
+    end
+end
+
+-- column attribute
 
 function boxed.stage_two(n,m)
     if #current_list > 0 then
@@ -452,7 +511,7 @@ end
 implement {
     name      = "linenumbersstageone",
     actions   = boxed.stage_one,
-    arguments = { "integer", "boolean" }
+    arguments = { "integer", "integer" }
 }
 
 implement {
