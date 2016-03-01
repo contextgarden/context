@@ -1,0 +1,38 @@
+%D \module
+%D   [       file=m-newcolumnsets,
+%D        version=2016.02.29,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=New Columnsets,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module will eventually be replaced by \type {m-oldcolumnsets}.
+
+\ifdefined \definepagegrid
+    \expandafter \endinput
+\else
+    \loadmarkfile{page-cst}
+\fi
+
+% \let\definecolumnset       \definepagegrid
+% \let\setupcolumnset        \setuppagegrid
+% \let\setupcolumnsetlines   \setuppagegridlines
+% \let\setupcolumnsetstart   \setuppagegridstart
+% \let\startcolumnset        \startpagegrid
+% \let\stopcolumnset         \stoppagegrid
+% \let\definecolumnsetspan   \definepagegridspan
+% \let\setupcolumnsetspan    \setuppagegridspan
+% \let\startcolumnsetspan    \startpagegridspan
+% \let\stopcolumnsetspan     \stoppagegridspan
+% \let\columnsetspanwidth    \pagegridspanwidth
+% \let\definecolumnsetarea   \definepagegridarea
+% \let\setupcolumnsetarea    \setuppagegridarea
+% \let\setupcolumnsetareatext\setuppagegridareatext
+
+\endinput
+

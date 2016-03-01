@@ -1,0 +1,29 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][n=4,page=left]
+
+\definecolumnsetarea
+  [first]
+  [x=2,y=4,nx=2,ny=8,
+   background=contrast,
+   state=start]
+
+\definecolumnsetarea
+  [second]
+  [x=1,y=20,nx=1,ny=3,
+   background=contrast,
+   state=start]
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{50}{\fakewords{50}{100}\par}
+
+\stopcolumnset
+
+\stoptext

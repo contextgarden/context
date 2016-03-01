@@ -1,0 +1,42 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\usemodule[oldfun]
+
+\environment columnsets-000
+
+\unprotected \def\SpreadGapText#1#2{{\def\+{\blackrule[\c!width=#1]}#2}}
+
+\definecolumnset[example][n=4,page=left]
+
+\definecolumnsetarea
+  [title]
+  [x=1,y=1,nx=8,ny=8,
+   background=contrast,
+   color=white,
+   align={lohi,right},
+   state=start]
+
+\setupcolumnsetareatext
+  [title]
+  [\setups{the title}]
+
+\startsetups[the title]
+
+  \GapText
+    {\dimexpr(\makeupwidth+\backspace)} {6pt}
+    {RegularBold} {sa 4}
+    {A Title Spanni\+ng 2 Pages}
+
+\stopsetups
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{30}{\fakewords{50}{100}\par}
+
+\stopcolumnset
+
+\stoptext

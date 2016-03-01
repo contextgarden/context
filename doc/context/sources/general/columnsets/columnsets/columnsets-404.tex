@@ -1,0 +1,34 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][n=3,page=left]
+
+\setupbackgrounds[text][text][background=contrast]
+
+\setupcolumnset[frame=on,framecolor=color-4,rulethickness=1mm]
+
+\definecolor[fakerulecolor][white]
+
+\setupcolumnset[example:1][width=2cm]
+\setupcolumnset[example:2][width=4cm]
+\setupcolumnset[example:3][width=3cm]
+
+\setupcolumnset[example:4][width=3cm]
+\setupcolumnset[example:5][width=4cm]
+\setupcolumnset[example:6][width=6cm]
+
+\starttext
+
+\startcolumnset[example]
+
+\dorecurse{15}{
+  \dorecurse{3}{\fakewords{10}{15}\par}
+  \column[yes]
+}
+
+\stopcolumnset
+
+\stoptext

@@ -1,0 +1,19 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset [example-1] [n=2]
+\definecolumnset [example-2] [n=3]
+
+\starttext \showgrid
+
+  \startcolumnset [example-1]
+    \dorecurse {1}{\input tufte \par}
+  \stopcolumnset
+  \startcolumnset [example-2]
+    \dorecurse {2}{\input ward  \par}
+  \stopcolumnset
+
+\stoptext

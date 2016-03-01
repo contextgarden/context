@@ -1,0 +1,36 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][n=4,page=left]
+
+\starttext
+
+\startbuffer
+\placefigure [tbrl]
+  {tblr}
+  {\externalfigure[fake][width=\columnsetspanwidth{1},lines=5]}
+\placefigure [fxtb:6*4]
+  {fxtb}
+  {\externalfigure[fake][width=\columnsetspanwidth{2},lines=5]}
+\placefigure [btlr]
+  {btlr}
+  {\externalfigure[fake][width=\columnsetspanwidth{2},lines=5]}
+\placefigure [btlr]
+  {btlr}
+  {\externalfigure[fake][width=\columnsetspanwidth{3},lines=5]}
+
+\dorecurse {5} {
+  \fakewords{100}{200}\par
+}
+\stopbuffer
+
+\startcolumnset[example]
+
+  \dorecurse{6}{\getbuffer}
+
+\stopcolumnset
+
+\stoptext

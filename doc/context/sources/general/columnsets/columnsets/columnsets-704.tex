@@ -1,0 +1,69 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\startuseMPgraphic{mpos:par:columns}
+  path p ; numeric h ;
+  for i=1 upto nofmultipars :
+    p := multipars[i] ;
+    h := bbheight(p) ;
+    if multikind[i] = "single" :
+      fill p topenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor \MPcolor{color-1} shadedinto white ;
+      fill p bottomenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor white shadedinto \MPcolor{color-1} ;
+    elseif multikind[i] = "first" :
+      fill p
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor \MPcolor{color-2} shadedinto white ;
+    elseif multikind[i] = "middle" :
+      fill p topenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor \MPcolor{color-2} shadedinto white ;
+      fill p bottomenlarged -.5h
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor white shadedinto \MPcolor{color-3} ;
+    elseif multikind[i] = "last" :
+      fill p
+        withshademethod "linear"
+        withshadedirection shadedup
+        withcolor white shadedinto \MPcolor{color-3} ;
+    fi ;
+  endfor ;
+\stopuseMPgraphic
+
+\definecolumnset
+  [example]
+  [n=4,
+   page=left]
+
+\definetextbackground
+  [shade]
+  [location=paragraph,
+   mp=mpos:par:columns,
+   before=\blank,
+   after=\blank]
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse {40} {
+    \starttextbackground[shade]
+      \fakewords{10}{200}
+    \stoptextbackground
+    \par
+  }
+
+\stopcolumnset
+
+\stoptext

@@ -1758,7 +1758,13 @@
   {\dotripleempty\spac_vspacing_define_amount}
 
 \def\spac_vspacing_define_amount[#1][#2][#3]% can be combined
-  {\setvalue{\??vspacingamount#1}{\ifgridsnapping#3\else#2\fi}%
+  {\ifthirdargument
+     \setvalue{\??vspacingamount#1}{\ifgridsnapping#3\else#2\fi}%
+   \else\ifsecondargument
+     \setvalue{\??vspacingamount#1}{\ifgridsnapping\lineheight\else#2\fi}%
+   \else
+     \setvalue{\??vspacingamount#1}{\lineheight}%
+   \fi\fi
    \clf_vspacingsetamount{#1}}
 
 % \installcorenamespace{vspacingamountnormal}

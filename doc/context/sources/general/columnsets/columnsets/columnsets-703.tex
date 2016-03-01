@@ -1,0 +1,34 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][n=4,page=left]
+
+\definecolumnsetarea
+  [title][left]
+  [x=1,y=1,nx=8,ny=8,
+   background=contrast,state=repeat]
+
+\setupcolumnsetareatext
+  [title][left][\setups{cow}]
+
+\startsetups[cow]
+
+  \externalfigure
+    [cow.pdf]
+    [height=15\lineheight,
+     width=2\dimexpr\makeupwidth+\backspace\relax]
+
+\stopsetups
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{30}{\fakewords{50}{100}\par}
+
+\stopcolumnset
+
+\stoptext

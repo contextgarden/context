@@ -1,0 +1,38 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][n=3,page=left,distance=1cm]
+
+\setupcolumnset
+  [example]
+  [background=contrast]
+
+\definecolor[fakerulecolor][white] \faketriggertrue
+
+\setuphead
+  [section]
+  [style=\bfd]
+
+\setuplinenumbering
+  [style=bold,
+   distance=0pt,
+   align=inner]
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{30}{
+    \startsection[title=foo #1]
+      \startlinenumbering
+        \fakewords{50}{100}\par
+      \stoplinenumbering
+    \stopsection
+  }
+
+\stopcolumnset
+
+\stoptext

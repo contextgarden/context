@@ -1,0 +1,35 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][n=2,page=left]
+
+\setupbackgrounds[text][background=color,backgroundcolor=color-1]
+
+\setupcolumnsetstart[example][1][1][2]
+\setupcolumnsetstart[example][1][2][4]
+\setupcolumnsetstart[example][2][1][6]
+\setupcolumnsetstart[example][2][2][6]
+\setupcolumnsetstart[example][3][1][4]
+\setupcolumnsetstart[example][3][2][2]
+
+\setupcolumnsetlines[example][1][1][-2]
+\setupcolumnsetlines[example][1][2][-4]
+\setupcolumnsetlines[example][2][1][-6]
+\setupcolumnsetlines[example][2][2][-6]
+\setupcolumnsetlines[example][3][1][-4]
+\setupcolumnsetlines[example][3][2][-2]
+\setupcolumnsetlines[example][4][1][4]
+\setupcolumnsetlines[example][4][2][10]
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{20}{\fakewords{100}{200}\par}
+
+\stopcolumnset
+
+\stoptext

@@ -1,0 +1,29 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][n=4,page=left,direction=reverse]
+
+\setupbackgrounds[text][text][background=contrast]
+
+\definecolor[fakerulecolor][color-1]
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{50}{
+    \dontleavehmode
+    \snaptogrid\hbox
+      {\scale[height=2.5\lineheight]{\color[white]{#1}}}%
+    \space
+    \fakewords{30}{60}
+   %\simulatewords[n=30,m=60,min=1,max=5,color=color-1,line=yes]\par
+    \par
+  }
+
+\stopcolumnset
+
+\stoptext
