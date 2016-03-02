@@ -60,14 +60,6 @@ local function addfeature(data,feature,specifications)
         return
     end
     -- feature has to be unique but the name entry wins eventually
- -- local gsubfeatures = features.gsub
- -- if gsubfeatures and gsubfeatures[feature] then
- --     return -- already present
- -- end
- -- local gposfeatures = features.gpos
- -- if gposfeatures and gposfeatures[feature] then
- --     return -- already present
- -- end
 
     -- todo alse gpos
 
@@ -454,6 +446,9 @@ local function addfeature(data,feature,specifications)
                 elseif featuretype == "chainposition" then
                     category = "gpos"
                     coverage = prepare_chain(list,featuretype,sublookups)
+                else
+                    report_otf("not registering feature %a, unknown category",feature)
+                    return
                 end
                 if coverage and next(coverage) then
                     nofsteps = nofsteps + 1
@@ -487,28 +482,17 @@ local function addfeature(data,feature,specifications)
                     insert(sequences,sequence)
                 end
                 -- register in metadata (merge as there can be a few)
-                local k = nil
-                if category == "gpos" then
-                    if not gposfeatures then
-                        gposfeatures  = { }
-                        fontfeatures.gpos = gposfeatures
-                    end
-                    k = gposfeatures[feature]
-                    if not k then
-                        k = { }
-                        gposfeatures[feature] = k
-                    end
-                else
-                    if not gsubfeatures then
-                        gsubfeatures  = { }
-                        fontfeatures.gsub = gsubfeatures
-                    end
-                    k = gsubfeatures[feature]
-                    if not k then
-                        k = { }
-                        gsubfeatures[feature] = k
-                    end
+                local features = fontfeatures[category]
+                if not features then
+                    features  = { }
+                    fontfeatures[category] = features
                 end
+                local k = features[feature]
+                if not k then
+                    k = { }
+                    features[feature] = k
+                end
+                --
                 for script, languages in next, askedfeatures do
                     local kk = k[script]
                     if not kk then

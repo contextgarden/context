@@ -2709,7 +2709,7 @@ local handle_contextchain = nil
 
 -- normal_handle_contextchain(head,start,kind,chainname,contexts,sequence,lookuphash)
 
-function chained_contextchain(head,start,stop,...)
+local function chained_contextchain(head,start,stop,...)
     local steps    = currentlookup.steps
     local nofsteps = currentlookup.nofsteps
     if nofsteps > 1 then

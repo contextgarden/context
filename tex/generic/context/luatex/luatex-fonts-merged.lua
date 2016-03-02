@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/01/16 14:03:56
+-- merge date  : 03/02/16 16:55:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -11,10 +11,14 @@ if not modules then modules={} end modules ['l-lua']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local major,minor=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
-_MAJORVERSION=tonumber(major) or 5
-_MINORVERSION=tonumber(minor) or 1
+_MAJORVERSION,_MINORVERSION=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
+_MAJORVERSION=tonumber(_MAJORVERSION) or 5
+_MINORVERSION=tonumber(_MINORVERSION) or 1
 _LUAVERSION=_MAJORVERSION+_MINORVERSION/10
+if _LUAVERSION<5.2 and jit then
+  _MINORVERSION=2
+  _LUAVERSION=5.2
+end
 if not lpeg then
   lpeg=require("lpeg")
 end
@@ -5858,7 +5862,8 @@ tfm.maxnestingsize=65536*1024
 local tfmfeatures=constructors.newfeatures("tfm")
 local registertfmfeature=tfmfeatures.register
 constructors.resolvevirtualtoo=false 
-fonts.formats.tfm="type1"
+fonts.formats.tfm="type1" 
+fonts.formats.ofm="type1"
 function tfm.setfeatures(tfmdata,features)
   local okay=constructors.initializefeatures("tfm",tfmdata,features,trace_features,report_tfm)
   if okay then
@@ -5984,6 +5989,7 @@ function readers.tfm(specification)
   end
   return check_tfm(specification,fullname)
 end
+readers.ofm=readers.tfm
 
 end -- closure
 
@@ -13863,7 +13869,7 @@ otf.chainhandlers={
   verbose=verbose_handle_contextchain,
 }
 local handle_contextchain=nil
-function chained_contextchain(head,start,stop,...)
+local function chained_contextchain(head,start,stop,...)
   local steps=currentlookup.steps
   local nofsteps=currentlookup.nofsteps
   if nofsteps>1 then

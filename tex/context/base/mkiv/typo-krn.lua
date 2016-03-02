@@ -243,7 +243,8 @@ local function inject_begin(boundary,prev,keeptogether,krn,ok) -- prev is a glyp
             if charone > 0 then
                 local font    = getfont(boundary)
                 local chartwo = getchar(boundary)
-                local kerns   = chardata[font][charone].kerns
+                local data    = chardata[font][charone]
+                local kerns   = data and data.kerns
                 local kern    = new_kern((kerns and kerns[chartwo] or 0) + quaddata[font]*krn)
                 setlink(kern,boundary)
                 return kern, true
@@ -280,7 +281,8 @@ local function inject_end(boundary,next,keeptogether,krn,ok)
             if charone > 0 then
                 local font    = getfont(tail)
                 local chartwo = getchar(next)
-                local kerns   = chardata[font][charone].kerns
+                local data    = chardata[font][charone]
+                local kerns   = data and data.kerns
                 local kern    = (kerns and kerns[chartwo] or 0) + quaddata[font]*krn
                 insert_node_after(boundary,tail,new_kern(kern))
                 return boundary, true
@@ -329,7 +331,8 @@ local function process_list(head,keeptogether,krn,font,okay)
                         -- keep 'm
                     else
                         local prevchar = getchar(prev)
-                        local kerns    = chardata[font][prevchar].kerns
+                        local data     = chardata[font][prevchar]
+                        local kerns    = data and data.kerns
                      -- if kerns then
                      --     print("it happens indeed, basemode kerns not yet injected")
                      -- end
@@ -446,7 +449,8 @@ function kerns.handler(head)
                         if keeptogether and keeptogether(prev,start) then
                             -- keep 'm
                         else
-                            local kerns = chardata[font][prevchar].kerns
+                            local data  = chardata[font][prevchar]
+                            local kerns = data and data.kerns
                             local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
                             insert_node_before(head,start,kern_injector(fillup,kern))
                             done = true

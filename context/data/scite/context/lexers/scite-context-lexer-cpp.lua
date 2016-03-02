@@ -87,7 +87,7 @@ local operator      = token("special", S("+-*/%^!=<>;:{}[]().&|?~"))
 
 ----- optionalspace = spacing^0
 
-local p_keywords    = exact_match(keywords )
+local p_keywords    = exact_match(keywords)
 local p_datatypes   = exact_match(datatypes)
 local p_macros      = exact_match(macros)
 
@@ -154,7 +154,7 @@ end
 
 cpplexer._tokenstyles = context.styleset
 
-cpplexer._foldpattern = P("/*") + P("*/") + S("{}") -- separate entry else interference
+cpplexer._foldpattern = P("/*") + P("*/") + S("{}") -- separate entry else interference (singular?)
 
 cpplexer._foldsymbols = {
     _patterns = {

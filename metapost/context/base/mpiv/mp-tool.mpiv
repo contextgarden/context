@@ -1405,7 +1405,7 @@ enddef;
 def _finarr text t =
     if autoarrows : set_ahlength (t) fi ;
     draw arrowpath _apth t ; % arrowpath added
-    both arrowhead _apth t ;
+    fillup arrowhead _apth t ;
 enddef;
 
 %D Handy too ......

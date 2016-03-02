@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 4547, stripped down to: 2526
+-- original size: 4734, stripped down to: 2626
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -65,10 +65,14 @@ if not modules then modules={} end modules ['l-lua']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local major,minor=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
-_MAJORVERSION=tonumber(major) or 5
-_MINORVERSION=tonumber(minor) or 1
+_MAJORVERSION,_MINORVERSION=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
+_MAJORVERSION=tonumber(_MAJORVERSION) or 5
+_MINORVERSION=tonumber(_MINORVERSION) or 1
 _LUAVERSION=_MAJORVERSION+_MINORVERSION/10
+if _LUAVERSION<5.2 and jit then
+  _MINORVERSION=2
+  _LUAVERSION=5.2
+end
 if not lpeg then
   lpeg=require("lpeg")
 end
@@ -18718,8 +18722,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 796028
--- stripped bytes    : 288678
+-- original bytes    : 796215
+-- stripped bytes    : 288765
 
 -- end library merge
 

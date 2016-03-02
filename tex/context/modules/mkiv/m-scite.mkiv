@@ -191,8 +191,17 @@ end
   {\ctxlua{buffers.scite.installcommands()}%
    \let\installscitecommands\relax}
 
-\unexpanded\def\startscite{\startlines}
-\unexpanded\def\stopscite {\stoplines}
+\unexpanded\def\startscite
+  {\begingroup
+   \dosingleempty\buff_scite_start}
+
+\def\buff_scite_start[#1]%
+  {\edef\currentscitelexer{#1}%
+   \dostartbuffer[@scite@][startscite][stopscite]}
+
+\unexpanded\def\stopscite
+  {\scitebuffer[\ifx\currentscitelexer\empty tex\else\currentscitelexer\fi][@scite@]%
+   \endgroup}
 
 \unexpanded\def\scitefile
   {\dosingleargument\module_scite_file}
@@ -204,9 +213,9 @@ end
    \tt
    \dontcomplain
    \startcontextcode
-   \startscite
+   \startlines
    \getbuffer[lex]%
-   \stopscite
+   \stoplines
    \stopcontextcode
    \stop}
 
@@ -224,9 +233,9 @@ end
    \tt
    \dontcomplain
    \setcatcodetable\ctxcatcodes % needed in xml
-   \startscite
+   \startlines
    \getbuffer[lex]%
-   \stopscite
+   \stoplines
    \stop}
 
 \protect

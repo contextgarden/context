@@ -41,7 +41,7 @@ local function set(s)
                 h = rep("#",2^(ns-1))
                 hashes[ns] = h
             end
-            m = h .. n
+            local m = h .. n
             top[s] = m
             return m
         end

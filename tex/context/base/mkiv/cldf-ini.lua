@@ -193,7 +193,7 @@ local registerfunction, unregisterfunction, reservefunction, knownfunctions, cal
     local f_resolve = nil
     local p_resolve  = ((1-lpegP("."))^1 / function(s) f_resolve = f_resolve[s] end * lpegP(".")^0)^1
 
-    function resolvestoredfunction(str)
+    local function resolvestoredfunction(str)
         f_resolve = global
         lpegmatch(p_resolve,str)
         return f_resolve

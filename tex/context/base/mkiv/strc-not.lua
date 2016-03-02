@@ -313,7 +313,8 @@ local function getdeltapage(tag,n)
         local references = li.references
         if references then
          -- local symb = structures.references.collected[""]["symb:"..tag..":"..n]
-            local symb = structures.references.collected[""]["*"..(references.internal or 0)]
+            local rymb = structures.references.collected[""]
+            local symb = rymb and rymb["*"..(references.internal or 0)]
             local notepage   = references.realpage or 0
             local symbolpage = symb and symb.references.realpage or -1
             if trace_references then

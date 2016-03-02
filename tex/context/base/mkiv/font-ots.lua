@@ -2713,7 +2713,7 @@ handlers.gpos_context             = handle_contextchain
 
 -- this needs testing
 
-function chained_contextchain(head,start,stop,dataset,sequence,currentlookup,rlmode)
+local function chained_contextchain(head,start,stop,dataset,sequence,currentlookup,rlmode)
     local steps    = currentlookup.steps
     local nofsteps = currentlookup.nofsteps
     if nofsteps > 1 then

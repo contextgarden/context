@@ -19,7 +19,7 @@
         context.start()
         context.forcesymbolset { collection }
         context.starttabulate { "|lT|l|l|" }
-        local option = { framecolor = "orange", rulethickness = ".8pt", offset = interfaces.variables.overlay }
+        local options = { framecolor = "orange", rulethickness = ".8pt", offset = interfaces.variables.overlay }
         for i=1,#symbols do
             local symbol = symbols[i]
             context.NC()
@@ -44,4 +44,16 @@
 \gdef\symb_show_set[#1]%
   {\ctxcommand{showsymbolset("#1","\symbolset{#1}")}}
 
-\protect \endinput
+\protect
+
+\continueifinputfile{symb-run.mkiv}
+
+\usesymbols[cc]
+
+\starttext
+
+    \showsymbolset[cc]
+
+    \symbol[cc][cc-by-sa-nc]
+
+\stoptext
