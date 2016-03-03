@@ -153,7 +153,10 @@
    \ifx\p_location\v!here
      % this branch injects nodes !
      \strc_lists_inject_enhance{\currentlistnumber}{\nextinternalreference}%
-     \clf_setinternalreference internal \nextinternalreference\relax % this will change
+     \clf_setinternalreference
+        internal \nextinternalreference
+        view     {\interactionparameter\c!focus}%
+     \relax % this will change
      \xdef\currentstructurelistattribute{\the\lastdestinationattribute}%
      \dontleavehmode\hbox attr \destinationattribute \lastdestinationattribute{}% todo
    \else
@@ -1373,7 +1376,7 @@
 %   {\edef\p_interaction_forward{\listparameter\c!interaction}%
 %    \ifcsname\??listinteractions\p_interaction_forward\endcsname
 %      \expandafter\let\expandafter\p_interaction_forward\csname\??listinteractions\p_interaction_forward\endcsname
-%      \strc_references_get_simple_page_reference{internal(\currentlistentrylocation)}%
+%      \strc_references_get_simple_reference{internal(\currentlistentrylocation)}%
 %      \a_strc_lists_reference\currentreferenceattribute
 %    \else
 %      \a_strc_lists_reference\attributeunsetvalue
@@ -1389,7 +1392,7 @@
 %    \fi
 %    \edef\p_interaction_backward{\namedheadparameter\currentlist\c!interaction}% \namedheadparameter !
 %    \ifx\p_interaction_backward\v!list
-%      \strc_references_set_simple_page_reference{bck:\currentlistentrylocation}%
+%      \strc_references_set_simple_page_reference{*\currentlistentrylocation}%
 %      \a_strc_lists_destination\currentdestinationattribute
 %    \else
 %      \a_strc_lists_destination\attributeunsetvalue
@@ -1407,7 +1410,7 @@
    \ifcsname\??listinteractions\p_interaction_forward\endcsname
     %\expandafter\let\expandafter\p_interaction_forward\csname\??listinteractions\p_interaction_forward\endcsname
      \expandafter\let\expandafter\p_interaction_forward\lastnamedcs
-     \strc_references_get_simple_page_reference{internal(\currentlistentrylocation)}%
+     \strc_references_get_simple_reference{internal(\currentlistentrylocation)}%
      \a_strc_lists_reference\currentreferenceattribute
    \else
      \a_strc_lists_reference\attributeunsetvalue
@@ -1423,7 +1426,7 @@
    \fi
    \edef\p_interaction_backward{\namedheadparameter\currentlist\c!interaction}% \namedheadparameter !
    \ifx\p_interaction_backward\v!list
-     \strc_references_set_simple_page_reference{bck:\currentlistentrylocation}%
+     \strc_references_set_simple_page_reference{*\currentlistentrylocation}%
      \a_strc_lists_destination\currentdestinationattribute
    \else
      \a_strc_lists_destination\attributeunsetvalue

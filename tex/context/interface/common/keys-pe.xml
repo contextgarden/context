@@ -801,6 +801,7 @@
 		<cd:constant name='firstpage' value='صفحه‌اول'/>
 		<cd:constant name='focus' value='تمرکز'/>
 		<cd:constant name='focusin' value='تمرکزدرون'/>
+		<cd:constant name='focusoffset' value='focusoffset'/>
 		<cd:constant name='focusout' value='تمرکزبیرون'/>
 		<cd:constant name='footer' value='ته‌برگ'/>
 		<cd:constant name='footerdistance' value='فاصله‌ته‌برگ'/>

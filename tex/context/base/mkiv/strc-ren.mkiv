@@ -99,13 +99,13 @@
   {\edef\currentheadinteraction{\headparameter\c!interaction}%
    \ifx\currentheadinteraction\v!list
      % setuphead[<section>][interaction=list,...]
-     \strc_references_get_simple_page_reference{bck:\nextinternalreference}%
+     \strc_references_get_simple_reference{*\nextinternalreference}%
      \let\currentstructurereferenceattribute\currentreferenceattribute
    \else\ifx\currentheadinteraction\v!reference
      % setuphead[<section>][interaction=reference,...] start<section>[backreference=abc,...]
      \edef\currentheadbackreference{\structurevariable\c!backreference}% weird, was references.backreference
      \ifx\currentheadbackreference\empty \else
-       \strc_references_get_simple_page_reference\currentheadbackreference
+       \strc_references_get_simple_reference\currentheadbackreference
        \let\currentstructurereferenceattribute\currentreferenceattribute
      \fi
    \else

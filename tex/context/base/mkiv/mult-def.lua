@@ -7859,6 +7859,10 @@ return {
    ["pe"]="تمرکزبیرون",
    ["ro"]="focusout",
   },
+  ["focusoffset"]={
+   ["en"]="focusoffset",
+   ["nl"]="focusoffset",
+  },
   ["footer"]={
    ["cs"]="upati",
    ["de"]="fusszeile",

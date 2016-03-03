@@ -542,7 +542,7 @@
    \xdef\currentstructurecomponentreferenceprefix{#1\c!referenceprefix}%
    \strc_counters_register_component_check_prefix
    \setnextinternalreference
-   \clf_setreferenceattribute
+   \clf_setdestinationattribute
         {%
             references {%
                   internal  \nextinternalreference
@@ -626,6 +626,7 @@
           reference {\currentstructurecomponentreference}
           prefix    {\currentstructurecomponentreferenceprefix}
         % section   structures.sections.currentid()
+          view      {\interactionparameter\c!focus}%
       }
       titledata {
           label    {\detokenize\expandafter{\currentstructurecomponentlabel}}
@@ -668,7 +669,9 @@
    %}
    \relax
    \xdef\m_strc_counters_last_registered_index{\the\scratchcounter}%
-   \clf_setinternalreference internal \nextinternalreference\relax
+   \clf_setinternalreference
+     internal \nextinternalreference
+   \relax
    \xdef\m_strc_counters_last_registered_attribute  {\the\lastdestinationattribute}%
    \xdef\m_strc_counters_last_registered_synchronize{\strc_lists_inject_enhance{\m_strc_counters_last_registered_index}{\nextinternalreference}}}
 

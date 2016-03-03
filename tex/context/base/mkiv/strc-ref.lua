@@ -1905,7 +1905,8 @@ directives.register("references.linkmethod", function(v) -- page auto
     references.setinnermethod(v)
 end)
 
--- this is inconsistent
+-- we can call setinternalreference with an already known internal or with
+-- a reference/prefix specification
 
 local destinationattributes = { }
 
@@ -1915,6 +1916,7 @@ local function setinternalreference(specification)
     if innermethod == v_auto or innermethod == v_name then
         local t, tn = { }, 0 -- maybe add to current (now only used for tracing)
         local reference = specification.reference
+        local view      = specification.view
         if reference then
             local prefix = specification.prefix
             if prefix and prefix ~= "" then
@@ -1934,13 +1936,20 @@ local function setinternalreference(specification)
         end
         -- ugly .. later we decide to ignore it when we have a real one
         -- but for testing we might want to see them all
-
-        if internal and innermethod ~= v_name then
-         -- we dont' want too many #1 #2 #3 etc
-            tn = tn + 1
-            t[tn] = internal -- when number it's internal
+        if internal then
+            if innermethod ~= v_name then -- so page and auto
+             -- we don't want too many #1 #2 #3 etc
+                tn = tn + 1
+                t[tn] = internal -- when number it's internal
+            end
+            if not view then
+                local i = references.internals[internal]
+                if i then
+                    view = i.references.view
+                end
+            end
         end
-        destination = references.mark(t,nil,nil,specification.view) -- returns an attribute
+        destination = references.mark(t,nil,nil,view) -- returns an attribute
     end
     if internal then -- new
         destinationattributes[internal] = destination
@@ -2017,7 +2026,7 @@ function references.setandgetattribute(data) -- maybe do internal automatically 
 end
 
 implement {
-    name      = "setreferenceattribute",
+    name      = "setdestinationattribute",
     actions   = references.setandgetattribute,
     arguments = {
         {
@@ -2581,14 +2590,16 @@ end
 runners["special operation"]                = runners["special"]
 runners["special operation with arguments"] = runners["special"]
 
--- These are the testspecials not the real ones. They are used to
--- check the validity.
-
 function specials.internal(var,actions)
     local v = internals[tonumber(var.operation)]
-    local r = v and v.references.realpage
+    local r = v and v.references
     if r then
-        actions.realpage = r
+        local p = r.realpage
+        if p then
+-- setmetatableindex(actions,r)
+            actions.realpage = p
+            actions.view     = r.view
+        end
     end
 end
 

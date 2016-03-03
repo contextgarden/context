@@ -177,77 +177,160 @@
 % An alternative approach is to have more variables but that does not
 % make the code less complex (probably more).
 
-\def\page_layouts_setup_texts[#vertical][#horizontal][#a][#b][#c][#d]%
-  {\ifsixthargument
-     \edef\currentlayoutelement{#vertical:#horizontal}%
-     \setlayoutelementparameter\c!lefttext
-       {\page_layouts_process_element_double
-          \c!leftstyle \c!leftcolor \c!leftwidth {#a}%
-          \c!rightstyle\c!rightcolor\c!rightwidth{#d}}%
-     \setlayoutelementparameter\c!righttext
-       {\page_layouts_process_element_double
-          \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
-          \c!leftstyle \c!leftcolor \c!leftwidth {#c}}%
-   \else\iffifthargument
-     \edef\currentlayoutelement{#vertical:\v!text}%
-     \setlayoutelementparameter\c!lefttext
-       {\page_layouts_process_element_double
-          \c!leftstyle \c!leftcolor \c!leftwidth {#horizontal}%
-          \c!rightstyle\c!rightcolor\c!rightwidth{#c}}%
-     \setlayoutelementparameter\c!righttext
-       {\page_layouts_process_element_double
-          \c!rightstyle\c!rightcolor\c!rightwidth{#a}%
-          \c!leftstyle \c!leftcolor \c!leftwidth {#b}}%
-   \else\iffourthargument
-     \edef\currentlayoutelement{#vertical:#horizontal}%
-     \doifelsenothing{\detokenize{#a}}
-       {\resetlayoutelementparameter\c!lefttext}
-       {\setlayoutelementparameter\c!lefttext
-          {\page_layouts_process_element_double
-             \c!leftstyle\c!leftcolor\c!leftwidth{#a}%
-             \c!leftstyle\c!leftcolor\c!leftwidth{#a}}}%
-     \doifelsenothing{\detokenize{#b}}
-       {\resetlayoutelementparameter\c!righttext}
-       {\setlayoutelementparameter\c!righttext
-          {\page_layouts_process_element_double
-             \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
-             \c!rightstyle\c!rightcolor\c!rightwidth{#b}}}%
-   \else\ifthirdargument
-     \edef\currentlayoutelement{#vertical:\v!text}%
-     \doifelsenothing{\detokenize{#horizontal}}
-       {\resetlayoutelementparameter\c!lefttext}
-       {\setlayoutelementparameter\c!lefttext
-          {\page_layouts_process_element_double
-             \c!leftstyle\c!leftcolor\c!leftwidth{#horizontal}%
-             \c!leftstyle\c!leftcolor\c!leftwidth{#horizontal}}}%
-     \doifelsenothing{\detokenize{#a}}
-       {\resetlayoutelementparameter\c!righttext}
-       {\setlayoutelementparameter\c!righttext
-          {\page_layouts_process_element_double
-             \c!rightstyle\c!rightcolor\c!rightwidth{#a}%
-             \c!rightstyle\c!rightcolor\c!rightwidth{#a}}}%
-   \else\ifsecondargument
-     \edef\currentlayoutelement{#vertical:\v!text}%
-     \resetlayoutelementparameter\c!lefttext
-     \resetlayoutelementparameter\c!righttext
-     \doifelsenothing{\detokenize{#horizontal}}
-       {\resetlayoutelementparameter\c!middletext}
-       {\setlayoutelementparameter\c!middletext
-          {\page_layouts_process_element_single\c!style\c!color\c!width{#horizontal}}}%
-   \else
-     \edef\currentlayoutelement{#vertical:\v!text}%
-     \resetlayoutelementparameter\c!lefttext
-     \resetlayoutelementparameter\c!righttext
-     \resetlayoutelementparameter\c!middletext
-     \edef\currentlayoutelement{#vertical:\v!margin}%
-     \resetlayoutelementparameter\c!lefttext
-     \resetlayoutelementparameter\c!righttext
-     \resetlayoutelementparameter\c!middletext
-     \edef\currentlayoutelement{#vertical:\v!edge}%
-     \resetlayoutelementparameter\c!lefttext
-     \resetlayoutelementparameter\c!righttext
-     \resetlayoutelementparameter\c!middletext
-   \fi\fi\fi\fi\fi}
+% \unexpanded\def\page_layouts_setup_texts[#vertical][#horizontal][#a][#b][#c][#d]%
+%   {\ifsixthargument
+%      \edef\currentlayoutelement{#vertical:#horizontal}%
+%      \setlayoutelementparameter\c!lefttext
+%        {\page_layouts_process_element_double
+%           \c!leftstyle \c!leftcolor \c!leftwidth {#a}%
+%           \c!rightstyle\c!rightcolor\c!rightwidth{#d}}%
+%      \setlayoutelementparameter\c!righttext
+%        {\page_layouts_process_element_double
+%           \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
+%           \c!leftstyle \c!leftcolor \c!leftwidth {#c}}%
+%    \else\iffifthargument
+%      \edef\currentlayoutelement{#vertical:\v!text}%
+%      \setlayoutelementparameter\c!lefttext
+%        {\page_layouts_process_element_double
+%           \c!leftstyle \c!leftcolor \c!leftwidth {#horizontal}%
+%           \c!rightstyle\c!rightcolor\c!rightwidth{#c}}%
+%      \setlayoutelementparameter\c!righttext
+%        {\page_layouts_process_element_double
+%           \c!rightstyle\c!rightcolor\c!rightwidth{#a}%
+%           \c!leftstyle \c!leftcolor \c!leftwidth {#b}}%
+%    \else\iffourthargument
+%      \edef\currentlayoutelement{#vertical:#horizontal}%
+%      \doifelsenothing{\detokenize{#a}}
+%        {\resetlayoutelementparameter\c!lefttext}
+%        {\setlayoutelementparameter\c!lefttext
+%           {\page_layouts_process_element_double
+%              \c!leftstyle\c!leftcolor\c!leftwidth{#a}%
+%              \c!leftstyle\c!leftcolor\c!leftwidth{#a}}}%
+%      \doifelsenothing{\detokenize{#b}}
+%        {\resetlayoutelementparameter\c!righttext}
+%        {\setlayoutelementparameter\c!righttext
+%           {\page_layouts_process_element_double
+%              \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
+%              \c!rightstyle\c!rightcolor\c!rightwidth{#b}}}%
+%    \else\ifthirdargument
+%      \edef\currentlayoutelement{#vertical:\v!text}%
+%      \doifelsenothing{\detokenize{#horizontal}}
+%        {\resetlayoutelementparameter\c!lefttext}
+%        {\setlayoutelementparameter\c!lefttext
+%           {\page_layouts_process_element_double
+%              \c!leftstyle\c!leftcolor\c!leftwidth{#horizontal}%
+%              \c!leftstyle\c!leftcolor\c!leftwidth{#horizontal}}}%
+%      \doifelsenothing{\detokenize{#a}}
+%        {\resetlayoutelementparameter\c!righttext}
+%        {\setlayoutelementparameter\c!righttext
+%           {\page_layouts_process_element_double
+%              \c!rightstyle\c!rightcolor\c!rightwidth{#a}%
+%              \c!rightstyle\c!rightcolor\c!rightwidth{#a}}}%
+%    \else\ifsecondargument
+%      \edef\currentlayoutelement{#vertical:\v!text}%
+%      \resetlayoutelementparameter\c!lefttext
+%      \resetlayoutelementparameter\c!righttext
+%      \doifelsenothing{\detokenize{#horizontal}}
+%        {\resetlayoutelementparameter\c!middletext}
+%        {\setlayoutelementparameter\c!middletext
+%           {\page_layouts_process_element_single\c!style\c!color\c!width{#horizontal}}}%
+%    \else
+%      \edef\currentlayoutelement{#vertical:\v!text}%
+%      \resetlayoutelementparameter\c!lefttext
+%      \resetlayoutelementparameter\c!righttext
+%      \resetlayoutelementparameter\c!middletext
+%      \edef\currentlayoutelement{#vertical:\v!margin}%
+%      \resetlayoutelementparameter\c!lefttext
+%      \resetlayoutelementparameter\c!righttext
+%      \resetlayoutelementparameter\c!middletext
+%      \edef\currentlayoutelement{#vertical:\v!edge}%
+%      \resetlayoutelementparameter\c!lefttext
+%      \resetlayoutelementparameter\c!righttext
+%      \resetlayoutelementparameter\c!middletext
+%    \fi\fi\fi\fi\fi}
+
+\unexpanded\def\page_layouts_setup_text_six#vertical#horizontal#a#b#c#d%
+  {\edef\currentlayoutelement{#vertical:#horizontal}%
+   \setlayoutelementparameter\c!lefttext
+     {\page_layouts_process_element_double
+        \c!leftstyle \c!leftcolor \c!leftwidth {#a}%
+        \c!rightstyle\c!rightcolor\c!rightwidth{#d}}%
+   \setlayoutelementparameter\c!righttext
+     {\page_layouts_process_element_double
+        \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
+        \c!leftstyle \c!leftcolor \c!leftwidth {#c}}}
+
+\unexpanded\def\page_layouts_setup_text_five#vertical#horizontal#a#b#c%
+  {\edef\currentlayoutelement{#vertical:\v!text}%
+   \setlayoutelementparameter\c!lefttext
+     {\page_layouts_process_element_double
+        \c!leftstyle \c!leftcolor \c!leftwidth {#horizontal}%
+        \c!rightstyle\c!rightcolor\c!rightwidth{#c}}%
+   \setlayoutelementparameter\c!righttext
+     {\page_layouts_process_element_double
+        \c!rightstyle\c!rightcolor\c!rightwidth{#a}%
+        \c!leftstyle \c!leftcolor \c!leftwidth {#b}}}
+
+\unexpanded\def\page_layouts_setup_text_four#vertical#horizontal#a#b%
+  {\edef\currentlayoutelement{#vertical:#horizontal}%
+   \doifelsenothing{\detokenize{#a}}
+     {\resetlayoutelementparameter\c!lefttext}
+     {\setlayoutelementparameter\c!lefttext
+        {\page_layouts_process_element_double
+           \c!leftstyle\c!leftcolor\c!leftwidth{#a}%
+           \c!leftstyle\c!leftcolor\c!leftwidth{#a}}}%
+   \doifelsenothing{\detokenize{#b}}
+     {\resetlayoutelementparameter\c!righttext}
+     {\setlayoutelementparameter\c!righttext
+        {\page_layouts_process_element_double
+           \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
+           \c!rightstyle\c!rightcolor\c!rightwidth{#b}}}}
+
+\unexpanded\def\page_layouts_setup_text_three#vertical#horizontal#a%
+  {\edef\currentlayoutelement{#vertical:\v!text}%
+   \doifelsenothing{\detokenize{#horizontal}}
+     {\resetlayoutelementparameter\c!lefttext}
+     {\setlayoutelementparameter\c!lefttext
+        {\page_layouts_process_element_double
+           \c!leftstyle\c!leftcolor\c!leftwidth{#horizontal}%
+           \c!leftstyle\c!leftcolor\c!leftwidth{#horizontal}}}%
+   \doifelsenothing{\detokenize{#a}}
+     {\resetlayoutelementparameter\c!righttext}
+     {\setlayoutelementparameter\c!righttext
+        {\page_layouts_process_element_double
+           \c!rightstyle\c!rightcolor\c!rightwidth{#a}%
+           \c!rightstyle\c!rightcolor\c!rightwidth{#a}}}}
+
+\unexpanded\def\page_layouts_setup_text_two#vertical#horizontal%
+  {\edef\currentlayoutelement{#vertical:\v!text}%
+   \resetlayoutelementparameter\c!lefttext
+   \resetlayoutelementparameter\c!righttext
+   \doifelsenothing{\detokenize{#horizontal}}
+     {\resetlayoutelementparameter\c!middletext}
+     {\setlayoutelementparameter\c!middletext
+        {\page_layouts_process_element_single\c!style\c!color\c!width{#horizontal}}}}
+
+\unexpanded\def\page_layouts_setup_text_one#vertical%
+  {\edef\currentlayoutelement{#vertical:\v!text}%
+   \resetlayoutelementparameter\c!lefttext
+   \resetlayoutelementparameter\c!righttext
+   \resetlayoutelementparameter\c!middletext
+   \edef\currentlayoutelement{#vertical:\v!margin}%
+   \resetlayoutelementparameter\c!lefttext
+   \resetlayoutelementparameter\c!righttext
+   \resetlayoutelementparameter\c!middletext
+   \edef\currentlayoutelement{#vertical:\v!edge}%
+   \resetlayoutelementparameter\c!lefttext
+   \resetlayoutelementparameter\c!righttext
+   \resetlayoutelementparameter\c!middletext}
+
+\unexpanded\def\page_layouts_setup_texts[#vertical][#horizontal][#a][#b][#c][#d]%
+  {\ifsixthargument \page_layouts_setup_text_six  {#vertical}{#horizontal}{#a}{#b}{#c}{#d}\else
+   \iffifthargument \page_layouts_setup_text_five {#vertical}{#horizontal}{#a}{#b}{#c}\else
+   \iffourthargument\page_layouts_setup_text_four {#vertical}{#horizontal}{#a}{#b}\else
+   \ifthirdargument \page_layouts_setup_text_three{#vertical}{#horizontal}{#a}\else
+   \ifsecondargument\page_layouts_setup_text_two  {#vertical}{#horizontal}\else
+                    \page_layouts_setup_text_one  {#vertical}\fi\fi\fi\fi\fi}
 
 %D Left and right texts are swapped on odd and even pages, but
 %D only when double sided typesetting is enabled.
@@ -655,22 +738,35 @@
 \unexpanded\def\definetext
   {\doseventupleempty\page_layouts_define_text}
 
+% \def\page_layouts_define_text[#tag][#vertical][#horizontal][#a][#b][#c][#d]%
+%   {\ifseventhargument
+%      \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}%
+%        {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a][#b][#c][#d]}%
+%    \else\ifsixthargument
+%      \setvalue{\namedlayoutelementhash{#vertical}#tag}%
+%        {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a][#b][#c]}%
+%    \else\iffifthargument
+%      \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}%
+%        {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a][#b]}%
+%    \else\iffourthargument
+%      \setvalue{\namedlayoutelementhash{#vertical}#tag}%
+%        {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a]}%
+%    \else
+%      \setvalue{\namedlayoutelementhash{#vertical}#tag}%
+%        {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal]}%
+%    \fi\fi\fi\fi}
+
 \def\page_layouts_define_text[#tag][#vertical][#horizontal][#a][#b][#c][#d]%
   {\ifseventhargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}%
-       {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a][#b][#c][#d]}%
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_six  {#vertical}{#horizontal}{#a}{#b}{#c}{#d}}%
    \else\ifsixthargument
-     \setvalue{\namedlayoutelementhash{#vertical}#tag}%
-       {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a][#b][#c]}%
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_five {#vertical}{#horizontal}{#a}{#b}{#c}}%
    \else\iffifthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}%
-       {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a][#b]}%
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_four {#vertical}{#horizontal}{#a}{#b}}%
    \else\iffourthargument
-     \setvalue{\namedlayoutelementhash{#vertical}#tag}%
-       {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a]}%
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_three{#vertical}{#horizontal}{#a}}%
    \else
-     \setvalue{\namedlayoutelementhash{#vertical}#tag}%
-       {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal]}%
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_two  {#vertical}{#horizontal}}%
    \fi\fi\fi\fi}
 
 %D A few more page breakers:

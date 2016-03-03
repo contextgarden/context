@@ -213,8 +213,15 @@ end
 
 -- funny values for tx and ty
 
-function lpdf.rectangle(width,height,depth)
+function lpdf.rectangle(width,height,depth,offset)
     local tx, ty = pdfgetpos()
+    if offset then
+        tx     = tx     -   offset
+        ty     = ty     +   offset
+        width  = width  + 2*offset
+        height = height +   offset
+        depth  = depth  +   offset
+    end
     if pdfhasmatrix() then
         local rx, sx, sy, ry = pdfgetmatrix()
         return

@@ -607,8 +607,8 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     -- we do these sparse -- todo: check table type or change names in ff loader
     local units      = result.units       or 1000 -- can be zero too
     local designsize = result.designsize  or 0
-    local minsize    = result.mindesign   or 0
-    local maxsize    = result.maxdesign   or 0
+    local minsize    = result.minsize     or 0
+    local maxsize    = result.maxsize     or 0
     local angle      = result.italicangle or 0
     local pfmwidth   = result.pfmwidth    or 0
     local pfmweight  = result.pfmweight   or 0

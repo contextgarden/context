@@ -1107,7 +1107,7 @@ vardef arrowhead expr p =
          path r ; r = gobble(p shifted -e cutafter makepath(pencircle scaled ((1-ahdimple)*2ahlength))) cuttings ;
      fi
      (q rotated (ahangle/2) & reverse q rotated -(ahangle/2)
-         if ahvariant = 1:
+         if ahvariant = 1 :
              -- point 0 of r --
          elseif ahvariant = 2 :
              ... point 0 of r ...

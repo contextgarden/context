@@ -832,8 +832,6 @@ function references.inject(prefix,reference,specification) -- todo: use currentr
     if bug or #set == 0 then
         -- unknown ref, just don't set it and issue an error
     else
-        -- nil prefix when ""
-        -- check
         set.highlight = specification.highlight
         set.newwindow = specification.newwindow
         set.layer     = specification.layer
@@ -841,20 +839,19 @@ function references.inject(prefix,reference,specification) -- todo: use currentr
     end
 end
 
-function references.injectinternal(internal,specification) -- todo: use currentreference is possible
-    local set = references.internals[internal]
-    if set then
-        -- unknown ref, just don't set it and issue an error
-    else
-        -- nil prefix when ""
-        -- check
-        set = { set }
-        set.highlight = specification.highlight
-        set.newwindow = specification.newwindow
-        set.layer     = specification.layer
-        setreference(specification.height,specification.depth,set) -- sets attribute / todo: for set[*].error
-    end
-end
+-- function references.injectinternal(internal,specification)
+--     references.inject("","internal("..internal..")",specification)
+--     if bug or #set == 0 then
+--         -- unknown ref, just don't set it and issue an error
+--     else
+--         -- nil prefix when ""
+--         -- check
+--         set.highlight = specification.highlight
+--         set.newwindow = specification.newwindow
+--         set.layer     = specification.layer
+--         setreference(specification.height,specification.depth,set) -- sets attribute / todo: for set[*].error
+--     end
+-- end
 
 function references.injectcurrentset(h,d) -- used inside doifelse
     local currentset = references.currentset
@@ -875,24 +872,26 @@ implement {
             { "layer" },
             { "height", "dimen" },
             { "depth", "dimen" },
+            { "view" },
         }
     }
 }
 
-implement {
-    name      = "injectinternalreference",
-    actions   = references.injectinternal,
-    arguments = {
-        "integer",
-        {
-            { "highlight", "boolean" },
-            { "newwindow", "boolean" },
-            { "layer" },
-            { "height", "dimen" },
-            { "depth", "dimen" },
-        }
-    }
-}
+-- implement {
+--     name      = "injectinternalreference",
+--     actions   = references.injectinternal,
+--     arguments = {
+--         "integer",
+--         {
+--             { "highlight", "boolean" },
+--             { "newwindow", "boolean" },
+--             { "layer" },
+--             { "height", "dimen" },
+--             { "depth", "dimen" },
+--             { "view" },
+--         }
+--     }
+-- }
 
 implement {
     name      = "injectcurrentreference",

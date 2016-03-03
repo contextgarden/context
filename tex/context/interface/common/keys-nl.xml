@@ -801,6 +801,7 @@
 		<cd:constant name='firstpage' value='eerstepagina'/>
 		<cd:constant name='focus' value='focus'/>
 		<cd:constant name='focusin' value='focusin'/>
+		<cd:constant name='focusoffset' value='focusoffset'/>
 		<cd:constant name='focusout' value='focusuit'/>
 		<cd:constant name='footer' value='voet'/>
 		<cd:constant name='footerdistance' value='voetafstand'/>

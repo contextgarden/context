@@ -268,6 +268,7 @@
         \ifx\currentregisterlabel\empty \else
             label    {\currentregisterlabel}%
         \fi
+%             view     {\interactionparameter\c!focus}%
         }%
         entries {%
             % we need a special one for xml, this is just a single one
@@ -292,7 +293,10 @@
         }%
         userdata {\detokenize\expandafter{\normalexpanded{#3}}}
    }%
- % \clf_setinternalreference internal \nextinternalreference\relax % in previous
+   \clf_setinternalreference
+      internal \nextinternalreference
+      view     {\interactionparameter\c!focus}%
+   \relax % this will change
    \ifx\currentregisterownnumber\v!yes
      \glet\currentregistersynchronize\relax
    \else
@@ -327,6 +331,10 @@
      }%
    }%
    % overlap with the above
+ % \clf_setinternalreference
+ %    internal \nextinternalreference
+ %    view     {\interactionparameter\c!focus}%
+   \relax % this will change
    \xdef\currentregistersynchronize{\ctxlatecommand{enhanceregister("\currentregister",\currentregisternumber)}}%
    \currentregistersynchronize % here?
    \dostarttagged\t!registerlocation\currentregister
@@ -493,14 +501,13 @@
    \fi
    \setnextinternalreference
    % we could consider storing register entries in list
-   \edef\temp{\clf_storeregister{
+   \edef\temp{\clf_storeregister{% \temp grabs the nofentries
      metadata {%
          kind {see}%
          name {\currentregister}%
      }%
      references {%
-       % internal = \nextinternalreference,
-       % section  = structures.sections.currentid(),
+%         view  {\interactionparameter\c!focus}%
      }%
      entries {%
          % we need a special one for xml, this is just a single one
@@ -511,6 +518,10 @@
          text  {\currentregisterseeword}%
      }%
    }}%
+   \clf_setinternalreference
+      internal \nextinternalreference
+      view     {\interactionparameter\c!focus}%
+   \relax % this will change
    \dostarttagged\t!registerlocation\currentregister
    \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
    \dotagregisterlocation
@@ -573,8 +584,12 @@
      \endgroup
    \fi}
 
+\newconditional\c_strc_registers_text_interaction
+
 \def\strc_registers_place_indeed
-  {\clf_processregister
+  {\doifelse{\registerparameter\c!interaction}\v!text
+     \settrue\setfalse\c_strc_registers_text_interaction
+   \clf_processregister
      {\currentregister}%
      {%
         language    {\registerparameter\s!language}%
@@ -837,10 +852,18 @@
 \unexpanded\def\registeronepagerangeseparator
   {|\endash|} % todo use \prewordbreak
 
-\def\withregisterpagecommand#1#2#3#4%
+% \unexpanded\def\withregisterpagecommand#1#2#3#4%
+%   {\def\currentregisterpageindex{#2}%
+%    \iflocation
+%      \goto{\applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}}[internal(#2)]%
+%    \else
+%      \applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}%
+%    \fi}
+
+\unexpanded\def\withregisterpagecommand#1#2#3#4%
   {\def\currentregisterpageindex{#2}%
    \iflocation
-     \goto{\applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}}[internal(#2)]%
+     \strc_references_goto_internal{\applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}}[#2]%
    \else
      \applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}%
    \fi}
@@ -865,13 +888,27 @@
    \dostoptagged
    \dostoptagged}
 
+% \unexpanded\def\defaultregisterentry#1#2#3#4% #1:processor #2:internal #3:seeindex #4:word
+%   {\def\currentregisterpageindex{#2}%
+%    \iflocation
+%      \def\currentregisterseeindex{#3}%
+%      \doifelse{\registerparameter\c!interaction}\v!text
+%        {\directgoto{\setlocationcolor\doapplyregisterentrycommand{#1}{#4}}[internal(#2)]}
+%        {\doapplyregisterentrycommand{#1}{#4}}%
+%    \else
+%      \let\currentregisterseeindex\empty
+%      \doapplyregisterentrycommand{#1}{#4}%
+%    \fi}
+
 \unexpanded\def\defaultregisterentry#1#2#3#4% #1:processor #2:internal #3:seeindex #4:word
   {\def\currentregisterpageindex{#2}%
    \iflocation
      \def\currentregisterseeindex{#3}%
-     \doifelse{\registerparameter\c!interaction}\v!text
-       {\directgoto{\setlocationcolor\doapplyregisterentrycommand{#1}{#4}}[internal(#2)]}
-       {\doapplyregisterentrycommand{#1}{#4}}%
+     \ifconditional\c_strc_registers_text_interaction
+       \strc_references_goto_internal{\setlocationcolor\doapplyregisterentrycommand{#1}{#4}}[internal(#2)]%
+     \else
+       \doapplyregisterentrycommand{#1}{#4}%
+     \fi
    \else
      \let\currentregisterseeindex\empty
      \doapplyregisterentrycommand{#1}{#4}%
@@ -886,13 +923,22 @@
    \applyprocessor{#1}{\registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#2}}}}%
    \dostoptagged}
 
+% \unexpanded\def\doapplyregisterseecommand#1#2%
+%   {\ifx\currentregisterseeindex\empty
+%    % \dontleavehmode
+%      \applyprocessor{#1}{#2}%
+%    \else
+%      \goto{\applyprocessor{#1}{#2}}[seeindex:\currentregisterseeindex]%
+%    \fi}
+
 \unexpanded\def\doapplyregisterseecommand#1#2%
   {\ifx\currentregisterseeindex\empty
-   % \dontleavehmode
      \applyprocessor{#1}{#2}%
+   \else\iflocation
+     \strc_references_goto_internal{\applyprocessor{#1}{#2}}[seeindex:\currentregisterseeindex]%
    \else
-     \goto{\applyprocessor{#1}{#2}}[seeindex:\currentregisterseeindex]%
-   \fi}
+     \applyprocessor{#1}{#2}%
+   \fi\fi}
 
 \unexpanded\def\defaultregisterseeword#1#2#3#4#5#6% i n #3:processor #4:internal #5:seeindex #6:word
   {\registerpageseparator

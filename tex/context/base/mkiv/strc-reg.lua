@@ -391,13 +391,18 @@ end
 
 local function finalizer()
     local flaginternals = references.flaginternals
+    local usedviews     = references.usedviews
     for k, v in next, tobesaved do
         local entries = v.entries
         if entries then
             for i=1,#entries do
                 local r = entries[i].references
-                if r and flaginternals[r.internal] then
-                    r.used = true
+                if r then
+                    local i = r.internal
+                    local f = flaginternals[i]
+                    if f then
+                        r.used = usedviews[i] or true
+                    end
                 end
             end
         end
@@ -539,7 +544,7 @@ local function storeregister(rawdata) -- metadata, references, entries
     end
     --
     if notsaved then
-        usedinternals[internal] = true -- todo view (we assume that forward references index entries are used)
+        usedinternals[internal] = references.used -- todo view (we assume that forward references index entries are used)
     end
     --
     if not references.realpage then
@@ -641,11 +646,12 @@ implement {
 
 implement {
     name      = "storeregister",
-    actions   = function(rawdata)
-        local nofentries = storeregister(rawdata)
-        setinternalreference { internal = rawdata.references.internal }
-        context(nofentries)
-    end,
+ -- actions   = function(rawdata)
+ --     local nofentries = storeregister(rawdata)
+ --     setinternalreference { internal = rawdata.references.internal }
+ --     context(nofentries)
+ -- end,
+    actions   = { storeregister, context },
     arguments = {
         {
             { "metadata", {
@@ -669,6 +675,7 @@ implement {
             { "references", {
                     { "internal", "integer" },
                     { "section", "integer" },
+                    { "view" },
                     { "label" }
                 }
             },

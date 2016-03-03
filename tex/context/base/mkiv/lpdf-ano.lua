@@ -350,21 +350,39 @@ local v_tight     = variables.tight
 
 -- todo: scaling
 
+-- local destinationactions = {
+--     [v_standard]  = function(r,w,h,d) return f_xyz  (r,gethpos()*factor,(getvpos()+h)*factor) end, -- local left,top with no zoom
+--     [v_frame]     = function(r,w,h,d) return f_fitr (r,pdfrectangle(w,h,d)) end,                   -- fit rectangle in window
+--     [v_width]     = function(r,w,h,d) return f_fith (r,(getvpos()+h)*factor) end,                  -- top coordinate, fit width of page in window
+--     [v_minwidth]  = function(r,w,h,d) return f_fitbh(r,(getvpos()+h)*factor) end,                  -- top coordinate, fit width of content in window
+--     [v_height]    = function(r,w,h,d) return f_fitv (r,gethpos()*factor) end,                      -- left coordinate, fit height of page in window
+--     [v_minheight] = function(r,w,h,d) return f_fitbv(r,gethpos()*factor) end,                      -- left coordinate, fit height of content in window    [v_fit]       =                          f_fit,                                                 -- fit page in window
+--     [v_tight]     =                          f_fitb,                                               -- fit content in window
+--     [v_fit]       =                          f_fit,
+-- }
+
 local destinationactions = {
- -- [v_standard]  = function(r,w,h,d) return f_xyz  (r,pdfrectangle(w,h,d)) end,                   -- local left,top with zoom (0 in our case)
-    [v_standard]  = function(r,w,h,d) return f_xyz  (r,gethpos()*factor,(getvpos()+h)*factor) end, -- local left,top with no zoom
-    [v_frame]     = function(r,w,h,d) return f_fitr (r,pdfrectangle(w,h,d)) end,                   -- fit rectangle in window
- -- [v_width]     = function(r,w,h,d) return f_fith (r,gethpos()*factor) end,                      -- top coordinate, fit width of page in window
-    [v_width]     = function(r,w,h,d) return f_fith (r,(getvpos()+h)*factor) end,                  -- top coordinate, fit width of page in window
- -- [v_minwidth]  = function(r,w,h,d) return f_fitbh(r,gethpos()*factor) end,                      -- top coordinate, fit width of content in window
-    [v_minwidth]  = function(r,w,h,d) return f_fitbh(r,(getvpos()+h)*factor) end,                  -- top coordinate, fit width of content in window
- -- [v_height]    = function(r,w,h,d) return f_fitv (r,(getvpos()+h)*factor) end,                  -- left coordinate, fit height of page in window
-    [v_height]    = function(r,w,h,d) return f_fitv (r,gethpos()*factor) end,                      -- left coordinate, fit height of page in window
- -- [v_minheight] = function(r,w,h,d) return f_fitbv(r,(getvpos()+h)*factor) end,                  -- left coordinate, fit height of content in window
-    [v_minheight] = function(r,w,h,d) return f_fitbv(r,gethpos()*factor) end,                      -- left coordinate, fit height of content in window    [v_fit]       =                          f_fit,                                                 -- fit page in window
-    [v_tight]     =                          f_fitb,                                               -- fit content in window
-	-- new:
-    [v_fit]       =                          f_fit,
+    [v_standard]  = function(r,w,h,d,o)        -- local left,top with no zoom
+        local tx, ty = getpos()
+        return f_xyz(r,tx*factor,(ty+h+2*o)*factor) -- we can assume margins
+    end,
+    [v_frame]     = function(r,w,h,d,o)        -- fit rectangle in window
+        return f_fitr(r,pdfrectangle(w,h,d,o))
+    end,
+    [v_width]     = function(r,w,h,d,o)        -- top coordinate, fit width of page in window
+        return f_fith(r,(getvpos()+h+o)*factor)
+    end,
+    [v_minwidth]  = function(r,w,h,d,o)        -- top coordinate, fit width of content in window
+        return f_fitbh(r,(getvpos()+h+o)*factor)
+    end,
+    [v_height]    = function(r,w,h,d,o)        -- left coordinate, fit height of page in window
+        return f_fitv(r,(gethpos())*factor)
+    end,
+    [v_minheight] = function(r,w,h,d,o)        -- left coordinate, fit height of content in window
+        return f_fitbv(r,(gethpos())*factor)
+    end,
+    [v_tight]     = f_fitb,                    -- fit content in window
+    [v_fit]       = f_fit,                     -- fit content in window
 }
 
 local mapping = {
@@ -380,6 +398,11 @@ local mapping = {
 
 local defaultview   = v_fit
 local defaultaction = destinationactions[defaultview]
+local offset        = 0 -- 65536*5
+
+directives.register("destinations.offset", function(v)
+    offset = string.todimen(v) or 0
+end)
 
 -- A complication is that we need to use named destinations when we have views so we
 -- end up with a mix. A previous versions just output multiple destinations but now
@@ -397,7 +420,7 @@ local function flushdestination(width,height,depth,names,view)
         r = pagedestinations[r]
     else
         local action = view and destinationactions[view] or defaultaction
-        r = pdfdelayedobject(action(r,width,height,depth))
+        r = pdfdelayedobject(action(r,width,height,depth,offset))
     end
     for n=1,#names do
         local name = names[n]
@@ -422,7 +445,8 @@ function nodeinjections.destination(width,height,depth,names,view)
     if method == v_page then
         for n=1,#names do
             local name = names[n]
-            if usedviews[name] then
+            local used = usedviews[name]
+            if used and used ~= true then
                 -- already done, maybe a warning
             elseif type(name) == "number" then
              -- if noview then
@@ -439,7 +463,8 @@ function nodeinjections.destination(width,height,depth,names,view)
     elseif method == v_name then
         for n=1,#names do
             local name = names[n]
-            if usedviews[name] then
+            local used = usedviews[name]
+            if used and used ~= true then
                 -- already done, maybe a warning
             elseif type(name) == "number" then
                 local used = usedinternals[name]
@@ -668,7 +693,7 @@ local share      = true
 
 local f_annot = formatters["<< /Type /Annot %s /Rect [ %0.3F %0.3F %0.3F %0.3F ] >>"]
 
-directives.register("refences.sharelinks", function(v) share = v end)
+directives.register("references.sharelinks", function(v) share = v end)
 
 setmetatableindex(hashed,function(t,k)
     local v = pdfdelayedobject(k)
