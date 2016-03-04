@@ -389,7 +389,7 @@
 
 %D For internal usage:
 
-\def\strc_references_set_simple_page_reference#label%
+\def\strc_references_set_simple_reference#label%
   {\iflocation
      \strc_references_start_destination_nodes
      \setnextinternalreference
@@ -497,7 +497,7 @@
    \scratchdepth \dp\nextbox
    \setbox\nextbox\hbox
      {\framed[\c!frame=\v!off,#2]{\box\nextbox}}%
-   \strc_references_set_simple_page_reference{#1}%
+   \strc_references_set_simple_reference{#1}%
    \setbox\nextbox\hbox attr \destinationattribute \currentdestinationattribute
      {\strc_references_flush_destination_nodes
       \box\nextbox}%
@@ -509,7 +509,7 @@
    \egroup}
 
 \def\strc_references_content_nop_finish#1#2%
-  {\strc_references_set_simple_page_reference{#1}%
+  {\strc_references_set_simple_reference{#1}%
    \hbox attr \destinationattribute \currentdestinationattribute
      {\strc_references_flush_destination_nodes
       \box\nextbox}%

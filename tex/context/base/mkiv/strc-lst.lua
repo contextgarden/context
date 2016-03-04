@@ -1021,6 +1021,7 @@ implement {
                     { "location" },
                     { "prefix" },
                     { "reference" },
+                    { "view" },
                     { "order", "integer" },
                 }
             },
