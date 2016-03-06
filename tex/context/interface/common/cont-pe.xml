@@ -3104,9 +3104,6 @@
         <cd:parameter name="متن">
           <cd:constant type="cd:text"/>
         </cd:parameter>
-        <cd:parameter name="بستن‌نماد">
-          <cd:constant type="cd:text"/>
-        </cd:parameter>
         <cd:parameter name="بستن‌فرمان">
           <cd:constant type="cd:oneargument"/>
         </cd:parameter>

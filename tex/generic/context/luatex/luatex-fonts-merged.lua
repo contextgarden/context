@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/03/16 23:31:11
+-- merge date  : 03/06/16 15:47:27
 
 do -- begin closure to overcome local limits and interference
 
@@ -7237,7 +7237,7 @@ local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
 otf.glists={ "gsub","gpos" }
-otf.version=2.820 
+otf.version=2.822 
 otf.cache=containers.define("fonts","otf",otf.version,true)
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -7825,7 +7825,7 @@ actions["prepare glyphs"]=function(data,filename,raw)
             for cidslot=cidmin,cidmax do
               local glyph=cidglyphs[cidslot]
               if glyph then
-                local index=tableversion>0.3 and glyph.orig_pos or cidslot
+                local index=cidslot
                 if trace_subfonts then
                   unique[index]=true
                 end
@@ -8883,8 +8883,9 @@ actions["check metadata"]=function(data,filename,raw)
       ttftables[i].data="deleted"
     end
   end
+  local state=metadata.validation_state
   local names=raw.names
-  if metadata.validation_state and table.contains(metadata.validation_state,"bad_ps_fontname") then
+  if state and table.contains(state,"bad_ps_fontname") then
     local function valid(what)
       if names then
         for i=1,#names do
@@ -8938,6 +8939,9 @@ actions["check metadata"]=function(data,filename,raw)
       report_otf("fontname %a, fullname %a, psname %a",metadata.fontname,metadata.fullname,psname)
     end
     metadata.psname=psname
+  end
+  if state and table.contains(state,"bad_cmap_table") then
+    report_otf("fontfile %a has bad cmap tables",filename)
   end
 end
 actions["cleanup tables"]=function(data,filename,raw)

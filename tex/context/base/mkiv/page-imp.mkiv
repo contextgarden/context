@@ -764,7 +764,6 @@
    {\dosetuparrangement{2}{4}{8}{3}{5}% X,Y,Total,hcutmarks,vcutmarks
         \pusharrangedpageSIXTEENZ\poparrangedpagesAB\relax}
 
-
 \def\pusharrangedpageSIXTEENZ#1%
   {\advancearrangedpageN
    \reportarrangedpage\arrangedpageN
@@ -1192,7 +1191,7 @@
 %
 % \starttext \dorecurse{30}{test \recurselevel \page} \stoptext
 
-\def\pusharrangedpageXY#1%
+\unexpanded\def\pusharrangedpageXY#1%
   {\advancearrangedpageN
    \global\advance\arrangedpageM\plusone
    \reportarrangedpage\arrangedpageN
@@ -1228,7 +1227,7 @@
       \poparrangedpages
     \fi}
 
-\def\poparrangedpagesXY
+\unexpanded\def\poparrangedpagesXY
   {\ifnum\arrangedpageN>\zerocount
      \paperwidth \arrangedpageX\paperwidth
      \paperheight\arrangedpageY\paperheight
@@ -1274,7 +1273,7 @@
 \setuppaper
   [\c!width =\dimexpr\printpaperwidth -2\v_page_target_backspace\relax,
    \c!height=\dimexpr\printpaperheight-2\v_page_target_topspace \relax]
-
+
 % \definepageshift[test][horizontal][10pt,20pt,30pt,40pt,50pt]
 % \definepageshift[test][vertical]  [10pt,20pt,30pt,40pt,50pt]
 %

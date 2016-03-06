@@ -366,4 +366,40 @@
 
 % \starttext \slicepages[slice1.pdf][n=3] \stoptext
 
+\unexpanded\def\trimpages[#1]% was for a over decade in p-pdf-51.tex
+  {\begingroup
+   \getdummyparameters
+     [\c!file=dummy,
+      \c!hoffset=\zeropoint,
+      \c!voffset=\zeropoint,
+      \c!width=17cm,
+      \c!height=24cm,
+      \c!x=\zeropoint,
+      \c!y=\zeropoint,
+      #1]
+   \getfiguredimensions
+     [\dummyparameter\c!file]
+     [\c!object=\v!no]
+   \dorecurse\noffigurepages
+     {\scale
+        [\c!width=\paperwidth,
+         \c!height=\paperheight]
+        {\offset
+           [\c!x=\dummyparameter\c!x,
+            \c!y=\dummyparameter\c!y]
+           {\clip
+              [\c!hoffset=\dummyparameter\c!hoffset,
+               \c!voffset=\dummyparameter\c!voffset,
+               \c!width=\dummyparameter\c!width,
+               \c!height=\dummyparameter\c!height]
+              {% we correct by default, if not needed, introduce option
+               \setbox\nextbox\hbox
+                 {\externalfigure[\dummyparameter\c!file][\c!page=##1]}%
+               \ifdim\wd\nextbox>\ht\nextbox
+                 \rotate[\c!rotation=90]{\box\nextbox}%
+               \else
+                 \box\nextbox
+               \fi}}}}%
+   \endgroup}
+
 \protect \endinput

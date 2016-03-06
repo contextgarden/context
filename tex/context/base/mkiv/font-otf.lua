@@ -58,7 +58,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.820 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 2.822 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -766,7 +766,8 @@ actions["prepare glyphs"] = function(data,filename,raw)
                         for cidslot=cidmin,cidmax do
                             local glyph = cidglyphs[cidslot]
                             if glyph then
-                                local index = tableversion > 0.3 and glyph.orig_pos or cidslot
+                             -- local index = tableversion > 0.3 and glyph.orig_pos or cidslot
+                                local index = cidslot
                                 if trace_subfonts then
                                     unique[index] = true
                                 end
@@ -2131,9 +2132,10 @@ actions["check metadata"] = function(data,filename,raw)
         end
     end
     --
+    local state = metadata.validation_state
     local names = raw.names
     --
-    if metadata.validation_state and table.contains(metadata.validation_state,"bad_ps_fontname") then
+    if state and table.contains(state,"bad_ps_fontname") then
         -- the ff library does a bit too much (and wrong) checking ... so we need to catch this
         -- at least for now
         local function valid(what)
@@ -2196,6 +2198,9 @@ actions["check metadata"] = function(data,filename,raw)
         metadata.psname = psname
     end
     --
+    if state and table.contains(state,"bad_cmap_table") then
+        report_otf("fontfile %a has bad cmap tables",filename)
+    end
 end
 
 actions["cleanup tables"] = function(data,filename,raw)

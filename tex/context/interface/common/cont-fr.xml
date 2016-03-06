@@ -3104,9 +3104,6 @@
         <cd:parameter name="texte">
           <cd:constant type="cd:text"/>
         </cd:parameter>
-        <cd:parameter name="closesymbol">
-          <cd:constant type="cd:text"/>
-        </cd:parameter>
         <cd:parameter name="closecommand">
           <cd:constant type="cd:oneargument"/>
         </cd:parameter>

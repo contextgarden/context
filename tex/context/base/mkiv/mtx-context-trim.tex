@@ -1,0 +1,72 @@
+%D \module
+%D   [       file=mtx-context-trim,
+%D        version=2016.03.04,
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Trimming Files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a very old module based feature that has been moved to \MKIV.
+
+% begin help
+%
+% usage: context --extra=trim [options] filename
+%
+% --paperwidth  : target paperwidth
+% --paperheight : target paperheight
+% --file        : processed file
+% --x           : page x offset
+% --y           : page y offset
+% --hoffset     : horizontal clip offset
+% --voffset     : vertical clip offset
+% --width       : clip width
+% --height      : clip height
+%
+% example: context --extra=trim --file=trimtest --hoffset=3.50cm --voffset=3.50cm --width=15cm --height=21cm
+%
+% end help
+
+\input mtx-context-common.tex
+
+\setdocumentargumentdefault {paperwidth}  {21cm}
+\setdocumentargumentdefault {paperheight} {29.7cm}
+\setdocumentargumentdefault {file}        {\getdocumentfilename{1}}
+\setdocumentargumentdefault {hoffset}     {0cm}
+\setdocumentargumentdefault {voffset}     {0cm}
+\setdocumentargumentdefault {width}       {17cm}
+\setdocumentargumentdefault {height}      {24cm}
+\setdocumentargumentdefault {x}           {0cm}
+\setdocumentargumentdefault {y}           {0cm}
+
+\doifnothing{\getdocumentargument{file}}                    {\starttext missing filename \stoptext}
+\doif       {\getdocumentargument{file}}{\inputfilename.tex}{\starttext missing filename \stoptext}
+
+\definepapersize
+  [fuzzy]
+  [width=\getdocumentargument{paperwidth},
+   height=\getdocumentargument{paperheight}]
+
+\setuppapersize
+  [fuzzy]
+  [fuzzy]
+
+\setuplayout
+  [page]
+
+\starttext
+
+    \trimpages
+      [file=\getdocumentargument{file},
+       hoffset=\getdocumentargument{hoffset},
+       voffset=\getdocumentargument{voffset},
+       width=\getdocumentargument{width},
+       height=\getdocumentargument{height},
+       x=\getdocumentargument{x},
+       y=\getdocumentargument{y}]
+
+\stoptext

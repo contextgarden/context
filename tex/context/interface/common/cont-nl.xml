@@ -3104,9 +3104,6 @@
         <cd:parameter name="tekst">
           <cd:constant type="cd:text"/>
         </cd:parameter>
-        <cd:parameter name="sluitsymbool">
-          <cd:constant type="cd:text"/>
-        </cd:parameter>
         <cd:parameter name="sluitcommando">
           <cd:constant type="cd:oneargument"/>
         </cd:parameter>
