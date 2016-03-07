@@ -325,7 +325,7 @@ local function copyduplicates(fontdata)
             for u, d in next, duplicates do
                 local du = descriptions[u]
                 if du then
-                    local t  = { f_character_y(u), f_index(du.index), "->" }
+                    local t  = { f_character_y(u), "@", f_index(du.index), "->" }
                     for u in next, d do
                         if descriptions[u] then
                             t[#t+1] = f_character_n(u)

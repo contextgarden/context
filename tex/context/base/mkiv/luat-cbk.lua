@@ -137,12 +137,8 @@ local function register_usercall(what,name,func)
     end
 end
 
-local function frozen_message(what,name)
-    report_callbacks("not %s frozen %a",what,name)
-end
-
 local function frozen_callback(name)
-    frozen_message("registering",name)
+    report_callbacks("not %s frozen %a","registering",name)
     return nil, format("callback '%s' is frozen",name) -- no formatter yet
 end
 
@@ -228,7 +224,7 @@ function callbacks.push(name,func)
             register_callback(name,func)
         end
     else
-        frozen_message("pushing",name)
+        report_callbacks("not %s frozen %a","pushing",name)
     end
 end
 
