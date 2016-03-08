@@ -667,84 +667,87 @@
 % quite special and don't apply to multiple. So, being strict saves
 % us resets.
 
-\installcorenamespace{listfiller}
-
-\unexpanded\def\installlistfiller#1#2%
-  {\setuvalue{\??listfiller#1}{#2}}
-
-\unexpanded\def\listfiller#1%
-  {\begincsname\??listfiller#1\endcsname}
+% \installcorenamespace{listfiller}
+%
+% \unexpanded\def\installlistfiller#1#2%
+%   {\setuvalue{\??listfiller#1}{#2}}
+%
+% \unexpanded\def\listfiller#1%
+%   {\begincsname\??listfiller#1\endcsname}
+%
+% \unexpanded\def\currentlistfiller
+%   {\begingroup
+%    \edef\p_filler{\listalternativeparameter\c!filler}%
+%    \ifcsname\??listfiller\p_filler\endcsname
+%      \lastnamedcs
+%    \else
+%      \p_filler
+%    \fi
+%    \endgroup}
+%
+% \installlistfiller\v!sym % original one
+%   {\begingroup
+%    \scratchdimen.5\emwidth
+%    \hskip\scratchdimen
+%    \gleaders
+%      \hbox to \scratchdimen
+%        {\hss
+%         \uselistalternativestyleandcolor\c!symstyle\c!symcolor
+%         \listalternativeparameter\c!symbol
+%         \hss}%
+%      \hfill
+%    \hskip\scratchdimen
+%    \endgroup}
+%
+% \installlistfiller\v!symbol % new one (make that default?)
+%   {\begingroup
+%    \scratchdimen.5\emwidth
+%    \hskip\scratchdimen
+%    \gleaders
+%      \hbox spread .5\scratchdimen
+%        {\hss
+%         \uselistalternativestyleandcolor\c!symstyle\c!symcolor
+%         \listalternativeparameter\c!symbol
+%         \hss}%
+%      \hfill
+%    \hskip\scratchdimen
+%    \endgroup}
+%
+% \installlistfiller\v!width
+%   {\hfill}
+%
+% \installlistfiller\v!space
+%   {\hskip.25\emwidth\relax}
+%
+% \setuplistalternative
+%   [\c!command=\strictlistparameter\c!command,
+%    \c!symbol=.]
 
 \unexpanded\def\currentlistfiller
-  {\begingroup
-   \edef\p_filler{\listalternativeparameter\c!filler}%
-   \ifcsname\??listfiller\p_filler\endcsname
-     \lastnamedcs
-   \else
-     \p_filler
-   \fi
-   \endgroup}
-
-\installlistfiller\v!sym % original one
-  {\begingroup
-   \scratchdimen.5\emwidth
-   \hskip\scratchdimen
-   \gleaders
-     \hbox to \scratchdimen
-       {\hss
-        \uselistalternativestyleandcolor\c!symstyle\c!symcolor
-        \listalternativeparameter\c!symbol
-        \hss}%
-     \hfill
-   \hskip\scratchdimen
-   \endgroup}
-
-\installlistfiller\v!symbol % new one (make that default?)
-  {\begingroup
-   \scratchdimen.5\emwidth
-   \hskip\scratchdimen
-   \gleaders
-     \hbox spread .5\scratchdimen
-       {\hss
-        \uselistalternativestyleandcolor\c!symstyle\c!symcolor
-        \listalternativeparameter\c!symbol
-        \hss}%
-     \hfill
-   \hskip\scratchdimen
-   \endgroup}
-
-\installlistfiller\v!width
-  {\hfill}
-
-\installlistfiller\v!space
-  {\hskip.25\emwidth\relax}
-
-\setuplistalternative
-  [\c!command=\strictlistparameter\c!command,
-   \c!symbol=.]
+  {\checkedfiller{\listalternativeparameter\c!filler}}
 
 \definelistalternative
   [a]
-  [\c!distance=\zeropoint,
-   \c!width=2\emwidth,
-   \c!stretch=10\emwidth,
-   \c!filler=\v!space,
+  [\c!distance=0pt,
+   \c!width=2em,
+   \c!stretch=10em,
+   \c!filler=\hskip.25em\relax,
    \c!renderingsetup=\??listrenderings:abc]
 
 \definelistalternative
   [b]
-  [\c!distance=5\emwidth,
-   \c!width=2\emwidth,
-   \c!stretch=10\emwidth,
-   \c!filler=\v!width,
+  [\c!distance=5em,
+   \c!width=2em,
+   \c!stretch=10em,
+   \c!filler=\hfill,
    \c!renderingsetup=\??listrenderings:abc]
 
 \definelistalternative
   [c]
-  [\c!distance=5\emwidth,
-   \c!width=\zeropoint,
-   \c!stretch=10\emwidth,
-   \c!filler=\v!sym,% \v!symbol
+  [\c!distance=5em,
+   \c!width=0pt,
+   \c!stretch=10em,
+   \c!filler=\hskip.5em\gleaders\hbox to .5em{\hss.\hss}\hfill\hskip.5em\relax,
    \c!renderingsetup=\??listrenderings:abc]
 
 \definelistalternative

@@ -337,7 +337,7 @@
   {\iffirstargument
      \setuvalue{#name}{\styleinstance[#name]}%
      \def\font_styles_define_style_collection_a#style%
-       {\def\font_styles_define_style_collection_b#alternative{\letbeundefined{\??stylecollection#name:#style:#alternative}}%
+       {\def\font_styles_define_style_collection_b#alternative{\undefinevalue{\??stylecollection#name:#style:#alternative}}%
         \font_helpers_process_alternative_list\font_styles_define_style_collection_b
         \font_styles_define_style_collection_b\s!default}%
      \font_helpers_process_style_list\font_styles_define_style_collection_a

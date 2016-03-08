@@ -621,7 +621,7 @@
 %D existance is not the same as the one described here. Therefore we introduce:
 
 \def\letbeundefined#1% potential stack buildup when used \global
-  {\expandafter\let\csname#1\endcsname\undefined}
+  {\expandafter\let\csname#1\endcsname\undefined} % or use \undefinevalue to match \setvalue
 
 \def\localundefine#1% conditional
   {\ifcsname#1\endcsname\expandafter\let\csname#1\endcsname\undefined\fi}

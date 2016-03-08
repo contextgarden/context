@@ -1589,6 +1589,16 @@
    \hbox to \dimexpr\availablehsize/\scratchcounter\relax{\collecteditemgroupitem\hss}%
    \endgroup}
 
+% \def\strc_itemgroups_collected_flush_indeed
+%   {\collecteditemgroupitem
+%    \iftrialtypesetting
+%      \undefinevalue{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
+%    \fi}
+
+\def\strc_itemgroups_collected_flush_indeed
+  {\collecteditemgroupitem
+   \undefinevalue{\??itemgroupstack\number\c_strc_itemgroups_collected_current}}
+
 \def\strc_itemgroups_collected_flush
   {\ifconditional\c_strc_itemgroups_randomize
      \getrandomcount\c_strc_itemgroups_collected_current\plusone\c_strc_itemgroups_collected_stored
@@ -1600,7 +1610,7 @@
      \ifconditional\c_strc_itemgroups_horizontal
        \strc_itemgroups_collected_flush_horizontal
      \else
-       \collecteditemgroupitem
+       \strc_itemgroups_collected_flush_indeed
      \fi
      \advance\c_strc_itemgroups_collected_done\plusone
    \fi

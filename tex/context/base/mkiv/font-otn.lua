@@ -846,7 +846,7 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
     return head, start, false, discfound
 end
 
-function handlers.gpos_single(head,start,kind,lookupname,kerns,sequence,injection)
+function handlers.gpos_single(head,start,kind,lookupname,kerns,sequence,lookuphash,i,injection)
     local startchar = getchar(start)
     local dx, dy, w, h = setpair(start,tfmdata.parameters.factor,rlmode,sequence.flags[4],kerns,injection) -- ,characters[startchar])
     if trace_kerns then

@@ -138,7 +138,7 @@ local function unifyresources(fontdata,indices)
     end
     --
     -- the duplicates need checking (probably only in cjk fonts): currently we only check
-    -- gsub_single, gsub_alternate and gsub_multiple
+    -- gsub_single, gsub_alternate, gsub_multiple, gpos_single and gpos_cursive
     --
     local function unifythem(sequences)
         if not sequences then
@@ -276,8 +276,22 @@ local function unifyresources(fontdata,indices)
                             local t1 = done[c]
                             if not t1 then
                                 t1 = { }
-                                for g1, d1 in next, c do
-                                    t1[indices[g1]] = d1
+                                if duplicates then
+                                    for g1, d1 in next, c do
+                                        local ug1 = indices[g1]
+                                        t1[ug1] = d1
+                                        --
+                                        local dg1 = duplicates[ug1]
+                                        if dg1 then
+                                            for u in next, dg1 do
+                                                t1[u] = d1
+                                            end
+                                        end
+                                    end
+                                else
+                                    for g1, d1 in next, c do
+                                        t1[indices[g1]] = d1
+                                    end
                                 end
                                 done[c] = t1
                             end

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/07/16 14:08:40
+-- merge date  : 03/08/16 13:29:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -7810,7 +7810,7 @@ actions["prepare glyphs"]=function(data,filename,raw)
           local cidcnt=subfont.glyphcnt
           local cidmin=subfont.glyphmin
           local cidmax=subfont.glyphmax
-          local notdef=subfont.notdef_loc or -1
+          local notdef=(tonumber(raw.table_version) or 0)>0.4 and subfont.notdef_loc or -1
           if notdeffound==-1 and notdef>=0 then
             notdeffound=notdef
           end
@@ -7911,7 +7911,7 @@ actions["prepare glyphs"]=function(data,filename,raw)
     local cnt=raw.glyphcnt or 0
     local min=raw.glyphmin or 0
     local max=raw.glyphmax or (raw.glyphcnt-1)
-    notdeffound=raw.notdef_loc or -1
+    notdeffound=(tonumber(raw.table_version) or 0)>0.4 and raw.notdef_loc or -1
     if cnt>0 then
       for index=min,max do
         local glyph=rawglyphs[index]
@@ -12267,7 +12267,7 @@ function handlers.gsub_ligature(head,start,kind,lookupname,ligature,sequence)
   end
   return head,start,false,discfound
 end
-function handlers.gpos_single(head,start,kind,lookupname,kerns,sequence,injection)
+function handlers.gpos_single(head,start,kind,lookupname,kerns,sequence,lookuphash,i,injection)
   local startchar=getchar(start)
   local dx,dy,w,h=setpair(start,tfmdata.parameters.factor,rlmode,sequence.flags[4],kerns,injection) 
   if trace_kerns then

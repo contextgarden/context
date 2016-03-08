@@ -646,9 +646,6 @@ actions["add dimensions"] = function(data,filename)
                 report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
              -- d.width  = -wd
             end
-         -- if forcenotdef and not d.name then
-         --     d.name = ".notdef"
-         -- end
             if bb then
                 local ht =  bb[4]
                 local dp = -bb[2]
@@ -750,7 +747,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
                     local cidcnt = subfont.glyphcnt
                     local cidmin = subfont.glyphmin
                     local cidmax = subfont.glyphmax
-                    local notdef = subfont.notdef_loc or -1
+                    local notdef = (tonumber(raw.table_version) or 0) > 0.4 and subfont.notdef_loc or -1
                     if notdeffound == -1 and notdef >= 0 then
                         notdeffound = notdef
                     end
@@ -878,7 +875,7 @@ actions["prepare glyphs"] = function(data,filename,raw)
         local cnt = raw.glyphcnt or 0
         local min = raw.glyphmin or 0
         local max = raw.glyphmax or (raw.glyphcnt - 1)
-        notdeffound = raw.notdef_loc or -1
+        notdeffound = (tonumber(raw.table_version) or 0) > 0.4 and raw.notdef_loc or -1
         if cnt > 0 then
             for index=min,max do
                 local glyph = rawglyphs[index]

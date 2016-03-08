@@ -1140,6 +1140,15 @@
      \fi
    \fi}
 
+\unexpanded\def\simplealignedspreadbox#1#2%
+  {\hbox \ifdim#1>\zeropoint spread #1
+     \ifcsname\??alignsimple#2\endcsname
+       \doubleexpandafter\lastnamedcs
+     \else
+       \doubleexpandafter\spac_align_simple_left
+     \fi
+   \fi}
+
 \unexpanded\def\simplealignedboxplus#1#2#3%
   {\hbox #3 \ifdim#1>\zeropoint to #1
      \ifcsname\??alignsimple#2\endcsname

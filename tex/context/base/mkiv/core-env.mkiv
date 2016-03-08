@@ -632,9 +632,9 @@
 
 \unexpanded\def\resetsetups[#1]% see x-fo for usage
   {\ifcsname\??setup\ifgridsnapping\v!grid\fi:#1\endcsname
-     \dodoglobal\letbeundefined{\??setup\ifgridsnapping\v!grid\fi:#1}%
+     \dodoglobal\undefinevalue{\??setup\ifgridsnapping\v!grid\fi:#1}%
    \else
-     \dodoglobal\letbeundefined{\??setup:#1}%
+     \dodoglobal\undefinevalue{\??setup:#1}%
    \fi}
 
 \unexpanded\def\showsetupsdefinition[#1]%

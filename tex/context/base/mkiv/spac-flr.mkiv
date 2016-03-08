@@ -45,6 +45,7 @@
   {\removeunwantedspaces
    \begingroup
    \edef\currentfiller{#1}%
+   \usefillerstyleandcolor\c!style\c!color
    \scratchdimen\fillerparameter\c!leftmargin\relax
    \ifdim\scratchdimen=\zeropoint\else
      \hskip\scratchdimen
@@ -64,16 +65,26 @@
 
 \setvalue{\??filleralternative\v!symbol}%
   {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
-      \simplealignedbox
-        {\fillerparameter\c!width}%
-        {\fillerparameter\c!align}%
-        {\fillerparameter\c!symbol}%
+     \ifdim\fillerparameter\c!offset>\zeropoint
+        \simplealignedspreadbox
+          {2\dimexpr\fillerparameter\c!offset\relax}%
+          {\fillerparameter\c!align}%
+          {\fillerparameter\c!symbol}%
+     \else
+        \simplealignedbox
+          {\fillerparameter\c!width}%
+          {\fillerparameter\c!align}%
+          {\fillerparameter\c!symbol}%
+     \fi
    \hfill}
 
-\setvalue{\??filleralternative\c!stretch}%
+\setvalue{\??filleralternative\v!stretch}%
   {\hfill}
 
-\setvalue{\??filleralternative\c!rule}%
+\setvalue{\??filleralternative\v!space}%
+  {\hskip\fillerparameter\c!distance\relax}
+
+\setvalue{\??filleralternative\v!rule}%
   {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
      \hrule
        \!!height\fillerparameter\c!height
@@ -88,6 +99,8 @@
 \setupfillers
   [\c!width=\emwidth,
    \c!symbol=.,
+   \c!distance=\emwidth,
+   \c!offset=\zeropoint,
    \c!align=\v!middle,
    \c!height=.1\exheight,
    \c!depth=\zeropoint,
@@ -95,6 +108,35 @@
    \c!rightmargin=\zeropoint,
    \c!alternative=\v!symbol,
    \c!method=\s!local]
+
+\definefiller
+  [\v!sym]
+  [\c!method=\v!global,
+   \c!width=.5\emwidth,
+   \c!leftmargin=.5\emwidth,
+   \c!rightmargin=.5\emwidth]
+
+\definefiller
+  [\v!symbol]
+  [\c!method=\v!global,
+   \c!offset=.125\emwidth,
+   \c!leftmargin=.5\emwidth,
+   \c!rightmargin=.5\emwidth]
+
+\definefiller
+  [\v!rule]
+  [\c!alternative=\v!rule,
+   \c!leftmargin=.5\emwidth,
+   \c!rightmargin=.5\emwidth]
+
+\definefiller
+  [\v!width]
+  [\c!alternative=\v!stretch]
+
+\definefiller
+  [\v!space]
+  [\c!alternative=\v!space,
+   \c!distance=3\emwidth]
 
 % maybe box -> symbol
 
