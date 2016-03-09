@@ -2212,6 +2212,7 @@ end
 
 do
 
+    local kerncodes = nodes.kerncodes
     local copy_node = nuts.copy
     local kern      = nuts.pool.register(nuts.pool.kern())
 
@@ -2223,7 +2224,9 @@ do
         return c
     end)
 
-    directives.register("nodes.injections.fontkern", function(v) setsubtype(kern,v and 0 or 1) end)
+    directives.register("fonts.injections.fontkern", function(v)
+        setsubtype(kern,v and kerncodes.fontkern or kerncodes.userkern)
+    end)
 
 end
 

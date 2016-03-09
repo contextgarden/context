@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['font-ext'] = {
 }
 
 local next, type, byte = next, type, string.byte
+local utfbyte = utf.byte
 
 local context            = context
 local fonts              = fonts
@@ -855,6 +856,45 @@ registerotffeature {
     }
 }
 
+do
+
+    local v_local = interfaces and interfaces.variables and interfaces.variables["local"] or "local"
+
+    local function initialize(tfmdata,key,value)
+        local characters = tfmdata.characters
+        local parameters = tfmdata.parameters
+        local oldchar    = 32
+        local newchar    = 32
+        if value == "locl" or value == v_local then
+            newchar = fonts.handlers.otf.getsubstitution(tfmdata,oldchar,"locl",true) or oldchar
+        elseif value == true then
+            -- use normal space
+        elseif value then
+            newchar = utfbyte(value)
+        else
+            return
+        end
+        local newchar  = newchar and characters[newchar]
+        local newspace = newchar and newchar.width
+        if newspace > 0 then
+            parameters.space         = newspace
+            parameters.space_stretch = newspace/2
+            parameters.space_shrink  = newspace/3
+            parameters.extra_space   = parameters.space_shrink
+        end
+    end
+
+    registerotffeature {
+        name        = 'space', -- true|false|locl|character
+        description = 'space settings',
+        manipulators = {
+            base = initialize,
+            node = initialize,
+        }
+    }
+
+end
+
 -- -- historic stuff, move from font-ota (handled differently, typo-rep)
 --
 -- local delete_node = nodes.delete
@@ -995,3 +1035,4 @@ implement {
         context(getprivatenode(fontdata[currentfont()],name))
     end
 }
+

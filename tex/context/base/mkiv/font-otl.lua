@@ -482,7 +482,7 @@ local function copytotfm(data,cache_id)
         --
         parameters.slant         = 0
         parameters.space         = spaceunits          -- 3.333 (cmr10)
-        parameters.space_stretch = units/2   --  500   -- 1.666 (cmr10)
+        parameters.space_stretch = 1*units/2   --  500   -- 1.666 (cmr10)
         parameters.space_shrink  = 1*units/3 --  333   -- 1.111 (cmr10)
         parameters.x_height      = 2*units/5 --  400
         parameters.quad          = units     -- 1000

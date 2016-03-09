@@ -21,15 +21,20 @@ if not modules then modules = { } end modules ['font-otj'] = {
 
 -- As we have a rawget on properties we don't need one on injections.
 
+-- The use_advance code is just a test and is meant for testing and manuals. There is no
+-- performance (or whatever) gain and using kerns is somewhat cleaner (at least for now).
+
 if not nodes.properties then return end
 
 local next, rawget = next, rawget
 local utfchar = utf.char
 local fastcopy = table.fastcopy
 
-local trace_injections = false  trackers.register("fonts.injections",         function(v) trace_injections = v end)
-local trace_marks      = false  trackers.register("fonts.injections.marks",   function(v) trace_marks      = v end)
-local trace_cursive    = false  trackers.register("fonts.injections.cursive", function(v) trace_cursive    = v end)
+local trace_injections  = false  trackers.register("fonts.injections",         function(v) trace_injections = v end)
+local trace_marks       = false  trackers.register("fonts.injections.marks",   function(v) trace_marks      = v end)
+local trace_cursive     = false  trackers.register("fonts.injections.cursive", function(v) trace_cursive    = v end)
+
+local use_advance       = false  directives.register("fonts.injections.advance", function(v) use_advance = v end)
 
 local report_injections = logs.reporter("fonts","injections")
 
@@ -553,7 +558,12 @@ local function inject_kerns_only(head,where)
                         -- left|glyph|right
                         local leftkern = i.leftkern
                         if leftkern and leftkern ~= 0 then
-                            insert_node_before(head,current,newkern(leftkern))
+                            if use_advance then
+                                setfield(current,"xoffset",leftkern)
+                                setfield(current,"xadvance",leftkern)
+                            else
+                                insert_node_before(head,current,newkern(leftkern))
+                            end
                         end
                     end
                     if prevdisc then
@@ -565,8 +575,12 @@ local function inject_kerns_only(head,where)
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
                                     local posttail = find_tail(post)
-                                    insert_node_after(post,posttail,newkern(leftkern))
-                                    done = true
+                                    if use_advance then
+                                        setfield(post,"xadvance",leftkern)
+                                    else
+                                        insert_node_after(post,posttail,newkern(leftkern))
+                                        done = true
+                                    end
                                 end
                             end
                         end
@@ -577,8 +591,12 @@ local function inject_kerns_only(head,where)
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
                                     local replacetail = find_tail(replace)
-                                    insert_node_after(replace,replacetail,newkern(leftkern))
-                                    done = true
+                                    if use_advance then
+                                        setfield(replace,"xadvance",leftkern)
+                                    else
+                                        insert_node_after(replace,replacetail,newkern(leftkern))
+                                        done = true
+                                    end
                                 end
                             end
                         end
@@ -603,8 +621,13 @@ local function inject_kerns_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                pre  = insert_node_before(pre,n,newkern(leftkern))
-                                done = true
+                                if use_advance then
+                                    setfield(pre,"xoffset",leftkern)
+                                    setfield(pre,"xadvance",leftkern)
+                                else
+                                    pre  = insert_node_before(pre,n,newkern(leftkern))
+                                    done = true
+                                end
                             end
                         end
                     end
@@ -620,8 +643,13 @@ local function inject_kerns_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                post = insert_node_before(post,n,newkern(leftkern))
-                                done = true
+                                if use_advance then
+                                    setfield(post,"xoffset",leftkern)
+                                    setfield(post,"xadvance",leftkern)
+                                else
+                                    post = insert_node_before(post,n,newkern(leftkern))
+                                    done = true
+                                end
                             end
                         end
                     end
@@ -637,8 +665,13 @@ local function inject_kerns_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                replace = insert_node_before(replace,n,newkern(leftkern))
-                                done    = true
+                                if use_advance then
+                                    setfield(replace,"xoffset",leftkern)
+                                    setfield(replace,"xadvance",leftkern)
+                                else
+                                    replace = insert_node_before(replace,n,newkern(leftkern))
+                                    done    = true
+                                end
                             end
                         end
                     end

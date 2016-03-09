@@ -370,7 +370,7 @@ end
 local f_cache = { }
 
 local function fontkern(head,current)
-    local kern = getfield(current,"kern")
+    local kern = getfield(current,"kern") + getfield(current,"expansion_factor")
     local info = f_cache[kern]
     if info then
         -- print("hit fontkern")

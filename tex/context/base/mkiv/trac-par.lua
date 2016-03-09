@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['trac-par'] = {
     comment   = "a translation of the built in parbuilder, initial convertsin by Taco Hoekwater",
 }
 
+-- todo: kern
+
 local utfchar = utf.char
 local concat = table.concat
 
