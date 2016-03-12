@@ -46,14 +46,11 @@ local hpack_node         = nodes.hpack
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
 
-local normalize_global   = true
-local normalize_local    = true
-
-directives.register("paragraphs.normalize.global", function(v) normalize_global = v end) -- adds 2% runtime
-directives.register("paragraphs.normalize.local",  function(v) normalize_local  = v end) -- adds 2% runtime
-
 storage.register("builders/paragraphs/constructors/names",   names,   "builders.paragraphs.constructors.names")
 storage.register("builders/paragraphs/constructors/numbers", numbers, "builders.paragraphs.constructors.numbers")
+
+local trace_page_builder = false  trackers.register("builders.page", function(v) trace_page_builder = v end)
+local trace_post_builder = false  trackers.register("builders.post", function(v) trace_post_builder = v end)
 
 local report_parbuilders = logs.reporter("parbuilders")
 
@@ -193,9 +190,6 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
     if head then
         starttiming(builders)
---         if normalize_local then
---             normalize(head,true) -- a bit weird place
---         end
         if trace_vpacking then
             local before = nodes.count(head)
             head, done = vboxactions(head,groupcode,size,packtype,maxdepth,direction)
@@ -232,48 +226,83 @@ end
 -- check why box is called before after_linebreak .. maybe make categories and
 -- call 'm less
 
-local build_par_codes = {
-    pre_box    = true,
-    box        = true,
-    pre_adjust = true,
-    adjust     = true,
-}
 
-function builders.buildpage_filter(groupcode)
-    -- the next check saves 1% runtime on 1000 tufte pages
-    local head = texlists.contrib_head
-    local done = false
---     if normalize_global and build_par_codes[groupcode] then
-    if build_par_codes[groupcode] then
-        -- also called in vbox .. we really need another callback for these four
-        normalize(head) -- a bit weird place
+-- this will be split into contribute_filter for these 4 so at some point
+-- thecheck can go away
+
+if LUATEXVERSION >= 0.895 then
+
+    function builders.buildpage_filter(groupcode)
+        -- the next check saves 1% runtime on 1000 tufte pages
+        local head = texlists.contrib_head
+        local done = false
+        if head then
+            -- called quite often ... maybe time to remove timing
+            starttiming(builders)
+            if trace_page_builder then
+                report(groupcode,head)
+            end
+            head, done = pageactions(head,groupcode)
+            stoptiming(builders)
+         -- -- doesn't work here (not passed on?)
+         -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
+            texlists.contrib_head = head or nil -- needs checking
+         -- tex.setlist("contrib_head",head,head and nodes.tail(head))
+            return done and head or true -- no return value needed
+        else
+            -- happens quite often
+            if trace_page_builder then
+                report(groupcode)
+            end
+            return nil, false -- no return value needed
+        end
     end
-    --
-    if head then
-        -- called quite often ... maybe time to remove timing
-        starttiming(builders)
-        if trace_page_builder then
-            report(groupcode,head)
+
+else
+
+    local build_par_codes = {
+        pre_box    = true,
+        box        = true,
+        pre_adjust = true,
+        adjust     = true,
+    }
+
+    function builders.buildpage_filter(groupcode)
+        -- the next check saves 1% runtime on 1000 tufte pages
+        local head = texlists.contrib_head
+        local done = false
+        if build_par_codes[groupcode] then
+            -- also called in vbox .. we really need another callback for these four
+            normalize(head) -- a bit weird place
         end
-        head, done = pageactions(head,groupcode)
-        stoptiming(builders)
-     -- -- doesn't work here (not passed on?)
-     -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
-        texlists.contrib_head = head or nil -- needs checking
-     -- tex.setlist("contrib_head",head,head and nodes.tail(head))
-        return done and head or true -- no return value needed
-    else
-        -- happens quite often
-        if trace_page_builder then
-            report(groupcode)
+        --
+        if head then
+            -- called quite often ... maybe time to remove timing
+            starttiming(builders)
+            if trace_page_builder then
+                report(groupcode,head)
+            end
+            head, done = pageactions(head,groupcode)
+            stoptiming(builders)
+         -- -- doesn't work here (not passed on?)
+         -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
+            texlists.contrib_head = head or nil -- needs checking
+         -- tex.setlist("contrib_head",head,head and nodes.tail(head))
+            return done and head or true -- no return value needed
+        else
+            -- happens quite often
+            if trace_page_builder then
+                report(groupcode)
+            end
+            return nil, false -- no return value needed
         end
-        return nil, false -- no return value needed
     end
 
 end
 
-callbacks.register('vpack_filter',     builders.vpack_filter,     "vertical spacing etc")
-callbacks.register('buildpage_filter', builders.buildpage_filter, "vertical spacing etc (mvl)")
+callbacks.register('vpack_filter',      builders.vpack_filter,      "vertical spacing etc")
+callbacks.register('buildpage_filter',  builders.buildpage_filter,  "vertical spacing etc (mvl)")
+---------.register('contribute_filter', builders.contribute_filter, "adding content to lists")
 
 statistics.register("v-node processing time", function()
     return statistics.elapsedseconds(builders)

@@ -140,7 +140,7 @@ return {
             ["luatex.expanddepth"]       =  "10000", -- 10000
             ["luatex.hashextra"]         = "100000", --     0
             ["luatex.nestsize"]          =   "1000", --    50
-            ["luatex.maxinopen"]         =    "500", --    15
+            ["luatex.maxinopen"]         =   "1000", --    15
             ["luatex.maxprintline"]      = " 10000", --    79
             ["luatex.maxstrings"]        = "500000", -- 15000 -- obsolete
             ["luatex.paramsize"]         =  "25000", --    60

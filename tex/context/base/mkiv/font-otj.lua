@@ -34,6 +34,8 @@ local trace_injections  = false  trackers.register("fonts.injections",         f
 local trace_marks       = false  trackers.register("fonts.injections.marks",   function(v) trace_marks      = v end)
 local trace_cursive     = false  trackers.register("fonts.injections.cursive", function(v) trace_cursive    = v end)
 
+-- use_advance is just an experiment: it makes copying glyphs (instead of new_glyph) dangerous
+
 local use_advance       = false  directives.register("fonts.injections.advance", function(v) use_advance = v end)
 
 local report_injections = logs.reporter("fonts","injections")

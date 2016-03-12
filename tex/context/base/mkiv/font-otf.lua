@@ -260,6 +260,7 @@ local valid_fields = table.tohash {
     "weight",
     "weight_width_slope_only",
  -- "xuid",
+ -- "truetype", -- maybe as check
 }
 
 local ordered_enhancers = {

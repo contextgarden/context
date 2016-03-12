@@ -886,15 +886,15 @@
   {\bgroup
    \global\advance\c_scrn_pushbutton_n\plusone
    \setupfield
-     [pushbutton]
-     [\c!frame=\v!overlay,
-      \c!offset=\v!overlay,
-      \c!clickout={#reference},
+     [pushbutton]%
+     [\c!frame=\v!overlay,%
+      \c!offset=\v!overlay,%
+      \c!clickout={#reference},%
       #settings]%
    \definefield
      [pushbutton:\number\c_scrn_pushbutton_n]%
-     [push]
-     [pushbutton]
+     [push]%
+     [pushbutton]%
      [pushsymbol:#tag:n,pushsymbol:#tag:r,pushsymbol:#tag:d]%
    \fitfield
      [pushbutton:\number\c_scrn_pushbutton_n]%

@@ -105,6 +105,7 @@ local submitoutputformat      = 0 --  0=unknown 1=HTML 2=FDF 3=XML   => not yet 
 
 local pdf_widget              = pdfconstant("Widget")
 local pdf_tx                  = pdfconstant("Tx")
+local pdf_sig                 = pdfconstant("Sig")
 local pdf_ch                  = pdfconstant("Ch")
 local pdf_btn                 = pdfconstant("Btn")
 ----- pdf_yes                 = pdfconstant("Yes")
@@ -1041,6 +1042,71 @@ end
 function methods.text(name,specification)
     return makelinechild(name,enhance(specification,"MultiLine"))
 end
+
+-- copy of line ... probably also needs a /Lock
+
+local function makesignatureparent(field,specification)
+    local text = pdfunicode(field.default)
+    local length = tonumber(specification.length or 0) or 0
+    local d = pdfdictionary {
+        Subtype  = pdf_widget,
+        T        = pdfunicode(specification.title),
+        F        = fieldplus(specification),
+        Ff       = fieldflag(specification),
+        OC       = fieldlayer(specification),
+        DA       = fieldsurrounding(specification),
+        AA       = fieldactions(specification),
+        FT       = pdf_sig,
+        Q        = fieldalignment(specification),
+        MaxLen   = length == 0 and 1000 or length,
+        DV       = text,
+        V        = text,
+    }
+    save_parent(field,specification,d)
+end
+
+local function makesignaturechild(name,specification)
+    local field, parent = clones[name], nil
+    if field then
+        parent = fields[field.parent]
+        if not parent.pobj then
+            if trace_fields then
+                report_fields("forcing parent signature %a",parent.name)
+            end
+            makesignatureparent(parent,specification)
+        end
+    else
+        parent = fields[name]
+        field = parent
+        if not parent.pobj then
+            if trace_fields then
+                report_fields("using parent text %a",name)
+            end
+            makesignatureparent(parent,specification)
+        end
+    end
+    if trace_fields then
+        report_fields("using child text %a",name)
+    end
+    -- we could save a little by not setting some key/value when it's the
+    -- same as parent but it would cost more memory to keep track of it
+    local d = pdfdictionary {
+        Subtype = pdf_widget,
+        Parent  = pdfreference(parent.pobj),
+        F       = fieldplus(specification),
+        OC      = fieldlayer(specification),
+        DA      = fieldsurrounding(specification),
+        AA      = fieldactions(specification),
+        MK      = fieldrendering(specification),
+        Q       = fieldalignment(specification),
+    }
+    return save_kid(parent,specification,d)
+end
+
+function methods.signature(name,specification)
+    return makesignaturechild(name,specification)
+end
+--
 
 local function makechoiceparent(field,specification)
     local d = pdfdictionary {

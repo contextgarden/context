@@ -24,3 +24,5 @@ table.setmetatableindex(thirddata, table.autokey)
 if not global then
     global  = _G
 end
+
+LUATEXVERSION = status.luatex_version/100 + tonumber(status.luatex_revision)/1000

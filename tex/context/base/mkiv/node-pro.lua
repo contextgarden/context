@@ -101,13 +101,13 @@ function processors.pre_linebreak_filter(head,groupcode) -- ,size,packtype,direc
     return true
 end
 
-local function hpack_filter(head,groupcode,size,packtype,direction)
+local function hpack_filter(head,groupcode,size,packtype,direction,attributes)
  -- local first, found = first_glyph(head) -- they really need to be glyphs
     local found = force_processors or has_glyph(head)
     if found then
         if trace_callbacks then
             local before = nodes.count(head,true)
-            local head, done = actions(head,groupcode,size,packtype,direction)
+            local head, done = actions(head,groupcode,size,packtype,direction,attributes)
             local after = nodes.count(head,true)
             if done then
                 tracer("hpack","changed",head,groupcode,before,after,true)
@@ -116,7 +116,7 @@ local function hpack_filter(head,groupcode,size,packtype,direction)
             end
             return done and head or true
         else
-            local head, done = actions(head,groupcode,size,packtype,direction)
+            local head, done = actions(head,groupcode,size,packtype,direction,attributes)
             return done and head or true
         end
     elseif trace_callbacks then

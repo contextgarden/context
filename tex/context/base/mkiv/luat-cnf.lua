@@ -19,21 +19,17 @@ texconfig.shell_escape = 't'
 luatex       = luatex or { }
 local luatex = luatex
 
-texconfig.max_print_line  = 100000 -- frozen
-texconfig.max_in_open     =    127 -- frozen
 texconfig.error_line      =     79 -- frozen
+texconfig.expand_depth    =  10000
 texconfig.half_error_line =     50 -- frozen
-
-texconfig.expand_depth    =  10000 -- 10000
-texconfig.hash_extra      = 100000 --     0
-texconfig.nest_size       =   1000 --    50
-texconfig.max_in_open     =    500 --    15 -- in fact it's limited to 127
-texconfig.max_print_line  =  10000 --    79
-texconfig.max_strings     = 500000 -- 15000
-texconfig.param_size      =  25000 --    60
-texconfig.save_size       =  50000 --  4000
-texconfig.save_size       = 100000 --  4000
-texconfig.stack_size      =  10000 --   300
+texconfig.hash_extra      = 100000
+texconfig.max_in_open     =   1000 -- frozen
+texconfig.max_print_line  = 100000 -- frozen
+texconfig.max_strings     = 500000
+texconfig.nest_size       =   1000
+texconfig.param_size      =  25000
+texconfig.save_size       = 100000
+texconfig.stack_size      =  10000
 
 local stub = [[
 

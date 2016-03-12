@@ -111,6 +111,9 @@ appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")   
 ------------("math",         "builders",    "noads.handlers.italics",  nil, "nohead")            -- disabled
 appendaction("math",         "builders",    "typesetters.directions.processmath")                -- disabled (has to happen pretty late)
 
+if LUATEXVERSION >= 0.895 then
+    appendaction("finalizers",   "lists",       "typesetters.paragraphs.normalize")                  -- moved here
+end
 appendaction("finalizers",   "lists",       "typesetters.margins.localhandler")                  -- disabled
 appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether")
 ------------("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo

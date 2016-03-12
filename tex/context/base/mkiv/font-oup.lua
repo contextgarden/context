@@ -270,7 +270,7 @@ local function unifyresources(fontdata,indices)
                                 done[c] = c
                             end
                         end
-                    elseif kind == "gpos_single" or kind == "gpos_cursive" then
+                    elseif kind == "gpos_single" then
                         local c = step.coverage
                         if c then
                             local t1 = done[c]
@@ -285,6 +285,34 @@ local function unifyresources(fontdata,indices)
                                         if dg1 then
                                             for u in next, dg1 do
                                                 t1[u] = d1
+                                            end
+                                        end
+                                    end
+                                else
+                                    for g1, d1 in next, c do
+                                        t1[indices[g1]] = d1
+                                    end
+                                end
+                                done[c] = t1
+                            end
+                            step.coverage = t1
+                        end
+                    elseif kind == "gpos_cursive" then
+                        local c = step.coverage
+                        if c then
+                            local t1 = done[c]
+                            if not t1 then
+                                t1 = { }
+                                if duplicates then
+                                    for g1, d1 in next, c do
+                                        local ug1 = indices[g1]
+                                        t1[ug1] = d1
+                                        --
+                                        local dg1 = duplicates[ug1]
+                                        if dg1 then
+                                            -- probably needs a bit more
+                                            for u in next, dg1 do
+                                                t1[u] = copy(d1)
                                             end
                                         end
                                     end

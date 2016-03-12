@@ -52,7 +52,7 @@ if not modules then modules = { } end modules ['typo-lin'] = {
 
 local type = type
 
-local trace_anchors  = false  trackers.register("paragraphs.anchors",  function(v) trace_anchors = v end)
+local trace_anchors  = false  trackers.register("paragraphs.anchors", function(v) trace_anchors = v end)
 
 local report = logs.reporter("anchors")
 

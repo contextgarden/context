@@ -103,6 +103,10 @@ local kerns              = typesetters.kerns
 local report             = logs.reporter("kerns")
 local trace_ligatures    = false  trackers.register("typesetters.kerns.ligatures",function(v) trace_ligatures = v end)
 
+-- use_advance is just an experiment: it makes copying glyphs (instead of new_glyph) dangerous
+
+local use_advance        = false  directives.register("typesetters.kerns.advance", function(v) use_advance = v end)
+
 kerns.mapping            = kerns.mapping or { }
 kerns.factors            = kerns.factors or { }
 local a_kerns            = attributes.private("kern")
@@ -452,7 +456,11 @@ function kerns.handler(head)
                             local data  = chardata[font][prevchar]
                             local kerns = data and data.kerns
                             local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
-                            insert_node_before(head,start,kern_injector(fillup,kern))
+                            if not fillup and use_advance then
+                                setfield(prev,"xadvance",getfield(prev,"xadvance") + kern)
+                            else
+                                insert_node_before(head,start,kern_injector(fillup,kern))
+                            end
                             done = true
                         end
                     else

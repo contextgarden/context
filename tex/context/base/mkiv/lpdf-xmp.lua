@@ -166,7 +166,7 @@ local function flushxmpinfo()
 
     local documentid = format("uuid:%s",os.uuid())
     local instanceid = format("uuid:%s",os.uuid())
-    local producer   = format("LuaTeX-%0.2f.%s",tex.luatexversion/100,tex.luatexrevision)
+    local producer   = format("LuaTeX-%0.2f.%s",status.luatex_version/100,status.luatex_revision)
     local creator    = "LuaTeX + ConTeXt MkIV"
     local time       = lpdf.timestamp()
     local fullbanner = status.banner
