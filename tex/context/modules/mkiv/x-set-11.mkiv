@@ -69,7 +69,7 @@
       destination:  bestemming
           triplet:  triplet
              word:  woord
-          content:  tekst
+          content:  inhoud
                  %
          language:  taal
         processor:  verwerker
@@ -130,11 +130,11 @@
              file:  file
          position:  position
         reference:  reference
-           csname:  name
+           csname:  csname
       destination:  destination
           triplet:  triplet
              word:  word
-          content:  text
+          content:  content
                  %
          language:  language
         processor:  processor
@@ -195,11 +195,11 @@
              file:  file
          position:  position
         reference:  reference
-           csname:  name
+           csname:  csname
       destination:  destination
           triplet:  triplet
              word:  word
-          content:  text
+          content:  content
                  %
          language:  sprache
         processor:  processor
@@ -260,11 +260,11 @@
              file:  file
          position:  position
         reference:  reference
-           csname:  name
+           csname:  csname
       destination:  destination
           triplet:  triplet
              word:  word
-          content:  text
+          content:  content
                  %
          language:  language
         processor:  processor
@@ -325,11 +325,11 @@
              file:  file
          position:  position
         reference:  reference
-           csname:  name
+           csname:  csname
       destination:  destination
           triplet:  triplet
              word:  word
-          content:  text
+          content:  content
                  %
          language:  language
         processor:  processor
@@ -390,11 +390,11 @@
              file:  file
          position:  position
         reference:  reference
-           csname:  name
+           csname:  csname
       destination:  destination
           triplet:  triplet
              word:  word
-          content:  text
+          content:  content
                  %
          language:  language
         processor:  processor
@@ -455,11 +455,11 @@
              file:  fichier
          position:  position
         reference:  réference
-           csname:  nom
+           csname:  csnom
       destination:  destination
           triplet:  triplet
              word:  mot
-          content:  texte
+          content:  content
                  %
          language:  language
         processor:  processor
@@ -616,9 +616,12 @@
         local n = 0
         for i=1,#collected do
             local c = collected[i]
-            if c.tg == "resolve" then
+            local tg = c.tg
+            if tg == "resolve" then
                 local d = definitions[c.at.name]
                 n = n + xml.count(d,"/*")
+            elseif tg == "delimiter" then
+                -- skip
             else
                 n = n + 1
             end
@@ -922,7 +925,14 @@
 \startxmlsetups xml:setups:twowords    \showSETUPcomponent{#1}{twowords}   {twowords}    \stopxmlsetups
 \startxmlsetups xml:setups:threewords  \showSETUPcomponent{#1}{threewords} {threewords}  \stopxmlsetups
 \startxmlsetups xml:setups:text        \showSETUPcomponent{#1}{text}       {text}        \stopxmlsetups
-\startxmlsetups xml:setups:to          \showSETUPcomponent{#1}{to}         {to}          \stopxmlsetups
+% \startxmlsetups xml:setups:to          \showSETUPcomponent{#1}{to}         {to}          \stopxmlsetups
+
+\startxmlsetups xml:setups:delimiter
+    \doifmode{setups-pass-one} {
+        \showSETUPline{\letterbackslash\xmlatt{#1}{name}}
+    }
+    \ignorespaces
+\stopxmlsetups
 
 \unexpanded\def\showSETUPcomponent#1#2#3%
   {\doifelsemode{setups-pass-one}
@@ -1020,10 +1030,11 @@
     \ignorespaces
 \stopxmlsetups
 
-%xmlmapvalue{setups:method}{class}{:}
-\xmlmapvalue{setups:method}{range}{:}
-\xmlmapvalue{setups:method}{apply}{->}
-\xmlmapvalue{setups:method}{none} {}
+%xmlmapvalue{setups:method}{class} {:}
+\xmlmapvalue{setups:method}{range} {:}
+\xmlmapvalue{setups:method}{apply} {->}
+\xmlmapvalue{setups:method}{factor}{*}
+\xmlmapvalue{setups:method}{none}  {}
 
 \startxmlsetups xml:setups:constant:value
     \c!setup!reserved!{\xmlatt{#1}{type}}
@@ -1117,6 +1128,8 @@
 \c!setup!definereserved {cd:true}                  {\c!setup!internal!{\getmessage{setup}{true}}}
 \c!setup!definereserved {cd:false}                 {\c!setup!internal!{\getmessage{setup}{false}}}
 \c!setup!definereserved {cd:category}              {\c!setup!internal!{\getmessage{setup}{category}}}
+\c!setup!definereserved {cd:csname}                {\c!setup!internal!{\getmessage{setup}{csname}}}
+\c!setup!definereserved {cd:content}               {\c!setup!internal!{\getmessage{setup}{content}}}
 
 %c!setup!definereserved {cd:noargument}            {\c!setup!command! {}}
 \c!setup!definereserved {cd:oneargument}           {\c!setup!command! {\texthash1}}
@@ -1160,7 +1173,7 @@
    \ignorespaces}
 
 \unexpanded\def\showSETUPline#1%
-  {\kern.25\emwidth
+  {\kern.5\emwidth
    #1%
    \ignorespaces}
 
@@ -1179,23 +1192,26 @@
 \xmlmapvalue {setups:keyword}    {parentheses} {\showSETUPkeywordparentheses}
 \xmlmapvalue {setups:keyword}    {none}        {\showSETUPkeywordnone}
 
+\unexpanded\def\setupEQsymbol % we raise the number already
+  {.\lower.25\exheight\hpack{=}.}
+
 \starttexdefinition unexpanded showSETUPassignmentbraces #1
     \ifcase\kindofsetup
-        \showSETUPline{\letterleftbrace.=.\letterrightbrace}
+        \showSETUPline{\letterleftbrace\setupEQsymbol\letterrightbrace}
     \else
         \showSETUP{#1}
-            {\letterleftbrace.=.\letterrightbrace}
-            {\letterleftbrace.=.,.=.\letterrightbrace}
+            {\letterleftbrace\setupEQsymbol\letterrightbrace}
+            {\letterleftbrace\setupEQsymbol,\setupEQsymbol\letterrightbrace}
     \fi
 \stoptexdefinition
 
 \starttexdefinition unexpanded showSETUPassignmentbrackets #1
     \ifcase\kindofsetup
-        \showSETUPline{[.=.]}
+        \showSETUPline{[\setupEQsymbol]}
     \else
         \showSETUP{#1}
-            {[.=.]}
-            {[.=.,.=.]}
+            {[\setupEQsymbol]}
+            {[\setupEQsymbol,\setupEQsymbol]}
     \fi
 \stoptexdefinition
 
@@ -1368,10 +1384,13 @@
         {...}
         {.. ... ..}}
 
+% \unexpanded\def\showSETUPto#1%
+%     {\showSETUP{#1}
+%         {\texescape to }
+%         {\texescape to }}
+
 \unexpanded\def\showSETUPto#1%
-    {\showSETUP{#1}
-        {\texescape to }
-        {\texescape to }}
+    {\showSETUPline{\texescape to}}
 
 \unexpanded\def\showSETUPmacro#1%
     {\showSETUP{#1}
