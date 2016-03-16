@@ -66,7 +66,6 @@ local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
 local line_code         = listcodes.line
 local localpar_code     = nodecodes.localpar
-local userskip_code     = gluecodes.userskip
 local leftskip_code     = gluecodes.leftskip
 local rightskip_code    = gluecodes.rightskip
 local parfillskip_code  = gluecodes.parfillskip

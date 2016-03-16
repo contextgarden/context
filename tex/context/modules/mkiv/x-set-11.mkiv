@@ -1195,6 +1195,9 @@
 \unexpanded\def\setupEQsymbol % we raise the number already
   {.\lower.25\exheight\hpack{=}.}
 
+\unexpanded\def\setupAPPLYsymbol % we raise the number already
+  {..\lower.25\exheight\hpack{=>}..}
+
 \starttexdefinition unexpanded showSETUPassignmentbraces #1
     \ifcase\kindofsetup
         \showSETUPline{\letterleftbrace\setupEQsymbol\letterrightbrace}
@@ -1341,8 +1344,8 @@
 
 \unexpanded\def\showSETUPapply#1%
     {\showSETUP{#1}
-        {[..=>..]}
-        {[..,..=>..,...]}}
+        {[\setupAPPLYsymbol]}
+        {[..,\setupAPPLYsymbol,...]}}
 
 \unexpanded\def\showSETUPtwowords#1%
     {\showSETUP{#1}

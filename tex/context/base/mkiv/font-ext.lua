@@ -1037,4 +1037,3 @@ implement {
         context(getprivatenode(fontdata[currentfont()],name))
     end
 }
-

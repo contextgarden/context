@@ -10,20 +10,20 @@ if not modules then modules = { } end modules ['font-ots'] = { -- sequences
 --
 -- cursives don't cross discretionaries
 -- marks precede bases
-
+--
 -- pitfalls:
 --
 -- when we append to a dics field we need to set the field in order to update tail
-
+--
 -- This is a version of font-otn.lua adapted to the new font loader code. It
 -- is a context version which can contain experimental code, but when we
 -- have serious patches we will backport to the font-otn files. There will
 -- be a generic variant too.
-
+--
 -- todo: looks like we have a leak somewhere (probably in ligatures)
 -- todo: copy attributes to disc
 -- todo: get rid of components, better use the tounicode entry if needed (at all)
-
+--
 -- we do some disc juggling where we need to keep in mind that the
 -- pre, post and replace fields can have prev pointers to a nesting
 -- node ... i wonder if that is still needed
@@ -94,6 +94,7 @@ results in different tables.</p>
 local type, next, tonumber = type, next, tonumber
 local random = math.random
 local formatters = string.formatters
+local insert = table.insert
 
 local logs, trackers, nodes, attributes = logs, trackers, nodes, attributes
 
@@ -154,25 +155,24 @@ local tonut              = nuts.tonut
 local getfield           = nuts.getfield
 local setfield           = nuts.setfield
 local getnext            = nuts.getnext
+local setnext            = nuts.setnext
 local getprev            = nuts.getprev
+local setprev            = nuts.setprev
 local getboth            = nuts.getboth
+local setboth            = nuts.setboth
 local getid              = nuts.getid
 local getattr            = nuts.getattr
+local setattr            = nuts.setattr
 local getprop            = nuts.getprop
+local setprop            = nuts.setprop
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
-local getchar            = nuts.getchar
-local getdisc            = nuts.getdisc
-
-local setattr            = nuts.setattr
-local setprop            = nuts.setprop
-local setdisc            = nuts.setdisc
-local setnext            = nuts.setnext
-local setprev            = nuts.setprev
-local setlink            = nuts.setlink
-local setboth            = nuts.setboth
-local setchar            = nuts.setchar
 local setsubtype         = nuts.setsubtype
+local getchar            = nuts.getchar
+local setchar            = nuts.setchar
+local getdisc            = nuts.getdisc
+local setdisc            = nuts.setdisc
+local setlink            = nuts.setlink
 
 local ischar             = nuts.is_char
 
@@ -219,7 +219,6 @@ local privateattribute   = attributes.private
 -- of only some.
 
 local a_state            = privateattribute('state')
-local a_cursbase         = privateattribute('cursbase') -- to be checked, probably can go
 
 local injections         = nodes.injections
 local setmark            = injections.setmark
@@ -243,29 +242,38 @@ local onetimemessage     = fonts.loggers.onetimemessage or function() end
 
 otf.defaultnodealternate = "none" -- first last
 
-local handlers           = { }
-
 -- We use a few global variables. The handler can be called nested but this assumes that the
 -- same font is used. Nested calls are normally not needed (only for devanagari).
 
-local tfmdata            = false
-local characters         = false
-local descriptions       = false
-local marks              = false
-local currentfont        = false
-local factor             = 0
+local tfmdata         = false
+local characters      = false
+local descriptions    = false
+local marks           = false
+local currentfont     = false
+local factor          = 0
+local threshold       = 0
 
-local sweepnode          = nil
-local sweepprev          = nil
-local sweepnext          = nil
-local sweephead          = { }
+local sweepnode       = nil
+local sweepprev       = nil
+local sweepnext       = nil
+local sweephead       = { }
 
-local notmatchpre        = { }
-local notmatchpost       = { }
-local notmatchreplace    = { }
+local notmatchpre     = { }
+local notmatchpost    = { }
+local notmatchreplace = { }
 
--- handlers  .whatever(head,start,     dataset,sequence,kerns,        step,i,injection)
--- chainprocs.whatever(head,start,stop,dataset,sequence,currentlookup,chainindex)
+local handlers        = { }
+
+-- helper
+
+local function isspace(n)
+    if getid(n) == glue_code then
+        local w = getfield(n,"width")
+        if w >= threshold then
+            return 32
+        end
+    end
+end
 
 -- we use this for special testing and documentation
 
@@ -566,8 +574,8 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
     -- needs testing (side effects):
     local components = getfield(start,"components")
     if components then
--- we get a double free .. needs checking
---         flush_node_list(components)
+     -- we get a double free .. needs checking
+     -- flush_node_list(components)
     end
     --
     local prev = getprev(start)
@@ -582,7 +590,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
     resetinjection(base)
     setchar(base,char)
     setsubtype(base,ligature_code)
-    setfield(base,"components",comp) -- start can have components .. do we need to flush?
+    setfield(base,"components",comp) -- start can have components ... do we need to flush?
     if prev then
         setnext(prev,base)
     end
@@ -866,8 +874,6 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
     return head, start, false, discfound
 end
 
--- todo: have this one directly (all are pair now)
-
 function handlers.gpos_single(head,start,dataset,sequence,kerns,rlmode,step,i,injection)
     local startchar = getchar(start)
     if step.format == "pair" then
@@ -952,8 +958,6 @@ end
 we need to explicitly test for basechar, baselig and basemark entries.</p>
 --ldx]]--
 
--- can we share with chains if we have a stop == nil ?
-
 function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode)
     local markchar = getchar(start)
     if marks[markchar] then
@@ -1005,8 +1009,6 @@ function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode)
     end
     return head, start, false
 end
-
--- ONCE CHECK HERE?
 
 function handlers.gpos_mark2ligature(head,start,dataset,sequence,markanchors,rlmode)
     local markchar = getchar(start)
@@ -1110,49 +1112,41 @@ function handlers.gpos_mark2mark(head,start,dataset,sequence,markanchors,rlmode)
 end
 
 function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,step,i) -- to be checked
-    local alreadydone = cursonce and getprop(start,a_cursbase)
-    if not alreadydone then
-        local done = false
-        local startchar = getchar(start)
-        if marks[startchar] then
-            if trace_cursive then
-                logprocess("%s: ignoring cursive for mark %s",pref(dataset,sequence),gref(startchar))
-            end
-        else
-            local nxt = getnext(start)
-            while not done and nxt do
-                local nextchar = ischar(nxt,currentfont)
-                if not nextchar then
-                    break
-                elseif marks[nextchar] then
-                    -- should not happen (maybe warning)
-                    nxt = getnext(nxt)
-                else
-                    local exit = exitanchors[3]
-                    if exit then
-                        local entry = exitanchors[1][nextchar]
+    local done = false
+    local startchar = getchar(start)
+    if marks[startchar] then
+        if trace_cursive then
+            logprocess("%s: ignoring cursive for mark %s",pref(dataset,sequence),gref(startchar))
+        end
+    else
+        local nxt = getnext(start)
+        while not done and nxt do
+            local nextchar = ischar(nxt,currentfont)
+            if not nextchar then
+                break
+            elseif marks[nextchar] then
+                -- should not happen (maybe warning)
+                nxt = getnext(nxt)
+            else
+                local exit = exitanchors[3]
+                if exit then
+                    local entry = exitanchors[1][nextchar]
+                    if entry then
+                        entry = entry[2]
                         if entry then
-                            entry = entry[2]
-                            if entry then
-                                local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
-                                if trace_cursive then
-                                    logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
-                                end
-                                done = true
+                            local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
+                            if trace_cursive then
+                                logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
                             end
+                            done = true
                         end
                     end
-                    break
                 end
+                break
             end
         end
-        return head, start, done
-    else
-        if trace_cursive and trace_details then
-            logprocess("%s, cursive %s is already done",pref(dataset,sequence),gref(getchar(start)),alreadydone)
-        end
-        return head, start, false
     end
+    return head, start, done
 end
 
 --[[ldx--
@@ -1742,56 +1736,52 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    local alreadydone = cursonce and getprop(start,a_cursbase) -- also mkmk?
-    if not alreadydone then
-        local startchar   = getchar(start)
-        local exitanchors = steps[1].coverage[startchar] -- always 1 step
-        if exitanchors then
-            local done = false
-            if marks[startchar] then
-                if trace_cursive then
-                    logprocess("%s: ignoring cursive for mark %s",pref(dataset,sequence),gref(startchar))
-                end
-            else
-                local nxt = getnext(start)
-                while not done and nxt do
-                    local nextchar = ischar(nxt,currentfont)
-                    if not nextchar then
-                        break
-                    elseif marks[nextchar] then
-                        -- should not happen (maybe warning)
-                        nxt = getnext(nxt)
-                    else
-                        local exit = exitanchors[3]
-                        if exit then
-                            local entry = exitanchors[1][nextchar]
-                            if entry then
-                                entry = entry[2]
-                                if entry then
-                                    local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
-                                    if trace_cursive then
-                                        logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
-                                    end
-                                    done = true
-                                    break
-                                end
-                            end
-                        elseif trace_bugs then
-                            onetimemessage(currentfont,startchar,"no entry anchors",report_fonts)
-                        end
-                        break
-                    end
-                end
+    local startchar   = getchar(start)
+    local exitanchors = steps[1].coverage[startchar] -- always 1 step
+    if exitanchors then
+        local done = false
+        if marks[startchar] then
+            if trace_cursive then
+                logprocess("%s: ignoring cursive for mark %s",pref(dataset,sequence),gref(startchar))
             end
-            return head, start, done
         else
-            if trace_cursive and trace_details then
-                logprocess("%s, cursive %s is already done",pref(dataset,sequence),gref(getchar(start)),alreadydone)
+            local nxt = getnext(start)
+            while not done and nxt do
+                local nextchar = ischar(nxt,currentfont)
+                if not nextchar then
+                    break
+                elseif marks[nextchar] then
+                    -- should not happen (maybe warning)
+                    nxt = getnext(nxt)
+                else
+                    local exit = exitanchors[3]
+                    if exit then
+                        local entry = exitanchors[1][nextchar]
+                        if entry then
+                            entry = entry[2]
+                            if entry then
+                                local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
+                                if trace_cursive then
+                                    logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
+                                end
+                                done = true
+                                break
+                            end
+                        end
+                    elseif trace_bugs then
+                        onetimemessage(currentfont,startchar,"no entry anchors",report_fonts)
+                    end
+                    break
+                end
             end
-            return head, start, false
         end
+        return head, start, done
+    else
+        if trace_cursive and trace_details then
+            logprocess("%s, cursive %s is already done",pref(dataset,sequence),gref(getchar(start)),alreadydone)
+        end
+        return head, start, false
     end
-    return head, start, false
 end
 
 -- what pointer to return, spec says stop
@@ -2439,7 +2429,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                         -- skip 'm
                                     end
                                 elseif seq[n][32] then
-                                    n = n -1
+                                    n = n - 1
                                 else
                                     match = false
                                     break
@@ -3075,6 +3065,7 @@ local function featuresprocessor(head,font,attr)
         characters      = tfmdata.characters
         marks           = tfmdata.resources.marks
         factor          = tfmdata.parameters.factor
+        threshold       = tfmdata.parameters.spacing.width or 65536*10
 
     elseif currentfont ~= font then
 
@@ -3121,11 +3112,23 @@ local function featuresprocessor(head,font,attr)
         local topstack     = 0
         local success      = false
         local typ          = sequence.type
-        local gpossing     = typ == "gpos_single" or typ == "gpos_pair"  -- store in dataset
+        local gpossing     = typ == "gpos_single" or typ == "gpos_pair" -- store in dataset
         local handler      = handlers[typ]
         local steps        = sequence.steps
         local nofsteps     = sequence.nofsteps
-        if typ == "gsub_reversecontextchain" then -- chain < 0
+        if not steps then
+            -- this permits injection, watch the different arguments
+            local h, d, ok = handler(head,start,dataset,sequence,nil,nil,nil,0,font,attr)
+            if ok then
+                success = true
+                if h then
+                    head = h
+                end
+                if d then
+                    start = d
+                end
+            end
+        elseif typ == "gsub_reversecontextchain" then -- chain < 0
             -- this is a limited case, no special treatments like 'init' etc
             -- we need to get rid of this slide! probably no longer needed in latest luatex
             local start = find_node_tail(head) -- slow (we can store tail because there's always a skip at the end): todo
@@ -3186,9 +3189,10 @@ local function featuresprocessor(head,font,attr)
                             local id = getid(start)
                             if id ~= glyph_code then
                                 -- very unlikely (if so we could use ischar)
+                             -- print("WIERD")
                                 start = getnext(start)
                             else
-                                local char = ischar(start,font)
+                                local char = ischar(start,font) -- also checks for glyph
                                 if char then
                                     local a = getattr(start,0)
                                  -- if a then
@@ -3224,7 +3228,7 @@ local function featuresprocessor(head,font,attr)
 
                     local function t_run(start,stop)
                         while start ~= stop do
-                            local id = getid(start)
+                            local id   = getid(start)
                             local char = ischar(start,font)
                             if char then
                                 local a = getattr(start,0)
@@ -3296,9 +3300,22 @@ local function featuresprocessor(head,font,attr)
                                 if n == last then
                                     break
                                 end
-                                local id = getid(n)
-                                if id == glyph_code then
-                                    local lookupmatch = lookupcache[getchar(n)]
+--                                 local id = getid(n)
+--                                 if id == glyph_code then
+--                                     local lookupmatch = lookupcache[getchar(n)]
+--                                     if lookupmatch then
+--                                         local h, d, ok = handler(sub,n,dataset,sequence,lookupmatch,rlmode,step,1,injection)
+--                                         if ok then
+--                                             done = true
+--                                             success = true
+--                                         end
+--                                     end
+--                                 else
+--                                     -- message
+--                                 end
+                                local char = ischar(n)
+                                if char then
+                                    local lookupmatch = lookupcache[char]
                                     if lookupmatch then
                                         local h, d, ok = handler(sub,n,dataset,sequence,lookupmatch,rlmode,step,1,injection)
                                         if ok then
@@ -3593,7 +3610,6 @@ local function featuresprocessor(head,font,attr)
                                     local step        = steps[i]
                                     local lookupcache = step.coverage
                                     if lookupcache then
-                                     -- local char = getchar(start)
                                         local lookupmatch = lookupcache[char]
                                         if lookupmatch then
                                             -- we could move all code inline but that makes things even more unreadable
@@ -3711,3 +3727,92 @@ registerotffeature {
 -- This can be used for extra handlers, but should be used with care!
 
 otf.handlers = handlers -- used in devanagari
+
+-- We implement one here:
+
+local setspacekerns = nodes.injections.setspacekerns if not setspacekerns then os.exit() end
+
+function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
+ -- if not setspacekerns then
+ --     setspacekerns = nodes.injections.setspacekerns
+ -- end
+    setspacekerns(font,sequence)
+    return head, start, true
+end
+
+local function spaceinitializer(tfmdata,value) -- attr
+    local resources  = tfmdata.resources
+    local spacekerns = resources.spacekerns
+    if spacekerns == nil then
+        local sequences = resources.sequences
+        local left  = { }
+        local right = { }
+        local last  = 0
+        local feat  = nil
+        for i=1,#sequences do
+            local sequence = sequences[i]
+            local steps    = sequence.steps
+            if steps then
+                local kern = sequence.features.kern
+                if kern then
+                    feat = feat or kern -- or maybe merge
+                    for i=1,#steps do
+                        local step = steps[i]
+                        local coverage = step.coverage
+                        if coverage then
+                            local kerns = coverage[32]
+                            if kerns then
+                                for k, v in next, kerns do
+                                    right[k] = v
+                                end
+                            end
+                            for k, v in next, coverage do
+                                local kern = v[32]
+                                if kern then
+                                    left[k] = kern
+                                end
+                            end
+                        end
+                    end
+                    last = i
+                end
+            else
+                -- no steps ... needed for old one ... we could use the basekerns
+                -- instead
+            end
+        end
+        left  = next(left)  and left  or false
+        right = next(right) and right or false
+        if left or right then
+            spacekerns = {
+                left  = left,
+                right = right,
+            }
+            if last > 0 then
+                local triggersequence = {
+                    features = { kern = feat or { dflt = { dflt = true, } } },
+                    flags    = noflags,
+                    name     = "trigger_space_kerns",
+                    order    = { "kern" },
+                    type     = "trigger_space_kerns",
+                    left     = left,
+                    right    = right,
+                }
+                insert(sequences,last,triggersequence)
+            end
+        else
+            spacekerns = false
+        end
+        resources.spacekerns = spacekerns
+    end
+    return spacekerns
+end
+
+registerotffeature {
+    name         = "spacekern",
+    description  = "space kern injection",
+    default      = true,
+    initializers = {
+        node     = spaceinitializer,
+    },
+}

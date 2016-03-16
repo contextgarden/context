@@ -47,6 +47,8 @@ local skipcodes          = nodes.skipcodes
 local glyph_code         = nodecodes.glyph
 local glue_code          = nodecodes.glue
 local userskip_code      = skipcodes.userskip
+local spaceskip_code     = skipcodes.spaceskip
+local xspaceskip_code    = skipcodes.xspaceskip
 
 local a_scriptstatus     = attributes.private('scriptstatus')
 local a_scriptinjection  = attributes.private('scriptinjection')
@@ -954,15 +956,19 @@ local function process(head,first,last)
                             or pcjk == "half_width_close" or ncjk == "half_width_open" then -- extra compared to korean
                             previous = "start"
                         else -- if head ~= first then
-                            if id == glue_code and getsubtype(first) == userskip_code then -- also scriptstatus check?
-                                -- for the moment no distinction possible between space and userskip
-                                local w = getfield(first,"width")
-                                local s = spacedata[getfont(p)]
-                                if w == s then -- could be option
-                                    if trace_details then
-                                        trace_detail_between(p,n,"space removed")
+                            if id == glue_code then
+                                -- also scriptstatus check?
+                                local subtype = getsubtype(first)
+                                if subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code then
+                                    -- for the moment no distinction possible between space and userskip
+                                    local w = getfield(first,"width")
+                                    local s = spacedata[getfont(p)]
+                                    if w == s then -- could be option
+                                        if trace_details then
+                                            trace_detail_between(p,n,"space removed")
+                                        end
+                                        remove_node(head,first,true)
                                     end
-                                    remove_node(head,first,true)
                                 end
                             end
                             previous = pcjk

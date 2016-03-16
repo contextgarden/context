@@ -51,7 +51,6 @@ local disc_code       = nodecodes.disc
 local math_code       = nodecodes.math
 
 local kerning_code    = kerncodes.kerning
-local userskip_code   = skipcodes.userskip
 
 local tasks           = nodes.tasks
 

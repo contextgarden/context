@@ -175,6 +175,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule("l-boolean.lua")
         loadmodule("l-math.lua")
         loadmodule("util-str.lua")
+        loadmodule("util-fil.lua")
 
         -- The following modules contain code that is either not used at all outside context or will fail
         -- when enabled due to lack of other modules.
@@ -206,21 +207,41 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule('font-cid.lua')
         loadmodule('font-map.lua')         -- for loading lum file (will be stripped)
         loadmodule('luatex-fonts-syn.lua') -- deals with font names (synonyms)
-        -- begin of test
-        loadmodule('font-tfm.lua')         -- optional
-        loadmodule('font-afm.lua')         -- optional
-        loadmodule('font-afk.lua')         -- optional
-        -- end of test
+
+        loadmodule('font-tfm.lua')
+        loadmodule('font-afm.lua')
+        loadmodule('font-afk.lua')
         loadmodule('luatex-fonts-tfm.lua')
         loadmodule('font-oti.lua')
-        loadmodule('font-otf.lua')
-        loadmodule('font-otb.lua')
-        ----------('luatex-fonts-inj.lua') -- normally the same as font-inj.lua / beware loadmodule is parsed
-        loadmodule('font-inj.lua')
+
+        -- These are the old loader and processing modules. These use the built-in
+        -- font loader and will stay around (but not be extended), only fixed.
+
+--         loadmodule('font-otf.lua')
+--         loadmodule('font-otb.lua')
+--         loadmodule('font-inj.lua')
+--         loadmodule('luatex-fonts-ota.lua')
+--         loadmodule('font-otn.lua')
+--         loadmodule('font-otp.lua')
+
+        -- Here come the new loader and processing modules. The loader is written in
+        -- Lua and although initial loading is somewhat slower, identifying is faster,
+        -- cached files can be slightly more efficient, and processing is somewhat
+        -- faster (only measureable on complex fonts).
+
+        loadmodule('font-otr.lua')
+        loadmodule('font-cff.lua')
+        loadmodule('font-ttf.lua')
+        loadmodule('font-dsp.lua')
+        loadmodule('font-oup.lua')
+        loadmodule('font-otl.lua')
+        loadmodule('font-oto.lua')
+        loadmodule('font-otj.lua')
         loadmodule('luatex-fonts-ota.lua')
-        ----------('luatex-fonts-otn.lua') -- normally the same as font-otn.lua / beware loadmodule is parsed
-        loadmodule('font-otn.lua')
-        loadmodule('font-otp.lua')
+        loadmodule('font-ots.lua')
+
+        -- common code
+
         loadmodule('luatex-fonts-lua.lua')
         loadmodule('font-def.lua')         -- this code (stripped) might end up in luatex-fonts-def.lua
         loadmodule('luatex-fonts-def.lua')

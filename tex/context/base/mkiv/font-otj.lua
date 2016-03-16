@@ -30,20 +30,27 @@ local next, rawget = next, rawget
 local utfchar = utf.char
 local fastcopy = table.fastcopy
 
-local trace_injections  = false  trackers.register("fonts.injections",         function(v) trace_injections = v end)
-local trace_marks       = false  trackers.register("fonts.injections.marks",   function(v) trace_marks      = v end)
-local trace_cursive     = false  trackers.register("fonts.injections.cursive", function(v) trace_cursive    = v end)
+local registertracker = trackers.register
+
+local trace_injections  = false  registertracker("fonts.injections",         function(v) trace_injections = v end)
+local trace_marks       = false  registertracker("fonts.injections.marks",   function(v) trace_marks      = v end)
+local trace_cursive     = false  registertracker("fonts.injections.cursive", function(v) trace_cursive    = v end)
+local trace_spaces      = false  registertracker("otf.spaces",               function(v) trace_spaces  = v end)
 
 -- use_advance is just an experiment: it makes copying glyphs (instead of new_glyph) dangerous
 
 local use_advance       = false  directives.register("fonts.injections.advance", function(v) use_advance = v end)
 
 local report_injections = logs.reporter("fonts","injections")
+local report_spaces     = logs.reporter("fonts","spaces")
 
 local attributes, nodes, node = attributes, nodes, node
 
 fonts                    = fonts
-local fontdata           = fonts.hashes.identifiers
+local hashes             = fonts.hashes
+local fontdata           = hashes.identifiers
+local parameters         = fonts.hashes.parameters
+local resources          = fonts.hashes.resources
 
 nodes.injections         = nodes.injections or { }
 local injections         = nodes.injections
@@ -56,6 +63,7 @@ local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local kern_code          = nodecodes.kern
+local glue_code          = nodecodes.glue
 
 local nuts               = nodes.nuts
 local nodepool           = nuts.pool
@@ -73,6 +81,9 @@ local getid              = nuts.getid
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
+local getboth            = nuts.getboth
+
+local ischar             = nuts.is_char
 
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
@@ -539,14 +550,17 @@ local function inject_kerns_only(head,where)
     if trace_injections then
         trace(head,"kerns")
     end
-    local current   = head
-    local prev      = nil
-    local next      = nil
-    local prevdisc  = nil
-    local prevglyph = nil
-    local pre       = nil -- saves a lookup
-    local post      = nil -- saves a lookup
-    local replace   = nil -- saves a lookup
+    local current     = head
+    local prev        = nil
+    local next        = nil
+    local prevdisc    = nil
+    local prevglyph   = nil
+    local pre         = nil -- saves a lookup
+    local post        = nil -- saves a lookup
+    local replace     = nil -- saves a lookup
+    local pretail     = nil -- saves a lookup
+    local posttail    = nil -- saves a lookup
+    local replacetail = nil -- saves a lookup
     while current do
         local id   = getid(current)
         local next = getnext(current)
@@ -576,7 +590,6 @@ local function inject_kerns_only(head,where)
                             if i then
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    local posttail = find_tail(post)
                                     if use_advance then
                                         setfield(post,"xadvance",leftkern)
                                     else
@@ -592,13 +605,22 @@ local function inject_kerns_only(head,where)
                             if i then
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    local replacetail = find_tail(replace)
                                     if use_advance then
                                         setfield(replace,"xadvance",leftkern)
                                     else
                                         insert_node_after(replace,replacetail,newkern(leftkern))
                                         done = true
                                     end
+                                end
+                            end
+                        else
+                         -- local i = rawget(p,"emptyinjections")
+                            local i = p.emptyinjections
+                            if i then
+                                -- glyph|disc|glyph (special case)
+                                local leftkern = i.leftkern
+                                if leftkern and leftkern ~= 0 then
+                                    setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
                                 end
                             end
                         end
@@ -611,7 +633,7 @@ local function inject_kerns_only(head,where)
             prevdisc  = nil
             prevglyph = current
         elseif id == disc_code then
-            pre, post, replace = getdisc(current)
+            pre, post, replace, pretail, posttail, replacetail = getdisc(current,true)
             local done = false
             if pre then
                 -- left|pre glyphs|right
@@ -705,14 +727,17 @@ local function inject_pairs_only(head,where)
     if trace_injections then
         trace(head,"pairs")
     end
-    local current   = head
-    local prev      = nil
-    local next      = nil
-    local prevdisc  = nil
-    local prevglyph = nil
-    local pre       = nil -- saves a lookup
-    local post      = nil -- saves a lookup
-    local replace   = nil -- saves a lookup
+    local current     = head
+    local prev        = nil
+    local next        = nil
+    local prevdisc    = nil
+    local prevglyph   = nil
+    local pre         = nil -- saves a lookup
+    local post        = nil -- saves a lookup
+    local replace     = nil -- saves a lookup
+    local pretail     = nil -- saves a lookup
+    local posttail    = nil -- saves a lookup
+    local replacetail = nil -- saves a lookup
     while current do
         local id   = getid(current)
         local next = getnext(current)
@@ -741,10 +766,10 @@ local function inject_pairs_only(head,where)
                         local i = p.emptyinjections
                         if i then
                             -- glyph|disc|glyph (special case)
+-- is this okay?
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
                                 if next and getid(next) == disc_code then
-                                    local replace = getfield(next,"replace")
                                     if replace then
                                         -- error, we expect an empty one
                                     else
@@ -754,7 +779,7 @@ local function inject_pairs_only(head,where)
                             end
                         end
                     end
-                    if prevdisc and p then
+                    if prevdisc then
                         local done = false
                         if post then
                          -- local i = rawget(p,"postinjections")
@@ -762,7 +787,6 @@ local function inject_pairs_only(head,where)
                             if i then
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    local posttail = find_tail(post)
                                     insert_node_after(post,posttail,newkern(leftkern))
                                     done = true
                                 end
@@ -774,9 +798,17 @@ local function inject_pairs_only(head,where)
                             if i then
                                 local leftkern = i.leftkern
                                 if leftkern and leftkern ~= 0 then
-                                    local replacetail = find_tail(replace)
                                     insert_node_after(replace,replacetail,newkern(leftkern))
                                     done = true
+                                end
+                            end
+                        else
+                            local i = p.emptyinjections
+                            if i then
+-- new .. okay?
+                                local leftkern = i.leftkern
+                                if leftkern and leftkern ~= 0 then
+                                    setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
                                 end
                             end
                         end
@@ -789,7 +821,7 @@ local function inject_pairs_only(head,where)
             prevdisc  = nil
             prevglyph = current
         elseif id == disc_code then
-            pre, post, replace = getdisc(current)
+            pre, post, replace, pretail, posttail, replacetail = getdisc(current,true)
             local done = false
             if pre then
                 -- left|pre glyphs|right
@@ -957,20 +989,23 @@ local function inject_everything(head,where)
     if trace_injections then
         trace(head,"everything")
     end
-    local hascursives = nofregisteredcursives > 0
-    local hasmarks    = nofregisteredmarks    > 0
+    local hascursives   = nofregisteredcursives > 0
+    local hasmarks      = nofregisteredmarks    > 0
     --
-    local current   = head
-    local last      = nil
-    local font      = font
-    local markdata  = nil
-    local prev      = nil
-    local next      = nil
-    local prevdisc  = nil
-    local prevglyph = nil
-    local pre       = nil -- saves a lookup
-    local post      = nil -- saves a lookup
-    local replace   = nil -- saves a lookup
+    local current       = head
+    local last          = nil
+    local font          = font
+    local markdata      = nil
+    local prev          = nil
+    local next          = nil
+    local prevdisc      = nil
+    local prevglyph     = nil
+    local pre           = nil -- saves a lookup
+    local post          = nil -- saves a lookup
+    local replace       = nil -- saves a lookup
+    local pretail       = nil -- saves a lookup
+    local posttail      = nil -- saves a lookup
+    local replacetail   = nil -- saves a lookup
     --
     local cursiveanchor = nil
     local minc          = 0
@@ -1127,10 +1162,10 @@ local function inject_everything(head,where)
                         local i = p.emptyinjections
                         if i then
                             -- glyph|disc|glyph (special case)
+-- okay?
                             local rightkern = i.rightkern
                             if rightkern and rightkern ~= 0 then
                                 if next and getid(next) == disc_code then
-                                    local replace = getfield(next,"replace")
                                     if replace then
                                         -- error, we expect an empty one
                                     else
@@ -1149,7 +1184,6 @@ local function inject_everything(head,where)
                                 if i then
                                     local leftkern = i.leftkern
                                     if leftkern and leftkern ~= 0 then
-                                        local posttail = find_tail(post)
                                         insert_node_after(post,posttail,newkern(leftkern))
                                         done = true
                                     end
@@ -1161,10 +1195,16 @@ local function inject_everything(head,where)
                                 if i then
                                     local leftkern = i.leftkern
                                     if leftkern and leftkern ~= 0 then
-                                        local replacetail = find_tail(replace)
                                         insert_node_after(replace,replacetail,newkern(leftkern))
                                         done = true
                                     end
+                                end
+                            else
+                             -- local i = rawget(p,"emptyinjections")
+                                local i = p.emptyinjections
+                                local leftkern = i.leftkern
+                                if leftkern and leftkern ~= 0 then
+                                    setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
                                 end
                             end
                             if done then
@@ -1189,7 +1229,7 @@ local function inject_everything(head,where)
             prevdisc  = nil
             prevglyph = current
         elseif id == disc_code then
-            pre, post, replace = getdisc(current)
+            pre, post, replace, pretail, posttail, replacetail = getdisc(current,true)
             local done = false
             if pre then
                 -- left|pre glyphs|right
@@ -1320,7 +1360,7 @@ local function inject_everything(head,where)
                 end
             end
             if done then
-                setdisc(current,pre,post.replace)
+                setdisc(current,pre,post,replace)
             end
             prevglyph = nil
             prevdisc  = current
@@ -1368,7 +1408,118 @@ local function inject_everything(head,where)
     return tonode(head), true
 end
 
+-- space triggers
+
+local triggers = false
+
+function nodes.injections.setspacekerns(font,sequence)
+    if triggers then
+        triggers[font] = sequence
+    else
+        triggers = { [font] = sequence }
+    end
+end
+
+local function injectspaces(head)
+
+    if not triggers then
+        return head, false
+    end
+
+    local lastfont   = nil
+    local spacekerns = nil
+    local leftkerns  = nil
+    local rightkerns = nil
+    local factor     = 0
+    local threshold  = 0
+    local leftkern   = false
+    local rightkern  = false
+
+    local function updatefont(font,trig)
+     -- local resources  = resources[font]
+     -- local spacekerns = resources.spacekerns
+     -- if spacekerns then
+     --     leftkerns  = spacekerns.left
+     --     rightkerns = spacekerns.right
+     -- end
+        leftkerns  = trig.left
+        rightkerns = trig.right
+        local par  = parameters[font]
+        factor     = par.factor
+        threshold  = par.spacing.width - 1 -- get rid of rounding errors
+        lastfont   = font
+    end
+
+    for n in traverse_id(glue_code,tonut(head)) do
+        local prev, next = getboth(n)
+        local prevchar = ischar(prev)
+        local nextchar = ischar(next)
+        if nextchar then
+            local font = getfont(next)
+            local trig = triggers[font]
+            if trig then
+                if lastfont ~= font then
+                    updatefont(font,trig)
+                end
+                if rightkerns then
+                    rightkern = rightkerns[nextchar]
+                end
+            end
+        end
+        if prevchar then
+            local font = getfont(next)
+            local trig = triggers[font]
+            if trig then
+                if lastfont ~= font then
+                    updatefont(font,trig)
+                end
+                if leftkerns then
+                    leftkern = leftkerns[prevchar]
+                end
+            end
+        end
+        if leftkern then
+            local old = getfield(n,"width")
+            if old >= threshold then
+                if rightkern then
+                    local new = old + (leftkern + rightkern) * factor
+                    if trace_spaces then
+                        report_spaces("%C [%p -> %p] %C",prevchar,old,new,nextchar)
+                    end
+                    setfield(n,"width",new)
+                    leftkern  = false
+                else
+                    local new = old + leftkern * factor
+                    if trace_spaces then
+                        report_spaces("%C [%p -> %p]",prevchar,old,new)
+                    end
+                    setfield(n,"width",new)
+                end
+            end
+            leftkern  = false
+        elseif rightkern then
+            local old = getfield(n,"width")
+            if old >= threshold then
+                local new = old + rightkern * factor
+                if trace_spaces then
+                    report_spaces("[%p -> %p] %C",nextchar,old,new)
+                end
+                setfield(n,"width",new)
+            end
+            rightkern = false
+        end
+    end
+
+    triggers = false
+    return head, true
+end
+
+--
+
 function injections.handler(head,where)
+    if triggers then
+        head = injectspaces(head)
+    end
     if nofregisteredmarks > 0 or nofregisteredcursives > 0 then
         return inject_everything(head,where)
     elseif nofregisteredpairs > 0 then

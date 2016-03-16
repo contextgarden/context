@@ -67,11 +67,9 @@ callbacks = {
 
 }
 
-utilities = {
-    storage = {
-        allocate = function(t) return t or { } end,
-        mark     = function(t) return t or { } end,
-    },
+utilities = utilities or { } utilities.storage = {
+    allocate = function(t) return t or { } end,
+    mark     = function(t) return t or { } end,
 }
 
 characters = characters or {
@@ -355,12 +353,28 @@ end
 
 --
 
+-- function table.setmetatableindex(t,f)
+--     if type(t) ~= "table" then
+--         f = f or t
+--         t = { }
+--     end
+--     setmetatable(t,{ __index = f })
+--     return t
+-- end
+
 function table.setmetatableindex(t,f)
     if type(t) ~= "table" then
-        f = f or t
-        t = { }
+        f, t = t, { }
     end
-    setmetatable(t,{ __index = f })
+    local m = getmetatable(t)
+    if f == "table" then
+        f = function(t,k) local v = { } t[k] = v return v end
+    end
+    if m then
+        m.__index = f
+    else
+        setmetatable(t,{ __index = f })
+    end
     return t
 end
 
