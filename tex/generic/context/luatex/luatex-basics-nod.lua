@@ -210,6 +210,7 @@ nuts.getlist             = direct.getlist
 nuts.setlist             = direct.setlist    or function(n,l) setfield(n,"list",l) end
 nuts.getleader           = direct.getleader
 nuts.setleader           = direct.setleader  or function(n,l) setfield(n,"leader",l) end
+nuts.is_char             = direct.is_char
 
 nuts.insert_before       = direct.insert_before
 nuts.insert_after        = direct.insert_after

@@ -3133,7 +3133,6 @@ local function featuresprocessor(head,font,attr)
             -- we need to get rid of this slide! probably no longer needed in latest luatex
             local start = find_node_tail(head) -- slow (we can store tail because there's always a skip at the end): todo
             while start do
-                local id   = getid(start)
                 local char = ischar(start,font)
                 if char then
                     local a = getattr(start,0)
@@ -3228,7 +3227,6 @@ local function featuresprocessor(head,font,attr)
 
                     local function t_run(start,stop)
                         while start ~= stop do
-                            local id   = getid(start)
                             local char = ischar(start,font)
                             if char then
                                 local a = getattr(start,0)
@@ -3300,19 +3298,6 @@ local function featuresprocessor(head,font,attr)
                                 if n == last then
                                     break
                                 end
---                                 local id = getid(n)
---                                 if id == glyph_code then
---                                     local lookupmatch = lookupcache[getchar(n)]
---                                     if lookupmatch then
---                                         local h, d, ok = handler(sub,n,dataset,sequence,lookupmatch,rlmode,step,1,injection)
---                                         if ok then
---                                             done = true
---                                             success = true
---                                         end
---                                     end
---                                 else
---                                     -- message
---                                 end
                                 local char = ischar(n)
                                 if char then
                                     local lookupmatch = lookupcache[char]
@@ -3485,24 +3470,26 @@ local function featuresprocessor(head,font,attr)
                  --     a = not attribute or getprop(prev,a_state) == attribute
                  -- end
                  -- if a then
-                if not a or (a == attr) then
+                    if not a or (a == attr) then
                         -- brr prev can be disc
-                        local char = getchar(prev)
-                        for i=1,nofsteps do
-                            local step        = steps[i]
-                            local lookupcache = step.coverage
-                            if lookupcache then
-                                local lookupmatch = lookupcache[char]
-                                if lookupmatch then
-                                    -- we could move all code inline but that makes things even more unreadable
-                                    local h, d, ok = handler(head,prev,dataset,sequence,lookupmatch,rlmode,step,i)
-                                    if ok then
-                                        done = true
-                                        break
+                        local char = ischar(prev)
+                        if char then
+                            for i=1,nofsteps do
+                                local step        = steps[i]
+                                local lookupcache = step.coverage
+                                if lookupcache then
+                                    local lookupmatch = lookupcache[char]
+                                    if lookupmatch then
+                                        -- we could move all code inline but that makes things even more unreadable
+                                        local h, d, ok = handler(head,prev,dataset,sequence,lookupmatch,rlmode,step,i)
+                                        if ok then
+                                            done = true
+                                            break
+                                        end
                                     end
+                                else
+                                    report_missing_cache(dataset,sequence)
                                 end
-                            else
-                                report_missing_cache(dataset,sequence)
                             end
                         end
                     end
@@ -3521,9 +3508,8 @@ local function featuresprocessor(head,font,attr)
                             if n == last then
                                 break
                             end
-                            local id = getid(n)
-                            if id == glyph_code then
-                                local char = getchar(n)
+                            local char = ischar(n)
+                            if char then
                                 for i=1,nofsteps do
                                     local step        = steps[i]
                                     local lookupcache = step.coverage
@@ -3549,7 +3535,6 @@ local function featuresprocessor(head,font,attr)
 
                 local function t_run(start,stop)
                     while start ~= stop do
-                        local id   = getid(start)
                         local char = ischar(start,font)
                         if char then
                             local a = getattr(start,0)

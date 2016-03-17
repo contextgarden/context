@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/16/16 23:40:49
+-- merge date  : 03/17/16 13:41:18
 
 do -- begin closure to overcome local limits and interference
 
@@ -4180,6 +4180,7 @@ nuts.getlist=direct.getlist
 nuts.setlist=direct.setlist  or function(n,l) setfield(n,"list",l) end
 nuts.getleader=direct.getleader
 nuts.setleader=direct.setleader or function(n,l) setfield(n,"leader",l) end
+nuts.is_char=direct.is_char
 nuts.insert_before=direct.insert_before
 nuts.insert_after=direct.insert_after
 nuts.delete=direct.delete
@@ -28286,7 +28287,6 @@ local function featuresprocessor(head,font,attr)
     elseif typ=="gsub_reversecontextchain" then
       local start=find_node_tail(head) 
       while start do
-        local id=getid(start)
         local char=ischar(start,font)
         if char then
           local a=getattr(start,0)
@@ -28369,7 +28369,6 @@ local function featuresprocessor(head,font,attr)
           end
           local function t_run(start,stop)
             while start~=stop do
-              local id=getid(start)
               local char=ischar(start,font)
               if char then
                 local a=getattr(start,0)
@@ -28568,22 +28567,24 @@ local function featuresprocessor(head,font,attr)
         end
         local function d_run(prev)
           local a=getattr(prev,0)
-        if not a or (a==attr) then
-            local char=getchar(prev)
-            for i=1,nofsteps do
-              local step=steps[i]
-              local lookupcache=step.coverage
-              if lookupcache then
-                local lookupmatch=lookupcache[char]
-                if lookupmatch then
-                  local h,d,ok=handler(head,prev,dataset,sequence,lookupmatch,rlmode,step,i)
-                  if ok then
-                    done=true
-                    break
+          if not a or (a==attr) then
+            local char=ischar(prev)
+            if char then
+              for i=1,nofsteps do
+                local step=steps[i]
+                local lookupcache=step.coverage
+                if lookupcache then
+                  local lookupmatch=lookupcache[char]
+                  if lookupmatch then
+                    local h,d,ok=handler(head,prev,dataset,sequence,lookupmatch,rlmode,step,i)
+                    if ok then
+                      done=true
+                      break
+                    end
                   end
+                else
+                  report_missing_cache(dataset,sequence)
                 end
-              else
-                report_missing_cache(dataset,sequence)
               end
             end
           end
@@ -28595,9 +28596,8 @@ local function featuresprocessor(head,font,attr)
               if n==last then
                 break
               end
-              local id=getid(n)
-              if id==glyph_code then
-                local char=getchar(n)
+              local char=ischar(n)
+              if char then
                 for i=1,nofsteps do
                   local step=steps[i]
                   local lookupcache=step.coverage
@@ -28621,7 +28621,6 @@ local function featuresprocessor(head,font,attr)
         end
         local function t_run(start,stop)
           while start~=stop do
-            local id=getid(start)
             local char=ischar(start,font)
             if char then
               local a=getattr(start,0)

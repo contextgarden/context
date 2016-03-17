@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['font-osd'] = { -- script devanag
     license   = "see context related readme files"
 }
 
+-- I'll optimize this one with ischar (much faster) when I see a reason (read: I need a
+-- proper test case first).
+
 -- This is a version of font-odv.lua  adapted to the new font loader and more
 -- direct hashing. The initialization code has been adapted (more efficient). One day
 -- I'll speed this up ... char swapping and properties.
@@ -1133,10 +1136,10 @@ function handlers.devanagari_reorder_matras(head,start) -- no leak
     local startfont = getfont(start)
     local startattr = getprop(start,a_syllabe)
     -- can be fast loop
-    while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == font and getprop(current,a_syllabe) == startattr do
+    while current and getid(current) == glyph_code and getsubtype(current) < 256 and getfont(current) == startfont and getprop(current,a_syllabe) == startattr do
         local next = getnext(current)
         if halant[getchar(current)] and not getprop(current,a_state) then
-            if next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == font and getprop(next,a_syllabe) == startattr and zw_char[getchar(next)] then
+            if next and getid(next) == glyph_code and getsubtype(next) < 256 and getfont(next) == startfont and getprop(next,a_syllabe) == startattr and zw_char[getchar(next)] then
                 current = next
             end
             local startnext = getnext(start)
@@ -1151,6 +1154,38 @@ function handlers.devanagari_reorder_matras(head,start) -- no leak
     end
     return head, start, true
 end
+
+-- -- more efficient:
+--
+-- function handlers.devanagari_reorder_matras(head,start) -- no leak
+--     local current = start -- we could cache attributes here
+--     local startfont = getfont(start)
+--     local startattr = getprop(start,a_syllabe)
+--     while true do
+--         local char = ischar(current,startfont)
+--         if char and getprop(current,a_syllabe) == startattr then
+--             local next = getnext(current)
+--             if halant[char] and not getprop(current,a_state) then
+--                 if next then
+--                     local char = ischar(next,startfont)
+--                     if char and getprop(next,a_syllabe) == startattr and zw_char[char] then
+--                         current = next
+--                     end
+--                 end
+--                 -- can be optimzied
+--                 local startnext = getnext(start)
+--                 head = remove_node(head,start)
+--                 local next = getnext(current)
+--                 setlink(start,next)
+--                 setlink(current,start)
+--                 start = startnext
+--                 break
+--             end
+--             current = next
+--         end
+--     end
+--     return head, start, true
+-- end
 
 -- todo: way more caching of attributes and font
 

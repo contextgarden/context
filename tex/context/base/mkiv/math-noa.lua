@@ -170,9 +170,6 @@ local math_style           = nodecodes.style          -- attr style
 local math_choice          = nodecodes.choice         -- attr display text script scriptscript
 local math_fence           = nodecodes.fence          -- attr subtype
 
-local hlist_code           = nodecodes.hlist
-local glyph_code           = nodecodes.glyph
-
 local left_fence_code      = fencecodes.left
 local middle_fence_code    = fencecodes.middle
 local right_fence_code     = fencecodes.right
