@@ -28,8 +28,10 @@ local implement          = interfaces.implement
 
 local settings_to_array  = utilities.parsers.settings_to_array
 local allocate           = utilities.storage.allocate
+local setmetatableindex  = table.setmetatableindex
 local formatters         = string.formatters
 local variables          = interfaces.variables
+local constants          = interfaces.constants
 
 converters               = converters or { }
 local converters         = converters
@@ -1137,7 +1139,7 @@ local v_WEEKDAY  = upper(v_weekday)
 
 local convert = converters.convert
 
-local days = { -- not variables.sunday
+local days = { -- not variables
     "sunday",
     "monday",
     "tuesday",
@@ -1147,7 +1149,7 @@ local days = { -- not variables.sunday
     "saturday",
 }
 
-local months = { -- not variables.january
+local months = { -- not variables
     "january",
     "february",
     "march",
@@ -1162,21 +1164,28 @@ local months = { -- not variables.january
     "december",
 }
 
+local monthmnems = { -- not variables
+    -- virtual table
+}
+
+setmetatableindex(months,     function(t,k) return "unknown" end)
+setmetatableindex(days,       function(t,k) return "unknown" end)
+setmetatableindex(monthmnems, function(t,k) return months[k] .. ":mnem" end)
+
 local function dayname(n)
-    return days[n] or "unknown"
+    return days[n]
 end
 
 local function weekdayname(day,month,year)
-    return days[weekday(day,month,year)] or "unknown"
+    return days[weekday(day,month,year)]
 end
 
 local function monthname(n)
-    return months[n] or "unknown"
+    return months[n]
 end
 
 local function monthmnem(n)
-    local m = months[n]
-    return m and (m ..":mnem") or "unknown"
+    return monthmnems[n]
 end
 
 implement {
@@ -1252,19 +1261,19 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
             context("%02i",year % 100)
         elseif tag == v_month or tag == "m" then
             if currentlanguage == false then
-                context(months[month] or "unknown")
+                context(months[month])
             elseif mnemonic then
-                context.labeltext(monthmnem(month))
+                context.labeltext(variables[monthmnems[month]])
             else
-                context.labeltext(monthname(month))
+                context.labeltext(variables[months[month]])
             end
         elseif tag == v_MONTH then
             if currentlanguage == false then
-                context.WORD(months[month] or "unknown")
+                context.WORD(variables[months[month]])
             elseif mnemonic then
-                context.LABELTEXT(monthmnem(month))
+                context.LABELTEXT(variables[monthmnems[month]])
             else
-                context.LABELTEXT(monthname(month))
+                context.LABELTEXT(variables[months[month]])
             end
         elseif tag == "mm" then
             context("%02i",month)
@@ -1272,7 +1281,7 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
             context(month)
         elseif tag == v_day or tag == "d" then
             if currentlanguage == false then
-                context(days[day] or "unknown")
+                context(days[day])
             else
                 context.convertnumber(v_day,day) -- why not direct
             end
@@ -1286,16 +1295,16 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
         elseif tag == v_weekday or tag == "w" then
             local wd = weekday(day,month,year)
             if currentlanguage == false then
-                context(days[wd] or "unknown")
+                context(days[wd])
             else
-                context.labeltext(days[wd] or "unknown")
+                context.labeltext(variables[days[wd]])
             end
         elseif tag == v_WEEKDAY then
             local wd = weekday(day,month,year)
             if currentlanguage == false then
-                context.WORD(days[wd] or "unknown")
+                context.WORD(days[wd])
             else
-                context.LABELTEXT(days[wd] or "unknown")
+                context.LABELTEXT(variables[days[wd]])
             end
         elseif tag == "W" then
             context(weekday(day,month,year))

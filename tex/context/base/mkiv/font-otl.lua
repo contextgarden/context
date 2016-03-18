@@ -53,7 +53,7 @@ local report_otf         = logs.reporter("fonts","otf loading")
 local fonts              = fonts
 local otf                = fonts.handlers.otf
 
-otf.version              = 3.014 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 3.016 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otl", otf.version, true)
 
 local otfreaders         = otf.readers
@@ -267,6 +267,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
             otfreaders.compact(data)
             otfreaders.rehash(data,"unicodes")
             otfreaders.addunicodetable(data)
+            otfreaders.extend(data)
             otfreaders.pack(data)
             report_otf("loading done")
             report_otf("saving %a in cache",filename)

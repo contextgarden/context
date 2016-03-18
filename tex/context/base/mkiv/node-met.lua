@@ -154,6 +154,9 @@ nodes.getsubtype        = getsubtype
 nodes.getlist           = getlist
 nodes.getleader         = getleader
 
+nodes.is_char           = node.is_char
+nodes.ischar            = node.is_char
+
 nodes.getbox            = node.getbox  or tex.getbox
 nodes.setbox            = node.setbox  or tex.setbox
 nodes.getskip           = node.getskip or tex.get

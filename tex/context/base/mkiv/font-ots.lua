@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-ots'] = { -- sequences
     license   = "see context related readme files",
 }
 
+-- beware, on my development machine we test a slightly a more optimized version
+
 -- assumptions:
 --
 -- cursives don't cross discretionaries
@@ -627,17 +629,21 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
         -- we can have one accent as part of a lookup and another following
      -- local start = components -- was wrong (component scanning was introduced when more complex ligs in devanagari was added)
         local start = getnext(current)
-        while start and getid(start) == glyph_code do
-            local char = getchar(start)
-            if marks[char] then
-                setligaindex(start,baseindex + getligaindex(start,componentindex))
-                if trace_marks then
-                    logwarning("%s: set mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
+        while start do
+            local char = ischar(start)
+            if char then
+                if marks[char] then
+                    setligaindex(start,baseindex + getligaindex(start,componentindex))
+                    if trace_marks then
+                        logwarning("%s: set mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
+                    end
+                    start = getnext(start)
+                else
+                    break
                 end
             else
                 break
             end
-            start = getnext(start)
         end
     else
         -- discfound ... forget about marks .. probably no scripts that hyphenate and have marks
@@ -783,9 +789,9 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
     local startchar = getchar(start)
     if marks[startchar] then
         while current do
-            local ch = ischar(current,currentfont)
-            if ch then
-                local lg = ligature[ch]
+            local char = ischar(current,currentfont)
+            if char then
+                local lg = ligature[char]
                 if lg then
                     stop     = current
                     ligature = lg
@@ -817,35 +823,35 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
         local discfound = false
         local lastdisc  = nil
         while current do
-            local id = getid(current)
-            -- weird test here
-            if id == glyph_code then -- not needed
-                local char = ischar(current,currentfont)
-                if char then
-                    if skipmark and marks[char] then
-                        current = getnext(current)
-                    else -- ligature is a tree
-                        local lg = ligature[char] -- can there be multiple in a row? maybe in a bad font
-                        if lg then
-                            if not discfound and lastdisc then
-                                discfound = lastdisc
-                                lastdisc  = nil
-                            end
-                            stop     = current -- needed for fake so outside then
-                            ligature = lg
-                            current  = getnext(current)
-                        else
-                            break
+            local char = ischar(current,currentfont)
+            if char then
+                if skipmark and marks[char] then
+                    current = getnext(current)
+                else -- ligature is a tree
+                    local lg = ligature[char] -- can there be multiple in a row? maybe in a bad font
+                    if lg then
+                        if not discfound and lastdisc then
+                            discfound = lastdisc
+                            lastdisc  = nil
                         end
+                        stop     = current -- needed for fake so outside then
+                        ligature = lg
+                        current  = getnext(current)
+                    else
+                        break
                     end
+                end
+            elseif char == false then
+                -- kind of weird
+                break
+            else
+                local id = getid(current)
+                if id == disc_code then
+                    lastdisc = current
+                    current  = getnext(current)
                 else
                     break
                 end
-            elseif id == disc_code then
-                lastdisc = current
-                current  = getnext(current)
-            else
-                break
             end
         end
         local lig = ligature.ligature
@@ -944,6 +950,8 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
                     end
                     done = true
                     break
+                else -- can't happen
+                    break
                 end
             else
                 break
@@ -966,7 +974,7 @@ function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode)
             local basechar = ischar(base,currentfont)
             if basechar then
                 if marks[basechar] then
-                    while true do
+                    while base do
                         base = getprev(base)
                         if base then
                             basechar = ischar(base,currentfont)
@@ -1018,7 +1026,7 @@ function handlers.gpos_mark2ligature(head,start,dataset,sequence,markanchors,rlm
             local basechar = ischar(base,currentfont)
             if basechar then
                 if marks[basechar] then
-                    while true do
+                    while base do
                         base = getprev(base)
                         if base then
                             basechar = ischar(base,currentfont)
@@ -1265,8 +1273,8 @@ function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,c
     end
     local current = start
     while current do
-        if getid(current) == glyph_code then
-            local currentchar = getchar(current)
+        local currentchar = ischar(current)
+        if currentchar then
             local replacement = steps[1].coverage[currentchar]
             if not replacement or replacement == "" then
                 if trace_bugs then
@@ -1280,6 +1288,9 @@ function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,c
                 setchar(current,replacement)
             end
             return head, start, true
+        elseif currentchar == false then
+            -- can't happen
+            break
         elseif current == stop then
             break
         else
@@ -1337,8 +1348,8 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
     local value   = what == true and tfmdata.shared.features[kind] or what
     local current = start
     while current do
-        if getid(current) == glyph_code then -- is this check needed?
-            local currentchar  = getchar(current)
+        local currentchar = ischar(current)
+        if currentchar then
             local alternatives = steps[1].coverage[currentchar]
             if alternatives then
                 local choice, comment = get_alternative_glyph(current,alternatives,value)
@@ -1355,6 +1366,9 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
                 end
             end
             return head, start, true
+        elseif currentchar == false then
+            -- can't happen
+            break
         elseif current == stop then
             break
         else
@@ -1561,7 +1575,7 @@ function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlooku
                 local basechar = ischar(base,currentfont)
                 if basechar then
                     if marks[basechar] then
-                        while true do
+                        while base do
                             base = getprev(base)
                             if base then
                                 local basechar = ischar(base,currentfont)
@@ -1625,7 +1639,7 @@ function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentl
                 local basechar = ischar(base,currentfont)
                 if basechar then
                     if marks[basechar] then
-                        while true do
+                        while base do
                             base = getprev(base)
                             if base then
                                 local basechar = ischar(base,currentfont)
@@ -2188,7 +2202,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
         if s == 1 then
             -- never happens
             local char = ischar(current,currentfont)
-            match = char and seq[1][char]
+            if char then
+                match = seq[1][char]
+            end
         else
             -- maybe we need a better space check (maybe check for glue or category or combination)
             -- we cannot optimize for n=2 because there can be disc nodes
@@ -2212,33 +2228,22 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                             sweeptype = nil
                         end
                         if last then
-                            local id = getid(last)
-                            if id == glyph_code then
-                                local char = ischar(last,currentfont)
-                                if char then
-                                    local ccd = descriptions[char]
-                                    if ccd then
-                                        local class = ccd.class or "base"
-                                        if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
-                                            skipped = true
-                                            if trace_skips then
-                                                show_skip(dataset,sequence,char,ck,class)
-                                            end
-                                            last = getnext(last)
-                                        elseif seq[n][char] then
-                                            if n < l then
-                                                last = getnext(last)
-                                            end
-                                            n = n + 1
-                                        else
-                                            if discfound then
-                                                notmatchreplace[discfound] = true
-                                                match = not notmatchpre[discfound]
-                                            else
-                                                match = false
-                                            end
-                                            break
+                            local char = ischar(last,currentfont)
+                            if char then
+                                local ccd = descriptions[char]
+                                if ccd then
+                                    local class = ccd.class or "base"
+                                    if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
+                                        skipped = true
+                                        if trace_skips then
+                                            show_skip(dataset,sequence,char,ck,class)
                                         end
+                                        last = getnext(last)
+                                    elseif seq[n][char] then
+                                        if n < l then
+                                            last = getnext(last)
+                                        end
+                                        n = n + 1
                                     else
                                         if discfound then
                                             notmatchreplace[discfound] = true
@@ -2257,54 +2262,66 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                     end
                                     break
                                 end
-                            elseif id == disc_code then
-                                diskseen              = true
-                                discfound             = last
-                                notmatchpre[last]     = nil
-                                notmatchpost[last]    = true
-                                notmatchreplace[last] = nil
-                                local pre, post, replace = getdisc(last)
-                                if pre then
-                                    local n = n
-                                    while pre do
-                                        if seq[n][getchar(pre)] then
-                                            n = n + 1
-                                            pre = getnext(pre)
-                                            if n > l then
+                                last = getnext(last)
+                            elseif char == false then
+                                if discfound then
+                                    notmatchreplace[discfound] = true
+                                    match = not notmatchpre[discfound]
+                                else
+                                    match = false
+                                end
+                                break
+                            else
+                                local id = getid(last)
+                                if id == disc_code then
+                                    diskseen              = true
+                                    discfound             = last
+                                    notmatchpre[last]     = nil
+                                    notmatchpost[last]    = true
+                                    notmatchreplace[last] = nil
+                                    local pre, post, replace = getdisc(last)
+                                    if pre then
+                                        local n = n
+                                        while pre do
+                                            if seq[n][getchar(pre)] then
+                                                n = n + 1
+                                                pre = getnext(pre)
+                                                if n > l then
+                                                    break
+                                                end
+                                            else
+                                                notmatchpre[last] = true
                                                 break
                                             end
-                                        else
-                                            notmatchpre[last] = true
-                                            break
                                         end
-                                    end
-                                    if n <= l then
+                                        if n <= l then
+                                            notmatchpre[last] = true
+                                        end
+                                    else
                                         notmatchpre[last] = true
                                     end
-                                else
-                                    notmatchpre[last] = true
-                                end
-                                if replace then
-                                    -- so far we never entered this branch
-                                    while replace do
-                                        if seq[n][getchar(replace)] then
-                                            n = n + 1
-                                            replace = getnext(replace)
-                                            if n > l then
+                                    if replace then
+                                        -- so far we never entered this branch
+                                        while replace do
+                                            if seq[n][getchar(replace)] then
+                                                n = n + 1
+                                                replace = getnext(replace)
+                                                if n > l then
+                                                    break
+                                                end
+                                            else
+                                                notmatchreplace[last] = true
+                                                match = not notmatchpre[last]
                                                 break
                                             end
-                                        else
-                                            notmatchreplace[last] = true
-                                            match = not notmatchpre[last]
-                                            break
                                         end
+                                        match = not notmatchpre[last]
                                     end
-                                    match = not notmatchpre[last]
+                                    last = getnext(last)
+                                else
+                                    match = false
+                                    break
                                 end
-                                last = getnext(last)
-                            else
-                                match = false
-                                break
                             end
                         else
                             match = false
@@ -2326,29 +2343,18 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                         local n = f - 1
                         while n >= 1 do
                             if prev then
-                                local id = getid(prev)
-                                if id == glyph_code then
-                                    local char = ischar(prev,currentfont)
-                                    if char then
-                                        local ccd = descriptions[char]
-                                        if ccd then
-                                            local class = ccd.class
-                                            if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
-                                                skipped = true
-                                                if trace_skips then
-                                                    show_skip(dataset,sequence,char,ck,class)
-                                                end
-                                            elseif seq[n][char] then
-                                                n = n -1
-                                            else
-                                                if discfound then
-                                                    notmatchreplace[discfound] = true
-                                                    match = not notmatchpost[discfound]
-                                                else
-                                                    match = false
-                                                end
-                                                break
+                                local char = ischar(prev,currentfont)
+                                if char then
+                                    local ccd = descriptions[char]
+                                    if ccd then
+                                        local class = ccd.class
+                                        if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
+                                            skipped = true
+                                            if trace_skips then
+                                                show_skip(dataset,sequence,char,ck,class)
                                             end
+                                        elseif seq[n][char] then
+                                            n = n -1
                                         else
                                             if discfound then
                                                 notmatchreplace[discfound] = true
@@ -2367,74 +2373,86 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                         end
                                         break
                                     end
-                                elseif id == disc_code then
-                                    -- the special case: f i where i becomes dottless i ..
-                                    diskseen              = true
-                                    discfound             = prev
-                                    notmatchpre[prev]     = true
-                                    notmatchpost[prev]    = nil
-                                    notmatchreplace[prev] = nil
-                                    local pre, post, replace, pretail, posttail, replacetail = getdisc(prev,true)
-                                    if pre ~= start and post ~= start and replace ~= start then
-                                        if post then
-                                            local n = n
-                                            while posttail do
-                                                if seq[n][getchar(posttail)] then
-                                                    n = n - 1
-                                                    if posttail == post then
-                                                        break
-                                                    else
-                                                        posttail = getprev(posttail)
-                                                        if n < 1 then
+                                    prev = getprev(prev)
+                                elseif char == false then
+                                    if discfound then
+                                        notmatchreplace[discfound] = true
+                                        match = not notmatchpost[discfound]
+                                    else
+                                        match = false
+                                    end
+                                    break
+                                else
+                                    local id = getid(prev)
+                                    if id == disc_code then
+                                        -- the special case: f i where i becomes dottless i ..
+                                        diskseen              = true
+                                        discfound             = prev
+                                        notmatchpre[prev]     = true
+                                        notmatchpost[prev]    = nil
+                                        notmatchreplace[prev] = nil
+                                        local pre, post, replace, pretail, posttail, replacetail = getdisc(prev,true)
+                                        if pre ~= start and post ~= start and replace ~= start then
+                                            if post then
+                                                local n = n
+                                                while posttail do
+                                                    if seq[n][getchar(posttail)] then
+                                                        n = n - 1
+                                                        if posttail == post then
                                                             break
+                                                        else
+                                                            posttail = getprev(posttail)
+                                                            if n < 1 then
+                                                                break
+                                                            end
                                                         end
+                                                    else
+                                                        notmatchpost[prev] = true
+                                                        break
                                                     end
-                                                else
-                                                    notmatchpost[prev] = true
-                                                    break
                                                 end
-                                            end
-                                            if n >= 1 then
+                                                if n >= 1 then
+                                                    notmatchpost[prev] = true
+                                                end
+                                            else
                                                 notmatchpost[prev] = true
                                             end
-                                        else
-                                            notmatchpost[prev] = true
-                                        end
-                                        if replace then
-                                            -- we seldom enter this branch (e.g. on brill efficient)
-                                            while replacetail do
-                                                if seq[n][getchar(replacetail)] then
-                                                    n = n - 1
-                                                    if replacetail == replace then
-                                                        break
-                                                    else
-                                                        replacetail = getprev(replacetail)
-                                                        if n < 1 then
+                                            if replace then
+                                                -- we seldom enter this branch (e.g. on brill efficient)
+                                                while replacetail do
+                                                    if seq[n][getchar(replacetail)] then
+                                                        n = n - 1
+                                                        if replacetail == replace then
                                                             break
+                                                        else
+                                                            replacetail = getprev(replacetail)
+                                                            if n < 1 then
+                                                                break
+                                                            end
                                                         end
+                                                    else
+                                                        notmatchreplace[prev] = true
+                                                        match = not notmatchpost[prev]
+                                                        break
                                                     end
-                                                else
-                                                    notmatchreplace[prev] = true
-                                                    match = not notmatchpost[prev]
+                                                end
+                                                if not match then
                                                     break
                                                 end
-                                            end
-                                            if not match then
-                                                break
+                                            else
+                                                -- skip 'm
                                             end
                                         else
                                             -- skip 'm
                                         end
+                                    elseif seq[n][32] then
+                                        n = n - 1
                                     else
-                                        -- skip 'm
+                                        match = false
+                                        break
                                     end
-                                elseif seq[n][32] then
-                                    n = n - 1
-                                else
-                                    match = false
-                                    break
+                                    prev = getprev(prev)
                                 end
-                                prev = getprev(prev)
                             elseif seq[n][32] then -- somewhat special, as zapfino can have many preceding spaces
                                 n = n - 1
                             else
@@ -2464,29 +2482,18 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                     local n = l + 1
                     while n <= s do
                         if current then
-                            local id = getid(current)
-                            if id == glyph_code then
-                                local char = ischar(current,currentfont)
-                                if char then
-                                    local ccd = descriptions[char]
-                                    if ccd then
-                                        local class = ccd.class
-                                        if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
-                                            skipped = true
-                                            if trace_skips then
-                                                show_skip(dataset,sequence,char,ck,class)
-                                            end
-                                        elseif seq[n][char] then
-                                            n = n + 1
-                                        else
-                                            if discfound then
-                                                notmatchreplace[discfound] = true
-                                                match = not notmatchpre[discfound]
-                                            else
-                                                match = false
-                                            end
-                                            break
+                            local char = ischar(current,currentfont)
+                            if char then
+                                local ccd = descriptions[char]
+                                if ccd then
+                                    local class = ccd.class
+                                    if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
+                                        skipped = true
+                                        if trace_skips then
+                                            show_skip(dataset,sequence,char,ck,class)
                                         end
+                                    elseif seq[n][char] then
+                                        n = n + 1
                                     else
                                         if discfound then
                                             notmatchreplace[discfound] = true
@@ -2505,63 +2512,76 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                     end
                                     break
                                 end
-                            elseif id == disc_code then
-                                diskseen                 = true
-                                discfound                = current
-                                notmatchpre[current]     = nil
-                                notmatchpost[current]    = true
-                                notmatchreplace[current] = nil
-                                local pre, post, replace = getdisc(current)
-                                if pre then
-                                    local n = n
-                                    while pre do
-                                        if seq[n][getchar(pre)] then
-                                            n = n + 1
-                                            pre = getnext(pre)
-                                            if n > s then
+                                current = getnext(current)
+                            elseif char == false then
+                                if discfound then
+                                    notmatchreplace[discfound] = true
+                                    match = not notmatchpre[discfound]
+                                else
+                                    match = false
+                                end
+                                break
+                            else
+                                local id = getid(current)
+                                if id == disc_code then
+                                    diskseen                 = true
+                                    discfound                = current
+                                    notmatchpre[current]     = nil
+                                    notmatchpost[current]    = true
+                                    notmatchreplace[current] = nil
+                                    local pre, post, replace = getdisc(current)
+                                    if pre then
+                                        local n = n
+                                        while pre do
+                                            if seq[n][getchar(pre)] then
+                                                n = n + 1
+                                                pre = getnext(pre)
+                                                if n > s then
+                                                    break
+                                                end
+                                            else
+                                                notmatchpre[current] = true
                                                 break
                                             end
-                                        else
-                                            notmatchpre[current] = true
-                                            break
                                         end
-                                    end
-                                    if n <= s then
+                                        if n <= s then
+                                            notmatchpre[current] = true
+                                        end
+                                    else
                                         notmatchpre[current] = true
                                     end
-                                else
-                                    notmatchpre[current] = true
-                                end
-                                if replace then
-                                    -- so far we never entered this branch
-                                    while replace do
-                                        if seq[n][getchar(replace)] then
-                                            n = n + 1
-                                            replace = getnext(replace)
-                                            if n > s then
+                                    if replace then
+                                        -- so far we never entered this branch
+                                        while replace do
+                                            if seq[n][getchar(replace)] then
+                                                n = n + 1
+                                                replace = getnext(replace)
+                                                if n > s then
+                                                    break
+                                                end
+                                            else
+                                                notmatchreplace[current] = true
+                                                match = notmatchpre[current]
                                                 break
                                             end
-                                        else
-                                            notmatchreplace[current] = true
-                                            match = notmatchpre[current]
+                                        end
+                                        if not match then
                                             break
                                         end
+                                    else
+                                        -- skip 'm
                                     end
-                                    if not match then
-                                        break
-                                    end
+                                elseif seq[n][32] then -- brrr
+                                    n = n + 1
                                 else
-                                    -- skip 'm
+                                    match = false
+                                    break
                                 end
-                            elseif seq[n][32] then -- brrr
-                                n = n + 1
-                            else
-                                match = false
-                                break
+                                current = getnext(current)
                             end
-                            current = getnext(current)
                         elseif seq[n][32] then
                             n = n + 1
+current = getnext(current)
                         else
                             match = false
                             break
@@ -2609,7 +2629,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                     local i = 1
                     while start and true do
                         if skipped then
-                            while true do -- todo: use properties
+                            while start do -- todo: use properties
                                 local char = getchar(start)
                                 local ccd = descriptions[char]
                                 if ccd then
@@ -3158,7 +3178,9 @@ local function featuresprocessor(head,font,attr)
                                 report_missing_cache(dataset,sequence)
                             end
                         end
-                        if start then start = getprev(start) end
+                        if start then
+                            start = getprev(start)
+                        end
                     else
                         start = getprev(start)
                     end
@@ -3185,38 +3207,36 @@ local function featuresprocessor(head,font,attr)
                             start = head
                         end
                         while start do
-                            local id = getid(start)
-                            if id ~= glyph_code then
-                                -- very unlikely (if so we could use ischar)
-                             -- print("WIERD")
-                                start = getnext(start)
-                            else
-                                local char = ischar(start,font) -- also checks for glyph
-                                if char then
-                                    local a = getattr(start,0)
-                                 -- if a then
-                                 --     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
-                                 -- else
-                                 --     a = not attribute or getprop(start,a_state) == attribute
-                                 -- end
-                                 -- if a then
-                                    if not a or (a == attr) then
-                                        local lookupmatch = lookupcache[char]
-                                        if lookupmatch then
-                                            -- sequence kan weg
-                                            local ok
-                                            head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
-                                            if ok then
-                                                done = true
-                                            end
+                            local char = ischar(start,font) -- also checks for glyph
+                            if char then
+                                local a = getattr(start,0)
+                             -- if a then
+                             --     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
+                             -- else
+                             --     a = not attribute or getprop(start,a_state) == attribute
+                             -- end
+                             -- if a then
+                                if not a or (a == attr) then
+                                    local lookupmatch = lookupcache[char]
+                                    if lookupmatch then
+                                        -- sequence kan weg
+                                        local ok
+                                        head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
+                                        if ok then
+                                            done = true
                                         end
-                                        if start then start = getnext(start) end
-                                    else
+                                    end
+                                    if start then
                                         start = getnext(start)
                                     end
                                 else
-                                    return head, false
+                                    start = getnext(start)
                                 end
+                            elseif char == false then
+                                return head, false
+                            else
+                                -- weird
+                                start = getnext(start)
                             end
                         end
                         if done then
@@ -3316,86 +3336,88 @@ local function featuresprocessor(head,font,attr)
                     end
 
                     while start do
-                        local id = getid(start)
-                        if id == glyph_code then
-                            local char = ischar(start,font)
-                            if char then
-                                local a = getattr(start,0)
-                                if a then
-                                    a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
-                                else
-                                    a = not attribute or getprop(start,a_state) == attribute
-                                end
-                                if a then
-                                    local lookupmatch = lookupcache[char]
-                                    if lookupmatch then
-                                        -- sequence kan weg
-                                        local ok
-                                        head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
-                                        if ok then
-                                            success = true
-                                        elseif gpossing and zwnjruns and char == zwnj then
-                                            discrun(start,d_run)
-                                        end
+                        local char = ischar(start,font)
+                        if char then
+                            -- todo glyph
+                            local a = getattr(start,0)
+                            if a then
+                                a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
+                            else
+                                a = not attribute or getprop(start,a_state) == attribute
+                            end
+                            if a then
+                                local lookupmatch = lookupcache[char]
+                                if lookupmatch then
+                                    -- sequence kan weg
+                                    local ok
+                                    head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
+                                    if ok then
+                                        success = true
                                     elseif gpossing and zwnjruns and char == zwnj then
                                         discrun(start,d_run)
                                     end
-                                    if start then start = getnext(start) end
-                                else
-                                   start = getnext(start)
+                                elseif gpossing and zwnjruns and char == zwnj then
+                                    discrun(start,d_run)
                                 end
+                                if start then start = getnext(start) end
                             else
-                                start = getnext(start)
+                               start = getnext(start)
                             end
-                        elseif id == disc_code then
-                            if gpossing then
-                                kernrun(start,k_run)
-                                start = getnext(start)
-                            elseif typ == "gsub_ligature" then
-                                start = testrun(start,t_run,c_run)
-                            else
-                                comprun(start,c_run)
-                                start = getnext(start)
-                            end
-                        elseif id == math_code then
-                            start = getnext(end_of_math(start))
-                        elseif id == dir_code then
-                            local dir = getfield(start,"dir")
-                            if dir == "+TLT" then
-                                topstack = topstack + 1
-                                dirstack[topstack] = dir
-                                rlmode = 1
-                            elseif dir == "+TRT" then
-                                topstack = topstack + 1
-                                dirstack[topstack] = dir
-                                rlmode = -1
-                            elseif dir == "-TLT" or dir == "-TRT" then
-                                topstack = topstack - 1
-                                rlmode = dirstack[topstack] == "+TRT" and -1 or 1
-                            else
-                                rlmode = rlparmode
-                            end
-                            if trace_directions then
-                                report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,mref(rlparmode),mref(rlmode),topstack,mref(newdir))
-                            end
-                            start = getnext(start)
-                        elseif id == localpar_code then
-                            local dir = getfield(start,"dir")
-                            if dir == "TRT" then
-                                rlparmode = -1
-                            elseif dir == "TLT" then
-                                rlparmode = 1
-                            else
-                                rlparmode = 0
-                            end
-                            -- one might wonder if the par dir should be looked at, so we might as well drop the next line
-                            rlmode = rlparmode
-                            if trace_directions then
-                                report_process("directions after pardir %a: parmode %a, txtmode %a",dir,mref(rlparmode),mref(rlmode))
-                            end
-                            start = getnext(start)
+                        elseif char == false then
+                           -- whatever glyph
+                           start = getnext(start)
                         else
-                            start = getnext(start)
+                            local id = getid(start)
+                            if id == disc_code then
+                                if gpossing then
+                                    kernrun(start,k_run)
+                                    start = getnext(start)
+                                elseif typ == "gsub_ligature" then
+                                    start = testrun(start,t_run,c_run)
+                                else
+                                    comprun(start,c_run)
+                                    start = getnext(start)
+                                end
+                            elseif id == math_code then
+                                start = getnext(end_of_math(start))
+                            elseif id == dir_code then
+                                local dir = getfield(start,"dir")
+                                if dir == "+TLT" then
+                                    topstack = topstack + 1
+                                    dirstack[topstack] = dir
+                                    rlmode = 1
+                                elseif dir == "+TRT" then
+                                    topstack = topstack + 1
+                                    dirstack[topstack] = dir
+                                    rlmode = -1
+                                elseif dir == "-TLT" or dir == "-TRT" then
+                                    topstack = topstack - 1
+                                    rlmode = dirstack[topstack] == "+TRT" and -1 or 1
+                                else
+                                    rlmode = rlparmode
+                                end
+                                if trace_directions then
+                                    report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,mref(rlparmode),mref(rlmode),topstack,mref(newdir))
+                                end
+                                start = getnext(start)
+                            elseif id == localpar_code then
+                                local dir = getfield(start,"dir")
+                                if dir == "TRT" then
+                                    rlparmode = -1
+                                elseif dir == "TLT" then
+                                    rlparmode = 1
+                                else
+                                    rlparmode = 0
+                                end
+                                -- one might wonder if the par dir should be looked at, so we might as well drop the next line
+                                rlmode = rlparmode
+                                if trace_directions then
+                                    report_process("directions after pardir %a: parmode %a, txtmode %a",dir,mref(rlparmode),mref(rlmode))
+                                end
+                                start = getnext(start)
+                            else
+                                start = getnext(start)
+                            end
                         end
                     end
                 end
@@ -3411,49 +3433,49 @@ local function featuresprocessor(head,font,attr)
                         start = head
                     end
                     while start do
-                        local id = getid(start)
-                        if id ~= glyph_code then
-                            -- very unlikely
-                            start = getnext(start)
-                        else
-                            local char = ischar(start,font)
-                            if char then
-                                local a = getattr(start,0)
-                             -- if a then
-                             --     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
-                             -- else
-                             --     a = not attribute or getprop(start,a_state) == attribute
-                             -- end
-                             -- if a then
-                                if not a or (a == attr) then
-                                    for i=1,nofsteps do
-                                        local step        = steps[i]
-                                        local lookupcache = step.coverage
-                                        if lookupcache then
-                                            local lookupmatch = lookupcache[char]
-                                            if lookupmatch then
-                                                -- we could move all code inline but that makes things even more unreadable
-                                                local ok
-                                                head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
-                                                if ok then
-                                                    done = true
-                                                    break
-                                                elseif not start then
-                                                    -- don't ask why ... shouldn't happen
-                                                    break
-                                                end
+                        local char = ischar(start,font)
+                        if char then
+                            local a = getattr(start,0)
+                         -- if a then
+                         --     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
+                         -- else
+                         --     a = not attribute or getprop(start,a_state) == attribute
+                         -- end
+                         -- if a then
+                            if not a or (a == attr) then
+                                for i=1,nofsteps do
+                                    local step        = steps[i]
+                                    local lookupcache = step.coverage
+                                    if lookupcache then
+                                        local lookupmatch = lookupcache[char]
+                                        if lookupmatch then
+                                            -- we could move all code inline but that makes things even more unreadable
+                                            local ok
+                                            head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+                                            if ok then
+                                                done = true
+                                                break
+                                            elseif not start then
+                                                -- don't ask why ... shouldn't happen
+                                                break
                                             end
-                                        else
-                                            report_missing_cache(dataset,sequence)
                                         end
+                                    else
+                                        report_missing_cache(dataset,sequence)
                                     end
-                                    if start then start = getnext(start) end
-                                else
+                                end
+                                if start then
                                     start = getnext(start)
                                 end
                             else
-                                return head, false
+                                start = getnext(start)
                             end
+                        elseif char == false then
+                            -- whatever glyph
+                            return head, false
+                        else
+                            -- very unlikely
+                            start = getnext(start)
                         end
                     end
                     if done then
@@ -3526,8 +3548,6 @@ local function featuresprocessor(head,font,attr)
                                         report_missing_cache(dataset,sequence)
                                     end
                                 end
-                            else
-                                -- message
                             end
                         end
                     end
@@ -3580,101 +3600,104 @@ local function featuresprocessor(head,font,attr)
                 end
 
                 while start do
-                    local id = getid(start)
-                    if id == glyph_code then
-                        local char = ischar(start,font)
-                        if char then
-                            local a = getattr(start,0)
-                            if a then
-                                a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
-                            else
-                                a = not attribute or getprop(start,a_state) == attribute
-                            end
-                            if a then
-                                for i=1,nofsteps do
-                                    local step        = steps[i]
-                                    local lookupcache = step.coverage
-                                    if lookupcache then
-                                        local lookupmatch = lookupcache[char]
-                                        if lookupmatch then
-                                            -- we could move all code inline but that makes things even more unreadable
-                                            local ok
-                                            head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
-                                            if ok then
-                                                success = true
-                                                break
-                                            elseif not start then
-                                                -- don't ask why ... shouldn't happen
-                                                break
-                                            elseif gpossing and zwnjruns and char == zwnj then
-                                                discrun(start,d_run)
-                                            end
+                    local char = ischar(start,font)
+                    if char then
+                        local a = getattr(start,0)
+                        if a then
+                            a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
+                        else
+                            a = not attribute or getprop(start,a_state) == attribute
+                        end
+                        if a then
+                            for i=1,nofsteps do
+                                local step        = steps[i]
+                                local lookupcache = step.coverage
+                                if lookupcache then
+                                    local lookupmatch = lookupcache[char]
+                                    if lookupmatch then
+                                        -- we could move all code inline but that makes things even more unreadable
+                                        local ok
+                                        head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+                                        if ok then
+                                            success = true
+                                            break
+                                        elseif not start then
+                                            -- don't ask why ... shouldn't happen
+                                            break
                                         elseif gpossing and zwnjruns and char == zwnj then
                                             discrun(start,d_run)
                                         end
-                                    else
-                                        report_missing_cache(dataset,sequence)
+                                    elseif gpossing and zwnjruns and char == zwnj then
+                                        discrun(start,d_run)
                                     end
+                                else
+                                    report_missing_cache(dataset,sequence)
                                 end
-                                if start then start = getnext(start) end
-                            else
+                            end
+                            if start then
                                 start = getnext(start)
                             end
                         else
                             start = getnext(start)
                         end
-                    elseif id == disc_code then
-                        if gpossing then
-                            kernrun(start,k_run)
-                            start = getnext(start)
-                        elseif typ == "gsub_ligature" then
-                            start = testrun(start,t_run,c_run)
-                        else
-                            comprun(start,c_run)
-                            start = getnext(start)
-                        end
-                    elseif id == math_code then
-                        start = getnext(end_of_math(start))
-                    elseif id == dir_code then
-                        local dir = getfield(start,"dir")
-                        if dir == "+TLT" then
-                            topstack = topstack + 1
-                            dirstack[topstack] = dir
-                            rlmode = 1
-                        elseif dir == "+TRT" then
-                            topstack = topstack + 1
-                            dirstack[topstack] = dir
-                            rlmode = -1
-                        elseif dir == "-TLT" or dir == "-TRT" then
-                            topstack = topstack - 1
-                            rlmode = dirstack[topstack] == "+TRT" and -1 or 1
-                        else
-                            rlmode = rlparmode
-                        end
-                        if trace_directions then
-                            report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,mref(rlparmode),mref(rlmode),topstack,mref(newdir))
-                        end
-                        start = getnext(start)
-                    elseif id == localpar_code then
-                        local dir = getfield(start,"dir")
-                        if dir == "TRT" then
-                            rlparmode = -1
-                        elseif dir == "TLT" then
-                            rlparmode = 1
-                        else
-                            rlparmode = 0
-                        end
-                        rlmode = rlparmode
-                        if trace_directions then
-                            report_process("directions after pardir %a: parmode %a, txtmode %a",dir,mref(rlparmode),mref(rlmode))
-                        end
+                    elseif char == false then
                         start = getnext(start)
                     else
-                        start = getnext(start)
+                        local id = getid(start)
+                        if id == disc_code then
+                            if gpossing then
+                                kernrun(start,k_run)
+                                start = getnext(start)
+                            elseif typ == "gsub_ligature" then
+                                start = testrun(start,t_run,c_run)
+                            else
+                                comprun(start,c_run)
+                                start = getnext(start)
+                            end
+                        elseif id == math_code then
+                            start = getnext(end_of_math(start))
+                        elseif id == dir_code then
+                            local dir = getfield(start,"dir")
+                            if dir == "+TLT" then
+                                topstack = topstack + 1
+                                dirstack[topstack] = dir
+                                rlmode = 1
+                            elseif dir == "+TRT" then
+                                topstack = topstack + 1
+                                dirstack[topstack] = dir
+                                rlmode = -1
+                            elseif dir == "-TLT" or dir == "-TRT" then
+                                topstack = topstack - 1
+                                rlmode = dirstack[topstack] == "+TRT" and -1 or 1
+                            else
+                                rlmode = rlparmode
+                            end
+                            if trace_directions then
+                                report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,mref(rlparmode),mref(rlmode),topstack,mref(newdir))
+                            end
+                            start = getnext(start)
+                        elseif id == localpar_code then
+                            local dir = getfield(start,"dir")
+                            if dir == "TRT" then
+                                rlparmode = -1
+                            elseif dir == "TLT" then
+                                rlparmode = 1
+                            else
+                                rlparmode = 0
+                            end
+                            rlmode = rlparmode
+                            if trace_directions then
+                                report_process("directions after pardir %a: parmode %a, txtmode %a",dir,mref(rlparmode),mref(rlmode))
+                            end
+                            start = getnext(start)
+                        else
+                            start = getnext(start)
+                        end
                     end
                 end
             end
         end
+
         if success then
             done = true
         end
@@ -3725,65 +3748,102 @@ function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,fo
     return head, start, true
 end
 
+local function hasspacekerns(data)
+    local sequences = data.resources.sequences
+    for i=1,#sequences do
+        local sequence = sequences[i]
+        local steps    = sequence.steps
+        if steps and sequence.features.kern then
+            for i=1,#steps do
+                local coverage = steps[i].coverage
+                if not coverage then
+                    -- maybe an issue
+                elseif coverage[32] then
+                    return true
+                else
+                    for k, v in next, coverage do
+                        if v[32] then
+                            return true
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return false
+end
+
+otf.readers.registerextender {
+    name   = "spacekerns",
+    action = function(data)
+        data.properties.hasspacekerns = hasspacekerns(data)
+    end
+}
+
 local function spaceinitializer(tfmdata,value) -- attr
     local resources  = tfmdata.resources
-    local spacekerns = resources.spacekerns
+    local spacekerns = resources and resources.spacekerns
     if spacekerns == nil then
-        local sequences = resources.sequences
-        local left  = { }
-        local right = { }
-        local last  = 0
-        local feat  = nil
-        for i=1,#sequences do
-            local sequence = sequences[i]
-            local steps    = sequence.steps
-            if steps then
-                local kern = sequence.features.kern
-                if kern then
-                    feat = feat or kern -- or maybe merge
-                    for i=1,#steps do
-                        local step = steps[i]
-                        local coverage = step.coverage
-                        if coverage then
-                            local kerns = coverage[32]
-                            if kerns then
-                                for k, v in next, kerns do
-                                    right[k] = v
+        local properties = tfmdata.properties
+        if properties and properties.hasspacekerns then
+            local sequences = resources.sequences
+            local left  = { }
+            local right = { }
+            local last  = 0
+            local feat  = nil
+            for i=1,#sequences do
+                local sequence = sequences[i]
+                local steps    = sequence.steps
+                if steps then
+                    local kern = sequence.features.kern
+                    if kern then
+                        feat = feat or kern -- or maybe merge
+                        for i=1,#steps do
+                            local step = steps[i]
+                            local coverage = step.coverage
+                            if coverage then
+                                local kerns = coverage[32]
+                                if kerns then
+                                    for k, v in next, kerns do
+                                        right[k] = v
+                                    end
                                 end
-                            end
-                            for k, v in next, coverage do
-                                local kern = v[32]
-                                if kern then
-                                    left[k] = kern
+                                for k, v in next, coverage do
+                                    local kern = v[32]
+                                    if kern then
+                                        left[k] = kern
+                                    end
                                 end
                             end
                         end
+                        last = i
                     end
-                    last = i
+                else
+                    -- no steps ... needed for old one ... we could use the basekerns
+                    -- instead
+                end
+            end
+            left  = next(left)  and left  or false
+            right = next(right) and right or false
+            if left or right then
+                spacekerns = {
+                    left  = left,
+                    right = right,
+                }
+                if last > 0 then
+                    local triggersequence = {
+                        features = { kern = feat or { dflt = { dflt = true, } } },
+                        flags    = noflags,
+                        name     = "trigger_space_kerns",
+                        order    = { "kern" },
+                        type     = "trigger_space_kerns",
+                        left     = left,
+                        right    = right,
+                    }
+                    insert(sequences,last,triggersequence)
                 end
             else
-                -- no steps ... needed for old one ... we could use the basekerns
-                -- instead
-            end
-        end
-        left  = next(left)  and left  or false
-        right = next(right) and right or false
-        if left or right then
-            spacekerns = {
-                left  = left,
-                right = right,
-            }
-            if last > 0 then
-                local triggersequence = {
-                    features = { kern = feat or { dflt = { dflt = true, } } },
-                    flags    = noflags,
-                    name     = "trigger_space_kerns",
-                    order    = { "kern" },
-                    type     = "trigger_space_kerns",
-                    left     = left,
-                    right    = right,
-                }
-                insert(sequences,last,triggersequence)
+                spacekerns = false
             end
         else
             spacekerns = false

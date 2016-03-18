@@ -2122,6 +2122,25 @@ function readers.compact(fontdata)
     report("the %a helper is not yet implemented","compact")
 end
 
+-- plug in
+
+local extenders = { }
+
+function readers.registerextender(extender)
+    extenders[#extenders+1] = extender
+end
+
+function readers.extend(fontdata)
+    for i=1,#extenders do
+        local extender = extenders[i]
+        local name     = extender.name or "unknown"
+        local action   = extender.action
+        if action then
+            action(fontdata)
+        end
+    end
+end
+
 --
 
 if fonts.hashes then

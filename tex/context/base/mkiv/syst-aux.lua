@@ -474,3 +474,26 @@ interfaces.implement {
     arguments = { "string", "string" },
 }
 
+-- interfaces.implement {
+--     name      = "stringcompare",
+--     arguments = { "string", "string" },
+--     actions   = function(a,b)
+--         context((a == b and 0) or (a > b and 1) or -1)
+--     end
+-- }
+--
+-- interfaces.implement {
+--     name      = "doifelsestringafter",
+--     arguments = { "string", "string" },
+--     actions   = function(a,b)
+--         ctx_doifelse((a == b and 0) or (a > b and 1) or -1)
+--     end
+-- }
+--
+-- interfaces.implement {
+--     name      = "doifelsestringbefore",
+--     arguments = { "string", "string" },
+--     actions   = function(a,b)
+--         ctx_doifelse((a == b and 0) or (a < b and -1) or 1)
+--     end
+-- }

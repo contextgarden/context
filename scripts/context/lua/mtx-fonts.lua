@@ -10,6 +10,10 @@ local getargument = environment.getargument
 local setargument = environment.setargument
 local givenfiles  = environment.files
 
+local suffix, addsuffix, removesuffix, replacesuffix = file.suffix, file.addsuffix, file.removesuffix, file.replacesuffix
+local nameonly, basename, joinpath, collapsepath = file.nameonly, file.basename, file.join, file.collapsepath
+local lower = string.lower
+
 local otfversion  = 2.819
 local otlversion  = 3.013
 
@@ -168,7 +172,7 @@ function fonts.names.simple(alsotypeone)
     local simpleversion = 1.001
     local simplelist = { "ttf", "otf", "ttc", "dfont", alsotypeone and "afm" or nil }
     local name = "luatex-fonts-names.lua"
-    local path = file.collapsepath(caches.getwritablepath("..","..","generic","fonts","data"))
+    local path = collapsepath(caches.getwritablepath("..","..","generic","fonts","data"))
     fonts.names.filters.list = simplelist
     fonts.names.version = simpleversion -- this number is the same as in font-dum.lua
     report("generating font database for 'luatex-fonts' version %s",fonts.names.version)
@@ -186,7 +190,7 @@ function fonts.names.simple(alsotypeone)
             local format = simplelist[i]
             for tag, index in next, data.mappings[format] do
                 local s = specifications[index]
-                simplemappings[tag] = { s.rawname, s.filename, s.subfont }
+                simplemappings[tag] = { s.rawname or nameonly(s.filename), s.filename, s.subfont }
             end
         end
         if environment.arguments.nocache then
@@ -195,7 +199,7 @@ function fonts.names.simple(alsotypeone)
             dir.mkdirs(path)
             if lfs.isdir(path) then
                 report("saving names on cache path %a",path)
-                name = file.join(path,name)
+                name = joinpath(path,name)
             else
                 report("invalid cache path %a",path)
             end
@@ -424,14 +428,14 @@ function scripts.fonts.justload()
 end
 
 function scripts.fonts.unpack()
-    local name = file.removesuffix(file.basename(givenfiles[1] or ""))
+    local name = removesuffix(basename(givenfiles[1] or ""))
     if name and name ~= "" then
         local cacheid   = getargument("cache") or "otl"
         local cache     = containers.define("fonts", cacheid, otlversion, true) -- cache is temp
         local cleanname = containers.cleanname(name)
         local data = containers.read(cache,cleanname)
         if data then
-            local savename = file.addsuffix(cleanname .. "-unpacked","tma")
+            local savename = addsuffix(cleanname .. "-unpacked","tma")
             report("fontsave, saving data in %s",savename)
             if data.creator == "context mkiv" then
                 fonts.handlers.otf.readers.unpack(data)
@@ -452,9 +456,9 @@ function scripts.fonts.save()
         if fontblob then
             if fontblob.validation_state and table.contains(fontblob.validation_state,"bad_ps_fontname") then
                 report("ignoring bad fontname for %a",name)
-                savename = file.nameonly(name) .. "-bad-ps-name"
+                savename = nameonly(name) .. "-bad-ps-name"
             end
-            savename = file.addsuffix(string.lower(savename),"lua")
+            savename = addsuffix(lower(savename),"lua")
             report("fontsave, saving data in %a",savename)
             table.tofile(savename,fontloader.to_table(fontblob),"return")
             fontloader.close(fontblob)
@@ -463,7 +467,7 @@ function scripts.fonts.save()
     if name and name ~= "" then
         local filename = resolvers.findfile(name) -- maybe also search for opentype
         if filename and filename ~= "" then
-            local suffix = string.lower(file.suffix(filename))
+            local suffix = lower(suffix(filename))
             if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' or suffix == "dfont" then
                 local fontinfo = fontloader.info(filename)
                 if fontinfo then
@@ -496,13 +500,13 @@ function scripts.fonts.convert() -- new save
     if name and name ~= "" then
         local filename = resolvers.findfile(name) -- maybe also search for opentype
         if filename and filename ~= "" then
-            local suffix = string.lower(file.suffix(filename))
+            local suffix = lower(suffix(filename))
             if suffix == 'ttf' or suffix == 'otf' or suffix == 'ttc' then
                 local data = fonts.handlers.otf.readers.loadfont(filename,sub)
                 if data then
                     fonts.handlers.otf.readers.compact(data)
                     fonts.handlers.otf.readers.rehash(data,getargument("names") and "names" or "unicodes")
-                    local savename = file.replacesuffix(string.lower(data.metadata.fullname or filename),"lua")
+                    local savename = replacesuffix(lower(data.metadata.fullname or filename),"lua")
                     table.save(savename,data)
                     report("font: %a saved as %a",filename,savename)
                 else

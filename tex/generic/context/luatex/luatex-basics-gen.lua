@@ -63,13 +63,19 @@ logs = {
 }
 
 callbacks = {
-    register = function(n,f) return callback.register(n,f) end,
+    register = function(n,f)
+        return callback.register(n,f)
+    end,
 
 }
 
 utilities = utilities or { } utilities.storage = {
-    allocate = function(t) return t or { } end,
-    mark     = function(t) return t or { } end,
+    allocate = function(t)
+        return t or { }
+    end,
+    mark     = function(t)
+        return t or { }
+    end,
 }
 
 characters = characters or {

@@ -7357,6 +7357,11 @@
 %def\ntimes#1#2{\ifnum#2>\zerocount#1\ntimes{#1}{\numexpr#2-\plusone\relax}\fi} % 1.72
 \def\ntimes#1#2{\clf_ntimes{#1}\numexpr#2\relax}                                % 0.33
 
+%D Not that useful:
+
+% \unexpanded\def\doifelsestringbefore{\clf_doifelsestringbefore}
+% \unexpanded\def\doifelsestringafter {\clf_doifelsestringafter}
+
 \protect \endinput
 
 % \edef\choicetokenyes{+}

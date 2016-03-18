@@ -2041,6 +2041,10 @@ function names.resolvespec(askedname,sub) -- overloads previous definition
     end
 end
 
+function fonts.names.ignoredfile(filename) -- only supported in mkiv
+    return false -- will be overloaded
+end
+
 -- We could generate typescripts with designsize info from the name database but
 -- it's not worth the trouble as font names remain a mess: for instance how do we
 -- idenfity a font? Names, families, subfamilies or whatever snippet can contain

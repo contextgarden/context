@@ -1,0 +1,90 @@
+%D \module
+%D   [      file=luatex-fonts-prepare,
+%D        version=2006.03.18,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Generate data for generic,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This file generates a few resources needed for generic font processing. This
+%D is needed because we don't want to load the (mostly not used in generic) data
+%D files.
+
+\startluacode
+
+-- dofile("t:/sources/char-ini.lua")
+-- dofile("t:/sources/char-def.lua")
+
+local chardata   = characters.data
+
+local s_init = 1    local s_rphf =  7
+local s_medi = 2    local s_half =  8
+local s_fina = 3    local s_pref =  9
+local s_isol = 4    local s_blwf = 10
+local s_mark = 5    local s_pstf = 11
+local s_rest = 6
+
+local mappers = {
+    l = s_init,  -- left
+    d = s_medi,  -- double
+    c = s_medi,  -- joiner
+    r = s_fina,  -- right
+    u = s_isol,  -- nonjoiner
+}
+
+local first_arabic,  last_arabic  = characters.blockrange("arabic")
+local first_syriac,  last_syriac  = characters.blockrange("syriac")
+local first_mandiac, last_mandiac = characters.blockrange("mandiac")
+local first_nko,     last_nko     = characters.blockrange("nko")
+
+local classifiers = { }
+
+for k, c in next, chardata do
+    if k > 0 then
+        local c = chardata[k]
+        if c then
+            local arabic = c.arabic
+            if arabic then
+                classifiers[k] = mappers[arabic]
+            elseif k >= first_arabic  and k <= last_arabic  or k >= first_syriac  and k <= last_syriac  or
+                   k >= first_mandiac and k <= last_mandiac or k >= first_nko     and k <= last_nko     then
+                if c.category == "mn" then
+                    classifiers[k] = s_mark
+                else
+                    classifiers[k] = s_rest
+                end
+            end
+        end
+    end
+end
+
+local template = string.formatters [ [[
+-- automatically generated from context data
+
+characters = characters or { }
+
+-- dummies
+
+characters.blockrange = { }
+
+-- classifiers needed for analysis
+
+%s
+
+-- done
+]] ]
+
+io.savedata("luatex-basics-chr.lua",template(
+    table.serialize(classifiers,"characters.classifiers")
+))
+
+\stopluacode
+
+\startTEXpage[offset=10pt]
+    \tttf generated file: luatex-basics-chr.lua
+\stopTEXpage

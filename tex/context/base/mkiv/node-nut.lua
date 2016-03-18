@@ -280,6 +280,7 @@ nuts.setlist    = direct.setlist
 nuts.setleader  = direct.setleader
 nuts.setsubtype = direct.setsubtype
 nuts.is_char    = direct.is_char
+nuts.ischar     = direct.is_char
 
 local d_remove_node     = direct.remove
 local d_free_node       = direct.free
