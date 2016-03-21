@@ -270,7 +270,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         -- We need to plug into a callback and the following module implements the handlers. Actual
         -- plugging in happens later.
 
-        loadmodule('luatex-fonts-cbk.lua')
+        loadmodule('font-gbn.lua')
 
     end
 

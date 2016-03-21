@@ -127,32 +127,64 @@ nodes.tonut  = function(n) return n end
 local getfield          = node.getfield
 local setfield          = node.setfield
 
-local getattr           = node.get_attribute or node.has_attribute or getfield
+local getattr           = node.get_attribute
 local setattr           = setfield
 
-local getnext           = node.getnext    or function(n) return getfield(n,"next")    end
-local getprev           = node.getprev    or function(n) return getfield(n,"prev")    end
-local getid             = node.getid      or function(n) return getfield(n,"id")      end
-local getchar           = node.getchar    or function(n) return getfield(n,"char")    end
-local getfont           = node.getfont    or function(n) return getfield(n,"font")    end
-local getsubtype        = node.getsubtype or function(n) return getfield(n,"subtype") end
-local getlist           = node.getlist    or function(n) return getfield(n,"list")    end
-local getleader         = node.getleader  or function(n) return getfield(n,"leader")  end
+local n_getid           = node.getid
+local n_getlist         = node.getlist
+local n_getnext         = node.getnext
+local n_getprev         = node.getprev
+local n_getchar         = node.getchar
+local n_getfont         = node.getfont
+local n_getsubtype      = node.getsubtype
+local n_setfield        = node.setfield
+local n_getfield        = node.getfield
+local n_setattr         = node.setattr
+local n_getattr         = node.getattr
+local n_getdisc         = node.getdisc
+local n_getleader       = node.getleader
 
-nodes.getfield          = getfield
-nodes.getattr           = getattr
+local n_setnext         = node.setnext or
+    function(c,next)
+        setfield(c,"next",n)
+    end
+local n_setprev         = node.setprev or
+    function(c,prev)
+        setfield(c,"prev",p)
+    end
+local n_setlink         = node.setlink or
+    function(c1,c2)
+        if c1 then setfield(c1,"next",c2) end
+        if c2 then setfield(c2,"prev",c1) end
+    end
+local n_setboth         = node.setboth or
+    function(c,p,n)
+        setfield(c,"prev",p)
+        setfield(c,"next",n)
+    end
 
-nodes.setfield          = setfield
-nodes.setattr           = setattr
+node.setnext            = n_setnext
+node.setprev            = n_setprev
+node.setlink            = n_setlink
+node.setboth            = n_setboth
 
-nodes.getnext           = getnext
-nodes.getprev           = getprev
-nodes.getid             = getid
-nodes.getchar           = getchar
-nodes.getfont           = getfont
-nodes.getsubtype        = getsubtype
-nodes.getlist           = getlist
-nodes.getleader         = getleader
+nodes.getfield          = n_getfield
+nodes.setfield          = n_setfield
+nodes.getattr           = n_getattr
+nodes.setattr           = n_setattr
+
+nodes.getnext           = n_getnext
+nodes.getprev           = n_getprev
+nodes.getid             = n_getid
+nodes.getchar           = n_getchar
+nodes.getfont           = n_getfont
+nodes.getsubtype        = n_getsubtype
+nodes.getlist           = n_getlist
+nodes.getleader         = n_getleader
+nodes.getdisc           = n_getdisc
+-----.getpre            = node.getpre     or function(n) local h, _, _, t       = n_getdisc(n,true) return h, t end
+-----.getpost           = node.getpost    or function(n) local _, h, _, _, t    = n_getdisc(n,true) return h, t end
+-----.getreplace        = node.getreplace or function(n) local _, _, h, _, _, t = n_getdisc(n,true) return h, t end
 
 nodes.is_char           = node.is_char
 nodes.ischar            = node.is_char
@@ -163,12 +195,6 @@ nodes.getskip           = node.getskip or tex.get
 
 local n_new_node        = nodes.new
 local n_free_node       = nodes.free
-local n_setfield        = nodes.setfield
-local n_getfield        = nodes.getfield
-local n_getnext         = nodes.getnext
-local n_getprev         = nodes.getprev
-local n_getid           = nodes.getid
-local n_getlist         = nodes.getlist
 local n_copy_node       = nodes.copy
 local n_copy_list       = nodes.copy_list
 local n_find_tail       = nodes.tail
@@ -187,8 +213,7 @@ local function remove(head,current,free_too)
         n_free_node(t)
         t = nil
     else
-        n_setfield(t,"next",nil)
-        n_setfield(t,"prev",nil)
+        n_setboth(t)
     end
     return head, current, t
 end
@@ -213,12 +238,10 @@ function nodes.replace(head,current,new) -- no head returned if false
     local prev = n_getprev(current)
     local next = n_getnext(current)
     if next then
-        n_setfield(new,"next",next)
-        n_setfield(next,"prev",new)
+        n_setlink(new,next)
     end
     if prev then
-        n_setfield(new,"prev",prev)
-        n_setfield(prev,"next",new)
+        n_setlink(prev,new)
     end
     if head then
         if head == current then
@@ -273,8 +296,7 @@ function nodes.linked(...)
         local next = select(i,...)
         if next then
             if head then
-                n_setfield(last,"next",next)
-                n_setfield(next,"prev",last)
+                n_setlink(last,next)
             else
                 head = next
             end
@@ -290,8 +312,7 @@ function nodes.concat(list) -- consider tail instead of slide
         local li = list[i]
         if li then
             if head then
-                n_setfield(tail,"next",li)
-                n_setfield(li,"prev",tail)
+                n_setlink(tail,li)
             else
                 head = li
             end
@@ -434,8 +455,7 @@ metatable.__concat = function(n1,n2) -- todo: accept nut on one end
         return n2 -- or n2 * 2
     else
         local tail = n_find_tail(n1)
-        n_setfield(tail,"next",n2)
-        n_setfield(n2,"prev",tail)
+        n_setlink(tail,n2)
         return n1
     end
 end
@@ -452,26 +472,22 @@ metatable.__mul = function(n,multiplier)
             local h = n_copy_list(n)
             if head then
                 local t = n_find_tail(h)
-                n_setfield(t,"next",head)
-                n_setfield(head,"prev",t)
+                n_setlink(t,head)
             end
             head = h
         end
         local t = n_find_tail(n)
-        n_setfield(t,"next",head)
-        n_setfield(head,"prev",t)
+        n_setlink(t,head)
     else
         local head
         for i=2,multiplier do
             local c = n_copy_node(n)
             if head then
-                n_setfield(c,"next",head)
-                n_setfield(head,"prev",c)
+                n_setlink(c,head)
             end
             head = c
         end
-        n_setfield(n,"next",head)
-        n_setfield(head,"prev",n)
+        n_setlink(n,head)
     end
     return n
 end
@@ -480,7 +496,7 @@ metatable.__sub = function(first,second)
     if type(second) == "number" then
         local tail = n_find_tail(first)
         for i=1,second do
-            local prev = n_getfield(tail,"prev")
+            local prev = n_getprev(tail)
             n_free_node(tail) -- can become flushlist/flushnode
             if prev then
                 tail = prev
@@ -489,7 +505,7 @@ metatable.__sub = function(first,second)
             end
         end
         if tail then
-            n_setfield(tail,"next",nil)
+            n_setnext(tail)
             return first
         else
             return nil
@@ -500,15 +516,12 @@ metatable.__sub = function(first,second)
         local prev = n_getprev(firsttail)
         if prev then
             local secondtail = n_find_tail(second)
-            n_setfield(secondtail,"next",firsttail)
-            n_setfield(firsttail,"prev",ltail)
-            n_setfield(prev,"next",second)
-            n_setfield(second,"prev",prev)
+            n_setlink(secondtail,firsttail)
+            n_setlink(prev,second)
             return first
         else
             local secondtail = n_find_tail(second)
-            n_setfield(secondtail,"next",first)
-            n_setfield(first,"prev",ltail)
+            n_setlink(secondtail,first)
             return second
         end
     end
@@ -527,7 +540,7 @@ metatable.__add = function(first,second)
             end
         end
         if head then
-            n_setfield(head,"prev",nil)
+            n_setprev(head)
             return head
         else
             return nil
@@ -537,13 +550,10 @@ metatable.__add = function(first,second)
         local next = n_getnext(first)
         if next then
             local secondtail = n_find_tail(second)
-            n_setfield(first,"next",second)
-            n_setfield(second,"prev",first)
-            n_setfield(secondtail,"next",next)
-            n_setfield(next,"prev",secondtail)
+            n_setlink(first,second)
+            n_setlink(secondtail,next)
         else
-            n_setfield(first,"next",second)
-            n_setfield(second,"prev",first)
+            n_setlink(first,second)
         end
         return first
     end
@@ -565,7 +575,7 @@ end
 metatable.__pow = function(n,multiplier)
     local tail = n
     local head = nil
-    if getnext(n) then
+    if n_getnext(n) then
         if multiplier == 1 then
             head = n_copy_list(n)
         else
@@ -573,8 +583,7 @@ metatable.__pow = function(n,multiplier)
                 local h = n_copy_list(n)
                 if head then
                     local t = n_find_tail(h)
-                    n_setfield(t,"next",head)
-                    n_setfield(head,"prev",t)
+                    n_setlink(t,head)
                 end
                 head = h
             end
@@ -586,8 +595,7 @@ metatable.__pow = function(n,multiplier)
             for i=2,multiplier do
                 local c = n_copy_node(n)
                 if head then
-                    n_setfield(head,"next",c)
-                    n_setfield(c,"prev",head)
+                    n_setlink(head,c)
                 end
                 head = c
             end
@@ -603,13 +611,12 @@ metatable.__unm = function(head)
     local current = n_getnext(head)
     while current do
         local next = n_getnext(current)
-        n_setfield(first,"prev",current)
-        n_setfield(current,"next",first)
+        n_setlink(current,first)
         first = current
         current = next
     end
-    n_setfield(first,"prev",nil)
-    n_setfield(last,"next",nil)
+    n_setprev(first)
+    n_setnext(last)
     return first
 end
 

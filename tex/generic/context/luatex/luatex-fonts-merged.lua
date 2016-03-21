@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/18/16 18:35:14
+-- merge date  : 03/21/16 19:48:28
 
 do -- begin closure to overcome local limits and interference
 
@@ -17996,6 +17996,7 @@ local trace_directions=false registertracker("otf.directions",function(v) trace_
 local trace_kernruns=false registertracker("otf.kernruns",function(v) trace_kernruns=v end)
 local trace_discruns=false registertracker("otf.discruns",function(v) trace_discruns=v end)
 local trace_compruns=false registertracker("otf.compruns",function(v) trace_compruns=v end)
+local trace_testruns=false registertracker("otf.testruns",function(v) trace_testruns=v end)
 local quit_on_no_replacement=true 
 local zwnjruns=true
 local optimizekerns=true
@@ -19602,6 +19603,7 @@ local noflags={ false,false,false,false }
 local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
   local sweepnode=sweepnode
   local sweeptype=sweeptype
+  local currentfont=currentfont
   local diskseen=false
   local checkdisc=getprev(head)
   local flags=sequence.flags or noflags
@@ -20124,11 +20126,11 @@ local function logprocess(...)
   report_process(...)
 end
 local logwarning=report_process
-local function report_missing_cache(dataset,sequence)
+local function report_missing_coverage(dataset,sequence)
   local t=missing[currentfont]
   if not t[sequence] then
     t[sequence]=true
-    logwarning("missing cache for feature %a, lookup %a, type %a, font %a, name %a",
+    logwarning("missing coverage for feature %a, lookup %a, type %a, font %a, name %a",
       dataset[4],sequence.name,sequence.type,currentfont,tfmdata.properties.fullname)
   end
 end
@@ -20209,82 +20211,100 @@ function otf.dataset(tfmdata,font)
   end
   return rl
 end
-local function kernrun(disc,run)
+local function report_disc(n)
+  report_run("kern: %s > %s",disc,languages.serializediscretionary(disc))
+end
+local function kernrun(disc,k_run,font,attr,...)
   if trace_kernruns then
-    report_run("kern") 
+    report_disc("kern")
   end
   local prev,next=getboth(disc)
+  local nextstart=next
+  local done=false
   local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
   local prevmarks=prev
   while prevmarks do
-    local char=ischar(prevmarks,currentfont)
+    local char=ischar(prevmarks,font)
     if char and marks[char] then
       prevmarks=getprev(prevmarks)
     else
       break
     end
   end
-  if prev and (pre or replace) and not ischar(prev,currentfont) then
+  if prev and (pre or replace) and not ischar(prev,font) then
     prev=false
   end
-  if next and (post or replace) and not ischar(next,currentfont) then
+  if next and (post or replace) and not ischar(next,font) then
     next=false
   end
   if pre then
-    run(pre,"injections")
+    if k_run(pre,"injections",nil,font,attr,...) then
+      done=true
+    end
     if prev then
       local nest=getprev(pre)
       setlink(prev,pre)
-      run(prevmarks,"preinjections",pre) 
+      if k_run(prevmarks,"preinjections",pre,font,attr,...) then 
+        done=true
+      end
       setprev(pre,nest)
       setnext(prev,disc)
     end
   end
   if post then
-    run(post,"injections")
+    if k_run(post,"injections",nil,font,attr,...) then
+      done=true
+    end
     if next then
       setlink(posttail,next)
-      run(posttail,"postinjections",next)
+      if k_run(posttail,"postinjections",next,font,attr,...) then
+        done=true
+      end
       setnext(posttail,nil)
       setprev(next,disc)
     end
   end
   if replace then
-    run(replace,"injections")
+    if k_run(replace,"injections",nil,font,attr,...) then
+      done=true
+    end
     if prev then
       local nest=getprev(replace)
       setlink(prev,replace)
-      run(prevmarks,"replaceinjections",replace) 
+      if k_run(prevmarks,"replaceinjections",replace,font,attr,...) then 
+        done=true
+      end
       setprev(replace,nest)
       setnext(prev,disc)
     end
     if next then
       setlink(replacetail,next)
-      run(replacetail,"replaceinjections",next)
+      if k_run(replacetail,"replaceinjections",next,font,attr,...) then
+        done=true
+      end
       setnext(replacetail,nil)
       setprev(next,disc)
     end
   elseif prev and next then
     setlink(prev,next)
-    run(prevmarks,"emptyinjections",next)
+    if k_run(prevmarks,"emptyinjections",next,font,attr,...) then
+      done=true
+    end
     setlink(prev,disc)
     setlink(disc,next)
   end
+  return nextstart,done
 end
-local function checkdisc(str,d) 
-  local pre,post,replace=getdisc(d)
-  report_check("%s : [%s][%s][%s]",str,nodes.toutf(pre),nodes.toutf(post),nodes.toutf(replace))
-end
-local function comprun(disc,run)
+local function comprun(disc,c_run,...)
   if trace_compruns then
-    report_run("comp: %s",languages.serializediscretionary(disc))
+    report_disc("comp")
   end
   local pre,post,replace=getdisc(disc)
   local renewed=false
   if pre then
     sweepnode=disc
     sweeptype="pre" 
-    local new,done=run(pre)
+    local new,done=c_run(pre,...)
     if done then
       pre=new
       renewed=true
@@ -20293,7 +20313,7 @@ local function comprun(disc,run)
   if post then
     sweepnode=disc
     sweeptype="post"
-    local new,done=run(post)
+    local new,done=c_run(post,...)
     if done then
       post=new
       renewed=true
@@ -20302,7 +20322,7 @@ local function comprun(disc,run)
   if replace then
     sweepnode=disc
     sweeptype="replace"
-    local new,done=run(replace)
+    local new,done=c_run(replace,...)
     if done then
       replace=new
       renewed=true
@@ -20313,80 +20333,303 @@ local function comprun(disc,run)
   if renewed then
     setdisc(disc,pre,post,replace)
   end
+  return getnext(disc),done
 end
-local function testrun(disc,trun,crun) 
-  local next=getnext(disc)
-  if next then
-    local _,_,replace,_,_,tail=getdisc(disc,true)
-    if replace then
-      local prev=getprev(disc)
-      if prev then
-        setlink(tail,next)
-        if trun(replace,next) then
-          setfield(disc,"replace",nil) 
-          setlink(prev,replace)
-          setlink(tail,next)
-          setboth(disc,nil,nil)
-          flush_node_list(disc)
-          return replace 
-        else
-          setnext(tail,nil)
-          setprev(next,disc)
+local function testrun(disc,t_run,c_run,...)
+  if trace_testruns then
+    report_disc("test")
+  end
+  local prev,next=getboth(disc)
+  if not next then
+    return
+  end
+  local pre,post,replace,pretail,posttail,replacetail=getdisc(disc)
+  local done=false
+  if replace and prev then
+    setlink(replacetail,next)
+    if t_run(replace,next,...) then
+      setfield(disc,"replace",nil) 
+      setlink(prev,replace)
+      setlink(replacetail,next)
+      setboth(disc)
+      flush_node_list(disc)
+      return replace,true 
+    else
+      setnext(replacetail)
+      setprev(next,disc)
+    end
+  end
+  local renewed=false
+  if pre then
+    sweepnode=disc
+    sweeptype="pre"
+    local new,ok=c_run(pre,...)
+    if ok then
+      pre=new
+      renewed=true
+    end
+  end
+  if post then
+    sweepnode=disc
+    sweeptype="post"
+    local new,ok=c_run(post,...)
+    if ok then
+      post=new
+      renewed=true
+    end
+  end
+  if replace then
+    sweepnode=disc
+    sweeptype="replace"
+    local new,ok=c_run(replace,...)
+    if ok then
+      replace=new
+      renewed=true
+    end
+  end
+  sweepnode=nil
+  sweeptype=nil
+  if renewed then
+    setdisc(disc,pre,post,replace)
+    return next,true
+  else
+    return next,done
+  end
+end
+local nesting=0
+local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+  local done=false
+  local start=sweephead[head]
+  if start then
+    sweephead[head]=nil
+  else
+    start=head
+  end
+  while start do
+    local char=ischar(start,font)
+    if char then
+      local a=getattr(start,0)
+      if not a or (a==attr) then
+        local lookupmatch=lookupcache[char]
+        if lookupmatch then
+          local ok
+          head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
+          if ok then
+            done=true
+          end
+        end
+        if start then
+          start=getnext(start)
         end
       else
+        start=getnext(start)
       end
+    elseif char==false then
+      return head,done
     else
+      start=getnext(start)
     end
-  else
   end
-  comprun(disc,crun)
-  return next
+  return head,done
 end
-local function discrun(disc,drun,krun)
-  local prev,next=getboth(disc)
-  if trace_discruns then
-    report_run("disc") 
+local function t_run_single(start,stop,font,attr,lookupcache)
+  while start~=stop do
+    local char=ischar(start,font)
+    if char then
+      local a=getattr(start,0)
+      if not a or (a==attr) then
+        local lookupmatch=lookupcache[char]
+        if lookupmatch then
+          local s=getnext(start)
+          local l=nil
+          while s do
+            local lg=lookupmatch[getchar(s)]
+            if lg then
+              l=lg
+              s=getnext(s)
+            else
+              break
+            end
+          end
+          if l and l.ligature then
+            return true
+          end
+        end
+      end
+      start=getnext(start)
+    else
+      break
+    end
   end
-  if next and prev then
-    setnext(prev,next)
-    drun(prev)
-    setnext(prev,disc)
+end
+local function k_run_single(sub,injection,last,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+  local a=getattr(sub,0)
+  if not a or (a==attr) then
+    for n in traverse_nodes(sub) do 
+      if n==last then
+        break
+      end
+      local char=ischar(n)
+      if char then
+        local lookupmatch=lookupcache[char]
+        if lookupmatch then
+          local h,d,ok=handler(sub,n,dataset,sequence,lookupmatch,rlmode,step,1,injection)
+          if ok then
+            return true
+          end
+        end
+      end
+    end
   end
-  local pre=getfield(disc,"pre")
-  if not pre then
-  elseif prev then
-    local nest=getprev(pre)
-    setlink(prev,pre)
-    krun(prev,"preinjections")
-    setprev(pre,nest)
-    setnext(prev,disc)
+end
+local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+  local done=false
+  local start=sweephead[head]
+  if start then
+    sweephead[head]=nil
   else
-    krun(pre,"preinjections")
+    start=head
   end
-  return next
+  while start do
+    local char=ischar(start,font)
+    if char then
+      local a=getattr(start,0)
+      if not a or (a==attr) then
+        for i=1,nofsteps do
+          local step=steps[i]
+          local lookupcache=step.coverage
+          if lookupcache then
+            local lookupmatch=lookupcache[char]
+            if lookupmatch then
+              local ok
+              head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+              if ok then
+                done=true
+                break
+              elseif not start then
+                break
+              end
+            end
+          else
+            report_missing_coverage(dataset,sequence)
+          end
+        end
+        if start then
+          start=getnext(start)
+        end
+      else
+        start=getnext(start)
+      end
+    elseif char==false then
+      return head,done
+    else
+      start=getnext(start)
+    end
+  end
+  return head,done
+end
+local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
+  while start~=stop do
+    local char=ischar(start,font)
+    if char then
+      local a=getattr(start,0)
+      if not a or (a==attr) then
+        for i=1,nofsteps do
+          local step=steps[i]
+          local lookupcache=step.coverage
+          if lookupcache then
+            local lookupmatch=lookupcache[char]
+            if lookupmatch then
+              local s=getnext(start)
+              local l=nil
+              while s do
+                local lg=lookupmatch[getchar(s)]
+                if lg then
+                  l=lg
+                  s=getnext(s)
+                else
+                  break
+                end
+              end
+              if l and l.ligature then
+                return true
+              end
+            end
+          else
+            report_missing_coverage(dataset,sequence)
+          end
+        end
+      end
+      start=getnext(start)
+    else
+      break
+    end
+  end
+end
+local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+  local a=getattr(sub,0)
+  if not a or (a==attr) then
+    for n in traverse_nodes(sub) do 
+      if n==last then
+        break
+      end
+      local char=ischar(n)
+      if char then
+        for i=1,nofsteps do
+          local step=steps[i]
+          local lookupcache=step.coverage
+          if lookupcache then
+            local lookupmatch=lookupcache[char]
+            if lookupmatch then
+              local h,d,ok=handler(head,n,dataset,sequence,lookupmatch,step,rlmode,i,injection)
+              if ok then
+                return true
+              end
+            end
+          else
+            report_missing_coverage(dataset,sequence)
+          end
+        end
+      end
+    end
+  end
 end
 local function txtdirstate(start,stack,top,rlparmode)
   local dir=getfield(start,"dir")
+  local new=1
   if dir=="+TRT" then
     top=top+1
     stack[top]=dir
-    return top,-1
+    new=-1
   elseif dir=="+TLT" then
     top=top+1
     stack[top]=dir
-    return top,1
-  end
-  if dir=="-TRT" or dir=="-TLT" then
+  elseif dir=="-TRT" or dir=="-TLT" then
     top=top-1
-    if dir=="+TRT" then
-      return top,-1
-    else
-      return top,1
+    if stack[top]=="+TRT" then
+      new=-1
     end
+  else
+    new=rlparmode
   end
-  return top,rlparmode
+  if trace_directions then
+    report_process("directions after txtdir %a: parmode %a, txtmode %a, level %a",dir,mref(rlparmode),mref(new),topstack)
+  end
+  return getnext(start),top,new
 end
-local nesting=0
+local function pardirstate(start)
+  local dir=getfield(start,"dir")
+  local new=0
+  if dir=="TLT" then
+    new=1
+  elseif dir=="TRT" then
+    new=-1
+  end
+  if trace_directions then
+    report_process("directions after pardir %a: parmode %a",dir,mref(new))
+  end
+  return getnext(start),new,new
+end
 local function featuresprocessor(head,font,attr)
   local sequences=sequencelists[font] 
   if not sequencelists then
@@ -20439,30 +20682,27 @@ local function featuresprocessor(head,font,attr)
         end
       end
     elseif typ=="gsub_reversecontextchain" then
-      local start=find_node_tail(head) 
+      local start=find_node_tail(head)
       while start do
         local char=ischar(start,font)
         if char then
           local a=getattr(start,0)
-          if a then
-            a=a==attr
-          else
-            a=true
-          end
-          if a then
+          if not a or (a==attr) then
             for i=1,nofsteps do
               local step=steps[i]
               local lookupcache=step.coverage
               if lookupcache then
                 local lookupmatch=lookupcache[char]
                 if lookupmatch then
-                  head,start,success=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
-                  if success then
+                  local ok
+                  head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
+                  if ok then
+                    success=true
                     break
                   end
                 end
               else
-                report_missing_cache(dataset,sequence)
+                report_missing_coverage(dataset,sequence)
               end
             end
             if start then
@@ -20481,112 +20721,9 @@ local function featuresprocessor(head,font,attr)
       if nofsteps==1 then 
         local step=steps[1]
         local lookupcache=step.coverage
-        if not lookupcache then 
-          report_missing_cache(dataset,sequence)
+        if not lookupcache then
+          report_missing_coverage(dataset,sequence)
         else
-          local function c_run(head) 
-            local done=false
-            local start=sweephead[head]
-            if start then
-              sweephead[head]=nil
-            else
-              start=head
-            end
-            while start do
-              local char=ischar(start,font) 
-              if char then
-                local a=getattr(start,0)
-                if not a or (a==attr) then
-                  local lookupmatch=lookupcache[char]
-                  if lookupmatch then
-                    local ok
-                    head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
-                    if ok then
-                      done=true
-                    end
-                  end
-                  if start then
-                    start=getnext(start)
-                  end
-                else
-                  start=getnext(start)
-                end
-              elseif char==false then
-                return head,false
-              else
-                start=getnext(start)
-              end
-            end
-            if done then
-              success=true 
-            end
-            return head,done
-          end
-          local function t_run(start,stop)
-            while start~=stop do
-              local char=ischar(start,font)
-              if char then
-                local a=getattr(start,0)
-                if not a or (a==attr) then
-                  local lookupmatch=lookupcache[char]
-                  if lookupmatch then
-                    local s=getnext(start)
-                    local l=nil
-                    while s do
-                      local lg=lookupmatch[getchar(s)]
-                      if lg then
-                        l=lg
-                        s=getnext(s)
-                      else
-                        break
-                      end
-                    end
-                    if l and l.ligature then
-                      return true
-                    end
-                  end
-                end
-                start=getnext(start)
-              else
-                break
-              end
-            end
-          end
-          local function d_run(prev) 
-            local a=getattr(prev,0)
-            if not a or (a==attr) then
-              local lookupmatch=lookupcache[getchar(prev)]
-              if lookupmatch then
-                local h,d,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
-                if ok then
-                  done=true
-                  success=true
-                end
-              end
-            end
-          end
-          local function k_run(sub,injection,last)
-            local a=getattr(sub,0)
-            if not a or (a==attr) then
-              for n in traverse_nodes(sub) do 
-                if n==last then
-                  break
-                end
-                local char=ischar(n)
-                if char then
-                  local lookupmatch=lookupcache[char]
-                  if lookupmatch then
-                    local h,d,ok=handler(sub,n,dataset,sequence,lookupmatch,rlmode,step,1,injection)
-                    if ok then
-                      done=true
-                      success=true
-                    end
-                  end
-                else
-                end
-              end
-            end
-          end
           while start do
             local char=ischar(start,font)
             if char then
@@ -20603,103 +20740,6 @@ local function featuresprocessor(head,font,attr)
                   head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
                   if ok then
                     success=true
-                  elseif gpossing and zwnjruns and char==zwnj then
-                    discrun(start,d_run)
-                  end
-                elseif gpossing and zwnjruns and char==zwnj then
-                  discrun(start,d_run)
-                end
-                if start then start=getnext(start) end
-              else
-                start=getnext(start)
-              end
-            elseif char==false then
-              start=getnext(start)
-            else
-              local id=getid(start)
-              if id==disc_code then
-                if gpossing then
-                  kernrun(start,k_run)
-                  start=getnext(start)
-                elseif typ=="gsub_ligature" then
-                  start=testrun(start,t_run,c_run)
-                else
-                  comprun(start,c_run)
-                  start=getnext(start)
-                end
-              elseif id==math_code then
-                start=getnext(end_of_math(start))
-              elseif id==dir_code then
-                local dir=getfield(start,"dir")
-                if dir=="+TLT" then
-                  topstack=topstack+1
-                  dirstack[topstack]=dir
-                  rlmode=1
-                elseif dir=="+TRT" then
-                  topstack=topstack+1
-                  dirstack[topstack]=dir
-                  rlmode=-1
-                elseif dir=="-TLT" or dir=="-TRT" then
-                  topstack=topstack-1
-                  rlmode=dirstack[topstack]=="+TRT" and -1 or 1
-                else
-                  rlmode=rlparmode
-                end
-                if trace_directions then
-                  report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,mref(rlparmode),mref(rlmode),topstack,mref(newdir))
-                end
-                start=getnext(start)
-              elseif id==localpar_code then
-                local dir=getfield(start,"dir")
-                if dir=="TRT" then
-                  rlparmode=-1
-                elseif dir=="TLT" then
-                  rlparmode=1
-                else
-                  rlparmode=0
-                end
-                rlmode=rlparmode
-                if trace_directions then
-                  report_process("directions after pardir %a: parmode %a, txtmode %a",dir,mref(rlparmode),mref(rlmode))
-                end
-                start=getnext(start)
-              else
-                start=getnext(start)
-              end
-            end
-          end
-        end
-      else
-        local function c_run(head)
-          local done=false
-          local start=sweephead[head]
-          if start then
-            sweephead[head]=nil
-          else
-            start=head
-          end
-          while start do
-            local char=ischar(start,font)
-            if char then
-              local a=getattr(start,0)
-              if not a or (a==attr) then
-                for i=1,nofsteps do
-                  local step=steps[i]
-                  local lookupcache=step.coverage
-                  if lookupcache then
-                    local lookupmatch=lookupcache[char]
-                    if lookupmatch then
-                      local ok
-                      head,start,ok=handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
-                      if ok then
-                        done=true
-                        break
-                      elseif not start then
-                        break
-                      end
-                    end
-                  else
-                    report_missing_cache(dataset,sequence)
                   end
                 end
                 if start then
@@ -20709,107 +20749,34 @@ local function featuresprocessor(head,font,attr)
                 start=getnext(start)
               end
             elseif char==false then
-              return head,false
-            else
               start=getnext(start)
-            end
-          end
-          if done then
-            success=true
-          end
-          return head,done
-        end
-        local function d_run(prev)
-          local a=getattr(prev,0)
-          if not a or (a==attr) then
-            local char=ischar(prev)
-            if char then
-              for i=1,nofsteps do
-                local step=steps[i]
-                local lookupcache=step.coverage
-                if lookupcache then
-                  local lookupmatch=lookupcache[char]
-                  if lookupmatch then
-                    local h,d,ok=handler(head,prev,dataset,sequence,lookupmatch,rlmode,step,i)
-                    if ok then
-                      done=true
-                      break
-                    end
-                  end
+            else
+              local id=getid(start)
+              if id==disc_code then
+                local ok
+                if gpossing then
+                  start,ok=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+                elseif typ=="gsub_ligature" then
+                  start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
                 else
-                  report_missing_cache(dataset,sequence)
+                  start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
                 end
+                if ok then
+                  success=true
+                end
+              elseif id==math_code then
+                start=getnext(end_of_math(start))
+              elseif id==dir_code then
+                start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
+              elseif id==localpar_code then
+                start,rlparmode,rlmode=pardirstate(start)
+              else
+                start=getnext(start)
               end
             end
           end
         end
-        local function k_run(sub,injection,last)
-          local a=getattr(sub,0)
-          if not a or (a==attr) then
-            for n in traverse_nodes(sub) do 
-              if n==last then
-                break
-              end
-              local char=ischar(n)
-              if char then
-                for i=1,nofsteps do
-                  local step=steps[i]
-                  local lookupcache=step.coverage
-                  if lookupcache then
-                    local lookupmatch=lookupcache[char]
-                    if lookupmatch then
-                      local h,d,ok=handler(head,n,dataset,sequence,lookupmatch,step,rlmode,i,injection)
-                      if ok then
-                        done=true
-                        break
-                      end
-                    end
-                  else
-                    report_missing_cache(dataset,sequence)
-                  end
-                end
-              end
-            end
-          end
-        end
-        local function t_run(start,stop)
-          while start~=stop do
-            local char=ischar(start,font)
-            if char then
-              local a=getattr(start,0)
-              if not a or (a==attr) then
-                for i=1,nofsteps do
-                  local step=steps[i]
-                  local lookupcache=step.coverage
-                  if lookupcache then
-                    local lookupmatch=lookupcache[char]
-                    if lookupmatch then
-                      local s=getnext(start)
-                      local l=nil
-                      while s do
-                        local lg=lookupmatch[getchar(s)]
-                        if lg then
-                          l=lg
-                          s=getnext(s)
-                        else
-                          break
-                        end
-                      end
-                      if l and l.ligature then
-                        return true
-                      end
-                    end
-                  else
-                    report_missing_cache(dataset,sequence)
-                  end
-                end
-              end
-              start=getnext(start)
-            else
-              break
-            end
-          end
-        end
+      else
         while start do
           local char=ischar(start,font)
           if char then
@@ -20833,14 +20800,10 @@ local function featuresprocessor(head,font,attr)
                       break
                     elseif not start then
                       break
-                    elseif gpossing and zwnjruns and char==zwnj then
-                      discrun(start,d_run)
                     end
-                  elseif gpossing and zwnjruns and char==zwnj then
-                    discrun(start,d_run)
                   end
                 else
-                  report_missing_cache(dataset,sequence)
+                  report_missing_coverage(dataset,sequence)
                 end
               end
               if start then
@@ -20854,51 +20817,23 @@ local function featuresprocessor(head,font,attr)
           else
             local id=getid(start)
             if id==disc_code then
+              local ok
               if gpossing then
-                kernrun(start,k_run)
-                start=getnext(start)
+                start,ok=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
               elseif typ=="gsub_ligature" then
-                start=testrun(start,t_run,c_run)
+                start,ok=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
               else
-                comprun(start,c_run)
-                start=getnext(start)
+                start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+              end
+              if ok then
+                success=true
               end
             elseif id==math_code then
               start=getnext(end_of_math(start))
             elseif id==dir_code then
-              local dir=getfield(start,"dir")
-              if dir=="+TLT" then
-                topstack=topstack+1
-                dirstack[topstack]=dir
-                rlmode=1
-              elseif dir=="+TRT" then
-                topstack=topstack+1
-                dirstack[topstack]=dir
-                rlmode=-1
-              elseif dir=="-TLT" or dir=="-TRT" then
-                topstack=topstack-1
-                rlmode=dirstack[topstack]=="+TRT" and -1 or 1
-              else
-                rlmode=rlparmode
-              end
-              if trace_directions then
-                report_process("directions after txtdir %a: parmode %a, txtmode %a, # stack %a, new dir %a",dir,mref(rlparmode),mref(rlmode),topstack,mref(newdir))
-              end
-              start=getnext(start)
+              start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
             elseif id==localpar_code then
-              local dir=getfield(start,"dir")
-              if dir=="TRT" then
-                rlparmode=-1
-              elseif dir=="TLT" then
-                rlparmode=1
-              else
-                rlparmode=0
-              end
-              rlmode=rlparmode
-              if trace_directions then
-                report_process("directions after pardir %a: parmode %a, txtmode %a",dir,mref(rlparmode),mref(rlmode))
-              end
-              start=getnext(start)
+              start,rlparmode,rlmode=pardirstate(start)
             else
               start=getnext(start)
             end
@@ -23696,7 +23631,7 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['luatex-fonts-cbk']={
+if not modules then modules={} end modules ['font-gbn']={
   version=1.001,
   comment="companion to luatex-*.tex",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -23709,45 +23644,59 @@ if context then
 end
 local fonts=fonts
 local nodes=nodes
-local traverse_id=node.traverse_id
-local free_node=node.free
-local remove_node=node.remove
+local nuts=nodes.nuts 
+local traverse_id=nuts.traverse_id
+local free_node=nuts.free
+local remove_node=nuts.remove
 local glyph_code=nodes.nodecodes.glyph
 local disc_code=nodes.nodecodes.disc
-local ligaturing=node.ligaturing
-local kerning=node.kerning
-local basepass=true
+local tonode=nuts.tonode
+local tonut=nuts.tonut
+local getfont=nuts.getfont
+local getchar=nuts.getchar
+local getid=nuts.getid
+local getprev=nuts.getprev
+local getnext=nuts.getnext
+local getdisc=nuts.getdisc
+local setchar=nuts.setchar
+local setlink=nuts.setlink
+local n_ligaturing=node.ligaturing
+local n_kerning=node.kerning
+local ligaturing=nuts.ligaturing
+local kerning=nuts.kerning
+local basemodepass=true
 local function l_warning() texio.write_nl("warning: node.ligaturing called directly") l_warning=nil end
 local function k_warning() texio.write_nl("warning: node.kerning called directly")  k_warning=nil end
 function node.ligaturing(...)
-  if basepass and l_warning then
+  if basemodepass and l_warning then
     l_warning()
   end
-  return ligaturing(...)
+  return n_ligaturing(...)
 end
 function node.kerning(...)
-  if basepass and k_warning then
+  if basemodepass and k_warning then
     k_warning()
   end
-  return kerning(...)
+  return n_kerning(...)
 end
-function nodes.handlers.setbasepass(v)
-  basepass=v
+function nodes.handlers.setbasemodepass(v)
+  basemodepass=v
 end
 function nodes.handlers.nodepass(head)
   local fontdata=fonts.hashes.identifiers
   if fontdata then
+    local nuthead=tonut(head)
     local usedfonts={}
     local basefonts={}
     local prevfont=nil
     local basefont=nil
     local variants=nil
     local redundant=nil
-    for n in traverse_id(glyph_code,head) do
-      local font=n.font
+    for n in traverse_id(glyph_code,nuthead) do
+      local font=getfont(n)
       if font~=prevfont then
         if basefont then
-          basefont[2]=n.prev
+          basefont[2]=getprev(n)
         end
         prevfont=font
         local used=usedfonts[font]
@@ -23759,7 +23708,7 @@ function nodes.handlers.nodepass(head)
               local processors=shared.processes
               if processors and #processors>0 then
                 usedfonts[font]=processors
-              elseif basepass then
+              elseif basemodepass then
                 basefont={ n,nil }
                 basefonts[#basefonts+1]=basefont
               end
@@ -23778,15 +23727,15 @@ function nodes.handlers.nodepass(head)
         end
       end
       if variants then
-        local char=n.char
+        local char=getchar(n)
         if char>=0xFE00 and (char<=0xFE0F or (char>=0xE0100 and char<=0xE01EF)) then
           local hash=variants[char]
           if hash then
-            local p=n.prev
-            if p and p.id==glyph_code then
-              local variant=hash[p.char]
+            local p=getprev(n)
+            if p and getid(p)==glyph_code then
+              local variant=hash[getchar(p)]
               if variant then
-                p.char=variant
+                setchar(p,variant)
                 if not redundant then
                   redundant={ n }
                 else
@@ -23801,15 +23750,15 @@ function nodes.handlers.nodepass(head)
     if redundant then
       for i=1,#redundant do
         local n=redundant[i]
-        remove_node(head,n)
+        remove_node(nuthead,n)
         free_node(n)
       end
     end
-    for d in traverse_id(disc_code,head) do
-      local r=d.replace
+    for d in traverse_id(disc_code,nuthead) do
+      local _,_,r=getdisc(d)
       if r then
         for n in traverse_id(glyph_code,r) do
-          local font=n.font
+          local font=getfont(n)
           if font~=prevfont then
             prevfont=font
             local used=usedfonts[font]
@@ -23836,34 +23785,31 @@ function nodes.handlers.nodepass(head)
         end
       end
     end
-    if basepass and #basefonts>0 then
+    if basemodepass and #basefonts>0 then
       for i=1,#basefonts do
         local range=basefonts[i]
         local start=range[1]
         local stop=range[2]
-        if start or stop then
-          local prev=nil
-          local next=nil
-          local front=start==head
+        if start then
+          local front=nuthead==start
+          local prev,next
           if stop then
-            next=stop.next
+            next=getnext(stop)
             start,stop=ligaturing(start,stop)
             start,stop=kerning(start,stop)
-          elseif start then
-            prev=start.prev
+          else
+            prev=getprev(start)
             start=ligaturing(start)
             start=kerning(start)
           end
           if prev then
-            start.prev=prev
-            prev.next=start
+            setlink(prev,start)
           end
           if next then
-            stop.next=next
-            next.prev=stop
+            setlink(stop,next)
           end
-          if front then
-            head=start
+          if front and nuthead~=start then
+            head=tonode(start)
           end
         end
       end
@@ -23874,9 +23820,9 @@ function nodes.handlers.nodepass(head)
   end
 end
 function nodes.handlers.basepass(head)
-  if basepass then
-    head=ligaturing(head)
-    head=kerning(head)
+  if not basemodepass then
+    head=n_ligaturing(head)
+    head=n_kerning(head)
   end
   return head,true
 end
@@ -23888,7 +23834,9 @@ function nodes.simple_font_handler(head)
   if head then
     head=nodepass(head)
     head=injectpass(head)
-    head=basepass(head)
+    if not basemodepass then
+      head=basepass(head)
+    end
     protectpass(head)
     return head,true
   else

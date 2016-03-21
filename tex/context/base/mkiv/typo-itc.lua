@@ -37,9 +37,11 @@ local getnext             = nuts.getnext
 local getid               = nuts.getid
 local getfont             = nuts.getfont
 local getchar             = nuts.getchar
+local getdisc             = nuts.getdisc
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local setfield            = nuts.setfield
+local setdisc             = nuts.setdisc
 
 local insert_node_after   = nuts.insert_after
 local delete_node         = nuts.delete
@@ -173,17 +175,22 @@ function italics.handler(head)
     local previtalic      = 0
     local previnserted    = nil
 
-    local replace         = nil
-    local replacechar     = nil
-    local replacehead     = nil
-    local replaceitalic   = 0
-    local replaceinserted = nil
+    local pre             = nil
+    local pretail          = nil
 
     local post            = nil
+    local posttail        = nil
     local postchar        = nil
     local posthead        = nil
     local postitalic      = 0
     local postinserted    = nil
+
+    local replace         = nil
+    local replacetail     = nil
+    local replacechar     = nil
+    local replacehead     = nil
+    local replaceitalic   = 0
+    local replaceinserted = nil
 
     local current         = prevhead
     local done            = false
@@ -275,9 +282,10 @@ function italics.handler(head)
             replaceitalic   = 0
             postinserted    = nil
             postitalic      = 0
-            replace = getfield(current,"replace")
+            updated         = false
+            pre, post, replace, pretail, posttail, replacetail = getdisc(current)
             if replace then
-                local current = find_tail(replace)
+                local current = replacetail
                 if getid(current) ~= glyph_code then
                     current = getprev(current)
                 end
@@ -304,25 +312,15 @@ function italics.handler(head)
                                     replacechar = char
                                     replacehead = replace
                                     replace     = current
+                                    updated     = true
                                 end
                             end
---                         else
---                             replaceitalic = 0
                         end
---                     else
---                         replaceitalic = 0
                     end
---                 else
---                     replaceitalic = 0
                 end
---                 replaceinserted = nil
--- else
---     replaceitalic   = 0
---     replaceinserted = nil
             end
-            post = getfield(current,"post")
             if post then
-                local current = find_tail(post)
+                local current = posttail
                 if getid(current) ~= glyph_code then
                     current = getprev(current)
                 end
@@ -349,21 +347,15 @@ function italics.handler(head)
                                     postchar = char
                                     posthead = post
                                     post     = current
+                                    updated     = true
                                 end
                             end
---                         else
---                             postitalic = 0
                         end
---                     else
---                         postitalic = 0
                     end
---                 else
---                     postitalic = 0
                 end
---                 postinserted = nil
--- else
---     postitalic   = 0
---     postinserted = nil
+            end
+            if updated then
+                setdisc(current,pre,post,replace)
             end
         elseif id == kern_code then -- how about fontkern ?
             previnserted    = nil

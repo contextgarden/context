@@ -45,32 +45,33 @@
   {\dodoubleargument\colo_show_palet}
 
 \gdef\colo_show_palet[#1][#2]%
-  {\ifcsname\??colorpalet#1\endcsname
-     \doifelseinset\v!vertical{#2} \colo_palets_show_vertical \colo_palets_show_horizontal [#1][#2]%
-   \fi}
+  {\doifelsecolorpalet{#1}
+     {\doifelseinset\v!vertical{#2} \colo_palets_show_vertical \colo_palets_show_horizontal {#1}{#2}}%
+     {}}
 
-\gdef\colo_palets_show_vertical[#1][#2]%
-  {\vbox
-     {\forgetall
-      \setlocalhsize
-      \hsize\localhsize
-      \offinterlineskip
-      \setuppalet[#1]
-      \tabskip\zeropoint
-      \def\colo_palets_show_palet##1%
-        {\doifelseinset\v!number{#2}{##1\hskip.5\emwidth}{}%
-         \aligntab
-         \color    [##1]{\vrule\s!width3\emwidth\s!height\strutht\s!depth\strutdp}%
-         \graycolor[##1]{\vrule\s!width3\emwidth\s!height\strutht\s!depth\strutdp}%
-         \aligntab
-         \doifinset\v!value{#2}{\hskip.5\emwidth\colorvalue{##1}}%
-         \crcr}
-      \halign
-        {\hss\alignmark\alignmark\aligntab\hss\alignmark\alignmark\hss\aligntab\alignmark\alignmark\cr
-         \aligntab\doifinset\v!name{#2}{\strut#1}\aligntab\cr
-         \colo_palets_process[#1]\colo_palets_show_palet\crcr}}}
+\gdef\colo_palets_show_vertical#1#2%
+  {\begingroup
+   \forgetall
+   \setlocalhsize
+   \hsize\localhsize
+   \offinterlineskip
+   \setuppalet[#1]
+   \tabskip\zeropoint
+   \def\colo_palets_show_palet##1%
+     {\doifelseinset\v!number{#2}{##1\hskip.5\emwidth}{}%
+      \aligntab
+      \color    [##1]{\vrule\s!width3\emwidth\s!height\strutht\s!depth\strutdp}%
+      \graycolor[##1]{\vrule\s!width3\emwidth\s!height\strutht\s!depth\strutdp}%
+      \aligntab
+      \doifinset\v!value{#2}{\hskip.5\emwidth\colorvalue{##1}}%
+      \crcr}
+   \halign
+     {\hss\alignmark\alignmark\aligntab\hss\alignmark\alignmark\hss\aligntab\alignmark\alignmark\cr
+      \aligntab\doifinset\v!name{#2}{\strut#1}\aligntab\cr
+      \colo_palets_process[#1]\colo_palets_show_palet\crcr}%
+  \endgroup}
 
-\gdef\colo_palets_show_horizontal[#1][#2]% todo: bTABLE etc
+\gdef\colo_palets_show_horizontal#1#2% todo: bTABLE etc
   {\vbox
      {\forgetall
       \setlocalhsize
@@ -116,29 +117,31 @@
          \crcr}}}
 
 \gdef\colo_palets_process[#1]%
-  {\expanded{\globalprocesscommalist[\getvalue{\??colorpalet#1}]}}
+  {\getpaletlist[#1]%
+   \normalexpanded{\globalprocesscommalist[\paletlist]}}
 
 \unexpanded\gdef\comparepalet
   {\dosingleargument\colo_palets_compare}
 
 \gdef\colo_palets_compare[#1]%
-  {\ifcsname\??colorpalet#1\endcsname
-     \hbox
-       {\colo_palets_compare_indeed\color[#1]%
-        \quad
-        \colo_palets_compare_indeed\graycolor[#1]}%
-   \fi}
+  {\doifelsecolorpalet{#1}%
+     {\hbox
+        {\colo_palets_compare_indeed\color{#1}%
+         \quad
+         \colo_palets_compare_indeed\graycolor{#1}}}%
+     {}}
 
-\gdef\colo_palets_compare_indeed#1[#2]%
+\gdef\colo_palets_compare_indeed#1#2%
   {\vbox
      {\forgetall
       \setlocalhsize
       \hsize\localhsize
       \offinterlineskip
       \setuppalet[#2]
-      \getcommacommandsize[\getvalue{\??colorpalet#2}]
+      \getpaletsize[#2]%
+      \getpaletlist[#2]%
       \scratchwidth2\emwidth\relax
-      \hsize\commalistsize\scratchwidth
+      \hsize\paletsize\scratchwidth
       \def\colo_palets_compare##1%
         {\hbox
            {\setbox0\hbox
@@ -149,9 +152,9 @@
               {\def\colo_palets_compare####1%
                  {\hbox to \scratchwidth
                     {\hss#1[####1]{\vrule\s!width.5\scratchwidth\s!height2.25\exheight\s!depth-.75\exheight}\hss}}%
-               \processcommacommand[\getvalue{\??colorpalet#2}]\colo_palets_compare}}
+               \processcommacommand[\paletlist]\colo_palets_compare}}
          \endgraf}
-      \processcommacommand[\getvalue{\??colorpalet#2}]\colo_palets_compare}}
+      \processcommacommand[\paletlist]\colo_palets_compare}}
 
 %D Groups
 

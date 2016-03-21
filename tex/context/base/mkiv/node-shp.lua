@@ -40,7 +40,6 @@ local tonode         = nuts.tonode
 local free_node      = nuts.free
 local remove_node    = nuts.remove
 local traverse_nodes = nuts.traverse
-local find_tail      = nuts.tail
 
 local getfield       = nuts.getfield
 local setfield       = nuts.setfield
@@ -48,8 +47,9 @@ local setsetlink     = nuts.setlink
 local setsetprev     = nuts.setprev
 local setsetnext     = nuts.setnext
 local getid          = nuts.getid
+local getdisc        = nuts.getdisc
+local getboth        = nuts.getboth
 local getnext        = nuts.getnext
-local getprev        = nuts.getprev
 local getlist        = nuts.getlist
 local getsubtype     = nuts.getsubtype
 
@@ -78,11 +78,9 @@ local function cleanup_redundant(head) -- better name is: flatten_page
         local id = getid(start)
         if id == disc_code then
             if getsubtype(start) == fulldisc_code then
-                local replace = getfield(start,"replace")
+                local _, _, replace, _, _ tail = getdisc(start)
                 if replace then
-                    local prev = getprev(start)
-                    local next = getnext(start)
-                    local tail = find_tail(replace)
+                    local prev, next = getboth(start)
                     setfield(start,"replace",nil)
                     if start == head then
                         remove_node(head,start,true)

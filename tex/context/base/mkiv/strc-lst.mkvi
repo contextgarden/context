@@ -116,6 +116,22 @@
 % userdata : location=none
 % simple   : location=here
 
+\installcorenamespace {listlocations}
+
+\unexpanded\def\doifelseinlistentry#1%
+  {\ifcsname\??listlocations#1\endcsname
+     \ifnum\lastnamedcs=\structurelistlocation\relax
+       \doubleexpandafter\firstoftwoarguments
+     \else
+       \doubleexpandafter\secondoftwoarguments
+     \fi
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\unexpanded\def\doifelseincurrentlistentry
+  {\doifelseinlistentry\currentlist}
+
 \unexpanded\def\structurelistinject
   {\dotripleempty\strc_lists_inject}
 
@@ -150,6 +166,7 @@
         userdata {\detokenize\expandafter{\normalexpanded{#userdata}}}
    \relax
    \edef\currentlistnumber{\the\scratchcounter}%
+\setxvalue{\??listlocations\currentlist}{\nextinternalreference}%
    \ifx\p_location\v!here
      % this branch injects nodes !
      \strc_lists_inject_enhance{\currentlistnumber}{\nextinternalreference}%
@@ -381,8 +398,8 @@
 \def\rawstructurelistuservariable#name%
   {\clf_listuserdata{\currentlist}\currentlistindex{#name}}
 
-\unexpanded\def\structurelistfirst {\structurelistuservariable\s!first } % s!
-\unexpanded\def\structurelistsecond{\structurelistuservariable\s!second} % s!
+\unexpanded\def\structurelistfirst   {\structurelistuservariable\s!first } % s!
+\unexpanded\def\structurelistsecond  {\structurelistuservariable\s!second} % s!
 
 \def\rawstructurelistfirst {\rawstructurelistuservariable\s!first } % s! % was \unexpanded
 \def\rawstructurelistsecond{\rawstructurelistuservariable\s!second} % s! % was \unexpanded
@@ -718,10 +735,10 @@
 %
 % \installlistfiller\v!space
 %   {\hskip.25\emwidth\relax}
-%
-% \setuplistalternative
-%   [\c!command=\strictlistparameter\c!command,
-%    \c!symbol=.]
+
+\setuplistalternative
+  [\c!command=\strictlistparameter\c!command,
+   \c!symbol=.]
 
 \unexpanded\def\currentlistfiller
   {\checkedfiller{\listalternativeparameter\c!filler}}
@@ -918,12 +935,16 @@
 
 \unexpanded\def\strc_lists_apply_renderingsetup
   {\the\t_lists_every_renderingsetup
+   % now we group
+   \begingroup
    \ifx\m_strc_list_alternative\empty
      \edef\currentlistalternative{\listparameter\c!alternative}%
    \else
      \let\currentlistalternative\m_strc_list_alternative
    \fi
    \directsetup{\listalternativeparameter\c!renderingsetup}\relax
+   \endgroup
+   % till here, where we reset locals
    \the\t_lists_every_renderingcleanup}
 
 % todo: provide packager via attributes

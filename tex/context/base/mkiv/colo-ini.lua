@@ -362,7 +362,7 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
                 definecolor(name, register_color(name,'rgb', tonumber(r) or 0, tonumber(g) or 0, tonumber(b) or 0), global)
             else
                 local c, m, y, k = settings.c, settings.m, settings.y, settings.k
-                if c or m or y or b then
+                if c or m or y or k then
                     definecolor(name, register_color(name,'cmyk',tonumber(c) or 0, tonumber(m) or 0, tonumber(y) or 0, tonumber(k) or 0), global)
                 else
                     local h, s, v = settings.h, settings.s, settings.v

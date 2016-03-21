@@ -11,27 +11,31 @@ if not modules then modules = { } end modules ['colo-run'] = {
 
 local colors, commands, context, utilities = colors, commands, context, utilities
 
-local colors= attributes.colors
+local colors = attributes.colors
+
+local private = table.tohash { "d_u_m_m_y", "maintextcolor", "themaintextcolor" }
 
 function commands.showcolorset(name)
     local set = colors.setlist(name)
     context.starttabulate { "|l|l|l|l|l|l|l|" }
     for i=1,#set do
         local s = set[i]
-        local r = { width = "4em", height = "max", depth = "max", color = s }
-        context.NC()
-        context.setcolormodel { "gray" }
-        context.blackrule(r)
-        context.NC()
-        context.blackrule(r)
-        context.NC()
-        context.grayvalue(s)
-        context.NC()
-        context.colorvalue(s)
-        context.NC()
-        context(s)
-        context.NC()
-        context.NR()
+        if not private[s] then
+            local r = { width = "4em", height = "max", depth = "max", color = s }
+            context.NC()
+            context.setcolormodel { "gray" }
+            context.blackrule(r)
+            context.NC()
+            context.blackrule(r)
+            context.NC()
+            context.grayvalue(s)
+            context.NC()
+            context.colorvalue(s)
+            context.NC()
+            context(s)
+            context.NC()
+            context.NR()
+        end
     end
     context.stoptabulate()
 end
@@ -52,16 +56,18 @@ function commands.showcolorcomponents(list)
         context.TB()
         for i=1,#set do
             local s = set[i]
-            context.NC()
-            context.showcolorbar { s }
-            context.NC()
-            context(s)
-            context.NC()
-            context.transparencycomponents(s)
-            context.NC()
-            context.colorcomponents(s)
-            context.NC()
-            context.NR()
+            if not private[s] then
+                context.NC()
+                context.showcolorbar { s }
+                context.NC()
+                context(s)
+                context.NC()
+                context.transparencycomponents(s)
+                context.NC()
+                context.colorcomponents(s)
+                context.NC()
+                context.NR()
+            end
         end
     context.stoptabulate()
 end

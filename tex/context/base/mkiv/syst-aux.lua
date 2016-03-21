@@ -438,43 +438,43 @@ local function doifnotinset(a,b)
     firstofoneargument()
 end
 
-interfaces.implement {
+implement {
     name      = "doifelsecommon",
     actions   = doifelsecommon,
     arguments = { "string", "string" },
 }
 
-interfaces.implement {
+implement {
     name      = "doifcommon",
     actions   = doifcommon,
     arguments = { "string", "string" },
 }
 
-interfaces.implement {
+implement {
     name      = "doifnotcommon",
     actions   = doifnotcommon,
     arguments = { "string", "string" },
 }
 
-interfaces.implement {
+implement {
     name      = "doifelseinset",
     actions   = doifelseinset,
     arguments = { "string", "string" },
 }
 
-interfaces.implement {
+implement {
     name      = "doifinset",
     actions   = doifinset,
     arguments = { "string", "string" },
 }
 
-interfaces.implement {
+implement {
     name      = "doifnotinset",
     actions   = doifnotinset,
     arguments = { "string", "string" },
 }
 
--- interfaces.implement {
+-- implement {
 --     name      = "stringcompare",
 --     arguments = { "string", "string" },
 --     actions   = function(a,b)
@@ -482,7 +482,7 @@ interfaces.implement {
 --     end
 -- }
 --
--- interfaces.implement {
+-- implement {
 --     name      = "doifelsestringafter",
 --     arguments = { "string", "string" },
 --     actions   = function(a,b)
@@ -490,10 +490,25 @@ interfaces.implement {
 --     end
 -- }
 --
--- interfaces.implement {
+-- implement {
 --     name      = "doifelsestringbefore",
 --     arguments = { "string", "string" },
 --     actions   = function(a,b)
 --         ctx_doifelse((a == b and 0) or (a < b and -1) or 1)
+--     end
+-- }
+
+-- implement { -- not faster than addtocommalist
+--     name      = "additemtolist", -- unique
+--     arguments = { "string", "string" },
+--     actions   = function(l,s)
+--         if l == "" or s == l then
+--          -- s = s
+--         elseif find("," .. l .. ",","," .. s .. ",") then
+--             s = l
+--         else
+--             s = l .. "," .. s
+--         end
+--         context(s)
 --     end
 -- }

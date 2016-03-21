@@ -53,6 +53,10 @@ into the <l n='tex'/> engine, but this is a not so natural extension.</p>
 also ignore the empty nodes. [This is obsolete!]</p>
 --ldx]]--
 
+-- local gf = node.direct.getfield
+-- local n = table.setmetatableindex("number")
+-- function node.direct.getfield(a,b) n[b] = n[b] + 1  print(b,n[b]) return gf(a,b) end
+
 nodes               = nodes or { }
 local nodes         = nodes
 nodes.handlers      = nodes.handlers or { }

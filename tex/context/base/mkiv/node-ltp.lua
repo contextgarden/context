@@ -203,6 +203,7 @@ local getboth              = nuts.getboth
 local getlist              = nuts.getlist
 local getfont              = nuts.getfont
 local getchar              = nuts.getchar
+local getdisc              = nuts.getdisc
 local getattr              = nuts.getattr
 local getdisc              = nuts.getdisc
 
@@ -1200,7 +1201,7 @@ local function post_line_break(par)
                 local prevlast = getprev(lastnode)
                 local nextlast = getnext(lastnode)
                 local subtype  = getsubtype(lastnode)
-                local pre, post, replace = getdisc(lastnode)
+                local pre, post, replace, pretail, posttail, replacetail = getdisc(lastnode)
                 if subtype == second_disc_code then
                     if not (getid(prevlast) == disc_code and getsubtype(prevlast) == first_disc_code) then
                         report_parbuilders('unsupported disc at location %a',3)
@@ -1210,12 +1211,11 @@ local function post_line_break(par)
                         pre = nil -- signal
                     end
                     if replace then
-                        local n = find_tail(replace)
                         setlink(prevlast,replace)
-                        setlink(n,lastnode)
+                        setlink(replacetail,lastnode)
                         replace = nil -- signal
                     end
-                    setdisc(pre,post,replace)
+                    setdisc(lastnode,pre,post,replace)
                     local pre, post, replace = getdisc(prevlast)
                     if pre then
                         flush_nodelist(pre)
@@ -1234,20 +1234,18 @@ local function post_line_break(par)
                     end
                     setsubtype(nextlast,regular_disc_code)
                     setfield(nextlast,"replace",post)
-                    setfield(lastnode,"post")
+                    setfield(lastnode,"post") -- nil
                 end
                 if replace then
                     flush_nodelist(replace)
                 end
                 if pre then
-                    local n = find_tail(pre)
                     setlink(prevlast,pre)
-                    setlink(n,lastnode)
+                    setlink(pretail,lastnode)
                 end
                 if post then
-                    local n = find_tail(post)
                     setlink(lastnode,post)
-                    setlink(n,nextlast)
+                    setlink(posttail,nextlast)
                     post_disc_break = true
                 end
                 setdisc(lastnode) -- nil, nil, nil
@@ -1882,8 +1880,13 @@ local function try_break(pi, break_type, par, first_p, current, checked_expansio
                 local b = r.break_node
                 local l = b and b.cur_break or first_p
                 local o = current and getprev(current)
-                if current and getid(current) == disc_code and getfield(current,"pre") then
-                    o = find_tail(getfield(current,"pre"))
+                if current and getid(current) == disc_code then
+                    local pre, _, _, pretail = getdisc(current)
+                    if pre then
+                        o = pretail
+                    else
+                        o = find_protchar_right(l,o)
+                    end
                 else
                     o = find_protchar_right(l,o)
                 end
@@ -2238,7 +2241,7 @@ function constructors.methods.basic(head,d)
                         -- 0.81 :
                         -- local actual_pen = getfield(current,"penalty")
                         --
-                        local pre = getfield(current,"pre")
+                        local pre, post, replace = getdisc(current)
                         if not pre then    --  trivial pre-break
                             disc_width.size = 0
                             if checked_expansion then
@@ -2297,7 +2300,6 @@ function constructors.methods.basic(head,d)
                             end
                         end
                     end
-                    local replace = getfield(current,"replace")
                     if replace then
                         local size, adjust_stretch, adjust_shrink = add_to_width(line_break_dir,checked_expansion,replace)
                         active_width.size = active_width.size + size
@@ -2466,8 +2468,9 @@ local function short_display(target,a,font_in_short_display)
                 write(target,utfchar(getchar(a)))
             end
         elseif id == disc_code then
-            font_in_short_display = short_display(target,getfield(a,"pre"),font_in_short_display)
-            font_in_short_display = short_display(target,getfield(a,"post"),font_in_short_display)
+            local pre, post, replace = getdisc(a)
+            font_in_short_display = short_display(target,pre,font_in_short_display)
+            font_in_short_display = short_display(target,post,font_in_short_display)
         elseif verbose then
             write(target,format("[%s]",nodecodes[id]))
         elseif id == rule_code then

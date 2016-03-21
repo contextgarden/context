@@ -117,6 +117,7 @@ local getnext           = nuts.getnext
 local getsubtype        = nuts.getsubtype
 local getfont           = nuts.getfont
 local getchar           = nuts.getchar
+local getdisc           = nuts.getdisc
 local getlist           = nuts.getlist
 local getid             = nuts.getid
 local getfield          = nuts.getfield
@@ -2640,14 +2641,13 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                 end
             end
         elseif id == disc_code then -- probably too late
+            local pre, post, replace = getdisc(n)
             if keephyphens then
-                local pre = getfield(n,"pre")
                 if pre and not getnext(pre) and getid(pre) == glyph_code and getchar(pre) == hyphencode then
                     nofcurrentcontent = nofcurrentcontent + 1
                     currentcontent[nofcurrentcontent] = hyphen
                 end
             end
-            local replace = getfield(n,"replace")
             if replace then
                 collectresults(replace,nil)
             end

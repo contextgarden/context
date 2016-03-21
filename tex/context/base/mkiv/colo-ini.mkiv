@@ -363,26 +363,73 @@
 %D This saves us some typing in for instance the modules that
 %D deal with pretty verbatim typesetting.
 
-\let\m_colo_palets_tmp\empty
+\installcorenamespace{paletlist}
+\installcorenamespace{paletsize}
+
+\let\m_colo_palet\relax
+\let\c_colo_palet\relax
+
+\def\colo_palet_allocate#1%
+  {\expandafter\let     \csname\??paletlist#1\endcsname\empty
+   \expandafter\newcount\csname\??paletsize#1\endcsname}
+
+\def\colo_palet_prepare#1%
+  {\edef\colo_palet_name{#1}%
+   \ifcsname\??paletlist\colo_palet_name\endcsname\else
+     \colo_palet_allocate\colo_palet_name
+   \fi
+   \edef\m_colo_palet{\begincsname\??paletlist\colo_palet_name\endcsname}%
+   \expandafter\let\expandafter\c_colo_palet\csname\??paletsize\colo_palet_name\endcsname}
+
+\def\colo_palet_extend#1%
+  {\addtocommalist{#1}\m_colo_palet
+   \expandafter\let\csname\??paletlist\colo_palet_name\endcsname\m_colo_palet
+   \advance\c_colo_palet\plusone}
+
+\unexpanded\def\doifelsecolorpalet#1%
+  {\ifcsname\??paletlist#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\let\paletlist\empty
+\let\paletsize\!!zerocount
+
+\unexpanded\def\getpaletlist[#1]%
+  {\edef\paletlist{\begincsname\??paletlist#1\endcsname}}
+
+\unexpanded\def\getpaletsize[#1]%
+  {\ifcsname\??paletsize#1\endcsname
+     \edef\paletsize{\the\lastnamedcs}%
+   \else
+     \let\paletsize\!!zerocount
+   \fi}
 
 \unexpanded\def\definepalet
-  {\dodoubleargument\colo_palets_define}
+  {\dotripleempty\colo_palets_define}
 
-\unexpanded\def\colo_palets_define[#1][#2]% todo
-  {\doifelseassignment{#2}
-     {%\colo_helpers_show_message\m!colors6{#1}%
-      \let\m_colo_palets_tmp\empty
-      \setevalue{\??colorpaletspecification#1}{#2}%
-      \processcommalist[#2]{\colo_palets_define_one{#1}}%
-      \letvalue{\??colorpalet#1}\m_colo_palets_tmp
-      \let\m_colo_palets_tmp\empty}
+\def\colo_palets_define
+  {\ifthirdargument
+     \expandafter\colo_palets_define_b
+   \else
+     \expandafter\colo_palets_define_a
+   \fi}
+
+\unexpanded\def\colo_palets_define_a[#1][#2][#3]%
+  {\colo_palet_prepare{#1}%
+   \doifelseassignment{#2}
+     {\setevalue{\??colorpaletspecification#1}{#2}%
+      \processcommalist[#2]{\colo_palets_define_one{#1}}}
      {\ifcsname\??colorpaletspecification#2\endcsname
-       %\normalexpanded{\colo_palets_define[#1][\csname\??colorpaletspecification#2\endcsname]}%
         \normalexpanded{\colo_palets_define[#1][\lastnamedcs]}%
       \fi}}
 
-% \def\colo_palets_define_one#1#2% get rid of { } in #2
-%   {\colo_palets_define_two{#1}[#2]}%
+\unexpanded\def\colo_palets_define_b[#1][#2][#3]%
+  {\colo_palet_prepare{#1}%
+   \setevalue{\??colorpaletspecification#1}{#2}%
+   \colo_palet_extend{#2}%
+   \colo_palets_define_assign{#1}{#2}{#3}}
 
 \def\colo_palets_define_one#1#2% get rid of { }
   {\doifelseassignment{#2} % catch empty entries
@@ -390,20 +437,13 @@
      {\colo_palets_define_three{#1}{#2}}}
 
 \def\colo_palets_define_two#1[#2=#3]%
-  {\edef\m_colo_palets_tmp{\ifx\m_colo_palets_tmp\empty\else\m_colo_palets_tmp,\fi#2}%
+  {\colo_palet_extend{#2}%
    \colo_palets_define_set{#1}{#2}{#3}}%
 
 \def\colo_palets_define_three#1#2%
   {\ifcsname\??colorpaletspecification#2\endcsname
-    %\processcommacommand[\csname\??colorpaletspecification#2\endcsname]{\colo_palets_define_one{#1}}%
      \processcommacommand[\lastnamedcs]{\colo_palets_define_one{#1}}%
    \fi}
-
-\let\paletsize\!!zerocount
-
-\unexpanded\def\getpaletsize[#1]% only works for valid k=v definitions
-  {\getcommacommandsize[\csname\??colorpaletspecification#1\endcsname]%
-   \edef\paletsize{\number\commalistsize}}
 
 %D Instead of refering to colors, one can also directly specify
 %D a color:
@@ -431,7 +471,7 @@
    \ifx\currentcolorpalet\empty
      % seems to be a reset
      \let\currentcolorprefix\empty
-   \else\ifcsname\??colorpalet\currentcolorpalet\endcsname
+   \else\ifcsname\??paletlist\currentcolorpalet\endcsname
      \edef\currentcolorprefix{#1:}%
    \else
      \colo_helpers_show_message\m!colors7\currentcolorpalet
@@ -510,12 +550,10 @@
 %D
 %D These speak for themselves. See \type {colo-ext} for usage.
 
-\def\negatecolorcomponent#1% #1 = \macro
+\unexpanded\def\negatecolorcomponent#1% #1 = \macro
   {\scratchdimen\onepoint\advance\scratchdimen-#1\onepoint
    \ifdim\scratchdimen<\zeropoint\scratchdimen\zeropoint\fi
    \edef#1{\withoutpt\the\scratchdimen}}
-
-\let\negatedcolorcomponent\firstofoneargument
 
 \def\negatedcolorcomponent#1%
   {\ifdim\dimexpr\onepoint-#1\onepoint\relax<\zeropoint
@@ -524,7 +562,7 @@
      \expandafter\withoutpt\the\dimexpr\onepoint-#1\onepoint\relax
    \fi}
 
-\def\negatecolorcomponent#1% #1 = \macro
+\unexpanded\def\negatecolorcomponent#1% #1 = \macro
   {\edef#1{\negatedcolorcomponent{#1}}}
 
 %D \macros
@@ -989,15 +1027,15 @@
 \def\colo_helpers_inherited_direct_ts#1{\ifcsname\??transparencysetter   #1\endcsname\lastnamedcs\fi}
 \def\colo_helpers_inherited_direct_ta#1{\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\!!zerocount\fi}
 
-%def\colo_helpers_inherited_palet_ca#1#2{\csname\??colorattribute       \ifcsname\??colorattribute       \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
-%def\colo_helpers_inherited_palet_cs#1#2{\csname\??colorsetter          \ifcsname\??colorsetter          \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
-%def\colo_helpers_inherited_palet_ta#1#2{\csname\??transparencyattribute\ifcsname\??transparencyattribute\??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
-%def\colo_helpers_inherited_palet_ts#1#2{\csname\??transparencysetter   \ifcsname\??transparencysetter   \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
-
-\def\colo_helpers_inherited_palet_ca#1#2{\ifcsname\??colorattribute       \??colorpalet#1:#2\endcsname\lastnamedcs\fi}
-\def\colo_helpers_inherited_palet_cs#1#2{\ifcsname\??colorsetter          \??colorpalet#1:#2\endcsname\lastnamedcs\else\!!zerocount\fi}
-\def\colo_helpers_inherited_palet_ta#1#2{\ifcsname\??transparencyattribute\??colorpalet#1:#2\endcsname\lastnamedcs\fi}
-\def\colo_helpers_inherited_palet_ts#1#2{\ifcsname\??transparencysetter   \??colorpalet#1:#2\endcsname\lastnamedcs\else\!!zerocount\fi}
+% %def\colo_helpers_inherited_palet_cs#1#2{\csname\??colorsetter          \ifcsname\??colorsetter          \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
+% %def\colo_helpers_inherited_palet_ca#1#2{\csname\??colorattribute       \ifcsname\??colorattribute       \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
+% %def\colo_helpers_inherited_palet_ts#1#2{\csname\??transparencysetter   \ifcsname\??transparencysetter   \??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
+% %def\colo_helpers_inherited_palet_ta#1#2{\csname\??transparencyattribute\ifcsname\??transparencyattribute\??colorpalet#1:#2\endcsname\??colorpalet#1:#2\fi\endcsname}
+%
+% \def\colo_helpers_inherited_palet_cs#1#2{\ifcsname\??colorsetter          \??colorpalet#1:#2\endcsname\lastnamedcs\fi}
+% \def\colo_helpers_inherited_palet_ca#1#2{\ifcsname\??colorattribute       \??colorpalet#1:#2\endcsname\lastnamedcs\else\!!zerocount\fi}
+% \def\colo_helpers_inherited_palet_ts#1#2{\ifcsname\??transparencysetter   \??colorpalet#1:#2\endcsname\lastnamedcs}
+% \def\colo_helpers_inherited_palet_ta#1#2{\ifcsname\??transparencyattribute\??colorpalet#1:#2\endcsname\lastnamedcs\else\!!zerocount\fi}
 
 \let\colo_helpers_set_value\setvalue
 
@@ -1009,25 +1047,56 @@
    \fi
 \to \everysetupcolors
 
+% \def\colo_palets_define_set#1#2#3%
+%   {\doifelseassignment{#3}% \definepalet[test][xx={y=.4}]
+%      {\definecolor[\??colorpalet#1:#2][#3]%
+%       \colo_helpers_set_value{\??colorsetter          #1:#2}{\colo_helpers_inherited_palet_ca{#1}{#2}}%
+%       \colo_helpers_set_value{\??colorattribute       #1:#2}{\colo_helpers_inherited_palet_cs{#1}{#2}}%
+%       \colo_helpers_set_value{\??transparencysetter   #1:#2}{\colo_helpers_inherited_palet_ta{#1}{#2}}%
+%       \colo_helpers_set_value{\??transparencyattribute#1:#2}{\colo_helpers_inherited_palet_ts{#1}{#2}}}
+%      {\ifcsname\??colorsetter#3\endcsname % \definepalet[test][xx=green]
+%         \colo_helpers_set_value{\??colorsetter          #1:#2}{\colo_helpers_inherited_direct_cs{#3}}%
+%         \colo_helpers_set_value{\??colorattribute       #1:#2}{\colo_helpers_inherited_direct_ca{#3}}%
+%         \colo_helpers_set_value{\??transparencysetter   #1:#2}{\colo_helpers_inherited_direct_ts{#3}}%
+%         \colo_helpers_set_value{\??transparencyattribute#1:#2}{\colo_helpers_inherited_direct_ta{#3}}%
+%       \else
+%         % not entered when making format
+%         \localundefine{\??colorsetter          #1:#2}%
+%         \localundefine{\??colorattribute       #1:#2}%
+%         \localundefine{\??transparencysetter   #1:#2}%
+%         \localundefine{\??transparencyattribute#1:#2}%
+%       \fi}}
+
 \def\colo_palets_define_set#1#2#3%
   {\doifelseassignment{#3}% \definepalet[test][xx={y=.4}]
-     {\definecolor[\??colorpalet#1:#2][#3]%
-      \colo_helpers_set_value{\??colorsetter          #1:#2}{\colo_helpers_inherited_palet_ca{#1}{#2}}%
-      \colo_helpers_set_value{\??colorattribute       #1:#2}{\colo_helpers_inherited_palet_cs{#1}{#2}}%
-      \colo_helpers_set_value{\??transparencysetter   #1:#2}{\colo_helpers_inherited_palet_ta{#1}{#2}}%
-      \colo_helpers_set_value{\??transparencyattribute#1:#2}{\colo_helpers_inherited_palet_ts{#1}{#2}}}
-     {\ifcsname\??colorsetter#3\endcsname % \definepalet[test][xx=green]
-        \colo_helpers_set_value{\??colorsetter          #1:#2}{\colo_helpers_inherited_direct_cs{#3}}%
-        \colo_helpers_set_value{\??colorattribute       #1:#2}{\colo_helpers_inherited_direct_ca{#3}}%
-        \colo_helpers_set_value{\??transparencysetter   #1:#2}{\colo_helpers_inherited_direct_ts{#3}}%
-        \colo_helpers_set_value{\??transparencyattribute#1:#2}{\colo_helpers_inherited_direct_ta{#3}}%
+     {\colo_palets_define_assign}%
+     {\ifcsname\??colorsetter#3\endcsname
+        % \definepalet[test][xx=green]
+        \expandafter\colo_palets_define_inherit
       \else
         % not entered when making format
-        \localundefine{\??colorsetter          #1:#2}%
-        \localundefine{\??colorattribute       #1:#2}%
-        \localundefine{\??transparencysetter   #1:#2}%
-        \localundefine{\??transparencyattribute#1:#2}%
-      \fi}}
+        \expandafter\colo_palets_define_undefine
+      \fi}%
+   {#1}{#2}{#3}}
+
+\def\colo_palets_define_inherit#1#2#3%
+  {\colo_helpers_set_value{\??colorsetter          #1:#2}{\colo_helpers_inherited_direct_cs{#3}}%
+   \colo_helpers_set_value{\??colorattribute       #1:#2}{\colo_helpers_inherited_direct_ca{#3}}%
+   \colo_helpers_set_value{\??transparencysetter   #1:#2}{\colo_helpers_inherited_direct_ts{#3}}%
+   \colo_helpers_set_value{\??transparencyattribute#1:#2}{\colo_helpers_inherited_direct_ta{#3}}}
+
+\def\colo_palets_define_undefine#1#2#3%
+  {\localundefine{\??colorsetter          #1:#2}%
+   \localundefine{\??colorattribute       #1:#2}%
+   \localundefine{\??transparencysetter   #1:#2}%
+   \localundefine{\??transparencyattribute#1:#2}}
+
+\def\colo_palets_define_assign#1#2#3%
+  {\definecolor[\??colorpalet#1:#2][#3]%
+   \colo_helpers_set_value{\??colorsetter          #1:#2}{\colo_helpers_inherited_direct_cs{\??colorpalet#1:#2}}%
+   \colo_helpers_set_value{\??colorattribute       #1:#2}{\colo_helpers_inherited_direct_ca{\??colorpalet#1:#2}}%
+   \colo_helpers_set_value{\??transparencysetter   #1:#2}{\colo_helpers_inherited_direct_ts{\??colorpalet#1:#2}}%
+   \colo_helpers_set_value{\??transparencyattribute#1:#2}{\colo_helpers_inherited_direct_ta{\??colorpalet#1:#2}}}
 
 \setvalue{\??colorattribute        currentcolor}{\the\attribute\colorattribute}        % for mpcolor
 \setvalue{\??transparencyattribute currentcolor}{\the\attribute\transparencyattribute} % for mpcolor

@@ -142,9 +142,7 @@ nuts.getleader            = direct.getleader
 --     end
 -- end
 
--- track("getsubtype")
-
--- local dgf = direct.getfield  function nuts.getlist(n) return dgf(n,"list") end
+-- track("getfield")
 
 -- setters
 
@@ -268,7 +266,20 @@ if not direct.setlist then
 
 end
 
+-- if not direct.getpre then
+--
+--     local getfield = nuts.getfield
+--
+--     function direct.getpre    (n) local h, _, _, t       = getdisc(n,true) return h, t end
+--     function direct.getpost   (n) local _, h, _, _, t    = getdisc(n,true) return h, t end
+--     function direct.getreplace(n) local _, _, h, _, _, t = getdisc(n,true) return h, t end
+--
+-- end
+
 nuts.getdisc    = direct.getdisc
+----.getpre     = direct.getpre
+----.getpost    = direct.getpost
+----.getreplace = direct.getreplace
 nuts.setdisc    = direct.setdisc
 nuts.setchar    = direct.setchar
 nuts.setnext    = direct.setnext

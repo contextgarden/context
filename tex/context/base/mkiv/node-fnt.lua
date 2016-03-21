@@ -44,6 +44,7 @@ local getid             = nuts.getid
 local getfont           = nuts.getfont
 local getsubtype        = nuts.getsubtype
 local getchar           = nuts.getchar
+local getdisc           = nuts.getdisc
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getfield          = nuts.getfield
@@ -285,8 +286,8 @@ function handlers.characters(head)
      -- local prevattr  = 0
 
         for d in traverse_id(disc_code,nuthead) do
-            -- we could use first_glyph
-            local r = getfield(d,"replace") -- good enough
+            -- we could use first_glyph, only doing replace is good enough
+            local _, _, r = getdisc(d)
             if r then
                 for n in traverse_char(r) do
                     local font = getfont(n)
@@ -414,18 +415,18 @@ function handlers.characters(head)
         end
     else
         -- multiple fonts
-        local front = nuthead == start
         for i=1,b do
             local range = basefonts[i]
             local start = range[1]
             local stop  = range[2]
-            if (start or stop) and (start ~= stop) then
+            if start then
+                local front = nuthead == start
                 local prev, next
                 if stop then
                     next = getnext(stop)
                     start, stop = ligaturing(start,stop)
                     start, stop = kerning(start,stop)
-                elseif start then -- safeguard
+                else
                     prev  = getprev(start)
                     start = ligaturing(start)
                     start = kerning(start)
@@ -436,18 +437,10 @@ function handlers.characters(head)
                 if next then
                     setlink(stop,next)
                 end
-                if front then
-                    nuthead  = start
-                    front = nil -- we assume a proper sequence
+                if front and nuthead ~= start then
+                    head = tonode(nuthead)
                 end
             end
-            if front then
-                -- shouldn't happen
-                nuthead = start
-            end
-        end
-        if front then
-            head = tonode(nuthead)
         end
     end
     stoptiming(nodes)

@@ -1354,7 +1354,7 @@ local validpair = {
 }
 
 local function movesubscript(parent,current_nucleus,current_char)
-    local prev = getfield(parent,"prev")
+    local prev = getprev(parent)
     if prev and getid(prev) == math_noad then
         if not getfield(prev,"sup") and not getfield(prev,"sub") then
             -- {f} {'}_n => f_n^'

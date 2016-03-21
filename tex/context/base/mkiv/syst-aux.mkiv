@@ -7362,6 +7362,10 @@
 % \unexpanded\def\doifelsestringbefore{\clf_doifelsestringbefore}
 % \unexpanded\def\doifelsestringafter {\clf_doifelsestringafter}
 
+% Could have been useful but not faster that addtocommalist and also expansion mess:
+%
+% \def\additemtolist#1#2{\normalexpanded{\noexpand\clf_additemtolist{#1}{#2}}}
+
 \protect \endinput
 
 % \edef\choicetokenyes{+}
