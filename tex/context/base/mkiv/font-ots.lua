@@ -3260,6 +3260,9 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
     end
 end
 
+-- to be checkedL nowadays we probably can assume properly matched directions
+-- so maybe we no longer need a stack
+
 local function txtdirstate(start,stack,top,rlparmode)
     local dir = getfield(start,"dir")
     local new = 1

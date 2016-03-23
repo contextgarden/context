@@ -293,6 +293,10 @@ function nuts.setvisual(n,mode)
     setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true))
 end
 
+function nuts.copyvisual(n,m)
+    setattr(n,a_visual,getattr(m,a_visual))
+end
+
 function visualizers.setvisual(n)
     texsetattribute(a_visual,setvisual(n,texgetattribute(a_visual)))
 end
@@ -308,6 +312,10 @@ end
 for mode, value in next, modes do
     trackers.register(formatters["visualizers.%s"](mode), function(v) set(mode,v) end)
 end
+
+local raisepenalties = false
+
+directives.register("visualizers.raisepenalties",function(v) raisepenalties = v end)
 
 local fraction = 10
 
@@ -828,6 +836,8 @@ local function ruledpenalty(head,current,vertical)
     info = copy_list(info)
     if vertical then
         info = vpack_nodes(info)
+    elseif raisepenalties then
+        setfield(info,"shift",-65536*4)
     end
     head, current = insert_node_before(head,current,info)
     return head, getnext(current)
@@ -973,20 +983,20 @@ local function visualize(head,vertical,forced,parent)
     return head
 end
 
-local function freed(cache)
-    local n = 0
-    for k, v in next, cache do
-        free_node_list(v)
-        n = n + 1
-    end
-    if n == 0 then
-        return 0, cache
-    else
-        return n, { }
-    end
-end
-
 do
+
+    local function freed(cache)
+        local n = 0
+        for k, v in next, cache do
+            free_node_list(v)
+            n = n + 1
+        end
+        if n == 0 then
+            return 0, cache
+        else
+            return n, { }
+        end
+    end
 
     local function cleanup()
         local hf, nw, nb, ng_v, ng_h, np_v, np_h, nk_v, nk_h

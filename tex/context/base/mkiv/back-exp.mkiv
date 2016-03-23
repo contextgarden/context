@@ -89,14 +89,14 @@
        \fi}%
     % brrr, we need to tag empty cells (unless we start numbering)
     \unexpanded\def\dotagTABLEsignal
-      {\char\zerocount}%
+      {\signalcharacter}%
 \to \everyenableelements
 
 \appendtoks
     \unexpanded\def\dotagtabulatecell
       {\iftrialtypesetting\else\clf_settagtabulatecell\c_tabl_tabulate_align\fi}%
     \unexpanded\def\dotagtabulatesignal
-      {\dontleavehmode\char\zerocount\ignorespaces}%
+      {\dontleavehmode\signalcharacter\ignorespaces}%
 \to \everyenableelements
 
 \appendtoks

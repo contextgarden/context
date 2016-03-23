@@ -90,7 +90,7 @@
 \def\dofakewords#1%
   {\bgroup
    \dorecurse{#1}
-     {\iffaketrigger\char\zerocount\fi % so that e.g. line numbering works
+     {\iffaketrigger\signalcharacter\fi % so that e.g. line numbering works
       \getrandomcount\scratchcounter{1}{5}%
       \dorecurse\scratchcounter
         {\getrandomdimen\scratchdimen{.5em}{1.25em}%

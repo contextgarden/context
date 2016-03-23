@@ -1139,6 +1139,12 @@
 % when enabled, sigstruts will remove themselves if nothing
 % goes inbetween
 
+%D For poractical reasons we define some boundary characters here.
+
+\unexpanded\def\leftboundary   {\boundary\plusone}
+\unexpanded\def\rightboundary  {\boundary\plustwo}
+\unexpanded\def\signalcharacter{\boundary\plusone\char\zerocount\boundary\plustwo} % not the same as strut signals
+
 \newsignal\strutsignal \setfalse\sigstruts
 
 \unexpanded\def\begstrut
@@ -1162,9 +1168,17 @@
    \hskip-\strutsignal
    \hskip\strutsignal}
 
+% \def\spac_struts_beg_normal
+%   {\strut
+%    \penalty\plustenthousand
+%    \hskip\zeropoint}
+
 \def\spac_struts_beg_normal
-  {\strut
+  {\boundary\plusone
+   \strut
+  %\boundary\plusone
    \penalty\plustenthousand
+  %\boundary\plusone
    \hskip\zeropoint}
 
 \unexpanded\def\endstrut
@@ -1195,11 +1209,20 @@
      \strut
    \fi}
 
+% \def\spac_struts_end_normal
+%   {\removeunwantedspaces
+%    \penalty\plustenthousand
+%    \hskip\zeropoint
+%    \strut}
+
 \def\spac_struts_end_normal
   {\removeunwantedspaces
    \penalty\plustenthousand
+  %\boundary\plustwo
    \hskip\zeropoint
-   \strut}
+  %\boundary\plustwo
+   \strut
+   \boundary\plustwo}
 
 % unsave:
 %

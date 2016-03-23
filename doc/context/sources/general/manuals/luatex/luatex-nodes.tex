@@ -1177,9 +1177,6 @@ If performance matters you can use an function instead:
 \NC getchar    \NC idem and also in other places \NC \NR
 \NC getdisc    \NC returns the \type {pre}, \type {post} and \type {replace} fields and
                    optionally when true is passed also the tail fields. \NC \NR
-\NC getpre     \NC returns the \type {pre} head and tail fields \NC \NR
-\NC getpost    \NC returns the \type {post} head and tail fields \NC \NR
-\NC getreplace \NC returns the \type {replace} head and tail fields \NC \NR
 \NC getlist    \NC we often parse nested lists so this is a convenient one too
                    (only works for hlist and vlist!) \NC \NR
 \NC getleader  \NC comparable to list, seldom used in \TEX\ (but needs frequent consulting
@@ -1190,11 +1187,6 @@ If performance matters you can use an function instead:
 
 The direct variants also have setters, where the discretionary setter takes three
 (optional) arguments plus an optional fourth indicating the subtype.
-
-These accessors can gain you some time when you do extensive processing of node
-lists but only when you do many calls (a simple pass over the list using key
-based access is normally pretty fast), which can happen when you need to look
-into glyphs and discretionaries that make up most of the text stream.
 
 It doesn't make sense to add more. Profiling demonstrated that these fields can
 get accesses way more times than other fields. Even in complex documents, many
@@ -1228,9 +1220,6 @@ summarized this:
 \NC \type {getbox}               \NC \nop \NC \yes  \NC \NR
 \NC \type {getchar}              \NC \yes \NC \yes  \NC \NR
 \NC \type {getdisc}              \NC \yes \NC \yes  \NC \NR
-\NC \type {getpre}               \NC \yes \NC \yes  \NC \NR
-\NC \type {getpost}              \NC \yes \NC \yes  \NC \NR
-\NC \type {getreplace}           \NC \yes \NC \yes  \NC \NR
 \NC \type {getfield}             \NC \yes \NC \yes  \NC \NR
 \NC \type {getfont}              \NC \yes \NC \yes  \NC \NR
 \NC \type {getid}                \NC \yes \NC \yes  \NC \NR

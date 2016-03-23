@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
 
 -- todo: hyphenate over range if needed
 
+-- setattr: helper for full attr
+
 -- to be considered: reset dictionary.hyphenated when a pattern is added
 -- or maybe an explicit reset of the cache
 
@@ -610,6 +612,7 @@ if context then
 
     local new_disc           = nodepool.disc
     local new_glyph          = nodepool.glyph
+    local new_penalty        = nodepool.penalty
 
     local getfield           = nuts.getfield
     local getfont            = nuts.getfont
@@ -638,6 +641,7 @@ if context then
     local variables          = interfaces.variables
     local v_reset            = variables.reset
     local v_yes              = variables.yes
+    local v_word             = variables.word
     local v_all              = variables.all
 
     local settings_to_array  = utilities.parsers.settings_to_array
@@ -651,6 +655,8 @@ if context then
     local postexhyphenchar   = lang.postexhyphenchar
 
     local a_hyphenation      = attributes.private("hyphenation")
+
+    local interwordpenalty   = 5000
 
     function traditional.loadpatterns(language)
         return dictionaries[language]
@@ -828,9 +834,10 @@ if context then
         local rightedge    = featureset.rightedge
         local leftchar     = somehyphenchar(featureset.leftchar)
         local rightchar    = somehyphenchar(featureset.rightchar)
-        --
-        joinerchars = joinerchars == v_yes and defaultjoiners or joinerchars
-        hyphenchars = hyphenchars == v_yes and defaulthyphens or hyphenchars
+        local rightchars   = featureset.rightchars
+        rightchars  = rightchars  == v_word and true           or tonumber(rightchars)
+        joinerchars = joinerchars == v_yes  and defaultjoiners or joinerchars
+        hyphenchars = hyphenchars == v_yes  and defaulthyphens or hyphenchars
         -- not yet ok: extrachars have to be ignored  so it cannot be all)
         featureset.extrachars   = makeset(joinerchars or "",extrachars or "")
         featureset.hyphenchars  = makeset(hyphenchars or "")
@@ -839,6 +846,7 @@ if context then
         featureset.charmin      = charmin      and charmin      > 0 and charmin      or nil
         featureset.leftcharmin  = leftcharmin  and leftcharmin  > 0 and leftcharmin  or nil
         featureset.rightcharmin = rightcharmin and rightcharmin > 0 and rightcharmin or nil
+        featureset.rightchars   = rightchars
         featureset.leftchar     = leftchar
         featureset.rightchar    = rightchar
         featureset.strict       = rightedge == 'tex'
@@ -883,6 +891,7 @@ if context then
                 { "characters" },
                 { "hyphens" },
                 { "joiners" },
+                { "rightchars" },
                 { "rightwordmin", "integer" },
                 { "charmin", "integer" },
                 { "leftcharmin", "integer" },
@@ -980,6 +989,7 @@ if context then
         local rightcharmin  = nil
         ----- leftwordmin   = nil
         local rightwordmin  = nil
+        local rightchars    = nil
         local leftchar      = nil
         local rightchar     = nil
         local attr          = nil
@@ -1000,6 +1010,16 @@ if context then
 
         starttiming(traditional)
 
+        local function insertpenalty()
+            local p = new_penalty(interwordpenalty)
+            setfield(p,"attr",getfield(last,"attr"))
+            if trace_visualize then
+                nuts.setvisual(p,"penalty")
+            end
+            last = getprev(last)
+            first, last = insert_after(first,last,p)
+        end
+
         local function synchronizefeatureset(a)
             local f = a and featuresets[a]
             if f then
@@ -1013,6 +1033,7 @@ if context then
                 leftchar     = f.leftchar
                 rightchar    = f.rightchar
                 strict       = f.strict and strictids
+                rightchars   = f.rightchars
                 if rightwordmin and rightwordmin > 0 and lastwordlast ~= rightwordmin then
                     -- so we can change mid paragraph but it's kind of unpredictable then
                     if not tail then
@@ -1020,16 +1041,25 @@ if context then
                     end
                     last = tail
                     local inword = false
+                    local count  = 0
                     while last and rightwordmin > 0 do
                         local id = getid(last)
                         if id == glyph_code then
+                            count = count + 1
                             inword = true
                             if trace_visualize then
-                                setcolor(last,"darkred")
+                                setcolor(last,"darkgreen")
                             end
                         elseif inword then
                             inword = false
                             rightwordmin = rightwordmin - 1
+                            if rightchars == true then
+                                if rightwordmin > 0 then
+                                    insertpenalty()
+                                end
+                            elseif rightchars and count <= rightchars then
+                                insertpenalty()
+                            end
                         end
                         last = getprev(last)
                     end

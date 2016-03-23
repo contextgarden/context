@@ -10134,6 +10134,9 @@ return {
   ["rightwords"]={
    ["en"]="rightwords",
   },
+  ["rightchars"]={
+   ["en"]="rightchars",
+  },
   ["roffset"]={
    ["en"]="roffset",
   },

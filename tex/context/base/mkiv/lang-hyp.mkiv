@@ -107,6 +107,7 @@
    \letdummyparameter\s!righthyphenchar\zerocount
    \letdummyparameter\c!alternative\empty
    \letdummyparameter\c!rightedge\empty
+   \letdummyparameter\c!rightchars\empty
    \getdummyparameters[#2]%
    \clf_definehyphenationfeatures
       {#1}%
@@ -115,6 +116,7 @@
         hyphens      {\dummyparameter\c!hyphens}%
         joiners      {\dummyparameter\c!joiners}%
         rightwordmin \numexpr\dummyparameter\c!rightwords\relax
+        rightchars   {\dummyparameter\c!rightchars}%
         charmin      \numexpr\dummyparameter\s!hyphenmin\relax
         leftcharmin  \numexpr\dummyparameter\s!lefthyphenmin\relax
         rightcharmin \numexpr\dummyparameter\s!righthyphenmin\relax

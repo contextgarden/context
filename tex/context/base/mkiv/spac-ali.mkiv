@@ -263,6 +263,9 @@
   {\let\raggedtopcommand   \relax
    \let\raggedbottomcommand\vfilll}
 
+\def\spac_align_set_par_fill
+  {\parfillskip\zeropoint plus \dimexpr\availablehsize-\number\c_spac_align_state_par_fill\parindent\relax}
+
 \def\spac_align_flush_vertical
   {\ifcase\c_spac_align_state_vertical
      \spac_align_set_vertical_none
@@ -272,6 +275,9 @@
      \spac_align_set_vertical_low
    \or
      \spac_align_set_vertical_high
+   \fi
+   \ifcase\c_spac_align_state_par_fill\else
+      \spac_align_set_par_fill
    \fi}
 
 % Horizontal
@@ -288,6 +294,7 @@
 
 \newconstant\c_spac_align_state_horizontal
 \newconstant\c_spac_align_state_broad
+\newconstant\c_spac_align_state_par_fill
 
 \def\v_spac_align_fill_amount          {\plusone  fil}
 \def\v_spac_align_fill_amount_negative {\minusone fil}
@@ -542,6 +549,7 @@
    \c_spac_align_state_vertical  \zerocount
    \c_spac_align_state_direction \zerocount % what is default ?
    \c_spac_align_state_page      \zerocount
+   \c_spac_align_state_par_fill  \zerocount
    \ifcsname\??aligncommand\m_spac_align_asked\endcsname
      \lastnamedcs
    \else
@@ -631,7 +639,7 @@
 
 \unexpanded\def\installalign#1#2% beware: commands must be unexpandable!
   {\ifcsname\??aligncommand#1\endcsname \else
-     \setvalue{\??aligncommand#1}{\t_spac_align_collected\expandafter{\the\t_spac_align_collected#2}}%
+     \setvalue{\??aligncommand#1}{\toksapp\t_spac_align_collected{#2}}%
    \fi}
 
 % beware, toks stuff and states are set at a differt time, so installalign is
@@ -639,7 +647,7 @@
 %
 % \setvalue{\??aligncommand whatever}%
 %   {\c_spac_align_state_horizontal\plushundred
-%    \t_spac_align_collected\expandafter{\the\t_spac_align_collected .....}}
+%    \toksapp\t_spac_align_collected{.....}}
 %
 % this one could deal with both
 %
@@ -648,7 +656,7 @@
 %      \setvalue{\??aligncommand#1}%
 %        {\spac_align_set_horizontal_none
 %         \c_spac_align_state_horizontal\plushundred % don't set
-%         \t_spac_align_collected\expandafter{\the\t_spac_align_collected#2}}%
+%         \toksapp\t_spac_align_collected{#2}}%
 %    \fi}
 %
 % \installalignoption
@@ -665,7 +673,7 @@
 \setvalue{\??aligncommand\v!height         }{\c_spac_align_state_page      \plustwo  }
 \setvalue{\??aligncommand\v!line           }{\c_spac_align_state_page      \plusthree
                                              % this will become another keyword (undocumented anyway)
-                                             \t_spac_align_collected\expandafter{\the\t_spac_align_collected\settrue\raggedonelinerstate}}
+                                             \toksapp\t_spac_align_collected{\settrue\raggedonelinerstate}}
 
 \setvalue{\??aligncommand\v!high           }{\c_spac_align_state_vertical  \plusthree}
 \setvalue{\??aligncommand\v!low            }{\c_spac_align_state_vertical  \plustwo  }
@@ -702,23 +710,27 @@
                                              \c_spac_align_state_broad     \plusone
                                              \c_spac_align_state_horizontal\plustwo  }
 
-\setvalue{\??aligncommand\v!lesshyphenation}{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\lesshyphens}}
-\setvalue{\??aligncommand\v!morehyphenation}{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\morehyphens}}
+\setvalue{\??aligncommand\v!lesshyphenation}{\toksapp\t_spac_align_collected{\lesshyphens}}
+\setvalue{\??aligncommand\v!morehyphenation}{\toksapp\t_spac_align_collected{\morehyphens}}
 
-\setvalue{\??aligncommand\v!hanging        }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\font_protruding_enable }}
-\setvalue{\??aligncommand\v!nothanging     }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\font_protruding_disable}}
-\setvalue{\??aligncommand\v!hz             }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\font_expansion_enable  }}
-\setvalue{\??aligncommand\v!fullhz         }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\font_expansion_enable_k}}
-\setvalue{\??aligncommand\v!nohz           }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\font_expansion_disable }}
-%setvalue{\??aligncommand\v!spacing        }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\normalspacing\zerocount}} % not yet
-%setvalue{\??aligncommand\v!nospacing      }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\normalspacing\plusone}}   % not yet
-\setvalue{\??aligncommand\v!hyphenated     }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\dohyphens}}
-\setvalue{\??aligncommand\v!nothyphenated  }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\nohyphens}}
+\setvalue{\??aligncommand\v!hanging        }{\toksapp\t_spac_align_collected{\font_protruding_enable }}
+\setvalue{\??aligncommand\v!nothanging     }{\toksapp\t_spac_align_collected{\font_protruding_disable}}
+\setvalue{\??aligncommand\v!hz             }{\toksapp\t_spac_align_collected{\font_expansion_enable  }}
+\setvalue{\??aligncommand\v!fullhz         }{\toksapp\t_spac_align_collected{\font_expansion_enable_k}}
+\setvalue{\??aligncommand\v!nohz           }{\toksapp\t_spac_align_collected{\font_expansion_disable }}
+%setvalue{\??aligncommand\v!spacing        }{\toksapp\t_spac_align_collected{\normalspacing\zerocount}} % not yet
+%setvalue{\??aligncommand\v!nospacing      }{\toksapp\t_spac_align_collected{\normalspacing\plusone}}   % not yet
+\setvalue{\??aligncommand\v!hyphenated     }{\toksapp\t_spac_align_collected{\dohyphens}}
+\setvalue{\??aligncommand\v!nothyphenated  }{\toksapp\t_spac_align_collected{\nohyphens}}
 
-\setvalue{\??aligncommand\v!tolerant       }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\spac_align_set_tolerant}}
-\setvalue{\??aligncommand\v!verytolerant   }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\spac_align_set_very_tolerant}}
-\setvalue{\??aligncommand\v!stretch        }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\spac_align_set_stretch}}
-\setvalue{\??aligncommand\v!extremestretch }{\t_spac_align_collected\expandafter{\the\t_spac_align_collected\spac_align_set_extreme_stretch}}
+\setvalue{\??aligncommand\v!tolerant       }{\toksapp\t_spac_align_collected{\spac_align_set_tolerant}}
+\setvalue{\??aligncommand\v!verytolerant   }{\toksapp\t_spac_align_collected{\spac_align_set_very_tolerant}}
+\setvalue{\??aligncommand\v!stretch        }{\toksapp\t_spac_align_collected{\spac_align_set_stretch}}
+\setvalue{\??aligncommand\v!extremestretch }{\toksapp\t_spac_align_collected{\spac_align_set_extreme_stretch}}
+
+\setvalue{\??aligncommand\v!two  }{\c_spac_align_state_par_fill\plustwo  }
+\setvalue{\??aligncommand\v!three}{\c_spac_align_state_par_fill\plusthree}
+\setvalue{\??aligncommand\v!four }{\c_spac_align_state_par_fill\plusfour }
 
 %D For Wolfgang:
 

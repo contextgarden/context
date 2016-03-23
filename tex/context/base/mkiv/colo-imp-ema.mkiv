@@ -8,7 +8,7 @@
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
-%C therefore copyrighted by \PRAGMA. See mreadme.pdf for 
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
 % author      : Peter Rolf <peter.rolf@arcor.de>
@@ -17,28 +17,30 @@
 %
 % USAGE:
 %
-% - select emacs menu: Edit -> Text Properties -> Display 
+% - select emacs menu: Edit -> Text Properties -> Display
 %   Colors, if you don't know what I'm talking about
-% - copy this file to your /texmf/tex/context/user directory 
+% - copy this file to your /texmf/tex/context/user directory
 %   and add "\input colo-emacs" to your tex-file
 %
 % IMPORTANT NOTES:
 %
-% - all color names are written as ONE word in lowercase 
-%   letters (no redundancy as in rgb.txt) so if you want to 
-%   use the color "Light Sky Blue"/"light sky blue" it's new 
+% - all color names are written as ONE word in lowercase
+%   letters (no redundancy as in rgb.txt) so if you want to
+%   use the color "Light Sky Blue"/"light sky blue" it's new
 %   name is lightskyblue
 % - the grayX values [X=0..100] can only be used with \color
 %   [grayX]
 % - use it at your own risk :)
 %
 % HINT:
-% 
-% I only include this file (\showcolor [ema]) until I've 
-% found the colors I want. Copy and paste the color 
-% definitions to a seperate file, to decrease compilation 
-% time (540 color definitions). 
-    
+%
+% I only include this file (\showcolor [ema]) until I've
+% found the colors I want. Copy and paste the color
+% definitions to a seperate file, to decrease compilation
+% time (540 color definitions).
+
+\startprotectedcolors
+
 \definecolor [snow]                 [r=1,g=.980392,b=.980392]
 \definecolor [ghostwhite]           [r=.972549,g=.972549,b=1]
 \definecolor [whitesmoke]           [s=.960784]
@@ -481,110 +483,18 @@
 \definecolor [thistle2]             [r=.933333,g=.823529,b=.933333]
 \definecolor [thistle3]             [r=.803922,g=.709804,b=.803922]
 \definecolor [thistle4]             [r=.545098,g=.482353,b=.545098]
-\definecolor [gray0]                [black]
-\definecolor [gray1]                [s=.01]
-\definecolor [gray2]                [s=.02]
-\definecolor [gray3]                [s=.03]
-\definecolor [gray4]                [s=.04]
-\definecolor [gray5]                [s=.05]
-\definecolor [gray6]                [s=.06]
-\definecolor [gray7]                [s=.07]
-\definecolor [gray8]                [s=.08]
-\definecolor [gray9]                [s=.09]
-\definecolor [gray10]               [s=.1]
-\definecolor [gray11]               [s=.11]
-\definecolor [gray12]               [s=.12]
-\definecolor [gray13]               [s=.13]
-\definecolor [gray14]               [s=.14]
-\definecolor [gray15]               [s=.15]
-\definecolor [gray16]               [s=.16]
-\definecolor [gray17]               [s=.17]
-\definecolor [gray18]               [s=.18]
-\definecolor [gray19]               [s=.19]
-\definecolor [gray20]               [s=.2]
-\definecolor [gray21]               [s=.21]
-\definecolor [gray22]               [s=.22]
-\definecolor [gray23]               [s=.23]
-\definecolor [gray24]               [s=.24]
-\definecolor [gray25]               [s=.25]
-\definecolor [gray26]               [s=.26]
-\definecolor [gray27]               [s=.27]
-\definecolor [gray28]               [s=.28]
-\definecolor [gray29]               [s=.29]
-\definecolor [gray30]               [s=.3]
-\definecolor [gray31]               [s=.31]
-\definecolor [gray32]               [s=.32]
-\definecolor [gray33]               [s=.33]
-\definecolor [gray34]               [s=.34]
-\definecolor [gray35]               [s=.35]
-\definecolor [gray36]               [s=.36]
-\definecolor [gray37]               [s=.37]
-\definecolor [gray38]               [s=.38]
-\definecolor [gray39]               [s=.39]
-\definecolor [gray40]               [s=.4]
-\definecolor [gray41]               [s=.41]
-\definecolor [gray42]               [s=.42]
-\definecolor [gray43]               [s=.43]
-\definecolor [gray44]               [s=.44]
-\definecolor [gray45]               [s=.45]
-\definecolor [gray46]               [s=.46]
-\definecolor [gray47]               [s=.47]
-\definecolor [gray48]               [s=.48]
-\definecolor [gray49]               [s=.49]
-\definecolor [gray50]               [s=.5]
-\definecolor [gray51]               [s=.51]
-\definecolor [gray52]               [s=.52]
-\definecolor [gray53]               [s=.53]
-\definecolor [gray54]               [s=.54]
-\definecolor [gray55]               [s=.55]
-\definecolor [gray56]               [s=.56]
-\definecolor [gray57]               [s=.57]
-\definecolor [gray58]               [s=.58]
-\definecolor [gray59]               [s=.59]
-\definecolor [gray60]               [s=.6]
-\definecolor [gray61]               [s=.61]
-\definecolor [gray62]               [s=.62]
-\definecolor [gray63]               [s=.63]
-\definecolor [gray64]               [s=.64]
-\definecolor [gray65]               [s=.65]
-\definecolor [gray66]               [s=.66]
-\definecolor [gray67]               [s=.67]
-\definecolor [gray68]               [s=.68]
-\definecolor [gray69]               [s=.69]
-\definecolor [gray70]               [s=.7]
-\definecolor [gray71]               [s=.71]
-\definecolor [gray72]               [s=.72]
-\definecolor [gray73]               [s=.73]
-\definecolor [gray74]               [s=.74]
-\definecolor [gray75]               [s=.75]
-\definecolor [gray76]               [s=.76]
-\definecolor [gray77]               [s=.77]
-\definecolor [gray78]               [s=.78]
-\definecolor [gray79]               [s=.79]
-\definecolor [gray80]               [s=.8]
-\definecolor [gray81]               [s=.81]
-\definecolor [gray82]               [s=.82]
-\definecolor [gray83]               [s=.83]
-\definecolor [gray84]               [s=.84]
-\definecolor [gray85]               [s=.85]
-\definecolor [gray86]               [s=.86]
-\definecolor [gray87]               [s=.87]
-\definecolor [gray88]               [s=.88]
-\definecolor [gray89]               [s=.89]
-\definecolor [gray90]               [s=.9]
-\definecolor [gray91]               [s=.91]
-\definecolor [gray92]               [s=.92]
-\definecolor [gray93]               [s=.93]
-\definecolor [gray94]               [s=.94]
-\definecolor [gray95]               [s=.95]
-\definecolor [gray96]               [s=.96]
-\definecolor [gray97]               [s=.97]
-\definecolor [gray98]               [s=.98]
-\definecolor [gray99]               [s=.99]
-\definecolor [gray100]              [white]
+
+\dorecurse{100}{
+    \definecolor [gray#1] [s=\cldcontext{#1/100}]
+}
+
 \definecolor [darkgray]             [s=.662745]
 \definecolor [darkblue]             [b=.545098]
 \definecolor [darkcyan]             [g=.545098,b=.545098]
 \definecolor [darkmagenta]          [r=.545098,b=.545098]
 \definecolor [darkred]              [r=.545098]
 \definecolor [lightgreen]           [r=.564706,g=.933333,b=.564706]
+
+\stopprotectedcolors
+
+\endinput

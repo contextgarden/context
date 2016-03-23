@@ -1331,7 +1331,7 @@
 % \setupmathematics
 %   [\v!autopunctuation=\v!no]
 %
-% \def\math_punctuation_next{\ifx\nexttoken\blankspace\char\zerocount\fi}
+% \def\math_punctuation_next{\ifx\nexttoken\blankspace\signalcharacter\fi}
 %
 % \unexpanded\def\math_punctuation_comma {\textcomma \futurelet\nexttoken\math_punctuation_next}
 % \unexpanded\def\math_punctuation_period{\textperiod\futurelet\nexttoken\math_punctuation_next}

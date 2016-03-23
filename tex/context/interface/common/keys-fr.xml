@@ -1090,6 +1090,7 @@
 		<cd:constant name='resources' value='resources'/>
 		<cd:constant name='reverse' value='inverse'/>
 		<cd:constant name='right' value='droite'/>
+		<cd:constant name='rightchars' value='rightchars'/>
 		<cd:constant name='rightcolor' value='couleurdroite'/>
 		<cd:constant name='rightcompoundhyphen' value='rightcompoundhyphen'/>
 		<cd:constant name='rightedge' value='borddroit'/>

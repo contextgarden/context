@@ -1090,6 +1090,7 @@
 		<cd:constant name='resources' value='resources'/>
 		<cd:constant name='reverse' value='omgekeerd'/>
 		<cd:constant name='right' value='rechts'/>
+		<cd:constant name='rightchars' value='rightchars'/>
 		<cd:constant name='rightcolor' value='rechterkleur'/>
 		<cd:constant name='rightcompoundhyphen' value='rechterkoppelteken'/>
 		<cd:constant name='rightedge' value='rechterrand'/>

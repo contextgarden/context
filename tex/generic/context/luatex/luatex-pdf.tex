@@ -67,30 +67,44 @@
 
     % commands
 
-    \protected\gdef\pdfliteral        {\pdfextension literal}
-    \protected\gdef\pdfcolorstack     {\pdfextension colorstack}
-    \protected\gdef\pdfsetmatrix      {\pdfextension setmatrix}
-    \protected\gdef\pdfsave           {\pdfextension save\relax}
-    \protected\gdef\pdfrestore        {\pdfextension restore\relax}
-    \protected\gdef\pdfobj            {\pdfextension obj }
-    \protected\gdef\pdfrefobj         {\pdfextension refobj }
-    \protected\gdef\pdfannot          {\pdfextension annot }
-    \protected\gdef\pdfstartlink      {\pdfextension startlink }
-    \protected\gdef\pdfendlink        {\pdfextension endlink\relax}
-    \protected\gdef\pdfoutline        {\pdfextension outline }
-    \protected\gdef\pdfdest           {\pdfextension dest }
-    \protected\gdef\pdfthread         {\pdfextension thread }
-    \protected\gdef\pdfstartthread    {\pdfextension startthread }
-    \protected\gdef\pdfendthread      {\pdfextension endthread\relax}
-    \protected\gdef\pdfinfo           {\pdfextension info }
-    \protected\gdef\pdfcatalog        {\pdfextension catalog }
-    \protected\gdef\pdfnames          {\pdfextension names }
-    \protected\gdef\pdfincludechars   {\pdfextension includechars }
-    \protected\gdef\pdffontattr       {\pdfextension fontattr }
-    \protected\gdef\pdfmapfile        {\pdfextension mapfile }
-    \protected\gdef\pdfmapline        {\pdfextension mapline }
-    \protected\gdef\pdftrailer        {\pdfextension trailer }
-    \protected\gdef\pdfglyphtounicode {\pdfextension glyphtounicode }
+    \protected\gdef\pdfliteral              {\pdfextension literal}
+    \protected\gdef\pdfcolorstack           {\pdfextension colorstack}
+    \protected\gdef\pdfsetmatrix            {\pdfextension setmatrix}
+    \protected\gdef\pdfsave                 {\pdfextension save\relax}
+    \protected\gdef\pdfrestore              {\pdfextension restore\relax}
+    \protected\gdef\pdfobj                  {\pdfextension obj }
+    \protected\gdef\pdfrefobj               {\pdfextension refobj }
+    \protected\gdef\pdfannot                {\pdfextension annot }
+    \protected\gdef\pdfstartlink            {\pdfextension startlink }
+    \protected\gdef\pdfendlink              {\pdfextension endlink\relax}
+    \protected\gdef\pdfoutline              {\pdfextension outline }
+    \protected\gdef\pdfdest                 {\pdfextension dest }
+    \protected\gdef\pdfthread               {\pdfextension thread }
+    \protected\gdef\pdfstartthread          {\pdfextension startthread }
+    \protected\gdef\pdfendthread            {\pdfextension endthread\relax}
+    \protected\gdef\pdfinfo                 {\pdfextension info }
+    \protected\gdef\pdfcatalog              {\pdfextension catalog }
+    \protected\gdef\pdfnames                {\pdfextension names }
+    \protected\gdef\pdfincludechars         {\pdfextension includechars }
+    \protected\gdef\pdffontattr             {\pdfextension fontattr }
+    \protected\gdef\pdfmapfile              {\pdfextension mapfile }
+    \protected\gdef\pdfmapline              {\pdfextension mapline }
+    \protected\gdef\pdftrailer              {\pdfextension trailer }
+    \protected\gdef\pdfglyphtounicode       {\pdfextension glyphtounicode }
+    \protected\gdef\pdfsuppressoptionalinfo {\pdfextension suppressoptionalinfo }
+    \global   \let \pdfsuppressptexinfo                \pdfsuppressoptionalinfo
+    \protected\gdef\pdfinfoid               {\pdfextension infoid }
+    \protected\gdef\pdfinfoomitdate         {\pdfextension suppressoptionalinfo \numexpr32+64\relax}
+
+    \chardef\pdfnofullbanner   =   1
+    \chardef\pdfnofilename     =   2
+    \chardef\pdfnopagenumber   =   4
+    \chardef\pdfnoinfodict     =   8
+    \chardef\pdfnocreator      =  16
+    \chardef\pdfnocreationdate =  32
+    \chardef\pdfnomoddate      =  64
+    \chardef\pdfnoproducer     = 128
+    \chardef\pdfnoid           = 256
 
     % converted
 
