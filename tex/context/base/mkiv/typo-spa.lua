@@ -32,11 +32,10 @@ local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
-local getchar            = nuts.getchar
-local getid              = nuts.getid
 local getfont            = nuts.getfont
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
+local isglyph            = nuts.isglyph
 
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
@@ -84,13 +83,12 @@ function spacings.handler(head)
     -- head is always begin of par (whatsit), so we have at least two prev nodes
     -- penalty followed by glue
     while start do
-        local id = getid(start)
-        if id == glyph_code then
+        local char, id = isglyph(start)
+        if char then
             local attr = getattr(start,a_spacings)
             if attr and attr > 0 then
                 local data = mapping[attr]
                 if data then
-                    local char = getchar(start)
                     local map = data.characters[char]
                     setattr(start,a_spacings,unsetvalue) -- needed?
                     if map then

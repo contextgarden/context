@@ -957,30 +957,45 @@
 % module after which the official interfaces have to be used. This is needed for
 % modules not made by ctx developers.
 
-\normalprotected\def\pdfliteral        {\pdfextension literal }
-\normalprotected\def\pdfcolorstack     {\pdfextension colorstack }
-\normalprotected\def\pdfsetmatrix      {\pdfextension setmatrix }
-\normalprotected\def\pdfsave           {\pdfextension save\relax}
-\normalprotected\def\pdfrestore        {\pdfextension restore\relax}
-\normalprotected\def\pdfobj            {\pdfextension obj }
-\normalprotected\def\pdfrefobj         {\pdfextension refobj }
-\normalprotected\def\pdfannot          {\pdfextension annot }
-\normalprotected\def\pdfstartlink      {\pdfextension startlink }
-\normalprotected\def\pdfendlink        {\pdfextension endlink\relax}
-\normalprotected\def\pdfoutline        {\pdfextension outline }
-\normalprotected\def\pdfdest           {\pdfextension dest }
-\normalprotected\def\pdfthread         {\pdfextension thread }
-\normalprotected\def\pdfstartthread    {\pdfextension startthread }
-\normalprotected\def\pdfendthread      {\pdfextension endthread\relax}
-\normalprotected\def\pdfinfo           {\pdfextension info }
-\normalprotected\def\pdfcatalog        {\pdfextension catalog }
-\normalprotected\def\pdfnames          {\pdfextension names }
-\normalprotected\def\pdfincludechars   {\pdfextension includechars }
-\normalprotected\def\pdffontattr       {\pdfextension fontattr }
-\normalprotected\def\pdfmapfile        {\pdfextension mapfile }
-\normalprotected\def\pdfmapline        {\pdfextension mapline }
-\normalprotected\def\pdftrailer        {\pdfextension trailer }
-\normalprotected\def\pdfglyphtounicode {\pdfextension glyphtounicode }
+\normalprotected\def\pdfliteral               {\pdfextension literal }
+\normalprotected\def\pdfcolorstack            {\pdfextension colorstack }
+\normalprotected\def\pdfsetmatrix             {\pdfextension setmatrix }
+\normalprotected\def\pdfsave                  {\pdfextension save\relax}
+\normalprotected\def\pdfrestore               {\pdfextension restore\relax}
+\normalprotected\def\pdfobj                   {\pdfextension obj }
+\normalprotected\def\pdfrefobj                {\pdfextension refobj }
+\normalprotected\def\pdfannot                 {\pdfextension annot }
+\normalprotected\def\pdfstartlink             {\pdfextension startlink }
+\normalprotected\def\pdfendlink               {\pdfextension endlink\relax}
+\normalprotected\def\pdfoutline               {\pdfextension outline }
+\normalprotected\def\pdfdest                  {\pdfextension dest }
+\normalprotected\def\pdfthread                {\pdfextension thread }
+\normalprotected\def\pdfstartthread           {\pdfextension startthread }
+\normalprotected\def\pdfendthread             {\pdfextension endthread\relax}
+\normalprotected\def\pdfinfo                  {\pdfextension info }
+\normalprotected\def\pdfcatalog               {\pdfextension catalog }
+\normalprotected\def\pdfnames                 {\pdfextension names }
+\normalprotected\def\pdfincludechars          {\pdfextension includechars }
+\normalprotected\def\pdffontattr              {\pdfextension fontattr }
+\normalprotected\def\pdfmapfile               {\pdfextension mapfile }
+\normalprotected\def\pdfmapline               {\pdfextension mapline }
+\normalprotected\def\pdftrailer               {\pdfextension trailer }
+\normalprotected\def\pdfglyphtounicode        {\pdfextension glyphtounicode }
+\normalprotected\gdef\pdfsuppressoptionalinfo {\pdfextension suppressoptionalinfo }
+\global          \let\pdfsuppressptexinfo                \pdfsuppressoptionalinfo
+\normalprotected\gdef\pdfinfoid               {\pdfextension infoid }
+\normalprotected\gdef\pdfinfoomitdate         {\pdfextension suppressoptionalinfo \numexpr32+64\relax}
+
+% \chardef\pdfnofullbanner   =   1
+% \chardef\pdfnofilename     =   2
+% \chardef\pdfnopagenumber   =   4
+% \chardef\pdfnoinfodict     =   8
+% \chardef\pdfnocreator      =  16
+% \chardef\pdfnocreationdate =  32
+% \chardef\pdfnomoddate      =  64
+% \chardef\pdfnoproducer     = 128
+% \chardef\pdfnotrapped      = 256
+% \chardef\pdfnoid           = 512
 
 \def\pdftexversion     {\numexpr\pdffeedback version}
 \def\pdftexrevision            {\pdffeedback revision}

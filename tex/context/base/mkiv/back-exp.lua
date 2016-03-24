@@ -116,14 +116,13 @@ local tonut             = nuts.tonut
 local getnext           = nuts.getnext
 local getsubtype        = nuts.getsubtype
 local getfont           = nuts.getfont
-local getchar           = nuts.getchar
 local getdisc           = nuts.getdisc
 local getlist           = nuts.getlist
 local getid             = nuts.getid
 local getfield          = nuts.getfield
 local getattr           = nuts.getattr
-
 local setattr           = nuts.setattr
+local isglyph           = nuts.isglyph
 
 local traverse_id       = nuts.traverse_id
 local traverse_nodes    = nuts.traverse
@@ -2536,8 +2535,8 @@ end
 local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
     local p
     for n in traverse_nodes(head) do
-        local id = getid(n) -- 14: image, 8: literal (mp)
-        if id == glyph_code then
+        local c, id = isglyph(n) -- 14: image, 8: literal (mp)
+        if c then
             local at = getattr(n,a_tagged) or pat
             if not at then
              -- we need to tag the pagebody stuff as being valid skippable
@@ -2546,7 +2545,6 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
             else
                 -- we could add tonunicodes for ligatures (todo)
                 local components = getfield(n,"components")
-                local c = getchar(n)
                 if components and (not characterdata[c] or overloads[c]) then -- we loose data
                     collectresults(components,nil,at) -- this assumes that components have the same attribute as the glyph ... we should be more tolerant (see math)
                 else
@@ -2643,7 +2641,7 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
         elseif id == disc_code then -- probably too late
             local pre, post, replace = getdisc(n)
             if keephyphens then
-                if pre and not getnext(pre) and getid(pre) == glyph_code and getchar(pre) == hyphencode then
+                if pre and not getnext(pre) and isglyph(pre) == hyphencode then
                     nofcurrentcontent = nofcurrentcontent + 1
                     currentcontent[nofcurrentcontent] = hyphen
                 end

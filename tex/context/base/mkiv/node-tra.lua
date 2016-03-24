@@ -46,8 +46,8 @@ local getchar          = nuts.getchar
 local getsubtype       = nuts.getsubtype
 local getlist          = nuts.getlist
 local getdisc          = nuts.getdisc
-
 local setattr          = nuts.setattr
+local isglyph          = nuts.isglyph
 
 local flush_list       = nuts.flush_list
 local count_nodes      = nuts.count
@@ -129,9 +129,8 @@ local function tosequence(start,stop,compact)
         stop = stop and tonut(stop)
         local t = { }
         while start do
-            local id = getid(start)
-            if id == glyph_code then
-                local c = getchar(start)
+            local c, id = isglyph(start)
+            if c then
                 if compact then
                     local components = getfield(start,"components")
                     if components then
@@ -293,9 +292,8 @@ nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 local function listtoutf(h,joiner,textonly,last,nodisc)
     local w = { }
     while h do
-        local id = getid(h)
-        if id == glyph_code then -- always true
-            local c = getchar(h)
+        local c, id = isglyph(h)
+        if c then
             w[#w+1] = c >= 0 and utfchar(c) or formatters["<%i>"](c)
             if joiner then
                 w[#w+1] = joiner

@@ -34,12 +34,12 @@ local getfield           = nuts.getfield
 local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
-local getid              = nuts.getid
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local setsubtype         = nuts.setsubtype
+local isglyph            = nuts.isglyph
 
 local setcolor           = nodes.tracers.colors.set
 
@@ -181,32 +181,42 @@ local methods = {
 
     [0x001F] = function(head,current)
         local next = getnext(current)
-        if next and getid(next) == glyph_code then
-            local char = getchar(next)
-            head, current = remove_node(head,current,true)
-            if not is_punctuation[char] then
-                local p = fontparameters[getfont(next)]
-                head, current = insert_node_before(head,current,new_glue(p.space,p.space_stretch,p.space_shrink))
+        if next then
+            local char = isglyph(next)
+            if char then
+                head, current = remove_node(head,current,true)
+                if not is_punctuation[char] then
+                    local p = fontparameters[getfont(next)]
+                    head, current = insert_node_before(head,current,new_glue(p.space,p.space_stretch,p.space_shrink))
+                end
             end
         end
     end,
 
     [0x00A0] = function(head,current) -- nbsp
         local next = getnext(current)
-        if next and getid(next) == glyph_code then
-            local char = getchar(next)
-            if char == 0x200C or char == 0x200D then -- nzwj zwj
+        if next then
+            local char = isglyph(current)
+            if not char then
+                -- move on
+            elseif char == 0x200C or char == 0x200D then -- nzwj zwj
                 next = getnext(next)
-				if next and nbsphash[getchar(next)] then
-                    return false
+				if next then
+                    char = isglyph(next)
+                    if char and nbsphash[char] then
+                        return false
+                    end
                 end
             elseif nbsphash[char] then
                 return false
             end
         end
         local prev = getprev(current)
-        if prev and getid(prev) == glyph_code and nbsphash[getchar(prev)] then
-            return false
+        if prev then
+            local char = isglyph(prev)
+            if char and nbsphash[char] then
+                return false
+            end
         end
         return nbsp(head,current)
     end,
@@ -280,10 +290,9 @@ function characters.handler(head) -- todo: use traverse_id
     local current = head
     local done = false
     while current do
-        local id = getid(current)
-        if id == glyph_code then
-            local next = getnext(current)
-            local char = getchar(current)
+        local char, id = isglyph(current)
+        if char then
+            local next   = getnext(current)
             local method = methods[char]
             if method then
                 if trace_characters then

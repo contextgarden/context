@@ -290,8 +290,44 @@ nuts.setlink    = direct.setlink
 nuts.setlist    = direct.setlist
 nuts.setleader  = direct.setleader
 nuts.setsubtype = direct.setsubtype
+
+if not direct.is_glyph then
+    local getchar    = direct.getchar
+    local getid      = direct.getid
+    local getfont    = direct.getfont
+    local glyph_code = nodes.nodecodes.glyph
+    function direct.is_glyph(n,f)
+        local id   = getid(n)
+        if id == glyph_code then
+            if f and getfont(n) == f then
+                return getchar(n)
+            else
+                return false
+            end
+        else
+            return nil, id
+        end
+    end
+    function direct.is_char(n,f)
+        local id = getid(n)
+        if id == glyph_code then
+            if getsubtype(n) >= 256 then
+                return false
+            elseif f and getfont(n) == f then
+                return getchar(n)
+            else
+                return false
+            end
+        else
+            return nil, id
+        end
+    end
+end
+
 nuts.is_char    = direct.is_char
 nuts.ischar     = direct.is_char
+nuts.is_glyph   = direct.is_glyph
+nuts.isglyph    = direct.is_glyph
 
 local d_remove_node     = direct.remove
 local d_free_node       = direct.free

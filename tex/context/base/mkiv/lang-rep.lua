@@ -49,6 +49,7 @@ local getprev            = nuts.getprev
 local getattr            = nuts.getattr
 local getid              = nuts.getid
 local getchar            = nuts.getchar
+local isglyph            = nuts.isglyph
 
 local setfield           = nuts.setfield
 local setattr            = nuts.setattr
@@ -146,23 +147,28 @@ local function hit(a,head)
             local current   = getnext(head)
             local lastrun   = false
             local lastfinal = false
-            while current and getid(current) == glyph_code do
-                local newroot = root[getchar(current)]
-                if not newroot then
-                    return lastrun, lastfinal
-                else
-                    local final = newroot.final
-                    if final then
-                        if trace_detail then
-                            report_replacement("hitting word %a, replacement %a",final.word,final.replacement)
-                        end
-                        lastrun   = current
-                        lastfinal = final
+            while current do
+                local char = isglyph(current)
+                if char then
+                    local newroot = root[char]
+                    if not newroot then
+                        return lastrun, lastfinal
                     else
-                        root = newroot
+                        local final = newroot.final
+                        if final then
+                            if trace_detail then
+                                report_replacement("hitting word %a, replacement %a",final.word,final.replacement)
+                            end
+                            lastrun   = current
+                            lastfinal = final
+                        else
+                            root = newroot
+                        end
                     end
+                    current = getnext(current)
+                else
+                    break
                 end
-                current = getnext(current)
             end
             if lastrun then
                 return lastrun, lastfinal

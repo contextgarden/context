@@ -57,10 +57,12 @@ local getfont           = nuts.getfont
 local getid             = nuts.getid
 local getattr           = nuts.getattr
 local setattr           = nuts.setattr
+local isglyph           = nuts.isglyph
 
 local insert_node_after = nuts.insert_after
 local first_glyph       = nuts.first_glyph
 local traverse_id       = nuts.traverse_id
+local traverse_char     = nuts.traverse_char
 
 local nodepool          = nuts.pool
 
@@ -453,8 +455,8 @@ function scripts.injectors.handler(head)
         local last_a, normal_process, lastfont, originals = nil, nil, nil, nil
         local done, first, last, ok = false, nil, nil, false
         while start do
-            local id = getid(start)
-            if id == glyph_code then
+            local char, id = isglyph(start)
+            if char then
                 local a = getattr(start,a_scriptinjection)
                 if a then
                     if a ~= last_a then
@@ -478,21 +480,20 @@ function scripts.injectors.handler(head)
                     end
                     if normal_process then
                         -- wrong: originals are indices !
-                        local f = getfont(start)
-                        if f ~= lastfont then
-                            originals = fontdata[f].resources
+                        local font = getfont(start)
+                        if font ~= lastfont then
+                            originals = fontdata[font].resources
                             if resources then
                                 originals = resources.originals
                             else
                                 originals = nil -- can't happen
                             end
-                            lastfont = f
+                            lastfont = font
                         end
-                        local c = getchar(start)
                         if originals and type(originals) == "number" then
-                            c = originals[c] or c
+                            char = originals[char] or char
                         end
-                        local h = hash[c]
+                        local h = hash[char]
                         if h then
                             setattr(start,a_scriptstatus,categorytonumber[h])
                             if not first then
@@ -697,26 +698,55 @@ end)
 
 local categories = characters.categories or { }
 
+-- local function hit(root,head)
+--     local current   = getnext(head)
+--     local lastrun   = false
+--     local lastfinal = false
+--     while current and getid(current) == glyph_code do
+--         local char = getchar(current)
+--         local newroot = root[char]
+--         if newroot then
+--             local final = newroot.final
+--             if final then
+--                 lastrun   = current
+--                 lastfinal = final
+--             end
+--             root = newroot
+--         elseif categories[char] == "mn" then
+--             -- continue
+--         else
+--             return lastrun, lastfinal
+--         end
+--         current = getnext(current)
+--     end
+--     if lastrun then
+--         return lastrun, lastfinal
+--     end
+-- end
+
 local function hit(root,head)
     local current   = getnext(head)
     local lastrun   = false
     local lastfinal = false
-    while current and getid(current) == glyph_code do
-        local char = getchar(current)
-        local newroot = root[char]
-        if newroot then
-            local final = newroot.final
-            if final then
-                lastrun   = current
-                lastfinal = final
+    while current do
+        local char = isglyph(current)
+        if char then
+            local newroot = root[char]
+            if newroot then
+                local final = newroot.final
+                if final then
+                    lastrun   = current
+                    lastfinal = final
+                end
+                root = newroot
+            elseif categories[char] == "mn" then
+                -- continue
+            else
+                return lastrun, lastfinal
             end
-            root = newroot
-        elseif categories[char] == "mn" then
-            -- continue
         else
-            return lastrun, lastfinal
+            break
         end
-        current = getnext(current)
     end
     if lastrun then
         return lastrun, lastfinal
@@ -746,9 +776,11 @@ function splitters.handler(head) -- todo: also first_glyph test
                         local last, final = hit(root,current)
                         if last then
                             local next = getnext(last)
-                            if next and getid(next) == glyph_code then
-                                local nextchar = getchar(next)
-                                if tree[nextchar] then
+                            if next then
+                                local nextchar = isglyph(next)
+                                if not nextchar then
+                                    -- we're done
+                                elseif tree[nextchar] then
                                     if trace_splitdetail then
                                         if type(final) == "string" then
                                             report_splitting("advance %s processing between <%s> and <%c>","with",final,nextchar)
@@ -886,11 +918,11 @@ setmetatableindex(cache_nop,function(t,k) local v = { } t[k] = v return v end)
 -- playing nice
 
 function autofontfeature.handler(head)
-    for n in traverse_id(glyph_code,tonut(head)) do
+    for n in traverse_char(tonut(head)) do
      -- if getattr(n,a_scriptinjection) then
      --     -- already tagged by script feature, maybe some day adapt
      -- else
-            local char = getchar(n)
+            local char   = getchar(n)
             local script = otfscripts[char]
             if script then
                 local dynamic = getattr(n,0) or 0

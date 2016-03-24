@@ -1306,7 +1306,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         end
         if glue_data then
             if force_glue then
-                if trace then trace_done("flushed due to " .. why,glue_data) end
+                if trace then trace_done("flushed due to forced " .. why,glue_data) end
                 head = forced_skip(head,current,getfield(glue_data,"width") or 0,"before",trace)
                 free_node(glue_data)
             else
@@ -1320,9 +1320,12 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
              -- end
                 local w = getfield(glue_data,"width")
                 if w ~= 0 then
-                    if trace then trace_done("flushed due to " .. why,glue_data) end
+                    if trace then trace_done("flushed due to non zero " .. why,glue_data) end
                     head = insert_node_before(head,current,glue_data)
-                else -- i really need to clean this up
+                elseif getfield(glue_data,"stretch") ~= 0 or getfield(glue_data,"shrink") ~= 0 then
+                    if trace then trace_done("flushed due to stretch/shrink in" .. why,glue_data) end
+                    head = insert_node_before(head,current,glue_data)
+                else
                  -- report_vspacing("needs checking (%s): %p",skipcodes[getsubtype(glue_data)],w)
                     free_node(glue_data)
                 end

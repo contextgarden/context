@@ -30,7 +30,6 @@ local getattr      = nuts.getattr
 local setattr      = nuts.setattr
 local getfont      = nuts.getfont
 local getsubtype   = nuts.getsubtype
-local getchar      = nuts.getchar
 local getlist      = nuts.getlist
 local setlist      = nuts.setlist
 

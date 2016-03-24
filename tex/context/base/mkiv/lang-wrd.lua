@@ -38,6 +38,7 @@ local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
 local setattr         = nuts.setattr
+local isglyph         = nuts.isglyph
 
 local traverse_nodes  = nuts.traverse
 local traverse_ids    = nuts.traverse_id
@@ -158,8 +159,8 @@ local function mark_words(head,whenfound) -- can be optimized and shared
     -- we haven't done the fonts yet so we have characters (otherwise
     -- we'd have to use the tounicodes)
     while current do
-        local id = getid(current)
-        if id == glyph_code then
+        local code, id = isglyph(current)
+        if code then
             local a = getfield(current,"lang")
             if a then
                 if a ~= language then
@@ -172,7 +173,6 @@ local function mark_words(head,whenfound) -- can be optimized and shared
                 action()
                 language = a
             end
-            local code = getchar(current)
             local data = chardata[code]
             if is_letter[data.category] then
                 n = n + 1

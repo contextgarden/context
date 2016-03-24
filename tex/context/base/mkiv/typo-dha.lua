@@ -53,13 +53,13 @@ local nutstring          = nuts.tostring
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getfont            = nuts.getfont
-local getchar            = nuts.getchar
 local getid              = nuts.getid
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getfield           = nuts.getfield
 local getattr            = nuts.getattr
 local getprop            = nuts.getprop
+local isglyph            = nuts.isglyph -- or ischar
 
 local setfield           = nuts.setfield
 local setprop            = nuts.setprop
@@ -124,9 +124,8 @@ end
 
 local function nextisright(current)
     current = getnext(current)
-    local id = getid(current)
+    local character, id = isglyph(current)
     if id == glyph_code then
-        local character = getchar(current)
         local direction = chardirections[character]
         return direction == "r" or direction == "al" or direction == "an"
     end
@@ -134,9 +133,8 @@ end
 
 local function previsright(current)
     current = getprev(current)
-    local id = getid(current)
+    local character, id = isglyph(current)
     if id == glyph_code then
-        local character = getchar(current)
         local direction = chardirections[character]
         return direction == "r" or direction == "al" or direction == "an"
     end
@@ -161,7 +159,7 @@ local function process(start)
     local fences   = { }
 
     while current do
-        local id   = getid(current)
+        local character, id = isglyph(current)
         local next = getnext(current)
         if id == math_code then
             current = getnext(end_of_math(next))
@@ -179,9 +177,8 @@ local function process(start)
                     prevattr = attr
                 end
             end
-            if id == glyph_code then
+            if character then
                 if attr and attr > 0 then
-                    local character = getchar(current)
                     if character == 0 then
                         -- skip signals
                         setprop(current,"direction",true)

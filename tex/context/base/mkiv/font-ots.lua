@@ -734,7 +734,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
         local discfound = false
         local lastdisc  = nil
         while current do
-            local char = ischar(current,currentfont)
+            local char, id = ischar(current,currentfont)
             if char then
                 if skipmark and marks[char] then
                     current = getnext(current)
@@ -755,14 +755,11 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
             elseif char == false then
                 -- kind of weird
                 break
+            elseif id == disc_code then
+                lastdisc = current
+                current  = getnext(current)
             else
-                local id = getid(current)
-                if id == disc_code then
-                    lastdisc = current
-                    current  = getnext(current)
-                else
-                    break
-                end
+                break
             end
         end
         local lig = ligature.ligature
@@ -2110,7 +2107,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                             sweeptype = nil
                         end
                         if last then
-                            local char = ischar(last,currentfont)
+                            local char, id = ischar(last,currentfont)
                             if char then
                                 local ccd = descriptions[char]
                                 if ccd then
@@ -2153,57 +2150,54 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                     match = false
                                 end
                                 break
-                            else
-                                local id = getid(last)
-                                if id == disc_code then
-                                    diskseen              = true
-                                    discfound             = last
-                                    notmatchpre[last]     = nil
-                                    notmatchpost[last]    = true
-                                    notmatchreplace[last] = nil
-                                    local pre, post, replace = getdisc(last)
-                                    if pre then
-                                        local n = n
-                                        while pre do
-                                            if seq[n][getchar(pre)] then
-                                                n = n + 1
-                                                pre = getnext(pre)
-                                                if n > l then
-                                                    break
-                                                end
-                                            else
-                                                notmatchpre[last] = true
+                            elseif id == disc_code then
+                                diskseen              = true
+                                discfound             = last
+                                notmatchpre[last]     = nil
+                                notmatchpost[last]    = true
+                                notmatchreplace[last] = nil
+                                local pre, post, replace = getdisc(last)
+                                if pre then
+                                    local n = n
+                                    while pre do
+                                        if seq[n][getchar(pre)] then
+                                            n = n + 1
+                                            pre = getnext(pre)
+                                            if n > l then
                                                 break
                                             end
-                                        end
-                                        if n <= l then
+                                        else
                                             notmatchpre[last] = true
+                                            break
                                         end
-                                    else
+                                    end
+                                    if n <= l then
                                         notmatchpre[last] = true
                                     end
-                                    if replace then
-                                        -- so far we never entered this branch
-                                        while replace do
-                                            if seq[n][getchar(replace)] then
-                                                n = n + 1
-                                                replace = getnext(replace)
-                                                if n > l then
-                                                    break
-                                                end
-                                            else
-                                                notmatchreplace[last] = true
-                                                match = not notmatchpre[last]
+                                else
+                                    notmatchpre[last] = true
+                                end
+                                if replace then
+                                    -- so far we never entered this branch
+                                    while replace do
+                                        if seq[n][getchar(replace)] then
+                                            n = n + 1
+                                            replace = getnext(replace)
+                                            if n > l then
                                                 break
                                             end
+                                        else
+                                            notmatchreplace[last] = true
+                                            match = not notmatchpre[last]
+                                            break
                                         end
-                                        match = not notmatchpre[last]
                                     end
-                                    last = getnext(last)
-                                else
-                                    match = false
-                                    break
+                                    match = not notmatchpre[last]
                                 end
+                                last = getnext(last)
+                            else
+                                match = false
+                                break
                             end
                         else
                             match = false
@@ -2225,7 +2219,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                         local n = f - 1
                         while n >= 1 do
                             if prev then
-                                local char = ischar(prev,currentfont)
+                                local char, id = ischar(prev,currentfont)
                                 if char then
                                     local ccd = descriptions[char]
                                     if ccd then
@@ -2264,77 +2258,74 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                         match = false
                                     end
                                     break
-                                else
-                                    local id = getid(prev)
-                                    if id == disc_code then
-                                        -- the special case: f i where i becomes dottless i ..
-                                        diskseen              = true
-                                        discfound             = prev
-                                        notmatchpre[prev]     = true
-                                        notmatchpost[prev]    = nil
-                                        notmatchreplace[prev] = nil
-                                        local pre, post, replace, pretail, posttail, replacetail = getdisc(prev,true)
-                                        if pre ~= start and post ~= start and replace ~= start then
-                                            if post then
-                                                local n = n
-                                                while posttail do
-                                                    if seq[n][getchar(posttail)] then
-                                                        n = n - 1
-                                                        if posttail == post then
-                                                            break
-                                                        else
-                                                            posttail = getprev(posttail)
-                                                            if n < 1 then
-                                                                break
-                                                            end
-                                                        end
-                                                    else
-                                                        notmatchpost[prev] = true
+                                elseif id == disc_code then
+                                    -- the special case: f i where i becomes dottless i ..
+                                    diskseen              = true
+                                    discfound             = prev
+                                    notmatchpre[prev]     = true
+                                    notmatchpost[prev]    = nil
+                                    notmatchreplace[prev] = nil
+                                    local pre, post, replace, pretail, posttail, replacetail = getdisc(prev,true)
+                                    if pre ~= start and post ~= start and replace ~= start then
+                                        if post then
+                                            local n = n
+                                            while posttail do
+                                                if seq[n][getchar(posttail)] then
+                                                    n = n - 1
+                                                    if posttail == post then
                                                         break
+                                                    else
+                                                        posttail = getprev(posttail)
+                                                        if n < 1 then
+                                                            break
+                                                        end
                                                     end
-                                                end
-                                                if n >= 1 then
+                                                else
                                                     notmatchpost[prev] = true
-                                                end
-                                            else
-                                                notmatchpost[prev] = true
-                                            end
-                                            if replace then
-                                                -- we seldom enter this branch (e.g. on brill efficient)
-                                                while replacetail do
-                                                    if seq[n][getchar(replacetail)] then
-                                                        n = n - 1
-                                                        if replacetail == replace then
-                                                            break
-                                                        else
-                                                            replacetail = getprev(replacetail)
-                                                            if n < 1 then
-                                                                break
-                                                            end
-                                                        end
-                                                    else
-                                                        notmatchreplace[prev] = true
-                                                        match = not notmatchpost[prev]
-                                                        break
-                                                    end
-                                                end
-                                                if not match then
                                                     break
                                                 end
-                                            else
-                                                -- skip 'm
+                                            end
+                                            if n >= 1 then
+                                                notmatchpost[prev] = true
+                                            end
+                                        else
+                                            notmatchpost[prev] = true
+                                        end
+                                        if replace then
+                                            -- we seldom enter this branch (e.g. on brill efficient)
+                                            while replacetail do
+                                                if seq[n][getchar(replacetail)] then
+                                                    n = n - 1
+                                                    if replacetail == replace then
+                                                        break
+                                                    else
+                                                        replacetail = getprev(replacetail)
+                                                        if n < 1 then
+                                                            break
+                                                        end
+                                                    end
+                                                else
+                                                    notmatchreplace[prev] = true
+                                                    match = not notmatchpost[prev]
+                                                    break
+                                                end
+                                            end
+                                            if not match then
+                                                break
                                             end
                                         else
                                             -- skip 'm
                                         end
-                                    elseif seq[n][32] then
-                                        n = n - 1
                                     else
-                                        match = false
-                                        break
+                                        -- skip 'm
                                     end
-                                    prev = getprev(prev)
+                                elseif seq[n][32] then
+                                    n = n - 1
+                                else
+                                    match = false
+                                    break
                                 end
+                                prev = getprev(prev)
                             elseif seq[n][32] then -- somewhat special, as zapfino can have many preceding spaces
                                 n = n - 1
                             else
@@ -2364,7 +2355,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                     local n = l + 1
                     while n <= s do
                         if current then
-                            local char = ischar(current,currentfont)
+                            local char, id = ischar(current,currentfont)
                             if char then
                                 local ccd = descriptions[char]
                                 if ccd then
@@ -2403,64 +2394,61 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                     match = false
                                 end
                                 break
-                            else
-                                local id = getid(current)
-                                if id == disc_code then
-                                    diskseen                 = true
-                                    discfound                = current
-                                    notmatchpre[current]     = nil
-                                    notmatchpost[current]    = true
-                                    notmatchreplace[current] = nil
-                                    local pre, post, replace = getdisc(current)
-                                    if pre then
-                                        local n = n
-                                        while pre do
-                                            if seq[n][getchar(pre)] then
-                                                n = n + 1
-                                                pre = getnext(pre)
-                                                if n > s then
-                                                    break
-                                                end
-                                            else
-                                                notmatchpre[current] = true
+                            elseif id == disc_code then
+                                diskseen                 = true
+                                discfound                = current
+                                notmatchpre[current]     = nil
+                                notmatchpost[current]    = true
+                                notmatchreplace[current] = nil
+                                local pre, post, replace = getdisc(current)
+                                if pre then
+                                    local n = n
+                                    while pre do
+                                        if seq[n][getchar(pre)] then
+                                            n = n + 1
+                                            pre = getnext(pre)
+                                            if n > s then
                                                 break
                                             end
-                                        end
-                                        if n <= s then
+                                        else
                                             notmatchpre[current] = true
-                                        end
-                                    else
-                                        notmatchpre[current] = true
-                                    end
-                                    if replace then
-                                        -- so far we never entered this branch
-                                        while replace do
-                                            if seq[n][getchar(replace)] then
-                                                n = n + 1
-                                                replace = getnext(replace)
-                                                if n > s then
-                                                    break
-                                                end
-                                            else
-                                                notmatchreplace[current] = true
-                                                match = notmatchpre[current]
-                                                break
-                                            end
-                                        end
-                                        if not match then
                                             break
                                         end
-                                    else
-                                        -- skip 'm
                                     end
-                                elseif seq[n][32] then -- brrr
-                                    n = n + 1
+                                    if n <= s then
+                                        notmatchpre[current] = true
+                                    end
                                 else
-                                    match = false
-                                    break
+                                    notmatchpre[current] = true
                                 end
-                                current = getnext(current)
+                                if replace then
+                                    -- so far we never entered this branch
+                                    while replace do
+                                        if seq[n][getchar(replace)] then
+                                            n = n + 1
+                                            replace = getnext(replace)
+                                            if n > s then
+                                                break
+                                            end
+                                        else
+                                            notmatchreplace[current] = true
+                                            match = notmatchpre[current]
+                                            break
+                                        end
+                                    end
+                                    if not match then
+                                        break
+                                    end
+                                else
+                                    -- skip 'm
+                                end
+                            elseif seq[n][32] then -- brrr
+                                n = n + 1
+                            else
+                                match = false
+                                break
                             end
+                            current = getnext(current)
                         elseif seq[n][32] then
                             n = n + 1
 current = getnext(current)
@@ -3429,7 +3417,7 @@ local function featuresprocessor(head,font,attr)
                 else
 
                     while start do
-                        local char = ischar(start,font)
+                        local char, id = ischar(start,font)
                         if char then
                             local a = getattr(start,0)
                             if a then
@@ -3459,29 +3447,26 @@ local function featuresprocessor(head,font,attr)
                         elseif char == false then
                            -- whatever glyph
                            start = getnext(start)
-                        else
-                            local id = getid(start)
-                            if id == disc_code then
-                                local ok
-                                if gpossing then
-                                    start, ok = kernrun(start,k_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                                elseif typ == "gsub_ligature" then
-                                    start, ok = testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                                else
-                                    start, ok = comprun(start,c_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                                end
-                                if ok then
-                                    success = true
-                                end
-                            elseif id == math_code then
-                                start = getnext(end_of_math(start))
-                            elseif id == dir_code then
-                                start, topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
-                            elseif id == localpar_code then
-                                start, rlparmode, rlmode = pardirstate(start)
+                        elseif id == disc_code then
+                            local ok
+                            if gpossing then
+                                start, ok = kernrun(start,k_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+                            elseif typ == "gsub_ligature" then
+                                start, ok = testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
                             else
-                                start = getnext(start)
+                                start, ok = comprun(start,c_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
                             end
+                            if ok then
+                                success = true
+                            end
+                        elseif id == math_code then
+                            start = getnext(end_of_math(start))
+                        elseif id == dir_code then
+                            start, topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
+                        elseif id == localpar_code then
+                            start, rlparmode, rlmode = pardirstate(start)
+                        else
+                            start = getnext(start)
                         end
                     end
                 end
@@ -3489,7 +3474,7 @@ local function featuresprocessor(head,font,attr)
             else
 
                 while start do
-                    local char = ischar(start,font)
+                    local char, id = ischar(start,font)
                     if char then
                         local a = getattr(start,0)
                         if a then
@@ -3531,29 +3516,26 @@ local function featuresprocessor(head,font,attr)
                         end
                     elseif char == false then
                         start = getnext(start)
-                    else
-                        local id = getid(start)
-                        if id == disc_code then
-                            local ok
-                            if gpossing then
-                                start, ok = kernrun(start,k_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-                            elseif typ == "gsub_ligature" then
-                                start, ok = testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-                            else
-                                start, ok = comprun(start,c_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-                            end
-                            if ok then
-                                success = true
-                            end
-                        elseif id == math_code then
-                            start = getnext(end_of_math(start))
-                        elseif id == dir_code then
-                            start, topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
-                        elseif id == localpar_code then
-                            start, rlparmode, rlmode = pardirstate(start)
+                    elseif id == disc_code then
+                        local ok
+                        if gpossing then
+                            start, ok = kernrun(start,k_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+                        elseif typ == "gsub_ligature" then
+                            start, ok = testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
                         else
-                            start = getnext(start)
+                            start, ok = comprun(start,c_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
                         end
+                        if ok then
+                            success = true
+                        end
+                    elseif id == math_code then
+                        start = getnext(end_of_math(start))
+                    elseif id == dir_code then
+                        start, topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
+                    elseif id == localpar_code then
+                        start, rlparmode, rlmode = pardirstate(start)
+                    else
+                        start = getnext(start)
                     end
                 end
             end

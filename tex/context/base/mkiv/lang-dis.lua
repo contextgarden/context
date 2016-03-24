@@ -29,6 +29,7 @@ local setsubtype         = nuts.setsubtype
 local getchar            = nuts.getchar
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
+local isglyph            = nuts.isglyph
 
 local copy_node          = nuts.copy
 local free_node          = nuts.free
@@ -59,13 +60,19 @@ local expanders = {
         -- \-
         local pre, post, replace = getdisc(d)
         local done = false
-        if pre and getid(pre) == glyph_code and getchar(pre) <= 0 then
-            done = true
-            pre  = nil
+        if pre then
+            local char = isglyph(pre)
+            if char and char <= 0 then
+                done = true
+                pre  = nil
+            end
         end
-        if post and getid(post) == glyph_code and getchar(post) <= 0 then
-            done = true
-            post = nil
+        if post then
+            local char = isglyph(post)
+            if char and char <= 0 then
+                done = true
+                post = nil
+            end
         end
         if done then
             setdisc(d,pre,post,replace,discretionary_code,tex.exhyphenpenalty)

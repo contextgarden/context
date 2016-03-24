@@ -13,7 +13,6 @@ local nuts               = nodes.nuts
 
 local getnext            = nuts.getnext
 local getfont            = nuts.getfont
-local getchar            = nuts.getchar
 local getid              = nuts.getid
 local getattr            = nuts.getattr
 

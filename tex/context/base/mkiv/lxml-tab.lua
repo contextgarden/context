@@ -36,6 +36,7 @@ local xml = xml
 local concat, remove, insert = table.concat, table.remove, table.insert
 local type, next, setmetatable, getmetatable, tonumber, rawset = type, next, setmetatable, getmetatable, tonumber, rawset
 local lower, find, match, gsub = string.lower, string.find, string.match, string.gsub
+local sort = table.sort
 local utfchar = utf.char
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, S, R, C, V, C, Cs = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.V, lpeg.C, lpeg.Cs
@@ -1316,29 +1317,44 @@ and then handle the lot.</p>
 
 local f_attribute = formatters['%s=%q']
 
+-- we could reuse ats
+
 local function verbose_element(e,handlers,escape) -- options
     local handle = handlers.handle
     local serialize = handlers.serialize
     local ens, etg, eat, edt, ern = e.ns, e.tg, e.at, e.dt, e.rn
     local ats = eat and next(eat) and { }
     if ats then
+        -- we now sort attributes
         local n = 0
-        for k,v in next, eat do
+        for k in next, eat do
             n = n + 1
-            ats[n] = f_attribute(k,escaped(v))
+            ats[n] = k
+        end
+        if n == 1 then
+            local k = ats[1]
+            ats = f_attribute(k,escaped(eat[k]))
+        else
+            sort(ats)
+            for i=1,n do
+                local k = ats[i]
+                ats[i] = f_attribute(k,escaped(eat[k]))
+            end
+            ats = concat(ats," ")
         end
     end
     if ern and trace_entities and ern ~= ens then
         ens = ern
     end
+    local n = edt and #edt
     if ens ~= "" then
-        if edt and #edt > 0 then
+        if n and n > 0 then
             if ats then
-                handle("<",ens,":",etg," ",concat(ats," "),">")
+                handle("<",ens,":",etg," ",ats,">")
             else
                 handle("<",ens,":",etg,">")
             end
-            for i=1,#edt do
+            for i=1,n do
                 local e = edt[i]
                 if type(e) == "string" then
                     handle(escaped(e))
@@ -1349,19 +1365,19 @@ local function verbose_element(e,handlers,escape) -- options
             handle("</",ens,":",etg,">")
         else
             if ats then
-                handle("<",ens,":",etg," ",concat(ats," "),"/>")
+                handle("<",ens,":",etg," ",ats,"/>")
             else
                 handle("<",ens,":",etg,"/>")
             end
         end
     else
-        if edt and #edt > 0 then
+        if n and n > 0 then
             if ats then
-                handle("<",etg," ",concat(ats," "),">")
+                handle("<",etg," ",ats,">")
             else
                 handle("<",etg,">")
             end
-            for i=1,#edt do
+            for i=1,n do
                 local e = edt[i]
                 if type(e) == "string" then
                     handle(escaped(e)) -- option: hexify escaped entities
@@ -1372,7 +1388,7 @@ local function verbose_element(e,handlers,escape) -- options
             handle("</",etg,">")
         else
             if ats then
-                handle("<",etg," ",concat(ats," "),"/>")
+                handle("<",etg," ",ats,"/>")
             else
                 handle("<",etg,"/>")
             end

@@ -63,7 +63,6 @@ local getid              = nuts.getid
 local getattr            = nuts.getattr
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
-local getchar            = nuts.getchar
 local getlist            = nuts.getlist
 
 local setfield           = nuts.setfield

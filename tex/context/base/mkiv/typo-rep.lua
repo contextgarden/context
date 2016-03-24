@@ -26,7 +26,7 @@ local tonode          = nuts.tonode
 
 local getnext         = nuts.getnext
 local getchar         = nuts.getchar
-local getid           = nuts.getid
+local isglyph         = nuts.isglyph
 
 local getattr         = nuts.getattr
 
@@ -89,11 +89,11 @@ function nodes.handlers.stripping(head)
     head = tonut(head)
     local current, done = head, false
     while current do
-        if getid(current) == glyph_code then
+        local char, id = isglyph(current)
+        if char then
             -- it's more efficient to keep track of what needs to be kept
             local todo = getattr(current,a_stripping)
             if todo == 1 then
-                local char = getchar(current)
                 local what = glyphs[char]
                 if what then
                     head, current = process(what,head,current,char)

@@ -210,7 +210,44 @@ nuts.getlist             = direct.getlist
 nuts.setlist             = direct.setlist    or function(n,l) setfield(n,"list",l) end
 nuts.getleader           = direct.getleader
 nuts.setleader           = direct.setleader  or function(n,l) setfield(n,"leader",l) end
+
+if not direct.is_glyph then
+    local getchar    = direct.getchar
+    local getid      = direct.getid
+    local getfont    = direct.getfont
+    local glyph_code = nodes.nodecodes.glyph
+    function direct.is_glyph(n,f)
+        local id   = getid(n)
+        if id == glyph_code then
+            if f and getfont(n) == f then
+                return getchar(n)
+            else
+                return false
+            end
+        else
+            return nil, id
+        end
+    end
+    function direct.is_char(n,f)
+        local id = getid(n)
+        if id == glyph_code then
+            if getsubtype(n) >= 256 then
+                return false
+            elseif f and getfont(n) == f then
+                return getchar(n)
+            else
+                return false
+            end
+        else
+            return nil, id
+        end
+    end
+end
+
+nuts.ischar              = direct.is_char
 nuts.is_char             = direct.is_char
+nuts.isglyph             = direct.is_glyph
+nuts.is_glyph            = direct.is_glyph
 
 nuts.insert_before       = direct.insert_before
 nuts.insert_after        = direct.insert_after

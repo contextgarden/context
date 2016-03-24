@@ -43,6 +43,7 @@ local getfont              = nuts.getfont
 local getchar              = nuts.getchar
 local getfield             = nuts.getfield
 local getattr              = nuts.getattr
+local isglyph              = nuts.isglyph
 
 local setfield             = nuts.setfield
 local setattr              = nuts.setattr
@@ -196,9 +197,8 @@ function characteralign.handler(originalhead,where)
     -- we can think of constraints
     if method == v_number then
         while current do
-            local id = getid(current)
-            if id == glyph_code then
-                local char = getchar(current)
+            local char, id = isglyph(current)
+            if char then
                 local font = getfont(current)
              -- local unicode = unicodes[font][char]
                 local unicode = fontcharacters[font][char].unicode or char -- ignore tables
@@ -273,9 +273,8 @@ function characteralign.handler(originalhead,where)
         end
     else
         while current do
-            local id = getid(current)
-            if id == glyph_code then
-                local char = getchar(current)
+            local char, id = isglyph(current)
+            if char then
                 local font = getfont(current)
              -- local unicode = unicodes[font][char]
                 local unicode = fontcharacters[font][char].unicode or char -- ignore tables

@@ -189,6 +189,9 @@ nodes.getdisc           = n_getdisc
 nodes.is_char           = node.is_char
 nodes.ischar            = node.is_char
 
+nodes.is_glyph          = node.is_glyph
+nodes.isglyph           = node.is_glyph
+
 nodes.getbox            = node.getbox  or tex.getbox
 nodes.setbox            = node.setbox  or tex.setbox
 nodes.getskip           = node.getskip or tex.get

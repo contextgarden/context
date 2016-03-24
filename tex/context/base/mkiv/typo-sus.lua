@@ -42,13 +42,13 @@ local tonut           = nodes.tonut
 local tonode          = nodes.tonode
 
 local getid           = nuts.getid
-local getchar         = nuts.getchar
 local getprev         = nuts.getprev
 local getnext         = nuts.getnext
 local getfield        = nuts.getfield
 local getattr         = nuts.getattr
 local getfont         = nuts.getfont
 local getlist         = nuts.getlist
+local isglyph         = nuts.isglyph
 
 local setfield        = nuts.setfield
 local setattr         = nuts.setattr
@@ -166,9 +166,8 @@ function typesetters.marksuspects(head)
     local lastdone = nil
     while current do
         if getattr(current,a_suspecting) then
-            local id = getid(current)
-            if id == glyph_code then
-                local char = getchar(current)
+            local char, id = isglyph(current)
+            if char then
                 local code = categories[char]
                 local done = false
                 if punctuation[code] then

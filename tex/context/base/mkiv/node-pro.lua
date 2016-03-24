@@ -35,8 +35,7 @@ local actions = tasks.actions("processors")
 do
 
     local tonut   = nuts.tonut
-    local getid   = nuts.getid
-    local getchar = nuts.getchar
+    local isglyph = nuts.isglyph
     local getnext = nuts.getnext
 
     local n = 0
@@ -45,9 +44,9 @@ do
         local t, n, h = { }, 0, tonut(head)
         while h do
             n = n + 1
-            local id = getid(h)
-            if id == glyph_code then -- todo: disc etc
-                t[n] = utfchar(getchar(h))
+            local char, id = isglyph(h)
+            if char then -- todo: disc etc
+                t[n] = utfchar(char)
             else
                 t[n] = "[]"
             end

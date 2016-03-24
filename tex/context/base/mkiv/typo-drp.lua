@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['typo-drp'] = {
 -- This ons is sensitive for order (e.g. when combined with first line
 -- processing.
 
+-- todo: use isglyph
+
 local tonumber, type, next = tonumber, type, next
 local ceil = math.ceil
 local settings_to_hash = utilities.parsers.settings_to_hash

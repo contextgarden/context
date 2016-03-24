@@ -29,11 +29,11 @@ local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getboth            = nuts.getboth
 local getsubtype         = nuts.getsubtype
-local getchar            = nuts.getchar
 local getfont            = nuts.getfont
 local getid              = nuts.getid
 local getfield           = nuts.getfield
 local getattr            = nuts.getattr
+local isglyph            = nuts.isglyph
 
 local setfield           = nuts.setfield
 local setattr            = nuts.setattr
@@ -209,8 +209,8 @@ function breakpoints.handler(head)
     local map     = nil
     local current = nead
     while current do
-        local id = getid(current)
-        if id == glyph_code then
+        local char, id = isglyph(current)
+        if char then
             local a = getattr(current,a_breakpoints)
             if a and a > 0 then
                 if a ~= attr then
@@ -223,7 +223,7 @@ function breakpoints.handler(head)
                     attr = a
                 end
                 if map then
-                    local cmap = map[getchar(current)]
+                    local cmap = map[char]
                     if cmap then
                         -- for now we collect but when found ok we can move the handler here
                         -- although it saves nothing in terms of performance
@@ -291,9 +291,9 @@ function breakpoints.handler(head)
                 local cright = 0
                 local next   = getnext(current)
                 while next and nright ~= cright do
-                    local id = getid(next)
-                    if id == glyph_code then
-                        if cright == 1 and cmap[getchar(next)] then
+                    local char, id = isglyph(next)
+                    if char then
+                        if cright == 1 and cmap[char] then
                             -- let's not make it too messy
                             break
                         end

@@ -36,7 +36,6 @@ local getfield            = nuts.getfield
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getprev             = nuts.getprev
-local getid               = nuts.getid
 local getprop             = nuts.getprop
 local setprop             = nuts.setprop
 local getfont             = nuts.getfont
@@ -122,10 +121,9 @@ function analyzers.setstate(head,font)
     local first, last, current, n, done = nil, nil, head, 0, false -- maybe make n boolean
     current = tonut(current)
     while current do
-        local char = ischar(current,font)
+        local char, id = ischar(current,font)
         if char and not getprop(current,a_state) then
             done = true
-            local char = getchar(current)
             local d = descriptions[char]
             if d then
                 if d.class == "mark" then
@@ -160,24 +158,21 @@ function analyzers.setstate(head,font)
             if id == math_code then
                 current = end_of_math(current)
             end
-        else
-            local id = getid(current)
-            if id == disc_code then
-                -- always in the middle .. it doesn't make much sense to assign a property
-                -- here ... we might at some point decide to flag the components when present
-                -- but even then it's kind of bogus
-                setprop(current,a_state,s_medi)
-                last = current
-            else -- finish
-                if first and first == last then
-                    setprop(last,a_state,s_isol)
-                elseif last then
-                    setprop(last,a_state,s_fina)
-                end
-                first, last, n = nil, nil, 0
-                if id == math_code then
-                    current = end_of_math(current)
-                end
+        elseif id == disc_code then
+            -- always in the middle .. it doesn't make much sense to assign a property
+            -- here ... we might at some point decide to flag the components when present
+            -- but even then it's kind of bogus
+            setprop(current,a_state,s_medi)
+            last = current
+        else -- finish
+            if first and first == last then
+                setprop(last,a_state,s_isol)
+            elseif last then
+                setprop(last,a_state,s_fina)
+            end
+            first, last, n = nil, nil, 0
+            if id == math_code then
+                current = end_of_math(current)
             end
         end
         current = getnext(current)
@@ -306,7 +301,7 @@ function methods.arab(head,font,attr)
     local current, done = head, false
     current = tonut(current)
     while current do
-        local char = ischar(current,font)
+        local char, id = ischar(current,font)
         if char and not getprop(current,a_state) then
             done = true
             local classifier = classifiers[char]

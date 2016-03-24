@@ -60,13 +60,13 @@ local tonode              = nuts.tonode
 local nutstring           = nuts.tostring
 
 local getnext             = nuts.getnext
-local getchar             = nuts.getchar
 local getid               = nuts.getid
 local getsubtype          = nuts.getsubtype
 local getlist             = nuts.getlist
 local getattr             = nuts.getattr
 local getfield            = nuts.getfield
 local getprop             = nuts.getprop
+local isglyph             = nuts.isglyph -- or ischar
 
 local setfield            = nuts.setfield
 local setprop             = nuts.setprop
@@ -260,7 +260,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
     local size    = 0
     while current do
         size = size + 1
-        local id = getid(current)
+        local chr, id = isglyph(current)
         if getprop(current,"directions") then
             local skip = 0
             local last = id
@@ -281,7 +281,6 @@ local function build_list(head) -- todo: store node pointer ... saves loop
                 list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id, last = last }
             end
         elseif id == glyph_code then
-            local chr = getchar(current)
             local dir = directiondata[chr]
             list[size] = { char = chr, direction = dir, original = dir, level = 0 }
             current = getnext(current)

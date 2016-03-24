@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['typo-krn'] = {
 }
 
 -- glue is still somewhat suboptimal
+-- components: better split on tounicode
 
 local next, type, tonumber = next, type, tonumber
 local utfchar = utf.char
@@ -38,6 +39,7 @@ local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
 local getdisc            = nuts.getdisc
+local isglyph            = nuts.isglyph
 
 local setfield           = nuts.setfield
 local getattr            = nuts.getattr
@@ -222,7 +224,7 @@ end
 -- sublists .. beware: we can have char -1
 
 local function inject_begin(boundary,prev,keeptogether,krn,ok) -- prev is a glyph
-    local id = getid(boundary)
+    local char, id = isglyph(boundary)
     if id == kern_code then
         if getsubtype(boundary) == kerning_code or getattr(boundary,a_fontkern) then
             local inject = true
@@ -239,17 +241,16 @@ local function inject_begin(boundary,prev,keeptogether,krn,ok) -- prev is a glyp
                 return boundary, true
             end
         end
-    elseif id == glyph_code then
+    elseif char then
         if keeptogether and keeptogether(boundary,prev) then
             -- keep 'm
         else
-            local charone = getchar(prev)
-            if charone > 0 then
-                local font    = getfont(boundary)
-                local chartwo = getchar(boundary)
-                local data    = chardata[font][charone]
-                local kerns   = data and data.kerns
-                local kern    = new_kern((kerns and kerns[chartwo] or 0) + quaddata[font]*krn)
+            local prevchar = isglyph(prev)
+            if prevchar and prevchar > 0 then
+                local font  = getfont(boundary)
+                local data  = chardata[font][prevchar]
+                local kerns = data and data.kerns
+                local kern  = new_kern((kerns and kerns[char] or 0) + quaddata[font]*krn)
                 setlink(kern,boundary)
                 return kern, true
             end
@@ -260,7 +261,7 @@ end
 
 local function inject_end(boundary,next,keeptogether,krn,ok)
     local tail = find_node_tail(boundary)
-    local id   = getid(tail)
+    local char, id = getid(tail)
     if id == kern_code then
         if getsubtype(tail) == kerning_code or getattr(tail,a_fontkern) then
             local inject = true
@@ -277,17 +278,16 @@ local function inject_end(boundary,next,keeptogether,krn,ok)
                 return boundary, true
             end
         end
-    elseif id == glyph_code then
+    elseif char then
         if keeptogether and keeptogether(tail,two) then
             -- keep 'm
         else
-            local charone = getchar(tail)
-            if charone > 0 then
-                local font    = getfont(tail)
-                local chartwo = getchar(next)
-                local data    = chardata[font][charone]
-                local kerns   = data and data.kerns
-                local kern    = (kerns and kerns[chartwo] or 0) + quaddata[font]*krn
+            local nextchar = isglyph(tail)
+            if nextchar and nextchar > 0 then
+                local font  = getfont(tail)
+                local data  = chardata[font][nextchar]
+                local kerns = data and data.kerns
+                local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
                 insert_node_after(boundary,tail,new_kern(kern))
                 return boundary, true
             end
@@ -303,15 +303,14 @@ local function process_list(head,keeptogether,krn,font,okay)
     local kern  = 0
     local mark  = font and markdata[font]
     while start  do
-        local id = getid(start)
-        if id == glyph_code then
+        local char, id = isglyph(start)
+        if char then
             if not font then
                 font = getfont(start)
                 mark = markdata[font]
                 kern = quaddata[font]*krn
             end
             if prev then
-                local char = getchar(start)
                 if mark[char] then
                     -- skip
                 elseif pid == kern_code then

@@ -9989,7 +9989,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 56627, stripped down to: 35669
+-- original size: 56973, stripped down to: 35872
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -10006,6 +10006,7 @@ local xml=xml
 local concat,remove,insert=table.concat,table.remove,table.insert
 local type,next,setmetatable,getmetatable,tonumber,rawset=type,next,setmetatable,getmetatable,tonumber,rawset
 local lower,find,match,gsub=string.lower,string.find,string.match,string.gsub
+local sort=table.sort
 local utfchar=utf.char
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local P,S,R,C,V,C,Cs=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.V,lpeg.C,lpeg.Cs
@@ -10950,22 +10951,34 @@ local function verbose_element(e,handlers,escape)
   local ats=eat and next(eat) and {}
   if ats then
     local n=0
-    for k,v in next,eat do
+    for k in next,eat do
       n=n+1
-      ats[n]=f_attribute(k,escaped(v))
+      ats[n]=k
+    end
+    if n==1 then
+      local k=ats[1]
+      ats=f_attribute(k,escaped(eat[k]))
+    else
+      sort(ats)
+      for i=1,n do
+        local k=ats[i]
+        ats[i]=f_attribute(k,escaped(eat[k]))
+      end
+      ats=concat(ats," ")
     end
   end
   if ern and trace_entities and ern~=ens then
     ens=ern
   end
+  local n=edt and #edt
   if ens~="" then
-    if edt and #edt>0 then
+    if n and n>0 then
       if ats then
-        handle("<",ens,":",etg," ",concat(ats," "),">")
+        handle("<",ens,":",etg," ",ats,">")
       else
         handle("<",ens,":",etg,">")
       end
-      for i=1,#edt do
+      for i=1,n do
         local e=edt[i]
         if type(e)=="string" then
           handle(escaped(e))
@@ -10976,19 +10989,19 @@ local function verbose_element(e,handlers,escape)
       handle("</",ens,":",etg,">")
     else
       if ats then
-        handle("<",ens,":",etg," ",concat(ats," "),"/>")
+        handle("<",ens,":",etg," ",ats,"/>")
       else
         handle("<",ens,":",etg,"/>")
       end
     end
   else
-    if edt and #edt>0 then
+    if n and n>0 then
       if ats then
-        handle("<",etg," ",concat(ats," "),">")
+        handle("<",etg," ",ats,">")
       else
         handle("<",etg,">")
       end
-      for i=1,#edt do
+      for i=1,n do
         local e=edt[i]
         if type(e)=="string" then
           handle(escaped(e)) 
@@ -10999,7 +11012,7 @@ local function verbose_element(e,handlers,escape)
       handle("</",etg,">")
     else
       if ats then
-        handle("<",etg," ",concat(ats," "),"/>")
+        handle("<",etg," ",ats,"/>")
       else
         handle("<",etg,"/>")
       end
@@ -18722,8 +18735,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 796212
--- stripped bytes    : 288762
+-- original bytes    : 796558
+-- stripped bytes    : 288905
 
 -- end library merge
 

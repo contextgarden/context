@@ -13,7 +13,7 @@
 %C details.
 
 % we can make this module a bit cleaner using more recent features
-% like sorting the xml directly
+% like sorting the xml directly .. will happen stepwise
 
 % \startluacode
 %     collectgarbage("stop")
@@ -506,25 +506,25 @@
 
 \installsetuponlycommandhandler \??interfacesetup {setup} % \??interfacesetup
 
-\unexpanded\def\c!setup!definereserved#1#2%
+\unexpanded\def\cmd_define_reserved#1#2%
   {\setvalue{\??interfacesetupreserved#1}{#2}}
 
-\unexpanded\def\c!setup!reserved!#1%
+\unexpanded\def\cmd_reserved_value#1%
   {\executeifdefined{\??interfacesetupreserved#1}{#1}}
 
-\unexpanded\def\c!setup!internal!#1%
+\unexpanded\def\cmd_internal_value#1%
   {\dontleavehmode
    \begingroup
    \setupintfont{#1}%
    \endgroup}
 
-\unexpanded\def\c!setup!text!#1%
+\unexpanded\def\cmd_text_value#1%
   {\dontleavehmode
    \begingroup
    \setupvarfont{#1}%
    \endgroup}
 
-\unexpanded\def\c!setup!command!#1%
+\unexpanded\def\cmd_command_value#1%
   {{\setupvarfont{\texescape...#1}}}
 
 \defineregister
@@ -674,36 +674,42 @@
 
 \newconstant\kindofsetup
 
-\unexpanded\def\basicsetup{\kindofsetup\zerocount\doshowsetup}
-\unexpanded\def\shortsetup{\kindofsetup\plusone  \doshowsetup}
-\unexpanded\def\setup     {\kindofsetup\plustwo  \doshowsetup}
-\unexpanded\def\showsetup {\kindofsetup\plustwo  \doshowsetup}
+\unexpanded\def\basicsetup{\kindofsetup\zerocount\cmd_show_setup}
+\unexpanded\def\shortsetup{\kindofsetup\plusone  \cmd_show_setup}
+\unexpanded\def\setup     {\kindofsetup\plustwo  \cmd_show_setup}
+\unexpanded\def\showsetup {\kindofsetup\plustwo  \cmd_show_setup}
 
-%unexpanded\def\showsetupinlist#1#2#3{\kindofsetup\plustwo\showsetupindeed{#3}\par}
-\unexpanded\def\showsetupinlist#1#2#3{\kindofsetup\plustwo\xmlsetup{#3}{xml:setups:typeset}\par}
+\unexpanded\def\showsetupinlist#1#2#3%
+  {\kindofsetup\plustwo\xmlsetup{#3}{xml:setups:typeset}\par}
 
 % todo: only references in lists
 
-\unexpanded\def\doshowsetup
-  {\dosingleempty\dodoshowsetup}
+\newconditional\c_cmd_showsetup
 
-\def\dodoshowsetup[#1]%
+\installtextracker
+  {cmd.showsetup}
+  {\settrue\c_cmd_showsetup}
+  {\setfalse\c_cmd_showsetup}
+
+\unexpanded\def\cmd_show_setup
+  {\doifelsenextoptionalcs\cmd_show_setup_yes\cmd_show_setup_nop}
+
+\def\cmd_show_setup_yes[#1]%
   {\iffirstargument
-     \dododoshowsetup{#1}%
+     \cmd_show_setup_nop{#1}%
    \else
-     \expandafter\dododoshowsetup
+     \expandafter\cmd_show_setup_nop
    \fi}
 
-\def\dododoshowsetup#1% this will trigger 'used'
+\def\cmd_show_setup_nop#1% this will trigger 'used'
   {\registersort[texcommand][stp:x:#1]%
-   \showsetupindeed{#1}}
-
-\def\showsetupindeed#1%
-  {\startelement[setup][name=#1]%
+   \ifconditional\c_cmd_showsetup
+     \writestatus{setup}{#1 / \rawsynonymname{texcommand}{stp:x:#1}}%
+   \fi
+   \startelement[setup][name=#1]%
      \startelement[noexport][comment={setup definition #1}]%
-%      \nospaces\plusone
        \xmlsetup{\rawsynonymname{texcommand}{stp:x:#1}}{xml:setups:typeset}
-   % \xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and '\e!start' or '') .. @name]/command(xml:setups:typeset)}%
+     % \xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and '\e!start' or '') .. @name]/command(xml:setups:typeset)}%
      \stopelement
    \stopelement}
 
@@ -1006,9 +1012,9 @@
 
 \startxmlsetups xml:setups:parameter
     \doifmodeelse {setups-measure} {
-        \c!setup!reserved!{\xmlatt{#1}{name}}\par
+        \cmd_reserved_value{\xmlatt{#1}{name}}\par
     } {
-        \startsecondSETUPcolumn{\c!setup!reserved!{\xmlatt{#1}{name}}}{=}
+        \startsecondSETUPcolumn{\cmd_reserved_value{\xmlatt{#1}{name}}}{=}
             \ignorespaces
             \xmlflush{#1}
             \doifmode{interface:setup:defaults} {
@@ -1037,21 +1043,21 @@
 \xmlmapvalue{setups:method}{none}  {}
 
 \startxmlsetups xml:setups:constant:value
-    \c!setup!reserved!{\xmlatt{#1}{type}}
+    \cmd_reserved_value{\xmlatt{#1}{type}}
 \stopxmlsetups
 
 \startxmlsetups xml:setups:constant
     \doifelsemode {setups-pass-one} {
     } {
         \doifsomethingelse{\xmlatt{#1}{prefix}} {
-            \c!setup!reserved!{\xmllastatt}
+            \cmd_reserved_value{\xmllastatt}
             \xmlmappedvalue{setups:method}{\xmlatt{#1}{method}}{none}
         } {
             \doif {\xmlatt{#1}{default}} {yes} {
                 \underbar % next needs to be {braced}
             }
         }
-        {\c!setup!reserved!{\xmlatt{#1}{type}}}
+        {\cmd_reserved_value{\xmlatt{#1}{type}}}
         \space
         \ignorespaces
     }
@@ -1061,7 +1067,7 @@
     \doifelsemode {setups-pass-one} {
         \expanded{\setupintfont{\xmlatt{#1}{value}}}\ignorespaces
     } {
-        \c!setup!reserved!{\xmlatt{#1}{value}}
+        \cmd_reserved_value{\xmlatt{#1}{value}}
         \space
         \ignorespaces
     }
@@ -1069,7 +1075,7 @@
 
 \startxmlsetups xml:setups:inherit
    \secondSETUPcolumn {
-        \c!setup!text!{\getmessage{setup}{inherits}}
+        \cmd_text_value{\getmessage{setup}{inherits}}
         \enspace
         \letterbackslash
         \xmlatt{#1}{name}
@@ -1079,64 +1085,64 @@
 
 \unexpanded\def\simpleSETUPargument#1%
   {\startfirstSETUPcolumn{\showSETUPnumber}%
-      \c!setup!internal!{#1}%
+      \cmd_internal_value{#1}%
    \stopfirstSETUPcolumn
    \blank[\v!halfline]
    \ignorespaces}
 
-\c!setup!definereserved {cd:command}               {\c!setup!internal!{\getmessage{setup}{command}}}
-\c!setup!definereserved {cd:dimension}             {\c!setup!internal!{\getmessage{setup}{dimension}}}
-\c!setup!definereserved {cd:file}                  {\c!setup!internal!{\getmessage{setup}{file}}}
-\c!setup!definereserved {cd:buffer}                {\c!setup!internal!{\getmessage{setup}{buffer}}}
-\c!setup!definereserved {cd:name}                  {\c!setup!internal!{\getmessage{setup}{identifier}}}
-\c!setup!definereserved {cd:character}             {\c!setup!internal!{\getmessage{setup}{character}}}
-\c!setup!definereserved {cd:mark}                  {\c!setup!internal!{\getmessage{setup}{mark}}}
-\c!setup!definereserved {cd:number}                {\c!setup!internal!{\getmessage{setup}{number}}}
-\c!setup!definereserved {cd:first}                 {\c!setup!internal!{\getmessage{setup}{first}}}
-\c!setup!definereserved {cd:last}                  {\c!setup!internal!{\getmessage{setup}{last}}}
-\c!setup!definereserved {cd:reference}             {\c!setup!internal!{\getmessage{setup}{reference}}}
-\c!setup!definereserved {cd:plural}                {\c!setup!internal!{\getmessage{setup}{plural}}}
-\c!setup!definereserved {cd:singular}              {\c!setup!internal!{\getmessage{setup}{singular}}}
-\c!setup!definereserved {cd:text}                  {\c!setup!internal!{\getmessage{setup}{text}}}
-\c!setup!definereserved {cd:formula}               {\c!setup!internal!{\getmessage{setup}{formula}}}
-\c!setup!definereserved {cd:file}                  {\c!setup!internal!{\getmessage{setup}{file}}}
-\c!setup!definereserved {cd:matrix}                {\c!setup!internal!{\getmessage{setup}{matrix}}}
-\c!setup!definereserved {cd:list}                  {\c!setup!internal!{\getmessage{setup}{list}}}
-\c!setup!definereserved {cd:section}               {\c!setup!internal!{\getmessage{setup}{section}}}
-\c!setup!definereserved {cd:language}              {\c!setup!internal!{\getmessage{setup}{language}}}
-\c!setup!definereserved {cd:section}               {\c!setup!internal!{\getmessage{setup}{section}}}
-\c!setup!definereserved {cd:language}              {\c!setup!internal!{\getmessage{setup}{language}}}
-\c!setup!definereserved {cd:processor}             {\c!setup!internal!{\getmessage{setup}{processor}}}
-\c!setup!definereserved {cd:style}                 {\c!setup!internal!{\getmessage{setup}{style}}}
-\c!setup!definereserved {cd:font}                  {\c!setup!internal!{\getmessage{setup}{font}}}
-\c!setup!definereserved {cd:character}             {\c!setup!internal!{\getmessage{setup}{character}}}
-\c!setup!definereserved {cd:userdata}              {\c!setup!internal!{\getmessage{setup}{userdata}}}
-\c!setup!definereserved {cd:key}                   {\c!setup!internal!{\getmessage{setup}{key}}}
-\c!setup!definereserved {cd:value}                 {\c!setup!internal!{\getmessage{setup}{value}}}
-\c!setup!definereserved {cd:color}                 {\c!setup!internal!{\getmessage{setup}{color}}}
-\c!setup!definereserved {cd:template}              {\c!setup!internal!{\getmessage{setup}{template}}}
-\c!setup!definereserved {cd:node}                  {\c!setup!internal!{\getmessage{setup}{node}}}
-\c!setup!definereserved {cd:lpath}                 {\c!setup!internal!{\getmessage{setup}{lpath}}}
-\c!setup!definereserved {cd:setup}                 {\c!setup!internal!{\getmessage{setup}{setup}}}
-\c!setup!definereserved {cd:xmlsetup}              {\c!setup!internal!{\getmessage{setup}{xmlsetup}}}
-\c!setup!definereserved {cd:luafunction}           {\c!setup!internal!{\getmessage{setup}{luafunction}}}
-\c!setup!definereserved {cd:marking}               {\c!setup!internal!{\getmessage{setup}{marking}}}
-\c!setup!definereserved {cd:sectionblock}          {\c!setup!internal!{\getmessage{setup}{sectionblock}}}
-\c!setup!definereserved {cd:row}                   {\c!setup!internal!{\getmessage{setup}{row}}}
-\c!setup!definereserved {cd:column}                {\c!setup!internal!{\getmessage{setup}{column}}}
-\c!setup!definereserved {cd:url}                   {\c!setup!internal!{\getmessage{setup}{url}}}
-\c!setup!definereserved {cd:true}                  {\c!setup!internal!{\getmessage{setup}{true}}}
-\c!setup!definereserved {cd:false}                 {\c!setup!internal!{\getmessage{setup}{false}}}
-\c!setup!definereserved {cd:category}              {\c!setup!internal!{\getmessage{setup}{category}}}
-\c!setup!definereserved {cd:csname}                {\c!setup!internal!{\getmessage{setup}{csname}}}
-\c!setup!definereserved {cd:content}               {\c!setup!internal!{\getmessage{setup}{content}}}
+\cmd_define_reserved {cd:command}               {\cmd_internal_value{\getmessage{setup}{command}}}
+\cmd_define_reserved {cd:dimension}             {\cmd_internal_value{\getmessage{setup}{dimension}}}
+\cmd_define_reserved {cd:file}                  {\cmd_internal_value{\getmessage{setup}{file}}}
+\cmd_define_reserved {cd:buffer}                {\cmd_internal_value{\getmessage{setup}{buffer}}}
+\cmd_define_reserved {cd:name}                  {\cmd_internal_value{\getmessage{setup}{identifier}}}
+\cmd_define_reserved {cd:character}             {\cmd_internal_value{\getmessage{setup}{character}}}
+\cmd_define_reserved {cd:mark}                  {\cmd_internal_value{\getmessage{setup}{mark}}}
+\cmd_define_reserved {cd:number}                {\cmd_internal_value{\getmessage{setup}{number}}}
+\cmd_define_reserved {cd:first}                 {\cmd_internal_value{\getmessage{setup}{first}}}
+\cmd_define_reserved {cd:last}                  {\cmd_internal_value{\getmessage{setup}{last}}}
+\cmd_define_reserved {cd:reference}             {\cmd_internal_value{\getmessage{setup}{reference}}}
+\cmd_define_reserved {cd:plural}                {\cmd_internal_value{\getmessage{setup}{plural}}}
+\cmd_define_reserved {cd:singular}              {\cmd_internal_value{\getmessage{setup}{singular}}}
+\cmd_define_reserved {cd:text}                  {\cmd_internal_value{\getmessage{setup}{text}}}
+\cmd_define_reserved {cd:formula}               {\cmd_internal_value{\getmessage{setup}{formula}}}
+\cmd_define_reserved {cd:file}                  {\cmd_internal_value{\getmessage{setup}{file}}}
+\cmd_define_reserved {cd:matrix}                {\cmd_internal_value{\getmessage{setup}{matrix}}}
+\cmd_define_reserved {cd:list}                  {\cmd_internal_value{\getmessage{setup}{list}}}
+\cmd_define_reserved {cd:section}               {\cmd_internal_value{\getmessage{setup}{section}}}
+\cmd_define_reserved {cd:language}              {\cmd_internal_value{\getmessage{setup}{language}}}
+\cmd_define_reserved {cd:section}               {\cmd_internal_value{\getmessage{setup}{section}}}
+\cmd_define_reserved {cd:language}              {\cmd_internal_value{\getmessage{setup}{language}}}
+\cmd_define_reserved {cd:processor}             {\cmd_internal_value{\getmessage{setup}{processor}}}
+\cmd_define_reserved {cd:style}                 {\cmd_internal_value{\getmessage{setup}{style}}}
+\cmd_define_reserved {cd:font}                  {\cmd_internal_value{\getmessage{setup}{font}}}
+\cmd_define_reserved {cd:character}             {\cmd_internal_value{\getmessage{setup}{character}}}
+\cmd_define_reserved {cd:userdata}              {\cmd_internal_value{\getmessage{setup}{userdata}}}
+\cmd_define_reserved {cd:key}                   {\cmd_internal_value{\getmessage{setup}{key}}}
+\cmd_define_reserved {cd:value}                 {\cmd_internal_value{\getmessage{setup}{value}}}
+\cmd_define_reserved {cd:color}                 {\cmd_internal_value{\getmessage{setup}{color}}}
+\cmd_define_reserved {cd:template}              {\cmd_internal_value{\getmessage{setup}{template}}}
+\cmd_define_reserved {cd:node}                  {\cmd_internal_value{\getmessage{setup}{node}}}
+\cmd_define_reserved {cd:lpath}                 {\cmd_internal_value{\getmessage{setup}{lpath}}}
+\cmd_define_reserved {cd:setup}                 {\cmd_internal_value{\getmessage{setup}{setup}}}
+\cmd_define_reserved {cd:xmlsetup}              {\cmd_internal_value{\getmessage{setup}{xmlsetup}}}
+\cmd_define_reserved {cd:luafunction}           {\cmd_internal_value{\getmessage{setup}{luafunction}}}
+\cmd_define_reserved {cd:marking}               {\cmd_internal_value{\getmessage{setup}{marking}}}
+\cmd_define_reserved {cd:sectionblock}          {\cmd_internal_value{\getmessage{setup}{sectionblock}}}
+\cmd_define_reserved {cd:row}                   {\cmd_internal_value{\getmessage{setup}{row}}}
+\cmd_define_reserved {cd:column}                {\cmd_internal_value{\getmessage{setup}{column}}}
+\cmd_define_reserved {cd:url}                   {\cmd_internal_value{\getmessage{setup}{url}}}
+\cmd_define_reserved {cd:true}                  {\cmd_internal_value{\getmessage{setup}{true}}}
+\cmd_define_reserved {cd:false}                 {\cmd_internal_value{\getmessage{setup}{false}}}
+\cmd_define_reserved {cd:category}              {\cmd_internal_value{\getmessage{setup}{category}}}
+\cmd_define_reserved {cd:csname}                {\cmd_internal_value{\getmessage{setup}{csname}}}
+\cmd_define_reserved {cd:content}               {\cmd_internal_value{\getmessage{setup}{content}}}
 
-%c!setup!definereserved {cd:noargument}            {\c!setup!command! {}}
-\c!setup!definereserved {cd:oneargument}           {\c!setup!command! {\texthash1}}
-\c!setup!definereserved {cd:twoarguments}          {\c!setup!command! {\texthash1\texthash2}}
-\c!setup!definereserved {cd:threearguments}        {\c!setup!command! {\texthash1\texthash2\texthash3}}
+%cmd_define_reserved {cd:noargument}            {\cmd_command_value {}}
+\cmd_define_reserved {cd:oneargument}           {\cmd_command_value {\texthash1}}
+\cmd_define_reserved {cd:twoarguments}          {\cmd_command_value {\texthash1\texthash2}}
+\cmd_define_reserved {cd:threearguments}        {\cmd_command_value {\texthash1\texthash2\texthash3}}
 
-\c!setup!definereserved {cd:sign}                  {[-+]}
+\cmd_define_reserved {cd:sign}                  {[-+]}
 
 %D Auxiliary.
 
@@ -1148,7 +1154,7 @@
    \setbox2=\hbox to \wd0
      {\hss
       \raise1.25\exheight\hbox
-        {\tx\ifcase\maximumSETUPargument\relax
+        {\txx\ifcase\maximumSETUPargument\relax
            \or*\else\currentSETUPargument
          \fi}%
       \hss}%
@@ -1158,7 +1164,7 @@
         \bgroup
           \txx
           \doif {\xmlatt{#1}{optional}} {yes}
-            {\c!setup!internal!{\getmessage{setup}{optional}}}%
+            {\cmd_internal_value{\getmessage{setup}{optional}}}%
         \egroup
       \hss}%
    \ht2\ht\strutbox
@@ -1359,7 +1365,7 @@
 
 \unexpanded\def\showSETUPcsname#1%
     {\showSETUP{#1}
-        {{\c!setup!command!{}}}
+        {{\cmd_command_value{}}}
         {}}
 
 \unexpanded\def\showSETUPdestination#1%
@@ -1480,7 +1486,7 @@
 % official interface
 
 \unexpanded\def\cmdinternal#1%
-  {{\tttf\c!setup!reserved!{#1}}} % todo color .. highlight
+  {{\tttf\cmd_reserved_value{#1}}} % todo color .. highlight
 
 \let\cmdbasicsetup\basicsetup
 \let\cmdshortsetup\shortsetup

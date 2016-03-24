@@ -616,13 +616,13 @@ if context then
 
     local getfield           = nuts.getfield
     local getfont            = nuts.getfont
-    local getchar            = nuts.getchar
     local getid              = nuts.getid
     local getattr            = nuts.getattr
     local getnext            = nuts.getnext
     local getprev            = nuts.getprev
     local getsubtype         = nuts.getsubtype
     local getlist            = nuts.getlist
+    local isglyph            = nuts.isglyph
 
     local setfield           = nuts.setfield
     local setchar            = nuts.setchar
@@ -1313,9 +1313,8 @@ if context then
         -- for extensions.
 
         while current and current ~= last do -- and current
-            local id = getid(current)
-            if id == glyph_code then
-                local code = getchar(current)
+            local code, id = isglyph(current)
+            if code then
                 local lang = getfield(current,"lang")
                 if lang ~= language then
                     if dictionary and size > charmin and leftmin + rightmin <= size then

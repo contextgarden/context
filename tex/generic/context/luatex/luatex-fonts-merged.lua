@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/21/16 19:48:28
+-- merge date  : 03/24/16 21:17:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -4186,7 +4186,42 @@ nuts.getlist=direct.getlist
 nuts.setlist=direct.setlist  or function(n,l) setfield(n,"list",l) end
 nuts.getleader=direct.getleader
 nuts.setleader=direct.setleader or function(n,l) setfield(n,"leader",l) end
+if not direct.is_glyph then
+  local getchar=direct.getchar
+  local getid=direct.getid
+  local getfont=direct.getfont
+  local glyph_code=nodes.nodecodes.glyph
+  function direct.is_glyph(n,f)
+    local id=getid(n)
+    if id==glyph_code then
+      if f and getfont(n)==f then
+        return getchar(n)
+      else
+        return false
+      end
+    else
+      return nil,id
+    end
+  end
+  function direct.is_char(n,f)
+    local id=getid(n)
+    if id==glyph_code then
+      if getsubtype(n)>=256 then
+        return false
+      elseif f and getfont(n)==f then
+        return getchar(n)
+      else
+        return false
+      end
+    else
+      return nil,id
+    end
+  end
+end
+nuts.ischar=direct.is_char
 nuts.is_char=direct.is_char
+nuts.isglyph=direct.is_glyph
+nuts.is_glyph=direct.is_glyph
 nuts.insert_before=direct.insert_before
 nuts.insert_after=direct.insert_after
 nuts.delete=direct.delete
@@ -17604,7 +17639,6 @@ local getfield=nuts.getfield
 local getnext=nuts.getnext
 local getprev=nuts.getprev
 local getprev=nuts.getprev
-local getid=nuts.getid
 local getprop=nuts.getprop
 local setprop=nuts.setprop
 local getfont=nuts.getfont
@@ -17668,10 +17702,9 @@ function analyzers.setstate(head,font)
   local first,last,current,n,done=nil,nil,head,0,false 
   current=tonut(current)
   while current do
-    local char=ischar(current,font)
+    local char,id=ischar(current,font)
     if char and not getprop(current,a_state) then
       done=true
-      local char=getchar(current)
       local d=descriptions[char]
       if d then
         if d.class=="mark" then
@@ -17705,21 +17738,18 @@ function analyzers.setstate(head,font)
       if id==math_code then
         current=end_of_math(current)
       end
-    else
-      local id=getid(current)
-      if id==disc_code then
-        setprop(current,a_state,s_medi)
-        last=current
-      else 
-        if first and first==last then
-          setprop(last,a_state,s_isol)
-        elseif last then
-          setprop(last,a_state,s_fina)
-        end
-        first,last,n=nil,nil,0
-        if id==math_code then
-          current=end_of_math(current)
-        end
+    elseif id==disc_code then
+      setprop(current,a_state,s_medi)
+      last=current
+    else 
+      if first and first==last then
+        setprop(last,a_state,s_isol)
+      elseif last then
+        setprop(last,a_state,s_fina)
+      end
+      first,last,n=nil,nil,0
+      if id==math_code then
+        current=end_of_math(current)
       end
     end
     current=getnext(current)
@@ -17823,7 +17853,7 @@ function methods.arab(head,font,attr)
   local current,done=head,false
   current=tonut(current)
   while current do
-    local char=ischar(current,font)
+    local char,id=ischar(current,font)
     if char and not getprop(current,a_state) then
       done=true
       local classifier=classifiers[char]
@@ -18496,7 +18526,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
     local discfound=false
     local lastdisc=nil
     while current do
-      local char=ischar(current,currentfont)
+      local char,id=ischar(current,currentfont)
       if char then
         if skipmark and marks[char] then
           current=getnext(current)
@@ -18516,14 +18546,11 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
         end
       elseif char==false then
         break
+      elseif id==disc_code then
+        lastdisc=current
+        current=getnext(current)
       else
-        local id=getid(current)
-        if id==disc_code then
-          lastdisc=current
-          current=getnext(current)
-        else
-          break
-        end
+        break
       end
     end
     local lig=ligature.ligature
@@ -19641,7 +19668,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
               sweeptype=nil
             end
             if last then
-              local char=ischar(last,currentfont)
+              local char,id=ischar(last,currentfont)
               if char then
                 local ccd=descriptions[char]
                 if ccd then
@@ -19684,56 +19711,53 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                   match=false
                 end
                 break
-              else
-                local id=getid(last)
-                if id==disc_code then
-                  diskseen=true
-                  discfound=last
-                  notmatchpre[last]=nil
-                  notmatchpost[last]=true
-                  notmatchreplace[last]=nil
-                  local pre,post,replace=getdisc(last)
-                  if pre then
-                    local n=n
-                    while pre do
-                      if seq[n][getchar(pre)] then
-                        n=n+1
-                        pre=getnext(pre)
-                        if n>l then
-                          break
-                        end
-                      else
-                        notmatchpre[last]=true
+              elseif id==disc_code then
+                diskseen=true
+                discfound=last
+                notmatchpre[last]=nil
+                notmatchpost[last]=true
+                notmatchreplace[last]=nil
+                local pre,post,replace=getdisc(last)
+                if pre then
+                  local n=n
+                  while pre do
+                    if seq[n][getchar(pre)] then
+                      n=n+1
+                      pre=getnext(pre)
+                      if n>l then
                         break
                       end
-                    end
-                    if n<=l then
+                    else
                       notmatchpre[last]=true
+                      break
                     end
-                  else
+                  end
+                  if n<=l then
                     notmatchpre[last]=true
                   end
-                  if replace then
-                    while replace do
-                      if seq[n][getchar(replace)] then
-                        n=n+1
-                        replace=getnext(replace)
-                        if n>l then
-                          break
-                        end
-                      else
-                        notmatchreplace[last]=true
-                        match=not notmatchpre[last]
+                else
+                  notmatchpre[last]=true
+                end
+                if replace then
+                  while replace do
+                    if seq[n][getchar(replace)] then
+                      n=n+1
+                      replace=getnext(replace)
+                      if n>l then
                         break
                       end
+                    else
+                      notmatchreplace[last]=true
+                      match=not notmatchpre[last]
+                      break
                     end
-                    match=not notmatchpre[last]
                   end
-                  last=getnext(last)
-                else
-                  match=false
-                  break
+                  match=not notmatchpre[last]
                 end
+                last=getnext(last)
+              else
+                match=false
+                break
               end
             else
               match=false
@@ -19753,7 +19777,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             local n=f-1
             while n>=1 do
               if prev then
-                local char=ischar(prev,currentfont)
+                local char,id=ischar(prev,currentfont)
                 if char then
                   local ccd=descriptions[char]
                   if ccd then
@@ -19792,73 +19816,70 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                     match=false
                   end
                   break
-                else
-                  local id=getid(prev)
-                  if id==disc_code then
-                    diskseen=true
-                    discfound=prev
-                    notmatchpre[prev]=true
-                    notmatchpost[prev]=nil
-                    notmatchreplace[prev]=nil
-                    local pre,post,replace,pretail,posttail,replacetail=getdisc(prev,true)
-                    if pre~=start and post~=start and replace~=start then
-                      if post then
-                        local n=n
-                        while posttail do
-                          if seq[n][getchar(posttail)] then
-                            n=n-1
-                            if posttail==post then
-                              break
-                            else
-                              posttail=getprev(posttail)
-                              if n<1 then
-                                break
-                              end
-                            end
-                          else
-                            notmatchpost[prev]=true
+                elseif id==disc_code then
+                  diskseen=true
+                  discfound=prev
+                  notmatchpre[prev]=true
+                  notmatchpost[prev]=nil
+                  notmatchreplace[prev]=nil
+                  local pre,post,replace,pretail,posttail,replacetail=getdisc(prev,true)
+                  if pre~=start and post~=start and replace~=start then
+                    if post then
+                      local n=n
+                      while posttail do
+                        if seq[n][getchar(posttail)] then
+                          n=n-1
+                          if posttail==post then
                             break
+                          else
+                            posttail=getprev(posttail)
+                            if n<1 then
+                              break
+                            end
                           end
-                        end
-                        if n>=1 then
+                        else
                           notmatchpost[prev]=true
-                        end
-                      else
-                        notmatchpost[prev]=true
-                      end
-                      if replace then
-                        while replacetail do
-                          if seq[n][getchar(replacetail)] then
-                            n=n-1
-                            if replacetail==replace then
-                              break
-                            else
-                              replacetail=getprev(replacetail)
-                              if n<1 then
-                                break
-                              end
-                            end
-                          else
-                            notmatchreplace[prev]=true
-                            match=not notmatchpost[prev]
-                            break
-                          end
-                        end
-                        if not match then
                           break
                         end
-                      else
+                      end
+                      if n>=1 then
+                        notmatchpost[prev]=true
+                      end
+                    else
+                      notmatchpost[prev]=true
+                    end
+                    if replace then
+                      while replacetail do
+                        if seq[n][getchar(replacetail)] then
+                          n=n-1
+                          if replacetail==replace then
+                            break
+                          else
+                            replacetail=getprev(replacetail)
+                            if n<1 then
+                              break
+                            end
+                          end
+                        else
+                          notmatchreplace[prev]=true
+                          match=not notmatchpost[prev]
+                          break
+                        end
+                      end
+                      if not match then
+                        break
                       end
                     else
                     end
-                  elseif seq[n][32] then
-                    n=n-1
                   else
-                    match=false
-                    break
                   end
-                  prev=getprev(prev)
+                elseif seq[n][32] then
+                  n=n-1
+                else
+                  match=false
+                  break
                 end
+                prev=getprev(prev)
               elseif seq[n][32] then 
                 n=n-1
               else
@@ -19885,7 +19906,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
           local n=l+1
           while n<=s do
             if current then
-              local char=ischar(current,currentfont)
+              local char,id=ischar(current,currentfont)
               if char then
                 local ccd=descriptions[char]
                 if ccd then
@@ -19924,62 +19945,59 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                   match=false
                 end
                 break
-              else
-                local id=getid(current)
-                if id==disc_code then
-                  diskseen=true
-                  discfound=current
-                  notmatchpre[current]=nil
-                  notmatchpost[current]=true
-                  notmatchreplace[current]=nil
-                  local pre,post,replace=getdisc(current)
-                  if pre then
-                    local n=n
-                    while pre do
-                      if seq[n][getchar(pre)] then
-                        n=n+1
-                        pre=getnext(pre)
-                        if n>s then
-                          break
-                        end
-                      else
-                        notmatchpre[current]=true
+              elseif id==disc_code then
+                diskseen=true
+                discfound=current
+                notmatchpre[current]=nil
+                notmatchpost[current]=true
+                notmatchreplace[current]=nil
+                local pre,post,replace=getdisc(current)
+                if pre then
+                  local n=n
+                  while pre do
+                    if seq[n][getchar(pre)] then
+                      n=n+1
+                      pre=getnext(pre)
+                      if n>s then
                         break
                       end
-                    end
-                    if n<=s then
+                    else
                       notmatchpre[current]=true
-                    end
-                  else
-                    notmatchpre[current]=true
-                  end
-                  if replace then
-                    while replace do
-                      if seq[n][getchar(replace)] then
-                        n=n+1
-                        replace=getnext(replace)
-                        if n>s then
-                          break
-                        end
-                      else
-                        notmatchreplace[current]=true
-                        match=notmatchpre[current]
-                        break
-                      end
-                    end
-                    if not match then
                       break
                     end
-                  else
                   end
-                elseif seq[n][32] then 
-                  n=n+1
+                  if n<=s then
+                    notmatchpre[current]=true
+                  end
                 else
-                  match=false
-                  break
+                  notmatchpre[current]=true
                 end
-                current=getnext(current)
+                if replace then
+                  while replace do
+                    if seq[n][getchar(replace)] then
+                      n=n+1
+                      replace=getnext(replace)
+                      if n>s then
+                        break
+                      end
+                    else
+                      notmatchreplace[current]=true
+                      match=notmatchpre[current]
+                      break
+                    end
+                  end
+                  if not match then
+                    break
+                  end
+                else
+                end
+              elseif seq[n][32] then 
+                n=n+1
+              else
+                match=false
+                break
               end
+              current=getnext(current)
             elseif seq[n][32] then
               n=n+1
 current=getnext(current)
@@ -20725,7 +20743,7 @@ local function featuresprocessor(head,font,attr)
           report_missing_coverage(dataset,sequence)
         else
           while start do
-            local char=ischar(start,font)
+            local char,id=ischar(start,font)
             if char then
               local a=getattr(start,0)
               if a then
@@ -20750,35 +20768,32 @@ local function featuresprocessor(head,font,attr)
               end
             elseif char==false then
               start=getnext(start)
-            else
-              local id=getid(start)
-              if id==disc_code then
-                local ok
-                if gpossing then
-                  start,ok=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                elseif typ=="gsub_ligature" then
-                  start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                else
-                  start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                end
-                if ok then
-                  success=true
-                end
-              elseif id==math_code then
-                start=getnext(end_of_math(start))
-              elseif id==dir_code then
-                start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
-              elseif id==localpar_code then
-                start,rlparmode,rlmode=pardirstate(start)
+            elseif id==disc_code then
+              local ok
+              if gpossing then
+                start,ok=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+              elseif typ=="gsub_ligature" then
+                start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
               else
-                start=getnext(start)
+                start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
               end
+              if ok then
+                success=true
+              end
+            elseif id==math_code then
+              start=getnext(end_of_math(start))
+            elseif id==dir_code then
+              start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
+            elseif id==localpar_code then
+              start,rlparmode,rlmode=pardirstate(start)
+            else
+              start=getnext(start)
             end
           end
         end
       else
         while start do
-          local char=ischar(start,font)
+          local char,id=ischar(start,font)
           if char then
             local a=getattr(start,0)
             if a then
@@ -20814,29 +20829,26 @@ local function featuresprocessor(head,font,attr)
             end
           elseif char==false then
             start=getnext(start)
-          else
-            local id=getid(start)
-            if id==disc_code then
-              local ok
-              if gpossing then
-                start,ok=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-              elseif typ=="gsub_ligature" then
-                start,ok=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-              else
-                start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-              end
-              if ok then
-                success=true
-              end
-            elseif id==math_code then
-              start=getnext(end_of_math(start))
-            elseif id==dir_code then
-              start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
-            elseif id==localpar_code then
-              start,rlparmode,rlmode=pardirstate(start)
+          elseif id==disc_code then
+            local ok
+            if gpossing then
+              start,ok=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+            elseif typ=="gsub_ligature" then
+              start,ok=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
             else
-              start=getnext(start)
+              start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
             end
+            if ok then
+              success=true
+            end
+          elseif id==math_code then
+            start=getnext(end_of_math(start))
+          elseif id==dir_code then
+            start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
+          elseif id==localpar_code then
+            start,rlparmode,rlmode=pardirstate(start)
+          else
+            start=getnext(start)
           end
         end
       end

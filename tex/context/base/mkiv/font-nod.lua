@@ -66,6 +66,7 @@ local getsubtype       = nuts.getsubtype
 local getchar          = nuts.getchar
 local getlist          = nuts.getlist
 local getdisc          = nuts.getdisc
+local isglyph          = nuts.isglyph
 
 local setfield         = nuts.setfield
 local setbox           = nuts.setbox
@@ -117,14 +118,12 @@ function char_tracers.collect(head,list,tag,n)
     n = n or 0
     local ok, fn = false, nil
     while head do
-        local id = getid(head)
-        if id == glyph_code then
+        local c, id = isglyph(head)
+        if c then
             local f = getfont(head)
             if f ~= fn then
                 ok, fn = false, f
             end
-            local c = getchar(head)
-         -- local i = fontidentifiers[f].indices[c] or 0 -- zero anyway as indices is nilled
             if not ok then
                 ok = true
                 n = n + 1
@@ -360,13 +359,14 @@ function step_tracers.codes(i,command,space)
     local c = collection[i]
 
     local function showchar(c)
+        local f = getfont(c)
+        local c = getchar(c)
         if command then
-            local f, c = getfont(c), getchar(c)
             local d = fontdescriptions[f]
             local d = d and d[c]
             context[command](f,c,d and d.class or "")
         else
-            context("[%s:U+%05X]",getfont(c),getchar(c))
+            context("[%s:U+%05X]",f,c)
         end
     end
 
@@ -478,43 +478,40 @@ local threshold = 65536
 local function toutf(list,result,nofresult,stopcriterium)
     if list then
         for n in traverse_nodes(tonut(list)) do
-            local id = getid(n)
-            if id == glyph_code then
+            local c, id = isglyph(n)
+            if c then
                 local components = getfield(n,"components")
                 if components then
                     result, nofresult = toutf(components,result,nofresult)
-                else
-                    local c = getchar(n)
-                    if c > 0 then
-                        local fc = fontcharacters[getfont(n)]
-                        if fc then
-                            local fcc = fc[c]
-                            if fcc then
-                                local u = fcc.unicode
-                                if not u then
+                elseif c > 0 then
+                    local fc = fontcharacters[getfont(n)]
+                    if fc then
+                        local fcc = fc[c]
+                        if fcc then
+                            local u = fcc.unicode
+                            if not u then
+                                nofresult = nofresult + 1
+                                result[nofresult] = utfchar(c)
+                            elseif type(u) == "table" then
+                                for i=1,#u do
                                     nofresult = nofresult + 1
-                                    result[nofresult] = utfchar(c)
-                                elseif type(u) == "table" then
-                                    for i=1,#u do
-                                        nofresult = nofresult + 1
-                                        result[nofresult] = utfchar(u[i])
-                                    end
-                                else
-                                    nofresult = nofresult + 1
-                                    result[nofresult] = utfchar(u)
+                                    result[nofresult] = utfchar(u[i])
                                 end
                             else
                                 nofresult = nofresult + 1
-                                result[nofresult] = utfchar(c)
+                                result[nofresult] = utfchar(u)
                             end
                         else
                             nofresult = nofresult + 1
-                            result[nofresult] = f_unicode(c)
+                            result[nofresult] = utfchar(c)
                         end
                     else
                         nofresult = nofresult + 1
-                        result[nofresult] = f_badcode(c)
+                        result[nofresult] = f_unicode(c)
                     end
+                else
+                    nofresult = nofresult + 1
+                    result[nofresult] = f_badcode(c)
                 end
             elseif id == disc_code then
                 result, nofresult = toutf(getfield(n,"replace"),result,nofresult) -- needed?

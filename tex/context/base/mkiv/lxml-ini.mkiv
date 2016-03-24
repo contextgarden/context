@@ -45,15 +45,12 @@
 % aliased
 
 \let\xmlall                    \clf_xmlall
-\let\xmllastmatch              \clf_xmllastmatch
 \let\xmlatt                    \clf_xmlatt
-\let\xmllastatt                \clf_xmllastatt
 \let\xmlattdef                 \clf_xmlattdef
 \let\xmlattribute              \clf_xmlattribute
 \let\xmlattributedef           \clf_xmlattributedef
 \let\xmlchainatt               \clf_xmlchainatt
 \let\xmlchainattdef            \clf_xmlchainattdef
-\let\xmlrefatt                 \clf_xmlrefatt
 \let\xmlchecknamespace         \clf_xmlchecknamespace
 \let\xmlcommand                \clf_xmlcommand
 \let\xmlcontext                \clf_xmlcontext
@@ -71,7 +68,9 @@
 \let\xmlflush                  \clf_xmlflush
 \let\xmlflushcontext           \clf_xmlflushcontext
 \let\xmlflushlinewise          \clf_xmlflushlinewise
+\let\xmlflushpure              \clf_xmlflushpure
 \let\xmlflushspacewise         \clf_xmlflushspacewise
+\let\xmlflushtext              \clf_xmlflushtext
 \let\xmlfunction               \clf_xmlfunction
 \let\xmlinclude                \clf_xmlinclude
 \let\xmlincludeoptions         \clf_xmlincludeoptions
@@ -79,18 +78,22 @@
 \let\xmlinclusions             \clf_xmlinclusions
 \let\xmlbadinclusions          \clf_xmlbadinclusions
 \let\xmlindex                  \clf_xmlindex
-\let\xmlposition               \clf_xmlindex
 \let\xmlinlineverbatim         \clf_xmlinlineverbatim
 \let\xmllast                   \clf_xmllast
+\let\xmllastatt                \clf_xmllastatt
+\let\xmllastmatch              \clf_xmllastmatch
 \let\xmlloaddirectives         \clf_xmlloaddirectives
 \let\xmlmain                   \clf_xmlmain
 \let\xmlmatch                  \clf_xmlmatch
-\let\xmlpath                   \clf_xmlpath
 \let\xmlname                   \clf_xmlname
 \let\xmlnamespace              \clf_xmlnamespace
 \let\xmlnonspace               \clf_xmlnonspace
+\let\xmlpath                   \clf_xmlpath
 \let\xmlpos                    \clf_xmlpos
+\let\xmlposition               \clf_xmlindex
+\let\xmlpure                   \clf_xmlpure
 \let\xmlraw                    \clf_xmlraw
+\let\xmlrefatt                 \clf_xmlrefatt
 \let\xmlregisterns             \clf_xmlregisterns         % document
 \let\xmlremapname              \clf_xmlremapname          % element
 \let\xmlremapnamespace         \clf_xmlremapnamespace     % document
@@ -104,15 +107,11 @@
 \let\xmlstrippednolines        \clf_xmlstrippednolines
 \let\xmltag                    \clf_xmltag
 \let\xmltext                   \clf_xmltext
-\let\xmlpure                   \clf_xmlpure
 \let\xmltobuffer               \clf_xmltobuffer           % id pattern name
 \let\xmltobufferverbose        \clf_xmltobufferverbose    % id pattern name
 \let\xmltofile                 \clf_xmltofile             % id pattern filename
 \let\xmltoparameters           \clf_xmltoparameters
 \let\xmlverbatim               \clf_xmlverbatim
-
-\let\xmlflushtext              \clf_xmlflushtext
-\let\xmlflushpure              \clf_xmlflushpure
 
 \unexpanded\def\xmlinfo                #1{\hbox{\ttxx[\clf_xmlname{#1}]}}
 \unexpanded\def\xmlshow                #1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
