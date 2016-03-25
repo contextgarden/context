@@ -296,7 +296,7 @@
 %D
 %D The number of days is available in the macro \type {\numberofdays}.
 
-\def\doifelseleapyear#1%
+\def\doifelseleapyear#1% expandable check
   {\clf_doifelseleapyear\numexpr#1\relax}
 
 \let\doifleapyearelse\doifelseleapyear
@@ -571,7 +571,7 @@
 % if we have definitions that are not matched at the lua end .. eventually we might do
 % that when more shows up
 
-\def\doifelseconversiondefined#1%
+\def\doifelseconversiondefined#1% expandable
   {\ifcsname\??conversion\currentlanguage#1\endcsname
      \expandafter\firstoftwoarguments
    \else\ifcsname\??conversion#1\endcsname
@@ -580,11 +580,11 @@
      \doubleexpandafter\secondoftwoarguments
    \fi\fi}
 
-\def\doifelseconversionnumber#1#2%
-  {\ifcsname\??conversion#1#2\endcsname
-     \expandafter\firstoftwoarguments
-   \else
+\def\doifelseconversionnumber#1#2% expandable
+  {\ifnum#2>\numexpr\clf_nofconversions{#1}\relax
      \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
    \fi}
 
 \let\doifconversiondefinedelse\doifelseconversiondefined

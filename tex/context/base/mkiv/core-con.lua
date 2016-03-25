@@ -611,10 +611,21 @@ function converters.define(name,set) -- ,language)
     sequences[name] = settings_to_array(set)
 end
 
+function converters.max(name)
+    local s = sequences[name]
+    return s and #s or 0
+end
+
 implement {
     name      = "defineconversion",
     actions   = converters.define,
     arguments = { "string", "string" }
+}
+
+implement {
+    name      = "nofconversions",
+    actions   = { converters.max, context },
+    arguments = "string",
 }
 
 local function convert(method,n,language)
