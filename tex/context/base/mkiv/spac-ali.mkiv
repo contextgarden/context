@@ -263,9 +263,6 @@
   {\let\raggedtopcommand   \relax
    \let\raggedbottomcommand\vfilll}
 
-\def\spac_align_set_par_fill
-  {\parfillskip\zeropoint plus \dimexpr\availablehsize-\number\c_spac_align_state_par_fill\parindent\relax}
-
 \def\spac_align_flush_vertical
   {\ifcase\c_spac_align_state_vertical
      \spac_align_set_vertical_none
@@ -275,9 +272,6 @@
      \spac_align_set_vertical_low
    \or
      \spac_align_set_vertical_high
-   \fi
-   \ifcase\c_spac_align_state_par_fill\else
-      \spac_align_set_par_fill
    \fi}
 
 % Horizontal
@@ -479,7 +473,8 @@
      \spac_align_set_horizontal_centered_last_line
    \or
      \parfillskip\zeropoint
-   \fi}
+   \fi
+   \relax}
 
 % Page spacing:
 
@@ -563,6 +558,7 @@
       \spac_align_flush_vertical
       \spac_align_flush_direction
       \spac_align_flush_page
+      \spac_align_flush_parfill
       }}% kept, nice for tracing
    \edef\raggedcommand    {\the\t_spac_align_collected }%
    \edef\updateraggedskips{\spac_align_flush_horizontal}%
@@ -728,9 +724,24 @@
 \setvalue{\??aligncommand\v!stretch        }{\toksapp\t_spac_align_collected{\spac_align_set_stretch}}
 \setvalue{\??aligncommand\v!extremestretch }{\toksapp\t_spac_align_collected{\spac_align_set_extreme_stretch}}
 
-\setvalue{\??aligncommand\v!two  }{\c_spac_align_state_par_fill\plustwo  }
-\setvalue{\??aligncommand\v!three}{\c_spac_align_state_par_fill\plusthree}
-\setvalue{\??aligncommand\v!four }{\c_spac_align_state_par_fill\plusfour }
+\setvalue{\??aligncommand  \v!final}{\c_spac_align_state_par_fill\plusone}
+\setvalue{\??aligncommand2*\v!final}{\c_spac_align_state_par_fill\plustwo}      % hardcoded multiplier
+\setvalue{\??aligncommand3*\v!final}{\c_spac_align_state_par_fill\plusthree}
+\setvalue{\??aligncommand4*\v!final}{\c_spac_align_state_par_fill\plusfour}
+
+\definehspace [\v!final] [\emspaceamount]
+
+\def\spac_align_flush_parfill
+  {\ifcase\c_spac_align_state_par_fill\else
+     \spac_align_flush_parfill_indeed{\number\c_spac_align_state_par_fill}%
+   \fi}
+
+\unexpanded\def\spac_align_flush_parfill_indeed#1%
+  {\parfillskip
+     #1\directhspaceamount\v!final
+   % plus \dimexpr\availablehsize-#1\directhspaceamount\v!final\relax
+     plus 1fill
+   \relax}
 
 %D For Wolfgang:
 

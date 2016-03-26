@@ -972,9 +972,10 @@
    \fi}
 
 \def\hspaceamount#1#2%
-  {\csname\??hspace
-     \ifcsname\??hspace#1:#2\endcsname#1:#2\else:\v!none\fi
-   \endcsname}
+  {\dimexpr\ifcsname\??hspace#1:#2\endcsname\lastnamedcs\else\zeropoint\fi\relax}
+
+\def\directhspaceamount#1%
+  {\dimexpr\ifcsname\??hspace  :#1\endcsname\lastnamedcs\else\zeropoint\fi\relax}
 
 % no installhspace here (this is already an old command)
 

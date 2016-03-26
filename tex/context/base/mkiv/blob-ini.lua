@@ -6,16 +6,10 @@ if not modules then modules = { } end modules ['blob-ini'] = {
     license   = "see context related readme files"
 }
 
--- Experimental ... names and functionality will change ... just a
--- place to collect code, so:
---
--- DON'T USE THESE FUNCTIONS AS THEY WILL CHANGE!
---
--- This module is just a playground. Occasionally we need to typeset
--- at the lua and and this is one method. In principle we can construct
--- pages this way too which sometimes makes sense in dumb cases. Actually,
--- if one only needs this, one does not really need tex, okay maybe the
--- parbuilder but that one can be simplified as well then.
+-- This module is just a playground. Occasionally we need to typeset at the lua and and
+-- this is one method. In principle we can construct pages this way too which sometimes
+-- makes sense in dumb cases. Actually, if one only needs this, one does not really need
+-- tex, okay maybe the parbuilder but that one can be simplified as well then.
 
 -- set fonts, attributes
 -- rest already done in packers etc
@@ -41,21 +35,18 @@ local write_node      = node.write
 local typesetters     = nodes.typesetters
 local tonodes         = typesetters.tonodes
 local tohpack         = typesetters.tohpack
-local tohpackfast     = typesetters.tohpackfast
 local tovpack         = typesetters.tovpack
-local tovpackfast     = typesetters.tovpackfast
 
 local implement       = interfaces.implement
 
-blobs = blobs or  { }
-
 -- provide copies here (nicer for manuals)
+
+blobs             = blobs or  { }
+local blobs       = blobs
 
 blobs.tonodes     = tonodes
 blobs.tohpack     = tohpack
-blobs.tohpackfast = tohpackfast
 blobs.tovpack     = tovpack
-blobs.tovpackfast = tovpackfast
 
 -- end of helpers
 
@@ -146,21 +137,21 @@ end
 -- blob.paragraph
 -- blob.page
 
---~ local lineblob = {
---~     type = "line",
---~     head = false,
---~     tail = false,
---~     pack = false,
---~     properties = { },
---~ end
+-- local lineblob = {
+--     type = "line",
+--     head = false,
+--     tail = false,
+--     pack = false,
+--     properties = { },
+-- end
 
---~ local parblob = {
---~     type = "line",
---~     head = false,
---~     tail = false,
---~     pack = false,
---~     properties = { },
---~ end
+-- local parblob = {
+--     type = "line",
+--     head = false,
+--     tail = false,
+--     pack = false,
+--     properties = { },
+-- end
 
 -- for the moment here:
 
