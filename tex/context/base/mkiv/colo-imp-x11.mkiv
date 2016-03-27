@@ -9,7 +9,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Standard X11 rgb colors (from \type {/usr/share/X11/rgb.txt}):
+%D Standard X11 rgb colors (from, e.g. \type {/usr/share/X11/rgb.txt}).
+%D Note that we have dropped the \quote{grey} spelling variants.
 
 \startprotectedcolors
 
@@ -45,7 +46,7 @@
 \definecolor [slategray]            [h=708090]
 \definecolor [lightslategray]       [h=778899]
 \definecolor [gray]                 [s=0.75]
-\definecolor [lightgrey]            [s=0.83]
+\definecolor [lightgray]            [s=0.83]
 \definecolor [midnightblue]         [h=191970]
 \definecolor [navy]                 [h=000080]
 \definecolor [navyblue]             [h=000080]
@@ -457,13 +458,15 @@
 \definecolor [thistle3]             [h=cdb5cd]
 \definecolor [thistle4]             [h=8b7b8b]
 
-% A lot of useless grays:
+% A lot of useless grays (since one can always specify \color[s=.XX]:
 
-\dorecurse{100}{
+\dostepwiserecurse{0}{100}{1}{
     \definecolor [gray#1] [s=\cldcontext{#1/100}]
 }
 
-\definecolor [darkgrey]             [s=0.66]
+% These were missing in the original specification, but were added later:
+
+\definecolor [darkgray]             [s=0.66]
 \definecolor [darkblue]             [h=00008b]
 \definecolor [darkcyan]             [h=008b8b]
 \definecolor [darkmagenta]          [h=8b008b]
