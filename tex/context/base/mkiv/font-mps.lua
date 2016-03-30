@@ -339,17 +339,16 @@ function fonts.metapost.boxtomp(n,kind)
                 end
                 advance = advance + kern
             elseif id == glue_code then
-                local spec  = current.spec
-                local width = spec.width
+                local width = current.width
                 if glue_sign == 1 then
-                    if spec.stretch_order == glue_order then
-                        width = (width + spec.stretch * glue_set) * fc
+                    if current.stretch_order == glue_order then
+                        width = (width + current.stretch * glue_set) * fc
                     else
                         width = width * fc
                     end
                 elseif glue_sign == 2 then
-                    if spec.shrink_order == glue_order then
-                        width = (width - spec.shrink * glue_set) * fc
+                    if current.shrink_order == glue_order then
+                        width = (width - current.shrink * glue_set) * fc
                     else
                         width = width * fc
                     end
@@ -404,7 +403,7 @@ function fonts.metapost.boxtomp(n,kind)
                 distance = distance - current.kern
                 advance  = 0
             elseif id == glue_code then
-                distance = distance - current.spec.width
+                distance = distance - current.width
                 advance  = 0
             elseif id == rule_code then
                 local wd = current.width

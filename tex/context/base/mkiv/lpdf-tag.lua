@@ -70,7 +70,6 @@ local setlist             = nuts.setlist
 
 local traverse_nodes      = nuts.traverse
 local tosequence          = nuts.tosequence
-local copy_node           = nuts.copy
 local slide_nodelist      = nuts.slide
 local insert_before       = nuts.insert_before
 local insert_after        = nuts.insert_after

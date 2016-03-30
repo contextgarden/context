@@ -101,7 +101,6 @@ local getbox              = nuts.getbox
 local find_node_tail      = nuts.tail
 local free_node           = nuts.free
 local free_node_list      = nuts.flush_list
-local copy_node           = nuts.copy
 local traverse_nodes      = nuts.traverse
 local traverse_nodes_id   = nuts.traverse_id
 local insert_node_before  = nuts.insert_before
@@ -123,7 +122,6 @@ local nodepool            = nuts.pool
 local new_penalty         = nodepool.penalty
 local new_kern            = nodepool.kern
 local new_rule            = nodepool.rule
-local new_gluespec        = nodepool.gluespec
 
 local nodecodes           = nodes.nodecodes
 local skipcodes           = nodes.skipcodes
@@ -593,17 +591,6 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
     end
     return h, d, ch, cd, lines
 end
-
--- local function snap_topskip(current,method)
---     local spec = getfield(current,"spec")
---     local w = w and getfield(spec,"width") or 0
---     local wd = w
---     if getfield(spec,"writable") then
---         setfield(spec,"width",0)
---         wd = 0
---     end
---     return w, wd
--- end
 
 local function snap_topskip(current,method)
     local w = getfield(current,"width") or 0
@@ -1254,6 +1241,8 @@ end
 -- topskip
 -- splittopskip
 
+local experiment = false directives.register("vspacing.experiment",function(v) experiment = v end)
+
 local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
     if trace then
         reset_tracing(head)
@@ -1310,14 +1299,6 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 head = forced_skip(head,current,getfield(glue_data,"width") or 0,"before",trace)
                 free_node(glue_data)
             else
-             --
-             -- local spec = getfield(glue_data,"spec")
-             -- if getfield(spec,"writable") then
-             --   if trace then trace_done("flushed due to " .. why,glue_data) end
-             --   head = insert_node_before(head,current,glue_data)
-             -- else
-             --   free_node(glue_data)
-             -- end
                 local w = getfield(glue_data,"width")
                 if w ~= 0 then
                     if trace then trace_done("flushed due to non zero " .. why,glue_data) end
@@ -1507,16 +1488,31 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     end
                     glue_order, glue_data = 0, nil
                 elseif sc == disable then
+local next = getnext(current)
+if not experiment or next then
                     ignore_following = true
                     if trace then trace_skip("disable",sc,so,sp,current) end
                     head, current = remove_node(head, current, true)
+else
+    current = next
+end
                 elseif sc == together then
+local next = getnext(current)
+if not experiment or next then
                     keep_together = true
                     if trace then trace_skip("together",sc,so,sp,current) end
                     head, current = remove_node(head, current, true)
+else
+    current = next
+end
                 elseif sc == nowhite then
+local next = getnext(current)
+if not experiment or next then
                     ignore_whitespace = true
                     head, current = remove_node(head, current, true)
+else
+    current = next
+end
                 elseif sc == discard then
                     if trace then trace_skip("discard",sc,so,sp,current) end
                     head, current = remove_node(head, current, true)
@@ -1728,6 +1724,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         if force_glue then
             head, tail = forced_skip(head,tail,getfield(glue_data,"width") or 0,"after",trace)
             free_node(glue_data)
+            glue_data = nil
         else
             head, tail = insert_node_after(head,tail,glue_data)
         end
@@ -1764,8 +1761,12 @@ end
 
 local stackhead, stacktail, stackhack = nil, nil, false
 
-local function report(message,lst)
-    report_vspacing(message,count_nodes(lst,true),nodeidstostring(lst))
+local function report(message,where,lst)
+    if lst and where then
+        report_vspacing(message,where,count_nodes(lst,true),nodeidstostring(lst))
+    else
+        report_vspacing(message,count_nodes(lst,true),nodeidstostring(lst))
+    end
 end
 
 -- ugly code: we get partial lists (check if this stack is still okay) ... and we run
@@ -1795,27 +1796,27 @@ function vspacing.pagehandler(newhead,where)
         end
         if flush then
             if stackhead then
-                if trace_collect_vspacing then report("appending %s nodes to stack (final): %s",newhead) end
+                if trace_collect_vspacing then report("%s > appending %s nodes to stack (final): %s",where,newhead) end
                 setlink(stacktail,newhead)
                 newhead = stackhead
                 stackhead, stacktail = nil, nil
             end
             if stackhack then
                 stackhack = false
-                if trace_collect_vspacing then report("processing %s nodes: %s",newhead) end
+                if trace_collect_vspacing then report("%s > processing %s nodes: %s",where,newhead) end
              -- texlists.contrib_head = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
                 newhead = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
             else
-                if trace_collect_vspacing then report("flushing %s nodes: %s",newhead) end
+                if trace_collect_vspacing then report("%s > flushing %s nodes: %s",where,newhead) end
              -- texlists.contrib_head = newhead
             end
             return tonode(newhead)
         else
             if stackhead then
-                if trace_collect_vspacing then report("appending %s nodes to stack (intermediate): %s",newhead) end
+                if trace_collect_vspacing then report("%s > appending %s nodes to stack (intermediate): %s",where,newhead) end
                 setlink(stacktail,newhead)
             else
-                if trace_collect_vspacing then report("storing %s nodes in stack (initial): %s",newhead) end
+                if trace_collect_vspacing then report("%s > storing %s nodes in stack (initial): %s",where,newhead) end
                 stackhead = newhead
             end
             stacktail = newtail

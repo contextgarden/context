@@ -69,7 +69,6 @@ local nodepool          = nuts.pool
 local new_glue          = nodepool.glue
 local new_rule          = nodepool.rule
 local new_penalty       = nodepool.penalty
------ new_gluespec      = nodepool.gluespec
 
 scripts                 = scripts or { }
 local scripts           = scripts
@@ -822,20 +821,6 @@ local function marker(head,current,font,color) -- could become: nodes.tracers.ma
     setnodecolor(current,color)
     return head, current
 end
-
--- local function process(handler,head,first,last)
---     dataset = numbertodataset[first[a_scriptsplitting]]
---     stretch = emwidths[first.font]*dataset.inter_word_stretch_factor
---     return insert_node_after(head,last,new_glue(0,stretch))
--- end
---
--- local cache = { }  table.setmetatableindex(cache,function(t,k)
---     local v = new_gluespec(0,k)
---     nodepool.register(v)
---     t[k] = v
---     return v
--- end)
--- return insert_node_after(head,last,new_glue(cache[last_s]))
 
 local last_a, last_f, last_s, last_q
 

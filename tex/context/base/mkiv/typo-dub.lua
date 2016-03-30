@@ -73,7 +73,6 @@ local setprop             = nuts.setprop
 local setchar             = nuts.setchar
 
 local remove_node         = nuts.remove
-local copy_node           = nuts.copy
 local insert_node_after   = nuts.insert_after
 local insert_node_before  = nuts.insert_before
 

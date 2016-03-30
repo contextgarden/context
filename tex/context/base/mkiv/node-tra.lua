@@ -382,11 +382,7 @@ local function nodetodimen(n)
         else
             return f_z_z(width)
         end
-    end
-    if id == glue_code then
-        n = getfield(n,"spec")
-    end
-    if not n or not getid(n) == gluespec_code then
+    elseif id ~= glue_code then
         return "0pt"
     end
     local stretch_order = getfield(n,"stretch_order")

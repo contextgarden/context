@@ -43,7 +43,6 @@ local expand = allocate ( tohash {
     "list",         -- list_ptr & ins_ptr & adjust_ptr
     "pre",          --
     "post",         --
-    "spec",         -- glue_ptr
     "top_skip",     --
     "attr",         --
     "replace",      -- nobreak

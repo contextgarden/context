@@ -34,8 +34,6 @@ local copy_node      = nuts.copy
 local free_nodelist  = nuts.flush_list
 local insert_after   = nuts.insert_after
 
-local new_gluespec   = nuts.pool.gluespec -- temp hack
-
 local glue_code      = nodecodes.glue
 local kern_code      = nodecodes.kern
 local glyph_code     = nodecodes.glyph

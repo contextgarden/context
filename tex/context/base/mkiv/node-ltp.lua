@@ -785,11 +785,10 @@ local function compute_break_width(par,break_type,p) -- split in two
         if id == glyph_code then
             return -- happens often
         elseif id == glue_code then
-            local spec = getfield(p,"spec")
-            local order = stretch_orders[getfield(spec,"stretch_order")]
-            break_width.size   = break_width.size   - getfield(spec,"width")
-            break_width[order] = break_width[order] - getfield(spec,"stretch")
-            break_width.shrink = break_width.shrink - getfield(spec,"shrink")
+            local order = stretch_orders[getfield(p,"stretch_order")]
+            break_width.size   = break_width.size   - getfield(p,"width")
+            break_width[order] = break_width[order] - getfield(p,"stretch")
+            break_width.shrink = break_width.shrink - getfield(p,"shrink")
         elseif id == penalty_code then
             -- do nothing
         elseif id == kern_code then
@@ -815,13 +814,6 @@ local function append_to_vlist(par, b)
         if getid(b) == hlist_code then
             local d = getfield(par.baseline_skip,"width") - prev_depth - getfield(b,"height") -- deficiency of space between baselines
             local s = d < par.line_skip_limit and new_lineskip(par.lineskip) or new_baselineskip(d)
-         -- local s = d < par.line_skip_limit
-         -- if s then
-         --     s = new_lineskip()
-         --     setfield(s,"spec",tex.lineskip)
-         -- else
-         --     s = new_baselineskip(d)
-         -- end
             local head_field = par.head_field
             if head_field then
                 local n = slide_nodelist(head_field) -- todo: find_tail
@@ -1464,11 +1456,8 @@ local function wrap_up(par)
             par.do_last_line_fit = false
         else
             local glue = par.final_par_glue
-            local spec = copy_node(getfield(glue,"spec"))
-            setfield(spec,"width",getfield(spec,"width") + active_short - active_glue)
-            setfield(spec,"stretch",0)
-        --  flush_node(getfield(glue,"spec")) -- brrr, when we do this we can get an "invalid id stretch message", maybe dec refcount
-            setfield(glue,"spec",spec)
+            setfield(glue,"width",getfield(glue,"width") + active_short - active_glue)
+            setfield(glue,"stretch",0)
             if trace_lastlinefit then
                 report_parbuilders("applying last line fit, short %a, glue %p",active_short,active_glue)
             end
@@ -2231,12 +2220,11 @@ function constructors.methods.basic(head,d)
                         end
                     end
                 end
-                local spec = check_shrinkage(par,getfield(current,"spec"))
-                local order = stretch_orders[getfield(spec,"stretch_order")]
-                setfield(current,"spec",spec)
-                active_width.size   = active_width.size   + getfield(spec,"width")
-                active_width[order] = active_width[order] + getfield(spec,"stretch")
-                active_width.shrink = active_width.shrink + getfield(spec,"shrink")
+                check_shrinkage(par,current)
+                local order = stretch_orders[getfield(current,"stretch_order")]
+                active_width.size   = active_width.size   + getfield(current,"width")
+                active_width[order] = active_width[order] + getfield(current,"stretch")
+                active_width.shrink = active_width.shrink + getfield(current,"shrink")
             elseif id == disc_code then
                 local subtype = getsubtype(current)
                 if subtype ~= second_disc_code then
@@ -2481,9 +2469,7 @@ local function short_display(target,a,font_in_short_display)
         elseif id == rule_code then
             write(target,"|")
         elseif id == glue_code then
-            if getfield(getfield(a,"spec"),"writable") then
-                write(target," ")
-            end
+            write(target," ")
         elseif id == kern_code then
             local s = getsubtype(a)
             if s == userkern_code or s == italickern_code or getattr(a,a_fontkern) then
@@ -2883,12 +2869,11 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                     end
                 end
             elseif id == glue_code then
-                local spec = getfield(current,"spec")
-                natural = natural + getfield(spec,"width")
-                local op = getfield(spec,"stretch_order")
-                local om = getfield(spec,"shrink_order")
-                total_stretch[op] = total_stretch[op] + getfield(spec,"stretch")
-                total_shrink [om] = total_shrink [om] + getfield(spec,"shrink")
+                natural = natural + getfield(current,"width")
+                local op = getfield(current,"stretch_order")
+                local om = getfield(current,"shrink_order")
+                total_stretch[op] = total_stretch[op] + getfield(current,"stretch")
+                total_shrink [om] = total_shrink [om] + getfield(current,"shrink")
                 if getsubtype(current) >= leaders_code then
                     local leader = getleader(current)
                     local ht = getfield(leader,"height")

@@ -10,8 +10,8 @@ local next, type = next, type
 local format, insert = string.format, table.insert
 local div, randomnumber = math.div, math.random
 
-local trace_casing = false  trackers.register("typesetters.casing", function(v) trace_casing = v end)
-local check_kerns  = false  directives.register("typesetters.casing.checkkerns", function(v) check_kerns = v end)
+local trace_casing = false  trackers  .register("typesetters.casing",            function(v) trace_casing = v end)
+local check_kerns  = true   directives.register("typesetters.casing.checkkerns", function(v) check_kerns  = v end)
 
 local report_casing = logs.reporter("typesetting","casing")
 

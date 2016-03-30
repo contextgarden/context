@@ -338,59 +338,9 @@ and hide it for the user. And yes, LuaTeX now gives a warning as
 well.</p>
 ]]--
 
--- writable will go away
-
-function nodes.writable_spec(n) -- not pool
-    local spec = n_getfield(n,"spec")
-    if not spec then
-        spec = n_copy_node(glue_spec)
-        n_setfield(n,"spec",spec)
-    elseif not n_getfield(spec,"writable") then
-        spec = n_copy_node(spec)
-        n_setfield(n,"spec",spec)
-    end
-    return spec
-end
-
-function nodes.copy_spec(old,free) -- also frees
-    if not old then
-        return n_new_node("glue_spec")
-    else
-        local new = n_copy_node(old)
-        if free and old.writable then
-            free_node(old)
-        end
-        return new
-    end
-end
-
-function nodes.free_spec(old)
-    if not old then
-        -- skip
-    elseif old.writable then
-        free_node(old)
-    else
-        -- skip
-    end
-end
-
--- if gonuts then
-
 function nodes.reference(n)
     return n and tonut(n) or "<none>"
 end
-
--- else
---
---     local left, space = lpeg.P("<"), lpeg.P(" ")
---
---     local reference = left * (1-left)^0 * left * space^0 * lpeg.C((1-space)^0)
---
---     function nodes.reference(n)
---         return n and lpegmatch(reference,tostring(n)) or "<none>"
---     end
---
--- end
 
 -- Here starts an experiment with metatables. Of course this only works with nodes
 -- wrapped in userdata with a metatable.

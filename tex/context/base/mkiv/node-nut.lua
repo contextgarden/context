@@ -200,30 +200,6 @@ nuts.ligaturing           = direct.ligaturing
 nuts.kerning              = direct.kerning
 nuts.effective_glue       = direct.effective_glue
 
-if not nuts.effective_glue then
-
-    local getfield = nuts.getfield
-
-    function nuts.effective_glue(glue,parent)
-        local spec  = getfield(glue,"spec")
-        local width = getfield(spec,"width")
-        if parent then
-            local sign  = getfield(parent,"glue_sign")
-            if sign == 1 then
-                if getfield(spec,"stretch_order") == getfield(parent,"glue_order") then
-                    return width + getfield(spec,"stretch") * getfield(parent,"glue_set")
-                end
-            elseif sign == 2 then
-                if getfield(spec,"shrink_order") == getfield(parent,"glue_order") then
-                    return width - getfield(spec,"shrink") * getfield(parent,"glue_set")
-                end
-            end
-        end
-        return width
-    end
-
-end
-
 -- placeholders
 
 if not nuts.kerning then
@@ -347,7 +323,7 @@ local d_find_tail       = direct.tail
 local d_insert_after    = direct.insert_after
 local d_insert_before   = direct.insert_before
 local d_slide           = direct.slide
-local d_copy_node       = direct.copy
+----- d_copy_node       = direct.copy
 local d_traverse        = direct.traverse
 local d_setlink         = direct.setlink
 local d_setboth         = direct.setboth
@@ -462,18 +438,6 @@ function nuts.concat(list) -- consider tail instead of slide
         end
     end
     return head, tail
-end
-
-function nuts.writable_spec(n) -- not pool
-    local spec = d_getfield(n,"spec")
-    if not spec then
-        spec = d_copy_node(glue_spec)
-        d_setfield(n,"spec",spec)
-    elseif not d_getfield(spec,"writable") then
-        spec = d_copy_node(spec)
-        d_setfield(n,"spec",spec)
-    end
-    return spec
 end
 
 function nuts.reference(n)

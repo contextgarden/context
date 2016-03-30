@@ -49,9 +49,7 @@ end
 -- subtype width leader spec (stretch shrink ...
 
 function formatters.glue(n,comment)
-    local s = n.spec
- -- return format("\\doFLOWgluenode{%s}{%s}{%s}{%s}{%s}",comment,gluecodes[n.subtype],points(s.width),points(s.stretch),points(s.shrink))
-    return format("\\doFLOWgluenode{%s}{%s}{%.4f}{%.4f}{%.4f}",comment,gluecodes[n.subtype],s.width*ptfactor,s.stretch*ptfactor,s.shrink*ptfactor)
+    return format("\\doFLOWgluenode{%s}{%s}{%.4f}{%.4f}{%.4f}",comment,gluecodes[n.subtype],n.width*ptfactor,n.stretch*ptfactor,n.shrink*ptfactor)
 end
 
 -- subtype width leader spec (stretch shrink ...

@@ -1650,9 +1650,15 @@
      \fi
    \fi}
 
+% \def\font_helpers_define_unknown_check_sizes#body#relativesize%
+%   {\ifcsname\??fontenvironments\s!default#relativesize\endcsname % fontclass ?
+%      % how \lastnamedcs here
+%      \expandafter\normalizebodyfontsize\csname\??fontenvironments#body#relativesize\endcsname{\csname\??fontenvironments\s!default#relativesize\endcsname\dimexpr#body\relax}%
+%      \settrue\c_font_defining_state
+%    \fi}
+
 \def\font_helpers_define_unknown_check_sizes#body#relativesize%
   {\ifcsname\??fontenvironments\s!default#relativesize\endcsname % fontclass ?
-     % how \lastnamedcs here
      \expandafter\normalizebodyfontsize\csname\??fontenvironments#body#relativesize\endcsname{\csname\??fontenvironments\s!default#relativesize\endcsname\dimexpr#body\relax}%
      \settrue\c_font_defining_state
    \fi}
@@ -1665,9 +1671,15 @@
      \settrue\c_font_defining_state
    \fi}
 
+% \def\font_helpers_define_unknown_check_relatives#body#relativesize%
+%   {\ifcsname\??fontbodyknown\csname\??fontenvironments#body#relativesize\endcsname\endcsname \else
+%      % how \lastnamedcs here
+%      \expandafter\font_helpers_define_unknown_font\csname\??fontenvironments#body#relativesize\endcsname
+%      \settrue\c_font_defining_state
+%    \fi}
+
 \def\font_helpers_define_unknown_check_relatives#body#relativesize%
   {\ifcsname\??fontbodyknown\csname\??fontenvironments#body#relativesize\endcsname\endcsname \else
-     % how \lastnamedcs here
      \expandafter\font_helpers_define_unknown_font\csname\??fontenvironments#body#relativesize\endcsname
      \settrue\c_font_defining_state
    \fi}
@@ -1682,6 +1694,20 @@
 
 %D These macros show that quite some definitions take place. Fonts are not loaded
 %D yet! This means that at format generation time, no font files are present.
+
+% \unexpanded\def\font_basics_switch_points#body%
+%   {\ifcsname\??fontbodyknown#body\endcsname \else
+%      % we need to check the relative sizes for this body
+%      \font_helpers_define_unknown_font{#body}%
+%    \fi%
+%    \ifcsname\??fontbodyknown#body\endcsname % always true now
+%      \font_basics_complete_switch{#body}%
+%      \localbodyfontsize#body\relax
+%      \normalizebodyfontsize\normalizedbodyfontsize\localbodyfontsize
+%      \font_helpers_check_bodyfont_environment\normalizedbodyfontsize\normalizedbodyfontsize % !!
+%    \else
+%      \showmessage\m!fonts4{#body}%
+%    \fi}
 
 \unexpanded\def\font_basics_switch_points#body%
   {\ifcsname\??fontbodyknown#body\endcsname \else

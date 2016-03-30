@@ -59,28 +59,45 @@ setmetatable(userids, {
 
 -- nuts overload
 
-local nuts      = nodes.nuts
-local nutpool   = { }
-nuts.pool       = nutpool
+local nuts       = nodes.nuts
+local nutpool    = { }
+nuts.pool        = nutpool
 
-local tonut     = nuts.tonut
-local tonode    = nuts.tonode
+local tonut      = nuts.tonut
+local tonode     = nuts.tonode
 
-local getbox    = nuts.getbox
-local getfield  = nuts.getfield
-local getid     = nuts.getid
-local getlist   = nuts.getlist
+local getbox     = nuts.getbox
+local getfield   = nuts.getfield
+local getid      = nuts.getid
+local getlist    = nuts.getlist
 
-local setfield  = nuts.setfield
-local setchar   = nuts.setchar
-local setlist   = nuts.setlist
+local setfield   = nuts.setfield
+local setchar    = nuts.setchar
+local setlist    = nuts.setlist
 
-local copy_nut  = nuts.copy
-local new_nut   = nuts.new
-local free_nut  = nuts.free
+local copy_nut   = nuts.copy
+local new_nut    = nuts.new
+local free_nut   = nuts.free
 
-local copy_node = nodes.copy
-local new_node  = nodes.new
+local copy_node  = nodes.copy
+local new_node   = nodes.new
+
+local reset_glue = nuts.reset_glue
+
+if not reset_glue then
+    reset_glue = function(n,width,stretch,shrink,stretch_order,shrink_order)
+        setfield(n,"width",width or 0)
+        setfield(n,"stretch",stretch or 0)
+        setfield(n,"shrink",shrink or 0)
+        setfield(n,"stretch_order",stretch_order or 0)
+        setfield(n,"shrink_order",shrink_order or 0)
+    end
+    nuts.reset_glue = reset_glue
+end
+
+nuts.resetglue = reset_glue
+
+-- todo: nodes.reset_glue
 
 -- at some point we could have a dual set (the overhead of tonut is not much larger than
 -- metatable associations at the lua/c end esp if we also take assignments into account
@@ -237,58 +254,45 @@ end
 
 local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)
     local n = copy_nut(skip)
-    if not width then
-        -- no spec
-    elseif width == false or tonumber(width) then
-        local s = copy_nut(glue_spec)
-        if width and width ~= 0 then
-            setfield(s,"width",width)
-        end
-        if stretch and stretch ~= 0 then
-            setfield(s,"stretch",stretch)
-        end
-        if shrink and shrink ~= 0 then
-            setfield(s,"shrink",shrink)
-        end
-        if stretch_order and stretch_order ~= 0 then
-            setfield(s,"stretch_order",stretch_order)
-        end
-        if shrink_order and shrink_order ~= 0 then
-            setfield(s,"shrink_order",shrink_order)
-        end
-        setfield(n,"spec",s)
-    else
-        -- shared
-        setfield(n,"spec",copy_nut(width))
+    if width and width ~= 0 then
+        setfield(n,"width",width)
+    end
+    if stretch and stretch ~= 0 then
+        setfield(n,"stretch",stretch)
+    end
+    if shrink and shrink ~= 0 then
+        setfield(n,"shrink",shrink)
+    end
+    if stretch_order and stretch_order ~= 0 then
+        setfield(n,"stretch_order",stretch_order)
+    end
+    if shrink_order and shrink_order ~= 0 then
+        setfield(n,"shrink_order",shrink_order)
     end
     return n
 end
 
 function nutpool.stretch(a,b)
     local n = copy_nut(glue)
-    local s = copy_nut(glue_spec)
     if b then
-        setfield(s,"stretch",a)
-        setfield(s,"stretch_order",b)
+        setfield(n,"stretch",a)
+        setfield(n,"stretch_order",b)
     else
-        setfield(s,"stretch",1)
-        setfield(s,"stretch_order",a or 1)
+        setfield(n,"stretch",1)
+        setfield(n,"stretch_order",a or 1)
     end
-    setfield(n,"spec",s)
     return n
 end
 
 function nutpool.shrink(a,b)
     local n = copy_nut(glue)
-    local s = copy_nut(glue_spec)
     if b then
-        setfield(s,"shrink",a)
-        setfield(s,"shrink_order",b)
+        setfield(n,"shrink",a)
+        setfield(n,"shrink_order",b)
     else
-        setfield(s,"shrink",1)
-        setfield(s,"shrink_order",a or 1)
+        setfield(n,"shrink",1)
+        setfield(n,"shrink_order",a or 1)
     end
-    setfield(n,"spec",s)
     return n
 end
 
@@ -298,20 +302,18 @@ end
 
 function nutpool.negatedglue(glue)
     local n = copy_nut(glue)
-    local s = copy_nut(getfield(n,"spec"))
-    local width   = getfield(s,"width")
-    local stretch = getfield(s,"stretch")
-    local shrink  = getfield(s,"shrink")
+    local width   = getfield(n,"width")
+    local stretch = getfield(n,"stretch")
+    local shrink  = getfield(n,"shrink")
     if width and width ~= 0 then
-        setfield(s,"width",  -width)
+        setfield(n,"width",  -width)
     end
     if stretch and stretch ~= 0 then
-        setfield(s,"stretch",-stretch)
+        setfield(n,"stretch",-stretch)
     end
     if shrink and shrink ~= 0 then
-        setfield(s,"shrink", -shrink)
+        setfield(n,"shrink", -shrink)
     end
-    setfield(n,"spec",s)
     return n
 end
 

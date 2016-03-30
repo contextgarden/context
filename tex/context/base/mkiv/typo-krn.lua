@@ -50,7 +50,8 @@ local setsubtype         = nuts.setsubtype
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
-local new_gluespec       = nodepool.gluespec
+local resetglue          = nuts.resetglue
+
 local new_kern           = nodepool.kern
 local new_glue           = nodepool.glue
 
@@ -206,16 +207,6 @@ local function kern_injector(fillup,kern)
         return g
     else
         return new_kern(kern)
-    end
-end
-
-local function spec_injector(fillup,width,stretch,shrink)
-    if fillup then
-        local s = new_gluespec(width,2*stretch,2*shrink)
-        setfield(s,"stretch_order",1)
-        return s
-    else
-        return new_gluespec(width,stretch,shrink)
     end
 end
 
@@ -560,10 +551,19 @@ function kerns.handler(head)
                 if subtype == userskip_code or subtype == xspaceskip_code or subtype == spaceskip_code then
                     local w = getfield(start,"width")
                     if w > 0 then
-                        local width   = w+gluefactor*w*krn
-                        local stretch = getfield(start,"stretch")
-                        local shrink  = getfield(start,"shrink")
-                        setfield(start,"spec",spec_injector(fillup,width,stretch*width/w,shrink*width/w))
+                        local width   = w + gluefactor * w * krn
+                        local stretch = getfield(start,"stretch") * width / w
+                        local shrink  = getfield(start,"shrink")  * width / w
+                        setfield(start,"width",width)
+                        if fillup then
+                            stretch = 2 * stretch
+                            shrink  = 2 * shrink
+                            setfield(start,"stretch_order",1)
+                            -- shrink_order ?
+                        end
+                        setfield(start,"stretch",stretch)
+                        setfield(start,"shrink", shrink)
+                        --
                         done = true
                     end
                 end
