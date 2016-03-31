@@ -128,6 +128,12 @@
                 <flag name="synctex">
                     <short>run with synctex enabled (optional value: zipped, unzipped, 1, -1)</short>
                 </flag>
+                <flag name="nodates">
+                    <short>omit runtime dates in pdf file</short>
+                </flag>
+                <flag name="trailerid">
+                    <short>alternative trailer id (or constant one)</short>
+                </flag>
                 </subcategory>
             <subcategory>
                 <flag name="generate">

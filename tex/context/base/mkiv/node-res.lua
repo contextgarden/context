@@ -82,23 +82,6 @@ local free_nut   = nuts.free
 local copy_node  = nodes.copy
 local new_node   = nodes.new
 
-local reset_glue = nuts.reset_glue
-
-if not reset_glue then
-    reset_glue = function(n,width,stretch,shrink,stretch_order,shrink_order)
-        setfield(n,"width",width or 0)
-        setfield(n,"stretch",stretch or 0)
-        setfield(n,"shrink",shrink or 0)
-        setfield(n,"stretch_order",stretch_order or 0)
-        setfield(n,"shrink_order",shrink_order or 0)
-    end
-    nuts.reset_glue = reset_glue
-end
-
-nuts.resetglue = reset_glue
-
--- todo: nodes.reset_glue
-
 -- at some point we could have a dual set (the overhead of tonut is not much larger than
 -- metatable associations at the lua/c end esp if we also take assignments into account
 

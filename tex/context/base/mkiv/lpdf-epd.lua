@@ -17,9 +17,9 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 -- we will provide .n as #; maybe in Lua 5.3 or later.
 --
 -- As there can be references to the parent we cannot expand a tree. I played with some
--- expansion variants but it does not pay off; adding extra checks is nto worth the trouble.
+-- expansion variants but it does not pay off; adding extra checks is not worth the trouble.
 --
--- The document stays over. In order to free memory one has to explicitly onload the loaded
+-- The document stays open. In order to free memory one has to explicitly unload the loaded
 -- document.
 --
 -- We have much more checking then needed in the prepare functions because occasionally

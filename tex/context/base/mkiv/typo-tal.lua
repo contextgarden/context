@@ -54,7 +54,8 @@ local insert_node_after    = nuts.insert_after
 local traverse_list_by_id  = nuts.traverse_id
 local dimensions_of_list   = nuts.dimensions
 local first_glyph          = nuts.first_glyph
-local reset_glue           = nuts.reset_glue
+
+local setglue              = nuts.setglue
 
 local nodepool             = nuts.pool
 local new_kern             = nodepool.kern
@@ -260,7 +261,7 @@ function characteralign.handler(originalhead,where)
                 local prev = getprev(current)
                 if next and prev and getid(next) == glyph_code and getid(prev) == glyph_code then -- too much checking
                     local width = fontcharacters[getfont(b_start)][separator or period].width
-                    reset_glue(current,width)
+                    setglue(current,width)
                     setattr(current,a_character,punctuationspace)
                     if a_start then
                         a_stop = current

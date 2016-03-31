@@ -113,6 +113,12 @@ run without stopping
 .B --synctex
 run with synctex enabled (optional value: zipped, unzipped, 1, -1)
 .TP
+.B --nodates
+omit runtime dates in pdf file
+.TP
+.B --trailerid
+alternative trailer id (or constant one)
+.TP
 .B --generate
 generate file database etc. (as luatools does)
 .TP

@@ -50,7 +50,7 @@ local setsubtype         = nuts.setsubtype
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
-local resetglue          = nuts.resetglue
+local setglue            = nuts.setglue -- todo
 
 local new_kern           = nodepool.kern
 local new_glue           = nodepool.glue
@@ -554,13 +554,13 @@ function kerns.handler(head)
                         local width   = w + gluefactor * w * krn
                         local stretch = getfield(start,"stretch") * width / w
                         local shrink  = getfield(start,"shrink")  * width / w
-                        setfield(start,"width",width)
                         if fillup then
                             stretch = 2 * stretch
                             shrink  = 2 * shrink
                             setfield(start,"stretch_order",1)
                             -- shrink_order ?
                         end
+                        setfield(start,"width",width)
                         setfield(start,"stretch",stretch)
                         setfield(start,"shrink", shrink)
                         --

@@ -44,29 +44,124 @@
 
 \outputmode  \plusone    \let\modeoutput \undefined \newcount\outputmode  \outputmode  \plusone
 
-%D These are already set:
+%D Because we do a lot in \LUA\ and don't want interferences, we nil most of the
+%D \PDFTEX\ primitives. Of course one can always use the \type {\pdfvariable},
+%D \type {\pdfextension} and \type {\pdffeedback} primitives but it will probably
+%D have bad side effects.
 
-% \pdfhorigin 1in
-% \pdfvorigin \pdfhorigin
+%D These are no-ops and don't even intercept what comes next. Maybe some day
+%D I'll write a parser that maps onto \CONTEXT.
 
-%D These too and most of them will be protected as well:
+\let\pdfcolorstack           \relax
+\let\pdfcolorstackinit       \relax
+\let\pdfannot                \relax
+\let\pdfstartlink            \relax
+\let\pdfendlink              \relax
+\let\pdfoutline              \relax
+\let\pdfdest                 \relax
+\let\pdfthread               \relax
+\let\pdfstartthread          \relax
+\let\pdfendthread            \relax
+\let\pdffontattr             \relax
+\let\pdfglyphtounicode       \relax
 
-% \pdfminorversion        \plusseven
-% \pdfgentounicode        \plusone    % \let\pdfgentounicode       \undefined \newcount\pdfgentounicode
-% \pdfinclusioncopyfonts  \plusone    % \let\pdfinclusioncopyfonts \undefined \newcount\pdfinclusioncopyfonts
-% \pdfinclusionerrorlevel \zerocount  % \let\pdfinclusionerrorlevel\undefined \newcount\pdfinclusionerrorlevel
-% \pdfdecimaldigits       \plussix    % \let\pdfdecimaldigits      \undefined \newcount\pdfdecimaldigits
-% \pdfimageresolution     300
-% \pdfpkresolution        600
+%D Here we do intercept (silently) what gets passed. One should use the
+%D \CONTEXT\ interfaces instead.
 
-%D Let's block these (we could share a dummy:
+\let\pdfcatalog         \relax  \newtoks \pdfcatalog
+\let\pdfinfo            \relax  \newtoks \pdfinfo
+\let\pdfnames           \relax  \newtoks \pdfnames
+\let\pdftrailer         \relax  \newtoks \pdftrailer
+\let\pdfpageresources   \relax  \newtoks \pdfpageresources
+\let\pdfpageattr        \relax  \newtoks \pdfpageattr
+\let\pdfpagesattr       \relax  \newtoks \pdfpagesattr
+\let\pdfxformattr       \relax  \newtoks \pdfxformattr
+\let\pdfxformresources  \relax  \newtoks \pdfxformresources
 
-\let\pdfcatalog      \relax  \newtoks\pdfcatalog
-\let\pdfinfo         \relax  \newtoks\pdfinfo
-\let\pdfnames        \relax  \newtoks\pdfnames
-\let\pdfpageresources\relax  \newtoks\pdfpageresources
-\let\pdfpageattr     \relax  \newtoks\pdfpageattr
-\let\pdfpagesattr    \relax  \newtoks\pdfpagesattr
+%D We use the \LUA\ interface (which then permits more control over
+%D possible pdf/x extensions).
+
+\let\pdfcompresslevel   \relax  \newcount\pdfcompresslevel
+\let\pdfobjcompresslevel\relax  \newcount\pdfobjcompresslevel
+
+%D But we still provide:
+
+\unexpanded\def\nopdfcompression     {\clf_setpdfcompression\zerocount\zerocount}
+\unexpanded\def\maximumpdfcompression{\clf_setpdfcompression\plusnine \plusnine }
+\unexpanded\def\normalpdfcompression {\clf_setpdfcompression\plusthree\plusthree}
+
+%D These might even become no-ops as we don't need them in \CONTEXT:
+
+\unexpanded\def\pdfmapfile#1{\clf_setmapfile{#1}}
+\unexpanded\def\pdfmapline#1{\clf_setmapline{#1}}
+
+%D We don't support these directives, at least not this way. If they are needed
+%D by third party modules we can provide some interface.
+
+\let\pdfcreationdate           \relax \newtoks \pdfcreationdate
+\let\pdfdecimaldigits          \relax \newcount\pdfdecimaldigits
+\let\pdfdestmargin             \relax \newcount\pdfdestmargin
+\let\pdffontname               \relax \newcount\pdffontname
+\let\pdffontobjnum             \relax \newcount\pdffontobjnum
+\let\pdffontsize               \relax \newcount\pdffontsize
+\let\pdfgamma                  \relax \newcount\pdfgamma
+\let\pdfgentounicode           \relax \newcount\pdfgentounicode
+\let\pdfhorigin                \relax \newcount\pdfhorigin
+\let\pdfignoreunknownimages    \relax \newcount\pdfignoreunknownimages
+\let\pdfimageaddfilename       \relax \newcount\pdfimageaddfilename
+\let\pdfimageapplygamma        \relax \newcount\pdfimageapplygamma
+\let\pdfimagegamma             \relax \newcount\pdfimagegamma
+\let\pdfimagehicolor           \relax \newcount\pdfimagehicolor
+\let\pdfimageresolution        \relax \newcount\pdfimageresolution
+\let\pdfincludechars           \relax \newtoks \pdffontsize
+\let\pdfinclusioncopyfonts     \relax \newcount\pdfinclusioncopyfonts
+\let\pdfinclusionerrorlevel    \relax \newcount\pdfinclusionerrorlevel
+\let\pdfinfoomitdate           \relax \newcount\pdfinfoomitdate
+\let\pdflastannot              \relax \newcount\pdflastannot
+\let\pdflastlink               \relax \newcount\pdflastlink
+\let\pdflinkmargin             \relax \newcount\pdflinkmargin
+\let\pdfminorversion           \relax \newcount\pdfminorversion
+\let\pdfpagebox                \relax \newcount\pdfpagebox
+\let\pdfpageref                \relax \newcount\pdfpageref
+\let\pdfpkfixeddpi             \relax \newcount\pdfpkfixeddpi
+\let\pdfpkmode                 \relax \newtoks \pdfpkmode
+\let\pdfpkresolution           \relax \newcount\pdfpkresolution
+\let\pdfretval                 \relax \newcount\pdfretval
+\let\pdfsuppressoptionalinfo   \relax \newcount\pdfsuppressoptionalinfo
+\let\pdfsuppressptexinfo       \relax \newcount\pdfsuppressptexinfo
+\let\pdftexrevision            \relax \newcount\pdftexrevision
+\let\pdftexversion             \relax \newcount\pdftexversion
+\let\pdfthreadmargin           \relax \newcount\pdfthreadmargin
+\let\pdftrailerid              \relax \newtoks \pdftrailerid
+\let\pdfuniqueresname          \relax \newcount\pdfuniqueresname
+\let\pdfvorigin                \relax \newcount\pdfvorigin
+\let\pdfxformmargin            \relax \newcount\pdfxformmargin
+\let\pdfxformname              \relax \newcount\pdfxformname
+
+%D These are still accepted but are normally not needed.
+
+\let\pdflastxform              \lastsavedboxresourceindex
+\let\pdflastximage             \lastsavedimageresourceindex
+\let\pdflastximagepages        \lastsavedimageresourcepages
+\let\pdflastxpos               \lastxpos
+\let\pdflastypos               \lastypos
+\let\pdfrefxform               \useboxresource
+\let\pdfrefximage              \useimageresource
+\let\pdfsavepos                \savepos
+\let\pdfxform                  \saveboxresource
+\let\pdfximage                 \saveimageresource
+
+%D For the moment we keep these as they are but they will become \LUA\
+%D calls eventually, after which we will nil the three \type {\pdf}
+%D interface primitives.
+
+\normalprotected\def\pdfliteral  {\pdfextension literal }
+\normalprotected\def\pdfobj      {\pdfextension obj }
+                \def\pdflastobj  {\numexpr\pdffeedback  lastobj\relax}
+\normalprotected\def\pdfrefobj   {\pdfextension refobj }
+\normalprotected\def\pdfrestore  {\pdfextension restore\relax}
+\normalprotected\def\pdfsave     {\pdfextension save\relax}
+\normalprotected\def\pdfsetmatrix{\pdfextension setmatrix }
 
 %D This one can be consulted by users although the suffix is also
 %D a system mode.
@@ -119,16 +214,6 @@
            \def\pdfbackendcurrentresources     {\clf_lpdf_collectedresources}
            \def\pdfcolor                     #1{\clf_lpdf_color\numexpr\thecolorattribute{#1}\relax}
            \let\PDFcolor\pdfcolor
-
-%D An example of usage is:
-
-\appendtoks % this will be moved to lua
-    \pdfbackendsetinfo{ConTeXt.Version}{\contextversion}%
-    \pdfbackendsetinfo{ConTeXt.Time}   {\number\normalyear.\twodigits\normalmonth.\twodigits\normalday\space \twodigits\currenthour:\twodigits\currentminute}%
-    \pdfbackendsetinfo{ConTeXt.Jobname}{\jobname}%
-    \pdfbackendsetinfo{ConTeXt.Url}    {www.pragma-ade.com}%
-    \pdfbackendsetinfo{ConTeXt.Support}{contextgarden.net}%
-\to \everylastbackendshipout
 
 %D Transformations
 

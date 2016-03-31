@@ -66,55 +66,14 @@ local two_strings       = interfaces.strings[2]
 local pdf    = pdf
 local factor = number.dimenfactors.bp
 
-if pdf.setinfo then
- -- table.setmetatablenewindex(pdf,function(t,k,v)
- --     report_blocked("'pdf.%s' is not supported",k)
- -- end)
-    -- the getters are harmless
-end
-
 do
 
     local texget = tex.get
     local texset = tex.set
 
-    if pdf.setminorversion then
-        function pdf.setmajorversion (n) texset("global","pdfmajorversion", n) end
-        function pdf.getmajorversion ( ) return texget("pdfmajorversion") end
-    else
-        --
-        function pdf.setmajorversion    (n) texset("global","pdfmajorversion",n) end
-        function pdf.setminorversion    (n) texset("global","pdfminorversion",n) end
-        function pdf.setcompresslevel   (n) texset("global","pdfcompresslevel",n) end
-        function pdf.setobjcompresslevel(n) texset("global","pdfobjcompresslevel",n) end
-        --
-        function pdf.getmajorversion    ( ) return texget("pdfmajorversion") end
-        function pdf.getminorversion    ( ) return texget("pdfminorversion") end
-        function pdf.getcompresslevel   ( ) return texget("pdfcompresslevel") end
-        function pdf.getobjcompresslevel( ) return texget("pdfobjcompresslevel") end
-    end
+    function pdf.setmajorversion (n) texset("global","pdfmajorversion", n) end
+    function pdf.getmajorversion ( ) return texget("pdfmajorversion") end
 
-end
-
-if not pdf.setinfo then
-    function pdf.setinfo   (s) pdf.info    = s end
-    function pdf.setcatalog(s) pdf.catalog = s end
-    function pdf.setnames  (s) pdf.names   = s end
-    function pdf.settrailer(s) pdf.trailer = s end
-end
-
-if not pdf.getpos then
-    function pdf.getpos   () return pdf.h, pdf.v end
-    function pdf.gethpos  () return pdf.h end
-    function pdf.getvpos  () return pdf.v end
-    function pdf.hasmatrix() return false end
-    function pdf.getmatrix() return 1, 0, 0, 1, 0, 0 end
-end
-
-if not pdf.setpageresources then
-    function pdf.setpageresources  (s) pdf.pageresources   = s end
-    function pdf.setpageattributes (s) pdf.pageattributes  = s end
-    function pdf.setpagesattributes(s) pdf.pagesattributes = s end
 end
 
 local pdfsetinfo            = pdf.setinfo
@@ -136,15 +95,6 @@ local pdfreserveobject      = pdf.reserveobj
 local pdfimmediateobject    = pdf.immediateobj
 local pdfdeferredobject     = pdf.obj
 local pdfreferenceobject    = pdf.refobj
-
--- function pdf.setinfo           () report_blocked("'pdf.%s' is not supported","setinfo")            end -- use lpdf.addtoinfo etc
--- function pdf.setcatalog        () report_blocked("'pdf.%s' is not supported","setcatalog")         end
--- function pdf.setnames          () report_blocked("'pdf.%s' is not supported","setnames")           end
--- function pdf.settrailer        () report_blocked("'pdf.%s' is not supported","settrailer")         end
--- function pdf.setpageresources  () report_blocked("'pdf.%s' is not supported","setpageresources")   end
--- function pdf.setpageattributes () report_blocked("'pdf.%s' is not supported","setpageattributes")  end
--- function pdf.setpagesattributes() report_blocked("'pdf.%s' is not supported","setpagesattributes") end
--- function pdf.registerannot     () report_blocked("'pdf.%s' is not supported","registerannot")      end
 
 local function pdfdisablecommand(command)
     pdf[command] = function() report_blocked("'pdf.%s' is not supported",command) end
@@ -637,47 +587,51 @@ function lpdf.escaped(str)
     return lpegmatch(escaped,str) or str
 end
 
-local p_null  = { } setmetatable(p_null, mt_z)
-local p_true  = { } setmetatable(p_true, mt_t)
-local p_false = { } setmetatable(p_false,mt_f)
+do
 
-local function pdfnull()
-    return p_null
-end
+    local p_null  = { } setmetatable(p_null, mt_z)
+    local p_true  = { } setmetatable(p_true, mt_t)
+    local p_false = { } setmetatable(p_false,mt_f)
 
--- print(pdfboolean(false),pdfboolean(false,false),pdfboolean(false,true))
--- print(pdfboolean(true),pdfboolean(true,false),pdfboolean(true,true))
--- print(pdfboolean(nil,true),pdfboolean(nil,false))
-
-local function pdfboolean(b,default)
-    if type(b) == "boolean" then
-        return b and p_true or p_false
-    else
-        return default and p_true or p_false
+    pdfnull = function()
+        return p_null
     end
-end
 
-local r_zero = setmetatable({ 0 },mt_r)
-
-local function pdfreference(r)  -- maybe make a weak table
-    if r and r ~= 0 then
-        return setmetatable({ r },mt_r)
-    else
-        return r_zero
+    pdfboolean = function(b,default)
+        if type(b) == "boolean" then
+            return b and p_true or p_false
+        else
+            return default and p_true or p_false
+        end
     end
-end
 
-local v_zero  = setmetatable({ 0  },mt_v)
-local v_empty = setmetatable({ "" },mt_v)
+    -- print(pdfboolean(false),pdfboolean(false,false),pdfboolean(false,true))
+    -- print(pdfboolean(true),pdfboolean(true,false),pdfboolean(true,true))
+    -- print(pdfboolean(nil,true),pdfboolean(nil,false))
 
-local function pdfverbose(t) -- maybe check for type
-    if t == 0 then
-        return v_zero
-    elseif t == "" then
-        return v_empty
-    else
-        return setmetatable({ t },mt_v)
+    local r_zero = setmetatable({ 0 },mt_r)
+
+    pdfreference = function(r)  -- maybe make a weak table
+        if r and r ~= 0 then
+            return setmetatable({ r },mt_r)
+        else
+            return r_zero
+        end
     end
+
+    local v_zero  = setmetatable({ 0  },mt_v)
+    local v_empty = setmetatable({ "" },mt_v)
+
+    pdfverbose = function(t) -- maybe check for type
+        if t == 0 then
+            return v_zero
+        elseif t == "" then
+            return v_empty
+        else
+            return setmetatable({ t },mt_v)
+        end
+    end
+
 end
 
 lpdf.stream      = pdfstream -- THIS WILL PROBABLY CHANGE
@@ -1188,12 +1142,6 @@ function lpdf.limited(n,min,max,default)
     end
 end
 
--- lpdf.addtoinfo("ConTeXt.Version", environment.version)
--- lpdf.addtoinfo("ConTeXt.Time",    os.date("%Y.%m.%d %H:%M")) -- :%S
--- lpdf.addtoinfo("ConTeXt.Jobname", environment.jobname)
--- lpdf.addtoinfo("ConTeXt.Url",     "www.pragma-ade.com")
--- lpdf.addtoinfo("ConTeXt.Support", "contextgarden.net")
-
 -- if not pdfreferenceobject then
 --
 --     local delayed = { }
@@ -1309,17 +1257,15 @@ end
 
 -- interface
 
-local lpdfverbose = lpdf.verbose
-
 implement { name = "lpdf_collectedresources",                             actions = { lpdf.collectedresources, context } }
 implement { name = "lpdf_addtocatalog",          arguments = two_strings, actions = lpdf.addtocatalog }
-implement { name = "lpdf_addtoinfo",             arguments = two_strings, actions = lpdf.addtoinfo }
+implement { name = "lpdf_addtoinfo",             arguments = two_strings, actions = function(a,b,c) lpdf.addtoinfo(a,b,c) end } -- gets adapted
 implement { name = "lpdf_addtonames",            arguments = two_strings, actions = lpdf.addtonames }
 implement { name = "lpdf_addtopageattributes",   arguments = two_strings, actions = lpdf.addtopageattributes }
 implement { name = "lpdf_addtopagesattributes",  arguments = two_strings, actions = lpdf.addtopagesattributes }
 implement { name = "lpdf_addtopageresources",    arguments = two_strings, actions = lpdf.addtopageresources }
-implement { name = "lpdf_adddocumentextgstate",  arguments = two_strings, actions = function(a,b) lpdf.adddocumentextgstate (a,lpdfverbose(b)) end }
-implement { name = "lpdf_adddocumentcolorspace", arguments = two_strings, actions = function(a,b) lpdf.adddocumentcolorspace(a,lpdfverbose(b)) end }
-implement { name = "lpdf_adddocumentpattern",    arguments = two_strings, actions = function(a,b) lpdf.adddocumentpattern   (a,lpdfverbose(b)) end }
-implement { name = "lpdf_adddocumentshade",      arguments = two_strings, actions = function(a,b) lpdf.adddocumentshade     (a,lpdfverbose(b)) end }
+implement { name = "lpdf_adddocumentextgstate",  arguments = two_strings, actions = function(a,b) lpdf.adddocumentextgstate (a,pdfverbose(b)) end }
+implement { name = "lpdf_adddocumentcolorspace", arguments = two_strings, actions = function(a,b) lpdf.adddocumentcolorspace(a,pdfverbose(b)) end }
+implement { name = "lpdf_adddocumentpattern",    arguments = two_strings, actions = function(a,b) lpdf.adddocumentpattern   (a,pdfverbose(b)) end }
+implement { name = "lpdf_adddocumentshade",      arguments = two_strings, actions = function(a,b) lpdf.adddocumentshade     (a,pdfverbose(b)) end }
 

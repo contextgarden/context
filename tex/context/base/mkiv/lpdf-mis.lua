@@ -206,6 +206,13 @@ local function setupidentity()
         end
         local id = lpdf.id()
         addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
+        --
+        addtoinfo("ConTeXt.Version", environment.version)
+        addtoinfo("ConTeXt.Time",    os.date("%Y-%m-%d %H:%M"))
+        addtoinfo("ConTeXt.Jobname", environment.jobname or tex.jobname)
+        addtoinfo("ConTeXt.Url",     "www.pragma-ade.com")
+        addtoinfo("ConTeXt.Support", "contextgarden.net")
+        --
         done = true
     else
         -- no need for a message

@@ -71,7 +71,7 @@ local new_kern          = nuts.pool.kern
 local hpack_nodes       = nuts.hpack
 local link_nodes        = nuts.link
 local find_node_tail    = nuts.tail
-local reset_glue        = nuts.reset_glue
+local setglue           = nuts.setglue
 
 local properties        = nodes.properties.data
 
@@ -720,7 +720,7 @@ local function profilelist(line,mvl)
                             if action then
                                 local ok = action(top,bot,t_profile,b_profile,specification)
                                 if ok and lastglue and distance ~= 0 then
-                                    resetglue(lastglue)
+                                    setglue(lastglue)
                                 end
                             end
                             t_profile.done = true
@@ -826,7 +826,7 @@ function profiling.profilebox(specification)
                         if action then
                             local ok = action(top,bot,t_profile,b_profile,specification)
                             if ok and lastglue and distance ~= 0 then
-                                reset_glue(lastglue)
+                                setglue(lastglue)
                             end
                         end
                         t_profile.done = true

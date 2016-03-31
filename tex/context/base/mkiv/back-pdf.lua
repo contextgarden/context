@@ -23,6 +23,7 @@ local scaninteger    = scanners.integer
 local scankeyword    = scanners.keyword
 
 local scanners       = interfaces.scanners
+local implement      = interfaces.implement
 
 local outputfilename
 
@@ -145,3 +146,26 @@ scanners.pdfstartmirroring = function()
 end
 
 scanners.pdfstopmirroring = scanners.pdfstartmirroring
+
+-- todo, change the above to implement too --
+
+implement {
+    name      = "setmapfile",
+    arguments = "string",
+    actions   = pdf.setmapfile
+}
+
+implement {
+    name      = "setmapfile",
+    arguments = "string",
+    actions   = pdf.setmapline
+}
+
+implement {
+    name      = "setpdfcompression",
+    arguments = { "integer", "integer" },
+    actions   = function(c,o)
+        pdf.setcompresslevel(c)
+        pdf.setobjcompresslevel(o)
+    end
+}

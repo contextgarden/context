@@ -76,6 +76,8 @@ local application = logs.application {
 --     ["shell-escape"]                = true, -- enable \write18{SHELL COMMAND}
 --     ["no-shell-escape"]             = true, -- disable \write18{SHELL COMMAND}
 --     ["shell-restricted"]            = true, -- restrict \write18 to a list of commands given in texmf.cnf
+--     ["nodates"]                     = true, -- no production dates in pdf file
+--     ["trailerid"]                   = true, -- alternative trailer id
 --     ["synctex"]                     = true, -- enable synctex
 --     ["version"]                     = true, -- display version and exit
 --     ["luaonly"]                     = true, -- run a lua file, then exit
@@ -591,6 +593,8 @@ function scripts.context.run(ctxdata,filename)
     local a_keeptuc     = getargument("keeptuc")
     local a_keeplog     = getargument("keeplog")
     local a_export      = getargument("export")
+    local a_nodates     = getargument("nodates")
+    local a_trailerid   = getargument("trailerid")
 
     -- the following flag is not officially supported because i cannot forsee
     -- side effects (so no bug reports please) .. we provide --sandbox that
@@ -750,21 +754,26 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.usemodule = "timing"
                 end
                 --
-                if not a_profile then
-                    -- okay
-                elseif c_flags.directives then
-                    c_flags.directives = format("system.profile,%s",c_flags.directives)
-                else
-                    c_flags.directives = "system.profile"
+                local directives = { }
+                --
+                if a_nodates then
+                    directives[#directives+1] = "backend.nodates"
+                end
+                --
+                if a_trailerid then
+                    directives[#directives+1] = format("backend.trailerid=%s",a_trailerid)
+                end
+                --
+                if a_profile then
+                    directives[#directives+1] = "system.profile"
                 end
                 --
                 if a_synctex then
                     report("warning: synctex is enabled") -- can add upto 5% runtime
-                    if c_flags.directives then
-                        c_flags.directives = format("system.synctex=%s,%s",a_synctex,c_flags.directives)
-                    else
-                        c_flags.directives = format("system.synctex=%s",a_synctex)
-                    end
+                    directives[#directives+1] = format("system.synctex=%s",a_synctex)
+                end
+                if #directives > 0 then
+                    c_flags.directives = concat(directives,",")
                 end
                 --
                 -- kindofrun: 1:first run, 2:successive run, 3:once, 4:last of maxruns

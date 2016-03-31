@@ -346,26 +346,35 @@
 \def\pack_thinrules[#1]%
   {\bgroup
    \setupcurrentthinrules[#1]%
-   \assignvalue{\directthinrulesparameter\c!interlinespace}\m_pack_thinrules_interlinespace{1.0}{1.5}{2.0}%
-   \spacing\m_pack_thinrules_interlinespace
-   \edef\p_after    {\directthinrulesparameter\c!after}%
-   \edef\p_inbetween{\directthinrulesparameter\c!inbetween}%
-   \directthinrulesparameter\c!before
    \scratchcounter\directthinrulesparameter\c!n\relax
-   \dorecurse\scratchcounter
-     {\ifnum\recurselevel=\scratchcounter \directvspacing\v!samepage \else   % \penalty500
-      \ifnum\recurselevel=\plustwo        \directvspacing\v!samepage \fi\fi  % \penalty500
-      \thinrule
-      \ifnum\recurselevel<\scratchcounter\relax
-        % test needed, else messed up whitespace
-        \ifx\p_inbetween\empty
-          \softbreak % \ifhmode \hskip \parfillskip \break \fi
-        \else
-          \endgraf
-          \nowhitespace
-          \p_inbetween
-        \fi
-      \fi}%
+   \ifcase\scratchcounter
+     % nothing, not even before/after
+     \let\p_after\relax
+   \else
+     \assignvalue{\directthinrulesparameter\c!interlinespace}\m_pack_thinrules_interlinespace{1.0}{1.5}{2.0}%
+     \spacing\m_pack_thinrules_interlinespace
+     \edef\p_after    {\directthinrulesparameter\c!after}%
+     \edef\p_inbetween{\directthinrulesparameter\c!inbetween}%
+     \directthinrulesparameter\c!before
+     \ifcase\scratchcounter\or
+       \thinrule
+     \else
+       \dorecurse\scratchcounter
+         {\ifnum\recurselevel=\scratchcounter \directvspacing\v!samepage \else   % \penalty500
+          \ifnum\recurselevel=\plustwo        \directvspacing\v!samepage \fi\fi  % \penalty500
+          \thinrule
+          \ifnum\recurselevel<\scratchcounter\relax
+            % test needed, else messed up whitespace
+            \ifx\p_inbetween\empty
+              \softbreak % \ifhmode \hskip \parfillskip \break \fi
+            \else
+              \endgraf
+              \nowhitespace
+              \p_inbetween
+            \fi
+          \fi}%
+     \fi
+   \fi
    \ifx\p_after\empty
      \carryoverpar\egroup
    \else

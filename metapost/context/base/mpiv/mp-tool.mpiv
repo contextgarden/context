@@ -1702,6 +1702,22 @@ enddef ;
 
 let greyed = grayed ;
 
+vardef hsvtorgb(expr h,s,v) =
+    save H, S, V, x ;
+    H = h mod 360 ;
+    S = if s < 0 : 0 elseif s > 1 : 1 else: s fi ;
+    V = if v < 0 : 0 elseif v > 1 : 1 else: v fi ;
+    x = 1 - abs(H mod 120 - 60)/60 ;
+    V * ( (1-S) * (1,1,1) + S *
+        if     H <  60 : (1,x,0)
+        elseif H < 120 : (x,1,0)
+        elseif H < 180 : (0,1,x)
+        elseif H < 240 : (0,x,1)
+        elseif H < 300 : (x,0,1)
+        else           : (1,0,x)
+    fi )
+enddef ;
+
 % yes or no: "text" infont "cmr12" at 24pt ;
 
 % let normalinfont = infont ;

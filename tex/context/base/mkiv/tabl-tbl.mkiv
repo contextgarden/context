@@ -379,7 +379,7 @@
 \unexpanded\def\tabl_tabulate_check_local_vrule_color_second#1%
   {\relax
    \ifx\m_tabl_tabulate_vrule_color_local\empty
-     \gdef\m_tabl_tabulate_vrule_color{#1}%
+     \xdef\m_tabl_tabulate_vrule_color{#1}%
    \else
      \global\let\m_tabl_tabulate_vrule_color\m_tabl_tabulate_vrule_color_local
      \global\let\m_tabl_tabulate_vrule_color_local\empty
@@ -426,95 +426,6 @@
 \let\tabl_tabulate_hook_e\donothing
 
 \let\tabl_tabulate_hook_g\donothing
-
-% \def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
-%   {\normalexpanded{\t_tabl_tabulate_preamble{\the\t_tabl_tabulate_preamble
-%         \tabl_tabulate_check_local_vrule_thickness\constantdimenargument\d_tabl_tabulate_vrulethickness
-%         \tabl_tabulate_check_local_vrule_color\constantemptyargument\m_tabl_tabulate_vrule_color
-%         \tabl_tabulate_check_local_color\constantemptyargument\m_tabl_tabulate_color\constantnumberargument\c_tabl_tabulate_colorspan
-%         \tabl_tabulate_color_side_right
-%         \aligntab
-%         \tabl_tabulate_column_vrule_inject
-%         \tabl_tabulate_color_side_left
-%         \tabl_tabulate_inject_pre_skip{\the\dimexpr\s_tabl_tabulate_pre}% get rid of plus
-%         \alignmark\alignmark
-%         \aligntab
-%         \tabl_tabulate_color_side_both
-%         \global\c_tabl_tabulate_colorspan\zerocount
-%         \global\c_tabl_tabulate_column\constantnumber\c_tabl_tabulate_columns
-%         \tabl_tabulate_hook_g
-%         \tabl_tabulate_setups_check % unexpandable
-%         \tabl_tabulate_hook_check   % unexpandable
-%         \ifzeropt\d_tabl_tabulate_width
-%             \ifcase\c_tabl_tabulate_modus\else
-%                \settrue\c_tabl_tabulate_automode
-%             \fi
-%         \else
-%             \ifcase\c_tabl_tabulate_modus
-%                 \hbox to
-%             \else
-%                 \hsize
-%             \fi
-%             \the\d_tabl_tabulate_width
-%         \fi
-%         \bgroup
-%             \tabl_tabulate_bbskip
-%             \bgroup % we cannot combine the if because a cell may have only one ##
-%                 \tabl_tabulate_hook_b
-%                 \c_tabl_tabulate_align\constantnumber\c_tabl_tabulate_align % needed in tag passing
-%                 \ifx\m_tabl_tabulate_alignment\empty \else
-%                     \spac_align_use_now{\m_tabl_tabulate_alignment}%
-%                 \fi
-%                 \noexpand\dostarttagged\noexpand\t!tabulatecell\noexpand\empty
-%                 \noexpand\dotagtabulatecell
-%                 \noexpand#1%
-%                 \ifconditional\c_tabl_tabulate_reshape
-%                     \tabl_tabulate_shaped_par_begin
-%                 \fi
-%                 \dotagtabulatesignal  % empty cells .. todo (can be removed as soon as build)
-%                 \noexpand\ifnum\noexpand\c_tabl_tabulate_type=\plusone\noexpand\else
-%                     \the\t_tabl_tabulate_bmath % maybe later? can interfere with char 0
-%                     \the\t_tabl_tabulate_font
-%                     \the\t_tabl_tabulate_settings
-%                     \the\t_tabl_tabulate_before
-%                     \ifx\m_tabl_tabulate_text_color\empty
-%                         \expandafter\gobbleoneargument
-%                     \else
-%                         \expandafter\dofastcoloractivation
-%                     \fi\m_tabl_tabulate_text_color
-%                 \noexpand\fi
-%                 % grouping needs to be outside macros (or expandable), nice test
-%                 % example \NC \string \aligntab \NC which will fail otherwise (mk)
-%                 \bgroup
-%                 \tabl_tabulate_entry_before
-%                 \alignmark\alignmark
-%                 \tabl_tabulate_entry_after
-%                 \egroup
-%                 \noexpand\ifnum\noexpand\c_tabl_tabulate_type=\plusone\noexpand\else
-%                     \the\t_tabl_tabulate_after
-%                     \the\t_tabl_tabulate_emath
-%                 \noexpand\fi
-%                 \ifconditional\c_tabl_tabulate_reshape
-%                     \tabl_tabulate_shaped_par_end
-%                 \fi
-%                 \noexpand#2%
-%                 \tabl_tabulate_hook_e
-%             \egroup
-%         \egroup
-%         \aligntab
-%         \noexpand\dostoptagged
-%         \tabl_tabulate_inject_post_skip{\the\dimexpr\s_tabl_tabulate_post}% get rid of plus
-%         \alignmark\alignmark
-%    }}%
-%    \t_tabl_tabulate_dummy\expandafter{\the\t_tabl_tabulate_dummy\NC}%
-%    \s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\relax
-%    \ifnum\c_tabl_tabulate_columns<\numexpr\c_tabl_tabulate_nofcolumns-\plusone\relax
-%      \s_tabl_tabulate_post\s_tabl_tabulate_pre
-%    \else
-%      \s_tabl_tabulate_post\zeropoint
-%    \fi
-%   %\let\gettabulateexit\dogettabulateexit % still needed ?
-%    \d_tabl_tabulate_width\zeropoint}
 
 \def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
   {\etoksapp\t_tabl_tabulate_preamble{%
@@ -887,24 +798,10 @@
      \tabl_tabulate_set_width_simple
    \fi}
 
-% \def\tabl_tabulate_set_last_entry#1% rulespec
-%   {\global\let\m_tabl_tabulate_vrule_color\empty
-%    \rawprocesscommalist[#1]\tabl_tabulate_set_vrule_command
-%    \ifx\currenttabulationtrulespec\empty
-%      \global\d_tabl_tabulate_vrulethickness\zeropoint
-%    \else
-%      \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
-%      \rawprocesscommalist[#1]\tabl_tabulate_set_vrule_command
-%    \fi
-%    \normalexpanded{\t_tabl_tabulate_preamble{\the\t_tabl_tabulate_preamble
-%      \tabl_tabulate_check_local_vrule_thickness\constantdimenargument\d_tabl_tabulate_vrulethickness
-%      \tabl_tabulate_check_local_vrule_color\constantemptyargument\m_tabl_tabulate_vrule_color
-%      \tabl_tabulate_column_vrule_inject}}%
-%    }
-
 \def\tabl_tabulate_set_last_entry#1% rulespec
-  {\global\let\m_tabl_tabulate_vrule_color\empty
-   \rawprocesscommalist[#1]\tabl_tabulate_set_vrule_command
+  {\global\let\m_tabl_tabulate_color\empty
+   \global\let\m_tabl_tabulate_vrule_color\empty
+   \edef\currenttabulationtrulespec{#1}%
    \ifx\currenttabulationtrulespec\empty
      \global\d_tabl_tabulate_vrulethickness\zeropoint
    \else
@@ -914,8 +811,7 @@
    \etoksapp\t_tabl_tabulate_preamble{%
      \tabl_tabulate_check_local_vrule_thickness\constantdimenargument\d_tabl_tabulate_vrulethickness
      \tabl_tabulate_check_local_vrule_color\constantemptyargument\m_tabl_tabulate_vrule_color
-     \tabl_tabulate_column_vrule_inject}%
-   }
+     \tabl_tabulate_column_vrule_inject}}
 
 \let\settabulateentry    \tabl_tabulate_set_entry      % used at the lua end
 \let\settabulatelastentry\tabl_tabulate_set_last_entry % used at the lua end
@@ -2153,166 +2049,6 @@
   {\setlocalhsize
    \hsize\localhsize}
 
-% \def\tabl_tabulate_process
-%   {\c_tabl_tabulate_pass\plusone
-%    \tabl_tabulate_check_full_content
-%    \edef\v_tabl_tabulate_align{\executeifdefined{\??tabulatealigning\p_align}0}%
-%    \s_tabl_tabulate_first.5\d_tabl_tabulate_unit
-%    \s_tabl_tabulate_last\s_tabl_tabulate_first
-%    \s_tabl_tabulate_pre\zeropoint
-%    \s_tabl_tabulate_post\s_tabl_tabulate_first % was: \zeropoint
-%    \global\c_tabl_tabulate_columns\zerocount
-%    \global\c_tabl_tabulate_nofauto\zerocount
-%    \global\c_tabl_tabulate_noflines\zerocount
-%    \c_tabl_tabulate_totalnoflines\zerocount
-%    \c_tabl_tabulate_minusnoflines\zerocount
-%    \global\d_tabl_tabulate_width_p\zeropoint
-%    \global\d_tabl_tabulate_width_w\zeropoint
-%    \global\setfalse\c_tabl_tabulate_equal
-%    \tabl_tabulate_pheight_reset
-%    \tabskip\zeropoint
-%    \ifinsidesplitfloat
-%      \donetrue
-%    \else\ifinsidefloat
-%      \donefalse
-%    \else
-%      \donetrue
-%    \fi\fi
-%    \ifdone
-%      \global\c_tabl_tabulate_repeathead\executeifdefined{\??tabulateheader\tabulationparameter\c!header}\zerocount
-%    \else
-%      \global\c_tabl_tabulate_repeathead\zerocount
-%    \fi
-%    %
-%    \the\t_tabl_tabulate_initializers_first % collect more here
-%    %
-%    \glet\tabl_tabulate_flush_collected\empty
-%    \ifdim\d_tabl_tabulate_margin>\zeropoint
-%      \t_tabl_tabulate_preamble
-%        {\aligntab
-%         \tabl_tabulate_flush_indent
-% % \global\advance\c_tabl_tabulate_noflines\plusone
-%         \strut
-%         \alignmark\alignmark
-%         \tabskip\d_tabl_tabulate_margin
-%         \strut
-%         \aligntab
-%         \alignmark\alignmark
-%         \tabskip\zeropoint}%
-%    \else
-%      \t_tabl_tabulate_preamble
-%        {\aligntab
-%         \tabl_tabulate_flush_indent
-% % \global\advance\c_tabl_tabulate_noflines\plusone
-%         \strut
-%         \alignmark\alignmark
-%         \aligntab
-%         \alignmark\alignmark
-%         \tabskip\zeropoint}%
-%    \fi
-%    \d_tabl_tabulate_width\zeropoint
-%    % these counters are set at the lua end
-%    \c_tabl_tabulate_nofcolumns         \zerocount
-%    \c_tabl_tabulate_has_rule_spec_first\zerocount
-%    \c_tabl_tabulate_has_rule_spec_last \zerocount
-%    \clf_presettabulate{\detokenizedtabulationparameter\c!format}%
-%    %
-%  % \edef\totaltabulatecolumns{\the\numexpr3*\c_tabl_tabulate_columns+\plusfour}%
-%    \d_tabl_tabulate_width\zeropoint
-%    \tabl_tabulate_initialize_boxes\c_tabl_tabulate_columns
-%    \t_tabl_tabulate_preamble\expandafter{\the\t_tabl_tabulate_preamble
-%      \aligntab\alignmark\alignmark
-%      \global\advance\c_tabl_tabulate_column\plusone % maybe just set it already
-%    }%
-%    \t_tabl_tabulate_dummy\expandafter{\the\t_tabl_tabulate_dummy
-%      \NC\unskip\unskip\crcr\tabl_tabulate_flush_collected % no count
-%    }%
-%    \global\c_tabl_tabulate_column\zerocount
-%    \tabl_tabulate_pheight_reset
-%    \glet\tabl_tabulate_hook\tabl_tabulate_hook_yes
-%    \ifx\p_indenting\v!no
-%      \forgetparindent
-%    \fi
-%    \ifinsidefloat
-%      \d_tabl_tabulate_indent\zeropoint
-%    \else
-%      \tabl_tabulate_set_local_hsize
-%    \fi
-%    \dontcomplain
-%    \forgetall % hm, interference with preceding \forgetparindent probably bug, to be solved
-%    \everypar\everytabulatepar
-%    \setbox0\vbox % outside \if because of line counting
-%      {\notesenabledfalse
-%       \d_tabl_tabulate_indent\zeropoint
-%       \settrialtypesetting % very important
-%       \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}}%
-%    \ifnum\c_tabl_tabulate_nofauto>\zerocount
-%      % so, even if the natural size is larger, in the final run, we force the calculated width
-%      \d_tabl_tabulate_width\dimexpr\hsize-\wd0-\d_tabl_tabulate_width_p-\d_tabl_tabulate_width_w\relax
-%      \ifnum\c_tabl_tabulate_nofauto>\zerocount
-%        \divide\d_tabl_tabulate_width \c_tabl_tabulate_nofauto\relax
-%      \fi
-%    \fi
-%    \ifconditional\c_tabl_tabulate_split
-%      \splittopskip\strutht
-%      \glet\tabl_tabulate_flush_collected_indeed\empty
-%      \glet\tabl_tabulate_flush_collected\tabl_tabulate_flush_second
-%    \fi
-%    \c_tabl_tabulate_totalnoflines\c_tabl_tabulate_noflines
-%    \c_tabl_tabulate_minusnoflines\numexpr\c_tabl_tabulate_noflines+\minusone\relax
-%    \global\c_tabl_tabulate_noflines\zerocount
-%    %
-%    \c_tabl_tabulate_pass\plustwo % final pass
-%    \the\t_tabl_tabulate_initializers_second % collect more here
-%    %
-%    \ifx\p_line\v!line
-%      \let\HL\HR
-%      \let\tabulateautoline\tabulateautorule
-%      \let\tabulateline\tabulaterule
-%    \fi
-%    %
-%    \ifcase\c_tabl_tabulate_repeathead
-%      \ifinsidesplitfloat
-%         \global\setbox\b_tabl_tabulate\vbox \bgroup
-%       \else
-%         \startframedcontent[\tabulationparameter\c!frame]%
-%       \fi
-%    \else
-%      \global\setbox\b_tabl_tabulate\vbox \bgroup
-%    \fi
-%    %
-%    \dostarttaggedchained\t!tabulate\empty\??tabulation
-%    \dostarttagged\t!tabulaterow\empty
-%    \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
-%    \everycr\expandafter{\the\everycr\dostoptagged\dostarttagged\t!tabulaterow\empty}%
-%    \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
-%    \dostoptagged
-%    \dostoptagged
-%    \ifhmode\par\prevdepth\strutdp\fi % nog eens beter, temporary hack
-%    \ifx\p_distance\v!grid
-%      \vskip-\strutdp % experimental tm-prikkels
-%    \fi
-%    %
-%    \ifcase\c_tabl_tabulate_repeathead
-%      \ifinsidesplitfloat
-%        \egroup % box
-%        \egroup % settings
-%        \tabl_split_box\b_tabl_tabulate
-%      \else
-%        \stopframedcontent
-%        \egroup
-%      \fi
-%    \else
-%      \egroup % box
-%      \egroup % settings
-%      \tabl_split_box\b_tabl_tabulate
-%    \fi
-%    %
-%    \ifinsidefloat \else
-%      \tabulationparameter\c!after
-%    \fi
-%    \egroup} % whole thing
-
 \def\tabl_tabulate_process
   {\c_tabl_tabulate_pass\plusone
    \tabl_tabulate_check_full_content
@@ -2445,7 +2181,7 @@
    \dostarttagged\t!tabulaterow\empty
    \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
    \everycr\expandafter{\the\everycr\dostoptagged\dostarttagged\t!tabulaterow\empty}%
-%    \toksapp\everycr{\dostoptagged\dostarttagged\t!tabulaterow\empty}%
+ % \toksapp\everycr{\dostoptagged\dostarttagged\t!tabulaterow\empty}%
    \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
    \dostoptagged
    \dostoptagged

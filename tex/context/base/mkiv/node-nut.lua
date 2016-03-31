@@ -200,29 +200,7 @@ nuts.ligaturing           = direct.ligaturing
 nuts.kerning              = direct.kerning
 nuts.effective_glue       = direct.effective_glue
 
--- placeholders
-
-if not nuts.kerning then
-
-    local n_kerning = node.kerning
-
-    function nuts.kerning(head)
-        return tonode(n_kerning(tonut(head)))
-    end
-
-end
-
-if not nuts.ligaturing then
-
-    local n_ligaturing = node.ligaturing
-
-    function nuts.ligaturing(head)
-        return tonode(n_ligaturing(tonut(head)))
-    end
-
-end
-
-if not direct.mlist_to_hlist then
+if not direct.mlist_to_hlist then -- needed
 
     local n_mlist_to_hlist = node.mlist_to_hlist
 
@@ -232,15 +210,36 @@ if not direct.mlist_to_hlist then
 
 end
 
-if not direct.setlist then
+local is_zero_glue = direct.is_zero_glue
+local setglue      = direct.setglue
+local getglue      = direct.getglue
 
-    local setfield = nuts.setfield
-
-    function direct.setlist   (n,l) setfield(n,"list",l) end
-    function direct.setleader (n,l) setfield(n,"leader",l) end
-    function direct.setsubtype(n,s) setfield(n,"subtype",s) end
-
+if not is_zero_glue then
+    is_zero_glue = function(n)
+        return not n or (
+            getfield(n,"width")   == 0 and
+            getfield(n,"stretch") == 0 and
+            getfield(n,"shrink")  == 0
+        )
+    end
+    setglue = function(n,width,stretch,shrink,stretch_order,shrink_order)
+        setfield(n,"width",        width         or 0)
+        setfield(n,"stretch",      stretch       or 0)
+        setfield(n,"shrink",       shrink        or 0)
+        setfield(n,"stretch_order",stretch_order or 0)
+        setfield(n,"shrink_order", shrink_order  or 0)
+    end
+    getglue = function(n)
+        return
+            getfield(n,"width"), getfield(n,"stretch"), getfield(n,"shrink"),
+            getfield(n,"stretch_order"), getfield(n,"shrink_order")
+    end
 end
+
+nuts.is_zero_glue = is_zero_glue
+nuts.setglue      = setglue
+nuts.getglue      = getglue
+
 
 -- if not direct.getpre then
 --
@@ -252,10 +251,11 @@ end
 --
 -- end
 
-nuts.getdisc    = direct.getdisc
 ----.getpre     = direct.getpre
 ----.getpost    = direct.getpost
 ----.getreplace = direct.getreplace
+
+nuts.getdisc    = direct.getdisc
 nuts.setdisc    = direct.setdisc
 nuts.setchar    = direct.setchar
 nuts.setnext    = direct.setnext
@@ -266,45 +266,6 @@ nuts.setlink    = direct.setlink
 nuts.setlist    = direct.setlist
 nuts.setleader  = direct.setleader
 nuts.setsubtype = direct.setsubtype
-
-if not direct.is_glyph then
-
-    local getchar    = direct.getchar
-    local getid      = direct.getid
-    local getfont    = direct.getfont
-    local getsubtype = direct.getsubtype
-
-    local glyph_code = nodes.nodecodes.glyph
-
-    function direct.is_glyph(n,f)
-        local id   = getid(n)
-        if id == glyph_code then
-            if f and getfont(n) == f then
-                return getchar(n)
-            else
-                return false
-            end
-        else
-            return nil, id
-        end
-    end
-
-    function direct.is_char(n,f)
-        local id = getid(n)
-        if id == glyph_code then
-            if getsubtype(n) >= 256 then
-                return false
-            elseif f and getfont(n) == f then
-                return getchar(n)
-            else
-                return false
-            end
-        else
-            return nil, id
-        end
-    end
-
-end
 
 nuts.is_char    = direct.is_char
 nuts.ischar     = direct.is_char

@@ -720,7 +720,7 @@ function codeinjections.setformat(s)
             local majorversion = math.div(pdf_version,10)
             local minorversion = math.mod(pdf_version,10)
             local objectcompression = spec.object_compression and pdf_version >= 15
-            local compresslevel = level or tex.pdfcompresslevel -- keep default
+            local compresslevel = level or pdf.getcompresslevel() -- keep default
             local objectcompresslevel = (objectcompression and (level or pdf.getobjcompresslevel())) or 0
             pdf.setcompresslevel   (compresslevel)
             pdf.setobjcompresslevel(objectcompresslevel)

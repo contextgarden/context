@@ -116,6 +116,10 @@ nodes.mlist_to_hlist       = node.mlist_to_hlist
 
 nodes.effective_glue       = node.effective_glue
 
+nodes.is_zero_glue         = node.is_zero_glue
+nodes.getglue              = node.getglue
+nodes.getglue              = node.getglue
+
 -- if not gonuts or not node.getfield then
 --     node.getfield = metatable.__index
 --     node.setfield = metatable.__newindex

@@ -234,8 +234,7 @@
 
 \let\newfam\newfamily
 
-
-\ifdefined\firstvalidlanguage \firstvalidlanguage\plusone \fi
+\firstvalidlanguage\plusone
 
 % Watch out, for the moment we disable the check for already being defined
 % later we will revert this but first all chardefs must be replaced.
@@ -981,10 +980,6 @@
 \normalprotected\def\pdfmapline               {\pdfextension mapline }
 \normalprotected\def\pdftrailer               {\pdfextension trailer }
 \normalprotected\def\pdfglyphtounicode        {\pdfextension glyphtounicode }
-\normalprotected\gdef\pdfsuppressoptionalinfo {\pdfextension suppressoptionalinfo }
-\global          \let\pdfsuppressptexinfo                \pdfsuppressoptionalinfo
-\normalprotected\gdef\pdfinfoid               {\pdfextension infoid }
-\normalprotected\gdef\pdfinfoomitdate         {\pdfextension suppressoptionalinfo \numexpr32+64\relax}
 
 % \chardef\pdfnofullbanner   =   1
 % \chardef\pdfnofilename     =   2
@@ -1054,6 +1049,11 @@
 \edef\pdfxformresources      {\pdfvariable xformresources}
 \edef\pdfpkmode              {\pdfvariable pkmode}
 
+\edef\pdfsuppressoptionalinfo{\pdfvariable suppressoptionalinfo }
+\let \pdfsuppressptexinfo              \pdfsuppressoptionalinfo
+\edef\pdftrailerid           {\pdfvariable trailerid }
+\edef\pdfinfoomitdate        {\pdfvariable suppressoptionalinfo \numexpr32+64\relax}
+
 \normalprotected\def\nopdfcompression     {\pdfobjcompresslevel\zerocount \pdfcompresslevel\zerocount}
 \normalprotected\def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }
 \normalprotected\def\normalpdfcompression {\pdfobjcompresslevel\plusthree \pdfcompresslevel\plusthree}
@@ -1099,13 +1099,7 @@
 \suppressmathparerror \plusone % \let\suppressmathparerror \relax
 \suppressifcsnameerror\plusone % \let\suppressifcsnameerror\relax
 
-\ifdefined\matheqnogapstep % for now
-    \matheqnogapstep  \zerocount
-\fi
-
-%D New primitive:
-
-\ifdefined\hyphenationmin \else \newcount\hyphenationmin \fi
+\matheqnogapstep      \zerocount % fr now
 
 %D While cleaning this code up a bit I was listening to Heather Nova's \CD\ Redbird.
 %D The first song on that \CD\ ends with a few lines suitable for ending this

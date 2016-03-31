@@ -91,10 +91,6 @@
     \protected\gdef\pdfmapline              {\pdfextension mapline }
     \protected\gdef\pdftrailer              {\pdfextension trailer }
     \protected\gdef\pdfglyphtounicode       {\pdfextension glyphtounicode }
-    \protected\gdef\pdfsuppressoptionalinfo {\pdfextension suppressoptionalinfo }
-    \global   \let \pdfsuppressptexinfo                \pdfsuppressoptionalinfo
-    \protected\gdef\pdfinfoid               {\pdfextension infoid }
-    \protected\gdef\pdfinfoomitdate         {\pdfextension suppressoptionalinfo \numexpr32+64\relax}
 
     \chardef\pdfnofullbanner   =   1
     \chardef\pdfnofilename     =   2
@@ -160,6 +156,11 @@
     \xdef\pdfxformattr                {\pdfvariable xformattr}
     \xdef\pdfxformresources           {\pdfvariable xformresources}
     \xdef\pdfpkmode                   {\pdfvariable pkmode}
+
+    \xdef\pdfsuppressoptionalinfo     {\pdfvariable suppressoptionalinfo }
+    \global\let\pdfsuppressptexinfo             \pdfsuppressoptionalinfo
+    \xdef\pdftrailerid                {\pdfvariable trailerid }
+    \xdef\pdfinfoomitdate             {\pdfvariable suppressoptionalinfo \numexpr32+64\relax}
 
     % initializations
 

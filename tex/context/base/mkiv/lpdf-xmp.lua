@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['lpdf-xmp'] = {
     comment   = "with help from Peter Rolf",
 }
 
-local tostring = tostring
+local tostring, type = tostring, type
 local format, random, char, gsub, concat = string.format, math.random, string.char, string.gsub, table.concat
 local xmlfillin = xml.fillin
 
@@ -37,46 +37,104 @@ local xpacket = [[
 
 local mapping = {
     -- user defined keys (pdfx:)
-    ["ConTeXt.Jobname"] = "rdf:Description/pdfx:ConTeXt.Jobname",
-    ["ConTeXt.Time"]    = "rdf:Description/pdfx:ConTeXt.Time",
-    ["ConTeXt.Url"]     = "rdf:Description/pdfx:ConTeXt.Url",
-    ["ConTeXt.Version"] = "rdf:Description/pdfx:ConTeXt.Version",
-    ["ID"]              = "rdf:Description/pdfx:ID",
-    ["PTEX.Fullbanner"] = "rdf:Description/pdfx:PTEX.Fullbanner",
+    ["ConTeXt.Jobname"] = { "context", "rdf:Description/pdfx:ConTeXt.Jobname" },
+    ["ConTeXt.Time"]    = { "date",    "rdf:Description/pdfx:ConTeXt.Time" },
+    ["ConTeXt.Url"]     = { "context", "rdf:Description/pdfx:ConTeXt.Url" },
+    ["ConTeXt.Version"] = { "context", "rdf:Description/pdfx:ConTeXt.Version" },
+    ["ID"]              = { "date",    "rdf:Description/pdfx:ID" },                         -- has date
+    ["PTEX.Fullbanner"] = { "metadata","rdf:Description/pdfx:PTEX.Fullbanner" },
     -- Adobe PDF schema
-    ["Keywords"]        = "rdf:Description/pdf:Keywords",
-    ["Producer"]        = "rdf:Description/pdf:Producer",
- -- ["Trapped"]         = "rdf:Description/pdf:Trapped", -- '/False' in /Info, but 'False' in XMP
+    ["Keywords"]        = { "metadata","rdf:Description/pdf:Keywords" },
+    ["Producer"]        = { "metadata","rdf:Description/pdf:Producer" },
+ -- ["Trapped"]         = { "pdf",     "rdf:Description/pdf:Trapped" },                     -- '/False' in /Info, but 'False' in XMP
     -- Dublin Core schema
-    ["Author"]          = "rdf:Description/dc:creator/rdf:Seq/rdf:li",
-    ["Format"]          = "rdf:Description/dc:format", -- optional, but nice to have
-    ["Subject"]         = "rdf:Description/dc:description/rdf:Alt/rdf:li",
-    ["Title"]           = "rdf:Description/dc:title/rdf:Alt/rdf:li",
+    ["Author"]          = { "metadata","rdf:Description/dc:creator/rdf:Seq/rdf:li" },
+    ["Format"]          = { "metadata","rdf:Description/dc:format" },                       -- optional, but nice to have
+    ["Subject"]         = { "metadata","rdf:Description/dc:description/rdf:Alt/rdf:li" },
+    ["Title"]           = { "metadata","rdf:Description/dc:title/rdf:Alt/rdf:li" },
     -- XMP Basic schema
-    ["CreateDate"]      = "rdf:Description/xmp:CreateDate",
-    ["Creator"]         = "rdf:Description/xmp:CreatorTool",
-    ["MetadataDate"]    = "rdf:Description/xmp:MetadataDate",
-    ["ModifyDate"]      = "rdf:Description/xmp:ModifyDate",
+    ["CreateDate"]      = { "date",    "rdf:Description/xmp:CreateDate" },
+    ["CreationDate"]    = { "date",    "rdf:Description/xmp:CreationDate" },                -- dummy
+    ["Creator"]         = { "metadata","rdf:Description/xmp:CreatorTool" },
+    ["MetadataDate"]    = { "date",    "rdf:Description/xmp:MetadataDate" },
+    ["ModDate"]         = { "date",    "rdf:Description/xmp:ModDate" },                     -- dummy
+    ["ModifyDate"]      = { "date",    "rdf:Description/xmp:ModifyDate" },
     -- XMP Media Management schema
-    ["DocumentID"]      = "rdf:Description/xmpMM:DocumentID",
-    ["InstanceID"]      = "rdf:Description/xmpMM:InstanceID",
-    ["RenditionClass"]  = "rdf:Description/xmpMM:RenditionClass", -- PDF/X-4
-    ["VersionID"]       = "rdf:Description/xmpMM:VersionID", -- PDF/X-4
+    ["DocumentID"]      = { "date",    "rdf:Description/xmpMM:DocumentID" },                -- uuid
+    ["InstanceID"]      = { "date",    "rdf:Description/xmpMM:InstanceID" },                -- uuid
+    ["RenditionClass"]  = { "pdf",     "rdf:Description/xmpMM:RenditionClass" },            -- PDF/X-4
+    ["VersionID"]       = { "pdf",     "rdf:Description/xmpMM:VersionID" },                 -- PDF/X-4
     -- additional entries
     -- PDF/X
-    ["GTS_PDFXVersion"] = "rdf:Description/pdfxid:GTS_PDFXVersion",
+    ["GTS_PDFXVersion"] = { "pdf",     "rdf:Description/pdfxid:GTS_PDFXVersion" },
     -- optional entries
     -- all what is visible in the 'document properties --> additional metadata' window
     -- XMP Rights Management schema (optional)
-    ["Marked"]          = "rdf:Description/xmpRights:Marked",
- -- ["Owner"]           = "rdf:Description/xmpRights:Owner/rdf:Bag/rdf:li", -- maybe useful (not visible)
- -- ["UsageTerms"]      = "rdf:Description/xmpRights:UsageTerms", -- maybe useful (not visible)
-    ["WebStatement"]    = "rdf:Description/xmpRights:WebStatement",
+    ["Marked"]          = { "pdf",      "rdf:Description/xmpRights:Marked" },
+ -- ["Owner"]           = { "metadata", "rdf:Description/xmpRights:Owner/rdf:Bag/rdf:li" }, -- maybe useful (not visible)
+ -- ["UsageTerms"]      = { "metadata", "rdf:Description/xmpRights:UsageTerms" },           -- maybe useful (not visible)
+    ["WebStatement"]    = { "metadata", "rdf:Description/xmpRights:WebStatement" },
     -- Photoshop PDF schema (optional)
-    ["AuthorsPosition"] = "rdf:Description/photoshop:AuthorsPosition",
-    ["Copyright"]       = "rdf:Description/photoshop:Copyright",
-    ["CaptionWriter"]   = "rdf:Description/photoshop:CaptionWriter",
+    ["AuthorsPosition"] = { "metadata", "rdf:Description/photoshop:AuthorsPosition" },
+    ["Copyright"]       = { "metadata", "rdf:Description/photoshop:Copyright" },
+    ["CaptionWriter"]   = { "metadata", "rdf:Description/photoshop:CaptionWriter" },
 }
+
+pdf.setsuppressoptionalinfo(
+        0 --
+    +   1 -- pdfnofullbanner
+    +   2 -- pdfnofilename
+    +   4 -- pdfnopagenumber
+    +   8 -- pdfnoinfodict
+    +  16 -- pdfnocreator
+    +  32 -- pdfnocreationdate
+    +  64 -- pdfnomoddate
+    + 128 -- pdfnoproducer
+    + 256 -- pdfnotrapped
+ -- + 512 -- pdfnoid
+)
+
+local included = table.setmetatableindex( {
+    context  = true,
+    id       = true,
+    metadata = true,
+    date     = true,
+    id       = true,
+    pdf      = true,
+}, function(t,k)
+    return true
+end)
+
+directives.register("backend.nodates", function(v)
+    included.date = not v
+    if v then
+        report_info("no date/time information will be added to the PDF file")
+    end
+end)
+
+directives.register("backend.trailerid", function(v)
+    if v then
+        if toboolean(v) or v == "" then
+            v = "This file is processed by ConTeXt and LuaTeX."
+        else
+            v = tostring(v)
+        end
+        local h = md5.HEX(v)
+        report_info("using hashed trailer id %a (%a)",v,h)
+        pdf.settrailerid(format("[<%s> <%s>]",h,h))
+    end
+end)
+
+local function permitdetail(what)
+    local m = mapping[what]
+    if m then
+        return included[m[1]] and m[2]
+    else
+        return included[what]
+    end
+end
+
+lpdf.permitdetail = permitdetail
 
 -- maybe some day we will load the xmp file at runtime
 
@@ -117,8 +175,8 @@ local function valid_xmp()
 end
 
 function lpdf.addxmpinfo(tag,value,check)
-    local pattern = mapping[tag]
-    if pattern then
+    local pattern = permitdetail(tag)
+    if type(pattern) == "string" then
         xmlfillin(xmp or valid_xmp(),pattern,value,check)
     end
 end
@@ -129,13 +187,20 @@ local pdfaddtoinfo  = lpdf.addtoinfo
 local pdfaddxmpinfo = lpdf.addxmpinfo
 
 function lpdf.addtoinfo(tag,pdfvalue,strvalue)
-    pdfaddtoinfo(tag,pdfvalue)
-    local value = strvalue or gsub(tostring(pdfvalue),"^%((.*)%)$","%1") -- hack
-    if trace_info then
-        report_info("set %a to %a",tag,value)
+    local pattern = permitdetail(tag)
+    if pattern then
+        pdfaddtoinfo(tag,pdfvalue)
     end
-    pdfaddxmpinfo(tag,value)
+    if type(pattern) == "string" then
+        local value = strvalue or gsub(tostring(pdfvalue),"^%((.*)%)$","%1") -- hack
+        if trace_info then
+            report_info("set %a to %a",tag,value)
+        end
+        xmlfillin(xmp or valid_xmp(),pattern,value,check)
+    end
 end
+
+local pdfaddtoinfo = lpdf.addtoinfo -- used later
 
 -- for the do-it-yourselvers
 
@@ -150,12 +215,6 @@ end
 -- flushing
 
 local t = { } for i=1,24 do t[i] = random() end
-
-if not pdf.getcompresslevel then
-    pdf.getcompresslevel = function()
-        return tex.pdfcompresslevel or tex.getcount("pdfcompresslevel")
-    end
-end
 
 local function flushxmpinfo()
     commands.pushrandomseed()

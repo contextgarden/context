@@ -782,8 +782,16 @@
 % Bonus:
 
 \useexternalfigure
-  [buffer]
+  [\v!buffer]
   [\jobname.buffer]
   [\c!object=\v!no]
+
+% Another one:
+
+\defineexternalfigure
+  [\v!inline]
+  [\c!height=\lineheight]
+
+\unexpanded\def\inlinefigure[#1]{\dontleavehmode\sbox{\externalfigure[#1][\v!inline]}}
 
 \protect \endinput
