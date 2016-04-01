@@ -269,21 +269,25 @@
        \namedtaggedlabeltexts
          \t!floatlabel \currentfloat
          \t!floatnumber\currentfloat
-         {\floatcaptionparameter\c!numbercommand
+         {\begstrut
+          \floatcaptionparameter\c!numbercommand
             {\clf_savedlistprefixednumber{\currentfloat}\currentfloatnumber\relax
-             \thecurrentfloatnumbersuffix}}%
+             \thecurrentfloatnumbersuffix}%
+          \endstrut}%
      \fi
    \fi \fi}
 
 \unexpanded\def\thecurrentfloatcaption
-  {\ifnofloatcaption \else
+  {\ifnofloatcaption \else \ifemptyfloatcaption \else
      \ifx\currentfloatnumber\relax\else
        \dostarttagged\t!floattext\empty
+       \begstrut
        \floatcaptionparameter\c!textcommand
-         {\clf_savedlisttitle{\currentfloat}\currentfloatnumber\relax}%
+         {\clf_savedlisttitle{\currentfloat}\numexpr\currentfloatnumber\relax}%
+       \endstrut
        \dostoptagged
      \fi
-   \fi}
+   \fi \fi}
 
 %D Captions.
 
@@ -327,9 +331,12 @@
    \gdef\lastcaptiontag{\strut\thecurrentfloatnumber}% was xdef ... needs checking
    \begingroup
      \usefloatcaptionstyleandcolor\c!style\c!color
+     \clf_doifelselisthastitle{\currentfloat}\numexpr\currentfloatnumber\relax
+       \donothing
+       \emptyfloatcaptiontrue
      \ifnofloatnumber
      \else
-       \hbox{\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor\strut\thecurrentfloatnumber}%
+       \hbox{\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor\thecurrentfloatnumber}%
        \ifnofloatcaption \else \ifemptyfloatcaption \else
          \doifelsenothing{\floatcaptionparameter\c!spaceinbetween}
            {\scratchskip\floatcaptionparameter\c!distance\relax
@@ -344,7 +351,7 @@
        \usefloatcaptionstyleandcolor\c!textstyle\c!textcolor
        \global\d_strc_floats_caption_height\strutheight
        \global\d_strc_floats_caption_depth \strutdepth
-       \begstrut\thecurrentfloatcaption\endstrut\endgraf
+       \thecurrentfloatcaption\endgraf
      \fi
    \endgroup
    \doifsomething{\floatcaptionparameter\c!spaceafter}{\blank[\floatcaptionparameter\c!spaceafter]}}
@@ -522,11 +529,21 @@
    \strc_floats_set_current_tag{#tag}%
    \dodoubleempty\strc_floats_place_indeed}
 
+\newtoks\c_floats_every_table_float
+
+\appendtoks
+    \edef\floatlocation{\v!force,\v!always,\floatlocation}%
+    \setupfloat[\c!spacebefore=\v!none,\c!spaceafter=\v!none]%
+\to \c_floats_every_table_float
+
 \def\strc_floats_place_indeed[#location][#reference]#caption%
   {\strc_floats_reset_variables
    \edef\floatlocation{#location}%
    \ifx\floatlocation\empty
       \edef\floatlocation{\floatparameter\c!default}% beware of a clash between alignment locations
+   \fi
+   \ifintable
+     \the\c_floats_every_table_float
    \fi
    \strc_floats_analyze_location
    % todo: use \lets
@@ -867,9 +884,11 @@
      \ifnofloatnumber \else \ifnofloatcaption \else
        \ifx\currentfloatgroup\empty
          % independent
+         \iftrialtypesetting\strc_counters_save\currentfloatcounter\fi
          \strc_counters_increment\currentfloatcounter
        \else\ifcase\strc_floats_group_index
          % first in group
+         \iftrialtypesetting\strc_counters_save\currentfloatcounter\fi
          \strc_counters_increment\currentfloatcounter
        \else
          % next in group
@@ -915,6 +934,7 @@
       \ifnofloatcaption
         \vss
       \fi}% gets rid of the depth (unless tabulate)
+   \iftrialtypesetting\strc_counters_restore\currentfloatcounter\fi
    \egroup
    % place the float
    \strc_floats_set_box
@@ -1162,23 +1182,44 @@
 \unexpanded\def\betweenfloatblanko % assumes that spaceafter is present
   {\blank[\rootfloatparameter\c!spacebefore]} % or v!back,....
 
+% keep as old 1
+%
 % \unexpanded\def\doplacefloatbox % used elsewhere
 %   {%\forgetall % NO
 %    \whitespace
 %    \blank[\rootfloatparameter\c!spacebefore]
 %    \page_otr_command_flush_float_box
 %    \blank[\rootfloatparameter\c!spaceafter]}
+%
+% keep as old 2
+%
+% \unexpanded\def\doplacefloatbox % used elsewhere
+%   {%\forgetall % NO
+%    \whitespace
+%    \blank[\rootfloatparameter\c!spacebefore]
+%    \nointerlineskip
+%    \flushnotes % new per 2014-05-29 : todo: move them up in the mvl
+%    \nointerlineskip
+%    \page_otr_command_flush_float_box
+%    \nointerlineskip
+%    \blank[\rootfloatparameter\c!spaceafter]}
+
+\def\strc_floats_apply_skip#1%
+  {\edef\m_space{\rootfloatparameter#1}%
+   \ifx\m_space\empty \else\ifx\m_space\v!none \else
+      \directvspacing\m_space
+   \fi\fi}
 
 \unexpanded\def\doplacefloatbox % used elsewhere
   {%\forgetall % NO
    \whitespace
-   \blank[\rootfloatparameter\c!spacebefore]
+   \strc_floats_apply_skip\c!spacebefore
    \nointerlineskip
    \flushnotes % new per 2014-05-29 : todo: move them up in the mvl
    \nointerlineskip
    \page_otr_command_flush_float_box
-   \nointerlineskip
-   \blank[\rootfloatparameter\c!spaceafter]}
+ % \nointerlineskip % interferes with depth of caption
+   \strc_floats_apply_skip\c!spaceafter}
 
 % test case:
 %

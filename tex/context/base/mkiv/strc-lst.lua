@@ -903,7 +903,7 @@ function lists.hastitledata(name,n,tag)
     if data then
         local titledata = data.titledata
         if titledata then
-            return (titledata[tag] or titledata.title or "") == ""
+            return (titledata[tag] or titledata.title or "") ~= ""
         end
     end
     return false
@@ -924,7 +924,7 @@ function lists.hasnumberdata(name,n)
     local data = lists.result[n]
     if data then
         local numberdata = data.numberdata
-        if numberdata and not numberdata.hidenumber then -- th ehide number is true
+        if numberdata and not numberdata.hidenumber then -- the hide number is true
             return true
         end
     end
