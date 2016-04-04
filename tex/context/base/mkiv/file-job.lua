@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['file-job'] = {
 -- in retrospect dealing it's not that bad to deal with the nesting
 -- and push/poppign at the tex end
 
+local rawget = rawget
 local gsub, match, find = string.gsub, string.match, string.find
 local insert, remove, concat = table.insert, table.remove, table.concat
 local validstring, formatters = string.valid, string.formatters
@@ -25,6 +26,7 @@ local implement         = interfaces.implement
 local trace_jobfiles    = false  trackers.register("system.jobfiles", function(v) trace_jobfiles = v end)
 
 local report_jobfiles   = logs.reporter("system","jobfiles")
+local report_functions  = logs.reporter("system","functions")
 
 local texsetcount       = tex.setcount
 local elements          = interfaces.elements
@@ -849,6 +851,13 @@ document = document or {
             modes        = allocate(),
         },
     },
+    functions = table.setmetatablenewindex(function(t,k,v)
+        if rawget(t,k) then
+            report_functions("overloading document function %a",k)
+        end
+        rawset(t,k,v)
+        return v
+    end),
 }
 
 function document.setargument(key,value)

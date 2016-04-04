@@ -1756,14 +1756,16 @@
 % experimental code, not yet interfaced:
 
 % category:
-% 0 == discard                             discard
-% 1 == only if larger                      largest
-% 2 == force even if smaller               force
-% 3 == only take penalty component         penalty
-% 4 == add to existing skip                add
-% 5 == disable (ignore following)          disable
-% 6 == kill whitespace                     nowhite
-% 7 == discard previous                    back
+%
+%  0 == discard                             discard
+%  1 == only if larger                      largest
+%  2 == force even if smaller               force
+%  3 == only take penalty component         penalty
+%  4 == add to existing skip                add
+%  5 == disable (ignore following)          disable
+%  6 == kill whitespace                     nowhite
+%  7 == discard previous                    back
+% 10 == no topskip
 %
 % penalty: larger wins
 % order: larger wins
@@ -1789,6 +1791,9 @@
      \setvalue{\??vspacingamount#1}{\lineheight}%
    \fi\fi
    \clf_vspacingsetamount{#1}}
+
+\def\spac_vspacing_no_topskip % use grouped
+  {\attribute\skipcategoryattribute\plusten}
 
 % \installcorenamespace{vspacingamountnormal}
 % \installcorenamespace{vspacingamountgrid}

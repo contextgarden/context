@@ -1917,11 +1917,28 @@
    \tabl_tabulate_nobreak_inject
    \stoptabulatenoalign}
 
+% \unexpanded\def\tabl_tabulate_ML_second_indeed
+%   {\tabl_tabulate_column_rule_separator_inject
+%    \tabl_tabulate_hrule_inject
+%    \vskip-\p_rulethickness\relax
+%    \tabl_tabulate_hrule_inject
+%    \tabl_tabulate_break_no
+%    \tabl_tabulate_column_rule_separator_inject
+%    \stoptabulatenoalign}
+
+\def\spac_vspacing_no_topskip % use grouped
+  {\attribute\skipcategoryattribute\plusten}
+
 \unexpanded\def\tabl_tabulate_ML_second_indeed
-  {\tabl_tabulate_column_rule_separator_inject
+  {\tabl_tabulate_break_no
+   \tabl_tabulate_column_rule_separator_inject
+   \tabl_tabulate_break_no
    \tabl_tabulate_hrule_inject
    \vskip-\p_rulethickness\relax
+   \begingroup
+   \spac_vspacing_no_topskip
    \tabl_tabulate_hrule_inject
+   \endgroup
    \tabl_tabulate_break_no
    \tabl_tabulate_column_rule_separator_inject
    \stoptabulatenoalign}

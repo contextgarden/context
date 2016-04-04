@@ -133,6 +133,17 @@ local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local localpar_code       = nodecodes.localpar
 
+local userskip_code              = skipcodes.userskip
+local lineskip_code              = skipcodes.lineskip
+local baselineskip_code          = skipcodes.baselineskip
+local parskip_code               = skipcodes.parskip
+local abovedisplayskip_code      = skipcodes.abovedisplayskip
+local belowdisplayskip_code      = skipcodes.belowdisplayskip
+local abovedisplayshortskip_code = skipcodes.abovedisplayshortskip
+local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
+local topskip_code               = skipcodes.topskip
+local splittopskip_code          = skipcodes.splittopskip
+
 local vspacing            = builders.vspacing or { }
 builders.vspacing         = vspacing
 
@@ -609,6 +620,7 @@ local categories = allocate {
      [7] = 'goback',
      [8] = 'together', -- not used (?)
      [9] = 'overlay',
+    [10] = 'notopskip',
 }
 
 vspacing.categories = categories
@@ -869,8 +881,8 @@ local function nodes_to_string(head)
         local ty = nodecodes[id]
         if id == penalty_code then
             t[#t+1] = formatters["%s:%s"](ty,getfield(current,"penalty"))
-        elseif id == glue_code then -- or id == kern_code then -- to be tested
-            t[#t+1] = formatters["%s:%p"](ty,current)
+        elseif id == glue_code then
+            t[#t+1] = formatters["%s:%s:%p"](ty,skipcodes[getsubtype(current)],getfield(current,"width"))
         elseif id == kern_code then
             t[#t+1] = formatters["%s:%p"](ty,getfield(current,"kern"))
         else
@@ -886,12 +898,12 @@ local function reset_tracing(head)
 end
 
 local function trace_skip(str,sc,so,sp,data)
-    trace_list[#trace_list+1] = { "skip", formatters["%s | %p | category %s | order %s | penalty %s"](str, data, sc or "-", so or "-", sp or "-") }
+    trace_list[#trace_list+1] = { "skip", formatters["%s | %p | category %s | order %s | penalty %s"](str, getfield(data,"width"), sc or "-", so or "-", sp or "-") }
     tracing_info = true
 end
 
 local function trace_natural(str,data)
-    trace_list[#trace_list+1] = { "skip", formatters["%s | %p"](str, data) }
+    trace_list[#trace_list+1] = { "skip", formatters["%s | %p"](str, getfield(data,"width")) }
     tracing_info = true
 end
 
@@ -913,7 +925,7 @@ local function trace_done(str,data)
     if getid(data) == penalty_code then
         trace_list[#trace_list+1] = { "penalty", formatters["%s | %s"](str,getfield(data,"penalty")) }
     else
-        trace_list[#trace_list+1] = { "glue", formatters["%s | %p"](str,data) }
+        trace_list[#trace_list+1] = { "glue", formatters["%s | %p"](str,getfield(data,"width")) }
     end
     tracing_info = true
 end
@@ -935,19 +947,6 @@ local function show_tracing(head)
 end
 
 -- alignment box begin_of_par vmode_par hmode_par insert penalty before_display after_display
-
-local skipcodes = nodes.skipcodes
-
-local userskip_code              = skipcodes.userskip
-local lineskip_code              = skipcodes.lineskip
-local baselineskip_code          = skipcodes.baselineskip
-local parskip_code               = skipcodes.parskip
-local abovedisplayskip_code      = skipcodes.abovedisplayskip
-local belowdisplayskip_code      = skipcodes.belowdisplayskip
-local abovedisplayshortskip_code = skipcodes.abovedisplayshortskip
-local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
-local topskip_code               = skipcodes.topskip
-local splittopskip_code          = skipcodes.splittopskip
 
 function vspacing.snapbox(n,how)
     local sv = snapmethods[how]
@@ -1270,7 +1269,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
     local function flush(why)
         if penalty_data then
             local p = new_penalty(penalty_data)
-            if trace then trace_done("flushed due to " .. why,p) end
+            if trace then
+                trace_done("flushed due to " .. why,p)
+            end
             if penalty_data >= 10000 then -- or whatever threshold?
                 local prev = getprev(current)
                 if getid(prev) == glue_code then -- maybe go back more, or maybe even push back before any glue
@@ -1295,16 +1296,22 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         end
         if glue_data then
             if force_glue then
-                if trace then trace_done("flushed due to forced " .. why,glue_data) end
+                if trace then
+                    trace_done("flushed due to forced " .. why,glue_data)
+                end
                 head = forced_skip(head,current,getfield(glue_data,"width") or 0,"before",trace)
                 free_node(glue_data)
             else
                 local w = getfield(glue_data,"width")
                 if w ~= 0 then
-                    if trace then trace_done("flushed due to non zero " .. why,glue_data) end
+                    if trace then
+                        trace_done("flushed due to non zero " .. why,glue_data)
+                    end
                     head = insert_node_before(head,current,glue_data)
                 elseif getfield(glue_data,"stretch") ~= 0 or getfield(glue_data,"shrink") ~= 0 then
-                    if trace then trace_done("flushed due to stretch/shrink in" .. why,glue_data) end
+                    if trace then
+                        trace_done("flushed due to stretch/shrink in" .. why,glue_data)
+                    end
                     head = insert_node_before(head,current,glue_data)
                 else
                  -- report_vspacing("needs checking (%s): %p",skipcodes[getsubtype(glue_data)],w)
@@ -1313,7 +1320,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
             end
         end
 
-        if trace then trace_node(current) end
+        if trace then
+            trace_node(current)
+        end
         glue_order, glue_data, force_glue = 0, nil, false
         penalty_order, penalty_data, natural_penalty = 0, nil, nil
         parskip, ignore_parskip, ignore_following, ignore_whitespace = nil, false, false, false
@@ -1344,7 +1353,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
             texgetdimen("bodyfontstrutheight"), texgetdimen("bodyfontstrutdepth")
         )
     end
-    if trace then trace_info("start analyzing",where,what) end
+    if trace then
+        trace_info("start analyzing",where,what)
+    end
 
 -- local headprev = getprev(head)
 
@@ -1397,7 +1408,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
             current = getnext(current)
         elseif id == penalty_code then
          -- natural_penalty = getfield(current,"penalty")
-         -- if trace then trace_done("removed penalty",current) end
+         -- if trace then
+         --     trace_done("removed penalty",current)
+         -- end
          -- head, current = remove_node(head, current, true)
 
 -- if nobreakfound == nil then
@@ -1428,9 +1441,11 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                         getpagelist()
                         local p = specialmethods[specialmethod](pagehead,pagetail,current,sp)
                         if p then
-                            if trace then
-                                trace_skip("previous special penalty %a is changed to %a using method %a",sp,p,specialmethod)
-                            end
+                         -- todo: other tracer
+                         --
+                         -- if trace then
+                         --     trace_skip("previous special penalty %a is changed to %a using method %a",sp,p,specialmethod)
+                         -- end
                             special_penalty = sp
                             sp = p
                         end
@@ -1448,7 +1463,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     elseif penalty_order == so and sp > penalty_data then
                         penalty_data = sp
                     end
-                    if trace then trace_skip("penalty in skip",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("penalty in skip",sc,so,sp,current)
+                    end
 
 -- if nobreakfound then
 --     penalty_data = 10000
@@ -1460,9 +1477,13 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     head, current = remove_node(head, current, true)
                 elseif not sc then  -- if not sc then
                     if glue_data then
-                        if trace then trace_done("flush",glue_data) end
+                        if trace then
+                            trace_done("flush",glue_data)
+                        end
                         head = insert_node_before(head,current,glue_data)
-                        if trace then trace_natural("natural",current) end
+                        if trace then
+                            trace_natural("natural",current)
+                        end
                         current = getnext(current)
                     else
                         -- not look back across head
@@ -1474,15 +1495,23 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                                 setfield(previous,"width",  (getfield(previous,"width")   or 0) + (getfield(current,"width")   or 0))
                                 setfield(previous,"stretch",(getfield(previous,"stretch") or 0) + (getfield(current,"stretch") or 0))
                                 setfield(previous,"shrink", (getfield(previous,"shrink")  or 0) + (getfield(current,"shrink")  or 0))
-                                if trace then trace_natural("removed",current) end
+                                if trace then
+                                    trace_natural("removed",current)
+                                end
                                 head, current = remove_node(head, current, true)
-                                if trace then trace_natural("collapsed",previous) end
+                                if trace then
+                                    trace_natural("collapsed",previous)
+                                end
                             else
-                                if trace then trace_natural("filler",current) end
+                                if trace then
+                                    trace_natural("filler",current)
+                                end
                                 current = getnext(current)
                             end
                         else
-                            if trace then trace_natural("natural (no prev)",current) end
+                            if trace then
+                                trace_natural("natural (no prev)",current)
+                            end
                             current = getnext(current)
                         end
                     end
@@ -1491,7 +1520,9 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
 local next = getnext(current)
 if not experiment or next then
                     ignore_following = true
-                    if trace then trace_skip("disable",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("disable",sc,so,sp,current)
+                    end
                     head, current = remove_node(head, current, true)
 else
     current = next
@@ -1500,7 +1531,9 @@ end
 local next = getnext(current)
 if not experiment or next then
                     keep_together = true
-                    if trace then trace_skip("together",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("together",sc,so,sp,current)
+                    end
                     head, current = remove_node(head, current, true)
 else
     current = next
@@ -1514,23 +1547,33 @@ else
     current = next
 end
                 elseif sc == discard then
-                    if trace then trace_skip("discard",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("discard",sc,so,sp,current)
+                    end
                     head, current = remove_node(head, current, true)
                 elseif sc == overlay then
                     -- todo (overlay following line over previous
-                    if trace then trace_skip("overlay",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("overlay",sc,so,sp,current)
+                    end
                         -- beware: head can actually be after the affected nodes as
                         -- we look back ... some day head will the real head
                     head, current = check_experimental_overlay(head,current,a_snapmethod)
                 elseif ignore_following then
-                    if trace then trace_skip("disabled",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("disabled",sc,so,sp,current)
+                    end
                     head, current = remove_node(head, current, true)
                 elseif not glue_data then
-                    if trace then trace_skip("assign",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("assign",sc,so,sp,current)
+                    end
                     glue_order = so
                     head, current, glue_data = remove_node(head, current)
                 elseif glue_order < so then
-                    if trace then trace_skip("force",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("force",sc,so,sp,current)
+                    end
                     glue_order = so
                     free_node(glue_data)
                     head, current, glue_data = remove_node(head, current)
@@ -1540,41 +1583,57 @@ end
                         local cw = getfield(current,"width")   or 0
                         local gw = getfield(glue_data,"width") or 0
                         if cw > gw then
-                            if trace then trace_skip("largest",sc,so,sp,current) end
+                            if trace then
+                                trace_skip("largest",sc,so,sp,current)
+                            end
                             free_node(glue_data)
                             head, current, glue_data = remove_node(head,current)
                         else
-                            if trace then trace_skip("remove smallest",sc,so,sp,current) end
+                            if trace then
+                                trace_skip("remove smallest",sc,so,sp,current)
+                            end
                             head, current = remove_node(head, current, true)
                         end
                     elseif sc == goback then
-                        if trace then trace_skip("goback",sc,so,sp,current) end
+                        if trace then
+                            trace_skip("goback",sc,so,sp,current)
+                        end
                         free_node(glue_data)
                         head, current, glue_data = remove_node(head,current)
                     elseif sc == force then
                         -- last one counts, some day we can provide an accumulator and largest etc
                         -- but not now
-                        if trace then trace_skip("force",sc,so,sp,current) end
+                        if trace then
+                            trace_skip("force",sc,so,sp,current)
+                        end
                         free_node(glue_data)
                         head, current, glue_data = remove_node(head, current)
                     elseif sc == penalty then
-                        if trace then trace_skip("penalty",sc,so,sp,current) end
+                        if trace then
+                            trace_skip("penalty",sc,so,sp,current)
+                        end
                         free_node(glue_data)
                         glue_data = nil
                         head, current = remove_node(head, current, true)
                     elseif sc == add then
-                        if trace then trace_skip("add",sc,so,sp,current) end
+                        if trace then
+                            trace_skip("add",sc,so,sp,current)
+                        end
                         setfield(old,"width",  (getfield(glue_data,"width")   or 0) + (getfield(current,"width")   or 0))
                         setfield(old,"stretch",(getfield(glue_data,"stretch") or 0) + (getfield(current,"stretch") or 0))
                         setfield(old,"shrink", (getfield(glue_data,"shrink")  or 0) + (getfield(current,"shrink")  or 0))
                         -- toto: order
                         head, current = remove_node(head, current, true)
                     else
-                        if trace then trace_skip("unknown",sc,so,sp,current) end
+                        if trace then
+                            trace_skip("unknown",sc,so,sp,current)
+                        end
                         head, current = remove_node(head, current, true)
                     end
                 else
-                    if trace then trace_skip("unknown",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("unknown",sc,so,sp,current)
+                    end
                     head, current = remove_node(head, current, true)
                 end
                 if sc == force then
@@ -1590,11 +1649,15 @@ end
                             report_snapper("lineskip set to zero")
                         end
                     else
-                        if trace then trace_skip("lineskip",sc,so,sp,current) end
+                        if trace then
+                            trace_skip("lineskip",sc,so,sp,current)
+                        end
                         flush("lineskip")
                     end
                 else
-                    if trace then trace_skip("lineskip",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("lineskip",sc,so,sp,current)
+                    end
                     flush("lineskip")
                 end
                 current = getnext(current)
@@ -1608,34 +1671,50 @@ end
                             report_snapper("baselineskip set to zero")
                         end
                     else
-                        if trace then trace_skip("baselineskip",sc,so,sp,current) end
+                        if trace then
+                            trace_skip("baselineskip",sc,so,sp,current)
+                        end
                         flush("baselineskip")
                     end
                 else
-                    if trace then trace_skip("baselineskip",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("baselineskip",sc,so,sp,current)
+                    end
                     flush("baselineskip")
                 end
                 current = getnext(current)
             elseif subtype == parskip_code then
                 -- parskip always comes later
                 if ignore_whitespace then
-                    if trace then trace_natural("ignored parskip",current) end
+                    if trace then
+                        trace_natural("ignored parskip",current)
+                    end
                     head, current = remove_node(head, current, true)
                 elseif glue_data then
                     local wp = getfield(current,"width") or 0
                     if ((w ~= 0) and (w > (getfield(glue_data,"width") or 0))) then
                         glue_data = current
                         head, current = remove_node(head, current)
-                        if trace then trace_natural("taking parskip",current) end
+                        if trace then
+                            trace_natural("taking parskip",current)
+                        end
                     else
                         head, current = remove_node(head, current, true)
-                        if trace then trace_natural("removed parskip",current) end
+                        if trace then
+                            trace_natural("removed parskip",current)
+                        end
                     end
                 else
-                    if trace then trace_natural("honored parskip",current) end
+                    if trace then
+                        trace_natural("honored parskip",current)
+                    end
                     head, current, glue_data = remove_node(head, current)
                 end
             elseif subtype == topskip_code or subtype == splittopskip_code then
+                local next = getnext(current)
+                if next and getattr(next,a_skipcategory) == 10 then -- no top skip
+                    nuts.setglue(current) -- zero
+                end
                 if snap then
                     local s = getattr(current,a_snapmethod)
                     if s and s ~= 0 then
@@ -1646,35 +1725,47 @@ end
                             report_snapper("topskip snapped from %p to %p for %a",w,cw,where)
                         end
                     else
-                        if trace then trace_skip("topskip",sc,so,sp,current) end
+                        if trace then
+                            trace_skip("topskip",sc,so,sp,current)
+                        end
                         flush("topskip")
                     end
                 else
-                    if trace then trace_skip("topskip",sc,so,sp,current) end
+                    if trace then
+                        trace_skip("topskip",sc,so,sp,current)
+                    end
                     flush("topskip")
                 end
                 current = getnext(current)
             elseif subtype == abovedisplayskip_code then
                 --
-                if trace then trace_skip("above display skip (normal)",sc,so,sp,current) end
+                if trace then
+                    trace_skip("above display skip (normal)",sc,so,sp,current)
+                end
                 flush("above display skip (normal)")
                 current = getnext(current)
                 --
             elseif subtype == belowdisplayskip_code then
                 --
-                if trace then trace_skip("below display skip (normal)",sc,so,sp,current) end
+                if trace then
+                    trace_skip("below display skip (normal)",sc,so,sp,current)
+                end
                 flush("below display skip (normal)")
                 current = getnext(current)
                --
             elseif subtype == abovedisplayshortskip_code then
                 --
-                if trace then trace_skip("above display skip (short)",sc,so,sp,current) end
+                if trace then
+                    trace_skip("above display skip (short)",sc,so,sp,current)
+                end
                 flush("above display skip (short)")
                 current = getnext(current)
                 --
             elseif subtype == belowdisplayshortskip_code then
                 --
-                if trace then trace_skip("below display skip (short)",sc,so,sp,current) end
+                if trace then
+                    trace_skip("below display skip (short)",sc,so,sp,current)
+                end
                 flush("below display skip (short)")
                 current = getnext(current)
                 --
@@ -1685,7 +1776,9 @@ end
                         report_snapper("glue %p of type %a kept",w,skipcodes[subtype])
                     end
                 end
-                if trace then trace_skip(formatters["glue of type %a"](subtype),sc,so,sp,current) end
+                if trace then
+                    trace_skip(formatters["glue of type %a"](subtype),sc,so,sp,current)
+                end
                 flush("some glue")
                 current = getnext(current)
             end
@@ -1694,7 +1787,9 @@ end
             current = getnext(current)
         end
     end
-    if trace then trace_info("stop analyzing",where,what) end
+    if trace then
+        trace_info("stop analyzing",where,what)
+    end
  -- if natural_penalty and (not penalty_data or natural_penalty > penalty_data) then
  --     penalty_data = natural_penalty
  -- end
@@ -1705,7 +1800,9 @@ end
     if penalty_data then
         tail = find_node_tail(head)
         local p = new_penalty(penalty_data)
-        if trace then trace_done("result",p) end
+        if trace then
+            trace_done("result",p)
+        end
         head, tail = insert_node_after(head,tail,p)
      -- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
             local props = properties[p]
@@ -1720,7 +1817,9 @@ end
     end
     if glue_data then
         if not tail then tail = find_node_tail(head) end
-        if trace then trace_done("result",glue_data) end
+        if trace then
+            trace_done("result",glue_data)
+        end
         if force_glue then
             head, tail = forced_skip(head,tail,getfield(glue_data,"width") or 0,"after",trace)
             free_node(glue_data)
