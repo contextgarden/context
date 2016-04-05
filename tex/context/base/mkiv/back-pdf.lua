@@ -152,13 +152,13 @@ scanners.pdfstopmirroring = scanners.pdfstartmirroring
 implement {
     name      = "setmapfile",
     arguments = "string",
-    actions   = pdf.setmapfile
+    actions   = pdf.mapfile
 }
 
 implement {
     name      = "setmapfile",
     arguments = "string",
-    actions   = pdf.setmapline
+    actions   = pdf.mapline
 }
 
 implement {

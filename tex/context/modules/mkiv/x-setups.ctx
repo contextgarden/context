@@ -1,0 +1,15 @@
+<?xml version='1.0' standalone='yes'?>
+
+<!-- this is also a demo of using the xml interface -->
+
+<ctx:job>
+    <ctx:message>generating interface setups</ctx:message>
+    <ctx:process>
+        <ctx:flags>
+            <ctx:flag>purge</ctx:flag>
+        </ctx:flags>
+        <ctx:resources>
+            <ctx:environment>x-setups-proofing.mkiv</ctx:environment>
+        </ctx:resources>
+    </ctx:process>
+</ctx:job>

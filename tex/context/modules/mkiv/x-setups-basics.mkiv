@@ -1,10 +1,10 @@
 %D \module
-%D   [       file=x-set-11,
-%D        version=2004.10.31,
+%D   [       file=setups-basics, % x-set-11,
+%D        version=2016.04.05, % 2004.10.31,
 %D         remark=setupx.tex: 1998.07.20 and later,
 %D          title=\CONTEXT\ Setup Definitions,
 %D       subtitle=Macro Definitions,
-%D         author=Hans Hagen,
+%D         author={Hans Hagen & Wolfgang Schuster},
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -603,9 +603,60 @@
 
     function xml.functions.setups_define(id)
         local x = lxml.getid(id)
-        for c in xml.collected(x,"/cd:interface/cd:define") do
+        for c in xml.collected(x,"cd:interface/cd:define") do
             definitions[c.at.name] = c
         end
+
+        for c in xml.collected(x,"cd:interface/cd:interface") do
+            c.at.file = c.__f__
+            c.at["xmlns:cd"] = nil
+         -- c.dt[#c.dt+1] = "    "
+        end
+
+        local interface = interfaces.currentinterface or "en"
+
+        if interface ~= "en" then
+
+            local constants  = interfaces.complete.constants
+            local variables  = interfaces.complete.variables
+            local commands   = interfaces.complete.commands
+            local elements   = interfaces.complete.elements
+
+            local function replace(pattern,attribute,one,two)
+                for e in xml.collected(x,pattern) do
+                    local t = e.at[attribute]
+                    if t then
+                        local c = one[t] or (two and two[t])
+                        if c then
+                            local v = c[interface]
+                            if v then
+                                e.at[attribute] = v
+                            end
+                        end
+                    end
+                end
+            end
+
+            replace('cd:string',    'value',   commands, elements)
+            replace('cd:variable' , 'value',   variables)
+
+            replace('cd:parameter', 'name',    constants)
+            replace('cd:constant',  'type',    variables)
+            replace('cd:constant',  'default', variables)
+            replace('cd:variable',  'type',    variables)
+            replace('cd:inherit',   'name',    commands, elements)
+
+            if tex.modes["setups:save"] and environment.currentrun == 1 then
+                local s = tostring(x)
+                s = string.gsub(s,"\n*%s*(</cd:interface>)%s+(<cd:interface)",  "\n\n    %1\n\n    %2")
+                s = string.gsub(s,"\n*%s*(</cd:interface>)%s+(</cd:interface>)","\n\n    %1\n\n    %2")
+                io.savedata("context-"..interface..".xml",s)
+            end
+
+        end
+
+     -- print(tostring(x))
+
     end
 
     function moduledata.setups.resolved(name)
@@ -644,9 +695,12 @@
     \loadsetups[\xmlatt{#1}{filename}]
 \stopxmlsetups
 
+% todo: option to expand
+
 \startxmlsetups xml:setups:basics
-    \xmlinclude {#1}{include}{filename}
-    \xmlcommand {#1}{/interface/interfacefile}{xml:setups:interfacefile}
+%     \xmlcommand {#1}{interface/interfacefile}{xml:setups:interfacefile}
+%     \xmlinclude {#1}{include}{filename}
+    \xmlincludeoptions {#1}{interfacefile|include}{filename}{recurse,basename}
     \xmlsetsetup{#1}{*}{xml:setups:*}
     \xmlfunction{#1}{setups_define}
 \stopxmlsetups
@@ -664,10 +718,9 @@
   {\doifsomething{#1}
      {\doonlyonce{setups:#1}
         {\doglobal\prependtocommalist{setups:#1}\loadedsetups % last overloads first
-         % \setupxml
-         %   [\c!default=\v!hidden, % ignore elements that are not defined
-         %    \c!compress=\v!yes]
-         \xmlloadonly{setups:#1}{#1}{setups}%
+         \doiffileexistselse{#1}
+            {\xmlloadonly{setups:#1}{#1}{setups}}%
+            {\xmlloadonly{setups:#1}{#1.xml}{setups}}%
          % qualified path saves > 50% runtime
          \xmlfilter{setups:#1}{/interface//command/command(xml:setups:register)}%
       }}}
@@ -798,6 +851,8 @@
     }
 \stopxmlsetups
 
+\let\currentSETUPfilename\empty
+
 \startxmlsetups xml:setups:typeset:raw
     \tttf
     \nohyphens
@@ -805,6 +860,7 @@
     \doglobal\newcounter\currentSETUPargument
     \xdef\maximumSETUPargument{\xmlfilter{#1}{/arguments/*/s_count()}}
     \edef\currentSETUPhash{\xmlatt{#1}{hash}}
+    \xdef\currentSETUPfilename{\xmlatt{#1}{file}}%
     \bgroup
         \enablemode[setups-pass-one]%
         \doif {\xmlatt{#1}{generated}} {yes} {
@@ -870,6 +926,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:typeset:yes
+    \glet\currentSETUPfilename\empty
     \ifcase\kindofsetup
         \xmlsetup{#1}{xml:setups:typeset:line}
     \or
@@ -883,15 +940,27 @@
         \xmlsetup{#1}{xml:setups:typeset:detail}
         \getvalue{\e!stop setuptext}
     \fi
+    \glet\currentSETUPfilename\empty
 \stopxmlsetups
+
+\defineoverlay
+  [setupfilename]
+  [\vbox to \overlayheight
+     {\infofont
+      \vfill
+      \scratchdimen.5\exheight
+      \hbox to \overlaywidth
+        {\strut
+         \hss
+         \currentSETUPfilename
+         \hskip\dimexpr\scratchdimen+\strutdp\relax}%
+      \vskip\scratchdimen}]
 
 \setupsetup
   [\c!before=,
    \c!after=,
    \c!command=\setup,
    \c!criterium=\v!used]
-
-% slow ... also hash this
 
 \startxmlsetups xml:setups:resolve
     \ignorespaces
@@ -1210,7 +1279,7 @@
     \else
         \showSETUP{#1}
             {\letterleftbrace\setupEQsymbol\letterrightbrace}
-            {\letterleftbrace\setupEQsymbol,\setupEQsymbol\letterrightbrace}
+            {\letterleftbrace..,\setupEQsymbol,..\letterrightbrace}
     \fi
 \stoptexdefinition
 
@@ -1220,7 +1289,7 @@
     \else
         \showSETUP{#1}
             {[\setupEQsymbol]}
-            {[\setupEQsymbol,\setupEQsymbol]}
+            {[..,\setupEQsymbol,..]}
     \fi
 \stoptexdefinition
 

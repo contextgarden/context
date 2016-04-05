@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <!--           *      -->
+    <!-- \... [..,.=.,..] -->
+    <!--                  -->
+    <!-- * SECTIONDATA    -->
+
+    <cd:define name="assignment-sectiondata-list">
+        <cd:assignments list="yes">
+            <cd:parameter name="title">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="bookmark">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="marking">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="list">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="reference">
+                <cd:constant type="cd:reference"/>
+            </cd:parameter>
+            <cd:parameter name="ownnumber">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <cd:define name="assignment-sectiondata-list-optional">
+        <cd:assignments list="yes" optional="yes">
+            <cd:parameter name="title">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="bookmark">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="marking">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="list">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="reference">
+                <cd:constant type="cd:reference"/>
+            </cd:parameter>
+            <cd:parameter name="ownnumber">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <!--           *      -->
+    <!-- \... [..,.=.,..] -->
+    <!--                  -->
+    <!-- * FLOATDATA      -->
+
+    <cd:define name="assignment-floatdata-list">
+        <cd:assignments list="yes">
+            <cd:parameter name="title">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="bookmark">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="marking">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="list">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="location">
+                <cd:resolve name="value-floatlocation"/>
+            </cd:parameter>
+            <cd:parameter name="reference">
+                <cd:constant type="cd:reference"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <cd:define name="assignment-floatdata-list-optional">
+        <cd:assignments list="yes" optional="yes">
+            <cd:parameter name="title">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="bookmark">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="marking">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="list">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="location">
+                <cd:resolve name="value-floatlocation"/>
+            </cd:parameter>
+            <cd:parameter name="reference">
+                <cd:constant type="cd:reference"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <!--           *      -->
+    <!-- \... [..,.=.,..] -->
+    <!--                  -->
+    <!-- * REGISTERDATA  -->
+
+    <cd:define name="assignment-registerdata-list">
+        <cd:assignments list="yes">
+            <cd:parameter name="label">
+                <cd:constant type="cd:name"/>
+            </cd:parameter>
+            <cd:parameter name="keys">
+                <cd:constant type="cd:text"/>
+                <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
+            </cd:parameter>
+            <cd:parameter name="entries">
+                <cd:constant type="cd:text"/>
+                <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
+            </cd:parameter>
+            <cd:parameter name="keys:1">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="keys:2">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="keys:3">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="entries:1">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="entries:2">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="entries:3">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="alternative">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <cd:define name="assignment-registerdata-list-optional">
+        <cd:assignments list="yes" optional="yes">
+            <cd:parameter name="label">
+                <cd:constant type="cd:name"/>
+            </cd:parameter>
+            <cd:parameter name="keys">
+                <cd:constant type="cd:text"/>
+                <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
+            </cd:parameter>
+            <cd:parameter name="entries">
+                <cd:constant type="cd:text"/>
+                <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
+            </cd:parameter>
+            <cd:parameter name="keys:1">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="keys:2">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="keys:3">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="entries:1">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="entries:2">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="entries:3">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="alternative">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <!--           *        -->
+    <!-- \... [..,.=.,..]   -->
+    <!--                    -->
+    <!-- * CONSTRUCTIONDATA -->
+
+    <cd:define name="assignment-constructiondata-list">
+        <cd:assignments list="yes">
+            <cd:parameter name="title">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="bookmark">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="list">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="reference">
+                <cd:constant type="cd:reference"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <cd:define name="assignment-constructiondata-list-optional">
+        <cd:assignments list="yes" optional="yes">
+            <cd:parameter name="title">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="bookmark">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="list">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="reference">
+                <cd:constant type="cd:reference"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <!--           *      -->
+    <!-- \... [..,.=.,..] -->
+    <!--                  -->
+    <!-- * USERDATA       -->
+
+    <cd:define name="assignment-userdata">
+        <cd:assignments>
+            <cd:parameter name="cd:key">
+                <cd:constant type="cd:value"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <cd:define name="assignment-userdata-optional">
+        <cd:assignments optional="yes">
+            <cd:parameter name="cd:key">
+                <cd:constant type="cd:value"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <cd:define name="assignment-userdata-list">
+        <cd:assignments list="yes">
+            <cd:parameter name="cd:key">
+                <cd:constant type="cd:value"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <cd:define name="assignment-userdata-list-optional">
+        <cd:assignments list="yes" optional="yes">
+            <cd:parameter name="cd:key">
+                <cd:constant type="cd:value"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <!--           *      -->
+    <!-- \... [..,.=.,..] -->
+    <!--                  -->
+    <!-- * LABELDATA      -->
+
+    <cd:define name="assignment-labeldata-list">
+        <cd:assignments list="yes">
+            <cd:parameter name="cd:key">
+                <cd:constant type="cd:key"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <cd:define name="assignment-labeldata-list-optional">
+        <cd:assignments list="yes" optional="yes">
+            <cd:parameter name="cd:key">
+                <cd:constant type="cd:key"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <!--           *      -->
+    <!-- \... [..,.=.,..] -->
+    <!--                  -->
+    <!-- CITEDATA         -->
+
+    <cd:define name="assignment-citedata-list">
+        <cd:assignments list="yes">
+            <cd:parameter name="reference">
+                <cd:constant type="cd:reference"/>
+            </cd:parameter>
+            <cd:parameter name="alternative">
+                <cd:resolve name="value-btxalternative"/>
+            </cd:parameter>
+            <cd:parameter name="before">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="after">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="left">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="right">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:inherit name="setupbtx"/>
+        </cd:assignments>
+    </cd:define>
+
+    <cd:define name="assignment-citedata-list-optional">
+        <cd:assignments list="yes" optional="yes">
+            <cd:parameter name="reference">
+                <cd:constant type="cd:reference"/>
+            </cd:parameter>
+            <cd:parameter name="alternative">
+                <cd:resolve name="value-btxalternative"/>
+            </cd:parameter>
+            <cd:parameter name="before">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="after">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="left">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="right">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:inherit name="setupbtx"/>
+        </cd:assignments>
+    </cd:define>
+
+</cd:interface>

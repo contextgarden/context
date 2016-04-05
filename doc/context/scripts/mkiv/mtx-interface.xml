@@ -8,9 +8,7 @@
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="interfaces"><short>generate context interface files</short></flag>
-    <flag name="messages"><short>generate context message files</short></flag>
-    <flag name="labels"><short>generate context label files</short></flag>
+    <flag name="interfaces"><short>generate context mkii interface files</short></flag>
    </subcategory>
    <subcategory>
     <flag name="context"><short>equals <ref name="interfaces"/> <ref name="messages"/> <ref name="languages"/></short></flag>

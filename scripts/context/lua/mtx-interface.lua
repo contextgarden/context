@@ -21,9 +21,7 @@ local helpinfo = [[
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="interfaces"><short>generate context interface files</short></flag>
-    <flag name="messages"><short>generate context message files</short></flag>
-    <flag name="labels"><short>generate context label files</short></flag>
+    <flag name="interfaces"><short>generate context mkii interface files</short></flag>
    </subcategory>
    <subcategory>
     <flag name="context"><short>equals <ref name="interfaces"/> <ref name="messages"/> <ref name="languages"/></short></flag>
@@ -228,87 +226,227 @@ function flushers.textpad(collected)
     end
 end
 
+-- function scripts.interface.editor(editor,split,forcedinterfaces)
+--     local interfaces= forcedinterfaces or environment.files
+--     if #interfaces == 0 then
+--         interfaces= userinterfaces
+--     end
+--     local xmlfile = resolvers.findfile("cont-en.xml") or ""
+--     if xmlfile == "" then
+--         report("unable to locate cont-en.xml")
+--     end
+--     local collected = { }
+--     for i=1,#interfaces do
+--         local interface = interfaces[i]
+--         local keyfile = resolvers.findfile(format("keys-%s.xml",interface)) or ""
+--         if keyfile == "" then
+--             report("unable to locate keys-*.xml")
+--         else
+--             local commands     = { }
+--             local mappings     = { }
+--             local environments = { }
+--             local x = xml.load(keyfile)
+--             for e, d, k in xml.elements(x,"/cd:interface/cd:commands/cd:command") do -- somehow this was variable
+--                 local at = d[k].at
+--                 local name, value = at.name, at.value
+--                 if name and value then
+--                     mappings[name] = value
+--                 end
+--             end
+--             local x = xml.load(xmlfile)
+--             for e, d, k in xml.elements(x,"/cd:interface/cd:command") do
+--                 local at = d[k].at
+--                 local name, type = at.name, at["type"]
+--                 if name and name ~= "" then
+--                     local remapped = mappings[name] or name
+--                     if type == "environment" then
+--                         if split then
+--                             environments[#environments+1] = remapped
+--                         else
+--                             commands[#commands+1] = "start" .. remapped
+--                             commands[#commands+1] = "stop"  .. remapped
+--                         end
+--                     else
+--                         commands[#commands+1] = remapped
+--                     end
+--                 end
+--             end
+--             if #commands > 0 then
+--                 sort(commands)
+--                 sort(environments)
+--                 collected[interface] = {
+--                     commands     = commands,
+--                     environments = environments,
+--                 }
+--             end
+--         end
+--     end
+--     -- awaiting completion of the xml file
+--     local definitions = dofile(resolvers.findfile("mult-def.lua"))
+--     if definitions then
+--         local commands = { en = { } }
+--         for command, languages in next, definitions.commands do
+--             commands.en[languages.en or command] = true
+--             for language, command in next, languages do
+--                 local c = commands[language]
+--                 if c then
+--                     c[command] = true
+--                 else
+--                     commands[language] = { [command] = true }
+--                 end
+--             end
+--         end
+--         for language, data in next, commands do
+--             local fromlua = data
+--             local fromxml = collected[language].commands
+--             for i=1,#fromxml do
+--                 local c = fromxml[i]
+--                 if not fromlua[c] then
+--                  -- print(language,c)
+--                     fromlua[c] = true
+--                 end
+--             end
+--             collected[language].commands = table.sortedkeys(fromlua)
+--         end
+--     end
+--     --
+--     flushers[editor](collected)
+-- end
+
+-- function scripts.interface.editor(editor,split,forcedinterfaces)
+--     local interfaces= forcedinterfaces or environment.files
+--     if #interfaces == 0 then
+--         interfaces= userinterfaces
+--     end
+--     --
+--     local filename = "context-en.xml"
+--     local xmlfile  = resolvers.findfile(filename) or ""
+--     if xmlfile == "" then
+--         report("unable to locate %a",filename)
+--         return
+--     end
+--     local x = xml.load(xmlfile)
+--     --
+--     local filename = "mult-def.lua"
+--     local deffile  = resolvers.findfile(filename) or ""
+--     if deffile == "" then
+--         report("unable to locate %a",filename)
+--         return
+--     end
+--     local interface = dofile(filename)
+--     if not interface or not next(interface) then
+--         report("invalid file %a",filename)
+--         return
+--     end
+--     local variables = interface.variables
+--     local constants = interface.constants
+--     local commands  = interface.commands
+--     local elements  = interface.elements
+--     local collected = { }
+--     for i=1,#interfaces do
+--         local interface      = interfaces[i]
+--         local i_commands     = { }
+--         local i_environments = { }
+--         local start = elements.start[interface] or elements.start.en
+--         local stop  = elements.stop [interface] or elements.stop .en
+--         for e, d, k in xml.elements(x,"cd:interface/cd:command") do
+--             local at   = d[k].at
+--             local name = at["name"] or ""
+--             local type = at["type"]
+--             if name ~= "" then
+--                 local c = commands[name]
+--                 local n = c and (c[interface] or c.en) or name
+--                 if type ~= "environment" then
+--                     i_commands[#i_commands+1] = n
+--                 elseif split then
+--                     i_environments[#i_environments+1] = n
+--                 else
+--                     -- variables ?
+--                     i_commands[#i_commands+1] = start .. n
+--                     i_commands[#i_commands+1] = stop  .. n
+--                 end
+--             end
+--         end
+--         if #i_commands > 0 then
+--             sort(i_commands)
+--             sort(i_environments)
+--             collected[interface] = {
+--                 commands     = i_commands,
+--                 environments = i_environments,
+--             }
+--         end
+--     end
+--     --
+--     flushers[editor](collected)
+-- end
+
 function scripts.interface.editor(editor,split,forcedinterfaces)
     local interfaces= forcedinterfaces or environment.files
     if #interfaces == 0 then
         interfaces= userinterfaces
     end
-    local xmlfile = resolvers.findfile("cont-en.xml") or ""
+    --
+    local filename = "i-context.xml"
+    local xmlfile  = resolvers.findfile(filename) or ""
     if xmlfile == "" then
-        report("unable to locate cont-en.xml")
+        report("unable to locate %a",filename)
+        return
     end
+    --
+    local filename = "mult-def.lua"
+    local deffile  = resolvers.findfile(filename) or ""
+    if deffile == "" then
+        report("unable to locate %a",filename)
+        return
+    end
+    local interface = dofile(filename)
+    if not interface or not next(interface) then
+        report("invalid file %a",filename)
+        return
+    end
+    local variables = interface.variables
+    local constants = interface.constants
+    local commands  = interface.commands
+    local elements  = interface.elements
+    --
     local collected = { }
+    --
+    local xmlroot = xml.load(xmlfile)
+    xml.include(xmlroot,"cd:interfacefile","filename",true,function(s)
+        return io.loaddata(resolvers.findfile(s))
+    end)
+    --
     for i=1,#interfaces do
-        local interface = interfaces[i]
-        local keyfile = resolvers.findfile(format("keys-%s.xml",interface)) or ""
-        if keyfile == "" then
-            report("unable to locate keys-*.xml")
-        else
-            local commands     = { }
-            local mappings     = { }
-            local environments = { }
-            local x = xml.load(keyfile)
-            for e, d, k in xml.elements(x,"/cd:interface/cd:commands/cd:command") do -- somehow this was variable
-                local at = d[k].at
-                local name, value = at.name, at.value
-                if name and value then
-                    mappings[name] = value
-                end
-            end
-            local x = xml.load(xmlfile)
-            for e, d, k in xml.elements(x,"/cd:interface/cd:command") do
-                local at = d[k].at
-                local name, type = at.name, at["type"]
-                if name and name ~= "" then
-                    local remapped = mappings[name] or name
-                    if type == "environment" then
-                        if split then
-                            environments[#environments+1] = remapped
-                        else
-                            commands[#commands+1] = "start" .. remapped
-                            commands[#commands+1] = "stop"  .. remapped
-                        end
-                    else
-                        commands[#commands+1] = remapped
-                    end
-                end
-            end
-            if #commands > 0 then
-                sort(commands)
-                sort(environments)
-                collected[interface] = {
-                    commands     = commands,
-                    environments = environments,
-                }
-            end
-        end
-    end
-    -- awaiting completion of the xml file
-    local definitions = dofile(resolvers.findfile("mult-def.lua"))
-    if definitions then
-        local commands = { en = { } }
-        for command, languages in next, definitions.commands do
-            commands.en[languages.en or command] = true
-            for language, command in next, languages do
-                local c = commands[language]
-                if c then
-                    c[command] = true
+        local interface      = interfaces[i]
+        local i_commands     = { }
+        local i_environments = { }
+        local start = elements.start[interface] or elements.start.en
+        local stop  = elements.stop [interface] or elements.stop .en
+        for e in xml.collected(xmlroot,"cd:interface/cd:command") do
+            local at   = e.at
+            local name = at["name"] or ""
+            local type = at["type"]
+            if name ~= "" then
+                local c = commands[name]
+                local n = c and (c[interface] or c.en) or name
+                if type ~= "environment" then
+                    i_commands[#i_commands+1] = n
+                elseif split then
+                    i_environments[#i_environments+1] = n
                 else
-                    commands[language] = { [command] = true }
+                    -- variables ?
+                    i_commands[#i_commands+1] = start .. n
+                    i_commands[#i_commands+1] = stop  .. n
                 end
             end
         end
-        for language, data in next, commands do
-            local fromlua = data
-            local fromxml = collected[language].commands
-            for i=1,#fromxml do
-                local c = fromxml[i]
-                if not fromlua[c] then
-                 -- print(language,c)
-                    fromlua[c] = true
-                end
-            end
-            collected[language].commands = table.sortedkeys(fromlua)
+        if #i_commands > 0 then
+            sort(i_commands)
+            sort(i_environments)
+            collected[interface] = {
+                commands     = i_commands,
+                environments = i_environments,
+            }
         end
     end
     --
@@ -341,7 +479,7 @@ function scripts.interface.check()
     end
 end
 
-function scripts.interface.interfaces()
+function scripts.interface.mkii()
     local filename = resolvers.findfile(environment.files[1] or "mult-def.lua") or ""
     if filename ~= "" then
         local interface = dofile(filename)
@@ -386,6 +524,7 @@ function scripts.interface.interfaces()
             end
             -- we could just replace attributes
             for language, _ in next, commands.setuplayout do
+                -- keyword files
                 local texresult, xmlresult = { }, { }
                 texresult[#texresult+1] = format("%% this file is auto-generated, don't edit this file\n%%")
                 xmlresult[#xmlresult+1] = format("<?xml version='1.0'?>\n",tag)
@@ -402,9 +541,10 @@ function scripts.interface.interfaces()
                 report("saving interface definitions '%s'",texfilename)
                 io.savedata(xmlfilename,concat(xmlresult,"\n"))
                 report("saving interface translations '%s'",xmlfilename)
+                -- mkii files
                 if language ~= "en" and xmldata ~= "" then
                     local newdata = xmldata:gsub("(<cd:interface.*language=.)en(.)","%1"..language.."%2",1)
--- newdata = replace(newdata, 'cd:command', 'name', interface.commands, interface.elements, language)
+                 -- newdata = replace(newdata, 'cd:command', 'name', interface.commands, interface.elements, language)
                     newdata = replace(newdata, 'cd:string', 'value', interface.commands, interface.elements, language)
                     newdata = replace(newdata, 'cd:variable' , 'value', interface.variables, nil, language)
                     newdata = replace(newdata, 'cd:parameter', 'name', interface.constants, nil, language)
@@ -415,6 +555,7 @@ function scripts.interface.interfaces()
                     io.savedata(xmlfilename,newdata)
                     report("saving interface specification '%s'",xmlfilename)
                 end
+                -- mkiv is generated otherwise
             end
         end
     end
@@ -438,33 +579,6 @@ function scripts.interface.preprocess()
         end
     end
 end
-
--- function scripts.interface.messages()
---     local filename = resolvers.findfile(environment.files[1] or "mult-mes.lua") or ""
---     if filename ~= "" then
---         local messages = dofile(filename)
---         report("messages for * loaded from '%s'",filename)
---         report()
---         for i=1,#messageinterfaces do
---             local interface = messageinterfaces[i]
---             local texresult = { }
---             for category, data in next, messages do
---                 for tag, message in next, data do
---                     if tag ~= "files" then
---                         local msg = message[interface] or message["all"] or message["en"]
---                         if msg then
---                             texresult[#texresult+1] = format("\\setinterfacemessage{%s}{%s}{%s}",category,tag,msg)
---                         end
---                     end
---                 end
---             end
---             texresult[#texresult+1] = format("%%\n\\endinput")
---             local interfacefile = format("mult-m%s.mkii",interface)
---             io.savedata(interfacefile,concat(texresult,"\n"))
---             report("messages for '%s' saved in '%s'",interface,interfacefile)
---         end
---     end
--- end
 
 function scripts.interface.toutf()
     local filename = environment.files[1]
@@ -509,88 +623,10 @@ function scripts.interface.toutf()
     end
 end
 
--- function scripts.interface.labels()
---     require("char-def.lua")
---     require("lang-txt.lua")
---     local interfaces = require("mult-def.lua")
---     local variables = interfaces.variables
---     local contextnames = { }
---     for unicode, data in next, characters.data do
---         local contextname = data.contextname
---         if contextname then
---             contextnames[utfchar(unicode)] = "\\" .. contextname .. " "
---         end
---     end
---     contextnames["i"] = nil
---     contextnames["'"] = nil
---     contextnames["\\"] = nil
---     local function flush(f,kind,what,expand,namespace,prefix)
---         local whatdata = languages.data.labels[what]
---         f:write("\n")
---         f:write(format("%% %s => %s\n",what,kind))
---         for tag, data in table.sortedpairs(whatdata) do
---             if not data.hidden then
---                 f:write("\n")
---                 for language, text in table.sortedpairs(data.labels) do
---                     if text ~= "" then
---                         if expand then
---                             text = utfgsub(text,".",contextnames)
---                             text = gsub(text,"  ", "\ ")
---                         end
---                         if namespace and namespace[tag] then
---                             tag = prefix .. tag
---                         end
---                         if find(text,",") then
---                             text = "{" .. text .. "}"
---                         end
---                         if text == "" then
---                             -- skip
---                         else
---                             if type(text) == "table" then
---                                 f:write(format("\\setup%stext[\\s!%s][%s={{%s},}]\n",kind,language,tag,text))
---                             else
---                                 f:write(format("\\setup%stext[\\s!%s][%s={{%s},{%s}}]\n",kind,language,tag,text[1],text[2]))
---                             end
---                         end
---                     end
---                 end
---             end
---         end
---     end
---     function flushall(txtname,expand)
---         local f = io.open(txtname,"w")
---         if f then
---             report("saving '%s'",txtname)
---             f:write("% this file is auto-generated, don't edit this file\n")
---             flush(f,"head","titles",expand,variables,"\\v!")
---             flush(f,"label","texts",expand,variables,"\\v!")
---             flush(f,"mathlabel","functions",expand)
---             flush(f,"taglabel","tags",expand)
---             f:write("\n")
---             f:write("\\endinput\n")
---             f:close()
---         end
---     end
---     flushall("lang-txt.mkii",true)
---     flushall("lang-txt.mkiv",false)
--- end
-
 local ea = environment.argument
 
-if ea("context") then
-    scripts.interface.interfaces()
- -- scripts.interface.messages()
- -- scripts.interface.labels()
-elseif ea("interfaces") or ea("messages") or ea("labels") then
-    if ea("interfaces") then
-        scripts.interface.interfaces()
-    end
- -- if ea("messages") then
- --     scripts.interface.messages()
- -- end
- -- if ea("labels") then
- --     scripts.interface.labels()
- -- end
+if ea("mkii") then
+    scripts.interface.mkii()
 elseif ea("preprocess") then
     scripts.interface.preprocess()
 elseif ea("toutf") then

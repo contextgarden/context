@@ -1,0 +1,50 @@
+%D \module
+%D   [       file=setups-proofing,
+%D        version=2016.04.05,
+%D          title=\CONTEXT\ Setup Definitions,
+%D       subtitle=Macro Definitions,
+%D         author={Hans Hagen & Wolfgang Schuster},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% <?context-directive job ctxfile x-setups.ctx ?>
+
+\usemodule[x][setups-basics]
+
+\unprotect
+
+\loadsetups
+  [\jobname.xml]
+
+\setupbodyfont
+  [10pt]
+
+\setuplayout
+  [\c!width=middle,
+   \c!topspace=1cm,
+   \c!bottomspace=1cm,
+   \c!backspace=1cm,
+   \c!cutspace=1cm,
+   \c!footer=0pt,
+   \c!header=1cm]
+
+\setuplayout
+  [\v!middle]
+
+\setupframedtext
+  [setuptext]
+  [\c!background=setupfilename]
+
+\protect
+
+\starttext
+
+    \loadsetups[i-common-definitions]
+
+    \placeeverysetup
+
+\stoptext

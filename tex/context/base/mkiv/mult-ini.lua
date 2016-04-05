@@ -60,6 +60,9 @@ sharedstorage.currentresponse  = sharedstorage.currentresponse  or "en"
 local currentinterface = sharedstorage.currentinterface
 local currentresponse  = sharedstorage.currentresponse
 
+interfaces.currentinterface = currentinterface
+interfaces.currentresponse  = currentresponse
+
 local complete      = allocate()
 interfaces.complete = complete
 
@@ -316,6 +319,8 @@ function interfaces.setuserinterface(interface,response)
     else
         report_interface("the language(s) can only be set when making the format")
     end
+    interfaces.currentinterface = currentinterface
+    interfaces.currentresponse  = currentresponse
 end
 
 interfaces.implement {

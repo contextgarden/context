@@ -12,13 +12,7 @@
 .SH OPTIONS
 .TP
 .B --interfaces
-generate context interface files
-.TP
-.B --messages
-generate context message files
-.TP
-.B --labels
-generate context label files
+generate context mkii interface files
 .TP
 .B --context
 equals --interfaces --messages --languages

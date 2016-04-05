@@ -1,0 +1,114 @@
+% language=uk
+
+\usemodule[art-01,abr-01]
+
+\starttext
+
+\startsubject[title=Introduction]
+
+The interface definitions have a long history. They started out in as \TEX\
+commands, something \type {\start} \unknown\ \type {\stop} with embedded
+specifications. When \CONTEXT\ became larger and \XML\ showed up the definitions
+were converted into \XML\ and instead of putting the definitions in the source
+files they moved to one file: \type {cont-en.xml}.
+
+When at some point the number of commands not covered grew and the covered ones
+lagged behind reality, Wolfgang started to systematically collect all the
+information needed to make a more complete set of definitions. In the process we
+enhanced the supported syntax variants and added more methods to share common
+definitions. The current set of files describes all commands (even those not
+really meant for users). Because the definitions are also used to generate files
+for editors like \SCITE, there are some tools that operate on the \XML\ file. If
+needed one can still generate the large files (one per interface with merged
+definitions).
+
+\stopsubject
+
+\startsubject[title=Overviews]
+
+The files describing the interface can be recognized by the prefix \type {i-} and
+suffix \type {xml}. We don't explain the syntax here as those files give enough
+examples of usage.
+
+\starttabulate[|T|p|]
+\NC i-context            \NC the main file (it loads other files) \NC \NR
+\NC i-common-definitions \NC common definitions that save time and space when
+                             defining others\NC \NR
+\NC i-common-*           \NC files loaded by the common definition file \NC \NR
+\NC i-*                  \NC the setups organized by functionality \NC \NR
+\stoptabulate
+
+There are a couple of styles that implement the rendering of the interface
+commands (traditionally called setups):
+
+\starttabulate[|T|p|]
+\NC x-setups-basics   \NC loading of definitions and rendering of compact of extensive
+                          interface commands \NC \NR
+\NC x-setups-overview \NC generate a document with all commands using the large combined
+                          definition file \NC \NR
+\NC x-setups-generate \NC generate a document with all commands using the individual
+                          files but generate the combined file in the process \NC \NR
+\NC x-setups-proofing \NC used for direct rendering of a file where commands
+                          are defined \NC \NR
+\stoptabulate
+
+The proofing only works when there is the following line in a definition file:
+
+\starttyping
+<?context-directive job ctxfile x-setups.ctx ?>
+\stoptyping
+
+In that case running the \type {context} command on the file will render the
+defined commands.
+
+\starttyping
+context i-backend.xml
+\stoptyping
+
+If you want the combined \XML\ file(s), you need to call:
+
+\starttyping
+context x-setups-generate.mkiv
+context x-setups-generate.mkiv --interface=nl --result=setup-nl
+\stoptyping
+
+For each relevant interface. If you don't want that, and save quite some disk space,
+you can use:
+
+\starttyping
+context x-setups-overview.mkiv
+context x-setups-overview.mkiv --interface=nl --result=setup-nl
+\stoptyping
+
+Instead of these commands you can also do this:
+
+\starttyping
+context --extra=setups --overview
+context --extra=setups --overview --save
+context --extra=setups --overview --interface=nl
+context --extra=setups framed
+\stoptyping
+
+\stopsubject
+
+\startsubject[title=Use in manuals]
+
+{\em todo}
+
+\stopsubject
+
+\startsubject[title=Keeping up]
+
+We try to keep up with additions in \CONTEXT\ but it might be that we forget some. If
+you run into issues when processing, can't find what should be there, or find a discrepancy in
+a manual (like the beginners manual) you can contact us.
+
+\startlines
+Wolfgang Schuster
+Ton Otten
+Hans Hagen
+\stoplines
+
+\stopsubject
+
+\stoptext
