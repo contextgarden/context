@@ -111,7 +111,7 @@ local direct, subdirect, writer, pushtarget, poptarget, setlogfile, settimedlog,
 if tex and (tex.jobname or tex.formatname) then
 
     if texio.setescape then
-        texio.setescape(0)
+        texio.setescape(0) -- or (false)
     end
 
     local function useluawrites()

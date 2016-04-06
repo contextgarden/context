@@ -429,7 +429,9 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
             if name ~= "" then
                 local c = commands[name]
                 local n = c and (c[interface] or c.en) or name
-                if type ~= "environment" then
+                if at.generated == "yes" then
+                    -- skip (for now)
+                elseif type ~= "environment" then
                     i_commands[#i_commands+1] = n
                 elseif split then
                     i_environments[#i_environments+1] = n
