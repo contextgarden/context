@@ -38,7 +38,10 @@
 
 \def\typo_breakpoints_define_character[#1][#2][#3]% name char settings
   {\begingroup
-   \getdummyparameters[\c!type=\plusone,\c!nleft=\plusthree,\c!nright=\plusthree,\s!language=,\c!left=,\c!right=,\c!middle=,#3]%
+   \getdummyparameters
+     [\c!type=\plusone,\c!nleft=\plusthree,\c!nright=\plusthree,%
+      \s!language=,\c!left=,\c!right=,\c!middle=,\c!range=\v!no,%
+      #3]%
    \clf_definebreakpoint
      {#1}%
      {#2}%
@@ -50,6 +53,7 @@
          right {\directdummyparameter\c!right}%
           left {\directdummyparameter\c!left}%
         middle {\directdummyparameter\c!middle}%
+        range  {\directdummyparameter\c!range}%
      }%
    \relax
    \endgroup}
@@ -63,11 +67,15 @@
 
 \definebreakpoints[compound]
 
-\definebreakpoint [compound] [+] [\c!nleft=3,\c!nright=3,\c!type=1] % middle=+,left=,right=
-\definebreakpoint [compound] [-] [\c!nleft=3,\c!nright=3,\c!type=1] % middle=+,left=,right=
-\definebreakpoint [compound] [/] [\c!nleft=3,\c!nright=3,\c!type=1] % middle=+,left=,right=
-\definebreakpoint [compound] [(] [\c!nleft=3,\c!nright=3,\c!type=2] % type=5,middle=(,left=(-,right=
-\definebreakpoint [compound] [)] [\c!nleft=3,\c!nright=3,\c!type=3] % type=5,middle=),left=,right=-)
+% 1: simple break
+% 6: simple break but skip same
+
+\definebreakpoint [compound] [+] [\c!nleft=3,\c!nright=3,\c!type=1]                 % middle=+,left=,right=
+%definebreakpoint [compound] [-] [\c!nleft=3,\c!nright=3,\c!type=1,\c!range=\v!yes] % middle=+,left=,right=
+\definebreakpoint [compound] [-] [\c!nleft=3,\c!nright=3,\c!type=6,\c!range=\v!yes] % middle=+,left=,right=
+\definebreakpoint [compound] [/] [\c!nleft=3,\c!nright=3,\c!type=1]                 % middle=+,left=,right=
+\definebreakpoint [compound] [(] [\c!nleft=3,\c!nright=3,\c!type=2]                 % type=5,middle=(,left=(-,right=
+\definebreakpoint [compound] [)] [\c!nleft=3,\c!nright=3,\c!type=3]                 % type=5,middle=),left=,right=-)
 
 \let\installbreakpoint\definebreakpoint % for a while
 

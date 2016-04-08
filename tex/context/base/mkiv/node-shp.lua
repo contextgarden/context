@@ -78,7 +78,7 @@ local function cleanup_redundant(head) -- better name is: flatten_page
         local id = getid(start)
         if id == disc_code then
             if getsubtype(start) == fulldisc_code then
-                local _, _, replace, _, _ tail = getdisc(start)
+                local _, _, replace, _, _ tail = getdisc(start,true)
                 if replace then
                     local prev, next = getboth(start)
                     setfield(start,"replace",nil)

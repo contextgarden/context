@@ -460,10 +460,18 @@
 %D \TEX{}     x\crlf
 %D \stoptyping
 %D
-%D from now on we treat it as anormal space and not as a space with \type
+%D from now on we treat it as a normal space and not as a space with \type
 %D {sfcode} 1000.
 
-\unexpanded\def\normalnotobeyedspace{\mathortext\normalspaceprimitive\space} % no \dontleavehmode\space (else no frenchspacing)
+\unexpanded\def\specialspaceprimitive
+  {\begingroup
+   % so, no fancy extra spacing after: foo i.e.\ bar
+   \nonfrenchspacing\normalspaceprimitive
+   \endgroup}
+
+\unexpanded\def\normalnotobeyedspace
+  {\mathortext\normalspaceprimitive\specialspaceprimitive} % no \dontleavehmode\space (else no frenchspacing)
+
 \let\ =\normalnotobeyedspace
 
 % Because I strip spaces at the end of lines (in the editor) we need a bit of

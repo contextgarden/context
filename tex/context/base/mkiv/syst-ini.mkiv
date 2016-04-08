@@ -1144,4 +1144,9 @@
 \let\normalstartdmath \Ustartdisplaymath
 \let\normalstopdmath  \Ustopdisplaymath
 
+%D For now:
+
+\ifdefined\protrusionboundary \else \let\protrusionboundary\boundary   \fi
+\ifdefined\wordboundary       \else \let\wordboundary      \noboundary \fi
+
 \protect \endinput

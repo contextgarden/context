@@ -244,6 +244,7 @@ local margincodes          = nodes.margincodes
 local disccodes            = nodes.disccodes
 local mathcodes            = nodes.mathcodes
 local fillcodes            = nodes.fillcodes
+local boundarycodes        = nodes.boundarycodes
 
 local temp_code            = nodecodes.temp
 local glyph_code           = nodecodes.glyph
@@ -260,6 +261,9 @@ local vlist_code           = nodecodes.vlist
 local unset_code           = nodecodes.unset
 local marginkern_code      = nodecodes.marginkern
 local dir_code             = nodecodes.dir
+local boundary_code        = nodecodes.boundary
+
+local protrusion_code      = boundarycodes.protrusion
 
 local leaders_code         = gluecodes.leaders
 
@@ -612,6 +616,16 @@ local function find(head) -- do we really want to recurse into an hlist?
             else
                 head = getnext(head)
             end
+        elseif id == protrusion_code then
+            local v = getfield(head,"value")
+            if v == 1 or v == 3 then
+                head = getnext(head)
+                if head then
+                    head = getnext(head)
+                end
+            else
+                return head
+            end
         elseif is_skipable(head) then
             head = getnext(head)
         else
@@ -651,6 +665,16 @@ local function find(head,tail)
                 return found
             else
                 tail = getprev(tail)
+            end
+        elseif id == protrusion_code then
+            local v = getfield(tail,"value")
+            if v == 2 or v == 3 then
+                tail = getprev(tail)
+                if tail then
+                    tail = getprev(tail)
+                end
+            else
+                return tail
             end
         elseif is_skipable(tail) then
             tail = getprev(tail)
@@ -1198,7 +1222,7 @@ local function post_line_break(par)
                 local prevlast = getprev(lastnode)
                 local nextlast = getnext(lastnode)
                 local subtype  = getsubtype(lastnode)
-                local pre, post, replace, pretail, posttail, replacetail = getdisc(lastnode)
+                local pre, post, replace, pretail, posttail, replacetail = getdisc(lastnode,true)
                 if subtype == second_disc_code then
                     if not (getid(prevlast) == disc_code and getsubtype(prevlast) == first_disc_code) then
                         report_parbuilders('unsupported disc at location %a',3)
@@ -1875,7 +1899,7 @@ local function try_break(pi, break_type, par, first_p, current, checked_expansio
                 local l = b and b.cur_break or first_p
                 local o = current and getprev(current)
                 if current and getid(current) == disc_code then
-                    local pre, _, _, pretail = getdisc(current)
+                    local pre, _, _, pretail = getdisc(current,true)
                     if pre then
                         o = pretail
                     else

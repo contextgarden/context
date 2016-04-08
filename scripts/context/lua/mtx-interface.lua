@@ -399,7 +399,7 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
         report("unable to locate %a",filename)
         return
     end
-    local interface = dofile(filename)
+    local interface = dofile(deffile)
     if not interface or not next(interface) then
         report("invalid file %a",filename)
         return

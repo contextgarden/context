@@ -283,7 +283,7 @@ function italics.handler(head)
             postinserted    = nil
             postitalic      = 0
             updated         = false
-            pre, post, replace, pretail, posttail, replacetail = getdisc(current)
+            pre, post, replace, pretail, posttail, replacetail = getdisc(current,true)
             if replace then
                 local current = replacetail
                 while current do

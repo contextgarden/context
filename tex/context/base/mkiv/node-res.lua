@@ -18,20 +18,21 @@ local report_nodes = logs.reporter("nodes","housekeeping")
 
 local nodes, node = nodes, node
 
-nodes.pool         = nodes.pool or { }
-local nodepool     = nodes.pool
+nodes.pool          = nodes.pool or { }
+local nodepool      = nodes.pool
 
-local whatsitcodes = nodes.whatsitcodes
-local skipcodes    = nodes.skipcodes
-local kerncodes    = nodes.kerncodes
-local rulecodes    = nodes.rulecodes
-local nodecodes    = nodes.nodecodes
+local whatsitcodes  = nodes.whatsitcodes
+local skipcodes     = nodes.skipcodes
+local kerncodes     = nodes.kerncodes
+local rulecodes     = nodes.rulecodes
+local nodecodes     = nodes.nodecodes
+local boundarycodes = nodes.boundarycodes
 
-local glyph_code   = nodecodes.glyph
+local glyph_code    = nodecodes.glyph
 
-local allocate     = utilities.storage.allocate
+local allocate      = utilities.storage.allocate
 
-local texgetcount  = tex.getcount
+local texgetcount   = tex.getcount
 
 local reserved, nofreserved = { }, 0
 
@@ -154,14 +155,21 @@ local user_l            = register_nut(new_nut("whatsit",whatsitcodes.userdefine
 local user_s            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_s,"type",115) -- 44
 local user_t            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_t,"type",116) -- 44
 ----- user_c            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_c,"type",108) -- 44
+
 local left_margin_kern  = register_nut(new_nut("margin_kern",0))
 local right_margin_kern = register_nut(new_nut("margin_kern",1))
+
 local lineskip          = register_nut(new_nut("glue",skipcodes.lineskip))
 local baselineskip      = register_nut(new_nut("glue",skipcodes.baselineskip))
 local leftskip          = register_nut(new_nut("glue",skipcodes.leftskip))
 local rightskip         = register_nut(new_nut("glue",skipcodes.rightskip))
+
 local temp              = register_nut(new_nut("temp",0))
+
 local noad              = register_nut(new_nut("noad"))
+
+local boundary          = register_nut(new_nut("boundary",boundarycodes.user))
+local wordboundary      = register_nut(new_nut("boundary",boundarycodes.word))
 
 -- the dir field needs to be set otherwise crash:
 
@@ -193,13 +201,33 @@ end
 
 function nutpool.penalty(p)
     local n = copy_nut(penalty)
-    setfield(n,"penalty",p)
+    if p and p ~= 0 then
+        setfield(n,"penalty",p)
+    end
     return n
 end
 
 function nutpool.kern(k)
     local n = copy_nut(kern)
-    setfield(n,"kern",k)
+    if k and k ~= 0 then
+        setfield(n,"kern",k)
+    end
+    return n
+end
+
+function nutpool.boundary(v)
+    local n = copy_nut(boundary)
+    if v and v ~= 0 then
+        setfield(n,"value",v)
+    end
+    return n
+end
+
+function nutpool.wordboundary(v)
+    local n = copy_nut(wordboundary)
+    if v and v ~= 0 then
+        setfield(n,"value",v)
+    end
     return n
 end
 
@@ -211,7 +239,9 @@ end
 
 function nutpool.italickern(k)
     local n = copy_nut(italickern)
-    setfield(n,"kern",k)
+    if k and k ~= 0 then
+        setfield(n,"kern",k)
+    end
     return n
 end
 

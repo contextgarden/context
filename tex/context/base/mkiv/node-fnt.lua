@@ -13,12 +13,13 @@ local concat, keys = table.concat, table.keys
 
 local nodes, node, fonts = nodes, node, fonts
 
-local trace_characters  = false  trackers  .register("nodes.characters",    function(v) trace_characters = v end)
-local trace_fontrun     = false  trackers  .register("nodes.fontrun",       function(v) trace_fontrun    = v end)
-local trace_variants    = false  trackers  .register("nodes.variants",      function(v) trace_variants   = v end)
+local trace_characters  = false  trackers.register("nodes.characters", function(v) trace_characters = v end)
+local trace_fontrun     = false  trackers.register("nodes.fontrun",    function(v) trace_fontrun    = v end)
+local trace_variants    = false  trackers.register("nodes.variants",   function(v) trace_variants   = v end)
 
-local force_discrun     = true   directives.register("nodes.discrun",       function(v) force_discrun    = v end)
-local force_basepass    = true   directives.register("nodes.basepass",      function(v) force_basepass   = v end)
+local force_discrun     = true   directives.register("nodes.discrun",     function(v) force_discrun     = v end)
+local force_boundaryrun = true   directives.register("nodes.boundaryrun", function(v) force_boundaryrun = v end)
+local force_basepass    = true   directives.register("nodes.basepass",    function(v) force_basepass    = v end)
 
 local report_fonts      = logs.reporter("fonts","processing")
 
@@ -58,11 +59,13 @@ local ischar            = nuts.ischar  -- checked
 
 local traverse_id       = nuts.traverse_id
 local traverse_char     = nuts.traverse_char
-local delete_node       = nuts.delete
+local remove_node       = nuts.remove
 local protect_glyph     = nuts.protect_glyph
 
 local glyph_code        = nodecodes.glyph
 local disc_code         = nodecodes.disc
+local boundary_code     = nodecodes.boundary
+local word_boundary     = nodes.boundarycodes.word
 
 local setmetatableindex = table.setmetatableindex
 
@@ -185,6 +188,8 @@ function handlers.characters(head)
                 report_fonts("font %03i, dynamic %03i, glyph %C",font,attr,char)
             elseif id == disc_code then
                 report_fonts("[disc] %s",nodes.listtoutf(n,true,false,n))
+            elseif id == boundary_code then
+                report_fonts("[boundary] %i:%i",getsubtype(n),getfield(n,"value"))
             else
                 report_fonts("[%s]",nodecodes[id])
             end
@@ -268,14 +273,33 @@ function handlers.characters(head)
         end
     end
 
-    if redundant then
-        for i=1,#redundant do
-            delete_node(nuthead,n)
+    if force_boundaryrun then
+
+        -- we can inject wordboundaries and then let the hyphenator do its work
+        -- but we need to get rid of those nodes in order to build ligatures
+        -- and kern (a rather context thing)
+
+        for b in traverse_id(boundary_code,nuthead) do
+            if getsubtype(b) == word_boundary then
+                if redundant then
+                    redundant[#redundant+1] = b
+                else
+                    redundant = { b }
+                end
+            end
         end
+
     end
 
-    -- could be an optional pass : seldom needed, only for documentation as a discretionary
-    -- with pre/post/replace will normally not occur on it's own
+    if redundant then
+        local front = nuthead == redundant[1]
+        for i=1,#redundant do
+            nuthead = remove_node(nuthead,redundant[i],true)
+        end
+        if front then
+            head = tonode(nuthead)
+        end
+    end
 
     local e = 0
 
@@ -341,9 +365,10 @@ function handlers.characters(head)
         report_fonts()
         report_fonts("statics : %s",u > 0 and concat(keys(usedfonts)," ") or "none")
         report_fonts("dynamics: %s",a > 0 and concat(keys(attrfonts)," ") or "none")
-        report_fonts("built-in: %s",b > 0 and b                           or "none")
+        report_fonts("built-in: %s",b > 0 and b or "none")
+        report_fonts("removed : %s",redundant and #redundant > 0 and #redundant or "none")
     if expanders then
-        report_fonts("expanded: %s",e > 0 and e                           or "none")
+        report_fonts("expanded: %s",e > 0 and e or "none")
     end
         report_fonts()
     end

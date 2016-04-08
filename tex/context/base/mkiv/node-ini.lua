@@ -162,6 +162,15 @@ local leadercodes = mark(getsubtypes("leader"))
 
 local fillcodes = mark(getsubtypes("fill"))
 
+-- local boundarycodes = allocate {
+--     [0] = "cancel",
+--     [1] = "user",
+--     [2] = "protrusion",
+--     [3] = "word",
+-- }
+
+local boundarycodes = mark(getsubtypes("boundary"))
+
 -- local penaltycodes = allocate { -- unfortunately not used (yet)
 --     [ 0] = "userpenalty",
 -- }
@@ -254,41 +263,43 @@ end
 local nodecodes = simplified(node.types())
 local whatcodes = simplified(node.whatsits())
 
-skipcodes    = allocate(swapped(skipcodes,skipcodes))
-noadcodes    = allocate(swapped(noadcodes,noadcodes))
-radicalcodes = allocate(swapped(radicalcodes,radicalcodes))
-nodecodes    = allocate(swapped(nodecodes,nodecodes))
-whatcodes    = allocate(swapped(whatcodes,whatcodes))
-listcodes    = allocate(swapped(listcodes,listcodes))
-glyphcodes   = allocate(swapped(glyphcodes,glyphcodes))
-kerncodes    = allocate(swapped(kerncodes,kerncodes))
-penaltycodes = allocate(swapped(penaltycodes,penaltycodes))
-mathcodes    = allocate(swapped(mathcodes,mathcodes))
-fillcodes    = allocate(swapped(fillcodes,fillcodes))
-margincodes  = allocate(swapped(margincodes,margincodes))
-disccodes    = allocate(swapped(disccodes,disccodes))
-accentcodes  = allocate(swapped(accentcodes,accentcodes))
-fencecodes   = allocate(swapped(fencecodes,fencecodes))
-rulecodes    = allocate(swapped(rulecodes,rulecodes))
-leadercodes  = allocate(swapped(leadercodes,leadercodes))
+skipcodes     = allocate(swapped(skipcodes,skipcodes))
+boundarycodes = allocate(swapped(boundarycodes,boundarycodes))
+noadcodes     = allocate(swapped(noadcodes,noadcodes))
+radicalcodes  = allocate(swapped(radicalcodes,radicalcodes))
+nodecodes     = allocate(swapped(nodecodes,nodecodes))
+whatcodes     = allocate(swapped(whatcodes,whatcodes))
+listcodes     = allocate(swapped(listcodes,listcodes))
+glyphcodes    = allocate(swapped(glyphcodes,glyphcodes))
+kerncodes     = allocate(swapped(kerncodes,kerncodes))
+penaltycodes  = allocate(swapped(penaltycodes,penaltycodes))
+mathcodes     = allocate(swapped(mathcodes,mathcodes))
+fillcodes     = allocate(swapped(fillcodes,fillcodes))
+margincodes   = allocate(swapped(margincodes,margincodes))
+disccodes     = allocate(swapped(disccodes,disccodes))
+accentcodes   = allocate(swapped(accentcodes,accentcodes))
+fencecodes    = allocate(swapped(fencecodes,fencecodes))
+rulecodes     = allocate(swapped(rulecodes,rulecodes))
+leadercodes   = allocate(swapped(leadercodes,leadercodes))
 
-nodes.skipcodes    = skipcodes     nodes.gluecodes    = skipcodes -- more official
-nodes.noadcodes    = noadcodes
-nodes.nodecodes    = nodecodes
-nodes.whatcodes    = whatcodes     nodes.whatsitcodes = whatcodes -- more official
-nodes.listcodes    = listcodes
-nodes.glyphcodes   = glyphcodes
-nodes.kerncodes    = kerncodes
-nodes.penaltycodes = penaltycodes
-nodes.mathcodes    = mathcodes
-nodes.fillcodes    = fillcodes
-nodes.margincodes  = margincodes   nodes.marginkerncodes    = margincodes
-nodes.disccodes    = disccodes     nodes.discretionarycodes = disccodes
-nodes.accentcodes  = accentcodes
-nodes.radicalcodes = radicalcodes
-nodes.fencecodes   = fencecodes
-nodes.rulecodes    = rulecodes
-nodes.leadercodes  = leadercodes
+nodes.skipcodes     = skipcodes     nodes.gluecodes    = skipcodes -- more official
+nodes.boundarycodes = boundarycodes
+nodes.noadcodes     = noadcodes
+nodes.nodecodes     = nodecodes
+nodes.whatcodes     = whatcodes     nodes.whatsitcodes = whatcodes -- more official
+nodes.listcodes     = listcodes
+nodes.glyphcodes    = glyphcodes
+nodes.kerncodes     = kerncodes
+nodes.penaltycodes  = penaltycodes
+nodes.mathcodes     = mathcodes
+nodes.fillcodes     = fillcodes
+nodes.margincodes   = margincodes   nodes.marginkerncodes    = margincodes
+nodes.disccodes     = disccodes     nodes.discretionarycodes = disccodes
+nodes.accentcodes   = accentcodes
+nodes.radicalcodes  = radicalcodes
+nodes.fencecodes    = fencecodes
+nodes.rulecodes     = rulecodes
+nodes.leadercodes   = leadercodes
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment
@@ -298,21 +309,22 @@ kerncodes.kerning          = kerncodes.fontkern
 kerncodes.italiccorrection = kerncodes.italiccorrection or 1 -- new
 
 nodes.codes = allocate { -- mostly for listing
-    glue    = skipcodes,
-    noad    = noadcodes,
-    node    = nodecodes,
-    hlist   = listcodes,
-    vlist   = listcodes,
-    glyph   = glyphcodes,
-    kern    = kerncodes,
-    penalty = penaltycodes,
-    math    = mathnodes,
-    fill    = fillcodes,
-    margin  = margincodes,
-    disc    = disccodes,
-    whatsit = whatcodes,
-    accent  = accentcodes,
-    fence   = fencecodes,
+    glue     = skipcodes,
+    boundary = boundarycodes,
+    noad     = noadcodes,
+    node     = nodecodes,
+    hlist    = listcodes,
+    vlist    = listcodes,
+    glyph    = glyphcodes,
+    kern     = kerncodes,
+    penalty  = penaltycodes,
+    math     = mathnodes,
+    fill     = fillcodes,
+    margin   = margincodes,
+    disc     = disccodes,
+    whatsit  = whatcodes,
+    accent   = accentcodes,
+    fence    = fencecodes,
 }
 
 local report_codes = logs.reporter("nodes","codes")

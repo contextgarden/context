@@ -670,6 +670,36 @@
    \strc_itemgroups_insert_reference
    \endgroup}
 
+% needs testing (maybe it need to happen later)
+%
+% \appendtoks
+%    \setupcounter
+%      [\v_strc_itemgroups_counter]%
+%      [\c!prefix=\itemgroupparameter\c!prefix,
+%       \c!prefixstopper=\itemgroupparameter\c!prefixstopper,
+%       \c!prefixseparatorset=\itemgroupparameter\c!prefixseparatorset,
+%       \c!prefixconversion=\itemgroupparameter\c!prefixconversion,
+%       \c!prefixconversionset=\itemgroupparameter\c!prefixseparatorset,
+%       \c!prefixset=\itemgroupparameter\c!prefixset,
+%       \c!prefixsegments=\itemgroupparameter\c!prefixsegments,
+%       \c!prefixconnector=\itemgroupparameter\c!prefixconnector,
+%       \c!criterium=\itemgroupparameter\c!criterium,
+%       \c!numberorder=\ifconditional\c_strc_itemgroups_reverse\v!reverse\else\v!normal\fi,
+%       \c!numberstopper=\expdoif{\itemgroupparameter\c!placestopper}\v!yes{\itemgroupparameter\c!stopper},
+%       \c!numberconversionset=\v_strc_itemgroups_counter,
+%       \c!numbersegments=\currentitemgroupsegments]%
+% \to\itemgroupcommands
+%
+% \def\strc_itemgroups_insert_item_counter_indeed % quite slow ... every time this setup .. but it
+%   {\begingroup                                  % can be optimized ... best move some to strc-num
+%    % there will be a fixedconversion key
+%   %\normalexpanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+%    \normalexpanded{\strc_sets_define_conversion_set[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+%    %
+%    \convertedcounter[\v_strc_itemgroups_counter]% [\number\currentitemlevel]%
+%    \strc_itemgroups_insert_reference
+%    \endgroup}
+
 \def\strc_itemgroups_set_symbol#symbol%
   {\edef\strc_itemgroups_tmp_symbol{#symbol}%
    \ifx\strc_itemgroups_tmp_symbol\empty \else
@@ -1665,6 +1695,36 @@
 %    \ignorespaces}
 
 %D End of plugin.
+
+%D Something for tables:
+
+\unexpanded\def\itemtag % not yet in interface definitions
+  {\dosingleempty\strc_itemgroups_item_tag}
+
+\unexpanded\def\strc_itemgroups_item_tag[#reference]% we can reuse more
+  {\def\currentitemreference{#reference}%
+   \iftrialtypesetting
+     \strc_counters_save\v_strc_itemgroups_counter
+     \strc_itemgroups_increment_item_counter
+     \strc_itemgroups_insert_item_tag_indeed
+     \strc_counters_restore\v_strc_itemgroups_counter
+   \else
+     \strc_itemgroups_increment_item_counter
+     \strc_itemgroups_insert_item_tag_indeed
+   \fi}
+
+\def\strc_itemgroups_insert_item_tag_indeed
+  {\letitemgroupparameter\c!distance\zeropoint
+   %letitemgroupparameter\c!width\zeropoint
+   \strc_itemgroups_make_symbol_box
+   \strc_itemgroups_make_destination_box
+   \let\m_strc_itemgroups_destination\empty
+   \ht\b_strc_itemgroups\strutheight
+   \dp\b_strc_itemgroups\strutdepth
+   \box\b_strc_itemgroups
+   \ignorespaces}
+
+%D Done again.
 
 \setupitemgroup
   [\c!margin=\zeropoint,

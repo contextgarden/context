@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
 }
 
 -- todo: hyphenate over range if needed
+-- todo: check boundary nodes
 
 -- setattr: helper for full attr
 

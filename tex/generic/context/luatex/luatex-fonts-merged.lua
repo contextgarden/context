@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/06/16 13:34:38
+-- merge date  : 04/08/16 20:00:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -20229,12 +20229,12 @@ function otf.dataset(tfmdata,font)
   end
   return rl
 end
-local function report_disc(n)
-  report_run("kern: %s > %s",disc,languages.serializediscretionary(disc))
+local function report_disc(what,n)
+  report_run("%s: %s > %s",what,n,languages.serializediscretionary(n))
 end
 local function kernrun(disc,k_run,font,attr,...)
   if trace_kernruns then
-    report_disc("kern")
+    report_disc("kern",disc)
   end
   local prev,next=getboth(disc)
   local nextstart=next
@@ -20315,7 +20315,7 @@ local function kernrun(disc,k_run,font,attr,...)
 end
 local function comprun(disc,c_run,...)
   if trace_compruns then
-    report_disc("comp")
+    report_disc("comp",disc)
   end
   local pre,post,replace=getdisc(disc)
   local renewed=false
@@ -20355,20 +20355,20 @@ local function comprun(disc,c_run,...)
 end
 local function testrun(disc,t_run,c_run,...)
   if trace_testruns then
-    report_disc("test")
+    report_disc("test",disc)
   end
   local prev,next=getboth(disc)
   if not next then
     return
   end
-  local pre,post,replace,pretail,posttail,replacetail=getdisc(disc)
+  local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
   local done=false
   if replace and prev then
     setlink(replacetail,next)
-    if t_run(replace,next,...) then
-      setfield(disc,"replace",nil) 
+    local ok,overflow=t_run(replace,next,...)
+    if ok and overflow then
+      setfield(disc,"replace",nil)
       setlink(prev,replace)
-      setlink(replacetail,next)
       setboth(disc)
       flush_node_list(disc)
       return replace,true 
@@ -20460,7 +20460,13 @@ local function t_run_single(start,stop,font,attr,lookupcache)
         if lookupmatch then
           local s=getnext(start)
           local l=nil
+          local d=0
           while s do
+            if s==stop then
+              d=1
+            elseif d>0 then
+              d=d+1
+            end
             local lg=lookupmatch[getchar(s)]
             if lg then
               l=lg
@@ -20470,7 +20476,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
             end
           end
           if l and l.ligature then
-            return true
+            return true,d>1
           end
         end
       end
@@ -20560,7 +20566,13 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
             if lookupmatch then
               local s=getnext(start)
               local l=nil
+              local d=0
               while s do
+                if s==stop then
+                  d=1
+                elseif d>0 then
+                  d=d+1
+                end
                 local lg=lookupmatch[getchar(s)]
                 if lg then
                   l=lg
@@ -20570,7 +20582,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
                 end
               end
               if l and l.ligature then
-                return true
+                return true,d>1
               end
             end
           else
@@ -23666,7 +23678,6 @@ local fonts=fonts
 local nodes=nodes
 local nuts=nodes.nuts 
 local traverse_id=nuts.traverse_id
-local free_node=nuts.free
 local remove_node=nuts.remove
 local glyph_code=nodes.nodecodes.glyph
 local disc_code=nodes.nodecodes.disc
@@ -23769,9 +23780,7 @@ function nodes.handlers.nodepass(head)
     end
     if redundant then
       for i=1,#redundant do
-        local n=redundant[i]
-        remove_node(nuthead,n)
-        free_node(n)
+        remove_node(nuthead,redundant[i],true)
       end
     end
     for d in traverse_id(disc_code,nuthead) do

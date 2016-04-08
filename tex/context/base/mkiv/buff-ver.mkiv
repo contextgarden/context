@@ -457,7 +457,8 @@
 \let\normaltextdis\dis
 
 \unexpanded\def\astype
-  {\bgroup\usetypestyleandcolor\c!style\c!color\let\nexttoken}
+  {\dontleavehmode
+   \bgroup\usetypestyleandcolor\c!style\c!color\let\nexttoken}
 
 \unexpanded\def\asciistr#1% used in some old styles
   {\dontleavehmode\begingroup

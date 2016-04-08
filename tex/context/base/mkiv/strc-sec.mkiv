@@ -299,7 +299,7 @@
 
 % lua interface / names and interface might change
 
-\newconditional\c_strc_rendering_continuous % not used (mkii ?)
+% \newconditional\c_strc_rendering_continuous % not used (mkii ?)
 
 \def\setstructurelevel         #1#2{\clf_setstructurelevel         {#1}{#2}}         % name, level|parent
 \def\getstructurelevel           #1{\clf_getstructurelevel         {#1}}             % name
@@ -897,7 +897,7 @@
      \fi\fi
    \fi
    \flushingcolumnfloatstrue
-   \setfalse\c_strc_sectioniong_ignore_page
+   \setfalse\c_strc_sectioning_ignore_page
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
    \dostarttagged\t!sectioncontent\empty
    \ifconditional\headisdisplay
@@ -992,14 +992,14 @@
      \doifelselayouttextline\v!footer{\normalexpanded{\setuplayouttext[\v!footer][\c!state=\p_footer]}}\donothing
    \fi}
 
-\newcount      \c_strc_sectioniong_preceding_level    \c_strc_sectioniong_preceding_level\plusone
+\newcount      \c_strc_sectioning_preceding_level     \c_strc_sectioning_preceding_level\plusone
 \newconditional\c_strc_sectioning_auto_break          \settrue\c_strc_sectioning_auto_break
-\newconditional\c_strc_sectioniong_ignore_page
-\newsignal     \s_strc_sectioniong_continuous_signal
+\newconditional\c_strc_sectioning_ignore_page
+\newsignal     \s_strc_sectioning_continuous_signal
 
 \unexpanded\def\strc_sectioning_inject_continuous_signal
   {\ifhmode
-     \hskip\s_strc_sectioniong_continuous_signal\relax
+     \hskip\s_strc_sectioning_continuous_signal\relax
    \fi}
 
 % \let\dotagsectionlevel\relax
@@ -1042,63 +1042,84 @@
   {\ifhmode
      \scratchcounter\lastpenalty
      \unpenalty % no beauty in this
-     \ifdim\lastskip=\s_strc_sectioniong_continuous_signal
+     \ifdim\lastskip=\s_strc_sectioning_continuous_signal
        % no page break
-       \ifconditional\c_strc_sectioniong_ignore_page
-         \setfalse\c_strc_sectioniong_ignore_page
+       \ifconditional\c_strc_sectioning_ignore_page
+         \setfalse\c_strc_sectioning_ignore_page
        \else
-         \global\c_strc_sectioniong_preceding_level\currentheadlevel
+         \global\c_strc_sectioning_preceding_level\currentheadlevel
          \nobreak
        \fi
-       \global\settrue\c_strc_rendering_continuous
+     % \global\settrue\c_strc_rendering_continuous
      \else
        \penalty\scratchcounter
-       \global\setfalse\c_strc_rendering_continuous
+     % \global\setfalse\c_strc_rendering_continuous
        #1%
      \fi
    \else
-     \global\setfalse\c_strc_rendering_continue
+   % \global\setfalse\c_strc_rendering_continuous
      #1%
    \fi}
 
 \def\currentsectioncountervalue {\clf_depthnumber\numexpr\thenamedheadlevel\currenthead\relax}
 \def\previoussectioncountervalue{\clf_depthnumber\numexpr\thenamedheadlevel\currenthead+\minusone\relax}
 
+% \def\strc_sectioning_handle_page_nop
+%   {\edef\p_continue{\headparameter\c!continue}%
+%    \ifx\p_continue\v!yes
+%      \ifnum\previoussectioncountervalue=\zerocount
+%        \strc_sectioning_check_layout
+%      \else\ifnum\currentsectioncountervalue>\zerocount
+%        \strc_sectioning_check_layout
+%      \fi\fi
+%    \else
+%      \strc_sectioning_check_layout
+%    \fi}
+
+\def\currentsectioncountervalue {\clf_depthnumber\numexpr\thenamedheadlevel\currenthead\relax}
+%def\previoussectioncountervalue{\clf_depthnumber\numexpr\thenamedheadlevel\currenthead+\minusone\relax}
+\def\previoussectioncountervalue{\clf_depthnumber\numexpr\thenamedheadlevel\previoushead\relax}
+
+\let\previoushead\empty
+
 \def\strc_sectioning_handle_page_nop
   {\edef\p_continue{\headparameter\c!continue}%
    \ifx\p_continue\v!yes
-     \ifnum\previoussectioncountervalue=\zerocount
-       \strc_sectioning_check_layout
+     \ifx\currenthead\previoushead % not really needed
+        \strc_sectioning_check_layout
+     \else\ifnum\previoussectioncountervalue=\zerocount
+        \strc_sectioning_check_layout
      \else\ifnum\currentsectioncountervalue>\zerocount
-       \strc_sectioning_check_layout
-     \fi\fi
+        \strc_sectioning_check_layout
+     \fi\fi\fi
    \else
      \strc_sectioning_check_layout
-   \fi}
+   \fi
+   \globallet\previoushead\currenthead}
 
 \def\strc_sectioning_handle_page_yes
-  {%[[\currenthead @\thenamedheadlevel\currenthead/prev:\previoussectioncountervalue/curr:\currentsectioncountervalue]]
-   \ifconditional\c_strc_sectioniong_ignore_page
-     \setfalse\c_strc_sectioniong_ignore_page
+  {\ifconditional\c_strc_sectioning_ignore_page
+     \setfalse\c_strc_sectioning_ignore_page
    \else
      % beware, these numbers are not yet know here
      \strc_sectioning_handle_page_nop
      \edef\p_aligntitle{\headparameter\c!aligntitle}%
      \ifx\p_aligntitle\v!float
-\ifconditional\c_strc_sectioning_auto_break
-  \vspacing[\v!samepage-\currentheadlevel]%
-\fi
+         \ifconditional\c_strc_sectioning_auto_break
+           \vspacing[\v!samepage-\currentheadlevel]%
+         \fi
          \headparameter\c!before\relax
          \indent
      \else
          \page_otr_command_flush_side_floats
-\ifconditional\c_strc_sectioning_auto_break
-  \vspacing[\v!samepage-\currentheadlevel]%
-\fi
+         \ifconditional\c_strc_sectioning_auto_break
+           \vspacing[\v!samepage-\currentheadlevel]%
+         \fi
          \headparameter\c!before\relax
      \fi
-     \global\c_strc_sectioniong_preceding_level\currentheadlevel
-   \fi}
+     \global\c_strc_sectioning_preceding_level\currentheadlevel
+   \fi
+   \globallet\previoushead\currenthead}
 
 \unexpanded\def\strc_sectioning_prevent_page_break#1% see strc-con
   {\ifconditional\c_strc_sectioning_auto_break

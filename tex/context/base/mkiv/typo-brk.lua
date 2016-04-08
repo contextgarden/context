@@ -40,6 +40,9 @@ local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setchar            = nuts.setchar
 local setdisc            = nuts.setdisc
+local setnext            = nuts.setnext
+local setprev            = nuts.setprev
+local setboth            = nuts.setboth
 local setsubtype         = nuts.setsubtype
 
 local copy_node          = nuts.copy
@@ -59,12 +62,14 @@ local nodepool           = nuts.pool
 local tasks              = nodes.tasks
 
 local v_reset            = interfaces.variables.reset
+local v_yes              = interfaces.variables.yes
 
 local implement          = interfaces.implement
 
 local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 local new_disc           = nodepool.disc
+local new_wordboundary   = nodepool.wordboundary
 
 local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
@@ -100,21 +105,60 @@ for i=1,#mapping do
     numbers[m.name] = m
 end
 
-local function insert_break(head,start,before,after,kern)
-    if not kern then
-        insert_node_before(head,start,new_penalty(before))
-        insert_node_before(head,start,new_glue(0))
-    end
-    insert_node_after(head,start,new_glue(0))
-    insert_node_after(head,start,new_penalty(after))
+-- this needs a cleanup ... maybe make all of them disc nodes
+
+-- todo: use boundaries
+
+local function withattribute(n,a)
+    setfield(n,"attr",a)
+    return n
 end
 
-methods[1] = function(head,start,_,kern)
-    local p, n = getboth(start)
-    if p and n then
-        insert_break(head,start,10000,0,kern)
+local function insert_break(head,start,stop,before,after,kern)
+    local a = getfield(start,"attr")
+    if not kern then
+        insert_node_before(head,start,withattribute(new_penalty(before),a))
+        insert_node_before(head,start,withattribute(new_glue(0),a))
     end
-    return head, start
+    insert_node_after(head,stop,withattribute(new_glue(0),a))
+    insert_node_after(head,stop,withattribute(new_penalty(after),a))
+end
+
+methods[1] = function(head,start,stop,settings,kern)
+    local p, n = getboth(stop)
+    if p and n then
+        insert_break(head,start,stop,10000,0,kern)
+    end
+    return head, stop
+end
+
+methods[6] = function(head,start,stop,settings,kern)
+    local p = getprev(start)
+    local n = getnext(stop)
+    if p and n then
+        if kern then
+            insert_break(head,start,stop,10000,0,kern)
+        else
+            local l = new_wordboundary()
+            local d = new_disc()
+            local r = new_wordboundary()
+            setfield(d,"attr",getfield(start,"attr")) -- otherwise basemode is forces and we crash
+            setlink(p,l)
+            setlink(l,d)
+            setlink(d,r)
+            setlink(r,n)
+            if start == stop then
+                setboth(start)
+                setdisc(d,start,nil,copy_node(start))
+            else
+                setprev(start)
+                setnext(stop)
+                setdisc(d,start,nil,copy_nodelist(start))
+            end
+            stop = r
+        end
+    end
+    return head, stop
 end
 
 methods[2] = function(head,start) -- ( => (-
@@ -131,7 +175,7 @@ methods[2] = function(head,start) -- ( => (-
         setchar(hyphen,languages.prehyphenchar(getfield(tmp,"lang")))
         setlink(tmp,hyphen)
         setfield(start,"post",tmp)
-        insert_break(head,start,10000,10000)
+        insert_break(head,start,start,10000,10000)
     end
     return head, start
 end
@@ -150,7 +194,7 @@ methods[3] = function(head,start) -- ) => -)
         setchar(hyphen,languages.prehyphenchar(getfield(tmp,"lang")))
         setlink(hyphen,tmp)
         setfield(start,"pre",hyphen)
-        insert_break(head,start,10000,10000)
+        insert_break(head,start,start,10000,10000)
     end
     return head, start
 end
@@ -164,12 +208,12 @@ methods[4] = function(head,start) -- - => - - -
      -- setfield(start,"attr",copy_nodelist(getfield(tmp,"attr"))) -- just a copy will do
         setfield(start,"attr",getfield(tmp,"attr"))
         setdisc(start,copy_node(tmp),copy_node(tmp),tmp)
-        insert_break(head,start,10000,10000)
+        insert_break(head,start,start,10000,10000)
     end
     return head, start
 end
 
-methods[5] = function(head,start,settings) -- x => p q r
+methods[5] = function(head,start,stop,settings) -- x => p q r
     local p, n = getboth(start)
     if p and n then
         local tmp
@@ -193,7 +237,7 @@ methods[5] = function(head,start,settings) -- x => p q r
      -- setfield(start,"attr",copy_nodelist(attr)) -- todo: critical only -- just a copy will do
         setfield(start,"attr",attr) -- todo: critical only -- just a copy will do
         free_node(tmp)
-        insert_break(head,start,10000,10000)
+        insert_break(head,start,start,10000,10000)
     end
     return head, start
 end
@@ -227,17 +271,43 @@ function breakpoints.handler(head)
                     if cmap then
                         -- for now we collect but when found ok we can move the handler here
                         -- although it saves nothing in terms of performance
-                        local d = { current, cmap }
-                        if done then
-                            done[#done+1] = d
+                        local lang = getfield(current,"lang")
+                        local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
+                        if smap then
+                            local skip  = smap.skip
+                            local start = current
+                            local stop  = current
+                            current = getnext(current)
+                            if skip then
+                                while current do
+                                    local c = isglyph(current)
+                                    if c == char then
+                                        stop    = current
+                                        current = getnext(current)
+                                    else
+                                        break
+                                    end
+                                end
+                            end
+                            local d = { start, stop, cmap, smap, char }
+                            if done then
+                                done[#done+1] = d
+                            else
+                                done = { d }
+                            end
                         else
-                            done = { d }
+                            current = getnext(current)
                         end
-                        setattr(current,a_breakpoints,unsetvalue) -- should not be needed
+                        setattr(start,a_breakpoints,unsetvalue) -- should not be needed
+                    else
+                        current = getnext(current)
                     end
+                else
+                    current = getnext(current)
                 end
+            else
+                current = getnext(current)
             end
-            current = getnext(current)
         elseif id == math_code then
             attr    = nil
             current = end_of_math(current)
@@ -254,16 +324,18 @@ function breakpoints.handler(head)
     -- we have hits
     local numbers = languages.numbers
     for i=1,#done do
-        local data    = done[i]
-        local current = data[1]
-        local cmap    = data[2]
-        local lang    = getfield(current,"lang")
-        -- we do a sanity check for language
-        local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
-        if smap then
+        local data  = done[i]
+        local start = data[1]
+        local stop  = data[2]
+        local cmap  = data[3]
+        local smap  = data[4]
+--         local lang  = getfield(start,"lang")
+--         -- we do a sanity check for language
+--         local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
+--         if smap then
             local nleft = smap.nleft
             local cleft = 0
-            local prev  = getprev(current)
+            local prev  = getprev(start)
             local kern   = nil
             while prev and nleft ~= cleft do
                 local id = getid(prev)
@@ -289,7 +361,7 @@ function breakpoints.handler(head)
             if nleft == cleft then
                 local nright = smap.nright
                 local cright = 0
-                local next   = getnext(current)
+                local next   = getnext(stop) -- getnext(start)
                 while next and nright ~= cright do
                     local char, id = isglyph(next)
                     if char then
@@ -317,10 +389,10 @@ function breakpoints.handler(head)
                 if nright == cright then
                     local method = methods[smap.type]
                     if method then
-                        nead, start = method(nead,current,smap,kern)
+                        nead, start = method(nead,start,stop,smap,kern)
                     end
                 end
-            end
+--             end
         end
     end
     return tonode(nead), true
@@ -362,6 +434,7 @@ function breakpoints.setreplacement(name,char,language,settings)
             left   = left   ~= "" and left     or nil,
             right  = right  ~= "" and right    or nil,
             middle = middle ~= "" and middle   or nil,
+            skip   = settings.range == v_yes,
         } -- was { type or 1, before or 1, after or 1 }
     end
 end
@@ -412,6 +485,7 @@ implement {
             { "right" },
             { "left" },
             { "middle" },
+            { "range" },
         }
     }
 }
