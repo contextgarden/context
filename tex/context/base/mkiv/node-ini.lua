@@ -162,14 +162,16 @@ local leadercodes = mark(getsubtypes("leader"))
 
 local fillcodes = mark(getsubtypes("fill"))
 
--- local boundarycodes = allocate {
---     [0] = "cancel",
---     [1] = "user",
---     [2] = "protrusion",
---     [3] = "word",
--- }
+-- for now:
 
-local boundarycodes = mark(getsubtypes("boundary"))
+local boundarycodes = allocate {
+    [0] = "cancel",
+    [1] = "user",
+    [2] = "protrusion",
+    [3] = "word",
+}
+
+-- local boundarycodes = mark(getsubtypes("boundary"))
 
 -- local penaltycodes = allocate { -- unfortunately not used (yet)
 --     [ 0] = "userpenalty",

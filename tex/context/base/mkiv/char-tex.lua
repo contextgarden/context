@@ -280,7 +280,7 @@ local commandmapping = allocate {
     ["l"]  = "ł", ["L"]  = "Ł",
     ["o"]  = "ø", ["O"]  = "Ø",
     ["oe"] = "œ", ["OE"] = "Œ",
-    ["sz"] = "ß", ["SZ"] = "SZ", ["ss"] = "ß", ["SS"] = "ß",
+    ["sz"] = "ß", ["SZ"] = "SZ", ["ss"] = "ß", ["SS"] = "ß", -- uppercase: ẞ
 }
 
 texcharacters.commandmapping = commandmapping
@@ -777,3 +777,46 @@ end
 implement { name = "setlettercatcodes", scope = "private", actions = characters.setlettercatcodes, arguments = "integer" }
 implement { name = "setactivecatcodes", scope = "private", actions = characters.setactivecatcodes, arguments = "integer" }
 --------- { name = "setcharactercodes", scope = "private", actions = characters.setcodes }
+
+-- experiment (some can move to char-ini.lua)
+
+local function overload(c,u,code,codes)
+    local c = tonumber(c)
+    if not c then
+        return
+    end
+    local u = utilities.parsers.settings_to_array(u)
+    local n = #u
+    if n == 0 then
+        return
+    end
+    local t = nil
+    if n == 1 then
+        t = u[1]
+    else
+        t = { }
+        for i=1,n do
+            t[#t+1] = tonumber(u[i])
+        end
+    end
+    if t then
+        data[c][code] = t
+        characters[codes][c] = nil
+    end
+end
+
+interfaces.implement {
+    name      = "overloaduppercase",
+    arguments = { "string", "string" },
+    actions   = function(c,u)
+        overload(c,u,"uccode","uccodes")
+    end
+}
+
+interfaces.implement {
+    name      = "overloadlowercase",
+    arguments = { "string", "string" },
+    actions   = function(c,u)
+        overload(c,u,"lccode","lccodes")
+    end
+}

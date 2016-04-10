@@ -1712,15 +1712,15 @@ end
 
 function lxml.context(id,pattern) -- the content, untouched by commands
     if pattern then
-        local collected = xmlapplylpath(getid(id),pattern) or getid(id)
+        local collected = xmlapplylpath(getid(id),pattern)
         if collected and #collected > 0 then
-            contextsprint(ctxcatcodes,collected[1].dt)
+            ctx_text(collected[1].dt[1])
         end
     else
         local collected = getid(id)
         if collected then
             local dt = collected.dt
-            if #dt > 0 then
+            if dt and #dt > 0 then
                 ctx_text(dt[1])
             end
         end

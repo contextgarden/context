@@ -95,4 +95,13 @@
 
 \def\chardescription#1{\clf_chardescription#1\relax}
 
+% experiment (watch out: this is global and very font dependent when used with
+% casing mechanisms)
+%
+% \overloaduppercase{0xDF}{0x1E9E}}
+% \overloaduppercase{0xDF}{0x53,0x53}
+
+\unexpanded\def\overloaduppercase{\clf_overloaduppercase}
+\unexpanded\def\overloadlowercase{\clf_overloadlowercase}
+
 \protect \endinput

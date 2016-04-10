@@ -177,21 +177,22 @@ local function get_full_info(name)
         local weight  = names.weight or ff.weight
         local width   = names.width -- no: ff.width
         local d   = {
-            familyname  = names.preffamilyname or names.family or ff.familyname,
-            fullname    = names.fullname or ff.fullname,
-            fontname    = ff.fontname,
-            subfamily   = names.subfamily,
-            modifiers   = names.prefmodifiers,
-            weight      = weight and lower(weight),
-            width       = width and lower(width),
-            italicangle = round(1000*(tonumber(ff.italicangle) or 0))/1000 or 0,
-            units       = ff.units_per_em,
-            designsize  = ff.design_size,
-            minsize     = ff.design_range_bottom,
-            maxsize     = ff.design_range_top,
-            pfmweight   = pfminfo.weight or 400,
-            pfmwidth    = pfminfo.width  or 5,
-            monospaced  = pfminfo.panose and pfminfo.panose.proportion == "Monospaced",
+            fontname      = ff.fontname,
+            fullname      = names.fullname or ff.fullname,
+            family        = names.family,
+            subfamily     = names.subfamily,
+            familyname    = names.preffamilyname or names.family or ff.familyname,
+            subfamilyname = names.prefmodifiers or names.subfamily,
+            weight        = weight and lower(weight),
+            width         = width and lower(width),
+            italicangle   = round(1000*(tonumber(ff.italicangle) or 0))/1000 or 0,
+            units         = ff.units_per_em,
+            designsize    = ff.design_size,
+            minsize       = ff.design_range_bottom,
+            maxsize       = ff.design_range_top,
+            pfmweight     = pfminfo.weight or 400,
+            pfmwidth      = pfminfo.width  or 5,
+            monospaced    = pfminfo.panose and pfminfo.panose.proportion == "Monospaced",
         }
         close_font(ff)
         return d

@@ -457,11 +457,12 @@ contextlexer._rules = {
     { "constant",    constant    },
  -- { "subsystem",   subsystem   },
     { "callers",     callers     },
+    { "subsystem",   subsystem   },
     { "helper",      helper      },
     { "command",     command     },
     { "primitive",   primitive   },
     { "ifprimitive", ifprimitive },
-    { "subsystem",   subsystem   },
+ -- { "subsystem",   subsystem   },
     { "reserved",    reserved    },
     { "csname",      csname      },
  -- { "whatever",    specialword }, -- not yet, crashes

@@ -325,20 +325,21 @@ local function normalize(t)
         boundingbox = { 0, 0, 0, 0 }
     end
     return {
-        copyright   = t.copyright,
-        fontname    = t.fontname,
-        fullname    = t.fullname,
-        familyname  = t.familyname,
-        weight      = t.weight,
-        widtht      = t.width,
-        italicangle = tonumber(t.italicangle) or 0,
-        monospaced  = toboolean(t.isfixedpitch) or false,
-        boundingbox = boundingbox,
-        version     = t.version,
-        capheight   = tonumber(t.capheight),
-        xheight     = tonumber(t.xheight),
-        ascender    = tonumber(t.ascender),
-        descender   = tonumber(t.descender),
+        copyright     = t.copyright,
+        fontname      = t.fontname,
+        fullname      = t.fullname,
+        familyname    = t.familyname,
+     -- subfamilyname = t.subfamilyname, -- nor used / needed
+        weight        = t.weight,
+        widtht        = t.width,
+        italicangle   = tonumber(t.italicangle) or 0,
+        monospaced    = toboolean(t.isfixedpitch) or false,
+        boundingbox   = boundingbox,
+        version       = t.version, -- not used
+        capheight     = tonumber(t.capheight),
+        xheight       = tonumber(t.xheight),
+        ascender      = tonumber(t.ascender),
+        descender     = tonumber(t.descender),
     }
 end
 
@@ -554,38 +555,39 @@ local function walk_tree(pathlist,suffix,identify)
     end
 end
 
--- "typographicfamily",    -- preffamilyname
--- "typographicsubfamily", -- prefmodifiers
-
 local function check_name(data,result,filename,modification,suffix,subfont)
     -- shortcuts
     local specifications = data.specifications
     -- fetch
-    local familyname    = result.familyname
-    local fullname      = result.fullname
-    local fontname      = result.fontname
-    local subfamily     = result.subfamily
-    local modifiers     = result.modifiers
-    local weight        = result.weight
-    local italicangle   = tonumber(result.italicangle)
-    local subfont       = subfont
-    local rawname       = fullname or fontname or familyname
-    local filebase      = removesuffix(basename(filename))
-    local cleanfilename = cleanname(filebase) -- for WS
+    local fullname       = result.fullname
+    local fontname       = result.fontname
+    local family         = result.family
+    local subfamily      = result.subfamily
+    local familyname     = result.familyname
+    local subfamilyname  = result.subfamilyname or result.modifiers
+ -- local compatiblename = result.compatiblename
+    local weight         = result.weight
+    local italicangle    = tonumber(result.italicangle)
+    local subfont        = subfont
+    local rawname        = fullname or fontname or familyname
+    local filebase       = removesuffix(basename(filename))
+    local cleanfilename  = cleanname(filebase) -- for WS
     -- normalize
-    familyname  = familyname and cleanname(familyname)
-    fullname    = fullname   and cleanname(fullname)
-    fontname    = fontname   and cleanname(fontname)
-    subfamily   = subfamily  and cleanname(subfamily)
-    modifiers   = modifiers  and cleanname(modifiers)
-    weight      = weight     and cleanname(weight)
-    italicangle = italicangle == 0 and nil
+    fullname       = fullname       and cleanname(fullname)
+    fontname       = fontname       and cleanname(fontname)
+    family         = family         and cleanname(family)
+    subfamily      = subfamily      and cleanname(subfamily)
+    familyname     = familyname     and cleanname(familyname)
+    subfamilyname  = subfamilyname  and cleanname(subfamilyname)
+ -- compatiblename = compatiblename and cleanname(compatiblename)
+    weight         = weight         and cleanname(weight)
+    italicangle    = italicangle == 0 and nil
     -- analyze
     local a_name, a_weight, a_style, a_width, a_variant = analyzespec(fullname or fontname or familyname)
     -- check
     local width = a_width
     local variant = a_variant
-    local style = modifiers and gsub(modifiers,"[^%a]","")
+    local style = subfamilyname and gsub(subfamilyname,"[^%a]","")
     if not style and italicangle then
         style = "italic"
     end
@@ -614,29 +616,31 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     local pfmweight  = result.pfmweight   or 0
     --
     specifications[#specifications + 1] = {
-        filename      = filename, -- unresolved
-        cleanfilename = cleanfilename,
-     -- subfontindex  = subfont,
-        format        = lower(suffix),
-        subfont       = subfont,
-        rawname       = rawname,
-        familyname    = familyname,
-        fullname      = fullname,
-        fontname      = fontname,
-        subfamily     = subfamily,
-        modifiers     = modifiers,
-        weight        = weight,
-        style         = style,
-        width         = width,
-        variant       = variant,
-        units         = units        ~= 1000 and units        or nil,
-        pfmwidth      = pfmwidth     ~=    0 and pfmwidth     or nil,
-        pfmweight     = pfmweight    ~=    0 and pfmweight    or nil,
-        angle         = angle        ~=    0 and angle        or nil,
-        minsize       = minsize      ~=    0 and minsize      or nil,
-        maxsize       = maxsize      ~=    0 and maxsize      or nil,
-        designsize    = designsize   ~=    0 and designsize   or nil,
-        modification  = modification ~=    0 and modification or nil,
+        filename       = filename, -- unresolved
+        cleanfilename  = cleanfilename,
+     -- subfontindex   = subfont,
+        format         = lower(suffix),
+        subfont        = subfont,
+        rawname        = rawname,
+        fullname       = fullname,
+        fontname       = fontname,
+        family         = family,          -- kind of redundant, could be nil if familyname
+        subfamily      = subfamily,       -- kind of redundant, could be nil if familyname
+        familyname     = familyname,
+        subfamilyname  = subfamilyname,
+     -- compatiblename = compatiblename,  -- nor used / needed
+        weight         = weight,
+        style          = style,
+        width          = width,
+        variant        = variant,
+        units          = units        ~= 1000 and units        or nil,
+        pfmwidth       = pfmwidth     ~=    0 and pfmwidth     or nil,
+        pfmweight      = pfmweight    ~=    0 and pfmweight    or nil,
+        angle          = angle        ~=    0 and angle        or nil,
+        minsize        = minsize      ~=    0 and minsize      or nil,
+        maxsize        = maxsize      ~=    0 and maxsize      or nil,
+        designsize     = designsize   ~=    0 and designsize   or nil,
+        modification   = modification ~=    0 and modification or nil,
     }
 end
 
@@ -673,14 +677,18 @@ local function cleanupkeywords()
             end
             s.weight, s.style, s.width, s.variant = weight, style, width, variant
         end
-        local stats = data.statistics
-        stats.used_weights, stats.used_styles, stats.used_widths, stats.used_variants = weights, styles, widths, variants
+        local statistics = data.statistics
+        statistics.used_weights  = weights
+        statistics.used_styles   = styles
+        statistics.used_widths   = widths
+        statistics.used_variants = variants
     end
 end
 
-local function collectstatistics()
+local function collectstatistics(runtime)
     local data           = names.data
     local specifications = data.specifications
+    local statistics     = data.statistics
     if specifications then
         local f_w = formatters["%i"]
         local f_a = formatters["%0.2f"]
@@ -718,19 +726,20 @@ local function collectstatistics()
             twidths[pfmwidth]   = (twidths [pfmwidth]  or 0) + 1
         end
         --
-        local stats      = data.statistics
-        stats.weights    = weights
-        stats.styles     = styles
-        stats.widths     = widths
-        stats.variants   = variants
-        stats.angles     = angles
-        stats.pfmweights = pfmweights
-        stats.pfmwidths  = pfmwidths
-        stats.fonts      = #specifications
+        statistics.weights    = weights
+        statistics.styles     = styles
+        statistics.widths     = widths
+        statistics.variants   = variants
+        statistics.angles     = angles
+        statistics.pfmweights = pfmweights
+        statistics.pfmwidths  = pfmwidths
+        statistics.fonts      = #specifications
         --
         setmetatableindex(pfmweights,nil)
         setmetatableindex(pfmwidths, nil)
         --
+        report_names("")
+        report_names("statistics: ")
         report_names("")
         report_names("weights")
         report_names("")
@@ -764,6 +773,13 @@ local function collectstatistics()
             report_names(formatters["  %-10s: %T"](k,v))
         end
         report_names("")
+        report_names("registered fonts : %i", statistics.fonts)
+        report_names("read files       : %i", statistics.readfiles)
+        report_names("skipped files    : %i", statistics.skippedfiles)
+        report_names("duplicate files  : %i", statistics.duplicatefiles)
+            if runtime then
+        report_names("total scan time  : %0.3f seconds",runtime)
+            end
     end
 end
 
@@ -1186,14 +1202,12 @@ function names.identify(force)
     analyzefiles(not force and names.readdata(names.basename))
     rejectclashes()
     collectfamilies()
- -- collectstatistics()
     cleanupkeywords()
     collecthashes()
     checkduplicates()
     addfilenames()
  -- sorthashes() -- will be resorted when saved
-    collectstatistics()
-    report_names("total scan time %0.3f seconds",os.gettimeofday()-starttime)
+    collectstatistics(os.gettimeofday()-starttime)
 end
 
 function names.is_permitted(name)
@@ -2044,52 +2058,6 @@ end
 function fonts.names.ignoredfile(filename) -- only supported in mkiv
     return false -- will be overloaded
 end
-
--- We could generate typescripts with designsize info from the name database but
--- it's not worth the trouble as font names remain a mess: for instance how do we
--- idenfity a font? Names, families, subfamilies or whatever snippet can contain
--- a number related to the design size and so we end up with fuzzy logic again. So,
--- instead it's easier to make a few goody files.
---
--- local hash = { }
---
--- for i=1,#specifications do
---     local s = specifications[i]
---     local min = s.minsize or 0
---     local max = s.maxsize or 0
---     if min ~= 0 or max ~= 0 then
---         -- the usual name mess:
---         --   antykwa has modifiers so we need to take these into account, otherwise we get weird combinations
---         --   ebgaramond has modifiers with the size encoded, so we need to strip this in order to recognized similar styles
---         --   lm has 'slanted appended in some names so how to choose that one
---         --
---         local modifier = string.gsub(s.modifiers or "normal","%d","")
---         -- print funny modifier
---         local instance = string.formatters["%s-%s-%s-%s-%s-%s"](s.familyname,s.width,s.style,s.weight,s.variant,modifier)
---         local h = hash[instance]
---         if not h then
---             h = { }
---             hash[instance] = h
---         end
---         size = string.formatters["%0.1fpt"]((min)/10)
---         h[size] = s.filename
---     end
--- end
---
--- local newhash = { }
---
--- for k, v in next, hash do
---     if next(v,next(v)) then
---      -- local instance = string.match(k,"(.+)%-.+%-.+%-.+$")
---         local instance = string.match(k,"(.+)%-.+%-.+$")
---         local instance = string.gsub(instance,"%-normal$","")
---         if not newhash[instance] then
---             newhash[instance] = v
---         end
---     end
--- end
---
--- inspect(newhash)
 
 -- example made for luatex list (unlikely to be used):
 --

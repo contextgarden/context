@@ -646,16 +646,15 @@
             replace('cd:variable',  'type',    variables)
             replace('cd:inherit',   'name',    commands, elements)
 
-            if tex.modes["setups:save"] and environment.currentrun == 1 then
-                local s = tostring(x)
-                s = string.gsub(s,"\n*%s*(</cd:interface>)%s+(<cd:interface)",  "\n\n    %1\n\n    %2")
-                s = string.gsub(s,"\n*%s*(</cd:interface>)%s+(</cd:interface>)","\n\n    %1\n\n    %2")
-                io.savedata("context-"..interface..".xml",s)
-            end
 
         end
 
-     -- print(tostring(x))
+        if tex.modes["setups:save"] and environment.currentrun == 1 then
+            local s = tostring(x)
+            s = string.gsub(s,"\n*%s*(</cd:interface>)%s+(<cd:interface)",  "\n\n    %1\n\n    %2")
+            s = string.gsub(s,"\n*%s*(</cd:interface>)%s+(</cd:interface>)","\n\n    %1\n\n    %2")
+            io.savedata("context-"..interface..".xml",s)
+        end
 
     end
 

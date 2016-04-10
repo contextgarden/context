@@ -731,6 +731,7 @@ function scripts.context.run(ctxdata,filename)
                     end
                 end
                 --
+                -- todo: --output-file=... in luatex
                 --
                 local l_flags = {
                     ["interaction"]           = a_batchmode,

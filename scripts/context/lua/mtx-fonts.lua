@@ -242,17 +242,18 @@ end
 
 local function showfeatures(tag,specification)
     report()
-    report("mapping : %s",tag)
-    report("fontname: %s",specification.fontname)
-    report("fullname: %s",specification.fullname)
-    report("filename: %s",specification.filename)
-    report("family  : %s",specification.familyname or "<nofamily>")
-    report("weight  : %s",specification.weight or "<noweight>")
-    report("style   : %s",specification.style or "<nostyle>")
-    report("width   : %s",specification.width or "<nowidth>")
-    report("variant : %s",specification.variant or "<novariant>")
-    report("subfont : %s",subfont(specification.subfont))
-    report("fweight : %s",fontweight(specification.fontweight))
+    report("mapping   : %s",tag)
+    report("fontname  : %s",specification.fontname)
+    report("fullname  : %s",specification.fullname)
+    report("filename  : %s",specification.filename)
+    report("family    : %s",specification.familyname or "<nofamily>")
+ -- report("subfamily : %s",specification.subfamilyname or "<nosubfamily>")
+    report("weight    : %s",specification.weight or "<noweight>")
+    report("style     : %s",specification.style or "<nostyle>")
+    report("width     : %s",specification.width or "<nowidth>")
+    report("variant   : %s",specification.variant or "<novariant>")
+    report("subfont   : %s",subfont(specification.subfont))
+    report("fweight   : %s",fontweight(specification.fontweight))
     -- maybe more
     local features = fonts.helpers.getfeatures(specification.filename,specification.format)
     if features then
@@ -306,11 +307,12 @@ local function list_specifications(t,info)
                 local v = s[k]
                 local entry = t[v]
                 s[k] = {
-                    entry.familyname  or "<nofamily>",
-                    entry.weight      or "<noweight>",
-                    entry.style       or "<nostyle>",
-                    entry.width       or "<nowidth>",
-                    entry.variant     or "<novariant>",
+                    entry.familyname    or "<nofamily>",
+                 -- entry.subfamilyname or "<nosubfamily>",
+                    entry.weight        or "<noweight>",
+                    entry.style         or "<nostyle>",
+                    entry.width         or "<nowidth>",
+                    entry.variant       or "<novariant>",
                     entry.fontname,
                     entry.filename,
                     subfont(entry.subfont),
