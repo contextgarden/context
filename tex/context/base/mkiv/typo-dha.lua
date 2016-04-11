@@ -75,7 +75,6 @@ local nodepool           = nuts.pool
 local nodecodes          = nodes.nodecodes
 local mathcodes          = nodes.mathcodes
 
-local glyph_code         = nodecodes.glyph
 local math_code          = nodecodes.math
 local penalty_code       = nodecodes.penalty
 local kern_code          = nodecodes.kern
@@ -125,7 +124,7 @@ end
 local function nextisright(current)
     current = getnext(current)
     local character, id = isglyph(current)
-    if id == glyph_code then
+    if character then
         local direction = chardirections[character]
         return direction == "r" or direction == "al" or direction == "an"
     end
@@ -134,7 +133,7 @@ end
 local function previsright(current)
     current = getprev(current)
     local character, id = isglyph(current)
-    if id == glyph_code then
+    if character then
         local direction = chardirections[character]
         return direction == "r" or direction == "al" or direction == "an"
     end

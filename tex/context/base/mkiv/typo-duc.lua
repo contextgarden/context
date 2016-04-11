@@ -1,70 +1,59 @@
-if not modules then modules = { } end modules ['typo-dua'] = {
+if not modules then modules = { } end modules ['typo-duc'] = {
     version   = 1.001,
     comment   = "companion to typo-dir.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
-    copyright = "PRAGMA ADE / ConTeXt Development Team / See below",
-    license   = "see context related readme files / whatever applies",
-    comment   = "Unicode bidi (sort of) variant a",
-    derived   = "derived from t-bidi by Khaled Hosny who derived from minibidi.c by Arabeyes",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+    comment   = "Unicode bidi (sort of) variant b",
 }
 
--- Comment by Khaled Hosny:
+-- This is a follow up on typo-uba which itself is a follow up on t-bidi by Khaled Hosny which
+-- in turn is based on minibidi.c from Arabeyes. This is a further optimizations, as well as
+-- an update on some recent unicode bidi developments. There is (and will) also be more control
+-- added. As a consequence this module is somewhat slower than its precursor which itself is
+-- slower than the one-pass bidi handler. This is also a playground and I might add some plugin
+-- support. However, in the meantime performance got a bit better and this third variant is again
+-- some 10% faster than the two variant.
+
+-- todo (cf html):
 --
--- This code started as a line for line translation of Arabeyes' minibidi.c from C to Lua,
--- excluding parts that of no use to us like shaping. The C code is Copyright (c) 2004
--- Ahmad Khalifa, and is distributed under the MIT Licence. The full license text can be
--- found at: http://svn.arabeyes.org/viewvc/projects/adawat/minibidi/LICENCE.
---
--- Comment by Hans Hagen:
---
--- The initial conversion to Lua has been done by Khaled Hosny. As a first step I optimized the
--- code (to suit todays context mkiv). Next I fixed the foreign object handling, for instance,
--- we can skip over math but we need to inject before the open math node and after the close node,
--- so we need to keep track of the endpoint. After I fixed that bit I realized that it was possible
--- to generalize the object skipper if only because it saves memory (and processing time). The
--- current implementation is about three times as fast (roughly measured) and I can probably squeeze
--- out some more, only to sacrifice soem when I start adding features. A next stage will be to have
--- more granularity in foreign objects. Of course all errors are mine. I'll also added the usual bit
--- of context tracing and reshuffled some code. A memory optimization is on the agenda (already sort
--- of prepared). It is no longer line by line.
---
--- The first implementation of bidi in context started out from examples of mixed usage (including
--- more than text) with an at that point bugged r2l support. It has  some alternatives for letting
--- the tex markup having a bit higher priority. I will  probably add some local (style driven)
--- overrides to the following code as well. It also means that we can selectively enable and disable
--- the parser (because a document wide appliance migh tnot be what we want). This will bring a
--- slow down but not that much. (I need to check with Idris why we have things like isol there.)
---
--- We'll probably keep multiple methods around (this is just a side track of improving the already
--- available scanner). I need to look into the changed unicode recomendations anyway as a first
--- impression is that some fuzzyness has been removed. I finally need to spend time on those specs. So,
--- there will be a third variant (written from scratch) so some point. The fun about TeX is that we
--- can provide alternative solutions (given that it doesn't bloat the engine!)
---
--- A test with some hebrew, mixed with hboxes with latin/hebrew and simple math. In fact this triggered
--- playing with bidi again:
---
--- 0.11 :      nothing
--- 0.14 : 0.03 node list only, one pass
--- 0.23 : 0.12 close to unicode bidi, multipass
--- 0.44 : 0.33 original previous
+-- normal            The element does not offer a additional level of embedding with respect to the bidirectional algorithm. For inline elements implicit reordering works across element boundaries.
+-- embed             If the element is inline, this value opens an additional level of embedding with respect to the bidirectional algorithm. The direction of this embedding level is given by the direction property.
+-- bidi-override     For inline elements this creates an override. For block container elements this creates an override for inline-level descendants not within another block container element. This means that inside the element, reordering is strictly in sequence according to the direction property; the implicit part of the bidirectional algorithm is ignored.
+-- isolate           This keyword indicates that the element's container directionality should be calculated without considering the content of this element. The element is therefore isolated from its siblings. When applying its bidirectional-resolution algorithm, its container element treats it as one or several U+FFFC Object Replacement Character, i.e. like an image.
+-- isolate-override  This keyword applies the isolation behavior of the isolate keyword to the surrounding content and the override behavior o f the bidi-override keyword to the inner content.
+-- plaintext         This keyword makes the elements directionality calculated without considering its parent bidirectional state or the value of the direction property. The directionality is calculated using the P2 and P3 rules of the Unicode Bidirectional Algorithm.
+--                   This value allows to display data which has already formatted using a tool following the Unicode Bidirectional Algorithm.
 --
 -- todo: check for introduced errors
 -- todo: reuse list, we have size, so we can just change values (and auto allocate when not there)
 -- todo: reuse the stack
 -- todo: no need for a max check
 -- todo: collapse bound similar ranges (not ok yet)
--- tood: combine some sweeps
+-- todo: combine some sweeps
+-- todo: removing is not needed when we inject at the same spot (only chnage the dir property)
+-- todo: isolated runs (isolating runs are similar to bidi=local in the basic analyzer)
+
+-- todo: check unicode addenda (from the draft):
 --
--- This one wil get frozen (or if needed in sync with basic t-bidi) and I will explore more options
--- in typo-dub.lua. There I might also be able to improve performance a bit.
+-- Added support for canonical equivalents in BD16.
+-- Changed logic in N0 to not check forwards for context in the case of enclosed text opposite the embedding direction.
+-- Major extension of the algorithm to allow for the implementation of directional isolates and the introduction of new isolate-related values to the Bidi_Class property.
+-- Adds BD8, BD9, BD10, BD11, BD12, BD13, BD14, BD15, and BD16, Sections 2.4 and 2.5, and Rules X5a, X5b, X5c and X6a.
+-- Extensively revises Section 3.3.2, Explicit Levels and Directions and its existing X rules to formalize the algorithm for matching a PDF with the embedding or override initiator whose scope it terminates.
+-- Moves Rules X9 and X10 into a separate new Section 3.3.3, Preparations for Implicit Processing.
+-- Modifies Rule X10 to make the isolating run sequence the unit to which subsequent rules are applied.
+-- Modifies Rule W1 to change an NSM preceded by an isolate initiator or PDI into ON.
+-- Adds Rule N0 and makes other changes to Section 3.3.5, Resolving Neutral and Isolate Formatting Types to resolve bracket pairs to the same level.
 
 local insert, remove, unpack, concat = table.insert, table.remove, table.unpack, table.concat
 local utfchar = utf.char
+local setmetatable = setmetatable
 local formatters = string.formatters
 
 local directiondata       = characters.directions
 local mirrordata          = characters.mirrors
+local textclassdata       = characters.textclasses
 
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
@@ -75,6 +64,7 @@ local getnext             = nuts.getnext
 local getid               = nuts.getid
 local getsubtype          = nuts.getsubtype
 local getlist             = nuts.getlist
+local getattr             = nuts.getattr
 local getfield            = nuts.getfield
 local getprop             = nuts.getprop
 local isglyph             = nuts.isglyph -- or ischar
@@ -82,6 +72,8 @@ local isglyph             = nuts.isglyph -- or ischar
 local setfield            = nuts.setfield
 local setprop             = nuts.setprop
 local setchar             = nuts.setchar
+
+local properties          = nodes.properties
 
 local remove_node         = nuts.remove
 local insert_node_after   = nuts.insert_after
@@ -102,20 +94,76 @@ local dir_code            = nodecodes.dir
 local localpar_code       = nodecodes.localpar
 local parfillskip_code    = skipcodes.skipcodes
 
------ object_replacement  = 0xFFFC -- object replacement character
-local maximum_stack       = 60     -- probably spec but not needed
+local maximum_stack       = 0xFF -- unicode: 60, will be jumped to 125, we don't care too much
 
 local directions          = typesetters.directions
 local setcolor            = directions.setcolor
+local getfences           = directions.getfences
 
------ a_directions        = attributes.private('directions')
+local a_directions        = attributes.private('directions')
+local a_textbidi          = attributes.private('textbidi')
+----- a_state             = attributes.private('state')
 
-local remove_controls     = true  directives.register("typesetters.directions.one.removecontrols",function(v) remove_controls  = v end)
+----- s_isol              = fonts.analyzers.states.isol
 
-local trace_directions    = false trackers  .register("typesetters.directions.one",               function(v) trace_directions = v end)
-local trace_details       = false trackers  .register("typesetters.directions.one.details",       function(v) trace_details    = v end)
+----- current[a_state] = s_isol -- maybe better have a special bidi attr value -> override (9) -> todo
 
-local report_directions   = logs.reporter("typesetting","directions one")
+local remove_controls     = true  directives.register("typesetters.directions.removecontrols",function(v) remove_controls  = v end)
+----- analyze_fences      = true  directives.register("typesetters.directions.analyzefences", function(v) analyze_fences   = v end)
+
+local trace_directions    = false trackers  .register("typesetters.directions.two",           function(v) trace_directions = v end)
+local trace_details       = false trackers  .register("typesetters.directions.two.details",   function(v) trace_details    = v end)
+local trace_list          = false trackers  .register("typesetters.directions.two.list",      function(v) trace_list       = v end)
+
+local report_directions   = logs.reporter("typesetting","directions two")
+
+-- strong (old):
+--
+-- l   : left to right
+-- r   : right to left
+-- lro : left to right override
+-- rlo : left to left override
+-- lre : left to right embedding
+-- rle : left to left embedding
+-- al  : right to legt arabic (esp punctuation issues)
+
+-- weak:
+--
+-- en  : english number
+-- es  : english number separator
+-- et  : english number terminator
+-- an  : arabic number
+-- cs  : common number separator
+-- nsm : nonspacing mark
+-- bn  : boundary neutral
+
+-- neutral:
+--
+-- b  : paragraph separator
+-- s  : segment separator
+-- ws : whitespace
+-- on : other neutrals
+
+-- interesting: this is indeed better (and more what we expect i.e. we already use this split
+-- in the old original (also these isolates)
+
+-- strong (new):
+--
+-- l   : left to right
+-- r   : right to left
+-- al  : right to left arabic (esp punctuation issues)
+
+-- explicit: (new)
+--
+-- lro : left to right override
+-- rlo : left to left override
+-- lre : left to right embedding
+-- rle : left to left embedding
+-- pdf : pop dir format
+-- lri : left to right isolate
+-- rli : left to left isolate
+-- fsi : first string isolate
+-- pdi : pop directional isolate
 
 local whitespace = {
     lre = true,
@@ -154,7 +202,7 @@ local function show_list(list,size,what)
                 result[i] = formatters["%-3s:%s %s (%i)"](direction,joiner,nodecodes[first],skip or 0)
             end
         elseif character >= 0x202A and character <= 0x202C then
-            result[i] = formatters["%-3s:%s   %U"](direction,joiner,character)
+            result[i] = formatters["%-3s:%s %U"](direction,joiner,character)
         else
             result[i] = formatters["%-3s:%s %c %U"](direction,joiner,character,character)
         end
@@ -197,6 +245,15 @@ end
 -- char is only used for mirror, so in fact we can as well only store it for
 -- glyphs only
 
+-- tracking what direction is used and skipping tests is not faster (extra kind of
+-- compensates gain)
+
+local mt_space  = { __index = { char = 0x0020, direction = "ws",  original = "ws",  level = 0 } }
+local mt_lre    = { __index = { char = 0x202A, direction = "lre", original = "lre", level = 0 } }
+local mt_lre    = { __index = { char = 0x202B, direction = "rle", original = "rle", level = 0 } }
+local mt_pdf    = { __index = { char = 0x202C, direction = "pdf", original = "pdf", level = 0 } }
+local mt_object = { __index = { char = 0xFFFC, direction = "on",  original = "on",  level = 0 } }
+
 local function build_list(head) -- todo: store node pointer ... saves loop
     -- P1
     local current = head
@@ -205,13 +262,15 @@ local function build_list(head) -- todo: store node pointer ... saves loop
     while current do
         size = size + 1
         local chr, id = isglyph(current)
-        if getprop(current,"directions") then
+        local t
+        local p = properties[current]
+        if p and p.directions then
             local skip = 0
             local last = id
             current    = getnext(current)
             while current do
                 local id = getid(current)
-                if getprop(current,"directions") then
+                if p and p.directions then
                     skip    = skip + 1
                     last    = id
                     current = getnext(current)
@@ -220,27 +279,42 @@ local function build_list(head) -- todo: store node pointer ... saves loop
                 end
             end
             if id == last then -- the start id
-                list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id }
+--                 t = { level = 0, skip = skip, id = id }
+                t = { skip = skip, id = id }
             else
-                list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id, last = last }
+                t = { skip = skip, id = id, last = last }
+--                 t = { level = 0, skip = skip, id = id, last = last }
             end
-        elseif chr then
+            setmetatable(t,mt_object)
+        elseif chr or id == glyph_code then
             local dir = directiondata[chr]
-            list[size] = { char = chr, direction = dir, original = dir, level = 0 }
+--             t = { level = 0, char = chr, direction = dir, original = dir, level = 0 }
+            t = { char = chr, direction = dir, original = dir, level = 0 }
             current = getnext(current)
+         -- if not list[dir] then list[dir] = true end -- not faster when we check for usage
         elseif id == glue_code then -- and how about kern
-            list[size] = { char = 0x0020, direction = "ws", original = "ws", level = 0 }
+--             t = { level = 0 }
+            t = { }
+            setmetatable(t,mt_space)
             current = getnext(current)
         elseif id == dir_code then
             local dir = getfield(current,"dir")
             if dir == "+TLT" then
-                list[size] = { char = 0x202A, direction = "lre", original = "lre", level = 0 }
+--                 t = { level = 0 }
+                t = { }
+                setmetatable(t,mt_lre)
             elseif dir == "+TRT" then
-                list[size] = { char = 0x202B, direction = "rle", original = "rle", level = 0 }
+--                 t = { level = 0 }
+                t = { }
+                setmetatable(t,mt_rle)
             elseif dir == "-TLT" or dir == "-TRT" then
-                list[size] = { char = 0x202C, direction = "pdf", original = "pdf", level = 0 }
+--                 t = { level = 0 }
+                t = { }
+                setmetatable(t,mt_pdf)
             else
-                list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, id = id } -- object replacement character
+--                 t = { level = 0, id = id }
+                t = { id = id }
+                setmetatable(t,mt_object)
             end
             current = getnext(current)
         elseif id == math_code then
@@ -252,7 +326,9 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             end
             skip       = skip + 1
             current    = getnext(current)
-            list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id }
+--             t = { level = 0, id = id, skip = skip }
+            t = { id = id, skip = skip }
+            setmetatable(t,mt_object)
         else
             local skip = 0
             local last = id
@@ -267,59 +343,88 @@ local function build_list(head) -- todo: store node pointer ... saves loop
                     break
                 end
             end
-            if id == last then -- the start id
-                list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id }
+            if skip == 0 then
+                t = { id = id }
+            elseif id == last then -- the start id
+--                 t = { level = 0, id = id, skip = skip }
+                t = { id = id, skip = skip }
             else
-                list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id, last = last }
+--                 t = { level = 0, id = id, skip = skip, last = last }
+                t = { id = id, skip = skip, last = last }
             end
+            setmetatable(t,mt_object)
         end
+        list[size] = t
     end
     return list, size
 end
 
+-- new
+
+-- we could support ( ] and [ ) and such ...
+
+-- ש ) ל ( א       0-0
+-- ש ( ל ] א       0-0
+-- ש ( ל ) א       2-4
+-- ש ( ל [ א ) כ ] 2-6
+-- ש ( ל ] א ) כ   2-6
+-- ש ( ל ) א ) כ   2-4
+-- ש ( ל ( א ) כ   4-6
+-- ש ( ל ( א ) כ ) 2-8,4-6
+-- ש ( ל [ א ] כ ) 2-8,4-6
+
+local function resolve_fences(list,size,start,limit)
+    -- N0: funny effects, not always better, so it's an option
+    local stack = { }
+    local top   = 0
+    for i=start,limit do
+        local entry = list[i]
+        if entry.direction == "on" then
+            local char   = entry.char
+            local mirror = mirrordata[char]
+            if mirror then
+                local class = textclassdata[char]
+                entry.mirror = mirror
+                entry.class  = class
+                if class == "open" then
+                    top = top + 1
+                    stack[top] = { mirror, i, false }
+                elseif top == 0 then
+                    -- skip
+                elseif class == "close" then
+                    while top > 0 do
+                        local s = stack[top]
+                        if s[1] == char then
+                            local open  = s[2]
+                            local close = i
+                            list[open ].paired = close
+                            list[close].paired = open
+                            break
+                        else
+                            -- do we mirror or not
+                        end
+                        top = top - 1
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- local function test_fences(str)
+--     local list  = { }
+--     for s in string.gmatch(str,".") do
+--         local b = utf.byte(s)
+--         list[#list+1] = { c = s, char = b, direction = directiondata[b] }
+--     end
+--     resolve_fences(list,#list,1,#size)
+--     inspect(list)
+-- end
+--
+-- test_fences("a(b)c(d)e(f(g)h)i")
+-- test_fences("a(b[c)d]")
+
 -- the action
-
--- local function find_run_limit_et(list,run_start,limit)
---     local run_limit = run_start
---     local i = run_start
---     while i <= limit and list[i].direction == "et" do
---         run_limit = i
---         i = i + 1
---     end
---     return run_limit
--- end
-
-local function find_run_limit_et(list,start,limit) -- returns last match
-    for i=start,limit do
-        if list[i].direction == "et" then
-            start = i
-        else
-            return start
-        end
-    end
-    return start
-end
-
--- local function find_run_limit_b_s_ws_on(list,run_start,limit)
---     local run_limit = run_start
---     local i = run_start
---     while i <= limit and b_s_ws_on[list[i].direction] do
---         run_limit = i
---         i = i + 1
---     end
---     return run_limit
--- end
-
-local function find_run_limit_b_s_ws_on(list,start,limit)
-    for i=start,limit do
-        if b_s_ws_on[list[i].direction] then
-            start = i
-        else
-            return start
-        end
-    end
-    return start
-end
 
 local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for localpar)
     local id = getid(head)
@@ -334,7 +439,7 @@ local function get_baselevel(head,list,size) -- todo: skip if first is object (o
         for i=1,size do
             local entry     = list[i]
             local direction = entry.direction
-            if direction == "r" or direction == "al" then
+            if direction == "r" or direction == "al" then -- and an ?
                 return 1, "TRT", true
             elseif direction == "l" then
                 return 0, "TLT", true
@@ -345,6 +450,7 @@ local function get_baselevel(head,list,size) -- todo: skip if first is object (o
 end
 
 local function resolve_explicit(list,size,baselevel)
+-- if list.rle or list.lre or list.rlo or list.lro then
     -- X1
     local level    = baselevel
     local override = "on"
@@ -426,22 +532,30 @@ local function resolve_explicit(list,size,baselevel)
             end
         end
     end
+-- else
+--     for i=1,size do
+--         list[i].level = baselevel
+--     end
+-- end
     -- X8 (reset states and overrides after paragraph)
 end
 
-local function resolve_weak(list,size,start,limit,sor,eor)
-    -- W1
+local function resolve_weak(list,size,start,limit,orderbefore,orderafter)
+    -- W1: non spacing marks get the direction of the previous character
+-- if list.nsm then
     for i=start,limit do
         local entry = list[i]
         if entry.direction == "nsm" then
             if i == start then
-                entry.direction = sor
+                entry.direction = orderbefore
             else
                 entry.direction = list[i-1].direction
             end
         end
     end
-    -- W2
+-- end
+    -- W2: mess with numbers and arabic
+-- if list.en then
     for i=start,limit do
         local entry = list[i]
         if entry.direction == "en" then
@@ -457,41 +571,83 @@ local function resolve_weak(list,size,start,limit,sor,eor)
             end
         end
     end
+-- end
     -- W3
+-- if list.al then
     for i=start,limit do
         local entry = list[i]
         if entry.direction == "al" then
             entry.direction = "r"
         end
     end
-    -- W4
-    for i=start+1,limit-1 do
-        local entry     = list[i]
-        local direction = entry.direction
-        if direction == "es" then
-            if list[i-1].direction == "en" and list[i+1].direction == "en" then
-                entry.direction = "en"
-            end
-        elseif direction == "cs" then
-            local prevdirection = list[i-1].direction
-            if prevdirection == "en" then
-                if list[i+1].direction == "en" then
+-- end
+    -- W4: make separators number
+-- if list.es or list.cs then
+        -- skip
+    if false then
+        for i=start+1,limit-1 do
+            local entry     = list[i]
+            local direction = entry.direction
+            if direction == "es" then
+                if list[i-1].direction == "en" and list[i+1].direction == "en" then
                     entry.direction = "en"
                 end
-            elseif prevdirection == "an" and list[i+1].direction == "an" then
-                entry.direction = "an"
+            elseif direction == "cs" then
+                local prevdirection = list[i-1].direction
+                if prevdirection == "en" then
+                    if list[i+1].direction == "en" then
+                        entry.direction = "en"
+                    end
+                elseif prevdirection == "an" and list[i+1].direction == "an" then
+                    entry.direction = "an"
+                end
             end
         end
+    else -- only more efficient when we have es/cs
+        local runner = start + 2
+        local before = list[start]
+        local entry  = list[start + 1]
+        local after  = list[runner]
+        while after do
+            local direction = entry.direction
+            if direction == "es" then
+                if before.direction == "en" and after.direction == "en" then
+                    entry.direction = "en"
+                end
+            elseif direction == "cs" then
+                local prevdirection = before.direction
+                if prevdirection == "en" then
+                    if after.direction == "en" then
+                        entry.direction = "en"
+                    end
+                elseif prevdirection == "an" and after.direction == "an" then
+                    entry.direction = "an"
+                end
+            end
+            before  = current
+            current = after
+            after   = list[runner]
+            runner  = runner + 1
+        end
     end
+-- end
     -- W5
+-- if list.et then
     local i = start
     while i <= limit do
         if list[i].direction == "et" then
-            local runstart     = i
-            local runlimit     = find_run_limit_et(list,runstart,limit) -- when moved inline we can probably collapse a lot
+            local runstart = i
+            local runlimit = runstart
+            for i=runstart,limit do
+                if list[i].direction == "et" then
+                    runlimit = i
+                else
+                    break
+                end
+            end
             local rundirection = runstart == start and sor or list[runstart-1].direction
             if rundirection ~= "en" then
-                rundirection = runlimit == limit and eor or list[runlimit+1].direction
+                rundirection = runlimit == limit and orderafter or list[runlimit+1].direction
             end
             if rundirection == "en" then
                 for j=runstart,runlimit do
@@ -502,7 +658,9 @@ local function resolve_weak(list,size,start,limit,sor,eor)
         end
         i = i + 1
     end
+-- end
     -- W6
+-- if list.es or list.cs or list.et then
     for i=start,limit do
         local entry     = list[i]
         local direction = entry.direction
@@ -510,11 +668,12 @@ local function resolve_weak(list,size,start,limit,sor,eor)
             entry.direction = "on"
         end
     end
+-- end
     -- W7
     for i=start,limit do
         local entry = list[i]
         if entry.direction == "en" then
-            local prev_strong = sor
+            local prev_strong = orderbefore
             for j=i-1,start,-1 do
                 local direction = list[j].direction
                 if direction == "l" or direction == "r" then
@@ -529,16 +688,26 @@ local function resolve_weak(list,size,start,limit,sor,eor)
     end
 end
 
-local function resolve_neutral(list,size,start,limit,sor,eor)
+local function resolve_neutral(list,size,start,limit,orderbefore,orderafter)
     -- N1, N2
     for i=start,limit do
         local entry = list[i]
         if b_s_ws_on[entry.direction] then
+            -- this needs checking
             local leading_direction, trailing_direction, resolved_direction
             local runstart = i
-            local runlimit = find_run_limit_b_s_ws_on(list,runstart,limit)
+            local runlimit = runstart
+--             for j=runstart,limit do
+            for j=runstart+1,limit do
+                if b_s_ws_on[list[j].direction] then
+--                     runstart = j
+                    runlimit = j
+                else
+                    break
+                end
+            end
             if runstart == start then
-                leading_direction = sor
+                leading_direction = orderbefore
             else
                 leading_direction = list[runstart-1].direction
                 if leading_direction == "en" or leading_direction == "an" then
@@ -546,7 +715,7 @@ local function resolve_neutral(list,size,start,limit,sor,eor)
                 end
             end
             if runlimit == limit then
-                trailing_direction = eor
+                trailing_direction = orderafter
             else
                 trailing_direction = list[runlimit+1].direction
                 if trailing_direction == "en" or trailing_direction == "an" then
@@ -558,7 +727,7 @@ local function resolve_neutral(list,size,start,limit,sor,eor)
                 resolved_direction = leading_direction
             else
                 -- N2 / does the weird period
-                resolved_direction = entry.level % 2 == 1 and "r" or "l" -- direction_of_level(entry.level)
+                resolved_direction = entry.level % 2 == 1 and "r" or "l"
             end
             for j=runstart,runlimit do
                 list[j].direction = resolved_direction
@@ -569,7 +738,7 @@ local function resolve_neutral(list,size,start,limit,sor,eor)
     end
 end
 
--- local function resolve_implicit(list,size,start,limit,sor,eor)
+-- local function resolve_implicit(list,size,start,limit,orderbefore,orderafter)
 --     -- I1
 --     for i=start,limit do
 --         local entry = list[i]
@@ -596,7 +765,7 @@ end
 --     end
 -- end
 
-local function resolve_implicit(list,size,start,limit,sor,eor)
+local function resolve_implicit(list,size,start,limit,orderbefore,orderafter,baselevel)
     for i=start,limit do
         local entry     = list[i]
         local level     = entry.level
@@ -617,7 +786,7 @@ local function resolve_implicit(list,size,start,limit,sor,eor)
     end
 end
 
-local function resolve_levels(list,size,baselevel)
+local function resolve_levels(list,size,baselevel,analyze_fences)
     -- X10
     local start = 1
     while start < size do
@@ -626,16 +795,20 @@ local function resolve_levels(list,size,baselevel)
         while limit < size and list[limit].level == level do
             limit = limit + 1
         end
-        local prev_level = start == 1    and baselevel or list[start-1].level
-        local next_level = limit == size and baselevel or list[limit+1].level
-        local sor = (level > prev_level and level or prev_level) % 2 == 1 and "r" or "l" -- direction_of_level(max(level,prev_level))
-        local eor = (level > next_level and level or next_level) % 2 == 1 and "r" or "l" -- direction_of_level(max(level,next_level))
+        local prev_level  = start == 1    and baselevel or list[start-1].level
+        local next_level  = limit == size and baselevel or list[limit+1].level
+        local orderbefore = (level > prev_level and level or prev_level) % 2 == 1 and "r" or "l"
+        local orderafter  = (level > next_level and level or next_level) % 2 == 1 and "r" or "l"
         -- W1 .. W7
-        resolve_weak(list,size,start,limit,sor,eor)
+        resolve_weak(list,size,start,limit,orderbefore,orderafter)
+        -- N0
+        if analyze_fences then
+            resolve_fences(list,size,start,limit)
+        end
         -- N1 .. N2
-        resolve_neutral(list,size,start,limit,sor,eor)
+        resolve_neutral(list,size,start,limit,orderbefore,orderafter)
         -- I1 .. I2
-        resolve_implicit(list,size,start,limit,sor,eor)
+        resolve_implicit(list,size,start,limit,orderbefore,orderafter,baselevel)
         start = limit
     end
     -- L1
@@ -666,12 +839,26 @@ local function resolve_levels(list,size,baselevel)
         end
     end
     -- L4
-    for i=1,size do
-        local entry = list[i]
-        if entry.level % 2 == 1 then -- odd(entry.level)
-            local mirror = mirrordata[entry.char]
-            if mirror then
-                entry.mirror = mirror
+    if analyze_fences then
+        for i=1,size do
+            local entry = list[i]
+            if entry.level % 2 == 1 then -- odd(entry.level)
+                if entry.mirror and not entry.paired then
+                    entry.mirror = false
+                end
+                -- okay
+            elseif entry.mirror then
+                entry.mirror = false
+            end
+        end
+    else
+        for i=1,size do
+            local entry = list[i]
+            if entry.level % 2 == 1 then -- odd(entry.level)
+                local mirror = mirrordata[entry.char]
+                if mirror then
+                    entry.mirror = mirror
+                end
             end
         end
     end
@@ -727,6 +914,9 @@ local function apply_to_list(list,size,head,pardir)
     local index   = 1
     local current = head
     local done    = false
+    if trace_list then
+        report_directions("start run")
+    end
     while current do
         if index > size then
             report_directions("fatal error, size mismatch")
@@ -736,7 +926,7 @@ local function apply_to_list(list,size,head,pardir)
         local entry    = list[index]
         local begindir = entry.begindir
         local enddir   = entry.enddir
-        setprop(current,"directions",true)
+        local p = properties[current] if p then p.directions = true else properties[current] = { directions = true } end
         if id == glyph_code then
             local mirror = entry.mirror
             if mirror then
@@ -744,6 +934,16 @@ local function apply_to_list(list,size,head,pardir)
             end
             if trace_directions then
                 local direction = entry.direction
+                if trace_list then
+                    local original = entry.original
+                    local char     = entry.char
+                    local level    = entry.level
+                    if direction == original then
+                        report_directions("%2i : %C : %s",level,char,direction)
+                    else
+                        report_directions("%2i : %C : %s -> %s",level,char,original,direction)
+                    end
+                end
                 setcolor(current,direction,false,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
@@ -752,7 +952,7 @@ local function apply_to_list(list,size,head,pardir)
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
                 local d = new_textdir(enddir)
-                setprop(d,"directions",true)
+                local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
              -- setfield(d,"attr",getfield(current,"attr"))
                 head = insert_node_before(head,current,d)
                 enddir = false
@@ -762,7 +962,7 @@ local function apply_to_list(list,size,head,pardir)
             if id == localpar_code then
                 -- localpar should always be the 1st node
                 local d = new_textdir(begindir)
-                setprop(d,"directions",true)
+                local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
              -- setfield(d,"attr",getfield(current,"attr"))
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
@@ -771,7 +971,7 @@ local function apply_to_list(list,size,head,pardir)
         end
         if begindir then
             local d = new_textdir(begindir)
-            setprop(d,"directions",true)
+            local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
          -- setfield(d,"attr",getfield(current,"attr"))
             head = insert_node_before(head,current,d)
             done = true
@@ -780,12 +980,12 @@ local function apply_to_list(list,size,head,pardir)
         if skip and skip > 0 then
             for i=1,skip do
                 current = getnext(current)
-                setprop(current,"directions",true)
+                local p = properties[current] if p then p.directions = true else properties[current] = { directions = true } end
             end
         end
         if enddir then
             local d = new_textdir(enddir)
-            setprop(d,"directions",true)
+            local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
          -- setfield(d,"attr",getfield(current,"attr"))
             head, current = insert_node_after(head,current,d)
             done = true
@@ -801,11 +1001,18 @@ local function apply_to_list(list,size,head,pardir)
         end
         index = index + 1
     end
+    if trace_list then
+        report_directions("stop run")
+    end
     return head, done
 end
 
 local function process(head)
     head = tonut(head)
+    -- for the moment a whole paragraph property
+    local attr = getattr(head,a_directions)
+    local analyze_fences = getfences(attr)
+    --
     local list, size = build_list(head)
     local baselevel, pardir, dirfound = get_baselevel(head,list,size) -- we always have an inline dir node in context
     if not dirfound and trace_details then
@@ -815,7 +1022,7 @@ local function process(head)
         report_directions("before : %s",show_list(list,size,"original"))
     end
     resolve_explicit(list,size,baselevel)
-    resolve_levels(list,size,baselevel)
+    resolve_levels(list,size,baselevel,analyze_fences)
     insert_dir_points(list,size)
     if trace_details then
         report_directions("after  : %s",show_list(list,size,"direction"))
@@ -825,4 +1032,4 @@ local function process(head)
     return tonode(head), done
 end
 
-directions.installhandler(interfaces.variables.one,process)
+directions.installhandler(interfaces.variables.three,process)

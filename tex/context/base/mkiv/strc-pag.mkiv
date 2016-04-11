@@ -237,6 +237,19 @@
     \strc_pagenumbers_decrement_counters
 \to \everygoodbye
 
+\newcount\c_strc_subpage_first_real \c_strc_subpage_first_real\plusone
+
+\appendtoks
+   \ifcase\subpageno\relax
+     \global\c_strc_subpage_first_real\realpageno
+   \or
+     \global\c_strc_subpage_first_real\realpageno
+   \fi
+\to \everybeforepagebody
+
+\def\therealsubpageno#1% new helper
+  {\the\numexpr\c_strc_subpage_first_real+#1+\minusone\relax}
+
 % Equivalents (compatibility):
 %
 % todo: maybe leave lastpage etc lua calls

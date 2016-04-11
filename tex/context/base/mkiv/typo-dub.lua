@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['typo-dua'] = {
+if not modules then modules = { } end modules ['typo-dub'] = {
     version   = 1.001,
     comment   = "companion to typo-dir.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -264,7 +264,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             local skip = 0
             local last = id
             current    = getnext(current)
-            while n do
+            while current do
                 local id = getid(current)
                 if getprop(current,"directions") then
                     skip    = skip + 1
@@ -279,7 +279,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             else
                 list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, skip = skip, id = id, last = last }
             end
-        elseif id == glyph_code then
+        elseif chr then
             local dir = directiondata[chr]
             list[size] = { char = chr, direction = dir, original = dir, level = 0 }
             current = getnext(current)
@@ -543,22 +543,49 @@ local function resolve_weak(list,size,start,limit,orderbefore,orderafter)
         end
     end
     -- W4: make separators number
-    for i=start+1,limit-1 do
-        local entry     = list[i]
-        local direction = entry.direction
-        if direction == "es" then
-            if list[i-1].direction == "en" and list[i+1].direction == "en" then
-                entry.direction = "en"
-            end
-        elseif direction == "cs" then
-            local prevdirection = list[i-1].direction
-            if prevdirection == "en" then
-                if list[i+1].direction == "en" then
+    if true then
+        for i=start+1,limit-1 do
+            local entry     = list[i]
+            local direction = entry.direction
+            if direction == "es" then
+                if list[i-1].direction == "en" and list[i+1].direction == "en" then
                     entry.direction = "en"
                 end
-            elseif prevdirection == "an" and list[i+1].direction == "an" then
-                entry.direction = "an"
+            elseif direction == "cs" then
+                local prevdirection = list[i-1].direction
+                if prevdirection == "en" then
+                    if list[i+1].direction == "en" then
+                        entry.direction = "en"
+                    end
+                elseif prevdirection == "an" and list[i+1].direction == "an" then
+                    entry.direction = "an"
+                end
             end
+        end
+    else -- probably more efficient
+        local runner = start + 2
+        local before = list[start]
+        local entry  = list[start + 1]
+        local after  = list[runner]
+        while after do
+            local direction = entry.direction
+            if direction == "es" then
+                if before.direction == "en" and after.direction == "en" then
+                    entry.direction = "en"
+                end
+            elseif direction == "cs" then
+                local prevdirection = before.direction
+                if prevdirection == "en" then
+                    if after.direction == "en" then
+                        entry.direction = "en"
+                    end
+                elseif prevdirection == "an" and after.direction == "an" then
+                    entry.direction = "an"
+                end
+            end
+            before  = current
+            current = after
+            after   = list[runner]
         end
     end
     -- W5
