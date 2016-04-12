@@ -413,6 +413,12 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="itemtag" variant="itemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="itm" variant="itemgroup" file="strc-itm.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>

@@ -30,17 +30,19 @@
    \c_page_grids_columns_mode\plusone
    \processallactionsinset
      [#1]%
-     [ \v!reset=>\c_page_grids_location   \zerocount,
-      \v!bottom=>\c_page_grids_location   \plusone,
-         \v!top=>\c_page_grids_location   \plustwo,
-        \v!none=>\c_page_grids_line_mode  \zerocount,
-         \v!all=>\c_page_grids_line_mode  \plusone,
-       \v!lines=>\c_page_grids_line_mode  \plustwo,
-       \v!frame=>\c_page_grids_line_mode  \plusthree,
-    \v!nonumber=>\c_page_grids_lineno_mode\zerocount,
-       \v!right=>\c_page_grids_lineno_mode\plusone,
-        \v!left=>\c_page_grids_lineno_mode\plustwo,
-       \v!outer=>\c_page_grids_lineno_mode\plusthree]%
+     [   \v!reset=>\c_page_grids_location    \zerocount
+                   \c_page_grids_columns_mode\zerocount,
+        \v!bottom=>\c_page_grids_location    \plusone,
+           \v!top=>\c_page_grids_location    \plustwo,
+          \v!none=>\c_page_grids_line_mode   \zerocount,
+           \v!all=>\c_page_grids_line_mode   \plusone,
+         \v!lines=>\c_page_grids_line_mode   \plustwo,
+         \v!frame=>\c_page_grids_line_mode   \plusthree,
+      \v!nonumber=>\c_page_grids_lineno_mode \zerocount,
+         \v!right=>\c_page_grids_lineno_mode \plusone,
+          \v!left=>\c_page_grids_lineno_mode \plustwo,
+         \v!outer=>\c_page_grids_lineno_mode \plusthree,
+       \v!columns=>\c_page_grids_columns_mode\plusone]% new option
    \ifcase\c_page_grids_location
      \let\page_grids_add_to_box\gobbleoneargument
    \else % 1=bottom 2=top

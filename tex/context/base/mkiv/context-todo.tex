@@ -41,3 +41,17 @@
 \vfill {\em Feel free to suggest additions.}
 
 \stoptext
+
+% new:
+
+<cd:command name="showgrid" file="page-grd.mkiv">
+    ...
+            <cd:constant type="columns" default="yes"/>
+    ...
+</cd:command>
+
+<cd:command name="itemtag" variant="itemgroup" file="strc-itm.mkvi">
+    <cd:arguments>
+        <cd:resolve name="keyword-reference-list-optional"/>
+    </cd:arguments>
+</cd:command>

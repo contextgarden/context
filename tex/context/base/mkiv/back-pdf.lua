@@ -156,7 +156,7 @@ implement {
 }
 
 implement {
-    name      = "setmapfile",
+    name      = "setmapline",
     arguments = "string",
     actions   = pdf.mapline
 }
