@@ -63,11 +63,11 @@ local nutstring           = nuts.tostring
 local getnext             = nuts.getnext
 local getid               = nuts.getid
 local getsubtype          = nuts.getsubtype
+local getchar             = nuts.getchar
 local getlist             = nuts.getlist
 local getattr             = nuts.getattr
 local getfield            = nuts.getfield
 local getprop             = nuts.getprop
-local isglyph             = nuts.isglyph -- or ischar
 
 local setfield            = nuts.setfield
 local setprop             = nuts.setprop
@@ -92,7 +92,7 @@ local vlist_code          = nodecodes.vlist
 local math_code           = nodecodes.math
 local dir_code            = nodecodes.dir
 local localpar_code       = nodecodes.localpar
-local parfillskip_code    = skipcodes.skipcodes
+local parfillskip_code    = skipcodes.parfillskip
 
 local maximum_stack       = 0xFF -- unicode: 60, will be jumped to 125, we don't care too much
 
@@ -261,9 +261,9 @@ local function build_list(head) -- todo: store node pointer ... saves loop
     local size    = 0
     while current do
         size = size + 1
-        local chr, id = isglyph(current)
+        local id = getid(current)
+        local p  = properties[current]
         local t
-        local p = properties[current]
         if p and p.directions then
             local skip = 0
             local last = id
@@ -279,40 +279,33 @@ local function build_list(head) -- todo: store node pointer ... saves loop
                 end
             end
             if id == last then -- the start id
---                 t = { level = 0, skip = skip, id = id }
                 t = { skip = skip, id = id }
             else
                 t = { skip = skip, id = id, last = last }
---                 t = { level = 0, skip = skip, id = id, last = last }
             end
             setmetatable(t,mt_object)
-        elseif chr or id == glyph_code then
+        elseif id == glyph_code then
+            local chr = getchar(current)
             local dir = directiondata[chr]
---             t = { level = 0, char = chr, direction = dir, original = dir, level = 0 }
             t = { char = chr, direction = dir, original = dir, level = 0 }
             current = getnext(current)
          -- if not list[dir] then list[dir] = true end -- not faster when we check for usage
         elseif id == glue_code then -- and how about kern
---             t = { level = 0 }
             t = { }
             setmetatable(t,mt_space)
             current = getnext(current)
         elseif id == dir_code then
             local dir = getfield(current,"dir")
             if dir == "+TLT" then
---                 t = { level = 0 }
                 t = { }
                 setmetatable(t,mt_lre)
             elseif dir == "+TRT" then
---                 t = { level = 0 }
                 t = { }
                 setmetatable(t,mt_rle)
             elseif dir == "-TLT" or dir == "-TRT" then
---                 t = { level = 0 }
                 t = { }
                 setmetatable(t,mt_pdf)
             else
---                 t = { level = 0, id = id }
                 t = { id = id }
                 setmetatable(t,mt_object)
             end
@@ -326,7 +319,6 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             end
             skip       = skip + 1
             current    = getnext(current)
---             t = { level = 0, id = id, skip = skip }
             t = { id = id, skip = skip }
             setmetatable(t,mt_object)
         else
@@ -346,10 +338,8 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             if skip == 0 then
                 t = { id = id }
             elseif id == last then -- the start id
---                 t = { level = 0, id = id, skip = skip }
                 t = { id = id, skip = skip }
             else
---                 t = { level = 0, id = id, skip = skip, last = last }
                 t = { id = id, skip = skip, last = last }
             end
             setmetatable(t,mt_object)

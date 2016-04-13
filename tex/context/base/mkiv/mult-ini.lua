@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['mult-ini'] = {
     license   = "see context related readme files"
 }
 
-local format, gmatch, match = string.format, string.gmatch, string.match
+local format, gmatch, match, find, sub = string.format, string.gmatch, string.match, string.find, string.sub
 local lpegmatch = lpeg.match
 local serialize, concat = table.serialize, table.concat
 local rawget, type = rawget, type
@@ -18,6 +18,7 @@ local implement           = interfaces.implement
 local allocate            = utilities.storage.allocate
 local mark                = utilities.storage.mark
 local prtcatcodes         = catcodes.numbers.prtcatcodes
+local vrbcatcodes         = catcodes.numbers.vrbcatcodes
 local contextsprint       = context.sprint
 local setmetatableindex   = table.setmetatableindex
 local formatters          = string.formatters
@@ -30,6 +31,7 @@ interfaces.variables      = mark(interfaces.variables      or { })
 interfaces.elements       = mark(interfaces.elements       or { })
 interfaces.formats        = mark(interfaces.formats        or { })
 interfaces.translations   = mark(interfaces.translations   or { })
+interfaces.setupstrings   = mark(interfaces.setupstrings   or { })
 interfaces.corenamespaces = mark(interfaces.corenamespaces or { })
 
 local registerstorage     = storage.register
@@ -40,6 +42,7 @@ local variables           = interfaces.variables
 local elements            = interfaces.elements
 local formats             = interfaces.formats
 local translations        = interfaces.translations
+local setupstrings        = interfaces.setupstrings
 local corenamespaces      = interfaces.corenamespaces
 local reporters           = { } -- just an optimization
 
@@ -48,6 +51,7 @@ registerstorage("interfaces/variables",      variables,      "interfaces.variabl
 registerstorage("interfaces/elements",       elements,       "interfaces.elements")
 registerstorage("interfaces/formats",        formats,        "interfaces.formats")
 registerstorage("interfaces/translations",   translations,   "interfaces.translations")
+registerstorage("interfaces/setupstrings",   setupstrings,   "interfaces.setupstrings")
 registerstorage("interfaces/corenamespaces", corenamespaces, "interfaces.corenamespaces")
 
 interfaces.interfaces = {
@@ -87,6 +91,7 @@ setmetatableindex(constants,    valueiskey)
 setmetatableindex(elements,     valueiskey)
 setmetatableindex(formats,      valueiskey)
 setmetatableindex(translations, valueiskey)
+setmetatableindex(setupstrings, valueiskey)
 
 function interfaces.registernamespace(n,namespace)
     corenamespaces[n] = namespace
@@ -132,6 +137,12 @@ end
 function interfaces.setformat(tag,values)
     add(formats,tag,values)
 end
+
+local function getsetupstring(tag)
+    return setupstrings[tag] or tag
+end
+
+interfaces.getsetupstring = getsetupstring
 
 -- the old method:
 
@@ -198,61 +209,11 @@ end
 
 logs.setmessenger(context.verbatim.ctxreport)
 
--- initialization
-
--- function interfaces.setuserinterface(interface,response)
---     sharedstorage.currentinterface, currentinterface = interface, interface
---     sharedstorage.currentresponse, currentresponse  = response, response
---     if environment.initex then
---         local nofconstants = 0
---         for given, constant in next, complete.constants do
---             constant = constant[interface] or constant.en or given
---             constants[constant] = given -- breedte -> width
---             contextsprint(prtcatcodes,"\\ui_c{",given,"}{",constant,"}") -- user interface constant
---             nofconstants = nofconstants + 1
---         end
---         local nofvariables = 0
---         for given, variable in next, complete.variables do
---             variable = variable[interface] or variable.en or given
---             variables[given] = variable -- ja -> yes
---             contextsprint(prtcatcodes,"\\ui_v{",given,"}{",variable,"}") -- user interface variable
---             nofvariables = nofvariables + 1
---         end
---         local nofelements = 0
---         for given, element in next, complete.elements do
---             element = element[interface] or element.en or given
---             elements[element] = given
---             contextsprint(prtcatcodes,"\\ui_e{",given,"}{",element,"}") -- user interface element
---             nofelements = nofelements + 1
---         end
---         local nofcommands = 0
---         for given, command in next, complete.commands do
---             command = command[interface] or command.en or given
---             if command ~= given then
---                 contextsprint(prtcatcodes,"\\ui_m{",given,"}{",command,"}") -- user interface macro
---             end
---             nofcommands = nofcommands + 1
---         end
---         local nofformats = 0
---         for given, format in next, complete.messages.formats do
---             formats[given] = format[interface] or format.en or given
---             nofformats = nofformats + 1
---         end
---         local noftranslations = 0
---         for given, translation in next, complete.messages.translations do
---             translations[given] = translation[interface] or translation.en or given
---             noftranslations = noftranslations + 1
---         end
---         report_interface("definitions: %a constants, %a variables, %a elements, %a commands, %a formats, %a translations",
---             nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations)
---     else
---         report_interface("the language(s) can only be set when making the format")
---     end
--- end
+-- todo: use setmacro
 
 function interfaces.setuserinterface(interface,response)
     sharedstorage.currentinterface, currentinterface = interface, interface
-    sharedstorage.currentresponse, currentresponse  = response, response
+    sharedstorage.currentresponse, currentresponse = response, response
     if environment.initex then
         local nofconstants    = 0
         local nofvariables    = 0
@@ -260,6 +221,7 @@ function interfaces.setuserinterface(interface,response)
         local nofcommands     = 0
         local nofformats      = 0
         local noftranslations = 0
+        local nofsetupstrings = 0
         local t, n, f, s
         --
         t, n, f, s = { }, 0, formatters["\\ui_c{%s}{%s}"], formatters["\\ui_s{%s}"]
@@ -314,8 +276,14 @@ function interfaces.setuserinterface(interface,response)
             noftranslations = noftranslations + 1
         end
         --
-        report_interface("definitions: %a constants, %a variables, %a elements, %a commands, %a formats, %a translations",
-            nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations)
+        for given, setupstring in next, complete.setupstrings do
+            setupstring = setupstring[interface] or setupstring.en or given
+            setupstrings[given] = setupstring
+            nofsetupstrings = nofsetupstrings + 1
+        end
+        --
+        report_interface("definitions: %a constants, %a variables, %a elements, %a commands, %a formats, %a translations, %a setupstrings",
+            nofconstants,nofvariables,nofelements,nofcommands,nofformats,noftranslations,nofsetupstrings)
     else
         report_interface("the language(s) can only be set when making the format")
     end
@@ -397,6 +365,14 @@ implement {
     name      = "message",
     overload  = true,
     actions   = interfaces.message,
+    arguments = "string",
+}
+
+implement {
+    name      = "getsetupstring",
+    actions   = function(s)
+        contextsprint(vrbcatcodes,getsetupstring(s))
+    end,
     arguments = "string",
 }
 

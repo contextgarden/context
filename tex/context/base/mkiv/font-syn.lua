@@ -308,14 +308,12 @@ end
 but to keep the overview, we define them here.</p>
 --ldx]]--
 
--- filters.dfont = get_font_info
-
 filters.otf = fonts.handlers.otf.readers.getinfo
 filters.ttf = filters.otf
 filters.ttc = filters.otf
--- filters.ttx = filters.otf
+-------.ttx = filters.otf
 
-local function normalize(t)
+local function normalize(t) -- only for afm parsing
     local boundingbox = t.fontbbox
     if boundingbox then
         for i=1,#boundingbox do
@@ -329,7 +327,6 @@ local function normalize(t)
         fontname      = t.fontname,
         fullname      = t.fullname,
         familyname    = t.familyname,
-     -- subfamilyname = t.subfamilyname, -- nor used / needed
         weight        = t.weight,
         widtht        = t.width,
         italicangle   = tonumber(t.italicangle) or 0,
@@ -564,7 +561,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     local family         = result.family
     local subfamily      = result.subfamily
     local familyname     = result.familyname
-    local subfamilyname  = result.subfamilyname or result.modifiers
+    local subfamilyname  = result.subfamilyname
  -- local compatiblename = result.compatiblename
     local weight         = result.weight
     local italicangle    = tonumber(result.italicangle)
@@ -585,10 +582,12 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     -- analyze
     local a_name, a_weight, a_style, a_width, a_variant = analyzespec(fullname or fontname or familyname)
     -- check
-    local width = a_width
+    local width   = a_width
     local variant = a_variant
-    local style = subfamilyname and gsub(subfamilyname,"[^%a]","")
-    if not style and italicangle then
+    local style   = subfamilyname or subfamily -- can re really trust subfamilyname?
+    if style then
+        style = gsub(style,"[^%a]","")
+    elseif italicangle then
         style = "italic"
     end
     if not variant or variant == "" then
@@ -624,8 +623,8 @@ local function check_name(data,result,filename,modification,suffix,subfont)
         rawname        = rawname,
         fullname       = fullname,
         fontname       = fontname,
-        family         = family,          -- kind of redundant, could be nil if familyname
-        subfamily      = subfamily,       -- kind of redundant, could be nil if familyname
+        family         = family,
+        subfamily      = subfamily,
         familyname     = familyname,
         subfamilyname  = subfamilyname,
      -- compatiblename = compatiblename,  -- nor used / needed
@@ -793,29 +792,50 @@ local function collecthashes()
     if specifications then
         -- maybe multiple passes
         for index=1,#specifications do
-            local s = specifications[index]
-            local format, fullname, fontname, familyname, weight, subfamily = s.format, s.fullname, s.fontname, s.familyname, s.weight, s.subfamily
-            local mf, ff = mappings[format], fallbacks[format]
-            if fullname and not mf[fullname] then
-                mf[fullname], nofmappings = index, nofmappings + 1
+            local specification = specifications[index]
+            local format        = specification.format
+            local fullname      = specification.fullname
+            local fontname      = specification.fontname
+            local familyname    = specification.familyname or specification.family
+            local subfamilyname = specification.subfamilyname
+            local subfamily     = specification.subfamily
+            local weight        = specification.weight
+            local mapping       = mappings[format]
+            local fallback      = fallbacks[format]
+            if fullname and not mapping[fullname] then
+                mapping[fullname] = index
+                nofmappings       = nofmappings + 1
             end
-            if fontname and not mf[fontname] then
-                mf[fontname], nofmappings = index, nofmappings + 1
+            if fontname and not mapping[fontname] then
+                mapping[fontname] = index
+                nofmappings       = nofmappings + 1
             end
-            if familyname and weight and weight ~= sub(familyname,#familyname-#weight+1,#familyname) then
-                local madename = familyname .. weight
-                if not mf[madename] and not ff[madename] then
-                    ff[madename], noffallbacks = index, noffallbacks + 1
+            if familyname then
+                if weight and weight ~= sub(familyname,#familyname-#weight+1,#familyname) then
+                    local madename = familyname .. weight
+                    if not mapping[madename] and not fallback[madename] then
+                        fallback[madename] = index
+                        noffallbacks       = noffallbacks + 1
+                    end
                 end
-            end
-            if familyname and subfamily and subfamily ~= sub(familyname,#familyname-#subfamily+1,#familyname) then
-                local extraname = familyname .. subfamily
-                if not mf[extraname] and not ff[extraname] then
-                    ff[extraname], noffallbacks = index, noffallbacks + 1
+                if subfamily and subfamily ~= sub(familyname,#familyname-#subfamily+1,#familyname) then
+                    local extraname = familyname .. subfamily
+                    if not mapping[extraname] and not fallback[extraname] then
+                        fallback[extraname] = index
+                        noffallbacks        = noffallbacks + 1
+                    end
                 end
-            end
-            if familyname and not mf[familyname] and not ff[familyname] then
-                ff[familyname], noffallbacks = index, noffallbacks + 1
+                if subfamilyname and subfamilyname ~= sub(familyname,#familyname-#subfamilyname+1,#familyname) then
+                    local extraname = familyname .. subfamilyname
+                    if not mapping[extraname] and not fallback[extraname] then
+                        fallback[extraname] = index
+                        noffallbacks        = noffallbacks + 1
+                    end
+                end
+                if not mapping[familyname] and not fallback[familyname] then
+                    fallback[familyname] = index
+                    noffallbacks         = noffallbacks + 1
+                end
             end
         end
     end

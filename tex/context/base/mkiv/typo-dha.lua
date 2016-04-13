@@ -52,7 +52,7 @@ local nutstring          = nuts.tostring
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
-local getfont            = nuts.getfont
+local getchar            = nuts.getchar
 local getid              = nuts.getid
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
@@ -73,8 +73,9 @@ local end_of_math        = nuts.end_of_math
 local nodepool           = nuts.pool
 
 local nodecodes          = nodes.nodecodes
-local mathcodes          = nodes.mathcodes
+local skipcodes          = nodes.skipcodes
 
+local glyph_code         = nodecodes.glyph
 local math_code          = nodecodes.math
 local penalty_code       = nodecodes.penalty
 local kern_code          = nodecodes.kern
@@ -83,6 +84,8 @@ local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local dir_code           = nodecodes.dir
 local localpar_code      = nodecodes.localpar
+
+local parfillskip_code   = skipcodes.parfillskip
 
 local new_textdir        = nodepool.textdir
 
@@ -158,7 +161,8 @@ local function process(start)
     local fences   = { }
 
     while current do
-        local character, id = isglyph(current)
+        -- no isglyph here as we test for skips first
+        local id   = getid(current)
         local next = getnext(current)
         if id == math_code then
             current = getnext(end_of_math(next))
@@ -176,8 +180,9 @@ local function process(start)
                     prevattr = attr
                 end
             end
-            if character then
+            if id == glyph_code then
                 if attr and attr > 0 then
+                    local character, font = isglyph(current)
                     if character == 0 then
                         -- skip signals
                         setprop(current,"direction",true)
@@ -198,7 +203,7 @@ local function process(start)
                         end
                         if direction == "on" then
                             local mirror = charmirrors[character]
-                            if mirror and fontchar[getfont(current)][mirror] then
+                            if mirror and fontchar[font][mirror] then
                                 local class = charclasses[character]
                                 if class == "open" then
                                     if nextisright(current) then
@@ -304,11 +309,15 @@ local function process(start)
                     setprop(current,"direction",true)
                 end
             elseif id == glue_code then
-                setprop(current,"direction",'g')
+                if getsubtype(current) == parfillskip_code then
+                    setprop(current,"direction",'!')
+                else
+                    setprop(current,"direction",'g')
+                end
             elseif id == kern_code then
                 setprop(current,"direction",'k')
             elseif id == dir_code then
-               local dir = getfield(current,"dir")
+                local dir = getfield(current,"dir")
                 if dir == "+TRT" then
                     autodir = -1
                 elseif dir == "+TLT" then
@@ -408,7 +417,7 @@ local function process(start)
                     state = "r"
                     done  = true
                 end
-                last  = false
+                last = false
             elseif collapse then
                 if cp == "k" or cp == "g" then
                     last = last or current
@@ -430,10 +439,13 @@ local function process(start)
         if next then
             current = next
         else
-            if state == "r" then
-                head = insert_node_after(head,current,stopdir("TRT"))
-            elseif state == "l" then
-                head = insert_node_after(head,current,stopdir("TLT"))
+            local sd = (state == "r" and stopdir("TRT")) or (state == "l" and stopdir("TLT"))
+            if sd then
+                if id == glue_code and getsubtype(current) == parfillskip_code then
+                    head = insert_node_before(head,current,sd)
+                else
+                    head = insert_node_after(head,current,sd)
+                end
             end
             break
         end

@@ -60,6 +60,17 @@
                 padding: 1em ;
             }
         </style>
+        <style type="text/css">
+            #main-left {
+                background-color: #C0C0C0 ;
+                color: black;
+            }
+            <?lua
+                if utilities and utilities.scite and utilities.scite.css then
+p(utilities.scite.css())
+                end
+            ?>
+        </style>
     </head>
     <body>
         <div id="top"><div id="top-one"><div id="top-two">

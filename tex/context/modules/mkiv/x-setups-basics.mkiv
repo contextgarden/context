@@ -12,482 +12,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% we can make this module a bit cleaner using more recent features
-% like sorting the xml directly .. will happen stepwise
-
-% \startluacode
-%     collectgarbage("stop")
-%     function collectgarbage() return 0 end
-% \stopluacode
-
-% todo: for fun: pure lua interface, but as this style evolved over 15 years
-% it's a waste of time
-%
-% todo:
-%
-% \setup{setupinterlinespace}
-% \setup{setupinterlinespace:1}
-% \setup{setupinterlinespace:2}
-%
-% cd:include -> filename
-% cd:choice
-%
-% register, interaction
-
-\startmessages  dutch  library: setup
-            title:  setup
-          formula:  formule
-           number:  getal
-             list:  lijst
-        dimension:  maat
-             mark:  markering
-        reference:  verwijzing
-          command:  commando
-             file:  file
-             name:  naam
-       identifier:  naam
-             text:  tekst
-          section:  sectie
-         singular:  naam enkelvoud
-           plural:  naam meervoud
-           matrix:  n*m
-              see:  zie
-         inherits:  erft van
-                1:  de karakters < en > zijn globaal actief!
-                2:  -- wordt verwerkt
-                3:  -- is niet gedefinieerd
-                4:  -- wordt nogmaals verwerkt
-         optional:  opt
-      displaymath:  formule
-            index:  ingang
-             math:  formule
-          nothing:  leeg
-             file:  file
-         position:  positie
-        reference:  verwijzing
-           csname:  naam
-      destination:  bestemming
-          triplet:  triplet
-             word:  woord
-          content:  inhoud
-                 %
-         language:  taal
-        processor:  verwerker
-            style:  letter
-             font:  font
-        character:  karakter
-         userdata:  gebruikersdata
-              key:  parameter
-            value:  waarde
-            color:  kleur
-         template:  sjabloon
-             node:  node
-            lpath:  lpath
-         xmlsetup:  xmlsetup
-      luafunction:  luafunction
-          marking:  markering
-     sectionblock:  sectieblok
-              row:  rij
-           column:  kolom
-              url:  url
-            first:  eerste
-             last:  laatste
-            setup:  setup
-           buffer:  buffer
-             true:  true
-            false:  false
-         category:  category
-\stopmessages
-
-\startmessages  english  library: setup
-            title:  setup
-          formula:  formula
-           number:  number
-             list:  list
-        dimension:  dimension
-             mark:  mark
-        reference:  reference
-          command:  command
-             file:  file
-             name:  name
-       identifier:  identifier
-             text:  text
-          section:  section
-         singular:  singular name
-           plural:  plural name
-           matrix:  n*m
-              see:  see
-         inherits:  inherits from
-                1:  the characters < and > are globally active!
-                2:  -- is processed
-                3:  -- is undefined
-                4:  -- is processed again
-         optional:  opt
-      displaymath:  formula
-            index:  entry
-             math:  formula
-          nothing:  empty
-             file:  file
-         position:  position
-        reference:  reference
-           csname:  csname
-      destination:  destination
-          triplet:  triplet
-             word:  word
-          content:  content
-                 %
-         language:  language
-        processor:  processor
-            style:  style
-             font:  font
-        character:  character
-         userdata:  userdata
-              key:  key
-            value:  value
-            color:  color
-         template:  template
-             node:  node
-            lpath:  lpath
-         xmlsetup:  xmlsetup
-      luafunction:  luafunction
-          marking:  marking
-     sectionblock:  sectionblock
-              row:  row
-           column:  column
-              url:  url
-            first:  first
-             last:  last
-            setup:  setup
-           buffer:  buffer
-             true:  true
-            false:  false
-         category:  category
-\stopmessages
-
-\startmessages  german library: setup
-            title:  Setup
-          formula:  Formel
-           number:  Nummer
-             list:  Liste
-        dimension:  Dimension
-             mark:  Beschriftung
-        reference:  Referenz
-          command:  Befehl
-             file:  Datei
-             name:  Name
-       identifier:  Name
-             text:  Text
-          section:  Abschnitt
-         singular:  singular
-           plural:  plural
-           matrix:  n*m
-              see:  siehe
-         inherits:  inherits from
-                1:  Die Zeichen < und > gelten global!
-                2:  -- wird verarbeitet
-                3:  -- ist undefiniert
-                4:  -- ist mehrmals verarbeitet
-         optional:  opt
-      displaymath:  formula
-            index:  entry
-             math:  formula
-          nothing:  empty
-             file:  file
-         position:  position
-        reference:  reference
-           csname:  csname
-      destination:  destination
-          triplet:  triplet
-             word:  word
-          content:  content
-                 %
-         language:  sprache
-        processor:  processor
-            style:  style
-             font:  font
-        character:  character
-         userdata:  userdata
-              key:  key
-            value:  value
-            color:  color
-         template:  template
-             node:  node
-            lpath:  lpath
-         xmlsetup:  xmlsetup
-      luafunction:  luafunction
-          marking:  marking
-     sectionblock:  sectionblock
-              row:  row
-           column:  column
-              url:  url
-            first:  first
-             last:  last
-            setup:  setup
-           buffer:  buffer
-             true:  true
-            false:  false
-         category:  category
-\stopmessages
-
-\startmessages  czech  library: setup
-            title:  setup
-          formula:  rovnice
-           number:  cislo
-             list:  seznam
-        dimension:  dimenze
-             mark:  znacka
-        reference:  reference
-          command:  prikaz
-             file:  soubor
-             name:  jmeno
-       identifier:  jmeno
-             text:  text
-          section:  sekce
-         singular:  jmeno v singularu
-           plural:  jmeno v pluralu
-           matrix:  n*m
-              see:  viz
-         inherits:  inherits from
-                1:  znaky < a > jsou globalne aktivni!
-                2:  -- je zpracovano
-                3:  -- je nedefinovano
-                4:  -- je zpracovano znovu
-         optional:  opt
-      displaymath:  formula
-            index:  entry
-             math:  formula
-          nothing:  empty
-             file:  file
-         position:  position
-        reference:  reference
-           csname:  csname
-      destination:  destination
-          triplet:  triplet
-             word:  word
-          content:  content
-                 %
-         language:  language
-        processor:  processor
-            style:  style
-             font:  font
-        character:  character
-         userdata:  userdata
-              key:  key
-            value:  value
-            color:  color
-         template:  template
-             node:  node
-            lpath:  lpath
-         xmlsetup:  xmlsetup
-      luafunction:  luafunction
-          marking:  marking
-     sectionblock:  sectionblock
-              row:  row
-           column:  column
-              url:  url
-            first:  first
-             last:  last
-            setup:  setup
-           buffer:  buffer
-             true:  true
-            false:  false
-         category:  category
-\stopmessages
-
-\startmessages  italian library: setup
-            title:  setup
-          formula:  formula
-           number:  number
-             list:  list
-        dimension:  dimension
-             mark:  mark
-        reference:  reference
-          command:  command
-             file:  file
-             name:  name
-       identifier:  name
-             text:  text
-          section:  section
-         singular:  singular name
-           plural:  plural name
-           matrix:  n*m
-              see:  see
-         inherits:  inherits from
-                1:  the characters < and > are globally active!
-                2:  -- is processed
-                3:  -- is undefined
-                4:  -- is processed again
-         optional:  opt
-      displaymath:  formula
-            index:  entry
-             math:  formula
-          nothing:  empty
-             file:  file
-         position:  position
-        reference:  reference
-           csname:  csname
-      destination:  destination
-          triplet:  triplet
-             word:  word
-          content:  content
-                 %
-         language:  language
-        processor:  processor
-            style:  style
-             font:  font
-        character:  character
-         userdata:  userdata
-              key:  key
-            value:  value
-            color:  color
-         template:  template
-             node:  node
-            lpath:  lpath
-         xmlsetup:  xmlsetup
-      luafunction:  luafunction
-          marking:  marking
-     sectionblock:  sectionblock
-              row:  row
-           column:  column
-              url:  url
-            first:  first
-             last:  last
-            setup:  setup
-           buffer:  buffer
-             true:  true
-            false:  false
-         category:  category
-\stopmessages
-
-\startmessages  romanian library: setup
-            title:  setari
-          formula:  formula
-           number:  numar
-             list:  lista
-        dimension:  dimensiune
-             mark:  marcaj
-        reference:  referinta
-          command:  comanda
-             file:  fisier
-             name:  nume
-       identifier:  nume
-             text:  text
-          section:  sectiune
-         singular:  nume singular
-           plural:  nume pluram
-           matrix:  n*m
-              see:  vezi
-         inherits:  inherits from
-                1:  caracterele < si > sunt active global!
-                2:  este procesat --
-                3:  -- este nedefinit
-                4:  -- este procesat din nou
-         optional:  opt
-      displaymath:  formula
-            index:  entry
-             math:  formula
-          nothing:  empty
-             file:  file
-         position:  position
-        reference:  reference
-           csname:  csname
-      destination:  destination
-          triplet:  triplet
-             word:  word
-          content:  content
-                 %
-         language:  language
-        processor:  processor
-            style:  style
-             font:  font
-        character:  character
-         userdata:  userdata
-              key:  key
-            value:  value
-            color:  color
-         template:  template
-             node:  node
-            lpath:  lpath
-         xmlsetup:  xmlsetup
-      luafunction:  luafunction
-          marking:  marking
-     sectionblock:  sectionblock
-              row:  row
-           column:  column
-              url:  url
-            first:  first
-             last:  last
-            setup:  setup
-           buffer:  buffer
-             true:  true
-            false:  false
-         category:  category
-\stopmessages
-
-\startmessages  french  library: setup
-            title:  réglage
-          formula:  formule
-           number:  numéro
-             list:  liste
-        dimension:  dimension
-             mark:  marquage
-        reference:  reference
-          command:  commande
-             file:  fichier
-             name:  nom
-       identifier:  identificateur
-             text:  texte
-          section:  section
-         singular:  nom singulier
-           plural:  nom pluriel
-           matrix:  n*m
-              see:  vois
-         inherits:  herite de
-                1:  les caractères < et > sont globalement actifs !
-                2:  -- est traité
-                3:  -- n'est pas défini
-                4:  -- est traité de nouveau
-         optional:  opt
-      displaymath:  formule
-            index:  entrée
-             math:  formule
-          nothing:  vide
-             file:  fichier
-         position:  position
-        reference:  réference
-           csname:  csnom
-      destination:  destination
-          triplet:  triplet
-             word:  mot
-          content:  content
-                 %
-         language:  language
-        processor:  processor
-            style:  style
-             font:  font
-        character:  character
-         userdata:  userdata
-              key:  key
-            value:  value
-            color:  color
-         template:  template
-             node:  node
-            lpath:  lpath
-         xmlsetup:  xmlsetup
-      luafunction:  luafunction
-          marking:  marking
-     sectionblock:  sectionblock
-              row:  row
-           column:  column
-              url:  url
-            first:  first
-             last:  last
-            setup:  setup
-           buffer:  buffer
-             true:  true
-            false:  false
-         category:  category
-\stopmessages
+% We can make this module a bit cleaner using more recent features
+% or we go \LUA\ completely but as this style evolved over 15 years
+% it's a waste of time.
 
 \unprotect
 
@@ -501,16 +28,13 @@
 \unexpanded\def\setupalwcolor{}
 \unexpanded\def\setupoptcolor{darkgray}
 
+\unexpanded\def\setupvarword#1{{\sl\detokenize{#1}}}
+\unexpanded\def\setupintword#1{\WORD{\detokenize{#1}}}
+\unexpanded\def\setuptxtword#1{\detokenize{#1}}
+
 \installcorenamespace{interfacesetup}
-\installcorenamespace{interfacesetupreserved}
 
 \installsetuponlycommandhandler \??interfacesetup {setup} % \??interfacesetup
-
-\unexpanded\def\cmd_define_reserved#1#2%
-  {\setvalue{\??interfacesetupreserved#1}{#2}}
-
-\unexpanded\def\cmd_reserved_value#1%
-  {\executeifdefined{\??interfacesetupreserved#1}{#1}}
 
 \unexpanded\def\cmd_internal_value#1%
   {\dontleavehmode
@@ -525,7 +49,7 @@
    \endgroup}
 
 \unexpanded\def\cmd_command_value#1%
-  {{\setupvarfont{\texescape...#1}}}
+  {{\setupvarfont{#1}}}
 
 \defineregister
   [texmacro]
@@ -566,15 +90,10 @@
         \let\currentSETUPprefix\empty
     }
     \edef\currentSETUPname{\xmlatt{#1}{name}}
-%     \doifelse {\xmlatt{#1}{generated}} {yes} {
-%         \def\currentSETUPgenerated{*}
-%     } {
-        \let\currentSETUPgenerated\empty
-%     }
+    \let\currentSETUPgenerated\empty
     \doifelsenothing {\xmlatt{#1}{variant}} {
         \let\currentSETUPvariant\empty
     } {
-      %\def\currentSETUPvariant{:\xmlatt{#1}{variant}}
        \def\currentSETUPvariant{:\xmllastatt}
     }
     \edef\currentSETUPfullname {
@@ -592,6 +111,16 @@
 \stopxmlsetups
 
 \startluacode
+
+    local find, gsub = string.find, string.gsub
+
+    local context        = context
+
+    local setupvarword   = context.formatted.setupvarword
+    local setupintword   = context.formatted.setupintword
+    local setuptxtword   = context.formatted.setuptxtword
+
+    local getsetupstring = interfaces.getsetupstring
 
     -- normally a lookup is fast enough but here we can have many setups
     -- spread over many files so we do a little speedup here
@@ -646,13 +175,12 @@
             replace('cd:variable',  'type',    variables)
             replace('cd:inherit',   'name',    commands, elements)
 
-
         end
 
         if tex.modes["setups:save"] and environment.currentrun == 1 then
             local s = tostring(x)
-            s = string.gsub(s,"\n*%s*(</cd:interface>)%s+(<cd:interface)",  "\n\n    %1\n\n    %2")
-            s = string.gsub(s,"\n*%s*(</cd:interface>)%s+(</cd:interface>)","\n\n    %1\n\n    %2")
+            s = gsub(s,"\n*%s*(</cd:interface>)%s+(<cd:interface)",  "\n\n    %1\n\n    %2")
+            s = gsub(s,"\n*%s*(</cd:interface>)%s+(</cd:interface>)","\n\n    %1\n\n    %2")
             io.savedata("context-"..interface..".xml",s)
         end
 
@@ -679,6 +207,29 @@
         context(n)
     end
 
+    local cmd = table.tohash {
+        "cd:noargument",
+        "cd:oneargument",
+        "cd:twoarguments",
+        "cd:threearguments",
+    }
+
+    interfaces.implement {
+        name      = "getsetupstring",
+        actions   = function(s)
+            local g = getsetupstring(s)
+            if not find(s,"^cd:") then
+                setuptxtword(g)
+            elseif cmd[s] then
+                setupvarword(g)
+            else
+                setupintword(g)
+            end
+        end,
+        overload  = true,
+        arguments = "string",
+    }
+
 \stopluacode
 
 % <?xml version="1.0" encoding="UTF-8"?>
@@ -694,12 +245,8 @@
     \loadsetups[\xmlatt{#1}{filename}]
 \stopxmlsetups
 
-% todo: option to expand
-
 \startxmlsetups xml:setups:basics
-%     \xmlcommand {#1}{interface/interfacefile}{xml:setups:interfacefile}
-%     \xmlinclude {#1}{include}{filename}
-    \xmlincludeoptions {#1}{interfacefile|include}{filename}{recurse,basename}
+    \xmlincludeoptions{#1}{interfacefile|include}{filename}{recurse,basename}
     \xmlsetsetup{#1}{*}{xml:setups:*}
     \xmlfunction{#1}{setups_define}
 \stopxmlsetups
@@ -981,37 +528,40 @@
     \xmlatt{#1}{value}\ignorespaces
 \stopxmlsetups
 
-\startxmlsetups xml:setups:content     \showSETUPcomponent{#1}{content}    {content}     \stopxmlsetups
-\startxmlsetups xml:setups:displaymath \showSETUPcomponent{#1}{displaymath}{display math}\stopxmlsetups
-\startxmlsetups xml:setups:index       \showSETUPcomponent{#1}{index}      {index}       \stopxmlsetups
-\startxmlsetups xml:setups:math        \showSETUPcomponent{#1}{math}       {math}        \stopxmlsetups
-\startxmlsetups xml:setups:nothing     \showSETUPcomponent{#1}{nothing}    {nothing}     \stopxmlsetups
-\startxmlsetups xml:setups:file        \showSETUPcomponent{#1}{file}       {file name}   \stopxmlsetups
-\startxmlsetups xml:setups:position    \showSETUPcomponent{#1}{position}   {position}    \stopxmlsetups
-\startxmlsetups xml:setups:reference   \showSETUPcomponent{#1}{reference}  {reference}   \stopxmlsetups
-\startxmlsetups xml:setups:csname      \showSETUPcomponent{#1}{csname}     {csname}      \stopxmlsetups
-\startxmlsetups xml:setups:destination \showSETUPcomponent{#1}{destination}{destination} \stopxmlsetups
-\startxmlsetups xml:setups:triplet     \showSETUPcomponent{#1}{triplet}    {triplet}     \stopxmlsetups
-\startxmlsetups xml:setups:word        \showSETUPcomponent{#1}{word}       {word}        \stopxmlsetups
-\startxmlsetups xml:setups:template    \showSETUPcomponent{#1}{template}   {template}    \stopxmlsetups
-\startxmlsetups xml:setups:angles      \showSETUPcomponent{#1}{angles}     {angles}      \stopxmlsetups
-\startxmlsetups xml:setups:apply       \showSETUPcomponent{#1}{apply}      {apply}       \stopxmlsetups
-\startxmlsetups xml:setups:twowords    \showSETUPcomponent{#1}{twowords}   {twowords}    \stopxmlsetups
-\startxmlsetups xml:setups:threewords  \showSETUPcomponent{#1}{threewords} {threewords}  \stopxmlsetups
-\startxmlsetups xml:setups:text        \showSETUPcomponent{#1}{text}       {text}        \stopxmlsetups
-% \startxmlsetups xml:setups:to          \showSETUPcomponent{#1}{to}         {to}          \stopxmlsetups
+\startxmlsetups xml:setups:content     \showSETUPcomponent{#1}{content}    {content}    \stopxmlsetups
+\startxmlsetups xml:setups:displaymath \showSETUPcomponent{#1}{displaymath}{displaymath}\stopxmlsetups
+\startxmlsetups xml:setups:index       \showSETUPcomponent{#1}{index}      {index}      \stopxmlsetups
+\startxmlsetups xml:setups:math        \showSETUPcomponent{#1}{math}       {math}       \stopxmlsetups
+\startxmlsetups xml:setups:nothing     \showSETUPcomponent{#1}{nothing}    {nothing}    \stopxmlsetups
+\startxmlsetups xml:setups:file        \showSETUPcomponent{#1}{file}       {file}       \stopxmlsetups
+\startxmlsetups xml:setups:position    \showSETUPcomponent{#1}{position}   {position}   \stopxmlsetups
+\startxmlsetups xml:setups:reference   \showSETUPcomponent{#1}{reference}  {reference}  \stopxmlsetups
+\startxmlsetups xml:setups:csname      \showSETUPcomponent{#1}{csname}     {csname}     \stopxmlsetups
+\startxmlsetups xml:setups:destination \showSETUPcomponent{#1}{destination}{destination}\stopxmlsetups
+\startxmlsetups xml:setups:triplet     \showSETUPcomponent{#1}{triplet}    {triplet}    \stopxmlsetups
+\startxmlsetups xml:setups:word        \showSETUPcomponent{#1}{word}       {word}       \stopxmlsetups
+\startxmlsetups xml:setups:template    \showSETUPcomponent{#1}{template}   {template}   \stopxmlsetups
+\startxmlsetups xml:setups:angles      \showSETUPcomponent{#1}{angles}     {angles}     \stopxmlsetups
+\startxmlsetups xml:setups:apply       \showSETUPcomponent{#1}{apply}      {apply}      \stopxmlsetups
+\startxmlsetups xml:setups:twowords    \showSETUPcomponent{#1}{twowords}   {twowords}   \stopxmlsetups
+\startxmlsetups xml:setups:threewords  \showSETUPcomponent{#1}{threewords} {threewords} \stopxmlsetups
+\startxmlsetups xml:setups:text        \showSETUPcomponent{#1}{text}       {text}       \stopxmlsetups
+
+% todo: cd:par => \\par
+% todo: cd:sep => \\\\
 
 \startxmlsetups xml:setups:delimiter
     \doifmode{setups-pass-one} {
-        \showSETUPline{\letterbackslash\xmlatt{#1}{name}}
+        \kern.5\emwidth
+        \letterbackslash\xmlatt{#1}{name}
     }
     \ignorespaces
 \stopxmlsetups
 
 \unexpanded\def\showSETUPcomponent#1#2#3%
   {\doifelsemode{setups-pass-one}
-     {\getvalue{showSETUP#2}{#1}}
-     {\simpleSETUPargument{#3}}}
+     {\getvalue{showSETUP#2}{#1}}  % top line
+     {\simpleSETUPargument{#3}}}   % column
 
 %D This is the second pass; here we generate the table.
 
@@ -1080,9 +630,9 @@
 
 \startxmlsetups xml:setups:parameter
     \doifmodeelse {setups-measure} {
-        \cmd_reserved_value{\xmlatt{#1}{name}}\par
+        \getsetupstring{\xmlatt{#1}{name}}\par
     } {
-        \startsecondSETUPcolumn{\cmd_reserved_value{\xmlatt{#1}{name}}}{=}
+        \startsecondSETUPcolumn{\getsetupstring{\xmlatt{#1}{name}}}{=}
             \ignorespaces
             \xmlflush{#1}
             \doifmode{interface:setup:defaults} {
@@ -1111,21 +661,21 @@
 \xmlmapvalue{setups:method}{none}  {}
 
 \startxmlsetups xml:setups:constant:value
-    \cmd_reserved_value{\xmlatt{#1}{type}}
+    \getsetupstring{\xmlatt{#1}{type}}
 \stopxmlsetups
 
 \startxmlsetups xml:setups:constant
     \doifelsemode {setups-pass-one} {
     } {
         \doifsomethingelse{\xmlatt{#1}{prefix}} {
-            \cmd_reserved_value{\xmllastatt}
+            \getsetupstring{\xmllastatt}
             \xmlmappedvalue{setups:method}{\xmlatt{#1}{method}}{none}
         } {
             \doif {\xmlatt{#1}{default}} {yes} {
                 \underbar % next needs to be {braced}
             }
         }
-        {\cmd_reserved_value{\xmlatt{#1}{type}}}
+        {\getsetupstring{\xmlatt{#1}{type}}}
         \space
         \ignorespaces
     }
@@ -1135,7 +685,7 @@
     \doifelsemode {setups-pass-one} {
         \expanded{\setupintfont{\xmlatt{#1}{value}}}\ignorespaces
     } {
-        \cmd_reserved_value{\xmlatt{#1}{value}}
+        \getsetupstring{\xmlatt{#1}{value}}
         \space
         \ignorespaces
     }
@@ -1143,7 +693,7 @@
 
 \startxmlsetups xml:setups:inherit
    \secondSETUPcolumn {
-        \cmd_text_value{\getmessage{setup}{inherits}}
+        \cmd_text_value{\getsetupstring{cd:inherits}}
         \enspace
         \letterbackslash
         \xmlatt{#1}{name}
@@ -1158,67 +708,15 @@
    \blank[\v!halfline]
    \ignorespaces}
 
-\cmd_define_reserved {cd:command}               {\cmd_internal_value{\getmessage{setup}{command}}}
-\cmd_define_reserved {cd:dimension}             {\cmd_internal_value{\getmessage{setup}{dimension}}}
-\cmd_define_reserved {cd:file}                  {\cmd_internal_value{\getmessage{setup}{file}}}
-\cmd_define_reserved {cd:buffer}                {\cmd_internal_value{\getmessage{setup}{buffer}}}
-\cmd_define_reserved {cd:name}                  {\cmd_internal_value{\getmessage{setup}{identifier}}}
-\cmd_define_reserved {cd:character}             {\cmd_internal_value{\getmessage{setup}{character}}}
-\cmd_define_reserved {cd:mark}                  {\cmd_internal_value{\getmessage{setup}{mark}}}
-\cmd_define_reserved {cd:number}                {\cmd_internal_value{\getmessage{setup}{number}}}
-\cmd_define_reserved {cd:first}                 {\cmd_internal_value{\getmessage{setup}{first}}}
-\cmd_define_reserved {cd:last}                  {\cmd_internal_value{\getmessage{setup}{last}}}
-\cmd_define_reserved {cd:reference}             {\cmd_internal_value{\getmessage{setup}{reference}}}
-\cmd_define_reserved {cd:plural}                {\cmd_internal_value{\getmessage{setup}{plural}}}
-\cmd_define_reserved {cd:singular}              {\cmd_internal_value{\getmessage{setup}{singular}}}
-\cmd_define_reserved {cd:text}                  {\cmd_internal_value{\getmessage{setup}{text}}}
-\cmd_define_reserved {cd:formula}               {\cmd_internal_value{\getmessage{setup}{formula}}}
-\cmd_define_reserved {cd:file}                  {\cmd_internal_value{\getmessage{setup}{file}}}
-\cmd_define_reserved {cd:matrix}                {\cmd_internal_value{\getmessage{setup}{matrix}}}
-\cmd_define_reserved {cd:list}                  {\cmd_internal_value{\getmessage{setup}{list}}}
-\cmd_define_reserved {cd:section}               {\cmd_internal_value{\getmessage{setup}{section}}}
-\cmd_define_reserved {cd:language}              {\cmd_internal_value{\getmessage{setup}{language}}}
-\cmd_define_reserved {cd:section}               {\cmd_internal_value{\getmessage{setup}{section}}}
-\cmd_define_reserved {cd:language}              {\cmd_internal_value{\getmessage{setup}{language}}}
-\cmd_define_reserved {cd:processor}             {\cmd_internal_value{\getmessage{setup}{processor}}}
-\cmd_define_reserved {cd:style}                 {\cmd_internal_value{\getmessage{setup}{style}}}
-\cmd_define_reserved {cd:font}                  {\cmd_internal_value{\getmessage{setup}{font}}}
-\cmd_define_reserved {cd:character}             {\cmd_internal_value{\getmessage{setup}{character}}}
-\cmd_define_reserved {cd:userdata}              {\cmd_internal_value{\getmessage{setup}{userdata}}}
-\cmd_define_reserved {cd:key}                   {\cmd_internal_value{\getmessage{setup}{key}}}
-\cmd_define_reserved {cd:value}                 {\cmd_internal_value{\getmessage{setup}{value}}}
-\cmd_define_reserved {cd:color}                 {\cmd_internal_value{\getmessage{setup}{color}}}
-\cmd_define_reserved {cd:template}              {\cmd_internal_value{\getmessage{setup}{template}}}
-\cmd_define_reserved {cd:node}                  {\cmd_internal_value{\getmessage{setup}{node}}}
-\cmd_define_reserved {cd:lpath}                 {\cmd_internal_value{\getmessage{setup}{lpath}}}
-\cmd_define_reserved {cd:setup}                 {\cmd_internal_value{\getmessage{setup}{setup}}}
-\cmd_define_reserved {cd:xmlsetup}              {\cmd_internal_value{\getmessage{setup}{xmlsetup}}}
-\cmd_define_reserved {cd:luafunction}           {\cmd_internal_value{\getmessage{setup}{luafunction}}}
-\cmd_define_reserved {cd:marking}               {\cmd_internal_value{\getmessage{setup}{marking}}}
-\cmd_define_reserved {cd:sectionblock}          {\cmd_internal_value{\getmessage{setup}{sectionblock}}}
-\cmd_define_reserved {cd:row}                   {\cmd_internal_value{\getmessage{setup}{row}}}
-\cmd_define_reserved {cd:column}                {\cmd_internal_value{\getmessage{setup}{column}}}
-\cmd_define_reserved {cd:url}                   {\cmd_internal_value{\getmessage{setup}{url}}}
-\cmd_define_reserved {cd:true}                  {\cmd_internal_value{\getmessage{setup}{true}}}
-\cmd_define_reserved {cd:false}                 {\cmd_internal_value{\getmessage{setup}{false}}}
-\cmd_define_reserved {cd:category}              {\cmd_internal_value{\getmessage{setup}{category}}}
-\cmd_define_reserved {cd:csname}                {\cmd_internal_value{\getmessage{setup}{csname}}}
-\cmd_define_reserved {cd:content}               {\cmd_internal_value{\getmessage{setup}{content}}}
-
-%cmd_define_reserved {cd:noargument}            {\cmd_command_value {}}
-\cmd_define_reserved {cd:oneargument}           {\cmd_command_value {\texthash1}}
-\cmd_define_reserved {cd:twoarguments}          {\cmd_command_value {\texthash1\texthash2}}
-\cmd_define_reserved {cd:threearguments}        {\cmd_command_value {\texthash1\texthash2\texthash3}}
-
-\cmd_define_reserved {cd:sign}                  {[-+]}
-
 %D Auxiliary.
 
-\unexpanded\def\showSETUP#1#2#3%
+\unexpanded\def\showSETUP#1#2%
   {\bgroup
    \doglobal\increment\currentSETUPargument
    \setbox0=\hbox
-     {\doifelse{\xmlatt{#1}{list}}{yes}{#3}{#2}}%
+     {\doifelse{\xmlatt{#1}{list}}{yes}
+        {\getsetupstring{s:#2}}%
+        {\getsetupstring{l:#2}}}%
    \setbox2=\hbox to \wd0
      {\hss
       \raise1.25\exheight\hbox
@@ -1232,7 +730,7 @@
         \bgroup
           \txx
           \doif {\xmlatt{#1}{optional}} {yes}
-            {\cmd_internal_value{\getmessage{setup}{optional}}}%
+            {\getsetupstring{cd:optional}}%
         \egroup
       \hss}%
    \ht2\ht\strutbox
@@ -1246,9 +744,9 @@
    \egroup
    \ignorespaces}
 
-\unexpanded\def\showSETUPline#1%
+\unexpanded\def\showSETUPline#1#2%
   {\kern.5\emwidth
-   #1%
+   \getsetupstring{s:#2}%
    \ignorespaces}
 
 \unexpanded\def\showSETUPnumber
@@ -1266,6 +764,8 @@
 \xmlmapvalue {setups:keyword}    {parentheses} {\showSETUPkeywordparentheses}
 \xmlmapvalue {setups:keyword}    {none}        {\showSETUPkeywordnone}
 
+% todo: replace = by lower
+
 \unexpanded\def\setupEQsymbol % we raise the number already
   {.\lower.25\exheight\hpack{=}.}
 
@@ -1274,41 +774,33 @@
 
 \starttexdefinition unexpanded showSETUPassignmentbraces #1
     \ifcase\kindofsetup
-        \showSETUPline{\letterleftbrace\setupEQsymbol\letterrightbrace}
+        \showSETUPline{#1}{bracedassignment}
     \else
-        \showSETUP{#1}
-            {\letterleftbrace\setupEQsymbol\letterrightbrace}
-            {\letterleftbrace..,\setupEQsymbol,..\letterrightbrace}
+        \showSETUP    {#1}{bracedassignment}
     \fi
 \stoptexdefinition
 
 \starttexdefinition unexpanded showSETUPassignmentbrackets #1
     \ifcase\kindofsetup
-        \showSETUPline{[\setupEQsymbol]}
+        \showSETUPline{#1}{bracketedassignment}
     \else
-        \showSETUP{#1}
-            {[\setupEQsymbol]}
-            {[..,\setupEQsymbol,..]}
+        \showSETUP    {#1}{bracketedassignment}
     \fi
 \stoptexdefinition
 
 \starttexdefinition unexpanded showSETUPkeywordparentheses #1
     \ifcase\kindofsetup
-        \showSETUPline{(...)}
+        \showSETUPline{#1}{parenthesizedassignment}
     \else
-        \showSETUP{#1}
-            {(...)}
-            {(...,...)}
+        \showSETUP    {#1}{parenthesizedassignment}
     \fi
 \stoptexdefinition
 
 \starttexdefinition unexpanded showSETUPkeywordnone #1
     \ifcase\kindofsetup
-        \showSETUPline{...}
+        \showSETUPline{#1}{none}
     \else
-        \showSETUP{#1}
-            {...}
-            {.. ... ..}
+        \showSETUP    {#1}{none}
     \fi
 \stoptexdefinition
 
@@ -1330,21 +822,17 @@
 
 \starttexdefinition unexpanded showSETUPkeywordbraces #1
     \ifcase\kindofsetup
-        \showSETUPline{\letterleftbrace...\letterrightbrace}
+        \showSETUPline{#1}{braces}
     \else
-        \showSETUP{#1}
-            {\letterleftbrace...\letterrightbrace}
-            {\letterleftbrace...,...\letterrightbrace}
+        \showSETUP    {#1}{braces}
     \fi
 \stoptexdefinition
 
 \starttexdefinition unexpanded showSETUPkeywordbrackets #1
     \ifcase\kindofsetup
-        \showSETUPline{[...]}
+        \showSETUPline{#1}{brackets}
     \else
-        \showSETUP{#1}
-            {[...]}
-            {[...,...]}
+        \showSETUP    {#1}{brackets}
     \fi
 \stoptexdefinition
 
@@ -1358,121 +846,26 @@
 
 % arguments
 
-% \unexpanded\def\showSETUPargument#1%
-%     {\ifcase\kindofsetup
-%        \showSETUPline{%
-%          \letterleftbrace
-%          \xmlfilter{#1}{/cd:constant/command(xml:setups:constant:value)}% always one
-%          \letterrightbrace
-%        }
-%      \else
-%        \showSETUP{#1}
-%           {\letterleftbrace..\letterrightbrace}
-%           {\letterleftbrace..,...,..\letterrightbrace}%
-%      \fi}
-
-\unexpanded\def\showSETUPdisplaymath#1%
-    {\showSETUP{#1}
-        {\letterdollar\letterdollar...\letterdollar\letterdollar}
-        {\letterdollar\letterdollar...\letterdollar\letterdollar}}
-
-\unexpanded\def\showSETUPindex#1%
-    {\showSETUP{#1}
-        {\letterleftbrace...\letterrightbrace}
-        {\letterleftbrace..+...+..\letterrightbrace}}
-
-\unexpanded\def\showSETUPmath#1%
-    {\showSETUP{#1}
-        {\letterdollar...\letterdollar}
-        {\letterdollar...\letterdollar}}
-
-\unexpanded\def\showSETUPnothing#1%
-    {\showSETUP{#1}
-        {...}
-        {}}
-
-\unexpanded\def\showSETUPfile#1%
-    {\showSETUP{#1}
-        {~...~}
-        {}}
-
-\unexpanded\def\showSETUPposition#1%
-    {\showSETUP{#1}
-        {(...)}
-        {(...,...)}}
-
-\unexpanded\def\showSETUPtemplate#1
-    {\showSETUP{#1}
-        {[\letterbar...\letterbar]}
-        {[\letterbar...\letterbar...\letterbar]}}
-
-\unexpanded\def\showSETUPangles#1%
-    {\showSETUP{#1}
-        {<<...>>}
-        {<<...>>}}
-
-\unexpanded\def\showSETUPreference#1%
-    {\showSETUP{#1}
-        {[...]}
-        {[...,...]}}
-
-\unexpanded\def\showSETUPapply#1%
-    {\showSETUP{#1}
-        {[\setupAPPLYsymbol]}
-        {[..,\setupAPPLYsymbol,...]}}
-
-\unexpanded\def\showSETUPtwowords#1%
-    {\showSETUP{#1}
-        {[..+..]}
-        {[..+..]}}
-
-\unexpanded\def\showSETUPthreewords#1%
-    {\showSETUP{#1}
-        {[..+..+..]}
-        {[..+..+..]}}
-
-\unexpanded\def\showSETUPcsname#1%
-    {\showSETUP{#1}
-        {{\cmd_command_value{}}}
-        {}}
-
-\unexpanded\def\showSETUPdestination#1%
-    {\showSETUP{#1}
-        {[\letterleftbrace..[ref]\letterrightbrace]}
-        {[..,\letterleftbrace..[ref,..]\letterrightbrace,..]}}
-
-\unexpanded\def\showSETUPtriplet#1%
-    {\showSETUP{#1}
-        {[x:y:z=]}
-        {[x:y:z=,..]}}
-
-\unexpanded\def\showSETUPword#1%
-    {\showSETUP{#1}
-        {\letterleftbrace...\letterrightbrace}
-        {\letterleftbrace.. ... ..\letterrightbrace}}
-
-\unexpanded\def\showSETUPcontent#1%
-    {\showSETUP{#1}
-        {\letterleftbrace...\letterrightbrace}
-        {\letterleftbrace.. ... ..\letterrightbrace}}
-
-\unexpanded\def\showSETUPtext#1%
-    {\showSETUP{#1}
-        {...}
-        {.. ... ..}}
-
-% \unexpanded\def\showSETUPto#1%
-%     {\showSETUP{#1}
-%         {\texescape to }
-%         {\texescape to }}
-
-\unexpanded\def\showSETUPto#1%
-    {\showSETUPline{\texescape to}}
-
-\unexpanded\def\showSETUPmacro#1%
-    {\showSETUP{#1}
-        {\texescape macro }
-        {\texescape macro }}
+\unexpanded\def\showSETUPdisplaymath#1{\showSETUP    {#1}{displaymath}}
+\unexpanded\def\showSETUPindex      #1{\showSETUP    {#1}{index}}
+\unexpanded\def\showSETUPmath       #1{\showSETUP    {#1}{math}}
+\unexpanded\def\showSETUPnothing    #1{\showSETUP    {#1}{nothing}}
+\unexpanded\def\showSETUPfile       #1{\showSETUP    {#1}{file}}
+\unexpanded\def\showSETUPposition   #1{\showSETUP    {#1}{position}}
+\unexpanded\def\showSETUPtemplate   #1{\showSETUP    {#1}{template}}
+\unexpanded\def\showSETUPangles     #1{\showSETUP    {#1}{angle}}
+\unexpanded\def\showSETUPreference  #1{\showSETUP    {#1}{reference}}
+\unexpanded\def\showSETUPapply      #1{\showSETUP    {#1}{apply}}
+\unexpanded\def\showSETUPtwowords   #1{\showSETUP    {#1}{twowords}}
+\unexpanded\def\showSETUPthreewords #1{\showSETUP    {#1}{threewords}}
+\unexpanded\def\showSETUPcsname     #1{\showSETUP    {#1}{noargument}}
+\unexpanded\def\showSETUPdestination#1{\showSETUP    {#1}{destination}}
+\unexpanded\def\showSETUPtriplet    #1{\showSETUP    {#1}{triplet}}
+\unexpanded\def\showSETUPword       #1{\showSETUP    {#1}{word}}
+\unexpanded\def\showSETUPcontent    #1{\showSETUP    {#1}{content}}
+\unexpanded\def\showSETUPtext       #1{\showSETUP    {#1}{textual}}
+\unexpanded\def\showSETUPto         #1{\showSETUPline{#1}{to}}
+\unexpanded\def\showSETUPmacro      #1{\showSETUP    {#1}{macro}}
 
 % A prelude to a rewrite and some more:
 
@@ -1554,7 +947,7 @@
 % official interface
 
 \unexpanded\def\cmdinternal#1%
-  {{\tttf\cmd_reserved_value{#1}}} % todo color .. highlight
+  {{\tttf\getsetupstring{#1}}} % todo color .. highlight
 
 \let\cmdbasicsetup\basicsetup
 \let\cmdshortsetup\shortsetup

@@ -276,7 +276,7 @@ handlers.luc  = handlers.lua
 handlers.html = handlers.htm
 
 local indices    = { "index.htm", "index.html" }
-local portnumber = 31415 -- pi suits tex
+local portnumber = 8088
 
 local newline    = lpeg.patterns.newline
 local spacer     = lpeg.patterns.spacer
@@ -422,4 +422,4 @@ else
     application.help()
 end
 
--- mtxrun --script server --start => http://localhost:31415/mtx-server-ctx-startup.lua
+-- mtxrun --script server --start => http://localhost:8088/mtx-server-ctx-startup.lua

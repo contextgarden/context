@@ -10,11 +10,18 @@ if not modules then modules = { } end modules ['mtx-server-ctx-help'] = {
 -- todo: pickup translations from mult file
 
 dofile(resolvers.findfile("trac-lmx.lua","tex"))
+dofile(resolvers.findfile("util-sci.lua","tex"))
+
+local scite = utilities.scite
+
+local setupstrings = dofile(resolvers.findfile("mult-def.lua","tex")).setupstrings
 
 -- problem ... serialize parent stack
 
-local format, match, gsub, find = string.format, string.match, string.gsub, string.find
-local concat = table.concat
+local format, match, gsub, find, lower = string.format, string.match, string.gsub, string.find, string.lower
+local concat, sort = table.concat, table.sort
+
+local formatters = string.formatters
 
 local report = logs.reporter("ctx-help")
 
@@ -31,253 +38,12 @@ document.setups.span = {
     pe = "<span dir='rtl' lang='arabic'>%s</span>"
 }
 
-document.setups.translations =  document.setups.translations or {
-
-    nl = {
-        ["title"]       = "setup",
-        ["formula"]     = "formule",
-        ["number"]      = "getal",
-        ["list"]        = "lijst",
-        ["dimension"]   = "maat",
-        ["mark"]        = "markering",
-        ["reference"]   = "verwijzing",
-        ["command"]     = "commando",
-        ["file"]        = "file",
-        ["name"]        = "naam",
-        ["identifier"]  = "naam",
-        ["text"]        = "tekst",
-        ["section"]     = "sectie",
-        ["singular"]    = "naam enkelvoud",
-        ["plural"]      = "naam meervoud",
-        ["matrix"]      = "n*m",
-        ["see"]         = "zie",
-        ["inherits"]    = "erft van",
-        ["optional"]    = "optioneel",
-        ["displaymath"] = "formule",
-        ["index"]       = "ingang",
-        ["math"]        = "formule",
-        ["nothing"]     = "leeg",
-        ["file"]        = "file",
-        ["position"]    = "positie",
-        ["reference"]   = "verwijzing",
-        ["csname"]      = "naam",
-        ["destination"] = "bestemming",
-        ["triplet"]     = "triplet",
-        ["word"]        = "woord",
-        ["content"]     = "tekst",
-    },
-
-    en = {
-        ["title"]       = "setup",
-        ["formula"]     = "formula",
-        ["number"]      = "number",
-        ["list"]        = "list",
-        ["dimension"]   = "dimension",
-        ["mark"]        = "mark",
-        ["reference"]   = "reference",
-        ["command"]     = "command",
-        ["file"]        = "file",
-        ["name"]        = "name",
-        ["identifier"]  = "identifier",
-        ["text"]        = "text",
-        ["section"]     = "section",
-        ["singular"]    = "singular name",
-        ["plural"]      = "plural name",
-        ["matrix"]      = "n*m",
-        ["see"]         = "see",
-        ["inherits"]    = "inherits from",
-        ["optional"]    = "optional",
-        ["displaymath"] = "formula",
-        ["index"]       = "entry",
-        ["math"]        = "formula",
-        ["nothing"]     = "empty",
-        ["file"]        = "file",
-        ["position"]    = "position",
-        ["reference"]   = "reference",
-        ["csname"]      = "name",
-        ["destination"] = "destination",
-        ["triplet"]     = "triplet",
-        ["word"]        = "word",
-        ["content"]     = "text",
-
-        ["noargument"]     = "\\cs",
-        ["oneargument"]    = "\\cs#1{..}",
-        ["twoarguments"]   = "\\cs#1#2{..}{..}",
-        ["threearguments"] = "\\cs#1#2#3{..}{..}{..}",
-
-    },
-
-    de = {
-        ["title"]       = "Setup",
-        ["formula"]     = "Formel",
-        ["number"]      = "Nummer",
-        ["list"]        = "Liste",
-        ["dimension"]   = "Dimension",
-        ["mark"]        = "Beschriftung",
-        ["reference"]   = "Referenz",
-        ["command"]     = "Befehl",
-        ["file"]        = "Datei",
-        ["name"]        = "Name",
-        ["identifier"]  = "Name",
-        ["text"]        = "Text",
-        ["section"]     = "Abschnitt",
-        ["singular"]    = "singular",
-        ["plural"]      = "plural",
-        ["matrix"]      = "n*m",
-        ["see"]         = "siehe",
-        ["inherits"]    = "inherits from",
-        ["optional"]    = "optioneel",
-        ["displaymath"] = "formula",
-        ["index"]       = "entry",
-        ["math"]        = "formula",
-        ["nothing"]     = "empty",
-        ["file"]        = "file",
-        ["position"]    = "position",
-        ["reference"]   = "reference",
-        ["csname"]      = "name",
-        ["destination"] = "destination",
-        ["triplet"]     = "triplet",
-        ["word"]        = "word",
-        ["content"]     = "text",
-    },
-
-    cz = {
-        ["title"]       = "setup",
-        ["formula"]     = "rovnice",
-        ["number"]      = "cislo",
-        ["list"]        = "seznam",
-        ["dimension"]   = "dimenze",
-        ["mark"]        = "znacka",
-        ["reference"]   = "reference",
-        ["command"]     = "prikaz",
-        ["file"]        = "soubor",
-        ["name"]        = "jmeno",
-        ["identifier"]  = "jmeno",
-        ["text"]        = "text",
-        ["section"]     = "sekce",
-        ["singular"]    = "jmeno v singularu",
-        ["plural"]      = "jmeno v pluralu",
-        ["matrix"]      = "n*m",
-        ["see"]         = "viz",
-        ["inherits"]    = "inherits from",
-        ["optional"]    = "optioneel",
-        ["displaymath"] = "formula",
-        ["index"]       = "entry",
-        ["math"]        = "formula",
-        ["nothing"]     = "empty",
-        ["file"]        = "file",
-        ["position"]    = "position",
-        ["reference"]   = "reference",
-        ["csname"]      = "name",
-        ["destination"] = "destination",
-        ["triplet"]     = "triplet",
-        ["word"]        = "word",
-        ["content"]     = "text",
-    },
-
-    it = {
-        ["title"]       = "setup",
-        ["formula"]     = "formula",
-        ["number"]      = "number",
-        ["list"]        = "list",
-        ["dimension"]   = "dimension",
-        ["mark"]        = "mark",
-        ["reference"]   = "reference",
-        ["command"]     = "command",
-        ["file"]        = "file",
-        ["name"]        = "name",
-        ["identifier"]  = "name",
-        ["text"]        = "text",
-        ["section"]     = "section",
-        ["singular"]    = "singular name",
-        ["plural"]      = "plural name",
-        ["matrix"]      = "n*m",
-        ["see"]         = "see",
-        ["inherits"]    = "inherits from",
-        ["optional"]    = "optioneel",
-        ["displaymath"] = "formula",
-        ["index"]       = "entry",
-        ["math"]        = "formula",
-        ["nothing"]     = "empty",
-        ["file"]        = "file",
-        ["position"]    = "position",
-        ["reference"]   = "reference",
-        ["csname"]      = "name",
-        ["destination"] = "destination",
-        ["triplet"]     = "triplet",
-        ["word"]        = "word",
-        ["content"]     = "text",
-    },
-
-    ro = {
-        ["title"]       = "setari",
-        ["formula"]     = "formula",
-        ["number"]      = "numar",
-        ["list"]        = "lista",
-        ["dimension"]   = "dimensiune",
-        ["mark"]        = "marcaj",
-        ["reference"]   = "referinta",
-        ["command"]     = "comanda",
-        ["file"]        = "fisier",
-        ["name"]        = "nume",
-        ["identifier"]  = "nume",
-        ["text"]        = "text",
-        ["section"]     = "sectiune",
-        ["singular"]    = "nume singular",
-        ["plural"]      = "nume pluram",
-        ["matrix"]      = "n*m",
-        ["see"]         = "vezi",
-        ["inherits"]    = "inherits from",
-        ["optional"]    = "optioneel",
-        ["displaymath"] = "formula",
-        ["index"]       = "entry",
-        ["math"]        = "formula",
-        ["nothing"]     = "empty",
-        ["file"]        = "file",
-        ["position"]    = "position",
-        ["reference"]   = "reference",
-        ["csname"]      = "name",
-        ["destination"] = "destination",
-        ["triplet"]     = "triplet",
-        ["word"]        = "word",
-        ["content"]     = "text",
-    },
-
-    fr = {
-        ["title"]       = "réglage",
-        ["formula"]     = "formule",
-        ["number"]      = "numéro",
-        ["list"]        = "liste",
-        ["dimension"]   = "dimension",
-        ["mark"]        = "marquage",
-        ["reference"]   = "reference",
-        ["command"]     = "commande",
-        ["file"]        = "fichier",
-        ["name"]        = "nom",
-        ["identifier"]  = "identificateur",
-        ["text"]        = "texte",
-        ["section"]     = "section",
-        ["singular"]    = "nom singulier",
-        ["plural"]      = "nom pluriel",
-        ["matrix"]      = "n*m",
-        ["see"]         = "vois",
-        ["inherits"]    = "herite de",
-        ["optional"]    = "optionel",
-        ["displaymath"] = "formule",
-        ["index"]       = "entrée",
-        ["math"]        = "formule",
-        ["nothing"]     = "vide",
-        ["file"]        = "fichier",
-        ["position"]    = "position",
-        ["reference"]   = "réference",
-        ["csname"]      = "nom",
-        ["destination"] = "destination",
-        ["triplet"]     = "triplet",
-        ["word"]        = "mot",
-        ["content"]     = "texte",
-    }
-
-}
+document.setups.translations = table.setmetatableindex(setupstrings, {
+    ["noargument"]     = { en = "\\cs" },
+    ["oneargument"]    = { en = "\\cs#1{..}" },
+    ["twoarguments"]   = { en = "\\cs#1#2{..}{..}" },
+    ["threearguments"] = { en = "\\cs#1#2#3{..}{..}{..}" },
+})
 
 document.setups.formats = {
     open_command    = {
@@ -330,22 +96,24 @@ document.setups.formats = {
 }
 
 local function translate(tag,int,noformat)
-    local t = document.setups.translations
-    local te = t["en"]
-    local ti = t[int] or te
+    local formats      = document.setups.formats
+    local translations = document.setups.translations
+    local translation  = translations[tag]
+    local translated   = translation and (translation[tag] or translation[tag]) or tag
     if noformat then
-        return ti[tag] or te[tag] or tag
+        return translated
     else
-        return format(document.setups.formats.special,ti[tag] or te[tag] or tag)
+        return formatters[formats.special](translated)
     end
 end
 
 local function translated(e,int)
+    local formats    = document.setups.formats
     local attributes = e.at
-    local s = attributes.type or "?"
+    local s   = attributes.type or "?"
     local tag = match(s,"^cd:(.*)$")
     if attributes.default == "yes" then
-        return format(document.setups.formats.default,tag or "?")
+        return formatters[formats.default](tag or "?")
     elseif tag then
         return translate(tag,int)
     else
@@ -392,37 +160,50 @@ function document.setups.name(ek)
     if at.generated == "yes" then
         name = name .. "*"
     end
-    return name:lower()
+    return lower(name)
 end
 
-function document.setups.csname(ek,int)
+local function csname(ek,int)
     local cs = ""
     local at = ek.at or { }
     if at.type == 'environment' then
         cs = translate("start",int,true) .. cs
     end
-    for e in xml.collected(ek,'cd:sequence/(cd:string|variable)') do
+    local e = xml.first(ek,'cd:sequence/(cd:string|variable)')
+    if e then
         if e.tg == "string" then
             cs = cs .. e.at.value
         else
             cs = cs .. e.at.value -- to be translated
         end
+    else
+        cs = cs .. ek.at.name
     end
     return cs
 end
 
+document.setups.csname = csname
+
 function document.setups.names()
     local current = document.setups.current
-    local names = current.names
+    local names   = current.names
     if not names or #names == 0 then
+        local found = { }
+        local name  = document.setups.name
         names = { }
-        local name = document.setups.name
-        local csname = document.setups.csname
         for e in xml.collected(current.root,'cd:command') do
-            names[#names+1] = { e.at.name, csname(e,int) }
+            local name   = e.at.name
+            local csname = csname(e,int)
+            local done   = found[csname]
+            if not done then
+                names[#names+1] = { name, csname }
+                found[csname] = name
+            else
+                -- variant
+            end
         end
-        table.sort(names, function(a,b) return a[2]:lower() < b[2]:lower() end)
-        current.names = names
+        sort(names, function(a,b) return lower(a[2]) < lower(b[2]) end)
+        current.names = names -- can also become a hash
     end
     return names
 end
@@ -462,34 +243,36 @@ end
 function document.setups.resolve(name)
     local current = document.setups.current
     if current.root then
-        local e = xml.filter(current.root,format("cd:define[@name='%s']/text()",name))
+        local e = xml.filter(current.root,formatters["cd:define[@name='%s']/text()"](name))
         if e then
             xml.sprint(e)
         end
     end
 end
 
+-- todo: cache definitions
+
 function document.setups.collect(name,int,lastmode)
     local current = document.setups.current
     local formats = document.setups.formats
-    local command = xml.filter(current.root,format("cd:command[@name='%s']/first()",name))
-    if command then
+    local list    = { }
+    for command in xml.collected(current.root,formatters["cd:command[@name='%s']"](name)) do
         local attributes = command.at or { }
         local data = {
             command = command,
             category = attributes.category or "",
         }
         if document.setups.showsources then
-            data.source = (attributes.file and format(formats.source,attributes.file,lastmode,attributes.file)) or ""
+            data.source = (attributes.file and formatters[formats.source](attributes.file,lastmode,attributes.file)) or ""
         else
             data.source = attributes.file or ""
         end
         local n, sequence, tags = 0, { }, { }
-        sequence[#sequence+1] = format(formats.open_command[lastmode],document.setups.csname(command,int))
+        sequence[#sequence+1] = formatters[formats.open_command[lastmode]](document.setups.csname(command,int))
         local arguments, tag = { }, ""
-        for r, d, k in xml.elements(command,"(cd:keywords|cd:assignments)") do
+        for e in xml.collected(command,"(cd:keywords|cd:assignments)") do
             n = n + 1
-            local attributes = d[k].at
+            local attributes = e.at
             if #sequence > 1 then
                 local c = formats.connector[lastmode]
                 if c ~= "" then
@@ -498,15 +281,15 @@ function document.setups.collect(name,int,lastmode)
             end
             if attributes.optional == 'yes' then
                 if attributes.list == 'yes' then
-                    tag = format(formats.optional_list[lastmode],n)
+                    tag = formatters[formats.optional_list[lastmode]](n)
                 else
-                    tag = format(formats.optional_single[lastmode],n)
+                    tag = formatters[formats.optional_single[lastmode]](n)
                 end
             else
                 if attributes.list == 'yes' then
-                    tag = format(formats.mandate_list[lastmode],n)
+                    tag = formatters[formats.mandate_list[lastmode]](n)
                 else
-                    tag = format(formats.mandate_single[lastmode],n)
+                    tag = formatters[formats.mandate_single[lastmode]](n)
                 end
             end
             sequence[#sequence+1] = tag
@@ -515,66 +298,87 @@ function document.setups.collect(name,int,lastmode)
         sequence[#sequence+1] = formats.close_command[lastmode]
         data.sequence = concat(sequence, " ")
         local parameters, n = { }, 0
-        for r, d, k in xml.elements(command,"(cd:keywords|cd:assignments)") do
-            n = n + 1
-            if d[k].tg == "keywords" then
-                local left = tags[n]
-                local right = { }
-                for r, d, k in xml.elements(d[k],"(cd:constant|cd:resolve)") do
-                    local tag = d[k].tg
-                    if tag == "resolve" then
-                        local name = d[k].at.name or ""
-                        if name ~= "" then
-                            local resolved = xml.filter(current.root,format("cd:define[@name='%s']",name))
-                            for r, d, k in xml.elements(resolved,"cd:constant") do
-                                right[#right+1] = translated(d[k],int)
-                            end
+
+        local function process(e)
+            for e in xml.collected(e,"(cd:keywords|cd:assignments|cd:resolve)") do
+                n = n + 1
+                local tag = e.tg
+                if tag == "resolve" then
+                    local name = e.at.name or ""
+                    if name ~= "" then
+                        local resolved = xml.first(current.root,formatters["cd:define[@name='%s']"](name))
+                        if resolved then
+                            process(resolved)
                         end
-                    else
-                        right[#right+1] = translated(d[k],int)
                     end
-                end
-                parameters[#parameters+1] = format(formats.parameter,left,"",concat(right, ", "))
-            else
-                local what = tags[n]
-                for r, d, k in xml.elements(d[k],"(cd:parameter|cd:inherit)") do
-                    local tag = d[k].tg
-                    local left, right = d[k].at.name or "?", { }
-                    if tag == "inherit" then
-                        local name = d[k].at.name or "?"
-                        local url  = format(document.setups.formats.href_as_command[lastmode],name,lastmode,name)
-                        if #parameters > 0 and not find(parameters[#parameters],"<br/>") then
-                            parameters[#parameters+1] = format(formats.parameter,"<br/>","","")
-                        end
-                        parameters[#parameters+1] = format(formats.parameter,what,format(formats.special,translate("inherits",int)),url)
-                    else
-                        for r, d, k in xml.elements(d[k],"(cd:constant|cd:resolve)") do
-                            local tag = d[k].tg
-                            if tag == "resolve" then
-                                local name = d[k].at.name or ""
-                                if name ~= "" then
-                                    local resolved = xml.filter(current.root,format("cd:define[@name='%s']",name))
-                                    for r, d, k in xml.elements(resolved,"cd:constant") do
-                                        right[#right+1] = translated(d[k],int)
-                                    end
+                elseif tag == "keywords" then
+                    local left  = tags[n]
+                    local right = { }
+                    for e in xml.collected(e,"(cd:constant|cd:resolve)") do
+                        local tag = e.tg
+                        if tag == "resolve" then
+                            local name = e.at.name or ""
+                            if name ~= "" then
+                                local resolved = xml.first(current.root,formatters["cd:define[@name='%s']"](name))
+                                for e in xml.collected(resolved,"cd:constant") do
+                                    right[#right+1] = translated(e,int)
                                 end
-                            else
-                                right[#right+1] = translated(d[k],int)
                             end
+                        else
+                            right[#right+1] = translated(e,int)
                         end
-                        parameters[#parameters+1] = format(formats.parameter,what,left,concat(right, ", "))
                     end
-                    what = ""
+                    parameters[#parameters+1] = formatters[formats.parameter](left,"",concat(right, ", "))
+                else
+                    local what = tags[n]
+                    for e in xml.collected(e,"(cd:parameter|cd:inherit|cd:resolve)") do
+                        local tag   = e.tg
+                        local left  = e.at.name or "?"
+                        local right = { }
+                        if tag == "resolve" then
+                            local name = e.at.name or ""
+                            if name ~= "" then
+                                local resolved = xml.first(current.root,formatters["cd:define[@name='%s']"](name))
+                                if resolved then
+                                    process(resolved)
+                                end
+                            end
+                        elseif tag == "inherit" then
+                            local name = e.at.name or "?"
+                            local url  = formatters[formats.href_as_command[lastmode]](name,lastmode,name)
+                            if #parameters > 0 and not find(parameters[#parameters],"<br/>") then
+                                parameters[#parameters+1] = formatters[formats.parameter]("<br/>","","")
+                            end
+                            parameters[#parameters+1] = formatters[formats.parameter](what,formatters[formats.special](translate("inherits",int)),url)
+                        else
+                            for e in xml.collected(e,"(cd:constant|cd:resolve)") do
+                                local tag = e.tg
+                                if tag == "resolve" then
+                                    local name = e.at.name or ""
+                                    if name ~= "" then
+                                        local resolved = xml.first(current.root,formatters["cd:define[@name='%s']"](name))
+                                        for e in xml.collected(resolved,"cd:constant") do
+                                            right[#right+1] = translated(e,int)
+                                        end
+                                    end
+                                else
+                                    right[#right+1] = translated(e,int)
+                                end
+                            end
+                            parameters[#parameters+1] = formatters[formats.parameter](what,left,concat(right, ", "))
+                        end
+                        what = ""
+                    end
                 end
+                parameters[#parameters+1] = formatters[formats.parameter]("<br/>","","")
             end
-            parameters[#parameters+1] = format(formats.parameter,"<br/>","","")
         end
+        process(command)
         data.parameters = parameters or { }
         data.mode = formats.modes[lastmode or "tex"]
-        return data
-    else
-        return nil
+        list[#list+1] = data
     end
+    return list
 end
 
 -- -- --
@@ -608,12 +412,13 @@ local variables = {
 --~     return io.loaddata(resolvers.findfile(filename)) -- return resolvers.texdatablob(filename)
 --~ end
 
-local function doit(configuration,filename,hashed)
+local what = { "environment", "category", "source", "mode" }
 
-    local formats = document.setups.formats
+local function doit(configuration,filename,hashed)
 
     local start   = os.clock()
     local detail  = hashed.queries or { }
+    local formats = document.setups.formats
 
     if detail then
 
@@ -626,7 +431,8 @@ local function doit(configuration,filename,hashed)
 
         if lastinterface then
             report("checking interface: %s",lastinterface)
-            document.setups.load(format("cont-%s.xml",lastinterface))
+         -- document.setups.load(formatters["cont-%s.xml"](lastinterface))
+            document.setups.load(formatters["context-%s.xml"](lastinterface))
         end
 
         local div  = document.setups.div [lastinterface]
@@ -635,13 +441,13 @@ local function doit(configuration,filename,hashed)
         local names, refs, ints = document.setups.names(lastinterface), { }, { }
         for k=1,#names do
             local v = names[k]
-            refs[k] = format(formats.href_in_list[lastmode],v[1],lastmode,v[2])
+            refs[k] = formatters[formats.href_in_list[lastmode]](v[1],lastmode,v[2])
         end
         if lastmode ~= "lua" then
             local sorted = table.sortedkeys(interfaces)
             for k=1,#sorted do
                 local v = sorted[k]
-                ints[k] = format(formats.interface,interfaces[v],lastmode,v)
+                ints[k] = formatters[formats.interface](interfaces[v],lastmode,v)
             end
         end
 
@@ -649,8 +455,8 @@ local function doit(configuration,filename,hashed)
         local i = concat(ints,"<br/><br/>")
 
         if div then
-            variables.names      = format(div,n)
-            variables.interfaces = format(div,i)
+            variables.names      = formatters[div](n)
+            variables.interfaces = formatters[div](i)
         else
             variables.names      = n
             variables.interfaces = i
@@ -676,16 +482,19 @@ local function doit(configuration,filename,hashed)
             end
             if full == "" then
                 variables.maintitle = lastsource
-                variables.maintext  = format(formats.listing,"no source found")
+                variables.maintext  = formatters[formats.listing]("no source found")
             else
+                local data = io.loaddata(full)
+                data = scite.html(data,file.suffix(full),true)
                 variables.maintitle = name
-                variables.maintext  = format(formats.listing,io.loaddata(full))
+                variables.maintext  = formatters[formats.listing](data)
             end
             lastsource = ""
         elseif lastcommand and lastcommand ~= "" then
-            local data = document.setups.collect(lastcommand,lastinterface,lastmode)
-            if data then
-                local what, extra = { "environment", "category", "source", "mode" }, { }
+            local list = document.setups.collect(lastcommand,lastinterface,lastmode)
+            if list and #list > 0 then
+                local data  = list[1]
+                local extra = { }
                 for k=1,#what do
                     local v = what[k]
                     if data[v] and data[v] ~= "" then
@@ -694,7 +503,7 @@ local function doit(configuration,filename,hashed)
                     end
                 end
                 variables.maintitle = data.sequence
-                variables.maintext  = format(formats.parameters,concat(data.parameters))
+                variables.maintext  = formatters[formats.parameters](concat(data.parameters))
                 variables.extra     = concat(extra,"&nbsp;&nbsp;&nbsp;")
             else
                 variables.maintext = "select command"
