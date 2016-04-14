@@ -25,9 +25,11 @@ local luatex = luatex
 
 local startactions = { }
 local stopactions  = { }
+local dumpactions  = { }
 
 function luatex.registerstartactions(...) insert(startactions, ...) end
 function luatex.registerstopactions (...) insert(stopactions,  ...) end
+function luatex.registerdumpactions (...) insert(dumpactions,  ...) end
 
 local function start_run()
     if logs.start_run then
@@ -76,6 +78,9 @@ end
 -- end
 
 local function pre_dump_actions()
+    for i=1,#dumpactions do
+        dumpactions[i]()
+    end
     lua.finalize(trace_lua_dump and report_lua or nil)
  -- statistics.savefmtstatus("\jobname","\contextversion","context.tex")
 end

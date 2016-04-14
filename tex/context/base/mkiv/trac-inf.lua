@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 local type, tonumber, select = type, tonumber, select
 local format, lower, find = string.format, string.lower, string.find
 local concat = table.concat
-local clock = os.gettimeofday or os.clock -- should go in environment
+local clock  = os.gettimeofday or os.clock -- should go in environment
 
 local setmetatableindex = table.setmetatableindex
 local serialize         = table.serialize

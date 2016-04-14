@@ -65,6 +65,10 @@
                 background-color: #C0C0C0 ;
                 color: black;
             }
+            a.setuplisturl {
+                color: #000000 ;
+                text-decoration: underline ;
+            }
             <?lua
                 if utilities and utilities.scite and utilities.scite.css then
 p(utilities.scite.css())

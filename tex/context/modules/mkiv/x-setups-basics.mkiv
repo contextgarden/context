@@ -18,39 +18,6 @@
 
 \unprotect
 
-% general
-
-\unexpanded\def\setupnumfont {}
-\unexpanded\def\setuptxtfont {}
-\unexpanded\def\setupintfont {\WORD}
-\unexpanded\def\setupvarfont {\sl}
-\unexpanded\def\setupoptfont {\sl}
-\unexpanded\def\setupalwcolor{}
-\unexpanded\def\setupoptcolor{darkgray}
-
-\unexpanded\def\setupvarword#1{{\sl\detokenize{#1}}}
-\unexpanded\def\setupintword#1{\WORD{\detokenize{#1}}}
-\unexpanded\def\setuptxtword#1{\detokenize{#1}}
-
-\installcorenamespace{interfacesetup}
-
-\installsetuponlycommandhandler \??interfacesetup {setup} % \??interfacesetup
-
-\unexpanded\def\cmd_internal_value#1%
-  {\dontleavehmode
-   \begingroup
-   \setupintfont{#1}%
-   \endgroup}
-
-\unexpanded\def\cmd_text_value#1%
-  {\dontleavehmode
-   \begingroup
-   \setupvarfont{#1}%
-   \endgroup}
-
-\unexpanded\def\cmd_command_value#1%
-  {{\setupvarfont{#1}}}
-
 \defineregister
   [texmacro]
 % [texmacros]
@@ -74,6 +41,47 @@
    \c!offset=0.75\emwidth]
 
 \popmacro\setuptext
+
+\installcorenamespace{interfacesetup}
+
+\installsetuponlycommandhandler \??interfacesetup {setup} % \??interfacesetup
+
+\setupsetup
+  [\c!before=,
+   \c!after=,
+   \c!command=\setup,
+   \c!criterium=\v!used]
+
+% general
+
+\unexpanded\def\setupnumfont {}
+\unexpanded\def\setuptxtfont {}
+\unexpanded\def\setupintfont {\WORD}
+\unexpanded\def\setupvarfont {\sl}
+\unexpanded\def\setupoptfont {\sl}
+\unexpanded\def\setupalwcolor{}
+\unexpanded\def\setupoptcolor{darkgray}
+
+\unexpanded\def\setupvarword#1{{\sl\detokenize{#1}}}
+\unexpanded\def\setupintword#1{\WORD{\detokenize{#1}}}
+\unexpanded\def\setuptxtword#1{\detokenize{#1}}
+
+\unexpanded\def\cmd_internal_value#1%
+  {\dontleavehmode
+   \begingroup
+   \setupintfont{#1}%
+   \endgroup}
+
+\unexpanded\def\cmd_text_value#1%
+  {\dontleavehmode
+   \begingroup
+   \setupvarfont{#1}%
+   \endgroup}
+
+\unexpanded\def\cmd_command_value#1%
+  {\begingroup
+   \setupvarfont{#1}%
+   \endgroup}
 
 %D Loading:
 
@@ -207,23 +215,16 @@
         context(n)
     end
 
-    local cmd = table.tohash {
-        "cd:noargument",
-        "cd:oneargument",
-        "cd:twoarguments",
-        "cd:threearguments",
-    }
-
     interfaces.implement {
         name      = "getsetupstring",
         actions   = function(s)
             local g = getsetupstring(s)
             if not find(s,"^cd:") then
                 setuptxtword(g)
-            elseif cmd[s] then
+            elseif find(s,"%-.$") then
                 setupvarword(g)
             else
-                setupintword(g)
+                setupintword(g) -- cap
             end
         end,
         overload  = true,
@@ -271,24 +272,28 @@
          \xmlfilter{setups:#1}{/interface//command/command(xml:setups:register)}%
       }}}
 
-\newconstant\kindofsetup
+\newconstant   \c_cmd_kind
+\newconditional\c_cmd_doing_line
+\newconditional\c_cmd_measuring
+\newconditional\c_cmd_show_setup
+\newcount      \c_cmd_current_argument
+\newcount      \c_cmd_maximum_argument
+\newdimen      \d_cmd_current_width
+\let           \m_cmd_current_hash      \empty
+\let           \m_cmd_current_file      \empty
 
-\unexpanded\def\basicsetup{\kindofsetup\zerocount\cmd_show_setup}
-\unexpanded\def\shortsetup{\kindofsetup\plusone  \cmd_show_setup}
-\unexpanded\def\setup     {\kindofsetup\plustwo  \cmd_show_setup}
-\unexpanded\def\showsetup {\kindofsetup\plustwo  \cmd_show_setup}
+\unexpanded\def\basicsetup{\c_cmd_kind\zerocount\cmd_show_setup}
+\unexpanded\def\shortsetup{\c_cmd_kind\plusone  \cmd_show_setup}
+\unexpanded\def\setup     {\c_cmd_kind\plustwo  \cmd_show_setup}
+\unexpanded\def\showsetup {\c_cmd_kind\plustwo  \cmd_show_setup}
 
 \unexpanded\def\showsetupinlist#1#2#3%
-  {\kindofsetup\plustwo\xmlsetup{#3}{xml:setups:typeset}\par}
-
-% todo: only references in lists
-
-\newconditional\c_cmd_showsetup
+  {\c_cmd_kind\plustwo\xmlsetup{#3}{xml:setups:typeset}\par}
 
 \installtextracker
   {cmd.showsetup}
-  {\settrue\c_cmd_showsetup}
-  {\setfalse\c_cmd_showsetup}
+  {\settrue\c_cmd_show_setup}
+  {\setfalse\c_cmd_show_setup}
 
 \unexpanded\def\cmd_show_setup
   {\doifelsenextoptionalcs\cmd_show_setup_yes\cmd_show_setup_nop}
@@ -302,7 +307,7 @@
 
 \def\cmd_show_setup_nop#1% this will trigger 'used'
   {\registersort[texcommand][stp:x:#1]%
-   \ifconditional\c_cmd_showsetup
+   \ifconditional\c_cmd_show_setup
      \writestatus{setup}{#1 / \rawsynonymname{texcommand}{stp:x:#1}}%
    \fi
    \startelement[setup][name=#1]%
@@ -318,15 +323,6 @@
 \let\placeeverysetup\placeallsetups
 
 %D Typesetting:
-
-% \setupxml
-%   [\c!default=\v!hidden, % ignore elements that are not defined
-%    \c!compress=\v!yes]
-
-\newcounter\currentSETUPargument
-\newcounter\maximumSETUPargument
-
-\def\currentSETUPwidth{0pt}
 
 \startxmlsetups xml:setups:typeset
     \doifelsenothing {#1} {
@@ -345,9 +341,9 @@
 \startxmlsetups xml:setups:typeset:line
     \ttbf
     \nohyphens
-    \edef\currentSETUPhash{\xmlatt{#1}{hash}}
+    \edef\m_cmd_current_hash{\xmlatt{#1}{hash}}
     \bgroup
-        \enablemode[setups-pass-one]%
+        \settrue\c_cmd_doing_line
         \doif {\xmlatt{#1}{generated}} {yes} {
             \ttbs
         }
@@ -368,15 +364,15 @@
     \egroup
     \xmldoif{#1}{/arguments} {
         \bgroup
-            \enablemode[setups-pass-one]
-            \doglobal\newcounter\currentSETUPargument
+            \settrue\c_cmd_doing_line
+            \global\c_cmd_current_argument\zerocount
             \ignorespaces
             \xmlfilter{#1}{/arguments/text()}
         \egroup
     }
     \doif {\xmlatt{#1}{type}} {environment} {
         \bgroup
-            \enablemode[setups-pass-one]%
+            \settrue\c_cmd_doing_line
             \hskip.5em\unknown\hskip.5em
             \doif {\xmlatt{#1}{generated}} {yes} {
                 \ttbs
@@ -397,18 +393,17 @@
     }
 \stopxmlsetups
 
-\let\currentSETUPfilename\empty
-
 \startxmlsetups xml:setups:typeset:raw
     \tttf
     \nohyphens
     \veryraggedright
-    \doglobal\newcounter\currentSETUPargument
-    \xdef\maximumSETUPargument{\xmlfilter{#1}{/arguments/*/s_count()}}
-    \edef\currentSETUPhash{\xmlatt{#1}{hash}}
-    \xdef\currentSETUPfilename{\xmlatt{#1}{file}}%
+    \global\c_cmd_current_argument\zerocount
+    \global\c_cmd_maximum_argument\xmlfilter{#1}{/arguments/*/s_count()}\relax
+    \edef\m_cmd_current_hash{\xmlatt{#1}{hash}}
+    \xdef\m_cmd_current_file{\xmlatt{#1}{file}}%
+    % can be made faster :
     \bgroup
-        \enablemode[setups-pass-one]%
+        \settrue\c_cmd_doing_line
         \doif {\xmlatt{#1}{generated}} {yes} {
             \ttsl
         }
@@ -428,16 +423,16 @@
         \ignorespaces
     \egroup
     \xmldoif{#1}{/arguments} {
+        \settrue\c_cmd_doing_line
         \bgroup
-            \enablemode[setups-pass-one]
-            \doglobal\newcounter\currentSETUPargument
+            \global\c_cmd_current_argument\zerocount
             \ignorespaces
             \xmlfilter{#1}{/arguments/text()}
         \egroup
     }
     \doif {\xmlatt{#1}{type}} {environment} {
+        \settrue\c_cmd_doing_line
         \bgroup
-            \enablemode[setups-pass-one]%
             \hskip.5em\unknown\hskip.5em
             \doif {\xmlatt{#1}{generated}} {yes} {
                 \ttsl
@@ -461,8 +456,8 @@
 \startxmlsetups xml:setups:typeset:detail
     \xmldoif{#1}{/arguments} {
         \bgroup
-            \enablemode[setups-pass-two]
-            \doglobal\newcounter\currentSETUPargument
+            \setfalse\c_cmd_doing_line
+            \global\c_cmd_current_argument\zerocount
            %\blank[\v!line] % packed mode (we could do \startunpacked ...)
             \godown[.75\lineheight]
             \switchtobodyfont[\v!small]
@@ -472,8 +467,8 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:typeset:yes
-    \glet\currentSETUPfilename\empty
-    \ifcase\kindofsetup
+    \glet\m_cmd_current_file\empty
+    \ifcase\c_cmd_kind
         \xmlsetup{#1}{xml:setups:typeset:line}
     \or
         \getvalue{\e!start setuptext}
@@ -486,7 +481,7 @@
         \xmlsetup{#1}{xml:setups:typeset:detail}
         \getvalue{\e!stop setuptext}
     \fi
-    \glet\currentSETUPfilename\empty
+    \glet\m_cmd_current_file\empty
 \stopxmlsetups
 
 \defineoverlay
@@ -498,15 +493,9 @@
       \hbox to \overlaywidth
         {\strut
          \hss
-         \currentSETUPfilename
+         \m_cmd_current_file
          \hskip\dimexpr\scratchdimen+\strutdp\relax}%
       \vskip\scratchdimen}]
-
-\setupsetup
-  [\c!before=,
-   \c!after=,
-   \c!command=\setup,
-   \c!criterium=\v!used]
 
 \startxmlsetups xml:setups:resolve
     \ignorespaces
@@ -528,40 +517,42 @@
     \xmlatt{#1}{value}\ignorespaces
 \stopxmlsetups
 
-\startxmlsetups xml:setups:content     \showSETUPcomponent{#1}{content}    {content}    \stopxmlsetups
-\startxmlsetups xml:setups:displaymath \showSETUPcomponent{#1}{displaymath}{displaymath}\stopxmlsetups
-\startxmlsetups xml:setups:index       \showSETUPcomponent{#1}{index}      {index}      \stopxmlsetups
-\startxmlsetups xml:setups:math        \showSETUPcomponent{#1}{math}       {math}       \stopxmlsetups
-\startxmlsetups xml:setups:nothing     \showSETUPcomponent{#1}{nothing}    {nothing}    \stopxmlsetups
-\startxmlsetups xml:setups:file        \showSETUPcomponent{#1}{file}       {file}       \stopxmlsetups
-\startxmlsetups xml:setups:position    \showSETUPcomponent{#1}{position}   {position}   \stopxmlsetups
-\startxmlsetups xml:setups:reference   \showSETUPcomponent{#1}{reference}  {reference}  \stopxmlsetups
-\startxmlsetups xml:setups:csname      \showSETUPcomponent{#1}{csname}     {csname}     \stopxmlsetups
-\startxmlsetups xml:setups:destination \showSETUPcomponent{#1}{destination}{destination}\stopxmlsetups
-\startxmlsetups xml:setups:triplet     \showSETUPcomponent{#1}{triplet}    {triplet}    \stopxmlsetups
-\startxmlsetups xml:setups:word        \showSETUPcomponent{#1}{word}       {word}       \stopxmlsetups
-\startxmlsetups xml:setups:template    \showSETUPcomponent{#1}{template}   {template}   \stopxmlsetups
-\startxmlsetups xml:setups:angles      \showSETUPcomponent{#1}{angles}     {angles}     \stopxmlsetups
-\startxmlsetups xml:setups:apply       \showSETUPcomponent{#1}{apply}      {apply}      \stopxmlsetups
-\startxmlsetups xml:setups:twowords    \showSETUPcomponent{#1}{twowords}   {twowords}   \stopxmlsetups
-\startxmlsetups xml:setups:threewords  \showSETUPcomponent{#1}{threewords} {threewords} \stopxmlsetups
-\startxmlsetups xml:setups:text        \showSETUPcomponent{#1}{text}       {text}       \stopxmlsetups
+\startxmlsetups xml:setups:delimiter
+    \ifconditional\c_cmd_doing_line
+        \kern.5\emwidth
+        \letterbackslash\xmlatt{#1}{name}
+    \fi
+    \ignorespaces
+\stopxmlsetups
+
+\startxmlsetups xml:setups:content     \showSETUPcomponent{#1}{content}    \stopxmlsetups
+\startxmlsetups xml:setups:displaymath \showSETUPcomponent{#1}{displaymath}\stopxmlsetups
+\startxmlsetups xml:setups:index       \showSETUPcomponent{#1}{index}      \stopxmlsetups
+\startxmlsetups xml:setups:math        \showSETUPcomponent{#1}{math}       \stopxmlsetups
+\startxmlsetups xml:setups:nothing     \showSETUPcomponent{#1}{nothing}    \stopxmlsetups
+\startxmlsetups xml:setups:file        \showSETUPcomponent{#1}{file}       \stopxmlsetups
+\startxmlsetups xml:setups:position    \showSETUPcomponent{#1}{position}   \stopxmlsetups
+\startxmlsetups xml:setups:reference   \showSETUPcomponent{#1}{reference}  \stopxmlsetups
+\startxmlsetups xml:setups:csname      \showSETUPcomponent{#1}{csname}     \stopxmlsetups
+\startxmlsetups xml:setups:destination \showSETUPcomponent{#1}{destination}\stopxmlsetups
+\startxmlsetups xml:setups:triplet     \showSETUPcomponent{#1}{triplet}    \stopxmlsetups
+\startxmlsetups xml:setups:word        \showSETUPcomponent{#1}{word}       \stopxmlsetups
+\startxmlsetups xml:setups:template    \showSETUPcomponent{#1}{template}   \stopxmlsetups
+\startxmlsetups xml:setups:angles      \showSETUPcomponent{#1}{angles}     \stopxmlsetups
+\startxmlsetups xml:setups:apply       \showSETUPcomponent{#1}{apply}      \stopxmlsetups
+\startxmlsetups xml:setups:twowords    \showSETUPcomponent{#1}{twowords}   \stopxmlsetups
+\startxmlsetups xml:setups:threewords  \showSETUPcomponent{#1}{threewords} \stopxmlsetups
+\startxmlsetups xml:setups:text        \showSETUPcomponent{#1}{text}       \stopxmlsetups
 
 % todo: cd:par => \\par
 % todo: cd:sep => \\\\
 
-\startxmlsetups xml:setups:delimiter
-    \doifmode{setups-pass-one} {
-        \kern.5\emwidth
-        \letterbackslash\xmlatt{#1}{name}
-    }
-    \ignorespaces
-\stopxmlsetups
-
-\unexpanded\def\showSETUPcomponent#1#2#3%
-  {\doifelsemode{setups-pass-one}
-     {\getvalue{showSETUP#2}{#1}}  % top line
-     {\simpleSETUPargument{#3}}}   % column
+\unexpanded\def\showSETUPcomponent#1#2%
+  {\ifconditional\c_cmd_doing_line
+     \getvalue{showSETUP#2}{#1}%
+   \else
+     \simpleSETUPargument{#2}%
+   \fi}
 
 %D This is the second pass; here we generate the table.
 
@@ -578,7 +569,7 @@
 \unexpanded\def\startsecondSETUPcolumn#1#2%
   {\bgroup
    \scratchdimen2.5\emwidth
-   \advance\hangindent\dimexpr\currentSETUPwidth+\scratchdimen\relax
+   \advance\hangindent\dimexpr\d_cmd_current_width+\scratchdimen\relax
    \noindent \hbox to \hangindent{#1\hss\hbox to \scratchdimen{\hss#2\hss}}}
 
 \unexpanded\def\stopsecondSETUPcolumn
@@ -588,69 +579,73 @@
 \unexpanded\def\secondSETUPcolumn#1#2%
   {\startsecondSETUPcolumn{#1}{#2}\stopsecondSETUPcolumn}
 
-\def\previousSETUPargument{\currentSETUPargument}
-
 \startxmlsetups xml:setups:assignments
-    \doifelsemode{setups-pass-one} {
-        \showSETUPassignment{#1}
-    } {
-        \xdef\currentSETUPwidth{0pt}%
+    \ifconditional\c_cmd_doing_line
+        \ifcase\c_cmd_kind
+            \expandafter\showSETUPline
+        \else
+            \expandafter\showSETUP
+        \fi{#1}{assignment\xmlattdef{#1}{delimiters}{brackets}}
+    \else
+        \global\d_cmd_current_width\zeropoint
         \setbox\scratchbox\vbox\bgroup
-            \setmode{setups-measure}
+            \settrue\c_cmd_measuring
             \xmlall{#1}{/(parameter|resolve)}
         \egroup
-        \xdef\currentSETUPwidth{\themaxboxwidth\scratchbox}%
+        \global\d_cmd_current_width\themaxboxwidth\scratchbox\relax
         \startfirstSETUPcolumn{\showSETUPnumber}%
             \ignorespaces
-            \xmldoifelse {#1} {/(parameter|inherit)} {
-                \xmlflush{#1}
+            \xmldoifelse {#1} {/(parameter|inherit|resolve)} {
+               \xmlflush{#1}
             } {
-             ...
+               \unknown
             }
-            \let\previousSETUPargument\currentSETUPargument
         \stopfirstSETUPcolumn
         \blank[\v!halfline]
         \ignorespaces
-    }
+    \fi
 \stopxmlsetups
 
 \startxmlsetups xml:setups:keywords
-    \doifelsemode{setups-pass-one} {
-        \showSETUPkeyword{#1}
-    } {
+    \ifconditional\c_cmd_doing_line
+        \ifcase\c_cmd_kind
+            \expandafter\showSETUPline
+        \else
+            \expandafter\showSETUP
+        \fi{#1}{\xmlattdef{#1}{delimiters}{brackets}}
+    \else
         \startfirstSETUPcolumn{\showSETUPnumber}%
             \ignorespaces
             \xmlflush{#1}
-            \let\previousSETUPargument\currentSETUPargument
         \stopfirstSETUPcolumn
         \blank[\v!halfline]
         \ignorespaces
-    }
+    \fi
 \stopxmlsetups
 
 \startxmlsetups xml:setups:parameter
-    \doifmodeelse {setups-measure} {
-        \getsetupstring{\xmlatt{#1}{name}}\par
-    } {
-        \startsecondSETUPcolumn{\getsetupstring{\xmlatt{#1}{name}}}{=}
+    \ifconditional\c_cmd_measuring
+      \getsetupstring{\xmlatt{#1}{name}}\par
+    \else
+      \startsecondSETUPcolumn{\getsetupstring{\xmlatt{#1}{name}}}{=}
             \ignorespaces
             \xmlflush{#1}
             \doifmode{interface:setup:defaults} {
-                \ifx\currentSETUPhash\empty \else
+                \ifx\m_cmd_current_hash\empty \else
                     \begingroup
                         % todo, make a one level expansion of parameter
                         \let\emwidth \relax
                         \let\exheight\relax
-                        \edef\currentSETUPvalue{\csname named\currentSETUPhash parameter\endcsname\empty{\xmlatt{#1}{name}}}
-                        \ifx\currentSETUPvalue\empty \else
+                        \edef\temp{\csname named\m_cmd_current_hash parameter\endcsname\empty{\xmlatt{#1}{name}}}
+                        \ifx\temp\empty \else
                             =\space
-                            \detokenize\expandafter{\currentSETUPvalue}
+                            \detokenize\expandafter{\temp}
                         \fi
                     \endgroup
                 \fi
             }
         \stopsecondSETUPcolumn
-    }
+    \fi
     \ignorespaces
 \stopxmlsetups
 
@@ -712,16 +707,16 @@
 
 \unexpanded\def\showSETUP#1#2%
   {\bgroup
-   \doglobal\increment\currentSETUPargument
+   \global\advance\c_cmd_current_argument\plusone
    \setbox0=\hbox
      {\doifelse{\xmlatt{#1}{list}}{yes}
-        {\getsetupstring{s:#2}}%
-        {\getsetupstring{l:#2}}}%
+        {\getsetupstring{cd:#2-l}}%
+        {\getsetupstring{cd:#2-s}}}%
    \setbox2=\hbox to \wd0
      {\hss
       \raise1.25\exheight\hbox
-        {\txx\ifcase\maximumSETUPargument\relax
-           \or*\else\currentSETUPargument
+        {\txx\ifcase\c_cmd_maximum_argument \relax
+           \or*\else\the\c_cmd_current_argument
          \fi}%
       \hss}%
    \setbox4=\hbox to \wd0
@@ -746,23 +741,16 @@
 
 \unexpanded\def\showSETUPline#1#2%
   {\kern.5\emwidth
-   \getsetupstring{s:#2}%
+   \getsetupstring{cd:#2-s}%
    \ignorespaces}
 
 \unexpanded\def\showSETUPnumber
-  {\doglobal\increment\currentSETUPargument
+  {\global\advance\c_cmd_current_argument\plusone
    \hbox to 2\emwidth
-     {\ifcase\maximumSETUPargument\relax
-        \or*\else\currentSETUPargument
+     {\ifcase\c_cmd_maximum_argument \relax
+        \or*\else\the\c_cmd_current_argument
       \fi
       \hss}}
-
-% assignments
-
-\xmlmapvalue {setups:assignment} {braces}      {\showSETUPassignmentbraces}
-\xmlmapvalue {setups:assignment} {brackets}    {\showSETUPassignmentbrackets}
-\xmlmapvalue {setups:keyword}    {parentheses} {\showSETUPkeywordparentheses}
-\xmlmapvalue {setups:keyword}    {none}        {\showSETUPkeywordnone}
 
 % todo: replace = by lower
 
@@ -771,78 +759,6 @@
 
 \unexpanded\def\setupAPPLYsymbol % we raise the number already
   {..\lower.25\exheight\hpack{=>}..}
-
-\starttexdefinition unexpanded showSETUPassignmentbraces #1
-    \ifcase\kindofsetup
-        \showSETUPline{#1}{bracedassignment}
-    \else
-        \showSETUP    {#1}{bracedassignment}
-    \fi
-\stoptexdefinition
-
-\starttexdefinition unexpanded showSETUPassignmentbrackets #1
-    \ifcase\kindofsetup
-        \showSETUPline{#1}{bracketedassignment}
-    \else
-        \showSETUP    {#1}{bracketedassignment}
-    \fi
-\stoptexdefinition
-
-\starttexdefinition unexpanded showSETUPkeywordparentheses #1
-    \ifcase\kindofsetup
-        \showSETUPline{#1}{parenthesizedassignment}
-    \else
-        \showSETUP    {#1}{parenthesizedassignment}
-    \fi
-\stoptexdefinition
-
-\starttexdefinition unexpanded showSETUPkeywordnone #1
-    \ifcase\kindofsetup
-        \showSETUPline{#1}{none}
-    \else
-        \showSETUP    {#1}{none}
-    \fi
-\stoptexdefinition
-
-\starttexdefinition unexpanded showSETUPassignment #1
-    \xmlvalue
-        {setups:assignment}
-        {\xmlattdef{#1}{delimiters}{brackets}}
-        {\showSETUPkeywordbrackets}
-        {#1}
-\stoptexdefinition
-
-% we could also add specifying separatos (default comma) but let's do
-% this stepwise
-
-% keywords
-
-\xmlmapvalue {setups:keyword} {braces}   {\showSETUPkeywordbraces}
-\xmlmapvalue {setups:keyword} {brackets} {\showSETUPkeywordbrackets}
-
-\starttexdefinition unexpanded showSETUPkeywordbraces #1
-    \ifcase\kindofsetup
-        \showSETUPline{#1}{braces}
-    \else
-        \showSETUP    {#1}{braces}
-    \fi
-\stoptexdefinition
-
-\starttexdefinition unexpanded showSETUPkeywordbrackets #1
-    \ifcase\kindofsetup
-        \showSETUPline{#1}{brackets}
-    \else
-        \showSETUP    {#1}{brackets}
-    \fi
-\stoptexdefinition
-
-\starttexdefinition unexpanded showSETUPkeyword #1
-    \xmlvalue
-        {setups:keyword}
-        {\xmlattdef{#1}{delimiters}{brackets}}
-        {\showSETUPkeywordbrackets}
-        {#1}
-\stoptexdefinition
 
 % arguments
 
