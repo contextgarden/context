@@ -46,6 +46,9 @@ local force_composed     = false
 local cache              = { }  -- we could make these weak
 local fraction           = 0.15 -- 30 units for lucida
 
+-- todo: we also need to update the feature hashes ... i'll do that when i'm in the mood
+-- and/or when i need it
+
 local function composecharacters(tfmdata)
     -- this assumes that slot 1 is self, there will be a proper self some day
     local characters   = tfmdata.characters

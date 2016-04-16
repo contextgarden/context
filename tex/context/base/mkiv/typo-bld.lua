@@ -52,7 +52,8 @@ storage.register("builders/paragraphs/constructors/numbers", numbers, "builders.
 local trace_page_builder = false  trackers.register("builders.page", function(v) trace_page_builder = v end)
 local trace_post_builder = false  trackers.register("builders.post", function(v) trace_post_builder = v end)
 
-local report_parbuilders = logs.reporter("parbuilders")
+local report_par_builder  = logs.reporter("builders","par")
+local report_page_builder = logs.reporter("builders","page")
 
 local mainconstructor = nil -- not stored in format
 local nofconstructors = 0
@@ -84,7 +85,7 @@ function constructors.start(name)
     if mainconstructor ~= unsetvalue then
         constructors.enable()
     end
- -- report_parbuilders("start %a",name)
+ -- report_par_builder("start %a",name)
 end
 
 function constructors.stop()
@@ -94,7 +95,7 @@ function constructors.stop()
     if mainconstructor == unsetvalue then
         constructors.disable()
     end
- -- report_parbuilders("stop")
+ -- report_par_builder("stop")
 end
 
 -- return values:
@@ -115,7 +116,7 @@ function constructors.handler(head,followed_by_display)
                 if handler then
                     return handler(head,followed_by_display)
                 else
-                    report_parbuilders("contructor method %a is not defined",tostring(method))
+                    report_par_builder("contructor method %a is not defined",tostring(method))
                     return true -- let tex break
                 end
             end

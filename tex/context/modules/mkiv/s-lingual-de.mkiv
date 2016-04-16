@@ -1,0 +1,32 @@
+% Some experimental code for Wolfgang to play with:
+
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "sz",
+        type = "multiple",
+        data = {
+            ["ẞ"] = { "S", "S" }
+        }
+    }
+\stopluacode
+
+\definefontfeature[sz][sz=yes]
+
+\unexpanded\def\composedSZ  {\overloaduppercase{0xDF}{0x1E9E}}
+\unexpanded\def\decomposedSZ{\overloaduppercase{0xDF}{0x53,0x53}}
+
+\continueifinputfile{s-lingual-de.mkiv}
+
+\setupbodyfont[libertine]
+
+\starttext
+   %\definefontfeature[default][default][sz=yes]
+    \dorecurse{10} {
+        \decomposedSZ \WORD{Gruß}\par
+        \composedSZ   \WORD{Gruß}\par
+    }
+
+    \composedSZ
+    {\addfeature{sz}Straße \WORD{Straße} STRAẞE}\par
+    {Straße \WORD{Straße} STRAẞE}\par
+\stoptext

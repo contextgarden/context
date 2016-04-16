@@ -792,7 +792,7 @@ local function overload(c,u,code,codes)
     end
     local t = nil
     if n == 1 then
-        t = u[1]
+        t = tonumber(u[1])
     else
         t = { }
         for i=1,n do

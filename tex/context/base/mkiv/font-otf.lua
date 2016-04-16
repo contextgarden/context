@@ -58,7 +58,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.823 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 2.824 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
