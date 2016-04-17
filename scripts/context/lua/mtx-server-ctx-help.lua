@@ -563,7 +563,6 @@ local function generate(configuration,filename,hashed)
 
         elseif lastcommand and lastcommand ~= "" then
 
-
             local list = collect(current,lastcommand,lastinterface,lastmode)
             if list and #list > 0 then
                 local data  = list[1]
