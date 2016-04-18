@@ -48,8 +48,6 @@ local vlist_code         = nodecodes.vlist
 
 local normal_rule        = rulecodes.normal
 
-local pdfliteral_code    = whatcodes.pdfliteral
-
 local states             = attributes.states
 local numbers            = attributes.numbers
 local a_trigger          = attributes.private('trigger')

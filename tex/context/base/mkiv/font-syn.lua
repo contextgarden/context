@@ -73,7 +73,7 @@ fonts.treatments           = treatments
 
 names.data                 = names.data or allocate { }
 
-names.version              = 1.130
+names.version              = 1.131
 names.basename             = "names"
 names.saved                = false
 names.loaded               = false
@@ -492,6 +492,7 @@ function names.getpaths(trace)
             end
         end
     end
+    sort(result)
     function names.getpaths()
         return result
     end
@@ -932,7 +933,6 @@ local function unpackreferences()
     local data           = names.data
     local specifications = data.specifications
     if specifications then
---         for k, v in next, data.families do
         for k, v in sortedhash(data.families) do
             for i=1,#v do
                 v[i] = specifications[v[i]]
@@ -940,9 +940,7 @@ local function unpackreferences()
         end
         local mappings = data.mappings
         if mappings then
---             for _, m in next, mappings do
             for _, m in sortedhash(mappings) do
---                 for k, v in next, m do
                 for k, v in sortedhash(m) do
                     m[k] = specifications[v]
                 end
@@ -950,9 +948,7 @@ local function unpackreferences()
         end
         local fallbacks = data.fallbacks
         if fallbacks then
---             for _, f in next, fallbacks do
             for _, f in sortedhash(fallbacks) do
---                 for k, v in next, f do
                 for k, v in sortedhash(f) do
                     f[k] = specifications[v]
                 end

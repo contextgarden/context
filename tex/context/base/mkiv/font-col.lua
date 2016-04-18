@@ -27,6 +27,7 @@ local setfield           = nuts.setfield
 local setchar            = nuts.setchar
 
 local traverse_id        = nuts.traverse_id
+local traverse_char      = nuts.traverse_char
 
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
@@ -256,7 +257,8 @@ end
 
 function collections.process(head) -- this way we keep feature processing
     local done = false
-    for n in traverse_id(glyph_code,tonut(head)) do
+ -- for n in traverse_id(glyph_code,tonut(head)) do
+    for n in traverse_char(tonut(head)) do
         local font   = getfont(n)
         local vector = vectors[font]
         if vector then

@@ -142,7 +142,10 @@ methods[6] = function(head,start,stop,settings,kern)
             local l = new_wordboundary()
             local d = new_disc()
             local r = new_wordboundary()
-            setfield(d,"attr",getfield(start,"attr")) -- otherwise basemode is forces and we crash
+            local a = getfield(start,"attr")
+         -- setfield(l,"attr",a)
+            setfield(d,"attr",a) -- otherwise basemode is forces and we crash
+         -- setfield(r,"attr",a)
             setlink(p,l)
             setlink(l,d)
             setlink(d,r)

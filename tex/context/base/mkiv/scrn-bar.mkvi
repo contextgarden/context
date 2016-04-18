@@ -211,13 +211,13 @@
      \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!firstpage]}%
      \hskip\emwidth
      \ifnum\realpageno>\plusone
-       \hskip\zeropoint\??plus\numexpr\realpageno-\plustwo\relax \s!sp\relax % cm gives overflow
+       \hskip\zeropoint\s!plus\numexpr\realpageno-\plustwo\relax \s!sp\relax % cm gives overflow
        \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!previouspage)]}%
      \fi
      \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[page(\number\realpageno)]}% todo: \v!currentpage
      \ifnum\realpageno<\lastpage\relax
        \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!nextpage]}%
-       \hskip\zeropoint\??plus\numexpr\lastpage-\realpageno-\plusone\relax \s!sp\relax % cm gives overflow
+       \hskip\zeropoint\s!plus\numexpr\lastpage-\realpageno-\plusone\relax \s!sp\relax % cm gives overflow
      \fi
      \hskip\emwidth
      \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!lastpage]}%

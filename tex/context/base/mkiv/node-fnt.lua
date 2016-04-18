@@ -48,11 +48,13 @@ local getchar           = nuts.getchar
 local getdisc           = nuts.getdisc
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
+local getboth           = nuts.getboth
 local getfield          = nuts.getfield
 ----- getdisc           = nuts.getdisc
 local setchar           = nuts.setchar
 local setlink           = nuts.setlink
 local setfield          = nuts.setfield
+local setprev           = nuts.setprev
 
 local isglyph           = nuts.isglyph -- unchecked
 local ischar            = nuts.ischar  -- checked
@@ -61,6 +63,7 @@ local traverse_id       = nuts.traverse_id
 local traverse_char     = nuts.traverse_char
 local remove_node       = nuts.remove
 local protect_glyph     = nuts.protect_glyph
+local free_node         = nuts.free
 
 local glyph_code        = nodecodes.glyph
 local disc_code         = nodecodes.disc
@@ -292,12 +295,27 @@ function handlers.characters(head)
     end
 
     if redundant then
-        local front = nuthead == redundant[1]
         for i=1,#redundant do
-            nuthead = remove_node(nuthead,redundant[i],true)
-        end
-        if front then
-            head = tonode(nuthead)
+            local r = redundant[i]
+            local p, n = getboth(r)
+            if r == nuthead then
+                nuthead = n
+                setprev(n)
+            else
+                setlink(p,n)
+            end
+            if b > 0 then
+                for i=1,b do
+                    local bi = basefonts[i]
+                    if r == bi[1] then
+                        bi[1] = n
+                    end
+                    if r == bi[2] then
+                        bi[2] = n
+                    end
+                end
+            end
+            free_node(r)
         end
     end
 
