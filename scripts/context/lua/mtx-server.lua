@@ -35,7 +35,15 @@ local application = logs.application {
     helpinfo = helpinfo,
 }
 
+local tonumber, tostring, loadfile, type = tonumber, tostring, loadfile, type
+local find, gsub = string.find, string.gsub
+local joinpath, filesuffix, dirname, is_qualified_path = file.join, file.suffix, file.dirname, file.is_qualified_path
+local loaddata = io.loaddata
+local P, C, patterns, lpegmatch = lpeg.P, lpeg.C, lpeg.patterns, lpeg.match
+local formatters = string.formatters
+local urlhashed, urlquery = url.hashed, url.query
 local report = application.report
+local gettime = os.gettimeofday or os.clock
 
 scripts           = scripts           or { }
 scripts.webserver = scripts.webserver or { }
@@ -44,7 +52,6 @@ dofile(resolvers.findfile("luat-soc.lua","tex"))
 
 local socket = socket or require("socket")
 ----- http   = http   or require("socket.http") -- not needed
-local format = string.format
 
 -- The following two lists are taken from webrick (ruby) and
 -- extended with a few extra suffixes.
@@ -154,10 +161,14 @@ local messages = {
     [505] = 'HTTP Version Not Supported',
 }
 
+local f_content_length = formatters["Content-Length: %s\r\n"]
+local f_content_type   = formatters["Content-Type: %s\r\n"]
+local f_error_title    = formatters["<head><title>%s %s</title></head><html><h2>%s %s</h2></html>"]
+
 local handlers = { }
 
 local function errormessage(client,configuration,n)
-    local data = format("<head><title>%s %s</title></head><html><h2>%s %s</h2></html>",n,messages[n],n,messages[n])
+    local data = f_error_title(n,messages[n],n,messages[n])
     report("handling error %s: %s",n,messages[n])
     handlers.generic(client,configuration,data,nil,true)
 end
@@ -166,42 +177,43 @@ local validpaths, registered = { }, { }
 
 function scripts.webserver.registerpath(name)
     if not registered[name] then
-        local cleanname = string.gsub(name,"%.%.","deleted-parent")
-        report("registering path '%s'",cleanname)
+        local cleanname = gsub(name,"%.%.","deleted-parent")
+        report("registering path: %s",cleanname)
         validpaths[#validpaths+1] = cleanname
         registered[name] = true
     end
 end
 
 function handlers.generic(client,configuration,data,suffix,iscontent)
+    local name = data
     if not iscontent then
-        local name = data
-        report("requested file '%s'",name)
-        local fullname = file.join(configuration.root,name)
-        data = io.loaddata(fullname) or ""
+        report("requested file: %s",name)
+        local fullname = joinpath(configuration.root,name)
+        data = loaddata(fullname) or ""
         if data == "" then
             for n=1,#validpaths do
-                local fullname = file.join(validpaths[n],name)
-                data = io.loaddata(fullname) or ""
+                local fullname = joinpath(validpaths[n],name)
+                data = loaddata(fullname) or ""
                 if data ~= "" then
-                    report("sending generic file '%s'",fullname)
+                    report("sending generic file: %s",fullname)
                     break
                 end
             end
         else
-            report("sending generic file '%s'",fullname)
+            report("sending generic file: %s",fullname)
         end
     end
     if data and data ~= "" then
         client:send("HTTP/1.1 200 OK\r\n")
         client:send("Connection: close\r\n")
-        client:send(format("Content-Length: %s\r\n",#data))
-        client:send(format("Content-Type: %s\r\n",(suffix and mimetypes[suffix]) or "text/html"))
+        client:send(f_content_length(#data))
+        client:send(f_content_type(suffix and mimetypes[suffix] or "text/html"))
         client:send("Cache-Control: no-cache, no-store, must-revalidate, max-age=0\r\n")
         client:send("\r\n")
         client:send(data)
         client:send("\r\n")
     else
+        report("unknown file: %s",tostring(name))
         errormessage(client,configuration,404)
     end
 end
@@ -217,9 +229,9 @@ end
 local loaded = { }
 
 function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- filename will disappear, and become hashed.filename
-    local filename = file.join(configuration.scripts,filename)
-    if not file.is_qualified_path(filename) then
-        filename = file.join(configuration.root,filename)
+    local filename = joinpath(configuration.scripts,filename)
+    if not is_qualified_path(filename) then
+        filename = joinpath(configuration.root,filename)
     end
     -- todo: split url in components, see l-url; rather trivial
     local result, keep = loaded[filename], false
@@ -258,16 +270,19 @@ function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- 
                 local action = handlers[suffix] or handlers.generic
                 action(client,configuration,result.content,suffix,true) -- content
             elseif result.filename then
-                local suffix = file.suffix(result.filename) or "text/html"
+                local suffix = filesuffix(result.filename) or "text/html"
                 local action = handlers[suffix] or handlers.generic
                 action(client,configuration,result.filename,suffix,false) -- filename
             else
+                report("no content of filename in result")
                 errormessage(client,configuration,404)
             end
         else
+            report("no valid result")
             errormessage(client,configuration,500)
         end
     else
+        report("no result")
         errormessage(client,configuration,404)
     end
 end
@@ -278,19 +293,19 @@ handlers.html = handlers.htm
 local indices    = { "index.htm", "index.html" }
 local portnumber = 8088
 
-local newline    = lpeg.patterns.newline
-local spacer     = lpeg.patterns.spacer
-local whitespace = lpeg.patterns.whitespace
-local method     = lpeg.P("GET")
-                 + lpeg.P("POST")
+local newline    = patterns.newline
+local spacer     = patterns.spacer
+local whitespace = patterns.whitespace
+local method     = P("GET")
+                 + P("POST")
 local identify   = (1-method)^0
-                 * lpeg.C(method)
+                 * C(method)
                  * spacer^1
-                 * lpeg.C((1-spacer)^1)
+                 * C((1-spacer)^1)
                  * spacer^1
-                 * lpeg.P("HTTP/")
+                 * P("HTTP/")
                  * (1-whitespace)^0
-                 * lpeg.C(lpeg.P(1)^0)
+                 * C(P(1)^0)
 
 function scripts.webserver.run(configuration)
     -- check configuration
@@ -314,7 +329,7 @@ function scripts.webserver.run(configuration)
     if not configuration.index then
         for i=1,#indices do
             local name = indices[i]
-            if lfs.isfile(file.join(configuration.root,name)) then
+            if lfs.isfile(joinpath(configuration.root,name)) then
                 configuration.index = name -- we will prepend the rootpath later
                 break
             end
@@ -322,7 +337,7 @@ function scripts.webserver.run(configuration)
         configuration.index = configuration.index or "unknown"
     end
     if not configuration.scripts or configuration.scripts == "" then
-        configuration.scripts = dir.expandname(file.join(configuration.root or ".",configuration.scripts or "."))
+        configuration.scripts = dir.expandname(joinpath(configuration.root or ".",configuration.scripts or "."))
     end
     -- so far for checks
     report("running at port: %s",configuration.port)
@@ -333,20 +348,20 @@ function scripts.webserver.run(configuration)
     local server = assert(socket.bind("*", configuration.port))
     local script = configuration.script
     while true do -- blocking
-        local start = os.clock()
+     -- local start = gettime()
         local client = server:accept()
         client:settimeout(configuration.timeout or 60)
         local request, e = client:receive()
         if e then
-            errormessage(client,configuration,404)
+            -- probably a time out
+         -- errormessage(client,configuration,404)
         else
             local from = client:getpeername()
             report("request from: %s",tostring(from))
             report("request data: %s",tostring(request))
-         -- local fullurl = string.match(request,"(GET) (.+) HTTP/.*$") or "" -- todo: more clever / post
+         -- local fullurl = match(request,"(GET) (.+) HTTP/.*$") or "" -- todo: more clever / post
          -- if fullurl == "" then
--- print("!!!!",request)
-            local method, fullurl, body = lpeg.match(identify,request)
+            local method, fullurl, body = lpegmatch(identify,request)
             if method == "" or fullurl == "" then
                 report("no url")
                 errormessage(client,configuration,404)
@@ -357,46 +372,50 @@ function scripts.webserver.run(configuration)
                 fullurl = url.unescapeget(fullurl)
                 report("requested url: %s",fullurl)
              -- fullurl = socket.url.unescape(fullurl) -- happens later
-                local hashed = url.hashed(fullurl)
-                local query = url.query(hashed.query)
+                local hashed = urlhashed(fullurl)
+                local query = urlquery(hashed.query)
                 local filename = hashed.path -- hm, not query?
                 hashed.body = body
                 if script then
                     filename = script
                     report("forced script: %s",filename)
-                    local suffix = file.suffix(filename)
+                    local suffix = filesuffix(filename)
                     local action = handlers[suffix] or handlers.generic
                     if action then
                         report("performing action: %s",filename)
                         action(client,configuration,filename,suffix,false,hashed) -- filename and no content
                     else
+                        report("invalid action: %s",filename)
                         errormessage(client,configuration,404)
                     end
                 elseif filename then
-                    filename = socket.url.unescape(filename)
-                    report("requested action: %s",filename)
-                    if string.find(filename,"%.%.") then
+                    local rawname = socket.url.unescape(filename)
+                    filename = rawname
+                    report("requested action: %s",filename or "?")
+                    if find(filename,"%.%.") then
                         filename = nil -- invalid path
                     end
                     if filename == nil or filename == "" or filename == "/" then
                         filename = configuration.index
                         report("invalid filename, forcing: %s",filename)
                     end
-                    local suffix = file.suffix(filename)
+                    local suffix = filesuffix(filename)
                     local action = handlers[suffix] or handlers.generic
                     if action then
-                        report("performing action: %s",filename)
+                        report("performing action: %s",filename or "?")
                         action(client,configuration,filename,suffix,false,hashed) -- filename and no content
                     else
+                        report("invalid action: %s",filename or "?")
                         errormessage(client,configuration,404)
                     end
                 else
+                    report("invalid request")
                     errormessage(client,configuration,404)
                 end
             end
         end
         client:close()
-        report("time spent with client: %0.03f seconds",os.clock()-start)
+     -- report("time spent with client: %0.03f seconds",gettime()-start)
     end
 end
 
@@ -404,8 +423,8 @@ if environment.argument("auto") then
     local path = resolvers.findfile("mtx-server.lua") or "."
     scripts.webserver.run {
         port    = environment.argument("port"),
-        root    = environment.argument("root") or file.dirname(path) or ".",
-        scripts = environment.argument("scripts") or file.dirname(path) or ".",
+        root    = environment.argument("root") or dirname(path) or ".",
+        scripts = environment.argument("scripts") or dirname(path) or ".",
         script  = environment.argument("script"),
     }
 elseif environment.argument("start") then

@@ -65,9 +65,29 @@
                 background-color: #C0C0C0 ;
                 color: black;
             }
+            a.setupmenuurl {
+                color: #FFFFFF ;
+                text-decoration: none ;
+                font-weight: bold ;
+            }
+            a.setupmenucmd {
+                color: #FFFFFF ;
+                text-decoration: none ;
+                font-weight: bold ;
+                font-style: italic ;
+            }
             a.setuplisturl {
                 color: #000000 ;
-                text-decoration: underline ;
+                text-decoration: none ;
+                font-weight: bold ;
+            }
+            .setupmenugroup {
+                text-decoration: none ;
+            }
+            .setupmenucategory {
+                font-weight: bold ;
+                font-size: 2.5ex ;
+                margin-bottom: 1ex ;
             }
             <?lua
                 if utilities and utilities.scite and utilities.scite.css then
@@ -78,25 +98,30 @@ p(utilities.scite.css())
     </head>
     <body>
         <div id="top"><div id="top-one"><div id="top-two">
-            <?lua pv('title') ?>
+<?lua pv('title') ?>
         </div></div></div>
         <div id="left"><div id="left-one"><div id="left-two">
-            <!-- empty -->
+<!-- empty -->
         </div></div></div>
         <div id="right"><div id="right-safari"><div id="right-one"><div id="right-two"><div id="right-three"><div id="right-four"><div id="right-five">
-            <?lua pv('interfaces') ?>
+<?lua pv('interfaces') ?>
         </div></div></div></div></div></div></div>
         <div id="main"><div id='main-settings'>
             <div id="main-left"><div id="main-common-settings">
-                <h1><?lua pv('maintitle') ?></h1>
-                <?lua pv('maintext') ?>
+<h1><?lua pv('maintitle') ?></h1>
+<?lua pv('maintext') ?>
             </div></div>
             <div id="main-right"><div id="main-common-settings">
-                <?lua pv('names') ?>
+<?lua pv('names') ?>
+<script type='text/javascript'>
+    <!--
+        document.getElementById("#current").scrollIntoView();
+    -->
+</script>
             </div></div>
         </div></div>
         <div id="bottom"><div id="bottom-one"><div id="bottom-two">
-            <?lua pv('extra') ?>
+<?lua pv('extra') ?>
         </div></div></div>
     </body>
 </html>

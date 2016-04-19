@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['mtx-server-ctx-help'] = {
     license   = "see context related readme files"
 }
 
-local gsub, find, lower = string.gsub, string.find, string.lower
+local gsub, find, lower, match = string.gsub, string.find, string.lower, string.match
 local concat, sort = table.concat, table.sort
 
 dofile(resolvers.findfile("trac-lmx.lua","tex"))
@@ -42,29 +42,41 @@ local f_spans_t = {
 }
 
 local f_href_in_list_t = {
-    tex = formatters[ [[<a class="setupmenuurl" href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>]] ],
-    lua = formatters[ [[<a class="setupmenuurl" href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>]] ],
+    tex = formatters["<a class='setupmenuurl' href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>"],
+    lua = formatters["<a class='setupmenuurl' href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>"],
+}
+
+local f_href_in_list_i = {
+    tex = formatters["<a class='setupmenucmd' href='mtx-server-ctx-help.lua?command=%s&mode=%s' id='#current'>%s</a>"],
+    lua = formatters["<a class='setupmenucmd' href='mtx-server-ctx-help.lua?command=%s&mode=%s' id='#current'>%s</a>"],
 }
 
 local f_href_as_command_t = {
-    tex = formatters[ [[<a class="setuplisturl" href='mtx-server-ctx-help.lua?command=%s&mode=%s'>\%s</a>]] ],
-    lua = formatters[ [[<a class="setuplisturl" href='mtx-server-ctx-help.lua?command=%s&mode=%s'>context.%s</a>]] ],
+    tex = formatters["<a class='setuplisturl' href='mtx-server-ctx-help.lua?command=%s&mode=%s'>\\%s</a>"],
+    lua = formatters["<a class='setuplisturl' href='mtx-server-ctx-help.lua?command=%s&mode=%s'>context.%s</a>"],
 }
 
 local s_modes_t = {
-    tex = [[<a class="setupmodeurl" href='mtx-server-ctx-help.lua?mode=lua'>lua mode</a>]],
-    lua = [[<a class="setupmodeurl" href='mtx-server-ctx-help.lua?mode=tex'>tex mode</a>]],
+    tex = "<a class='setupmodeurl' href='mtx-server-ctx-help.lua?mode=lua'>lua mode</a>",
+    lua = "<a class='setupmodeurl' href='mtx-server-ctx-help.lua?mode=tex'>tex mode</a>",
 }
 
-local f_interface  = formatters[ [[<a href='mtx-server-ctx-help.lua?interface=%s&mode=%s'>%s</a>]] ]
-local f_source     = formatters[ [[<a href='mtx-server-ctx-help.lua?source=%s&mode=%s'>%s</a>]] ]
-local f_keyword    = formatters[ [[<tr><td width='15%%'>%s</td><td width='85%%' colspan='2'>%s</td></tr>]] ]
-local f_parameter  = formatters[ [[<tr><td width='15%%'>%s</td><td width='15%%'>%s</td><td width='70%%'>%s</td></tr>]] ]
-local f_parameters = formatters[ [[<table width='100%%'>%s</table>]] ]
-local f_listing    = formatters[ [[<pre><t>%s</t></listing>]] ]
-local f_special    = formatters[ [[<i>%s</i>]] ]
-local f_url        = formatters[ [[<tr><td width='15%%'>%s</td><td width='85%%' colspan='2'><i>%s</i>: %s</td></tr>]] ]
-local f_default    = formatters[ [[<u>%s</u>]] ]
+local s_views_t = {
+    groups = "<a class='setupviewurl' href='mtx-server-ctx-help.lua?view=names'>names</a>",
+    names  = "<a class='setupviewurl' href='mtx-server-ctx-help.lua?view=groups'>groups</a>",
+}
+
+local f_interface   = formatters["<a href='mtx-server-ctx-help.lua?interface=%s&mode=%s'>%s</a>"]
+local f_source      = formatters["<a href='mtx-server-ctx-help.lua?source=%s&mode=%s'>%s</a>"]
+local f_keyword     = formatters[" <tr>\n  <td width='15%%'>%s</td>\n  <td width='85%%' colspan='2'>%s</td>\n </tr>\n"]
+local f_parameter   = formatters[" <tr>\n  <td width='15%%'>%s</td>\n  <td width='15%%'>%s</td>\n  <td width='70%%'>%s</td>\n </tr>\n"]
+local f_url         = formatters[" <tr>\n  <td width='15%%'>%s</td>\n  <td width='85%%' colspan='2'><i>%s</i>: %s</td>\n </tr>\n"]
+local f_parameters  = formatters["\n<table width='100%%'>\n%s</table>\n"]
+local f_listing     = formatters["<pre><t>%s</t></pre>"]
+local f_special     = formatters["<i>%s</i>"]
+local f_default     = formatters["<u>%s</u>"]
+
+local f_group       = formatters["<div class='setupmenugroup'>\n<div class='setupmenucategory'>%s</div>%s</div>"]
 
 local function translate(tag,int,noformat) -- to be checked
     local translation = setupstrings[tag]
@@ -135,20 +147,33 @@ local function csname(e,int) -- to be checked
 end
 
 local function getnames(root)
-    local found = { }
-    local names = { }
-    for e in xmlcollected(root,'cd:command') do
-        local name   = e.at.name
-        local csname = csname(e,int)
-        if not found[csname] then
-            names[#names+1] = { name, csname }
-            found[csname] = name
-        else
-            -- variant
+    local found  = { }
+    local names  = { }
+    local groups = { }
+    for e in xmlcollected(root,'cd:interface/cd:interface') do
+        local category = match(e.at.file or "","^i%-(.*)%.xml$")
+        local list     = { }
+        for e in xmlcollected(e,'cd:command') do
+            local name   = e.at.name
+            local csname = csname(e,int)
+            if not found[csname] then
+                local t = { name, csname }
+                names[#names+1] = t
+                list[#list+1]  = t
+                found[csname]  = true
+            else
+                -- variant
+            end
         end
+        if #list > 0 then
+            sort(list, function(a,b) return lower(a[2]) < lower(b[2]) end)
+            groups[#groups+1] = { category, list }
+        end
+
     end
-    sort(names, function(a,b) return lower(a[2]) < lower(b[2]) end)
-    return names
+    sort(names,  function(a,b) return lower(a[2]) < lower(b[2]) end)
+    sort(groups, function(a,b) return lower(a[1]) < lower(b[1]) end)
+    return names, groups
 end
 
 local function getdefinitions(root)
@@ -167,12 +192,14 @@ local loaded = setmetatableindex(function(loaded,interface)
     if fullname ~= "" then
         local root = xmlload(fullname)
         if root then
+            local names, groups = getnames(root)
             current = {
-                intercace   = interface,
+                interface   = interface,
                 filename    = filename,
                 fullname    = fullname,
                 root        = root,
-                names       = getnames(root),
+                names       = names,
+                groups      = groups,
                 definitions = getdefinitions(root),
             }
         end
@@ -461,6 +488,8 @@ local function collect(current,name,int,lastmode)
         data.mode = s_modes_t[lastmode or "tex"]
         list[#list+1] = data
 
+        data.view = s_views_t[lastview or "groups"]
+        list[#list+1] = data
     end
     return list
 end
@@ -486,7 +515,7 @@ local variables = {
     ['title']                       = 'ConTeXt Help Information',
 }
 
-local what = { "environment", "category", "source", "mode" }
+local what = { "environment", "category", "source", "mode", "view" }
 
 local function generate(configuration,filename,hashed)
 
@@ -497,6 +526,7 @@ local function generate(configuration,filename,hashed)
 
         local lastinterface = detail.interface or "en"
         local lastcommand   = detail.command   or ""
+        local lastview      = detail.view      or "groups"
         local lastsource    = detail.source    or ""
         local lastmode      = detail.mode      or "tex"
 
@@ -507,13 +537,35 @@ local function generate(configuration,filename,hashed)
         local f_div  = f_divs_t[lastinterface]
         ----- f_span = f_spans[lastinterface]
 
-        local names = current.names
-        local refs  = { }
-        local ints  = { }
+        local names  = current.names
+        local groups = current.groups
+        local refs   = { }
+        local ints   = { }
 
-        for k=1,#names do
-            local v = names[k]
-            refs[k] = f_href_in_list_t[lastmode](v[1],lastmode,v[2])
+        local function addnames(names)
+            local target = { }
+            for k=1,#names do
+                local namedata = names[k]
+                local command  = namedata[1]
+                local text     = namedata[2]
+                if command == lastcommand then
+                    target[#target+1] = f_href_in_list_i[lastmode](command,lastmode,text)
+                else
+                    target[#target+1] = f_href_in_list_t[lastmode](command,lastmode,text)
+                end
+            end
+            return concat(target,"<br/>\n")
+        end
+
+        if lastview == "groups" then
+            local target = { }
+            for i=1,#groups do
+                local group = groups[i]
+                target[#target+1] = f_group(group[1],addnames(group[2]))
+            end
+            refs = concat(target,"<br/>\n")
+        else
+            refs = addnames(names)
         end
 
         if lastmode ~= "lua" then
@@ -524,8 +576,8 @@ local function generate(configuration,filename,hashed)
             end
         end
 
-        local n = concat(refs,"<br/>")
-        local i = concat(ints,"<br/><br/>")
+        local n = refs
+        local i = concat(ints,"<br/><br/>\n")
 
         if f_div then
             variables.names      = f_div(n)
