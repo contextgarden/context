@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/19/16 17:16:02
+-- merge date  : 04/21/16 19:35:29
 
 do -- begin closure to overcome local limits and interference
 
@@ -3693,11 +3693,8 @@ local remapper={
   otf="opentype fonts",
   ttf="truetype fonts",
   ttc="truetype fonts",
-  dfont="truetype fonts",
   cid="cid maps",
   cidmap="cid maps",
-  fea="font feature files",
-  pfa="type1 fonts",
   pfb="type1 fonts",
   afm="afm",
 }
@@ -5656,9 +5653,13 @@ function constructors.scale(tfmdata,specification)
     elseif autoitalicamount then 
       local vi=description.italic
       if not vi then
-        local vi=description.boundingbox[3]-description.width+autoitalicamount
-        if vi>0 then 
-          chr.italic=vi*hdelta
+        local bb=description.boundingbox
+        if bb then
+          local vi=bb[3]-description.width+autoitalicamount
+          if vi>0 then 
+            chr.italic=vi*hdelta
+          end
+        else
         end
       elseif vi~=0 then
         chr.italic=vi*hdelta
@@ -6928,7 +6929,7 @@ local function read_from_tfm(specification)
       end
     end
     properties.haskerns=true
-    properties.haslogatures=true
+    properties.hasligatures=true
     resources.unicodes={}
     resources.lookuptags={}
     depth[filename]=depth[filename]-1
@@ -6981,9 +6982,11 @@ if not modules then modules={} end modules ['font-afm']={
 }
 local fonts,logs,trackers,containers,resolvers=fonts,logs,trackers,containers,resolvers
 local next,type,tonumber=next,type,tonumber
-local format,match,gmatch,lower,gsub,strip=string.format,string.match,string.gmatch,string.lower,string.gsub,string.strip
-local abs=math.abs
-local P,S,C,R,lpegmatch,patterns=lpeg.P,lpeg.S,lpeg.C,lpeg.R,lpeg.match,lpeg.patterns
+local match,gmatch,lower,gsub,strip,find=string.match,string.gmatch,string.lower,string.gsub,string.strip,string.find
+local char,byte,sub=string.char,string.byte,string.sub
+local abs,mod=math.abs,math.mod
+local bxor,rshift=bit32.bxor,bit32.rshift
+local P,S,R,Cmt,C,Ct,Cs,lpegmatch,patterns=lpeg.P,lpeg.S,lpeg.R,lpeg.Cmt,lpeg.C,lpeg.Ct,lpeg.Cs,lpeg.match,lpeg.patterns
 local derivetable=table.derive
 local trace_features=false trackers.register("afm.features",function(v) trace_features=v end)
 local trace_indexing=false trackers.register("afm.indexing",function(v) trace_indexing=v end)
@@ -6995,10 +6998,6 @@ local findbinfile=resolvers.findbinfile
 local definers=fonts.definers
 local readers=fonts.readers
 local constructors=fonts.constructors
-local fontloader=fontloader
-local font_to_table=fontloader.to_table
-local open_font=fontloader.open
-local close_font=fontloader.close
 local afm=constructors.newhandler("afm")
 local pfb=constructors.newhandler("pfb")
 local afmfeatures=constructors.newfeatures("afm")
@@ -7112,39 +7111,140 @@ local function get_variables(data,fontmetrics)
     end
   end
 end
-local function get_indexes(data,pfbname)
-  data.resources.filename=resolvers.unresolve(pfbname) 
-  local pfbblob=open_font(pfbname)
-  if pfbblob then
-    local characters=data.characters
-    local pfbdata=font_to_table(pfbblob)
-    if pfbdata then
-      local glyphs=pfbdata.glyphs
-      if glyphs then
-        if trace_loading then
-          report_afm("getting index data from %a",pfbname)
-        end
-        for index,glyph in next,glyphs do
-          local name=glyph.name
-          if name then
-            local char=characters[name]
-            if char then
-              if trace_indexing then
-                report_afm("glyph %a has index %a",name,index)
-              end
-              char.index=index
+local get_indexes
+do
+  local fontloader=fontloader
+  if fontloader then
+    local font_to_table=fontloader.to_table
+    local open_font=fontloader.open
+    local close_font=fontloader.close
+    local function get_indexes_old(data,pfbname)
+      local pfbblob=open_font(pfbname)
+      if pfbblob then
+        local characters=data.characters
+        local pfbdata=font_to_table(pfbblob)
+        if pfbdata then
+          local glyphs=pfbdata.glyphs
+          if glyphs then
+            if trace_loading then
+              report_afm("getting index data from %a",pfbname)
             end
+            for index,glyph in next,glyphs do
+              local name=glyph.name
+              if name then
+                local char=characters[name]
+                if char then
+                  if trace_indexing then
+                    report_afm("glyph %a has index %a",name,index)
+                  end
+                  char.index=index
+                end
+              end
+            end
+          elseif trace_loading then
+            report_afm("no glyph data in pfb file %a",pfbname)
           end
+        elseif trace_loading then
+          report_afm("no data in pfb file %a",pfbname)
         end
+        close_font(pfbblob)
       elseif trace_loading then
-        report_afm("no glyph data in pfb file %a",pfbname)
+        report_afm("invalid pfb file %a",pfbname)
       end
-    elseif trace_loading then
-      report_afm("no data in pfb file %a",pfbname)
     end
-    close_font(pfbblob)
-  elseif trace_loading then
-    report_afm("invalid pfb file %a",pfbname)
+  end
+  local n,m
+  local progress=function(str,position,name,size)
+    local forward=position+tonumber(size)+3+2
+    n=n+1
+    if n>=m then
+      return #str,name
+    elseif forward<#str then
+      return forward,name
+    else
+      return #str,name
+    end
+  end
+  local initialize=function(str,position,size)
+    n=0
+    m=tonumber(size)
+    return position+1
+  end
+  local charstrings=P("/CharStrings")
+  local name=P("/")*C((R("az")+R("AZ")+R("09")+S("-_."))^1)
+  local size=C(R("09")^1)
+  local spaces=P(" ")^1
+  local p_filternames=Ct (
+    (1-charstrings)^0*charstrings*spaces*Cmt(size,initialize)*(Cmt(name*P(" ")^1*C(R("09")^1),progress)+P(1))^1
+  )
+  local decrypt
+  do
+    local r,c1,c2,n=0,0,0,0
+    local function step(c)
+      local cipher=byte(c)
+      local plain=bxor(cipher,rshift(r,8))
+      r=mod((cipher+r)*c1+c2,65536)
+      return char(plain)
+    end
+    decrypt=function(binary)
+      r,c1,c2,n=55665,52845,22719,4
+      binary=gsub(binary,".",step)
+      return sub(binary,n+1)
+    end
+  end
+  local function loadpfbvector(filename)
+    local data=io.loaddata(resolvers.findfile(filename))
+    if not find(data,"!PS%-AdobeFont%-") then
+      print("no font",filename)
+      return
+    end
+    if not data then
+      print("no data",filename)
+      return
+    end
+    local ascii,binary=match(data,"(.*)eexec%s+......(.*)")
+    if not binary then
+      print("no binary",filename)
+      return
+    end
+    binary=decrypt(binary,4)
+    local vector=lpegmatch(p_filternames,binary)
+    vector[0]=table.remove(vector,1)
+    if not vector then
+      print("no vector",filename)
+      return
+    end
+    return vector
+  end
+  get_indexes=function(data,pfbname)
+    local vector=loadpfbvector(pfbname)
+    if vector then
+      local characters=data.characters
+      if trace_loading then
+        report_afm("getting index data from %a",pfbname)
+      end
+      for index=1,#vector do
+        local name=vector[index]
+        local char=characters[name]
+        if char then
+          if trace_indexing then
+            report_afm("glyph %a has index %a",name,index)
+          end
+          char.index=index
+        end
+      end
+    end
+  end
+  if fontloader then
+    afm.use_new_indexer=true
+    get_indexes_new=get_indexes
+    get_indexes=function(data,pfbname)
+      if afm.use_new_indexer then
+        return get_indexes_new(data,pfbname)
+      else
+        return get_indexes_old(data,pfbname)
+      end
+    end
   end
 end
 local function readafm(filename)
@@ -7223,6 +7323,7 @@ function afm.load(filename)
       data=readafm(filename)
       if data then
         if pfbname~="" then
+          data.resources.filename=resolvers.unresolve(pfbname)
           get_indexes(data,pfbname)
         elseif trace_loading then
           report_afm("no pfb file for %a",filename)
@@ -8143,14 +8244,10 @@ if not modules then modules={} end modules ['font-otr']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-if not characters then
-  require("char-def")
-  require("char-ini")
-end
 local next,type,unpack=next,type,unpack
 local byte,lower,char,strip,gsub=string.byte,string.lower,string.char,string.strip,string.gsub
 local bittest=bit32.btest
-local concat,remove,unpack=table.concat,table.remov,table.unpack
+local concat,remove,unpack,fastcopy=table.concat,table.remov,table.unpack,table.fastcopy
 local floor,mod,abs,sqrt,round=math.floor,math.mod,math.abs,math.sqrt,math.round
 local P,R,S,C,Cs,Cc,Ct,Carg,Cmt=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Ct,lpeg.Carg,lpeg.Cmt
 local lpegmatch=lpeg.match
@@ -8702,18 +8799,17 @@ readers.hmtx=function(f,fontdata,specification)
       local nofmetrics=fontdata.horizontalheader.nofhmetrics
       local glyphs=fontdata.glyphs
       local nofglyphs=fontdata.nofglyphs
-      local nofrepeated=nofglyphs-nofmetrics
       local width=0 
       local leftsidebearing=0
       for i=0,nofmetrics-1 do
         local glyph=glyphs[i]
         width=readshort(f)
         leftsidebearing=readshort(f)
-        if advance~=0 then
+        if width~=0 then
           glyph.width=width
         end
       end
-      for i=nofmetrics,nofrepeated do
+      for i=nofmetrics,nofglyphs-1 do
         local glyph=glyphs[i]
         if width~=0 then
           glyph.width=width
@@ -8796,6 +8892,7 @@ local sequence={
   { 0,0,6 },
   { 3,0,6 },
   { 0,5,14 },
+  { 3,10,13 },
 }
 local supported={}
 for i=1,#sequence do
@@ -8967,7 +9064,7 @@ formatreaders[12]=function(f,fontdata,offset)
     local last=readulong(f)
     local index=readulong(f)
     if trace_cmap then
-      report("format 12 from %C to %C",first,last)
+      report("format 12 from %C to %C starts at index %i",first,last,index)
     end
     for unicode=first,last do
       local glyph=glyphs[index]
@@ -8989,6 +9086,49 @@ formatreaders[12]=function(f,fontdata,offset)
         end
       end
       index=index+1
+    end
+  end
+  return nofdone
+end
+formatreaders[13]=function(f,fontdata,offset)
+  setposition(f,offset+2+2+4+4) 
+  local mapping=fontdata.mapping
+  local glyphs=fontdata.glyphs
+  local duplicates=fontdata.duplicates
+  local nofgroups=readulong(f)
+  local nofdone=0
+  for i=1,nofgroups do
+    local first=readulong(f)
+    local last=readulong(f)
+    local index=readulong(f)
+    if first<privateoffset then
+      if trace_cmap then
+        report("format 13 from %C to %C get index %i",first,last,index)
+      end
+      local glyph=glyphs[index]
+      local unicode=glyph.unicode
+      if not unicode then
+        unicode=first
+        glyph.unicode=unicode
+        first=first+1
+      end
+      local list=duplicates[unicode]
+      mapping[index]=unicode
+      if not list then
+        list={}
+        duplicates[unicode]=list
+      end
+      if last>=privateoffset then
+        local limit=privateoffset-1
+        report("format 13 from %C to %C pruned to %C",first,last,limit)
+        last=limit
+      end
+      for unicode=first,last do
+        list[unicode]=true
+      end
+      nofdone=nofdone+last-first+1
+    else
+      report("format 13 from %C to %C ignored",first,last)
     end
   end
   return nofdone
@@ -13832,16 +13972,28 @@ local function copyduplicates(fontdata)
         local du=descriptions[u]
         if du then
           local t={ f_character_y(u),"@",f_index(du.index),"->" }
+          local n=0
+          local m=25
           for u in next,d do
             if descriptions[u] then
-              t[#t+1]=f_character_n(u)
+              if n<m then
+                t[n+4]=f_character_n(u)
+              end
             else
               local c=copy(du)
+              c.unicode=u 
               descriptions[u]=c
-              t[#t+1]=f_character_y(u)
+              if n<m then
+                t[n+4]=f_character_y(u)
+              end
             end
+            n=n+1
           end
-          report("duplicates: % t",t)
+          if n<=m then
+            report("duplicates: %i : % t",n,t)
+          else
+            report("duplicates: %i : % t ...",n,t)
+          end
         else
         end
       end
@@ -14026,13 +14178,12 @@ local function checklookups(fontdata,missing,nofmissing)
       if r then
         local name=descriptions[i].name or f_index(i)
         if not ignore[name] then
-          done[#done+1]=name
+          done[name]=true
         end
       end
     end
-    if #done>0 then
-      table.sort(done)
-      report("not unicoded: % t",done)
+    if next(done) then
+      report("not unicoded: % t",table.sortedkeys(done))
     end
   end
 end
@@ -15487,7 +15638,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.017 
+otf.version=3.018 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 local otfreaders=otf.readers
 local hashes=fonts.hashes

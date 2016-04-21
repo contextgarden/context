@@ -243,7 +243,7 @@ function paragraphs.normalize(head,islocal)
     end
     for line in traverse_id(hlist_code,tonut(head)) do
         if getsubtype(line) == line_code and not getprop(line,"line") then
-            normalize(line,islocal)
+            normalize(line)
         end
     end
     return head, true

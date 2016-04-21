@@ -113,7 +113,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="makeup" type="environment" file="page-mak.mkvi">
+    <cd:command file="page-mak.mkvi" name="makeup" type="environment">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -122,7 +122,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="makeup" type="environment" generated="yes" variant="generated" file="page-mak.mkvi">
+    <cd:command file="page-mak.mkvi" generated="yes" name="makeup" type="environment" variant="generated">
         <cd:sequence>
             <cd:variable value="makeup"/>
             <cd:string value="makeup"/>
@@ -132,7 +132,16 @@
                 <cd:inherit name="setupmakeup"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="standard"/>
+            <cd:constant value="page"/>
+            <cd:constant value="text"/>
+            <cd:constant value="middle"/>
+        </cd:instances>
     </cd:command>
+
+
+    <!--
 
     <cd:command name="standardmakeup" type="environment" file="page-mak.mkvi">
         <cd:arguments>
@@ -165,5 +174,7 @@
             </cd:assignments>
         </cd:arguments>
     </cd:command>
+
+    -->
 
 </cd:interface>

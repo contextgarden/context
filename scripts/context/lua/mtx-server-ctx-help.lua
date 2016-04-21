@@ -21,7 +21,12 @@ local sortedkeys        = table.sortedkeys
 local setmetatableindex = table.setmetatableindex
 local lowercase         = characters.lower
 local uppercase         = characters.upper
-local setupstrings      = dofile(resolvers.findfile("mult-def.lua","tex")).setupstrings
+local interfaces        = dofile(resolvers.findfile("mult-def.lua","tex"))
+local i_setupstrings    = interfaces.setupstrings
+local i_commands        = interfaces.commands
+local i_variables       = interfaces.variables
+local i_constants       = interfaces.constants
+local i_elements        = interfaces.elements
 local report            = logs.reporter("ctx-help")
 local gettime           = os.gettimeofday or os.clock
 
@@ -30,8 +35,38 @@ local xmlfirst          = xml.first
 local xmltext           = xml.text
 local xmlload           = xml.load
 
-document        = document or { }
-document.setups = document.setups or { }
+document                = document or { }
+document.setups         = document.setups or { }
+
+local usedsetupfile     = resolvers.findfile("i-context.xml") or ""
+local usedsetuproot     = usedsetupfile ~= "" and xmlload(usedsetupfile) or false
+local useddefinitions   = { }
+
+if usedsetuproot then
+    report("main file loaded: %s",usedsetupfile)
+    xml.include(usedsetuproot,"cd:interfacefile","filename",true,function(s)
+        local fullname =  resolvers.findfile(s)
+        if fullname and fullname ~= "" then
+            report("inclusion loaded: %s",fullname)
+            return io.loaddata(fullname)
+        end
+    end)
+else
+    report("no main file")
+    return false, false
+end
+
+local defaultinterface  = "en"
+
+-- todo: store mode|interface in field but then we need post
+
+for e in xmlcollected(usedsetuproot,"cd:define") do
+    useddefinitions[e.at.name] = e
+end
+
+for e in xml.collected(usedsetuproot,"cd:interface/cd:interface") do
+    e.at.file = e.__f__ -- nicer
+end
 
 local f_divs_t = {
     pe = formatters["<div dir='rtl' lang='arabic'>%s</div>"],
@@ -42,45 +77,54 @@ local f_spans_t = {
 }
 
 local f_href_in_list_t = {
-    tex = formatters["<a class='setupmenuurl' href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>"],
-    lua = formatters["<a class='setupmenuurl' href='mtx-server-ctx-help.lua?command=%s&mode=%s'>%s</a>"],
+    tex = formatters["<a class='setupmenuurl' href='mtx-server-ctx-help.lua?interface=%s&command=%s&mode=%s'>%s</a>"],
+    lua = formatters["<a class='setupmenuurl' href='mtx-server-ctx-help.lua?interface=%s&command=%s&mode=%s'>%s</a>"],
 }
 
 local f_href_in_list_i = {
-    tex = formatters["<a class='setupmenucmd' href='mtx-server-ctx-help.lua?command=%s&mode=%s' id='#current'>%s</a>"],
-    lua = formatters["<a class='setupmenucmd' href='mtx-server-ctx-help.lua?command=%s&mode=%s' id='#current'>%s</a>"],
+    tex = formatters["<a class='setupmenucmd' href='mtx-server-ctx-help.lua?interface=%s&command=%s&mode=%s' id='#current'>%s</a>"],
+    lua = formatters["<a class='setupmenucmd' href='mtx-server-ctx-help.lua?interface=%s&command=%s&mode=%s' id='#current'>%s</a>"],
 }
 
 local f_href_as_command_t = {
-    tex = formatters["<a class='setuplisturl' href='mtx-server-ctx-help.lua?command=%s&mode=%s'>\\%s</a>"],
-    lua = formatters["<a class='setuplisturl' href='mtx-server-ctx-help.lua?command=%s&mode=%s'>context.%s</a>"],
+    tex = formatters["<a class='setuplisturl' href='mtx-server-ctx-help.lua?interface=%s&command=%s&mode=%s'>\\%s</a>"],
+    lua = formatters["<a class='setuplisturl' href='mtx-server-ctx-help.lua?interface=%s&command=%s&mode=%s'>context.%s</a>"],
 }
 
-local s_modes_t = {
-    tex = "<a class='setupmodeurl' href='mtx-server-ctx-help.lua?mode=lua'>lua mode</a>",
-    lua = "<a class='setupmodeurl' href='mtx-server-ctx-help.lua?mode=tex'>tex mode</a>",
+local f_modes_t = {
+    tex = formatters["<a class='setupmodeurl' href='mtx-server-ctx-help.lua?interface=%s&mode=lua'>lua mode</a>"],
+    lua = formatters["<a class='setupmodeurl' href='mtx-server-ctx-help.lua?interface=%s&mode=tex'>tex mode</a>"],
 }
 
-local s_views_t = {
-    groups = "<a class='setupviewurl' href='mtx-server-ctx-help.lua?view=names'>names</a>",
-    names  = "<a class='setupviewurl' href='mtx-server-ctx-help.lua?view=groups'>groups</a>",
+local f_views_t = {
+    groups = formatters["<a class='setupviewurl' href='mtx-server-ctx-help.lua?interface=%s&view=names'>names</a>"],
+    names  = formatters["<a class='setupviewurl' href='mtx-server-ctx-help.lua?interface=%s&view=groups'>groups</a>"],
 }
 
-local f_interface   = formatters["<a href='mtx-server-ctx-help.lua?interface=%s&mode=%s'>%s</a>"]
-local f_source      = formatters["<a href='mtx-server-ctx-help.lua?source=%s&mode=%s'>%s</a>"]
+local f_interface   = formatters["<a href='mtx-server-ctx-help.lua?interface=%s&command=%s&mode=%s'>%s</a>"]
+local f_source      = formatters["<a href='mtx-server-ctx-help.lua?interface=%s&command=%s&source=%s&mode=%s'>%s</a>"]
 local f_keyword     = formatters[" <tr>\n  <td width='15%%'>%s</td>\n  <td width='85%%' colspan='2'>%s</td>\n </tr>\n"]
 local f_parameter   = formatters[" <tr>\n  <td width='15%%'>%s</td>\n  <td width='15%%'>%s</td>\n  <td width='70%%'>%s</td>\n </tr>\n"]
 local f_url         = formatters[" <tr>\n  <td width='15%%'>%s</td>\n  <td width='85%%' colspan='2'><i>%s</i>: %s</td>\n </tr>\n"]
 local f_parameters  = formatters["\n<table width='100%%'>\n%s</table>\n"]
+local f_instance    = formatters["<tt>%s</tt>"]
+local f_instances   = formatters["\n<div class='setupinstances'><b>predefined instances</b>:&nbsp;%s</div>\n"]
 local f_listing     = formatters["<pre><t>%s</t></pre>"]
 local f_special     = formatters["<i>%s</i>"]
 local f_default     = formatters["<u>%s</u>"]
-
 local f_group       = formatters["<div class='setupmenugroup'>\n<div class='setupmenucategory'>%s</div>%s</div>"]
 
-local function translate(tag,int,noformat) -- to be checked
-    local translation = setupstrings[tag]
-    local translated  = translation and (translation[tag] or translation[tag]) or tag
+-- replace('cd:string',    'value',   i_commands, i_elements)
+-- replace('cd:variable' , 'value',   i_variables)
+-- replace('cd:parameter', 'name',    i_constants)
+-- replace('cd:constant',  'type',    i_variables)
+-- replace('cd:constant',  'default', i_variables)
+-- replace('cd:variable',  'type',    i_variables)
+-- replace('cd:inherit',   'name',    i_commands, i_elements)
+
+local function translate(tag,interface,noformat) -- to be checked
+    local translation = i_setupstrings[tag]
+    local translated  = translation and (translation[interface] or translation[interface]) or tag
     if noformat then
         return translated
     else
@@ -88,65 +132,116 @@ local function translate(tag,int,noformat) -- to be checked
     end
 end
 
-local function translated(e,int) -- to be checked
+local function translatedparameter(e,interface)
     local attributes = e.at
-    local s   = attributes.type or "?"
+    local s = attributes.type or "?"
     if find(s,"^cd:") then
-        local t = setupstrings[s]
-        local f = t and (t[int] or t.en) or s
+        local t = i_setupstrings[s]
+        local f = t and (t[interface] or t.en) or s
+        return f
+    else
+        local t = i_variables[s]
+        local f = t and (t[interface] or t.en) or s
+        return f
+    end
+end
+
+local function translatedkeyword(e,interface)
+    local attributes = e.at
+    local s = attributes.type or "?"
+    if find(s,"^cd:") then
+        local t = i_setupstrings[s]
+        local f = t and (t[interface] or t.en) or s
+        return f
+    else
+        local t = i_variables[s]
+        local f = t and (t[interface] or t.en) or s
         if attributes.default == "yes" then
-            return f_default(f)
-        elseif tag then
             return f_default(f)
         else
             return f
         end
-    else
-        if attributes.default == "yes" then
-            return f_default(translate(s,int) or "?")
-        elseif tag then
-            return translate(s,int)
-        else
-            return s
-        end
     end
 end
 
-local function makename(e) -- to be checked
+local function translatedvariable(s,interface)
+    local t = i_variables[s]
+    return t and (t[interface] or t.en) or s
+end
+
+local function translatedconstant(s,interface) -- cache
+    local t = i_constants[s]
+    return t and (t[interface] or t.en) or s
+end
+
+local function translatedelement(s,interface) -- cache
+    local t = i_elements[s]
+    return t and (t[interface] or t.en) or s
+end
+
+local function translatedstring(s,interface) -- cache
+    local t = i_commands[s]
+    if t then
+        t = t[interface] or t.en
+    end
+    if t then
+        return t
+    end
+    t = i_elements[s]
+    return t and (t[interface] or t.en) or s
+end
+
+local function translatedcommand(s,interface) -- cache
+    local t = i_commands[s]
+    return t and (t[interface] or t.en) or s
+end
+
+local function makeidname(e)
     local at   = e.at
     local name = at.name
     if at.type == 'environment' then
-        name = "start" .. name -- todo: elements.start
+        name = name .. ":environment"
+    end
+    if at.generated == "yes" then
+        name = name .. ":generated"
     end
     if at.variant then
         name = name .. ":" .. at.variant
     end
-    if at.generated == "yes" then
-        name = name .. "*"
-    end
     return lower(name)
 end
 
-local function csname(e,int) -- to be checked
+local function makecsname(e,interface,prefix) -- stop ?
     local cs = ""
     local at = e.at
-    if at.type == 'environment' then
-        cs = "start" .. cs -- todo: elements.start
+    local ok = false
+    local en = at.type == 'environment'
+    if prefix and en then
+        cs = translatedelement("start",interface)
     end
-    local f = xmlfirst(e,'cd:sequence/(cd:string|variable)')
-    if f then
-        if f.tg == "string" then
-            cs = cs .. f.at.value
-        else
-            cs = cs .. f.at.value -- to be translated
+    for f in xmlcollected(e,'cd:sequence/(cd:string|cd:variable)') do -- always at the start
+        local tag = f.tg
+        local val = f.at.value or ""
+        if tag == "string" then
+            cs = cs .. translatedstring(val,interface)
+        elseif tag == "variable" then
+            cs = cs .. f_special(translatedconstant("name",interface))
+        else -- can't happen
+            cs = cs .. val
         end
-    else
-        cs = cs .. at.name
+        ok = true
+    end
+    if not ok then
+        if en then
+            cs = cs .. translatedstring(at.name,interface)
+        else
+            cs = cs .. translatedcommand(at.name,interface)
+        end
     end
     return cs
 end
 
-local function getnames(root)
+local function getnames(root,interface)
     local found  = { }
     local names  = { }
     local groups = { }
@@ -154,13 +249,13 @@ local function getnames(root)
         local category = match(e.at.file or "","^i%-(.*)%.xml$")
         local list     = { }
         for e in xmlcollected(e,'cd:command') do
-            local name   = e.at.name
-            local csname = csname(e,int)
-            if not found[csname] then
-                local t = { name, csname }
+            local idname = makeidname(e)
+            local csname = makecsname(e,interface,true)
+            if not found[idname] then
+                local t = { idname, csname }
                 names[#names+1] = t
-                list[#list+1]  = t
-                found[csname]  = true
+                list[#list+1]   = t
+                found[idname]   = e
             else
                 -- variant
             end
@@ -173,79 +268,46 @@ local function getnames(root)
     end
     sort(names,  function(a,b) return lower(a[2]) < lower(b[2]) end)
     sort(groups, function(a,b) return lower(a[1]) < lower(b[1]) end)
-    return names, groups
-end
-
-local function getdefinitions(root)
-    local definitions = { }
-    for e in xmlcollected(root,"cd:define") do
-        definitions[e.at.name] = e
-    end
-    return definitions
+    return names, groups, found
 end
 
 local loaded = setmetatableindex(function(loaded,interface)
-    local starttime = gettime()
-    local filename  = formatters["context-%s.xml"](interface)
-    local fullname  = resolvers.findfile(filename) or ""
-    local current   = false
-    if fullname ~= "" then
-        local root = xmlload(fullname)
-        if root then
-            local names, groups = getnames(root)
-            current = {
-                interface   = interface,
-                filename    = filename,
-                fullname    = fullname,
-                root        = root,
-                names       = names,
-                groups      = groups,
-                definitions = getdefinitions(root),
-            }
-        end
-    end
-    if current then
-        report("data file %a loaded for interface %a in %0.3f seconds",filename,interface,gettime()-starttime)
-    else
-        report("no valid interface file for %a",interface)
-    end
-    loaded[filename] = current
+    local names, groups, found = getnames(usedsetuproot,interface)
+    local current = {
+        interface   = interface,
+        root        = usedsetuproot,
+        definitions = useddefinitions,
+        names       = names,
+        groups      = groups,
+        found       = found,
+    }
+    loaded[interface] = current
     return current
 end)
 
-local function collect(current,name,int,lastmode)
-    local list = { }
-    for command in xmlcollected(current.root,formatters["cd:command[@name='%s']"](name)) do
-        local attributes = command.at or { }
-        local data = {
-            command  = command,
-            category = attributes.category or "",
-            source   = attributes.file and f_source(attributes.file,lastmode,attributes.file) or ""
-        }
-
-        local sequence  = { }
-        local tags      = { }
-        local arguments = { }
-        local tag       = ""
-
+local function collect(current,name,interface,lastmode)
+    local command = current.found[name]
+    if command then
+        local definitions = current.definitions
+        local attributes  = command.at or { }
         local generated   = attributes.generated == "yes"
         local environment = attributes.type      == "environment"
+        local sequence    = { }
+        local tags        = { }
+        local arguments   = { }
+        local parameters  = { }
+        local instances   = { }
+        local tag         = ""
+        local category    = attributes.category or ""
+        local source      = attributes.file and f_source(lastinterface,lastcommand,attributes.file,lastmode,attributes.file) or ""
 
         -- first pass: construct the top line
 
-        local start   = environment and (attributes["begin"] or "start") or "" -- elements.start
-        local stop    = environment and (attributes["end"]   or "stop" ) or "" -- elements.stop
-        local name    = attributes.name
+        local start   = environment and (attributes["begin"] or translatedelement("start",interface)) or ""
+        local stop    = environment and (attributes["end"]   or translatedelement("stop" ,interface)) or ""
+        local name    = makecsname(command,interface) -- we can use the stored one
         local valid   = true
         local texmode = lastmode == "tex"
-
-        local first = xmlfirst(command,"/sequence")
-
-        if first then
-            name = xmltext(xmlfirst(first))
-        end
-
-        -- translate name
 
         local function process(e)
             for e in xmlcollected(e,"/*") do
@@ -253,7 +315,7 @@ local function collect(current,name,int,lastmode)
                     local tag        = e.tg
                     local attributes = e.at
                     if tag == "resolve" then
-                        local resolved = current.definitions[e.at.name or ""]
+                        local resolved = definitions[e.at.name or ""]
                         if resolved then
                            process(resolved)
                         end
@@ -266,18 +328,18 @@ local function collect(current,name,int,lastmode)
                             local okay
                             if tag == "keywords" then
                              -- todo = optional
-                                okay = setupstrings["cd:" .. delimiters .. (list and "-l" or "-s")]
+                                okay = i_setupstrings["cd:" .. delimiters .. (list and "-l" or "-s")]
                             elseif tag == "assignments" then
                              -- todo = optional
-                                okay = setupstrings["cd:assignment" .. delimiters .. (list and "-l" or "-s")]
+                                okay = i_setupstrings["cd:assignment" .. delimiters .. (list and "-l" or "-s")]
                             elseif tag == "delimiter" then
                                 tag = "\\" .. attributes.name
                             elseif tag == "string" then
-                                tag = attributes.value
+                                tag = translatedstring(attributes.value,interface)
                             else
                              -- todo = optional
-                                okay = setupstrings["cd:" .. tag .. (list and "-l" or "-s")]
-                                    or setupstrings["cd:" .. tag]
+                                okay = i_setupstrings["cd:" .. tag .. (list and "-l" or "-s")]
+                                    or i_setupstrings["cd:" .. tag]
                             end
                             if okay then
                                 tag = okay.en or tag
@@ -286,18 +348,18 @@ local function collect(current,name,int,lastmode)
                             local okay
                             if tag == "keywords" then
                              -- todo = optional
-                                okay = setupstrings["cd:" .. delimiters .. (list and "-l" or "-s")]
+                                okay = i_setupstrings["cd:" .. delimiters .. (list and "-l" or "-s")]
                             elseif tag == "assignments" then
                              -- todo = optional
-                                okay = setupstrings["cd:assignment" .. delimiters .. (list and "-l" or "-s")]
+                                okay = i_setupstrings["cd:assignment" .. delimiters .. (list and "-l" or "-s")]
                             elseif tag == "delimiter" then
                                 okay = false
                             elseif tag == "string" then
                                 okay = false
                             else
                              -- todo = optional
-                                okay = setupstrings["cd:" .. tag .. (list and "-l" or "-s")]
-                                    or setupstrings["cd:" .. tag]
+                                okay = i_setupstrings["cd:" .. tag .. (list and "-l" or "-s")]
+                                    or i_setupstrings["cd:" .. tag]
                             end
                             if okay then
                                 local luatag = okay.lua
@@ -357,11 +419,10 @@ local function collect(current,name,int,lastmode)
 
         if valid then
 
-            data.sequence = concat(sequence," ")
+            sequence = concat(sequence," ")
 
             -- second pass: construct the descriptions
 
-            local parameters = { }
             local n          = 0
 
             local function process(e)
@@ -370,7 +431,7 @@ local function collect(current,name,int,lastmode)
 
                     if tag == "resolve" then
 
-                        local resolved = current.definitions[e.at.name or ""]
+                        local resolved = definitions[e.at.name or ""]
                         if resolved then
                             process(resolved)
                         end
@@ -382,14 +443,14 @@ local function collect(current,name,int,lastmode)
                         local right = { }
 
                         local function processkeyword(e)
-                            right[#right+1] = translated(e,int)
+                            right[#right+1] = translatedkeyword(e,interface)
                         end
 
                         for e in xmlcollected(e,"/*") do
                             if not e.special then
                                 local tag = e.tg
                                 if tag == "resolve" then
-                                    local resolved = current.definitions[e.at.name or ""]
+                                    local resolved = definitions[e.at.name or ""]
                                     if resolved then
                                         processkeyword(resolved)
                                     end
@@ -413,12 +474,12 @@ local function collect(current,name,int,lastmode)
                                 if not e.special then
                                     local tag = e.tg
                                     if tag == "resolve" then
-                                        local resolved = current.definitions[e.at.name or ""]
+                                        local resolved = definitions[e.at.name or ""]
                                         if resolved then
                                             processparameter(resolved,right)
                                         end
                                     elseif tag == "constant" then
-                                        right[#right+1] = translated(e,int)
+                                        right[#right+1] = translatedparameter(e,interface)
                                     else
                                         right[#right+1] = "PARAMETER TODO"
                                     end
@@ -429,18 +490,18 @@ local function collect(current,name,int,lastmode)
                         for e in xmlcollected(e,"/*") do
                             if not e.special then
                                 local tag   = e.tg
-                                local left  = e.at.name or "?"
+                                local left  = translatedconstant(e.at.name,interface)
                                 local right = { }
                                 if tag == "resolve" then
-                                    local resolved = current.definitions[e.at.name or ""]
+                                    local resolved = definitions[e.at.name or ""]
                                     if resolved then
                                         -- todo
                                         process(resolved)
                                     end
                                 elseif tag == "inherit" then
                                     local name = e.at.name or "?"
-                                    local url  = f_href_as_command_t[lastmode](name,lastmode,name)
-                                    parameters[#parameters+1] = f_url(what,translate("inherits",int),url)
+                                    local url  = f_href_as_command_t[lastmode](lastinterface,name,lastmode,name)
+                                    parameters[#parameters+1] = f_url(what,translate("cd:inherits",interface),url)
                                 elseif tag == "parameter" then
                                     processparameter(e,right)
                                     parameters[#parameters+1] = f_parameter(what,left,concat(right, ", "))
@@ -459,10 +520,10 @@ local function collect(current,name,int,lastmode)
 
                         n = n + 1
                         local left  = tags[n]
-                        local right = setupstrings["cd:"..tag]
+                        local right = i_setupstrings["cd:"..tag]
 
                         if right then
-                            right = uppercase(right[int] or right.en or tag)
+                            right = uppercase(right[interface] or right.en or tag)
                         end
 
                         parameters[#parameters+1] = f_keyword(left,right)
@@ -475,23 +536,30 @@ local function collect(current,name,int,lastmode)
                 process(e)
             end
 
-            data.parameters = parameters
         else
             if texmode then
-                data.sequence = formatters["unsupported command '%s%s'"](start or "",name)
+                sequence = formatters["unsupported command '%s%s'"](start or "",name)
             else
-                data.sequence = formatters["unsupported function '%s%s'"](start or "",name)
+                sequence = formatters["unsupported function '%s%s'"](start or "",name)
             end
-            data.parameters = { }
+            parameters = { }
         end
 
-        data.mode = s_modes_t[lastmode or "tex"]
-        list[#list+1] = data
 
-        data.view = s_views_t[lastview or "groups"]
-        list[#list+1] = data
+        for e in xmlcollected(command,"/cd:instances/cd:constant") do
+            instances[#instances+1] = f_instance(translatedconstant(e.at.value or "?",interface))
+        end
+
+        return {
+            category   = category,
+            source     = source,
+            mode       = f_modes_t[lastmode or "tex"](lastinterface),
+            view       = f_views_t[lastview or "groups"](lastinterface),
+            sequence   = sequence,
+            parameters = parameters,
+            instances  = instances,
+        }
     end
-    return list
 end
 
 -- -- --
@@ -519,18 +587,21 @@ local what = { "environment", "category", "source", "mode", "view" }
 
 local function generate(configuration,filename,hashed)
 
-    local start   = gettime()
-    local detail  = hashed.queries or { }
+    local start     = gettime()
+    local detail    = hashed.queries or { }
+    local variables = setmetatableindex({},variables)
 
     if detail then
-
-        local lastinterface = detail.interface or "en"
+        local lastinterface = detail.interface or defaultinterface or "en"
         local lastcommand   = detail.command   or ""
         local lastview      = detail.view      or "groups"
         local lastsource    = detail.source    or ""
         local lastmode      = detail.mode      or "tex"
 
         local current       = loaded[lastinterface]
+
+        local title         = variables.title .. ": " .. lastinterface
+        variables.title     = title
 
         lastcommand = gsub(lastcommand,"%s*^\\*(.+)%s*","%1")
 
@@ -549,9 +620,9 @@ local function generate(configuration,filename,hashed)
                 local command  = namedata[1]
                 local text     = namedata[2]
                 if command == lastcommand then
-                    target[#target+1] = f_href_in_list_i[lastmode](command,lastmode,text)
+                    target[#target+1] = f_href_in_list_i[lastmode](lastinterface,command,lastmode,text)
                 else
-                    target[#target+1] = f_href_in_list_t[lastmode](command,lastmode,text)
+                    target[#target+1] = f_href_in_list_t[lastmode](lastinterface,command,lastmode,text)
                 end
             end
             return concat(target,"<br/>\n")
@@ -572,7 +643,7 @@ local function generate(configuration,filename,hashed)
             local sorted = sortedkeys(interfaces)
             for k=1,#sorted do
                 local v = sorted[k]
-                ints[k] = f_interface(interfaces[v],lastmode,v)
+                ints[k] = f_interface(interfaces[v],lastcommand,lastmode,v)
             end
         end
 
@@ -611,13 +682,12 @@ local function generate(configuration,filename,hashed)
                 variables.maintext  = f_listing(data)
             end
             lastsource      = ""
-            variables.extra = "mode: " .. s_modes_t.tex .. " " .. s_modes_t.lua
+            variables.extra = "mode: " .. f_modes_t.tex(lastinterface) .. " " .. f_modes_t.lua(lastinterface)
 
         elseif lastcommand and lastcommand ~= "" then
 
-            local list = collect(current,lastcommand,lastinterface,lastmode)
-            if list and #list > 0 then
-                local data  = list[1]
+            local data  = collect(current,lastcommand,lastinterface,lastmode)
+            if data then
                 local extra = { }
                 for k=1,#what do
                     local v = what[k]
@@ -626,15 +696,15 @@ local function generate(configuration,filename,hashed)
                         extra[#extra+1] = v .. ": " .. data[v]
                     end
                 end
+                local instances     = data.instances
                 variables.maintitle = data.sequence
-                variables.maintext  = f_parameters(concat(data.parameters))
+                variables.maintext  = f_parameters(concat(data.parameters)) .. (#instances > 0 and f_instances(concat(instances,",&nbsp;")) or "")
                 variables.extra     = concat(extra,"&nbsp;&nbsp;&nbsp;")
             else
-                variables.maintitle = "no command"
-                variables.maintext  = "select command"
+                variables.maintitle = "no definition"
+                variables.maintext  = ""
                 variables.extra     = ""
             end
-
         else
             variables.maintitle = "no definition"
             variables.maintext  = ""

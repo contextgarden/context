@@ -425,18 +425,22 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                             child.__p__ = ekrt
                             child.__f__ = name -- handy for tracing
                             epdt[ek.ni] = child
-                            local inclusions = xmldata.settings.inclusions
+                            local settings   = xmldata.settings
+                            local inclusions = settings and settings.inclusions
                             if inclusions then
                                 inclusions[#inclusions+1] = name
+                            elseif settings then
+                                settings.inclusions = { name }
                             else
-                                xmldata.settings.inclusions = { name }
+                                settings = { inclusions = { name } }
+                                xmldata.settings = settings
                             end
                             if child.er then
-                                local badinclusions = xmldata.settings.badinclusions
+                                local badinclusions = settings.badinclusions
                                 if badinclusions then
                                     badinclusions[#badinclusions+1] = name
                                 else
-                                    xmldata.settings.badinclusions = { name }
+                                    settings.badinclusions = { name }
                                 end
                             end
                         end

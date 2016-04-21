@@ -72,9 +72,8 @@
             }
             a.setupmenucmd {
                 color: #FFFFFF ;
-                text-decoration: none ;
+                text-decoration: underline ;
                 font-weight: bold ;
-                font-style: italic ;
             }
             a.setuplisturl {
                 color: #000000 ;
@@ -83,6 +82,9 @@
             }
             .setupmenugroup {
                 text-decoration: none ;
+            }
+            .setupinstances {
+                margin-top: 3ex ;
             }
             .setupmenucategory {
                 font-weight: bold ;

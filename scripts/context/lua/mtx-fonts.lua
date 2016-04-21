@@ -15,7 +15,7 @@ local nameonly, basename, joinpath, collapsepath = file.nameonly, file.basename,
 local lower = string.lower
 
 local otfversion  = 2.824
-local otlversion  = 3.017
+local otlversion  = 3.018
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -170,7 +170,7 @@ end
 
 function fonts.names.simple(alsotypeone)
     local simpleversion = 1.001
-    local simplelist = { "ttf", "otf", "ttc", "dfont", alsotypeone and "afm" or nil }
+    local simplelist = { "ttf", "otf", "ttc", alsotypeone and "afm" or nil }
     local name = "luatex-fonts-names.lua"
     local path = collapsepath(caches.getwritablepath("..","..","generic","fonts","data"))
     fonts.names.filters.list = simplelist
@@ -240,22 +240,28 @@ local function fontweight(fw)
     end
 end
 
+local function indeed(f,s)
+    if s and s ~= "" then
+        report(f,s)
+    end
+end
+
 local function showfeatures(tag,specification)
     report()
-    report("mapping   : %s",tag)
-    report("fontname  : %s",specification.fontname)
-    report("fullname  : %s",specification.fullname)
-    report("filename  : %s",specification.filename)
-    report("family    : %s",specification.familyname or "<nofamily>")
- -- report("subfamily : %s",specification.subfamilyname or "<nosubfamily>")
-    report("weight    : %s",specification.weight or "<noweight>")
-    report("style     : %s",specification.style or "<nostyle>")
-    report("width     : %s",specification.width or "<nowidth>")
-    report("variant   : %s",specification.variant or "<novariant>")
-    report("subfont   : %s",subfont(specification.subfont))
-    report("fweight   : %s",fontweight(specification.fontweight))
+    indeed("mapping   : %s",tag)
+    indeed("fontname  : %s",specification.fontname)
+    indeed("fullname  : %s",specification.fullname)
+    indeed("filename  : %s",specification.filename)
+    indeed("family    : %s",specification.familyname or "<nofamily>")
+ -- indeed("subfamily : %s",specification.subfamilyname or "<nosubfamily>")
+    indeed("weight    : %s",specification.weight or "<noweight>")
+    indeed("style     : %s",specification.style or "<nostyle>")
+    indeed("width     : %s",specification.width or "<nowidth>")
+    indeed("variant   : %s",specification.variant or "<novariant>")
+    indeed("subfont   : %s",subfont(specification.subfont))
+    indeed("fweight   : %s",fontweight(specification.fontweight))
     -- maybe more
-    local features = fonts.helpers.getfeatures(specification.filename,specification.format)
+    local features = fonts.helpers.getfeatures(specification.filename,not getargument("nosave"))
     if features then
         for what, v in table.sortedhash(features) do
             local data = features[what]

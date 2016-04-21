@@ -12,19 +12,26 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% We can make this module a bit cleaner using more recent features
-% or we go \LUA\ completely but as this style evolved over 15 years
-% it's a waste of time.
+%D We can make this module a bit cleaner using more recent features or we go \LUA\
+%D completely but as this style evolved over 15 years it's a waste of time.
+%D
+%D As we also have a help server we can make a common framework for this \unknown\
+%D but even then, this file is also a test for the the \XML\ processor.
+%D
+%D Traditionally we used the sorter to generate the lists while nowadays we can
+%D as well use the \XML\ mechanisms directly. We cannot change too much because
+%D manuals depend on it.
+%D
+%D Currently we load the \XML\ file and when not in the english interface we just
+%D remap the relevant words to their translation.
 
 \unprotect
 
 \defineregister
   [texmacro]
-% [texmacros]
 
 \definesorting
   [texcommand]
-% [texcommands]
 
 \setupsorting
   [texcommand]
@@ -52,7 +59,7 @@
    \c!command=\setup,
    \c!criterium=\v!used]
 
-% general
+%D General:
 
 \unexpanded\def\setupnumfont {}
 \unexpanded\def\setuptxtfont {}
@@ -102,7 +109,7 @@
     \doifelsenothing {\xmlatt{#1}{variant}} {
         \let\currentSETUPvariant\empty
     } {
-       \def\currentSETUPvariant{:\xmllastatt}
+        \def\currentSETUPvariant{:\xmllastatt}
     }
     \edef\currentSETUPfullname {
         \currentSETUPprefix
@@ -174,6 +181,7 @@
                 end
             end
 
+            replace('cd:command',   'name',    commands, elements)
             replace('cd:string',    'value',   commands, elements)
             replace('cd:variable' , 'value',   variables)
 
@@ -254,23 +262,23 @@
 
 \xmlregisterdocumentsetup{setups}{xml:setups:basics}
 
-\unexpanded\def\loadsetups{\complexorsimple\loadsetups}
-
 \let\loadedsetups\empty % we load more setups, setups:<name>
 
-\def\simpleloadsetups
-  {\doifnotmode{no-setup-main}{\complexloadsetups[cont-en.xml]}}
+\unexpanded\def\loadsetups
+  {\dosingleempty\cmd_load_setups}
 
-\def\complexloadsetups[#1]%
-  {\doifsomething{#1}
-     {\doonlyonce{setups:#1}
-        {\doglobal\prependtocommalist{setups:#1}\loadedsetups % last overloads first
-         \doiffileexistselse{#1}
-            {\xmlloadonly{setups:#1}{#1}{setups}}%
-            {\xmlloadonly{setups:#1}{#1.xml}{setups}}%
-         % qualified path saves > 50% runtime
-         \xmlfilter{setups:#1}{/interface//command/command(xml:setups:register)}%
-      }}}
+\def\cmd_load_setups[#1]%
+  {\edef\m_cmd_asked_setups{#1}%
+   \doifnotmode{no-setup-main}{\def\m_cmd_asked_setups{i-context.xml}}%
+   \ifx\m_cmd_asked_setups\empty \else
+     \doonlyonce{setups:#1}
+       {\doglobal\prependtocommalist{setups:#1}\loadedsetups
+        \doiffileexistselse{#1}
+           {\xmlloadonly{setups:#1}{#1}{setups}}%
+           {\xmlloadonly{setups:#1}{#1.xml}{setups}}%
+        % qualified path saves > 50% runtime
+        \xmlfilter{setups:#1}{/interface//command/command(xml:setups:register)}}%
+   \fi}
 
 \newconstant   \c_cmd_kind
 \newconditional\c_cmd_doing_line
@@ -313,12 +321,13 @@
    \startelement[setup][name=#1]%
      \startelement[noexport][comment={setup definition #1}]%
        \xmlsetup{\rawsynonymname{texcommand}{stp:x:#1}}{xml:setups:typeset}
-     % \xmlfilterlist{\loadedsetups}{/interface/command['#1' == (@type=='environment' and '\e!start' or '') .. @name]/command(xml:setups:typeset)}%
      \stopelement
    \stopelement}
 
 \unexpanded\def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
 \unexpanded\def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}
+
+% todo: grouped
 
 \let\placeeverysetup\placeallsetups
 
@@ -338,30 +347,81 @@
     \blank
 \stopxmlsetups
 
+\startxmlsetups xml:setups:make:string
+    \xmlatt{#1}{value}
+\stopxmlsetups
+
+\startxmlsetups xml:setups:make:variable
+    \xmlatt{#1}{value}
+\stopxmlsetups
+
+\let\m_cmd_current_hash\empty
+\let\m_cmd_current_file\empty
+\let\m_cmd_font        \empty
+\let\m_cmd_name        \empty
+\let\m_cmd_start       \empty
+\let\m_cmd_stop        \empty
+
+\startxmlsetups xml:setups:make:prepare
+    \edef\m_cmd_current_hash{\xmlatt{#1}{hash}}
+    \xdef\m_cmd_current_file{\xmlatt{#1}{file}}%
+    \xmldoifelseempty{#1}{/sequence} {
+        \edef\m_cmd_name{\xmlatt{#1}{name}}
+    } {
+        \edef\m_cmd_name{\xmlfilter{#1}{/sequence/(string|variable)/command(xml:setups:make:*)}}
+    }
+    \doifelse {\xmlatt{#1}{type}} {environment} {
+        \doifsomethingelse {\xmlatt{#1}{begin}} {
+            \edef\m_cmd_start{\xmllastatt}
+        } {
+            \let\m_cmd_start\e!start
+        }
+        \doifsomethingelse {\xmlatt{#1}{end}} {
+            \edef\m_cmd_stop{\xmllastatt}
+        } {
+            \let\m_cmd_stop\e!stop
+        }
+    } {
+        \let\m_cmd_start\empty
+        \let\m_cmd_stop \empty
+    }
+    \doifelse {\xmlatt{#1}{generated}} {yes} {
+        \let\m_cmd_font\ttsl
+    } {
+        \let\m_cmd_font\relax
+    }
+\stopxmlsetups
+
+\startsetups xml:setups:make:start
+    \bgroup
+        \settrue\c_cmd_doing_line
+        \m_cmd_font
+        \letterbackslash
+        \m_cmd_start
+        \m_cmd_name
+        \ignorespaces
+    \egroup
+\stopsetups
+
+\startsetups xml:setups:make:stop
+    \ifx\m_cmd_stop\empty \else
+        \bgroup
+            \settrue\c_cmd_doing_line
+            \hskip.5em\unknown\hskip.5em
+            \m_cmd_font
+            \letterbackslash
+            \m_cmd_stop
+            \m_cmd_name
+            \ignorespaces
+        \egroup
+    \fi
+\stopsetups
+
 \startxmlsetups xml:setups:typeset:line
     \ttbf
     \nohyphens
-    \edef\m_cmd_current_hash{\xmlatt{#1}{hash}}
-    \bgroup
-        \settrue\c_cmd_doing_line
-        \doif {\xmlatt{#1}{generated}} {yes} {
-            \ttbs
-        }
-        \letterbackslash
-        \doif {\xmlatt{#1}{type}} {environment} {
-            \doifsomethingelse {\xmlatt{#1}{begin}} {
-                \xmllastatt
-            } {
-                \e!start
-            }
-        }
-        \xmldoifelseempty{#1}{/sequence} {
-            \xmlatt{#1}{name}
-        } {
-            \xmlfilter{#1}{/sequence/first()}
-        }
-        \ignorespaces
-    \egroup
+    \xmlsetup{#1}{xml:setups:make:prepare}
+    \directsetup{xml:setups:make:start}
     \xmldoif{#1}{/arguments} {
         \bgroup
             \settrue\c_cmd_doing_line
@@ -370,27 +430,7 @@
             \xmlfilter{#1}{/arguments/text()}
         \egroup
     }
-    \doif {\xmlatt{#1}{type}} {environment} {
-        \bgroup
-            \settrue\c_cmd_doing_line
-            \hskip.5em\unknown\hskip.5em
-            \doif {\xmlatt{#1}{generated}} {yes} {
-                \ttbs
-            }
-            \letterbackslash
-            \doifsomethingelse {\xmlatt{#1}{end}} {
-                \xmllastatt
-            } {
-                \e!stop
-            }
-            \xmldoifelseempty{#1}{/sequence} {
-                \xmlatt{#1}{name}
-            } {
-                \xmlfilter{#1}{/sequence/first()}
-            }
-            \ignorespaces
-        \egroup
-    }
+    \directsetup{xml:setups:make:stop}
 \stopxmlsetups
 
 \startxmlsetups xml:setups:typeset:raw
@@ -399,29 +439,8 @@
     \veryraggedright
     \global\c_cmd_current_argument\zerocount
     \global\c_cmd_maximum_argument\xmlfilter{#1}{/arguments/*/s_count()}\relax
-    \edef\m_cmd_current_hash{\xmlatt{#1}{hash}}
-    \xdef\m_cmd_current_file{\xmlatt{#1}{file}}%
-    % can be made faster :
-    \bgroup
-        \settrue\c_cmd_doing_line
-        \doif {\xmlatt{#1}{generated}} {yes} {
-            \ttsl
-        }
-        \letterbackslash
-        \doif {\xmlatt{#1}{type}} {environment} {
-            \doifsomethingelse {\xmlatt{#1}{begin}} {
-                \xmllastatt
-            } {
-                \e!start
-            }
-        }
-        \xmldoifelseempty{#1}{/sequence} {
-            \xmlatt{#1}{name}
-        } {
-            \xmlfilter{#1}{/sequence/first()}
-        }
-        \ignorespaces
-    \egroup
+    \xmlsetup{#1}{xml:setups:make:prepare}
+    \directsetup{xml:setups:make:start}
     \xmldoif{#1}{/arguments} {
         \settrue\c_cmd_doing_line
         \bgroup
@@ -430,27 +449,7 @@
             \xmlfilter{#1}{/arguments/text()}
         \egroup
     }
-    \doif {\xmlatt{#1}{type}} {environment} {
-        \settrue\c_cmd_doing_line
-        \bgroup
-            \hskip.5em\unknown\hskip.5em
-            \doif {\xmlatt{#1}{generated}} {yes} {
-                \ttsl
-            }
-            \letterbackslash
-            \doifsomethingelse {\xmlatt{#1}{end}} {
-                \xmllastatt
-            } {
-                \e!stop
-            }
-            \xmldoifelseempty{#1}{/sequence} {
-                \xmlatt{#1}{name}
-            } {
-                \xmlfilter{#1}{/sequence/first()}
-            }
-            \ignorespaces
-        \egroup
-    }
+    \directsetup{xml:setups:make:stop}
 \stopxmlsetups
 
 \startxmlsetups xml:setups:typeset:detail
@@ -484,23 +483,28 @@
     \glet\m_cmd_current_file\empty
 \stopxmlsetups
 
+\startsetups xml:setups:overlay:file
+    \vbox to \overlayheight \bgroup
+        \infofont
+        \vfill
+        \scratchdimen.5\exheight
+        \hbox to \overlaywidth \bgroup
+            \strut
+            \hss
+            \m_cmd_current_file
+            \hskip\dimexpr\scratchdimen+\strutdp\relax
+        \egroup
+        \vskip\scratchdimen
+    \egroup
+\stopsetups
+
 \defineoverlay
   [setupfilename]
-  [\vbox to \overlayheight
-     {\infofont
-      \vfill
-      \scratchdimen.5\exheight
-      \hbox to \overlaywidth
-        {\strut
-         \hss
-         \m_cmd_current_file
-         \hskip\dimexpr\scratchdimen+\strutdp\relax}%
-      \vskip\scratchdimen}]
+  [\directsetup{xml:setups:overlay:file}]
 
 \startxmlsetups xml:setups:resolve
     \ignorespaces
     \ctxlua{moduledata.setups.resolved('\xmlatt{#1}{name}')}
-  % \xmlfilterlist{\loadedsetups}{/interface/define[@name='\xmlatt{#1}{name}']/first()}
 \stopxmlsetups
 
 %D This is the first pass; here we generate the top line.

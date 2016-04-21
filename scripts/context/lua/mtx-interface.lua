@@ -413,7 +413,10 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
     --
     local xmlroot = xml.load(xmlfile)
     xml.include(xmlroot,"cd:interfacefile","filename",true,function(s)
-        return io.loaddata(resolvers.findfile(s))
+        local fullname =  resolvers.findfile(s)
+        if fullname and fullname ~= "" then
+            return io.loaddata(fullname)
+        end
     end)
     --
     for i=1,#interfaces do

@@ -231,74 +231,30 @@ end
 -- this will be split into contribute_filter for these 4 so at some point
 -- thecheck can go away
 
-if LUATEXVERSION >= 0.895 then
-
-    function builders.buildpage_filter(groupcode)
-        -- the next check saves 1% runtime on 1000 tufte pages
-        local head = texlists.contrib_head
-        local done = false
-        if head then
-            -- called quite often ... maybe time to remove timing
-            starttiming(builders)
-            if trace_page_builder then
-                report(groupcode,head)
-            end
-            head, done = pageactions(head,groupcode)
-            stoptiming(builders)
-         -- -- doesn't work here (not passed on?)
-         -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
-            texlists.contrib_head = head or nil -- needs checking
-         -- tex.setlist("contrib_head",head,head and nodes.tail(head))
-            return done and head or true -- no return value needed
-        else
-            -- happens quite often
-            if trace_page_builder then
-                report(groupcode)
-            end
-            return nil, false -- no return value needed
+function builders.buildpage_filter(groupcode)
+    -- the next check saves 1% runtime on 1000 tufte pages
+    local head = texlists.contrib_head
+    local done = false
+    if head then
+        -- called quite often ... maybe time to remove timing
+        starttiming(builders)
+        if trace_page_builder then
+            report(groupcode,head)
         end
+        head, done = pageactions(head,groupcode)
+        stoptiming(builders)
+     -- -- doesn't work here (not passed on?)
+     -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
+        texlists.contrib_head = head or nil -- needs checking
+     -- tex.setlist("contrib_head",head,head and nodes.tail(head))
+        return done and head or true -- no return value needed
+    else
+        -- happens quite often
+        if trace_page_builder then
+            report(groupcode)
+        end
+        return nil, false -- no return value needed
     end
-
-else
-
-    local build_par_codes = {
-        pre_box    = true,
-        box        = true,
-        pre_adjust = true,
-        adjust     = true,
-    }
-
-    function builders.buildpage_filter(groupcode)
-        -- the next check saves 1% runtime on 1000 tufte pages
-        local head = texlists.contrib_head
-        local done = false
-        if build_par_codes[groupcode] then
-            -- also called in vbox .. we really need another callback for these four
-            normalize(head) -- a bit weird place
-        end
-        --
-        if head then
-            -- called quite often ... maybe time to remove timing
-            starttiming(builders)
-            if trace_page_builder then
-                report(groupcode,head)
-            end
-            head, done = pageactions(head,groupcode)
-            stoptiming(builders)
-         -- -- doesn't work here (not passed on?)
-         -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
-            texlists.contrib_head = head or nil -- needs checking
-         -- tex.setlist("contrib_head",head,head and nodes.tail(head))
-            return done and head or true -- no return value needed
-        else
-            -- happens quite often
-            if trace_page_builder then
-                report(groupcode)
-            end
-            return nil, false -- no return value needed
-        end
-    end
-
 end
 
 callbacks.register('vpack_filter',      builders.vpack_filter,      "vertical spacing etc")
