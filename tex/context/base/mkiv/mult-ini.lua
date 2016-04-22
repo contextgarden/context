@@ -412,13 +412,22 @@ implement {
     arguments = "string",
 }
 
-implement {
-    name      = "getsetupstring",
-    actions   = function(s)
+local function gss(s)
         contextsprint(vrbcatcodes,getsetupstring(s))
-    end,
+    end
+
+implement { -- will b eoverloaded
+    name      = "getsetupstring",
+    actions   = gss,
     arguments = "string",
 }
+
+implement {
+    name      = "rawsetupstring",
+    actions   = gss,
+    arguments = "string",
+}
+
 
 local function showassignerror(namespace,key,line)
     local ns, instance = match(namespace,"^(%d+)[^%a]+(%a*)")

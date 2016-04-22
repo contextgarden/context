@@ -127,13 +127,15 @@
 \setuplayout
   [\c!backspace=2cm,
    \c!topspace=1.5cm,
+   \c!bottomspace=0.5cm,
    \c!header=0cm,
-   \c!footer=0cm,
+   \c!footer=1cm,
    \c!width=\v!middle,
    \c!height=\v!middle]
 
 \setuppagenumbering
-  [\c!alternative=\v!doublesided]
+  [\c!location=\v!footer,
+   \c!alternative=\v!doublesided]
 
 \setupsetup
   [\c!criterium=\v!all]

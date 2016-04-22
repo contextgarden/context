@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/21/16 19:35:29
+-- merge date  : 04/22/16 09:10:04
 
 do -- begin closure to overcome local limits and interference
 
@@ -7002,7 +7002,7 @@ local afm=constructors.newhandler("afm")
 local pfb=constructors.newhandler("pfb")
 local afmfeatures=constructors.newfeatures("afm")
 local registerafmfeature=afmfeatures.register
-afm.version=1.500 
+afm.version=1.501 
 afm.cache=containers.define("fonts","afm",afm.version,true)
 afm.autoprefixed=true 
 afm.helpdata={} 
@@ -7367,7 +7367,8 @@ end
 local uparser=fonts.mappings.makenameparser()
 unify=function(data,filename)
   local unicodevector=fonts.encodings.agl.unicodes 
-  local unicodes,names={},{}
+  local unicodes={}
+  local names={}
   local private=constructors.privateoffset
   local descriptions=data.descriptions
   for name,blob in next,data.characters do
