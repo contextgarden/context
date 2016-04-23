@@ -566,7 +566,22 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
             local pre, post, replace, pretail, posttail, replacetail = getdisc(discfound,true)
             if not replace then -- todo: signal simple hyphen
                 local prev = getprev(base)
-                local copied = copy_node_list(comp)
+--                 local copied = copy_node_list(comp)
+local current  = comp
+local previous = nil
+local copied   = nil
+while current do
+    if getid(current) == glyph_code then
+        local n = copy_node(current)
+        if copied then
+            setlink(previous,n)
+        else
+            copied = n
+        end
+        previous = n
+    end
+    current = getnext(current)
+end
                 setprev(discnext,nil) -- also blocks funny assignments
                 setnext(discprev,nil) -- also blocks funny assignments
                 if pre then

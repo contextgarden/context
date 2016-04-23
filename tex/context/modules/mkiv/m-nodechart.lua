@@ -133,23 +133,23 @@ local function flow_nodes_to_chart(specification)
                 end
             else
                 if pre then
-                    commands.flow_set_connection("+rl","",tostring(pre))
+                    commands.flow_set_connection("rl","",tostring(pre))
                 end
                 if rep then
-                    commands.flow_set_connection("rl","",tostring(rep))
+                    commands.flow_set_connection("+rl","",tostring(rep))
                 end
                 if pos then
                     commands.flow_set_connection("-rl","",tostring(pos))
                 end
                 commands.flow_stop_cell()
                 if pre then
-                    n = flow_nodes_to_chart{ head = pre, comment = "prebreak", x = x+1, y = y-2 }
+                    n = flow_nodes_to_chart{ head = pre, comment = "prebreak", x = x+1, y = y-1 }
                 end
                 if rep then
-                    n = flow_nodes_to_chart{ head = rep, comment = "replacement", x = x+1, y = y-1 }
+                    n = flow_nodes_to_chart{ head = rep, comment = "replacement", x = x+3, y = y-1 }
                 end
                 if pos then
-                    n = flow_nodes_to_chart{ head = pos, comment = "postbreak", x = x+1, y = y }
+                    n = flow_nodes_to_chart{ head = pos, comment = "postbreak", x = x+2, y = y-1 }
                 end
             end
         elseif nodecode == "hlist" then

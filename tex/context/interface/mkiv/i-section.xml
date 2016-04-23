@@ -613,6 +613,14 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="subjectlevel" type="environment" file="strc-lev.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="assignment-sectiondata-list-optional"/>
+            <cd:resolve name="assignment-userdata-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="defineheadalternative" file="strc-ren.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>

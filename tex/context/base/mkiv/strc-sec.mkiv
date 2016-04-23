@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D In retrospect I should have gone futher and move more to the
+%D \LUA\ end but here we are now. Maybe some day.
+
 \writestatus{loading}{ConTeXt Structure Macros / Sectioning}
 
 \unprotect
@@ -480,14 +483,8 @@
 % todo: add grouping but where: before/after trickery .. probably inside because one can always add
 % grouping to the before/after settings
 
-\unexpanded\def\strc_sectioning_start_named_section[#1]% [#2][#3]
-  {\pushmacro\currentnamedsection
-   \edef\currentnamedsection{#1}%
-   \normalexpanded{\strc_sectioning_start_named_section_indeed[\currentnamedsection]}} % [#2][#3]
-
 \unexpanded\def\stopnamedsection
-  {\normalexpanded{\strc_sectioning_stop[\currentnamedsection]}%
-   \popmacro\currentnamedsection}
+  {\normalexpanded{\strc_sectioning_stop[\currentnamedsection]}}
 
 % structure sections (the parents of chapter etc)
 
@@ -603,9 +600,9 @@
 
 % head construction
 
-\unexpanded\def\strc_sectioning_handle_own{\dodoubleempty\strc_sectioning_handle_own_indeed}          % [ref] {nr} {title}
-\unexpanded\def\strc_sectioning_handle_nop{\dodoubleempty\strc_sectioning_handle_nop_indeed}          % [ref] {title}
-\unexpanded\def\strc_sectioning_start     {\dotripleempty\strc_sectioning_start_named_section_indeed} % [settings] [userdata] !!! also used at lua end
+\unexpanded\def\strc_sectioning_handle_own{\dodoubleempty\strc_sectioning_handle_own_indeed}   % [ref] {nr} {title}
+\unexpanded\def\strc_sectioning_handle_nop{\dodoubleempty\strc_sectioning_handle_nop_indeed}   % [ref] {title}
+\unexpanded\def\strc_sectioning_start     {\dotripleempty\strc_sectioning_start_named_section} % [settings] [userdata] !!! also used at lua end
 
 \newconditional\currentstructureown
 
@@ -628,8 +625,10 @@
 \unexpanded\def\strc_sectioning_handle_nop_indeed_nop#1#2#3%
   {\strc_sectioning_handle{#1}{\c!reference={#2},\c!title={#3}}{}} % name ref nr title --
 
-\unexpanded\def\strc_sectioning_start_named_section_indeed[#1][#2][#3]% for the moment no grouping, too annoying with page breaks
-  {\setfalse\currentstructureown
+\unexpanded\def\strc_sectioning_start_named_section[#1][#2][#3]% for the moment no grouping, too annoying with page breaks
+  {\pushmacro\currentnamedsection
+   \edef\currentnamedsection{#1}%
+   \setfalse\currentstructureown
   %\globalpushmacro\currenthead % this does not work out well
    \xdef\currenthead{#1}%
    \setsystemmode\currenthead % new, also here now
@@ -647,7 +646,8 @@
    \xdef\currenthead{#1}% recover
    \headparameter\c!aftersection
    \the\everyafterhead
-   \resetsystemmode\currenthead} % new, also here now
+   \resetsystemmode\currenthead
+   \popmacro\currentnamedsection} % new, also here now
 
 \let\dostarthead\strc_sectioning_start % used at lua end
 \let\dostophead \strc_sectioning_stop  % used at lua end

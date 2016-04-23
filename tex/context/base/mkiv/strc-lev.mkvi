@@ -24,19 +24,25 @@
 \unprotect
 
 \unexpanded\def\definesectionlevels{\dodoubleargument\strc_levels_define}
-\unexpanded\def\startsectionlevel  {\dosingleempty   \strc_levels_start }
+\unexpanded\def\startsectionlevel  {\dosingleempty   \strc_levels_start_section}
+\unexpanded\def\startsubjectlevel  {\dosingleempty   \strc_levels_start_subject}
 
 \unexpanded\def\strc_levels_define[#category][#list]{\clf_definesectionlevels{#category}{#list}}
-\unexpanded\def\strc_levels_start        [#category]{\clf_startsectionlevel{#category}}
 \unexpanded\def\stopsectionlevel                    {\clf_stopsectionlevel}
+\unexpanded\def\stopsubjectlevel                    {\clf_stopsectionlevel}
 
 \unexpanded\def\nostarthead{\dotripleargument\strc_levels_start_nop} % used at the lua end
 \unexpanded\def\nostophead {\dosingleargument\strc_levels_stop_nop } % used at the lua end
 
-\unexpanded\def\strc_levels_start[#category]%
-  {\doifelseassignment{#category}
-     {\clf_startsectionlevel{\v!default}[#category]}
-     {\clf_startsectionlevel{#category}}}
+\unexpanded\def\strc_levels_start_section[#category]%
+  {\doifelseassignment{#category}%
+     {\clf_startsectionlevel\plusone{\v!default}{\currentnamedsection}[#category]}%
+     {\clf_startsectionlevel\plusone          {}{\currentnamedsection}{#category}}}
+
+\unexpanded\def\strc_levels_start_subject[#category]%
+  {\doifelseassignment{#category}%
+     {\clf_startsectionlevel\plustwo{\v!default}{\currentnamedsection}[#category]}%
+     {\clf_startsectionlevel\plustwo {#category}{\currentnamedsection}}}
 
 \unexpanded\def\strc_levels_start_nop[#category][#settings][#userdata]%
   {\blank
@@ -50,13 +56,12 @@
 
 \definesectionlevels
   [\v!default]
-  [\v!chapter,
-   \v!section,
-   \v!subsection,
-   \v!subsubsection,
-   \v!subsubsubsection,
-   \v!subsubsubsubsection]
-
+  [{\v!chapter,\v!title},
+   {\v!section,\v!subject},
+   {\v!subsection,\v!subsubject},
+   {\v!subsubsection,\v!subsubsubject},
+   {\v!subsubsubsection,\v!subsubsubject},
+   {\v!subsubsubsubsection,\v!subsubsubject}]
 
 \let\definestructurelevels\definesectionlevels
 \let\startstructurelevel  \startsectionlevel

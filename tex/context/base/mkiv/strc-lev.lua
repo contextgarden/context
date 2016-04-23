@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['strc-lev'] = {
 }
 
 local insert, remove = table.insert, table.remove
+local settings_to_array = utilities.parsers.settings_to_array
 
 local context     = context
 local interfaces  = interfaces
@@ -15,6 +16,7 @@ local sections    = structures.sections
 local implement   = interfaces.implement
 
 local v_default   = interfaces.variables.default
+local v_auto      = interfaces.variables.auto
 
 sections.levels   = sections.levels or { }
 
@@ -27,29 +29,46 @@ local f_two_colon = string.formatters["%s:%s"]
 storage.register("structures/sections/levels", levels, "structures.sections.levels")
 
 local function definesectionlevels(category,list)
-    levels[category] = utilities.parsers.settings_to_array(list)
+    list = settings_to_array(list)
+    for i=1,#list do
+        list[i] = settings_to_array(list[i])
+    end
+    levels[category] = list
 end
 
-local function startsectionlevel(category)
+local function startsectionlevel(n,category,current)
     category = category ~= "" and category or v_default
-    level = level + 1
     local lc = levels[category]
+    for i=1,#lc do
+        local lcl = lc[i]
+        if (lcl[n] or lcl[1]) == current then
+            level = i
+            break
+        end
+    end
+    level = level + 1
     if not lc or level > #lc then
         context.nostarthead { f_two_colon(category,level) }
     else
-        context.dostarthead { lc[level] }
+        local lcl = lc[level]
+        if n > #lcl then
+            n = #lcl
+        end
+        context.dostarthead { lc[level][n] }
     end
-    insert(categories,category)
+    insert(categories,{ category, n })
 end
 
 local function stopsectionlevel()
-    local category = remove(categories)
-    if category then
+    local top = remove(categories)
+    if top then
+        local category = top[1]
+        local n = top[2]
         local lc = levels[category]
         if not lc or level > #lc then
             context.nostophead { f_two_colon(category,level) }
         else
-            context.dostophead { lc[level] }
+            context.dostophead { lc[level][n] }
         end
         level = level - 1
     else
@@ -60,13 +79,13 @@ end
 implement {
     name      = "definesectionlevels",
     actions   = definesectionlevels,
-    arguments = { "string", "string" }
+    arguments = { "string", "string" },
 }
 
 implement {
     name      = "startsectionlevel",
     actions   = startsectionlevel,
-    arguments = "string"
+    arguments = { "integer", "string", "string" },
 }
 
 implement {
