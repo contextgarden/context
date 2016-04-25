@@ -9,6 +9,9 @@ if not modules then modules = { } end modules ['font-ots'] = { -- sequences
 -- to be checked: discrun doesn't seem to do something useful now (except run the
 -- check again) so if we need it again we'll do a zwnjrun or so
 
+-- components will go away and be replaced by a property table which simplifies
+-- code (also more efficient)
+
 -- beware, on my development machine we test a slightly a more optimized version
 
 -- assumptions:

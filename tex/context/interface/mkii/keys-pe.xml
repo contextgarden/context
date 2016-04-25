@@ -208,7 +208,6 @@
 		<cd:variable name='footnote' value='پانوشت'/>
 		<cd:variable name='force' value='اجبار'/>
 		<cd:variable name='foreground' value='پیش‌زمینه'/>
-		<cd:variable name='formeel' value='formeel'/>
 		<cd:variable name='formula' value='فرمول'/>
 		<cd:variable name='formulae' value='فرمولها'/>
 		<cd:variable name='forward' value='به‌جلو'/>
@@ -245,7 +244,6 @@
 		<cd:variable name='inbetween' value='دربین'/>
 		<cd:variable name='index' value='نمایه'/>
 		<cd:variable name='indices' value='نمایه‌ها'/>
-		<cd:variable name='informeel' value='informeel'/>
 		<cd:variable name='inherit' value='ارث‌بردن'/>
 		<cd:variable name='ininner' value='درداخلی'/>
 		<cd:variable name='ininneredge' value='ininneredge'/>
@@ -306,6 +304,7 @@
 		<cd:variable name='line' value='خط'/>
 		<cd:variable name='linenote' value='خط‌نوشت'/>
 		<cd:variable name='lines' value='خطها'/>
+		<cd:variable name='linked' value='linked'/>
 		<cd:variable name='list' value='لیست'/>
 		<cd:variable name='local' value='موضعی'/>
 		<cd:variable name='localenvironment' value='محیط‌موضعی'/>
@@ -441,7 +440,6 @@
 		<cd:variable name='referral' value='مراجعه'/>
 		<cd:variable name='register' value='ثبت'/>
 		<cd:variable name='regular' value='منظم'/>
-		<cd:variable name='rekening' value='rekening'/>
 		<cd:variable name='relative' value='نسبی'/>
 		<cd:variable name='repeat' value='تکرار'/>
 		<cd:variable name='required' value='موردنیاز'/>
@@ -796,7 +794,7 @@
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='finalpagesep' value='finalpagesep'/>
 		<cd:constant name='finalpubsep' value='finalpubsep'/>
-		<cd:constant name='first' value='first'/>
+		<cd:constant name='first' value='اولی'/>
 		<cd:constant name='firstnamesep' value='firstnamesep'/>
 		<cd:constant name='firstpage' value='صفحه‌اول'/>
 		<cd:constant name='focus' value='تمرکز'/>

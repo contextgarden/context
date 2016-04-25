@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/23/16 10:02:48
+-- merge date  : 04/25/16 13:30:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -16680,8 +16680,6 @@ local attributes,nodes,node=attributes,nodes,node
 fonts=fonts
 local hashes=fonts.hashes
 local fontdata=hashes.identifiers
-local parameters=fonts.hashes.parameters
-local resources=fonts.hashes.resources
 nodes.injections=nodes.injections or {}
 local injections=nodes.injections
 local tracers=nodes.tracers
@@ -17871,7 +17869,7 @@ local function injectspaces(head)
   local function updatefont(font,trig)
     leftkerns=trig.left
     rightkerns=trig.right
-    local par=parameters[font]
+    local par=fontdata[font].parameters 
     factor=par.factor
     threshold=par.spacing.width-1 
     lastfont=font

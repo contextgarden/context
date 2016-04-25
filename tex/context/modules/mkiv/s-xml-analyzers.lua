@@ -20,6 +20,7 @@ local chardata = characters.data
 local tags = { }
 local char = { }
 local attr = { }
+local ents = { }
 local name = nil
 
 local function analyze(filename)
@@ -40,6 +41,7 @@ local function analyze(filename)
     tags = { }
     char = { }
     attr = { }
+    ents = { }
 
     table.setmetatableindex(tags,function(t,k)
         local v = {
@@ -58,6 +60,11 @@ local function analyze(filename)
 
     table.setmetatableindex(attr,function(t,k)
         char[k] = char[k] or 0
+        t[k] = 0
+        return 0
+    end)
+
+    table.setmetatableindex(ents,function(t,k)
         t[k] = 0
         return 0
     end)
@@ -112,12 +119,19 @@ local function analyze(filename)
     end
 
     for i=1,#filename do
-        collect(xml.load(filename[i]))
+        local root = xml.load(filename[i])
+        collect(root)
+        --
+        local names = root.statistics.entities.names
+        for n in next, names  do
+            ents[n] = ents[n] + 1
+        end
     end
 
     table.setmetatableindex(tags,nil)
     table.setmetatableindex(char,nil)
     table.setmetatableindex(attr,nil)
+    table.setmetatableindex(ents,nil)
 
 end
 
@@ -169,4 +183,16 @@ function moduledata.xml.analyzers.characters(filename)
     end
     context.stoptabulate()
 end
+
+function moduledata.xml.analyzers.entities(filename)
+    analyze(filename)
+    context.starttabulate { "|l|r|" }
+    for e, n in table.sortedhash(ents) do
+        NC() context(e)
+        NC() context(n)
+        NC() NR()
+    end
+    context.stoptabulate()
+end
+
 

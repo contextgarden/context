@@ -150,7 +150,7 @@
 \expandafter\let\csname\??buttonlocation\v!none   \endcsname\plusthree
 \expandafter\let\csname\??buttonlocation\v!normal \endcsname\plusone % default
 \expandafter\let\csname\??buttonlocation\s!default\endcsname\plusone % default
-\expandafter\let\csname\??buttonlocation\s!empty  \endcsname\plusone % default
+\expandafter\let\csname\??buttonlocation          \endcsname\plusone % default
 
 \newconditional\c_scrn_button_skipped
 
@@ -1022,15 +1022,22 @@
   {\dodoubleempty\scrn_menu_register_menu_buttons}
 
 \def\scrn_menu_register_menu_buttons[#menu][#register]%
-  {\ifsecondargument
-     \clf_registerbuttons{menu}{#register}{\currentlanguage}%
+  {\begingroup
+   \ifsecondargument
+     \clf_registerbuttons{#menu}{#register}{\currentlanguage}%
    \else
      \clf_registerbuttons{}{#menu}{\currentlanguage}%
-   \fi}
+   \fi
+   \removeunwantedspaces
+   \endgroup}
+
+\def\doregistermenubutton#1#2#3% used at lua end
+  {\scrn_menu_menu_button_c{#1}{#2}{#3}%
+   \space}
 
 % or less readable:
 %
 % \def\scrn_menu_register_menu_buttons[#menu][#register]%
-%   {\clf_registerbuttons\ifsecondargument{menu}{#register}\else{}{#menu}\fi{\currentlanguage}}
+%   {\clf_registerbuttons\ifsecondargument{#menu}{#register}\else{}{#menu}\fi{\currentlanguage}}
 
 \protect \endinput

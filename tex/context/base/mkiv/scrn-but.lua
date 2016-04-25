@@ -7,15 +7,15 @@ if not modules then modules = { } end modules ['scrn-but'] = {
 }
 
 local context     = context
-local f_two_colon = string.formatters["%s:%s"]
+local f_two_colon = string.formatters["%s:%s:%s"]
+local v_section   = interfaces.variables.section
 
 local function registerbuttons(tag,register,language)
     local data = sorters.definitions[language]
     local orders = data and data.orders or sorters.definitions.default.orders
-    local tag = tag == "" and { "" } or { tag }
     for i=1,#orders do
         local order = orders[i]
-        context.menubutton(tag,f_two_colon(register,order),order)
+        context.doregistermenubutton(tag, order, f_two_colon(register,v_section,order) )
     end
 end
 

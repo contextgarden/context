@@ -40,8 +40,12 @@ local variables            = interfaces.variables
 local v_forward            = variables.forward
 local v_all                = variables.all
 local v_yes                = variables.yes
+local v_packed             = variables.packed
 local v_current            = variables.current
 local v_previous           = variables.previous
+local v_next               = variables.next
+local v_first              = variables.first
+local v_last               = variables.last
 local v_text               = variables.text
 
 local context              = context
@@ -86,6 +90,7 @@ local ctx_registerentry         = context.registerentry
 local ctx_registerseeword       = context.registerseeword
 local ctx_registerpagerange     = context.registerpagerange
 local ctx_registeronepage       = context.registeronepage
+local ctx_registerpacked        = context.registerpacked
 
 -- possible export, but ugly code (overloads)
 --
@@ -995,6 +1000,14 @@ local function pagenumber(entry,prefixspec,pagespec)
     )
 end
 
+local function packed(f_entry,t_entry)
+    local fer, ter = f_entry.references, t_entry.references
+    ctx_registerpacked(
+        fer.internal or 0,
+        ter.internal or 0
+    )
+end
+
 local function collapsedpage(pages)
     for i=2,#pages do
         local first, second = pages[i-1], pages[i]
@@ -1059,8 +1072,10 @@ local function collapsepages(pages)
 end
 
 function registers.flush(data,options,prefixspec,pagespec)
-    local collapse_singles = options.compress == v_yes
-    local collapse_ranges  = options.compress == v_all
+    local compress         = options.compress
+    local collapse_singles = compress == v_yes
+    local collapse_ranges  = compress == v_all
+    local collapse_packed  = compress == v_packed
     local show_page_number = options.pagenumber ~= false -- true or false
     local result = data.result
     local maxlevel = 0
@@ -1237,6 +1252,28 @@ function registers.flush(data,options,prefixspec,pagespec)
                         else
                             pagenumber(entry,prefixspec,pagespec)
                         end
+                    elseif collapse_packed then
+                        local first = nil
+                        local last  = nil
+                        while true do
+                            if not first then
+                                first = entry
+                            end
+                            last  = entry
+                            if d == #data then
+                                break
+                            else
+                                d = d + 1
+                                local next = data[d]
+                                if next.metadata.kind == "see" or not equal(entry.list,next.list) then
+                                    d = d - 1
+                                    break
+                                else
+                                    entry = next
+                                end
+                            end
+                        end
+                        packed(first,last) -- returns internals
                     else
                         while true do
                             if entry.references.lastrealpage then
@@ -1351,4 +1388,68 @@ implement {
             { "segments" },
         }
     }
+}
+
+-- linked registers
+
+function registers.findinternal(tag,where,n)
+ -- local collected = registers.collected
+    local current   = collected[tag]
+    if not current then
+        return 0
+    end
+    local entries = current.entries
+    if not entries then
+        return 0
+    end
+    local entry = entries[n]
+    if not entry then
+        return 0
+    end
+    local list = entry.list
+    local size = #list
+    --
+    local start, stop, step
+    if where == v_previous then
+        start = n - 1
+        stop  = 1
+        step  = -1
+    elseif where == v_first then
+        start = 1
+        stop  = #entries
+        step  = 1
+    elseif where == v_last then
+        start = #entries
+        stop  = 1
+        step  = -1
+    else
+        start = n + 1
+        stop  = #entries
+        step  = 1
+    end
+    --
+    for i=start,stop,step do
+        local r = entries[i]
+        local l = r.list
+        local s = #l
+        if s == size then
+            local ok = true
+            for i=1,size do
+                if list[i][1] ~= l[i][1] then
+                    ok = false
+                    break
+                end
+            end
+            if ok then
+                return r.references.internal or 0
+            end
+        end
+    end
+    return 0
+end
+
+interfaces.implement {
+    name      = "findregisterinternal",
+    arguments = { "string", "string", "integer" },
+    actions   = { registers.findinternal, context },
 }

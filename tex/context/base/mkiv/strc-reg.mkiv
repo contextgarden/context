@@ -159,6 +159,9 @@
 
 %D Registering:
 
+\global\let\currentregistername  \empty
+\global\let\currentregisternumber\!!zerocount
+
 \def\strc_registers_register_page_entry
   {\iftrialtypesetting
      \expandafter\gobblethreearguments
@@ -250,6 +253,7 @@
    \setnextinternalreference
    % we could consider storing register entries in a list which we
    % could then sort
+   \glet\currentregistername\currentregister
    \xdef\currentregisternumber{\clf_storeregister % 'own' should not be in metadata
         metadata {%
             name     {\currentregister}%
@@ -315,6 +319,7 @@
   {\begingroup
    \edef\currentregister{#1}%
    \setnextinternalreference
+   \glet\currentregistername\currentregister
    \xdef\currentregisternumber{\clf_storeregister
      {%
         metadata {%
@@ -771,6 +776,16 @@
 \newdimen\d_strc_registers_hangindent
 \newcount\c_strc_registers_hangafter
 
+\unexpanded\def\usenestedregisterstyleandcolor#1#2% will change
+  {\useregisterstyleandcolor#1#2%
+   % how about style
+   \ifconditional\c_strc_registers_text_interaction
+     \ifx\currentcolorparameter\empty \else
+       \resetinteractionparameter\c!color
+       \resetinteractionparameter\c!contrastcolor
+     \fi
+   \fi}
+
 \unexpanded\def\startregisterentries#1% depth
   {\endgraf
    \begingroup
@@ -778,7 +793,7 @@
    \dostarttagged\t!registerentries\empty
    \let\savedcurrentregister\currentregister
    \edef\currentregister{\currentregister:\number\scratchcounter}%
-   \useregisterstyleandcolor\c!textstyle\c!textcolor
+   \usenestedregisterstyleandcolor\c!textstyle\c!textcolor
    \ifnum\scratchcounter>\plusone
      \advance\leftskip\d_strc_registers_distance\relax
    \fi
@@ -863,7 +878,7 @@
 \unexpanded\def\withregisterpagecommand#1#2#3#4%
   {\def\currentregisterpageindex{#2}%
    \iflocation
-     \strc_references_goto_internal{\applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}}[#2]%
+     \strc_references_goto_internal{\applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}}[internal(#2)]%
    \else
      \applyprocessor{#1}{\registerparameter\c!pagecommand{#4}}%
    \fi}
@@ -888,18 +903,6 @@
    \dostoptagged
    \dostoptagged}
 
-% \unexpanded\def\defaultregisterentry#1#2#3#4% #1:processor #2:internal #3:seeindex #4:word
-%   {\def\currentregisterpageindex{#2}%
-%    \iflocation
-%      \def\currentregisterseeindex{#3}%
-%      \doifelse{\registerparameter\c!interaction}\v!text
-%        {\directgoto{\setlocationcolor\doapplyregisterentrycommand{#1}{#4}}[internal(#2)]}
-%        {\doapplyregisterentrycommand{#1}{#4}}%
-%    \else
-%      \let\currentregisterseeindex\empty
-%      \doapplyregisterentrycommand{#1}{#4}%
-%    \fi}
-
 \unexpanded\def\defaultregisterentry#1#2#3#4% #1:processor #2:internal #3:seeindex #4:word
   {\def\currentregisterpageindex{#2}%
    \iflocation
@@ -922,14 +925,6 @@
    \fi
    \applyprocessor{#1}{\registerparameter\c!textcommand{\limitedregisterentry{\registerparameter\c!deeptextcommand{#2}}}}%
    \dostoptagged}
-
-% \unexpanded\def\doapplyregisterseecommand#1#2%
-%   {\ifx\currentregisterseeindex\empty
-%    % \dontleavehmode
-%      \applyprocessor{#1}{#2}%
-%    \else
-%      \goto{\applyprocessor{#1}{#2}}[seeindex:\currentregisterseeindex]%
-%    \fi}
 
 \unexpanded\def\doapplyregisterseecommand#1#2%
   {\ifx\currentregisterseeindex\empty
@@ -1031,6 +1026,48 @@
 
 %D The linked register code will be reimplemented (not that hard) when it's needed
 %D again and/or when I'm bored.
+
+           \def\findregisterinternal#1#2#3{\clf_findregisterinternal{#1}{#2}#3\relax}
+\unexpanded\def\pageofinternal          #1{\clf_pageofinternal#1\relax}
+
+\unexpanded\def\linkedregisterentrylink#1#2#3#4% tag where before after
+  {\iflocation
+     \scratchcounter\findregisterinternal{#1}{#2}\currentregisternumber\relax\relax
+     \ifcase\scratchcounter\else
+       #3\relax
+       \goto{\symbol[#2]}[internal(\the\scratchcounter)]%
+       #4\relax
+     \fi
+   \else
+   % \scratchcounter\findregisterinternal{#1}{#2}\currentregisternumber\relax\relax
+   % \ifcase\scratchcounter\else
+   %   #3\relax
+   %   \pageofinternal\scratchcounter
+   %   #4\relax
+   % \fi
+   \fi}
+
+\unexpanded\def\linkedregisterentry#1%
+  {\dontleavehmode
+   \begingroup
+   \setbox\scratchbox\hbox{#1}%
+   \linkedregisterentrylink\currentregistername\v!previous\relax\nobreakspace
+   \unhbox\scratchbox
+   \linkedregisterentrylink\currentregistername\v!next\nobreakspace\relax
+   \endgroup}
+
+\unexpanded\def\registerpacked#1#2%
+  {\iflocation
+     \hskip\d_strc_registers_distance\relax
+     \nobreak
+     \ifnum#1=#2\relax
+       \goto{\symbol[\v!somewhere]}[internal(#1)]%
+     \else
+       \goto{\symbol[\v!first]}[internal(#1)]%
+       \nobreakspace
+       \goto{\symbol[\v!last]}[internal(#2)]%
+     \fi
+   \fi}
 
 %D Default index:
 

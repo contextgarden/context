@@ -208,7 +208,6 @@
 		<cd:variable name='footnote' value='notepdp'/>
 		<cd:variable name='force' value='force'/>
 		<cd:variable name='foreground' value='premierplan'/>
-		<cd:variable name='formeel' value='formeel'/>
 		<cd:variable name='formula' value='formule'/>
 		<cd:variable name='formulae' value='formules'/>
 		<cd:variable name='forward' value='avance'/>
@@ -245,7 +244,6 @@
 		<cd:variable name='inbetween' value='entre'/>
 		<cd:variable name='index' value='index'/>
 		<cd:variable name='indices' value='indices'/>
-		<cd:variable name='informeel' value='informeel'/>
 		<cd:variable name='inherit' value='herite'/>
 		<cd:variable name='ininner' value='ininner'/>
 		<cd:variable name='ininneredge' value='ininneredge'/>
@@ -306,6 +304,7 @@
 		<cd:variable name='line' value='ligne'/>
 		<cd:variable name='linenote' value='noteligne'/>
 		<cd:variable name='lines' value='lignes'/>
+		<cd:variable name='linked' value='linked'/>
 		<cd:variable name='list' value='liste'/>
 		<cd:variable name='local' value='local'/>
 		<cd:variable name='localenvironment' value='environementlocal'/>
@@ -441,7 +440,6 @@
 		<cd:variable name='referral' value='referral'/>
 		<cd:variable name='register' value='registre'/>
 		<cd:variable name='regular' value='regulier'/>
-		<cd:variable name='rekening' value='rekening'/>
 		<cd:variable name='relative' value='relatif'/>
 		<cd:variable name='repeat' value='repete'/>
 		<cd:variable name='required' value='recquis'/>
@@ -796,7 +794,7 @@
 		<cd:constant name='finalnamesep' value='finalnamesep'/>
 		<cd:constant name='finalpagesep' value='finalpagesep'/>
 		<cd:constant name='finalpubsep' value='finalpubsep'/>
-		<cd:constant name='first' value='first'/>
+		<cd:constant name='first' value='premier'/>
 		<cd:constant name='firstnamesep' value='firstnamesep'/>
 		<cd:constant name='firstpage' value='premierepage'/>
 		<cd:constant name='focus' value='focus'/>

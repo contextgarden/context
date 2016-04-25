@@ -2421,9 +2421,7 @@ local function setreferencerealpage(actions)
     if not actions then
         actions = references.currentset
     end
-    if not actions then
-        return 0
-    else
+    if type(actions) == "table" then
         local realpage = actions.realpage
         if realpage then
             return realpage
@@ -2443,8 +2441,8 @@ local function setreferencerealpage(actions)
             end
         end
         actions.realpage = 0
-        return 0
     end
+    return 0
 end
 
 references.setreferencerealpage = setreferencerealpage

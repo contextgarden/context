@@ -7814,7 +7814,14 @@ return {
    ["en"]="finalpubsep",
   },
   ["first"]={
+   ["cs"]="prvni",
+   ["de"]="erste",
    ["en"]="first",
+   ["fr"]="premier",
+   ["it"]="primo",
+   ["nl"]="eerste",
+   ["pe"]="اولی",
+   ["ro"]="primul",
   },
   ["firstnamesep"]={
    ["en"]="firstnamesep",
@@ -13507,16 +13514,6 @@ return {
    ["pe"]="پیش‌زمینه",
    ["ro"]="primplan",
   },
-  ["formeel"]={
-   ["cs"]="formeel",
-   ["de"]="formeel",
-   ["en"]="formeel",
-   ["fr"]="formeel",
-   ["it"]="formeel",
-   ["nl"]="formeel",
-   ["pe"]="formeel",
-   ["ro"]="formeel",
-  },
   ["formula"]={
    ["cs"]="rovnice",
    ["de"]="formel",
@@ -13876,16 +13873,6 @@ return {
    ["nl"]="indices",
    ["pe"]="نمایه‌ها",
    ["ro"]="indexuri",
-  },
-  ["informeel"]={
-   ["cs"]="informeel",
-   ["de"]="informeel",
-   ["en"]="informeel",
-   ["fr"]="informeel",
-   ["it"]="informeel",
-   ["nl"]="informeel",
-   ["pe"]="informeel",
-   ["ro"]="informeel",
   },
   ["inherit"]={
    ["cs"]="inherit",
@@ -14417,6 +14404,9 @@ return {
    ["nl"]="regels",
    ["pe"]="خطها",
    ["ro"]="linii",
+  },
+  ["linked"]={
+   ["en"]="linked",
   },
   ["list"]={
    ["cs"]="seznam",
@@ -15622,16 +15612,6 @@ return {
    ["nl"]="regular",
    ["pe"]="منظم",
    ["ro"]="regular",
-  },
-  ["rekening"]={
-   ["cs"]="rekening",
-   ["de"]="rekening",
-   ["en"]="rekening",
-   ["fr"]="rekening",
-   ["it"]="rekening",
-   ["nl"]="rekening",
-   ["pe"]="rekening",
-   ["ro"]="rekening",
   },
   ["relative"]={
    ["cs"]="relativni",
