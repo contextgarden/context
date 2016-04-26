@@ -36,18 +36,22 @@
 
 \unexpanded\def\meta_textext_indeed#1#2%
   {\begingroup
+   \let\space\normalspace
    \setbox\nextbox\hbox{#2}%
-   \executeifdefined{\??graphictexdepth#1}{\getvalue{\??graphictexdepth\s!depth}}%
+   \ifcsname\??graphictexdepth#1\endcsname
+     \lastnamedcs
+   \else
+     \syst_boxes_lower_nextbox_dp
+   \fi
    \box\nextbox
    \endgroup}
 
 \def\getTeXtext#1%
-  {\getvalue{\??graphictextext#1}}
+  {\begincsname\??graphictextext#1\endcsname}
 
-\setvalue{\??graphictexdepth d}{\setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}}  % unchecked
-\letvalue{\??graphictexdepth n}\donothing                                             % unchecked
-
-\setvalue{\??graphictexdepth\s!depth  }{\getvalue{\??graphictexdepth d}}
+\letvalue{\??graphictexdepth         d}\syst_boxes_lower_nextbox_dp
+\letvalue{\??graphictexdepth  \s!depth}\syst_boxes_lower_nextbox_dp
+\letvalue{\??graphictexdepth         n}\donothing
 \letvalue{\??graphictexdepth\s!nodepth}\donothing
 
 % \definetextext[framed]{\framed}

@@ -285,6 +285,9 @@
      \expandafter\syst_boxes_smash_process_option
    \fi}
 
+\def\syst_boxes_lower_nextbox_dp
+  {\setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}}
+
 %D \starttabulate[|l|l|]
 %D \NC w   \NC \ruledhbox{\smash  [w]{This is some great smashing, isn't it?}} \NC \NR
 %D \NC h   \NC \ruledhbox{\smash  [h]{This is some great smashing, isn't it?}} \NC \NR

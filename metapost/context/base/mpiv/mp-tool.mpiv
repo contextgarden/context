@@ -330,6 +330,11 @@ vardef set_outer_boundingbox text q = % obsolete
     setbounds q to outerboundingbox q;
 enddef;
 
+% secondarydef a boundedto b = % will this cleanup ?
+%     hide(picture mfun_a_b ; mfun_a_b := a ; setbounds mfun_a_b to b;)
+%     mfun_a_b
+% enddef ;
+
 %D Some missing functions can be implemented rather straightforward (thanks to
 %D Taco and others):
 
@@ -875,6 +880,12 @@ primarydef p leftenlarged   d = ( (llcorner p) shifted (-d,0) -- lrcorner p -- u
 primarydef p rightenlarged  d = ( llcorner p -- (lrcorner p) shifted (d,0) -- (urcorner p) shifted (d,0) -- ulcorner p -- cycle   ) enddef ;
 primarydef p topenlarged    d = ( llcorner p -- lrcorner p -- (urcorner p) shifted (0,d) -- (ulcorner p) shifted (0,d) -- cycle   ) enddef ;
 primarydef p bottomenlarged d = ( llcorner p shifted (0,-d) -- lrcorner p shifted (0,-d) -- urcorner p -- ulcorner p -- cycle     ) enddef ;
+
+%D Handy as stepper:
+
+vardef rotation(expr i, n) =
+    if (n == 0) : 0 else : i * 360 / n fi
+enddef ;
 
 %D Handy for testing/debugging:
 

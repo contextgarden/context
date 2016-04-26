@@ -1,5 +1,7 @@
 \startenvironment luatex-style
 
+% todo: use \useMPlibrary[lua]
+
 \usemodule[abr-02]
 
 \setuplayout
@@ -217,15 +219,16 @@
     StopPage ;
 \stopuseMPgraphic
 
-\starttexdefinition luaextraangle
-    % we can also just access the last page and so in mp directly
-    \ctxlua {
-        context(\lastpage == 0 and 0 or \realfolio*360/\lastpage)
-    }
-\stoptexdefinition
+% \starttexdefinition luaextraangle
+%     % we can also just access the last page and so in mp directly
+%     \ctxlua {
+%         context(\lastpage == 0 and 0 or \realfolio*360/\lastpage)
+%     }
+% \stoptexdefinition
 
 \startuseMPgraphic{luanumber}
-    luaextraangle  := \luaextraangle;
+  % luaextraangle  := \luaextraangle;
+    luaextraangle  := if (LastPageNumber == 0) : 0 else : RealPageNumber * 360 / LastPageNumber fi;
     luaorbitfactor := 0.25 ;
     picture p ; p := lualogo ;
     setbounds p to boundingbox fullcircle ;

@@ -298,9 +298,12 @@
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_process_graphic}
 
+\let\meta_temp_space\space % for now in cont-loc: \let\meta_temp_space\relax
+
 \unexpanded\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
   {\meta_start_current_graphic
    \forgetall
+   \let\space\meta_temp_space % e.g. textext("1\red\space\endash\space2")
    \edef\p_extensions{\MPinstanceparameter\s!extensions}%
    \meta_process_graphic_start
      \normalexpanded{\noexpand\clf_mpgraphic
@@ -1495,6 +1498,7 @@
 
 \unexpanded\def\startMPcalculation
   {\begingroup
+  %\let\space\normalspace
    \setbox\nextbox\hpack\bgroup
    \dosinglegroupempty\meta_start_calculation}
 

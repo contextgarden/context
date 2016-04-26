@@ -112,6 +112,8 @@ loadmodule("font-otp.lua") -- we need to unpack the font for analysis
 
 -- new loader code
 
+loadmodule("char-def.lua")
+
 loadmodule("font-otr.lua")
 loadmodule("font-cff.lua")
 loadmodule("font-ttf.lua")
