@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/26/16 23:18:57
+-- merge date  : 04/27/16 10:18:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -20371,13 +20371,13 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                   end
                 else
                 end
+                current=getnext(current)
               elseif seq[n][32] then 
                 n=n+1
               else
                 match=false
                 break
               end
-              current=getnext(current)
             elseif seq[n][32] then
               n=n+1
               current=getnext(current)

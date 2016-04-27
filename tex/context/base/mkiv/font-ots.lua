@@ -2492,14 +2492,14 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                 else
                                     -- skip 'm
                                 end
+                                -- maybe only if match
+                                current = getnext(current)
                             elseif seq[n][32] then -- brrr
                                 n = n + 1
                             else
                                 match = false
                                 break
                             end
-                            -- maybe only if match
-                            current = getnext(current)
                         elseif seq[n][32] then
                             n = n + 1
                             current = getnext(current)

@@ -263,7 +263,7 @@ return {
         --
         "removetoks", "appendtoks", "prependtoks", "appendtotoks", "prependtotoks", "to",
         --
-        "endgraf", "endpar", "everyendpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace", "nbsp",
+        "endgraf", "endpar", "everyendpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace", "emspace", "charspace", "nbsp",
         "obeyspaces", "obeylines", "obeyedspace", "obeyedline", "obeyedtab", "obeyedpage",
         "normalspace",
         --
