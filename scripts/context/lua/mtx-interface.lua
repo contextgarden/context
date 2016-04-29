@@ -411,10 +411,13 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
     --
     local collected = { }
     --
+    report("generating files for %a",editor)
+    report("loading %a",xmlfile)
     local xmlroot = xml.load(xmlfile)
     xml.include(xmlroot,"cd:interfacefile","filename",true,function(s)
-        local fullname =  resolvers.findfile(s)
+        local fullname = resolvers.findfile(s)
         if fullname and fullname ~= "" then
+            report("including %a",fullname)
             return io.loaddata(fullname)
         end
     end)

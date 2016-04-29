@@ -1320,7 +1320,8 @@
    \let\flushnotes\relax
    \let\postponenotes\relax
    \forgetall
-   \resetallattributes % new, we don't want color bleed into notes
+   \resetallattributes   % new, we don't want color bleed into notes
+   \inheritmaintextcolor % but we do want to obey the textcolor
 \to \everybeforenoteinsert
 
 \appendtoks

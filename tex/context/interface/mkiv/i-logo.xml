@@ -36,6 +36,8 @@
 
     <cd:command name="pdfeTeX" file="cont-log.mkiv"/>
 
+    <cd:command name="Lua" file="cont-log.mkiv"/>
+
     <cd:command name="luaTeX" file="cont-log.mkiv"/>
 
     <cd:command name="luajitTeX" file="cont-log.mkiv"/>

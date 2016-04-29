@@ -72,19 +72,23 @@ prefixes.pathname = function(str)
 end
 
 prefixes.selfautoloc = function(str)
-    return cleanpath(joinpath(getenv('SELFAUTOLOC'),str))
+    local pth = getenv('SELFAUTOLOC')
+    return cleanpath(str and joinpath(pth,str) or pth)
 end
 
 prefixes.selfautoparent = function(str)
-    return cleanpath(joinpath(getenv('SELFAUTOPARENT'),str))
+    local pth = getenv('SELFAUTOPARENT')
+    return cleanpath(str and joinpath(pth,str) or pth)
 end
 
 prefixes.selfautodir = function(str)
-    return cleanpath(joinpath(getenv('SELFAUTODIR'),str))
+    local pth = getenv('SELFAUTODIR')
+    return cleanpath(str and joinpath(pth,str) or pth)
 end
 
 prefixes.home = function(str)
-    return cleanpath(joinpath(getenv('HOME'),str))
+    local pth = getenv('HOME')
+    return cleanpath(str and joinpath(pth,str) or pth)
 end
 
 prefixes.env  = prefixes.environment

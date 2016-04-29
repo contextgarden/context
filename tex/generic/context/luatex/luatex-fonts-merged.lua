@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/27/16 10:18:10
+-- merge date  : 04/29/16 15:14:37
 
 do -- begin closure to overcome local limits and interference
 
@@ -2545,7 +2545,7 @@ local reslasher=lpeg.replacer(S("\\/"),"/")
 local deslasher=lpeg.replacer(S("\\/")^1,"/")
 function file.join(one,two,three,...)
   if not two then
-    return one=="" and one or lpegmatch(stripper,one)
+    return one=="" and one or lpegmatch(reslasher,one)
   end
   if one=="" then
     return lpegmatch(stripper,three and concat({ two,three,... },"/") or two)
