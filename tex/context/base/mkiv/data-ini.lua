@@ -34,7 +34,7 @@ texconfig.shell_escape = 't'
 
 if not (environment and environment.default_texmfcnf) and kpse and kpse.default_texmfcnf then
     local default_texmfcnf = kpse.default_texmfcnf()
-    -- looks more like context:
+    -- looks more like context
     default_texmfcnf = gsub(default_texmfcnf,"$SELFAUTOLOC","selfautoloc:")
     default_texmfcnf = gsub(default_texmfcnf,"$SELFAUTODIR","selfautodir:")
     default_texmfcnf = gsub(default_texmfcnf,"$SELFAUTOPARENT","selfautoparent:")

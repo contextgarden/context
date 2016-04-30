@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['font-otc'] = {
 local format, insert, sortedkeys, tohash = string.format, table.insert, table.sortedkeys, table.tohash
 local type, next = type, next
 local lpegmatch = lpeg.match
-local utfbyte = utf.byte
+local utfbyte, utflen = utf.byte, utf.len
 
 -- we assume that the other otf stuff is loaded already
 
@@ -68,6 +68,8 @@ local function addfeature(data,feature,specifications)
     local splitter     = lpeg.splitter(" ",unicodes)
     local done         = 0
     local skip         = 0
+    local aglunicodes  = false
+
     if not specifications[1] then
         -- so we accept a one entry specification
         specifications = { specifications }
@@ -76,11 +78,24 @@ local function addfeature(data,feature,specifications)
     local function tounicode(code)
         if not code then
             return
-        elseif type(code) == "number" then
-            return code
-        else
-            return unicodes[code] or utfbyte(code)
         end
+        if type(code) == "number" then
+            return code
+        end
+        local u = unicodes[code]
+        if u then
+            return u
+        end
+        if utflen(code) == 1 then
+            u = utfbyte(code)
+            if u then
+                return u
+            end
+        end
+        if not aglunicodes then
+            aglunicodes = fonts.encodings.agl.unicodes -- delayed
+        end
+        return aglunicodes[code]
     end
 
     local coverup      = otf.coverup
