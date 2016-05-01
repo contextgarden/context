@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/30/16 23:51:15
+-- merge date  : 05/01/16 09:52:32
 
 do -- begin closure to overcome local limits and interference
 
@@ -17663,9 +17663,11 @@ local function inject_everything(head,where)
                 end
               else
                 local i=p.emptyinjections
-                local leftkern=i.leftkern
-                if leftkern and leftkern~=0 then
-                  setfield(prev,"replace",newkern(leftkern)) 
+                if i then
+                  local leftkern=i.leftkern
+                  if leftkern and leftkern~=0 then
+                    setfield(prev,"replace",newkern(leftkern)) 
+                  end
                 end
               end
               if done then
