@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/01/16 09:52:32
+-- merge date  : 05/06/16 11:55:05
 
 do -- begin closure to overcome local limits and interference
 
@@ -16658,6 +16658,7 @@ registerotffeature {
     base=featuresinitializer,
   }
 }
+otf.basemodeinitializer=featuresinitializer
 
 end -- closure
 
@@ -21284,6 +21285,8 @@ registerotffeature {
     node=featuresprocessor,
   }
 }
+otf.nodemodeinitializer=featuresinitializer
+otf.featuresprocessor=featuresprocessor
 otf.handlers=handlers
 local setspacekerns=nodes.injections.setspacekerns if not setspacekerns then os.exit() end
 function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)

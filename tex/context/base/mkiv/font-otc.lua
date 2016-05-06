@@ -546,6 +546,8 @@ local function enhance(data,filename,raw)
     end
 end
 
+otf.enhancers.enhance = enhance
+
 otf.enhancers.register("check extra features",enhance)
 
 -- tlig --

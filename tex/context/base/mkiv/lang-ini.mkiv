@@ -518,7 +518,7 @@
 
 \let\dohyphens\relax
 
-\unexpanded\def\lang_basics_synchronize_min_max
+\unexpanded\def\lang_basics_synchronize_min_max % maybe store this at the lua end
   {% these values are stored along with glyph nodes
    \lefthyphenmin \numexpr0\languageparameter\s!lefthyphenmin +\hyphenminoffset\relax
    \righthyphenmin\numexpr0\languageparameter\s!righthyphenmin+\hyphenminoffset\relax

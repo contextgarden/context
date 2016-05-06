@@ -198,7 +198,7 @@
             withpen pencircle scaled (p/2)
             withcolor (luaorbitfactor * luaholecolor) ;
         fill fullcircle scaled r shifted (d+1/8,d+1/8)
-            rotated luaextraangle
+            rotated - luaextraangle
             withcolor luaplanetcolor ;
         fill fullcircle scaled r shifted (d-1/8,d-1/8)
             withcolor luaholecolor   ;
@@ -228,7 +228,7 @@
 
 \startuseMPgraphic{luanumber}
   % luaextraangle  := \luaextraangle;
-    luaextraangle  := if (LastPageNumber == 0) : 0 else : RealPageNumber * 360 / LastPageNumber fi;
+    luaextraangle  := if (LastPageNumber == 0) : 0 else : (RealPageNumber / LastPageNumber) * 360  fi;
     luaorbitfactor := 0.25 ;
     picture p ; p := lualogo ;
     setbounds p to boundingbox fullcircle ;

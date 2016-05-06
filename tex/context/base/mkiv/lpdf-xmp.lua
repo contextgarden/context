@@ -41,7 +41,7 @@ local mapping = {
     ["ConTeXt.Time"]    = { "date",    "rdf:Description/pdfx:ConTeXt.Time" },
     ["ConTeXt.Url"]     = { "context", "rdf:Description/pdfx:ConTeXt.Url" },
     ["ConTeXt.Version"] = { "context", "rdf:Description/pdfx:ConTeXt.Version" },
-    ["ID"]              = { "date",    "rdf:Description/pdfx:ID" },                         -- has date
+    ["ID"]              = { "id",      "rdf:Description/pdfx:ID" },                         -- has date
     ["PTEX.Fullbanner"] = { "metadata","rdf:Description/pdfx:PTEX.Fullbanner" },
     -- Adobe PDF schema
     ["Keywords"]        = { "metadata","rdf:Description/pdf:Keywords" },
@@ -60,8 +60,8 @@ local mapping = {
     ["ModDate"]         = { "date",    "rdf:Description/xmp:ModDate" },                     -- dummy
     ["ModifyDate"]      = { "date",    "rdf:Description/xmp:ModifyDate" },
     -- XMP Media Management schema
-    ["DocumentID"]      = { "date",    "rdf:Description/xmpMM:DocumentID" },                -- uuid
-    ["InstanceID"]      = { "date",    "rdf:Description/xmpMM:InstanceID" },                -- uuid
+    ["DocumentID"]      = { "id",      "rdf:Description/xmpMM:DocumentID" },                -- uuid
+    ["InstanceID"]      = { "id",      "rdf:Description/xmpMM:InstanceID" },                -- uuid
     ["RenditionClass"]  = { "pdf",     "rdf:Description/xmpMM:RenditionClass" },            -- PDF/X-4
     ["VersionID"]       = { "pdf",     "rdf:Description/xmpMM:VersionID" },                 -- PDF/X-4
     -- additional entries
@@ -105,32 +105,66 @@ local included = table.setmetatableindex( {
     return true
 end)
 
-directives.register("backend.nodates", function(v)
-    included.date = not v
+function lpdf.settrailerid(v)
     if v then
-        report_info("no date/time information will be added to the PDF file")
-    end
-end)
-
-directives.register("backend.trailerid", function(v)
-    if v then
-        if toboolean(v) or v == "" then
+        local b = toboolean(v) or v == ""
+        if b then
             v = "This file is processed by ConTeXt and LuaTeX."
         else
             v = tostring(v)
         end
         local h = md5.HEX(v)
-        report_info("using hashed trailer id %a (%a)",v,h)
+        if b then
+            report_info("using frozen trailer id")
+        else
+            report_info("using hashed trailer id %a (%a)",v,h)
+        end
         pdf.settrailerid(format("[<%s> <%s>]",h,h))
     end
-end)
+end
+
+function lpdf.setdates(v)
+    local n = tonumber(v)
+    if n and n >= 0 then
+        included.date = true
+        included.id   = "fake"
+        report_info()
+        report_info("forced date/time information %a will be used",lpdf.settime(n))
+        lpdf.settrailerid(false)
+        report_info()
+    else
+        v = v and true or false
+        included.date = v
+        if v then
+            included.id = true
+        else
+            report_info()
+            report_info("fake date/time/id information will be added")
+            lpdf.settrailerid(true)
+            report_info()
+            included.id = "fake"
+        end
+    end
+end
+
+function lpdf.id() -- overload of ini
+    local banner = tex.jobname
+    if included.date then
+        return format("%s.%s",banner,lpdf.timestamp())
+    else
+        return banner
+    end
+end
+
+directives.register("backend.trailerid", lpdf.settrailerid)
+directives.register("backend.date",      lpdf.setdates)
 
 local function permitdetail(what)
     local m = mapping[what]
     if m then
         return included[m[1]] and m[2]
     else
-        return included[what]
+        return included[what] and true or false
     end
 end
 
@@ -214,21 +248,33 @@ end
 
 -- flushing
 
-local t = { } for i=1,24 do t[i] = random() end
+local function randomstring(n)
+    local t = { }
+    for i=1,n do
+        t[i] = char(96 + random(26))
+    end
+    return concat(t)
+end
+
+randomstring(26) -- kind of initializes and kicks off random
 
 local function flushxmpinfo()
     commands.pushrandomseed()
     commands.setrandomseed(os.time())
 
-    local t = { } for i=1,24 do t[i] = char(96 + random(26)) end
-    local packetid = concat(t)
-
-    local documentid = format("uuid:%s",os.uuid())
-    local instanceid = format("uuid:%s",os.uuid())
+    local packetid   = "no unique packet id here" -- 24 chars
+    local documentid = "no unique document id here"
+    local instanceid = "no unique instance id here"
     local producer   = format("LuaTeX-%0.2f.%s",status.luatex_version/100,status.luatex_revision)
     local creator    = "LuaTeX + ConTeXt MkIV"
     local time       = lpdf.timestamp()
     local fullbanner = status.banner
+
+    if included.id ~= "fake" then
+        packetid   = randomstring(24)
+        documentid = "uuid:%s" .. os.uuid()
+        instanceid = "uuid:%s" .. os.uuid()
+    end
 
     pdfaddxmpinfo("DocumentID",      documentid)
     pdfaddxmpinfo("InstanceID",      instanceid)

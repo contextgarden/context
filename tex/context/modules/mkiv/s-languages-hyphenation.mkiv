@@ -34,6 +34,12 @@
    \ctxlua{moduledata.languages.hyphenation.stopcomparepatterns()}%
    \endgroup}
 
+\appendtoks
+    \clf_storelanguagestate % global
+\to \everylanguage
+
+\clf_storelanguagestate % initialize
+
 \installmodulecommandluasingle \showcomparepatternslegend {moduledata.languages.hyphenation.showcomparelegend}
 
 \protect
@@ -42,11 +48,13 @@
 \definecolor[hyphenation:2] [g=.8]
 \definecolor[hyphenation:3] [b=.8]
 \definecolor[hyphenation:4] [r=.4,g=.4]
+\definecolor[hyphenation:5] [r=.4,b=.4]
 
 \definecolor[hyphenation:en] [hyphenation:1]
 \definecolor[hyphenation:de] [hyphenation:2]
 \definecolor[hyphenation:nl] [hyphenation:3]
 \definecolor[hyphenation:fr] [hyphenation:4]
+\definecolor[hyphenation:sl] [hyphenation:5]
 
 \stopmodule
 
@@ -56,10 +64,33 @@
 
 \starttext
 
-\def|#1|{-}
+    \startcomparepatterns[en,sl]
+        {For Mojca Miklavec}
+        {For Mojca Miklavec}
+    \stopcomparepatterns
+
+    \startcomparepatterns[en]
+        {For Mojca Miklavec}
+        {For Mojca Miklavec}
+    \stopcomparepatterns
+
+    \startcomparepatterns[sl]
+        {For Mojca Miklavec}
+        {For Mojca Miklavec}
+    \stopcomparepatterns
+
+    \startcomparepatterns[en,sl]
+        {For Mojca Miklavec}\crlf
+        {For Mojca Miklavec}\crlf
+        {\de For Mojca Miklavec}\crlf
+        {For Mojca Miklavec}\crlf
+        {\fr For Mojca Miklavec}
+    \stopcomparepatterns
+
+    \page
 
     \startsubject{Normal text}
-            \input tufte
+        \input tufte
     \stopsubject
 
     \startsubject{Compare hyphenation points of \showcomparepatternslegend[en,de]}

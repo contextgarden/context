@@ -1059,13 +1059,24 @@ do
         return timestamp
     end
 
+    function lpdf.settime(n)
+        if type(n) == "number" and n >= 0 then
+            timestamp = os.date("%Y-%m-%dT%X",n) .. os.timezone(true)
+        end
+        return timestamp
+    end
+
     function lpdf.pdftimestamp(str)
         local Y, M, D, h, m, s, Zs, Zh, Zm = match(str,"^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)([%+%-])(%d%d):(%d%d)$")
         return Y and format("D:%s%s%s%s%s%s%s%s'%s'",Y,M,D,h,m,s,Zs,Zh,Zm)
     end
 
-    function lpdf.id()
-        return format("%s.%s",tex.jobname,timestamp)
+    function lpdf.id(nodate)
+        if nodate then
+            return tex.jobname
+        else
+            return format("%s.%s",tex.jobname,timestamp)
+        end
     end
 
 end

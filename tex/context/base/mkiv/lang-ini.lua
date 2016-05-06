@@ -40,8 +40,8 @@ local prehyphenchar    = lang.prehyphenchar    -- global per language
 local posthyphenchar   = lang.posthyphenchar   -- global per language
 local preexhyphenchar  = lang.preexhyphenchar  -- global per language
 local postexhyphenchar = lang.postexhyphenchar -- global per language
-local lefthyphenmin    = lang.lefthyphenmin
-local righthyphenmin   = lang.righthyphenmin
+----- lefthyphenmin    = lang.lefthyphenmin
+----- righthyphenmin   = lang.righthyphenmin
 local sethjcode        = lang.sethjcode
 
 local uccodes          = characters.uccodes
@@ -344,8 +344,8 @@ function languages.prehyphenchar   (what) return prehyphenchar   (tolang(what)) 
 function languages.posthyphenchar  (what) return posthyphenchar  (tolang(what)) end
 function languages.preexhyphenchar (what) return preexhyphenchar (tolang(what)) end
 function languages.postexhyphenchar(what) return postexhyphenchar(tolang(what)) end
-function languages.lefthyphenmin   (what) return lefthyphenmin   (tolang(what)) end
-function languages.righthyphenmin  (what) return righthyphenmin  (tolang(what)) end
+-------- languages.lefthyphenmin   (what) return lefthyphenmin   (tolang(what)) end
+-------- languages.righthyphenmin  (what) return righthyphenmin  (tolang(what)) end
 
 -- e['implementer']= 'imple{m}{-}{-}menter'
 -- e['manual'] = 'man{}{}{}'

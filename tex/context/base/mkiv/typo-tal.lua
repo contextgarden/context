@@ -200,10 +200,10 @@ function characteralign.handler(originalhead,where)
         while current do
             local char, id = isglyph(current)
             if char then
-                local font = getfont(current)
-             -- local unicode = unicodes[font][char]
-                local unicode = fontcharacters[font][char].unicode or char -- ignore tables
-                if not unicode then
+                local font    = getfont(current)
+                local data    = fontcharacters[font][char]
+                local unicode = data and data.unicode or char -- ignore tables
+                if not unicode then -- type(unicode) ~= "number"
                     -- no unicode so forget about it
                 elseif unicode == separator then
                     c = current
