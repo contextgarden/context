@@ -42,6 +42,7 @@ luatex  = luatex  or { }
 
 texconfig.kpse_init    = false
 texconfig.shell_escape = 't'
+---------.start_time   = tonumber(os.getenv("SOURCE_DATE_EPOCH")) -- not used in context
 
 -- as soon as possible
 

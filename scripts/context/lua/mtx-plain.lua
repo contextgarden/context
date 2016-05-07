@@ -12,6 +12,8 @@ if not modules then modules = { } end modules ['mtx-plain'] = {
 -- instead of kpse here, just like with the font database code (as that
 -- one also works with kpse runtime)
 
+local format = string.format
+
 local helpinfo = [[
 <?xml version="1.0"?>
 <application>
@@ -46,14 +48,18 @@ local report = application.report
 scripts       = scripts       or { }
 scripts.plain = scripts.plain or { }
 
+local passed_options = table.tohash {
+    "utc"
+}
+
 local function execute(...)
-    local command = string.format(...)
+    local command = format(...)
     report("running command %a\n",command)
     return os.execute(command)
 end
 
 local function resultof(...)
-    local command = string.format(...)
+    local command = format(...)
     report("running command %a",command)
     local result = os.resultof(command) or ""
     result = string.gsub(result,"[\n\r]+","")
@@ -72,7 +78,7 @@ function scripts.plain.make(texengine,texformat)
         report("using path expansion %a",fmtpathspec)
     else
         report("no valid path reported, trying alternative")
---         fmtpathspec = resultof("kpsewhich --show-path=fmt --engine=%s",texengine)
+     -- fmtpathspec = resultof("kpsewhich --show-path=fmt --engine=%s",texengine)
         if fmtpathspec ~= "" then
             report("using path expansion %a",fmtpathspec)
         else
@@ -108,7 +114,13 @@ end
 function scripts.plain.run(texengine,texformat,filename)
     local t = { }
     for k, v in next, environment.arguments do
-        t[#t+1] = string.format("--mtx:%s=%s",k,v)
+        local m = passed_options[k] and "" or "mtx:"
+        if type(v) == "string" and v ~= "" then
+            v = format("--%s%s=%s",m,k,v)
+        elseif v then
+            v = format("--%s%s",m,k)
+        end
+        t[#t+1] = v
     end
     execute('%s --fmt=%s %s "%s"',texengine,file.removesuffix(texformat),table.concat(t," "),filename)
 end

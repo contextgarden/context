@@ -25,6 +25,8 @@ local scankeyword    = scanners.keyword
 local scanners       = interfaces.scanners
 local implement      = interfaces.implement
 
+local report         = logs.reporter("backend")
+
 local outputfilename
 
 function codeinjections.getoutputfilename()
@@ -143,6 +145,15 @@ scanners.pdfstopmatrix   = pdfstopsomething
 
 scanners.pdfstartmirroring = function()
     context(pdfsetmatrix(-1,0,0,1))
+end
+
+if environment.arguments.nocompression then
+    pdf.setcompresslevel(0)
+    pdf.setobjcompresslevel(0)
+    function pdf.setcompresslevel()
+        -- blocked from now on
+    end
+    pdf.setobjcompresslevel = pdf.setcompresslevel
 end
 
 scanners.pdfstopmirroring = scanners.pdfstartmirroring

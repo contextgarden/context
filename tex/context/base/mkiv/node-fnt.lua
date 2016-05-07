@@ -17,9 +17,12 @@ local trace_characters  = false  trackers.register("nodes.characters", function(
 local trace_fontrun     = false  trackers.register("nodes.fontrun",    function(v) trace_fontrun    = v end)
 local trace_variants    = false  trackers.register("nodes.variants",   function(v) trace_variants   = v end)
 
-local force_discrun     = true   directives.register("nodes.discrun",     function(v) force_discrun     = v end)
-local force_boundaryrun = true   directives.register("nodes.boundaryrun", function(v) force_boundaryrun = v end)
-local force_basepass    = true   directives.register("nodes.basepass",    function(v) force_basepass    = v end)
+-- bad namespace for directives
+
+local force_discrun     = true   directives.register("nodes.discrun",      function(v) force_discrun     = v end)
+local force_boundaryrun = true   directives.register("nodes.boundaryrun",  function(v) force_boundaryrun = v end)
+local force_basepass    = true   directives.register("nodes.basepass",     function(v) force_basepass    = v end)
+local keep_redundant    = false  directives.register("nodes.keepredundant",function(v) keep_redundant    = v end)
 
 local report_fonts      = logs.reporter("fonts","processing")
 
@@ -271,6 +274,12 @@ function handlers.characters(head)
                             end
                         end
                     end
+                elseif keep_redundant then
+                    -- go on, can be used for tracing
+                elseif not redundant then
+                    redundant = { n }
+                else
+                    redundant[#redundant+1] = n
                 end
             end
         end

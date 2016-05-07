@@ -486,6 +486,10 @@
 \startMPextensions
     string contextversion;
     contextversion:="\contextversion"; % expanded
+    minute:=\the\normaltime mod 60;
+    hour:=\the\normaltime div 60;
+    year:=\the\normalyear;
+    month:=\the\normalmonth;
 \stopMPextensions
 
 %D \macros

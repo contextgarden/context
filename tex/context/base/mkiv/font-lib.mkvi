@@ -57,9 +57,8 @@
 
 % we use otf code for type one
 
-\doifelsefileexists{font-one.lua}
-    {\registerctxluafile{font-one}{1.001}}
-    {\registerctxluafile{font-afm}{1.001}}
+\registerctxluafile{font-one}{1.001}
+%registerctxluafile{font-afm}{1.001}
 \registerctxluafile{font-afk}{1.001}
 
 % so far

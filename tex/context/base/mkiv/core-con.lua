@@ -19,8 +19,9 @@ slower but look nicer this way.</p>
 local floor, date, time, concat = math.floor, os.date, os.time, table.concat
 local lower, upper, rep, match, gsub = string.lower, string.upper, string.rep, string.match, string.gsub
 local utfchar, utfbyte = utf.char, utf.byte
-local tonumber, tostring = tonumber, tostring
-local P, C, Cs, lpegmatch = lpeg.P, lpeg.C, lpeg.Cs, lpeg.match
+local tonumber, tostring, type, rawset = tonumber, tostring, type, rawset
+local P, S, R, Cc, Cf, Cg, Ct, Cs, C = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.Cs, lpeg.C
+local lpegmatch = lpeg.match
 
 local context            = context
 local commands           = commands
@@ -32,6 +33,8 @@ local setmetatableindex  = table.setmetatableindex
 local formatters         = string.formatters
 local variables          = interfaces.variables
 local constants          = interfaces.constants
+
+local texset             = tex.set
 
 converters               = converters or { }
 local converters         = converters
@@ -1355,3 +1358,39 @@ implement {
     actions   = { formatters["U+%05X"], context },
     arguments = "integer"
 }
+
+local n = lpeg.R("09")^1 / tonumber
+
+local p = Cf( Ct("")
+    * Cg(Cc("year")  * (n           )) * P("-")^-1
+    * Cg(Cc("month") * (n + Cc(   1))) * P("-")^-1
+    * Cg(Cc("day")   * (n + Cc(   1))) * lpeg.patterns.whitespace^-1
+    * Cg(Cc("hour")  * (n + Cc(   0))) * P(":")^-1
+    * Cg(Cc("min")   * (n + Cc(   0)))
+    , rawset)
+
+function converters.totime(s)
+    if not s then
+        return
+    elseif type(s) == "table" then
+        return s
+    elseif type(s) == "string" then
+        return lpegmatch(p,s)
+    end
+    local n = tonumber(s)
+    if n and n >= 0 then
+        return date("*t",n)
+    end
+end
+
+function converters.settime(t)
+    if type(t) ~= "table" then
+        t = converters.totime(t)
+    end
+    if t then
+        texset("year", t.year or 1000)
+        texset("month", t.month or 1)
+        texset("day", t.day or 1)
+        texset("time", (t.hour or 0) * 60 + (t.min or 0))
+    end
+end

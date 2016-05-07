@@ -173,7 +173,7 @@ local function initializeunicoding(tfmdata)
     end
 end
 
-registerafmfeature {
+local unicoding_specification = {
     name        = "unicoding",
     description = "adapt unicode table",
     initializers = {
@@ -186,15 +186,5 @@ registerafmfeature {
  -- }
 }
 
-registerotffeature {
-    name        = "unicoding",
-    description = "adapt unicode table",
-    initializers = {
-        base = initializeunicoding,
-        node = initializeunicoding,
-    },
- -- manipulators = {
- --     base = finalizeunicoding,
- --     node = finalizeunicoding,
- -- }
-}
+registerotffeature(unicoding_specification)
+registerafmfeature(unicoding_specification)

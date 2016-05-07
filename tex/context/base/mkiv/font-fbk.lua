@@ -251,7 +251,7 @@ local function composecharacters(tfmdata)
     end
 end
 
-registerotffeature {
+local compose_specification = {
     name        = "compose",
     description = "additional composed characters",
     manipulators = {
@@ -260,14 +260,8 @@ registerotffeature {
     }
 }
 
-registerafmfeature {
-    name        = "compose",
-    description = "additional composed characters",
-    manipulators = {
-        base = composecharacters,
-        node = composecharacters,
-    }
-}
+registerotffeature(compose_specification)
+registerafmfeature(compose_specification)
 
 vf.helpers.composecharacters = composecharacters
 

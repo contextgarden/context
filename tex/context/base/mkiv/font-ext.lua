@@ -149,7 +149,7 @@ local function initializeexpansion(tfmdata,value)
     end
 end
 
-registerotffeature {
+local expansion_specification = {
     name        = "expansion",
     description = "apply hz optimization",
     initializers = {
@@ -158,14 +158,8 @@ registerotffeature {
     }
 }
 
-registerafmfeature {
-    name        = "expansion",
-    description = "apply hz optimization",
-    initializers = {
-        base = initializeexpansion,
-        node = initializeexpansion,
-    }
-}
+registerotffeature(expansion_specification)
+registerafmfeature(expansion_specification)
 
 fonts.goodies.register("expansions",  function(...) return fonts.goodies.report("expansions", trace_expansion, ...) end)
 
@@ -466,7 +460,7 @@ local function initializeprotrusion(tfmdata,value)
     end
 end
 
-registerotffeature {
+local protrusion_specification = {
     name         = "protrusion",
     description  = "l/r margin character protrusion",
     initializers = {
@@ -475,14 +469,8 @@ registerotffeature {
     }
 }
 
-registerafmfeature {
-    name         = "protrusion",
-    description  = "shift characters into the left and or right margin",
-    initializers = {
-        base = initializeprotrusion,
-        node = initializeprotrusion,
-    }
-}
+registerotffeature(protrusion_specification)
+registerafmfeature(protrusion_specification)
 
 fonts.goodies.register("protrusions", function(...) return fonts.goodies.report("protrusions", trace_protrusion, ...) end)
 
@@ -534,7 +522,7 @@ local function initializeitlc(tfmdata,value) -- hm, always value
     end
 end
 
-registerotffeature {
+local italic_specification = {
     name         = "itlc",
     description  = "italic correction",
     initializers = {
@@ -543,20 +531,14 @@ registerotffeature {
     }
 }
 
-registerafmfeature {
-    name         = "itlc",
-    description  = "italic correction",
-    initializers = {
-        base = initializeitlc,
-        node = initializeitlc,
-    }
-}
+registerotffeature(italic_specification)
+registerafmfeature(italic_specification)
 
 local function initializetextitalics(tfmdata,value) -- yes no delay
     tfmdata.properties.textitalics = toboolean(value)
 end
 
-registerotffeature {
+local textitalics_specification = {
     name         = "textitalics",
     description  = "use alternative text italic correction",
     initializers = {
@@ -565,20 +547,14 @@ registerotffeature {
     }
 }
 
-registerafmfeature {
-    name         = "textitalics",
-    description  = "use alternative text italic correction",
-    initializers = {
-        base = initializetextitalics,
-        node = initializetextitalics,
-    }
-}
+registerotffeature(textitalics_specification)
+registerafmfeature(textitalics_specification)
 
 local function initializemathitalics(tfmdata,value) -- yes no delay
     tfmdata.properties.mathitalics = toboolean(value)
 end
 
-registerotffeature {
+local mathitalics_specification = {
     name         = "mathitalics",
     description  = "use alternative math italic correction",
     initializers = {
@@ -587,14 +563,8 @@ registerotffeature {
     }
 }
 
-registerafmfeature {
-    name         = "mathitalics",
-    description  = "use alternative math italic correction",
-    initializers = {
-        base = initializemathitalics,
-        node = initializemathitalics,
-    }
-}
+registerotffeature(mathitalics_specification)
+registerafmfeature(mathitalics_specification)
 
 -- slanting
 
@@ -610,7 +580,7 @@ local function initializeslant(tfmdata,value)
     tfmdata.parameters.slantfactor = value
 end
 
-registerotffeature {
+local slant_specification = {
     name        = "slant",
     description = "slant glyphs",
     initializers = {
@@ -619,14 +589,8 @@ registerotffeature {
     }
 }
 
-registerafmfeature {
-    name        = "slant",
-    description = "slant glyphs",
-    initializers = {
-        base = initializeslant,
-        node = initializeslant,
-    }
-}
+registerotffeature(slant_specification)
+registerafmfeature(slant_specification)
 
 local function initializeextend(tfmdata,value)
     value = tonumber(value)
@@ -640,7 +604,7 @@ local function initializeextend(tfmdata,value)
     tfmdata.parameters.extendfactor = value
 end
 
-registerotffeature {
+local extend_specification = {
     name        = "extend",
     description = "scale glyphs horizontally",
     initializers = {
@@ -649,14 +613,8 @@ registerotffeature {
     }
 }
 
-registerafmfeature {
-    name        = "extend",
-    description = "scale glyphs horizontally",
-    initializers = {
-        base = initializeextend,
-        node = initializeextend,
-    }
-}
+registerotffeature(extend_specification)
+registerafmfeature(extend_specification)
 
 -- For Wolfgang Schuster:
 --
@@ -745,7 +703,7 @@ local function manipulatedimensions(tfmdata,key,value)
     end
 end
 
-registerotffeature {
+local dimensions_specification = {
     name        = "dimensions",
     description = "force dimensions",
     manipulators = {
@@ -753,6 +711,9 @@ registerotffeature {
         node = manipulatedimensions,
     }
 }
+
+registerotffeature(dimensions_specification)
+registerafmfeature(dimensions_specification)
 
 -- for zhichu chen (see mailing list archive): we might add a few more variants
 -- in due time

@@ -465,9 +465,9 @@ local function setextensions(tfmdata)
     end
 end
 
--- installation (collected to keep the overview) -- also for type 1
+-- installation
 
-registerotffeature {
+local goodies_specification = {
     name         = "goodies",
     description  = "goodies on top of built in features",
     initializers = {
@@ -476,6 +476,12 @@ registerotffeature {
         node     = setgoodies,
     }
 }
+
+registerotffeature(goodies_specification)
+registerafmfeature(goodies_specification)
+registertfmfeature(goodies_specification)
+
+-- maybe more of the following could be for type one too
 
 registerotffeature {
     name        = "extrafeatures",
@@ -524,30 +530,6 @@ registerotffeature {
     initializers = {
         base = setpostprocessor,
         node = setpostprocessor,
-    }
-}
-
--- afm
-
-registerafmfeature {
-    name         = "goodies",
-    description  = "goodies on top of built in features",
-    initializers = {
-        position = 1,
-        base     = setgoodies,
-        node     = setgoodies,
-    }
-}
-
--- tfm
-
-registertfmfeature {
-    name         = "goodies",
-    description  = "goodies on top of built in features",
-    initializers = {
-        position = 1,
-        base     = setgoodies,
-        node     = setgoodies,
     }
 }
 

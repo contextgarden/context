@@ -437,7 +437,7 @@ local function adddummysymbols(tfmdata,...)
  -- end
 end
 
-registerotffeature {
+local dummies_specification = {
     name        = "dummies",
     description = "dummy symbols",
     default     = true,
@@ -447,15 +447,8 @@ registerotffeature {
     }
 }
 
-registerafmfeature {
-    name        = "dummies",
-    description = "dummy symbols",
-    default     = true,
-    manipulators = {
-        base = adddummysymbols,
-        node = adddummysymbols,
-    }
-}
+registerotffeature(dummies_specification)
+registerafmfeature(dummies_specification)
 
 -- callback.register("char_exists",function(f,c) -- to slow anyway as called often so we should flag in tfmdata
 --     return true

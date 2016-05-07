@@ -572,29 +572,30 @@ function scripts.context.run(ctxdata,filename)
         return
     end
     --
-    local a_mkii        = getargument("mkii") or getargument("pdftex") or getargument("xetex")
-    local a_purge       = getargument("purge")
-    local a_purgeall    = getargument("purgeall")
-    local a_purgeresult = getargument("purgeresult")
-    local a_global      = getargument("global")
-    local a_timing      = getargument("timing")
-    local a_profile     = getargument("profile")
-    local a_batchmode   = getargument("batchmode")
-    local a_nonstopmode = getargument("nonstopmode")
-    local a_scollmode   = getargument("scrollmode")
-    local a_once        = getargument("once")
-    local a_synctex     = getargument("synctex")
-    local a_backend     = getargument("backend")
-    local a_arrange     = getargument("arrange")
-    local a_noarrange   = getargument("noarrange")
-    local a_jiton       = getargument("jiton")
-    local a_jithash     = getargument("jithash")
-    local a_texformat   = getargument("texformat")
-    local a_keeptuc     = getargument("keeptuc")
-    local a_keeplog     = getargument("keeplog")
-    local a_export      = getargument("export")
-    local a_nodates     = getargument("nodates")
-    local a_trailerid   = getargument("trailerid")
+    local a_mkii          = getargument("mkii") or getargument("pdftex") or getargument("xetex")
+    local a_purge         = getargument("purge")
+    local a_purgeall      = getargument("purgeall")
+    local a_purgeresult   = getargument("purgeresult")
+    local a_global        = getargument("global")
+    local a_timing        = getargument("timing")
+    local a_profile       = getargument("profile")
+    local a_batchmode     = getargument("batchmode")
+    local a_nonstopmode   = getargument("nonstopmode")
+    local a_scollmode     = getargument("scrollmode")
+    local a_once          = getargument("once")
+    local a_synctex       = getargument("synctex")
+    local a_backend       = getargument("backend")
+    local a_arrange       = getargument("arrange")
+    local a_noarrange     = getargument("noarrange")
+    local a_jiton         = getargument("jiton")
+    local a_jithash       = getargument("jithash")
+    local a_texformat     = getargument("texformat")
+    local a_keeptuc       = getargument("keeptuc")
+    local a_keeplog       = getargument("keeplog")
+    local a_export        = getargument("export")
+    local a_nodates       = getargument("nodates")
+    local a_trailerid     = getargument("trailerid")
+    local a_nocompression = getargument("nocompression")
 
     -- the following flag is not officially supported because i cannot forsee
     -- side effects (so no bug reports please) .. we provide --sandbox that
@@ -712,16 +713,17 @@ function scripts.context.run(ctxdata,filename)
                 local maxnofruns = once and 1 or multipass_nofruns
                 --
                 local c_flags = {
-                    directives  = directives,   -- gets passed via mtxrun
-                    trackers    = trackers,     -- gets passed via mtxrun
-                    experiments = experiments,  -- gets passed via mtxrun
+                    directives     = directives,   -- gets passed via mtxrun
+                    trackers       = trackers,     -- gets passed via mtxrun
+                    experiments    = experiments,  -- gets passed via mtxrun
                     --
-                    result      = validstring(resultname),
-                    input       = validstring(getargument("input") or filename), -- alternative input
-                    fulljobname = validstring(filename),
-                    files       = concat(files,","),
-                    ctx         = validstring(ctxname),
-                    export      = a_export and true or nil,
+                    result         = validstring(resultname),
+                    input          = validstring(getargument("input") or filename), -- alternative input
+                    fulljobname    = validstring(filename),
+                    files          = concat(files,","),
+                    ctx            = validstring(ctxname),
+                    export         = a_export and true or nil,
+                    nocompression  = a_nocompression and true or nil,
                 }
                 --
                 for k, v in next, environment.arguments do
@@ -758,7 +760,7 @@ function scripts.context.run(ctxdata,filename)
                 local directives = { }
                 --
                 if a_nodates then
-                    directives[#directives+1] = "backend.nodates"
+                    directives[#directives+1] = format("backend.date=%s",type(a_nodates) == "string" and a_nodates or " no")
                 end
                 --
                 if a_trailerid then

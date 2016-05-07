@@ -1083,8 +1083,8 @@ if not characters.lhash then
                     lhash[utfchar(k)] = utfchar(l)
                 elseif #l == 2 then
                     lhash[utfchar(k)] = utfchar(l[1]) .. utfchar(l[2])
-                else
-                    inspect(v)
+             -- else
+             --     inspect(v)
                 end
             else
                 local u = v.uccode
@@ -1094,8 +1094,8 @@ if not characters.lhash then
                         uhash[utfchar(k)] = utfchar(u)
                     elseif #u == 2 then
                         uhash[utfchar(k)] = utfchar(u[1]) .. utfchar(u[2])
-                    else
-                        inspect(v)
+                 -- else
+                 --     inspect(v)
                     end
                 end
             end
@@ -1105,8 +1105,8 @@ if not characters.lhash then
                     shash[utfchar(k)] = utfchar(s)
                 elseif #s == 2 then
                     shash[utfchar(k)] = utfchar(s[1]) .. utfchar(s[2])
-                else
-                    inspect(v)
+             -- else
+             --     inspect(v)
                 end
             end
      -- end

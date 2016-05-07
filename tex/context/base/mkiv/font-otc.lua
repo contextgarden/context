@@ -61,8 +61,6 @@ local function addfeature(data,feature,specifications)
     end
     -- feature has to be unique but the name entry wins eventually
 
-    -- todo alse gpos
-
     local fontfeatures = resources.features or everywhere
     local unicodes     = resources.unicodes
     local splitter     = lpeg.splitter(" ",unicodes)
@@ -529,6 +527,7 @@ end
 otf.enhancers.addfeature = addfeature
 
 local extrafeatures = { }
+local knownfeatures = { }
 
 function otf.addfeature(name,specification)
     if type(name) == "table" then
@@ -536,17 +535,30 @@ function otf.addfeature(name,specification)
         name = specification.name
     end
     if type(name) == "string" then
-        extrafeatures[name] = specification
+        local slot = knownfeatures[name]
+        if slot then
+            -- we overload one
+        else
+            slot = #extrafeatures + 1
+            knownfeatures[name] = slot
+        end
+        specification.name  = name -- to be sure
+        extrafeatures[slot] = specification
     end
 end
+
+-- for feature, specification in next, extrafeatures do
+--     addfeature(data,feature,specification)
+-- end
 
 local function enhance(data,filename,raw)
-    for feature, specification in next, extrafeatures do
-        addfeature(data,feature,specification)
+    for slot=1,#extrafeatures do
+        local specification = extrafeatures[slot]
+        addfeature(data,specification.name,specification)
     end
 end
 
-otf.enhancers.enhance = enhance
+-- otf.enhancers.enhance = enhance
 
 otf.enhancers.register("check extra features",enhance)
 
@@ -576,6 +588,7 @@ local tlig_specification = {
 otf.addfeature("tlig",tlig_specification)
 
 registerotffeature {
+    -- this makes it a known feature (in tables)
     name        = 'tlig',
     description = 'tex ligatures',
 }
@@ -600,6 +613,7 @@ local trep_specification = {
 otf.addfeature("trep",trep_specification)
 
 registerotffeature {
+    -- this makes it a known feature (in tables)
     name        = 'trep',
     description = 'tex replacements',
 }
@@ -701,6 +715,7 @@ local anum_specification = {
 otf.addfeature("anum",anum_specification) -- todo: only when there is already an arab script feature
 
 registerotffeature {
+    -- this makes it a known feature (in tables)
     name        = 'anum',
     description = 'arabic digits',
 }

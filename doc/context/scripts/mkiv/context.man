@@ -114,7 +114,10 @@ run without stopping
 run with synctex enabled (optional value: zipped, unzipped, 1, -1)
 .TP
 .B --nodates
-omit runtime dates in pdf file
+omit runtime dates in pdf file (optional value: a number (this 1970 offset time) or string "YYYY-MM-DD HH:MM")
+.TP
+.B --nocompression
+forcefully turns off compression in the backend
 .TP
 .B --trailerid
 alternative trailer id (or constant one)

@@ -124,26 +124,26 @@ function lpdf.settrailerid(v)
 end
 
 function lpdf.setdates(v)
-    local n = tonumber(v)
-    if n and n >= 0 then
-        included.date = true
-        included.id   = "fake"
-        report_info()
-        report_info("forced date/time information %a will be used",lpdf.settime(n))
-        lpdf.settrailerid(false)
-        report_info()
-    else
-        v = v and true or false
-        included.date = v
-        if v then
-            included.id = true
-        else
-            report_info()
-            report_info("fake date/time/id information will be added")
-            lpdf.settrailerid(true)
-            report_info()
-            included.id = "fake"
+    local t = type(v)
+    if t == "number" or t == "string" then
+        t = converters.totime(v)
+        if t then
+            included.date = true
+            included.id   = "fake"
+            report_info("forced date/time information %a will be used",lpdf.settime(t))
+            lpdf.settrailerid(false)
+            return
         end
+    end
+    v = toboolean(v)
+    included.date = v
+    if v then
+        included.id = true
+    else
+        report_info("no date/time but fake id information will be added")
+        lpdf.settrailerid(true)
+        included.id = "fake"
+     -- maybe: lpdf.settime(231631200) -- 1975-05-05 % first entry of knuth about tex mentioned in DT
     end
 end
 

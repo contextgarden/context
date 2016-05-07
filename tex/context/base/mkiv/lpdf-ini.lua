@@ -1060,11 +1060,17 @@ do
     end
 
     function lpdf.settime(n)
-        if type(n) == "number" and n >= 0 then
-            timestamp = os.date("%Y-%m-%dT%X",n) .. os.timezone(true)
+        if n then
+            n = converters.totime(n)
+            if n then
+                converters.settime(n)
+                timestamp = os.date("%Y-%m-%dT%X",os.time(n)) .. os.timezone(true)
+            end
         end
         return timestamp
     end
+
+    lpdf.settime(tonumber(resolvers.variable("start_time")) or tonumber(resolvers.variable("SOURCE_DATE_EPOCH"))) -- bah
 
     function lpdf.pdftimestamp(str)
         local Y, M, D, h, m, s, Zs, Zh, Zm = match(str,"^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)([%+%-])(%d%d):(%d%d)$")
