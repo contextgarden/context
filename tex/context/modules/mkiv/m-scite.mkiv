@@ -165,8 +165,29 @@ function scite.installcommands()
     context(exportcolors())
 end
 
+local p = lpeg.P("\\slxS ")^1
+
+local function indent(str)
+    local l = string.split(str,"\n")
+    for i=1,#l do
+        local s = l[i]
+        if #s > 0 then
+            local n = lpegmatch(p,s)
+            if n then
+                n = (n-1)/6
+            else
+                n = 0
+            end
+            l[i] = formatters["\\slxb{%s}%s\\slxe"](n,s)
+        end
+    end
+    return concat(l,"\n")
+end
+
 local function lexdata(data,lexname)
-    buffers.assign("lex",exportstyled(scite.loadedlexers[lexname],data or ""))
+    local styled = exportstyled(scite.loadedlexers[lexname],data or "")
+    styled = indent(styled)
+    buffers.assign("lex",styled)
 end
 
 scite.lexdata = lexdata
@@ -187,9 +208,21 @@ end
 
 \unprotect
 
+\unexpanded\def\buff_scite_slxb#1%
+  {%\begingroup
+   \hangindent\dimexpr\numexpr#1+1\relax\emwidth\relax
+   \hangafter \numexpr\numexpr#1+1\relax}
+
+\unexpanded\def\buff_scite_slxe
+  {\par
+   }%\endgroup}
+
 \unexpanded\def\installscitecommands
   {\ctxlua{buffers.scite.installcommands()}%
-   \let\installscitecommands\relax}
+   \let\installscitecommands\relax
+   \def\slxS{\fixedspace\allowbreak}%
+   \let\slxb\buff_scite_slxb
+   \let\slxe\buff_scite_slxe}
 
 \unexpanded\def\startscite
   {\begingroup
@@ -212,6 +245,7 @@ end
    \installscitecommands
    \tt
    \dontcomplain
+   \raggedright
    \startcontextcode
    \startlines
    \getbuffer[lex]%
@@ -232,6 +266,7 @@ end
    \installscitecommands
    \tt
    \dontcomplain
+   \raggedright
    \setcatcodetable\ctxcatcodes % needed in xml
    \startlines
    \getbuffer[lex]%

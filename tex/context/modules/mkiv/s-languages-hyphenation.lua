@@ -188,9 +188,12 @@ function moduledata.languages.hyphenation.startcomparepatterns(list)
         tags = utilities.parsers.settings_to_array(list)
     end
     noflanguages = #tags
+    context.begingroup()
     for i=1,noflanguages do
         langs[i] = tags[i] and languages.getnumber(tags[i])
+        context.language{tags[i]}
     end
+    context.endgroup()
     nodes.tasks.enableaction("processors","moduledata.languages.hyphenation.showhyphens")
 end
 

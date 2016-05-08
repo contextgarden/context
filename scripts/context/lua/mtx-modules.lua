@@ -58,7 +58,7 @@ local report = application.report
 -- \stoptypen
 --
 -- Macro definitions specific to the documentation are not surrounded by
--- start-stop commands. The suffix specificaction can be overruled at runtime,
+-- start-stop commands. The suffix specification can be overruled at runtime,
 -- but defaults to the file extension. This specification can be used for language
 -- depended verbatim typesetting.
 --

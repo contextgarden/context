@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=type-imp-lato,
-%D        version=2014.05.02,
+%D        version=2016.05.07,
 %D          title=\CONTEXT\ Typescript Macros,
 %D       subtitle=Lato fonts,
 %D         author=Hans Hagen,
@@ -11,11 +11,24 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% hai : hair    / lta : italic
-% lig : light   / lta : italic
-% reg : regular / lta : italic
-% bol : bold    / lta : italic
-% bla : black   / lta : italic
+% Lato-Black.ttf
+% Lato-BlackItalic.ttf
+% Lato-Bold.ttf
+% Lato-BoldItalic.ttf
+% Lato-Hairline.ttf
+% Lato-HairlineItalic.ttf
+% Lato-Heavy.ttf
+% Lato-HeavyItalic.ttf
+% Lato-Italic.ttf
+% Lato-Light.ttf
+% Lato-LightItalic.ttf
+% Lato-Medium.ttf
+% Lato-MediumItalic.ttf
+% Lato-Regular.ttf
+% Lato-Semibold.ttf
+% Lato-SemiboldItalic.ttf
+% Lato-Thin.ttf
+% Lato-ThinItalic.ttf
 
 \loadtypescriptfile[dejavu]
 \loadtypescriptfile[xits]
@@ -24,29 +37,68 @@
 
     \starttypescript [\s!sans] [lato] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [\s!file:lato-reg]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansBold]       [\s!file:lato-bol]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansItalic]     [\s!file:lato-regita] [\s!features=\s!default]
-        \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-bollta] [\s!features=\s!default]
+        \definefontsynonym [\s!Sans]           [\s!file:lato-regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:lato-bold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:lato-italic]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-bolditalic] [\s!features=\s!default]
     \stoptypescript
 
     \starttypescript [\s!sans] [lato-light] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [\s!file:lato-lig]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansBold]       [\s!file:lato-reg]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansItalic]     [\s!file:lato-liglta] [\s!features=\s!default]
-        \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-regita] [\s!features=\s!default]
+        \definefontsynonym [\s!Sans]           [\s!file:lato-light]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:lato-regular]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:lato-lightitalic] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-italic]      [\s!features=\s!default]
     \stoptypescript
 
     \starttypescript [\s!sans] [lato-dark] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [\s!file:lato-bol]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansBold]       [\s!file:lato-bla]    [\s!features=\s!default]
-        \definefontsynonym [\s!SansItalic]     [\s!file:lato-bollta] [\s!features=\s!default]
-        \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-blalta] [\s!features=\s!default]
+        \definefontsynonym [\s!Sans]           [\s!file:lato-bold]        [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:lato-heavy]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:lato-bolditalic]  [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-heavyitalic] [\s!features=\s!default]
+    \stoptypescript
+		
+    \starttypescript [\s!sans] [lato-black] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:lato-heavy]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:lato-black]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:lato-heavyitalic] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-blackitalic] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript[lato,lato-light,lato-dark]
+    \starttypescript [\s!sans] [lato-hairline] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:lato-hairline]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:lato-regular]        [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:lato-hairlineitalic] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-italic]         [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [lato-thin] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:lato-thin]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:lato-regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:lato-thinitalic] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-italic]     [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [lato-medium] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:lato-medium]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:lato-bold]         [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:lato-mediumitalic] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-bolditalic]   [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [lato-semibold] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [\s!file:lato-regular]        [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:lato-semibold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:lato-italic]         [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-semibolditalic] [\s!features=\s!default]
+    \stoptypescript
+    \starttypescript[lato,lato-light,lato-dark,lato-black,lato-hairline,lato-thin,lato-medium,lato-semibold]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu]         [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]

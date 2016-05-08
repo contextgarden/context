@@ -19,13 +19,13 @@ with <logo label='tex'/>.
 
 I will rewrite this using lpeg. On the other hand, we cannot expect proper
 <logo label='tex'/> and for educational purposed the syntax might be wrong.
+
+Todo: use the scite parser.
 --ldx]]--
 
--- there is a nice parser on from http://lua-users.org/wiki/LpegRecipes (by
--- Patrick Donnelly) but lua crashes when I apply functions to some of the
--- matches
+local banner = "version 1.0.1 - 2007+ - PRAGMA ADE / CONTEXT"
 
-banner = "version 1.0.1 - 2007+ - PRAGMA ADE / CONTEXT"
+local report = logs.reporter("x-ldx")
 
 --[[
 This script needs a few libraries. Instead of merging the code here
@@ -226,6 +226,8 @@ and by calculating the indentation we also avoid space troubles. It also makes
 it possible to change the indentation afterwards.
 --ldx]]--
 
+local newmethod = true
+
 function ldx.as_xml(data) -- ldx: not needed
     local t, cmode = { }, false
     t[#t+1] = "<?xml version='1.0' standalone='yes'?>\n"
@@ -233,38 +235,44 @@ function ldx.as_xml(data) -- ldx: not needed
     for k=1,#data do
         local v = data[k]
         if v.code and not emptystring(v.code) then
-            t[#t+1] = "\n<code>\n"
-            local split = splitstring(v.code,"\n")
-            for k=1,#split do -- make this faster
-                local v = split[k]
-                local a, b = find(v,"^(%s+)")
-                if v then v = gsub(v,"[\n\r ]+$","") end
-                if a and b then
-                    v = sub(v,b+1,#v)
-                    if cmode then
-                        t[#t+1] = "<line comment='yes' n='" .. b .. "'>" .. v .. "</line>\n"
+            if newmethod then
+                t[#t+1] = "\n<luacode><![CDATA[\n"
+                t[#t+1] = v.code
+                t[#t+1] = "]]></luacode>\n"
+            else
+                t[#t+1] = "\n<code>\n"
+                local split = splitstring(v.code,"\n")
+                for k=1,#split do -- make this faster
+                    local v = split[k]
+                    local a, b = find(v,"^(%s+)")
+                    if v then v = gsub(v,"[\n\r ]+$","") end
+                    if a and b then
+                        v = sub(v,b+1,#v)
+                        if cmode then
+                            t[#t+1] = "<line comment='yes' n='" .. b .. "'>" .. v .. "</line>\n"
+                        else
+                            t[#t+1] = "<line n='" .. b .. "'>" .. v .. "</line>\n"
+                        end
+                    elseif emptystring(v) then
+                        if cmode then
+                            t[#t+1] = "<line comment='yes'/>\n"
+                        else
+                            t[#t+1] = "<line/>\n"
+                        end
+                    elseif find(v,"^%-%-%[%[") then
+                        t[#t+1] = "<line comment='yes'>" .. v .. "</line>\n"
+                        cmode= true
+                    elseif find(v,"^%]%]%-%-") then
+                        t[#t+1] = "<line comment='yes'>" .. v .. "</line>\n"
+                        cmode= false
+                    elseif cmode then
+                        t[#t+1] = "<line comment='yes'>" .. v .. "</line>\n"
                     else
-                        t[#t+1] = "<line n='" .. b .. "'>" .. v .. "</line>\n"
+                        t[#t+1] = "<line>" .. v .. "</line>\n"
                     end
-                elseif emptystring(v) then
-                    if cmode then
-                        t[#t+1] = "<line comment='yes'/>\n"
-                    else
-                        t[#t+1] = "<line/>\n"
-                    end
-                elseif find(v,"^%-%-%[%[") then
-                    t[#t+1] = "<line comment='yes'>" .. v .. "</line>\n"
-                    cmode= true
-                elseif find(v,"^%]%]%-%-") then
-                    t[#t+1] = "<line comment='yes'>" .. v .. "</line>\n"
-                    cmode= false
-                elseif cmode then
-                    t[#t+1] = "<line comment='yes'>" .. v .. "</line>\n"
-                else
-                    t[#t+1] = "<line>" .. v .. "</line>\n"
                 end
+                t[#t+1] = "</code>\n"
             end
-            t[#t+1] = "</code>\n"
         elseif v.comment then
             t[#t+1] = "\n<comment>\n" .. v.comment .. "\n</comment>\n"
         else
@@ -288,20 +296,25 @@ The next function wraps it all in one call:
 --ldx]]--
 
 function ldx.convert(luaname,ldxname)
-    if not file.is_readable(luaname) then
-        luaname = luaname .. ".lua"
+    if not lfs.isfile(luaname) then
+        file.addsuffix(luaname,"lua")
     end
-    if file.is_readable(luaname) then
+    if lfs.isfile(luaname) then
         if not ldxname then
             ldxname = file.replacesuffix(luaname,"ldx")
         end
+        report("converting file %a to %a",luaname,ldxname)
         local data = ldx.load(luaname)
         if data then
-            ldx.enhance(data)
+--             ldx.enhance(data)
             if ldxname ~= luaname then
                 ldx.save(ldxname,data)
             end
+        else
+            report("invalid file %a",luaname)
         end
+    else
+        report("unknown file %a",luaname)
     end
 end
 
@@ -336,6 +349,6 @@ The main conversion call is:
 
 if environment.files and environment.files[1] then
     ldx.convert(environment.files[1],environment.files[2])
+else
+    report("no file given")
 end
-
---~ exit(1)

@@ -37,6 +37,7 @@ local gsub, find, match, validstring = string.gsub, string.find, string.match, s
 local concat = table.concat
 local xmltext = xml.text
 
+local report_jobfile   = logs.reporter("system","jobfile")
 local report_prepfiles = logs.reporter("system","prepfiles")
 
 local commands         = commands
@@ -94,6 +95,8 @@ end
 
 function ctxrunner.load(ctxname)
 
+    report_jobfile("processing %a",ctxname)
+
     local xmldata = xml.load(ctxname)
 
     local jobname = tex.jobname -- todo
@@ -138,7 +141,7 @@ function ctxrunner.load(ctxname)
     end
 
     for e in xml.collected(xmldata,"ctx:message") do
-        report_prepfiles("ctx comment: %s", xmltext(e))
+        report_jobfile("ctx comment: %s", xmltext(e))
     end
 
     for r, d, k in xml.elements(xmldata,"ctx:value[@name='job']") do
@@ -192,15 +195,19 @@ function ctxrunner.load(ctxname)
             pattern =justtext(xml.tostring(pattern))
             if preprocessor and preprocessor ~= "" and pattern and pattern ~= "" then
                 local noftreatments = #treatments + 1
-                local findpattern = string.topattern(pattern)
+                local findpattern   = string.topattern(pattern)
                 local preprocessors = utilities.parsers.settings_to_array(preprocessor)
                 treatments[noftreatments] = {
                     pattern       = findpattern,
                     preprocessors = preprocessors,
                 }
-                report_prepfiles("step %s, pattern %a, preprocessor: %a",noftreatments,findpattern,preprocessors)
+                report_jobfile("step %s, pattern %a, preprocessor: %a",noftreatments,findpattern,preprocessors)
              end
         end
+    end
+
+    if #treatments == 0 then
+        report_jobfile("no treatments needed")
     end
 
     local function needstreatment(oldfile)
@@ -214,6 +221,8 @@ function ctxrunner.load(ctxname)
     end
 
     local preparefile = #treatments > 0 and function(prepfiles,filename)
+
+        filename = file.collapsepath(filename)
 
         local treatment = needstreatment(filename)
         local oldfile = filename
@@ -244,9 +253,12 @@ function ctxrunner.load(ctxname)
                     end
                 end
             end
+            oldname = file.collapsepath(oldname)
+            newname = file.collapsepath(newname)
             if not newfile then
                 newfile = filename
-            elseif file.needsupdating(filename,newfile) then
+                report_prepfiles("%a is not converted to %a",filename,newfile)
+            elseif not lfs.isfile(newfile) or file.needsupdating(filename,newfile) then
                 for i=1,#runners do
                     report_prepfiles("step %i: %s",i,runners[i])
                 end
@@ -258,6 +270,8 @@ function ctxrunner.load(ctxname)
                  -- if result > 0 then
                  --     report_prepfiles("error, return code: %s",result)
                  -- end
+                    logs.newline()
+                    logs.newline()
                 end
                 if lfs.isfile(newfile) then
                     file.syncmtimes(filename,newfile)
@@ -268,6 +282,8 @@ function ctxrunner.load(ctxname)
                 end
             elseif lfs.isfile(newfile) then
                 report_prepfiles("%a is already converted to %a",filename,newfile)
+            else
+                report_prepfiles("unknown error when converting %a to %a",filename,newfile)
             end
         else
             newfile = filename

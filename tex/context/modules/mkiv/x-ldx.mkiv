@@ -93,7 +93,23 @@
 \startxmlsetups ldx:code
     \startpacked
     \xmlflush{#1}\relax
-    \stoppacked
+    \scitepacked
+\stopxmlsetups
+
+\startluacode
+    function xml.finalizers.tex.cdatatobuffer(c,name)
+        buffers.assign(name,xml.cdata(c[1]))
+    end
+\stopluacode
+
+\startxmlsetups ldx:luacode
+    \blank
+    \begingroup
+    \switchtobodyfont[dejavu-condensed]
+    \xmlfilter{#1}{./cdatatobuffer('name')}
+    \scitebuffer[lua][name]
+    \endgroup
+    \blank
 \stopxmlsetups
 
 \startxmlsetups ldx:lines
@@ -150,26 +166,22 @@
 % code    -> cd
 % comment -> tx (text)
 
-\definetypeface[mainfacenormal]  [ss][sans] [iwona]       [default]
-\definetypeface[mainfacenormal]  [rm][serif][palatino]    [default]
-\definetypeface[mainfacenormal]  [tt][mono] [modern]      [default][rscale=1] % 1.1
-\definetypeface[mainfacenormal]  [mm][math] [iwona]       [default][encoding=default]
+\usemodule[scite]
 
-\definetypeface[mainfacemedium]  [ss][sans] [iwona-medium][default]
-\definetypeface[mainfacenormal]  [rm][serif][palatino]    [default]
-\definetypeface[mainfacemedium]  [tt][mono] [modern]      [default][rscale=1] % 1.1
-\definetypeface[mainfacemedium]  [mm][math] [iwona-medium][default][encoding=default]
-
-\definetypeface[mainfacenarrowtt][tt][mono] [modern-cond] [default][rscale=1] % 1.1
+\switchtobodyfont
+  [dejavu-condensed,10pt] % preload
 
 \setupbodyfont
-  [mainfacenormal,11pt]
+  [dejavu,10pt] % main font
+
+\mainlanguage
+  [en]
 
 \setupwhitespace
   [big]
 
-\defineregister[function][functions]
-\defineregister[variable][variables]
+\defineregister[function]
+\defineregister[variable]
 
 \definehead[source][subject]
 \definehead[extra] [subsubject]
@@ -190,7 +202,15 @@
 \setuplayout
   [width=middle,
    height=middle,
-   backspace=2cm,
-   topspace=2cm]
+   footer=0pt,
+   header=1.5cm,
+   backspace=1.5cm,
+   topspace=1.5cm]
 
+\doifmode {nocolor} {
+
+  \setupcolors
+    [conversion=always]
+
+}
 \endinput

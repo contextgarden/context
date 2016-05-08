@@ -708,9 +708,10 @@ function scripts.context.run(ctxdata,filename)
                     scripts.context.make(formatname)
                 end
                 --
-                local oldhash    = multipass_hashfiles(jobname)
-                local newhash    = { }
-                local maxnofruns = once and 1 or multipass_nofruns
+                local oldhash     = multipass_hashfiles(jobname)
+                local newhash     = { }
+                local maxnofruns  = once and 1 or multipass_nofruns
+                local fulljobname = validstring(filename)
                 --
                 local c_flags = {
                     directives     = directives,   -- gets passed via mtxrun
@@ -719,7 +720,7 @@ function scripts.context.run(ctxdata,filename)
                     --
                     result         = validstring(resultname),
                     input          = validstring(getargument("input") or filename), -- alternative input
-                    fulljobname    = validstring(filename),
+                    fulljobname    = fulljobname,
                     files          = concat(files,","),
                     ctx            = validstring(ctxname),
                     export         = a_export and true or nil,
@@ -850,9 +851,9 @@ function scripts.context.run(ctxdata,filename)
                 end
                 --
                 if a_purge then
-                    scripts.context.purge_job(jobname)
+                    scripts.context.purge_job(jobname,false,false,fulljobname)
                 elseif a_purgeall then
-                    scripts.context.purge_job(jobname,true)
+                    scripts.context.purge_job(jobname,true,false,fulljobname)
                 end
                 --
                 if resultname then
@@ -866,11 +867,13 @@ function scripts.context.run(ctxdata,filename)
                     report("result renamed to: %s",newbase)
                 end
                 --
-                if purge then
-                    scripts.context.purge_job(resultname)
-                elseif purgeall then
-                    scripts.context.purge_job(resultname,true)
-                end
+             -- -- needs checking
+             --
+             -- if a_purge then
+             --     scripts.context.purge_job(resultname)
+             -- elseif a_purgeall then
+             --     scripts.context.purge_job(resultname,true)
+             -- end
                 --
                 local pdfview = getargument("autopdf")
                 if pdfview then
@@ -1245,6 +1248,9 @@ local temporary_runfiles = {
     "aux", "blg",                      -- bibtex
 }
 
+local temporary_suffixes = {
+    "prep",                            -- context preprocessed
+}
 local synctex_runfiles = {
     "synctex", "synctex.gz",           -- synctex
 }
@@ -1273,7 +1279,7 @@ local function purge_file(dfile,cfile)
     end
 end
 
-function scripts.context.purge_job(jobname,all,mkiitoo)
+function scripts.context.purge_job(jobname,all,mkiitoo,fulljobname)
     if jobname and jobname ~= "" then
         jobname = filebasename(jobname)
         local filebase = removesuffix(jobname)
@@ -1286,6 +1292,11 @@ function scripts.context.purge_job(jobname,all,mkiitoo)
             end
             for i=1,#temporary_runfiles do
                 deleted[#deleted+1] = purge_file(fileaddsuffix(filebase,temporary_runfiles[i]))
+            end
+            if fulljobname and fulljobname ~= jobname then
+                for i=1,#temporary_suffixes do
+                    deleted[#deleted+1] = purge_file(fileaddsuffix(fulljobname,temporary_suffixes[i],true))
+                end
             end
             if not environment.argument("synctex") then
                 -- special case: not deleted when --synctex is given, but what if given in preamble
