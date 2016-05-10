@@ -554,17 +554,17 @@ local function initializemathitalics(tfmdata,value) -- yes no delay
     tfmdata.properties.mathitalics = toboolean(value)
 end
 
-local mathitalics_specification = {
-    name         = "mathitalics",
-    description  = "use alternative math italic correction",
-    initializers = {
-        base = initializemathitalics,
-        node = initializemathitalics,
-    }
-}
+-- local mathitalics_specification = {
+--     name         = "mathitalics",
+--     description  = "use alternative math italic correction",
+--     initializers = {
+--         base = initializemathitalics,
+--         node = initializemathitalics,
+--     }
+-- }
 
-registerotffeature(mathitalics_specification)
-registerafmfeature(mathitalics_specification)
+-- registerotffeature(mathitalics_specification)
+-- registerafmfeature(mathitalics_specification)
 
 -- slanting
 
@@ -924,6 +924,45 @@ registerotffeature {
 --         node = processformatters,
 --     }
 -- }
+
+-- not to be used! experimental code, only needed when testing
+
+local is_letter = characters.is_letter
+local always    = true
+
+local function collapseitalics(tfmdata,key,value)
+    local threshold = value == true and 100 or tonumber(value)
+    if threshold and threshold > 0 then
+        if threshold > 100 then
+            threshold = 100
+        end
+        for unicode, data in next, tfmdata.characters do
+            if always or is_letter[unicode] or is_letter[data.unicode] then
+                local italic = data.italic
+                if italic and italic ~= 0 then
+                    local width = data.width
+                    if width and width ~= 0 then
+                        local delta = threshold * italic / 100
+                        data.width  = width  + delta
+                        data.italic = italic - delta
+                    end
+                end
+            end
+        end
+    end
+end
+
+local dimensions_specification = {
+    name        = "collapseitalics",
+    description = "collapse italics",
+    manipulators = {
+        base = collapseitalics,
+        node = collapseitalics,
+    }
+}
+
+registerotffeature(dimensions_specification)
+registerafmfeature(dimensions_specification)
 
 -- a handy helper (might change or be moved to another namespace)
 

@@ -3715,6 +3715,9 @@ local function ligature(lookupdata,lookupname,unicode,lookuphash)
     target.ligature = unicode
 end
 
+-- this is not ok .. it doesn't work for the old loader with new loader extension
+-- specs
+
 local function pair(lookupdata,lookupname,unicode,lookuphash)
     local target = lookuphash[lookupname]
     if not target then
@@ -3723,7 +3726,9 @@ local function pair(lookupdata,lookupname,unicode,lookuphash)
     end
     local others = target[unicode]
     local paired = lookupdata[1]
-    if others then
+    if not paired then
+        -- something is wrong
+    elseif others then
         others[paired] = lookupdata
     else
         others = { [paired] = lookupdata }

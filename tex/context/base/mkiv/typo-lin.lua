@@ -379,11 +379,13 @@ local function setanchor(h_anchor)
     return new_latelua(f_anchor(h_anchor))
 end
 
--- local t_anchor = { x = true, c = true }
---
--- local function setanchor(h_anchor)
---      return lateluafunction(function() setposition("md:h",h_anchor,t_anchor) end)
--- end
+--     local lateluafunction = nodepool.lateluafunction
+--     local setposition     = job.positions.set
+--     local t_anchor        = { x = true, c = true }
+
+--     local function setanchor(h_anchor)
+--          return lateluafunction(function() setposition("md:h",h_anchor,t_anchor) end)
+--     end
 
 function paragraphs.calculatedelta(n,width,delta,atleft,islocal,followshape,area)
     local line = type(n) ~= "table" and getprop(n,"line") or n

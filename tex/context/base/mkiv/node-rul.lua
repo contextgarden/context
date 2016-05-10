@@ -11,7 +11,6 @@ if not modules then modules = { } end modules ['node-rul'] = {
 --
 -- todo: make robust for layers ... order matters
 
-
 local attributes, nodes, node = attributes, nodes, node
 
 local nuts         = nodes.nuts
@@ -275,9 +274,13 @@ local data = rules.data
 
 -- we implement user rules here as it takes less code this way
 
-local function userrule(t)
+local function userrule(t,noattributes)
     local r = new_userrule(t.width or 0,t.height or 0,t.depth or 0)
-    setfield(r,"attr",attribs())
+    if noattributes == false or noattributes == nil then
+        -- avoid fuzzy ones
+    else
+        setfield(r,"attr",attribs())
+    end
     properties[r] = t
     return tonode(r)
 end
@@ -289,10 +292,12 @@ rules.ruleactions = ruleactions
 callback.register("process_rule",function(n,h,v)
     local n = tonut(n)
     local p = properties[n]
-    local i = p.type or "draw"
-    local a = ruleactions[i]
-    if a then
-        a(p,h,v,i,n)
+    if p then
+        local i = p.type or "draw"
+        local a = ruleactions[i]
+        if a then
+            a(p,h,v,i,n)
+        end
     end
 end)
 

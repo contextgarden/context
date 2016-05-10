@@ -913,10 +913,10 @@
          \settrue\c_page_mul_balance_possible % balance indeed
        \fi
      \fi
-  \else
-    \setfalse\c_page_mul_balance_possible % balancing does not make sense
-  \fi
-  \ifconditional\c_page_mul_balance_possible % start balancing, was: \ifdim\ht\b_page_mul_balance_content>\openlineheight
+   \else
+     \setfalse\c_page_mul_balance_possible % balancing does not make sense
+   \fi
+   \ifconditional\c_page_mul_balance_possible % start balancing, was: \ifdim\ht\b_page_mul_balance_content>\openlineheight
      \page_mul_balance_try_one
      \ifinheritcolumns
        \page_mul_balance_try_two
@@ -955,8 +955,7 @@
      \d_page_mul_balance_step\spacingfactor\onepoint % rubish
    \fi
    \doloop\page_mul_balance_try_one_attempt
-   \dohandleallcolumns
-     {\global\setbox\currentcolumnbox\vbox{\unvcopy\currentcolumnbox}}%
+   \page_mul_balance_try_one_attempt_final
    \ifnum\c_page_mul_balance_tries>\c_page_mul_balance_tries_max\relax
      \showmessage\m!columns7\empty
    \else
@@ -983,9 +982,44 @@
      \exitloop
    \fi\fi}
 
+% \def\page_mul_balance_try_one_attempt_final
+%   {\dohandleallcolumns
+%      {\global\setbox\currentcolumnbox\vbox{\unvcopy\currentcolumnbox}}}
+%
+% \def\page_mul_balance_try_one_attempt_step
+%   {\setbox\b_page_mul_balance_column\vbox
+%      {\unvcopy\currentcolumnbox
+%       \unpenalty
+%       \unskip
+%       \unpenalty
+%       \unskip}% maybe better in main splitter
+%    \ifdim\ht\b_page_mul_balance_column>\d_page_mul_balance_natural_height
+%      \d_page_mul_balance_natural_height\ht\b_page_mul_balance_column
+%    \fi}
+%
+% In mkiv we juggle node lists and we cannot work on copies that easily but in
+% practice context hardly uses copies except here. So, the next variant doesn't
+% use copies but the original in the final result, for which we need an extra
+% split pass. A simple test case is:
+%
+% \starttext
+%     \startcolumns
+%         \inleft{!} x \par x
+%     \stopcolumns
+% \stoptext
+
+\def\page_mul_balance_try_one_attempt_final % we need this because we want to have the non copied content
+  {\global\setbox\b_page_mul_preceding_rest_of_page\box\b_page_mul_balance_content
+   \page_mul_split_first_column\b_page_mul_preceding_rest_of_page\d_page_mul_balance_target
+   \dohandlemidcolumns
+     {\page_mul_split_current_column\b_page_mul_preceding_rest_of_page\d_page_mul_balance_target}%
+   \page_mul_split_last_column\b_page_mul_preceding_rest_of_page\d_page_mul_balance_target
+   \dohandleallcolumns
+     {\global\setbox\currentcolumnbox\vbox{\unvbox\currentcolumnbox}}}
+
 \def\page_mul_balance_try_one_attempt_step
   {\setbox\b_page_mul_balance_column\vbox
-     {\unvcopy\currentcolumnbox
+     {\unvbox\currentcolumnbox % was copy but not needed with the above
       \unpenalty
       \unskip
       \unpenalty

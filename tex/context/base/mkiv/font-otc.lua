@@ -52,6 +52,10 @@ local noflags    = { false, false, false, false }
 -- beware: shared, maybe we should copy the sequence
 
 local function addfeature(data,feature,specifications)
+
+    -- todo: add some validator / check code so that we're more tolerant to
+    -- user errors
+
     local descriptions = data.descriptions
     local resources    = data.resources
     local features     = resources.features
@@ -254,26 +258,30 @@ local function addfeature(data,feature,specifications)
     local function prepare_pair(list,featuretype)
         local coverage = { }
         local cover    = coveractions[featuretype]
-        for code, replacement in next, list do
-            local unicode     = tounicode(code)
-            local description = descriptions[unicode]
-            if description and type(replacement) == "table" then
-                local r = { }
-                for k, v in next, replacement do
-                    local u = tounicode(k)
-                    if u then
-                        r[u] = v
+        if cover then
+            for code, replacement in next, list do
+                local unicode     = tounicode(code)
+                local description = descriptions[unicode]
+                if description and type(replacement) == "table" then
+                    local r = { }
+                    for k, v in next, replacement do
+                        local u = tounicode(k)
+                        if u then
+                            r[u] = v
+                        end
                     end
-                end
-                if next(r) then
-                    cover(coverage,unicode,r)
-                    done = done + 1
+                    if next(r) then
+                        cover(coverage,unicode,r)
+                        done = done + 1
+                    else
+                        skip = skip + 1
+                    end
                 else
                     skip = skip + 1
                 end
-            else
-                skip = skip + 1
             end
+        else
+            report_otf("unknown cover type %a",featuretype)
         end
         return coverage
     end
@@ -447,7 +455,7 @@ local function addfeature(data,feature,specifications)
                     coverage = prepare_multiple(list,featuretype)
                 elseif featuretype == "kern" then
                     category = "gpos"
-                    format   = kern
+                    format   = "kern"
                     coverage = prepare_kern(list,featuretype)
                 elseif featuretype == "pair" then
                     category = "gpos"

@@ -168,7 +168,83 @@ local function correction_glue(glue,n)
     return g
 end
 
-function italics.handler(head)
+local mathokay   = false
+local textokay   = false
+local enablemath = false
+local enabletext = false
+
+local function domath(head,current, done)
+    current    = end_of_math(current)
+    local next = getnext(current)
+    if next then
+        local char, id = isglyph(next)
+        if char then
+            -- we can have an old font where italic correction has been applied
+            -- or a new one where it hasn't been done
+            local kern = getprev(current)
+            if kern and getid(kern) == kern_code then
+                local glyph = getprev(kern)
+                if glyph and getid(glyph) == glyph_code then
+                    -- [math: <glyph><kern>]<glyph> : we remove the correction when we have
+                    -- punctuation
+                    if is_punctuation[char] then
+                        local a = getattr(glyph,a_mathitalics)
+                        if a and (a < 100 or a > 100) then
+                            if a > 100 then
+                                a = a - 100
+                            else
+                                a = a + 100
+                            end
+                            if getfield(next,"height") < 1.25*ex then
+                                if trace_italics then
+                                    report_italics("removing italic between math %C and punctuation %C",getchar(glyph),char)
+                                end
+                                setfield(kern,"kern",0) -- or maybe a small value or half the ic
+                                done = true
+                            end
+                        end
+                    end
+                end
+            else
+                local glyph = kern
+                if glyph and getid(glyph) == glyph_code then
+                    -- [math: <glyph>]<glyph> : we add the correction when we have
+                    -- no punctuation
+                    if not is_punctuation[char] then
+                        local a = getattr(glyph,a_mathitalics)
+                        if a and (a < 100 or a > 100) then
+                            if a > 100 then
+                                a = a - 100
+                            else
+                                a = a + 100
+                            end
+                            if trace_italics then
+                                report_italics("adding italic between math %C and non punctuation %C",getchar(glyph),char)
+                            end
+                            insert_node_after(head,glyph,new_correction_kern(a))
+                            done = true
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return current, done
+end
+
+local function mathhandler(head)
+    local current = tonut(head)
+    local done    = false
+    while current do
+        if getid(current) == math_code then
+            current, done = domath(head,current,done)
+        end
+        current = getnext(current)
+    end
+    return head, done
+end
+
+local function texthandler(head)
 
     local prev            = nil
     local prevchar        = nil
@@ -398,36 +474,17 @@ function italics.handler(head)
                 end
             end
         elseif id == math_code then
-            current = end_of_math(current)
+            -- is this still needed ... the current engine implementation has been redone
             previnserted    = nil
             previtalic      = 0
             replaceinserted = nil
             replaceitalic   = 0
             postinserted    = nil
             postitalic      = 0
-            local next = getnext(current)
-            if next then
-                local char, id = isglyph(next)
-                if char and is_punctuation[char] then
-                    local kern = getprev(current)
-                    if kern and getid(kern) == kern_code then
-                        local glyph = getprev(kern)
-                        if glyph and getid(glyph) == glyph_code then
-                            local a = getattr(glyph,a_mathitalics)
-                            if a == 101 then
-                                local font = getfont(next)
-                                local ex = exheights[font]
-                                -- we need an extrat punctuation checker: . ; etc
-                                if getfield(next,"height") < 1.25*ex then
-                                    if trace_italics then
-                                        report_italics("removing italic between math %C and punctuation %C",getchar(glyph),char)
-                                    end
-                                    setfield(kern,"kern",0) -- or maybe a small value or half the ic
-                                end
-                            end
-                        end
-                    end
-                end
+            if mathokay then
+                current, done = domath(head,current,done)
+            else
+                current = end_of_math(current)
             end
         else
             if previtalic ~= 0 then
@@ -500,19 +557,49 @@ function italics.handler(head)
     return head, done
 end
 
-local enable
+function italics.handler(head)
+    if textokay then
+        return texthandler(head)
+    elseif mathokay then
+        return mathhandler(head)
+    else
+        return head, false
+    end
+end
 
-enable = function()
+enabletext = function()
     tasks.enableaction("processors","typesetters.italics.handler")
     if trace_italics then
-        report_italics("enabling text italics")
+        report_italics("enabling text/text italics")
     end
-    enable = false
+    enabletext = false
+    textokay   = true
+end
+
+enablemath = function()
+    tasks.enableaction("processors","typesetters.italics.handler")
+    if trace_italics then
+        report_italics("enabling math/text italics")
+    end
+    enablemath = false
+    mathokay   = true
+end
+
+function italics.enabletext()
+    if enabletext then
+        enabletext()
+    end
+end
+
+function italics.enablemath()
+    if enablemath then
+        enablemath()
+    end
 end
 
 function italics.set(n)
-    if enable then
-        enable()
+    if enabletext then
+        enabletext()
     end
     if n == variables.reset then
         texsetattribute(a_italics,unsetvalue)
@@ -540,8 +627,8 @@ local variables        = interfaces.variables
 local settings_to_hash = utilities.parsers.settings_to_hash
 
 local function setupitaliccorrection(option) -- no grouping !
-    if enable then
-        enable()
+    if enabletext then
+        enabletext()
     end
     local options = settings_to_hash(option)
     local variant = unsetvalue

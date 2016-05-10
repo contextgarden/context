@@ -1236,10 +1236,15 @@ italics[math_char] = function(pointer,what,n,parent)
             if not next_noad then
                 if n == 1 then -- only at the outer level .. will become an option (always,endonly,none)
                     if trace_italics then
-                        report_italics("method %a, flagging italic correction between %C and end math",method,correction,char)
+                        report_italics("method %a, flagging italic correction %p between %C and end math",method,correction,char)
                     end
-                    setattr(pointer,a_mathitalics,101)
-                    setattr(parent,a_mathitalics,101)
+                    if correction > 0 then
+                        correction = correction + 100
+                    else
+                        correction = correction - 100
+                    end
+                    setattr(pointer,a_mathitalics,correction)
+                    setattr(parent,a_mathitalics,correction)
                 end
             end
         end
@@ -1258,6 +1263,8 @@ enable = function()
     if trace_italics then
         report_italics("enabling math italics")
     end
+    -- we enable math (unless already enabled elsewhere)
+    typesetters.italics.enablemath()
     enable = false
 end
 

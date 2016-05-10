@@ -14,8 +14,8 @@ local suffix, addsuffix, removesuffix, replacesuffix = file.suffix, file.addsuff
 local nameonly, basename, joinpath, collapsepath = file.nameonly, file.basename, file.join, file.collapsepath
 local lower = string.lower
 
-local otfversion  = 2.824
-local otlversion  = 3.019
+local otfversion  = 2.825
+local otlversion  = 3.020
 
 local helpinfo = [[
 <?xml version="1.0"?>
