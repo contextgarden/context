@@ -2117,3 +2117,34 @@ implement {
 -- end
 --
 -- \externalfigure[t:/sources/hakker1b.tiff]
+
+-- something relatively new:
+
+local registered = { }
+
+interfaces.implement {
+    name      = "figure_register_page",
+    arguments = { "string", "string", "string" },
+    actions   = function(a,b,c)
+        registered[#registered+1] = { a, b, c }
+        context(#registered)
+    end
+}
+
+interfaces.implement {
+    name    = "figure_nof_registered_pages",
+    actions = function()
+        context(#registered)
+    end
+}
+
+interfaces.implement {
+    name      = "figure_flush_registered_pages",
+    arguments = "string",
+    actions   = function(n)
+        local f = registered[tonumber(n)]
+        if f then
+            context.doexternalfigurerepeat(f[1],f[2],f[3],n)
+        end
+    end
+}

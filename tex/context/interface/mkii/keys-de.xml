@@ -732,6 +732,7 @@
 		<cd:constant name='couplingway' value='verkopplungsart'/>
 		<cd:constant name='criterium' value='kriterium'/>
 		<cd:constant name='cropoffset' value='cropoffset'/>
+		<cd:constant name='crossreference' value='crossreference'/>
 		<cd:constant name='cssfile' value='cssfile'/>
 		<cd:constant name='current' value='aktuell'/>
 		<cd:constant name='cutspace' value='cutspace'/>

@@ -99,6 +99,7 @@
    \c!ymax           =24,
    \c!xmax           =,
    \c!align          =\v!none, % New, for Tacos extremely large graphics.
+   \c!crossreference =\v!no,
   ]
 
 %D Defining figures.
@@ -305,9 +306,10 @@
    %
    \the\t_grph_include_local_settings
    %
-   \edef\p_width {\externalfigureparameter\c!width}%
-   \edef\p_height{\externalfigureparameter\c!height}%
-   \edef\p_label {\externalfigureparameter\c!label}%
+   \edef\p_width    {\externalfigureparameter\c!width}%
+   \edef\p_height   {\externalfigureparameter\c!height}%
+   \edef\p_label    {\externalfigureparameter\c!label}%
+   \edef\p_reference{\externalfigureparameter\c!reference}%
    %
    \dostarttagged\t!image\empty
    \clf_figure_push
@@ -361,9 +363,80 @@
    \fi
    \clf_figure_pop
    \dotagfigure
-   \naturalvbox attr \imageattribute 2 {\box\foundexternalfigure}%
+   %
+   \scratchcounter\zerocount
+   \edef\p_crossreference{\externalfigureparameter\c!crossreference}%
+   \iflocation\iftrialtypesetting\else
+     \ifx\p_crossreference\empty
+        % nothing
+     \else\ifx\p_crossreference\v!no
+        % nothing
+     \else\ifx\p_crossreference\v!yes
+       \ifassignment
+         \scratchcounter\clf_figure_register_page{#1}{}{#2}\relax
+       \else
+         \scratchcounter\clf_figure_register_page{#1}{#2}{#3}\relax
+       \fi
+     \else
+       \scratchcounter-\p_crossreference % passed by repeater
+     \fi\fi\fi
+   \fi\fi
+   \naturalvpack
+     attr \imageattribute \plustwo
+   \ifnum\scratchcounter>\zerocount
+     {\strc_references_cross_forward {ex:\number \scratchcounter}{\box\foundexternalfigure}}%
+   \else\ifnum\scratchcounter<\zerocount
+     {\strc_references_cross_backward{ex:\number-\scratchcounter}{\box\foundexternalfigure}}%
+   \else
+     {\box\foundexternalfigure}%
+   \fi\fi
+   %
    \dostoptagged
    \egroup}
+
+%D Next we provide a cross referenced scale-up mechanism:
+
+\def\strc_references_cross_forward#1#2%
+  {\begingroup
+   \strc_references_set_simple_internal_reference{cross:b:#1}%
+   \naturalhpack
+      attr \destinationattribute\number\lastdestinationattribute
+      {\naturalhpack{\strc_references_flush_destination_nodes\directgotodumbbox{#2}[cross:f:#1]}}%
+   \endgroup}
+
+\def\strc_references_cross_backward#1#2%
+  {\begingroup
+   \strc_references_set_simple_internal_reference{cross:f:#1}%
+   \naturalhpack
+      attr \destinationattribute\number\lastdestinationattribute
+      {\naturalhpack{\strc_references_flush_destination_nodes\directgotodumbbox{#2}[cross:b:#1]}}%
+   \endgroup}
+
+\let\doexternalfigurerepeat\gobblefourarguments % called from lua end
+
+\unexpanded\def\placeregisteredexternalfigures
+  {\dosingleempty\grph_include_place_registered}
+
+\unexpanded\def\grph_include_place_registered[#1]%
+  {\page
+   \begingroup
+   \unexpanded\def\doexternalfigurerepeat{\grph_include_place_registered_indeed{#1}}%
+   \dorecurse\clf_figure_nof_registered_pages
+    {\page
+     \clf_figure_flush_registered_pages\recurselevel
+     \page}%
+   \endgroup
+   \page}
+
+\unexpanded\def\grph_include_place_registered_indeed#1#2#3#4#5% called from lua end
+  {\grph_include_place[#2][#3][#4,%
+     \c!hfactor=,\c!wfactor=,\c!factor=,%
+     \c!maxwidth=,\c!maxheight=,%
+     \c!xscale=,\c!yscale=,\c!scale=,%
+     \c!sx=,\c!sy=,\c!s=,%
+     \c!width=,\c!height=,%
+     \c!crossreference=#5,%
+     #1]}
 
 %D Scaling:
 

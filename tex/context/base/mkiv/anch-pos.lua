@@ -110,17 +110,18 @@ local f_e_tag     = formatters["e:%s"]
 local f_p_tag     = formatters["p:%s"]
 local f_w_tag     = formatters["w:%s"]
 
-local f_b_column  = formatters["_plib_.b_col(%q)"]
-local f_e_column  = formatters["_plib_.e_col()"]
-
-local f_enhance   = formatters["_plib_.enhance(%q)"]
 local f_region    = formatters["region:%s"]
-
-local f_b_region  = formatters["_plib_.b_region(%q)"]
-local f_e_region  = formatters["_plib_.e_region(%s)"]
 
 local f_tag_three = formatters["%s:%s:%s"]
 local f_tag_two   = formatters["%s:%s"]
+
+----- f_enhance   = formatters["_plib_.enhance(%q)"]
+
+----- f_b_column  = formatters["_plib_.b_column(%q)"]
+----- f_e_column  = formatters["_plib_.e_column()"]
+
+----- f_b_region  = formatters["_plib_.b_region(%q)"]
+----- f_e_region  = formatters["_plib_.e_region(%s)"]
 
 local function sorter(a,b)
     return a.y > b.y
@@ -272,7 +273,7 @@ local function enhance(data)
         data.y = getvpos()
     end
     if data.p == true then
-        data.p = texgetcount("realpageno")
+        data.p = texgetcount("realpageno") -- we should use a variable set in otr
     end
     if data.c == true then
         data.c = column
@@ -351,7 +352,7 @@ scanners.dosavepositionplus = compilescanner {
 
 -- not much gain in keeping stack (inc/dec instead of insert/remove)
 
-function jobpositions.b_col(tag)
+local function b_column(tag)
     tobesaved[tag] = {
         r = true,
         x = gethpos(),
@@ -361,7 +362,7 @@ function jobpositions.b_col(tag)
     column = tag
 end
 
-function jobpositions.e_col(tag)
+local function e_column(tag)
     local t = tobesaved[column]
     if not t then
         -- something's wrong
@@ -373,6 +374,9 @@ function jobpositions.e_col(tag)
     column = columns[#columns]
 end
 
+jobpositions.b_column = b_column
+jobpositions.e_column = e_column
+
 scanners.bposcolumn = function() -- tag
     local tag = scanstring()
     insert(columns,tag)
@@ -383,7 +387,8 @@ scanners.bposcolumnregistered = function() -- tag
     local tag = scanstring()
     insert(columns,tag)
     column = tag
-    context(new_latelua_node(f_b_column(tag)))
+ -- context(new_latelua_node(f_b_column(tag)))
+    context(new_latelua_node(function() b_column(tag) end))
 end
 
 scanners.eposcolumn = function()
@@ -392,14 +397,15 @@ scanners.eposcolumn = function()
 end
 
 scanners.eposcolumnregistered = function()
-    context(new_latelua_node(f_e_column()))
+ -- context(new_latelua_node(f_e_column()))
+    context(new_latelua_node(e_column))
     remove(columns)
     column = columns[#columns]
 end
 
 -- regions
 
-function jobpositions.b_region(tag)
+local function b_region(tag)
     local last = tobesaved[tag]
     last.x, last.y = getpos()
     last.p = texgetcount("realpageno")
@@ -407,7 +413,7 @@ function jobpositions.b_region(tag)
     region = tag
 end
 
-function jobpositions.e_region(correct)
+local function e_region(correct)
     local last = tobesaved[region]
     local v = getvpos()
     if correct then
@@ -417,6 +423,9 @@ function jobpositions.e_region(correct)
     remove(regions)
     region = regions[#regions]
 end
+
+jobpositions.b_region = b_region
+jobpositions.e_region = e_region
 
 local function setregionbox(n,tag)
     if not tag or tag == "" then
@@ -438,10 +447,13 @@ local function setregionbox(n,tag)
     return tag, box
 end
 
-local function markregionbox(n,tag,correct)
+local function markregionbox(n,tag,correct) -- correct needs checking
     local tag, box = setregionbox(n,tag)
-    local push = new_latelua(f_b_region(tag))
-    local pop  = new_latelua(f_e_region(tostring(correct))) -- todo: check if tostring is needed with formatter
+     -- todo: check if tostring is needed with formatter
+ -- local push = new_latelua(f_b_region(tag))
+ -- local pop  = new_latelua(f_e_region(tostring(correct)))
+    local push = new_latelua(function() b_region(tag) end)
+    local pop  = new_latelua(function() e_region(tostring(correct)) end)
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
     local head = getlist(box)
     if head then
@@ -509,7 +521,8 @@ scanners.parpos = function() -- todo: relate to localpar (so this is an intermed
     end
     local tag = f_p_tag(nofparagraphs)
     tobesaved[tag] = t
-    context(new_latelua_node(f_enhance(tag)))
+ -- context(new_latelua_node(f_enhance(tag)))
+    context(new_latelua_node(function() enhance(tobesaved[tag]) end))
 end
 
 scanners.dosetposition = function() -- name
@@ -522,7 +535,8 @@ scanners.dosetposition = function() -- name
         y = true,
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
-    context(new_latelua_node(f_enhance(name)))
+ -- context(new_latelua_node(f_enhance(name)))
+    context(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionwhd = function() -- name w h d extra
@@ -538,7 +552,8 @@ scanners.dosetpositionwhd = function() -- name w h d extra
         d = scandimen(),
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
-    context(new_latelua_node(f_enhance(name)))
+ -- context(new_latelua_node(f_enhance(name)))
+    context(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionbox = function() -- name box
@@ -555,7 +570,8 @@ scanners.dosetpositionbox = function() -- name box
         d = getfield(box,"depth"),
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
-    context(new_latelua_node(f_enhance(name)))
+ -- context(new_latelua_node(f_enhance(name)))
+    context(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionplus = function() -- name w h d extra
@@ -572,7 +588,8 @@ scanners.dosetpositionplus = function() -- name w h d extra
         n = nofparagraphs > 0 and nofparagraphs or nil,
         e = scanstring(),
     }
-    context(new_latelua_node(f_enhance(name)))
+ -- context(new_latelua_node(f_enhance(name)))
+    context(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionstrut = function() -- name
@@ -588,7 +605,8 @@ scanners.dosetpositionstrut = function() -- name
         d = getfield(strutbox,"depth"),
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
-    context(new_latelua_node(f_enhance(name)))
+ -- context(new_latelua_node(f_enhance(name)))
+    context(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 function jobpositions.getreserved(tag,n)

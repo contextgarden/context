@@ -7362,6 +7362,9 @@ return {
    ["pe"]="criterium",
    ["ro"]="criteriu",
   },
+  ["crossreference"]={
+   ["en"]="crossreference",
+  },
   ["cropoffset"]={
    ["en"]="cropoffset",
   },

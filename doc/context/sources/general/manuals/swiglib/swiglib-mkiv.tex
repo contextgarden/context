@@ -1,7 +1,17 @@
 % language=uk
 
-% author  : Hans Hagen, PRAGMA ADE, NL
-% license : Creative Commons, Attribution-NonCommercial-ShareAlike 3.0 Unported
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
 
 \usemodule[art-01,abr-02]
 
@@ -72,11 +82,11 @@ StartPage ;
         shifted (-1cm,2cm)
         withcolor \MPcolor{maincolor} ;
 
-%     draw textext.ulft("\definedfont[TitlePageMono]in context mkiv")
-%         xsized .6PaperWidth
-%         shifted lrcorner Page
-%         shifted (-1cm,6cm)
-%         withcolor \MPcolor{maincolor} ;
+  % draw textext.ulft("\definedfont[TitlePageMono]in context mkiv")
+  %     xsized .6PaperWidth
+  %     shifted lrcorner Page
+  %     shifted (-1cm,6cm)
+  %     withcolor \MPcolor{maincolor} ;
 
 StopPage ;
 
@@ -135,6 +145,12 @@ Here is an example of using such a library (by Luigi):
 local gm       = swiglib("gmwand.core")
 local findfile = resolvers.findfile
 
+if not gm then
+    -- no big deal for this manual as we use a system in flux
+    logs.report("swiglib","no swiglib libraries loaded")
+    return
+end
+
 gm.InitializeMagick(".")
 
 local magick_wand  = gm.NewMagickWand()
@@ -174,7 +190,9 @@ gm.DestroyMagickWand(magick_wand)
 \stopluacode
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer
+
+\getbuffer
 
 In practice you will probably stay away from manipulating text this way, but it
 illustrates that you can use the regular \CONTEXT\ helpers to locate files.
@@ -316,7 +334,7 @@ needs a lot of them) it will first look on its own path (which is remembered).
 The \MKIV\ lookups are somewhat more robust in the sense that they first check
 for matches on engine specific paths. This comes in handy when the search
 patterns are too generic and one can match on for instance \type {luajittex}
-whilc \type {luatex} is used.
+while \type {luatex} is used.
 
 \stopsection
 
@@ -326,7 +344,6 @@ whilc \type {luatex} is used.
 \NC author    \NC \getvariable{document}{author}, \getvariable{document}{affiliation}, \getvariable{document}{location} \NC \NR
 \NC version   \NC \currentdate \NC \NR
 \NC website   \NC \getvariable{document}{website} \endash\ \getvariable{document}{support} \NC \NR
-\NC copyright \NC \symbol[cc][cc-by-sa-nc] \NC \NR
 \NC comment   \NC the swiglib infrastructure is implemented by Luigi Scarso \NC \NR
 \stoptabulate
 

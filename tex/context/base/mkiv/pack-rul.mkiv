@@ -2727,6 +2727,8 @@
      {\pack_framed_text_start_continue\empty{#1}}
      {\pack_framed_text_start_continue{#1}{#2}}}
 
+% todo: sort out first/lastline ht/dp
+
 \def\pack_framed_text_start_continue#1#2%
   {\setupframedtexts[\currentframedtext][#2]%
    \doifsomething{#1}{\setframedtextparameter\c!location{#1}}% does not listen to #3
@@ -2739,10 +2741,10 @@
        \hsize\localhsize
     %  \insidefloattrue % ? better
        \usebodyfontparameter\framedtextparameter
+    %  \edef\p_framed_text_strut{\letframedtextparameter\c!strut}% to be used
        \letframedtextparameter\c!strut\v!no
        \inheritedframedtextframed\bgroup
          \let\\=\endgraf
-         \framedtextparameter\c!inner % oud spul
          \edef\p_framed_text_depthcorrection{\framedtextparameter\c!depthcorrection}%
          \ifx\p_framed_text_depthcorrection\v!on
             \pack_framed_text_start_depth_correction
@@ -2753,6 +2755,7 @@
          \doinhibitblank
          \useindentingparameter\framedtextparameter
          \useframedtextstyleandcolor\c!style\c!color
+         \framedtextparameter\c!inner
          \ignorespaces}
 
 % testcase 1:
@@ -2855,17 +2858,26 @@
 
 \def\pack_framed_text_start_direct[#1]%
   {\usebodyfontparameter\framedtextparameter
-   \letframedtextparameter\c!strut\v!no
    \iffirstargument
      \setupcurrentframedtext[#1]%
    \fi
+   \edef\p_framed_text_strut{\letframedtextparameter\c!strut}%
+   \letframedtextparameter\c!strut\v!no
    \inheritedframedtextframed\bgroup
      \blank[\v!disable]%
      \let\\=\endgraf
-     \framedtextparameter\c!inner
      \useframedtextstyleandcolor\c!style\c!color
+     \vskip-\strutdp % brrr why is this needed ... needs to be sorted out, see testcase 1
+     \framedtextparameter\c!inner
+     \ifx\p_framed_text_strut\v!no
+        \let\pack_framed_strut\relax
+     \else
+        \let\pack_framed_strut\strut
+     \fi
      \bgroup
      \aftergroup\pack_framed_text_stop_direct
+     \afterassignment\ignorespaces
+     \afterassignment\pack_framed_strut
      \let\next=}
 
 \def\pack_framed_text_stop_direct
