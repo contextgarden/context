@@ -100,7 +100,7 @@ return {
         "startcomponent", "stopcomponent", "component",
         "startproduct", "stopproduct", "product",
         "startproject", "stopproject", "project",
-        "starttext", "stoptext", "startnotext", "stopnotext","startdocument", "stopdocument", "documentvariable", "setupdocument",
+        "starttext", "stoptext", "startnotext", "stopnotext","startdocument", "stopdocument", "documentvariable", "setupdocument", "presetdocument",
         "startmodule", "stopmodule", "usemodule", "usetexmodule", "useluamodule","setupmodule","currentmoduleparameter","moduleparameter",
         "everystarttext", "everystoptext",
         --

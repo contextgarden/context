@@ -1963,6 +1963,12 @@
      \clf_vspacing{\currentvspacing}%
    \fi\fi}
 
+\unexpanded\def\useblankparameter#1% faster local variant
+  {\edef\m_spac_blank_asked{#1\c!blank}%
+   \ifx\m_spac_blank_asked\empty\else
+     \clf_vspacing{\m_spac_blank_asked}
+   \fi}
+
 % handy (and faster):
 
 \unexpanded\def\directvpenalty#1%

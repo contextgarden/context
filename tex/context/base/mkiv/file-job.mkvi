@@ -319,6 +319,9 @@
   {\setvariables[\s!document][#settings]%
    \the\everysetupdocument\relax}
 
+\unexpanded\def\presetdocument[#settings]%
+  {\checkvariables[\s!document][#settings]}
+
 % metadata:author  metadata:title  metadata:subject
 
 \setvariables

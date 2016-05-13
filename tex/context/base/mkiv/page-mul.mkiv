@@ -165,7 +165,6 @@
 \newbox        \b_page_mul_preceding_rest_of_page
 
 \newconditional\c_page_mul_reverse
-
 \newconditional\c_page_mul_trace
 
 %D The next dimensions reports the final column height .. todo
@@ -434,19 +433,19 @@
    % messy correction, we need to rewrite this module (newcolumns)
    \setbox\columnpagebox\vbox
      {\offinterlineskip
-      \scratchdimen\ht\columnpagebox
-      \advance\scratchdimen\dp\columnpagebox % we probably lost that one already
+      \scratchdimen\htdp\columnpagebox
       \box\columnpagebox
       \vskip-\scratchdimen}%
-   \scratchdimen\noflines\openlineheight
-   \advance\scratchdimen-\openstrutdepth
-   \ifgridsnapping
-      % quick hack (at least it works with itemize)
-   \else
-     \advance\scratchdimen-\openlineheight
-     \advance\scratchdimen\topskip
-   \fi
-   \ht\columnpagebox\scratchdimen
+   \ht\columnpagebox\dimexpr
+     \noflines\openlineheight
+     -\openstrutdepth
+     \ifgridsnapping
+        % quick hack (at least it works with itemize)
+     \else
+       -\openlineheight
+       +\topskip
+     \fi
+   \relax
    \dp\columnpagebox\openstrutdepth
    % end of mess
    \box\columnpagebox
@@ -479,22 +478,18 @@
    \page_mul_calculate_column_result_dimensions
    \overlaycolumnfootnotes
    \setbox\columnpagebox\vbox
-     {\hbox to \makeupwidth
-        {\hskip\d_page_mul_leftskip\relax % new, \relax needed
-         \ifconditional\c_page_mul_reverse
-           \expandafter\dohandlerevcolumns
-         \else
-           \expandafter\dohandleallcolumns
-         \fi
+     {\hbox \ifconditional\c_page_mul_reverse dir TRT \fi to \makeupwidth
+        {\hskip\ifconditional\c_page_mul_reverse\d_page_mul_rightskip\else\d_page_mul_leftskip\fi\relax
+         \dohandleallcolumns
            {\finishcolumnbox
-              {\setbox\scratchbox\hbox
-                 {\ifx\finishcolumnbox\relax\else\strut\fi
-                  \box\currentcolumnbox}% hm, why strut
+               {\setbox\scratchbox\hbox
+                   {\ifx\finishcolumnbox\relax\else\strut\fi
+                   \box\currentcolumnbox}% hm, why strut
                \anch_mark_column_box\scratchbox
                \box\scratchbox}%
-            \hfil}%
+               \hfil}%
          \unskip
-         \hskip\d_page_mul_rightskip}}% new
+         \hskip\ifconditional\c_page_mul_reverse\d_page_mul_leftskip\else\d_page_mul_rightskip\fi}}%
    \scratchdimen\zeropoint
    \dohandleallcolumns
      {\ifdim-\ht\currenttopcolumnbox<\scratchdimen
@@ -504,9 +499,9 @@
    \advance\scratchdimen \ht\columnpagebox
    \setbox\scratchbox\hbox to \makeupwidth
      {\vrule
-        \s!width\zeropoint
+        \s!width \zeropoint
         \s!height\scratchdimen
-        \s!depth\dp\columnpagebox
+        \s!depth \dp\columnpagebox
       \dostepwiserecurse\plustwo\nofcolumns\plusone{\hfil\page_mul_between_columns}\hfil}%
    \setbox\columnpagebox\hbox
      {\box\columnpagebox
@@ -529,8 +524,7 @@
    \global\d_page_mul_preceding_height\zeropoint
    \page_otr_command_set_vsize
    \dosomebreak\nobreak % hm, only needed when topstuff
-   \ifgridsnapping
-   \else
+   \ifgridsnapping \else
      \ifcase\multicolumntopflushmethod
        % sometimes method 1 goes wrong, so we need a way out; best sort this out
        % when we run into it again

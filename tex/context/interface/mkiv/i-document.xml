@@ -198,6 +198,14 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="presetdocument" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupdocument"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="documentvariable" file="file-job.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-key"/>

@@ -609,7 +609,7 @@ local noparent = 1 - (lparent+rparent)
 local nested   = P{lparent * (noparent + V(1))^0 * rparent}
 local value    = P(lparent * C((noparent + nested)^0) * rparent) -- P{"("*C(((1-S("()"))+V(1))^0)*")"}
 
-local lp_child   = Cc("expr.child(ll,'") * R("az","AZ","--","__")^1 * Cc("')")
+local lp_child   = Cc("expr.child(ll,'") * R("az","AZ") * R("az","AZ","--","__")^0 * Cc("')")
 local lp_number  = S("+-") * R("09")^1
 local lp_string  = Cc("'") * R("az","AZ","--","__")^1 * Cc("'")
 local lp_content = (P("'") * (1-P("'"))^0 * P("'") + P('"') * (1-P('"'))^0 * P('"'))

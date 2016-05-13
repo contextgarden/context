@@ -225,6 +225,12 @@
                 <cd:parameter name="order">
                     <cd:constant type="cd:list"/> <!-- a list of suffixes/types to check -->
                 </cd:parameter>
+                <cd:parameter name="crossreference">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <!-- only passed by the system: -->
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

@@ -54,14 +54,25 @@
 
 \installframedcommandhandler \??mixedcolumns {mixedcolumns} \??mixedcolumns
 
+% old multicolumns mechanism
+%
+% \c!ntop=1,
+% \c!rule=\v!off,
+% \c!height=,
+% \c!blank={\v!line,\v!fixed},
+% \c!rulethickness=\linewidth,
+% \c!offset=.5\bodyfontsize,
+
 \setupmixedcolumns
   [\c!distance=1.5\bodyfontsize,
    \c!n=\plustwo,
-  %\c!align=, % inherit
+  %\c!align=, % inherit (also replaces tolerance)
   %\c!before=,
   %\c!after=,
   %\c!separator=\v!none,
   %\c!setups=,
+  %\c!balance=\v!no,
+  %\c!blank={\v!line,\v!fixed}, yes or no
    \c!frame=\v!off,
    \c!strut=\v!no,
    \c!offset=\v!overlay,
@@ -475,6 +486,8 @@
    %
    \insidecolumnstrue % new
    %
+   \usealignparameter  \mixedcolumnsparameter
+   \useblankparameter  \mixedcolumnsparameter
    \useprofileparameter\mixedcolumnsparameter % new
    %
    \nofcolumns\c_page_mix_n_of_columns} % public

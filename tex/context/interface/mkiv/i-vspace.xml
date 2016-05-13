@@ -104,6 +104,12 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="useblankparameter" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="inhibitblank" file="spac-ver.mkiv"/>
 
     <cd:command name="synchronizeblank" file="spac-ver.mkiv"/>
