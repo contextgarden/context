@@ -117,6 +117,7 @@ appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether")
 ------------("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
 appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
 appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
+appendaction("finalizers",   "lists",       "nodes.linefillers.handler")
 
 -- still experimental
 
@@ -191,6 +192,7 @@ disableaction("finalizers",  "builders.paragraphs.keeptogether")
 disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
 -------------("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
 disableaction("finalizers",  "builders.paragraphs.tag")
+disableaction("finalizers",  "nodes.linefillers.handler")
 
 disableaction("math",        "noads.handlers.showtree")
 disableaction("math",        "noads.handlers.tags")

@@ -490,6 +490,15 @@ function nodes.shifts.enable()
     tasks.enableaction("shipouts","nodes.shifts.handler")
 end
 
+-- linefillers (placeholder)
+
+nodes.linefillers      = nodes.linefillers      or { }
+nodes.linefillers.data = nodes.linefillers.data or { }
+
+function nodes.linefillers.handler(head)
+    return head, false
+end
+
 -- interface
 
 local implement = interfaces.implement

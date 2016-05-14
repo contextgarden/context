@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/13/16 16:21:29
+-- merge date  : 05/14/16 14:06:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -22254,46 +22254,32 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['font-one']={
+if not modules then modules={} end modules ['font-onr']={
   version=1.001,
   comment="companion to font-ini.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local fonts,logs,trackers,containers,resolvers=fonts,logs,trackers,containers,resolvers
+local fonts,logs,trackers,resolvers=fonts,logs,trackers,resolvers
 local next,type,tonumber,rawget=next,type,tonumber,rawget
-local match,gmatch,lower,gsub,strip,find=string.match,string.gmatch,string.lower,string.gsub,string.strip,string.find
+local match,lower,gsub,strip,find=string.match,string.lower,string.gsub,string.strip,string.find
 local char,byte,sub=string.char,string.byte,string.sub
 local abs=math.abs
 local bxor,rshift=bit32.bxor,bit32.rshift
 local P,S,R,Cmt,C,Ct,Cs,Carg=lpeg.P,lpeg.S,lpeg.R,lpeg.Cmt,lpeg.C,lpeg.Ct,lpeg.Cs,lpeg.Carg
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
-local trace_features=false trackers.register("afm.features",function(v) trace_features=v end)
 local trace_indexing=false trackers.register("afm.indexing",function(v) trace_indexing=v end)
 local trace_loading=false trackers.register("afm.loading",function(v) trace_loading=v end)
-local trace_defining=false trackers.register("fonts.defining",function(v) trace_defining=v end)
 local report_afm=logs.reporter("fonts","afm loading")
-local setmetatableindex=table.setmetatableindex
-local derivetable=table.derive
-local findbinfile=resolvers.findbinfile
-local definers=fonts.definers
-local readers=fonts.readers
-local constructors=fonts.constructors
-local afm=constructors.newhandler("afm")
-local pfb=constructors.newhandler("pfb")
-local otf=fonts.handlers.otf
-local otfreaders=otf.readers
-local otfenhancers=otf.enhancers
-local afmfeatures=constructors.newfeatures("afm")
-local registerafmfeature=afmfeatures.register
-afm.version=1.510 
-afm.cache=containers.define("fonts","afm",afm.version,true)
-afm.autoprefixed=true 
-afm.helpdata={} 
-afm.syncspace=true 
-local overloads=fonts.mappings.overloads
-local applyruntimefixes=fonts.treatments and fonts.treatments.applyfixes
+fonts=fonts or {}
+local handlers=fonts.handlers or {}
+fonts.handlers=handlers
+local afm=handlers.afm or {}
+handlers.afm=afm
+local readers=afm.readers or {}
+afm.readers=readers
+afm.version=1.512
 local get_indexes
 do
   local n,m
@@ -22337,12 +22323,12 @@ do
   end
   local function loadpfbvector(filename)
     local data=io.loaddata(resolvers.findfile(filename))
-    if not find(data,"!PS%-AdobeFont%-") then
-      print("no font",filename)
-      return
-    end
     if not data then
       print("no data",filename)
+      return
+    end
+    if not find(data,"!PS%-AdobeFont%-") then
+      print("no font",filename)
       return
     end
     local ascii,binary=match(data,"(.*)eexec%s+......(.*)")
@@ -22352,7 +22338,9 @@ do
     end
     binary=decrypt(binary,4)
     local vector=lpegmatch(p_filternames,binary)
-    vector[0]=table.remove(vector,1)
+    if vector[1]==".notdef" then
+      vector[0]=table.remove(vector,1)
+    end
     if not vector then
       print("no vector",filename)
       return
@@ -22379,91 +22367,85 @@ do
     end
   end
 end
-local readafm
-do 
-  local spacing=patterns.spacer
-  local lineend=patterns.newline
-  local number=spacing*(R("09")+S("."))^1/tonumber
-  local name=spacing*C((1-spacing)^1)
-  local words=spacing*(1-lineend)^1/strip
-  local rest=(1-lineend)^0
-  local fontdata=Carg(1)
-  local semicolon=spacing*P(";")
-  local plus=P("plus")*number
-  local minus=P("minus")*number
-  local function addkernpair(data,one,two,value)
-    local chr=data.characters[one]
-    if chr then
-      local kerns=chr.kerns
-      if kerns then
-        kerns[two]=tonumber(value)
-      else
-        chr.kerns={ [two]=tonumber(value) }
-      end
-    end
-  end
-  local p_kernpair=(fontdata*P("KPX")*name*name*number)/addkernpair
-  local chr=false
-  local ind=0
-  local function start()
-    ind=0
-    chr={}
-  end
-  local function stop()
-    ind=0
-    chr=false
-  end
-  local function setindex(i)
-    if i<0 then
-      ind=ind+1 
+local spacing=patterns.whitespace
+local lineend=patterns.newline
+local number=spacing*S("+-")^-1*(R("09")+S("."))^1/tonumber
+local name=spacing*C((1-spacing)^1)
+local words=spacing*(1-lineend)^1/strip
+local rest=(1-lineend)^0
+local fontdata=Carg(1)
+local semicolon=spacing*P(";")
+local plus=P("plus")*number
+local minus=P("minus")*number
+local function addkernpair(data,one,two,value)
+  local chr=data.characters[one]
+  if chr then
+    local kerns=chr.kerns
+    if kerns then
+      kerns[two]=tonumber(value)
     else
-      ind=i
-    end
-    chr={
-      index=ind
-    }
-  end
-  local function setwidth(width)
-    chr.width=width
-  end
-  local function setname(data,name)
-    data.characters[name]=chr
-  end
-  local function setboundingbox(boundingbox)
-    chr.boundingbox=boundingbox
-  end
-  local function setligature(plus,becomes)
-    local ligatures=chr.ligatures
-    if ligatures then
-      ligatures[plus]=becomes
-    else
-      chr.ligatures={ [plus]=becomes }
+      chr.kerns={ [two]=tonumber(value) }
     end
   end
-  local p_charmetric=((
-    P("C")*number/setindex+P("WX")*number/setwidth+P("N")*fontdata*name/setname+P("B")*Ct((number)^4)/setboundingbox+P("L")*(name)^2/setligature
-   )*semicolon )^1
-  local p_charmetrics=P("StartCharMetrics")*number*(p_charmetric+(1-P("EndCharMetrics")))^0*P("EndCharMetrics")
-  local p_kernpairs=P("StartKernPairs")*number*(p_kernpair+(1-P("EndKernPairs")) )^0*P("EndKernPairs")
-  local function set_1(data,key,a)   data.metadata[lower(key)]=a      end
-  local function set_2(data,key,a,b)  data.metadata[lower(key)]={ a,b }  end
-  local function set_3(data,key,a,b,c) data.metadata[lower(key)]={ a,b,c } end
-  local p_parameters=P(false)+P("FontName")*fontdata*words/function(data,line)
-      data.metadata.fontname=line
-      data.metadata.fullname=line
-    end+P("ItalicAngle")*fontdata*number/function(data,angle)
-      data.metadata.italicangle=angle
-    end+P("IsFixedPitch")*fontdata*name/function(data,pitch)
-      data.metadata.monospaced=toboolean(pitch,true)
-    end+P("CharWidth")*fontdata*number/function(data,width)
-      data.metadata.charwidth=width
-    end+P("XHeight")*fontdata*number/function(data,xheight)
-      data.metadata.xheight=xheight
-    end+P("Descender")*fontdata*number/function(data,descender)
-      data.metadata.descender=descender
-    end+P("Ascender")*fontdata*number/function(data,ascender)
-      data.metadata.ascender=ascender
-    end+P("Comment")*spacing*(P(false)+(fontdata*C("DESIGNSIZE")*number*rest)/set_1 
+end
+local p_kernpair=(fontdata*P("KPX")*name*name*number)/addkernpair
+local chr=false
+local ind=0
+local function start(data,version)
+  data.metadata.afmversion=version
+  ind=0
+  chr={}
+end
+local function stop()
+  ind=0
+  chr=false
+end
+local function setindex(i)
+  if i<0 then
+    ind=ind+1 
+  else
+    ind=i
+  end
+  chr={
+    index=ind
+  }
+end
+local function setwidth(width)
+  chr.width=width
+end
+local function setname(data,name)
+  data.characters[name]=chr
+end
+local function setboundingbox(boundingbox)
+  chr.boundingbox=boundingbox
+end
+local function setligature(plus,becomes)
+  local ligatures=chr.ligatures
+  if ligatures then
+    ligatures[plus]=becomes
+  else
+    chr.ligatures={ [plus]=becomes }
+  end
+end
+local p_charmetric=((
+  P("C")*number/setindex+P("WX")*number/setwidth+P("N")*fontdata*name/setname+P("B")*Ct((number)^4)/setboundingbox+P("L")*(name)^2/setligature
+ )*semicolon )^1
+local p_charmetrics=P("StartCharMetrics")*number*(p_charmetric+(1-P("EndCharMetrics")))^0*P("EndCharMetrics")
+local p_kernpairs=P("StartKernPairs")*number*(p_kernpair+(1-P("EndKernPairs" )))^0*P("EndKernPairs" )
+local function set_1(data,key,a)   data.metadata[lower(key)]=a      end
+local function set_2(data,key,a,b)  data.metadata[lower(key)]={ a,b }  end
+local function set_3(data,key,a,b,c) data.metadata[lower(key)]={ a,b,c } end
+local p_parameters=P(false)+fontdata*((P("FontName")+P("FullName")+P("FamilyName"))/lower)*words/function(data,key,value)
+    data.metadata[key]=value
+  end+fontdata*((P("Weight")+P("Version"))/lower)*name/function(data,key,value)
+    data.metadata[key]=value
+  end+fontdata*P("IsFixedPitch")*name/function(data,pitch)
+    data.metadata.monospaced=toboolean(pitch,true)
+  end+fontdata*P("FontBBox")*Ct(number^4)/function(data,boundingbox)
+    data.metadata.boundingbox=boundingbox
+ end+fontdata*((P("CharWidth")+P("CapHeight")+P("XHeight")+P("Descender")+P("Ascender")+P("ItalicAngle"))/lower)*number/function(data,key,value)
+    data.metadata[key]=value
+  end+P("Comment")*spacing*(P(false)+(fontdata*C("DESIGNSIZE")*number*rest)/set_1 
 +(fontdata*C("TFM designsize")*number*rest)/set_1+(fontdata*C("DesignSize")*number*rest)/set_1+(fontdata*C("CODINGSCHEME")*words*rest)/set_1 
 +(fontdata*C("CHECKSUM")*number*words*rest)/set_1 
 +(fontdata*C("SPACE")*number*plus*minus*rest)/set_3 
@@ -22477,42 +22459,109 @@ do
 +(fontdata*C("SUBDROP")*number*rest)/set_1 
 +(fontdata*C("DELIM")*number*number*rest)/set_2 
 +(fontdata*C("AXISHEIGHT")*number*rest)/set_1 
-    )
-  local parser=(P("StartFontMetrics")/start )*(p_charmetrics+p_kernpairs+p_parameters+(1-P("EndFontMetrics")) )^0*(P("EndFontMetrics")/stop )
-  readafm=function(filename)
-    local ok,afmblob,size=resolvers.loadbinfile(filename) 
-    if ok and afmblob then
-      local data={
-        resources={
-          filename=resolvers.unresolve(filename),
-          version=afm.version,
-          creator="context mkiv",
-        },
-        properties={
-          hasitalics=false,
-        },
-        goodies={},
-        metadata={
-          filename=file.removesuffix(file.basename(filename))
-        },
-        characters={
-        },
-        descriptions={
-        },
-      }
-      if trace_loading then
-        report_afm("parsing afm file %a",filename)
-      end
-      lpegmatch(parser,afmblob,1,data)
-      return data
-    else
-      if trace_loading then
-        report_afm("no valid afm file %a",filename)
-      end
-      return nil
+  )
+local fullparser=(P("StartFontMetrics")*fontdata*name/start )*(p_charmetrics+p_kernpairs+p_parameters+(1-P("EndFontMetrics")) )^0*(P("EndFontMetrics")/stop )
+local infoparser=(P("StartFontMetrics")*fontdata*name/start )*(p_parameters+(1-P("EndFontMetrics")) )^0*(P("EndFontMetrics")/stop )
+local function read(filename,parser)
+  local afmblob=io.loaddata(filename)
+  if afmblob then
+    local data={
+      resources={
+        filename=resolvers.unresolve(filename),
+        version=afm.version,
+        creator="context mkiv",
+      },
+      properties={
+        hasitalics=false,
+      },
+      goodies={},
+      metadata={
+        filename=file.removesuffix(file.basename(filename))
+      },
+      characters={
+      },
+      descriptions={
+      },
+    }
+    if trace_loading then
+      report_afm("parsing afm file %a",filename)
     end
+    lpegmatch(parser,afmblob,1,data)
+    return data
+  else
+    if trace_loading then
+      report_afm("no valid afm file %a",filename)
+    end
+    return nil
   end
 end
+function readers.loadfont(afmname,pfbname)
+  local data=read(resolvers.findfile(afmname),fullparser)
+  if data then
+    if not pfbname or pfbname=="" then
+      pfbname=file.replacesuffix(file.nameonly(afmname),"pfb")
+      pfbname=resolvers.findfile(pfbname)
+    end
+    if pfbname and pfbname~="" then
+      data.resources.filename=resolvers.unresolve(pfbname)
+      get_indexes(data,pfbname)
+    elseif trace_loading then
+      report_afm("no pfb file for %a",afmname)
+    end
+    return data
+  end
+end
+function readers.getinfo(filename)
+  local data=read(resolvers.findfile(filename),infoparser)
+  if data then
+    return data.metadata
+  end
+end
+
+end -- closure
+
+do -- begin closure to overcome local limits and interference
+
+if not modules then modules={} end modules ['font-one']={
+  version=1.001,
+  comment="companion to font-ini.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local fonts,logs,trackers,containers,resolvers=fonts,logs,trackers,containers,resolvers
+local next,type,tonumber,rawget=next,type,tonumber,rawget
+local match,gmatch,lower,gsub,strip,find=string.match,string.gmatch,string.lower,string.gsub,string.strip,string.find
+local char,byte,sub=string.char,string.byte,string.sub
+local abs=math.abs
+local bxor,rshift=bit32.bxor,bit32.rshift
+local P,S,R,Cmt,C,Ct,Cs,Carg=lpeg.P,lpeg.S,lpeg.R,lpeg.Cmt,lpeg.C,lpeg.Ct,lpeg.Cs,lpeg.Carg
+local lpegmatch,patterns=lpeg.match,lpeg.patterns
+local trace_features=false trackers.register("afm.features",function(v) trace_features=v end)
+local trace_indexing=false trackers.register("afm.indexing",function(v) trace_indexing=v end)
+local trace_loading=false trackers.register("afm.loading",function(v) trace_loading=v end)
+local trace_defining=false trackers.register("fonts.defining",function(v) trace_defining=v end)
+local report_afm=logs.reporter("fonts","afm loading")
+local setmetatableindex=table.setmetatableindex
+local derivetable=table.derive
+local findbinfile=resolvers.findbinfile
+local definers=fonts.definers
+local readers=fonts.readers
+local constructors=fonts.constructors
+local afm=constructors.newhandler("afm")
+local pfb=constructors.newhandler("pfb")
+local otf=fonts.handlers.otf
+local otfreaders=otf.readers
+local otfenhancers=otf.enhancers
+local afmfeatures=constructors.newfeatures("afm")
+local registerafmfeature=afmfeatures.register
+afm.version=1.512 
+afm.cache=containers.define("fonts","afm",afm.version,true)
+afm.autoprefixed=true 
+afm.helpdata={} 
+afm.syncspace=true 
+local overloads=fonts.mappings.overloads
+local applyruntimefixes=fonts.treatments and fonts.treatments.applyfixes
 local enhancers={
 }
 local steps={
@@ -22556,14 +22605,8 @@ function afm.load(filename)
     end
     if not data or data.size~=size or data.time~=time or data.pfbsize~=pfbsize or data.pfbtime~=pfbtime then
       report_afm("reading %a",filename)
-      data=readafm(filename)
+      data=afm.readers.loadfont(filename,pfbname)
       if data then
-        if pfbname~="" then
-          data.resources.filename=resolvers.unresolve(pfbname)
-          get_indexes(data,pfbname)
-        elseif trace_loading then
-          report_afm("no pfb file for %a",filename)
-        end
         applyenhancers(data,filename)
         fonts.mappings.addtounicode(data,filename)
         otfreaders.pack(data)

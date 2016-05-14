@@ -308,106 +308,107 @@ end
 but to keep the overview, we define them here.</p>
 --ldx]]--
 
+filters.afm = fonts.handlers.afm.readers.getinfo
 filters.otf = fonts.handlers.otf.readers.getinfo
 filters.ttf = filters.otf
 filters.ttc = filters.otf
 -------.ttx = filters.otf
 
-local function normalize(t) -- only for afm parsing
-    local boundingbox = t.fontbbox
-    if boundingbox then
-        for i=1,#boundingbox do
-            boundingbox[i] = tonumber(boundingbox[i])
-        end
-    else
-        boundingbox = { 0, 0, 0, 0 }
-    end
-    return {
-        copyright     = t.copyright,
-        fontname      = t.fontname,
-        fullname      = t.fullname,
-        familyname    = t.familyname,
-        weight        = t.weight,
-        widtht        = t.width,
-        italicangle   = tonumber(t.italicangle) or 0,
-        monospaced    = toboolean(t.isfixedpitch) or false,
-        boundingbox   = boundingbox,
-        version       = t.version, -- not used
-        capheight     = tonumber(t.capheight),
-        xheight       = tonumber(t.xheight),
-        ascender      = tonumber(t.ascender),
-        descender     = tonumber(t.descender),
-    }
-end
+-- local function normalize(t) -- only for afm parsing
+--     local boundingbox = t.boundingbox or t.fontbbox
+--     if boundingbox then
+--         for i=1,#boundingbox do
+--             boundingbox[i] = tonumber(boundingbox[i])
+--         end
+--     else
+--         boundingbox = { 0, 0, 0, 0 }
+--     end
+--     return {
+--         copyright     = t.copyright,
+--         fontname      = t.fontname,
+--         fullname      = t.fullname,
+--         familyname    = t.familyname,
+--         weight        = t.weight,
+--         widtht        = t.width,
+--         italicangle   = tonumber(t.italicangle) or 0,
+--         monospaced    = t.monospaced or toboolean(t.isfixedpitch) or false,
+--         boundingbox   = boundingbox,
+--         version       = t.version, -- not used
+--         capheight     = tonumber(t.capheight),
+--         xheight       = tonumber(t.xheight),
+--         ascender      = tonumber(t.ascender),
+--         descender     = tonumber(t.descender),
+--     }
+-- end
+--
+-- function filters.afm(name)
+--     -- we could parse the afm file as well, and then report an error but
+--     -- it's not worth the trouble
+--     local pfbname = findfile(removesuffix(name)..".pfb","pfb") or ""
+--     if pfbname == "" then
+--         pfbname = findfile(nameonly(name)..".pfb","pfb") or ""
+--     end
+--     if pfbname ~= "" then
+--         local f = io.open(name)
+--         if f then
+--             local hash = { }
+--             local okay = false
+--             for line in f:lines() do -- slow but only a few lines at the beginning
+--                 if find(line,"StartCharMetrics",1,true) then
+--                     break
+--                 else
+--                     local key, value = match(line,"^(.+)%s+(.+)%s*$")
+--                     if key and #key > 0 then
+--                         hash[lower(key)] = value
+--                     end
+--                 end
+--             end
+--             f:close()
+--             return normalize(hash)
+--         end
+--     end
+--     return nil, "no matching pfb file"
+-- end
 
-local p_spaces  = lpegpatterns.whitespace
-local p_number  = (R("09")+S(".-+"))^1 / tonumber
-local p_boolean = P("false") * Cc(false)
-                + P("false") * Cc(false)
-local p_string  = P("(") * C((lpegpatterns.nestedparents + 1 - P(")"))^1) * P(")")
-local p_array   = P("[") * Ct((p_number + p_boolean + p_string + p_spaces^1)^1) * P("]")
-                + P("{") * Ct((p_number + p_boolean + p_string + p_spaces^1)^1) * P("}")
-
-local p_key     = P("/") * C(R("AZ","az")^1)
-local p_value   = p_string
-                + p_number
-                + p_boolean
-                + p_array
-
-local p_entry   = p_key * p_spaces^0 * p_value
-
-function filters.afm(name)
-    -- we could parse the afm file as well, and then report an error but
-    -- it's not worth the trouble
-    local pfbname = findfile(removesuffix(name)..".pfb","pfb") or ""
-    if pfbname == "" then
-        pfbname = findfile(nameonly(name)..".pfb","pfb") or ""
-    end
-    if pfbname ~= "" then
-        local f = io.open(name)
-        if f then
-            local hash = { }
-            local okay = false
-            for line in f:lines() do -- slow but only a few lines at the beginning
-                if find(line,"StartCharMetrics",1,true) then
-                    break
-                else
-                    local key, value = match(line,"^(.+)%s+(.+)%s*$")
-                    if key and #key > 0 then
-                        hash[lower(key)] = value
-                    end
-                end
-            end
-            f:close()
-            return normalize(hash)
-        end
-    end
-    return nil, "no matching pfb file"
-end
-
-function filters.pfb(name)
-    local f = io.open(name)
-    if f then
-        local hash = { }
-        local okay = false
-        for line in f:lines() do -- slow but only a few lines at the beginning
-            if find(line,"dict begin") then
-                okay = true
-            elseif not okay then
-                -- go on
-            elseif find(line,"currentdict end") then
-                break
-            else
-                local key, value = lpegmatch(p_entry,line)
-                if key and value then
-                    hash[lower(key)] = value
-                end
-            end
-        end
-        f:close()
-        return normalize(hash)
-    end
-end
+-- local p_spaces  = lpegpatterns.whitespace
+-- local p_number  = (R("09")+S(".-+"))^1 / tonumber
+-- local p_boolean = P("false") * Cc(false)
+--                 + P("false") * Cc(false)
+-- local p_string  = P("(") * C((lpegpatterns.nestedparents + 1 - P(")"))^1) * P(")")
+-- local p_array   = P("[") * Ct((p_number + p_boolean + p_string + p_spaces^1)^1) * P("]")
+--                 + P("{") * Ct((p_number + p_boolean + p_string + p_spaces^1)^1) * P("}")
+--
+-- local p_key     = P("/") * C(R("AZ","az")^1)
+-- local p_value   = p_string
+--                 + p_number
+--                 + p_boolean
+--                 + p_array
+--
+-- local p_entry   = p_key * p_spaces^0 * p_value
+--
+-- function filters.pfb(name)
+--     local f = io.open(name)
+--     if f then
+--         local hash = { }
+--         local okay = false
+--         for line in f:lines() do -- slow but only a few lines at the beginning
+--             if find(line,"dict begin") then
+--                 okay = true
+--             elseif not okay then
+--                 -- go on
+--             elseif find(line,"currentdict end") then
+--                 break
+--             else
+--                 local key, value = lpegmatch(p_entry,line)
+--                 if key and value then
+--                     hash[lower(key)] = value
+--                 end
+--             end
+--         end
+--         f:close()
+--         return normalize(hash)
+--     end
+-- end
 
 --[[ldx--
 <p>The scanner loops over the filters using the information stored in

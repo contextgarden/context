@@ -348,8 +348,8 @@
    \clf_defineshift
      continue {\shiftparameter\c!continue}%
      unit     {\shiftparameter\c!unit}%
-     method   \shiftparameter\c!method
-     dy       \shiftparameter\c!dy % number
+     method    \shiftparameter\c!method
+     dy        \shiftparameter\c!dy % number
    \relax}}
 
 \unexpanded\def\node_shifts_redefine#1%
@@ -366,6 +366,7 @@
   {\def\currentshift{#1}%
    \expandafter\let\expandafter\c_node_shifts_index\csname\??shiftindex#1\endcsname
    \advance\c_node_shifts_index\plusone
+   \clf_enableshifts % will be relaxed
    \attribute\shiftedattribute\numexpr
       \plusthousand*\c_node_shifts_index
      +\csname\??shiftattribute#1\ifcsname\??shift#1:\number\c_node_shifts_index\s!parent\endcsname:\number\c_node_shifts_index\fi\endcsname

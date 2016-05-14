@@ -121,6 +121,8 @@ loadmodule("font-tmp.lua")
 loadmodule("font-dsp.lua") -- not yet in distribution
 loadmodule("font-oup.lua") -- not yet in distribution
 
+loadmodule("font-onr.lua")
+
 -- extra code
 
 loadmodule("font-syn.lua")

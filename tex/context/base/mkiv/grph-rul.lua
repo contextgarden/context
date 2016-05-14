@@ -23,6 +23,10 @@ local a_colorspace   = attributes.private('colormodel')
 
 local mpcolor        = attributes.colors.mpcolor
 
+local trace_mp       = false  trackers.register("rules.mp", function(v) trace_mp = v end)
+
+local report_mp      = logs.reporter("rules","mp")
+
 local floor          = math.floor
 local random         = math.random
 
@@ -65,6 +69,7 @@ FakeWord(%width%,%height%,%depth%,%line%,%color%);
 FakeRule(%width%,%height%,%depth%,%line%,%color%);
         ]],
         ["fake:rest"] = replacer [[
+RuleOption := "%option%" ;
 RuleWidth := %width% ;
 RuleHeight := %height% ;
 RuleDepth := %depth% ;
@@ -87,8 +92,12 @@ def RuleColor = %color% enddef ;
             offset = p.offset or 0,
             line   = (p.line or 65536) * bpfactor,
             color  = mpcolor(p.ma,p.ca,p.ta),
+            option = p.option or "",
         }
         local m = cache[code]
+        if trace_mp then
+            report_mp(m)
+        end
         if m and m ~= "" then
             pdfprint("direct",m)
         end
