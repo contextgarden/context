@@ -339,6 +339,7 @@ function scripts.unicode.update()
             local d = characterdata[first]
             if d then
                 local v = d.variants
+                local v = rawget(d,"variants")
                 if not v then
                     v = { }
                     d.variants = v
@@ -348,6 +349,12 @@ function scripts.unicode.update()
                     v[second] = addendum
                 end
             end
+        end
+    end
+    for unicode, ud in table.sortedpairs(characterdata) do
+        if not rawget(ud,"category") and rawget(ud,"variants") then
+            report("stripping %U (variant, takes from metacharacter)",unicode)
+            characterdata[unicode] = nil
         end
     end
 end

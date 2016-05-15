@@ -69,6 +69,7 @@ FakeWord(%width%,%height%,%depth%,%line%,%color%);
 FakeRule(%width%,%height%,%depth%,%line%,%color%);
         ]],
         ["fake:rest"] = replacer [[
+RuleDirection := "%direction%" ;
 RuleOption := "%option%" ;
 RuleWidth := %width% ;
 RuleHeight := %height% ;
@@ -84,15 +85,16 @@ def RuleColor = %color% enddef ;
     ruleactions.mp = function(p,h,v,i,n)
         local name = p.name or "fake:rest"
         local code = (predefined[name] or predefined["fake:rest"]) {
-            data   = p.data or "",
-            width  = p.width * bpfactor,
-            height = p.height * bpfactor,
-            depth  = p.depth * bpfactor,
-            factor = (p.factor or 0) * bpfactor, -- needs checking
-            offset = p.offset or 0,
-            line   = (p.line or 65536) * bpfactor,
-            color  = mpcolor(p.ma,p.ca,p.ta),
-            option = p.option or "",
+            data      = p.data or "",
+            width     = p.width * bpfactor,
+            height    = p.height * bpfactor,
+            depth     = p.depth * bpfactor,
+            factor    = (p.factor or 0) * bpfactor, -- needs checking
+            offset    = p.offset or 0,
+            line      = (p.line or 65536) * bpfactor,
+            color     = mpcolor(p.ma,p.ca,p.ta),
+            option    = p.option or "",
+            direction = p.direction or "TLT",
         }
         local m = cache[code]
         if trace_mp then

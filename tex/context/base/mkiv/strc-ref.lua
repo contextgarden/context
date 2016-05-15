@@ -68,7 +68,8 @@ local logsnewline        = logs.newline
 local logspushtarget     = logs.pushtarget
 local logspoptarget      = logs.poptarget
 
-local settings_to_array  = utilities.parsers.settings_to_array
+----- settings_to_array  = utilities.parsers.settings_to_array
+local settings_to_table  = utilities.parsers.settings_to_array_obey_fences
 local process_settings   = utilities.parsers.process_stripped_settings
 local unsetvalue         = attributes.unsetvalue
 
@@ -883,7 +884,8 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
             if not set.reference then set.reference = reference end
             if not set.prefix    then set.prefix    = prefix    end
         end
-        local r = settings_to_array(reference)
+     -- local r = settings_to_array(reference)
+        local r = settings_to_table(reference) -- maybe option to honor () []
         for i=1,#r do
             local ri = r[i]
             local d = defined[prefix][ri] or defined[""][ri]

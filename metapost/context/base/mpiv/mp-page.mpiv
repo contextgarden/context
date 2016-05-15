@@ -665,6 +665,7 @@ enddef ;
 
 % for the moment we put these here:
 
+string  RuleDirection ; RuleDirection := "" ;
 string  RuleOption    ; RuleOption    := "" ;
 numeric RuleWidth     ; RuleWidth     := 0 ;
 numeric RuleHeight    ; RuleHeight    := 0 ;

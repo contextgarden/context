@@ -50,7 +50,9 @@
    \the\everyenableoutputstream
    \inoutputstreamtrue
    \xdef\currentoutputstream{#1}%
-   \clf_enablestream{#1}}
+   \clf_enablestream{#1}
+   \prevdepth\zeropoint % maybe more is needed i.e. we need to get rid of leading glue
+   }
 
 \unexpanded\def\disableoutputstream
   {\inoutputstreamfalse

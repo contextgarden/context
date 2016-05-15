@@ -565,6 +565,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     local familyname     = result.familyname
     local subfamilyname  = result.subfamilyname
  -- local compatiblename = result.compatiblename
+ -- local cfffullname    = result.cfffullname
     local weight         = result.weight
     local italicangle    = tonumber(result.italicangle)
     local subfont        = subfont
@@ -579,6 +580,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     familyname     = familyname     and cleanname(familyname)
     subfamilyname  = subfamilyname  and cleanname(subfamilyname)
  -- compatiblename = compatiblename and cleanname(compatiblename)
+ -- cfffullname    = cfffullname    and cleanname(cfffullname)
     weight         = weight         and cleanname(weight)
     italicangle    = italicangle == 0 and nil
     -- analyze
@@ -630,6 +632,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
         familyname     = familyname,
         subfamilyname  = subfamilyname,
      -- compatiblename = compatiblename,  -- nor used / needed
+     -- cfffullname    = cfffullname,
         weight         = weight,
         style          = style,
         width          = width,
@@ -792,18 +795,20 @@ local function collecthashes()
     local nofmappings    = 0
     local noffallbacks   = 0
     if specifications then
-        -- maybe multiple passes
+        -- maybe multiple passes (for the compatible and cffnames so that they have less preference)
         for index=1,#specifications do
-            local specification = specifications[index]
-            local format        = specification.format
-            local fullname      = specification.fullname
-            local fontname      = specification.fontname
-            local familyname    = specification.familyname or specification.family
-            local subfamilyname = specification.subfamilyname
-            local subfamily     = specification.subfamily
-            local weight        = specification.weight
-            local mapping       = mappings[format]
-            local fallback      = fallbacks[format]
+            local specification  = specifications[index]
+            local format         = specification.format
+            local fullname       = specification.fullname
+            local fontname       = specification.fontname
+         -- local compatiblename = specification.compatiblename
+         -- local cfffullname    = specification.cfffullname
+            local familyname     = specification.familyname or specification.family
+            local subfamilyname  = specification.subfamilyname
+            local subfamily      = specification.subfamily
+            local weight         = specification.weight
+            local mapping        = mappings[format]
+            local fallback       = fallbacks[format]
             if fullname and not mapping[fullname] then
                 mapping[fullname] = index
                 nofmappings       = nofmappings + 1
@@ -812,6 +817,14 @@ local function collecthashes()
                 mapping[fontname] = index
                 nofmappings       = nofmappings + 1
             end
+         -- if compatiblename and not mapping[compatiblename] then
+         --     mapping[compatiblename] = index
+         --     nofmappings             = nofmappings + 1
+         -- end
+         -- if cfffullname and not mapping[cfffullname] then
+         --     mapping[cfffullname] = index
+         --     nofmappings          = nofmappings + 1
+         -- end
             if familyname then
                 if weight and weight ~= sub(familyname,#familyname-#weight+1,#familyname) then
                     local madename = familyname .. weight

@@ -91,6 +91,10 @@
                     <cd:constant type="displaylimits"/>
                     <cd:constant type="none"/>
                 </cd:parameter>
+                <cd:parameter name="default">
+                    <cd:constant type="normal"/>
+                    <cd:constant type="italic" default="yes"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -370,6 +374,8 @@
     <cd:command name="mathbi" file="math-ini.mkiv"/>
 
     <cd:command name="mathbs" file="math-ini.mkiv"/>
+
+    <cd:command name="mathitalic" file="math-ini.mkiv"/>
 
     <cd:command name="mathupright" file="math-ini.mkiv"/>
 

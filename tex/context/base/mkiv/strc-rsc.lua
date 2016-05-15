@@ -183,3 +183,7 @@ references.splitcomponent    = splitcomponent
 -- inspect(splitreference([[special(operation{"argument,argument{whatever"})]]))
 -- inspect(splitreference([[special(operation{"argument{whatever"})]]))
 
+-- inspect(splitreference([[url(http://a,b.c)]]))
+-- inspect(splitcomponent([[url(http://a,b.c)]]))
+-- inspect(splitcomponent([[url(http://a.b.c)]]))
+

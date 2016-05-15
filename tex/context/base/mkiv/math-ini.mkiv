@@ -386,7 +386,7 @@
 \let\mathalternate            \math_set_font_alternate
 
 \unexpanded\def\mathupright   {\math_set_attribute\s!regular\s!tf\math_set_font_style_alternate\s!tf}
-\unexpanded\def\mathdefault   {\math_set_attribute\s!regular\s!it\math_set_font_style_alternate\s!it}
+\unexpanded\def\mathitalic    {\math_set_attribute\s!regular\s!it\math_set_font_style_alternate\s!it}
 \unexpanded\def\mathscript    {\math_set_alphabet \s!script      \math_set_font_style_alternate\s!script}
 \unexpanded\def\mathfraktur   {\math_set_alphabet \s!fraktur     \math_set_font_style_alternate\s!fraktur}
 \unexpanded\def\mathblackboard{\math_set_alphabet \s!blackboard  \math_set_font_style_alternate\s!blackboard}
@@ -402,6 +402,20 @@
 \unexpanded\def\mathbf        {\math_set_font_style\s!bf         \math_set_font_style_alternate\s!bf}
 \unexpanded\def\mathbs        {\math_set_font_style\s!bi         \math_set_font_style_alternate\s!bi} % no sl
 \unexpanded\def\mathbi        {\math_set_font_style\s!bi         \math_set_font_style_alternate\s!bi}
+
+\let\mathdefault\mathitalic
+
+\appendtoks
+    \edef\p_default{\mathematicsparameter\c!default}%
+    \ifx\p_default\v!normal
+      \let\mathdefault\mathupright
+    \else
+      \let\mathdefault\mathitalic
+    \fi
+\to \everysetupmathematics
+
+\setupmathematics
+  [\c!default=\v!italic]
 
 \let\tfmath\mathtf % maybe a grouped command
 \let\slmath\mathsl

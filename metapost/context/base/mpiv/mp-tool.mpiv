@@ -822,12 +822,20 @@ def colortype(expr c) =
 enddef ;
 
 vardef whitecolor(expr c) =
-    if cmykcolor c : (0,0,0,0) elseif rgbcolor c : (1,1,1)  else : 1         fi
+    if cmykcolor c : (0,0,0,0) elseif rgbcolor c : (1,1,1)  else : 1 fi
 enddef ;
 
 vardef blackcolor expr c =
     if cmykcolor c : (0,0,0,1) elseif rgbcolor c : (0,0,0)  else : 0 fi
 enddef ;
+
+vardef complementary expr c = (
+        if cmykcolor c : (1,1,1,1) -
+    elseif rgbcolor  c : (1,1,1) -
+    elseif pair      c : (1,1) -
+    elseif numeric   c :  1 -
+        fi c
+) enddef ;
 
 %D Well, this is the dangerous and naive version:
 

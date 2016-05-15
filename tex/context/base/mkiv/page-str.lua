@@ -22,6 +22,12 @@ local implement         = interfaces.implement
 local new_kern          = nodepool.kern
 local new_glyph         = nodepool.glyph
 
+local nodecodes         = nodes.nodecodes
+local gluecodes         = nodes.gluecodes
+local hlist_code        = nodecodes.hlist
+local vlist_code        = nodecodes.vlist
+local glue_code         = nodecodes.glue
+
 local slide_nodelist    = node.slide
 local write_node        = node.write
 local free_node         = node.free
@@ -167,6 +173,16 @@ function streams.synchronize(list) -- this is an experiment !
             local dana = data[name]
             local slot = dana[m]
             if slot then
+-- for n in nodes.traverse(slot) do
+--     local id = n.id
+--     if id == hlist_code or id == vlist_code then
+--         print(n,n.height,n.depth)
+--     elseif id == glue_code then
+--         print(n,n.width,gluecodes[n.subtype])
+--     else
+--         print(n)
+--     end
+-- end
                 local vbox = vpack_nodelist(slot)
                 local ht, dp = vbox.height, vbox.depth
                 if ht > height then
