@@ -29,6 +29,7 @@ local report_mp      = logs.reporter("rules","mp")
 
 local floor          = math.floor
 local random         = math.random
+local formatters     = string.formatters
 
 do
 
@@ -36,6 +37,7 @@ do
     local cachesize      = 0
     local maxcachesize   = 256*1024
     local cachethreshold = 1024
+    local caching        = false -- otherwise random issues so we need a dedicated randomizer first
 
  -- local maxcachesize   = 8*1024
  -- local cachethreshold = 1024/2
@@ -66,6 +68,7 @@ do
 FakeWord(%width%,%height%,%depth%,%line%,%color%);
         ]],
         ["fake:rule"] = replacer[[
+%initializations%
 FakeRule(%width%,%height%,%depth%,%line%,%color%);
         ]],
         ["fake:rest"] = replacer [[
@@ -82,26 +85,34 @@ def RuleColor = %color% enddef ;
         ]]
     }
 
+    local initialized = false ;
+
     ruleactions.mp = function(p,h,v,i,n)
         local name = p.name or "fake:rest"
         local code = (predefined[name] or predefined["fake:rest"]) {
-            data      = p.data or "",
-            width     = p.width * bpfactor,
-            height    = p.height * bpfactor,
-            depth     = p.depth * bpfactor,
-            factor    = (p.factor or 0) * bpfactor, -- needs checking
-            offset    = p.offset or 0,
-            line      = (p.line or 65536) * bpfactor,
-            color     = mpcolor(p.ma,p.ca,p.ta),
-            option    = p.option or "",
-            direction = p.direction or "TLT",
+            data            = p.data or "",
+            width           = p.width * bpfactor,
+            height          = p.height * bpfactor,
+            depth           = p.depth * bpfactor,
+            factor          = (p.factor or 0) * bpfactor, -- needs checking
+            offset          = p.offset or 0,
+            line            = (p.line or 65536) * bpfactor,
+            color           = mpcolor(p.ma,p.ca,p.ta),
+            option          = p.option or "",
+            direction       = p.direction or "TLT",
+
         }
-        local m = cache[code]
-        if trace_mp then
-            report_mp(m)
+        if not initialized then
+            initialized = true
+            simplemetapost("rulefun",formatters["randomseed := %s;"](random(0,4095)))
         end
-        if m and m ~= "" then
-            pdfprint("direct",m)
+        local pdf = caching and cache[code] or simplemetapost("rulefun",code) -- w, h, d
+        if trace_mp then
+            report_mp("code: %s",code)
+            report_mp("pdf : %s",pdf)
+        end
+        if pdf and pdf ~= "" then
+            pdfprint("direct",pdf)
         end
     end
 
@@ -109,8 +120,8 @@ end
 
 do
 
-    local f_rectangle = string.formatters["%F w %F %F %F %F re %s"]
-    local f_radtangle = string.formatters[ [[
+    local f_rectangle = formatters["%F w %F %F %F %F re %s"]
+    local f_radtangle = formatters[ [[
         %F w %F %F m
         %F %F l %F %F %F %F y
         %F %F l %F %F %F %F y
@@ -157,12 +168,19 @@ interfaces.implement {
         { "name",   "string" },
     } } ,
     actions = function(t)
-        if t.type == "mp" then
-            t.ma = getattribute(a_colorspace) or 1
-            t.ca = getattribute(a_color)
-            t.ta = getattribute(a_transparency)
-        end
         local r = userrule(t)
+        local ma = getattribute(a_colorspace) or 1
+        local ca = getattribute(a_color)
+        local ta = getattribute(a_transparency)
+        if t.type == "mp" then
+            t.ma = ma
+            t.ca = ca
+            t.ta = ta
+        else
+            r[a_colorspace]   = ma
+            r[a_color]        = ca
+            r[a_transparency] = ta
+        end
         context(r)
     end
 }

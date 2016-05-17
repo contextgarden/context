@@ -837,6 +837,18 @@ vardef complementary expr c = (
         fi c
 ) enddef ;
 
+vardef complemented expr c =
+    save m ;
+        if cmykcolor c : m := max(cyanpart c, magentapart c, yellowpart c, blackpart c) ;
+                         ( (m,m,m,m) -
+    elseif rgbcolor  c : m := max(redpart c, greenpart c, bluepart c) ;
+                         ( (m,m,m) -
+    elseif pair      c : m := max(xpart c, ypart c) ;
+                         ( (m,m) -
+    elseif numeric   c : ( m -
+        fi c )
+enddef ;
+
 %D Well, this is the dangerous and naive version:
 
 def drawfill text t =

@@ -13,34 +13,36 @@ if not modules then modules = { } end modules ['node-rul'] = {
 
 local attributes, nodes, node = attributes, nodes, node
 
-local nuts         = nodes.nuts
-local tonode       = nuts.tonode
-local tonut        = nuts.tonut
+local nuts          = nodes.nuts
+local tonode        = nuts.tonode
+local tonut         = nuts.tonut
 
-local getfield     = nuts.getfield
-local setfield     = nuts.setfield
-local setnext      = nuts.setnext
-local setprev      = nuts.setprev
-local setlink      = nuts.setlink
-local getnext      = nuts.getnext
-local getprev      = nuts.getprev
-local getid        = nuts.getid
-local getattr      = nuts.getattr
-local setattr      = nuts.setattr
-local getfont      = nuts.getfont
-local getsubtype   = nuts.getsubtype
-local getlist      = nuts.getlist
-local setlist      = nuts.setlist
+local getfield      = nuts.getfield
+local setfield      = nuts.setfield
+local setnext       = nuts.setnext
+local setprev       = nuts.setprev
+local setlink       = nuts.setlink
+local getnext       = nuts.getnext
+local getprev       = nuts.getprev
+local getid         = nuts.getid
+local getattr       = nuts.getattr
+local setattr       = nuts.setattr
+local getfont       = nuts.getfont
+local getsubtype    = nuts.getsubtype
+local getlist       = nuts.getlist
+local setlist       = nuts.setlist
 
-local nodecodes    = nodes.nodecodes
-local tasks        = nodes.tasks
+local nodecodes     = nodes.nodecodes
+local tasks         = nodes.tasks
 
-local properties   = nodes.properties
-local attribs      = node.current_attr
+local properties    = nodes.properties
+local attribs       = node.current_attr
 
-local glyph_code   = nodecodes.glyph
-local disc_code    = nodecodes.disc
-local rule_code    = nodecodes.rule
+local glyph_code    = nodecodes.glyph
+local disc_code     = nodecodes.disc
+local rule_code     = nodecodes.rule
+local boundary_code = nodecodes.boundary
+local dir_code      = nodecodes.dir
 
 function nodes.striprange(first,last) -- todo: dir
     if first and last then -- just to be sure
@@ -49,7 +51,7 @@ function nodes.striprange(first,last) -- todo: dir
         end
         while first and first ~= last do
             local id = getid(first)
-            if id == glyph_code or id == disc_code then -- or id == rule_code
+            if id == glyph_code or id == disc_code or id == dir_code or id == boundary_code then -- or id == rule_code
                 break
             else
                 first = getnext(first)
@@ -62,7 +64,7 @@ function nodes.striprange(first,last) -- todo: dir
         end
         while last and last ~= first do
             local id = getid(last)
-            if id == glyph_code or id == disc_code then -- or id == rule_code
+            if id == glyph_code or id == disc_code or id == dir_code or id == boundary_code  then -- or id == rule_code
                 break
             else
                 local prev = getprev(last) -- luatex < 0.70 has italic correction kern not prev'd
@@ -123,6 +125,7 @@ local kern_code          = nodecodes.kern
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local rule_code          = nodecodes.rule
+local boundary_code      = nodecodes.boundary
 local dir_code           = nodecodes.dir
 
 local userskip_code      = skipcodes.userskip
@@ -198,7 +201,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     end
                     f, l, a = nil, nil, nil
                 end
-            elseif id == disc_code then
+            elseif id == disc_code or id == boundary_code then
                 if f then
                     l = n
                 end
@@ -215,8 +218,12 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                 if list then
                     setlist(n,(processwords(attribute,data,flush,list,n))) -- watch ()
                 end
-            elseif checkdir and id == dir_code then -- only changes in dir, we assume proper boundaries
-                if f and a then
+--             elseif checkdir and id == dir_code then -- only changes in dir, we assume proper boundaries
+--                 if f and a then
+--                     l = n
+--                 end
+            elseif id == dir_code then -- only changes in dir, we assume proper boundaries
+                if f then
                     l = n
                 end
             elseif f then
@@ -467,10 +474,10 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
         head = list
     end
     if prev then
-       setlink(prev,list)
+        setlink(prev,list)
     end
     if next then
-        setlink(next,list)
+        setlink(list,next)
     end
     local raise = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
     setfield(list,"shift",raise)

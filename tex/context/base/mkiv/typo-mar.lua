@@ -74,7 +74,7 @@ if not modules then modules = { } end modules ['typo-mar'] = {
 -- so far
 
 local format, validstring = string.format, string.valid
-local insert, remove = table.insert, table.remove
+local insert, remove, sortedkeys = table.insert, table.remove, table.sortedkeys
 local setmetatable, next = setmetatable, next
 local formatters = string.formatters
 local toboolean = toboolean
@@ -275,6 +275,11 @@ setattr(content,a_specialcontent,1) -- todo: a property
     local scope    = t.scope
     local name     = t.name
     local option   = t.option
+    local stack    = t.stack
+    if stack == v_yes or stack == v_continue then
+        inline   = false
+        t.inline = false
+    end
     if option then
         option   = settings_to_hash(option)
         t.option = option
@@ -313,7 +318,7 @@ setattr(content,a_specialcontent,1) -- todo: a property
     end
     if name and name ~= "" then
         if inlinestore then -- todo: inline store has to be done differently (not sparse)
-            local t = table.sortedkeys(store) for j=#t,1,-1 do local i = t[j]
+            local t = sortedkeys(store) for j=#t,1,-1 do local i = t[j]
                 local si = store[i]
                 if si.name == name then
                     local s = remove(store,i)
@@ -539,6 +544,9 @@ local function markovershoot(current) -- todo: alleen als offset > line
     local list = hpack_nodes(linked_nodes(anchor,getlist(current)),getfield(current,"width"),"exactly")--
  -- why not:
  -- local list = linked_nodes(anchor,getlist(current))
+    if trace_marginstack then
+        report_margindata("marking anchor %a",v_anchors)
+    end
     setlist(current,list)
 end
 
@@ -546,15 +554,17 @@ local function getovershoot(location)
     local p = getposition("md:v",v_anchors)
     local c = getposition("md:v",v_anchors+1)
     if p and c and p.p and p.p == c.p then
-        local distance = p.y - c.y
-        local offset = p[location] or 0
+        local distance  = p.y - c.y
+        local offset    = p[location] or 0
         local overshoot = offset - distance
         if trace_marginstack then
-            report_margindata("location %a, distance %p, offset %p, overshoot %p",location,distance,offset,overshoot)
+            report_margindata("location %a, anchor %a, distance %p, offset %p, overshoot %p",location,v_anchors,distance,offset,overshoot)
         end
         if overshoot > 0 then
             return overshoot
         end
+    elseif trace_marginstack then
+        report_margindata("location %a, anchor %a, nothing to correct",location,v_anchors)
     end
     return 0
 end
@@ -601,7 +611,7 @@ local function inject(parent,head,candidate)
     candidate.hsize = getfield(parent,"width") -- we can also pass textwidth
     candidate.psubtype = psubtype
     if trace_margindata then
-        report_margindata("processing, index %s, height %p, depth %p, parent %s",candidate.n,height,depth,listcodes[psubtype])
+        report_margindata("processing, index %s, height %p, depth %p, parent %a, method %a",candidate.n,height,depth,listcodes[psubtype],method)
     end
     if firstonstack then
         offset = 0
@@ -610,7 +620,7 @@ local function inject(parent,head,candidate)
     end
     if stack == v_yes then
         offset = offset + candidate.dy -- always
-        shift = shift + offset
+        shift  = shift + offset
     elseif stack == v_continue then
         offset = offset + candidate.dy -- always
         if firstonstack then
@@ -675,7 +685,7 @@ local function inject(parent,head,candidate)
         if trace_margindata then
             report_margindata("offset %p applied to line %s",delta,line)
         end
-        shift = shift + delta
+        shift  = shift + delta
         offset = offset + delta
     end
     setfield(box,"shift",shift)
@@ -842,9 +852,9 @@ local trialtypesetting = context.trialtypesetting
 
 function margins.localhandler(head,group) -- sometimes group is "" which is weird
 
-if trialtypesetting() then
-    return head, false
-end
+    if trialtypesetting() then
+        return head, false
+    end
 
     local inhibit = conditionals.inhibitmargindata
     if inhibit then
@@ -864,9 +874,9 @@ end
 
 function margins.globalhandler(head,group) -- check group
 
-if trialtypesetting() then
-    return head, false
-end
+    if trialtypesetting() then
+        return head, false
+    end
 
     local inhibit = conditionals.inhibitmargindata
     if inhibit or nofstored == 0 then
@@ -921,9 +931,9 @@ end
 
 function margins.finalhandler(head)
     if nofdelayed > 0 then
-     -- if trace_margindata then
-     --     report_margindata("flushing stage two, instore: %s, delayed: %s",nofstored,nofdelayed)
-     -- end
+        if trace_margindata then
+            report_margindata("flushing stage two, instore: %s, delayed: %s",nofstored,nofdelayed)
+        end
         head = tonut(head)
         local head, done = finalhandler(head)
         head = tonode(head)

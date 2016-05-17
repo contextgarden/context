@@ -108,7 +108,7 @@ local function restart(engine_old,engine_new)
     local command = format("%s --luaonly %q %s --redirected",engine_new,environment.ownname,environment.reconstructcommandline())
     report(format("redirect %s -> %s: %s",engine_old,engine_new,command))
     local result = os.execute(command)
-    os.exit(result)
+    os.exit(result == 0 and 0 or 1)
 end
 
 if getargument("redirected") then

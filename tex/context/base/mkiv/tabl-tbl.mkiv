@@ -1723,9 +1723,13 @@
 \unexpanded\def\tabl_tabulate_HQ_first{\tabl_tabulate_column_equal \plustwo}
 
 %unexpanded\def\tabl_tabulate_NG_first{\NC\tabl_tabulate_charalign}
-\unexpanded\def\tabl_tabulate_NG_first{\NC}
-\unexpanded\def\tabl_tabulate_NN_first{\NC\tabl_tabulate_digits} % new, undocumented, test first
-\unexpanded\def\tabl_tabulate_ND_first{\NC\tabl_tabulate_digits} % same, for old times sake
+%unexpanded\def\tabl_tabulate_NG_first{\NC}
+%unexpanded\def\tabl_tabulate_NN_first{\NC\tabl_tabulate_digits} % new, undocumented, test first
+%unexpanded\def\tabl_tabulate_ND_first{\NC\tabl_tabulate_digits} % same, for old times sake
+
+\unexpanded\def\tabl_tabulate_NG_first{\tabl_tabulate_column_normal\zerocount}
+\unexpanded\def\tabl_tabulate_NN_first{\tabl_tabulate_column_normal\zerocount\tabl_tabulate_digits} % new, undocumented, test first
+\unexpanded\def\tabl_tabulate_ND_first{\tabl_tabulate_column_normal\zerocount\tabl_tabulate_digits} % same, for old times sake
 
 \unexpanded\def\tabl_tabulate_NR_first {\tabl_tabulate_NR_common\conditionaltrue \tabl_tabulate_check_penalties} % next row
 \unexpanded\def\tabl_tabulate_NB_first {\tabl_tabulate_NR_common\conditionaltrue \tabl_tabulate_nobreak_inject } % next row no break
@@ -1738,9 +1742,15 @@
 \unexpanded\def\tabl_tabulate_CM_first{\global\c_tabl_tabulate_localcolorspan\plustwo  \tabl_tabulate_set_color_column\zerocount}
 \unexpanded\def\tabl_tabulate_CR_first{\global\c_tabl_tabulate_localcolorspan\plusthree\tabl_tabulate_set_color_column\zerocount}
 
+%D The following shortcut is handy for tables where one needs bold headers:
+
+%unexpanded\def\tabl_tabulate_BC_first{\NC\let\fontstyle\globalfontstyle\bf}
+\unexpanded\def\tabl_tabulate_BC_first{\tabl_tabulate_column_normal\zerocount\let\fontstyle\globalfontstyle\bf}
+
 \appendtoks
    \let\VL\tabl_tabulate_VL_first
    \let\NC\tabl_tabulate_NC_first
+   \let\BC\tabl_tabulate_BC_first
    \let\RC\tabl_tabulate_RC_first
    \let\HC\tabl_tabulate_HC_first
    \let\EQ\tabl_tabulate_EQ_first

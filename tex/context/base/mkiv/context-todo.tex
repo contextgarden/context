@@ -28,6 +28,19 @@
     \startitem
         get rid of \type {temp} node in hyphenator i.e. postpone to when needed
     \stopitem
+    \startitem
+        remove local par in head of line when done with linebreak
+    \stopitem
+    \startitem
+        check why leftskip doesn't always inherit attributes (maybe dir notes don't have them)
+        (also check redundant \type {delete_attribute_ref} after \type {new_glue})
+    \stopitem
+    \startitem
+        implement \type {\hyphenationbounds}
+    \stopitem
+    \startitem
+        only return nil when we expect multiple calls in in one line
+    \stopitem
 \stopitemize
 
 \subsubject{\CONTEXT}

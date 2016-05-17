@@ -35,6 +35,14 @@
                 <cd:parameter name="color">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
+                <cd:parameter name="type">
+                    <cd:constant type="mp"/>
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="mp">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

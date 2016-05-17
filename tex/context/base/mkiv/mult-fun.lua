@@ -106,7 +106,7 @@ return {
      -- "remapcolors", "normalcolors", "resetcolormap", "remapcolor", "remappedcolor",
      -- "recolor", "refill", "redraw", "retext", "untext", "restroke", "reprocess", "repathed",
         "tensecircle", "roundedsquare",
-        "colortype", "whitecolor", "blackcolor", "basiccolors", "complementary",
+        "colortype", "whitecolor", "blackcolor", "basiccolors", "complementary", "complemented",
         --
      -- "swappointlabels",
         "normalfill", "normaldraw", "visualizepaths", "detailpaths", "naturalizepaths",

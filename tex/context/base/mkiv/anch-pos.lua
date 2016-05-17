@@ -437,8 +437,8 @@ local function setregionbox(n,tag)
     local h = getfield(box,"height")
     local d = getfield(box,"depth")
     tobesaved[tag] = {
-        p = true,
-        x = true,
+        p = true,      -- not enhanced
+        x = true,      -- not enhanced
         y = getvpos(), -- true,
         w = w ~= 0 and w or nil,
         h = h ~= 0 and h or nil,

@@ -350,7 +350,7 @@
 
 \startxmlsetups xml:setups:typeset:nop
     \blank
-    \type {MISSING SETUP}
+    {\tttf MISSING SETUP}
     \blank
 \stopxmlsetups
 
@@ -895,5 +895,33 @@
 \let\cmdbasicsetup\basicsetup
 \let\cmdshortsetup\shortsetup
 \let\cmdfullsetup \showsetup
+
+% bonus
+
+\definefloat
+  [definition]
+
+\setupcaption
+  [definition]
+  [align=flushright]
+
+\unexpanded\def\showdefinition#1%
+  {\placedefinition[here][definition:#1]{\tex{#1}}{\showsetup{#1}}}
+
+\unexpanded\def\definition[#1]%
+  {\begingroup
+   \getcommalistsize[#1]%
+   \scratchcounter\zerocount
+   \def\dodefinition##1%
+     {\advance\scratchcounter\plusone
+      \ifnum\scratchcounter=\commalistsize
+        \in{and}[definition:##1]%
+      \else\ifnum\scratchcounter=\plusone
+        \in{definition}[definition:##1]\space
+      \else
+        \in{, }[definition:##1]\space
+      \fi\fi}%
+   \processcommalist[#1]\dodefinition
+   \endgroup}
 
 \protect \endinput

@@ -38,9 +38,7 @@
 %D \getbuffer
 %D \stoplines
 %D
-%D The next macros are derived from the \PLAIN\ \TEX\ one, but also supports
-%D nesting. The \type{$} keeps us in horizontal mode and at the same time
-%D applies grouping.
+%D The formal definitions are:
 %D
 %D \showsetup{underbar}
 %D \showsetup{underbars}
@@ -49,11 +47,9 @@
 %D \showsetup{overstrike}
 %D \showsetup{overstrikes}
 %D
-%D \showsetup{setupunderbar}
+%D \showsetup{setupbars}
 %D
-%D Nested bars can be configured by appending \type {:<index>} to the category.
-%D Normally units in combination with a unitless thickness specification but
-%D there units can be used too.
+%D Units can be any normal \TEX\ unit:
 %D
 %D \startbuffer
 %D \setupbars[unit=mm,rulethickness=1]     bar\startbar[underbar]foo\stopbar bar\blank
@@ -105,7 +101,9 @@
     \else
         \expandafter\newcount\csname\??barindex\currentbar\endcsname
     \fi
-    \normalexpanded{\t_node_rules_checklist{\node_rules_redefine{\currentbar}\the\t_node_rules_checklist}}%
+%     \normalexpanded{\t_node_rules_checklist{\node_rules_redefine{\currentbar}\the\t_node_rules_checklist}}%
+    \normalexpanded{\t_node_rules_checklist{\the\t_node_rules_checklist\node_rules_redefine{\currentbar}}}%
+%     \etoksapp\t_node_rules_checklist{\node_rules_redefine{\currentbar}}%
     \node_rules_define
     \setuevalue\currentbar{\node_rules_direct{\currentbar}}%
 \to \everydefinebar
@@ -134,16 +132,10 @@
 \unexpanded\def\node_rules_direct#1%
   {\groupedcommand{\node_rules_set{#1}}\relax}
 
-% \unexpanded\def\node_rules_set
-%   {\clf_enablerules % will be moved to lua
-%    \glet\node_rules_set\node_rules_set_indeed
-%    \node_rules_set}
-%
-%\unexpanded\def\node_rules_set_indeed#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
-
 \unexpanded\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
   {\edef\currentbar{#1}%
    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   % maybe: \usebarstyleandcolor\c!textgroundstyle\c!textcolor
    % todo: move this to lua .. we callout anyway
    \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
    \advance\c_node_rules_index\plusone
@@ -156,10 +148,12 @@
 
 \unexpanded\def\startbar[#1]%
   {\begingroup
-   \node_rules_set{#1}}
+   \node_rules_set{#1}%
+   \ignorespaces}
 
 \unexpanded\def\stopbar
-  {\endgroup}
+  {\removeunwantedspaces
+   \endgroup}
 
 \unexpanded\def\setbar[#1]%
   {\node_rules_set{#1}}
@@ -277,7 +271,7 @@
 
 \startuseMPgraphic{rules:under:dash}
     draw
-        ((0,RuleDepth) ... (RuleWidth,RuleDepth))
+        ((0,RuleDepth) -- (RuleWidth,RuleDepth))
         shifted (0,RuleFactor*RuleOffset)
         dashed dashpattern(on RuleFactor/2 off RuleFactor/2)
         withpen pencircle scaled RuleThickness
@@ -286,10 +280,13 @@
 \stopuseMPgraphic
 
 \startuseMPgraphic{rules:under:dots}
+    path p ; p := (0,RuleDepth) -- (RuleWidth,RuleDepth) ;
+    numeric l ; l := arclength(p);
+    l := l mod RuleThickness/4;
     draw
-        ((0,RuleDepth) ... (RuleWidth,RuleDepth))
-        shifted (0,RuleFactor*RuleOffset)
-        dashed dashpattern(off 3/RuleFactor on 0 off 3/RuleFactor)
+        p
+        shifted (l,RuleFactor*RuleOffset)
+        dashed dashpattern(off 2RuleThickness+l on 0 off 2RuleThickness)
         withpen pencircle scaled 2RuleThickness
         withcolor RuleColor ;
     setbounds currentpicture to unitsquare xysized(RuleWidth,RuleHeight) ;
@@ -372,22 +369,24 @@
      +\csname\??shiftattribute#1\ifcsname\??shift#1:\number\c_node_shifts_index\s!parent\endcsname:\number\c_node_shifts_index\fi\endcsname
    \relax
    \useshiftstyleandcolor\c!style\c!color
-   \dosetupisolatedalign{\shiftparameter\c!align}}
+   \dosetupisolatedalign{\shiftparameter\c!align}} % weird feature that i probably needed once
 
 \unexpanded\def\startshift[#1]%
   {\begingroup
-   \node_shifts_set{#1}}
+   \node_shifts_set{#1}%
+   \ignorespaces}
 
 \unexpanded\def\stopshift
-  {\endgroup}
+  {\removeunwantedspaces
+   \endgroup}
 
 % \unexpanded\def\node_shifts_direct#1%
 %   {\doisolatedgroupedalign{\node_shifts_set{#1}}\donothing}
 
 \unexpanded\def\node_shifts_direct#1%
   {\groupedcommand
-     {\begingroup\dostartisolation\begingroup\node_shifts_set{#1}}
-     {\endgroup\dostopisolation\endgroup}}
+     {\begingroup\dostartisolation\begingroup\node_shifts_set{#1}\ignorespaces}
+     {\removeunwantedspaces\endgroup\dostopisolation\endgroup}}
 
 \setupshifts
   [\c!method=0,

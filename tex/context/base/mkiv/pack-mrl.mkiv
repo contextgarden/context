@@ -56,10 +56,14 @@
      \setstrut
    \fi\fi
    \useblackrulesstyleandcolor\c!style\c!color
-   \vrule
-     \ifx\p_width \v!max\s!width \emwidth\else\ifx\p_width \empty\else\s!width \p_width \fi\fi
-     \ifx\p_height\v!max\s!height\strutht\else\ifx\p_height\empty\else\s!height\p_height\fi\fi
-     \ifx\p_depth \v!max\s!depth \strutdp\else\ifx\p_depth \empty\else\s!depth \p_depth \fi\fi
+   \ifcsname\??blackruletype\directblackrulesparameter\c!type\endcsname
+     \lastnamedcs
+   \else
+     \vrule
+   \fi
+   \ifx\p_width \v!max\s!width \emwidth\else\ifx\p_width \empty\else\s!width \p_width \fi\fi
+   \ifx\p_height\v!max\s!height\strutht\else\ifx\p_height\empty\else\s!height\p_height\fi\fi
+   \ifx\p_depth \v!max\s!depth \strutdp\else\ifx\p_depth \empty\else\s!depth \p_depth \fi\fi
    \egroup}
 
 \setupblackrules
@@ -109,7 +113,7 @@
    \scratchdistance\directblackrulesparameter\c!distance
    \scratchcounter \directblackrulesparameter\c!n
    \edef\p_alternative{\blackrulesparameter\c!alternative}%
-   \ifx\p_alternative\c!b
+   \ifx\p_alternative\c!b % why not just check distance
      \ifnum\scratchcounter=\plusone
        \scratchdistance\zeropoint
      \else
@@ -117,14 +121,33 @@
      \fi
    \fi
    \useblackrulesstyleandcolor\c!style\c!color
+   \edef\brule
+     {\ifcsname\??blackruletype\directblackrulesparameter\c!type\endcsname
+        \lastnamedcs
+      \else
+        \vrule
+      \fi}%
    \dorecurse\scratchcounter % a typical case of where we can use a simple loop
-     {\vrule
+     {\brule
         \s!width \scratchwidth
         \s!height\scratchheight
         \s!depth \scratchdepth
-      \hskip\scratchdistance}%
+      \ifzeropt\scratchdistance\else
+        \hskip\scratchdistance
+      \fi}%
    \unskip
    \egroup}
+
+\installcorenamespace{blackruletype}
+
+\setvalue{\??blackruletype mp}%
+  {\frule
+     type {mp}%
+     data {\includeMPgraphic{\directblackrulesparameter\c!mp}}}
+
+\letvalue{\??blackruletype\s!no }\novrule
+%letvalue{\??blackruletype\s!yes}\vrule
+
 
 \setupblackrules
   [\c!n=3,
