@@ -265,6 +265,15 @@ end
 local nodecodes = simplified(node.types())
 local whatcodes = simplified(node.whatsits())
 
+local usercodes = allocate {
+    [ 97] = "attributes", -- a
+    [100] = "number",     -- d
+    [108] = "lua",        -- l
+    [110] = "nodes",      -- n
+    [115] = "string",     -- s
+    [116] = "tokens"      -- t
+}
+
 skipcodes     = allocate(swapped(skipcodes,skipcodes))
 boundarycodes = allocate(swapped(boundarycodes,boundarycodes))
 noadcodes     = allocate(swapped(noadcodes,noadcodes))
@@ -283,25 +292,32 @@ accentcodes   = allocate(swapped(accentcodes,accentcodes))
 fencecodes    = allocate(swapped(fencecodes,fencecodes))
 rulecodes     = allocate(swapped(rulecodes,rulecodes))
 leadercodes   = allocate(swapped(leadercodes,leadercodes))
+usercodes     = allocate(swapped(usercodes,usercodes))
 
-nodes.skipcodes     = skipcodes     nodes.gluecodes    = skipcodes -- more official
+nodes.skipcodes     = skipcodes
 nodes.boundarycodes = boundarycodes
 nodes.noadcodes     = noadcodes
 nodes.nodecodes     = nodecodes
-nodes.whatcodes     = whatcodes     nodes.whatsitcodes = whatcodes -- more official
+nodes.whatcodes     = whatcodes
 nodes.listcodes     = listcodes
 nodes.glyphcodes    = glyphcodes
 nodes.kerncodes     = kerncodes
 nodes.penaltycodes  = penaltycodes
 nodes.mathcodes     = mathcodes
 nodes.fillcodes     = fillcodes
-nodes.margincodes   = margincodes   nodes.marginkerncodes    = margincodes
-nodes.disccodes     = disccodes     nodes.discretionarycodes = disccodes
+nodes.margincodes   = margincodes
+nodes.disccodes     = disccodes
 nodes.accentcodes   = accentcodes
 nodes.radicalcodes  = radicalcodes
 nodes.fencecodes    = fencecodes
 nodes.rulecodes     = rulecodes
 nodes.leadercodes   = leadercodes
+nodes.usercodes     = usercodes
+
+nodes.gluecodes          = skipcodes -- more official
+nodes.whatsitcodes       = whatcodes -- more official
+nodes.marginkerncodes    = margincodes
+nodes.discretionarycodes = disccodes
 
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment
@@ -327,6 +343,9 @@ nodes.codes = allocate { -- mostly for listing
     whatsit  = whatcodes,
     accent   = accentcodes,
     fence    = fencecodes,
+    rule     = rulecodes,
+    leader   = leadercodes,
+    user     = usercodes,
 }
 
 local report_codes = logs.reporter("nodes","codes")

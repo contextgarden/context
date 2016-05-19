@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/15/16 20:46:20
+-- merge date  : 05/19/16 13:43:44
 
 do -- begin closure to overcome local limits and interference
 
@@ -19686,7 +19686,7 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
   while start do
     local char=ischar(start,font)
     if char then
-      local a=getattr(start,0)
+      local a=attr and getattr(start,0)
       if not a or (a==attr) then
         local lookupmatch=lookupcache[char]
         if lookupmatch then
@@ -19716,7 +19716,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
   while start~=stop do
     local char=ischar(start,font)
     if char then
-      local a=getattr(start,0)
+      local a=attr and getattr(start,0)
       if not a or (a==attr) then
         local lookupmatch=lookupcache[char]
         if lookupmatch then
@@ -19749,7 +19749,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
   end
 end
 local function k_run_single(sub,injection,last,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-  local a=getattr(sub,0)
+  local a=attr and getattr(sub,0)
   if not a or (a==attr) then
     for n in traverse_nodes(sub) do 
       if n==last then
@@ -19780,7 +19780,7 @@ local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlm
   while start do
     local char=ischar(start,font)
     if char then
-      local a=getattr(start,0)
+      local a=attr and getattr(start,0)
       if not a or (a==attr) then
         for i=1,nofsteps do
           local step=steps[i]
@@ -19821,7 +19821,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
   while start~=stop do
     local char=ischar(start,font)
     if char then
-      local a=getattr(start,0)
+      local a=attr and getattr(start,0)
       if not a or (a==attr) then
         for i=1,nofsteps do
           local step=steps[i]
@@ -19862,7 +19862,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
   end
 end
 local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-  local a=getattr(sub,0)
+  local a=attr and getattr(sub,0)
   if not a or (a==attr) then
     for n in traverse_nodes(sub) do 
       if n==last then
@@ -19944,6 +19944,9 @@ local function featuresprocessor(head,font,attr)
     nesting=nesting-1
     return head,false
   end
+  if attr==0 then
+    attr=false 
+  end
   head=tonut(head)
   if trace_steps then
     checkstep(head)
@@ -19981,7 +19984,7 @@ local function featuresprocessor(head,font,attr)
       while start do
         local char=ischar(start,font)
         if char then
-          local a=getattr(start,0)
+          local a=attr and getattr(start,0)
           if not a or (a==attr) then
             for i=1,nofsteps do
               local step=steps[i]
@@ -20022,7 +20025,7 @@ local function featuresprocessor(head,font,attr)
           while start do
             local char,id=ischar(start,font)
             if char then
-              local a=getattr(start,0)
+              local a=attr and getattr(start,0)
               if a then
                 a=(a==attr) and (not attribute or getprop(start,a_state)==attribute)
               else
@@ -20072,7 +20075,7 @@ local function featuresprocessor(head,font,attr)
         while start do
           local char,id=ischar(start,font)
           if char then
-            local a=getattr(start,0)
+            local a=attr and getattr(start,0)
             if a then
               a=(a==attr) and (not attribute or getprop(start,a_state)==attribute)
             else
@@ -22272,6 +22275,7 @@ local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local trace_indexing=false trackers.register("afm.indexing",function(v) trace_indexing=v end)
 local trace_loading=false trackers.register("afm.loading",function(v) trace_loading=v end)
 local report_afm=logs.reporter("fonts","afm loading")
+local report_afm=logs.reporter("fonts","pfb loading")
 fonts=fonts or {}
 local handlers=fonts.handlers or {}
 fonts.handlers=handlers
@@ -22324,16 +22328,16 @@ do
   local function loadpfbvector(filename)
     local data=io.loaddata(resolvers.findfile(filename))
     if not data then
-      print("no data",filename)
+      report_pfb("no data in %a",filename)
       return
     end
-    if not find(data,"!PS%-AdobeFont%-") then
-      print("no font",filename)
+    if not (find(data,"!PS%-AdobeFont%-") or find(data,"%%!FontType1")) then
+      report_pfb("no font in %a",filename)
       return
     end
     local ascii,binary=match(data,"(.*)eexec%s+......(.*)")
     if not binary then
-      print("no binary",filename)
+      report_pfb("no binary data in %a",filename)
       return
     end
     binary=decrypt(binary,4)
@@ -22342,7 +22346,7 @@ do
       vector[0]=table.remove(vector,1)
     end
     if not vector then
-      print("no vector",filename)
+      report_pfb("no vector in %a",filename)
       return
     end
     return vector
@@ -22367,16 +22371,18 @@ do
     end
   end
 end
-local spacing=patterns.whitespace
+local spacer=patterns.spacer
+local whitespace=patterns.whitespace
 local lineend=patterns.newline
+local spacing=spacer^0
 local number=spacing*S("+-")^-1*(R("09")+S("."))^1/tonumber
-local name=spacing*C((1-spacing)^1)
-local words=spacing*(1-lineend)^1/strip
+local name=spacing*C((1-whitespace)^1)
+local words=spacing*((1-lineend)^1/strip)
 local rest=(1-lineend)^0
 local fontdata=Carg(1)
 local semicolon=spacing*P(";")
-local plus=P("plus")*number
-local minus=P("minus")*number
+local plus=spacing*P("plus")*number
+local minus=spacing*P("minus")*number
 local function addkernpair(data,one,two,value)
   local chr=data.characters[one]
   if chr then
@@ -22460,6 +22466,7 @@ local p_parameters=P(false)+fontdata*((P("FontName")+P("FullName")+P("FamilyName
 +(fontdata*C("DELIM")*number*number*rest)/set_2 
 +(fontdata*C("AXISHEIGHT")*number*rest)/set_1 
   )
+local fullparser=(P("StartFontMetrics")*fontdata*name/start )*(p_charmetrics+p_kernpairs+p_parameters+(1-P("EndFontMetrics")) )^0*(P("EndFontMetrics")/stop )
 local fullparser=(P("StartFontMetrics")*fontdata*name/start )*(p_charmetrics+p_kernpairs+p_parameters+(1-P("EndFontMetrics")) )^0*(P("EndFontMetrics")/stop )
 local infoparser=(P("StartFontMetrics")*fontdata*name/start )*(p_parameters+(1-P("EndFontMetrics")) )^0*(P("EndFontMetrics")/stop )
 local function read(filename,parser)
@@ -23195,7 +23202,8 @@ local function check_afm(specification,fullname)
   end
 end
 function readers.afm(specification,method)
-  local fullname,tfmdata=specification.filename or "",nil
+  local fullname=specification.filename or ""
+  local tfmdata=nil
   if fullname=="" then
     local forced=specification.forced or ""
     if forced~="" then
@@ -23223,8 +23231,17 @@ function readers.pfb(specification,method)
   if trace_defining then
     report_afm("using afm reader for %a",original)
   end
-  specification.specification=file.replacesuffix(original,"afm")
   specification.forced="afm"
+  local function swap(name)
+    local value=specification[swap]
+    if value then
+      specification[swap]=gsub("%.pfb",".afm",1)
+    end
+  end
+  swap("filename")
+  swap("fullname")
+  swap("forcedname")
+  swap("specification")
   return readers.afm(specification,method)
 end
 

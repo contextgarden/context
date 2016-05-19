@@ -686,6 +686,13 @@
     \getsetupstring{\xmlatt{#1}{type}}
 \stopxmlsetups
 
+\definebar % in case we mess with underbar settings
+  [cmd_underbar]
+  [\v!underbar]
+  [\c!foregroundcolor=,
+   \c!foregroundstyle=,
+   \c!color=]
+
 \startxmlsetups xml:setups:constant
     \doifelsemode {setups-pass-one} {
     } {
@@ -694,7 +701,7 @@
             \xmlmappedvalue{setups:method}{\xmlatt{#1}{method}}{none}
         } {
             \doif {\xmlatt{#1}{default}} {yes} {
-                \underbar % next needs to be {braced}
+                \cmd_underbar % next needs to be {braced}
             }
         }
         {\getsetupstring{\xmlatt{#1}{type}}}

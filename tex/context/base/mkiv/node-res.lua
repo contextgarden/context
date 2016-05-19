@@ -27,6 +27,7 @@ local kerncodes     = nodes.kerncodes
 local rulecodes     = nodes.rulecodes
 local nodecodes     = nodes.nodecodes
 local boundarycodes = nodes.boundarycodes
+local usercodes     = nodes.usercodes
 
 local glyph_code    = nodecodes.glyph
 
@@ -150,11 +151,15 @@ local textdir           = register_nut(new_nut("dir"))
 
 local latelua           = register_nut(new_nut("whatsit",whatsitcodes.latelua))
 local special           = register_nut(new_nut("whatsit",whatsitcodes.special))
-local user_n            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_n,"type",100) -- 44
-local user_l            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_l,"type",110) -- 44
-local user_s            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_s,"type",115) -- 44
-local user_t            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_t,"type",116) -- 44
------ user_c            = register_nut(new_nut("whatsit",whatsitcodes.userdefined)) setfield(user_c,"type",108) -- 44
+
+local user_node         = new_nut("whatsit",whatsitcodes.userdefined)
+
+local user_number       = register_nut(copy_nut(user_node)) setfield(user_number,    "type",usercodes.number)
+local user_nodes        = register_nut(copy_nut(user_node)) setfield(user_nodes,     "type",usercodes.nodes)
+local user_string       = register_nut(copy_nut(user_node)) setfield(user_string,    "type",usercodes.string)
+local user_tokens       = register_nut(copy_nut(user_node)) setfield(user_tokens,    "type",usercodes.tokens)
+----- user_lua          = register_nut(copy_nut(user_node)) setfield(user_lua,       "type",usercodes.lua) -- in > 0.95
+local user_attributes   = register_nut(copy_nut(user_node)) setfield(user_attributes,"type",usercodes.attributes)
 
 local left_margin_kern  = register_nut(new_nut("margin_kern",0))
 local right_margin_kern = register_nut(new_nut("margin_kern",1))
@@ -571,7 +576,7 @@ end
 -- local str = userids[num]
 
 function nutpool.usernumber(id,num)
-    local n = copy_nut(user_n)
+    local n = copy_nut(user_number)
     if num then
         setfield(n,"user_id",id)
         setfield(n,"value",num)
@@ -582,7 +587,7 @@ function nutpool.usernumber(id,num)
 end
 
 function nutpool.userlist(id,list)
-    local n = copy_nut(user_l)
+    local n = copy_nut(user_nodes)
     if list then
         setfield(n,"user_id",id)
         setfield(n,"value",list)
@@ -593,7 +598,7 @@ function nutpool.userlist(id,list)
 end
 
 function nutpool.userstring(id,str)
-    local n = copy_nut(user_s)
+    local n = copy_nut(user_string)
     if str then
         setfield(n,"user_id",id)
         setfield(n,"value",str)
@@ -604,7 +609,7 @@ function nutpool.userstring(id,str)
 end
 
 function nutpool.usertokens(id,tokens)
-    local n = copy_nut(user_t)
+    local n = copy_nut(user_tokens)
     if tokens then
         setfield(n,"user_id",id)
         setfield(n,"value",tokens)
@@ -614,16 +619,27 @@ function nutpool.usertokens(id,tokens)
     return n
 end
 
--- function nutpool.usercode(id,code)
---     local n = copy_nut(user_c)
---     if code then
---         setfield(n,"user_id",id)
---         setfield(n,"value",code)
---     else
---         setfield(n,"value",id)
---     end
---     return n
--- end
+function nutpool.userlua(id,code)
+    local n = copy_nut(user_lua)
+    if code then
+        setfield(n,"user_id",id)
+        setfield(n,"value",code)
+    else
+        setfield(n,"value",id)
+    end
+    return n
+end
+
+function nutpool.userattributes(id,attr)
+    local n = copy_nut(user_attributes)
+    if attr then
+        setfield(n,"user_id",id)
+        setfield(n,"value",attr)
+    else
+        setfield(n,"value",id)
+    end
+    return n
+end
 
 function nutpool.special(str)
     local n = copy_nut(special)
@@ -637,24 +653,22 @@ local function cleanup(nofboxes) -- todo
     if nodes.tracers.steppers then -- to be resolved
         nodes.tracers.steppers.reset() -- todo: make a registration subsystem
     end
-    local nl, nr = 0, nofreserved
+    local nl = 0
+    local nr = nofreserved
     for i=1,nofreserved do
         local ri = reserved[i]
-    --  if not (getid(ri) == glue_spec and not getfield(ri,"is_writable")) then
-            free_nut(reserved[i])
-    --  end
+        free_nut(reserved[i])
     end
     if nofboxes then
         for i=0,nofboxes do
             local l = getbox(i)
             if l then
--- print(nodes.listtoutf(getlist(l)))
                 free_nut(l) -- also list ?
                 nl = nl + 1
             end
         end
     end
-    reserved = { }
+    reserved    = { }
     nofreserved = 0
     return nr, nl, nofboxes -- can be nil
 end

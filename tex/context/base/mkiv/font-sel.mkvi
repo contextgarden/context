@@ -1,6 +1,6 @@
 %D \module
 %D   [     file=font-sel,
-%D      version=2014.07.27,
+%D      version=2016.05.16,
 %D        title=\CONTEXT\ User Module,
 %D     subtitle=Selectfont,
 %D       author=Wolfgang Schuster,
@@ -17,7 +17,7 @@
 \installcorenamespace                      {selectfont}
 \installsimplecommandhandler \??selectfont {selectfont}
 
-\unexpanded\def\selectfont_setparameters[#settings]%
+\unexpanded\def\selectfont_register[#settings]%
   {\begingroup
    \setupcurrentselectfont[#settings]%
    \edef\p_selectfont_preset{\selectfontparameter\c!preset}%
@@ -25,73 +25,30 @@
      \processcommacommand[\p_selectfont_preset]\selectfont_preset_process
      \setupcurrentselectfont[#settings]%
    \fi
-   \setexpandedselectfontparameter\c!style      {\expandnamespaceparameter\??selectfontstyle      \selectfontparameter\c!style      \s!rm     }%
-   \setexpandedselectfontparameter\c!alternative{\expandnamespaceparameter\??selectfontalternative\selectfontparameter\c!alternative\v!default}%
-   \xdef\selectfont_index{\clf_defineselectfont
+   \font_helpers_process_alternative_list\clf_registerfontalternative
+   \setexpandedselectfontparameter\c!style{\expandnamespaceparameter\??fontshortstyle\selectfontparameter\c!style\s!rm}%
+   \xdef\selectfont_index{\clf_registerfontfamily
         metadata {%
-            typeface    {\selectfontparameter\c!name}%
+            typeface    {\selectfontparameter\c!label}%
             style       {\selectfontparameter\c!style}%
-            family      {\selectfontparameter\c!family}%
+            family      {\selectfontparameter\c!name}%
         }
         options {%
-            opticals    {\selectfontparameter\c!opticalsize}%
-            scale       {\selectfontparameter\c!scale}%
+            designsize  {\selectfontparameter\s!designsize}%
+            rscale      {\selectfontparameter\s!rscale}%
             goodies     {\selectfontparameter\c!goodies}%
-            alternative {\selectfontparameter\c!alternative}%
+			extras      {\selectfontparameter\c!extras}%
+            features    {\selectfontparameter\c!features}%
+			preset      {\selectfontparameter\c!preset}%
             range       {\selectfontparameter\c!range}%  fallback only
             offset      {\selectfontparameter\c!offset}% fallback only
             check       {\selectfontparameter\c!check}%  fallback only
             force       {\selectfontparameter\c!force}%  fallback only
         }
-        alternatives {%
-            tf {\selectfontparameter\s!tf}%
-            bf {\selectfontparameter\s!bf}%
-            it {\selectfontparameter\s!it}%
-            sl {\selectfontparameter\s!sl}%
-            bi {\selectfontparameter\s!bi}%
-            bs {\selectfontparameter\s!bs}%
-            sc {\selectfontparameter\s!sc}%
-        }
-        files {%
-            tf {\selectfontparameter\c!regularfont}%
-            bf {\selectfontparameter\c!boldfont}%
-            it {\selectfontparameter\c!italicfont}%
-            sl {\selectfontparameter\c!slantedfont}%
-            bi {\selectfontparameter\c!bolditalicfont}%
-            bs {\selectfontparameter\c!boldslantedfont}%
-            sc {\selectfontparameter\c!smallcapsfont}%
-        }
-        features {%
-            tf {\selectfontparameter\c!regularfeatures}%
-            bf {\selectfontparameter\c!boldfeatures}%
-            it {\selectfontparameter\c!italicfeatures}%
-            sl {\selectfontparameter\c!slantedfeatures}%
-            bi {\selectfontparameter\c!bolditalicfeatures}%
-            bs {\selectfontparameter\c!boldslantedfeatures}%
-            sc {\selectfontparameter\c!smallcapsfeatures}%
-        }}%
+		userdata {%
+			\luaexpanded{#settings}%
+		}}%
    \endgroup}
-
-%D \macros
-%D   {defineselectfontstyle}
-
-\installcorenamespace {selectfontstyle}
-
-\unexpanded\def\defineselectfontstyle
-  {\dodoubleargument\selectfont_style_define}
-
-\def\selectfont_style_define[#styles][#shortstyle]%
-  {\processcommalist[#styles]{\selectfont_style_define_indeed{#shortstyle}}}
-
-\def\selectfont_style_define_indeed#shortstyle#style%
-  {\setvalue{\??selectfontstyle#style}{#shortstyle}}
-
-\defineselectfontstyle [\s!rm,\s!serif]       [\s!rm]
-\defineselectfontstyle [\s!ss,\s!sans]        [\s!ss]
-\defineselectfontstyle [\s!tt,\s!mono]        [\s!tt]
-\defineselectfontstyle [\s!hw,\s!handwriting] [\s!hw]
-\defineselectfontstyle [\s!cg,\s!calligraphy] [\s!cg]
-\defineselectfontstyle [\s!mm,\s!math]        [\s!mm]
 
 %D \macros
 %D   {definefontfamilypreset}
@@ -113,6 +70,10 @@
      % unknown preset
    \fi}
 
+\def\selectfont_preset_define[#name][#settings]%
+  {\setvalue{\??selectfontpreset#name}{\setupcurrentselectfont[#settings]}%
+   \clf_definefontfamilypreset{#name}{\luaexpanded{#settings}}}
+
 \definefontfamilypreset
   [range:chinese]
   [\c!range={cjkcompatibilityforms,
@@ -131,19 +92,19 @@
 
 \definefontfamilypreset
   [range:japanese]
-  [\crange={cjkcompatibilityforms,
-            cjkcompatibilityideographs,
-            cjkcompatibilityideographssupplement,
-            cjkradicalssupplement,
-            cjkstrokes,
-            cjksymbolsandpunctuation,
-            cjkunifiedideographs,
-            cjkunifiedideographsextensiona,
-            cjkunifiedideographsextensionb,
-            halfwidthandfullwidthforms,
-            verticalforms,
-            hiragana,
-            katakana}]
+  [\c!range={cjkcompatibilityforms,
+             cjkcompatibilityideographs,
+             cjkcompatibilityideographssupplement,
+             cjkradicalssupplement,
+             cjkstrokes,
+             cjksymbolsandpunctuation,
+             cjkunifiedideographs,
+             cjkunifiedideographsextensiona,
+             cjkunifiedideographsextensionb,
+             halfwidthandfullwidthforms,
+             verticalforms,
+             hiragana,
+             katakana}]
 
 \definefontfamilypreset
   [range:korean]
@@ -207,36 +168,6 @@
 \definefontfamilypreset [math:uppercasegreekbold]       [\c!range=uppercasegreeknormal,\c!offset=uppercasegreekbold,      \s!tf=style:bold]
 \definefontfamilypreset [math:uppercasegreekbolditalic] [\c!range=uppercasegreeknormal,\c!offset=uppercasegreekbolditalic,\s!tf=style:bolditalic]
 
-
-%D \macros
-%D   {defineselectfontalternative}
-%D
-%D The results between the old {\em simplefonts} and the new {\em selectfont}
-%D can be different because simplefonts the name entries in the database to find
-%D the styles for a font while selectfont the newer spec-method to the find the
-%D files for each style.
-%D
-%D The used method depends on the command one uses to load a font but it is
-%D also possible to switch between them with the {\em alternative} key, possible
-%D values are:
-%D
-%D \startitemize[packed]
-%D \startitem selectfont and \stopitem
-%D \startitem simplefonts. \stopitem
-%D \stopitemize
-
-\installcorenamespace {selectfontalternative}
-
-\unexpanded\def\defineselectfontalternative
-  {\dodoubleargument\selectfont_alternative_define}
-
-\def\selectfont_alternative_define[#name][#alternative]%
-  {\setvalue{\??selectfontalternative#name}{#alternative}}
-
-\defineselectfontalternative [\v!selectfont ] [\v!selectfont ]
-\defineselectfontalternative [\v!simplefonts] [\v!simplefonts]
-\defineselectfontalternative [\v!default    ] [\v!default    ]
-
 %D \macros
 %D   {definefontfamily,definefallbackfamily}
 %D
@@ -250,17 +181,17 @@
 %D \definefontfamily [dejavu] [serif] [DejaVu Serif]
 %D \definefontfamily [dejavu] [sans]  [DejaVu Sans]
 %D \definefontfamily [dejavu] [mono]  [DejaVu Sans Mono]
-%D \definefontfamily [dejavu] [math]  [XITS Math] [scale=1.1]
+%D \definefontfamily [dejavu] [math]  [XITS Math] [rscale=1.1]
 %D
 %D \definefontfamily [office] [serif] [Times New Roman]
-%D \definefontfamily [office] [sans]  [Arial] [scale=0.9]
+%D \definefontfamily [office] [sans]  [Arial] [rscale=0.9]
 %D \definefontfamily [office] [mono]  [Courier]
 %D \definefontfamily [office] [math]  [TeX Gyre Termes Math]
 %D
 %D \definefontfamily [linux] [serif] [Linux Libertine O]
 %D \definefontfamily [linux] [sans]  [Linux Biolinum O]
 %D \definefontfamily [linux] [mono]  [Latin Modern Mono]
-%D \definefontfamily [linux] [math]  [TeX Gyre Pagella Math] [scale=0.9]
+%D \definefontfamily [linux] [math]  [TeX Gyre Pagella Math] [rscale=0.9]
 %D
 %D \setupbodyfont[dejavu]
 %D
@@ -306,7 +237,7 @@
 %D optical sizes when they are a feature of the requested font.
 %D
 %D \starttyping
-%D \definefontfamily[mainface][serif][Latin Modern Roman][opticalsize=yes]
+%D \definefontfamily[mainface][serif][Latin Modern Roman][designsize=auto]
 %D
 %D \setupbodyfont[mainface]
 %D
@@ -319,15 +250,15 @@
 %D \stoptext
 %D \stoptyping
 
-% regularfont = … | * … | name:… | name:* … | file:… | file:* … | spec:…-…-… | style:medium
+% tf = … | * … | name:… | name:* … | file:… | file:* … | style:medium
 
 \unexpanded\def\definefontfamily
   {\doquadrupleempty\selectfont_family_define}
 
 \def\selectfont_family_define[#typeface][#style][#family][#settings]%
   {\doifelseassignment{#settings}
-     {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},#settings]}
-     {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},\c!preset={#settings}]}%
+     {\selectfont_register[\c!label={#typeface},\c!style={#style},\c!name={#family},#settings]}
+     {\selectfont_register[\c!label={#typeface},\c!style={#style},\c!name={#family},\c!preset={#settings}]}%
    \clf_definefontfamily\selectfont_index\relax}
 
 \unexpanded\def\definefallbackfamily
@@ -335,95 +266,13 @@
 
 \def\selectfont_fallback_define[#typeface][#style][#family][#settings]%
   {\doifelseassignment{#settings}
-     {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},#settings]}
-     {\selectfont_setparameters[\c!name={#typeface},\c!style={#style},\c!family={#family},\c!preset={#settings}]}%
-   \edef\p_selectfont_style{\expandnamespacevalue\??selectfontstyle{#style}\s!rm}%
-   \clf_definefallbackfamily{#typeface}{\p_selectfont_style}\selectfont_index\relax}
-
-%D \macros
-%D   {setupfontfamily,setupfallbackfamily}
-%D
-%D For simple documents which don’t need complex font settings one could use
-%D the \tex{setupfontfamily} command where the requested font is enabled immediately
-%D without the need to load it with \tex{setupbodyfont}. The downside of this method
-%D is that processing of the document takes longer with each additional font which
-%D is set with \tex{setupfontfamily}.
-%D
-%D \starttyping
-%D \setupfontfamily [serif] [DejaVu Serif]
-%D \setupfontfamily [sans]  [DejaVu Sans]
-%D \setupfontfamily [mono]  [DejaVu Sans Mono]
-%D \setupfontfamily [math]  [XITS Math] [scale=1.1]
-%D
-%D \starttext
-%D
-%D \rm Serif 123 \ss Sans \tt Mono \m{1+2=3}
-%D
-%D \stoptext
-%D \stoptyping
-
-\newcount\c_selectfont_family
-\newtoks \t_selectfont_fallback
-\newtoks \t_selectfont_styles
-
-\unexpanded\def\setupfontfamily
-  {\dotripleempty\selectfont_family_setup}
-
-\def\selectfont_family_setup
-  {\ifsecondargument
-     \expandafter\selectfont_family_setup_yes
-   \else
-     \expandafter\selectfont_family_setup_nop
-   \fi}
-
-\def\selectfont_family_setup_yes[#style][#family][#settings]%
-  {\normalexpanded{\t_selectfont_styles{\selectfont_set_font_family[#style][#family][#settings]\the\t_selectfont_styles}}%
-   \selectfont_set_font_indeed}
-
-\def\selectfont_family_setup_nop[#settings][#dummya][#dummyb]%
-  {\setupselectfont[#settings]}
-
-\unexpanded\def\selectfont_set_default
-  {\selectfont_set_font_family[\v!serif][Latin Modern Roman][\c!opticalsize=\v!yes]%
-   \selectfont_set_font_family[\v!sans] [Latin Modern Sans] [\c!opticalsize=\v!yes]%
-   \selectfont_set_font_family[\v!mono] [Latin Modern Mono] [\c!opticalsize=\v!yes,\c!features=\s!none]%
-   \selectfont_set_font_family[\v!math] [Latin Modern Math] [\c!opticalsize=\v!yes]}
-
-\unexpanded\def\setupfallbackfamily
-  {\dotripleempty\selectfont_fallback_setup}
-
-\def\selectfont_fallback_setup[#style][#family][#settings]%
-  {\normalexpanded{\t_selectfont_fallback{\the\t_selectfont_fallback\selectfont_set_font_fallback[#style][#family][#settings]}}}
-
-\def\selectfont_set_font_indeed
-  {\global\advance\c_selectfont_family\plusone
-   \edef\m_selectfont_typeface{\v!selectfont-\number\c_selectfont_family}%
-   \the\t_selectfont_fallback
-   \the\t_selectfont_styles
-   \selectfont_set_default
-   \setupbodyfont[\m_selectfont_typeface,\rootselectfontparameter\c!style]}
-
-\unexpanded\def\selectfont_set_font_family[#style]#dummy[#family]#dummy[#settings]%
-  {\ifcsname\m_selectfont_typeface#style\endcsname \else
-     \expandafter\let\csname\m_selectfont_typeface#style\endcsname\relax
-     \selectfont_family_define[\m_selectfont_typeface][#style][#family][#settings]%
-   \fi}
-
-\unexpanded\def\selectfont_set_font_fallback[#style]#dummy[#family]#dummy[#settings]%
-  {\selectfont_fallback_define[\m_selectfont_typeface][#style][#family][#settings]}
-
-%D You can apply a different feature set to each style of a font but if nothing
-%D is set the global features are used.
+     {\selectfont_register[\c!label={#typeface},\c!style={#style},\c!name={#family},#settings]}
+     {\selectfont_register[\c!label={#typeface},\c!style={#style},\c!name={#family},\c!preset={#settings}]}%
+   \clf_definefallbackfamily\selectfont_index\relax}
 
 \setupselectfont
-  [           \c!features=\s!default,
-       \c!regularfeatures=\selectfontparameter\c!features,
-          \c!boldfeatures=\selectfontparameter\c!features,
-        \c!italicfeatures=\selectfontparameter\c!features,
-       \c!slantedfeatures=\selectfontparameter\c!features,
-    \c!bolditalicfeatures=\selectfontparameter\c!features,
-   \c!boldslantedfeatures=\selectfontparameter\c!features,
-     \c!smallcapsfeatures=\s!smallcaps,
-                 \c!style=\s!rm]
+  [  \c!features=\s!default,
+   \s!designsize=\s!default,
+       \s!rscale=1]
 
 \protect

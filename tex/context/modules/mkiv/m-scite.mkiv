@@ -62,6 +62,8 @@ local f_fore_bold = formatters["\\def\\slx%s#1{{\\slxc%s\\bf#1}}%%"]
 local f_none_bold = formatters["\\def\\slx%s#1{{\\bf#1}}%%"]
 local f_none_none = formatters["\\def\\slx%s#1{{#1}}%%"]
 local f_texstyled = formatters["\\slx%s{%s}"]
+local f_hanging   = formatters["\\slxb{%s}%s\\slxe"]
+
 
 local f_mapping   = [[
 \let\string\slxL\string\letterleftbrace
@@ -165,20 +167,21 @@ function scite.installcommands()
     context(exportcolors())
 end
 
-local p = lpeg.P("\\slxS ")^1
+local p1 = lpeg.tsplitat(lpeg.patterns.newline)
+local p2 = lpeg.P("\\slxS ")^1
 
 local function indent(str)
-    local l = string.split(str,"\n")
+    local l = lpegmatch(p1,str)
     for i=1,#l do
         local s = l[i]
         if #s > 0 then
-            local n = lpegmatch(p,s)
+            local n = lpegmatch(p2,s)
             if n then
                 n = (n-1)/6
             else
                 n = 0
             end
-            l[i] = formatters["\\slxb{%s}%s\\slxe"](n,s)
+            l[i] = f_hanging(n,s)
         end
     end
     return concat(l,"\n")

@@ -60,6 +60,9 @@ local setlink           = nuts.setlink
 local setlist           = nuts.setlist
 local setattr           = nuts.setattr
 
+local properties        = nodes.properties.data
+local setprop           = nuts.setprop
+local getprop           = nuts.getprop
 local theprop           = nuts.theprop
 
 local floor             = math.floor
@@ -73,12 +76,10 @@ local link_nodes        = nuts.link
 local find_node_tail    = nuts.tail
 local setglue           = nuts.setglue
 
-local properties        = nodes.properties.data
-
 local a_visual          = attributes.private("visual")
 local a_snapmethod      = attributes.private("snapmethod")
 local a_profilemethod   = attributes.private("profilemethod")
-local a_specialcontent  = attributes.private("specialcontent")
+----- a_specialcontent  = attributes.private("specialcontent")
 
 local variables         = interfaces.variables
 local v_none            = variables.none
@@ -203,7 +204,8 @@ local function getprofile(line,step)
                 -- we could do a nested check .. but then we need to push / pop glue
                 local shift = getfield(current,"shift")
                 wd = getfield(current,"width")
-                if getattr(current,a_specialcontent) then
+             -- if getattr(current,a_specialcontent) then
+                if getprop(current,"specialcontent") then
                     -- like a margin note, maybe check for wd
                     ht = 0
                     dp = 0
