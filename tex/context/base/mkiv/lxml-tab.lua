@@ -439,7 +439,6 @@ do
 
     local p_rest = (1-P(";"))^0
     local p_many = P(1)^0
-    local p_char = lpegpatterns.utf8character
 
     local parsedentity =
         P("&#") * (P("x")*(p_rest/fromhex) + (p_rest/fromdec)) * P(";") * P(-1) +

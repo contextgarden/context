@@ -464,13 +464,6 @@ function context.trialtypesetting()
     return texgetcount("@@trialtypesetting") ~= 0
 end
 
--- local f_cldo       = formatters["_cldo_(%i)"]
--- local latelua_node = nodes.pool.latelua
---
--- function context.lateluafunctionnnode(f)
---     return latelua_node(f_cldo(registerfunction(f)))
--- end
-
 -- Should we keep the catcodes with the function?
 
 local catcodestack    = { }
@@ -977,7 +970,6 @@ local prtindexer = nil
 --
 --     local create   = token.create
 --     local twrite   = token.write
---     local setmacro = token.set_macro
 --
 --     indexer = function(parent,k)
 --         if type(k) == "string" then

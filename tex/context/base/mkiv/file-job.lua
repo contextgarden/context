@@ -44,7 +44,6 @@ local basename          = file.basename
 local addsuffix         = file.addsuffix
 local removesuffix      = file.removesuffix
 local dirname           = file.dirname
-local joinpath          = file.join
 local is_qualified_path = file.is_qualified_path
 
 local cleanpath         = resolvers.cleanpath
@@ -60,7 +59,7 @@ local resetextrapath    = resolvers.resetextrapath
 local pushextrapath     = resolvers.pushextrapath
 local popextrapath      = resolvers.popextrapath
 
-local v_outer           = variables.outer
+----- v_outer           = variables.outer
 local v_text            = variables.text
 local v_project         = variables.project
 local v_environment     = variables.environment

@@ -22,9 +22,6 @@ if not characters then
     dofile(resolvers.findfile("char-tex.lua"))
 end
 
-local chardata  = characters.data
-local lowercase = characters.lower
-
 local lower, find, sub = string.lower, string.find, string.sub
 local concat, copy, tohash = table.concat, table.copy, table.tohash
 local next, type, rawget = next, type, rawget
@@ -191,8 +188,7 @@ local defaultshortcuts = allocate {
 
 local space      = p_whitespace^0
 local separator  = space * "+" * space
-local l_splitter = lpeg.tsplitat(separator)
-local d_splitter = lpeg.splitat (separator)
+local p_splitter = lpeg.tsplitat(separator)
 
 local unknownfield = function(t,k)
     local v = "extra"
@@ -323,7 +319,7 @@ function publications.parenttag(dataset,tag)
     if not dataset or not tag then
         report("error in specification, dataset %a, tag %a",dataset,tag)
     elseif find(tag,"%+") then
-        local tags    = lpegmatch(l_splitter,tag)
+        local tags    = lpegmatch(p_splitter,tag)
         local parent  = tags[1]
         local current = datasets[dataset]
         local luadata = current.luadata

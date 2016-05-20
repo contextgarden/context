@@ -65,7 +65,6 @@ local flush_list         = nuts.flush_list
 local insert_after       = nuts.insert_after
 
 local nodepool           = nuts.pool
-local new_glyph          = nodepool.glyph
 local new_disc           = nodepool.disc
 
 local texsetattribute    = tex.setattribute

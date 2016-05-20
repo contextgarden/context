@@ -104,8 +104,6 @@ local v_local            = variables["local"]
 local v_global           = variables["global"]
 local v_left             = variables.left
 local v_right            = variables.right
-local v_flushleft        = variables.flushleft
-local v_flushright       = variables.flushright
 local v_inner            = variables.inner
 local v_outer            = variables.outer
 local v_margin           = variables.margin
@@ -117,9 +115,7 @@ local v_continue         = variables.continue
 local v_first            = variables.first
 local v_text             = variables.text
 local v_paragraph        = variables.paragraph
-local v_column           = variables.column
 local v_line             = variables.line
-local v_hanging          = variables.hanging
 
 local nuts               = nodes.nuts
 local nodepool           = nuts.pool
@@ -127,12 +123,9 @@ local nodepool           = nuts.pool
 local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
-local copy_node_list     = nuts.copy_list
 local hpack_nodes        = nuts.hpack
 local traverse_id        = nuts.traverse_id
 local free_node_list     = nuts.flush_list
-local insert_node_after  = nuts.insert_after
-local insert_node_before = nuts.insert_before
 local linked_nodes       = nuts.linked
 
 local getfield           = nuts.getfield
@@ -143,9 +136,11 @@ local getid              = nuts.getid
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local getsubtype         = nuts.getsubtype
-local getbox             = nuts.getbox
 local getlist            = nuts.getlist
 local setlist            = nuts.setlist
+
+local getbox             = nuts.getbox
+local takebox            = nuts.takebox
 
 local setprop            = nuts.setprop
 local getprop            = nuts.getprop
@@ -157,25 +152,17 @@ local whatsitcodes       = nodes.whatsitcodes
 
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
-local glue_code          = nodecodes.glue
-local kern_code          = nodecodes.kern
-local penalty_code       = nodecodes.penalty
 local whatsit_code       = nodecodes.whatsit
-local line_code          = listcodes.line
-local cell_code          = listcodes.cell
-local alignment_code     = listcodes.alignment
 local userdefined_code   = whatsitcodes.userdefined
 
 local nodepool           = nuts.pool
 
-local new_kern           = nodepool.kern
 local new_usernumber     = nodepool.usernumber
-local new_latelua        = nodepool.latelua
 
 local lateluafunction    = nodepool.lateluafunction
 
-local texgetcount        = tex.getcount
 local texgetdimen        = tex.getdimen
+----- texgetcount        = tex.getcount
 local texget             = tex.get
 
 local isleftpage         = layouts.status.isleftpage
@@ -269,7 +256,7 @@ end
 
 function margins.save(t)
     setmetatable(t,defaults)
-    local content  = getbox(t.number)
+    local content  = takebox(t.number)
  -- setattr(content,a_specialcontent,1)
     setprop(content,"specialcontent","margindata")
     local location = t.location
@@ -316,6 +303,7 @@ function margins.save(t)
         showstore(store,"before",location)
     end
     if name and name ~= "" then
+        -- this can be used to overload
         if inlinestore then -- todo: inline store has to be done differently (not sparse)
             local t = sortedkeys(store) for j=#t,1,-1 do local i = t[j]
                 local si = store[i]
@@ -342,7 +330,7 @@ function margins.save(t)
         local rightmargindistance = texgetdimen("naturalrightmargindistance")
         local strutbox            = getbox("strutbox")
         -- better make a new table and make t entry in t
-        t.box                 = copy_node_list(content)
+        t.box                 = content
         t.n                   = nofsaved
         -- used later (we will clean up this natural mess later)
         -- nice is to make a special status table mechanism
@@ -386,19 +374,6 @@ end
 --
 -- When the prototype inner/outer code that was part of this proved to be
 -- okay it was moved elsewhere.
-
--- local f_anchor = formatters["_plib_.set('md:h',%i,{x=true,c=true})"]
--- local s_anchor = 'md:h'
---
--- local function setanchor(h_anchor)
---     return new_latelua(f_anchor(h_anchor))
--- end
-
--- local t_anchor = { x = true, c = true }
---
--- local function setanchor(h_anchor)
---      return lateluafunction(function() setposition("md:h",h_anchor,t_anchor) end)
--- end
 
 local function realign(current,candidate)
     local location      = candidate.location
@@ -661,7 +636,7 @@ local function inject(parent,head,candidate)
         if anchors[location] then
             local a1 = getanchor(location,anchors[location])
             local a2 = getanchor(location,v_anchors+1)
-            if a1 and a2 then
+            if a1 and a2 and a1.p == a2.p then
                 local distance = a1.y - a2.y
                 if distance > offset then
              --     report_margindata("location %s, no overlap, case 1",location)
@@ -925,6 +900,9 @@ local function handler(scope,head,group)
 end
 
 local trialtypesetting = context.trialtypesetting
+
+-- maybe change this to an action applied to the to be shipped out box (that is
+-- the mvl list in there so that we don't need to traverse global
 
 function margins.localhandler(head,group) -- sometimes group is "" which is weird
 

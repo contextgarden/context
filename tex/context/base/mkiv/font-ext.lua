@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['font-ext'] = {
 }
 
 local next, type, byte = next, type, string.byte
-local utfbyte = utf.byte
 
 local context            = context
 local fonts              = fonts
@@ -18,7 +17,6 @@ local trace_expansion    = false  trackers.register("fonts.expansion",  function
 
 local report_expansions  = logs.reporter("fonts","expansions")
 local report_protrusions = logs.reporter("fonts","protrusions")
-local report_opbd        = logs.reporter("fonts","otf opbd")
 
 --[[ldx--
 <p>When we implement functions that deal with features, most of them
@@ -823,6 +821,8 @@ registerotffeature {
 --
 --     local v_local = interfaces and interfaces.variables and interfaces.variables["local"] or "local"
 --
+--     local utfbyte = utf.byte
+--
 --     local function initialize(tfmdata,key,value)
 --         local characters = tfmdata.characters
 --         local parameters = tfmdata.parameters
@@ -970,7 +970,6 @@ local nodepool    = nodes.pool
 
 local new_special = nodepool.special
 local new_glyph   = nodepool.glyph
-local new_rule    = nodepool.rule
 local hpack_node  = node.hpack
 
 local helpers     = fonts.helpers

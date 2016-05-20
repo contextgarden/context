@@ -95,8 +95,6 @@ end
 directives.register("system.dumphash",  function() dump_hash(false) end)
 directives.register("system.dumpdelta", function() dump_hash(true ) end)
 
-local report_dump = logs.reporter("resolvers","dump")
-
 local function saveusedfilesintrees(format)
     local data = {
         jobname = environment.jobname or "?",

@@ -192,7 +192,6 @@ local report_subchain = logs.reporter("fonts","otf subchain")
 local report_chain    = logs.reporter("fonts","otf chain")
 local report_process  = logs.reporter("fonts","otf process")
 local report_prepare  = logs.reporter("fonts","otf prepare")
-local report_warning  = logs.reporter("fonts","otf warning")
 local report_run      = logs.reporter("fonts","otf run")
 
 registertracker("otf.verbose_chain", function(v) otf.setcontextchain(v and "verbose") end)
@@ -226,10 +225,7 @@ local setsubtype         = nuts.setsubtype
 local getchar            = nuts.getchar
 local setchar            = nuts.setchar
 
-local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
-local delete_node        = nuts.delete
-local remove_node        = nuts.remove
 local copy_node          = nuts.copy
 local copy_node_list     = nuts.copy_list
 local find_node_tail     = nuts.tail
@@ -251,7 +247,6 @@ local glyphcodes         = nodes.glyphcodes
 local disccodes          = nodes.disccodes
 
 local glyph_code         = nodecodes.glyph
-local glue_code          = nodecodes.glue
 local disc_code          = nodecodes.disc
 local math_code          = nodecodes.math
 local dir_code           = nodecodes.dir
@@ -1227,41 +1222,6 @@ example, the following is valid:</p>
 <typing>
 <line>xxxabcdexxx [single a->A][multiple b->BCD][ligature cde->E] xxxABCDExxx</line>
 </typing>
-
-<p>Therefore we we don't really do the replacement here already unless we have the
-single lookup case. The efficiency of the replacements can be improved by deleting
-as less as needed but that would also make the code even more messy.</p>
---ldx]]--
-
--- local function delete_till_stop(head,start,stop,ignoremarks) -- keeps start
---     local n = 1
---     if start == stop then
---         -- done
---     elseif ignoremarks then
---         repeat -- start x x m x x stop => start m
---             local next = getnext(start)
---             if not marks[getchar(next)] then
---                 local components = getnext(next,"components")
---                 if components then -- probably not needed
---                     flush_node_list(components)
---                 end
---                 head = delete_node(head,next)
---             end
---             n = n + 1
---         until next == stop
---     else -- start x x x stop => start
---         repeat
---             local next = getnext(start)
---             local components = getfield(next,"components")
---             if components then -- probably not needed
---                 flush_node_list(components)
---             end
---             head = delete_node(head,next)
---             n = n + 1
---         until next == stop
---     end
---     return head, n
--- end
 
 --[[ldx--
 <p>Here we replace start by a single variant.</p>

@@ -8,8 +8,6 @@ if not modules then modules = { } end modules ['lxml-ent'] = {
 
 local type, next, tonumber =  type, next, tonumber
 local byte, format = string.byte, string.format
-local utfchar = utf.char
-local lpegmatch = lpeg.match
 local setmetatableindex = table.setmetatableindex
 
 --[[ldx--

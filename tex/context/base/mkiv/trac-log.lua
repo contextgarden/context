@@ -793,7 +793,7 @@ end
 
 -- we don't have show_open and show_close callbacks yet
 
-local report_files = logs.reporter("files")
+----- report_files = logs.reporter("files")
 local nesting      = 0
 local verbose      = false
 local hasscheme    = url.hasscheme

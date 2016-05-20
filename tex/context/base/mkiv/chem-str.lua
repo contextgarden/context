@@ -47,7 +47,6 @@ local context      = context
 local implement    = interfaces.implement
 
 local formatters   = string.formatters
-local texgetcount  = tex.getcount
 
 local v_default    = variables.default
 local v_small      = variables.small

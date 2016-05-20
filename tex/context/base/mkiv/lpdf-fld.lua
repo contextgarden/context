@@ -58,7 +58,6 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
 local tostring, next = tostring, next
 local gmatch, lower, format, formatters = string.gmatch, string.lower, string.format, string.formatters
 local lpegmatch = lpeg.match
-local utfchar = utf.char
 local bpfactor, todimen = number.dimenfactors.bp, string.todimen
 
 local trace_fields = false  trackers.register("backends.fields", function(v) trace_fields = v end)
@@ -88,7 +87,6 @@ local pdfreference            = lpdf.reference
 local pdfunicode              = lpdf.unicode
 local pdfstring               = lpdf.string
 local pdfconstant             = lpdf.constant
-local pdftoeight              = lpdf.toeight
 local pdfflushobject          = lpdf.flushobject
 local pdfshareobjectreference = lpdf.shareobjectreference
 local pdfshareobject          = lpdf.shareobject

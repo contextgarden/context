@@ -14,10 +14,7 @@ local force_processors = false  directives.register("nodes.processors.force", fu
 
 local report_nodes = logs.reporter("nodes","processors")
 
-local nodes = nodes
-
-local nodecodes     = nodes.nodecodes
-local glyph_code    = nodecodes.glyph
+local nodes         = nodes
 local tasks         = nodes.tasks
 local nuts          = nodes.nuts
 

@@ -46,9 +46,6 @@ local userdefined_code = whatsitcodes.userdefined
 local nodepool         = nodes.pool
 local new_usernumber   = nodepool.usernumber
 
-local nutpool          = nuts.pool
-local nut_usernumber   = nutpool.usernumber
-
 local variables        = interfaces.variables
 local v_before         = variables.before
 local v_after          = variables.after
@@ -179,6 +176,9 @@ end
 
 -- another experiment (a table or function closure are equally efficient); a function
 -- is easier when we want to experiment with different (compatible) implementations
+
+-- local nutpool          = nuts.pool
+-- local nut_usernumber = nutpool.usernumber
 
 -- function nodes.nuts.pool.deferredfunction(...)
 --     nofdelayed = nofdelayed + 1

@@ -53,9 +53,7 @@ local tasks              = nodes.tasks
 local new_glue           = nodepool.glue
 
 local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
 local chardata           = fonthashes.characters
-local quaddata           = fonthashes.quads
 
 local v_reset            = interfaces.variables.reset
 

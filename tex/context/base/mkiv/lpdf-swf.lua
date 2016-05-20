@@ -13,20 +13,17 @@ local format, gsub = string.format, string.gsub
 
 local backends, lpdf = backends, lpdf
 
-local pdfconstant        = lpdf.constant
-local pdfboolean         = lpdf.boolean
-local pdfstring          = lpdf.string
-local pdfunicode         = lpdf.unicode
-local pdfdictionary      = lpdf.dictionary
-local pdfarray           = lpdf.array
-local pdfnull            = lpdf.null
-local pdfreference       = lpdf.reference
-local pdfflushobject     = lpdf.flushobject
+local pdfconstant    = lpdf.constant
+local pdfstring      = lpdf.string
+local pdfdictionary  = lpdf.dictionary
+local pdfarray       = lpdf.array
+local pdfreference   = lpdf.reference
+local pdfflushobject = lpdf.flushobject
 
-local checkedkey         = lpdf.checkedkey
+local checkedkey     = lpdf.checkedkey
 
-local codeinjections     = backends.pdf.codeinjections
-local nodeinjections     = backends.pdf.nodeinjections
+local codeinjections = backends.pdf.codeinjections
+local nodeinjections = backends.pdf.nodeinjections
 
 local trace_swf = false  trackers.register("backend.swf", function(v) trace_swf = v end)
 

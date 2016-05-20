@@ -17,9 +17,7 @@ local codeinjections = backends.pdf.codeinjections
 local context        = context
 
 local scanners       = tokens.scanners
-local scanstring     = scanners.string
 local scannumber     = scanners.number
-local scaninteger    = scanners.integer
 local scankeyword    = scanners.keyword
 
 local scanners       = interfaces.scanners

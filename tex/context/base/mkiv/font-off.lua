@@ -11,11 +11,11 @@ local round             = math.round
 local setmetatableindex = table.setmetatableindex
 
 local fontloader        = fontloader
-local font_to_table     = fontloader.to_table
+----- font_to_table     = fontloader.to_table
 local open_font         = fontloader.open
-local get_font_info     = fontloader.info
+----- get_font_info     = fontloader.info
 local close_font        = fontloader.close
-local font_fields       = fontloader.fields
+----- font_fields       = fontloader.fields
 
 -- table={
 --  ["familyname"]="TeXGyrePagella",

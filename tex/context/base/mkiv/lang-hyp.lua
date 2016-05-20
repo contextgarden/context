@@ -603,8 +603,8 @@ if context then
 
     local discretionary_code = disccodes.discretionary
     local explicit_code      = disccodes.explicit
-    local regular_code       = disccodes.regular
-    local automatic_code     = disccodes.automatic
+    ----- regular_code       = disccodes.regular
+    ----- automatic_code     = disccodes.automatic
 
     local nuts               = nodes.nuts
     local tonut              = nodes.tonut
@@ -612,7 +612,6 @@ if context then
     local nodepool           = nuts.pool
 
     local new_disc           = nodepool.disc
-    local new_glyph          = nodepool.glyph
     local new_penalty        = nodepool.penalty
 
     local getfield           = nuts.getfield

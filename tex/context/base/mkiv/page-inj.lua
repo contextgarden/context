@@ -22,7 +22,6 @@ local variables         = interfaces.variables
 
 local texsetcount       = tex.setcount
 
-local v_yes             = variables.yes
 local v_previous        = variables.previous
 local v_next            = variables.next
 

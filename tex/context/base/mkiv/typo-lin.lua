@@ -65,7 +65,7 @@ local hlist_code        = nodecodes.hlist
 local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
 local line_code         = listcodes.line
-local localpar_code     = nodecodes.localpar
+----- localpar_code     = nodecodes.localpar
 local leftskip_code     = gluecodes.leftskip
 local rightskip_code    = gluecodes.rightskip
 local parfillskip_code  = gluecodes.parfillskip
@@ -95,14 +95,11 @@ local getprop           = nuts.rawprop -- getprop
 local effectiveglue     = nuts.effective_glue
 
 local nodepool          = nuts.pool
-local new_glue          = nodepool.glue
 local new_kern          = nodepool.kern
 local new_leftskip      = nodepool.leftskip
 local new_rightskip     = nodepool.rightskip
 local new_hlist         = nodepool.hlist
-local new_vlist         = nodepool.vlist
 local new_rule          = nodepool.rule
-local new_latelua       = nodepool.latelua
 
 local texgetcount       = tex.getcount
 local setmetatableindex = table.setmetatableindex
@@ -371,13 +368,6 @@ function paragraphs.moveinline(n,blob,dx,dy)
         end
     end
 end
-
--- local f_anchor = formatters["_plib_.set('md:h',%i,{x=true,c=true})"]
--- local s_anchor = 'md:h'
---
--- local function setanchor(h_anchor)
---     return new_latelua(f_anchor(h_anchor))
--- end
 
 local lateluafunction = nodepool.lateluafunction
 local setposition     = job.positions.set

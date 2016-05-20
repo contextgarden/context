@@ -37,7 +37,6 @@ local setchar         = nuts.setchar
 
 local copy_node       = nuts.copy
 local end_of_math     = nuts.end_of_math
-local traverse_nodes  = nuts.traverse
 local traverse_id     = nuts.traverse_id
 local insert_after    = nuts.insert_after
 
@@ -63,7 +62,6 @@ local fontchar        = fonthashes.characters
 local variables       = interfaces.variables
 local v_reset         = variables.reset
 
-local chardata        = characters.data
 local texsetattribute = tex.setattribute
 local unsetvalue      = attributes.unsetvalue
 

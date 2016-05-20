@@ -29,10 +29,8 @@ local executers                = structures.references.executers
 local variables                = interfaces.variables
 
 local v_hidden                 = variables.hidden
-local v_normal                 = variables.normal
 local v_auto                   = variables.auto
 local v_embed                  = variables.embed
-local v_unknown                = variables.unknown
 local v_max                    = variables.max
 
 local pdfconstant              = lpdf.constant
@@ -42,7 +40,6 @@ local pdfreference             = lpdf.reference
 local pdfunicode               = lpdf.unicode
 local pdfstring                = lpdf.string
 local pdfboolean               = lpdf.boolean
-local pdfcolorspec             = lpdf.colorspec
 local pdfflushobject           = lpdf.flushobject
 local pdfflushstreamobject     = lpdf.flushstreamobject
 local pdfflushstreamfileobject = lpdf.flushstreamfileobject

@@ -75,7 +75,6 @@ local rule_code        = nodecodes.rule
 local dir_code         = nodecodes.dir
 local localpar_code    = nodecodes.localpar
 local whatsit_code     = nodecodes.whatsit
-local gluespec_code    = nodecodes.gluespec
 
 local dimenfactors     = number.dimenfactors
 local fillorders       = nodes.fillcodes

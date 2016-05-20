@@ -90,7 +90,6 @@ local insert, remove = table.insert, table.remove
 
 local nodecodes       = nodes.nodecodes
 local glyph_code      = nodecodes.glyph
-local whatsit_code    = nodecodes.whatsit
 local localpar_code   = nodecodes.localpar
 
 local texnest         = tex.nest

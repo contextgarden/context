@@ -55,7 +55,6 @@ local insert_after      = nuts.insert_after
 local remove_node       = nuts.remove
 local traverse_id       = nuts.traverse_id
 local traverse          = nuts.traverse
-local free_node         = nuts.free
 
 local variables         = interfaces.variables
 local v_default         = variables.default

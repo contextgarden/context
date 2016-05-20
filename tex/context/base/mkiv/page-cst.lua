@@ -24,7 +24,6 @@ local setmetatableindex   = table.setmetatableindex
 local properties          = nodes.properties
 
 local nodecodes           = nodes.nodecodes
-local gluecodes           = nodes.gluecodes
 local rulecodes           = nodes.rulecodes
 
 local hlist_code          = nodecodes.hlist
@@ -32,14 +31,7 @@ local vlist_code          = nodecodes.vlist
 local kern_code           = nodecodes.kern
 local glue_code           = nodecodes.glue
 local penalty_code        = nodecodes.penalty
-local insert_code         = nodecodes.ins
-local mark_code           = nodecodes.mark
 local rule_code           = nodecodes.rule
-
-local topskip_code        = gluecodes.topskip
-local lineskip_code       = gluecodes.lineskip
-local baselineskip_code   = gluecodes.baselineskip
-local userskip_code       = gluecodes.userskip
 
 local nuts                = nodes.nuts
 local tonode              = nuts.tonode
@@ -47,9 +39,8 @@ local tonut               = nuts.tonut
 
 local hpack               = nuts.hpack
 local vpack               = nuts.vpack
-local freenode            = nuts.free
 local flushlist           = nuts.flush_list
-local removenode          = nuts.remove
+----- removenode          = nuts.remove
 
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
@@ -84,9 +75,7 @@ local theprop             = nuts.theprop
 
 local nodepool            = nuts.pool
 
-local new_hlist           = nodepool.hlist
 local new_vlist           = nodepool.vlist
-local new_kern            = nodepool.kern
 local new_trace_rule      = nodepool.rule
 local new_empty_rule      = nodepool.emptyrule
 
@@ -99,13 +88,11 @@ local v_fixed             = variables.fixed
 local v_top               = variables.top
 local v_bottom            = variables.bottom
 local v_repeat            = variables["repeat"]
-local v_left              = variables.left
-local v_right             = variables.right
 local v_yes               = variables.yes
 local v_page              = variables.page
 local v_first             = variables.first
 local v_last              = variables.last
-local v_wide              = variables.wide
+----- v_wide              = variables.wide
 
 pagebuilders              = pagebuilders or { } -- todo: pages.builders
 pagebuilders.columnsets   = pagebuilders.columnsets or { }

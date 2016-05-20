@@ -23,7 +23,6 @@ local trace_detail = false  trackers.register("mixedcolumns.detail", function(v)
 local report_state = logs.reporter("mixed columns")
 
 local nodecodes           = nodes.nodecodes
-local gluecodes           = nodes.gluecodes
 
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
@@ -34,14 +33,8 @@ local insert_code         = nodecodes.ins
 local mark_code           = nodecodes.mark
 local rule_code           = nodecodes.rule
 
-local topskip_code        = gluecodes.topskip
-local lineskip_code       = gluecodes.lineskip
-local baselineskip_code   = gluecodes.baselineskip
-local userskip_code       = gluecodes.userskip
-
 local nuts                = nodes.nuts
 local tonode              = nuts.tonode
-local nodetostring        = nuts.tostring
 local listtoutf           = nodes.listtoutf
 
 local hpack               = nuts.hpack
@@ -83,12 +76,7 @@ local variables           = interfaces.variables
 local v_yes               = variables.yes
 local v_global            = variables["global"]
 local v_local             = variables["local"]
-local v_columns           = variables.columns
-local v_fixed             = variables.fixed
-local v_auto              = variables.auto
 local v_none              = variables.none
-local v_more              = variables.more
-local v_less              = variables.less
 local v_halfline          = variables.halfline
 
 local context             = context
@@ -680,8 +668,6 @@ local kept = head
 
         backtracked = false
 
-     -- print("process",nodetostring(current))
-
         if id == hlist_code or id == vlist_code then
             if process_list(current,nxt) then break end
         elseif id == glue_code then
@@ -696,10 +682,7 @@ local kept = head
         end
 
         if backtracked then
-         -- print("pickup",nodetostring(current))
             nxt = current
-        else
-         -- print("move on",nodetostring(current))
         end
 
         if nxt then

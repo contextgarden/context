@@ -65,8 +65,6 @@ local P, S, V, C, Cs, Ct, Cc, Cg, Cf, patterns, lpegmatch = lpeg.P, lpeg.S, lpeg
 local concat = table.concat
 
 local osuuid            = os.uuid
-local osclock           = os.clock or os.time
-local ostime            = os.time
 local setmetatableindex = table.setmetatableindex
 
 local trace_sql     = false  trackers.register("sql.trace",  function(v) trace_sql     = v end)

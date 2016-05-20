@@ -18,8 +18,8 @@ local report_unicoding   = logs.reporter("fonts","unicoding")
 local fonts              = fonts
 local constructors       = fonts.constructors
 
-local tfmfeatures        = constructors.newfeatures("tfm")
-local registertfmfeature = tfmfeatures.register
+----- tfmfeatures        = constructors.newfeatures("tfm")
+----- registertfmfeature = tfmfeatures.register
 
 local afmfeatures        = fonts.constructors.newfeatures("afm")
 local registerafmfeature = afmfeatures.register

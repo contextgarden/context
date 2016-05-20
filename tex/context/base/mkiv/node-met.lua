@@ -201,7 +201,6 @@ nodes.getbox            = node.getbox  or tex.getbox
 nodes.setbox            = node.setbox  or tex.setbox
 nodes.getskip           = node.getskip or tex.get
 
-local n_new_node        = nodes.new
 local n_free_node       = nodes.free
 local n_copy_node       = nodes.copy
 local n_copy_list       = nodes.copy_list

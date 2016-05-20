@@ -18,7 +18,6 @@ if not modules then modules = { } end modules ['strc-bkm'] = {
 local next, type = next, type
 local gsub, lower = string.gsub, string.lower
 local concat = table.concat
-local utfvalues = utf.values
 local settings_to_hash = utilities.parsers.settings_to_hash
 
 local trace_bookmarks  = false  trackers.register("references.bookmarks", function(v) trace_bookmarks = v end)

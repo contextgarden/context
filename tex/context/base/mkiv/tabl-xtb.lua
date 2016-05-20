@@ -79,7 +79,6 @@ local nodepool                = nuts.pool
 
 local new_glue                = nodepool.glue
 local new_kern                = nodepool.kern
-local new_penalty             = nodepool.penalty
 local new_hlist               = nodepool.hlist
 
 local v_stretch               = variables.stretch
@@ -89,7 +88,7 @@ local v_height                = variables.height
 local v_repeat                = variables["repeat"]
 local v_max                   = variables.max
 local v_fixed                 = variables.fixed
-local v_auto                  = variables.auto
+----- v_auto                  = variables.auto
 local v_before                = variables.before
 local v_after                 = variables.after
 local v_both                  = variables.both

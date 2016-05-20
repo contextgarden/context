@@ -22,7 +22,6 @@ if not modules then modules = { } end modules ['font-inj'] = {
 if not nodes.properties then return end
 
 local next, rawget = next, rawget
-local utfchar = utf.char
 local fastcopy = table.fastcopy
 
 local trace_injections = false  trackers.register("fonts.injections", function(v) trace_injections = v end)

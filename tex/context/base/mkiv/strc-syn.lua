@@ -227,7 +227,6 @@ function synonyms.flush(data,options)
     local result = data.result
     for i=1,#result do
         local sublist = result[i]
-        local letter  = sublist.tag
         local data    = sublist.data
         for d=1,#data do
             local entry = data[d].definition

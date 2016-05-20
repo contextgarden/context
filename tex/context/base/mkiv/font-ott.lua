@@ -18,7 +18,6 @@ local allocate             = utilities.storage.allocate
 local fonts                = fonts
 local otf                  = fonts.handlers.otf
 local otffeatures          = otf.features
-local registerotffeature   = otffeatures.register
 
 local tables               = otf.tables or { }
 otf.tables                 = tables

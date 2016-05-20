@@ -890,7 +890,6 @@ local function checkduplicate(where) -- fails on "Romantik" but that's a border 
                     local ok = true
                     local fn = s.filename
                     for i=1,#h do
-                        local hn = s.filename
                         if h[i] == fn then
                             ok = false
                             break

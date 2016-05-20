@@ -406,7 +406,6 @@ local setmetatableindex  = table.setmetatableindex
 local family_font        = node.family_font
 
 local fontcharacters     = fonts.hashes.characters
-local fontdescriptions   = fonts.hashes.descriptions
 local extensibles        = utilities.storage.allocate()
 fonts.hashes.extensibles = extensibles
 
@@ -418,7 +417,6 @@ local extensibles        = mathematics.extensibles
 local e_left       = extensibles.left
 local e_right      = extensibles.right
 local e_horizontal = extensibles.horizontal
-local e_vertical   = extensibles.vertical
 local e_mixed      = extensibles.mixed
 local e_unknown    = extensibles.unknown
 

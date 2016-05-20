@@ -10,7 +10,6 @@ if not modules then modules = { } end modules ['typo-krn'] = {
 -- components: better split on tounicode
 
 local next, type, tonumber = next, type, tonumber
-local utfchar = utf.char
 
 local nodes              = nodes
 local fonts              = fonts
@@ -82,7 +81,6 @@ local spaceskip_code     = skipcodes.spaceskip
 local xspaceskip_code    = skipcodes.xspaceskip
 
 local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
 local chardata           = fonthashes.characters
 local quaddata           = fonthashes.quads
 local markdata           = fonthashes.marks

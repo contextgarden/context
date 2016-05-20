@@ -8,8 +8,6 @@ if not modules then modules = { } end modules ['font-otb'] = {
 local concat = table.concat
 local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring, rawget = type, next, tonumber, tostring, rawget
-local lpegmatch = lpeg.match
-local utfchar = utf.char
 
 local trace_baseinit         = false  trackers.register("otf.baseinit",         function(v) trace_baseinit         = v end)
 local trace_singles          = false  trackers.register("otf.singles",          function(v) trace_singles          = v end)

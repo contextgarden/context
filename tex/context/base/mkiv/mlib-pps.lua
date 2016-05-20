@@ -17,12 +17,11 @@ local formatters = string.formatters
 local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
 
 local context              = context
-local context_setvalue     = context.setvalue
 
 local implement            = interfaces.implement
 local setmacro             = interfaces.setmacro
 
-local texgetbox            = tex.getbox
+----- texgetbox            = tex.getbox
 local texsetbox            = tex.setbox
 local textakebox           = tex.takebox
 local copy_list            = node.copy_list
@@ -283,10 +282,10 @@ local function settext(box,slot)
      -- if trace_textexts then
      --     report_textexts("getting text %s from box %s",slot,box)
      -- end
-        top.textexts[slot] = copy_list(texgetbox(box))
-        texsetbox(box,nil)
-        -- this can become
-        -- top.textexts[slot] = textakebox(box)
+     -- top.textexts[slot] = copy_list(texgetbox(box))
+     -- texsetbox(box,nil)
+     -- this can become
+        top.textexts[slot] = textakebox(box)
     else
         -- weird error
     end
@@ -294,6 +293,7 @@ end
 
 local function gettext(box,slot)
     if top then
+     -- maybe check how often referenced
         texsetbox(box,copy_list(top.textexts[slot]))
      -- if trace_textexts then
      --     report_textexts("putting text %s in box %s",slot,box)
@@ -523,12 +523,6 @@ end
 metapost.checktexts = checktexts
 
 local factor = 65536*(7227/7200)
-
--- function metapost.edefsxsy(wd,ht,dp) -- helper for figure
---     local hd = ht + dp
---     context_setvalue("sx",wd ~= 0 and factor/wd or 0)
---     context_setvalue("sy",hd ~= 0 and factor/hd or 0)
--- end
 
 implement {
     name       = "mpsetsxsy",

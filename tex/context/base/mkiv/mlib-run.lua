@@ -93,8 +93,7 @@ do
     local finders = { }
     mplib.finders = finders -- also used in meta-lua.lua
 
-    local new_instance  = mplib.new
-    local resolved_file = resolvers.findfile
+    local new_instance = mplib.new
 
     local function preprocessed(name)
         if not mpbasepath(name) then
@@ -241,9 +240,8 @@ function metapost.load(name,method)
 end
 
 function metapost.checkformat(mpsinput,method)
-    local mpsversion = environment.version or "unset version"
-    local mpsinput   = mpsinput or "metafun"
-    local foundfile  = ""
+    local mpsinput  = mpsinput or "metafun"
+    local foundfile = ""
     if file.suffix(mpsinput) ~= "" then
         foundfile  = find_file(mpsinput) or ""
     end

@@ -10,7 +10,6 @@ if not modules then modules = { } end modules ['lxml-tex'] = {
 -- interface and not the context one. If we ever do that there will
 -- be an cldf-xml helper library.
 
-local utfchar = utf.char
 local concat, insert, remove, sortedkeys, reversed = table.concat, table.insert, table.remove, table.sortedkeys, table.reverse
 local format, sub, gsub, find, gmatch, match = string.format, string.sub, string.gsub, string.find, string.gmatch, string.match
 local type, next, tonumber, tostring, select = type, next, tonumber, tostring, select

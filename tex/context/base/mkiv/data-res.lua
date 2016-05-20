@@ -198,7 +198,6 @@ end
 
 local dollarstripper   = lpeg.stripper("$")
 local inhibitstripper  = P("!")^0 * Cs(P(1)^0)
-local backslashswapper = lpeg.replacer("\\","/")
 
 local somevariable     = P("$") / ""
 local somekey          = C(R("az","AZ","09","__","--")^1)

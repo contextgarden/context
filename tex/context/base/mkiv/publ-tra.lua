@@ -42,7 +42,6 @@ local ctx_monobold      = ctx_formatted.monobold
 local ctx_verbatim      = ctx_formatted.verbatim
 
 local ctx_rotate        = context.rotate
-local ctx_llap          = context.llap
 local ctx_rlap          = context.rlap
 local ctx_page          = context.page
 
@@ -101,9 +100,6 @@ function tracers.showdatasetcompleteness(settings)
     local specification = settings.specification
     local fielddata     = specification and specifications[specification] or specifications.apa
     local categories    = fielddata.categories
-
- -- local lpegmatch     = lpeg.match
- -- local texescape     = lpeg.patterns.texescape
 
     local preamble = { "|lTBw(5em)|lBTp(10em)|plT|" }
 

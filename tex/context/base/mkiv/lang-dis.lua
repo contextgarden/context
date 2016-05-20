@@ -12,7 +12,6 @@ local nodes              = nodes
 
 local tasks              = nodes.tasks
 local nuts               = nodes.nuts
-local nodepool           = nuts.pool
 
 local tonode             = nuts.tonode
 local tonut              = nuts.tonut
@@ -32,10 +31,8 @@ local setdisc            = nuts.setdisc
 local isglyph            = nuts.isglyph
 
 local copy_node          = nuts.copy
-local free_node          = nuts.free
 local remove_node        = nuts.remove
 local traverse_id        = nuts.traverse_id
-local traverse_nodes     = nuts.traverse
 
 local nodecodes          = nodes.nodecodes
 local disccodes          = nodes.disccodes

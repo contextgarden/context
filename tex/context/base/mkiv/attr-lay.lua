@@ -71,8 +71,6 @@ local texgetattribute   = tex.getattribute
 local texsettokenlist   = tex.settoks
 local unsetvalue        = attributes.unsetvalue
 
-local nodepool          = nodes.pool
-
 local data              = viewerlayers.data
 local values            = viewerlayers.values
 local listwise          = viewerlayers.listwise

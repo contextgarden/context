@@ -28,7 +28,6 @@ if not modules then modules = { } end modules ['typo-dir'] = {
 
 local next, type = next, type
 local format, insert, sub, find, match = string.format, table.insert, string.sub, string.find, string.match
-local utfchar = utf.char
 local formatters = string.formatters
 
 local nodes, node = nodes, node
@@ -38,7 +37,7 @@ local trace_mathdirections  = false  trackers.register("typesetters.directions.m
 local trace_directions      = false  trackers.register("typesetters.directions",      function(v) trace_textdirections = v trace_mathdirections = v end)
 
 local report_textdirections = logs.reporter("typesetting","text directions")
-local report_mathdirections = logs.reporter("typesetting","math directions")
+----- report_mathdirections = logs.reporter("typesetting","math directions")
 
 local hasbit                = number.hasbit
 

@@ -250,14 +250,12 @@ local glue_code    = nodecodes.glue
 local hlist_code   = nodecodes.hlist
 local vlist_code   = nodecodes.vlist
 local rule_code    = nodecodes.rule
-local penalty_code = nodecodes.penalty
 
 local find_tail    = nodes.tail
 
 ----- metapost     = fonts.glyphs.metapost
 
 local characters   = fonts.hashes.characters
-local quaddata     = fonts.hashes.emwidths
 local shapes       = fonts.hashes.shapes
 local topaths      = metapost.paths
 

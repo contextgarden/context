@@ -424,7 +424,6 @@ local implement     = interfaces.implement
 
 local tex           = tex
 local texsetlccode  = tex.setlccode
-local texsetuccode  = tex.setuccode
 local texsetsfcode  = tex.setsfcode
 local texsetcatcode = tex.setcatcode
 

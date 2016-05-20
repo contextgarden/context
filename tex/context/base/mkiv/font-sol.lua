@@ -21,7 +21,6 @@ if not modules then modules = { } end modules ['font-sol'] = { -- this was: node
 local gmatch, concat, format, remove = string.gmatch, table.concat, string.format, table.remove
 local next, tostring, tonumber = next, tostring, tonumber
 local insert, remove = table.insert, table.remove
-local utfchar = utf.char
 local random = math.random
 
 local utilities, logs, statistics, fonts, trackers = utilities, logs, statistics, fonts, trackers
@@ -121,9 +120,7 @@ local stoptiming         = statistics.stoptiming
 local inject_kerns       = nodes.injections.handler
 
 local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
 local setfontdynamics    = fonthashes.setdynamics
-local fontprocesses      = fonthashes.processes
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue

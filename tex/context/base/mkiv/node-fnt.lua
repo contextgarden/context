@@ -64,11 +64,9 @@ local ischar            = nuts.ischar  -- checked
 
 local traverse_id       = nuts.traverse_id
 local traverse_char     = nuts.traverse_char
-local remove_node       = nuts.remove
 local protect_glyph     = nuts.protect_glyph
 local free_node         = nuts.free
 
-local glyph_code        = nodecodes.glyph
 local disc_code         = nodecodes.disc
 local boundary_code     = nodecodes.boundary
 local word_boundary     = nodes.boundarycodes.word

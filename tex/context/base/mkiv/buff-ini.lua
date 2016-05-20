@@ -20,7 +20,7 @@ local trace_visualize   = false  trackers.register("buffers.visualize", function
 
 local report_buffers    = logs.reporter("buffers","usage")
 local report_typeset    = logs.reporter("buffers","typeset")
-local report_grabbing   = logs.reporter("buffers","grabbing")
+----- report_grabbing   = logs.reporter("buffers","grabbing")
 
 local context           = context
 local commands          = commands
@@ -32,12 +32,11 @@ local scanstring        = scanners.string
 local scaninteger       = scanners.integer
 local scanboolean       = scanners.boolean
 local scancode          = scanners.code
-local scantoken         = scanners.token
+----- scantoken         = scanners.token
 
 local getters           = tokens.getters
 local gettoken          = getters.token
 
-local compilescanner    = tokens.compile
 local scanners          = interfaces.scanners
 
 local variables         = interfaces.variables

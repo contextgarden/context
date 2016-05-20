@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['lpdf-tag'] = {
 local next = next
 local format, match, concat = string.format, string.match, table.concat
 local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
-local utfchar = utf.char
 local settings_to_hash = utilities.parsers.settings_to_hash
 local formatters = string.formatters
 
@@ -32,7 +31,6 @@ local pdfboolean          = lpdf.boolean
 local pdfconstant         = lpdf.constant
 local pdfreference        = lpdf.reference
 local pdfunicode          = lpdf.unicode
-local pdfstring           = lpdf.string
 local pdfflushobject      = lpdf.flushobject
 local pdfreserveobject    = lpdf.reserveobject
 local pdfpagereference    = lpdf.pagereference
@@ -70,7 +68,6 @@ local setlist             = nuts.setlist
 
 local traverse_nodes      = nuts.traverse
 local tosequence          = nuts.tosequence
-local slide_nodelist      = nuts.slide
 local insert_before       = nuts.insert_before
 local insert_after        = nuts.insert_after
 
@@ -88,7 +85,6 @@ local taglist             = structurestags.taglist
 local specifications      = structurestags.specifications
 local usedlabels          = structurestags.labels
 local properties          = structurestags.properties
-local lasttaginchain      = structurestags.lastinchain
 local usewithcare         = structurestags.usewithcare
 
 local usedmapping         = { }
@@ -348,7 +344,6 @@ function nodeinjections.addtags(head)
                     last = nil
                 else
                     local nl = getlist(n)
-                 -- slide_nodelist(nl) -- temporary hack till math gets slided (tracker item)
                     collectranges(nl,n)
                 end
             end
@@ -482,7 +477,6 @@ end
 --                     last = nil
 --                 else
 --                     local nl = getlist(n)
---                  -- slide_nodelist(nl) -- temporary hack till math gets slided (tracker item)
 --                     collectranges(nl,n)
 --                 end
 --             end

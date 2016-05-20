@@ -50,10 +50,8 @@ local listcodes          = nodes.listcodes
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local whatsit_code       = nodecodes.whatsit
-local glue_code          = nodecodes.glue
 local glyph_code         = nodecodes.glyph
 local line_code          = listcodes.line
-local leftskip_code      = skipcodes.leftskip
 
 local a_displaymath      = attributes.private('displaymath')
 local a_linenumber       = attributes.private('linenumber')
@@ -83,17 +81,12 @@ local setfield           = nuts.setfield
 local traverse_id        = nuts.traverse_id
 local traverse           = nuts.traverse
 local copy_node          = nuts.copy
-local hpack_nodes        = nuts.hpack
-local linked_nodes       = nuts.linked
-local insert_node_after  = nuts.insert_after
-local insert_node_before = nuts.insert_before
+----- hpack_nodes        = nuts.hpack
 local is_display_math    = nuts.is_display_math
 local leftmarginwidth    = nuts.leftmarginwidth
 
-local nodepool           = nuts.pool
-local negated_glue       = nodepool.negatedglue
-local new_hlist          = nodepool.hlist
-local new_kern           = nodepool.kern
+----- nodepool           = nuts.pool
+----- new_kern           = nodepool.kern
 
 local ctx_convertnumber  = context.convertnumber
 local ctx_makelinenumber = context.makelinenumber

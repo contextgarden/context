@@ -16,7 +16,6 @@ local sections    = structures.sections
 local implement   = interfaces.implement
 
 local v_default   = interfaces.variables.default
-local v_auto      = interfaces.variables.auto
 
 sections.levels   = sections.levels or { }
 

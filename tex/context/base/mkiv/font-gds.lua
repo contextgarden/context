@@ -175,7 +175,6 @@ fontgoodies.prepare_features = prepare_features
 
 local function initialize(goodies,tfmdata)
     local featuresets = goodies.featuresets
-    local goodiesname = goodies.name
     if featuresets then
         if trace_goodies then
             report_goodies("checking featuresets in %a",goodies.name)

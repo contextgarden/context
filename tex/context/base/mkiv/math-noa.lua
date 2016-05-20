@@ -111,19 +111,14 @@ local mlist_to_hlist       = nodes.mlist_to_hlist
 local font_of_family       = node.family_font
 
 local new_kern             = nodepool.kern
-local new_rule             = nodepool.rule
 
 local fonthashes           = fonts.hashes
 local fontdata             = fonthashes.identifiers
 local fontcharacters       = fonthashes.characters
-local fontproperties       = fonthashes.properties
 local fontitalics          = fonthashes.italics
-local fontemwidths         = fonthashes.emwidths
-local fontexheights        = fonthashes.exheights
 
 local variables            = interfaces.variables
 local texsetattribute      = tex.setattribute
-local texgetattribute      = tex.getattribute
 local unsetvalue           = attributes.unsetvalue
 local implement            = interfaces.implement
 
@@ -166,7 +161,7 @@ local math_sub             = nodecodes.submlist       -- attr list
 local math_char            = nodecodes.mathchar       -- attr fam char
 local math_textchar        = nodecodes.mathtextchar   -- attr fam char
 local math_delim           = nodecodes.delim          -- attr small_fam small_char large_fam large_char
-local math_style           = nodecodes.style          -- attr style
+----- math_style           = nodecodes.style          -- attr style
 local math_choice          = nodecodes.choice         -- attr display text script scriptscript
 local math_fence           = nodecodes.fence          -- attr subtype
 
@@ -1564,7 +1559,6 @@ do
     local domains       = { }
     local categories    = { }
     local numbers       = { }
-    local mclasses      = mathematics.classes
     local a_mathdomain  = privateattribute("mathdomain")
 
     mathematics.domains = categories

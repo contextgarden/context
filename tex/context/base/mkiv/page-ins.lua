@@ -12,8 +12,6 @@ structures           = structures or { }
 structures.inserts   = structures.inserts or { }
 local inserts        = structures.inserts
 
-local report_inserts = logs.reporter("inserts")
-
 local allocate       = utilities.storage.allocate
 
 inserts.stored       = inserts.stored or allocate { } -- combining them in one is inefficient in the
@@ -21,10 +19,6 @@ inserts.data         = inserts.data   or allocate { } -- bytecode storage pool
 
 local variables      = interfaces.variables
 local v_page         = variables.page
-local v_columns      = variables.columns
-local v_firstcolumn  = variables.firstcolumn
-local v_lastcolumn   = variables.lastcolumn
-local v_text         = variables.text
 
 local context        = context
 local implement      = interfaces.implement

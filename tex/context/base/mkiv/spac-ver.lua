@@ -70,20 +70,16 @@ local report_vspacing     = logs.reporter("vspacing","spacing")
 local report_collapser    = logs.reporter("vspacing","collapsing")
 local report_snapper      = logs.reporter("vspacing","snapping")
 local report_specials     = logs.reporter("vspacing","specials")
-local report_page_builder = logs.reporter("builders","page")
 
 local a_skipcategory      = attributes.private('skipcategory')
 local a_skippenalty       = attributes.private('skippenalty')
 local a_skiporder         = attributes.private('skiporder')
------ snap_category       = attributes.private('snapcategory')
 local a_snapmethod        = attributes.private('snapmethod')
 local a_snapvbox          = attributes.private('snapvbox')
-local a_profilemethod     = attributes.private("profilemethod")
 
 local nuts                = nodes.nuts
 local tonode              = nuts.tonode
 local tonut               = nuts.tonut
-local ntostring           = nuts.tostring
 
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
@@ -100,7 +96,6 @@ local getbox              = nuts.getbox
 
 local find_node_tail      = nuts.tail
 local free_node           = nuts.free
-local free_node_list      = nuts.flush_list
 local traverse_nodes      = nuts.traverse
 local traverse_nodes_id   = nuts.traverse_id
 local insert_node_before  = nuts.insert_before

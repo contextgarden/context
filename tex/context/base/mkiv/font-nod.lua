@@ -16,8 +16,6 @@ local utfchar = utf.char
 local concat, fastcopy = table.concat, table.fastcopy
 local match, rep = string.match, string.rep
 
-local report_nodes = logs.reporter("fonts","tracing")
-
 fonts = fonts or { }
 nodes = nodes or { }
 
@@ -49,7 +47,6 @@ local vlist_code       = nodecodes.vlist
 local disc_code        = nodecodes.disc
 local glue_code        = nodecodes.glue
 local kern_code        = nodecodes.kern
-local rule_code        = nodecodes.rule
 local dir_code         = nodecodes.dir
 local localpar_code    = nodecodes.localpar
 
@@ -100,7 +97,6 @@ local properties = nodes.properties.data
 -- direct.set_properties_mode(true,true)  -- default
 
 local function freeze(h,where)
- -- report_nodes("freezing %s",where)
     for n in traverse_nodes(tonut(h)) do -- todo: disc but not traced anyway
         local p = properties[n]
         if p then

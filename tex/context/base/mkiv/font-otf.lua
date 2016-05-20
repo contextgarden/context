@@ -20,7 +20,6 @@ if not modules then modules = { } end modules ['font-otf'] = {
 
 -- more checking against low level calls of functions
 
-local utfbyte = utf.byte
 local gmatch, gsub, find, match, lower, strip = string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local abs = math.abs

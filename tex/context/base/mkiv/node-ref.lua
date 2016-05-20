@@ -574,8 +574,8 @@ end
 
 -- references:
 
-local texsetattribute = tex.setattribute
 local texsetcount     = tex.setcount
+----- texsetattribute = tex.setattribute
 
 local stack           = { }
 local done            = { }

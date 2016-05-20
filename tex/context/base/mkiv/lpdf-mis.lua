@@ -33,7 +33,6 @@ local register             = nodepool.register
 
 local pdfdictionary        = lpdf.dictionary
 local pdfarray             = lpdf.array
-local pdfboolean           = lpdf.boolean
 local pdfconstant          = lpdf.constant
 local pdfreference         = lpdf.reference
 local pdfunicode           = lpdf.unicode

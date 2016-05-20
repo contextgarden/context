@@ -18,7 +18,7 @@ local streamreader = readers.streamreader
 
 local readushort   = streamreader.readcardinal2  -- 16-bit unsigned integer
 local readulong    = streamreader.readcardinal4  -- 24-bit unsigned integer
-local readshort    = streamreader.readinteger2   -- 16-bit   signed integer
+----- readshort    = streamreader.readinteger2   -- 16-bit   signed integer
 local readtag      = streamreader.readtag
 local skipshort    = streamreader.skipshort
 local setposition  = streamreader.setposition

@@ -140,7 +140,6 @@ local nodepool           = nuts.pool
 local new_rule           = nodepool.rule
 local new_userrule       = nodepool.userrule
 local new_kern           = nodepool.kern
-local new_glue           = nodepool.glue
 
 -- we can use this one elsewhere too
 --

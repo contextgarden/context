@@ -25,7 +25,6 @@ local setbox          = nuts.setbox
 local new_latelua     = nuts.pool.latelua
 
 local settexdimen     = tokens.setters.dimen
-local settexcount     = tokens.setters.count
 
 local gettexbox       = tokens.getters.box
 local gettexdimen     = tokens.getters.dimen

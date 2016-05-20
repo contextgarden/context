@@ -40,7 +40,6 @@ local variables            = interfaces.variables
 local findfile             = resolvers.findfile
 local addsuffix            = file.addsuffix
 
-local v_auto               = variables.auto
 local v_yes                = variables.yes
 local v_last               = variables.last
 local v_all                = variables.all

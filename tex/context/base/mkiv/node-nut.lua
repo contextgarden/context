@@ -274,8 +274,6 @@ nuts.isglyph    = direct.is_glyph
 
 local d_remove_node     = direct.remove
 local d_free_node       = direct.free
-local d_getfield        = direct.getfield
-local d_setfield        = direct.setfield
 local d_getnext         = direct.getnext
 local d_getprev         = direct.getprev
 local d_getid           = direct.getid

@@ -14,10 +14,6 @@ more efficient.</p>
 
 -- plus (extra) is obsolete but we will keep it for a while
 
--- context(new_latelua_node(f_enhance(tag)))
---     =>
--- context.lateluafunction(function() f_enhance(tag) end)
-
 -- maybe replace texsp by our own converter (stay at the lua end)
 -- eventually mp will have large numbers so we can use sp there too
 

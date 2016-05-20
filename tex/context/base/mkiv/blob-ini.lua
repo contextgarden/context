@@ -29,7 +29,7 @@ local report_blobs    = logs.reporter("blobs")
 
 local flush_node_list = node.flush_list
 local hpack_node_list = node.hpack
-local vpack_node_list = node.vpack
+----- vpack_node_list = node.vpack
 local write_node      = node.write
 
 local typesetters     = nodes.typesetters

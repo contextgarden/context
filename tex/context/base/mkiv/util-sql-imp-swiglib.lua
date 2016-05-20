@@ -132,31 +132,31 @@ end
 
 --
 
-local typemap = mysql.MYSQL_TYPE_VAR_STRING and {
-    [mysql.MYSQL_TYPE_VAR_STRING ]  = "string",
-    [mysql.MYSQL_TYPE_STRING     ]  = "string",
-    [mysql.MYSQL_TYPE_DECIMAL    ]  = "number",
-    [mysql.MYSQL_TYPE_SHORT      ]  = "number",
-    [mysql.MYSQL_TYPE_LONG       ]  = "number",
-    [mysql.MYSQL_TYPE_FLOAT      ]  = "number",
-    [mysql.MYSQL_TYPE_DOUBLE     ]  = "number",
-    [mysql.MYSQL_TYPE_LONGLONG   ]  = "number",
-    [mysql.MYSQL_TYPE_INT24      ]  = "number",
-    [mysql.MYSQL_TYPE_YEAR       ]  = "number",
-    [mysql.MYSQL_TYPE_TINY       ]  = "number",
-    [mysql.MYSQL_TYPE_TINY_BLOB  ]  = "binary",
-    [mysql.MYSQL_TYPE_MEDIUM_BLOB]  = "binary",
-    [mysql.MYSQL_TYPE_LONG_BLOB  ]  = "binary",
-    [mysql.MYSQL_TYPE_BLOB       ]  = "binary",
-    [mysql.MYSQL_TYPE_DATE       ]  = "date",
-    [mysql.MYSQL_TYPE_NEWDATE    ]  = "date",
-    [mysql.MYSQL_TYPE_DATETIME   ]  = "datetime",
-    [mysql.MYSQL_TYPE_TIME       ]  = "time",
-    [mysql.MYSQL_TYPE_TIMESTAMP  ]  = "time",
-    [mysql.MYSQL_TYPE_ENUM       ]  = "set",
-    [mysql.MYSQL_TYPE_SET        ]  = "set",
-    [mysql.MYSQL_TYPE_NULL       ]  = "null",
-}
+-- local typemap = mysql.MYSQL_TYPE_VAR_STRING and {
+--     [mysql.MYSQL_TYPE_VAR_STRING ]  = "string",
+--     [mysql.MYSQL_TYPE_STRING     ]  = "string",
+--     [mysql.MYSQL_TYPE_DECIMAL    ]  = "number",
+--     [mysql.MYSQL_TYPE_SHORT      ]  = "number",
+--     [mysql.MYSQL_TYPE_LONG       ]  = "number",
+--     [mysql.MYSQL_TYPE_FLOAT      ]  = "number",
+--     [mysql.MYSQL_TYPE_DOUBLE     ]  = "number",
+--     [mysql.MYSQL_TYPE_LONGLONG   ]  = "number",
+--     [mysql.MYSQL_TYPE_INT24      ]  = "number",
+--     [mysql.MYSQL_TYPE_YEAR       ]  = "number",
+--     [mysql.MYSQL_TYPE_TINY       ]  = "number",
+--     [mysql.MYSQL_TYPE_TINY_BLOB  ]  = "binary",
+--     [mysql.MYSQL_TYPE_MEDIUM_BLOB]  = "binary",
+--     [mysql.MYSQL_TYPE_LONG_BLOB  ]  = "binary",
+--     [mysql.MYSQL_TYPE_BLOB       ]  = "binary",
+--     [mysql.MYSQL_TYPE_DATE       ]  = "date",
+--     [mysql.MYSQL_TYPE_NEWDATE    ]  = "date",
+--     [mysql.MYSQL_TYPE_DATETIME   ]  = "datetime",
+--     [mysql.MYSQL_TYPE_TIME       ]  = "time",
+--     [mysql.MYSQL_TYPE_TIMESTAMP  ]  = "time",
+--     [mysql.MYSQL_TYPE_ENUM       ]  = "set",
+--     [mysql.MYSQL_TYPE_SET        ]  = "set",
+--     [mysql.MYSQL_TYPE_NULL       ]  = "null",
+-- }
 
 -- real_escape_string
 

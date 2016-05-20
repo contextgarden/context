@@ -17,7 +17,6 @@ local trace_libraries = false  trackers.register("resolvers.libraries", function
 local report_library  = logs.reporter("files","library")
 ----- report_files    = logs.reporter("files","readfile")
 
-local suffixonly      = file.suffix
 local removesuffix    = file.removesuffix
 
 local getreadfilename = resolvers.getreadfilename

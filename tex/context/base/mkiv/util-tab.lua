@@ -812,7 +812,7 @@ local function serialize(root,name,specification)
         -- The dummy access will initialize a table that has a delayed initialization
         -- using a metatable. (maybe explicitly test for metatable)
         if getmetatable(root) then -- todo: make this an option, maybe even per subtable
-            local dummy = root._w_h_a_t_e_v_e_r_
+            local dummy = root._w_h_a_t_e_v_e_r_ -- needed
             root._w_h_a_t_e_v_e_r_ = nil
         end
         -- Let's forget about empty tables.

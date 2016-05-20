@@ -18,7 +18,6 @@ local formatters              = string.formatters
 local settings_to_array       = utilities.parsers.settings_to_array
 local settings_to_hash        = utilities.parsers.settings_to_hash
 
-local v_yes                   = interfaces.variables.yes
 local v_default               = interfaces.variables.default
 
 local implement               = interfaces.implement
@@ -71,7 +70,6 @@ local report_selectfont   = logs.reporter("selectfont")
 local report_files        = logs.reporter("selectfont","files")
 local report_features     = logs.reporter("selectfont","features")
 local report_goodies      = logs.reporter("selectfont","goodies")
-local report_alternatives = logs.reporter("selectfont","alternatives")
 local report_typescript   = logs.reporter("selectfont","typescripts")
 
 defaults["rm"] = { features = { ["sc"] = "*,f:smallcaps" } }

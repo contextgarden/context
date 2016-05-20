@@ -149,7 +149,7 @@ local trace_expansion     = false  trackers.register("builders.paragraphs.expans
 local trace_quality       = false  trackers.register("builders.paragraphs.quality",     function(v) trace_quality     = v end)
 
 local report_parbuilders  = logs.reporter("nodes","parbuilders")
-local report_hpackers     = logs.reporter("nodes","hpackers")
+----- report_hpackers     = logs.reporter("nodes","hpackers")
 
 local calculate_badness   = tex.badness
 local texnest             = tex.nest
@@ -185,7 +185,6 @@ local constructors         = parbuilders.constructors
 local setmetatableindex    = table.setmetatableindex
 
 local fonthashes           = fonts.hashes
-local fontdata             = fonthashes.identifiers
 local chardata             = fonthashes.characters
 local quaddata             = fonthashes.quads
 local parameters           = fonthashes.parameters
@@ -222,15 +221,13 @@ local slide_nodelist       = nuts.slide -- get rid of this, probably ok > 78.2
 local find_tail            = nuts.tail
 local new_node             = nuts.new
 local copy_node            = nuts.copy
-local copy_nodelist        = nuts.copy_list
 local flush_node           = nuts.free
 local flush_nodelist       = nuts.flush_list
-local hpack_nodes          = nuts.hpack
+----- hpack_nodes          = nuts.hpack
 local xpack_nodes          = nuts.hpack
 local replace_node         = nuts.replace
 local insert_node_after    = nuts.insert_after
 local insert_node_before   = nuts.insert_before
-local traverse_by_id       = nuts.traverse_id
 
 local setnodecolor         = nodes.tracers.colors.set
 
@@ -278,7 +275,7 @@ local ligature_code        = glyphcodes.ligature
 local stretch_orders       = nodes.fillcodes
 
 local leftmargin_code      = margincodes.left
-local rightmargin_code     = margincodes.right
+----- rightmargin_code     = margincodes.right
 
 local automatic_disc_code  = disccodes.automatic
 local regular_disc_code    = disccodes.regular
@@ -616,12 +613,16 @@ local function find(head) -- do we really want to recurse into an hlist?
             else
                 head = getnext(head)
             end
-        elseif id == protrusion_code then
-            local v = getfield(head,"value")
-            if v == 1 or v == 3 then
-                head = getnext(head)
-                if head then
+        elseif id == boundary_code then
+            if getsubtype(head) == protrusion_code then
+                local v = getfield(head,"value")
+                if v == 1 or v == 3 then
                     head = getnext(head)
+                    if head then
+                        head = getnext(head)
+                    end
+                else
+                    return head
                 end
             else
                 return head
@@ -666,12 +667,16 @@ local function find(head,tail)
             else
                 tail = getprev(tail)
             end
-        elseif id == protrusion_code then
-            local v = getfield(tail,"value")
-            if v == 2 or v == 3 then
-                tail = getprev(tail)
-                if tail then
+        elseif id == boundary_code then
+            if getsubtype(head) == protrusion_code then
+                local v = getfield(tail,"value")
+                if v == 2 or v == 3 then
                     tail = getprev(tail)
+                    if tail then
+                        tail = getprev(tail)
+                    end
+                else
+                    return tail
                 end
             else
                 return tail

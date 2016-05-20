@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/19/16 13:43:44
+-- merge date  : 05/20/16 18:42:08
 
 do -- begin closure to overcome local limits and interference
 
@@ -5034,7 +5034,6 @@ if not modules then modules={} end modules ['font-ini']={
   license="see context related readme files"
 }
 local allocate=utilities.storage.allocate
-local report_defining=logs.reporter("fonts","defining")
 fonts=fonts or {}
 local fonts=fonts
 fonts.hashes={ identifiers=allocate() }
@@ -5061,7 +5060,6 @@ if not modules then modules={} end modules ['font-con']={
 }
 local next,tostring,rawget=next,tostring,rawget
 local format,match,lower,gsub=string.format,string.match,string.lower,string.gsub
-local utfbyte=utf.byte
 local sort,insert,concat,sortedkeys,serialize,fastcopy=table.sort,table.insert,table.concat,table.sortedkeys,table.serialize,table.fastcopy
 local derivetable=table.derive
 local trace_defining=false trackers.register("fonts.defining",function(v) trace_defining=v end)
@@ -6087,7 +6085,6 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
     local properties=tfmdata.properties or {} 
     local whathandler=handlers[what]
     local whatfeatures=whathandler.features
-    local whatinitializers=whatfeatures.initializers
     local whatmodechecker=whatfeatures.modechecker
     local mode=properties.mode or (whatmodechecker and whatmodechecker(tfmdata,features,features.mode)) or features.mode or "base"
     properties.mode=mode 
@@ -6403,7 +6400,6 @@ if not modules then modules={} end modules ['font-map']={
 local tonumber,next,type=tonumber,next,type
 local match,format,find,concat,gsub,lower=string.match,string.format,string.find,table.concat,string.gsub,string.lower
 local P,R,S,C,Ct,Cc,lpegmatch=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.match
-local utfbyte=utf.byte
 local floor=math.floor
 local formatters=string.formatters
 local trace_loading=false trackers.register("fonts.loading",function(v) trace_loading=v end)
@@ -6839,7 +6835,6 @@ tfm.version=1.000
 tfm.maxnestingdepth=5
 tfm.maxnestingsize=65536*1024
 local tfmfeatures=constructors.newfeatures("tfm")
-local registertfmfeature=tfmfeatures.register
 constructors.resolvevirtualtoo=false 
 fonts.formats.tfm="type1" 
 fonts.formats.ofm="type1"
@@ -7148,7 +7143,6 @@ local streamreader=utilities.files
 readers.streamreader=streamreader
 local openfile=streamreader.open
 local closefile=streamreader.close
-local skipbytes=streamreader.skip
 local setposition=streamreader.setposition
 local skipshort=streamreader.skipshort
 local readbytes=streamreader.readbytes
@@ -7156,8 +7150,7 @@ local readstring=streamreader.readstring
 local readbyte=streamreader.readcardinal1 
 local readushort=streamreader.readcardinal2 
 local readuint=streamreader.readcardinal3 
-local readulong=streamreader.readcardinal4 
-local readchar=streamreader.readinteger1  
+local readulong=streamreader.readcardinal4
 local readshort=streamreader.readinteger2  
 local readlong=streamreader.readinteger4  
 local readfixed=streamreader.readfixed4
@@ -10597,7 +10590,6 @@ local report=logs.reporter("otf reader")
 local readers=fonts.handlers.otf.readers
 local streamreader=readers.streamreader
 local setposition=streamreader.setposition
-local skipbytes=streamreader.skip
 local skipshort=streamreader.skipshort
 local readushort=streamreader.readcardinal2 
 local readulong=streamreader.readcardinal4 
@@ -15170,8 +15162,6 @@ local concat,unpack=table.concat,table.unpack
 local insert,remove=table.insert,table.remove
 local format,gmatch,gsub,find,match,lower,strip=string.format,string.gmatch,string.gsub,string.find,string.match,string.lower,string.strip
 local type,next,tonumber,tostring,rawget=type,next,tonumber,tostring,rawget
-local lpegmatch=lpeg.match
-local utfchar=utf.char
 local trace_baseinit=false trackers.register("otf.baseinit",function(v) trace_baseinit=v end)
 local trace_singles=false trackers.register("otf.singles",function(v) trace_singles=v end)
 local trace_multiples=false trackers.register("otf.multiples",function(v) trace_multiples=v end)
@@ -15543,7 +15533,6 @@ if not modules then modules={} end modules ['font-otj']={
 }
 if not nodes.properties then return end
 local next,rawget=next,rawget
-local utfchar=utf.char
 local fastcopy=table.fastcopy
 local registertracker=trackers.register
 local trace_injections=false registertracker("fonts.injections",function(v) trace_injections=v end)
@@ -15588,7 +15577,6 @@ local traverse_id=nuts.traverse_id
 local traverse_char=nuts.traverse_char
 local insert_node_before=nuts.insert_before
 local insert_node_after=nuts.insert_after
-local find_tail=nuts.tail
 local properties=nodes.properties.data
 function injections.installnewkern(nk)
   newkern=nk or newkern
@@ -16865,7 +16853,6 @@ local getsubtype=nuts.getsubtype
 local getchar=nuts.getchar
 local ischar=nuts.is_char
 local traverse_id=nuts.traverse_id
-local traverse_node_list=nuts.traverse
 local end_of_math=nuts.end_of_math
 local nodecodes=nodes.nodecodes
 local disc_code=nodecodes.disc
@@ -17257,7 +17244,6 @@ local report_chain=logs.reporter("fonts","otf chain")
 local report_process=logs.reporter("fonts","otf process")
 local report_warning=logs.reporter("fonts","otf warning")
 local report_run=logs.reporter("fonts","otf run")
-local report_check=logs.reporter("fonts","otf check")
 registertracker("otf.replacements","otf.singles,otf.multiples,otf.alternatives,otf.ligatures")
 registertracker("otf.positions","otf.marks,otf.kerns,otf.cursive")
 registertracker("otf.actions","otf.replacements,otf.positions")
@@ -17288,10 +17274,7 @@ local getdisc=nuts.getdisc
 local setdisc=nuts.setdisc
 local setlink=nuts.setlink
 local ischar=nuts.is_char
-local insert_node_before=nuts.insert_before
 local insert_node_after=nuts.insert_after
-local delete_node=nuts.delete
-local remove_node=nuts.remove
 local copy_node=nuts.copy
 local copy_node_list=nuts.copy_list
 local find_node_tail=nuts.tail
@@ -20300,8 +20283,6 @@ fonts=fonts          or {}
 fonts.analyzers=fonts.analyzers     or {}
 fonts.analyzers.methods=fonts.analyzers.methods or { node={ otf={} } }
 local otf=fonts.handlers.otf
-local nodecodes=nodes.nodecodes
-local glyph_code=nodecodes.glyph
 local handlers=otf.handlers
 local methods=fonts.analyzers.methods
 local otffeatures=fonts.constructors.newfeatures("otf")
@@ -24109,7 +24090,6 @@ local fonts=fonts
 local nodes=nodes
 local nuts=nodes.nuts 
 local traverse_id=nuts.traverse_id
-local remove_node=nuts.remove
 local free_node=nuts.free
 local glyph_code=nodes.nodecodes.glyph
 local disc_code=nodes.nodecodes.disc

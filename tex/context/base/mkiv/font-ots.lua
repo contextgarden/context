@@ -145,10 +145,8 @@ local report_direct   = logs.reporter("fonts","otf direct")
 local report_subchain = logs.reporter("fonts","otf subchain")
 local report_chain    = logs.reporter("fonts","otf chain")
 local report_process  = logs.reporter("fonts","otf process")
------ report_prepare  = logs.reporter("fonts","otf prepare")
 local report_warning  = logs.reporter("fonts","otf warning")
 local report_run      = logs.reporter("fonts","otf run")
-local report_check    = logs.reporter("fonts","otf check")
 
 registertracker("otf.replacements", "otf.singles,otf.multiples,otf.alternatives,otf.ligatures")
 registertracker("otf.positions","otf.marks,otf.kerns,otf.cursive")
@@ -185,10 +183,7 @@ local setlink            = nuts.setlink
 
 local ischar             = nuts.is_char
 
-local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
-local delete_node        = nuts.delete
-local remove_node        = nuts.remove
 local copy_node          = nuts.copy
 local copy_node_list     = nuts.copy_list
 local find_node_tail     = nuts.tail

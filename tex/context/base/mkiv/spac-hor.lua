@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['spac-hor'] = {
     license   = "see context related readme files"
 }
 
-local utfbyte = utf.byte
 local lpegmatch, P, C = lpeg.match, lpeg.P, lpeg.C
 
 local context  = context

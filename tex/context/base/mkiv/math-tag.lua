@@ -70,8 +70,6 @@ local math_code           = nodecodes.math
 local processnoads        = noads.process
 
 local a_tagged            = attributes.private('tagged')
-local a_taggedpar         = attributes.private('taggedpar')
-local a_exportstatus      = attributes.private('exportstatus')
 local a_mathcategory      = attributes.private('mathcategory')
 local a_mathmode          = attributes.private('mathmode')
 local a_fontkern          = attributes.private('fontkern')

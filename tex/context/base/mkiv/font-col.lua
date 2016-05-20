@@ -46,7 +46,6 @@ collections.vectors      = vectors
 
 local fontdata           = fonts.hashes.identifiers
 local chardata           = fonts.hashes.characters
-local glyph_code         = nodes.nodecodes.glyph
 local currentfont        = font.current
 
 local fontpatternhassize = fonts.helpers.fontpatternhassize
@@ -257,7 +256,6 @@ end
 
 function collections.process(head) -- this way we keep feature processing
     local done = false
- -- for n in traverse_id(glyph_code,tonut(head)) do
     for n in traverse_char(tonut(head)) do
         local font   = getfont(n)
         local vector = vectors[font]

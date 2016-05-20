@@ -26,7 +26,6 @@ local nodecodes     = nodes.nodecodes
 local hlist_code    = nodecodes.hlist
 local vlist_code    = nodecodes.vlist
 local glyph_code    = nodecodes.glyph
-local kern_code     = nodecodes.kern
 local setnodecolor  = nodes.tracers.colors.set
 local parameters    = fonts.hashes.parameters
 local basepoints    = number.basepoints

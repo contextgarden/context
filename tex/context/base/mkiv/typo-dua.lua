@@ -69,7 +69,6 @@ local mirrordata          = characters.mirrors
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 local tonode              = nuts.tonode
-local nutstring           = nuts.tostring
 
 local getnext             = nuts.getnext
 local getid               = nuts.getid

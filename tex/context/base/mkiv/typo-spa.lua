@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['typo-spa'] = {
 }
 
 local next, type = next, type
-local utfchar = utf.char
 
 local trace_spacing = false  trackers.register("typesetters.spacing", function(v) trace_spacing = v end)
 
@@ -18,7 +17,6 @@ local nodes, fonts, node = nodes, fonts, node
 local tasks              = nodes.tasks
 
 local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
 local quaddata           = fonthashes.quads
 
 local texsetattribute    = tex.setattribute
@@ -47,7 +45,6 @@ local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 
 local nodecodes          = nodes.nodecodes
-local glyph_code         = nodecodes.glyph
 local math_code          = nodecodes.math
 
 local somespace          = nodes.somespace

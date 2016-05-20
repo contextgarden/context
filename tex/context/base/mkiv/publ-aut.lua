@@ -15,7 +15,6 @@ local lpeg = lpeg
 
 local type, next, tostring = type, next, tostring
 local concat = table.concat
-local utfchar = utf.char
 local utfsub = utf.sub
 local formatters = string.formatters
 
@@ -27,7 +26,6 @@ local context         = context
 ----- commands        = commands
 
 local implement       = interfaces.implement
-local ctx_setmacro    = interfaces.setmacro
 
 local publications    = publications
 
@@ -347,7 +345,6 @@ local currentauthorsymbol = nil
 local manipulators       = typesetters.manipulators
 local splitmanipulation  = manipulators.splitspecification
 local applymanipulation  = manipulators.applyspecification
-local manipulatormethods = manipulators.methods
 
 local function value(i,field)
     if currentauthordata then

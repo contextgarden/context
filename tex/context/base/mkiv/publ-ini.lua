@@ -24,7 +24,6 @@ if not modules then modules = { } end modules ['publ-ini'] = {
 local next, rawget, type, tostring, tonumber = next, rawget, type, tostring, tonumber
 local match, find, gsub = string.match, string.find, string.gsub
 local concat, sort, tohash = table.concat, table.sort, table.tohash
-local utfsub = utf.sub
 local mod = math.mod
 local formatters = string.formatters
 local allocate = utilities.storage.allocate
@@ -38,7 +37,6 @@ local upper = utf.upper
 local report             = logs.reporter("publications")
 local report_cite        = logs.reporter("publications","cite")
 local report_list        = logs.reporter("publications","list")
-local report_reference   = logs.reporter("publications","reference")
 local report_suffix      = logs.reporter("publications","suffix")
 
 local trace              = false  trackers.register("publications",                 function(v) trace            = v end)
@@ -72,16 +70,12 @@ local v_yes              = variables.yes
 local v_no               = variables.no
 local v_all              = variables.all
 local v_always           = variables.always
-local v_hidden           = variables.hidden
-local v_list             = variables.list
 local v_text             = variables.text
 local v_doublesided      = variables.doublesided
 local v_default          = variables.default
 local v_dataset          = variables.dataset
 
 local conditionals       = tex.conditionals
-
-local numbertochar       = converters.characters
 
 local logsnewline        = logs.newline
 local logspushtarget     = logs.pushtarget
@@ -108,19 +102,16 @@ manipulatormethods.WORDS = converters.WORDS
 local context                     = context
 local commands                    = commands
 local implement                   = interfaces.implement
-local ctx_setmacro                = interfaces.setmacro
 
 local ctx_doifelse                = commands.doifelse
 local ctx_doif                    = commands.doif
 local ctx_doifnot                 = commands.doifnot
 local ctx_gobbletwoarguments      = context.gobbletwoarguments
 
-local ctx_btxdirectlink           = context.btxdirectlink
 local ctx_btxhandlelistentry      = context.btxhandlelistentry
 local ctx_btxhandlelisttextentry  = context.btxhandlelisttextentry
 local ctx_btxhandlecombientry     = context.btxhandlecombientry
 local ctx_btxchecklistentry       = context.btxchecklistentry
-local ctx_btxchecklistcombi       = context.btxchecklistcombi
 
 local ctx_btxsetdataset           = context.btxsetdataset
 local ctx_btxsettag               = context.btxsettag
@@ -142,10 +133,8 @@ local ctx_btxsetrighttext         = context.btxsetrighttext
 local ctx_btxsetbefore            = context.btxsetbefore
 local ctx_btxsetafter             = context.btxsetafter
 local ctx_btxsetbacklink          = context.btxsetbacklink
-local ctx_btxsetbacktrace         = context.btxsetbacktrace
 local ctx_btxsetcount             = context.btxsetcount
 local ctx_btxsetconcat            = context.btxsetconcat
-local ctx_btxsetoveflow           = context.btxsetoverflow
 local ctx_btxsetfirstpage         = context.btxsetfirstpage
 local ctx_btxsetlastpage          = context.btxsetlastpage
 local ctx_btxsetfirstinternal     = context.btxsetfirstinternal

@@ -21,11 +21,8 @@ local C, S, P, lpegmatch = lpeg.C, lpeg.S, lpeg.P, lpeg.match
 -- we use floatbox, floatwidth, floatheight
 -- text page leftpage rightpage (todo: top, bottom, margin, order)
 
-local flush_node_list  = node.flush_list
-
 local setdimen         = tex.setdimen
 local setcount         = tex.setcount
-local texgetbox        = tex.getbox
 local texsetbox        = tex.setbox
 local textakebox       = nodes.takebox
 

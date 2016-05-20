@@ -18,7 +18,6 @@ local listcodes         = nodes.listcodes
 
 local hlist_code        = nodecodes.hlist
 local vlist_code        = nodecodes.vlist
-local glyph_code        = nodecodes.glyph
 local cell_code         = listcodes.cell
 
 local nuts              = nodes.nuts

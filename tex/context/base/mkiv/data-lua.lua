@@ -50,11 +50,9 @@ function helpers.cleanpath(path) -- hm, don't we have a helper for this?
     return resolveprefix(lpegmatch(pattern,path))
 end
 
-local loadedaslib      = helpers.loadedaslib
-local getextraluapaths = package.extraluapaths
-local getextralibpaths = package.extralibpaths
-local registerpath     = helpers.registerpath
-local lualibfile       = helpers.lualibfile
+local loadedaslib  = helpers.loadedaslib
+local registerpath = helpers.registerpath
+local lualibfile   = helpers.lualibfile
 
 local luaformatpaths
 local libformatpaths

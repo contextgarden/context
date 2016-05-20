@@ -109,8 +109,6 @@ local otffeatures         = otf.features
 local otftables           = otf.tables
 
 local registerotffeature  = otffeatures.register
-local baseprocessors      = otffeatures.processors.base
-local baseinitializers    = otffeatures.initializers.base
 
 local sequencers          = utilities.sequencers
 local appendgroup         = sequencers.appendgroup

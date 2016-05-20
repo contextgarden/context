@@ -18,15 +18,12 @@ local nodes         = nodes
 
 local implement     = interfaces.implement
 
-local splitstring   = string.split
-
 local nodecodes     = nodes.nodecodes
 
 local disc_code     = nodecodes.disc
 local hlist_code    = nodecodes.hlist
 local vlist_code    = nodecodes.vlist
 local glue_code     = nodecodes.glue
-local kern_code     = nodecodes.kern
 local glyph_code    = nodecodes.glyph
 
 local nuts          = nodes.nuts
@@ -64,8 +61,6 @@ local nodepool      = nuts.pool
 local new_penalty   = nodepool.penalty
 local new_hlist     = nodepool.hlist
 local new_glue      = nodepool.glue
-local new_rule      = nodepool.rule
-local new_kern      = nodepool.kern
 
 local setlistcolor  = nodes.tracers.colors.setlist
 
@@ -101,7 +96,6 @@ local function hyphenatedlist(head,usecolor)
                 flush_list(replace)
                 setfield(current,"replace",nil)
             end
-         -- setfield(current,"replace",new_rule(65536)) -- new_kern(65536*2))
             setboth(current)
             local list = link_nodes (
                 pre and new_penalty(10000),

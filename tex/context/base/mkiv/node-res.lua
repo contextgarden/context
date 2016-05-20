@@ -422,9 +422,7 @@ if context and _cldo_ then
 
     -- a typical case where we have more nodes than nuts
 
-    local context = context
-
-    local f_cldo   = string.formatters["_cldo_(%i)"]
+    local context  = context
     local register = context.registerfunction
 
     local latelua_node  = register_node(new_node("whatsit",whatsitcodes.latelua))
@@ -432,20 +430,6 @@ if context and _cldo_ then
 
     local setfield_node = nodes.setfield
     local setfield_nut  = nuts .setfield
-
- -- function nodepool.lateluafunction(f)
- --     local n = copy_node(latelua_node)
- --     setfield_node(n,"string",f_cldo(register(f)))
- --     return n
- -- end
-
- -- function nutpool.lateluafunction(f)
- --     local n = copy_nut(latelua_nut)
- --     setfield_nut(n,"string",f_cldo(register(f)))
- --     return n
- -- end
-
-    -- when function in latelua:
 
     function nodepool.lateluafunction(f)
         local n = copy_node(latelua_node)
@@ -459,37 +443,16 @@ if context and _cldo_ then
         return n
     end
 
-    local latefunction = nodepool.lateluafunction
-    local flushnode    = context.flushnode
-
- -- function context.lateluafunction(f)
- --     flushnode(latefunction(f)) -- hm, quite some indirect calls
- -- end
-
-    -- when function in latelua:
-
  -- function context.lateluafunction(f)
  --     local n = copy_node(latelua_node)
  --     setfield_node(n,"string",f)
- --     flushnode(n)
+ --     contextsprint(ctxcatcodes,"\\cldl",storenode(n)," ")
  -- end
 
- -- local contextsprint = context.sprint
- -- local ctxcatcodes   = tex.ctxcatcodes
- -- local storenode     = context.storenode
+    local new_latelua_node = nodes.pool.latelua
 
-     -- when 0.79 is out:
-
- -- function context.lateluafunction(f)
- --     contextsprint(ctxcatcodes,"\\cldl",storenode(latefunction(f))," ")
- -- end
-
-    -- when function in latelua:
-
-    function context.lateluafunction(f)
-        local n = copy_node(latelua_node)
-        setfield_node(n,"string",f)
-        contextsprint(ctxcatcodes,"\\cldl",storenode(n)," ")
+    function context.lateluafunction(f) -- not used anyway
+        context(new_latelua_node(f))
     end
 
 end

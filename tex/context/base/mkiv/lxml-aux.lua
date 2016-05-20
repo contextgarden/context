@@ -19,7 +19,6 @@ local xml = xml
 local xmlcopy, xmlname = xml.copy, xml.name
 local xmlinheritedconvert = xml.inheritedconvert
 local xmlapplylpath = xml.applylpath
-local xmlfilter = xml.filter
 
 local type, next, setmetatable, getmetatable = type, next, setmetatable, getmetatable
 local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat

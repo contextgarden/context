@@ -42,11 +42,8 @@ local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local glue_code          = nodecodes.glue
 local rule_code          = nodecodes.rule
-local whatsit_code       = nodecodes.whatsit
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
-
-local normal_rule        = rulecodes.normal
 
 local states             = attributes.states
 local numbers            = attributes.numbers
@@ -179,7 +176,6 @@ function states.finalize(namespace,attribute,head) -- is this one ok?
 end
 
 -- we need to deal with literals too (reset as well as oval)
--- if id == glyph_code or (id == whatsit_code and getsubtype(stack) == pdfliteral_code) or (id == rule_code and stack.width ~= 0) or (id == glue_code and stack.leader) then
 
 local function process(namespace,attribute,head,inheritance,default) -- one attribute
     local stack  = head
@@ -226,9 +222,7 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                 -- end nested --
             end
         elseif id == rule_code then
--- if subtype(stack) == normal_rule then
             check = getfield(stack,"width") ~= 0
--- end
         end
         -- much faster this way than using a check() and nested() function
         if check then
@@ -355,9 +349,7 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
                 -- end nested
             end
         elseif id == rule_code then
--- if subtype(stack) == normal_rule then
             check = getfield(stack,"width") ~= 0
--- end
         end
 
         if check then
@@ -488,9 +480,7 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
                 end
             end
         elseif id == rule_code then
--- if subtype(stack) == normal_rule then
             check = getfield(stack,"width") ~= 0
--- end
         end
 
         if check then
@@ -584,9 +574,7 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
                 done = done or ok
             end
         elseif id == rule_code then
--- if subtype(stack) == normal_rule then
             check = getfield(current,"width") ~= 0
--- end
         end
 
         if check then

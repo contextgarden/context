@@ -26,7 +26,6 @@ local register                = nodepool.register
 local pdfliteral              = nodepool.pdfliteral
 
 local pdfconstant             = lpdf.constant
-local pdfstring               = lpdf.string
 local pdfdictionary           = lpdf.dictionary
 local pdfarray                = lpdf.array
 local pdfreference            = lpdf.reference

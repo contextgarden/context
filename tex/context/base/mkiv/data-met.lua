@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['data-met'] = {
 local find, format = string.find, string.format
 local sequenced = table.sequenced
 local addurlscheme, urlhashed = url.addscheme, url.hashed
-local getcurrentdir = lfs.currentdir
 
 local trace_locating = false
 local trace_methods  = false

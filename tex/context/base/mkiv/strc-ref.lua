@@ -44,10 +44,6 @@ local report_importing   = logs.reporter("references","importing")
 local report_empty       = logs.reporter("references","empty")
 
 local variables          = interfaces.variables
-local v_default          = variables.default
-local v_url              = variables.url
-local v_file             = variables.file
-local v_unknown          = variables.unknown
 local v_page             = variables.page
 local v_auto             = variables.auto
 local v_yes              = variables.yes
@@ -127,20 +123,18 @@ local componentsplitter  = references.componentsplitter
 local currentreference   = nil
 
 local txtcatcodes        = catcodes.numbers.txtcatcodes -- or just use "txtcatcodes"
-local context_delayed    = context.delayed
 
-local ctx_pushcatcodes                = context.pushcatcodes
-local ctx_popcatcodes                 = context.popcatcodes
-local ctx_dofinishreference           = context.dofinishreference
-local ctx_dofromurldescription        = context.dofromurldescription
-local ctx_dofromurlliteral            = context.dofromurlliteral
-local ctx_dofromfiledescription       = context.dofromfiledescription
-local ctx_dofromfileliteral           = context.dofromfileliteral
-local ctx_expandreferenceoperation    = context.expandreferenceoperation
-local ctx_expandreferencearguments    = context.expandreferencearguments
-local ctx_getreferencestructureprefix = context.getreferencestructureprefix
-local ctx_convertnumber               = context.convertnumber
-local ctx_emptyreference              = context.emptyreference
+local ctx_pushcatcodes             = context.pushcatcodes
+local ctx_popcatcodes              = context.popcatcodes
+local ctx_dofinishreference        = context.dofinishreference
+local ctx_dofromurldescription     = context.dofromurldescription
+local ctx_dofromurlliteral         = context.dofromurlliteral
+local ctx_dofromfiledescription    = context.dofromfiledescription
+local ctx_dofromfileliteral        = context.dofromfileliteral
+local ctx_expandreferenceoperation = context.expandreferenceoperation
+local ctx_expandreferencearguments = context.expandreferencearguments
+local ctx_convertnumber            = context.convertnumber
+local ctx_emptyreference           = context.emptyreference
 
 storage.register("structures/references/defined", references.defined, "structures.references.defined")
 
@@ -789,10 +783,6 @@ implement {
 }
 
 -- shared by urls and files
-
--- function references.whatfrom(name)
---     context((urldata[name] and v_url) or (filedata[name] and v_file) or v_unknown)
--- end
 
 function references.from(name)
     local u = urldata[name]

@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 local next, type = next, type
 local format, gmatch = string.format, string.gmatch
 local equal, concat, remove = table.are_equal, table.concat, table.remove
-local utfchar = utf.char
 local lpegmatch = lpeg.match
 local allocate = utilities.storage.allocate
 
@@ -43,7 +42,6 @@ local v_yes                = variables.yes
 local v_packed             = variables.packed
 local v_current            = variables.current
 local v_previous           = variables.previous
-local v_next               = variables.next
 local v_first              = variables.first
 local v_last               = variables.last
 local v_text               = variables.text
@@ -64,9 +62,6 @@ local internalreferences   = references.internals
 local setinternalreference = references.setinternalreference
 
 local setmetatableindex    = table.setmetatableindex
-local texsetattribute      = tex.setattribute
-
-local a_destination        = attributes.private('destination')
 
 local absmaxlevel          = 5 -- \c_strc_registers_maxlevel
 

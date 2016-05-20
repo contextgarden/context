@@ -46,7 +46,6 @@ local setcolor           = nodes.tracers.colors.set
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
-local copy_node_list     = nuts.copy_list
 local traverse_id        = nuts.traverse_id
 
 local tasks              = nodes.tasks
@@ -60,7 +59,6 @@ local new_rule           = nodepool.rule
 local nodecodes          = nodes.nodecodes
 local skipcodes          = nodes.skipcodes
 local glyph_code         = nodecodes.glyph
-local glue_code          = nodecodes.glue
 
 local space_skip_code    = skipcodes["spaceskip"]
 

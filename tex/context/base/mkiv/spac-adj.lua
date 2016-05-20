@@ -17,7 +17,6 @@ local vlist_code  = nodecodes.vlist
 
 local remove_node = nodes.remove
 local hpack_node  = node.hpack
-local vpack_node  = node.vpack
 
 function nodes.handlers.graphicvadjust(head,groupcode) -- we can make an actionchain for mvl only
     if groupcode == "" then -- mvl only

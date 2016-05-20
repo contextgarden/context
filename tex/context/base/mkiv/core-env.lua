@@ -16,7 +16,6 @@ local P, C, S, Cc, lpegmatch, patterns = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc, lpeg.m
 local context           = context
 
 local texgetcount       = tex.getcount
-local texsetcount       = tex.setcount
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex

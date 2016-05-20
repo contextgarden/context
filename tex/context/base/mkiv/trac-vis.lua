@@ -93,7 +93,6 @@ local getdisc             = nuts.getdisc
 
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
-local copy_node           = nuts.copy
 local copy_list           = nuts.copy_list
 local free_node           = nuts.free
 local free_node_list      = nuts.flush_list
@@ -123,7 +122,6 @@ local nodepool            = nuts.pool
 local new_rule            = nodepool.rule
 local new_kern            = nodepool.kern
 local new_glue            = nodepool.glue
-local new_penalty         = nodepool.penalty
 local new_hlist           = nodepool.hlist
 local new_vlist           = nodepool.vlist
 
@@ -605,16 +603,6 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous,trace_o
             end
             info = new_hlist(info,wd,ht,dp,shift)
         end
-
--- how about dir, so maybe just copy the node
---
--- local l = getlist(current)
--- setlist(current,nil)
--- local c = copy_node(current)
--- setlist(current,l)
--- setlist(c,info)
--- info = c
-
         if next then
             setlink(info,next)
         end
@@ -635,13 +623,6 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous,trace_o
         return head, current
     end
 end
-
-local bpfactor =  number.dimenfactors.bp
-
--- callback.register("process_rule",function(n,h,v)
---     local p = string.formatters["0 0 %0.6F %0.6F re f"](h*bpfactor,v*bpfactor)
---     pdf.print("direct",p)
--- end)
 
 local function ruledglyph(head,current,previous)
     local wd = getfield(current,"width")

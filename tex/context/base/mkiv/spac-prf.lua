@@ -34,13 +34,9 @@ local leaders_code      = gluecodes.leaders
 local lineskip_code     = gluecodes.lineskip
 local baselineskip_code = gluecodes.baselineskip
 local line_code         = listcodes.line
-local parskip_code      = listcodes.parskip
 
 local texlists          = tex.lists
-local gettexdimen       = tex.getdimen
 local settexattribute   = tex.setattribute
-local settexbox         = tex.setbox
-local taketexbox        = tex.takebox
 
 local nuts              = nodes.nuts
 local tonut             = nodes.tonut
@@ -72,7 +68,6 @@ local new_rule          = nuts.pool.rule
 local new_glue          = nuts.pool.glue
 local new_kern          = nuts.pool.kern
 local hpack_nodes       = nuts.hpack
-local link_nodes        = nuts.link
 local find_node_tail    = nuts.tail
 local setglue           = nuts.setglue
 
@@ -889,12 +884,12 @@ function profiling.profilebox(specification)
 
 end
 
-local ignore = table.tohash {
-    "split_keep",
-    "split_off",
- -- "vbox",
-}
-
+-- local ignore = table.tohash {
+--     "split_keep",
+--     "split_off",
+--  -- "vbox",
+-- }
+--
 -- function profiling.vboxhandler(head,where)
 --     if head and not ignore[where] then
 --         local h = tonut(head)

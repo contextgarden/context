@@ -10,7 +10,6 @@ local setmetatable, next = setmetatable, next
 local insert = table.insert
 local floor = math.floor
 local formatters = string.formatters
-local utfchar = utf.char
 
 local setmetatableindex = table.setmetatableindex
 

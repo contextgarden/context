@@ -58,7 +58,6 @@ local textclassdata       = characters.textclasses
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 local tonode              = nuts.tonode
-local nutstring           = nuts.tostring
 
 local getnext             = nuts.getnext
 local getid               = nuts.getid
@@ -101,12 +100,6 @@ local setcolor            = directions.setcolor
 local getfences           = directions.getfences
 
 local a_directions        = attributes.private('directions')
-local a_textbidi          = attributes.private('textbidi')
------ a_state             = attributes.private('state')
-
------ s_isol              = fonts.analyzers.states.isol
-
------ current[a_state] = s_isol -- maybe better have a special bidi attr value -> override (9) -> todo
 
 local remove_controls     = true  directives.register("typesetters.directions.removecontrols",function(v) remove_controls  = v end)
 ----- analyze_fences      = true  directives.register("typesetters.directions.analyzefences", function(v) analyze_fences   = v end)

@@ -15,8 +15,6 @@ local findfile           = resolvers.findfile
 
 local implement          = interfaces.implement
 
-local report_files       = logs.reporter("files")
-
 storage.register("environment/filesynonyms", filesynonyms, "environment.filesynonyms")
 
 local function truefilename(name)

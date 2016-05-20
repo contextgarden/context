@@ -35,11 +35,9 @@ local replace_node    = nuts.replace
 local copy_node       = nuts.copy
 
 local nodecodes       = nodes.nodecodes
-local glyph_code      = nodecodes.glyph
 
 local chardata        = characters.data
 local collected       = false
-local fontdata        = fonts.hashes.identifiers
 
 local a_stripping     = attributes.private("stripping")
 local texsetattribute = tex.setattribute

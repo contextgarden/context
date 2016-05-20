@@ -25,7 +25,6 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 local type, next = type, next
 local max = math.max
 local format = string.format
-local utfchar = utf.char
 local fastcopy = table.copy
 
 local fonts, nodes, mathematics = fonts, nodes, mathematics

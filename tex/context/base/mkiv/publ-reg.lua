@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['publ-reg'] = {
 local formatters = string.formatters
 local concat     = table.concat
 local sortedhash = table.sortedhash
-local lpegmatch  = lpeg.match
 
 local context        = context
 
@@ -135,7 +134,6 @@ implement {
 
 local ctx_dosetfastregisterentry = context.dosetfastregisterentry -- register entry key
 
------ p_keywords = lpeg.tsplitat(lpeg.patterns.whitespace^0 * lpeg.P(";") * lpeg.patterns.whitespace^0)
 local components = publications.components.author
 local f_author   = formatters[ [[\btxindexedauthor{%s}{%s}{%s}{%s}{%s}{%s}]] ]
 

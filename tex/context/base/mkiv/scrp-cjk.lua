@@ -14,8 +14,6 @@ if not modules then modules = { } end modules ['scrp-cjk'] = {
 -- sense either because otherwise a wanted space at the end of a
 -- line would have to be a hard coded ones.
 
-local utfchar = utf.getchar
-
 local nuts               = nodes.nuts
 local tonut              = nodes.tonut
 local tonode             = nodes.tonode
@@ -59,7 +57,6 @@ local hash               = scripts.hash
 local numbertodataset    = scripts.numbertodataset
 
 local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
 local quaddata           = fonthashes.quads
 local spacedata          = fonthashes.spaces
 

@@ -48,7 +48,6 @@ local report_directions  = logs.reporter("typesetting","text directions")
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
 local tonode             = nuts.tonode
-local nutstring          = nuts.tostring
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -77,11 +76,8 @@ local skipcodes          = nodes.skipcodes
 
 local glyph_code         = nodecodes.glyph
 local math_code          = nodecodes.math
-local penalty_code       = nodecodes.penalty
 local kern_code          = nodecodes.kern
 local glue_code          = nodecodes.glue
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
 local dir_code           = nodecodes.dir
 local localpar_code      = nodecodes.localpar
 
@@ -94,7 +90,6 @@ local formatters         = string.formatters
 local insert             = table.insert
 
 local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
 local fontchar           = fonthashes.characters
 
 local chardirections     = characters.directions

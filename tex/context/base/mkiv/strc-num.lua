@@ -38,9 +38,6 @@ local v_previous        = variables.previous
 local v_prev            = variables.prev
 local v_last            = variables.last
 ----- v_no              = variables.no
-local v_backward        = variables.backward
-local v_forward         = variables.forward
------ v_subs            = variables.subs or "subs"
 
 -- states: start stop none reset
 

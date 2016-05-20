@@ -79,7 +79,7 @@ local kern_code          = nodecodes.kern
 local math_code          = nodecodes.math
 
 local fontkern_code      = kerncodes.fontkern
-local userkern_code      = kerncodes.userkern
+----- userkern_code      = kerncodes.userkern
 local italickern_code    = kerncodes.italiccorrection
 
 local typesetters        = typesetters

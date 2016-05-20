@@ -25,7 +25,6 @@ local getfont         = nuts.getfont
 local hpack_node_list = nuts.hpack
 local vpack_node_list = nuts.vpack
 local full_hpack_list = nuts.fullhpack
-local copy_node       = nuts.copy
 
 local nodepool        = nuts.pool
 local new_glyph       = nodepool.glyph
@@ -34,19 +33,19 @@ local new_glue        = nodepool.glue
 local utfvalues       = utf.values
 
 local currentfont     = font.current
-local currentattr     = node.current_attr
+----- currentattr     = node.current_attr
 local fontparameters  = fonts.hashes.parameters
 
 local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
     local head, prev = nil, nil
---     local attrid = nil
+ -- local attrid = nil
     if not fontid then
         if templateglyph then
             fontid = getfont(templateglyph)
---             attrid = getfield(templateglyph,"attr")
+         -- attrid = getfield(templateglyph,"attr")
         else
             fontid = currentfont()
---             attrid = currentattr()
+         -- attrid = currentattr()
         end
     end
     local fp = fontparameters[fontid]

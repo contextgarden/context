@@ -37,7 +37,6 @@ local v_auto              = variables.auto
 local v_strict            = variables.strict
 local v_all               = variables.all
 local v_positive          = variables.positive
-local v_by                = variables.by
 
 local trace_sectioning    = false  trackers.register("structures.sectioning", function(v) trace_sectioning = v end)
 local trace_detail        = false  trackers.register("structures.detail",     function(v) trace_detail     = v end)
@@ -63,8 +62,6 @@ local stopapplyprocessor  = processors.stopapply
 local strippedprocessor   = processors.stripped
 
 local convertnumber       = converters.convert
-
-local a_internal          = attributes.private('internal')
 
 local ctx_convertnumber   = context.convertnumber
 local ctx_sprint          = context.sprint
@@ -327,7 +324,7 @@ function sections.setentry(given)
     local mappedlevel = levelmap[givenname]
     local newdepth    = tonumber(mappedlevel or (olddepth > 0 and olddepth) or 1) -- hm, levelmap only works for section-*
     local resetset    = directives and directives.resetset or ""
- -- local resetter = sets.getall("structure:resets",data.block,resetset)
+ -- local resetter    = sets.getall("structure:resets",data.block,resetset)
     -- a trick to permit userdata to overload title, ownnumber and reference
     -- normally these are passed as argument but nowadays we provide several
     -- interfaces (we need this because we want to be compatible)

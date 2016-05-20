@@ -33,9 +33,7 @@ local tracedrule          = nodes.tracers.pool.nuts.rule
 
 local nodepool            = nuts.pool
 
-local new_rule            = nodepool.rule
 local new_hlist           = nodepool.hlist
-local new_glue            = nodepool.glue
 local new_kern            = nodepool.kern
 
 local hlist_code          = nodes.nodecodes.hlist

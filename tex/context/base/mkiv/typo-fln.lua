@@ -50,7 +50,6 @@ local free_node_list     = nuts.flush_list
 local free_node          = nuts.flush_node
 local copy_node_list     = nuts.copy_list
 local insert_node_after  = nuts.insert_after
-local insert_node_before = nuts.insert_before
 local hpack_node_list    = nuts.hpack
 local remove_node        = nuts.remove
 

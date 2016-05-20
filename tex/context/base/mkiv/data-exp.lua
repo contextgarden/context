@@ -14,7 +14,6 @@ local Ct, Cs, Cc, Carg, P, C, S = lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.Carg, lpeg.P, 
 local type, next = type, next
 local isdir = lfs.isdir
 
-local ostype = os.type
 local collapsepath, joinpath, basename = file.collapsepath, file.join, file.basename
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
@@ -244,7 +243,6 @@ end
 
 local cache = { }
 
------ splitter = lpeg.tsplitat(S(ostype == "windows" and ";" or ":;")) -- maybe add ,
 local splitter = lpeg.tsplitat(";") -- as we move towards urls, prefixes and use tables we no longer do :
 
 local backslashswapper = lpeg.replacer("\\","/")

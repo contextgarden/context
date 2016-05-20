@@ -8,8 +8,8 @@ if not modules then modules = { } end modules ['mlib-int'] = {
 
 local factor    = number.dimenfactors.bp
 local mpprint   = mp.print
-local mpboolean = mp.boolean
-local mpquoted  = mp.quoted
+----- mpboolean = mp.boolean
+----- mpquoted  = mp.quoted
 local getdimen  = tex.getdimen
 local getcount  = tex.getcount
 local get       = tex.get

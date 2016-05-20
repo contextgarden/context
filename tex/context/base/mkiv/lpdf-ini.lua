@@ -78,8 +78,8 @@ end
 
 local pdfsetinfo            = pdf.setinfo
 local pdfsetcatalog         = pdf.setcatalog
-local pdfsetnames           = pdf.setnames
-local pdfsettrailer         = pdf.settrailer
+----- pdfsetnames           = pdf.setnames
+----- pdfsettrailer         = pdf.settrailer
 
 local pdfsetpageresources   = pdf.setpageresources
 local pdfsetpageattributes  = pdf.setpageattributes

@@ -5909,7 +5909,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 28680, stripped down to: 18636
+-- original size: 28690, stripped down to: 18636
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6552,7 +6552,7 @@ local function serialize(root,name,specification)
   end
   if root then
     if getmetatable(root) then 
-      local dummy=root._w_h_a_t_e_v_e_r_
+      local dummy=root._w_h_a_t_e_v_e_r_ 
       root._w_h_a_t_e_v_e_r_=nil
     end
     if next(root)~=nil then
@@ -7668,7 +7668,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 12862, stripped down to: 9104
+-- original size: 12833, stripped down to: 9079
 
 if not modules then modules={} end modules ['trac-set']={ 
   version=1.001,
@@ -7854,7 +7854,6 @@ function setters.list(t)
   return user,system
 end
 function setters.show(t)
-  local category=t.name
   local list=setters.list(t)
   t.report()
   for k=1,#list do
@@ -7981,7 +7980,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 30767, stripped down to: 21355
+-- original size: 30767, stripped down to: 21312
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -8612,7 +8611,6 @@ function logs.stop_page_number()
   end
   logs.flush()
 end
-local report_files=logs.reporter("files")
 local nesting=0
 local verbose=false
 local hasscheme=url.hasscheme
@@ -9998,7 +9996,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 56973, stripped down to: 35872
+-- original size: 56926, stripped down to: 35829
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -10285,7 +10283,6 @@ do
   end
   local p_rest=(1-P(";"))^0
   local p_many=P(1)^0
-  local p_char=lpegpatterns.utf8character
   local parsedentity=P("&#")*(P("x")*(p_rest/fromhex)+(p_rest/fromdec))*P(";")*P(-1)+P ("#")*(P("x")*(p_many/fromhex)+(p_many/fromdec))
   xml.parsedentitylpeg=parsedentity
   local predefined_unified={
@@ -12518,7 +12515,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 30566, stripped down to: 21741
+-- original size: 30536, stripped down to: 21713
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -12534,7 +12531,6 @@ local xml=xml
 local xmlcopy,xmlname=xml.copy,xml.name
 local xmlinheritedconvert=xml.inheritedconvert
 local xmlapplylpath=xml.applylpath
-local xmlfilter=xml.filter
 local type,next,setmetatable,getmetatable=type,next,setmetatable,getmetatable
 local insert,remove,fastcopy,concat=table.insert,table.remove,table.fastcopy,table.concat
 local gmatch,gsub,format,find,strip=string.gmatch,string.gsub,string.format,string.find,string.strip
@@ -14183,7 +14179,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 18619, stripped down to: 11042
+-- original size: 18508, stripped down to: 11020
 
 if not modules then modules={} end modules ['data-exp']={
   version=1.001,
@@ -14199,7 +14195,6 @@ local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local Ct,Cs,Cc,Carg,P,C,S=lpeg.Ct,lpeg.Cs,lpeg.Cc,lpeg.Carg,lpeg.P,lpeg.C,lpeg.S
 local type,next=type,next
 local isdir=lfs.isdir
-local ostype=os.type
 local collapsepath,joinpath,basename=file.collapsepath,file.join,file.basename
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local trace_expansions=false trackers.register("resolvers.expansions",function(v) trace_expansions=v end)
@@ -15228,7 +15223,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-met"] = package.loaded["data-met"] or true
 
--- original size: 5488, stripped down to: 4101
+-- original size: 5450, stripped down to: 4065
 
 if not modules then modules={} end modules ['data-met']={
   version=1.100,
@@ -15240,7 +15235,6 @@ if not modules then modules={} end modules ['data-met']={
 local find,format=string.find,string.format
 local sequenced=table.sequenced
 local addurlscheme,urlhashed=url.addscheme,url.hashed
-local getcurrentdir=lfs.currentdir
 local trace_locating=false
 local trace_methods=false
 trackers.register("resolvers.locating",function(v) trace_methods=v end)
@@ -15347,7 +15341,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 67241, stripped down to: 46427
+-- original size: 67192, stripped down to: 46380
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -15444,7 +15438,6 @@ local function resolvevariable(k)
 end
 local dollarstripper=lpeg.stripper("$")
 local inhibitstripper=P("!")^0*Cs(P(1)^0)
-local backslashswapper=lpeg.replacer("\\","/")
 local somevariable=P("$")/""
 local somekey=C(R("az","AZ","09","__","--")^1)
 local somethingelse=P(";")*((1-S("!{}/\\"))^1*P(";")/"")+P(";")*(P(";")/"")+P(1)
@@ -18003,7 +17996,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lua"] = package.loaded["data-lua"] or true
 
--- original size: 4447, stripped down to: 3302
+-- original size: 4339, stripped down to: 3210
 
 if not modules then modules={} end modules ['data-lua']={
   version=1.001,
@@ -18045,8 +18038,6 @@ function helpers.cleanpath(path)
   return resolveprefix(lpegmatch(pattern,path))
 end
 local loadedaslib=helpers.loadedaslib
-local getextraluapaths=package.extraluapaths
-local getextralibpaths=package.extralibpaths
 local registerpath=helpers.registerpath
 local lualibfile=helpers.lualibfile
 local luaformatpaths
@@ -18752,8 +18743,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 797557
--- stripped bytes    : 289197
+-- original bytes    : 797155
+-- stripped bytes    : 289131
 
 -- end library merge
 

@@ -213,7 +213,6 @@ function setters.list(t) -- pattern
 end
 
 function setters.show(t)
-    local category = t.name
     local list = setters.list(t)
     t.report()
     for k=1,#list do

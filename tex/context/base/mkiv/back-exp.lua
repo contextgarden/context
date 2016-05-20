@@ -89,7 +89,6 @@ local glyph_code        = nodecodes.glyph
 local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
 local disc_code         = nodecodes.disc
-local insert_code       = nodecodes.insert
 
 local userskip_code     = skipcodes.userskip
 local rightskip_code    = skipcodes.rightskip
@@ -3315,7 +3314,6 @@ local htmltemplate = [[
         -- ./jobname-export/styles/jobname-templates.css
 
         local basename  = file.basename(v)
-        local corename  = file.removesuffix(basename)
         local basepath  = basename .. "-export"
         local imagepath = joinfile(basepath,"images")
         local stylepath = joinfile(basepath,"styles")

@@ -17,7 +17,6 @@ local nodeinjections = backends.pdf.nodeinjections
 
 local colors         = attributes.colors
 local basepoints     = number.dimenfactors["bp"]
-local inches         = number.dimenfactors["in"]
 
 local nodeinjections = backends.pdf.nodeinjections
 local codeinjections = backends.pdf.codeinjections

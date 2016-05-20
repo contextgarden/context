@@ -25,7 +25,6 @@ local attributes      = attributes
 
 local sharedstorage   = storage.shared
 
-local texgetcount     = tex.getcount
 local texsetattribute = tex.setattribute
 
 attributes.names      = attributes.names    or { }

@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['typo-itc'] = {
     license   = "see context related readme files"
 }
 
-local utfchar = utf.char
 
 local trace_italics       = false  trackers.register("typesetters.italics", function(v) trace_italics = v end)
 local report_italics      = logs.reporter("nodes","italics")
@@ -47,7 +46,6 @@ local isglyph             = nuts.isglyph
 local insert_node_after   = nuts.insert_after
 local delete_node         = nuts.delete
 local end_of_math         = nuts.end_of_math
-local find_tail           = nuts.tail
 
 local texgetattribute     = tex.getattribute
 local texsetattribute     = tex.setattribute
