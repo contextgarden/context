@@ -211,42 +211,28 @@ local getvpos = function() getvpos = backends.codeinjections.getvpos return getv
 
 local function setdim(name,w,h,d,extra) -- will be used when we move to sp allover
     local x, y = getpos()
-    if x == 0 then x = nil end
-    if y == 0 then y = nil end
-    if w == 0 then w = nil end
-    if h == 0 then h = nil end
-    if d == 0 then d = nil end
-    if extra == "" then extra = nil end
-    -- todo: sparse
     tobesaved[name] = {
         p = texgetcount("realpageno"),
-        x = x,
-        y = y,
-        w = w,
-        h = h,
-        d = d,
-        e = extra,
+        x = x ~= 0 and x or nil,
+        y = y ~= 0 and y or nil,
+        w = w ~= 0 and w or nil,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
+        e = extra ~= "" and extra or nil,
         r = region,
         c = column,
     }
 end
 
 local function setall(name,p,x,y,w,h,d,extra)
-    if x == 0 then x = nil end
-    if y == 0 then y = nil end
-    if w == 0 then w = nil end
-    if h == 0 then h = nil end
-    if d == 0 then d = nil end
-    if extra == "" then extra = nil end
-    -- todo: sparse
     tobesaved[name] = {
         p = p,
-        x = x,
-        y = y,
-        w = w,
-        h = h,
-        d = d,
-        e = extra,
+        x = x ~= 0 and x or nil,
+        y = y ~= 0 and y or nil,
+        w = w ~= 0 and w or nil,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
+        e = extra ~= "" and extra or nil,
         r = region,
         c = column,
     }
@@ -261,12 +247,16 @@ local function enhance(data)
     end
     if data.x == true then
         if data.y == true then
-            data.x, data.y = getpos()
+            local x, y = getpos()
+            data.x = x ~= 0 and x or nil
+            data.y = y ~= 0 and y or nil
         else
-            data.x = gethpos()
+            local x = gethpos()
+            data.x = x ~= 0 and x or nil
         end
     elseif data.y == true then
-        data.y = getvpos()
+        local y = getvpos()
+        data.y = y ~= 0 and y or nil
     end
     if data.p == true then
         data.p = texgetcount("realpageno") -- we should use a variable set in otr
@@ -274,12 +264,15 @@ local function enhance(data)
     if data.c == true then
         data.c = column
     end
+ -- if rawget(data,"w") == 0 then
     if data.w == 0 then
         data.w = nil
     end
+ -- if rawget(data,"h") == 0 then
     if data.h == 0 then
         data.h = nil
     end
+ -- if rawget(data,"d") == 0 then
     if data.d == 0 then
         data.d = nil
     end
@@ -349,10 +342,11 @@ scanners.dosavepositionplus = compilescanner {
 -- not much gain in keeping stack (inc/dec instead of insert/remove)
 
 local function b_column(tag)
+    local x = gethpos()
     tobesaved[tag] = {
         r = true,
-        x = gethpos(),
-        w = 0,
+        x = x ~= 0 and x or nil,
+     -- w = 0,
     }
     insert(columns,tag)
     column = tag
@@ -363,7 +357,8 @@ local function e_column(tag)
     if not t then
         -- something's wrong
     else
-        t.w = gethpos() - t.x
+        local x = gethpos() - t.x
+        t.w = x ~= 0 and x or nil
         t.r = region
     end
     remove(columns)
@@ -403,7 +398,9 @@ end
 
 local function b_region(tag)
     local last = tobesaved[tag]
-    last.x, last.y = getpos()
+    local x, y = getpos()
+    last.x = x ~= 0 and x or nil
+    last.y = y ~= 0 and y or nil
     last.p = texgetcount("realpageno")
     insert(regions,tag)
     region = tag
@@ -411,11 +408,12 @@ end
 
 local function e_region(correct)
     local last = tobesaved[region]
-    local v = getvpos()
+    local y = getvpos()
     if correct then
-        last.h = last.y - v
+        local h = (last.y or 0) - y
+        last.h = h ~= 0 and h or nil
     end
-    last.y = v
+    last.y = y ~= 0 and y or nil
     remove(regions)
     region = regions[#regions]
 end
@@ -432,10 +430,11 @@ local function setregionbox(n,tag)
     local w = getfield(box,"width")
     local h = getfield(box,"height")
     local d = getfield(box,"depth")
+    local y = getvpos()
     tobesaved[tag] = {
         p = true,      -- not enhanced
         x = true,      -- not enhanced
-        y = getvpos(), -- true,
+        y = y ~= 0 and y or nil,
         w = w ~= 0 and w or nil,
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
@@ -487,9 +486,9 @@ scanners.parpos = function() -- todo: relate to localpar (so this is an intermed
         r  = true,
         x  = true,
         y  = true,
-        h  = getfield(strutbox,"height"),
-        d  = getfield(strutbox,"depth"),
-        hs = texget("hsize"),
+        h  = getfield(strutbox,"height"), -- never 0
+        d  = getfield(strutbox,"depth"),  -- never 0
+        hs = texget("hsize"),             -- never 0
     }
     local leftskip   = getfield(getskip("leftskip"),"width")
     local rightskip  = getfield(getskip("rightskip"),"width")
@@ -537,15 +536,18 @@ end
 
 scanners.dosetpositionwhd = function() -- name w h d extra
     local name = scanstring()
+    local w = scandimen()
+    local h = scandimen()
+    local d = scandimen()
     tobesaved[name] = {
         p = true,
         c = column,
         r = true,
         x = true,
         y = true,
-        w = scandimen(),
-        h = scandimen(),
-        d = scandimen(),
+        w = w ~= 0 and w or nil,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
  -- context(new_latelua_node(f_enhance(name)))
@@ -555,15 +557,18 @@ end
 scanners.dosetpositionbox = function() -- name box
     local name = scanstring()
     local box  = getbox(scaninteger())
+    local w = getfield(box,"width")
+    local h = getfield(box,"height")
+    local d = getfield(box,"depth")
     tobesaved[name] = {
         p = true,
         c = column,
         r = true,
         x = true,
         y = true,
-        w = getfield(box,"width"),
-        h = getfield(box,"height"),
-        d = getfield(box,"depth"),
+        w = w ~= 0 and w or nil,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
  -- context(new_latelua_node(f_enhance(name)))
@@ -572,15 +577,18 @@ end
 
 scanners.dosetpositionplus = function() -- name w h d extra
     local name = scanstring()
+    local w = scandimen()
+    local h = scandimen()
+    local d = scandimen()
     tobesaved[name] = {
         p = true,
         c = column,
         r = true,
         x = true,
         y = true,
-        w = scandimen(),
-        h = scandimen(),
-        d = scandimen(),
+        w = w ~= 0 and w or nil,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
         e = scanstring(),
     }
@@ -591,14 +599,16 @@ end
 scanners.dosetpositionstrut = function() -- name
     local name = scanstring()
     local strutbox = getbox("strutbox")
+    local h = getfield(strutbox,"height")
+    local d = getfield(strutbox,"depth")
     tobesaved[name] = {
         p = true,
         c = column,
         r = true,
         x = true,
         y = true,
-        h = getfield(strutbox,"height"),
-        d = getfield(strutbox,"depth"),
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
     }
  -- context(new_latelua_node(f_enhance(name)))

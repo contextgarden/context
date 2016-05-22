@@ -94,6 +94,7 @@ local direct              = node.direct
 local fastcopy            = table.fastcopy
 
 local texget              = tex.get
+local texgetskip          = tex.getskip
 
 local nodecodes           = nodes.nodecodes
 local hlist_code          = nodecodes.hlist
@@ -151,7 +152,9 @@ nuts.setattr              = direct.set_attribute or setfield
 
 nuts.getbox               = direct.getbox
 nuts.setbox               = direct.setbox
-nuts.getskip              = direct.getskip or function(s) return tonut(texget(s)) end
+nuts.getskip              = function(s)
+    return tonut(type(s) == "number" and texgetskip(s) or texget(s))
+end
 
 -- helpers
 

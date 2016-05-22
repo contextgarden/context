@@ -667,10 +667,11 @@
      % maybe intercept empty
      \clf_mixgetsplit\recurselevel\relax
      \hskip-\d_page_mix_column_width
-     \page_mix_hbox to \d_page_mix_column_width \bgroup
+     \vbox \bgroup
+       \hsize\d_page_mix_column_width
        \placenoteinserts
-       \hss
      \egroup
+     \hss
    \egroup}
 
 \unexpanded\def\page_mix_routine_continue
