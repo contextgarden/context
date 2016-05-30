@@ -61,7 +61,7 @@
 
 \appendtoks
    \setuevalue{\e!start\currentlines}{\spac_lines_start[\currentlines]}%
-   \setuevalue{\e!stop \currentlines}{\spac_lines_stop}%
+   \letvalue  {\e!stop \currentlines }\spac_lines_stop
 \to \everydefinelines
 
 \unexpanded\def\spac_lines_start[#1]%
@@ -107,14 +107,17 @@
 
 \def\spac_lines_after_first_obeyed_line_a % tzt two pass, like itemize
   {\linesparameter\c!command
+   \linesparameter\c!left
    \glet\spac_after_first_obeyed_line\spac_lines_after_first_obeyed_line_b}
 
 \def\spac_lines_after_first_obeyed_line_b
   {\spac_lines_break
-   \linesparameter\c!command}
+   \linesparameter\c!command
+   \linesparameter\c!left}
 
 \def\spac_lines_obeyed_line
-  {\dostoptagged
+  {\ifdone\linesparameter\c!right\fi
+   \dostoptagged % can be a dummy one as we don't look ahead
    \par
    \dostarttagged\t!line\empty
    \futurelet\next\spac_lines_between}
@@ -128,9 +131,13 @@
    \egroup}
 
 \def\spac_lines_between
-  {\doifelsemeaning\next\obeyedline % brrr
-     {\linesparameter\c!inbetween}
-     {\spac_after_first_obeyed_line}}
+  {\ifx\next\spac_lines_stop
+     \donefalse
+   \else
+     \doifelsemeaning\next\obeyedline % brrr
+       {\donefalse\linesparameter\c!inbetween}
+       {\donetrue\spac_after_first_obeyed_line}%
+   \fi}
 
 \definelines[\v!lines]
 

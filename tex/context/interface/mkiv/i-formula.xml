@@ -126,55 +126,45 @@
 
     -->
 
+    <!-- todo: make definition for keywords -->
+
     <cd:command name="formula" type="environment" generated="yes" variant="generated" file="strc-mat.mkiv">
         <cd:sequence>
             <cd:variable value="formula"/>
             <cd:string value="formula"/>
         </cd:sequence>
         <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:inherit name="setupbodyfont"/>
-            </cd:keywords>
+            <cd:resolve name="argument-formula"/>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="formula" type="environment" file="strc-mat.mkiv">
         <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:inherit name="setupbodyfont"/>
-            </cd:keywords>
+            <cd:resolve name="argument-formula"/>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="spformula" type="environment" file="strc-mat.mkiv">
         <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:inherit name="setupbodyfont"/>
-            </cd:keywords>
+            <cd:resolve name="argument-formula"/>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="sdformula" type="environment" file="strc-mat.mkiv">
         <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:inherit name="setupbodyfont"/>
-            </cd:keywords>
+            <cd:resolve name="argument-formula"/>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="mpformula" type="environment" file="strc-mat.mkiv">
         <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:inherit name="setupbodyfont"/>
-            </cd:keywords>
+            <cd:resolve name="argument-formula"/>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="mdformula" type="environment" file="strc-mat.mkiv">
         <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:inherit name="setupbodyfont"/>
-            </cd:keywords>
+            <cd:resolve name="argument-formula"/>
         </cd:arguments>
     </cd:command>
 
@@ -188,9 +178,7 @@
 
     <cd:command name="formula" file="strc-mat.mkiv">
         <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:inherit name="setupbodyfont"/>
-            </cd:keywords>
+            <cd:resolve name="argument-formula"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>

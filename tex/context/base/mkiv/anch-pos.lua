@@ -448,7 +448,7 @@ local function markregionbox(n,tag,correct) -- correct needs checking
  -- local push = new_latelua(f_b_region(tag))
  -- local pop  = new_latelua(f_e_region(tostring(correct)))
     local push = new_latelua(function() b_region(tag) end)
-    local pop  = new_latelua(function() e_region(tostring(correct)) end)
+    local pop  = new_latelua(function() e_region(correct) end)
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
     local head = getlist(box)
     if head then

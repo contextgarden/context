@@ -142,6 +142,7 @@
                 <cd:parameter name="strut">
                     <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>
+                    <cd:constant type="none"/>
                     <cd:constant type="local"/>
                     <cd:constant type="global"/>
                 </cd:parameter>

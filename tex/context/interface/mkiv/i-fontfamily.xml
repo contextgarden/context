@@ -146,8 +146,8 @@
                     <cd:constant type="no" default="yes"/>
                 </cd:parameter>
                 <cd:parameter name="force">
-                    <cd:constant type="yes" default="yes"/>
-                    <cd:constant type="no"/>
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
                 </cd:parameter>
                 <cd:parameter name="features">
                     <cd:constant type="cd:name"/>
@@ -209,9 +209,9 @@
     <cd:command name="definefontfamilypreset" variant="1" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
-            <cd:assignment list="yes">
+            <cd:assignments list="yes">
                 <cd:inherit name="definefontfamily"/>
-            </cd:assignment>
+            </cd:assignments>
         </cd:arguments>
     </cd:command>
 

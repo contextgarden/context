@@ -57,7 +57,7 @@ local otf                = fonts.handlers.otf
 
 otf.glists               = { "gsub", "gpos" }
 
-otf.version              = 2.825 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 2.826 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otf", otf.version, true)
 
 local hashes             = fonts.hashes
@@ -1907,18 +1907,16 @@ actions["analyze math"] = function(data,filename,raw)
                     math.accent = accent
                 end
                 if mathkerns then
-                    for k, v in next, mathkerns do
-                        if not next(v) then
-                            mathkerns[k] = nil
-                        else
-                            for k, v in next, v do
-                                if v == 0 then
-                                    k[v] = nil -- height / kern can be zero
-                                end
-                            end
-                        end
-                    end
-                    math.kerns = mathkerns
+                    local topright    = mathkerns.top_right
+                    local topleft     = mathkerns.top_left
+                    local bottomright = mathkerns.bottom_right
+                    local bottomleft  = mathkerns.bottom_left
+                    math.kerns = {
+                        topright    = topright    and next(topright)    and topright    or nil,
+                        topleft     = topleft     and next(topleft)     and topleft     or nil,
+                        bottomright = bottomright and next(bottomright) and bottomright or nil,
+                        bottomleft  = bottomleft  and next(bottomleft)  and bottomleft  or nil,
+                    }
                 end
                 if hvariants then
                     math.hvariants, math.hparts, math.hitalic = check_variants(unicode,hvariants,splitter,unicodes)

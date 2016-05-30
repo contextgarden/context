@@ -842,7 +842,7 @@ vardef mfun_do_outline_text_f (expr n, x, y) (text t) =
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
         if mfun_do_outline_n = n :
-            fill   i shifted(x,y) mfun_do_outline_options_f
+            fill   i shifted(x,y) mfun_do_outline_options_f withpen pencircle scaled 0
         else :
             nofill i shifted(x,y)
         fi ;

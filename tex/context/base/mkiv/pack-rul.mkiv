@@ -809,11 +809,12 @@
 \newconditional\c_framed_has_width
 \newconditional\c_framed_has_height
 \newconditional\c_framed_has_format
-\newconditional\c_framed_has_strut
 \newconditional\c_framed_is_overlaid
 \newconditional\c_framed_has_frame
 \newconditional\c_framed_has_extra_offset
 \newconditional\c_framed_text_location_none
+
+\newconstant   \c_framed_has_strut  % 0=relaxes 1=pseudostruts 2=realstruts
 
 %D \macros
 %D   {framed, setupframed}
@@ -1226,18 +1227,18 @@
      \framed_offset_alternative_unknown
    \fi
    % the next check could move to strutalternative
-   \ifconditional\c_framed_has_strut
+   \ifcase\c_framed_has_strut % none (not even noindent)
+     \let\localbegstrut\relax
+     \let\localendstrut\relax
+     \let\localstrut   \relax
+   \or % no / overlay
+     \let\localbegstrut\pseudobegstrut
+     \let\localendstrut\pseudoendstrut
+     \let\localstrut   \pseudostrut
+   \else
      \let\localbegstrut\begstrut
      \let\localendstrut\endstrut
      \let\localstrut   \strut
-   \else
-     \let\localbegstrut\pseudobegstrut % was: \relax
-     \let\localendstrut\pseudoendstrut % was: \relax
-     \let\localstrut   \pseudostrut    % was: \relax
-    %\ifconditional\c_framed_has_height\ifdim\d_framed_height<\strutht % saveguard
-    %  \let\localbegstrut\relax               % but not that
-    %  \let\localstrut   \relax               % save after all
-    %\fi\fi
    \fi
    \ifx\p_framed_autostrut\v!yes
      \let\delayedbegstrut\relax
@@ -1390,7 +1391,7 @@
 % struts (use let instead?)
 
 \setvalue{\??framedstrutalternative\v!no}%
-  {\setfalse\c_framed_has_strut}
+  {\c_framed_has_strut\plusone}
 
 \setvalue{\??framedstrutalternative\v!global}%
   {\setstrut}
@@ -1407,48 +1408,46 @@
 \def\framed_strut_alternative_unknown
   {\setstrut}
 
+\setvalue{\??framedstrutalternative\v!none}% not even pseudo struts
+  {\c_framed_has_strut\zerocount}
+
 % offsets
 
 \setvalue{\??framedoffsetalternative\v!none}%
   {\setfalse\c_framed_has_offset
-   \setfalse\c_framed_has_strut
+   \c_framed_has_strut\plusone
    \setfalse\c_framed_is_overlaid
    \d_framed_local_offset\d_framed_linewidth}
 
 \setvalue{\??framedoffsetalternative\v!overlay}%
   {% \ifx\p_framed_frame\v!no \setfalse\c_framed_has_frame \fi % test first
    \setfalse\c_framed_has_offset
-   \setfalse\c_framed_has_strut
-   \settrue \c_framed_is_overlaid
+   \c_framed_has_strut\plusone
+   \settrue\c_framed_is_overlaid
    \d_framed_local_offset\zeropoint}
 
 % \setvalue{\??framedoffsetalternative\v!strut}%
 %   {\setfalse\c_framed_has_offset
-%    \settrue \c_framed_has_strut
-%    \settrue \c_framed_is_overlaid
+%    \c_framed_has_strut\plustwo
+%    \settrue\c_framed_is_overlaid
 %    \d_framed_local_offset\zeropoint}
 
 \setvalue{\??framedoffsetalternative\v!default}% new per 2-6-2000
   {\settrue \c_framed_has_offset
-   \settrue \c_framed_has_strut
+   \c_framed_has_strut\plustwo
    \setfalse\c_framed_is_overlaid
    \let\localoffset\defaultframeoffset
    \letframedparameter\c!offset\defaultframeoffset % brrr
    \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
 
-\setvalue{\??framedoffsetalternative\s!unknown}%
+\def\framed_offset_alternative_unknown
   {\settrue \c_framed_has_offset
-   \settrue \c_framed_has_strut
+   \c_framed_has_strut\plustwo
    \setfalse\c_framed_is_overlaid
    \let\defaultframeoffset\localoffset
    \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
 
-\def\framed_offset_alternative_unknown
-  {\settrue \c_framed_has_offset
-   \settrue \c_framed_has_strut
-   \setfalse\c_framed_is_overlaid
-   \let\defaultframeoffset\localoffset
-   \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
+\letvalue{\??framedoffsetalternative\s!unknown}\framed_offset_alternative_unknown
 
 % so far for alternatives
 
@@ -1952,12 +1951,13 @@
 %    \inheritedmathframedframed{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
 %    \endgroup}
 
-\newcount\c_pack_framed_mc
+\newcount\c_pack_framed_mathframed
+\newtoks \t_pack_framed_mathframed
 
 \def\pack_framed_math_pos
-  {\global\advance\c_pack_framed_mc\plusone
-   \xdef\pack_framed_mc_one{mcf:1:\number\c_pack_framed_mc}%
-   \xdef\pack_framed_mc_two{mcf:2:\number\c_pack_framed_mc}%
+  {\global\advance\c_pack_framed_mathframed\plusone
+   \xdef\pack_framed_mc_one{mcf:1:\number\c_pack_framed_mathframed}%
+   \xdef\pack_framed_mc_two{mcf:2:\number\c_pack_framed_mathframed}%
    \xypos\pack_framed_mc_two}
 
 \def\pack_framed_mathframed_indeed[#1]#2% no fancy nesting supported here
@@ -1971,8 +1971,19 @@
    \else\ifx\m_framed_location\v!low\else
      \let\normalstrut\pack_framed_math_strut
    \fi\fi
-   \inheritedmathframedframed{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
+   \inheritedmathframedframed\bgroup
+     \Ustartmath
+     \triggermathstyle\c_framed_mstyle
+     \the\t_pack_framed_mathframed
+     #2%
+     \Ustopmath
+   \egroup
    \endgroup}
+
+\appendtoks
+    \mathraggedstatus\plustwo   % makes \startalign work
+    \eqalignmode     \zerocount % makes \startalign fit
+\to \t_pack_framed_mathframed
 
 \installframedlocator \v!mathematics
   {}
@@ -3007,6 +3018,7 @@
    \ifx\currentframedcontent\v!off
      \let\stopframedcontent\egroup
    \else
+     \checkframedcontentparent
      \let\stopframedcontent\pack_framed_stop_content_indeed
      \expandafter\pack_framed_start_content_indeed
    \fi}

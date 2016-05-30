@@ -11,6 +11,12 @@ if not modules then modules = { } end modules ['node-rul'] = {
 --
 -- todo: make robust for layers ... order matters
 
+-- todo: collect successive bit and pieces and combine them
+--
+-- path s ; s := shaped(p) ; % p[] has rectangles
+-- fill s withcolor .5white ;
+-- draw boundingbox s withcolor yellow;
+
 local attributes, nodes, node = attributes, nodes, node
 
 local nuts          = nodes.nuts
@@ -93,6 +99,7 @@ local n_tostring         = nodes.idstostring
 local n_tosequence       = nodes.tosequence
 
 local a_ruled            = attributes.private('ruled')
+local a_runningtext      = attributes.private('runningtext')
 local a_color            = attributes.private('color')
 local a_transparency     = attributes.private('transparency')
 local a_colorspace       = attributes.private('colormodel')
@@ -161,16 +168,16 @@ local checkdir = true
 
 -- handlers
 
-local function processwords(attribute,data,flush,head,parent) -- we have hlistdir and local dir
+local function processwords(attribute,data,flush,head,parent,skip) -- we have hlistdir and local dir
     local n = head
     if n then
         local f, l, a, d, i, class
         local continue, leaders, done, strip, level = false, false, false, true, -1
         while n do
             local id = getid(n)
-            if id == glyph_code or id == rule_code then
+            if id == glyph_code or id == rule_code or (id == hlist_code and getattr(n,a_runningtext) == 1) then
                 local aa = getattr(n,attribute)
-                if aa then
+                if aa and aa ~= skip then
                     if aa == a then
                         if not f then -- ?
                             f = n
@@ -200,6 +207,12 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                     end
                     f, l, a = nil, nil, nil
                 end
+                if id == hlist_code then
+                    local list = getlist(n)
+                    if list then
+                        setlist(n,(processwords(attribute,data,flush,list,n,aa))) -- watch ()
+                    end
+                end
             elseif id == disc_code or id == boundary_code then
                 if f then
                     l = n
@@ -215,7 +228,7 @@ local function processwords(attribute,data,flush,head,parent) -- we have hlistdi
                 end
                 local list = getlist(n)
                 if list then
-                    setlist(n,(processwords(attribute,data,flush,list,n))) -- watch ()
+                    setlist(n,(processwords(attribute,data,flush,list,n,skip))) -- watch ()
                 end
 --             elseif checkdir and id == dir_code then -- only changes in dir, we assume proper boundaries
 --                 if f and a then
@@ -317,7 +330,14 @@ end
 local a_viewerlayer = attributes.private("viewerlayer")
 
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
-    if getid(f) ~= glyph_code then
+    local font = nil
+    local id   = getid(f)
+    if id == glyph_code then
+        font = getfont(f)
+    elseif id == hlist_code then
+        font = getattr(f,a_runningtext)
+    end
+    if not font then
         -- saveguard ... we need to deal with rules and so (math)
         return head
     end
@@ -353,14 +373,14 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     local transparency  = ta > 0 and ta or getattr(f,a_transparency)
     local foreground    = order == v_foreground
     local layer         = getattr(f,a_viewerlayer)
-    local e             = dimenfactor(unit,getfont(f)) -- what if no glyph node
+    local e             = dimenfactor(unit,font) -- what if no glyph node
     local rt            = tonumber(rulethickness)
     if rt then
         rulethickness = e * rulethickness / 2
     else
         local n, u = splitdimen(rulethickness)
         if n and u then -- we need to intercept ex and em and % and ...
-            rulethickness = n * dimenfactor(u,fontdata[getfont(f)]) / 2
+            rulethickness = n * dimenfactor(u,fontdata[font]) / 2
         else
             rulethickness = 1/5
         end

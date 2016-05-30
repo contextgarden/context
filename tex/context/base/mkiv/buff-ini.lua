@@ -494,7 +494,9 @@ local function runbuffer(name,encapsulate)
             registertempfile(addsuffix(tag,"tmp")) -- to be sure
             registertempfile(addsuffix(tag,"pdf"))
         end
-        newhashes = { }
+        newhashes = {
+            version = environment.version,
+        }
         job.datasets.setdata {
             name = "typeset buffers",
             tag  = "hashes",
@@ -518,7 +520,7 @@ local function runbuffer(name,encapsulate)
     --
     if newhashes[hash] then
         -- done
-    elseif not oldhashes[hash] or not lfs.isfile(resultname) then
+    elseif not oldhashes[hash] or oldhashes.version ~= newhashes.version or not lfs.isfile(resultname) then
         if trace_run then
             report_typeset("changes in %a, processing forced",name)
         end

@@ -38,7 +38,7 @@
    \dorecurse{\mathalignmentparameter\c!m}\math_build_eqalign_step
    \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_c}}}
 
-\def\math_build_eqalign_step
+\unexpanded\def\math_build_eqalign_step % make sure no expansion in tracing
   {\ifnum\recurselevel>\plusone
      \scratchtoks\expandafter{\the\scratchtoks\tabskip\mathalignmentparameter\c!distance\aligntab\tabskip\zeropoint}%
    \fi
@@ -83,8 +83,6 @@
 
 % use zeroskipplusfill
 
-% i really need to redo this eqno mess ... in lua
-
 \def\math_prepare_r_eqalign_no
   {\c_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
    \c_math_align_b{\aligntab\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
@@ -118,7 +116,7 @@
 
 \def\math_both_eqalign_no_normal#1#2%
   {\ifmmode
-     \the\mathdisplayaligntweaks % \let\strc_formulas_place_number\relax % strange hack
+     \the\mathdisplayaligntweaks
      \vcenter\bgroup
      \let\math_finish_eqalign_no\egroup
    \else
@@ -145,8 +143,8 @@
 
 \def\math_rlap#1%
   {\setbox\scratchbox\hbox{#1}%
-   \ifdim\wd\scratchbox>\mathnumbercorrection
-     \xdef\mathnumbercorrection{\the\wd\scratchbox}%
+   \ifdim\wd\scratchbox>\d_math_number_correction
+     \global\d_math_number_correction\wd\scratchbox
    \fi
    \box\scratchbox
    \global\mathnumberstatus\plustwo}
@@ -1052,26 +1050,13 @@
 \newconstant\mathraggedstatus % normal left center  right
 \newconstant\mathnumberstatus % nothing normal shift_right
 
-\let\mathnumbercorrection\!!zeropoint
-
-\let\math_the_r_eq_no\empty
-\let\math_the_l_eq_no\empty
+\newdimen\d_math_number_correction
 
 \unexpanded\def\startmathbox#1%
   {\hsize\displaywidth % \checkeddisplaymath
    \global\mathnumberstatus\plusone
    \mathraggedstatus#1\relax
-   \let\mathnumbercorrection\!!zeropoint
-   \global\let\math_the_r_eq_no\empty
-   \global\let\math_the_l_eq_no\empty
-   \def\reqno{\gdef\math_the_r_eq_no}%
-   \def\leqno{\gdef\math_the_l_eq_no}%
-   \let\eqno\reqno
-   % added
-   \let\normalreqno\reqno
-   \let\normalleqno\leqno
-   \let\normaleqno \eqno
-   % added
+   \global\d_math_number_correction\zeropoint
    \strc_formulas_place_number
    \setbox\scratchbox\math_hbox to \displaywidth\bgroup % \checkeddisplaymath
      \mathinnerstrut
@@ -1080,57 +1065,113 @@
 
 \def\math_box_llapped_math_no
   {\ifcase\mathraggedstatus\or
-     \math_the_r_eq_no
+     \box\b_strc_formulas_number
    \or
-     \llap{\math_the_r_eq_no}%
+     \llap{\box\b_strc_formulas_number}%
    \or
-     \llap{\math_the_r_eq_no}%
+     \llap{\box\b_strc_formulas_number}%
    \fi}
 
 \def\math_box_rlapped_math_no
   {\ifcase\mathraggedstatus\or
-     \rlap{\math_the_l_eq_no}%
+     \rlap{\box\b_strc_formulas_number}%
    \or
-     \rlap{\math_the_l_eq_no}%
+     \rlap{\box\b_strc_formulas_number}%
    \or
-     \math_the_l_eq_no
+     \box\b_strc_formulas_number
    \fi}
+
+% \unexpanded\def\stopmathbox
+%   {\stopforceddisplaymath
+%    \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
+%    \egroup
+%    \setbox0\hbox{\unhcopy\scratchbox}%
+%    \scratchdimen\wd0
+%   % to be tested: \scratchdimen\naturalwd\scratchbox
+%    \ifdim\scratchdimen>\displaywidth % \checkeddisplaymath
+%      \donetrue
+%    \else
+%      \donefalse
+%    \fi
+%    % is number correction still needed ?
+%    \dontcomplain
+%    \dontleavehmode
+%    \kern\d_strc_formulas_display_margin_left
+%    \hbox to \displaywidth\bgroup
+%      \ifcase\mathnumberstatus
+%        \box\scratchbox
+%      \or
+%        \ifzeropt\wd\b_strc_formulas_number
+%          \box\scratchbox
+%        \else\ifx\p_location\v!left
+%          \ifdone
+%            \vpack{\hpack to \displaywidth{\math_box_rlapped_math_no\hss}\box\scratchbox}% \checkeddisplaymath
+%          \else
+%            \math_box_rlapped_math_no\box\scratchbox\hss % hss makes room for number
+%          \fi
+%        \else
+%          \ifdone
+%            \vpack{\box\scratchbox\hpack to \displaywidth{\hss\math_box_llapped_math_no}}% \checkeddisplaymath
+%          \else
+%            \hss\box\scratchbox\math_box_llapped_math_no % hss makes room for number
+%          \fi
+%        \fi\fi
+%      \or
+%         \hskip\d_math_number_correction
+%         \box\scratchbox
+%         \hss
+%      \else
+%         \box\scratchbox
+%      \fi
+%    \egroup}
 
 \unexpanded\def\stopmathbox
   {\stopforceddisplaymath
    \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
    \egroup
-   \setbox0\hbox{\unhcopy\scratchbox}%
-   \scratchdimen\wd0
-  % to be tested: \scratchdimen\naturalwd\scratchbox
-   \ifdim\scratchdimen>\displaywidth % \checkeddisplaymath
-     \donetrue
+   \ifconditional\c_strc_formulas_tight
+     \setnaturalwd\scratchbox
+     \scratchdimen\wd\scratchbox
+     \ifdim\scratchdimen>\displaywidth % \checkeddisplaymath
+       \donetrue
+     \else
+       \displaywidth\scratchdimen
+       \donefalse
+     \fi
    \else
-     \donefalse
+     \scratchdimen\getnaturalwd\scratchbox
+     \ifdim\scratchdimen>\displaywidth % \checkeddisplaymath
+       \donetrue
+     \else
+       \donefalse
+     \fi
    \fi
-   \hbox to \displaywidth\bgroup
+   % is number correction still needed ?
+   \dontcomplain
+   \noindentation
+ % \dontleavehmode
+   \kern\d_strc_formulas_display_margin_left
+   \hbox to \displaywidth \bgroup
      \ifcase\mathnumberstatus
        \box\scratchbox
      \or
-       \ifx\math_the_l_eq_no\empty
-         \ifx\math_the_r_eq_no\empty
-           \box\scratchbox
-         \else
-           \ifdone
-             \vpack{\box\scratchbox\hpack to \displaywidth{\hss\math_box_llapped_math_no}}% \checkeddisplaymath
-           \else
-             \hss\box\scratchbox\math_box_llapped_math_no % hss makes room for number
-           \fi
-         \fi
-       \else
+       \ifzeropt\wd\b_strc_formulas_number
+         \box\scratchbox
+       \else\ifx\p_location\v!left
          \ifdone
            \vpack{\hpack to \displaywidth{\math_box_rlapped_math_no\hss}\box\scratchbox}% \checkeddisplaymath
          \else
            \math_box_rlapped_math_no\box\scratchbox\hss % hss makes room for number
          \fi
-       \fi
+       \else
+         \ifdone
+           \vpack{\box\scratchbox\hpack to \displaywidth{\hss\math_box_llapped_math_no}}% \checkeddisplaymath
+         \else
+           \hss\box\scratchbox\math_box_llapped_math_no % hss makes room for number
+         \fi
+       \fi\fi
      \or
-        \hskip\mathnumbercorrection
+        \hskip\d_math_number_correction
         \box\scratchbox
         \hss
      \else
@@ -1144,131 +1185,9 @@
 \defineinnermathhandler\v!flushleft {\startmathbox\plusthree}{\stopmathbox}
 \defineinnermathhandler\v!center    {\startmathbox\plustwo  }{\stopmathbox}
 \defineinnermathhandler\v!flushright{\startmathbox\plusone  }{\stopmathbox}
-\defineinnermathhandler\v!normal    {}                       {}
+\defineinnermathhandler\v!normal    {\startmathbox\plustwo  }{\stopmathbox}
 
-%defineinnermathhandler\v!normal    {\startmathbox\plustwo  }{\stopmathbox}
-
-%D [The examples below are in english and don't process in the
-%D  documentation style, which will be english some day.]
-%D
-%D Normally a formula is centered, but in case you want to
-%D align it left or right, you can set up formulas to behave
-%D that way. Normally a formula will adapt is left indentation
-%D to the environment:
-%D
-%D \startbuffer
-%D \fakewords{20}{40}\epar
-%D \startitemize
-%D \item \fakewords{20}{40}\epar
-%D       \placeformula \startformula \fakeformula \stopformula
-%D \item \fakewords{20}{40}\epar
-%D \stopitemize
-%D \fakewords{20}{40}\epar
-%D \stopbuffer
-%D
-%D % \getbuffer
-%D
-%D In the next examples we explicitly align formulas to the
-%D left (\type {\raggedleft}), center and right (\type
-%D {\raggedright}):
-%D
-%D \startbuffer
-%D \setupformulas[align=left]
-%D \startformula\fakeformula\stopformula
-%D \setupformulas[align=middle]
-%D \startformula\fakeformula\stopformula
-%D \setupformulas[align=right]
-%D \startformula\fakeformula\stopformula
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D Or in print:
-%D
-%D % {\getbuffer}
-%D
-%D With formula numbers these formulas look as follows:
-%D
-%D \startbuffer
-%D \setupformulas[align=left]
-%D \placeformula \startformula\fakeformula\stopformula
-%D \setupformulas[align=middle]
-%D \placeformula \startformula\fakeformula\stopformula
-%D \setupformulas[align=right]
-%D \placeformula \startformula\fakeformula\stopformula
-%D \stopbuffer
-%D
-%D % {\getbuffer}
-%D
-%D This was keyed in as:
-%D
-%D \typebuffer
-%D
-%D When tracing is turned on (\type {\tracemathtrue}) you can
-%D visualize the bounding box of the formula,
-%D
-%D % {\tracemathtrue\getbuffer}
-%D
-%D As you can see, the dimensions are the natural ones, but if
-%D needed you can force a normalized line:
-%D
-%D \startbuffer
-%D \setupformulas[strut=yes]
-%D \placeformula \startformula \fakeformula \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer
-%D
-%D This time we get a more spacy result.
-%D
-%D % {\tracemathtrue\getbuffer}
-%D
-%D We will now show a couple of more settings and combinations
-%D of settings. In centered formulas, the number takes no space
-%D
-%D \startbuffer
-%D \setupformulas[align=middle]
-%D \startformula \fakeformula \stopformula
-%D \placeformula \startformula \fakeformula \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer % {\tracemathtrue\getbuffer}
-%D
-%D You can influence the placement of the whole box with the
-%D parameters \type {leftmargin} and \type {rightmargin}.
-%D
-%D \startbuffer
-%D \setupformulas[align=right,leftmargin=3em]
-%D \startformula \fakeformula \stopformula
-%D \placeformula \startformula \fakeformula \stopformula
-%D
-%D \setupformulas[align=left,rightmargin=1em]
-%D \startformula \fakeformula \stopformula
-%D \placeformula \startformula \fakeformula \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer % {\tracemathtrue\getbuffer}
-%D
-%D You can also inherit the margin from the environment.
-%D
-%D \startbuffer
-%D \setupformulas[align=right,margin=standard]
-%D \startformula \fakeformula \stopformula
-%D \placeformula \startformula \fakeformula \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer % {\tracemathtrue\getbuffer}
-%D
-%D The distance between the formula and the number is only
-%D applied when the formula is left or right aligned.
-%D
-%D \startbuffer
-%D \setupformulas[align=left,distance=2em]
-%D \startformula \fakeformula \stopformula
-%D \placeformula \startformula \fakeformula \stopformula
-%D \stopbuffer
-%D
-%D \typebuffer % {\tracemathtrue\getbuffer}
+%D For documentation, see \type {math-mkiv.tex}.
 
 \protect \endinput
 

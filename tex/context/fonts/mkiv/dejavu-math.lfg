@@ -1,0 +1,18 @@
+local kern_250 = { bottomright = { { kern = -250 } } }
+
+return {
+    name = "dejavu-math",
+    version = "1.00",
+    comment = "Goodies that complement dejavu.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        kerns = {
+            [0x1D449] = kern_250, --
+            [0x1D44A] = kern_250, -- 𝑊
+        },
+        alternates = {
+            dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
+        },
+    },
+}

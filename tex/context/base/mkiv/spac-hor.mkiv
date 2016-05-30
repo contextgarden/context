@@ -782,14 +782,18 @@
 \newskip\leftskipadaption
 \newskip\rightskipadaption
 
-\setvalue{\??skipadaptionleft \v!standard}{\ifdim\d_spac_indentation_par=\zeropoint\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
-\setvalue{\??skipadaptionleft \v!yes     }{\ifdim\d_spac_indentation_par=\zeropoint\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
+\setvalue{\??skipadaptionleft \v!yes     }{\ifzeropt\d_spac_indentation_par\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
 \letvalue{\??skipadaptionleft \v!no      }\zeropoint
 \letvalue{\??skipadaptionleft \empty     }\zeropoint
-\setvalue{\??skipadaptionright\v!standard}{\narrowerparameter\c!right}
 \setvalue{\??skipadaptionright\v!yes     }{\narrowerparameter\c!right}
 \letvalue{\??skipadaptionright\v!no      }\zeropoint
 \letvalue{\??skipadaptionright\empty     }\zeropoint
+
+% \setvalue{\??skipadaptionleft \v!standard}{\ifdim\d_spac_indentation_par=\zeropoint\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
+% \setvalue{\??skipadaptionright\v!standard}{\narrowerparameter\c!right}
+
+\letcsnamecsname\csname\??skipadaptionleft \v!standard\endcsname\csname\??skipadaptionleft \v!yes\endcsname
+\letcsnamecsname\csname\??skipadaptionright\v!standard\endcsname\csname\??skipadaptionright\v!yes\endcsname
 
 % \unexpanded\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\csname\??skipadaptionleft #1\endcsname\else#1\fi\relax}
 % \unexpanded\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\csname\??skipadaptionright#1\endcsname\else#1\fi\relax}

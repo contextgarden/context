@@ -40,6 +40,7 @@
    \c!expansion=\v!yes, % maybe automatically
    \c!spacebefore=\v!big,
    \c!spaceafter=\formulaparameter\c!spacebefore,
+   \c!width=\hsize,
    \c!leftmargin=\zeropoint,
    \c!rightmargin=\zeropoint,
    \c!indentnext=\v!no,
@@ -230,12 +231,6 @@
     \global\setfalse\c_strc_formulas_inside_place_sub
 \to \everyresetformulas
 
-% \def\strc_formulas_place_numbering % place formula
-%   {\settrue\c_strc_formulas_handle_number
-%    \strc_formulas_check_reference\c_strc_formulas_place_number_mode\currentplaceformulareference
-%    \glet\strc_formulas_place_number\strc_formulas_place_number_indeed
-%    \glet\strc_formulas_place_number_nested\strc_formulas_place_number_nested_indeed}
-
 \def\strc_formulas_place_numbering % place formula
   {\settrue\c_strc_formulas_handle_number
    \strc_formulas_check_reference\c_strc_formulas_place_number_mode\currentplaceformulareference
@@ -271,21 +266,6 @@
 \let\strc_formulas_reference_trace\relax
 \let\strc_formulas_reference_show \relax
 
-% \def\strc_formulas_reference_trace
-%   {\rlap{\hbox{\quad\tt\txx[%
-%       \number\c_strc_formulas_place_number_mode,%
-%       \number\c_strc_formulas_number_mode,%
-%       \number\c_strc_formulas_sub_number_mode,%
-%       \number\c_strc_formulas_nested_number_mode
-%    ]}}}
-
-% \def\strc_formulas_reference_show
-%   {\writestatus{\v!formula}%
-%      {place:      \number\c_strc_formulas_place_number_mode,\space
-%       formula:    \number\c_strc_formulas_number_mode,\space
-%       subformula: \number\c_strc_formulas_sub_number_mode,\space
-%       nested:     \number\c_strc_formulas_nested_number_mode]}}
-
 \unexpanded\def\placecurrentformulanumber
   {\begingroup
    \rm % determines the distance and main font
@@ -312,9 +292,6 @@
 \unexpanded\def\strc_formulas_place_current_number
   {\strc_formulas_handle_current_references
    \labeltexts\currentformula{\convertedcounter[\v!formula][]}}
-
-% \def\theboxdestinationattribute#1{\iflocation\ifx#1\relax\else\ifx#1\empty\else attr      \destinationattribute#1\fi\fi\fi}
-% \def\thedestinationattribute   #1{\iflocation\ifx#1\relax\else\ifx#1\empty\else \attribute\destinationattribute#1\fi\fi\fi}
 
 \def\theformuladestinationattribute#1%
   {\iflocation\ifx#1\relax\else\ifx#1\empty\else
@@ -501,12 +478,22 @@
 %D
 %D Otherwise we get a missing \type {$$} error reported.
 
-\let\reqno\eqno
+\let\reqno\eqno % no longer valid as we just nil it
 
-\unexpanded\def\resetdisplaymatheq % when used?
-  {\let\normalleqno\gobbleoneargument \let\leqno\gobbleoneargument
-   \let\normalreqno\gobbleoneargument \let\eqno \gobbleoneargument
-   \let\strc_formulas_place_number\relax}
+\let\math_native_leqno\leqno
+\let\math_native_reqno\reqno
+
+\unexpanded\def\resetdisplaymatheq
+  {\let\strc_formulas_place_number\relax}
+
+\unexpanded\def\normaleqno#1{\writestatus\m!system{no native (l)eqno equation number support}}
+
+\let\normalleqno\normaleqno
+\let\normalreqno\normaleqno
+
+\let\leqno\normaleqno
+\let\reqno\normaleqno
+\let\eqno \normaleqno
 
 %D \macros
 %D   {startsubformulas}
@@ -537,12 +524,12 @@
 \belowdisplayshortskip \zeropoint % evt. 0pt minus 3pt
 
 \predisplaypenalty     \zerocount
-\postdisplaypenalty    \zerocount % -5000 gaat mis, zie penalty bij \paragraaf
-
-% we don't use the skip's
+\postdisplaypenalty    \zerocount % -5000 goes wrong, see penalty at \section
+\mathdisplayskipmode   \plusthree %  because align also adds
 
 \unexpanded\def\strc_formulas_forget_display_skips
-  {\abovedisplayskip     \zeropoint
+  {\mathdisplayskipmode  \plusthree
+   \abovedisplayskip     \zeropoint
    \belowdisplayskip     \zeropoint
    \abovedisplayshortskip\zeropoint
    \belowdisplayshortskip\zeropoint}
@@ -554,24 +541,142 @@
 \newdimen\d_strc_formulas_display_margin_left
 \newdimen\d_strc_formulas_display_margin_right
 \newdimen\d_strc_formulas_display_pre_threshold
-\newskip \d_strc_formulas_display_skip_par
+\newdimen\d_strc_formulas_display_width
+
+\newconstant\c_strc_formulas_mode
+\newconstant\c_strc_formulas_space_model
+
+\c_strc_formulas_mode       \plustwo   % 0=native 1=simple 2=align
+\c_strc_formulas_space_model\plusthree % replaces \plusone
+
+\newconditional\c_strc_formulas_tight
+
+\newbox\b_strc_formulas_number
+\newbox\b_strc_formulas_content
+
+\def\strc_formulas_flush_content_and_number
+  {\noindentation
+ % \dontleavehmode
+   \kern\d_strc_formulas_display_margin_left
+   \ifcase\wd\b_strc_formulas_number
+     \hbox to \displaywidth \bgroup
+        \hfill
+        \box\b_strc_formulas_content
+        \hfill
+     \egroup
+  \else\ifdim\dimexpr\wd\b_strc_formulas_content+\wd\b_strc_formulas_number\relax>\displaywidth
+    \vbox \bgroup
+      \hsize\displaywidth
+      \box\b_strc_formulas_content
+      \par
+      \ifx\p_location\v!left
+        \box\b_strc_formulas_number\hfill
+      \else
+        \hfill\box\b_strc_formulas_number
+      \fi
+    \egroup
+  \else
+    \hbox to \displaywidth \bgroup
+      \ifx\p_location\v!left
+        \rlap{\box\b_strc_formulas_number}%
+        \hfill\box\b_strc_formulas_content\hfill
+      \else
+        \hfill\box\b_strc_formulas_content\hfill
+        \llap{\box\b_strc_formulas_number}%
+      \fi
+    \egroup
+  \fi\fi}
+
+\installcorenamespace{mathdisplayspacemodel}
+
+\setvalue{\??mathdisplayspacemodel\v!before:1}% old
+  {\ifx\p_spacebefore\v!none
+     % nothing
+   \else
+     \directvspacing\p_spacebefore
+   \fi}
+
+\setvalue{\??mathdisplayspacemodel\v!after:1}% old
+  {\prevdepth .5\strutdp
+   \edef\p_spaceafter{\formulaparameter\c!spaceafter}%
+   \ifx\p_spaceafter\v!none
+     % nothing
+   \else
+     \directvspacing\p_spaceafter
+   \fi}
+
+\setvalue{\??mathdisplayspacemodel\v!before:2}% old
+  {\ifx\p_spacebefore\v!none
+     % nothing
+   \else
+     \directvspacing\p_spacebefore
+   \fi
+   \prevdepth-\maxdimen} % texbook pagina 79-80
+
+\setvalue{\??mathdisplayspacemodel\v!after:2}% old
+  {\prevdepth\lineheight
+   \edef\p_spaceafter{\formulaparameter\c!spaceafter}%
+   \ifx\p_spaceafter\v!none
+     % nothing
+   \else
+     \directvspacing\p_spaceafter
+   \fi}
+
+\setvalue{\??mathdisplayspacemodel\v!before:3}%
+  {\ifdim\lastskip>\zeropoint
+     % bah
+   \else
+     \obeydepth
+     \nointerlineskip
+   \fi
+   \ifx\p_spacebefore\v!none
+     % nothing
+   \else\ifx\p_spaceafter\empty
+     \directvspacing\currentvspacing
+   \else
+     \directvspacing\p_spacebefore
+   \fi\fi}
+
+\setvalue{\??mathdisplayspacemodel\v!after:3}%
+  {\prevdepth\strutdp
+   \ifx\p_spaceafter\v!none
+     % nothing
+   \else\ifx\p_spaceafter\empty
+     \directvspacing\currentvspacing
+   \else
+     \directvspacing\p_spaceafter
+   \fi\fi}
 
 \unexpanded\def\beforedisplayspace
-  {\edef\p_spacebefore{\formulaparameter\c!spacebefore}%
-   \ifx\p_spacebefore\v!none \else
-     \blank[\p_spacebefore]%
+  {\ifhmode
+     \par
+   \fi
+   \ifvmode
+     \edef\p_spacebefore{\formulaparameter\c!spacebefore}%
+     \begincsname\??mathdisplayspacemodel\v!before:\number\c_strc_formulas_space_model\endcsname
+   \fi
+   \ifhmode
+     \par
    \fi}
 
 \unexpanded\def\afterdisplayspace
-  {\edef\p_spaceafter{\formulaparameter\c!spaceafter}%
-   \ifx\p_spaceafter\v!none \else
-     \blank[\p_spaceafter]%
+  {\ifhmode
+     \par
+   \fi
+   \ifvmode
+     \edef\p_spaceafter{\formulaparameter\c!spaceafter}%
+     \begincsname\??mathdisplayspacemodel\v!after:\number\c_strc_formulas_space_model\endcsname
+   \fi
+   \ifhmode
+     \par
    \fi}
 
 \unexpanded\def\setdisplaydimensions
-  {\displayindent\d_strc_formulas_display_skip_left
-   \advance\displayindent\d_strc_formulas_display_margin_left
-   \displaywidth\hsize
+  {\displayindent\dimexpr
+     \d_strc_formulas_display_skip_left
+    +\d_strc_formulas_display_margin_left
+   \relax
+   \displaywidth\d_strc_formulas_display_width
   %\setlocalhsize
   %\displaywidth\localhsize
    \ifdim\hangindent>\zeropoint
@@ -579,7 +684,11 @@
    \else
      \advance\displaywidth\hangindent
    \fi
-   \advance\displaywidth\dimexpr-\displayindent-\d_strc_formulas_display_skip_right-\d_strc_formulas_display_margin_right\relax
+   \advance\displaywidth\dimexpr
+     -\displayindent
+     -\d_strc_formulas_display_skip_right
+     -\d_strc_formulas_display_margin_right
+   \relax
    \hsize\displaywidth} % new, else overfull in itemize
 
 \unexpanded\def\strc_formulas_start_formula#1%
@@ -595,33 +704,44 @@
 %D
 %D \typebuffer \getbuffer
 
+\installcorenamespace{formulaoption}
+
+\def\strc_formulas_option#1%
+  {\ifcsname\??formulaoption#1\endcsname
+     \lastnamedcs
+   \else
+     \font_basics_switchtobodyfont{#1}% for old time sake, might go away, only pt so maybe dimension and small test
+   \fi}
+
+\setvalue{\??formulaoption\v!packed}%
+  {\c_strc_formulas_space_model\zerocount}
+
+\setvalue{\??formulaoption\v!tight}%
+  {\settrue\c_strc_formulas_tight}
+
+\setvalue{\??formulaoption\v!middle}%
+  {\d_strc_formulas_display_skip_left \zeropoint
+   \d_strc_formulas_display_skip_right\zeropoint}
+
 \unexpanded\def\strc_formulas_start_formula_indeed[#1][#2]% setting leftskip adaption is slow !
   {\bgroup % HERE
    \def\currentformula{#1}%
    \dostarttaggedchained\t!formula\currentformula\??formula
    \the\everybeforedisplayformula
-   \d_strc_formulas_display_skip_par\parskip\relax
+   \setfalse\c_strc_formulas_tight
   %\formulastrutdp\strutdepth
   %\formulastrutht\strutheight
-   \edef\p_option  {\formulaparameter\c!option}%
-   \edef\p_margin  {\formulaparameter\c!margin}%
-   \edef\p_bodyfont{#2}%
-  %\ifx\p_bodyfont\empty
-  %  \edef\p_bodyfont{\formulaparameter\c!bodyfont}%
-  %\fi
-   \ifx\p_bodyfont\empty \else
-     \switchtoformulabodyfont[#2]%
-   \fi
-   \parskip\d_strc_formulas_display_skip_par\relax
-   \ifx\p_option\v!middle
-     \d_strc_formulas_display_skip_left \zeropoint
-     \d_strc_formulas_display_skip_right\zeropoint
-   \else
-     \d_strc_formulas_display_skip_left \leftskip
-     \d_strc_formulas_display_skip_right\rightskip
-   \fi
+   \d_strc_formulas_display_skip_left   \leftskip
+   \d_strc_formulas_display_skip_right  \rightskip
+   \d_strc_formulas_display_width       \formulaparameter\c!width\relax
    \d_strc_formulas_display_margin_left \formulaparameter\c!leftmargin \relax
    \d_strc_formulas_display_margin_right\formulaparameter\c!rightmargin\relax
+   \edef\p_option{\formulaparameter\c!option}%
+   \edef\p_option{\ifx\p_option\empty\else\p_option,\fi#2}%
+   \ifx\p_option\empty \else
+     \rawprocesscommacommand[\p_option]\strc_formulas_option
+   \fi
+   \edef\p_margin{\formulaparameter\c!margin}%
    \ifx\p_margin\empty \else
      \dosetleftskipadaption\p_margin
      \d_strc_formulas_display_margin_left\leftskipadaption
@@ -643,9 +763,8 @@
 % tagging of formulanumbers is not ok (we get two display maths blobs)
 
 \unexpanded\def\strc_formulas_stop_formula
-  {\dostarttagged\t!formulacaption\empty
-   \strc_formulas_place_number
-   \dostoptagged
+  {\strc_formulas_place_number % in case it hasn't happened yet
+   \strc_formulas_flush_number % in case we are in native mode
    \dostarttagged\t!formulacontent\empty
    \csname\e!stop\formulaparameter\c!alternative\v!formula\endcsname
    \dostoptagged
@@ -668,16 +787,16 @@
    \fi
 \to \everybeforedisplayformula
 
-\unexpanded\def\switchtoformulabodyfont
-  {\switchtobodyfont}
+% \unexpanded\def\switchtoformulabodyfont
+%   {\switchtobodyfont}
 
 \setuvalue{\v!formula}{\dosingleempty\strc_formulas_formula}
 
 \def\strc_formulas_formula[#1]#2% todo: tagged
   {\begingroup
-   \edef\p_bodyfont{#1}%
-   \ifx\p_bodyfont\empty \else
-     \switchtoformulabodyfont[\p_bodyfont]%
+   \edef\p_direct{#1}%
+   \ifx\p_direct\empty \else
+     \rawprocesscommalist[\p_direct]\strc_formulas_option
    \fi
    % not : \def\strc_formulas_formula[##1]##2{\mathematics{##2}}%
    \mathematics{#2}%
@@ -711,47 +830,71 @@
 %    \afterdisplayspace
 %    \par
 %    \egroup}
-
-\newconstant\c_strc_formulas_space_model
-
-\c_strc_formulas_space_model\plusone
-%c_strc_formulas_space_model\plustwo % needs chdcking with spac-ver
+%
+% \unexpanded\def\startdisplaymath
+%   {\bgroup
+%    \par
+%    \informulatrue
+%    \beforedisplayspace
+%    \par
+%    \ifvmode
+%      \ifcase\c_strc_formulas_space_model
+%        % nothing
+%      \or
+%        % nothing yet
+%      \or
+%        \prevdepth-\maxdimen % texbook pagina 79-80
+%      \fi
+%    \fi
+%    \noindent % else funny hlist with funny baselineskip
+%    \Ucheckedstartdisplaymath
+%    \setdisplaydimensions
+%    \startinnermath}
+%
+% \unexpanded\def\stopdisplaymath
+%   {\stopinnermath
+%    \Ucheckedstopdisplaymath
+%    \par
+%    \ifvmode
+%      \ifcase\c_strc_formulas_space_model
+%        % nothing
+%      \or
+%        \prevdepth .5\strutdp
+%      \or
+%        \prevdepth\lineheight
+%      \fi
+%    \fi
+%    \afterdisplayspace
+%    \par
+%    \egroup}
 
 \unexpanded\def\startdisplaymath
   {\bgroup
-   \par
    \informulatrue
    \beforedisplayspace
-   \par
-   \ifvmode
-     \ifcase\c_strc_formulas_space_model
-       % nothing
-     \or
-       % nothing yet
-     \or
-       \prevdepth-\maxdimen % texbook pagina 79-80
-     \fi
-   \fi
-   \noindent % else funny hlist with funny baselineskip
-   \Ucheckedstartdisplaymath
    \setdisplaydimensions
-   \startinnermath}
+   \ifcase\c_strc_formulas_mode
+     \noindent % prevents that tex injects empty line (when using native display mechanism)
+     \Ucheckedstartdisplaymath
+   \or
+     \setbox\b_strc_formulas_content\hbox\bgroup
+     \normalUstartmath
+     \displaystyle
+   \else
+     \expandafter\startinnermath
+   \fi}
 
 \unexpanded\def\stopdisplaymath
-  {\stopinnermath
-   \Ucheckedstopdisplaymath
-   \par
-   \ifvmode
-     \ifcase\c_strc_formulas_space_model
-       % nothing
-     \or
-       \prevdepth .5\strutdp
-     \or
-       \prevdepth\lineheight
-     \fi
+  {\ifcase\c_strc_formulas_mode
+     \Ucheckedstopdisplaymath
+   \or
+     \normalUstopmath
+     \egroup
+     \strc_formulas_flush_content_and_number
+   \else
+     \expandafter\stopinnermath
    \fi
    \afterdisplayspace
-   \par
    \egroup}
 
 % already defined
@@ -821,47 +964,49 @@
 \unexpanded\def\startformulas
   {\dosingleempty\strc_formulas_start_formulas}
 
+\unexpanded\def\startformulas
+  {\dosingleempty\strc_formulas_start_formulas}
+
 \def\strc_formulas_start_formulas[#1]#2\stopformulas % new / to be internationalized
-  {\bgroup
+  {\startformula
    \dostarttagged\t!formulaset\empty
    \global\settrue\c_strc_formulas_inside_formulas
    \edef\currentformulasreference{#1}%
    \strc_formulas_handle_number
    \let\currentformula\empty
    \strc_formulas_forget_display_skips
-   \startdisplaymath
-   \setlocalhsize
    \unexpanded\def\startformula##1\stopformula
      {\advance\scratchcounter\plusone}%
    \scratchcounter\zerocount
    #2% preroll
-   \ifcase\scratchcounter\else
-     \divide \hsize \scratchcounter
-   \fi
-   \hbox to \localhsize \bgroup
+   \hbox to \displaywidth \bgroup
+     \divide\displaywidth\scratchcounter
      \hss
      \let\startformula\strc_formulas_nested_formula_start
      \let\stopformula \strc_formulas_nested_formula_stop
      #2%
-     \egroup
-   \stopdisplaymath
+   \egroup
    \global\setfalse\c_strc_formulas_inside_formulas
    \dostoptagged
-   \egroup
+   \stopformula
    \the\everyresetformulas
    \hangafter\minusone    % added for side floats
    \hangindent\zeropoint} % added for side floats
 
 \unexpanded\def\strc_formulas_nested_formula_start
-  {\Ustartmath
-   \vcenter\bgroup
+  {\hbox to \displaywidth \bgroup
+   \hsize\displaywidth
+   \Ustartmath
+   \vcenter\bgroup % not optimal
    \vskip-\strutdepth
    \Ustartdisplaymath}
 
 \unexpanded\def\strc_formulas_nested_formula_stop
   {\Ustopdisplaymath
+   \obeydepth
    \egroup
    \Ustopmath
+   \egroup
    \hss}
 
 % place
@@ -998,10 +1143,23 @@
    \fi}
 
 \def\strc_formulas_place_number_indeed
-  {\glet\strc_formulas_place_number\relax
-   \doifelse{\formulaparameter\c!location}\v!left
-     {\normalleqno{\strc_formulas_number_indeed}}
-     {\normalreqno{\strc_formulas_number_indeed}}}
+  {\dostarttagged\t!formulacaption\empty
+   \glet\strc_formulas_place_number\relax
+   \global\setbox\b_strc_formulas_number\hbox{\strc_formulas_number_indeed}%
+   \dostoptagged}
+
+\def\strc_formulas_flush_number
+  {\ifcase\c_strc_formulas_mode
+     \ifzeropt\wd\b_strc_formulas_number
+        % nothing to be done
+     \else
+       \ifx\p_location\v!left
+         \math_native_leqno{\box\b_strc_formulas_number}%
+       \else
+         \math_native_reqno{\box\b_strc_formulas_number}%
+       \fi
+     \fi
+   \fi}
 
 % todo
 

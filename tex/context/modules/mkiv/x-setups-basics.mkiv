@@ -912,7 +912,13 @@
   [definition]
   [align=flushright]
 
-\unexpanded\def\showdefinition#1%
+\unexpanded\def\showdefinition
+  {\doifelsenextoptional\cmd_show_definition_yes\cmd_show_definition_nop}
+
+\unexpanded\def\cmd_show_definition_nop#1%
+  {\cmd_show_definition_yes[#1]}
+
+\unexpanded\def\cmd_show_definition_yes[#1]%
   {\placedefinition[here][definition:#1]{\tex{#1}}{\showsetup{#1}}}
 
 \unexpanded\def\definition[#1]%

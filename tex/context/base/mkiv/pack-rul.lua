@@ -26,6 +26,7 @@ local hlist_code      = nodes.nodecodes.hlist
 local vlist_code      = nodes.nodecodes.vlist
 local box_code        = nodes.listcodes.box
 local line_code       = nodes.listcodes.line
+local equation_code   = nodes.listcodes.equation
 
 local texsetdimen     = tex.setdimen
 local texsetcount     = tex.setcount
@@ -49,9 +50,16 @@ local traverse_id     = nuts.traverse_id
 local node_dimensions = nuts.dimensions
 local free_node       = nuts.free
 
+local checkformath    = false
+
+directives.register("framed.checkmath",function(v) checkformath = v end) -- experiment
+
+-- beware: dir nodes and pseudostruts can end up on lines of their own
+
 local function doreshapeframedbox(n)
     local box            = getbox(n)
     local noflines       = 0
+    local nofnonzero     = 0
     local firstheight    = nil
     local lastdepth      = nil
     local lastlinelength = 0
@@ -74,7 +82,6 @@ local function doreshapeframedbox(n)
                     if repack then
                         local subtype = getsubtype(n)
                         if subtype == box_code or subtype == line_code then
-                         -- used to be: hpack(copy(l)).width
                             lastlinelength = node_dimensions(l,getfield(n,"dir"))
                         else
                             lastlinelength = getfield(n,"width")
@@ -87,6 +94,9 @@ local function doreshapeframedbox(n)
                     end
                     if lastlinelength < minwidth or minwidth == 0 then
                         minwidth = lastlinelength
+                    end
+                    if lastlinelength > 0 then
+                        nofnonzero = nofnonzero + 1
                     end
                     totalwidth = totalwidth + lastlinelength
                 end
@@ -111,16 +121,15 @@ local function doreshapeframedbox(n)
                             local subtype = getsubtype(h)
                             if subtype == box_code or subtype == line_code then
                                 local p = hpack(l,maxwidth,'exactly',getfield(h,"dir")) -- multiple return value
-                                if false then
-                                    setlist(h,p)
-                                    setfield(h,"shift",0) -- needed for display math, so no width check possible
-                                 -- setfield(p,"attr",getfield(h,"attr"))
-                                else
-                                    setfield(h,"glue_set",getfield(p,"glue_set"))
-                                    setfield(h,"glue_order",getfield(p,"glue_order"))
-                                    setfield(h,"glue_sign",getfield(p,"glue_sign"))
-                                    setlist(p)
-                                    free_node(p)
+                                setfield(h,"glue_set",getfield(p,"glue_set"))
+                                setfield(h,"glue_order",getfield(p,"glue_order"))
+                                setfield(h,"glue_sign",getfield(p,"glue_sign"))
+                                setlist(p)
+                                free_node(p)
+                            elseif checkformath and subtype == equation_code then
+                             -- display formulas use a shift
+                                if nofnonzero == 1 then
+                                    setfield(h,"shift",0)
                                 end
                             end
                             setfield(h,"width",maxwidth)
@@ -138,7 +147,7 @@ local function doreshapeframedbox(n)
                 setfield(box,"width",maxwidth)
                 averagewidth = noflines > 0 and totalwidth/noflines or 0
             else -- e.g. empty math {$ $} or \hbox{} or ...
-setfield(box,"width",0)
+                setfield(box,"width",0)
             end
         end
     end

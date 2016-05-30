@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['typo-itc'] = {
 
 
 local trace_italics       = false  trackers.register("typesetters.italics", function(v) trace_italics = v end)
+
 local report_italics      = logs.reporter("nodes","italics")
 
 local threshold           = 0.5   trackers.register("typesetters.threshold", function(v) threshold = v == true and 0.5 or tonumber(v) end)
@@ -61,6 +62,7 @@ local fonthashes          = fonts.hashes
 local fontdata            = fonthashes.identifiers
 local italicsdata         = fonthashes.italics
 local exheights           = fonthashes.exheights
+local chardata            = fonthashes.characters
 
 local is_punctuation      = characters.is_punctuation
 
@@ -193,12 +195,37 @@ local function domath(head,current, done)
                             else
                                 a = a + 100
                             end
-                            if getfield(next,"height") < 1.25*ex then
-                                if trace_italics then
-                                    report_italics("removing italic between math %C and punctuation %C",getchar(glyph),char)
+                            local i = getfield(kern,"kern")
+                            local f = getfont(glyph)
+                            local c = getchar(glyph)
+                            if getfield(next,"height") < 1.25*exheights[f] then
+                                if i == 0 then
+                                    if trace_italics then
+                                        report_italics("%s italic %p between math %C and punctuation %C","ignoring",i,c,char)
+                                    end
+                                else
+                                    if trace_italics then
+                                        report_italics("%s italic between math %C and punctuation %C","removing",i,c,char)
+                                    end
+                                    setfield(kern,"kern",0) -- or maybe a small value or half the ic
+                                    done = true
                                 end
-                                setfield(kern,"kern",0) -- or maybe a small value or half the ic
-                                done = true
+                            elseif i == 0 then
+                                local d = chardata[f][c]
+                                local i = d.italic
+                                if i == 0 then
+                                    if trace_italics then
+                                        report_italics("%s italic %p between math %C and punctuation %C","ignoring",i,c,char)
+                                    end
+                                else
+                                    setfield(kern,"kern",i)
+                                    if trace_italics then
+                                        report_italics("%s italic %p between math %C and punctuation %C","setting",i,c,char)
+                                    end
+                                    done = true
+                                end
+                            elseif trace_italics then
+                                report_italics("%s italic %p between math %C and punctuation %C","keeping",k,c,char)
                             end
                         end
                     end

@@ -173,7 +173,7 @@ end
 
 fontgoodies.prepare_features = prepare_features
 
-local function initialize(goodies,tfmdata)
+local function initialize(goodies)
     local featuresets = goodies.featuresets
     if featuresets then
         if trace_goodies then
@@ -586,46 +586,48 @@ local function initialize(tfmdata)
         local shared = tfmdata.shared
         for i=1,#goodies do
             local mathgoodies = goodies[i].mathematics
-            local mathitalics = mathgoodies and mathgoodies.italics
-            if mathitalics then
-                local properties = tfmdata.properties
-                if properties.setitalics then
-                    mathitalics = mathitalics[file.nameonly(properties.name)] or mathitalics
-                    if mathitalics then
-                        if trace_goodies then
-                            report_goodies("loading mathitalics for font %a",properties.name)
-                        end
-                        local corrections   = mathitalics.corrections
-                        local defaultfactor = mathitalics.defaultfactor
-                     -- properties.mathitalic_defaultfactor = defaultfactor -- we inherit outer one anyway (name will change)
-                        if corrections then
-                            fontgoodies.registerpostprocessor(tfmdata, function(tfmdata) -- this is another tfmdata (a copy)
-                                -- better make a helper so that we have less code being defined
-                                local properties = tfmdata.properties
-                                local parameters = tfmdata.parameters
-                                local characters = tfmdata.characters
-                                properties.mathitalic_defaultfactor = defaultfactor
-                                properties.mathitalic_defaultvalue  = defaultfactor * parameters.quad
-                                if trace_goodies then
-                                    report_goodies("assigning mathitalics for font %a",properties.name)
-                                end
-                                local quad    = parameters.quad
-                                local hfactor = parameters.hfactor
-                                for k, v in next, corrections do
-                                    local c = characters[k]
-                                    if c then
-                                        if v > -1 and v < 1 then
-                                            c.italic = v * quad
-                                        else
-                                            c.italic = v * hfactor
-                                        end
-                                    else
-                                        report_goodies("invalid mathitalics entry %U for font %a",k,properties.name)
+            if mathgoodies then
+                local mathitalics = mathgoodies.italics
+                if mathitalics then
+                    local properties = tfmdata.properties
+                    if properties.setitalics then
+                        mathitalics = mathitalics[file.nameonly(properties.name)] or mathitalics
+                        if mathitalics then
+                            if trace_goodies then
+                                report_goodies("loading mathitalics for font %a",properties.name)
+                            end
+                            local corrections   = mathitalics.corrections
+                            local defaultfactor = mathitalics.defaultfactor
+                         -- properties.mathitalic_defaultfactor = defaultfactor -- we inherit outer one anyway (name will change)
+                            if corrections then
+                                fontgoodies.registerpostprocessor(tfmdata, function(tfmdata) -- this is another tfmdata (a copy)
+                                    -- better make a helper so that we have less code being defined
+                                    local properties = tfmdata.properties
+                                    local parameters = tfmdata.parameters
+                                    local characters = tfmdata.characters
+                                    properties.mathitalic_defaultfactor = defaultfactor
+                                    properties.mathitalic_defaultvalue  = defaultfactor * parameters.quad
+                                    if trace_goodies then
+                                        report_goodies("assigning mathitalics for font %a",properties.name)
                                     end
-                                end
-                            end)
+                                    local quad    = parameters.quad
+                                    local hfactor = parameters.hfactor
+                                    for k, v in next, corrections do
+                                        local c = characters[k]
+                                        if c then
+                                            if v > -1 and v < 1 then
+                                                c.italic = v * quad
+                                            else
+                                                c.italic = v * hfactor
+                                            end
+                                        else
+                                            report_goodies("invalid mathitalics entry %U for font %a",k,properties.name)
+                                        end
+                                    end
+                                end)
+                            end
+                            return -- maybe not as these can accumulate
                         end
-                        return -- maybe not as these can accumulate
                     end
                 end
             end
@@ -855,12 +857,53 @@ registerotffeature {
     }
 }
 
+local enabled = false   directives.register("fontgoodies.mathkerning",function(v) enabled = v end)
+
+local function initialize(tfmdata)
+    if enabled and tfmdata.mathparameters then -- funny, cambria text has this
+        local goodies = tfmdata.goodies
+        if goodies then
+            local characters = tfmdata.characters
+            if characters[0x1D44E] then -- 119886
+                -- we have at least an italic a
+                for i=1,#goodies do
+                    local mathgoodies = goodies[i].mathematics
+                    if mathgoodies then
+                        local kerns = mathgoodies.kerns
+                        if kerns then
+                            for unicode, specification in next, kerns do
+                                local chardata = characters[unicode]
+                                if chardata and (not chardata.mathkerns or specification.force) then
+                                    chardata.mathkerns = specification
+                                end
+                            end
+                            return
+                        end
+                    end
+                end
+            else
+                return -- no proper math font anyway
+            end
+        end
+    end
+end
+
+registerotffeature {
+    name        = "mathkerns",
+    description = "math kerns",
+    default     = true,
+    initializers = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
 -- kern hackery:
 --
 -- yes  : use goodies table
 -- auto : assume features to be set (often ccmp only)
 
-local function setkeepligatures(tfmdata,value)
+local function setkeepligatures(tfmdata)
     if not tfmdata.properties.keptligatures then
         local goodies = tfmdata.goodies
         if goodies then

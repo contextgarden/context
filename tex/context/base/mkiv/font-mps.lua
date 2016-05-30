@@ -23,9 +23,9 @@ fonts.metapost      = metapost
 
 local trace_skips   = false  trackers.register("metapost.outlines.skips",function(v) trace_skips = v end)
 
-local f_moveto      = formatters["(%.4F,%.4F)"]
-local f_lineto      = formatters["--(%.4F,%.4F)"]
-local f_curveto     = formatters["..controls(%.4F,%.4F)and(%.4F,%.4F)..(%.4F,%.4F)"]
+local f_moveto      = formatters["(%F,%F)"]
+local f_lineto      = formatters["--(%F,%F)"]
+local f_curveto     = formatters["..controls(%F,%F)and(%F,%F)..(%F,%F)"]
 local s_cycle       = "--cycle"
 
 local f_nofill      = formatters["nofill %s;"]
@@ -34,8 +34,8 @@ local f_dofill      = formatters["fill %s;"]
 local f_draw_trace  = formatters["drawpathonly %s;"]
 local f_draw        = formatters["draw %s;"]
 
-local f_boundingbox = formatters["((%.4F,%.4F)--(%.4F,%.4F)--(%.4F,%.4F)--(%.4F,%.4F)--cycle)"]
-local f_vertical    = formatters["((%.4F,%.4F)--(%.4F,%.4F))"]
+local f_boundingbox = formatters["((%F,%F)--(%F,%F)--(%F,%F)--(%F,%F)--cycle)"]
+local f_vertical    = formatters["((%F,%F)--(%F,%F))"]
 
 function metapost.boundingbox(d,factor)
     local bounds = d.boundingbox
@@ -256,16 +256,17 @@ local find_tail    = nodes.tail
 ----- metapost     = fonts.glyphs.metapost
 
 local characters   = fonts.hashes.characters
+local parameters   = fonts.hashes.parameters
 local shapes       = fonts.hashes.shapes
 local topaths      = metapost.paths
 
-local f_code       = formatters["mfun_do_outline_text_flush(%q,%i,%.4F,%.4F)(%,t);"]
+local f_code       = formatters["mfun_do_outline_text_flush(%q,%i,%F,%F)(%,t);"]
 local s_nothing    = "(origin scaled 10)"
-local f_trace_rule = formatters["draw rule(%6F,%6F,%6F) shifted (%6F,%6F) withcolor .5white;"]
-local f_strut      = formatters["strut(%6F,%6F);"]
-local f_hrule      = formatters["draw rule(%6F,%6F,%6F);"]
-local f_vrule      = formatters["draw rule(%6F,%6F,%6F) shifted (%6F,%6F);"]
-local f_bounds     = formatters["checkbounds(%6F,%6F,%6F,%6F);"]
+local f_trace_rule = formatters["draw rule(%F,%F,%F) shifted (%F,%F) withcolor .5white;"]
+local f_strut      = formatters["strut(%F,%F);"]
+local f_hrule      = formatters["draw rule(%F,%F,%F);"]
+local f_vrule      = formatters["draw rule(%F,%F,%F) shifted (%F,%F);"]
+local f_bounds     = formatters["checkbounds(%F,%F,%F,%F);"]
 
 local sc = 10
 local fc = number.dimenfactors.bp * sc / 10
@@ -284,6 +285,7 @@ function metapost.output(kind,font,char,advance,shift,ex)
                 if glyf then
                     local units     = shapedata.units or 1000
                     local yfactor   = sc/units
+yfactor = yfactor * parameters[font].factor / 655.36
                     local xfactor   = yfactor
                     local shift     = shift or 0
                     local advance   = advance or 0

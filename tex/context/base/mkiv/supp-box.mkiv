@@ -2620,7 +2620,7 @@
 
 \unexpanded\def\obeydepth
   {\par
-  \ifvmode
+   \ifvmode
      \ifdim\prevdepth>\zeropoint
        \kern-\prevdepth
      \fi
@@ -2885,9 +2885,19 @@
 \let\getnaturaldimensions\clf_getnaturaldimensions % sets three dimensions
 \let\naturalwd           \clf_naturalwd            % calculates and returns wd
 
+\let\getnaturalwd\clf_getnaturalwd % no intermediate
+\let\setnaturalwd\clf_setnaturalwd % no intermediate
+
 \unexpanded\def\doifelserighttoleftinbox{\clf_doifelserighttoleftinbox}
 
 \let\doifrighttoleftinboxelse\doifelserighttoleftinbox
+
+%D New, used in high/low:
+
+\definesystemattribute [runningtext] [public]
+
+\unexpanded\def\runninghbox{\hbox attr \runningtextattribute \plusone}     % not yet in i-*
+\unexpanded\def\runninghbox{\hbox attr \runningtextattribute \fontid\font} % not yet in i-*
 
 \protect \endinput
 

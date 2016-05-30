@@ -38,6 +38,7 @@ local getid         = nuts.getid
 local getlist       = nuts.getlist
 local getattribute  = nuts.getattribute
 local getbox        = nuts.getbox
+local takebox       = nuts.takebox
 
 local setfield      = nuts.setfield
 local setlink       = nuts.setlink
@@ -54,6 +55,7 @@ local find_tail     = nuts.tail
 local traverse_id   = nuts.traverse_id
 local link_nodes    = nuts.linked
 local dimensions    = nuts.dimensions
+local hpack         = nuts.hpack
 
 local listtoutf     = nodes.listtoutf
 
@@ -388,6 +390,35 @@ interfaces.implement {
         context.lastnaturalboxwd(false)
     end
 }
+
+interfaces.implement {
+    name      = "getnaturalwd",
+    arguments = "integer",
+    actions   = function(n)
+        local w, h, d = 0, 0, 0
+        local l = getlist(getbox(n))
+        if l then
+            w, h, d = dimensions(l)
+        end
+        context("\\dimexpr%i\\scaledpoint\\relax",w)
+    end
+}
+
+local function setboxtonaturalwd(n)
+    local old = takebox(n)
+    local new = hpack(getlist(old))
+    setlist(old,nil)
+    free_node(old)
+    setbox(n,new)
+end
+
+interfaces.implement {
+    name      = "setnaturalwd",
+    arguments = "integer",
+    actions   = setboxtonaturalwd
+}
+
+nodes.setboxtonaturalwd = setboxtonaturalwd
 
 local function firstdirinbox(n)
     local b = getbox(n)

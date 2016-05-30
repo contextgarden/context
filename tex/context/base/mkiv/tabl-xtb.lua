@@ -26,7 +26,7 @@ this mechamism will be improved so that it can replace its older cousin.
 -- todo: use linked list instead of r/c array
 -- todo: we can use the sum of previously forced widths for column spans
 
-local tonumber, next = tonumber, next
+local tonumber, next, rawget = tonumber, next, rawget
 
 local commands                = commands
 local context                 = context
@@ -1187,9 +1187,17 @@ function xtables.next_row(specification)
 end
 
 function xtables.finish_row()
-    local n = data.nofcolumns - data.currentcolumn
+    local c = data.currentcolumn
+    local r = data.currentrow
+    local d = data.rows[r][c]
+    local n = data.nofcolumns - c
+    if d then
+        local nx = d.nx
+        if nx > 0 then
+            n = n - nx + 1
+        end
+    end
     if n > 0 then
-        -- message
         for i=1,n do
             context_dummyxcell()
         end

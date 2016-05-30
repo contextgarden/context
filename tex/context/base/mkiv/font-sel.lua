@@ -70,6 +70,7 @@ local report_selectfont   = logs.reporter("selectfont")
 local report_files        = logs.reporter("selectfont","files")
 local report_features     = logs.reporter("selectfont","features")
 local report_goodies      = logs.reporter("selectfont","goodies")
+local report_alternatives = logs.reporter("selectfont","alternatives")
 local report_typescript   = logs.reporter("selectfont","typescripts")
 
 defaults["rm"] = { features = { ["sc"] = "*,f:smallcaps" } }
@@ -81,6 +82,7 @@ defaults["dejavumath"]         = { options = { extras = "dejavu",               
 defaults["neoeuler"]           = { options = { extras = "euler-math",           features = "math\\mathsizesuffix"                                           } }
 defaults["latinmodernmath"]    = { options = { extras = "lm,lm-math",           features = "math\\mathsizesuffix,lm-math", goodies = "lm"                   } }
 defaults["lucidabrightmathot"] = { options = { extras = "lucida-opentype-math", features = "math\\mathsizesuffix",         goodies = "lucida-opentype-math" } }
+defaults["texgyredejavumath"]  = { options = { extras = "dejavu",               features = "math\\mathsizesuffix"                                           } }
 defaults["texgyrepagellamath"] = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
 defaults["texgyrebonummath"]   = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
 defaults["texgyrescholamath"]  = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
@@ -678,8 +680,8 @@ end
 function selectfont.fontfallback(data,class,style,alternative,index)
     local range = data.options.range
     local scale = data.options.rscale ~= "" and data.options.rscale or 1
-    local check = data.options.check  ~= "" and data.options.check  or "yes"
-    local force = data.options.force  ~= "" and data.options.force  or "no"
+    local check = data.options.check  ~= "" and data.options.check  or ""
+    local force = data.options.force  ~= "" and data.options.force  or ""
     local fontfeature = data.features and data.features[alternative] or data.options.features
     local fontsynonym  =  formatters["synonym-%s-%s-%s-%s"](class,style,alternative,index)
     local fontfallback = formatters["fallback-%s-%s-%s"]   (class,style,alternative)
@@ -812,11 +814,7 @@ function selectfont.typeface(data)
     --~ if trace_typescript then
     --~     report_typescript("Class: '%s', Style: '%s', Size: '%s', Scale: '%s'",fontclass,fontstyle,size,scale)
     --~ end
-    if fontstyle == "mm" then -- math uses the default bodyfont settings because it uses 'ma' and 'mb' as alternative names
-        ctx_definetypeface( { fontclass }, { fontstyle }, { style }, { "" }, { "default" }, { designsize = size, rscale = scale } )
-    else
-        ctx_definetypeface( { fontclass }, { fontstyle }, { "" }, { "" }, { "" }, { designsize = size, rscale = scale } )
-    end
+    ctx_definetypeface( { fontclass }, { fontstyle }, { style }, { "" }, { "default" }, { designsize = size, rscale = scale } )
 end
 
 function selectfont.default(data)

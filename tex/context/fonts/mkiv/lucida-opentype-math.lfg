@@ -1,3 +1,5 @@
+----- kern_250 = { bottomright = { { kern = -250 } }, force = true }
+
 return {
     name = "lucida-opentype-math",
     version = "1.00",
@@ -13,6 +15,10 @@ return {
             zero         = { feature = 'ss05', value = 1, comment = "Mathematical Alternative Zero" },
             partial      = { feature = 'ss20', value = 1, comment = "Mathematical Alternative Upright Partial Differential" },
         },
+     -- kerns = {
+     --     [0x1D449] = kern_250, --
+     --     [0x1D44A] = kern_250, -- 𝑊
+     -- },
         dimensions = {
             default = { -- experimental values
                 [0x2044] = { xoffset = 275, width = 600 },

@@ -31,6 +31,9 @@ local tonut              = nuts.tonut
 local tonode             = nuts.tonode
 
 local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getboth            = nuts.getboth
+local setboth            = nuts.setboth
 local getid              = nuts.getid
 local getfield           = nuts.getfield
 local setfield           = nuts.setfield
@@ -39,6 +42,10 @@ local setlist            = nuts.setlist
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local getbox             = nuts.getbox
+local getdisc            = nuts.getdisc
+local setdisc            = nuts.setdisc
+local getdimensions      = nuts.dimensions
+local setlink            = nuts.setlink
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
@@ -50,7 +57,6 @@ local free_node_list     = nuts.flush_list
 local free_node          = nuts.flush_node
 local copy_node_list     = nuts.copy_list
 local insert_node_after  = nuts.insert_after
-local hpack_node_list    = nuts.hpack
 local remove_node        = nuts.remove
 
 local nodepool           = nuts.pool
@@ -119,12 +125,30 @@ actions[v_line] = function(head,setting)
     local n          = 0
     local temp       = copy_node_list(head)
     local linebreaks = { }
-    for g in traverse_id(glyph_code,temp) do
+
+    local function set(g)
         if dynamic > 0 then
             setattr(g,0,dynamic)
         end
         setfield(g,"font",font)
     end
+
+    for g in traverse_id(glyph_code,temp) do
+        set(g)
+    end
+    for g in traverse_id(disc_code,temp) do
+        local pre, post, replace = getdisc(g)
+        if pre then
+            set(pre)
+        end
+        if post then
+            set(post)
+        end
+        if replace then
+            set(replace)
+        end
+    end
+
     local start = temp
     local list  = temp
     local prev  = temp
@@ -136,25 +160,37 @@ actions[v_line] = function(head,setting)
         if i <= - hangafter then
             hsize = hsize - hangindent
         end
+
+        local function try(extra)
+            local width = getdimensions(list,start)
+            if extra then
+                width = width + getdimensions(extra)
+            end
+            if width > hsize then
+                list = prev
+                return true
+            else
+                linebreaks[i] = n
+                prev = start
+                nofchars = n
+            end
+        end
+
         while start do
             local id = getid(start)
             if id == glyph_code then
                 n = n + 1
             elseif id == disc_code then
                 -- this could be an option
+                n = n + 1
+                if try(getfield(start,"pre")) then
+                    break
+                end
             elseif id == kern_code then -- todo: fontkern
                 -- this could be an option
             elseif n > 0 then
-                local pack = hpack_node_list(copy_node_list(list,start))
-                if getfield(pack,"width") > hsize then
-                    free_node_list(pack)
-                    list = prev
+                if try() then
                     break
-                else
-                    linebreaks[i] = n
-                    prev = start
-                    free_node_list(pack)
-                    nofchars = n
                 end
             end
             start = getnext(start)
@@ -165,23 +201,69 @@ actions[v_line] = function(head,setting)
     end
     local start = head
     local n     = 0
+
+    local function update(start)
+        if dynamic > 0 then
+            setattr(start,0,dynamic)
+        end
+        setfield(start,"font",font)
+        if ca and ca > 0 then
+            setattr(start,a_colorspace,ma == 0 and 1 or ma)
+            setattr(start,a_color,ca)
+        end
+        if ta and ta > 0 then
+            setattr(start,a_transparency,ta)
+        end
+    end
+
     for i=1,noflines do
         local linebreak = linebreaks[i]
         while start and n < nofchars do
             local id = getid(start)
-            if id == glyph_code then -- or id == disc_code then
-                if dynamic > 0 then
-                    setattr(start,0,dynamic)
-                end
-                setfield(start,"font",font)
-                if ca and ca > 0 then
-                    setattr(start,a_colorspace,ma == 0 and 1 or ma)
-                    setattr(start,a_color,ca)
-                end
-                if ta and ta > 0 then
-                    setattr(start,a_transparency,ta)
-                end
+            if id == glyph_code then
                 n = n + 1
+                update(start)
+            elseif id == disc_code then
+                n = n + 1
+                local disc = start
+                local pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
+                if linebreak == n then
+                    local p, n = getboth(start)
+                    if pre then
+                        for current in traverse_id(glyph_code,pre) do
+                            update(current)
+                        end
+                        setlink(pretail,n)
+                        setlink(p,pre)
+                        start = pretail
+                        pre = nil
+                    else
+                        setlink(p,n)
+                        start = p
+                    end
+                    if post then
+                        local p, n = getboth(start)
+                        setlink(posttail,n)
+                        setlink(start,post)
+                        post = nil
+                    end
+                else
+                    local p, n = getboth(start)
+                    if replace then
+                        for current in traverse_id(glyph_code,replace) do
+                            update(current)
+                        end
+                        setlink(replacetail,n)
+                        setlink(p,replace)
+                        start = replacetail
+                        replace = nil
+                    else
+                        setlink(p,n)
+                        start = p
+                    end
+                end
+                setdisc(disc,pre,post,replace)
+                free_node(disc)
             end
             if linebreak == n then
                 if trace_firstlines then

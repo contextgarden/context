@@ -1,0 +1,19 @@
+local kern_200_050 = { bottomright = { { kern = -200 } }, topright = { { kern = 50 } } }
+local kern_100_050 = { bottomright = { { kern = -100 } }, topright = { { kern = 50 } } }
+
+return {
+    name = "schola-math",
+    version = "1.00",
+    comment = "Goodies that complement schola.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        kerns = {
+            [0x1D449] = kern_200_050, --
+            [0x1D44A] = kern_100_050, -- 𝑊
+        },
+        alternates = {
+            dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
+        },
+    },
+}

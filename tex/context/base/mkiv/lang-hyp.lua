@@ -48,6 +48,8 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
 -- In the procecess of wrapping up (for the ctx conference proceedings) I cleaned up
 -- and extended the code a bit.
 
+-- todo: hjcodes (<32 == length) if i really want it
+
 local type, rawset, tonumber, next = type, rawset, tonumber, next
 
 local P, R, S, Cg, Cf, Ct, Cc, C, Carg, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.Cg, lpeg.Cf, lpeg.Ct, lpeg.Cc, lpeg.C, lpeg.Carg, lpeg.Cs

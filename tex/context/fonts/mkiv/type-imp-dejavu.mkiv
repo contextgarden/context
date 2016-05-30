@@ -40,15 +40,16 @@
     \stoptypescript
 
     \starttypescript [\s!math][dejavu][\s!name]
-       %\loadfontgoodies[dejavu]
-        \definefontsynonym[\s!MathRoman][file:dejavu-math.otf][\s!features=\s!math\mathsizesuffix]
+        \loadfontgoodies[dejavu-math]
+      % \definefontsynonym[\s!MathRoman][file:dejavu-math.otf][\s!features=\s!math\mathsizesuffix]
+        \definefontsynonym[\s!MathRoman][file:texgyredejavu-math][\s!features=\s!math\mathsizesuffix,\s!goodies=dejavu-math]
     \stoptypescript
 
     \starttypescript[dejavu]
         \definetypeface [dejavu] [\s!rm] [\s!serif] [dejavu] [\s!default]
         \definetypeface [dejavu] [\s!ss] [\s!sans]  [dejavu] [\s!default]
         \definetypeface [dejavu] [\s!tt] [\s!mono]  [dejavu] [\s!default]
-%       \definetypeface [dejavu] [\s!mm] [\s!math]  [xits]   [\s!default] [\s!rscale=1.2]
+      % \definetypeface [dejavu] [\s!mm] [\s!math]  [xits]   [\s!default] [\s!rscale=1.2]
         \definetypeface [dejavu] [\s!mm] [\s!math]  [dejavu] [\s!default]
     \stoptypescript
 
@@ -99,7 +100,7 @@
         \definetypeface [dejavu-condensed] [\s!rm] [\s!serif] [dejavu-condensed] [\s!default]
         \definetypeface [dejavu-condensed] [\s!ss] [\s!sans]  [dejavu-condensed] [\s!default]
         \definetypeface [dejavu-condensed] [\s!tt] [\s!mono]  [dejavu-condensed] [\s!default]
-%       \definetypeface [dejavu-condensed] [\s!mm] [\s!math]  [xits]             [\s!default] [\s!rscale=1.2]
+      % \definetypeface [dejavu-condensed] [\s!mm] [\s!math]  [xits]             [\s!default] [\s!rscale=1.2]
         \definetypeface [dejavu-condensed] [\s!mm] [\s!math]  [dejavu]           [\s!default]
     \stoptypescript
 

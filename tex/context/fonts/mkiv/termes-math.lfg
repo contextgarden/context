@@ -1,0 +1,19 @@
+local kern_200 = { bottomright = { { kern = -200 } } }
+local kern_100 = { bottomright = { { kern = -100 } } }
+
+return {
+    name = "termes-math",
+    version = "1.00",
+    comment = "Goodies that complement termes.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        kerns = {
+            [0x1D449] = kern_200, --
+            [0x1D44A] = kern_100, -- 𝑊
+        },
+        alternates = {
+            dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
+        },
+    },
+}

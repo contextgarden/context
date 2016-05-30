@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['trac-vis'] = {
 local string, number, table = string, number, table
 local node, nodes, attributes, fonts, tex = node, nodes, attributes, fonts, tex
 local type = type
-local format = string.format
+local gmatch = string.gmatch
 local formatters = string.formatters
 
 -- This module started out in the early days of mkiv and luatex with
@@ -166,6 +166,7 @@ local modes = {
     vtop       =     4,
     kern       =     8,
     glue       =    16,
+ -- skip       =    16,
     penalty    =    32,
     fontkern   =    64,
     strut      =   128,
@@ -237,7 +238,7 @@ local function enable()
     tex.setcount("global","c_syst_visualizers_state",1) -- so that we can optimize at the tex end
 end
 
-local function setvisual(n,a,what) -- this will become more efficient when we have the bit lib linked in
+local function setvisual(n,a,what,list) -- this will become more efficient when we have the bit lib linked in
     if not n or n == "reset" then
         return unsetvalue
     elseif n == "makeup" then
@@ -261,22 +262,15 @@ local function setvisual(n,a,what) -- this will become more efficient when we ha
             a = setbit(a,preset_all)
         end
     else
-        local m = modes[n]
-        if not m then
-            -- go on
-        elseif a == unsetvalue then
-            if what == false then
-                return unsetvalue
-            else
-             -- a = setbit(0,m)
+        for s in gmatch(n,"[a-z]+") do
+            local m = modes[s]
+            if not m then
+                -- go on
+            elseif not a or a == 0 or a == unsetvalue then
                 a = m
+            else
+                a = setbit(a,m)
             end
-        elseif what == false then
-            a = clearbit(a,m)
-        elseif not a or a == 0 then
-            a = m
-        else
-            a = setbit(a,m)
         end
     end
     if not a or a == 0 or a == unsetvalue then
@@ -289,6 +283,10 @@ end
 
 function nuts.setvisual(n,mode)
     setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true))
+end
+
+function nuts.setvisuals(n,mode)
+    setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true,true))
 end
 
 function nuts.copyvisual(n,m)
@@ -1072,7 +1070,7 @@ end
 statistics.register("visualization time",function()
     if enabled then
      -- cleanup() -- in case we don't don't do it each time
-        return format("%s seconds",statistics.elapsedtime(visualizers))
+        return formatters["%s seconds"](statistics.elapsedtime(visualizers))
     end
 end)
 
@@ -1080,9 +1078,38 @@ end)
 
 local implement = interfaces.implement
 
-implement { name = "setvisual",       arguments = "string",  actions = visualizers.setvisual }
-implement { name = "getvisual",       arguments = "string",  actions = { setvisual, context } }
-implement { name = "setvisuallayer",  arguments = "string",  actions = visualizers.setlayer }
-implement { name = "markvisualfonts", arguments = "integer", actions = visualizers.markfonts }
-implement { name = "setvisualfont",   arguments = "integer", actions = visualizers.setfont }
+implement {
+    name      = "setvisual",
+    arguments = "string",
+    actions   = visualizers.setvisual
+}
 
+implement {
+    name      = "setvisuals",
+    arguments = "string",
+    actions   = visualizers.setvisual
+}
+
+implement {
+    name      = "getvisual",
+    arguments = "string",
+    actions   = { setvisual, context }
+}
+
+    implement {
+    name      = "setvisuallayer",
+    arguments = "string",
+    actions   = visualizers.setlayer
+}
+
+implement {
+    name      = "markvisualfonts",
+    arguments = "integer",
+    actions   = visualizers.markfonts
+}
+
+implement {
+    name      = "setvisualfont",
+    arguments = "integer",
+    actions   = visualizers.setfont
+}

@@ -66,6 +66,8 @@ local trace_vspacing         = false  trackers.register("vspacing.spacing",  fun
 local trace_vsnapping        = false  trackers.register("vspacing.snapping", function(v) trace_vsnapping        = v end)
 local trace_specials         = false  trackers.register("vspacing.specials", function(v) trace_specials         = v end)
 
+local remove_math_skips   = true  directives.register("vspacing.removemathskips", function(v) remnove_math_skips = v end)
+
 local report_vspacing     = logs.reporter("vspacing","spacing")
 local report_collapser    = logs.reporter("vspacing","collapsing")
 local report_snapper      = logs.reporter("vspacing","snapping")
@@ -647,7 +649,7 @@ vspacingdata.skip = vspacingdata.skip or { } -- allocate ?
 storage.register("builders/vspacing/data/map",  vspacingdata.map,  "builders.vspacing.data.map")
 storage.register("builders/vspacing/data/skip", vspacingdata.skip, "builders.vspacing.data.skip")
 
-do -- todo: interface.variables
+do -- todo: interface.variables and properties
 
     vspacing.fixed   = false
 
@@ -1377,11 +1379,11 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     if sv then
                         -- check if already snapped
                         if list and already_done(id,list,a_snapmethod) then
-                            local ht = getfield(current,"height")
-                            local dp = getfield(current,"depth")
                             -- assume that the box is already snapped
                             if trace_vsnapping then
-                                report_snapper("mvl list already snapped at (%p,%p): %s",ht,dp,listtoutf(list))
+                                local h = getfield(current,"height")
+                                local d = getfield(current,"depth")
+                                report_snapper("mvl list already snapped at (%p,%p): %s",h,d,listtoutf(list))
                             end
                         else
                             local h, d, ch, cd, lines = snap_hlist("mvl",current,sv)
@@ -1686,18 +1688,18 @@ end
                     end
                     head, current = remove_node(head, current, true)
                 elseif glue_data then
-                    local wp = getfield(current,"width") or 0
+                    local w = getfield(current,"width") or 0
                     if ((w ~= 0) and (w > (getfield(glue_data,"width") or 0))) then
                         glue_data = current
-                        head, current = remove_node(head, current)
                         if trace then
                             trace_natural("taking parskip",current)
                         end
+                        head, current = remove_node(head, current)
                     else
-                        head, current = remove_node(head, current, true)
                         if trace then
                             trace_natural("removed parskip",current)
                         end
+                        head, current = remove_node(head, current, true)
                     end
                 else
                     if trace then
@@ -1732,7 +1734,7 @@ end
                     flush("topskip")
                 end
                 current = getnext(current)
-            elseif subtype == abovedisplayskip_code then
+            elseif subtype == abovedisplayskip_code and remove_math_skips then
                 --
                 if trace then
                     trace_skip("above display skip (normal)",sc,so,sp,current)
@@ -1740,7 +1742,7 @@ end
                 flush("above display skip (normal)")
                 current = getnext(current)
                 --
-            elseif subtype == belowdisplayskip_code then
+            elseif subtype == belowdisplayskip_code and remove_math_skips then
                 --
                 if trace then
                     trace_skip("below display skip (normal)",sc,so,sp,current)
@@ -1748,7 +1750,7 @@ end
                 flush("below display skip (normal)")
                 current = getnext(current)
                --
-            elseif subtype == abovedisplayshortskip_code then
+            elseif subtype == abovedisplayshortskip_code and remove_math_skips then
                 --
                 if trace then
                     trace_skip("above display skip (short)",sc,so,sp,current)
@@ -1756,7 +1758,7 @@ end
                 flush("above display skip (short)")
                 current = getnext(current)
                 --
-            elseif subtype == belowdisplayshortskip_code then
+            elseif subtype == belowdisplayshortskip_code and remove_math_skips then
                 --
                 if trace then
                     trace_skip("below display skip (short)",sc,so,sp,current)

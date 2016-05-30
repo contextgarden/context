@@ -81,8 +81,8 @@
                 <cd:parameter name="textcolor">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
-                <cd:parameter name="functionstyle">
-                    <cd:resolve name="value-style"/>
+                <cd:parameter name="functioncolor">
+                    <cd:resolve name="cd:color"/>
                 </cd:parameter>
                 <cd:parameter name="integral">
                     <cd:constant type="limits"/>

@@ -53,7 +53,7 @@
    \begingroup
    \edef\currentlow{#1}%
    \kern\lowparameter\c!distance\relax
-   \setbox\scratchbox\hbox\bgroup
+   \setbox\scratchbox\runninghbox\bgroup
      \lower\lowparameter\c!down\hbox\bgroup
        \ifx\fontsize\empty
          \ifmmode
@@ -79,7 +79,7 @@
    \begingroup
    \edef\currenthigh{#1}%
    \kern\highparameter\c!distance\relax
-   \setbox\scratchbox\hbox\bgroup
+   \setbox\scratchbox\runninghbox\bgroup
      \raise\highparameter\c!up\hbox\bgroup
        \ifx\fontsize\empty
          \ifmmode
@@ -136,7 +136,7 @@
 
 \unexpanded\def\typo_scripts_lowhigh#1% #2
   {\dontleavehmode
-   \hbox\bgroup
+   \runninghbox\bgroup
    \edef\currentlowhigh{#1}%
    \dosingleempty}                 % #2
 
@@ -228,7 +228,8 @@
 \to \everydefinelowmidhigh
 
 \unexpanded\def\typo_scripts_lowmidhigh#1#2#3#4%
-  {\dontleavehmode \hbox \bgroup
+  {\dontleavehmode
+   \runninghbox\bgroup
      \edef\currentlowmidhigh{#1}%
      \dostarttagged\t!subsup\currentlowmidhigh
      \uselowmidhighstyleandcolor\c!style\c!color

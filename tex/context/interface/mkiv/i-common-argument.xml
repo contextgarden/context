@@ -494,4 +494,15 @@
         </cd:keywords>
     </cd:define>
 
+    <!-- math formula directives -->
+
+    <cd:define name="argument-formula">
+        <cd:keywords list="yes" optional="yes">
+            <cd:constant type="packed"/>
+            <cd:constant type="tight"/>
+            <cd:constant type="middle"/>
+            <cd:inherit name="setupbodyfont"/>
+        </cd:keywords>
+    </cd:define>
+
 </cd:interface>
