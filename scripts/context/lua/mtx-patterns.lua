@@ -694,16 +694,37 @@ end
 --
 -- use this call:
 --
--- mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=e:/tmp/patterns
-
--- copy /Y *.hyp e:\tex-context\tex\texmf-context\tex\context\patterns
--- copy /Y *.pat e:\tex-context\tex\texmf-context\tex\context\patterns
--- copy /Y *.rme e:\tex-context\tex\texmf-context\tex\context\patterns
--- copy /Y *.lua e:\tex-context\tex\texmf-context\tex\context\patterns
-
--- move /Y *.hyp e:\tex-context\tex\texmf-mine\tex\context\patterns
--- move /Y *.pat e:\tex-context\tex\texmf-mine\tex\context\patterns
--- move /Y *.rme e:\tex-context\tex\texmf-mine\tex\context\patterns
--- move /Y *.lua e:\tex-context\tex\texmf-mine\tex\context\patterns
-
+-- setlocal
+--
+-- rem tugsvn checkout:
+--
+-- set patternsroot=c:/data/develop/svn-hyphen/trunk
+--
+-- rem github checkout:
+--
+-- set patternsroot=c:/data/repositories/tex-hyphen
+--
+-- del /q c:\data\develop\tex-context\tex\texmf-local\tex\context\patterns\*
+-- del /q c:\data\develop\tex-context\tex\texmf-mine\tex\context\patterns\*
+-- del /q c:\data\develop\tex-context\tex\texmf-context\tex\context\patterns\*
+--
+-- mtxrun --script pattern --convert --path=%patternsroot%/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=c:/data/develop/tmp/patterns
+--
+-- copy /Y lang*.hyp c:\data\develop\tex-context\tex\texmf-context\tex\context\patterns
+-- copy /Y lang*.pat c:\data\develop\tex-context\tex\texmf-context\tex\context\patterns
+-- copy /Y lang*.rme c:\data\develop\tex-context\tex\texmf-context\tex\context\patterns
+-- copy /Y lang*.lua c:\data\develop\tex-context\tex\texmf-context\tex\context\patterns
+--
+-- move /Y lang*.hyp c:\data\develop\tex-context\tex\texmf-mine\tex\context\patterns
+-- move /Y lang*.pat c:\data\develop\tex-context\tex\texmf-mine\tex\context\patterns
+-- move /Y lang*.rme c:\data\develop\tex-context\tex\texmf-mine\tex\context\patterns
+-- move /Y lang*.lua c:\data\develop\tex-context\tex\texmf-mine\tex\context\patterns
+--
 -- mtxrun --script pattern --words --update word-th.lua --compress
+--
+-- copy /Y word*.lua c:\data\develop\tex-context\tex\texmf-context\tex\context\patterns
+-- move /Y word*.lua c:\data\develop\tex-context\tex\texmf-mine\tex\context\patterns
+--
+-- mtxrun --generate
+--
+-- endlocal

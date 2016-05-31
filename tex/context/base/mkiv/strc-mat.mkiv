@@ -534,8 +534,6 @@
    \abovedisplayshortskip\zeropoint
    \belowdisplayshortskip\zeropoint}
 
-% \def\predisplaysizethreshhold{2\emwidth} % was 3\emwidth
-
 \newdimen\d_strc_formulas_display_skip_left
 \newdimen\d_strc_formulas_display_skip_right
 \newdimen\d_strc_formulas_display_margin_left
@@ -546,7 +544,7 @@
 \newconstant\c_strc_formulas_mode
 \newconstant\c_strc_formulas_space_model
 
-\c_strc_formulas_mode       \plustwo   % 0=native 1=simple 2=align
+\c_strc_formulas_mode       \plustwo   % 0=native 1=simple (old) 2=align (new)
 \c_strc_formulas_space_model\plusthree % replaces \plusone
 
 \newconditional\c_strc_formulas_tight
@@ -747,7 +745,6 @@
      \d_strc_formulas_display_margin_left\leftskipadaption
    \fi
    \let\strc_formulas_start_formula\strc_formulas_start_formula_nested
-  %\freezedimenmacro\predisplaysizethreshhold
    \strc_formulas_forget_display_skips
    \csname\e!start\formulaparameter\c!alternative\v!formula\endcsname}
 

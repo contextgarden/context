@@ -126,16 +126,17 @@ actions[v_line] = function(head,setting)
     local temp       = copy_node_list(head)
     local linebreaks = { }
 
-    local function set(g)
-        if dynamic > 0 then
-            setattr(g,0,dynamic)
+    local function set(head)
+        for g in traverse_id(glyph_code,head) do
+            if dynamic > 0 then
+                setattr(g,0,dynamic)
+            end
+            setfield(g,"font",font)
         end
-        setfield(g,"font",font)
     end
 
-    for g in traverse_id(glyph_code,temp) do
-        set(g)
-    end
+    set(temp)
+
     for g in traverse_id(disc_code,temp) do
         local pre, post, replace = getdisc(g)
         if pre then

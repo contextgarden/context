@@ -1,0 +1,631 @@
+% language=uk
+
+\setupbodyfont
+  [pagella]
+
+\setupwhitespace
+  [big]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setuplayout
+  [backspace=2cm,
+   width=middle,
+   cutspace=2cm,
+   topspace=2cm,
+   header=2cm,
+   height=middle,
+   footer=0pt,
+   bottomspace=2cm]
+
+\usemodule[x][setups-basics]
+
+\usemodule[visual]
+
+\loadsetups[i-context]
+
+\starttext
+
+\startMPpage
+
+StartPage;
+    fill Page withcolor .35magenta ;
+    picture p ; p := image ( draw outlinetext.b
+        ("\textdollar")
+        (withcolor .35green)
+        (withcolor .5yellow withpen pencircle scaled .1) ;
+    ) ;
+    p := p xysized(PaperWidth - 20pt,PaperHeight - 20pt ) ;
+    p := p shifted - llcorner p shifted (10pt,10pt) ;
+    draw p ;
+    picture p ; p := image ( draw outlinetext.b
+        ("math")
+        (withcolor .35green)
+        (withcolor .5yellow withpen pencircle scaled .2) ;
+    ) ;
+    p := p xsized(PaperWidth/2 - 40pt) ;
+    p := p shifted - llcorner p shifted (10pt,10pt) ;
+    draw p shifted (PaperWidth/2 + 20pt,20pt);
+StopPage;
+
+\stopMPpage
+
+\page[empty] \setuppagenumber[number=1]
+
+\setuplayout
+  [backspace=2cm,
+   topspace=2cm,
+   header=2cm,
+   height=middle,
+   width=middle]
+
+\setuphead
+  [chapter]
+  [header=high,
+   style=\bfc,
+   color=darkmagenta]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\setuphead
+  [subsection]
+  [style=\bfa]
+
+\starttitle[title=Introduction]
+
+This manual is not a systematic discussion about math in \CONTEXT\ but more a
+collection of wrap|-|ups. The file also serves as testcase. The content can
+change over time and can also serve as a trigger for discussions on the mailing
+list. Feel free to contribute.
+
+\startlines
+Hans Hagen
+Hasselt NL
+% May 2016
+\stoplines
+
+\stoptitle
+
+\startchapter[title=Vertical spacing]
+
+The low level way to input inline math in \TEX\ is
+
+\starttyping
+$ e = mc^2 $
+\stoptyping
+
+while display math can be entered like:
+
+\starttyping
+$$ e = mc^2 $$
+\stoptyping
+
+The inline method is still valid, but for display math the \type {$$} method
+should not be used. This has to do with the fact that we want to control spacing
+in a consistent way. In \CONTEXT\ the vertical spacing model is rather stable
+although in \MKIV\ the implementation is quite different. It has always been a
+challenge to let this mechanism work well with space round display formulas. This
+has to do with the fact that (in the kind of documents that we have to produce)
+interaction with already present spacing is somewhat tricky.
+
+Of course much can be achieved in \TEX\ but in \CONTEXT\ we need to have control
+over the many mechanisms that can interact. Given the way \TEX\ handles space
+around display math there is no real robust solution possible that gives visually
+consistent space in all cases so that is why we basically disable the existing
+spacing model. Disabling is easier in \LUATEX\ and recent versions of \MKIV\ have
+been adapted to that.
+
+In pure \TEX\ what happens is this:
+
+\startbuffer
+$$ x $$
+\stopbuffer
+
+\typebuffer \par \start \showboxes \getbuffer \par \stop
+
+A horizontal box get added which triggers a baselineskip. Then the formula is put
+below it. We can get rid of that box with \type {\noindent}:
+
+\startbuffer
+\noindent $$ x $$
+\stopbuffer
+
+\typebuffer \par \start \showboxes \getbuffer \par \stop
+
+In addition (not shown here) vertical space is added before and after the formula
+and left- and rightskip on the edges. In fact typesetting display math goes like this:
+
+\startitemize[packed]
+    \startitem
+        typeset the formula using display mode and wrap it in a box
+    \stopitem
+    \startitem
+        add an equation number, if possible in the same line, otherwise on a line
+        below
+    \stopitem
+    \startitem
+        in the process center the formula using the available display width and
+        required display indentation
+    \stopitem
+    \startitem
+        add vertical space above and below (depending also in displays being
+        short in relation to the previous line
+    \stopitem
+    \startitem
+        at the same time also add penalties that determine the break across
+        pages
+    \stopitem
+\stopitemize
+
+Apart from the spacing around the formula and the equation number, typesetting is
+not different from:
+
+\starttyping
+\hbox {$ \displaystyle x $}
+\stoptyping
+
+This spacing around math is a sensitive issue. Because math itself can have a
+narrow band, for instance a lone $x$, or relative much depth, as with $y$, or
+both depth and height as in $(1,2)$ and $x^2 + y_2$ and because a preceding line
+can have no or little depth and a following line little height, the visual
+appearance can become inconsistent. The default approach is to force consistent
+spacing, but when needed we can implement variants.
+
+Spacing around display math is set up with \type {\setupformulas}:
+
+\starttyping
+  \setupformulas
+    [spacebefore=big,
+     spaceafter=big]
+\stoptyping
+
+When the whitespace is larger that setting wins because as usual the larger
+of blanks or whitespace wins.
+
+% \showdefinition[setupformula]
+% \showdefinition[setupmathematics]
+
+In \in {figures} [whitespace-no], \in {figures} [whitespace-medium] \in {and}
+[whitespace-big] we see how things interact. We show lines with and without
+maximum line height and depth (enforced by struts) alongside.
+
+% no whitespace
+
+\startbuffer[demo-1]
+\disablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=none,spaceafter=none]
+\setupwhitespace[none]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startbuffer[demo-2]
+\enablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=none,spaceafter=none]
+\setupwhitespace[none]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startbuffer[demo-3]
+\disablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=medium,spaceafter=medium]
+\setupwhitespace[none]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startbuffer[demo-4]
+\enablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=medium,spaceafter=medium]
+\setupwhitespace[none]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startplacefigure[location=page,reference=whitespace-no,title={No whitespace.}]
+    \startcombination[2*2]
+        {\typesetbuffer[demo-1][height=.45\textheight]} {\tttf natural + none   + ws none}
+        {\typesetbuffer[demo-2][height=.45\textheight]} {\tttf strut   + none   + ws none}
+        {\typesetbuffer[demo-3][height=.45\textheight]} {\tttf natural + medium + ws none}
+        {\typesetbuffer[demo-4][height=.45\textheight]} {\tttf strut   + medium + ws none}
+    \stopcombination
+\stopplacefigure
+
+% whitespace medium same as medium spacing around math
+
+\startbuffer[demo-1]
+\disablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=none,spaceafter=none]
+\setupwhitespace[medium]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startbuffer[demo-2]
+\enablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=none,spaceafter=none]
+\setupwhitespace[medium]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startbuffer[demo-3]
+\disablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=medium,spaceafter=medium]
+\setupwhitespace[medium]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startbuffer[demo-4]
+\enablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=medium,spaceafter=medium]
+\setupwhitespace[medium]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startplacefigure[location=page,reference=whitespace-medium,title={Whitespace the same as display spacing.}]
+    \startcombination[2*2]
+        {\typesetbuffer[demo-1][height=.45\textheight]} {\tttf natural + none   + ws medium}
+        {\typesetbuffer[demo-2][height=.45\textheight]} {\tttf strut   + none   + ws medium}
+        {\typesetbuffer[demo-3][height=.45\textheight]} {\tttf natural + medium + ws medium}
+        {\typesetbuffer[demo-4][height=.45\textheight]} {\tttf strut   + medium + ws medium}
+    \stopcombination
+\stopplacefigure
+
+% whitespace big wins from medium spacing around math
+
+\startbuffer[demo-1]
+\disablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=none,spaceafter=none]
+\setupwhitespace[big]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startbuffer[demo-2]
+\enablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=none,spaceafter=none]
+\setupwhitespace[big]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startbuffer[demo-3]
+\disablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=medium,spaceafter=medium]
+\setupwhitespace[big]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startbuffer[demo-4]
+\enablemode[with-struts]
+\showmakeup
+\setupformulas[spacebefore=medium,spaceafter=medium]
+\setupwhitespace[big]
+\input math-spacing-001.tex
+\stopbuffer
+
+\startplacefigure[location=page,reference=whitespace-big,title={Whitespace larger than display spacing.}]
+    \startcombination[2*2]
+        {\typesetbuffer[demo-1][height=.45\textheight]} {\tttf natural + none   + ws big}
+        {\typesetbuffer[demo-2][height=.45\textheight]} {\tttf strut   + none   + ws big}
+        {\typesetbuffer[demo-3][height=.45\textheight]} {\tttf natural + medium + ws big}
+        {\typesetbuffer[demo-4][height=.45\textheight]} {\tttf strut   + medium + ws big}
+    \stopcombination
+\stopplacefigure
+
+Because we want to have control over the placement of the formula number but also
+want to be able to align the formula with the left or right edge of the text
+area, we don't use the native display handler by default. We still have a way to
+force this, but this is only for testing purposes. By default a formula is placed
+centered relative to the current text, including left and right margins.
+
+\startbuffer
+\fakewords{20}{40}
+
+\startitemize
+    \startitem
+        \fakewords{20}{40}
+        \placeformula
+            \startformula
+                \fakeformula
+            \stopformula
+    \stopitem
+    \startitem
+        \fakewords{20}{40}
+    \stopitem
+\stopitemize
+
+\fakewords{20}{40}\epar
+\stopbuffer
+
+\typebuffer
+
+\start \getbuffer \stop
+
+In the next examples we explicitly align formulas to the left (\type
+{flushleft}), center (\type {middle}) and right (\type {flushright}):
+
+\startbuffer[demo]
+\setupformulas[align=flushleft]
+\startformula\fakeformula\stopformula
+\setupformulas[align=middle]
+\startformula\fakeformula\stopformula
+\setupformulas[align=flushright]
+\startformula\fakeformula\stopformula
+\stopbuffer
+
+\typebuffer[demo]
+
+The three cases show up as:
+
+\start \getbuffer[demo] \stop
+
+You can also set a left and|/|or right margin:
+
+\startbuffer[setting]
+\setupformulas
+  [leftmargin=3cm,
+   rightmargin=3cm]
+\stopbuffer
+
+\start \getbuffer[setting] \getbuffer[demo] \stop
+
+With formula numbers these formulas look as follows:
+
+\startbuffer[demo]
+\setupformulas[align=flushleft]
+\placeformula \startformula\fakeformula\stopformula
+\setupformulas[align=middle]
+\placeformula \startformula\fakeformula\stopformula
+\setupformulas[align=flushright]
+\placeformula \startformula\fakeformula\stopformula
+\stopbuffer
+
+\start \getbuffer[demo] \stop
+
+and the same with margins:
+
+\start \getbuffer[setting] \getbuffer[demo] \stop
+
+\page
+
+When the \type {margin} option is set to \type {standard} or \type {yes} the
+current indentation (when set) or left skip is added to the left side.
+
+\startbuffer
+\setupformulas[align=flushleft]
+\startformula \fakeformula \stopformula
+\placeformula \startformula \fakeformula \stopformula
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+\startbuffer
+\setupformulas[align=flushleft,margin=standard]
+\startformula \fakeformula \stopformula
+\placeformula \startformula \fakeformula \stopformula
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+The distance between the formula and the number is only applied when the formula
+is left or right aligned.
+
+\startbuffer
+\setupformulas[align=flushright,distance=0pt]
+\startformula \fakeformula \stopformula
+\placeformula \startformula \fakeformula \stopformula
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+\startbuffer
+\setupformulas[align=flushright,distance=2em]
+\startformula \fakeformula \stopformula
+\placeformula \startformula \fakeformula \stopformula
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+\stopchapter
+
+% \startchapter[title=Numbering]
+
+% \stopchapter
+
+\startchapter[title=Framing]
+
+The \type {\framed} macro is one of the core constructors in \CONTEXT\ and it's
+used all over the place. This macro is unlikely to change its behaviour and as it
+has evolved over years it comes with quite some options and some can interfere
+with the expectations one has. In general using this macro works out well but you
+need to keep an eye on using struts and alignment.
+
+\startbuffer
+\framed{$e=mc^2$}
+\stopbuffer
+
+\typebuffer
+
+The outcome of this is:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+There is a bit of offset (that you can set) but also struts are added as can be
+seen when we visualize them:
+
+\startlinecorrection \showstruts \getbuffer \stoplinecorrection
+
+These struts can be disabled:
+
+\startbuffer
+\framed[strut=no]{$e=mc^2$}
+\stopbuffer
+
+\typebuffer
+
+Now the result is more tight.
+
+\startlinecorrection \showstruts \getbuffer \stoplinecorrection
+
+These struts are the way to get a consistent look and feel and are used
+frequently in \CONTEXT. We mention these struts because they get in the way when
+we frame a display formula. Let's first look at what happens when we
+just package a formula in a box:
+
+\startbuffer
+\vbox\bgroup
+    \startformula
+        e = mc^2
+    \stopformula
+\egroup
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlinecorrection \start \showmakeup \getbuffer \stop \stoplinecorrection
+
+Now there are a few properties of displaymath that one needs to keep in mind when
+messing around with them this way. First of all display math is meant to be used
+as part of the page stream. This means that spacing above and below is adapted to
+what comes before and after. It also means that, because formulas can be numbered,
+we have some settings that relate to horizontal placement.
+
+The default vertical spacing is easy to get rid of:
+
+\startbuffer
+\vbox\bgroup
+    \startformula[packed]
+        e = mc^2
+    \stopformula
+\egroup
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection \start \showmakeup \getbuffer \stop \stoplinecorrection
+
+Another handy keyword is \type {tight}:
+
+\startbuffer
+\vbox\bgroup
+    \startformula[tight]
+        e = mc^2
+    \stopformula
+\egroup
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection \start \showmakeup \getbuffer \stop \stoplinecorrection
+
+We can combine these two:
+
+\startbuffer
+\vbox\bgroup
+    \startformula[packed,tight]
+        e = mc^2
+    \stopformula
+\egroup
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection \start \showmakeup \getbuffer \stop \stoplinecorrection
+
+Just in case you wonder why we need to go through these troubles: keep in mind
+that we are wrapping something (math) that normally goes in a vertical list with
+text above and below.
+
+The \type {packed} and \type {tight} options can help when we want to wrap
+a formula in a frame:
+
+\startbuffer
+\framed
+    [strut=no]
+    {
+        \startformula[packed,tight]
+            e = mc^2
+        \stopformula
+    }
+\stopbuffer
+
+\typebuffer
+
+which renders as:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+There is a dedicated math framed instance that is tuned to give better results
+and automatically switches to math mode:
+
+\startbuffer
+\mframed {
+    e = mc^2
+}
+\stopbuffer
+
+\typebuffer
+
+becomes:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Multiple formulas can be combined:
+
+\startbuffer
+\startformulas
+    \startformula
+        a + b = c
+    \stopformula
+    \startformula
+        d - e = f
+    \stopformula
+\stopformulas
+\stopbuffer
+
+\typebuffer
+
+We might add some more control in the future, but this is what you get:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopchapter
+
+\stoptext
+
+% when we compare these tables with the one that the ff loader produces we notice
+% some differences: this is because (deduced from source) that ff does some kind
+% of interpolation for missing heights for the last kern (for n=2 adding 100 and
+% for adding 1 the max height) ... this is probably a side effect if missing specs
+% here we don't do that
+% \enabledirectives[fontgoodies.mathkerning]
+
+% \startTEXpage[offset=2mm]
+%     \startcombination[4*2]
+%         {\hbox to 50pt{\hss\showboxes\switchtobodyfont  [modern]$V_i^i = W_i^i$\hss}} {\infofont modern}
+%         {\hbox to 50pt{\hss\showboxes\switchtobodyfont [cambria]$V_i^i = W_i^i$\hss}} {\infofont cambria}
+%         {\hbox to 50pt{\hss\showboxes\switchtobodyfont[lucidaot]$V_i^i = W_i^i$\hss}} {\infofont lucida}
+%         {\hbox to 50pt{\hss\showboxes\switchtobodyfont  [dejavu]$V_i^i = W_i^i$\hss}} {\infofont dejavu}
+%         {\hbox to 50pt{\hss\showboxes\switchtobodyfont [pagella]$V_i^i = W_i^i$\hss}} {\infofont pagella}
+%         {\hbox to 50pt{\hss\showboxes\switchtobodyfont  [termes]$V_i^i = W_i^i$\hss}} {\infofont termes}
+%         {\hbox to 50pt{\hss\showboxes\switchtobodyfont   [bonum]$V_i^i = W_i^i$\hss}} {\infofont bonum}
+%         {\hbox to 50pt{\hss\showboxes\switchtobodyfont  [schola]$V_i^i = W_i^i$\hss}} {\infofont schola}
+%     \stopcombination
+% \stopTEXpage
