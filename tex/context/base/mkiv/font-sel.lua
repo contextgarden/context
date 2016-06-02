@@ -70,7 +70,7 @@ local report_selectfont   = logs.reporter("selectfont")
 local report_files        = logs.reporter("selectfont","files")
 local report_features     = logs.reporter("selectfont","features")
 local report_goodies      = logs.reporter("selectfont","goodies")
-local report_alternatives = logs.reporter("selectfont","alternatives")
+----- report_alternatives = logs.reporter("selectfont","alternatives")
 local report_typescript   = logs.reporter("selectfont","typescripts")
 
 defaults["rm"] = { features = { ["sc"] = "*,f:smallcaps" } }

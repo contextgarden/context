@@ -468,6 +468,15 @@ function jobpositions.enhance(name)
     enhance(tobesaved[name])
 end
 
+function jobpositions.gettobesaved(name,tag)
+    local t = tobesaved[name]
+    if t and tag then
+        return t[tag]
+    else
+        return t
+    end
+end
+
 -- scanners.pos = function(name,t) -- name t
 --     local name = scanstring()
 --     tobesaved[name] = scanstring()

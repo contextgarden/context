@@ -1049,9 +1049,13 @@ local grammar_unparsed_text = P { "preamble",
 
 -- maybe we will add settings to result as well
 
-local function _xmlconvert_(data, settings)
+local function _xmlconvert_(data,settings)
     settings = settings or { } -- no_root strip_cm_and_dt given_entities parent_root error_handler
     preparexmlstate(settings)
+    local preprocessor = settings.preprocessor
+    if data and data ~= "" and type(preprocessor) == "function" then
+        data = preprocessor(data,settings) or data -- settings.currentresource
+    end
     if settings.parent_root then
         mt = getmetatable(settings.parent_root)
     else

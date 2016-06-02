@@ -1166,6 +1166,7 @@
 		<cd:constant name='splitoffset' value='شکافتن‌آفست'/>
 		<cd:constant name='spot' value='لکه'/>
 		<cd:constant name='stack' value='توده'/>
+		<cd:constant name='stackname' value='stackname'/>
 		<cd:constant name='start' value='شروع'/>
 		<cd:constant name='starter' value='starter'/>
 		<cd:constant name='state' value='وضعیت'/>

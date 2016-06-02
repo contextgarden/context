@@ -2747,6 +2747,83 @@ Tags like \type {t7}, \type {t8} etc.\ can represent versions.
 
 \stopsection
 
+\startsection[title=preprocessing]
+
+% local match    = lpeg.match
+% local replacer = lpeg.replacer("BAD TITLE:","<bold>BAD TITLE:</bold>")
+%
+% function lxml.preprocessor(data,settings)
+%     return match(replacer,data)
+% end
+
+\startbuffer[pre-code]
+\startluacode
+    function lxml.preprocessor(data,settings)
+        return string.find(data,"BAD TITLE:")
+           and string.gsub(data,"BAD TITLE:","<bold>BAD TITLE:</bold>")
+            or data
+    end
+\stopluacode
+\stopbuffer
+
+\startbuffer[pre-xml]
+\startxmlsetups pre:demo:initialize
+    \xmlsetsetup{#1}{*}{pre:demo:*}
+\stopxmlsetups
+
+\xmlregisterdocumentsetup{pre:demo}{pre:demo:initialize}
+
+\startxmlsetups pre:demo:root
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups pre:demo:bold
+    \begingroup\bf\xmlflush{#1}\endgroup
+\stopxmlsetups
+
+\starttext
+    \xmlprocessbuffer{pre:demo}{demo}{}
+\stoptext
+\stopbuffer
+
+Say that you have the following \XML\ setup:
+
+\typebuffer[pre-xml]
+
+and that (such things happen) the input looks like this:
+
+\startbuffer[demo]
+<root>
+BAD TITLE: crap crap crap ...
+
+BAD TITLE: crap crap crap ...
+</root>
+\stopbuffer
+
+\typebuffer[demo]
+
+You can then clean up these \type {BAD TITLE}'s as follows:
+
+\typebuffer[pre-code]
+
+and get as result:
+
+\start \getbuffer[pre-code,pre-xml] \stop
+
+The preprocessor function gets as second argument the current settings, an d
+the field \type {currentresource} can be used to limit the actions to
+specific resources, in our case it's \type {buffer: demo}. Afterwards you can
+reset the proprocessor with:
+
+\startluacode
+lxml.preprocessor = nil
+\stopluacode
+
+Future versions might give some more control over preprocessors. For now consider
+it to be a quick hack.
+
+\stopsection
+
 \stopchapter
 
 \startchapter[title={Lookups using lpaths}]

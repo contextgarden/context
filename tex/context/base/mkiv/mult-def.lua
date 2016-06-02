@@ -10565,6 +10565,10 @@ return {
    ["pe"]="توده",
    ["ro"]="stack",
   },
+  ["stackname"]={
+   ["en"]="stackname",
+   ["nl"]="stapelnaam",
+  },
   ["start"]={
    ["cs"]="start",
    ["de"]="start",

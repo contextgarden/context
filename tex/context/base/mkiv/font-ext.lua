@@ -36,6 +36,7 @@ local fontdata           = hashes.identifiers
 local allocate           = utilities.storage.allocate
 local settings_to_array  = utilities.parsers.settings_to_array
 local getparameters      = utilities.parsers.getparameters
+local gettexdimen        = tex.getdimen
 
 local setmetatableindex  = table.setmetatableindex
 
@@ -625,12 +626,20 @@ local function manipulatedimensions(tfmdata,key,value)
     if type(value) == "string" and value ~= "" then
         local characters = tfmdata.characters
         local parameters = tfmdata.parameters
-        local emwidth = parameters.quad
-        local exheight = parameters.xheight
-        local spec = settings_to_array(value)
-        local width = (spec[1] or 0) * emwidth
-        local height = (spec[2] or 0) * exheight
-        local depth = (spec[3] or 0) * exheight
+        local emwidth    = parameters.quad
+        local exheight   = parameters.xheight
+        local width      = 0
+        local height     = 0
+        local depth      = 0
+        if value == "strut" then
+            height = gettexdimen("strutht")
+            depth  = gettexdimen("strutdp")
+        else
+            local spec = settings_to_array(value)
+            width  = (spec[1] or 0) * emwidth
+            height = (spec[2] or 0) * exheight
+            depth  = (spec[3] or 0) * exheight
+        end
         if width > 0 then
             local resources = tfmdata.resources
             local additions = { }
@@ -687,7 +696,7 @@ local function manipulatedimensions(tfmdata,key,value)
         elseif height > 0 and depth > 0 then
             for unicode, old_c in next, characters do
                 old_c.height = height
-                old_c.depth = depth
+                old_c.depth  = depth
             end
         elseif height > 0 then
             for unicode, old_c in next, characters do

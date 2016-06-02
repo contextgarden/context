@@ -164,6 +164,10 @@ local function toupper (n) local t = { } for i=0,25 do t[0x00041+i] = n+i end re
 local function tolower (n) local t = { } for i=0,25 do t[0x00061+i] = n+i end return t end
 local function tovector(t)                                                    return t end
 
+-- how about 0x2A (ast)    cq. 0x2217
+--           0x2D (hyphen) cq. 0x2212
+--           0x3A (colon)  cq. 0x2236
+
 local regular_tf = {
     digits    = todigit(0x00030),
     ucletters = toupper(0x00041),

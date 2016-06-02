@@ -44,7 +44,6 @@ local vpack               = nuts.vpack
 local freenode            = nuts.free
 local concatnodes         = nuts.concat
 local slidenodes          = nuts.slide -- ok here as we mess with prev links intermediately
-local findtail            = nuts.tail
 
 local getfield            = nuts.getfield
 local setfield            = nuts.setfield
@@ -62,8 +61,6 @@ local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
 local getskip             = nuts.getskip
 local getattribute        = nuts.getattribute
-
-local texgetskip          = tex.getskip
 
 local theprop             = nuts.theprop
 
@@ -340,8 +337,8 @@ local function preparesplit(specification) -- a rather large function
                 if trace_state then
                     report_state("backtracking over %s in column %s","glue",column)
                 end
-            elseif id == penalty_code then
                 current = getprev(current)
+            elseif id == penalty_code then
                 if trace_state then
                     report_state("backtracking over %s in column %s","penalty",column)
                 end

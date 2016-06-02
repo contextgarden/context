@@ -9996,7 +9996,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 56926, stripped down to: 35829
+-- original size: 57132, stripped down to: 35990
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -10775,6 +10775,10 @@ local grammar_unparsed_text=P { "preamble",
 local function _xmlconvert_(data,settings)
   settings=settings or {} 
   preparexmlstate(settings)
+  local preprocessor=settings.preprocessor
+  if data and data~="" and type(preprocessor)=="function" then
+    data=preprocessor(data,settings) or data 
+  end
   if settings.parent_root then
     mt=getmetatable(settings.parent_root)
   else
@@ -18743,8 +18747,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 797155
--- stripped bytes    : 289131
+-- original bytes    : 797361
+-- stripped bytes    : 289176
 
 -- end library merge
 

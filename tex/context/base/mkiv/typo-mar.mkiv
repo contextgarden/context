@@ -122,6 +122,7 @@
    \c!scope=\v!global,
    \c!width=,
  % \c!stack=,
+ % \c!stackname=,
  % \c!option=, % \v!paragraph (follow shape)
    \c!line=0,
    \c!anchor=\v!text,
@@ -131,8 +132,8 @@
    \c!hoffset=\zeropoint,
    \c!voffset=\zeropoint]
 
-\setupmarginframed % so, align should be set with the data command
-  [\c!strut=\v!yes,
+\setupmarginframed  % so, align should be set with the data command
+  [\c!strut=\v!yes, % so by default we scale the strut to the font !
    \c!offset=\v!overlay,
    \c!fr!analyze=\v!yes,
    \c!frame=\v!off,
@@ -303,6 +304,7 @@
    % \fi
        align       {\margindataparameter\c!align}%
        line        \numexpr\margindataparameter\c!line\relax
+       stackname   {\margindataparameter\c!stackname}%
        stack       {\margindataparameter\c!stack}%
      \relax
    \else

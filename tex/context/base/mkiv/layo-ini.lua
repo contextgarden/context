@@ -18,7 +18,7 @@ layouts = {
 
 local status = layouts.status
 
-function status.leftorrightpagection(left,right)
+function status.leftorrightpageaction(left,right)
     if left == nil then
         left, right = false, true
     end
@@ -41,14 +41,14 @@ function status.leftorrightpagection(left,right)
     end
 end
 
-function status.isleftpage()
+function status.isleftpage(r)
     if not conditionals.layoutisdoublesided then
         return false
     elseif conditionals.layoutissinglesided then
         return false
     elseif texgetcount("pagenoshift") % 2 == 0 then
-        return texgetcount("realpageno") % 2 == 0
+        return (r or texgetcount("realpageno")) % 2 == 0
     else
-        return not texgetcount("realpageno") % 2 == 0
+        return not (r or texgetcount("realpageno")) % 2 == 0
     end
 end

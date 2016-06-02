@@ -1166,6 +1166,7 @@
 		<cd:constant name='splitoffset' value='splitoffset'/>
 		<cd:constant name='spot' value='spot'/>
 		<cd:constant name='stack' value='stack'/>
+		<cd:constant name='stackname' value='stackname'/>
 		<cd:constant name='start' value='demarre'/>
 		<cd:constant name='starter' value='starter'/>
 		<cd:constant name='state' value='etat'/>

@@ -523,6 +523,8 @@ local function entityconverter(id,str,ent) -- todo: disable tex entities when ra
     return xmlprivatetoken(str)
 end
 
+lxml.preprocessor = nil
+
 local function lxmlconvert(id,data,compress,currentresource)
     local settings = { -- we're now roundtrip anyway
         unify_predefined_entities   = false, -- is also default
@@ -530,6 +532,7 @@ local function lxmlconvert(id,data,compress,currentresource)
         resolve_predefined_entities = true,  -- is also default
         resolve_entities            = function(str,ent) return entityconverter(id,str,ent) end,
         currentresource             = tostring(currentresource or id),
+        preprocessor                = lxml.preprocessor,
     }
     if compress and compress == variables.yes then
         settings.strip_cm_and_dt = true

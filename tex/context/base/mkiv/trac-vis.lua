@@ -374,8 +374,11 @@ end
 local f_cache = { }
 
 local function fontkern(head,current)
-    local kern = getfield(current,"kern") + getfield(current,"expansion_factor")
-    local info = f_cache[kern]
+    local width = getfield(current,"kern")
+    local extra = getfield(current,"expansion_factor")
+    local kern  = width + extra
+    local info  = f_cache[kern]
+ -- report_visualize("fontkern: %p ex %p",width,extra)
     if info then
         -- print("hit fontkern")
     else

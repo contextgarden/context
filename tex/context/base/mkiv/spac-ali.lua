@@ -115,7 +115,7 @@ local function handler(head,leftpage,realpageno)
 end
 
 function alignments.handler(head)
-    local leftpage = isleftpage(true,false)
+    local leftpage = isleftpage()
     local realpageno = texgetcount("realpageno")
     local head, done = handler(tonut(head),leftpage,realpageno)
     return tonode(head), done
