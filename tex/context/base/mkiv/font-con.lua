@@ -1049,6 +1049,29 @@ function constructors.hashfeatures(specification) -- will be overloaded
     return "unknown"
 end
 
+-- hashmethods.normal = function(list)
+--     local s = { }
+--     local n = 0
+--     for k, v in next, list do
+--         if not k then
+--             -- no need to add to hash
+--         elseif k == "number" or k == "features" then
+--             -- no need to add to hash (maybe we need a skip list)
+--         else
+--             n = n + 1
+--             s[n] = k
+--         end
+--     end
+--     if n > 0 then
+--         sort(s)
+--         for i=1,n do
+--             local k = s[i]
+--             s[i] = k .. '=' .. tostring(list[k])
+--         end
+--         return concat(s,"+")
+--     end
+-- end
+
 hashmethods.normal = function(list)
     local s = { }
     local n = 0
@@ -1059,15 +1082,11 @@ hashmethods.normal = function(list)
             -- no need to add to hash (maybe we need a skip list)
         else
             n = n + 1
-            s[n] = k
+            s[n] = k .. '=' .. tostring(v)
         end
     end
     if n > 0 then
         sort(s)
-        for i=1,n do
-            local k = s[i]
-            s[i] = k .. '=' .. tostring(list[k])
-        end
         return concat(s,"+")
     end
 end

@@ -605,8 +605,8 @@ if context then
 
     local discretionary_code = disccodes.discretionary
     local explicit_code      = disccodes.explicit
+    local automatic_code     = disccodes.automatic
     ----- regular_code       = disccodes.regular
-    ----- automatic_code     = disccodes.automatic
 
     local nuts               = nodes.nuts
     local tonut              = nodes.tonut
@@ -657,6 +657,9 @@ if context then
     local postexhyphenchar   = lang.postexhyphenchar
 
     local a_hyphenation      = attributes.private("hyphenation")
+
+    local expand_explicit    = languages.expanders[explicit_code]
+    local expand_automatic   = languages.expanders[automatic_code]
 
     local interwordpenalty   = 5000
 
@@ -1281,20 +1284,15 @@ if context then
                     setcolor(glyph,"darkred")  -- these get checked
                     setcolor(disc,"darkgreen") -- in the colorizer
                 end
-                local pre     = mil
+                local pre     = nil
                 local post    = nil
                 local replace = glyph
-                if not leftchar then
-                    leftchar = code
-                end
-                if rightchar then
-                    pre = copy_node(glyph)
-                    setchar(pre,rightchar)
-                end
-                if leftchar then
+                if leftchar and leftchar > 0 then
                     post = copy_node(glyph)
                     setchar(post,leftchar)
                 end
+                pre = copy_node(glyph)
+                setchar(pre,rightchar and rightchar > 0 and rightchar or code)
                 setdisc(disc,pre,post,replace,discretionary_code,hyphenpenalty)
                 if attributes then
                     setfield(disc,"attr",attributes)
@@ -1425,16 +1423,12 @@ if context then
                         current = getnext(current)
                     elseif subtype == explicit_code then -- \- => only here
                         size = 0
+                        expand_explicit(current)
                         current = getnext(current)
-                        while current do
-                            local id = getid(current)
-                            if id == glyph_code or id == disc_code then
-                                current = getnext(current)
-                            else
-                                break
-                            end
-                        end
-                        -- todo: change to discretionary_code
+                    elseif subtype == automatic_code then -- - => only here
+                        size = 0
+                        expand_automatic(current)
+                        current = getnext(current)
                     else
                         -- automatic (-) : the hyphenator turns an exhyphen into glyph+disc
                         -- first         : done by the hyphenator

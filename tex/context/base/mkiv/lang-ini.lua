@@ -259,7 +259,9 @@ function languages.associate(tag,script,language) -- not yet used
 end
 
 function languages.association(tag) -- not yet used
-    if type(tag) == "number" then
+    if not tag then
+        tag = numbers[tex.language]
+    elseif type(tag) == "number" then
         tag = numbers[tag]
     end
     local lat = tag and associated[tag]

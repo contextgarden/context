@@ -48,8 +48,8 @@ characters.graphemes        = graphemes
 local collapsed             = allocate()
 characters.collapsed        = collapsed
 
-local combined              = allocate()
-characters.combined         = combined
+-- local combined           = allocate()
+-- characters.combined      = combined
 
 local decomposed            = allocate()
 characters.decomposed       = decomposed
@@ -64,8 +64,6 @@ local utffilters            = { }
 characters.filters.utf      = utffilters
 
 local data                  = characters.data
-
--- is characters.combined cached?
 
 --[[ldx--
 <p>It only makes sense to collapse at runtime, since we don't expect source code
@@ -95,76 +93,6 @@ local decomposed = allocate {
 }
 
 characters.decomposed = decomposed
-
--- local function initialize() -- maybe only 'mn'
---     local data = characters.data
---     for unicode, v in next, data do
---         -- using vs and first testing for length is faster (.02->.01 s)
---         local vs = v.specials
---         if vs and #vs == 3 then
---             local vc = vs[1]
---             if vc == "char" then
---                 local one, two = vs[2], vs[3]
---                 if data[two].category == "mn" then
---                     local cgf = combined[one]
---                     if not cgf then
---                         cgf = { [two] = unicode }
---                         combined[one]  = cgf
---                     else
---                         cgf[two] = unicode
---                     end
---                 end
---                 local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
---                 local cgf = graphemes[first]
---                 if not cgf then
---                     cgf = { [second] = combination }
---                     graphemes[first] = cgf
---                 else
---                     cgf[second] = combination
---                 end
---                 if v.mathclass or v.mathspec then
---                     local mps = mathpairs[two]
---                     if not mps then
---                         mps = { [one] = unicode }
---                         mathpairs[two] = mps
---                     else
---                         mps[one] = unicode -- here unicode
---                     end
---                     local mps = mathpairs[second]
---                     if not mps then
---                         mps = { [first] = combination }
---                         mathpairs[second] = mps
---                     else
---                         mps[first] = combination
---                     end
---                 end
---          -- elseif vc == "compat" then
---          -- else
---          --     local description = v.description
---          --     if find(description,"LIGATURE") then
---          --         if vs then
---          --             local t = { }
---          --             for i=2,#vs do
---          --                 t[#t+1] = utfchar(vs[i])
---          --             end
---          --             decomposed[utfchar(unicode)] = concat(t)
---          --         else
---          --             local vs = v.shcode
---          --             if vs then
---          --                 local t = { }
---          --                 for i=1,#vs do
---          --                     t[i] = utfchar(vs[i])
---          --                 end
---          --                 decomposed[utfchar(unicode)] = concat(t)
---          --             end
---          --         end
---          --     end
---             end
---         end
---     end
---     initialize = false
---     characters.initialize = function() end -- when used outside tex
--- end
 
 local function initialize() -- maybe in tex mode store in format !
     local data = characters.data

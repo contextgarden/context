@@ -402,17 +402,19 @@ function handlers.characters(head)
         -- skip
     elseif u == 1 then
         local font, processors = next(usedfonts)
+        local attr = a == 0 and false or 0 -- 0 is the savest way
         for i=1,#processors do
-            local h, d = processors[i](head,font,0)
+            local h, d = processors[i](head,font,attr)
             if d then
                 head = h or head
                 done = true
             end
         end
     else
+        local attr = a == 0 and false or 0 -- 0 is the savest way
         for font, processors in next, usedfonts do
             for i=1,#processors do
-                local h, d = processors[i](head,font,0)
+                local h, d = processors[i](head,font,attr)
                 if d then
                     head = h or head
                     done = true

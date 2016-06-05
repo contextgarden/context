@@ -284,6 +284,38 @@
 \letvalue{\??featureyes\s!unknown}\empty
 \letvalue{\??featurenop\s!unknown}\empty
 
+% experimental bonus:
+
+% \unexpanded\def\addfflanguage
+%   {\ifnum\c_font_feature_state=\plusone
+%      \ifx\currentlanguage\currentfeature\else
+%        \font_feature_add_language_indeed
+%      \fi
+%    \else
+%      \font_feature_add_language_indeed
+%    \fi}
+%
+% \unexpanded\def\font_feature_add_language_indeed
+%   {\clf_addfeature{\m_font_feature_list}{\currentlanguage}%
+%    \edef\m_font_feature_list{\m_font_feature_list+\currentlanguage}% also + at the lua end
+%    \c_font_feature_state\plusone
+%    \let\currentfeature\currentlanguage}
+%
+% some 3% slower:
+
+% \unexpanded\def\addfflanguage
+%   {\let\m_font_feature_asked\currentlanguage
+%    \font_feature_add}
+
+\let\m_font_feature_language\currentlanguage
+
+\unexpanded\def\addfflanguage
+  {\ifx\currentlanguage\m_font_feature_language\else
+     \let\m_font_feature_language\currentlanguage
+     \let\m_font_feature_asked   \currentlanguage
+     \font_feature_add
+   \fi}
+
 % just for old times sake:
 
 \unexpanded\def\featureattribute#feature%

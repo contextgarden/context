@@ -174,8 +174,8 @@ constructors.nofsharedhashes   = 0
 constructors.nofsharedvectors  = 0
 constructors.noffontsloaded    = 0
 
-local shares    = { }
-local hashes    = { }
+local shares = { }
+local hashes = { }
 
 function constructors.trytosharefont(target,tfmdata)
     constructors.noffontsloaded = constructors.noffontsloaded + 1
@@ -292,7 +292,7 @@ otftables.scripts.auto = "automatic fallback to latn when no dflt present"
 
 -- setmetatableindex(otffeatures.descriptions,otftables.features)
 
-local privatefeatures = {
+local privatefeatures = { -- this can go away
     tlig = true,
     trep = true,
     anum = true,
@@ -583,42 +583,48 @@ local function presetcontext(name,parent,features) -- will go to con and shared
     return number, t
 end
 
+-- local function contextnumber(name) -- will be replaced
+--     local t = setups[name]
+--     if not t then
+--         return 0
+--     elseif t.auto then -- check where used, autolanguage / autoscript?
+--         local lng = tonumber(tex.language)
+--         local tag = name .. ":" .. lng
+--         local s = setups[tag]
+--         if s then
+--             return s.number or 0
+--         else
+--             local script, language = languages.association(lng)
+--             if t.script ~= script or t.language ~= language then
+--                 local s = fastcopy(t)
+--                 local n = #numbers + 1
+--                 setups[tag] = s
+--                 numbers[n] = tag
+--                 s.number = n
+--                 s.script = script
+--                 s.language = language
+--                 return n
+--             else
+--                 setups[tag] = t
+--                 return t.number or 0
+--             end
+--         end
+--     else
+--         return t.number or 0
+--     end
+-- end
+
 local function contextnumber(name) -- will be replaced
     local t = setups[name]
-    if not t then
-        return 0
-    elseif t.auto then
-        local lng = tonumber(tex.language)
-        local tag = name .. ":" .. lng
-        local s = setups[tag]
-        if s then
-            return s.number or 0
-        else
-            local script, language = languages.association(lng)
-            if t.script ~= script or t.language ~= language then
-                local s = fastcopy(t)
-                local n = #numbers + 1
-                setups[tag] = s
-                numbers[n] = tag
-                s.number = n
-                s.script = script
-                s.language = language
-                return n
-            else
-                setups[tag] = t
-                return t.number or 0
-            end
-        end
-    else
-        return t.number or 0
-    end
+    return t and t.number or 0
 end
 
 local function mergecontext(currentnumber,extraname,option) -- number string number (used in scrp-ini
     local extra = setups[extraname]
     if extra then
         local current = setups[numbers[currentnumber]]
-        local mergedfeatures, mergedname = { }, nil
+        local mergedfeatures = { }
+        local mergedname = nil
         if option < 0 then
             if current then
                 for k, v in next, current do
@@ -1435,7 +1441,7 @@ function definers.resolve(specification) -- overload function in font-con.lua
     else
         specification.forced = specification.forced
     end
-    -- goodies are a context specific thing and not always defined
+    -- goodies are a context specific thing and are not always defined
     -- as feature, so we need to make sure we add them here before
     -- hashing because otherwise we get funny goodies applied
     local goodies = specification.goodies
@@ -1454,12 +1460,19 @@ function definers.resolve(specification) -- overload function in font-con.lua
         end
     end
     -- so far for goodie hacks
-    specification.hash = lower(specification.name .. ' @ ' .. hashfeatures(specification))
-    if specification.sub and specification.sub ~= "" then
-        specification.hash = specification.sub .. ' @ ' .. specification.hash
+    local hash = hashfeatures(specification)
+    local name = specification.name
+    local sub  = specification.sub
+    if sub and sub ~= "" then
+        specification.hash = lower(name .. " @ " .. sub .. ' @ ' .. hash)
+    else
+        specification.hash = lower(name .. " @ "        .. ' @ ' .. hash)
     end
+    --
     return specification
 end
+
+
 
 
 -- soon to be obsolete:
@@ -2021,15 +2034,7 @@ end
 
 do
 
- -- local scanners               = tokens.scanners
- -- local scanstring             = scanners.string
- -- local scaninteger            = scanners.integer
- -- local scandimen              = scanners.dimen
- -- local scanboolean            = scanners.boolean
-
- -- local scanners               = interfaces.scanners
-
-    local setmacro               = tokens.setters.macro
+    local setmacro = tokens.setters.macro
 
     function constructors.currentfonthasfeature(n)
         local f = fontdata[currentfont()]
@@ -2046,24 +2051,8 @@ do
         arguments = "string"
     }
 
-    -- local p, f = 1, formatters["%0.1fpt"] -- normally this value is changed only once
-    --
-    -- local stripper = lpeg.patterns.stripzeros
-    --
-    -- function commands.nbfs(amount,precision)
-    --     if precision ~= p then
-    --         p = precision
-    --         f = formatters["%0." .. p .. "fpt"]
-    --     end
-    --     context(lpegmatch(stripper,f(amount/65536)))
-    -- end
-
     local f_strip  = formatters["%0.2fpt"] -- normally this value is changed only once
     local stripper = lpeg.patterns.stripzeros
-
- -- scanners.nbfs = function()
- --     context(lpegmatch(stripper,f_strip(scandimen()/65536)))
- -- end
 
     implement {
         name      = "nbfs",
@@ -2072,18 +2061,6 @@ do
             context(lpegmatch(stripper,f_strip(d/65536)))
         end
     }
-
-    -- commands.featureattribute  = function(tag) context(contextnumber(tag)) end
-    -- commands.setfontfeature    = function(tag) texsetattribute(0,contextnumber(tag)) end
-    -- commands.resetfontfeature  = function()    texsetattribute(0,0) end
-    -- commands.setfontofid       = function(id)  context_getvalue(csnames[id]) end
-    -- commands.definefontfeature = presetcontext
-
-    -- scanners.featureattribute  = function() context(contextnumber(scanstring())) end
-    -- scanners.setfontfeature    = function() texsetattribute(0,contextnumber(scanstring())) end
-    -- scanners.resetfontfeature  = function() texsetattribute(0,0) end
-    -- scanners.setfontofid       = function() context_getvalue(csnames[scaninteger()]) end
-    -- scanners.definefontfeature = function() presetcontext(scanstring(),scanstring(),scanstring()) end
 
     implement {
         name      = "featureattribute",
@@ -2187,6 +2164,9 @@ do
         end
     end
 
+    constructors.setfeature   = setfeature
+    constructors.resetfeature = resetfeature
+
     implement { name = "resetfeature",    actions = resetfeature }
     implement { name = "addfeature",      actions = setfeature, arguments = { "'+'",  "string", "string" } }
     implement { name = "subtractfeature", actions = setfeature, arguments = { "'-'",  "string", "string" } }
@@ -2200,8 +2180,8 @@ do
     }
 
     implement {
-        name      = "registerlanguagefeatures",
-        actions   = registerlanguagefeatures,
+        name    = "registerlanguagefeatures",
+        actions = registerlanguagefeatures,
     }
 
 end

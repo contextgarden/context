@@ -26,6 +26,7 @@ local getattr            = nuts.getattr
 local getsubtype         = nuts.getsubtype
 local setsubtype         = nuts.setsubtype
 local getchar            = nuts.getchar
+local setchar            = nuts.setchar
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
 local isglyph            = nuts.isglyph
@@ -33,12 +34,14 @@ local isglyph            = nuts.isglyph
 local copy_node          = nuts.copy
 local remove_node        = nuts.remove
 local traverse_id        = nuts.traverse_id
+local flush_list         = nuts.flush_list
 
 local nodecodes          = nodes.nodecodes
 local disccodes          = nodes.disccodes
 
 local disc_code          = nodecodes.disc
 local glyph_code         = nodecodes.glyph
+
 local discretionary_code = disccodes.discretionary
 
 local a_visualize        = attributes.private("visualizediscretionary")
@@ -49,7 +52,7 @@ local getlanguagedata    = languages.getdata
 local check_regular      = true
 
 local expanders = {
-    [disccodes.discretionary] = function(d,template)
+    [discretionary_code] = function(d,template)
         -- \discretionary
         return template
     end,
@@ -61,18 +64,23 @@ local expanders = {
             local char = isglyph(pre)
             if char and char <= 0 then
                 done = true
-                pre  = nil
+                flush_list(pre)
+                pre = nil
             end
         end
         if post then
             local char = isglyph(post)
             if char and char <= 0 then
                 done = true
+                flush_list(post)
                 post = nil
             end
         end
         if done then
+            -- todo: take existing penalty
             setdisc(d,pre,post,replace,discretionary_code,tex.exhyphenpenalty)
+        else
+            setfield(d,"subtype",discretionary_code)
         end
         return template
     end,

@@ -879,6 +879,40 @@
 
 \let\fontfile\s!unknown
 
+%D Relatively new:
+
+\installcorenamespace{fonts}
+\installcorenamespace{fontslanguage}
+
+\installsetuponlycommandhandler \??fonts {fonts}
+
+\newconstant\c_fonts_auto_language
+
+\letvalue{\??fontslanguage\v!auto}\plusone % experimental
+%letvalue{\??fontslanguage\v!yes }\plustwo % less efficient, for experiments
+
+\appendtoks
+    \c_fonts_auto_language
+      \ifcsname\??fontslanguage\fontsparameter\c!language\endcsname
+        \lastnamedcs
+      \else
+        \zerocount
+      \fi
+\to \everysetupfonts
+
+\appendtoks
+    \ifcase\c_fonts_auto_language
+        % nothing
+    \or
+        \addfflanguage
+  % \or
+        % font
+    \fi
+\to \everylanguage
+
+% \setupfonts
+%   [\c!language=\v!auto]
+
 %D \macros
 %D  {everyfont,everyfontswitch}
 
@@ -886,6 +920,16 @@
 \ifdefined\everyfontswitch \else \newtoks\everyfontswitch \fi
 
 \def\setfontcharacteristics{\the\everyfont}
+
+% \appendtoks
+%     \ifcase\c_fonts_auto_language
+%         % nothing
+%     \or
+%         % auto
+%     \or
+%         \addfflanguage
+%     \fi
+% \to \everyfont
 
 %D \macros
 %D   {definefont}

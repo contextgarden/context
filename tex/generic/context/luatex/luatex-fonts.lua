@@ -186,6 +186,7 @@ if non_generic_context.luatex_fonts.skip_loading ~= true then
         loadmodule("l-file.lua")
         loadmodule("l-boolean.lua")
         loadmodule("l-math.lua")
+        loadmodule("l-unicode.lua")
 
         -- A few slightly higher level support modules:
 
