@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/05/16 16:26:23
+-- merge date  : 06/06/16 22:46:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -6655,7 +6655,10 @@ function constructors.getfeatureaction(what,where,mode,name)
     end
   end
 end
-function constructors.newhandler(what) 
+local newhandler={}
+constructors.handlers=newhandler 
+constructors.newhandler=newhandler
+local function setnewhandler(what) 
   local handler=handlers[what]
   if not handler then
     handler={}
@@ -6663,7 +6666,14 @@ function constructors.newhandler(what)
   end
   return handler
 end
-function constructors.newfeatures(what) 
+setmetatable(newhandler,{
+  __call=function(t,k) local v=t[k] return v end,
+  __index=function(t,k) local v=setnewhandler(k) t[k]=v return v end,
+})
+local newfeatures={}
+constructors.newfeatures=newfeatures 
+constructors.features=newfeatures
+local function setnewfeatures(what)
   local handler=handlers[what]
   local features=handler.features
   if not features then
@@ -6682,6 +6692,10 @@ function constructors.newfeatures(what)
   end
   return features
 end
+setmetatable(newfeatures,{
+  __call=function(t,k) local v=t[k] return v end,
+  __index=function(t,k) local v=setnewfeatures(k) t[k]=v return v end,
+})
 function constructors.checkedfeatures(what,features)
   local defaults=handlers[what].features.defaults
   if features and next(features) then
@@ -7446,11 +7460,11 @@ local handlers=fonts.handlers
 local readers=fonts.readers
 local constructors=fonts.constructors
 local encodings=fonts.encodings
-local tfm=constructors.newhandler("tfm")
+local tfm=constructors.handlers.tfm
 tfm.version=1.000
 tfm.maxnestingdepth=5
 tfm.maxnestingsize=65536*1024
-local tfmfeatures=constructors.newfeatures("tfm")
+local tfmfeatures=constructors.features.tfm
 constructors.resolvevirtualtoo=false 
 fonts.formats.tfm="type1" 
 fonts.formats.ofm="type1"
@@ -7595,8 +7609,8 @@ if not modules then modules={} end modules ['font-oti']={
 local lower=string.lower
 local fonts=fonts
 local constructors=fonts.constructors
-local otf=constructors.newhandler("otf")
-local otffeatures=constructors.newfeatures("otf")
+local otf=constructors.handlers.otf
+local otffeatures=constructors.features.otf
 local registerotffeature=otffeatures.register
 local otftables=otf.tables or {}
 otf.tables=otftables
@@ -15149,7 +15163,7 @@ local hashes=fonts.hashes
 local definers=fonts.definers
 local readers=fonts.readers
 local constructors=fonts.constructors
-local otffeatures=constructors.newfeatures("otf")
+local otffeatures=constructors.features.otf
 local registerotffeature=otffeatures.register
 local enhancers=allocate()
 otf.enhancers=enhancers
@@ -17503,7 +17517,7 @@ local math_code=nodecodes.math
 local fontdata=fonts.hashes.identifiers
 local categories=characters and characters.categories or {} 
 local chardata=characters and characters.data
-local otffeatures=fonts.constructors.newfeatures("otf")
+local otffeatures=fonts.constructors.features.otf
 local registerotffeature=otffeatures.register
 local s_init=1  local s_rphf=7
 local s_medi=2  local s_half=8
@@ -17955,7 +17969,7 @@ local getligaindex=injections.getligaindex
 local cursonce=true
 local fonthashes=fonts.hashes
 local fontdata=fonthashes.identifiers
-local otffeatures=fonts.constructors.newfeatures("otf")
+local otffeatures=fonts.constructors.features.otf
 local registerotffeature=otffeatures.register
 local onetimemessage=fonts.loggers.onetimemessage or function() end
 otf.defaultnodealternate="none"
@@ -20924,7 +20938,7 @@ fonts.analyzers.methods=fonts.analyzers.methods or { node={ otf={} } }
 local otf=fonts.handlers.otf
 local handlers=otf.handlers
 local methods=fonts.analyzers.methods
-local otffeatures=fonts.constructors.newfeatures("otf")
+local otffeatures=fonts.constructors.features.otf
 local registerotffeature=otffeatures.register
 local nuts=nodes.nuts
 local tonode=nuts.tonode
@@ -23175,12 +23189,12 @@ local findbinfile=resolvers.findbinfile
 local definers=fonts.definers
 local readers=fonts.readers
 local constructors=fonts.constructors
-local afm=constructors.newhandler("afm")
-local pfb=constructors.newhandler("pfb")
+local afm=constructors.handlers.afm
+local pfb=constructors.handlers.pfb
 local otf=fonts.handlers.otf
 local otfreaders=otf.readers
 local otfenhancers=otf.enhancers
-local afmfeatures=constructors.newfeatures("afm")
+local afmfeatures=constructors.features.afm
 local registerafmfeature=afmfeatures.register
 afm.version=1.512 
 afm.cache=containers.define("fonts","afm",afm.version,true)
@@ -24507,7 +24521,7 @@ if context then
   os.exit()
 end
 local fonts=fonts
-local otffeatures=fonts.constructors.newfeatures("otf")
+local otffeatures=fonts.constructors.features.otf
 local function initializeitlc(tfmdata,value)
   if value then
     local parameters=tfmdata.parameters

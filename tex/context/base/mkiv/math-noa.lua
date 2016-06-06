@@ -36,7 +36,7 @@ local mathematics          = mathematics
 local context              = context
 
 local otf                  = fonts.handlers.otf
-local otffeatures          = fonts.constructors.newfeatures("otf")
+local otffeatures          = fonts.constructors.features.otf
 local registerotffeature   = otffeatures.register
 
 local privateattribute     = attributes.private

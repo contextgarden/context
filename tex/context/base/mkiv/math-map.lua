@@ -39,7 +39,7 @@ local extract = bit32.extract
 
 local allocate            = utilities.storage.allocate
 
-local otffeatures         = fonts.constructors.newfeatures("otf")
+local otffeatures         = fonts.constructors.features.otf
 local registerotffeature  = otffeatures.register
 
 local setmetatableindex   = table.setmetatableindex

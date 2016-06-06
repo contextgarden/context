@@ -22,7 +22,7 @@ local fastcopy          = table.fastcopy
 
 local fonts             = fonts
 local constructors      = fonts.constructors
-local vf                = constructors.newhandler("vf")
+local vf                = constructors.handlers.vf
 vf.version              = 1.000 -- same as tfm
 
 --[[ldx--

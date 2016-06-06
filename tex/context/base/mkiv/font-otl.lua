@@ -63,7 +63,7 @@ local definers           = fonts.definers
 local readers            = fonts.readers
 local constructors       = fonts.constructors
 
-local otffeatures        = constructors.newfeatures("otf")
+local otffeatures        = constructors.features.otf
 local registerotffeature = otffeatures.register
 
 local enhancers          = allocate()

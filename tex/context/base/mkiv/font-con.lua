@@ -1255,7 +1255,11 @@ function constructors.getfeatureaction(what,where,mode,name)
     end
 end
 
-function constructors.newhandler(what) -- could be a metatable newindex
+local newhandler        = { }
+constructors.handlers   = newhandler -- downward compatible
+constructors.newhandler = newhandler
+
+local function setnewhandler(what) -- could be a metatable newindex
     local handler = handlers[what]
     if not handler then
         handler = { }
@@ -1264,7 +1268,16 @@ function constructors.newhandler(what) -- could be a metatable newindex
     return handler
 end
 
-function constructors.newfeatures(what) -- could be a metatable newindex
+setmetatable(newhandler, {
+    __call  = function(t,k) local v = t[k] return v end,
+    __index = function(t,k) local v = setnewhandler(k) t[k] = v return v end,
+})
+
+local newfeatures        = { }
+constructors.newfeatures = newfeatures -- downward compatible
+constructors.features    = newfeatures
+
+local function setnewfeatures(what)
     local handler = handlers[what]
     local features = handler.features
     if not features then
@@ -1283,6 +1296,11 @@ function constructors.newfeatures(what) -- could be a metatable newindex
     end
     return features
 end
+
+setmetatable(newfeatures, {
+    __call  = function(t,k) local v = t[k] return v end,
+    __index = function(t,k) local v = setnewfeatures(k) t[k] = v return v end,
+})
 
 --[[ldx--
 <p>We need to check for default features. For this we provide

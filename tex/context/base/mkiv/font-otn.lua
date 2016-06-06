@@ -281,7 +281,7 @@ local cursonce           = true
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
 
-local otffeatures        = fonts.constructors.newfeatures("otf")
+local otffeatures        = fonts.constructors.featuress.otf
 local registerotffeature = otffeatures.register
 
 local onetimemessage     = fonts.loggers.onetimemessage or function() end

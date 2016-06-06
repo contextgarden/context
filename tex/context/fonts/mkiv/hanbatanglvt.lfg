@@ -1,19 +1,30 @@
--- Maybe some day I will do this more efficient but for the moment it's okay. (We need
--- access to the names table then.)
-
-local f_uni_base = string.formatters["uni%04X"]
-local f_uni_plus = string.formatters["uni%04X.y%s"]
-
-local function range(first,last)
-    local t = { }
-    for i=first,last do
-        t[#t+1] = f_uni_base(i)
-        for j=0,19 do
-            t[#t+1] = f_uni_plus(i,j)
-        end
-    end
-    return t
-end
+-- local f_uni_base = string.formatters["uni%04X"]
+-- local f_uni_plus = string.formatters["uni%04X.y%s"]
+--
+-- local function range(first,last)
+--     local t = { }
+--     for i=first,last do
+--         t[#t+1] = f_uni_base(i)
+--         for j=0,19 do
+--             t[#t+1] = f_uni_plus(i,j)
+--         end
+--     end
+--     return t
+-- end
+--
+-- return {
+--     name = "hanbatanglvt",
+--     version = "1.00",
+--     comment = "Goodies that complement the hanbatanglvt fonts.",
+--     author = "Hans Hagen",
+--     colorschemes = {
+--         default = {
+--             range(0x01100,0x0115F),   -- jamo_initial (r/c)
+--             range(0x01160,0x011A7),   -- jamo_medial  (g/m)
+--             range(0x011A8,0x011FF),   -- jamo_final   (b/y)
+--         }
+--     }
+-- }
 
 return {
     name = "hanbatanglvt",
@@ -22,9 +33,10 @@ return {
     author = "Hans Hagen",
     colorschemes = {
         default = {
-            range(0x01100,0x0115F), -- jamo_initial (r/c)
-            range(0x01160,0x011A7), -- jamo_medial  (g/m)
-            range(0x011A8,0x011FF), -- jamo_final   (b/y)
+            { "0x01100:0x0115F" }, -- jamo_initial (r/c)
+            { "0x01160:0x011A7" }, -- jamo_medial  (g/m)
+            { "0x011A8:0x011FF" }, -- jamo_final   (b/y)
         }
     }
 }
+

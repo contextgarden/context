@@ -531,7 +531,7 @@ end
 
 -- nodes.tasks.prependaction("processors","normalizers","scripts.decomposehangul")
 
-local otffeatures         = fonts.constructors.newfeatures("otf")
+local otffeatures         = fonts.constructors.features.otf
 local registerotffeature  = otffeatures.register
 
 registerotffeature {

@@ -2474,3 +2474,27 @@ implement {
     actions   = { names.exists, commands.doifelse },
     arguments = "string"
 }
+
+-- we use 0xFE000+ and 0xFF000+ in math and for runtime (text) extensions we
+-- use 0xFD000+
+
+constructors.privateslots = constructors.privateslots or { }
+
+storage.register("fonts/constructors/privateslots", constructors.privateslots, "fonts.constructors.privateslots")
+
+local privateslots    = constructors.privateslots
+local lastprivateslot = 0xFD000
+
+constructors.privateslots = setmetatableindex(privateslots,function(t,k)
+    local v = lastprivateslot
+    lastprivateslot = lastprivateslot + 1
+    t[k] = v
+    return v
+end)
+
+implement {
+    name      = "getprivateglyphslot",
+    actions   = function(name) context(privateslots[name]) end,
+    arguments = "string",
+}
+

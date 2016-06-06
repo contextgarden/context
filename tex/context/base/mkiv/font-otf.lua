@@ -68,7 +68,7 @@ local constructors       = fonts.constructors
 local fontdata           = hashes     and hashes.identifiers
 local chardata           = characters and characters.data -- not used
 
-local otffeatures        = constructors.newfeatures("otf")
+local otffeatures        = constructors.features.otf
 local registerotffeature = otffeatures.register
 
 local enhancers          = allocate()

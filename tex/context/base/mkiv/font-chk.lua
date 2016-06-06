@@ -34,9 +34,10 @@ local addprivate         = helpers.addprivate
 local hasprivate         = helpers.hasprivate
 local getprivatenode     = helpers.getprivatenode
 
-local otffeatures        = fonts.constructors.newfeatures("otf")
+local otffeatures        = fonts.constructors.features.otf
+local afmfeatures        = fonts.constructors.features.afm
+
 local registerotffeature = otffeatures.register
-local afmfeatures        = fonts.constructors.newfeatures("afm")
 local registerafmfeature = afmfeatures.register
 
 local is_character       = characters.is_character

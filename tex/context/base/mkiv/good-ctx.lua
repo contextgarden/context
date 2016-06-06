@@ -44,6 +44,8 @@ local colorschemes       = fontgoodies.colorschemes or allocate { }
 fontgoodies.colorschemes = colorschemes
 colorschemes.data        = colorschemes.data or { }
 
+local privatestoo        = true
+
 local function setcolorscheme(tfmdata,scheme)
     if type(scheme) == "string" then
         local goodies = tfmdata.goodies
@@ -65,13 +67,16 @@ local function setcolorscheme(tfmdata,scheme)
                     local w = what[i]
                     for j=1,#w do
                         local name = w[j]
+                        local kind = type(name)
                         if name == "*" then
                             -- inefficient but only used for tracing anyway
                             for _, unicode in next, hash do
                                 reverse[unicode] = i
                             end
-                        elseif type(name) == "number" then
+                        elseif kind == "number" then
                             reverse[name] = i
+                        elseif kind ~= "string" then
+                            -- ignore invalid entries
                         elseif find(name,":",1,true) then
                             local start, stop = splitup(name,":")
                             start = tonumber(start)
@@ -90,6 +95,26 @@ local function setcolorscheme(tfmdata,scheme)
                             local unicode = hash[name]
                             if unicode then
                                 reverse[unicode] = i
+                            end
+                        end
+                    end
+                end
+                if privatestoo then
+                    local private      = fonts.constructors.privateoffset
+                    local descriptions = tfmdata.descriptions
+                    for unicode, data in next, characters do
+                        if unicode >= private then
+                            if not reverse[unicode] then
+                                local d = descriptions[unicode]
+                                if d then
+                                    local u = d.unicode
+                                    if u then
+                                        local r = reverse[u] -- also catches tables
+                                        if r then
+                                            reverse[unicode] = r
+                                        end
+                                    end
+                                end
                             end
                         end
                     end

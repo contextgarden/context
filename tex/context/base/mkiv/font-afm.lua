@@ -50,10 +50,10 @@ local definers           = fonts.definers
 local readers            = fonts.readers
 local constructors       = fonts.constructors
 
-local afm                = constructors.newhandler("afm")
-local pfb                = constructors.newhandler("pfb")
+local afm                = constructors.handlers.afm
+local pfb                = constructors.handlers.pfb
 
-local afmfeatures        = constructors.newfeatures("afm")
+local afmfeatures        = constructors.features.afm
 local registerafmfeature = afmfeatures.register
 
 afm.version              = 1.501 -- incrementing this number one up will force a re-cache
