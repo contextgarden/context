@@ -175,6 +175,7 @@
 		<cd:variable name='eight' value='acht'/>
 		<cd:variable name='embed' value='sluitin'/>
 		<cd:variable name='empty' value='leeg'/>
+		<cd:variable name='enable' value='enable'/>
 		<cd:variable name='end' value='eind'/>
 		<cd:variable name='endnote' value='eindnoot'/>
 		<cd:variable name='enumeration' value='doornummering'/>

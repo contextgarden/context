@@ -151,7 +151,7 @@ local function getfontname(tfmdata)
     return basename(type(tfmdata) == "number" and properties[tfmdata].name or tfmdata.properties.name)
 end
 
-fonts.helpers.name = getfontname
+helpers.name = getfontname
 
 if _LUAVERSION < 5.2  then
 
@@ -160,7 +160,7 @@ if _LUAVERSION < 5.2  then
 
 else
 
-    utilities.strings.formatters.add(formatters,"font:name",    [["'"..fontname(%s).."'"]],          { fontname  = fonts.helpers.name })
+    utilities.strings.formatters.add(formatters,"font:name",    [["'"..fontname(%s).."'"]],          { fontname  = helpers.name })
     utilities.strings.formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ sequenced = table.sequenced    })
 
 end
@@ -2498,3 +2498,24 @@ implement {
     arguments = "string",
 }
 
+-- an extra helper
+
+function helpers.getcoloredglyphs(tfmdata)
+    if type(tfmdata) == "number" then
+        tfmdata = fontdata[tfmdata]
+    end
+    if not tfmdata then
+        tfmdata = fontdata[true]
+    end
+    local characters   = tfmdata.characters
+    local descriptions = tfmdata.descriptions
+    local collected    = { }
+    for unicode in next, characters do
+        local description = descriptions[unicode]
+        if description and description.colors then
+            collected[#collected+1] = unicode
+        end
+    end
+    table.sort(collected)
+    return collected
+end

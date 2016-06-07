@@ -2071,6 +2071,8 @@
 
 \definevspacing[\v!preference][penalty:-500]  % goodbreak
 \definevspacing[\v!samepage]  [penalty:10000] % nobreak
+
+\definevspacing[\v!always]    [category:0] % hm, internally it's discard
 \definevspacing[\v!max]       [category:1]
 \definevspacing[\v!force]     [category:2]
 \definevspacing[\v!disable]   [category:5]
@@ -2078,7 +2080,8 @@
 \definevspacing[\v!back]      [category:7]
 %               together      [category:8]
 \definevspacing[\v!overlay]   [category:9]
-\definevspacing[\v!always]    [category:0] % hm, internally it's discard
+\definevspacing[\v!enable]    [category:10]
+
 \definevspacing[\v!weak]      [order:0]
 \definevspacing[\v!strong]    [order:100]
 

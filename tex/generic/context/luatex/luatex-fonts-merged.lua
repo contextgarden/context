@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/06/16 22:46:10
+-- merge date  : 06/07/16 20:29:08
 
 do -- begin closure to overcome local limits and interference
 
@@ -7064,7 +7064,7 @@ local function makenameparser(str)
 end
 local f_single=formatters["%04X"]
 local f_double=formatters["%04X%04X"]
-local function tounicode16(unicode,name)
+local function tounicode16(unicode)
   if unicode<0xD7FF or (unicode>0xDFFF and unicode<=0xFFFF) then
     return f_single(unicode)
   else
@@ -7072,7 +7072,7 @@ local function tounicode16(unicode,name)
     return f_double(floor(unicode/1024)+0xD800,unicode%1024+0xDC00)
   end
 end
-local function tounicode16sequence(unicodes,name)
+local function tounicode16sequence(unicodes)
   local t={}
   for l=1,#unicodes do
     local u=unicodes[l]
@@ -8801,6 +8801,16 @@ function readers.glyf(f,fontdata,specification)
     reportskippedtable("glyf")
   end
 end
+function readers.colr(f,fontdata,specification)
+  if specification.details then
+    reportskippedtable("colr")
+  end
+end
+function readers.cpal(f,fontdata,specification)
+  if specification.details then
+    reportskippedtable("cpal")
+  end
+end
 function readers.kern(f,fontdata,specification)
   if specification.kerns then
     local datatable=fontdata.tables.kern
@@ -9109,6 +9119,8 @@ local function readdata(f,offset,specification)
   readers["cmap"](f,fontdata,specification)
   readers["loca"](f,fontdata,specification)
   readers["glyf"](f,fontdata,specification)
+  readers["colr"](f,fontdata,specification)
+  readers["cpal"](f,fontdata,specification)
   readers["kern"](f,fontdata,specification)
   readers["gdef"](f,fontdata,specification)
   readers["gsub"](f,fontdata,specification)
@@ -9264,6 +9276,7 @@ function readers.loadfont(filename,n)
       metadata=getinfo(fontdata,n),
       properties={
         hasitalics=fontdata.hasitalics or false,
+        maxcolorclass=fontdata.maxcolorclass,
       },
       resources={
         filename=filename,
@@ -9279,6 +9292,7 @@ function readers.loadfont(filename,n)
         version=getname(fontdata,"version"),
         cidinfo=fontdata.cidinfo,
         mathconstants=fontdata.mathconstants,
+        colorpalettes=fontdata.colorpalettes,
       },
     }
   end
@@ -11227,6 +11241,7 @@ local readshort=streamreader.readinteger2
 local readfword=readshort
 local readstring=streamreader.readstring
 local readtag=streamreader.readtag
+local readbytes=streamreader.readbytes
 local gsubhandlers={}
 local gposhandlers={}
 local lookupidoffset=-1  
@@ -13126,7 +13141,7 @@ function readers.math(f,fontdata,specification)
       setposition(f,tableoffset)
       local version=readulong(f)
       if version~=0x00010000 then
-        report("table version %a of %a is not supported (yet), maybe font %s is bad",version,what,fontdata.filename)
+        report("table version %a of %a is not supported (yet), maybe font %s is bad",version,"math",fontdata.filename)
         return
       end
       local constants=readushort(f)
@@ -13143,6 +13158,102 @@ function readers.math(f,fontdata,specification)
       if variants~=0 then
         readmathvariants(f,fontdata,tableoffset+variants)
       end
+    end
+  end
+end
+function readers.colr(f,fontdata,specification)
+  if specification.details then
+    if fontdata.tables.cpal then
+      local datatable=fontdata.tables.colr
+      if datatable then
+        local tableoffset=datatable.offset
+        setposition(f,tableoffset)
+        local version=readushort(f)
+        if version~=0 then
+          report("table version %a of %a is not supported (yet), maybe font %s is bad",version,"colr",fontdata.filename)
+          return
+        end
+        local glyphs=fontdata.glyphs
+        local nofglyphs=readushort(f)
+        local baseoffset=readulong(f)
+        local layeroffset=readulong(f)
+        local noflayers=readushort(f)
+        local layerrecords={}
+        local maxclass=0
+        setposition(f,tableoffset+layeroffset)
+        for i=1,noflayers do
+          local slot=readushort(f)
+          local class=readushort(f)
+          if class<0xFFFF then
+            class=class+1
+            if class>maxclass then
+              maxclass=class
+            end
+          end
+          layerrecords[i]={
+            slot=slot,
+            class=class,
+          }
+        end
+        fontdata.maxcolorclass=maxclass
+        setposition(f,tableoffset+baseoffset)
+        for i=0,nofglyphs-1 do
+          local glyphindex=readushort(f)
+          local firstlayer=readushort(f)
+          local noflayers=readushort(f)
+          local t={}
+          for i=1,noflayers do
+            t[i]=layerrecords[firstlayer+i]
+          end
+          glyphs[glyphindex].colors=t
+        end
+      end
+    else
+      report("color table %a ignored in font %a due to missing %a table","colr",fontdata.filename,"cpal")
+    end
+  end
+end
+function readers.cpal(f,fontdata,specification)
+  if specification.details then
+    local datatable=fontdata.tables.cpal
+    if datatable then
+      local tableoffset=datatable.offset
+      setposition(f,tableoffset)
+      local version=readushort(f)
+      if version>1 then
+        report("table version %a of %a is not supported (yet), maybe font %s is bad",version,"cpal",fontdata.filename)
+        return
+      end
+      local nofpaletteentries=readushort(f)
+      local nofpalettes=readushort(f)
+      local nofcolorrecords=readushort(f)
+      local firstcoloroffset=readulong(f)
+      local colorrecords={}
+      local palettes={}
+      for i=1,nofpalettes do
+        palettes[i]=readushort(f)
+      end
+      if version==1 then
+        local palettettypesoffset=readulong(f)
+        local palettelabelsoffset=readulong(f)
+        local paletteentryoffset=readulong(f)
+      end
+      setposition(f,tableoffset+firstcoloroffset)
+      for i=1,nofcolorrecords do
+        local b,g,r,a=readbytes(f,4)
+        colorrecords[i]={
+          r,g,b,a~=255 and a or nil,
+        }
+      end
+      for i=1,nofpalettes do
+        local p={}
+        local o=palettes[i]
+        for j=1,nofpaletteentries do
+          p[j]=colorrecords[o+j]
+        end
+        palettes[i]=p
+      end
+      fontdata.colorpalettes=palettes
     end
   end
 end
@@ -13803,6 +13914,18 @@ local function unifyglyphs(fontdata,usenames)
       end
     end
   end
+  local colorpalettes=resources.colorpalettes
+  if colorpalettes then
+    for index=1,#glyphs do
+      local colors=glyphs[index].colors
+      if colors then
+        for i=1,#colors do
+          local c=colors[i]
+          c.slot=indices[c.slot]
+        end
+      end
+    end
+  end
   fontdata.private=private
   fontdata.glyphs=nil
   fontdata.names=names
@@ -14203,6 +14326,7 @@ function readers.pack(data)
     local sequences=resources.sequences
     local sublookups=resources.sublookups
     local features=resources.features
+    local palettes=resources.colorpalettes
     local chardata=characters and characters.data
     local descriptions=data.descriptions or data.glyphs
     if not descriptions then
@@ -14345,6 +14469,14 @@ function readers.pack(data)
           end
         end
       end
+      if palettes then
+        for i=1,#palettes do
+          local p=palettes[i]
+          for j=1,#p do
+            p[j]=pack_indexed(p[j])
+          end
+        end
+      end
       if not success(1,pass) then
         return
       end
@@ -14465,6 +14597,7 @@ function readers.unpack(data)
       local sequences=resources.sequences
       local sublookups=resources.sublookups
       local features=resources.features
+      local palettes=resources.colorpalettes
       local unpacked={}
       setmetatable(unpacked,unpacked_mt)
       for unicode,description in next,descriptions do
@@ -14699,6 +14832,17 @@ function readers.unpack(data)
             local tv=tables[spec]
             if tv then
               list[feature]=tv
+            end
+          end
+        end
+      end
+      if palettes then
+        for i=1,#palettes do
+          local p=palettes[i]
+          for j=1,#p do
+            local tv=tables[p[j]]
+            if tv then
+              p[j]=tv
             end
           end
         end

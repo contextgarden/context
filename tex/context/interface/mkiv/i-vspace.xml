@@ -28,6 +28,7 @@
                 <cd:constant type="samepage"/>
                 <cd:constant type="max"/>
                 <cd:constant type="force"/>
+                <cd:constant type="enable"/>
                 <cd:constant type="disable"/>
                 <cd:constant type="nowhite"/>
                 <cd:constant type="back"/>

@@ -13177,6 +13177,9 @@ return {
    ["pe"]="تهی",
    ["ro"]="gol",
   },
+  ["enable"]={
+   ["en"]="enable",
+  },
   ["end"]={
    ["en"]="end",
    ["nl"]="eind",

@@ -1657,6 +1657,20 @@ function readers.glyf(f,fontdata,specification) -- part goes to cff module
     end
 end
 
+-- Experimental (we need fonts).
+
+function readers.colr(f,fontdata,specification)
+    if specification.details then
+        reportskippedtable("colr")
+    end
+end
+
+function readers.cpal(f,fontdata,specification)
+    if specification.details then
+        reportskippedtable("cpal")
+    end
+end
+
 -- Here we have a table that we really need for later processing although a more advanced gpos table
 -- can also be available. Todo: we need a 'fake' lookup for this (analogue to ff).
 
@@ -1997,6 +2011,8 @@ local function readdata(f,offset,specification)
     readers["cmap"](f,fontdata,specification)
     readers["loca"](f,fontdata,specification)
     readers["glyf"](f,fontdata,specification)
+    readers["colr"](f,fontdata,specification)
+    readers["cpal"](f,fontdata,specification)
     readers["kern"](f,fontdata,specification)
     readers["gdef"](f,fontdata,specification)
     readers["gsub"](f,fontdata,specification)
@@ -2165,7 +2181,8 @@ function readers.loadfont(filename,n)
             goodies       = { },
             metadata      = getinfo(fontdata,n), -- no platformnames here !
             properties    = {
-                hasitalics = fontdata.hasitalics or false,
+                hasitalics    = fontdata.hasitalics or false,
+                maxcolorclass = fontdata.maxcolorclass,
             },
             resources     = {
              -- filename      = fontdata.filename,
@@ -2182,6 +2199,7 @@ function readers.loadfont(filename,n)
                 version       = getname(fontdata,"version"),
                 cidinfo       = fontdata.cidinfo,
                 mathconstants = fontdata.mathconstants,
+                colorpalettes = fontdata.colorpalettes,
             },
         }
     end

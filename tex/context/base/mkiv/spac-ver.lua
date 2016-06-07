@@ -1022,16 +1022,17 @@ end
 
 -- penalty only works well when before skip
 
-local discard  = 0
-local largest  = 1
-local force    = 2
-local penalty  = 3
-local add      = 4
-local disable  = 5
-local nowhite  = 6
-local goback   = 7
-local together = 8 -- not used (?)
-local overlay  = 9
+local discard  =  0
+local largest  =  1
+local force    =  2
+local penalty  =  3
+local add      =  4
+local disable  =  5
+local nowhite  =  6
+local goback   =  7
+local together =  8 -- not used (?)
+local overlay  =  9
+local enable   = 10
 
 -- [whatsits][hlist][glue][glue][penalty]
 
@@ -1513,36 +1514,36 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                         end
                     end
                     glue_order, glue_data = 0, nil
-                elseif sc == disable then
-local next = getnext(current)
-if not experiment or next then
-                    ignore_following = true
-                    if trace then
-                        trace_skip("disable",sc,so,sp,current)
+                elseif sc == disable or sc == enable then
+                    local next = getnext(current)
+                    if not experiment or next then
+                        ignore_following = sc == disable
+                        if trace then
+                            trace_skip(sc == disable and "disable" or "enable",sc,so,sp,current)
+                        end
+                        head, current = remove_node(head, current, true)
+                    else
+                        current = next
                     end
-                    head, current = remove_node(head, current, true)
-else
-    current = next
-end
                 elseif sc == together then
-local next = getnext(current)
-if not experiment or next then
-                    keep_together = true
-                    if trace then
-                        trace_skip("together",sc,so,sp,current)
+                    local next = getnext(current)
+                    if not experiment or next then
+                        keep_together = true
+                        if trace then
+                            trace_skip("together",sc,so,sp,current)
+                        end
+                        head, current = remove_node(head, current, true)
+                    else
+                        current = next
                     end
-                    head, current = remove_node(head, current, true)
-else
-    current = next
-end
                 elseif sc == nowhite then
-local next = getnext(current)
-if not experiment or next then
-                    ignore_whitespace = true
-                    head, current = remove_node(head, current, true)
-else
-    current = next
-end
+                    local next = getnext(current)
+                    if not experiment or next then
+                        ignore_whitespace = true
+                        head, current = remove_node(head, current, true)
+                    else
+                        current = next
+                    end
                 elseif sc == discard then
                     if trace then
                         trace_skip("discard",sc,so,sp,current)
