@@ -1686,7 +1686,7 @@ local svgconverter = { }
 converters.svg     = svgconverter
 converters.svgz    = svgconverter
 
--- inkscape on windows only works with complete paths
+-- inkscape on windows only works with complete paths .. did the command line arguments change again?
 
 programs.inkscape = {
     command  = "inkscape",
@@ -1694,7 +1694,7 @@ programs.inkscape = {
         "%oldname%"
         --export-dpi=600
         -A
-        "%newname%"
+        --export-pdf="%newname%"
     ]],
     pngargument = [[
         "%oldname%"

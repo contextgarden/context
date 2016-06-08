@@ -1,0 +1,174 @@
+%D \module
+%D   [       file=meta-mat,
+%D        version=2013.07.19,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Math,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is just an example library not meant for production.
+
+% A few accents:
+
+% / for cambria
+
+\startMPextensions
+    vardef math_stacker_overbracket_shape =
+        image (
+            draw
+                (0,OverlayOffset) --
+                (0,OverlayHeight-OverlayOffset) --
+                (OverlayWidth,OverlayHeight-OverlayOffset) --
+                (OverlayWidth,OverlayOffset)
+            withcolor
+                OverlayLineColor ;
+            setbounds currentpicture to boundingbox currentpicture bottomenlarged OverlayOffset ;
+        )
+    enddef ;
+    vardef math_stacker_underbracket_shape =
+        math_stacker_overbracket_shape rotated 180
+    enddef ;
+    vardef math_stacker_overparent_shape =
+        image (
+            draw
+                (0,OverlayOffset) ...
+                (OverlayWidth/2,OverlayHeight-OverlayOffset) ...
+                (OverlayWidth,OverlayOffset)
+            withcolor
+                OverlayLineColor ;
+            setbounds currentpicture to boundingbox currentpicture bottomenlarged OverlayOffset ;
+        )
+    enddef ;
+    vardef math_stacker_underparent_shape =
+        math_stacker_overparent_shape rotated 180
+    enddef ;
+    vardef math_stacker_overbrace_shape =
+        image (
+            draw
+                (0,OverlayOffset) ...
+                (OverlayWidth/4-OverlayOffset,OverlayHeight-OverlayOffset) ...
+                (OverlayWidth/2-OverlayOffset,OverlayHeight-OverlayOffset) ...
+                (OverlayWidth/2,OverlayHeight) &
+                (OverlayWidth/2,OverlayHeight) ...
+                (OverlayWidth/2+OverlayOffset,OverlayHeight-OverlayOffset) ...
+                (3OverlayWidth/4+OverlayOffset,OverlayHeight-OverlayOffset) ...
+                (OverlayWidth,OverlayOffset)
+            withcolor
+                OverlayLineColor ;
+            setbounds currentpicture to boundingbox currentpicture bottomenlarged OverlayOffset ;
+        )
+    enddef ;
+    vardef math_stacker_underbrace_shape =
+        math_stacker_overbrace_shape rotated 180
+    enddef ;
+    vardef math_stacker_overbar_shape =
+        image (
+            draw
+                (0,OverlayOffset) -- (OverlayWidth,OverlayOffset)
+            withcolor
+                OverlayLineColor ;
+            setbounds currentpicture to boundingbox currentpicture bottomenlarged OverlayOffset ;
+        )
+    enddef ;
+    vardef math_stacker_underbar_shape =
+        math_stacker_overbar_shape rotated 180
+    enddef ;
+    vardef math_stacker_arrow_shape =
+        image (
+            drawarrow
+                (OverlayWidth,OverlayOffset) -- (0,OverlayOffset)
+            withcolor
+                OverlayLineColor ;
+            setbounds currentpicture to boundingbox currentpicture bottomenlarged (OverlayOffset/2) topenlarged (OverlayOffset/2) ;
+        )
+    enddef ;
+    vardef math_stacker_leftarrow_shape =
+        math_stacker_arrow_shape
+    enddef ;
+    vardef math_stacker_rightarrow_shape =
+        math_stacker_arrow_shape rotated 180
+    enddef ;
+    def math_stacker_draw(expr p) =
+        draw
+            p
+        withpen
+            pencircle
+                xscaled (2OverlayLineWidth)
+              % yscaled (3OverlayLineWidth/4)
+                yscaled (3OverlayLineWidth)
+              % rotated 30 ;
+                rotated 45 ;
+    enddef ;
+\stopMPextensions
+
+\startuniqueMPgraphic{math:stacker:\number"FE3B4}
+    math_stacker_draw(math_stacker_overbracket_shape) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"FE3B5}
+    math_stacker_draw(math_stacker_underbracket_shape) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"FE3DC}
+    math_stacker_draw(math_stacker_overparent_shape) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"FE3DD}
+    math_stacker_draw(math_stacker_underparent_shape) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"FE3DE}
+    math_stacker_draw(math_stacker_overbrace_shape) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"FE3DF}
+    math_stacker_draw(math_stacker_underbrace_shape) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"FE33E}
+    math_stacker_draw(math_stacker_overbar_shape) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"FE33F}
+    math_stacker_draw(math_stacker_underbar_shape) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"2190}
+    math_stacker_draw(math_stacker_leftarrow_shape) ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{math:stacker:\number"2192}
+    math_stacker_draw(math_stacker_rightarrow_shape) ;
+\stopuniqueMPgraphic
+
+%D Radicals:
+
+\startMPextensions
+    vardef math_radical_simple(expr w,h,d,o) =
+        (-h/2-o,h/2-o) --
+        (-h/4-o,-d-o)  --
+        (-o,h+o)       --
+        (w+o,h+o)      --
+        (w+o,h-h/10+o)
+    enddef ;
+\stopMPextensions
+
+\startuniqueMPgraphic{math:radical:default}%{...}
+    draw
+        math_radical_simple(OverlayWidth,OverlayHeight,OverlayDepth,OverlayOffset)
+        withpen pencircle xscaled (2OverlayLineWidth) yscaled (3OverlayLineWidth/4) rotated 30
+      % dashed evenly
+        withcolor OverlayLineColor ;
+\stopuniqueMPgraphic
+
+% \setupmathstackers
+%   [vfenced]
+%   [color=darkred,
+%    alternative=mp]
+
+\endinput

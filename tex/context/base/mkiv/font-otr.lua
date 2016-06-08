@@ -129,12 +129,11 @@ local function readlongdatetime(f)
     return 0x100000000 * d + 0x1000000 * e + 0x10000 * f + 0x100 * g + h
 end
 
-local tableversion      = 0.004
-local privateoffset     = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
+local tableversion    = 0.004
+readers.tableversion  = tableversion
+local privateoffset   = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
+local reportedskipped = { }
 
-readers.tableversion    = tableversion
-
-local reportedskipped   = { }
 
 local function reportskippedtable(tag)
     if not reportedskipped[tag] then
@@ -1671,6 +1670,12 @@ function readers.cpal(f,fontdata,specification)
     end
 end
 
+function readers.svg(f,fontdata,specification)
+    if specification.details then
+        reportskippedtable("svg")
+    end
+end
+
 -- Here we have a table that we really need for later processing although a more advanced gpos table
 -- can also be available. Todo: we need a 'fake' lookup for this (analogue to ff).
 
@@ -2013,6 +2018,7 @@ local function readdata(f,offset,specification)
     readers["glyf"](f,fontdata,specification)
     readers["colr"](f,fontdata,specification)
     readers["cpal"](f,fontdata,specification)
+    readers["svg" ](f,fontdata,specification)
     readers["kern"](f,fontdata,specification)
     readers["gdef"](f,fontdata,specification)
     readers["gsub"](f,fontdata,specification)
@@ -2200,6 +2206,7 @@ function readers.loadfont(filename,n)
                 cidinfo       = fontdata.cidinfo,
                 mathconstants = fontdata.mathconstants,
                 colorpalettes = fontdata.colorpalettes,
+                svgshapes     = fontdata.svgshapes,
             },
         }
     end

@@ -2510,9 +2510,9 @@ function helpers.getcoloredglyphs(tfmdata)
     local characters   = tfmdata.characters
     local descriptions = tfmdata.descriptions
     local collected    = { }
-    for unicode in next, characters do
+    for unicode, character in next, characters do
         local description = descriptions[unicode]
-        if description and description.colors then
+        if description and (description.colors or character.svg) then
             collected[#collected+1] = unicode
         end
     end

@@ -800,20 +800,45 @@
 
     <cd:command name="setupfonts" file="font-ini.mkiv">
         <cd:arguments>
-            <cd:parameters>
-                <cd:constant type="cd:dimension"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="setupbodyfont" file="font-ini.mkiv">
-        <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="language">
                     <cd:constant type="no" default="yes"/>
                     <cd:constant type="auto"/>
                 </cd:parameter>
             </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupbodyfont" file="font-ini.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="cd:dimension"/>
+                <cd:constant type="cd:name"/>
+                <cd:constant type="global"/>
+                <cd:constant type="reset"/>
+                <cd:constant type="x"/>
+                <cd:constant type="xx"/>
+                <cd:constant type="small"/>
+                <cd:constant type="big"/>
+                <cd:constant type="script"/>
+                <cd:constant type="scriptscript"/>
+                <cd:constant type="rm"/>
+                <cd:constant type="ss"/>
+                <cd:constant type="tt"/>
+                <cd:constant type="hw"/>
+                <cd:constant type="cg"/>
+                <cd:constant type="roman"/>
+                <cd:constant type="serif"/>
+                <cd:constant type="regular"/>
+                <cd:constant type="sans"/>
+                <cd:constant type="sansserif"/>
+                <cd:constant type="support"/>
+                <cd:constant type="type"/>
+                <cd:constant type="teletype"/>
+                <cd:constant type="mono"/>
+                <cd:constant type="handwritten"/>
+                <cd:constant type="calligraphic"/>
+            </cd:keywords>
         </cd:arguments>
     </cd:command>
 

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/07/16 20:29:08
+-- merge date  : 06/08/16 16:32:52
 
 do -- begin closure to overcome local limits and interference
 
@@ -7796,8 +7796,8 @@ local function readlongdatetime(f)
   return 0x100000000*d+0x1000000*e+0x10000*f+0x100*g+h
 end
 local tableversion=0.004
-local privateoffset=fonts.constructors and fonts.constructors.privateoffset or 0xF0000 
 readers.tableversion=tableversion
+local privateoffset=fonts.constructors and fonts.constructors.privateoffset or 0xF0000 
 local reportedskipped={}
 local function reportskippedtable(tag)
   if not reportedskipped[tag] then
@@ -8811,6 +8811,11 @@ function readers.cpal(f,fontdata,specification)
     reportskippedtable("cpal")
   end
 end
+function readers.svg(f,fontdata,specification)
+  if specification.details then
+    reportskippedtable("svg")
+  end
+end
 function readers.kern(f,fontdata,specification)
   if specification.kerns then
     local datatable=fontdata.tables.kern
@@ -9121,6 +9126,7 @@ local function readdata(f,offset,specification)
   readers["glyf"](f,fontdata,specification)
   readers["colr"](f,fontdata,specification)
   readers["cpal"](f,fontdata,specification)
+  readers["svg" ](f,fontdata,specification)
   readers["kern"](f,fontdata,specification)
   readers["gdef"](f,fontdata,specification)
   readers["gsub"](f,fontdata,specification)
@@ -9293,6 +9299,7 @@ function readers.loadfont(filename,n)
         cidinfo=fontdata.cidinfo,
         mathconstants=fontdata.mathconstants,
         colorpalettes=fontdata.colorpalettes,
+        svgshapes=fontdata.svgshapes,
       },
     }
   end
@@ -13163,53 +13170,53 @@ function readers.math(f,fontdata,specification)
 end
 function readers.colr(f,fontdata,specification)
   if specification.details then
-    if fontdata.tables.cpal then
-      local datatable=fontdata.tables.colr
-      if datatable then
-        local tableoffset=datatable.offset
-        setposition(f,tableoffset)
-        local version=readushort(f)
-        if version~=0 then
-          report("table version %a of %a is not supported (yet), maybe font %s is bad",version,"colr",fontdata.filename)
-          return
-        end
-        local glyphs=fontdata.glyphs
-        local nofglyphs=readushort(f)
-        local baseoffset=readulong(f)
-        local layeroffset=readulong(f)
-        local noflayers=readushort(f)
-        local layerrecords={}
-        local maxclass=0
-        setposition(f,tableoffset+layeroffset)
-        for i=1,noflayers do
-          local slot=readushort(f)
-          local class=readushort(f)
-          if class<0xFFFF then
-            class=class+1
-            if class>maxclass then
-              maxclass=class
-            end
-          end
-          layerrecords[i]={
-            slot=slot,
-            class=class,
-          }
-        end
-        fontdata.maxcolorclass=maxclass
-        setposition(f,tableoffset+baseoffset)
-        for i=0,nofglyphs-1 do
-          local glyphindex=readushort(f)
-          local firstlayer=readushort(f)
-          local noflayers=readushort(f)
-          local t={}
-          for i=1,noflayers do
-            t[i]=layerrecords[firstlayer+i]
-          end
-          glyphs[glyphindex].colors=t
-        end
+    local datatable=fontdata.tables.colr
+    if datatable then
+      local tableoffset=datatable.offset
+      setposition(f,tableoffset)
+      local version=readushort(f)
+      if version~=0 then
+        report("table version %a of %a is not supported (yet), maybe font %s is bad",version,"colr",fontdata.filename)
+        return
       end
-    else
-      report("color table %a ignored in font %a due to missing %a table","colr",fontdata.filename,"cpal")
+      if not fontdata.tables.cpal then
+        report("color table %a in font %a has no mandate %a table","colr",fontdata.filename,"cpal")
+        fontdata.colorpalettes={}
+      end
+      local glyphs=fontdata.glyphs
+      local nofglyphs=readushort(f)
+      local baseoffset=readulong(f)
+      local layeroffset=readulong(f)
+      local noflayers=readushort(f)
+      local layerrecords={}
+      local maxclass=0
+      setposition(f,tableoffset+layeroffset)
+      for i=1,noflayers do
+        local slot=readushort(f)
+        local class=readushort(f)
+        if class<0xFFFF then
+          class=class+1
+          if class>maxclass then
+            maxclass=class
+          end
+        end
+        layerrecords[i]={
+          slot=slot,
+          class=class,
+        }
+      end
+      fontdata.maxcolorclass=maxclass
+      setposition(f,tableoffset+baseoffset)
+      for i=0,nofglyphs-1 do
+        local glyphindex=readushort(f)
+        local firstlayer=readushort(f)
+        local noflayers=readushort(f)
+        local t={}
+        for i=1,noflayers do
+          t[i]=layerrecords[firstlayer+i]
+        end
+        glyphs[glyphindex].colors=t
+      end
     end
   end
 end
@@ -13254,6 +13261,44 @@ function readers.cpal(f,fontdata,specification)
         palettes[i]=p
       end
       fontdata.colorpalettes=palettes
+    end
+  end
+end
+function readers.svg(f,fontdata,specification)
+  if specification.details then
+    local datatable=fontdata.tables.svg
+    if datatable then
+      local tableoffset=datatable.offset
+      setposition(f,tableoffset)
+      local version=readushort(f)
+      if version~=0 then
+        report("table version %a of %a is not supported (yet), maybe font %s is bad",version,"svg",fontdata.filename)
+        return
+      end
+      local glyphs=fontdata.glyphs
+      local indexoffset=tableoffset+readulong(f)
+      local reserved=readulong(f)
+      setposition(f,indexoffset)
+      local nofentries=readushort(f)
+      local entries={}
+      for i=1,nofentries do
+        entries[i]={
+          first=readushort(f),
+          last=readushort(f),
+          offset=indexoffset+readulong(f),
+          length=readulong(f),
+        }
+      end
+      for i=1,nofentries do
+        local entry=entries[i]
+        setposition(f,entry.offset)
+        entries[i]={
+          first=entry.first,
+          last=entry.last,
+          data=readstring(f,entry.length)
+        }
+      end
+      fontdata.svgshapes=entries
     end
   end
 end
@@ -15302,6 +15347,8 @@ local fonts=fonts
 local otf=fonts.handlers.otf
 otf.version=3.022 
 otf.cache=containers.define("fonts","otl",otf.version,true)
+otf.svgcache=containers.define("fonts","svg",otf.version,true)
+otf.pdfcache=containers.define("fonts","pdf",otf.version,true)
 local otfreaders=otf.readers
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -15447,6 +15494,22 @@ function otf.load(filename,sub,featurefile)
     starttiming(otfreaders)
     data=otfreaders.loadfont(filename,sub or 1)
     if data then
+      local resources=data.resources
+      local svgshapes=resources.svgshapes
+      if svgshapes then
+        resources.svgshapes=nil
+        if otf.svgenabled then
+          local timestamp=os.date()
+          containers.write(otf.svgcache,hash,{
+            svgshapes=svgshapes,
+            timestamp=timestamp,
+          })
+          data.properties.svg={
+            hash=hash,
+            timestamp=timestamp,
+          }
+        end
+      end
       otfreaders.compact(data)
       otfreaders.rehash(data,"unicodes")
       otfreaders.addunicodetable(data)
@@ -15500,7 +15563,6 @@ end
 local function copytotfm(data,cache_id)
   if data then
     local metadata=data.metadata
-    local resources=data.resources
     local properties=derivetable(data.properties)
     local descriptions=derivetable(data.descriptions)
     local goodies=derivetable(data.goodies)
