@@ -26,10 +26,12 @@ local luatex = luatex
 local startactions = { }
 local stopactions  = { }
 local dumpactions  = { }
+local pageactions  = { }
 
 function luatex.registerstartactions(...) insert(startactions, ...) end
 function luatex.registerstopactions (...) insert(stopactions,  ...) end
 function luatex.registerdumpactions (...) insert(dumpactions,  ...) end
+function luatex.registerpageactions (...) insert(pageactions,  ...) end
 
 local function start_run()
     if logs.start_run then
@@ -63,6 +65,9 @@ end
 
 local function stop_shipout_page()
     logs.stop_page_number()
+    for i=1,#pageactions do
+        pageactions[i]()
+    end
 end
 
 local function report_output_pages()

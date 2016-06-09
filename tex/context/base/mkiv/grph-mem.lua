@@ -19,43 +19,70 @@ local report = logs.reporter("memstream")
 local data   = { }
 local trace  = false
 
+local opened = { }
+
 function resolvers.finders.memstream(specification)
-    local original   = specification.original
-    local identifier = data[original]
+    local name       = specification.path
+    local identifier = data[name]
     if identifier then
         if trace then
             report("reusing %a",identifier)
         end
         return identifier
     end
-    local stream = io.loaddata(specification.path)
+    local stream = io.loaddata(name)
     if not stream or stream == "" then
         return resolvers.finders.notfound()
     end
-    local memstream  = { epdf.openMemStream(stream,#stream,original) }
-    local identifier = memstream[2]
+    local memstream, identifier = epdf.openMemStream(stream,#stream,original)
     if not identifier then
         report("invalid %a",name)
         identifier = "invalid-memstream"
     elseif trace then
         report("using %a",identifier)
     end
-    data[original]   = identifier
+    data  [name] = identifier
+    opened[name] = memstream
     return identifier
 end
 
-function resolvers.setmemstream(name,stream)
-    local original   = "memstream:///" .. name
-    local memstream  = { epdf.openMemStream(stream,#stream,original) }
-    local identifier = memstream[2]
+function resolvers.setmemstream(name,stream,once)
+    if once and data[name] then
+        if trace then
+            report("not overloading %a",name) --
+        end
+        return
+    end
+    local memstream, identifier = epdf.openMemStream(stream,#stream,name)
     if not identifier then
         report("invalid %a",name)
         identifier = "invalid-memstream"
     elseif trace then
-        report("setting %a",identifier)
+        report("setting %a as %a",name,identifier)
     end
-    data[original] = identifier
+    data  [name] = identifier
+    opened[name] = memstream
 end
+
+local flush = { }
+
+function resolvers.resetmemstream(name,afterpage)
+    if afterpage then
+        flush[#flush+1] = name
+    else
+        opened[name] = nil
+    end
+end
+
+luatex.registerpageactions(function()
+    if #flush > 0 then
+        for i=1,#flush do
+            opened[flush[i]] = nil -- we keep of course data[name] because of reuse
+        end
+        flush = { }
+    end
+end)
+
 
 figures.identifiers.list[#figures.identifiers.list+1] = function(specification)
     local name = specification.request.name

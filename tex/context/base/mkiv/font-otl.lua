@@ -58,6 +58,8 @@ otf.cache                = containers.define("fonts", "otl", otf.version, true)
 otf.svgcache             = containers.define("fonts", "svg", otf.version, true)
 otf.pdfcache             = containers.define("fonts", "pdf", otf.version, true)
 
+otf.svgenabled           = false
+
 local otfreaders         = otf.readers
 
 local hashes             = fonts.hashes

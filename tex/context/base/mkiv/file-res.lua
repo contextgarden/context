@@ -118,7 +118,11 @@ local function readfilename(specification,backtrack,treetoo)
     return fnd or ""
 end
 
---~ resolvers.readfilename = readfilename -- bonus use getreadfilename instead
+-- resolvers.readfilename = readfilename -- bonus use getreadfilename instead
+
+function resolvers.finders.original(specification) -- handy, see memstreams
+    return specification.path
+end
 
 function finders.job(specification) return readfilename(specification,false,                 false) end -- current path, no backtracking
 function finders.loc(specification) return readfilename(specification,resolvers.maxreadlevel,false) end -- current path, backtracking
