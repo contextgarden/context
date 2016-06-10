@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
 
 local format, gmatch, match, split = string.format, string.gmatch, string.match, string.split
 local tonumber, type, unpack = tonumber, type, unpack
-local round = math.round
+local round, sqrt = math.round, math.sqrt
 local insert, remove, concat = table.insert, table.remove, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
 local lpegmatch, tsplitat, tsplitter = lpeg.match, lpeg.tsplitat, lpeg.tsplitter
@@ -1119,7 +1119,49 @@ local function sh_process(object,prescript,before,after)
         local domain   = lpegmatch(domainsplitter,prescript.sh_domain   or "0 1")
         local centera  = lpegmatch(centersplitter,prescript.sh_center_a or "0 0")
         local centerb  = lpegmatch(centersplitter,prescript.sh_center_b or "0 0")
-        local steps    = tonumber(prescript.sh_step) or 1
+        -- compensation for scaling
+        local sx = 1
+        local sy = 1
+        local sr = 1
+        local dx = 0
+        local dy = 0
+        if true then
+            local first = lpegmatch(coordinatesplitter,prescript.sh_first or "0 0")
+            local setx  = lpegmatch(coordinatesplitter,prescript.sh_set_x or "0 0")
+            local sety  = lpegmatch(coordinatesplitter,prescript.sh_set_y or "0 0")
+
+            local x = setx[1] -- point that has different x
+            local y = sety[1] -- point that has different y
+
+            if x == 0 or y == 0 then
+                -- forget about it
+            else
+                local path   = object.path
+                local path1x = path[1].x_coord
+                local path1y = path[1].y_coord
+                local path2x = path[x].x_coord
+                local path2y = path[y].y_coord
+
+                local dxa = path2x - path1x
+                local dya = path2y - path1y
+                local dxb = setx[2] - first[1]
+                local dyb = sety[2] - first[2]
+
+                if dxa == 0 or dya == 0 or dxb == 0 or dyb == 0 then
+                    -- forget about it
+                else
+                    sx = dxa / dxb ; if sx < 0 then sx = - sx end -- yes or no
+                    sy = dya / dyb ; if sy < 0 then sy = - sy end -- yes or no
+
+                    sr = sqrt(sx^2 + sy^2)
+
+                    dx = path1x - sx*first[1]
+                    dy = path1y - sy*first[2]
+                end
+            end
+        end
+
+        local steps      = tonumber(prescript.sh_step) or 1
         local sh_color_a = prescript.sh_color_a_1 or prescript.sh_color_a or "1"
         local sh_color_b = prescript.sh_color_b_1 or prescript.sh_color_b or "1" -- sh_color_b_<sh_steps>
         local ca, cb, colorspace, name, model, separation, fractions
@@ -1177,13 +1219,13 @@ local function sh_process(object,prescript,before,after)
             steps = 1
         end
         if sh_type == "linear" then
-            local coordinates = { centera[1], centera[2], centerb[1], centerb[2] }
+            local coordinates = { dx + sx*centera[1], dy + sy*centera[2], dx + sx*centerb[1], dy + sy*centerb[2] }
             lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates,separation,steps>1 and steps,fractions) -- backend specific (will be renamed)
         elseif sh_type == "circular" then
             local factor  = tonumber(prescript.sh_factor) or 1
             local radiusa = factor * tonumber(prescript.sh_radius_a)
             local radiusb = factor * tonumber(prescript.sh_radius_b)
-            local coordinates = { centera[1], centera[2], radiusa, centerb[1], centerb[2], radiusb }
+            local coordinates = { dx + sx*centera[1], dy + sy*centera[2], sr*radiusa, dx + sx*centerb[1], dy + sy*centerb[2], sr*radiusb }
             lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates,separation,steps>1 and steps,fractions) -- backend specific (will be renamed)
         else
             -- fatal error

@@ -507,16 +507,51 @@ def mfun_withshadestep (text t) =
     t
 enddef ;
 
+numeric mfun_shade_fx, mfun_shade_fy ;
+numeric mfun_shade_lx, mfun_shade_ly ;
+numeric mfun_shade_nx, mfun_shade_ny ;
+numeric mfun_shade_dx, mfun_shade_dy ;
+numeric mfun_shade_tx, mfun_shade_ty ;
+
+% first
+
+def mfun_with_shade_method_analyze(expr p) =
+    mfun_shade_path := p ;
+    mfun_shade_step := 1 ;
+    mfun_shade_fx   := xpart point 0 of p ;
+    mfun_shade_fy   := ypart point 0 of p ;
+    mfun_shade_lx   := mfun_shade_fx ;
+    mfun_shade_ly   := mfun_shade_fy ;
+    mfun_shade_nx   := 0 ;
+    mfun_shade_ny   := 0 ;
+    mfun_shade_dx   := abs(mfun_shade_fx - mfun_shade_lx) ;
+    mfun_shade_dy   := abs(mfun_shade_fy - mfun_shade_ly) ;
+    for i=1 upto length(p) :
+        mfun_shade_tx := abs(mfun_shade_fx - xpart point i of p) ;
+        mfun_shade_ty := abs(mfun_shade_fy - ypart point i of p) ;
+        if mfun_shade_tx > mfun_shade_dx :
+            mfun_shade_nx := i + 1 ;
+            mfun_shade_lx := xpart point i of p ;
+            mfun_shade_dx := mfun_shade_tx ;
+        fi ;
+        if mfun_shade_ty > mfun_shade_dy :
+            mfun_shade_ny := i + 1 ;
+            mfun_shade_ly := ypart point i of p ;
+            mfun_shade_dy := mfun_shade_ty ;
+        fi ;
+    endfor ;
+enddef ;
+
 primarydef p withshademethod m =
-    hide(
-        mfun_shade_path := p ;
-        mfun_shade_step := 1 ;
-    )
+    hide(mfun_with_shade_method_analyze(p))
     p
     withprescript "sh_domain=0 1"
     withprescript "sh_color=into"
     withprescript "sh_color_a=" & colordecimals white
     withprescript "sh_color_b=" & colordecimals black
+    withprescript "sh_first=" & ddecimal point 0 of p % used for support scaling
+    withprescript "sh_set_x=" & ddecimal (mfun_shade_nx,mfun_shade_lx) %
+    withprescript "sh_set_y=" & ddecimal (mfun_shade_ny,mfun_shade_ly) %
     if m = "linear" :
         withprescript "sh_type=linear"
         withprescript "sh_factor=1"

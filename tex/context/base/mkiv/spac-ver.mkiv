@@ -1572,20 +1572,12 @@
 
 \unexpanded\def\synchronizeskipamounts
   {\bigskipamount
-               \skipfactor\baselineskip
-       plus\skipgluefactor\baselineskip
-      minus\skipgluefactor\baselineskip
+                 \skipfactor\baselineskip
+      \s!plus\skipgluefactor\baselineskip
+     \s!minus\skipgluefactor\baselineskip
    \relax
    \medskipamount  \bigskipamount \divide\medskipamount  \plustwo
    \smallskipamount\bigskipamount \divide\smallskipamount\plusfour}
-
-\appendtoks
-    \synchronizeskipamounts
-\to \everysetupglobalinterlinespace
-
-\appendtoks
-    \synchronizeskipamounts
-\to \everysetuplocalinterlinespace
 
 %D Snapping.
 

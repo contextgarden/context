@@ -66,7 +66,7 @@ local f_pair      = formatters["(%.16f,%.16f)"]
 local f_triplet   = formatters["(%.16f,%.16f,%.16f)"]
 local f_quadruple = formatters["(%.16f,%.16f,%.16f,%.16f)"]
 
-function mp.print(...)
+local function mpprint(...)
     for i=1,select("#",...) do
         local value = select(i,...)
         if value ~= nil then
@@ -84,6 +84,10 @@ function mp.print(...)
         end
     end
 end
+
+mp.print = mpprint
+
+table.setmetatablecall(mp,function(t,k) mpprint(k) end)
 
 function mp.boolean(n)
     n = n + 1

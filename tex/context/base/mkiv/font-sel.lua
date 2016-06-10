@@ -148,9 +148,9 @@ methods["name"] = function(data,alternative,name)
     local fontname = getlookups{ fontname = filename }
     local fullname = getlookups{ fullname = filename }
     if #fontname > 0 then
-        selectfont_savefile(data,alternative,0,"default",fullname[1])
-    elseif #fullname > 0 then
         selectfont_savefile(data,alternative,0,"default",fontname[1])
+    elseif #fullname > 0 then
+        selectfont_savefile(data,alternative,0,"default",fullname[1])
     else
         if trace_alternatives then
             report_selectfont("Alternative '%s': No font was found for the requested name '%s'",alternative,filename)
