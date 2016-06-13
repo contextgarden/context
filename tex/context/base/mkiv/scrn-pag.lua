@@ -40,6 +40,7 @@ implement {
             { "bleedoffset", "dimen" },
             { "artoffset", "dimen" },
             { "trimoffset", "dimen" },
+            { "copies", "integer" },
         }
     }
 }

@@ -728,6 +728,7 @@
 		<cd:constant name='controls' value='sturing'/>
 		<cd:constant name='conversion' value='conversie'/>
 		<cd:constant name='convertfile' value='converteerfile'/>
+		<cd:constant name='copies' value='kopieen'/>
 		<cd:constant name='corner' value='hoek'/>
 		<cd:constant name='coupling' value='koppeling'/>
 		<cd:constant name='couplingway' value='koppelwijze'/>

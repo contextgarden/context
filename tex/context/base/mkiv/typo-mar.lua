@@ -521,7 +521,7 @@ local function inject(parent,head,candidate)
         stackname = validstacknames[stackname] or location
     end
     local isstacked    = stack == v_continue or stack == v_yes
-    local offset       = stack and stack ~= "" and stacked[stack][stackname]
+    local offset       = isstacked and stacked[stack][stackname]
     local firstonstack = offset == false or offset == nil
     nofinjected        = nofinjected + 1
     nofdelayed         = nofdelayed + 1

@@ -86,16 +86,6 @@
      \spac_directions_lefttoright_hmode
    \fi}
 
-\unexpanded\def\spac_directions_lefttoright_vmode
-  {\settrue\displaylefttoright
-   \settrue\inlinelefttoright
-   \textdir TLT\relax
-   \pardir  TLT\relax}
-
-\unexpanded\def\spac_directions_lefttoright_hmode
-  {\settrue\inlinelefttoright
-   \textdir TLT\relax}
-
 \unexpanded\def\righttoleft
   {\ifvmode
      \spac_directions_righttoleft_vmode
@@ -103,15 +93,71 @@
      \spac_directions_righttoleft_hmode
    \fi}
 
+\unexpanded\def\spac_directions_lefttoright_vmode
+  {\settrue\displaylefttoright
+   \settrue\inlinelefttoright
+   \textdir TLT\relax
+   \pardir  TLT\relax}
+
 \unexpanded\def\spac_directions_righttoleft_vmode
   {\setfalse\displaylefttoright
    \setfalse\inlinelefttoright
    \textdir TRT\relax
    \pardir  TRT\relax}
 
-\unexpanded\def\spac_directions_righttoleft_hmode
-  {\textdir TRT\relax
-   \setfalse\inlinelefttoright}
+\newconditional\c_spac_auto_line_dir  \settrue\c_spac_auto_line_dir
+
+\ifdefined\linedir
+
+    \unexpanded\def\spac_directions_lefttoright_hmode
+      {\ifconditional\c_spac_auto_line_dir\linedir\else\textdir\fi TLT\relax % linedir keeps subtype
+       \setfalse\inlinerighttoleft}
+
+    \unexpanded\def\spac_directions_righttoleft_hmode
+      {\ifconditional\c_spac_auto_line_dir\linedir\else\textdir\fi TRT\relax % linedir keeps subtype
+       \setfalse\inlinelefttoright}
+
+\else % keep this as reference
+
+   \unexpanded\def\spac_directions_lefttoright_hmode
+     {\settrue\inlinelefttoright
+      \textdir TLT\relax}
+
+   \unexpanded\def\spac_directions_righttoleft_hmode
+     {\textdir TRT\relax
+      \setfalse\inlinelefttoright}
+
+    \unexpanded\def\spac_directions_lefttoright_hmode
+      {\ifconditional\c_spac_auto_line_dir
+         \ifzeropt\lastskip
+           \linedir TLT\relax
+         \else
+           \scratchskip\lastskip
+           \unskip
+           \linedir TLT\relax
+           \hskip\scratchskip
+         \fi
+       \else
+         \textdir TLT\relax
+       \fi
+       \setfalse\inlinerighttoleft}
+
+    \unexpanded\def\spac_directions_righttoleft_hmode
+      {\ifconditional\c_spac_auto_line_dir
+         \ifzeropt\lastskip
+           \linedir TRT\relax
+         \else
+           \scratchskip\lastskip
+           \unskip
+           \linedir TRT\relax
+           \hskip\scratchskip
+         \fi
+       \else
+         \textdir TRT\relax
+       \fi
+       \setfalse\inlinelefttoright}
+
+\fi
 
 % \def\currentdirectionparameters
 %   {\ifconditional\inlinelefttoright \else
@@ -291,6 +337,7 @@
 \newconstant\c_spac_align_state_par_fill
 
 \def\v_spac_align_fill_amount          {\plusone  fil}
+\def\v_spac_align_fill_amount_hard     {\plusone  fill}
 \def\v_spac_align_fill_amount_negative {\minusone fil}
 \def\v_spac_align_fill_amount_double   {\plustwo  fil}
 \def\v_spac_align_fill_amount_space    {\plustwo  fil} % can be added to xspace if we have a key
@@ -406,6 +453,18 @@
    \parindent  \zeropoint
    \relax}
 
+\unexpanded\def\spac_align_set_horizontal_flushedright_last_line
+  {\raggedstatus\zerocount
+   \attribute\alignstateattribute\attributeunsetvalue
+   \leftskip       \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
+   \rightskip      \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
+   \spaceskip      \zeropoint\relax
+   \xspaceskip     \zeropoint\relax
+   \parfillskip    \zeropoint
+   \parfillleftskip\zeropoint\s!plus\v_spac_align_fill_amount_hard\relax
+   \parindent      \zeropoint
+   \relax}
+
 \unexpanded\def\spac_align_set_horizontal_right_tt % a plain command
   {\tttf % brrr
    \raggedstatus\plusthree
@@ -472,6 +531,10 @@
      % 7 centered last line
      \spac_align_set_horizontal_centered_last_line
    \or
+     % 8 right aligned last line
+     \spac_align_set_horizontal_flushedright_last_line
+   \or
+     % 9 paragraph
      \parfillskip\zeropoint
    \fi
    \relax}
@@ -694,7 +757,8 @@
                                              \c_spac_align_state_broad     \plustwo  }
 \setvalue{\??aligncommand\v!disable        }{\c_spac_align_state_horizontal\plussix  }
 \setvalue{\??aligncommand\v!last           }{\c_spac_align_state_horizontal\plusseven}
-\setvalue{\??aligncommand\v!paragraph      }{\c_spac_align_state_horizontal\pluseight}
+\setvalue{\??aligncommand\v!end            }{\c_spac_align_state_horizontal\pluseight}
+\setvalue{\??aligncommand\v!paragraph      }{\c_spac_align_state_horizontal\plusnine}
 
 
 \setvalue{\??aligncommand\v!lefttoright    }{\c_spac_align_state_direction \plusone  }
@@ -758,18 +822,19 @@
 
 % Visible commands:
 
-\let\notragged       \spac_align_set_horizontal_none
-\let\raggedleft      \spac_align_set_horizontal_left
-\let\raggedcenter    \spac_align_set_horizontal_center
-\let\raggedright     \spac_align_set_horizontal_right
-\let\veryraggedleft  \spac_align_set_horizontal_very_left
-\let\veryraggedcenter\spac_align_set_horizontal_very_center
-\let\veryraggedright \spac_align_set_horizontal_very_right
-\let\raggedwidecenter\spac_align_set_horizontal_wide_center
-\let\centeredlastline\spac_align_set_horizontal_centered_last_line
-\let\ttraggedright   \spac_align_set_horizontal_right_tt            % a plain command
+\let\notragged           \spac_align_set_horizontal_none
+\let\raggedleft          \spac_align_set_horizontal_left
+\let\raggedcenter        \spac_align_set_horizontal_center
+\let\raggedright         \spac_align_set_horizontal_right
+\let\veryraggedleft      \spac_align_set_horizontal_very_left
+\let\veryraggedcenter    \spac_align_set_horizontal_very_center
+\let\veryraggedright     \spac_align_set_horizontal_very_right
+\let\raggedwidecenter    \spac_align_set_horizontal_wide_center
+\let\centeredlastline    \spac_align_set_horizontal_centered_last_line
+\let\flushedrightlastline\spac_align_set_horizontal_flushedright_last_line
+\let\ttraggedright       \spac_align_set_horizontal_right_tt            % a plain command
 
-\let\forgetragged    \spac_align_set_horizontal_none
+\let\forgetragged      \spac_align_set_horizontal_none
 
 \appendtoks
     \spac_align_set_horizontal_none

@@ -201,7 +201,6 @@ nuts.protect_glyph        = direct.protect_glyph
 nuts.unprotect_glyphs     = direct.unprotect_glyphs
 nuts.ligaturing           = direct.ligaturing
 nuts.kerning              = direct.kerning
-nuts.effective_glue       = direct.effective_glue
 
 if not direct.mlist_to_hlist then -- needed
 
@@ -213,50 +212,25 @@ if not direct.mlist_to_hlist then -- needed
 
 end
 
-local is_zero_glue = direct.is_zero_glue
-local setglue      = direct.setglue
-local getglue      = direct.getglue
+if LUATEXVERSION < 0.97 then
 
-if not is_zero_glue then
-    is_zero_glue = function(n)
-        return not n or (
-            getfield(n,"width")   == 0 and
-            getfield(n,"stretch") == 0 and
-            getfield(n,"shrink")  == 0
-        )
+    local getglue = direct.getglue
+
+    function direct.is_zero_glue(n)
+        local width, stretch, shrink = getglue(n)
+        return width == 0 and stretch == 0 and shrink == 0
     end
-    setglue = function(n,width,stretch,shrink,stretch_order,shrink_order)
-        setfield(n,"width",        width         or 0)
-        setfield(n,"stretch",      stretch       or 0)
-        setfield(n,"shrink",       shrink        or 0)
-        setfield(n,"stretch_order",stretch_order or 0)
-        setfield(n,"shrink_order", shrink_order  or 0)
-    end
-    getglue = function(n)
-        return
-            getfield(n,"width"), getfield(n,"stretch"), getfield(n,"shrink"),
-            getfield(n,"stretch_order"), getfield(n,"shrink_order")
-    end
+
 end
 
-nuts.is_zero_glue = is_zero_glue
-nuts.setglue      = setglue
-nuts.getglue      = getglue
+local getglue      = direct.getglue
+local setglue      = direct.setglue
+local is_zero_glue = direct.is_zero_glue
 
-
--- if not direct.getpre then
---
---     local getfield = nuts.getfield
---
---     function direct.getpre    (n) local h, _, _, t       = getdisc(n,true) return h, t end
---     function direct.getpost   (n) local _, h, _, _, t    = getdisc(n,true) return h, t end
---     function direct.getreplace(n) local _, _, h, _, _, t = getdisc(n,true) return h, t end
---
--- end
-
-----.getpre     = direct.getpre
-----.getpost    = direct.getpost
-----.getreplace = direct.getreplace
+nuts.effective_glue = direct.effective_glue
+nuts.getglue        = getglue
+nuts.setglue        = setglue
+nuts.is_zero_glue   = is_zero_glue
 
 nuts.getdisc    = direct.getdisc
 nuts.setdisc    = direct.setdisc

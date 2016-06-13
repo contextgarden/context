@@ -133,6 +133,8 @@ return {
         "optionalspace", "asciispacechar",
         --
         "Ux", "eUx", "Umathaccents",
+        --
+        "parfillleftskip", "parfillrightskip",
     },
     ["helpers"] = {
         --

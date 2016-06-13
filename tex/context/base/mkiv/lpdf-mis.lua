@@ -50,7 +50,21 @@ local addtopageattributes  = lpdf.addtopageattributes
 local addtonames           = lpdf.addtonames
 
 local variables            = interfaces.variables
+
 local v_stop               = variables.stop
+local v_none               = variables.none
+local v_max                = variables.max
+local v_bookmark           = variables.bookmark
+local v_fit                = variables.fit
+local v_doublesided        = variables.doublesided
+local v_singlesided        = variables.singlesided
+local v_default            = variables.default
+local v_auto               = variables.auto
+local v_fixed              = variables.fixed
+local v_landscape          = variables.landscape
+local v_portrait           = variables.portrait
+local v_page               = variables.page
+local v_paper              = variables.paper
 
 local positive             = register(pdfliteral("/GSpositive gs"))
 local negative             = register(pdfliteral("/GSnegative gs"))
@@ -247,23 +261,99 @@ lpdf.registerdocumentfinalizer(flushjavascripts,"javascripts")
 -- -- --
 
 local pagespecs = {
-    [variables.max]         = { mode = "FullScreen",  layout = false,            fit = false, fixed = false, duplex = false },
-    [variables.bookmark]    = { mode = "UseOutlines", layout = false,            fit = false, fixed = false, duplex = false },
-    [variables.fit]         = { mode = "UseNone",     layout = false,            fit = true,  fixed = false, duplex = false },
-    [variables.doublesided] = { mode = "UseNone",     layout = "TwoColumnRight", fit = true,  fixed = false, duplex = false },
-    [variables.singlesided] = { mode = "UseNone",     layout = false,            fit = false, fixed = false, duplex = false },
-    [variables.default]     = { mode = "UseNone",     layout = "auto",           fit = false, fixed = false, duplex = false },
-    [variables.auto]        = { mode = "UseNone",     layout = "auto",           fit = false, fixed = false, duplex = false },
-    [variables.none]        = { mode = false,         layout = false,            fit = false, fixed = false, duplex = false },
-    -- new
-    [variables.fixed]       = { mode = "UseNone",     layout = "auto",           fit = false, fixed = true,  duplex = false }, -- noscale
-    [variables.landscape]   = { mode = "UseNone",     layout = "auto",           fit = false, fixed = true,  duplex = "DuplexFlipShortEdge" },
-    [variables.portrait]    = { mode = "UseNone",     layout = "auto",           fit = false, fixed = true,  duplex = "DuplexFlipLongEdge" },
-    [variables.page]        = { mode = "UseNone",     layout = "auto",           fit = false, fixed = true,  duplex = "Simplex" },
+    [v_none] = {
+    },
+    [v_max] = {
+        mode = "FullScreen",
+    },
+    [v_bookmark] = {
+        mode = "UseOutlines",
+    },
+    [v_fit] = {
+        mode = "UseNone",
+        fit  = true,
+    },
+    [v_doublesided] = {
+        mode   = "UseNone",
+        layout = "TwoColumnRight",
+        fit = true,
+    },
+    [v_singlesided] = {
+        mode   = "UseNone"
+    },
+    [v_default] = {
+        mode   = "UseNone",
+        layout = "auto",
+    },
+    [v_auto] = {
+        mode   = "UseNone",
+        layout = "auto",
+    },
+    [v_fixed] = {
+        mode   = "UseNone",
+        layout = "auto",
+        fixed  = true, -- noscale
+    },
+    [v_landscape] = {
+        mode   = "UseNone",
+        layout = "auto",
+        fixed  = true,
+        duplex = "DuplexFlipShortEdge",
+    },
+    [v_portrait] = {
+        mode   = "UseNone",
+        layout = "auto",
+        fixed  = true,
+        duplex = "DuplexFlipLongEdge",
+    },
+    [v_page] = {
+        mode   = "UseNone",
+        layout = "auto",
+        fixed  = true,
+        duplex = "Simplex",
+    },
+    [v_paper] = {
+        mode   = "UseNone",
+        layout = "auto",
+        fixed  = true,
+        duplex = "Simplex",
+        paper  = true,
+    },
+}
+
+local plusspecs = {
+    [v_max] = {
+        mode = "FullScreen",
+    },
+    [v_bookmark] = {
+        mode = "UseOutlines",
+    },
+    [v_fit] = {
+        fit  = true,
+    },
+    [v_doublesided] = {
+        layout = "TwoColumnRight",
+    },
+    [v_fixed] = {
+        fixed  = true,
+    },
+    [v_landscape] = {
+        duplex = "DuplexFlipShortEdge",
+    },
+    [v_portrait] = {
+        duplex = "DuplexFlipLongEdge",
+    },
+    [v_page] = {
+        duplex = "Simplex" ,
+    },
+    [v_paper] = {
+        paper  = true,
+    },
 }
 
 local pagespec, topoffset, leftoffset, height, width, doublesided = "default", 0, 0, 0, 0, false
 local cropoffset, bleedoffset, trimoffset, artoffset = 0, 0, 0, 0
+local copies = false
 
 function codeinjections.setupcanvas(specification)
     local paperheight = specification.paperheight
@@ -275,11 +365,16 @@ function codeinjections.setupcanvas(specification)
     if paperwidth then
         texset('global','pagewidth',paperwidth)
     end
-    pagespec    = specification.mode        or pagespec
-    topoffset   = specification.topoffset   or 0
-    leftoffset  = specification.leftoffset  or 0
-    height      = specification.height      or texget("pageheight")
-    width       = specification.width       or texget("pagewidth")
+    pagespec    = specification.mode       or pagespec
+    topoffset   = specification.topoffset  or 0
+    leftoffset  = specification.leftoffset or 0
+    height      = specification.height     or texget("pageheight")
+    width       = specification.width      or texget("pagewidth")
+    --
+    copies      = specification.copies
+    if copies and copies < 2 then
+        copies = false
+    end
     --
     cropoffset  = specification.cropoffset  or 0
     trimoffset  = cropoffset  - (specification.trimoffset  or 0)
@@ -293,22 +388,17 @@ end
 
 local function documentspecification()
     if not pagespec or pagespec == "" then
-        pagespec = variables.default
+        pagespec = v_default
     end
- -- local settings = utilities.parsers.settings_to_array(pagespec)
- -- local spec     = pagespecs[variables.default]
- -- for i=1,#settings do
- --     local s = pagespecs[settings[i]]
- --     if s then
- --         for k, v in next, s do
- --             spec[k] = v
- --         end
- --     end
- -- end
-    local spec = pagespecs[pagespec] or pagespecs[variables.default]
+    local settings = utilities.parsers.settings_to_array(pagespec)
+    -- so the first one detemines the defaults
+    local first    = settings[1]
+    local defaults = pagespecs[first]
+    local spec     = defaults or pagespecs[v_default]
+    -- successive keys can modify this
     if spec.layout == "auto" then
         if doublesided then
-            local s = pagespecs[variables.doublesided] -- to be checked voor interfaces
+            local s = pagespecs[v_doublesided] -- to be checked voor interfaces
             for k, v in next, s do
                 spec[k] = v
             end
@@ -316,22 +406,35 @@ local function documentspecification()
             spec.layout = false
         end
     end
+    -- we start at 2 when we have a valid first default set
+    for i=defaults and 2 or 1,#settings do
+        local s = plusspecs[settings[i]]
+        if s then
+            for k, v in next, s do
+                spec[k] = v
+            end
+        end
+    end
+    --
     local layout = spec.layout
     local mode   = spec.mode
     local fit    = spec.fit
     local fixed  = spec.fixed
     local duplex = spec.duplex
+    local paper  = spec.paper
     if layout then
         addtocatalog("PageLayout",pdfconstant(layout))
     end
     if mode then
         addtocatalog("PageMode",pdfconstant(mode))
     end
-    if fit or fixed or duplex then
+    if fit or fixed or duplex or copies or paper then
         addtocatalog("ViewerPreferences",pdfdictionary {
-            FitWindow    = fit    and true                or nil,
-            PrintScaling = fixed  and pdfconstant("None") or nil,
-            Duplex       = duplex and pdfconstant(duplex) or nil,
+            FitWindow         = fit    and true                or nil,
+            PrintScaling      = fixed  and pdfconstant("None") or nil,
+            Duplex            = duplex and pdfconstant(duplex) or nil,
+            NumCopies         = copies and copies              or nil,
+            PickTrayByPDFSize = paper  and true                or nil,
         })
     end
     addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP

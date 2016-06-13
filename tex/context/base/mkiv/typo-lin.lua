@@ -77,6 +77,7 @@ local traverse_id       = nuts.traverse_id
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
 local find_tail         = nuts.tail
+local rehpack           = nuts.rehpack
 ----- remove_node       = nuts.remove
 
 local getsubtype        = nuts.getsubtype
@@ -93,6 +94,8 @@ local setprop           = nuts.setprop
 local getprop           = nuts.rawprop -- getprop
 
 local effectiveglue     = nuts.effective_glue
+local n_is_zero_glue    = nodes.is_zero_glue
+local n_getglue         = nodes.getglue
 
 local nodepool          = nuts.pool
 local new_kern          = nodepool.kern
@@ -100,8 +103,10 @@ local new_leftskip      = nodepool.leftskip
 local new_rightskip     = nodepool.rightskip
 local new_hlist         = nodepool.hlist
 local new_rule          = nodepool.rule
+local new_glue          = nodepool.glue
 
 local texgetcount       = tex.getcount
+local texgetskip        = tex.getskip
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
 
@@ -238,9 +243,47 @@ function paragraphs.normalize(head,islocal)
         -- can be an option, maybe we need a proper state in lua itself ... is this check still needed?
         return head, false
     end
+    -- this can become a separate handler but it makes sense to integrate it here
+    local parfillleftskip = texgetskip("parfillleftskip")
+    if not n_is_zero_glue(parfillleftskip) then
+        local last = nil -- a nut
+        local done = false
+        for line in traverse_id(hlist_code,tonut(head)) do
+            if getsubtype(line) == line_code and not getprop(line,"line") then
+                if done then
+                    last = line
+                else
+                    done = true
+                end
+            end
+        end
+        if last then -- only if we have more than one line
+            local head    = getlist(last)
+            local current = head
+            if current then
+                if getid(current) == glue_code and getsubtype(current,leftskip_code) then
+                    current = getnext(current)
+                end
+                if current then
+                    head, current = insert_before(head,current,new_glue(n_getglue(parfillleftskip)))
+                    if head == current then
+                        setlist(last,head)
+                    end
+                    -- can be a 'rehpack(h  )'
+                    rehpack(last)
+                end
+            end
+        end
+    end
+    -- normalizer
     for line in traverse_id(hlist_code,tonut(head)) do
         if getsubtype(line) == line_code and not getprop(line,"line") then
             normalize(line)
+            if done then
+                last = line
+            else
+                done = true
+            end
         end
     end
     return head, true

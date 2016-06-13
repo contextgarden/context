@@ -32,6 +32,7 @@
                 <cd:constant type="center"/>
                 <cd:constant type="disable"/>
                 <cd:constant type="last"/>
+                <cd:constant type="end"/>
                 <cd:constant type="paragraph"/>
                 <cd:constant type="lefttoright"/>
                 <cd:constant type="righttoleft"/>
@@ -241,6 +242,8 @@
     <cd:command name="raggedwidecenter" file="spac-ali.mkiv"/>
 
     <cd:command name="centeredlastline" file="spac-ali.mkiv"/>
+
+    <cd:command name="flushedrightlastline" file="spac-ali.mkiv"/>
 
     <cd:command name="ttraggedright" file="spac-ali.mkiv"/>
 

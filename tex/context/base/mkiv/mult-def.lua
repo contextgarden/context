@@ -7322,6 +7322,10 @@ return {
    ["pe"]="پرونده‌تبدیل",
    ["ro"]="convertestefisier",
   },
+  ["copies"]={
+   ["en"]="copies",
+   ["nl"]="kopieen",
+  },
   ["corner"]={
    ["cs"]="roh",
    ["de"]="winkel",

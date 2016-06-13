@@ -728,6 +728,7 @@
 		<cd:constant name='controls' value='کنترلها'/>
 		<cd:constant name='conversion' value='تبدیل'/>
 		<cd:constant name='convertfile' value='پرونده‌تبدیل'/>
+		<cd:constant name='copies' value='copies'/>
 		<cd:constant name='corner' value='گوشه'/>
 		<cd:constant name='coupling' value='تزویج'/>
 		<cd:constant name='couplingway' value='روش‌تزویج'/>

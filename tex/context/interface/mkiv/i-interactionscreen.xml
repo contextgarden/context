@@ -31,7 +31,7 @@
                 <cd:parameter name="topspace">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
-                <cd:parameter name="option">
+                <cd:parameter name="option" list="yes">
                     <cd:constant type="fit"/>
                     <cd:constant type="max"/>
                     <cd:constant type="singlesided"/>
@@ -44,6 +44,10 @@
                     <cd:constant type="landscape"/>
                     <cd:constant type="portrait"/>
                     <cd:constant type="page"/>
+                    <cd:constant type="paper"/>
+                </cd:parameter>
+                <cd:parameter name="copies">
+                    <cd:constant type="cd:number"/>
                 </cd:parameter>
                 <cd:parameter name="delay">
                     <cd:constant type="none" default="yes"/>

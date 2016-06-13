@@ -115,11 +115,21 @@ nodes.kerning              = node.kerning
 nodes.ligaturing           = node.ligaturing
 nodes.mlist_to_hlist       = node.mlist_to_hlist
 
-nodes.effective_glue       = node.effective_glue
+if LUATEXVERSION < 0.97 then
 
+    local getglue = node.getglue
+
+    function node.is_zero_glue(n)
+        local width, stretch, shrink = getglue(n)
+        return width == 0 and stretch == 0 and shrink == 0
+    end
+
+end
+
+nodes.effective_glue       = node.effective_glue
+nodes.getglue              = node.getglue
+nodes.setglue              = node.setglue
 nodes.is_zero_glue         = node.is_zero_glue
-nodes.getglue              = node.getglue
-nodes.getglue              = node.getglue
 
 -- if not gonuts or not node.getfield then
 --     node.getfield = metatable.__index

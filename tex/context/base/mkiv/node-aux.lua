@@ -445,6 +445,25 @@ function nodes.locate(start,wantedid,wantedsubtype)
     return found and tonode(found)
 end
 
+local function rehpack(n,width)
+    local head = getlist(n)
+    local size = width or getfield(n,"width")
+    local temp = hpack_nodes(head,size,"exactly")
+    setfield(n,"width",     size)
+    setfield(n,"glue_set",  getfield(temp,"glue_set"))
+    setfield(n,"glue_sign", getfield(temp,"glue_sign"))
+    setfield(n,"glue_order",getfield(temp,"glue_order"))
+    setlist(temp)
+    free_node(temp)
+    return n
+end
+
+nuts.rehpack = rehpack
+
+function nodes.rehpack(n,...)
+    rehpack(tonut(n),...)
+end
+
 -- I have no use for this yet:
 --
 -- \skip0=10pt plus 2pt minus 2pt

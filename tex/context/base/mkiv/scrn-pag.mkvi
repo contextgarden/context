@@ -227,6 +227,7 @@
         trimoffset  \canvastrimoffset
         bleedoffset \canvasbleedoffset
         artoffset   \canvasartoffset
+        copies      \numexpr\interactionscreenparameter\c!copies\relax
    \relax
   %\global\let\scrn_canvas_synchronize_simple \relax
    \global\let\scrn_canvas_synchronize_complex\relax}
@@ -251,6 +252,7 @@
    \c!veroffset=\zeropoint,
    \c!backspace=\backspace,
    \c!topspace=\topspace,
+   \c!copies=\plusone, % not the best place but backend anyway
    \c!option=\v!auto]
 
 \appendtoks

@@ -735,7 +735,9 @@
    \d_strc_formulas_display_margin_left \formulaparameter\c!leftmargin \relax
    \d_strc_formulas_display_margin_right\formulaparameter\c!rightmargin\relax
    \edef\p_option{\formulaparameter\c!option}%
-   \edef\p_option{\ifx\p_option\empty\else\p_option,\fi#2}%
+   \ifsecondargument
+     \edef\p_option{\ifx\p_option\empty\else\p_option,\fi#2}%
+   \fi
    \ifx\p_option\empty \else
      \rawprocesscommacommand[\p_option]\strc_formulas_option
    \fi

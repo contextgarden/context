@@ -183,8 +183,6 @@ end)
 nodes.builders = nodes.builder or { }
 local builders = nodes.builders
 
-local normalize = typesetters.paragraphs.normalize
-
 local vboxactions = nodes.tasks.actions("vboxbuilders")
 
 function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)

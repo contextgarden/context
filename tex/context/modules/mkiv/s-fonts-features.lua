@@ -49,12 +49,12 @@ function moduledata.fonts.features.showused(specification)
                         elseif rawget(descriptions,feature) then
                             NC() context(feature)
                             NC() context("+") -- extra
-                            NC() context(descriptions[feature])
+                            NC() context.escaped(descriptions[feature])
                             done = true
                         elseif rawget(features,feature) then
                             NC() context(feature)
                             NC()              -- otf
-                            NC() context(features[feature])
+                            NC() context.escaped(features[feature])
                             done = true
                         else
                             NC() context(feature)

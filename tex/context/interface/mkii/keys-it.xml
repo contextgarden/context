@@ -728,6 +728,7 @@
 		<cd:constant name='controls' value='controlli'/>
 		<cd:constant name='conversion' value='conversione'/>
 		<cd:constant name='convertfile' value='convertifile'/>
+		<cd:constant name='copies' value='copies'/>
 		<cd:constant name='corner' value='angolo'/>
 		<cd:constant name='coupling' value='accoppiamento'/>
 		<cd:constant name='couplingway' value='modoaccoppiamento'/>
