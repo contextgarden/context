@@ -215,6 +215,22 @@
 
 \stoptypescriptcollection
 
+% tricky: we cannot mix now as the file is loaded only once
+
+\startmode[txmath]
+
+    \starttypescriptcollection[texgyre-math-times]
+
+        \starttypescript [\s!math][times,termes][\s!all]
+            \loadfontgoodies[tx-math]
+            \definefontsynonym[\s!MathRoman][txmath@tx-math]
+          % \definefontsynonym[\s!MathRomanBold][MathRoman]
+        \stoptypescript
+
+    \stoptypescriptcollection
+
+\stopmode
+
 \startnotmode[txmath]
 
     \starttypescriptcollection[texgyre-math-times]
@@ -228,6 +244,20 @@
     \stoptypescriptcollection
 
 \stopnotmode
+
+\startmode[pxmath]
+
+    \starttypescriptcollection[texgyre-math-pagella]
+
+        \starttypescript [\s!math][palatino,pagella][\s!all]
+            \loadfontgoodies[px-math]
+            \definefontsynonym[\s!MathRoman][pxmath@px-math]
+          % \definefontsynonym[\s!MathRomanBold][MathRoman]
+        \stoptypescript
+
+    \stoptypescriptcollection
+
+\stopmode
 
 \startnotmode[pxmath]
 
@@ -263,31 +293,4 @@
 
 \stoptypescriptcollection
 
-\startmode[txmath]
-
-    \starttypescriptcollection[texgyre-math-times]
-
-        \starttypescript [\s!math][times,termes][\s!all]
-            \loadfontgoodies[tx-math]
-            \definefontsynonym[\s!MathRoman][txmath@tx-math]
-          % \definefontsynonym[\s!MathRomanBold][MathRoman]
-        \stoptypescript
-
-    \stoptypescriptcollection
-
-\stopmode
-
-\startmode[pxmath]
-
-    \starttypescriptcollection[texgyre-math-pagella]
-
-        \starttypescript [\s!math][palatino,pagella][\s!all]
-            \loadfontgoodies[px-math]
-            \definefontsynonym[\s!MathRoman][pxmath@px-math]
-          % \definefontsynonym[\s!MathRomanBold][MathRoman]
-        \stoptypescript
-
-    \stoptypescriptcollection
-
-\stopmode
 

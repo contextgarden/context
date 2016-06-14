@@ -115,9 +115,6 @@ local function showglyphshape(specification)
     if not charnum then
         charnum = fonts.helpers.nametoslot(n)
     end
-    context.start()
-    context.dontleavehmode()
-    context.obeyMPboxdepth()
     local characters   = tfmdata.characters
     local descriptions = tfmdata.descriptions
     local parameters   = tfmdata.parameters
@@ -130,6 +127,9 @@ local function showglyphshape(specification)
         local width, italic = (d.width or 0)*factor, (d.italic or 0)*factor
         local top_accent, bot_accent = (d.top_accent or 0)*factor, (d.bot_accent or 0)*factor
         local anchors, math = d.anchors, d.math
+        context.start()
+        context.dontleavehmode()
+        context.obeyMPboxdepth()
         context.startMPcode()
         context("numeric lw ; lw := .125bp ;")
         context("pickup pencircle scaled lw ;")
@@ -143,7 +143,7 @@ local function showglyphshape(specification)
             if #v > 0 then
                 local l = { }
                 for kk, vv in ipairs(v) do
-                    local h, k = vv.height, vv.kern
+                    local h, k = vv.height or 0, vv.kern or 0
                     if h and k then
                         l[#l+1] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
                     end
@@ -160,7 +160,7 @@ local function showglyphshape(specification)
             if #v > 0 then
                 local l = { }
                 for kk, vv in ipairs(v) do
-                    local h, k = vv.height, vv.kern
+                    local h, k = vv.height or 0, vv.kern or 0
                     if h and k then
                         l[#l+1] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
                     end
@@ -171,7 +171,7 @@ local function showglyphshape(specification)
                     context('label.%s("\\type{%s}",%s shifted (0,2bp)) ;',loc,txt,l[1])
                 end
                 for kk, vv in ipairs(v) do
-                    local h, k = vv.height, vv.kern
+                    local h, k = vv.height or 0, vv.kern or 0
                     if h and k then
                         context('label.top("(%s,%s)",%s shifted (0,-2bp));',k,h,l[kk])
                     end
@@ -183,13 +183,13 @@ local function showglyphshape(specification)
             if kerns then
                 for _, slant in ipairs { slant_1, slant_2 } do
                     for k,v in pairs(kerns) do
-                        if k == "top_right" then
+                        if k == "topright" then
                             slant(v,width+italic,0,k,1,1,"top","ulft")
-                        elseif k == "bottom_right" then
+                        elseif k == "bottomright" then
                             slant(v,width,0,k,1,1,"bot","lrt")
-                        elseif k == "top_left" then
+                        elseif k == "topleft" then
                             slant(v,0,0,k,-1,1,"top","ulft")
-                        elseif k == "bottom_left" then
+                        elseif k == "bottomleft" then
                             slant(v,0,0,k,-1,1,"bot","lrt")
                         end
                     end
@@ -257,6 +257,7 @@ local function showglyphshape(specification)
         context("setbounds currentpicture to boundingbox currentpicture enlarged 1bp ;")
         context("currentpicture := currentpicture scaled 8 ;")
         context.stopMPcode()
+        context.stop()
  -- elseif c then
  --     lastdata, lastunicode = nil, nil
  --     local factor = (7200/7227)/65536
@@ -290,10 +291,9 @@ local function showglyphshape(specification)
  --     context("currentpicture := currentpicture scaled 8 ;")
  --     context.stopMPcode()
     else
-        lastdata, lastunicode = nil, nil
-        context("no such shape: 0x%05X",charnum)
+ --     lastdata, lastunicode = nil, nil
+ --     context("no such shape: 0x%05X",charnum)
     end
-    context.stop()
 end
 
 moduledata.fonts.shapes.showglyphshape = showglyphshape

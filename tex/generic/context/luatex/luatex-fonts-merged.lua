@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/13/16 22:12:02
+-- merge date  : 06/14/16 20:24:47
 
 do -- begin closure to overcome local limits and interference
 
@@ -15901,7 +15901,7 @@ local function getgsub(tfmdata,k,kind,value)
 end
 otf.getgsub=getgsub 
 function otf.getsubstitution(tfmdata,k,kind,value)
-  local found,kind=getgsub(tfmdata,k,kind)
+  local found,kind=getgsub(tfmdata,k,kind,value)
   if not found then
   elseif kind=="gsub_single" then
     return found

@@ -17,39 +17,39 @@ local splitat, lpegmatch         = lpeg.splitat, lpeg.match
 local formatters                 = string.formatters
 local settings_to_array          = utilities.parsers.settings_to_array
 local settings_to_hash           = utilities.parsers.settings_to_hash
-                                 
+
 local v_default                  = interfaces.variables.default
-                                 
+
 local implement                  = interfaces.implement
-                                 
+
 local selectfont                 = fonts.select or { }
 fonts.select                     = selectfont
-                                 
+
 local data                       = selectfont.data or { }
 selectfont.data                  = data
-                                 
+
 local fallbacks                  = selectfont.fallbacks or { }
 selectfont.fallbacks             = fallbacks
-                                 
+
 local methods                    = selectfont.methods or { }
 selectfont.methods               = methods
-                                 
+
 local extras                     = selectfont.extras or { }
 selectfont.extras                = extras
-                                 
+
 local alternatives               = selectfont.alternatives or { }
 selectfont.alternatives          = alternatives
-                                 
+
 local presets                    = selectfont.presets or { }
 selectfont.presets               = presets
-                                 
+
 local defaults                   = selectfont.defaults or { }
 selectfont.defaults              = defaults
 
 local getlookups                 = fonts.names.getlookups
 local registerdesignsizes        = fonts.goodies.designsizes.register
 local bodyfontsizes              = storage.shared.bodyfontsizes
-                                 
+
 local ctx_definefontsynonym      = context.definefontsynonym
 local ctx_resetfontfallback      = context.resetfontfallback
 local ctx_startfontclass         = context.startfontclass

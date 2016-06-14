@@ -747,7 +747,7 @@ end
 otf.getgsub = getgsub -- returns value, gsub_kind
 
 function otf.getsubstitution(tfmdata,k,kind,value)
-    local found, kind = getgsub(tfmdata,k,kind)
+    local found, kind = getgsub(tfmdata,k,kind,value)
     if not found then
         --
     elseif kind == "gsub_single" then
