@@ -100,16 +100,16 @@ local function addfeature(data,feature,specifications)
         return
     end
 
-local alreadydone = resources.alreadydone
-if not alreadydone then
-    alreadydone = { }
-    resources.alreadydone = alreadydone
-end
-if alreadydone[specifications] then
-    return
-else
-    alreadydone[specifications] = true
-end
+    local alreadydone = resources.alreadydone
+    if not alreadydone then
+        alreadydone = { }
+        resources.alreadydone = alreadydone
+    end
+    if alreadydone[specifications] then
+        return
+    else
+        alreadydone[specifications] = true
+    end
 
     -- feature has to be unique but the name entry wins eventually
 
