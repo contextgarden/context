@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-dvi</entry>
+  <entry name="detail">ConTeXt DVI Helpers</entry>
+  <entry name="version">0.01</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="list"><short>list dvi commands</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

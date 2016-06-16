@@ -540,7 +540,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
                 collectgarbage("collect")
             end
             stoptiming("fontloader")
-            if elapsedtime then -- not in generic
+            if elapsedtime then
                 report_otf("loading, optimizing, packing and caching time %s, pack time %s",
                     elapsedtime("fontloader"),packdata and elapsedtime(packtime) or 0)
             end
@@ -1279,7 +1279,7 @@ end
 --     local private      = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
 --     --
 --     local ns, nl = 0, 0
-
+--
 --     local guess  = { }
 --     -- helper
 --     local function check(gname,code,unicode)

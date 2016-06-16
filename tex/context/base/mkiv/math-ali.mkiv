@@ -1150,7 +1150,7 @@
    \dontcomplain
    \noindentation
  % \dontleavehmode
-   \kern\d_strc_formulas_display_margin_left
+   \hskip\d_strc_formulas_display_margin_left % was kern but that doesn't indent
    \hbox to \displaywidth \bgroup
      \ifcase\mathnumberstatus
        \box\scratchbox

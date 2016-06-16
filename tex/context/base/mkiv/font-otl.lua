@@ -53,7 +53,7 @@ local report_otf         = logs.reporter("fonts","otf loading")
 local fonts              = fonts
 local otf                = fonts.handlers.otf
 
-otf.version              = 3.022 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version              = 3.024 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                = containers.define("fonts", "otl", otf.version, true)
 otf.svgcache             = containers.define("fonts", "svg", otf.version, true)
 otf.pdfcache             = containers.define("fonts", "pdf", otf.version, true)
@@ -305,7 +305,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
                 collectgarbage("collect")
             end
             stoptiming(otfreaders)
-            if elapsedtime then -- not in generic
+            if elapsedtime then
                 report_otf("loading, optimizing, packing and caching time %s", elapsedtime(otfreaders))
             end
             if cleanup > 3 then
@@ -339,7 +339,6 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         --
         data.metadata.math = data.resources.mathconstants
     end
-
 
     return data
 end

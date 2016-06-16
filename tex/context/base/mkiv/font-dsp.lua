@@ -365,7 +365,9 @@ end
 -- We generalize the chained lookups so that we can do with only one handler
 -- when processing them.
 
-local function readlookuparray(f,noflookups)
+-- pruned
+
+local function readlookuparray(f,noflookups,nofcurrent)
     local lookups = { }
     if noflookups > 0 then
         local length = 0
@@ -381,9 +383,33 @@ local function readlookuparray(f,noflookups)
                 lookups[index] = false
             end
         end
+     -- if length > nofcurrent then
+     --     report_issue("more lookups than currently matched characters")
+     -- end
     end
     return lookups
 end
+
+-- not pruned
+--
+-- local function readlookuparray(f,noflookups,nofcurrent)
+--     local lookups = { }
+--     for i=1,nofcurrent do
+--         lookups[i] = false
+--     end
+--     for i=1,noflookups do
+--         local index = readushort(f) + 1
+--         if index > nofcurrent then
+--             report_issue("more lookups than currently matched characters")
+--             for i=nofcurrent+1,index-1 do
+--                 lookups[i] = false
+--             end
+--             nofcurrent = index
+--         end
+--         lookups[index] = readushort(f) + 1
+--     end
+--     return lookups
+-- end
 
 local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofglyphs,what)
     local tableoffset = lookupoffset + offset
@@ -409,7 +435,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
                         for i=2,nofcurrent do
                             current[i] = { readushort(f) }
                         end
-                        local lookups = readlookuparray(f,noflookups)
+                        local lookups = readlookuparray(f,noflookups,nofcurrent)
                         rules[#rules+1] = {
                             current = current,
                             lookups = lookups
@@ -452,7 +478,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
                                 for i=2,nofcurrent do
                                     current[i] = currentclasses[readushort(f) + 1]
                                 end
-                                local lookups = readlookuparray(f,noflookups)
+                                local lookups = readlookuparray(f,noflookups,nofcurrent)
                                 rules[#rules+1] = {
                                     current = current,
                                     lookups = lookups
@@ -476,7 +502,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
     elseif subtype == 3 then
         local current    = readarray(f)
         local noflookups = readushort(f)
-        local lookups    = readlookuparray(f,noflookups)
+        local lookups    = readlookuparray(f,noflookups,#current)
         current = readcoveragearray(f,tableoffset,current,true)
         return {
             format = "coverage",
@@ -536,7 +562,7 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
                             end
                         end
                         local noflookups = readushort(f)
-                        local lookups    = readlookuparray(f,noflookups)
+                        local lookups    = readlookuparray(f,noflookups,nofcurrent)
                         rules[#rules+1] = {
                             before  = before,
                             current = current,
@@ -604,7 +630,7 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
                                 end
                                 -- no sequence index here (so why in context as it saves nothing)
                                 local noflookups = readushort(f)
-                                local lookups    = readlookuparray(f,noflookups)
+                                local lookups    = readlookuparray(f,noflookups,nofcurrent)
                                 rules[#rules+1] = {
                                     before  = before,
                                     current = current,
@@ -632,7 +658,7 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
         local current    = readarray(f)
         local after      = readarray(f)
         local noflookups = readushort(f)
-        local lookups    = readlookuparray(f,noflookups)
+        local lookups    = readlookuparray(f,noflookups,#current)
         before  = readcoveragearray(f,tableoffset,before,true)
         current = readcoveragearray(f,tableoffset,current,true)
         after   = readcoveragearray(f,tableoffset,after,true)

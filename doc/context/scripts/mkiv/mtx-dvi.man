@@ -1,0 +1,27 @@
+.TH "mtx-dvi" "1" "01-01-2016" "version 0.01" "ConTeXt DVI Helpers"
+.SH NAME
+.B mtx-dvi
+.SH SYNOPSIS
+.B mtxrun --script dvi [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt DVI Helpers
+.SH OPTIONS
+.TP
+.B --list
+list dvi commands
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

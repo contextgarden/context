@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/15/16 20:18:05
+-- merge date  : 06/16/16 23:49:06
 
 do -- begin closure to overcome local limits and interference
 
@@ -4161,7 +4161,7 @@ end
 function files.readinteger1(f) 
   local n=byte(f:read(1))
   if n>=0x80 then
-    return n-0xFF-1
+    return n-0x100
   else
     return n
   end
@@ -4177,7 +4177,7 @@ function files.readinteger2(f)
   local a,b=byte(f:read(2),1,2)
   local n=0x100*a+b
   if n>=0x8000 then
-    return n-0xFFFF-1
+    return n-0x10000
   else
     return n
   end
@@ -4185,6 +4185,15 @@ end
 function files.readcardinal3(f)
   local a,b,c=byte(f:read(3),1,3)
   return 0x10000*a+0x100*b+c
+end
+function files.readinteger3(f)
+  local a,b,c=byte(f:read(3),1,3)
+  local n=0x10000*a+0x100*b+c
+  if n>=0x80000 then
+    return n-0x1000000
+  else
+    return n
+  end
 end
 function files.readcardinal4(f)
   local a,b,c,d=byte(f:read(4),1,4)
@@ -4194,7 +4203,7 @@ function files.readinteger4(f)
   local a,b,c,d=byte(f:read(4),1,4)
   local n=0x1000000*a+0x10000*b+0x100*c+d
   if n>=0x8000000 then
-    return n-0xFFFFFFFF-1
+    return n-0x100000000
   else
     return n
   end
@@ -4203,7 +4212,7 @@ function files.readfixed4(f)
   local a,b,c,d=byte(f:read(4),1,4)
   local n=0x100*a+b
   if n>=0x8000 then
-    return n-0xFFFF-1+(0x100*c+d)/0xFFFF
+    return n-0x10000+(0x100*c+d)/0xFFFF
   else
     return n+(0x100*c+d)/0xFFFF
   end
@@ -11479,7 +11488,7 @@ local function covered(subset,all)
   end
   return used
 end
-local function readlookuparray(f,noflookups)
+local function readlookuparray(f,noflookups,nofcurrent)
   local lookups={}
   if noflookups>0 then
     local length=0
@@ -11522,7 +11531,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
             for i=2,nofcurrent do
               current[i]={ readushort(f) }
             end
-            local lookups=readlookuparray(f,noflookups)
+            local lookups=readlookuparray(f,noflookups,nofcurrent)
             rules[#rules+1]={
               current=current,
               lookups=lookups
@@ -11563,7 +11572,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
                 for i=2,nofcurrent do
                   current[i]=currentclasses[readushort(f)+1]
                 end
-                local lookups=readlookuparray(f,noflookups)
+                local lookups=readlookuparray(f,noflookups,nofcurrent)
                 rules[#rules+1]={
                   current=current,
                   lookups=lookups
@@ -11587,7 +11596,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
   elseif subtype==3 then
     local current=readarray(f)
     local noflookups=readushort(f)
-    local lookups=readlookuparray(f,noflookups)
+    local lookups=readlookuparray(f,noflookups,#current)
     current=readcoveragearray(f,tableoffset,current,true)
     return {
       format="coverage",
@@ -11642,7 +11651,7 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
               end
             end
             local noflookups=readushort(f)
-            local lookups=readlookuparray(f,noflookups)
+            local lookups=readlookuparray(f,noflookups,nofcurrent)
             rules[#rules+1]={
               before=before,
               current=current,
@@ -11707,7 +11716,7 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
                   end
                 end
                 local noflookups=readushort(f)
-                local lookups=readlookuparray(f,noflookups)
+                local lookups=readlookuparray(f,noflookups,nofcurrent)
                 rules[#rules+1]={
                   before=before,
                   current=current,
@@ -11735,7 +11744,7 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
     local current=readarray(f)
     local after=readarray(f)
     local noflookups=readushort(f)
-    local lookups=readlookuparray(f,noflookups)
+    local lookups=readlookuparray(f,noflookups,#current)
     before=readcoveragearray(f,tableoffset,before,true)
     current=readcoveragearray(f,tableoffset,current,true)
     after=readcoveragearray(f,tableoffset,after,true)
@@ -15363,7 +15372,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.023 
+otf.version=3.024 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pdfcache=containers.define("fonts","pdf",otf.version,true)
@@ -15541,7 +15550,7 @@ function otf.load(filename,sub,featurefile)
         collectgarbage("collect")
       end
       stoptiming(otfreaders)
-      if elapsedtime then 
+      if elapsedtime then
         report_otf("loading, optimizing, packing and caching time %s",elapsedtime(otfreaders))
       end
       if cleanup>3 then
@@ -23117,7 +23126,7 @@ if not modules then modules={} end modules ['font-ocl']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local tostring,next=tostring,next
+local tostring,next,format=tostring,next,string.format
 local formatters=string.formatters
 local otf=fonts.handlers.otf
 local f_color_start=formatters["pdf:direct: %f %f %f rg"]
@@ -23234,70 +23243,62 @@ do
     end
   end
 end
-if context and xml.convert then
+do
   local report_svg=logs.reporter("fonts","svg conversion")
-  local xmlconvert=xml.convert
-  local xmlfirst=xml.first
   local loaddata=io.loaddata
   local savedata=io.savedata
   local remove=os.remove
+  if context and xml.convert then
+    local xmlconvert=xml.convert
+    local xmlfirst=xml.first
+    function otfsvg.filterglyph(entry,index)
+      local svg=xmlconvert(entry.data)
+      local root=svg and xmlfirst(svg,"/svg[@id='glyph"..index.."']")
+      local data=root and tostring(root)
+      return data
+    end
+  else
+    function otfsvg.filterglyph(entry,index) 
+      return entry.data
+    end
+  end
   function otfsvg.topdf(svgshapes)
-    local inkscape=io.popen("inkscape --shell 2>&1","w")
+    local inkscape=io.popen("inkscape --shell > temp-otf-svg-shape.log","w")
     local pdfshapes={}
     local nofshapes=#svgshapes
     local f_svgfile=formatters["temp-otf-svg-shape-%i.svg"]
     local f_pdffile=formatters["temp-otf-svg-shape-%i.pdf"]
     local f_convert=formatters["%s --export-pdf=%s\n"]
+    local filterglyph=otfsvg.filterglyph
     report_svg("processing %i svg containers",nofshapes)
     statistics.starttiming()
     for i=1,nofshapes do
       local entry=svgshapes[i]
-      for j=entry.first,entry.last do
-        local svg=xmlconvert(entry.data)
-        local root=svg and xmlfirst(svg,"/svg[@id='glyph"..j.."']")
-        local data=root and tostring(root)
+      for index=entry.first,entry.last do
+        local data=filterglyph(entry,index)
         if data and data~="" then
-          local svgfile=f_svgfile(j)
-          local pdffile=f_pdffile(j)
+          local svgfile=f_svgfile(index)
+          local pdffile=f_pdffile(index)
           savedata(svgfile,data)
           inkscape:write(f_convert(svgfile,pdffile))
-          pdfshapes[j]=true
+          pdfshapes[index]=true
         end
       end
     end
     inkscape:write("quit\n")
     inkscape:close()
     report_svg("processing %i pdf results",nofshapes)
-    for i in next,pdfshapes do
-      local svgfile=f_svgfile(i)
-      local pdffile=f_pdffile(i)
-      pdfshapes[i]=loaddata(pdffile)
+    for index in next,pdfshapes do
+      local svgfile=f_svgfile(index)
+      local pdffile=f_pdffile(index)
+      pdfshapes[index]=loaddata(pdffile)
       remove(svgfile)
       remove(pdffile)
     end
     statistics.stoptiming()
-    report_svg("conversion time: %0.3f",statistics.elapsedtime())
-    return pdfshapes
-  end
-else
-  function otfsvg.topdf(svgshapes)
-    local svgfile="temp-otf-svg-shape.svg"
-    local pdffile="temp-otf-svg-shape.pdf"
-    local command="inkscape "..svgfile.." --export-pdf="..pdffile
-    local pdfshapes={}
-    local nofshapes=#svgshapes
-    texio.write(formatters["[converting %i svg glyphs to pdf using command %q : "](nofshapes,command))
-    for i=1,nofshapes do
-      local entry=svgshapes[i]
-      for j=entry.first,entry.last do
-        texio.write(formatters["%i "](j))
-        io.savedata(svgfile,tostring(entry.data))
-        os.execute(command)
-        pdfshapes[j]=io.loaddata(pdffile)
-      end
+    if statistics.elapsedseconds then
+      report_svg("svg conversion time %s",statistics.elapsedseconds())
     end
-    os.remove(svgfile)
-    texio.write("done]")
     return pdfshapes
   end
 end

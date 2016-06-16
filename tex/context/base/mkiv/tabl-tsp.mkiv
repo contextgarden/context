@@ -372,13 +372,13 @@
        \page_split_float_process{\tsplitbeforeresult\box\tsplitresult\tsplitafterresult}%
        \doifnotinsidesplitfloat\tsplitafter
        \endgraf
+       \global\settrue\usesamefloatnumber % new, prevent next increment
      \fi
      \ifinsidecolumns
        \goodbreak % was \doifnotinsidesplitfloat\goodbreak
      \else
        \page      % was \doifnotinsidesplitfloat\page
      \fi
-     \global\settrue\usesamefloatnumber % new, prevent next increment
    \fi}
 
 %D The next one assumes that the split takes place elsewhere. This is
