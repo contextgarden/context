@@ -53,6 +53,15 @@
                 <cd:parameter name="numbercommand">
                     <cd:constant type="cd:oneargument"/>
                 </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="numberstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="numbercolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
                 <cd:parameter name="option">
                     <cd:constant type="middle"/>
                 </cd:parameter>

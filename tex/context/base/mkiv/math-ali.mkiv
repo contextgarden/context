@@ -1052,17 +1052,6 @@
 
 \newdimen\d_math_number_correction
 
-\unexpanded\def\startmathbox#1%
-  {\hsize\displaywidth % \checkeddisplaymath
-   \global\mathnumberstatus\plusone
-   \mathraggedstatus#1\relax
-   \global\d_math_number_correction\zeropoint
-   \strc_formulas_place_number
-   \setbox\scratchbox\math_hbox to \displaywidth\bgroup % \checkeddisplaymath
-     \mathinnerstrut
-     \startforceddisplaymath
-     \ifcase\mathraggedstatus\or\hfill\or\hfill\fi}
-
 \def\math_box_llapped_math_no
   {\ifcase\mathraggedstatus\or
      \box\b_strc_formulas_number
@@ -1081,111 +1070,387 @@
      \box\b_strc_formulas_number
    \fi}
 
-% \unexpanded\def\stopmathbox
-%   {\stopforceddisplaymath
-%    \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
-%    \egroup
-%    \setbox0\hbox{\unhcopy\scratchbox}%
-%    \scratchdimen\wd0
-%   % to be tested: \scratchdimen\naturalwd\scratchbox
-%    \ifdim\scratchdimen>\displaywidth % \checkeddisplaymath
-%      \donetrue
-%    \else
-%      \donefalse
-%    \fi
-%    % is number correction still needed ?
-%    \dontcomplain
-%    \dontleavehmode
-%    \kern\d_strc_formulas_display_margin_left
-%    \hbox to \displaywidth\bgroup
-%      \ifcase\mathnumberstatus
-%        \box\scratchbox
-%      \or
-%        \ifzeropt\wd\b_strc_formulas_number
-%          \box\scratchbox
-%        \else\ifx\p_location\v!left
-%          \ifdone
-%            \vpack{\hpack to \displaywidth{\math_box_rlapped_math_no\hss}\box\scratchbox}% \checkeddisplaymath
-%          \else
-%            \math_box_rlapped_math_no\box\scratchbox\hss % hss makes room for number
-%          \fi
-%        \else
-%          \ifdone
-%            \vpack{\box\scratchbox\hpack to \displaywidth{\hss\math_box_llapped_math_no}}% \checkeddisplaymath
-%          \else
-%            \hss\box\scratchbox\math_box_llapped_math_no % hss makes room for number
-%          \fi
-%        \fi\fi
-%      \or
-%         \hskip\d_math_number_correction
-%         \box\scratchbox
-%         \hss
-%      \else
-%         \box\scratchbox
-%      \fi
-%    \egroup}
+\newconditional\c_strc_math_has_number
+\newconditional\c_strc_math_display_overflow
+\newconstant   \c_strc_math_number_location
+\newdimen      \d_strc_math_number_width
+\newdimen      \d_strc_math_display_width
+\newbox        \b_strc_math_display
+\newconstant   \c_strc_formulas_frame_mode
 
-\unexpanded\def\stopmathbox
-  {\stopforceddisplaymath
-   \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
-   \egroup
+\let\d_strc_math_framed_width\displaywidth
+
+\setvalue{\??formulaoption\v!frame}%
+  {\edef\p_frame{\formulaparameter\c!frame}%
+   \ifx\p_frame\v!number
+     \c_strc_formulas_frame_mode\plustwo % inside frame
+   \else
+     \c_strc_formulas_frame_mode\plusone % outside frame
+   \fi}
+
+% mode: 0=no frame | 1=number inside frame | 2=number outside frame
+
+\def\strc_math_flush_aligned
+  {\ifcase\mathraggedstatus\or\hfill\or\hfill\fi
+   \box\b_strc_math_display
+   \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi}
+
+\def\strc_math_flush_box_normal
+  {\hbox to \displaywidth\bgroup
+     \strc_math_flush_aligned
+   \egroup}
+
+\def\strc_math_flush_box_framed_common
+  {\setformulaframedparameter\c!align{\formulaparameter\c!align}%
+   \letformulaframedparameter\c!strut\v!no
+   \d_framed_formula\ht\b_strc_math_display
+   \ifcase\mathraggedstatus\or\hfill\or\hfill         \fi
+   \inheritedformulaframedframed{\box\b_strc_math_display}%
+   \ifcase\mathraggedstatus\or      \or\hfill\or\hfill\fi}
+
+% \def\strc_math_flush_box_framed_inline
+%   {\letformulaframedparameter\c!location\empty
+%    \letformulaframedparameter\c!width\displaywidth
+%    \strc_math_flush_box_framed_common}
+
+\def\strc_math_flush_box_framed_display
+  {\let\currentformulaframed\currentformula
+   \letformulaframedparameter\c!location\v!formula
+   \setformulaframedparameter\c!width{\d_strc_math_framed_width}%
+   \strc_math_flush_box_framed_common}
+
+\def\strc_math_flush_box_framed_fit_inline
+  {\let\currentformulaframed\currentformula
+   \letformulaframedparameter\c!location\empty
+   \letformulaframedparameter\c!width\v!fit
+   \strc_math_flush_box_framed_common}
+
+\def\strc_math_flush_box_framed_fit_display
+  {\let\currentformulaframed\currentformula
+   \letformulaframedparameter\c!location\v!formula
+   \letformulaframedparameter\c!width\v!fit
+   \strc_math_flush_box_framed_common}
+
+% combiners
+
+\def\strc_math_flush_box
+  {\ifcase\c_strc_formulas_frame_mode
+     \strc_math_flush_box_normal
+   \else
+     \strc_math_flush_box_framed_display
+   \fi}
+
+\def\strc_math_number_right_normal
+  {\strc_math_flush_aligned
+   \hss % hss makes room for number
+   \math_box_llapped_math_no}
+
+\def\strc_math_number_left_normal
+  {\math_box_rlapped_math_no
+   \strc_math_flush_aligned
+   \hss} % hss makes room for number
+
+\def\strc_math_number_right_normal_outside
+  {\ifconditional\c_strc_formulas_tight
+     \strc_math_flush_box_framed_fit_display
+   \else
+     \strc_math_flush_box_framed_display
+   \fi
+   \hss % hss makes room for number
+   \math_box_llapped_math_no}
+
+\def\strc_math_number_left_normal_outside
+  {\math_box_rlapped_math_no
+   \hss % hss makes room for number
    \ifconditional\c_strc_formulas_tight
-     \setnaturalwd\scratchbox
-     \scratchdimen\wd\scratchbox
-     \ifdim\scratchdimen>\displaywidth % \checkeddisplaymath
-       \donetrue
+     \strc_math_flush_box_framed_fit_display
+   \else
+     \strc_math_flush_box_framed_display
+   \fi}
+
+\def\strc_math_number_right_normal_inside
+  {\setbox\b_strc_math_display\hpack to \dimexpr\displaywidth-\d_framed_locator_lo-\d_framed_locator_ro\relax\bgroup
+     \strc_math_flush_aligned
+     \hss
+     \math_box_llapped_math_no
+   \egroup
+   \strc_math_flush_box_framed_fit_inline}
+
+\def\strc_math_number_left_normal_inside
+  {\setbox\b_strc_math_display\hpack to \dimexpr\displaywidth-\d_framed_locator_lo-\d_framed_locator_ro\relax\bgroup
+     \math_box_rlapped_math_no
+     \hss
+     \strc_math_flush_aligned
+   \egroup
+   \strc_math_flush_box_framed_fit_inline}
+
+\def\strc_math_number_right_overflow
+  {\vpack\bgroup
+     \strc_math_flush_box
+     \par
+     \hpack to \displaywidth\bgroup
+       \hss
+       \math_box_llapped_math_no
+     \egroup
+   \egroup}
+
+\def\strc_math_number_left_overflow
+  {\vpack\bgroup
+     \hpack to \displaywidth\bgroup
+       \math_box_rlapped_math_no
+       \hss
+     \egroup
+     \strc_math_flush_box
+   \egroup}
+
+\def\strc_math_number_right_overflow_outside
+  {\vpack\bgroup
+     \strc_math_flush_box_framed_fit_inline
+     \hskip\zeropoint % nicely breaks the line with out introducing funny vertical spacing ... why o why
+     \hpack to \displaywidth\bgroup
+       \hss
+       \math_box_llapped_math_no
+     \egroup
+   \egroup}
+
+\def\strc_math_number_left_overflow_outside
+  {\vpack\bgroup
+     \hpack to \dimexpr\displaywidth-\d_framed_locator_lo\relax\bgroup
+       \math_box_rlapped_math_no
+       \hss
+     \egroup
+     \hskip\zeropoint % nicely breaks the line with out introducing funny vertical spacing ... why o why
+     \strc_math_flush_box_framed_fit_inline
+   \egroup}
+
+\def\strc_math_number_right_overflow_inside
+  {\setbox\b_strc_math_display\vpack\bgroup
+     \box\b_strc_math_display
+     \hpack to \displaywidth\bgroup
+       \hss
+       \math_box_llapped_math_no
+       \hskip\d_framed_locator_ro
+     \egroup
+   \egroup
+   \strc_math_flush_box_framed_fit_inline}
+
+\def\strc_math_number_left_overflow_inside
+  {\setbox\b_strc_math_display\vpack\bgroup
+     \hpack to \displaywidth\bgroup
+     % \hskip\d_framed_locator_lo
+       \math_box_rlapped_math_no
+       \hss
+     \egroup
+     \box\b_strc_math_display
+   \egroup
+   \strc_math_flush_box_framed_fit_inline}
+
+% checkers
+
+\def\strc_math_number_check
+  {\d_strc_math_display_width\wd\b_strc_math_display
+   \ifconditional\c_strc_formulas_tight
+     \ifdim\d_strc_math_display_width>\displaywidth
+       \settrue\c_strc_math_display_overflow
      \else
-       \displaywidth\scratchdimen
-       \donefalse
+       \displaywidth\d_strc_math_display_width
+       \setfalse\c_strc_math_display_overflow
      \fi
    \else
-     \scratchdimen\getnaturalwd\scratchbox
-     \ifdim\scratchdimen>\displaywidth % \checkeddisplaymath
-       \donetrue
+     \ifdim\d_strc_math_display_width>\displaywidth
+       \settrue\c_strc_math_display_overflow
      \else
-       \donefalse
+       \setfalse\c_strc_math_display_overflow
      \fi
+   \fi}
+
+\def\strc_math_number_check_outside
+  {\d_strc_math_display_width\naturalwd\b_strc_math_display
+   \ifdim\dimexpr\d_strc_math_display_width+\d_framed_locator_lo+\d_framed_locator_ro\relax>\displaywidth
+     \settrue\c_strc_math_display_overflow
+   \else
+     \setfalse\c_strc_math_display_overflow
    \fi
-   % is number correction still needed ?
+   % still ok?
+   \ifnum\mathraggedstatus=\plustwo
+     \edef\d_strc_math_framed_width{\the\dimexpr\displaywidth-2\wd\b_strc_formulas_number\relax}%
+   \else
+     \edef\d_strc_math_framed_width{\the\dimexpr\displaywidth-\wd\b_strc_formulas_number\relax}%
+   \fi}
+
+\let\strc_math_number_check_inside\strc_math_number_check_outside
+
+% offsets
+
+\def\strc_math_number_check_offsets
+  {\begingroup
+     \setbox\scratchbox\hbox
+       {\inheritedformulaframedframed
+          {\pack_framed_locator_set_lo\pack_framed_locator_set_ro}}%
+   \endgroup}
+
+% tracing
+
+\def\strc_math_traced_state_yes
+  {\llap{\setbox\scratchbox\hbox{\infofont
+   \ifcase\mathraggedstatus unset\or right\or middle\or left\fi
+   \space
+   \ifcase\c_strc_formulas_frame_mode no\or out\or in\fi
+   \space
+   \ifconditional\c_strc_math_display_overflow overflow\else fit\fi
+   \quad}\ht\scratchbox\zeropoint\dp\scratchbox\zeropoint\box\scratchbox}}
+
+\let\strc_math_traced_state\relax
+
+\installtextracker
+  {formulas.framed}
+  {\let\strc_math_traced_state\strc_math_traced_state_yes}
+  {\let\strc_math_traced_state\relax}
+
+% packaging
+
+\unexpanded\def\strc_math_box_start#1%
+  {\hsize\displaywidth % \checkeddisplaymath
+   \global\mathnumberstatus\plusone
+   \mathraggedstatus#1\relax
+   %
+   \global\d_math_number_correction\zeropoint
+   %
+   \edef\p_location{\formulaparameter\c!location}%
+   \useformulacolorparameter\c!color
+   \c_strc_math_number_location\ifx\p_location\v!left\plusone\else\ifx\p_location\v!right\plustwo\else\zerocount\fi\fi
+   %
+   \strc_formulas_place_number
    \dontcomplain
-   \noindentation
- % \dontleavehmode
+   \setbox\b_strc_math_display\math_hbox\bgroup % \checkeddisplaymath
+     \mathinnerstrut
+     \startforceddisplaymath}
+
+\def\strc_math_flush_number_no
+  {\ifconditional\c_strc_math_display_overflow
+     \ifcase\c_strc_formulas_frame_mode
+       \strc_math_flush_box_normal
+     \else
+       \strc_math_flush_box_framed_fit_inline
+     \fi
+   \else
+     \ifcase\c_strc_formulas_frame_mode
+      %\ifconditional\c_strc_formulas_tight
+      %  \strc_math_flush_box_normal
+      %\else
+         \strc_math_flush_box_normal
+      %\fi
+     \else
+       \ifconditional\c_strc_formulas_tight
+         \strc_math_flush_box_framed_fit_inline
+       \else
+         \strc_math_flush_box_framed_display
+       \fi
+     \fi
+   \fi}
+
+\def\strc_math_flush_number_left
+  {\ifconditional\c_strc_math_display_overflow
+     \ifcase\c_strc_formulas_frame_mode
+       \strc_math_number_left_overflow
+     \or
+       \strc_math_number_left_overflow_outside
+     \or
+       \strc_math_number_left_overflow_inside
+     \fi
+   \else
+     \ifcase\c_strc_formulas_frame_mode
+       \strc_math_number_left_normal
+     \or
+       \strc_math_number_left_normal_outside
+     \or
+       \strc_math_number_left_normal_inside
+     \fi
+   \fi}
+
+\def\strc_math_flush_number_right
+  {\ifconditional\c_strc_math_display_overflow
+     \ifcase\c_strc_formulas_frame_mode
+       \strc_math_number_right_overflow
+     \or
+       \strc_math_number_right_overflow_outside
+     \or
+       \strc_math_number_right_overflow_inside
+     \fi
+   \else
+     \ifcase\c_strc_formulas_frame_mode
+       \strc_math_number_right_normal
+     \or
+       \strc_math_number_right_normal_outside
+     \or
+       \strc_math_number_right_normal_inside
+     \fi
+   \fi}
+
+\unexpanded\def\strc_math_box_stop
+  {\stopforceddisplaymath
+   \egroup
+   % check number
+   \d_strc_math_number_width\wd\b_strc_formulas_number
+   %
+   \ifcase\mathnumberstatus
+     \setfalse\c_strc_math_has_number
+   \or\ifzeropt\d_strc_math_number_width
+     \setfalse\c_strc_math_has_number
+   \else
+     \settrue\c_strc_math_has_number
+   \fi\fi
+   % preroll left and right offsets
+   \ifcase\c_strc_formulas_frame_mode
+     % no frame
+   \else
+     \strc_math_number_check_offsets
+   \fi
+   \ifcase\c_strc_formulas_frame_mode
+     \strc_math_number_check
+   \or
+     \strc_math_number_check_outside
+   \else
+     \strc_math_number_check_inside
+   \fi
+   \noindent % \noindentation % not \dontleavehmode
    \hskip\d_strc_formulas_display_margin_left % was kern but that doesn't indent
+   \strc_math_traced_state
    \hbox to \displaywidth \bgroup
      \ifcase\mathnumberstatus
-       \box\scratchbox
-     \or
-       \ifzeropt\wd\b_strc_formulas_number
-         \box\scratchbox
-       \else\ifx\p_location\v!left
-         \ifdone
-           \vpack{\hpack to \displaywidth{\math_box_rlapped_math_no\hss}\box\scratchbox}% \checkeddisplaymath
+       \strc_math_flush_box
+     \or % status 1
+       \ifcase\c_strc_math_number_location
+         \strc_math_flush_box
+       \or % number left
+         \ifzeropt\wd\b_strc_formulas_number
+           \strc_math_flush_number_no
          \else
-           \math_box_rlapped_math_no\box\scratchbox\hss % hss makes room for number
+           \strc_math_flush_number_left
          \fi
-       \else
-         \ifdone
-           \vpack{\box\scratchbox\hpack to \displaywidth{\hss\math_box_llapped_math_no}}% \checkeddisplaymath
+       \else % number right
+         \ifzeropt\wd\b_strc_formulas_number
+           \strc_math_flush_number_no
          \else
-           \hss\box\scratchbox\math_box_llapped_math_no % hss makes room for number
+           \strc_math_flush_number_right
          \fi
-       \fi\fi
-     \or
-        \hskip\d_math_number_correction
-        \box\scratchbox
+       \fi
+     \or % status 2
+        \hskip\d_math_number_correction % probably no longer used
+        \strc_math_flush_box
         \hss
      \else
-        \box\scratchbox
+       \strc_math_flush_box
      \fi
    \egroup}
 
-\defineinnermathhandler\v!left      {\startmathbox\plusone  }{\stopmathbox}
-\defineinnermathhandler\v!middle    {\startmathbox\plustwo  }{\stopmathbox}
-\defineinnermathhandler\v!right     {\startmathbox\plusthree}{\stopmathbox}
-\defineinnermathhandler\v!flushleft {\startmathbox\plusthree}{\stopmathbox}
-\defineinnermathhandler\v!center    {\startmathbox\plustwo  }{\stopmathbox}
-\defineinnermathhandler\v!flushright{\startmathbox\plusone  }{\stopmathbox}
-\defineinnermathhandler\v!normal    {\startmathbox\plustwo  }{\stopmathbox}
+\defineinnermathhandler\v!left      {\strc_math_box_start\plusone  }{\strc_math_box_stop}
+\defineinnermathhandler\v!middle    {\strc_math_box_start\plustwo  }{\strc_math_box_stop}
+\defineinnermathhandler\v!right     {\strc_math_box_start\plusthree}{\strc_math_box_stop}
+\defineinnermathhandler\v!flushleft {\strc_math_box_start\plusthree}{\strc_math_box_stop}
+\defineinnermathhandler\v!center    {\strc_math_box_start\plustwo  }{\strc_math_box_stop}
+\defineinnermathhandler\v!flushright{\strc_math_box_start\plusone  }{\strc_math_box_stop}
+\defineinnermathhandler\v!normal    {\strc_math_box_start\plustwo  }{\strc_math_box_stop}
 
 %D For documentation, see \type {math-mkiv.tex}.
 

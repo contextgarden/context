@@ -177,7 +177,9 @@ local methods = {
     -- The next one uses an attribute assigned to the character but still we
     -- don't have the 'local' value.
 
-    [0x001F] = function(head,current)
+    -- maybe also 0x0008 : backspace
+
+    [0x001F] = function(head,current) -- kind of special
         local next = getnext(current)
         if next then
             local char = isglyph(next)

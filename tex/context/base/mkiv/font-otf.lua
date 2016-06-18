@@ -2697,7 +2697,7 @@ local function copytotfm(data,cache_id)
                 spaceunits, spacer = charwidth, "charwidth"
             end
         end
-        spaceunits = tonumber(spaceunits) or 500 -- brrr
+        spaceunits = tonumber(spaceunits) or units/2
         --
         parameters.slant         = 0
         parameters.space         = spaceunits          -- 3.333 (cmr10)

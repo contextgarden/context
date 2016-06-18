@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/16/16 23:49:06
+-- merge date  : 06/18/16 16:28:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -15712,13 +15712,13 @@ local function copytotfm(data,cache_id)
         spaceunits,spacer=charwidth,"charwidth"
       end
     end
-    spaceunits=tonumber(spaceunits) or 500
+    spaceunits=tonumber(spaceunits) or units/2
     parameters.slant=0
-    parameters.space=spaceunits     
+    parameters.space=spaceunits      
     parameters.space_stretch=1*units/2  
-    parameters.space_shrink=1*units/3 
-    parameters.x_height=2*units/5 
-    parameters.quad=units   
+    parameters.space_shrink=1*units/3  
+    parameters.x_height=2*units/5  
+    parameters.quad=units    
     if spaceunits<2*units/5 then
     end
     if italicangle and italicangle~=0 then

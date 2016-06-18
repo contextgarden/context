@@ -501,6 +501,7 @@
             <cd:constant type="packed"/>
             <cd:constant type="tight"/>
             <cd:constant type="middle"/>
+            <cd:constant type="frame"/>
             <cd:inherit name="setupbodyfont"/>
         </cd:keywords>
     </cd:define>

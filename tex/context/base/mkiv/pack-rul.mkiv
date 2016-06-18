@@ -1668,15 +1668,36 @@
 
 \newdimen\d_framed_locator_ht
 \newdimen\d_framed_locator_dp
+\newdimen\d_framed_locator_lo
+\newdimen\d_framed_locator_ro
 
-\def\pack_framed_locater_set#1%
+\def\pack_framed_locator_set#1%
   {\d_framed_locator_ht\dimexpr
      #1+\d_framed_linewidth
      \ifconditional\c_framed_has_offset
        +\framedparameter\c!offset
      \fi
+     +\framedparameter\c!toffset
    \relax
    \d_framed_locator_dp\dimexpr\ht\b_framed_normal-\d_framed_locator_ht\relax}
+
+\def\pack_framed_locator_set_lo
+  {\global\d_framed_locator_lo\dimexpr
+     \d_framed_linewidth
+     \ifconditional\c_framed_has_offset
+       +\framedparameter\c!offset
+     \fi
+     +\framedparameter\c!loffset
+   \relax}
+
+\def\pack_framed_locator_set_ro
+  {\global\d_framed_locator_ro\dimexpr
+     \d_framed_linewidth
+     \ifconditional\c_framed_has_offset
+       +\framedparameter\c!offset
+     \fi
+     +\framedparameter\c!roffset
+   \relax}
 
 % \ruledhbox
 %   {A
@@ -1742,11 +1763,11 @@
 
 \installframedlocator \v!high
   {}
-  {\pack_framed_locater_set\strutht
+  {\pack_framed_locator_set\strutht
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_dp\box\b_framed_normal}%
    \ht\b_framed_normal\strutht
    \dp\b_framed_normal\strutdp
-   \hpack{\box\b_framed_normal}}
+   \hpack{\box\b_framed_normal}} % why pack
 
 \installframedlocator \v!line
   {}
@@ -1757,7 +1778,7 @@
 
 \installframedlocator \v!low
   {}
-  {\pack_framed_locater_set\strutdp
+  {\pack_framed_locator_set\strutdp
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_ht\box\b_framed_normal}%
    \ht\b_framed_normal\strutht
    \dp\b_framed_normal\strutdp
@@ -1765,7 +1786,7 @@
 
 \installframedlocator \v!top
   {}
-  {\pack_framed_locater_set\strutht
+  {\pack_framed_locator_set\strutht
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_dp\box\b_framed_normal}%
    \ht\b_framed_normal\d_framed_locator_ht
    \dp\b_framed_normal\d_framed_locator_dp
@@ -1785,7 +1806,7 @@
 
 \installframedlocator \v!bottom
   {}
-  {\pack_framed_locater_set\strutdp
+  {\pack_framed_locator_set\strutdp
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_ht\box\b_framed_normal}%
    \ht\b_framed_normal\d_framed_locator_dp
    \dp\b_framed_normal\d_framed_locator_ht
@@ -1794,6 +1815,16 @@
 \installframedlocator \v!keep % retains height/depth
   {\pack_framed_remove_depth}
   {\pack_framed_restore_depth}
+
+\newdimen\d_framed_formula
+
+\installframedlocator \v!formula % private, will become a more generic name
+  {}
+  {\pack_framed_locator_set\d_framed_formula
+   \setbox\b_framed_normal\hpack{\lower\d_framed_locator_dp\box\b_framed_normal}%
+   \ht\b_framed_normal\d_framed_locator_ht
+   \dp\b_framed_normal\d_framed_locator_dp
+   \hpack{\box\b_framed_normal}}
 
 % also used in fastlocalframed
 

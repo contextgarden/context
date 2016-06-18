@@ -606,7 +606,86 @@ We might add some more control in the future, but this is what you get:
 
 \startlinecorrection \getbuffer \stoplinecorrection
 
+Framing a formula is also supported as a option, where the full power of framed can
+be applied to the formula. We will illustrate this in detail on the next pages. For this
+we use the following sample:
+
+\typefile{math-framing-001.tex}
+
+In \in {figure} [framing-flushleft], \in [framing-middle] \in {and}
+[framing-flushright] you see some combinations. You can run this example on your
+machine and see the details.
+
+\startplacefigure[location=page,reference=framing-flushleft,title={Framed formulas flushed left.}]
+    \startcombination[2*2]
+        {\typesetfile[math-framing-001.tex][page=01,height=.45\textheight]} {\tttf right + flushleft}
+        {\typesetfile[math-framing-001.tex][page=02,height=.45\textheight]} {\tttf right + flushleft}
+        {\typesetfile[math-framing-001.tex][page=07,height=.45\textheight]} {\tttf left  + flushleft + tight}
+        {\typesetfile[math-framing-001.tex][page=08,height=.45\textheight]} {\tttf left  + flushleft + tight}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[location=page,reference=framing-middle,title={Framed formulas centered.}]
+    \startcombination[2*2]
+        {\typesetfile[math-framing-001.tex][page=03,height=.45\textheight]} {\tttf right + middle}
+        {\typesetfile[math-framing-001.tex][page=04,height=.45\textheight]} {\tttf right + middle}
+        {\typesetfile[math-framing-001.tex][page=09,height=.45\textheight]} {\tttf left  + middle + tight}
+        {\typesetfile[math-framing-001.tex][page=10,height=.45\textheight]} {\tttf left  + middle + tight}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[location=page,reference=framing-flushright,title={Framed formulas flushed right.}]
+    \startcombination[2*2]
+        {\typesetfile[math-framing-001.tex][page=05,height=.45\textheight]} {\tttf right + flushright}
+        {\typesetfile[math-framing-001.tex][page=06,height=.45\textheight]} {\tttf right + flushright}
+        {\typesetfile[math-framing-001.tex][page=11,height=.45\textheight]} {\tttf left  + flushright + tight}
+        {\typesetfile[math-framing-001.tex][page=12,height=.45\textheight]} {\tttf left  + flushright + tight}
+    \stopcombination
+\stopplacefigure
+
 \stopchapter
+
+With each formula class a framed variants is automatically created:
+
+\startbuffer
+\defineformula
+  [foo]
+
+\setupformulaframed
+  [foo]
+  [frame=on,
+   framecolor=red]
+
+\startfooformula[frame]
+    e=mc^2
+\stopfooformula
+\stopbuffer
+
+\typebuffer
+
+This time you get a red frame:
+
+\getbuffer
+
+You can also frame the number, as in:
+
+\startbuffer
+\setupformulaframed[framecolor=red,frame=on,offset=1ex]
+\setupformula[option=frame,color=blue]
+\setupformula[numbercommand={\inframed[framecolor=green]}]
+
+\startplaceformula
+    \startformula
+        2 + 2 = 2x
+    \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer
+
+The boxes get properly aligned:
+
+\start \showboxes \getbuffer \stop
 
 \stoptext
 

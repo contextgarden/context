@@ -62,6 +62,7 @@
 %                             %            "2003  % quad == \quad == \hskip\emwidth
 \edef\threeperemspace         {\normalUchar"2004} % quad/3
 \edef\fourperemspace          {\normalUchar"2005} % quad/4
+%edef\fiveperemspace          {\normalUchar"001E} % quad/5 (bonus)
 \edef\sixperemspace           {\normalUchar"2006} % quad/6
 \edef\figurespace             {\normalUchar"2007} % width of zero
 \edef\punctuationspace        {\normalUchar"2008} % width of period
@@ -71,9 +72,12 @@
 \edef\zerowidthnonjoiner      {\normalUchar"200C} % 0
 \edef\zerowidthjoiner         {\normalUchar"200D} % 0
 \edef\narrownobreakspace      {\normalUchar"202F} % quad/8
-%                             %            "205F  % space/8 (math)
-%    \zerowidthnobreakspace   {\normalUchar"FEFF}
+%edef\mediummathspace         {\normalUchar"205F} % space/8 (math)
+%edef\zerowidthnobreakspace   {\normalUchar"FEFF}
+%edef\fiveperemspace          {\normalUchar"001E}
+
 \udef\zerowidthnobreakspace   {\penalty\plustenthousand\kern\zeropoint}
+\udef\fiveperemspace          {\hskip\dimexpr\emwidth/5\relax}
 
 \let\zwnj\zerowidthnonjoiner
 \let\zwj \zerowidthjoiner
@@ -86,10 +90,6 @@
 % unexpanded as otherwise we need to intercept / cleanup a lot
 
 \unexpanded\def~{\nobreakspace}
-
-% Goodies:
-
-\unexpanded\def\fiveperemspace{\hskip\dimexpr\emwidth/5\relax}
 
 \protect \endinput
 

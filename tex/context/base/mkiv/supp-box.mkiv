@@ -2619,13 +2619,11 @@
    \fi}
 
 \unexpanded\def\obeydepth
-  {\par
-   \ifvmode
-     \ifdim\prevdepth>\zeropoint
-       \kern-\prevdepth
-     \fi
-     \kern\strutdp
-   \fi}
+  {\par % watch out for changes in math formulas
+   \ifvmode\ifdim\prevdepth<\zeropoint\else\ifdim\prevdepth<\strutdp
+     \kern\dimexpr\strutdp-\prevdepth\relax
+     \prevdepth\strutdp
+   \fi\fi\fi}
 
 \unexpanded\def\undepthed
   {\dowithnextbox{\dp\nextbox\zeropoint\box\nextbox}\hbox}

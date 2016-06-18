@@ -506,14 +506,14 @@ local function copytotfm(data,cache_id)
                 spaceunits, spacer = charwidth, "charwidth"
             end
         end
-        spaceunits = tonumber(spaceunits) or 500 -- brrr
+        spaceunits = tonumber(spaceunits) or units/2
         --
         parameters.slant         = 0
-        parameters.space         = spaceunits          -- 3.333 (cmr10)
+        parameters.space         = spaceunits            -- 3.333 (cmr10)
         parameters.space_stretch = 1*units/2   --  500   -- 1.666 (cmr10)
-        parameters.space_shrink  = 1*units/3 --  333   -- 1.111 (cmr10)
-        parameters.x_height      = 2*units/5 --  400
-        parameters.quad          = units     -- 1000
+        parameters.space_shrink  = 1*units/3   --  333   -- 1.111 (cmr10)
+        parameters.x_height      = 2*units/5   --  400
+        parameters.quad          = units       -- 1000
         if spaceunits < 2*units/5 then
             -- todo: warning
         end

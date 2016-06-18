@@ -19,15 +19,29 @@
 \unprotect
 
 %D \macros
-%D   {setupformulas,setupsubformulas}
+%D   {setupformulas,setupsubformulas,setupformulaframed}
 
 \installcorenamespace{formula}
 \installcorenamespace{subformula}
+\installcorenamespace{formulaframed}
+\installcorenamespace{formulaoption}
 
-\installcommandhandler \??formula    {formula}    \??formula
-\installcommandhandler \??subformula {subformula} \??subformula % maybe just setuphandler (no childs used yet)
+\installcommandhandler       \??formula       {formula}       \??formula
+\installcommandhandler       \??subformula    {subformula}    \??subformula % maybe just setuphandler (no childs used yet)
+\installframedcommandhandler \??formulaframed {formulaframed} \??formulaframed
 
 \let\setupformulas   \setupformula
 \let\setupsubformulas\setupsubformula
+
+\appendtoks
+    \normalexpanded{\defineformulaframed[\currentformula][\currentformulaparent]}%
+\to \everydefineformula
+
+\def\strc_formulas_option#1%
+  {\ifcsname\??formulaoption#1\endcsname
+     \lastnamedcs
+   \else
+     \font_basics_switchtobodyfont{#1}% for old time sake, might go away, only pt so maybe dimension and small test
+   \fi}
 
 \protect \endinput

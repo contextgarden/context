@@ -1,0 +1,73 @@
+\doifmodeelse {with-struts} {
+    \def\Line{\dontleavehmode{\showstruts\dorecurse{18}{x \strut x }}}
+} {
+    \def\Line{\dontleavehmode{\showstruts\dorecurse{18}{x        x }}}
+}
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   backspace=1mm,
+   topspace=1cm]
+
+\setupbodyfont
+  [17.3pt]
+
+\starttext
+
+\Line
+
+\startformula
+    x
+\stopformula
+
+\Line
+
+\startformula
+    y
+\stopformula
+
+\Line
+
+\startformula
+    \strut x
+\stopformula
+
+\Line
+
+\startformula \startalign
+    \NC c - a     = \NC b \NR
+    \NC d + c - b = \NC a \NR
+\stopalign \stopformula
+
+\Line
+
+\startformula \startalign
+    \NC c - a     = \NC b \NR
+    \NC d + c - b = \NC a \NR
+\stopalign \stopformula
+
+\Line
+
+\startformula
+\mframed
+    [offset=1mm,loffset=3mm,roffset=3mm] {
+        a + b = c
+    }
+\stopformula
+
+\Line
+
+\startformula
+\mframed
+    [offset=1mm,loffset=3mm,roffset=3mm] {
+        \startalign
+            \NC c - a     = \NC b \NR
+            \NC d + c - b = \NC a \NR
+        \stopalign
+    }
+\stopformula
+
+\Line
+
+\stoptext

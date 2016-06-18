@@ -48,6 +48,12 @@
    \c!strut=\v!no,
    \c!distance=2\emwidth]
 
+\setupformulaframed
+  [%c!location=<auto set>,
+   %c!width=<auto set>,
+   %c!align=<auto set>,
+   \c!offset=.5\exheight]
+
 \ifdefined\matheqnogapstep
     % we're ok, now we have that quad in the distance which is
     % more consistent and not depending on the text font in math
@@ -620,11 +626,19 @@
      \directvspacing\p_spaceafter
    \fi}
 
+\def\strc_math_obey_depth
+  {\ifvmode\ifdim\prevdepth<\zeropoint\else\ifdim\prevdepth<\strutdp
+     % maybe add a tracing option here
+     \kern\dimexpr\strutdp-\prevdepth\relax
+     \prevdepth\strutdp
+   \fi\fi\fi}
+
 \setvalue{\??mathdisplayspacemodel\v!before:3}%
-  {\ifdim\lastskip>\zeropoint
+  {% not ok, try \stopformula\par\startformula vs \stopformula\startformula
+   \ifdim\lastskip>\zeropoint
      % bah
    \else
-     \obeydepth
+     \strc_math_obey_depth
      \nointerlineskip
    \fi
    \ifx\p_spacebefore\v!none
@@ -701,15 +715,6 @@
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
-
-\installcorenamespace{formulaoption}
-
-\def\strc_formulas_option#1%
-  {\ifcsname\??formulaoption#1\endcsname
-     \lastnamedcs
-   \else
-     \font_basics_switchtobodyfont{#1}% for old time sake, might go away, only pt so maybe dimension and small test
-   \fi}
 
 \setvalue{\??formulaoption\v!packed}%
   {\c_strc_formulas_space_model\zerocount}
