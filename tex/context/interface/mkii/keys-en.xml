@@ -210,7 +210,7 @@
 		<cd:variable name='force' value='force'/>
 		<cd:variable name='foreground' value='foreground'/>
 		<cd:variable name='formula' value='formula'/>
-		<cd:variable name='formulae' value='formulae'/>
+		<cd:variable name='formulas' value='formulas'/>
 		<cd:variable name='forward' value='forward'/>
 		<cd:variable name='four' value='four'/>
 		<cd:variable name='frame' value='frame'/>

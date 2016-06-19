@@ -13538,10 +13538,10 @@ return {
    ["pe"]="فرمول",
    ["ro"]="formula",
   },
-  ["formulae"]={
+  ["formulas"]={
    ["cs"]="rovnice",
    ["de"]="formeln",
-   ["en"]="formulae",
+   ["en"]="formulas",
    ["fr"]="formules",
    ["it"]="formule",
    ["nl"]="formules",

@@ -968,10 +968,21 @@
 \unexpanded\def\startformulas
   {\dosingleempty\strc_formulas_start_formulas}
 
-\unexpanded\def\startformulas
-  {\dosingleempty\strc_formulas_start_formulas}
+\expandafter\let\csname\e!stop\v!formulas\endcsname\relax
 
-\def\strc_formulas_start_formulas[#1]#2\stopformulas % new / to be internationalized
+\unexpanded\def\strc_formulas_nested_formula_start
+  {\hbox to \displaywidth \bgroup
+   \hsize\displaywidth
+   \hss
+   \Ustartmath}
+
+\unexpanded\def\strc_formulas_nested_formula_stop
+  {\Ustopmath
+   \hss
+   \egroup
+   \hss}
+
+\normalexpanded{\def\noexpand\strc_formulas_start_formulas[#1]#2\csname\e!stop\v!formulas\endcsname}%
   {\startformula
    \dostarttagged\t!formulaset\empty
    \global\settrue\c_strc_formulas_inside_formulas
@@ -979,8 +990,9 @@
    \strc_formulas_handle_number
    \let\currentformula\empty
    \strc_formulas_forget_display_skips
-   \unexpanded\def\startformula##1\stopformula
-     {\advance\scratchcounter\plusone}%
+   \unexpanded\def\startformula
+     {\advance\scratchcounter\plusone
+      \expandafter\gobbleuntil\csname\e!stop\v!formula\endcsname}%
    \scratchcounter\zerocount
    #2% preroll
    \hbox to \displaywidth \bgroup
@@ -996,22 +1008,6 @@
    \the\everyresetformulas
    \hangafter\minusone    % added for side floats
    \hangindent\zeropoint} % added for side floats
-
-\unexpanded\def\strc_formulas_nested_formula_start
-  {\hbox to \displaywidth \bgroup
-   \hsize\displaywidth
-   \Ustartmath
-   \vcenter\bgroup % not optimal
-   \vskip-\strutdepth
-   \Ustartdisplaymath}
-
-\unexpanded\def\strc_formulas_nested_formula_stop
-  {\Ustopdisplaymath
-   \obeydepth
-   \egroup
-   \Ustopmath
-   \egroup
-   \hss}
 
 % place
 

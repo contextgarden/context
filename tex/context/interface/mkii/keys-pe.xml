@@ -210,7 +210,7 @@
 		<cd:variable name='force' value='اجبار'/>
 		<cd:variable name='foreground' value='پیش‌زمینه'/>
 		<cd:variable name='formula' value='فرمول'/>
-		<cd:variable name='formulae' value='فرمولها'/>
+		<cd:variable name='formulas' value='فرمولها'/>
 		<cd:variable name='forward' value='به‌جلو'/>
 		<cd:variable name='four' value='چهار'/>
 		<cd:variable name='frame' value='قالب'/>

@@ -1,0 +1,54 @@
+-- We just assume that Minion Pro is used. After all it's a commercial font so
+-- that is probably whey people will buy.
+
+return {
+    name = "minion",
+    version = "1.00",
+    comment = "Goodies that complement minion pro.",
+    author = "Hans Hagen and Mathias Schickel",
+    copyright = "ConTeXt development team",
+    designsizes = {
+        ["Minion-Regular"] = {
+            ["9.5pt"]  = "file:MinionPro-Capt.otf",
+            ["12.5pt"] = "file:MinionPro-Regular.otf",
+            ["14.5pt"] = "file:MinionPro-Subh.otf",
+            ["16pt"]   = "file:MinionPro-Disp.otf",
+            default    = "file:MinionPro-Regular.otf",
+        },
+        ["Minion-Italic"] = {
+            ["9.5pt"]  = "file:MinionPro-ItCapt.otf",
+            ["12.5pt"] = "file:MinionPro-It.otf",
+            ["14.5pt"] = "file:MinionPro-ItSubh.otf",
+            ["16pt"]   = "file:MinionPro-ItDisp.otf",
+            default    = "file:MinionPro-It.otf",
+        },
+        ["Minion-Bold"] = {
+            ["9.5pt"]  = "file:MinionPro-BoldCapt.otf",
+            ["12.5pt"] = "file:MinionPro-Bold.otf",
+            ["14.5pt"] = "file:MinionPro-BoldSubh.otf",
+            ["16pt"]   = "file:MinionPro-BoldDisp.otf",
+            default    = "file:MinionPro-Bold.otf",
+        },
+        ["Minion-BoldItalic"] = {
+            ["9.5pt"]  = "file:MinionPro-BoldItCapt.otf",
+            ["12.5pt"] = "file:MinionPro-BoldIt.otf",
+            ["14.5pt"] = "file:MinionPro-BoldItSubh.otf",
+            ["16pt"]   = "file:MinionPro-BoldItDisp.otf",
+            default    = "file:MinionPro-It.otf",
+        },
+        ["Minion-Medium"] = {
+            ["9.5pt"]  = "file:MinionPro-SemiboldCapt.otf",
+            ["12.5pt"] = "file:MinionPro-Semibold.otf",
+            ["14.5pt"] = "file:MinionPro-SemiboldSubh.otf",
+            ["16pt"]   = "file:MinionPro-SemiboldDisp.otf",
+            default    = "file:MinionPro-Semibold.otf",
+        },
+        ["Minion-MediumItalic"] = {
+            ["9.5pt"]  = "file:MinionPro-SemiboldItCapt.otf",
+            ["12.5pt"] = "file:MinionPro-SemiboldIt.otf",
+            ["14.5pt"] = "file:MinionPro-SemiboldItSubh.otf",
+            ["16pt"]   = "file:MinionPro-SemiboldItDisp.otf",
+            default    = "file:MinionPro-SemiboldIt.otf",
+        },
+    },
+}

@@ -11,28 +11,44 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-
-\definefontfallback[MinionMathFallback][file:latinmodern-math.otf][uppercasescript]
+\definefontfallback[MinionMathFallback]    [file:latinmodern-math.otf][uppercasescript]
+\definefontfallback[MinionBoldMathFallback][file:latinmodern-math.otf][uppercasescript]
 
 \starttypescriptcollection[minion]
 
     \starttypescript [\s!serif][minion][\s!all]
-        \definefontsynonym[\s!Serif]          [\s!file:MinionPro-Regular.otf][\s!features=\s!default]
-        \definefontsynonym[\s!SerifBold]      [\s!file:MinionPro-Bold.otf]   [\s!features=\s!default]
-        \definefontsynonym[\s!SerifItalic]    [\s!file:MinionPro-It.otf]     [\s!features=\s!default]
-        \definefontsynonym[\s!SerifBoldItalic][\s!file:MinionPro-BoldIt.otf] [\s!features=\s!default]
+        \loadfontgoodies[minion]
+        \definefontsynonym[\s!Serif]          [Minion-Regular]   [\s!features=\s!default,\s!goodies=minion]
+        \definefontsynonym[\s!SerifBold]      [Minion-Bold]      [\s!features=\s!default,\s!goodies=minion]
+        \definefontsynonym[\s!SerifItalic]    [Minion-Italic]    [\s!features=\s!default,\s!goodies=minion]
+        \definefontsynonym[\s!SerifBoldItalic][Minion-BoldItalic][\s!features=\s!default,\s!goodies=minion]
+    \stoptypescript
+
+    \starttypescript [\s!serif][minion-medium][\s!all]
+        \loadfontgoodies[minion]
+        \definefontsynonym[\s!Serif]          [Minion-Regular]     [\s!features=\s!default,\s!goodies=minion]
+        \definefontsynonym[\s!SerifBold]      [Minion-Medium]      [\s!features=\s!default,\s!goodies=minion]
+        \definefontsynonym[\s!SerifItalic]    [Minion-Italic]      [\s!features=\s!default,\s!goodies=minion]
+        \definefontsynonym[\s!SerifBoldItalic][Minion-MediumItalic][\s!features=\s!default,\s!goodies=minion]
     \stoptypescript
 
     \starttypescript [\s!math][minion][\s!all]
         \loadfontgoodies[minion-math]
-        \definefontsynonym[\s!MathRoman][Minion-Math][\s!features=\s!math\mathsizesuffix,\s!designsize=\s!auto,\s!goodies=minion-math,\s!fallbacks=MinionMathFallback]
+        \definefontsynonym[\s!MathRoman]    [Minion-Math]    [\s!features=\s!math\mathsizesuffix,\s!designsize=\s!auto,\s!goodies=minion-math,\s!fallbacks=MinionMathFallback]
+        \definefontsynonym[\s!MathRomanBold][Minion-BoldMath][\s!features=\s!math\mathsizesuffix,\s!designsize=\s!auto,\s!goodies=minion-math,\s!fallbacks=MinionBoldMathFallback]
     \stoptypescript
 
-    \starttypescript [minion]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [minion] [\s!default]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu] [\s!default] [\s!rscale=0.8]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu] [\s!default] [\s!rscale=0.8]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [minion] [\s!default]
+    \starttypescript [\s!math][minion-medium][\s!all]
+        \loadfontgoodies[minion-math]
+        \definefontsynonym[\s!MathRoman]    [Minion-Math]      [\s!features=\s!math\mathsizesuffix,\s!designsize=\s!auto,\s!goodies=minion-math,\s!fallbacks=MinionMathFallback]
+        \definefontsynonym[\s!MathRomanBold][Minion-MediumMath][\s!features=\s!math\mathsizesuffix,\s!designsize=\s!auto,\s!goodies=minion-math,\s!fallbacks=MinionBoldMathFallback]
+    \stoptypescript
+
+    \starttypescript [minion,minion-medium]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default] [\s!rscale=0.8]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default] [\s!rscale=0.8]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
     \stoptypescript
 
 \stoptypescriptcollection
