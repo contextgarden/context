@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/19/16 13:29:04
+-- merge date  : 06/20/16 22:14:55
 
 do -- begin closure to overcome local limits and interference
 
@@ -1487,6 +1487,7 @@ local function do_serialize(root,name,depth,level,indexed)
           else
             handle(format("%s [%s]=%s,",depth,k and "true" or "false",v)) 
           end
+        elseif tk~="string" then
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           if hexify then
             handle(format("%s %s=0x%X,",depth,k,v))
@@ -1509,6 +1510,7 @@ local function do_serialize(root,name,depth,level,indexed)
           end
         elseif tk=="boolean" then
           handle(format("%s [%s]=%q,",depth,k and "true" or "false",v))
+        elseif tk~="string" then
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           handle(format("%s %s=%q,",depth,k,v))
         else
@@ -1524,6 +1526,7 @@ local function do_serialize(root,name,depth,level,indexed)
             end
           elseif tk=="boolean" then
             handle(format("%s [%s]={},",depth,k and "true" or "false"))
+          elseif tk~="string" then
           elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
             handle(format("%s %s={},",depth,k))
           else
@@ -1540,6 +1543,7 @@ local function do_serialize(root,name,depth,level,indexed)
               end
             elseif tk=="boolean" then
               handle(format("%s [%s]={ %s },",depth,k and "true" or "false",concat(st,", ")))
+            elseif tk~="string" then
             elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
               handle(format("%s %s={ %s },",depth,k,concat(st,", ")))
             else
@@ -1560,6 +1564,7 @@ local function do_serialize(root,name,depth,level,indexed)
           end
         elseif tk=="boolean" then
           handle(format("%s [%s]=%s,",depth,tostring(k),v and "true" or "false"))
+        elseif tk~="string" then
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           handle(format("%s %s=%s,",depth,k,v and "true" or "false"))
         else
@@ -1576,6 +1581,7 @@ local function do_serialize(root,name,depth,level,indexed)
             end
           elseif tk=="boolean" then
             handle(format("%s [%s]=load(%q),",depth,k and "true" or "false",f))
+          elseif tk~="string" then
           elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
             handle(format("%s %s=load(%q),",depth,k,f))
           else
@@ -1591,6 +1597,7 @@ local function do_serialize(root,name,depth,level,indexed)
           end
         elseif tk=="boolean" then
           handle(format("%s [%s]=%q,",depth,k and "true" or "false",tostring(v)))
+        elseif tk~="string" then
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           handle(format("%s %s=%q,",depth,k,tostring(v)))
         else
@@ -5682,7 +5689,7 @@ if not modules then modules={} end modules ['font-con']={
   license="see context related readme files"
 }
 local next,tostring,rawget=next,tostring,rawget
-local format,match,lower,gsub=string.format,string.match,string.lower,string.gsub
+local format,match,lower,gsub,find=string.format,string.match,string.lower,string.gsub,string.find
 local sort,insert,concat,sortedkeys,serialize,fastcopy=table.sort,table.insert,table.concat,table.sortedkeys,table.serialize,table.fastcopy
 local derivetable=table.derive
 local trace_defining=false trackers.register("fonts.defining",function(v) trace_defining=v end)
@@ -5702,89 +5709,6 @@ constructors.version=1.01
 constructors.cache=containers.define("fonts","constructors",constructors.version,false)
 constructors.privateoffset=0xF0000 
 constructors.cacheintex=true
-constructors.keys={
-  properties={
-    encodingbytes="number",
-    embedding="number",
-    cidinfo={},
-    format="string",
-    fontname="string",
-    fullname="string",
-    filename="filename",
-    psname="string",
-    name="string",
-    virtualized="boolean",
-    hasitalics="boolean",
-    autoitalicamount="basepoints",
-    nostackmath="boolean",
-    noglyphnames="boolean",
-    mode="string",
-    hasmath="boolean",
-    mathitalics="boolean",
-    textitalics="boolean",
-    finalized="boolean",
-  },
-  parameters={
-    mathsize="number",
-    scriptpercentage="float",
-    scriptscriptpercentage="float",
-    units="cardinal",
-    designsize="scaledpoints",
-    expansion={
-                  stretch="integerscale",
-                  shrink="integerscale",
-                  step="integerscale",
-                  auto="boolean",
-                 },
-    protrusion={
-                  auto="boolean",
-                 },
-    slantfactor="float",
-    extendfactor="float",
-    factor="float",
-    hfactor="float",
-    vfactor="float",
-    size="scaledpoints",
-    units="scaledpoints",
-    scaledpoints="scaledpoints",
-    slantperpoint="scaledpoints",
-    spacing={
-                  width="scaledpoints",
-                  stretch="scaledpoints",
-                  shrink="scaledpoints",
-                  extra="scaledpoints",
-                 },
-    xheight="scaledpoints",
-    quad="scaledpoints",
-    ascender="scaledpoints",
-    descender="scaledpoints",
-    synonyms={
-                  space="spacing.width",
-                  spacestretch="spacing.stretch",
-                  spaceshrink="spacing.shrink",
-                  extraspace="spacing.extra",
-                  x_height="xheight",
-                  space_stretch="spacing.stretch",
-                  space_shrink="spacing.shrink",
-                  extra_space="spacing.extra",
-                  em="quad",
-                  ex="xheight",
-                  slant="slantperpoint",
-                 },
-  },
-  description={
-    width="basepoints",
-    height="basepoints",
-    depth="basepoints",
-    boundingbox={},
-  },
-  character={
-    width="scaledpoints",
-    height="scaledpoints",
-    depth="scaledpoints",
-    italic="scaledpoints",
-  },
-}
 local designsizes=allocate()
 constructors.designsizes=designsizes
 local loadedfonts=allocate()
@@ -5922,6 +5846,21 @@ local function mathkerns(v,vdelta)
   end
   return k
 end
+local psfake=0
+local function fixedpsname(psname,fallback)
+  local usedname=psname
+  if not psname or psname=="" then
+    psname=fallback
+    usedname=gsub(psname,"[^a-zA-Z0-9]+","-")
+  elseif find(psname," ") then
+    usedname=gsub(psname,"[%s]+","-")
+  end
+  if not psname or psname=="" then
+    psfake=psfake+1
+    psname="fakename-"..psfake
+  end
+  return usedname,psname~=usedname
+end
 function constructors.scale(tfmdata,specification)
   local target={}
   if tonumber(specification) then
@@ -5995,14 +5934,12 @@ function constructors.scale(tfmdata,specification)
   target.cidinfo=properties.cidinfo
   target.format=properties.format
   target.cache=constructors.cacheintex and "yes" or "renew"
-  local fontname=properties.fontname or tfmdata.fontname 
-  local fullname=properties.fullname or tfmdata.fullname 
-  local filename=properties.filename or tfmdata.filename 
-  local psname=properties.psname  or tfmdata.psname  
+  local fontname=properties.fontname or tfmdata.fontname
+  local fullname=properties.fullname or tfmdata.fullname
+  local filename=properties.filename or tfmdata.filename
+  local psname=properties.psname  or tfmdata.psname
   local name=properties.name   or tfmdata.name
-  if not psname or psname=="" then
-    psname=fontname or (fullname and fonts.names.cleanname(fullname))
-  end
+  local psname,psfixed=fixedpsname(psname,fontname or fullname or file.nameonly(filename))
   target.fontname=fontname
   target.fullname=fullname
   target.filename=filename
@@ -6115,8 +6052,9 @@ function constructors.scale(tfmdata,specification)
     end
   end
   if trace_defining then
-    report_defining("defining tfm, name %a, fullname %a, filename %a, hscale %a, vscale %a, math %a, italics %a",
-      name,fullname,filename,hdelta,vdelta,hasmath and "enabled" or "disabled",hasitalics and "enabled" or "disabled")
+    report_defining("defining tfm, name %a, fullname %a, filename %a, %spsname %a, hscale %a, vscale %a, math %a, italics %a",
+      name,fullname,filename,psfixed and "(fixed) " or "",psname,hdelta,vdelta,
+      hasmath and "enabled" or "disabled",hasitalics and "enabled" or "disabled")
   end
   constructors.beforecopyingcharacters(target,tfmdata)
   local sharedkerns={}
@@ -24583,10 +24521,11 @@ if not modules then modules={} end modules ['font-def']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local format,gmatch,match,find,lower,gsub=string.format,string.gmatch,string.match,string.find,string.lower,string.gsub
+local lower,gsub=string.lower,string.gsub
 local tostring,next=tostring,next
 local lpegmatch=lpeg.match
 local suffixonly,removesuffix=file.suffix,file.removesuffix
+local formatters=string.formatters
 local allocate=utilities.storage.allocate
 local trace_defining=false trackers .register("fonts.defining",function(v) trace_defining=v end)
 local directive_embedall=false directives.register("fonts.embedall",function(v) directive_embedall=v end)
@@ -24747,7 +24686,7 @@ function definers.applypostprocessors(tfmdata)
       local extrahash=postprocessors[i](tfmdata) 
       if type(extrahash)=="string" and extrahash~="" then
         extrahash=gsub(lower(extrahash),"[^a-z]","-")
-        properties.fullname=format("%s-%s",properties.fullname,extrahash)
+        properties.fullname=formatters["%s-%s"](properties.fullname,extrahash)
       end
     end
   end

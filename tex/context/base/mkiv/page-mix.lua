@@ -62,6 +62,8 @@ local getbox              = nuts.getbox
 local getskip             = nuts.getskip
 local getattribute        = nuts.getattribute
 
+local texgetcount         = tex.getcount
+
 local theprop             = nuts.theprop
 
 local nodepool            = nuts.pool
@@ -106,9 +108,7 @@ local function collectinserts(result,nxt,nxtid)
     local inserts, currentskips, nextskips, inserttotal = { }, 0, 0, 0
     while nxt do
         if nxtid == insert_code then
-            inserttotal = inserttotal
-                        + getfield(nxt,"height")
-                        + getfield(nxt,"depth")
+            inserttotal = inserttotal + getfield(nxt,"height") -- height includes depth
             local s = getsubtype(nxt)
             local c = inserts[s]
             if trace_detail then
@@ -449,8 +449,8 @@ local function preparesplit(specification) -- a rather large function
             end
         end
         if trace_detail then
-            report_state("%-7s > column %s, delta %p, threshold %p, advance %p, total %p, target %p => %a (height %p, depth %p, skip %p)",
-                where,curcol,delta,threshold,advance,total,target,state,skipped,height,depth,skip)
+            report_state("%-8s > column %s, delta %p, threshold %p, advance %p, total %p, target %p => %a (height %p, depth %p, skip %p)",
+                where,curcol,delta,threshold,advance,total,target,state,height,depth,skip)
         end
         return state, skipped
     end
@@ -474,9 +474,9 @@ local function preparesplit(specification) -- a rather large function
         if advance ~= 0 then
             local state, skipped = checked(advance,"glue")
             if trace_state then
-                report_state("%-7s > column %s, state %a, advance %p, height %p","glue",column,state,advance,height)
+                report_state("%-8s > column %s, state %a, advance %p, height %p","glue",column,state,advance,height)
                 if skipped ~= 0 then
-                    report_state("%-7s > column %s, discarded %p","glue",column,skipped)
+                    report_state("%-8s > column %s, discarded %p","glue",column,skipped)
                 end
             end
             if state == "quit" then
@@ -486,15 +486,15 @@ local function preparesplit(specification) -- a rather large function
             depth  = 0
             if advance < 0 then
                 height = height + advance
-                skip   = 0
+                skip = 0
                 if height < 0 then
                     height = 0
                 end
             else
-                skip   = height > 0 and advance or 0
+                skip = height > 0 and advance or 0
             end
             if trace_state then
-                report_state("%-7s > column %s, height %p, depth %p, skip %p","glue",column,height,depth,skip)
+                report_state("%-8s > column %s, height %p, depth %p, skip %p","glue",column,height,depth,skip)
             end
         else
             -- what else? ignore? treat as valid as usual?
@@ -509,9 +509,9 @@ local function preparesplit(specification) -- a rather large function
         if advance ~= 0 then
             local state, skipped = checked(advance,"kern")
             if trace_state then
-                report_state("%-7s > column %s, state %a, advance %p, height %p, state %a","kern",column,state,advance,height)
+                report_state("%-8s > column %s, state %a, advance %p, height %p, state %a","kern",column,state,advance,height)
                 if skipped ~= 0 then
-                    report_state("%-7s > column %s, discarded %p","kern",column,skipped)
+                    report_state("%-8s > column %s, discarded %p","kern",column,skipped)
                 end
             end
             if state == "quit" then
@@ -521,7 +521,7 @@ local function preparesplit(specification) -- a rather large function
             depth  = 0
             skip   = 0
             if trace_state then
-                report_state("%-7s > column %s, height %p, depth %p, skip %p","kern",column,height,depth,skip)
+                report_state("%-8s > column %s, height %p, depth %p, skip %p","kern",column,height,depth,skip)
             end
         end
     end
@@ -532,9 +532,9 @@ local function preparesplit(specification) -- a rather large function
         if advance ~= 0 then
             local state, skipped = checked(advance,"rule")
             if trace_state then
-                report_state("%-7s > column %s, state %a, rule, advance %p, height %p","rule",column,state,advance,inserttotal,height)
+                report_state("%-8s > column %s, state %a, rule, advance %p, height %p","rule",column,state,advance,inserttotal,height)
                 if skipped ~= 0 then
-                    report_state("%-7s > column %s, discarded %p","rule",column,skipped)
+                    report_state("%-8s > column %s, discarded %p","rule",column,skipped)
                 end
             end
             if state == "quit" then
@@ -579,14 +579,14 @@ local function preparesplit(specification) -- a rather large function
                     if trace_state then
                         report_state("cycle: %s, forced column break, same page",cycle)
                         if skipped ~= 0 then
-                            report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
+                            report_state("%-8s > column %s, discarded %p","penalty",column,skipped)
                         end
                     end
                 else
                     if trace_state then
                         report_state("cycle: %s, forced column break, next page",cycle)
                         if skipped ~= 0 then
-                            report_state("%-7s > column %s, discarded %p","penalty",column,skipped)
+                            report_state("%-8s > column %s, discarded %p","penalty",column,skipped)
                         end
                     end
                     return true
@@ -611,17 +611,18 @@ local function preparesplit(specification) -- a rather large function
         line = line + 1
         local inserts, insertskips, nextskips, inserttotal = nil, 0, 0, 0
         local advance = getfield(current,"height")
+        local more = nxt and (nxtid == insert_code or nxtid == mark_code)
         if trace_state then
-            report_state("%-7s > column %s, content: %s","line",column,listtoutf(getlist(current),true,true))
+            report_state("%-8s > column %s, content: %s","line (1)",column,listtoutf(getlist(current),true,true))
         end
-        if nxt and (nxtid == insert_code or nxtid == mark_code) then
-            nxt, inserts, localskips, insertskips, inserttotal = collectinserts(result,nxt,nxtid)
+        if more then
+            nxt, inserts, insertskips, nextskips, inserttotal = collectinserts(result,nxt,nxtid)
         end
-        local state, skipped = checked(advance+inserttotal+insertskips,"line",lastlocked)
+        local state, skipped = checked(advance+inserttotal+insertskips,more and "line (2)" or "line only",lastlocked)
         if trace_state then
-            report_state("%-7s > column %s, state %a, line %s, advance %p, insert %p, height %p","line",column,state,line,advance,inserttotal,height)
+            report_state("%-8s > column %s, state %a, line %s, advance %p, insert %p, height %p","line (3)",column,state,line,advance,inserttotal,height)
             if skipped ~= 0 then
-                report_state("%-7s > column %s, discarded %p","line",column,skipped)
+                report_state("%-8s > column %s, discarded %p","line (4)",column,skipped)
             end
         end
         if state == "quit" then
@@ -658,7 +659,7 @@ local function preparesplit(specification) -- a rather large function
             appendinserts(result.inserts,inserts)
         end
         if trace_state then
-            report_state("%-7s > column %s, height %p, depth %p, skip %p","line",column,height,depth,skip)
+            report_state("%-8s > column %s, height %p, depth %p, skip %p","line (5)",column,height,depth,skip)
         end
         lastcontent = current
     end
@@ -681,6 +682,7 @@ local function preparesplit(specification) -- a rather large function
         elseif id == rule_code then
             if process_rule(current,nxt) then break end
         else
+            -- skip inserts and such
         end
 
         if backtracked then
@@ -751,12 +753,12 @@ local function finalize(result)
             local h = r.head
             if h then
                 setprev(h)
-if r.back then
-    local k = new_glue(r.back)
-    setlink(k,h)
-    h = k
-    r.head = h
-end
+                if r.back then
+                    local k = new_glue(r.back)
+                    setlink(k,h)
+                    h = k
+                    r.head = h
+                end
                 local t = r.tail
                 if t then
                     setnext(t,nil)
@@ -771,8 +773,11 @@ end
                         local h = new_hlist()
                         t[i] = h
                         setlist(h,getfield(l,"head"))
-                        setfield(h,"height",getfield(l,"height"))
-                        setfield(h,"depth",getfield(l,"depth"))
+                        local ht = getfield(l,"height")
+                        local dp = getfield(l,"depth")
+                        -- here ht is still ht + dp !
+                        setfield(h,"height",ht)
+                        setfield(h,"depth",dp)
                         setfield(l,"head",nil)
                     end
                     setprev(t[1])  -- needs checking

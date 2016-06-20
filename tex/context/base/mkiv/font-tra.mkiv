@@ -287,4 +287,16 @@
    \stopotfsample
    \endgroup}
 
+% new
+
+\unexpanded\def\savefont[#1]% not yet in i-*.xml
+  {\begingroup
+   \getdummyparameters[#1]%
+   \clf_savefont {
+      filename {\dummyparameter\c!file}
+      fontname {\dummyparameter\c!name}
+      method   {\dummyparameter\c!method}
+   }%
+   \endgroup}
+
 \protect \endinput

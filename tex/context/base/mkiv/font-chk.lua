@@ -428,7 +428,7 @@ local dummyzero = {
     commands = { { "special", "" } },
 }
 
-local function adddummysymbols(tfmdata,...)
+local function adddummysymbols(tfmdata)
     local characters = tfmdata.characters
     if not characters[0] then
         characters[0] = dummyzero

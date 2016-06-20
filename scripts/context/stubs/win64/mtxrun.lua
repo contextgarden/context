@@ -1389,7 +1389,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 36997, stripped down to: 22376
+-- original size: 37593, stripped down to: 22615
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1851,6 +1851,7 @@ local function do_serialize(root,name,depth,level,indexed)
           else
             handle(format("%s [%s]=%s,",depth,k and "true" or "false",v)) 
           end
+        elseif tk~="string" then
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           if hexify then
             handle(format("%s %s=0x%X,",depth,k,v))
@@ -1873,6 +1874,7 @@ local function do_serialize(root,name,depth,level,indexed)
           end
         elseif tk=="boolean" then
           handle(format("%s [%s]=%q,",depth,k and "true" or "false",v))
+        elseif tk~="string" then
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           handle(format("%s %s=%q,",depth,k,v))
         else
@@ -1888,6 +1890,7 @@ local function do_serialize(root,name,depth,level,indexed)
             end
           elseif tk=="boolean" then
             handle(format("%s [%s]={},",depth,k and "true" or "false"))
+          elseif tk~="string" then
           elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
             handle(format("%s %s={},",depth,k))
           else
@@ -1904,6 +1907,7 @@ local function do_serialize(root,name,depth,level,indexed)
               end
             elseif tk=="boolean" then
               handle(format("%s [%s]={ %s },",depth,k and "true" or "false",concat(st,", ")))
+            elseif tk~="string" then
             elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
               handle(format("%s %s={ %s },",depth,k,concat(st,", ")))
             else
@@ -1924,6 +1928,7 @@ local function do_serialize(root,name,depth,level,indexed)
           end
         elseif tk=="boolean" then
           handle(format("%s [%s]=%s,",depth,tostring(k),v and "true" or "false"))
+        elseif tk~="string" then
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           handle(format("%s %s=%s,",depth,k,v and "true" or "false"))
         else
@@ -1940,6 +1945,7 @@ local function do_serialize(root,name,depth,level,indexed)
             end
           elseif tk=="boolean" then
             handle(format("%s [%s]=load(%q),",depth,k and "true" or "false",f))
+          elseif tk~="string" then
           elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
             handle(format("%s %s=load(%q),",depth,k,f))
           else
@@ -1955,6 +1961,7 @@ local function do_serialize(root,name,depth,level,indexed)
           end
         elseif tk=="boolean" then
           handle(format("%s [%s]=%q,",depth,k and "true" or "false",tostring(v)))
+        elseif tk~="string" then
         elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
           handle(format("%s %s=%q,",depth,k,tostring(v)))
         else
@@ -18756,8 +18763,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 797752
--- stripped bytes    : 289399
+-- original bytes    : 798348
+-- stripped bytes    : 289756
 
 -- end library merge
 

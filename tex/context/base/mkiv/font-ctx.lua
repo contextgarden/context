@@ -1387,7 +1387,7 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specificati
     local scaledpoints, delta = calculatescale(tfmdata,scaledpoints)
  -- if enable_auto_r_scale and relativeid then -- for the moment this is rather context specific (we need to hash rscale then)
  --     local relativedata = fontdata[relativeid]
- --     local rfmdata = relativedata and relativedata.unscaled and relativedata.unscaled
+ --     local rfmdata = relativedata and relativedata.unscaled and relativedata.unscaled -- just use metadata instead
  --     local id_x_height = rfmdata and rfmdata.parameters and rfmdata.parameters.x_height
  --     local tf_x_height = tfmdata and tfmdata.parameters and tfmdata.parameters.x_height
  --     if id_x_height and tf_x_height then
@@ -2519,3 +2519,38 @@ function helpers.getcoloredglyphs(tfmdata)
     table.sort(collected)
     return collected
 end
+
+-- for the font manual
+
+local trace_files = false
+
+trackers.register("fonts.files",function(v) trace_files = v end)
+
+statistics.register("used fonts",function()
+    if trace_files then
+        local files = { }
+        local list  = { }
+        for id, tfmdata in sortedhash(fontdata) do
+            local filename = tfmdata.properties.filename
+            local filedata = files[filename]
+            if filedata then
+                filedata.instances = filedata.instances + 1
+            else
+                local rawdata  = tfmdata.shared and tfmdata.shared.rawdata
+                local metadata = rawdata and rawdata.metadata
+                files[filename] = {
+                    instances = 1,
+                    filename  = filename,
+                    version   = metadata and metadata.version,
+                    size      = rawdata and rawdata.size,
+                }
+            end
+        end
+        for k, v in sortedhash(files) do
+            list[#list+1] = v
+        end
+        local filename = file.nameonly(environment.jobname) .. "-usedfonts.lua"
+        table.save(filename,list)
+        return format("log saved in '%s'",filename)
+    end
+end)
