@@ -584,6 +584,11 @@
   {\installbasicparameterhandler{#1}{#2}%
    \installautosetuphandler     {#1}{#2}}
 
+\unexpanded\def\installstylisticautosetuphandler#1#2#3% \??self name \??parent (can be \??self)
+  {\installbasicparameterhandler{#1}{#2}%
+   \installautosetuphandler     {#1}{#2}%
+   \installstyleandcolorhandler {#1}{#2}}
+
 \unexpanded\def\installcommandhandler#1#2#3% \??self name \??parent (can be \??self)
   {\installbasicparameterhandler{#1}{#2}%
    \installdefinehandler        {#1}{#2}{#3}%

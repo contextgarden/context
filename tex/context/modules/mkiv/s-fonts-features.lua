@@ -83,6 +83,51 @@ local function collectkerns(tfmdata,feature)
     local lookuphash   = resources.lookuphash
     local feature      = feature or "kern"
     if sequences then
+
+        if true then
+
+            for i=1,#sequences do
+                local sequence = sequences[i]
+                if sequence.features and sequence.features[feature] then
+                    local steps = sequence.steps
+                    for i=1,#steps do
+                        local step   = steps[i]
+                        local format = step.format
+                        for unicode, hash in table.sortedhash(step.coverage) do
+                            local kerns = combinations[unicode]
+                            if not kerns then
+                                kerns = { }
+                                combinations[unicode] = kerns
+                            end
+                            for otherunicode, kern in table.sortedhash(hash) do
+                                if format == "pair" then
+                                    local f = kern[1]
+                                    local s = kern[2]
+                                    if f then
+                                        if s then
+                                            -- todo
+                                        else
+                                            if not kerns[otherunicode] and f[3] ~= 0 then
+                                                kerns[otherunicode] = f[3]
+                                            end
+                                        end
+                                    elseif s then
+                                        -- todo
+                                    end
+                                elseif format == "kern" then
+                                    if not kerns[otherunicode] and kern ~= 0 then
+                                        kerns[otherunicode] = kern
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+    else -- old loader
+
         for i=1,#sequences do
             local sequence = sequences[i]
             if sequence.features and sequence.features[feature] then
@@ -107,7 +152,9 @@ local function collectkerns(tfmdata,feature)
                 end
             end
         end
+
     end
+
     return combinations
 end
 
@@ -142,6 +189,7 @@ function moduledata.fonts.features.showallkerns(specification)
     local tfmdata    = fonts.hashes.identifiers[id]
     local allkerns   = collectkerns(tfmdata)
     local characters = tfmdata.characters
+    local hfactor    = tfmdata.parameters.hfactor
     if next(allkerns) then
         for first, pairs in sortedhash(allkerns) do
             context.par()
@@ -150,7 +198,7 @@ function moduledata.fonts.features.showallkerns(specification)
              -- if not kerns and pairs[second] then
              --     -- weird
              -- end
-                showkernpair(first,kern,second,0)
+                showkernpair(first,kern*hfactor,second)
             end
             context.par()
         end

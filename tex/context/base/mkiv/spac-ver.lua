@@ -126,6 +126,7 @@ local skipcodes           = nodes.skipcodes
 local penalty_code        = nodecodes.penalty
 local kern_code           = nodecodes.kern
 local glue_code           = nodecodes.glue
+local insert_code         = nodecodes.ins
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
 local localpar_code       = nodecodes.localpar
@@ -1957,14 +1958,37 @@ function vspacing.collapsevbox(n,aslist) -- for boxes but using global a_snapmet
 end
 
 -- This one is needed to prevent bleeding of prevdepth to the next page
--- which doesn't work well with forced skips.
+-- which doesn't work well with forced skips. I'm not that sure if the
+-- following is a good way out.
 
-local outer = texnest[0]
+do
 
-function vspacing.resetprevdepth()
-    if texlists.hold_head then
-        outer.prevdepth = 0
+    local outer  = texnest[0]
+    local reset  = true
+    local trace  = false
+    local report = logs.reporter("vspacing")
+
+    directives.register("vspacing.resetprevdepth",function(v) reset = v end)
+    trackers.register  ("vspacing.resetprevdepth",function(v) trace = v end)
+
+    function vspacing.resetprevdepth()
+        if reset then
+            local head = texlists.hold_head
+            local skip = 0
+            while head and head.id == insert_code do
+                head = head.next
+                skip = skip + 1
+            end
+            if head then
+                outer.prevdepth = 0
+            end
+            if trace then
+                report("prevdepth %s at page %i, skipped %i, value %p",
+                    head and "reset" or "kept",tex.getcount("realpageno"),skip,outer.prevdepth)
+            end
+        end
     end
+
 end
 
 -- interface

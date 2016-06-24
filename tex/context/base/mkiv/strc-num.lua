@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['strc-num'] = {
 local format = string.format
 local next, type = next, type
 local min, max = math.min, math.max
+local insert, remove, copy = table.insert, table.remove, table.copy
 local texsetcount = tex.setcount
 
 -- Counters are managed here. They can have multiple levels which makes it easier to synchronize
@@ -16,6 +17,7 @@ local texsetcount = tex.setcount
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
+local setmetatablecall  = table.setmetatablecall
 
 local trace_counters    = false  trackers.register("structures.counters", function(v) trace_counters = v end)
 local report_counters   = logs.reporter("structure","counters")
@@ -429,14 +431,23 @@ end
 function counters.save(name) -- or just number
     local cd = counterdata[name]
     if cd then
-        table.insert(cd.saved,table.copy(cd.data))
+        insert(cd.saved,copy(cd.data))
     end
 end
 
 function counters.restore(name)
     local cd = counterdata[name]
-    if cd and cd.saved then
-        cd.data = table.remove(cd.saved)
+    if not cd then
+        report_counters("invalid restore, no counter %a",name)
+        return
+    end
+    local saved = cd.saved
+    if not saved then
+        -- is ok
+    elseif #saved > 1 then
+        cd.data = remove(saved)
+    else
+        report_counters("restore without save for counter %a",name)
     end
 end
 
@@ -640,7 +651,7 @@ implement { name = "decrementedcounter",      actions = { add, context }, argume
 implement { name = "showcounter",             actions = showcounter,       arguments = "string" }  -- todo
 implement { name = "checkcountersetup",       actions = checkcountersetup, arguments = { "string", "integer", "integer", "string" } }
 
-table.setmetatablecall(counterdata,function(t,k) return t[k] end)
+setmetatablecall(counterdata,function(t,k) return t[k] end)
 
 implement { name = "doifelsecounter", actions = { counterdata, commands.doifelse }, arguments = "string" }
 implement { name = "doifcounter",     actions = { counterdata, commands.doif     }, arguments = "string" }

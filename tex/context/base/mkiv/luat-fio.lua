@@ -92,16 +92,16 @@ if not resolvers.instance then
         register('find_vf_file'        , function(name) return findbinfile(name,"vf")     end, true)
         register('find_cidmap_file'    , function(name) return findbinfile(name,"cidmap") end, true)
 
-        register('read_data_file'      , function(file) return loadbinfile(file,"tex") end, true)
-        register('read_enc_file'       , function(file) return loadbinfile(file,"enc") end, true)
-        register('read_font_file'      , function(file) return loadbinfile(file,"tfm") end, true)
+        register('read_data_file'      , function(file) return loadbinfile(file,"tex")    end, true)
+        register('read_enc_file'       , function(file) return loadbinfile(file,"enc")    end, true)
+        register('read_font_file'      , function(file) return loadbinfile(file,"tfm")    end, true)
      -- format
      -- image
-        register('read_map_file'       , function(file) return loadbinfile(file,"map") end, true)
+        register('read_map_file'       , function(file) return loadbinfile(file,"map")    end, true)
      -- output
-        register('read_pk_file'        , function(file) return loadbinfile(file,"pk")  end, true) -- 600dpi/manfnt.720pk
-        register('read_sfd_file'       , function(file) return loadbinfile(file,"sfd") end, true)
-        register('read_vf_file'        , function(file) return loadbinfile(file,"vf" ) end, true)
+        register('read_pk_file'        , function(file) return loadbinfile(file,"pk")     end, true) -- 600dpi/manfnt.720pk
+        register('read_sfd_file'       , function(file) return loadbinfile(file,"sfd")    end, true)
+        register('read_vf_file'        , function(file) return loadbinfile(file,"vf" )    end, true)
 
      -- register('find_font_file'      , function(name) return findbinfile(name,"ofm")    end, true)
      -- register('find_vf_file'        , function(name) return findbinfile(name,"ovf")    end, true)

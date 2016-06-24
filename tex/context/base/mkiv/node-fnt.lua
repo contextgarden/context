@@ -166,17 +166,17 @@ function handlers.characters(head)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)
 
-    local usedfonts = { }
-    local attrfonts = { }
-    local basefonts = { }
-    local a, u, b   = 0, 0, 0
-    local basefont  = nil
-    local prevfont  = nil
-    local prevattr  = 0
-    local mode      = nil
-    local done      = false
-    local variants  = nil
-    local redundant = nil
+    local usedfonts  = { }
+    local attrfonts  = { }
+    local basefonts  = { }
+    local a, u, b, r = 0, 0, 0, 0
+    local basefont   = nil
+    local prevfont   = nil
+    local prevattr   = 0
+    local mode       = nil
+    local done       = false
+    local variants   = nil
+    local redundant  = nil
 
     if trace_fontrun then
         run = run + 1
@@ -213,6 +213,7 @@ function handlers.characters(head)
             variants = fontvariants[font]
             if mode == "none" then
                 -- skip
+             -- variants = false
                 protect_glyph(n)
             else
                 if basefont then
@@ -231,7 +232,7 @@ function handlers.characters(head)
                             a = a + 1
                         elseif force_basepass then
                             b = b + 1
-                            basefont = { n, nil }
+                            basefont = { n, false }
                             basefonts[b] = basefont
                         end
                     end
@@ -244,7 +245,7 @@ function handlers.characters(head)
                             u = u + 1
                         elseif force_basepass then
                             b = b + 1
-                            basefont = { n, nil }
+                            basefont = { n, false }
                             basefonts[b] = basefont
                         end
                     end
@@ -265,19 +266,23 @@ function handlers.characters(head)
                                 report_fonts("replacing %C by %C",char,variant)
                             end
                             setchar(p,variant)
-                            if not redundant then
-                                redundant = { n }
+                            if redundant then
+                                r = r + 1
+                                redundant[r] = n
                             else
-                                redundant[#redundant+1] = n
+                                r = 1
+                                redundant = { n }
                             end
                         end
                     end
                 elseif keep_redundant then
                     -- go on, can be used for tracing
-                elseif not redundant then
-                    redundant = { n }
+                elseif redundant then
+                    r = r + 1
+                    redundant[r] = n
                 else
-                    redundant[#redundant+1] = n
+                    r = 1
+                    redundant = { n }
                 end
             end
         end
@@ -292,8 +297,10 @@ function handlers.characters(head)
         for b in traverse_id(boundary_code,nuthead) do
             if getsubtype(b) == word_boundary then
                 if redundant then
-                    redundant[#redundant+1] = b
+                    r = r + 1
+                    redundant[r] = b
                 else
+                    r = 1
                     redundant = { b }
                 end
             end
@@ -302,7 +309,7 @@ function handlers.characters(head)
     end
 
     if redundant then
-        for i=1,#redundant do
+        for i=1,r do
             local r = redundant[i]
             local p, n = getboth(r)
             if r == nuthead then

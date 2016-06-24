@@ -240,6 +240,32 @@ vardef rawtextext(expr s) = % todo: avoid currentpicture
     fi
 enddef ;
 
+vardef validtexbox(expr category, name) =
+    if category == "" :
+        false
+    elseif string name :
+        name <> ""
+    elseif numeric name :
+        name > 0
+    else :
+        true
+    fi
+enddef ;
+
+vardef rawtexbox(expr category, name) =
+    mfun_tt_c := nullpicture ;
+    if validtexbox(category,name) :
+        mfun_tt_b := lua.mp.tb_dimensions(category, name) ;
+        addto mfun_tt_c doublepath unitsquare
+            xscaled redpart mfun_tt_b
+            yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
+            shifted (0,- bluepart mfun_tt_b)
+            withprescript "bx_category=" & if numeric category : decimal fi category
+            withprescript "bx_name=" & if numeric name : decimal fi name ;
+    fi
+    mfun_tt_c
+enddef ;
+
 % More text
 
 defaultfont  := "Mono" ;
@@ -401,6 +427,19 @@ enddef ;
 vardef onetimetextext@#(expr p) = % no draw here
     mfun_onetime_textext := true ;
     thetextext@#(p,origin)
+enddef ;
+
+vardef thetexbox@#(expr category, name, z) =
+    save p ; picture p ; p := rawtexbox(category,name) ;
+    p
+        if (mfun_labtype@# >= 10) :
+            shifted (0,ypart center p)
+        fi
+        shifted (z + textextoffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+enddef ;
+
+vardef texbox@#(expr category, name) = % no draw here
+    thetexbox@#(category,name,origin)
 enddef ;
 
 vardef thelabel@#(expr p,z) =

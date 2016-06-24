@@ -19,11 +19,11 @@
 \installmodulecommandluasingle \showallkerns     {moduledata.fonts.features.showallkerns}
 \installmodulecommandluasingle \showbasekerns    {moduledata.fonts.features.showbasekerns}
 
-\def\kernpairheight{\strutheight}
-\def\kernpairdepth {\strutdepth}
+\def\kernpairheight{.8\strutht}
+\def\kernpairdepth {.8\strutdp}
 \def\kernpairwidth {\onepoint}
 
-\unexpanded\def\showkernpair#1#2#3% first second kern
+\unexpanded\def\showkernpair#1#2#3% first kern second
   {\dontleavehmode
    \hbox \bgroup
    \scratchdimen#2\scaledpoint

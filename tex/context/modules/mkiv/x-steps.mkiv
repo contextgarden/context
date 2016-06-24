@@ -18,6 +18,8 @@
 
 \usemodule[m][steps]
 
+\endinput
+
 \unprotect
 
 \installcorenamespace {xmlstepchart}
@@ -46,40 +48,40 @@
 
 \xmlregistersetup{xml:ct:define}
 
-\startxmlsetups xml:ct:prep
-    \expanded{\prep[\xmltoparameters{#1}]}{\xmlflush{#1}}
-\stopxmlsetups
+% \startxmlsetups xml:ct:prep
+%     \normalexpanded{\prep[\xmltoparameters{#1}]}{\xmlflush{#1}}
+% \stopxmlsetups
 
 \startxmlsetups xml:ct:text
-    \expanded{\text[\xmltoparameters{#1}]}{\xmlflush{#1}}
+    \normalexpanded{\text[\xmltoparameters{#1}]}{\xmlflush{#1}}
 \stopxmlsetups
 
 \startxmlsetups xml:ct:texts
-    \expanded{\texts[\xmltoparameters{#1}]}{\xmltext{#1}{/top}} {\xmltext{#1}{/bot}}
+    \normalexpanded{\texts[\xmltoparameters{#1}]}{\xmltext{#1}{/top}} {\xmltext{#1}{/bot}}
 \stopxmlsetups
 
 \startxmlsetups xml:ct:cell
-    \expanded{\cell[\xmltoparameters{#1}]}{\xmlflush{#1}}
+    \normalexpanded{\cell[\xmltoparameters{#1}]}{\xmlflush{#1}}
 \stopxmlsetups
 
 \startxmlsetups xml:ct:cells
-    \expanded{\cells[\xmltoparameters{#1}]}{\xmltext{#1}{/top}} {\xmltext{#1}{/bot}}
+    \normalexpanded{\cells[\xmltoparameters{#1}]}{\xmltext{#1}{/top}} {\xmltext{#1}{/bot}}
 \stopxmlsetups
 
 \startxmlsetups xml:ct:lines
-    \expanded{\startlines[\xmltoparameters{#1}]}
+    \normalexpanded{\startlines[\xmltoparameters{#1}]}
         \xmlflush{#1}
     \stoplines
 \stopxmlsetups
 
 \startxmlsetups xml:ct:steptable
-    \expanded{\startSTEPtable[\xmltoparameters{#1}]}
+    \normalexpanded{\startSTEPtable[\xmltoparameters{#1}]}
         \xmlflush{#1}
     \stopSTEPtable
 \stopxmlsetups
 
 \startxmlsetups xml:ct:stepchart
-    \expanded{\startSTEPchart[\xmltoparameters{#1}]}
+    \normalexpanded{\startSTEPchart[\xmltoparameters{#1}]}
         \xmlflush{#1}
     \stopSTEPchart
 \stopxmlsetups

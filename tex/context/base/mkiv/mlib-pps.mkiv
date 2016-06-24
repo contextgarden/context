@@ -91,6 +91,33 @@
    \smashbox\MPbox
    \box\MPbox}
 
+% \putnextboxincache{hans}{1}\hbox{foo}
+%
+% \startMPcode
+%     draw boundingbox rawtexbox("hans",1) ;
+%     draw rawtexbox("hans",1) ;
+% \stopMPcode
+
+\unexpanded\def\MPLIBgetboxscaledcm#1#2%
+  {\begingroup
+   \copyboxfromcache{#1}{#2}\MPtextbox % can be \clf_
+   \MPLIBgetboxscaledcm_next}
+
+\unexpanded\def\MPLIBgetboxscaledcm_next#1#2#3#4#5#6#7#8% 1-6: sx,rx,ry,sy,tx,ty
+  {\setbox\MPbox\hpack\bgroup
+     \dotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}%
+       \vpack to \zeropoint\bgroup
+          \vss
+          \hpack to \zeropoint \bgroup
+             \fastsxsy{#7}{#8}{\raise\dp\MPtextbox\box\MPtextbox}%
+             \hss
+         \egroup
+       \egroup
+   \egroup
+   \smashbox\MPbox
+   \box\MPbox
+   \endgroup}
+
 \unexpanded\def\MPLIBgraphictext#1% use at mp end
   {\startTEXpage[\c!scale=10000]#1\stopTEXpage}
 

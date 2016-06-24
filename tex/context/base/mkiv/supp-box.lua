@@ -443,3 +443,144 @@ interfaces.implement {
         doifelse(firstdirinbox(n) == "TRT")
     end
 }
+
+-- new (handy for mp) .. might move to its own module
+
+do
+
+    local flush_list = nodes.flush_list
+    local copy_list  = nodes.copy_list
+    local takebox    = nodes.takebox
+    local texsetbox  = tex.setbox
+
+    local new_hlist  = nodes.pool.hlist
+
+    local boxes  = { }
+    nodes.boxes  = boxes
+    local cache  = table.setmetatableindex("table")
+    local report = logs.reporter("boxes","cache")
+    local trace  = false
+
+    trackers.register("nodes.boxes",function(v) trace = v end)
+
+    function boxes.save(category,name,box)
+name = tonumber(name) or name
+        local b = takebox(box)
+        if trace then
+            report("category %a, name %a, %s (%s)",category,name,"save",b and "content" or "empty")
+        end
+        cache[category][name] = b or false
+    end
+
+    function boxes.direct(category,name,copy)
+name = tonumber(name) or name
+        local c = cache[category]
+        local b = c[name]
+        if not b then
+            -- do nothing, maybe trace
+        elseif copy then
+            b = copy_list(b)
+        else
+            c[name] = false
+        end
+        if trace then
+            report("category %a, name %a, %s (%s)",category,name,"direct",b and "content" or "empty")
+        end
+        return b or nil
+    end
+
+    function boxes.restore(category,name,box,copy)
+name = tonumber(name) or name
+        local c = cache[category]
+        local b = takebox(box)
+        if b then
+            flush_list(b)
+        end
+        local b = c[name]
+        if not b then
+            -- do nothing, maybe trace
+        elseif copy then
+            b = copy_list(b)
+        else
+            c[name] = false
+        end
+        if trace then
+            report("category %a, name %a, %s (%s)",category,name,"restore",b and "content" or "empty")
+        end
+        texsetbox(box,b or nil)
+    end
+
+    function boxes.dimensions(category,name)
+name = tonumber(name) or name
+        local b = cache[category][name]
+        if b then
+            return b.width, b.height, b.depth
+        else
+            return 0, 0, 0
+        end
+    end
+
+    function boxes.reset(category,name)
+name = tonumber(name) or name
+        local c = cache[category]
+        if name and name ~= "" then
+            local b = c[name]
+            if b then
+                flush_list(b)
+                c[name] = false
+            end
+            if trace then
+                report("category %a, name %a, reset",category,name)
+            end
+        else
+            for k, b in next, c do
+                if b then
+                    flush_list(b)
+                end
+            end
+            cache[category] = { }
+            if trace then
+                report("category %a, reset",category)
+            end
+        end
+    end
+
+    interfaces.implement {
+        name      = "putboxincache",
+        arguments = { "string", "string", "integer" },
+        actions   = boxes.save,
+    }
+
+    interfaces.implement {
+        name      = "getboxfromcache",
+        arguments = { "string", "string", "integer" },
+        actions   = boxes.restore,
+    }
+
+    interfaces.implement {
+        name      = "directboxfromcache",
+        arguments = { "string", "string" },
+        actions   = { boxes.direct, context },
+     -- actions   = function(category,name) local b = boxes.direct(category,name) if b then context(b) end end,
+    }
+
+    interfaces.implement {
+        name      = "directcopyboxfromcache",
+        arguments = { "string", "string", true },
+        actions   = { boxes.direct, context },
+     -- actions   = function(category,name) local b = boxes.direct(category,name,true) if b then context(b) end end,
+    }
+
+    interfaces.implement {
+        name      = "copyboxfromcache",
+        arguments = { "string", "string", "integer", true },
+        actions   = boxes.restore,
+    }
+
+    interfaces.implement {
+        name      = "resetboxesincache",
+        arguments = { "string" },
+        actions   = boxes.reset,
+    }
+
+end

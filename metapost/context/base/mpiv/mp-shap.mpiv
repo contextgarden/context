@@ -156,6 +156,14 @@ def some_shape (expr shape_type, shape_width, shape_height, shape_linewidth, sha
     endgroup ;
 enddef ;
 
+% maybe:
+%
+%     if t>1 : % normal shape
+%         path pp ; pp := some_shape_path(t) xyscaled(bbwidth(p), bbheight(p)) ;
+%         pp := pp shifted - center pp shifted center p ;
+%         fill pp withcolor fc ;
+%         draw pp withpen pencircle scaled lw withcolor lc ;
+
 vardef drawpredefinedshape (expr t, p, lw, lc, fc) =
     save pp ;
     if t>1 : % normal shape

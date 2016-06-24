@@ -56,7 +56,7 @@ return {
         "checkedbounds", "checkbounds", "strut", "rule",
         "withmask", "bitmapimage",
         "colordecimals", "ddecimal", "dddecimal", "ddddecimal",
-        "textext", "thetextext", "rawtextext", "textextoffset",
+        "textext", "thetextext", "rawtextext", "textextoffset", "texbox", "thetexbox", "rawtexbox",
         "verbatim",
         "thelabel", "label",
         "autoalign",

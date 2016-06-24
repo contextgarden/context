@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/20/16 22:14:55
+-- merge date  : 06/24/16 02:20:17
 
 do -- begin closure to overcome local limits and interference
 
@@ -11302,10 +11302,15 @@ local function readcoverage(f,offset,simple)
   end
   return coverage
 end
-local function readclassdef(f,offset)
+local function readclassdef(f,offset,preset)
   setposition(f,offset)
   local classdefformat=readushort(f)
   local classdef={}
+  if type(preset)=="number" then
+    for k=0,preset-1 do
+      classdef[k]=1
+    end
+  end
   if classdefformat==1 then
     local index=readushort(f)
     local nofclassdef=readushort(f)
@@ -11326,6 +11331,13 @@ local function readclassdef(f,offset)
     end
   else
     report("unknown classdef format %a ",classdefformat)
+  end
+  if type(preset)=="table" then
+    for k in next,preset do
+      if not classdef[k] then
+        classdef[k]=1
+      end
+    end
   end
   return classdef
 end
@@ -11491,7 +11503,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
     local rules={}
     if subclasssets then
       coverage=readcoverage(f,tableoffset+coverage)
-      currentclassdef=readclassdef(f,tableoffset+currentclassdef)
+      currentclassdef=readclassdef(f,tableoffset+currentclassdef,coverage)
       local currentclasses=classtocoverage(currentclassdef,fontdata.glyphs)
       for class=1,#subclasssets do
         local offset=subclasssets[class]
@@ -11615,9 +11627,9 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
     local rules={}
     if subclasssets then
       local coverage=readcoverage(f,tableoffset+coverage)
-      local beforeclassdef=readclassdef(f,tableoffset+beforeclassdef)
-      local currentclassdef=readclassdef(f,tableoffset+currentclassdef)
-      local afterclassdef=readclassdef(f,tableoffset+afterclassdef)
+      local beforeclassdef=readclassdef(f,tableoffset+beforeclassdef,nofglyphs)
+      local currentclassdef=readclassdef(f,tableoffset+currentclassdef,coverage)
+      local afterclassdef=readclassdef(f,tableoffset+afterclassdef,nofglyphs)
       local beforeclasses=classtocoverage(beforeclassdef,fontdata.glyphs)
       local currentclasses=classtocoverage(currentclassdef,fontdata.glyphs)
       local afterclasses=classtocoverage(afterclassdef,fontdata.glyphs)
@@ -12008,8 +12020,8 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
     local nofclasses2=readushort(f) 
     local classlist=readpairclasssets(f,nofclasses1,nofclasses2,format1,format2)
        coverage=readcoverage(f,tableoffset+coverage)
-       classdef1=readclassdef(f,tableoffset+classdef1)
-       classdef2=readclassdef(f,tableoffset+classdef2)
+       classdef1=readclassdef(f,tableoffset+classdef1,coverage)
+       classdef2=readclassdef(f,tableoffset+classdef2,nofglyphs)
     local usedcoverage={}
     for g1,c1 in next,classdef1 do
       if coverage[g1] then
@@ -15310,7 +15322,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.024 
+otf.version=3.025 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pdfcache=containers.define("fonts","pdf",otf.version,true)

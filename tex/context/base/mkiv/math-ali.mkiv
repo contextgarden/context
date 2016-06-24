@@ -114,6 +114,14 @@
    \the\mathdisplayaligntweaks
    \tabskip\centering}
 
+\def\math_halign_checked
+   {\halign
+       \ifnum\c_strc_formulas_mode=\plustwo
+         % currently there is no need for width juggling
+       \else
+          \ifcase\eqalignmode \or to \checkeddisplaywidth \fi
+       \fi}
+
 \def\math_both_eqalign_no_normal#1#2%
   {\ifmmode
      \the\mathdisplayaligntweaks
@@ -123,7 +131,7 @@
      \let\math_finish_eqalign_no\relax
    \fi
    #1%
-   \halign \ifcase\eqalignmode \or to \checkeddisplaywidth \fi \expandafter {\the\scratchtoks\crcr#2\crcr}%
+   \math_halign_checked\expandafter\bgroup\the\scratchtoks\crcr#2\crcr\egroup
    \math_finish_eqalign_no}
 
 \def\math_both_eqalign_no_aligned#1%
@@ -139,7 +147,7 @@
     \fi
    \fi
    #1%
-   \halign \ifcase\eqalignmode \or to \checkeddisplaywidth \fi \expandafter \bgroup\the\scratchtoks\crcr}
+   \math_halign_checked\expandafter\bgroup\the\scratchtoks\crcr}
 
 \def\math_rlap#1%
   {\setbox\scratchbox\hbox{#1}%

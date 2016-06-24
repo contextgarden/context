@@ -931,6 +931,8 @@ local function cl_reset(t)
     t[#t+1] = metapost.colorinitializer() -- only color
 end
 
+-- text
+
 local function tx_reset()
     if top then
         -- why ?
@@ -1080,6 +1082,37 @@ local function tx_process(object,prescript,before,after)
             object.grouped = true
             object.istext  = true
         end
+    end
+end
+
+-- we could probably redo normal textexts in the next way but as it's rather optimized
+-- we keep away from that (at least for now)
+
+local function bx_process(object,prescript,before,after)
+    local bx_category = prescript.bx_category
+    local bx_name     = prescript.bx_name
+    if bx_category and bx_name then
+        if trace_textexts then
+            report_textexts("category %a, name %a",bx_category,bx_name)
+        end
+        local sx, rx, ry, sy, tx, ty = cm(object) -- needs to be frozen outside the function
+        local wd, ht, dp = nodes.boxes.dimensions(bx_category,bx_name)
+        before[#before+1] = function()
+            context.MPLIBgetboxscaledcm(bx_category,bx_name,
+                f_f(sx), -- bah ... %s no longer checks
+                f_f(rx), -- bah ... %s no longer checks
+                f_f(ry), -- bah ... %s no longer checks
+                f_f(sy), -- bah ... %s no longer checks
+                f_f(tx), -- bah ... %s no longer checks
+                f_f(ty), -- bah ... %s no longer checks
+                sxsy(wd,ht,dp))
+        end
+        if not trace_textexts then
+            object.path = false -- else: keep it
+        end
+        object.color   = false
+        object.grouped = true
+        object.istext  = true
     end
 end
 
@@ -1508,6 +1541,7 @@ appendaction(processoractions,"system",sh_process)
 --          (processoractions,"system",gt_process)
 appendaction(processoractions,"system",bm_process)
 appendaction(processoractions,"system",tx_process)
+appendaction(processoractions,"system",bx_process)
 appendaction(processoractions,"system",ps_process)
 appendaction(processoractions,"system",fg_process)
 appendaction(processoractions,"system",tr_process) -- last, as color can be reset

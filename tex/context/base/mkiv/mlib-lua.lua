@@ -356,9 +356,10 @@ end
 
 -- texts:
 
-local factor    = 65536*(7227/7200)
-local textexts  = nil
-local mptriplet = mp.triplet
+local factor       = 65536*(7227/7200)
+local textexts     = nil
+local mptriplet    = mp.triplet
+local nbdimensions = nodes.boxes.dimensions
 
 function mp.tt_initialize(tt)
     textexts = tt
@@ -386,6 +387,12 @@ function mp.tt_dimensions(n)
         mptriplet(0,0,0)
     end
 end
+
+function mp.tb_dimensions(category,name)
+    local w, h, d = nbdimensions(category,name)
+    mptriplet(w/factor,h/factor,d/factor)
+end
+
 
 function mp.report(a,b)
     if b then

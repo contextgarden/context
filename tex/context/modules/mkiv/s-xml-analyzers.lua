@@ -119,7 +119,11 @@ local function analyze(filename)
     end
 
     for i=1,#filename do
-        local root = xml.load(filename[i])
+        local name = filename[i]
+        local root = xml.load(name)
+        --
+        logs.report("xml analyze","loaded: %s",name)
+        --
         collect(root)
         --
         local names = root.statistics.entities.names
@@ -160,9 +164,9 @@ function moduledata.xml.analyzers.structure(filename)
             for attribute, values in sortedhash(attributes) do
                 local n = table.count(values)
                 if attribute == "id" or attribute == "xml:id" or n > maxnofattributes then
-                    NC() context(attribute) NC() context("%s different values",n) NC() NR()
+                    NC() context("@%s",attribute) NC() context("%s different values",n) NC() NR()
                 else
-                    NC() context(attribute) NC() context.puretext(sequenced(values)) NC() NR()
+                    NC() context("@%s",attribute) NC() context.puretext(sequenced(values)) NC() NR()
                 end
             end
         end
@@ -194,5 +198,3 @@ function moduledata.xml.analyzers.entities(filename)
     end
     context.stoptabulate()
 end
-
-

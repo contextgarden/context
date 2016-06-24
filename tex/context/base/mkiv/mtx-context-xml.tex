@@ -23,6 +23,8 @@
 % --bodyfont=list       : additional bodyfont settings
 % --paperformat=spec    : paper*print or paperxprint
 %
+% context --extra=xml --analyze path::i-context.xml
+% context --extra=xml --analyze selfautoparent:texmf-context/tex/context/interface/mkiv/i-*.xml
 % end help
 
 \input mtx-context-common.tex
@@ -50,8 +52,8 @@
 \starttext
 
 \startluacode
-    local pattern = document.arguments.pattern
     local files   = document.files
+    local pattern = document.arguments.pattern or (#files == 1 and files[1])
 
     if pattern then
         files = dir.glob(pattern)

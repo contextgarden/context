@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% multiple texts?
+% This code is not optimized.
 
 \registerctxluafile{m-steps}{}
 
@@ -23,11 +23,11 @@
 \installcorenamespace {steptexts}
 \installcorenamespace {steplines}
 
-\installsimplecommandhandler \??stepcharts {STEPchart} \??stepcharts
-\installsimplecommandhandler \??steptables {STEPtable} \??steptables
-\installsimplecommandhandler \??stepcells  {STEPcell}  \??stepcells
-\installsimplecommandhandler \??steptexts  {STEPtext}  \??steptexts
-\installsimplecommandhandler \??steplines  {STEPline}  \??steplines
+\installstylisticautosetuphandler \??stepcharts {STEPchart} \??stepcharts
+\installstylisticautosetuphandler \??steptables {STEPtable} \??steptables
+\installstylisticautosetuphandler \??stepcells  {STEPcell}  \??stepcells
+\installstylisticautosetuphandler \??steptexts  {STEPtext}  \??steptexts
+\installstylisticautosetuphandler \??steplines  {STEPline}  \??steplines
 
 \let\setupSTEPcharts\setupSTEPchart
 \let\setupSTEPtables\setupSTEPtable
@@ -40,10 +40,10 @@
 
 \setupSTEPcharts
   [\c!alternative=\v!horizontal,
+  %\c!offset=.15\bodyfontsize
+  %\c!height=2ex
    \c!before=\blank,
    \c!after=\blank]
-%    \c!offset=.15\bodyfontsize
-%    \c!height=2ex
 
 % \setupSTEPtables
 %   [\c!before=\blank,
@@ -56,11 +56,11 @@
 
 \setupSTEPcells
   [\c!alternative=1, % TODO
-%    \c!style=,
-%    \c!color=,
+   \c!style=,
+   \c!color=,
    \c!dx=\bodyfontsize,
    \c!dy=\bodyfontsize,
-   \c!background=\v!color,
+ % \c!background=\v!color,
    \c!backgroundcolor=STEPbackgroundcolor,
    \c!rulethickness=.1\bodyfontsize,
    \c!framecolor=STEPframecolor,
@@ -68,9 +68,9 @@
 
 \setupSTEPtexts
   [\c!alternative=1, % TODO
-%    \c!style=\v!smallbodyfont,
-%    \c!color=,
-   \c!background=\v!color,
+   \c!style=\v!smallbodyfont,
+   \c!color=,
+ % \c!background=\v!color,
    \c!backgroundcolor=STEPbackgroundcolor,
    \c!rulethickness=.1\bodyfontsize,
    \c!framecolor=STEPframecolor,
@@ -89,31 +89,65 @@
 \definecolor [STEPframecolor]      [s=.7]
 \definecolor [STEPbackgroundcolor] [s=.9]
 
+\newcount\c_module_steps_tag
+\newmacro\m_module_steps_category
+
+\unexpanded\def\setSTEPbox#tag#str%
+  {\setbox\scratchbox\hbox\bgroup
+     \begstrut
+     \ignorespaces
+     #str%
+     \removeunwantedspaces
+     \endstrut
+   \egroup
+   \ifzeropt\wd\scratchbox
+     \let#1\empty
+   \else
+     \global\advance\c_module_steps_tag\plusone
+     \edef#tag{\the\c_module_steps_tag}%
+     \putboxincache{\??stepcharts\m_module_steps_category}{#tag}\scratchbox
+   \fi}
+
 \newtoks\everySTEPchart
+
+% we used to save charts but that is tricky with so much delegated to lua
+% and mp so now we do support a buffered way only
 
 \unexpanded\def\startSTEPchart
   {\begingroup
    \dodoubleempty\module_steps_start_chart}
 
 \def\module_steps_start_chart[#name][#settings]%
-  {\startnointerference
-   \iffirstargument
+  {\iffirstargument
      \doifelseassignment{#name}
        {\let\currentSTEPchart\empty
-        \xdef\module_steps_flush_chart{\module_steps_chart[][#name]}}
+        \let\m_module_steps_category\empty
+        \setupcurrentSTEPchart[#name]%
+        \def\module_steps_flush_chart{\module_steps_chart[][#name]}}
        {\edef\currentSTEPchart{#name}%
-        \glet\module_steps_flush_chart\relax}% settings are not stored
+        \let\m_module_steps_category\currentSTEPchart
+        \resetboxesincache{\??stepcharts\m_module_steps_category}%
+        \setupcurrentSTEPchart[#settings]%
+        \let\module_steps_flush_chart\relax}% settings are not stored
    \else
      \let\currentSTEPchart\empty
-     \gdef\module_steps_flush_chart{\module_steps_chart[][]}%
+     \def\module_steps_flush_chart{\module_steps_chart[][]}%
    \fi
+   \edef\p_category{\STEPchartparameter\c!category}%
+   \let\currentSTEPtext\p_category
+   \let\currentSTEPcell\p_category
+   \let\currentSTEPline\p_category
    \the\everySTEPchart
-   \ctxcommand{step_start_chart("\currentSTEPchart")}}
+   \startnointerference
+   \clf_step_start_chart{\currentSTEPchart}}
 
 \unexpanded\def\stopSTEPchart
-  {\ctxcommand{step_stop_chart()}%
+  {\clf_step_stop_chart
    \stopnointerference
    \module_steps_flush_chart
+   \ifx\m_module_steps_category\empty
+      \resetboxesincache{\??stepcharts}%
+   \fi
    \endgroup}
 
 \unexpanded\def\startSTEPtable
@@ -123,13 +157,24 @@
 
 \let\stopSTEPtable\stopSTEPchart
 
+\unexpanded\def\startSTEPaligntable
+  {\begingroup
+   \setupSTEPchart[\c!alternative={\v!vertical,\v!three}]%
+   \let\module_steps_cells\module_steps_cells_three % no nesting yet
+   \dodoubleempty\module_steps_start_chart}
+
+\let\stopSTEPaligntable\stopSTEPchart
+
 \let\module_steps_flush_chart\relax
+
+% \resetboxesincache\??stepcharts
 
 \unexpanded\def\STEPchart
   {\dodoubleempty\module_steps_chart}
 
 \unexpanded\def\module_steps_chart[#name][#settings]%
   {\begingroup
+   \edef\m_module_steps_category{#name}%
    \setupSTEPchart[#settings]%
    \ifinsidefloat
      \makeSTEPchart[#name]%
@@ -144,70 +189,215 @@
    \endgroup}
 
 \unexpanded\def\makeSTEPchart[#name]%
-  {\ctxcommand{step_make_chart {
-        chart = {
-            name            = "#name",
-            alternative     = "\STEPchartparameter\c!alternative",
-        },
-        cell = {
-            alternative     = "\STEPcellparameter\c!alternative", % TODO: shapes
-            offset          = \number\dimexpr\STEPcellparameter\c!offset,
-            rulethickness   = \number\dimexpr\STEPcellparameter\c!rulethickness,
-            framecolor      = "\STEPcellparameter\c!framecolor",
-            backgroundcolor = "\STEPcellparameter\c!backgroundcolor",
-            dx              = \number\dimexpr\STEPcellparameter\c!dx,
-            dy              = \number\dimexpr\STEPcellparameter\c!dy,
-        },
-        text = {
-            alternative     = "\STEPtextparameter\c!alternative", % TODO: shapes
-            offset          = \number\dimexpr\STEPtextparameter\c!offset,
-            distance        = \number\dimexpr\STEPtextparameter\c!distance,
-            rulethickness   = \number\dimexpr\STEPtextparameter\c!rulethickness,
-            framecolor      = "\STEPtextparameter\c!framecolor",
-            backgroundcolor = "\STEPtextparameter\c!backgroundcolor",
-        },
-        line = {
-            alternative     = "\STEPlineparameter\c!alternative", % TODO: dash, arrow
-            rulethickness   = \number\dimexpr\STEPlineparameter\c!rulethickness,
-            height          = \number\dimexpr\STEPlineparameter\c!height,
-            distance        = \number\dimexpr\STEPlineparameter\c!distance,
-            offset          = \number\dimexpr\STEPlineparameter\c!offset,
-            color           = "\STEPlineparameter\c!color",
-        },
-   }}}
+  {\clf_step_make_chart
+        chart {
+            category        {\??stepcharts\m_module_steps_category}
+            name            {#name}
+            alternative     {\STEPchartparameter\c!alternative}
+        }
+        cell {
+            alternative     {\STEPcellparameter\c!alternative} % shapes
+            offset          \dimexpr\STEPcellparameter\c!offset\relax
+            rulethickness   \dimexpr\STEPcellparameter\c!rulethickness\relax
+            framecolor      {\STEPcellparameter\c!framecolor}
+            backgroundcolor {\STEPcellparameter\c!backgroundcolor}
+            dx              \dimexpr\STEPcellparameter\c!dx\relax
+            dy              \dimexpr\STEPcellparameter\c!dy\relax
+        }
+        text {
+            alternative     {\STEPtextparameter\c!alternative} % shapes
+            offset          \dimexpr\STEPtextparameter\c!offset\relax
+            distance        \dimexpr\STEPtextparameter\c!distance\relax
+            rulethickness   \dimexpr\STEPtextparameter\c!rulethickness\relax
+            framecolor      {\STEPtextparameter\c!framecolor}
+            backgroundcolor {\STEPtextparameter\c!backgroundcolor}
+        }
+        line {
+            alternative     {\STEPlineparameter\c!alternative} % dash, arrow
+            rulethickness   \dimexpr\STEPlineparameter\c!rulethickness\relax
+            height          \dimexpr\STEPlineparameter\c!height\relax
+            distance        \dimexpr\STEPlineparameter\c!distance\relax
+            offset          \dimexpr\STEPlineparameter\c!offset\relax
+            color           {\STEPlineparameter\c!color}
+        }
+  \relax}
 
-\unexpanded\def\startSTEPcell
-  {\ctxcommand{step_start_cell()}}
+\unexpanded\def\startSTEPcell{\clf_step_start_cell}
+\unexpanded\def\stopSTEPcell {\clf_step_stop_cell}
 
-\unexpanded\def\stopSTEPcell
-  {\ctxcommand{step_stop_cell()}}
+\unexpanded\def\module_steps_cells      {\dosingleempty\module_steps_cells_indeed}
+\unexpanded\def\module_steps_cells_three{\dosingleempty\module_steps_cells_three_indeed}
+\unexpanded\def\module_steps_texts      {\dosingleempty\module_steps_texts_indeed}
+\unexpanded\def\module_steps_cell       {\dosingleempty\module_steps_cell_indeed}
+\unexpanded\def\module_steps_text       {\dosingleempty\module_steps_text_indeed}
+%unexpanded\def\module_steps_textset    {\dosingleempty\module_steps_textset_indeed}
+\unexpanded\def\module_steps_toptext    {\dosingleempty\module_steps_toptext_indeed}
+\unexpanded\def\module_steps_bottext    {\dosingleempty\module_steps_bottext_indeed}
+\unexpanded\def\module_steps_topcell    {\dosingleempty\module_steps_topcell_indeed}
+\unexpanded\def\module_steps_botcell    {\dosingleempty\module_steps_botcell_indeed}
 
-\unexpanded\def\module_steps_cells#top#bot%
-  {\ctxcommand{step_cells(\!!bs\detokenize{#top}\!!es,\!!bs\detokenize{#bot}\!!es)}}
+\def\module_steps_check_cell#category%
+  {\edef\p_category{#category}%
+   \ifx\p_category\empty \else
+     \let\currentSTEPcell\p_category
+   \fi}
 
-\unexpanded\def\module_steps_texts#top#bot%
-  {\ctxcommand{step_texts(\!!bs\detokenize{#top}\!!es,\!!bs\detokenize{#bot}\!!es)}}
+\def\module_steps_check_text#category%
+  {\edef\p_category{#category}%
+   \ifx\p_category\empty \else
+     \let\currentSTEPtext\p_category
+   \fi}
 
-\unexpanded\def\module_steps_cell#str%
-  {\ctxcommand{step_cell(\!!bs\detokenize{#str}\!!es)}}
+\def\module_steps_pass_data#1#2%
+  {{
+       text  {
+         #2
+       }
+       shape {
+         rulethickness   \dimexpr#1\c!rulethickness\relax
+         alternative     {#1\c!alternative}
+         framecolor      {#1\c!framecolor}
+         backgroundcolor {#1\c!backgroundcolor}
+       }
+       line {
+         rulethickness \dimexpr\STEPlineparameter\c!rulethickness\relax
+         alternative   {\STEPlineparameter\c!alternative}
+         color         {\STEPlineparameter\c!color}
+         offset        \dimexpr\STEPlineparameter\c!offset\relax
+       }
+    }}
 
-\unexpanded\def\module_steps_text#str%
-  {\ctxcommand{step_text(\!!bs\detokenize{#str}\!!es)}}
+\def\module_steps_cells_indeed[#category]#top#bot%
+  {\begingroup
+   \iffirstargument
+     \module_steps_check_cell{#category}%
+   \fi
+   \useSTEPcellstyleandcolor\c!style\c!color
+   \setSTEPbox\module_steps_tag_a{#top}%
+   \setSTEPbox\module_steps_tag_b{#bot}%
+   \clf_step_cells \module_steps_pass_data \STEPcellparameter {
+     top {\module_steps_tag_a}
+     bot {\module_steps_tag_b}
+   }
+   \endgroup}
 
-\unexpanded\def\module_steps_textset#left#middle#right%
-  {\ctxcommand{step_textset(\!!bs\detokenize{#left}\!!es,\!!bs\detokenize{#middle}\!!es,\!!bs\detokenize{#right}\!!es)}}
+\def\module_steps_cells_three_indeed[#category]#one#two#three%
+  {\begingroup
+   \iffirstargument
+     \module_steps_check_cell{#category}%
+   \fi
+   \useSTEPcellstyleandcolor\c!style\c!color
+   \setSTEPbox\module_steps_tag_a{#one}%
+   \setSTEPbox\module_steps_tag_b{#two}%
+   \setSTEPbox\module_steps_tag_c{#three}%
+   \clf_step_cells_three \module_steps_pass_data \STEPcellparameter {
+     left   {\module_steps_tag_a}
+     middle {\module_steps_tag_b}
+     right  {\module_steps_tag_c}
+   }%
+   \endgroup}
 
-\unexpanded\def\module_steps_toptext#top%
-  {\ctxcommand{step_text_top(\!!bs\detokenize{#top}\!!es)}}
+\def\module_steps_texts_indeed[#category]#top#bot%
+  {\begingroup
+   \iffirstargument
+     \module_steps_check_text{#category}%
+   \fi
+   \useSTEPtextstyleandcolor\c!style\c!color
+   \setSTEPbox\module_steps_tag_a{#top}%
+   \setSTEPbox\module_steps_tag_b{#bot}%
+   \clf_step_texts \module_steps_pass_data \STEPtextparameter {
+     top {\module_steps_tag_a}
+     bot {\module_steps_tag_b}
+   }%
+   \endgroup}
 
-\unexpanded\def\module_steps_bottext#bot%
-  {\ctxcommand{step_text_bot(\!!bs\detokenize{#bot}\!!es)}}
+\def\module_steps_cell_indeed[#category]#str%
+  {\begingroup
+   \iffirstargument
+     \module_steps_check_cell{#category}%
+   \fi
+   \useSTEPcellstyleandcolor\c!style\c!color
+   \setSTEPbox\module_steps_tag_a{#str}%
+   \clf_step_cell \module_steps_pass_data \STEPcellparameter {
+     top {\module_steps_tag_a}
+   }%
+   \endgroup}
 
-\unexpanded\def\module_steps_topcell#top%
-  {\ctxcommand{step_cell_top(\!!bs\detokenize{#top}\!!es)}}
+\def\module_steps_text_indeed[#category]#str%
+  {\begingroup
+   \iffirstargument
+     \module_steps_check_text{#category}%
+   \fi
+   \useSTEPtextstyleandcolor\c!style\c!color
+   \setSTEPbox\module_steps_tag_a{#str}%
+   \clf_step_text \module_steps_pass_data \STEPtextparameter {
+     top {\module_steps_tag_a}
+   }%
+   \endgroup}
 
-\unexpanded\def\module_steps_botcell#bot%
-  {\ctxcommand{step_cell_bot(\!!bs\detokenize{#bot}\!!es)}}
+% \def\module_steps_textset_indeed[#category]#left#middle#right%
+%   {\begingroup
+%    \iffirstargument
+%      \module_steps_check_text{#category}%
+%    \fi
+%    \useSTEPtextstyleandcolor\c!style\c!color
+%    \setSTEPbox\module_steps_tag_a{#left}%
+%    \setSTEPbox\module_steps_tag_b{#middle}%
+%    \setSTEPbox\module_steps_tag_c{#right}%
+%    \clf_step_textset \module_steps_pass_data \STEPtextparameter {
+%      left   {\module_steps_tag_a}
+%      middle {\module_steps_tag_a}
+%      right  {\module_steps_tag_a}
+%    }%
+%    \endgroup}
+
+\def\module_steps_toptext_indeed[#category]#top%
+  {\begingroup
+   \iffirstargument
+     \module_steps_check_text{#category}%
+   \fi
+   \useSTEPtextstyleandcolor\c!style\c!color
+   \setSTEPbox\module_steps_tag_a{#top}%
+   \clf_step_text_top \module_steps_pass_data \STEPtextparameter {
+     top {\module_steps_tag_a}
+   }%
+   \endgroup}
+
+\def\module_steps_bottext_indeed[#category]#bot%
+  {\begingroup
+   \iffirstargument
+     \module_steps_check_text{#category}%
+   \fi
+   \useSTEPtextstyleandcolor\c!style\c!color
+   \setSTEPbox\module_steps_tag_a{#bot}%
+   \clf_step_text_bot \module_steps_pass_data \STEPtextparameter {
+     bot {\module_steps_tag_a}
+   }%
+   \endgroup}
+
+\def\module_steps_topcell_indeed[#category]#top%
+  {\begingroup
+   \iffirstargument
+     \module_steps_check_cell{#category}%
+   \fi
+   \useSTEPcellstyleandcolor\c!style\c!color
+   \setSTEPbox\module_steps_tag_a{#top}%
+   \clf_step_cell_top \module_steps_pass_data \STEPcellparameter {
+     top {\module_steps_tag_a}
+   }%
+   \endgroup}
+
+\def\module_steps_botcell_indeed[#category]#bot%
+  {\begingroup
+   \iffirstargument
+     \module_steps_check_cell{#category}%
+   \fi
+   \useSTEPcellstyleandcolor\c!style\c!color
+   \setSTEPbox\module_steps_tag_a{#bot}%
+   \clf_step_cell_bot \module_steps_pass_data \STEPcellparameter {
+     bot {\module_steps_tag_a}
+   }%
+   \endgroup}
 
 \appendtoks
     \let\cells  \module_steps_cells
@@ -223,43 +413,80 @@
 
 % todo: mapping can be done in lua
 
+% chart table cell text line
+
+\unexpanded\def\module_steps_xml_directive#1%
+  {\begincsname setSTEP#1parameter\endcsname}
+
+\xmlinstalldirective{stepchart}{module_steps_xml_directive}
+
 \startxmlsetups xml:step:define
-    \xmlsetsetup{#1} {stepchart|steptable} {xml:step:*}
+    \xmlsetsetup{#1} {stepchart|steptable|stepaligntable} {xml:step:*}
 \stopxmlsetups
 
 \xmlregistersetup{xml:step:define}
 
 \startxmlsetups xml:step:stepchart
-    \startSTEPchart
+    \startSTEPchart[\c!category=\xmlatt{#1}{class}]
         \xmlfilter{#1}{/(cells|texts|stepcell|cell|text)/command(xml:step:*)}
     \stopSTEPchart
 \stopxmlsetups
 
 \startxmlsetups xml:step:steptable
-    \startSTEPtable
+    \startSTEPtable[\c!category=\xmlatt{#1}{class}]
         \xmlfilter{#1}{/(cells|texts|stepcell|cell|text)/command(xml:step:*)}
     \stopSTEPtable
 \stopxmlsetups
 
+\startxmlsetups xml:step:stepaligntable
+    \startSTEPaligntable[\c!category=\xmlatt{#1}{class}]
+        \xmlfilter{#1}{/(cells|texts|stepcell|cell|text)/command(xml:step:*)}
+    \stopSTEPaligntable
+\stopxmlsetups
+
 \startxmlsetups xml:step:cells
-    \cells {\xmltext{#1}{/top}} {\xmltext{#1}{/bot}}
+    \xmldoifelse {#1} {/c1} {
+        \cells
+          [\xmlatt{#1}{class}]
+          {\xmltext{#1}{/c1}}
+          {\xmltext{#1}{/c2}}
+          {\xmltext{#1}{/c3}}
+    } {
+        \cells
+          [\xmlatt{#1}{class}]
+          {\xmltext{#1}{/top}}
+          {\xmltext{#1}{/bot}}
+    }
 \stopxmlsetups
 
 \startxmlsetups xml:step:texts
-    \texts {\xmltext{#1}{/top}} {\xmltext{#1}{/bot}}
+    \texts
+      [\xmlatt{#1}{class}]
+      {\xmltext{#1}{/top}}
+      {\xmltext{#1}{/bot}}
 \stopxmlsetups
 
 \startxmlsetups xml:step:stepcell
-    \cells {\xmltext{#1}{/topcell}} {\xmltext{#1}{/botcell}}
-    \texts {\xmltext{#1}{/toptext}} {\xmltext{#1}{/bottext}}
+    \cells
+      [\xmlatt{#1}{class}]
+      {\xmltext{#1}{/topcell}}
+      {\xmltext{#1}{/botcell}}
+    \texts
+      [\xmlatt{#1}{class}]
+      {\xmltext{#1}{/toptext}}
+      {\xmltext{#1}{/bottext}}
 \stopxmlsetups
 
 \startxmlsetups xml:step:cell
-    \cell {\xmlflush{#1}}
+    \cell
+      [\xmlatt{#1}{class}]
+      {\xmlflush{#1}}
 \stopxmlsetups
 
 \startxmlsetups xml:step:text
-    \text {\xmlflush{#1}}
+    \text
+      [\xmlatt{#1}{class}]
+      {\xmlflush{#1}}
 \stopxmlsetups
 
 \protect
@@ -268,18 +495,19 @@
 
 \starttext
 
+\setupSTEPcells[demo-1][style=bold]
+
 \startbuffer
 <stepchart>
   <cell> some cell </cell>
   <text> some text </text>
-  <cell> some cell </cell>
+  <cell class="demo-1"> some cell </cell>
   <text> some text </text>
   <cell> some cell </cell>
 </stepchart>
 \stopbuffer
 
 \typebuffer \processxmlbuffer
-
 
 \startbuffer
 <steptable>
@@ -309,7 +537,6 @@
     \cell {two}   \textset{$c+d$}{=}{$y$}
     \cell {three}
 \stopSTEPtable
-
 
 \page
 

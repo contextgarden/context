@@ -1,6 +1,6 @@
 %D \module
 %D   [       file=x-mathml,
-%D        version=2008.05.29,
+%D        version=2008.05.29, (evolved from pre 2000 code)
 %D          title=\CONTEXT\ XML Modules,
 %D       subtitle=\MATHML,
 %D         author=Hans Hagen,
@@ -13,20 +13,14 @@
 
 % \xmlfilter{#1}{/*/name()} -> \xmltag
 
-% This module is under construction and will be cleaned up. We use a funny mix of
-% xml, tex and lua. I could rewrite the lot but it also shows how context evolves.
+% This implementation looks like a hack ... this is because we deal with all weird
+% cases we ran into, including abuse that was supposed to render ok (even if it
+% didn't in other renderers) .. it was simply expected to work that way.
 %
-% I might end up with a lua-only implementation some day. I must find a good reason
-% to spend time on it. In fact, it might even be more messy.
-%
-% no m:text strip (needs checking, maybe nbsp is mandate
-%
-% todo: more will be moved to lua (less hassle)
-% todo: move left/right to the lua end
-%
-% this implememation looks like a hack ... this is because we deal with all weird cases we
-% ran into, including abuse that was supposed to render ok (even if it didn't in other
-% renderers) .. it was simply expected to work that way.
+% So, consider this module to be under constant construction and clean up. We still
+% use a funny mix of xml, tex and lua. I could rewrite the lot but it also shows how
+% context evolves. I might end up with a lua-only implementation some day, but I must
+% find a real good reason to spend time on it as so far it never paid back.
 
 \writestatus{loading}{ConTeXt XML Macros / MathML Renderer}
 
@@ -2430,7 +2424,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:mcolumn
-    \ctxmodulemathml{mcolumn("#1")}
+    \vbox{\ctxmodulemathml{mcolumn("#1")}}% needs checking
 \stopxmlsetups
 
 \def\mmlsetfakewidth#1{\setbox\scratchbox\hbox{#1}\scratchdimen\wd\scratchbox}

@@ -2604,6 +2604,32 @@
 \unexpanded\def\globalpushbox{\syst_boxes_push\global}
 \unexpanded\def\globalpopbox {\syst_boxes_pop \global}
 
+%D And here is a more modern one (not yet in i-*):
+%D
+%D \starttyping
+%D \dorecurse {100} {
+%D     \setbox\zerocount\hbox{test \recurselevel}
+%D     \putboxincache{foo}{\recurselevel}\zerocount
+%D     \copyboxfromcache{foo}{\recurselevel}\zerocount
+%D     \iftrue
+%D         \setbox\zerocount\hbox{\directboxfromcache{foo}{\recurselevel}}%
+%D     \else
+%D         \getboxfromcache{foo}{\recurselevel}\zerocount
+%D     \fi
+%D }
+%D \resetboxesincache{foo}
+%D \stoptyping
+
+\unexpanded\def\putboxincache       #1#2#3{\clf_putboxincache         {#1}{#2}#3\relax}
+\unexpanded\def\getboxfromcache     #1#2#3{\clf_getboxfromcache       {#1}{#2}#3\relax}
+\unexpanded\def\copyboxfromcache    #1#2#3{\clf_copyboxfromcache      {#1}{#2}#3\relax}
+\unexpanded\def\directboxfromcache    #1#2{\clf_directboxfromcache    {#1}{#2}}
+\unexpanded\def\directcopyboxfromcache#1#2{\clf_directcopyboxfromcache{#1}{#2}}
+\unexpanded\def\resetboxesincache       #1{\clf_resetboxesincache     {#1}}
+
+\unexpanded\def\putnextboxincache#1#2%
+  {\dowithnextbox{\putboxincache{#1}{#2}\nextbox}}
+
 %D \macros
 %D   {removedepth, obeydepth}
 %D
