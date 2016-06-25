@@ -74,6 +74,8 @@ def stop_predefined_shape_definition =
 
 enddef ;
 
+% this can be delayed
+
 start_predefined_shape_definition ;
 
     predefined_shapes[ 0] := (origin--cycle) ;
@@ -143,7 +145,7 @@ start_predefined_shape_definition ;
 stop_predefined_shape_definition ;
 
 vardef some_shape_path (expr type) =
-    if known predefined_shapes[type] : predefined_shapes[type] else : predefined_shapes[0] fi
+    if known predefined_shapes[type] : predefined_shapes[type] else : predefined_shapes[24] fi
 enddef ;
 
 def some_shape (expr shape_type, shape_width, shape_height, shape_linewidth, shape_linecolor, shape_fillcolor) =

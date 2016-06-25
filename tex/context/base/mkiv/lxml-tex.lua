@@ -2206,7 +2206,11 @@ local pattern = P("context-") * C((1-patterns.whitespace)^1) * C(P(1)^1)
 function lxml.applyselectors(id)
     local root = getid(id)
     local function filter(e)
-        local dt   = e.dt
+        local dt = e.dt
+        if not dt then
+            report_lxml("error in selector, no data in %a",e.tg or "?")
+            return
+        end
         local ndt  = #dt
         local done = false
         local i = 1
@@ -2312,7 +2316,7 @@ function lxml.applyselectors(id)
                                 end
                             end
                         end
-                    else
+                    elseif dti then
                         filter(dti)
                     end
                 end

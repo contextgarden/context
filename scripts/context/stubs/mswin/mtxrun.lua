@@ -10012,7 +10012,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 57132, stripped down to: 35990
+-- original size: 57426, stripped down to: 36192
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -10936,14 +10936,24 @@ function xml.toxml(data)
     return data
   end
 end
-local function copy(old)
+local function copy(old,p)
   if old then
     local new={}
     for k,v in next,old do
-      if type(v)=="table" then
-        new[k]=table.copy(v)
-      else
+      local t=type(v)=="table"
+      if k=="at" then
+        local t={}
+        for k,v in next,v do
+          t[k]=v
+        end
+        new[k]=t
+      elseif k=="dt" then
+        v.__p__=nil
+        v=copy(v,new)
         new[k]=v
+        v.__p__=p
+      else
+        new[k]=v 
       end
     end
     local mt=getmetatable(old)
@@ -12535,7 +12545,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 30536, stripped down to: 21713
+-- original size: 30855, stripped down to: 21924
 
 if not modules then modules={} end modules ['lxml-aux']={
   version=1.001,
@@ -12754,7 +12764,17 @@ function xml.replace(root,pattern,whatever)
           report('replacing',pattern,c,e)
         end
         local d=p.dt
-        d[e.ni]=copiedelement(element,p)
+        local n=e.ni
+        local t=copiedelement(element,p)
+        if type(t)=="table" then
+          d[n]=t[1]
+          for i=2,#t do
+            n=n+1
+            insert(d,n,t[i])
+          end
+        else
+          d[n]=t
+        end
         redo_ni(d) 
       end
     end
@@ -18763,8 +18783,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 798419
--- stripped bytes    : 289827
+-- original bytes    : 799032
+-- stripped bytes    : 290027
 
 -- end library merge
 

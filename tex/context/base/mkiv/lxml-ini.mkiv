@@ -310,6 +310,16 @@
 \unexpanded\def\xmlinstalldirective#1#2%
   {\clf_xmlinstalldirective{#1}{\csstring#2}}
 
+% an example:
+
+% <?context-tex-directive bgroup ?>
+
+\appendtoks
+    \xmlinstalldirective{tex}{xmltexcommand}%
+\to \everyjob
+
+\def\xmltexcommand#1{\begincsname#1\endcsname}
+
 % \def\xmlcontextdirective#1% kind class key value
 %   {\executeifdefined{xml#1directive}\gobblethreearguments}
 

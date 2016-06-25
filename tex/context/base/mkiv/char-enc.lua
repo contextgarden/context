@@ -162,7 +162,6 @@ characters.synonyms = allocate { -- afm mess
 --         if not enccodes[name] then enccodes[name] = unicode end
 --     end
 --
---
 -- end
 --
 -- storage.register("characters.enccodes", characters.enccodes, "characters.enccodes")

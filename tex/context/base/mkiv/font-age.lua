@@ -12,7 +12,7 @@ if context then
     os.exit()
 end
 
-return { -- generated: inspect(fonts.encodings.agl.unicodes)
+return {
  ["A"]=65,
  ["AE"]=198,
  ["AEacute"]=508,
@@ -1527,6 +1527,7 @@ return { -- generated: inspect(fonts.encodings.agl.unicodes)
  ["dotbelowcomb"]=803,
  ["dotkatakana"]=12539,
  ["dotlessi"]=305,
+ ["dotlessj"]=567,
  ["dotlessjstrokehook"]=644,
  ["dotmath"]=8901,
  ["dottedcircle"]=9676,

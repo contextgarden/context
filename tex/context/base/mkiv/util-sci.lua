@@ -22,6 +22,7 @@ local lexerroot = file.dirname(resolvers.find_file("scite-context-lexer.lua"))
 local knownlexers  = {
     tex  = "tex", mkiv = "tex", mkvi = "tex", mkxi = "tex", mkix = "tex", mkii = "tex", cld  = "tex",
     lua  = "lua", lfg  = "lua", lus = "lua",
+    mp = "mps", mpiv = "mps", mpii = "mps",
     w = "web", ww = "web",
     c = "cpp", h = "cpp", cpp = "cpp", hpp = "cpp", cxx = "cpp", hxx = "cpp",
     xml = "xml", lmx  = "xml", ctx = "xml", xsl = "xml", xsd = "xml", rlx = "xml", css = "xml", dtd = "xml",

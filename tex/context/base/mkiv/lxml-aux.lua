@@ -257,7 +257,17 @@ function xml.replace(root,pattern,whatever)
                     report('replacing',pattern,c,e)
                 end
                 local d = p.dt
-                d[e.ni] = copiedelement(element,p)
+                local n = e.ni
+                local t = copiedelement(element,p)
+                if type(t) == "table" then
+                    d[n] = t[1]
+                    for i=2,#t do
+                        n = n + 1
+                        insert(d,n,t[i])
+                    end
+                else
+                    d[n] = t
+                end
                 redo_ni(d) -- probably not needed
             end
         end

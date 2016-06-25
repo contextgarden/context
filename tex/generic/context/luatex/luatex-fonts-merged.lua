@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/24/16 02:20:17
+-- merge date  : 06/25/16 14:38:07
 
 do -- begin closure to overcome local limits and interference
 
@@ -4327,6 +4327,7 @@ local remapper={
   cidmap="cid maps",
   pfb="type1 fonts",
   afm="afm",
+  enc="enc files",
 }
 function resolvers.findfile(name,fileformat)
   name=string.gsub(name,"\\","/")
@@ -5849,15 +5850,17 @@ end
 local psfake=0
 local function fixedpsname(psname,fallback)
   local usedname=psname
-  if not psname or psname=="" then
-    psname=fallback
-    usedname=gsub(psname,"[^a-zA-Z0-9]+","-")
-  elseif find(psname," ") then
-    usedname=gsub(psname,"[%s]+","-")
-  end
-  if not psname or psname=="" then
+  if psname and psname~="" then
+    if find(psname," ") then
+      usedname=gsub(psname,"[%s]+","-")
+    else
+    end
+  elseif not fallback or fallback=="" then
     psfake=psfake+1
     psname="fakename-"..psfake
+  else
+    psname=fallback
+    usedname=gsub(psname,"[^a-zA-Z0-9]+","-")
   end
   return usedname,psname~=usedname
 end
@@ -6796,19 +6799,61 @@ if context then
   os.exit()
 end
 local fonts=fonts
-fonts.encodings={}
-fonts.encodings.agl={}
-fonts.encodings.known={}
-setmetatable(fonts.encodings.agl,{ __index=function(t,k)
+local encodings={}
+fonts.encodings=encodings
+encodings.agl={}
+encodings.known={}
+setmetatable(encodings.agl,{ __index=function(t,k)
   if k=="unicodes" then
     texio.write(" <loading (extended) adobe glyph list>")
     local unicodes=dofile(resolvers.findfile("font-age.lua"))
-    fonts.encodings.agl={ unicodes=unicodes }
+    encodings.agl={ unicodes=unicodes }
     return unicodes
   else
     return nil
   end
 end })
+encodings.cache=containers.define("fonts","enc",encodings.version,true)
+function encodings.load(filename)
+  local name=file.removesuffix(filename)
+  local data=containers.read(encodings.cache,name)
+  if data then
+    return data
+  end
+  local vector,tag,hash,unicodes={},"",{},{}
+  local foundname=resolvers.findfile(filename,'enc')
+  if foundname and foundname~="" then
+    local ok,encoding,size=resolvers.loadbinfile(foundname)
+    if ok and encoding then
+      encoding=string.gsub(encoding,"%%(.-)\n","")
+      local unicoding=encodings.agl.unicodes
+      local tag,vec=string.match(encoding,"/(%w+)%s*%[(.*)%]%s*def")
+      local i=0
+      for ch in string.gmatch(vec,"/([%a%d%.]+)") do
+        if ch~=".notdef" then
+          vector[i]=ch
+          if not hash[ch] then
+            hash[ch]=i
+          else
+          end
+          local u=unicoding[ch]
+          if u then
+            unicodes[u]=i
+          end
+        end
+        i=i+1
+      end
+    end
+  end
+  local data={
+    name=name,
+    tag=tag,
+    vector=vector,
+    hash=hash,
+    unicodes=unicodes
+  }
+  return containers.write(encodings.cache,name,data)
+end
 
 end -- closure
 

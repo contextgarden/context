@@ -1243,17 +1243,15 @@ generic table copier. Since we know what we're dealing with we
 can speed up things a bit. The second argument is not to be used!</p>
 --ldx]]--
 
--- local function copy(old,tables)
+-- local function copy(old)
 --     if old then
---         if not tables then
---             tables = { }
---         end
 --         local new = { }
---         if not tables[old] then
---             tables[old] = new
---         end
 --         for k,v in next, old do
---             new[k] = (type(v) == "table" and (tables[v] or copy(v, tables))) or v
+--             if type(v) == "table" then
+--                 new[k] = table.copy(v)
+--             else
+--                 new[k] = v
+--             end
 --         end
 --         local mt = getmetatable(old)
 --         if mt then
@@ -1264,15 +1262,27 @@ can speed up things a bit. The second argument is not to be used!</p>
 --         return { }
 --     end
 -- end
+--
+-- We need to prevent __p__ recursio, so:
 
-local function copy(old)
+local function copy(old,p)
     if old then
         local new = { }
-        for k,v in next, old do
-            if type(v) == "table" then
-                new[k] = table.copy(v)
-            else
+        for k, v in next, old do
+            local t = type(v) == "table"
+            if k == "at" then
+                local t = { }
+                for k, v in next, v do
+                    t[k] = v
+                end
+                new[k] = t
+            elseif k == "dt" then
+                v.__p__ = nil
+                v = copy(v,new)
                 new[k] = v
+                v.__p__ = p
+            else
+                new[k] = v -- so we also share entities, etc in root
             end
         end
         local mt = getmetatable(old)

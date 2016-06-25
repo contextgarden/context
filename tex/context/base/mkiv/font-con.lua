@@ -259,17 +259,19 @@ local psfake = 0
 
 local function fixedpsname(psname,fallback)
     local usedname = psname
-    if not psname or psname == "" then
+    if psname and psname ~= "" then
+        if find(psname," ") then
+            usedname = gsub(psname,"[%s]+","-")
+        else
+            -- we assume that the name is sane enough (we might sanitize completely some day)
+        end
+    elseif not fallback or fallback == "" then
+        psfake = psfake + 1
+        psname = "fakename-" .. psfake
+    else
         -- filenames can be a mess so we do a drastic cleanup
         psname   = fallback
         usedname = gsub(psname,"[^a-zA-Z0-9]+","-")
-    elseif find(psname," ") then
-        -- we assume that the name is sane enough (we might sanitize completely some day)
-        usedname = gsub(psname,"[%s]+","-")
-    end
-    if not psname or psname == "" then
-        psfake = psfake + 1
-        psname = "fakename-" .. psfake
     end
     return usedname, psname ~= usedname
 end

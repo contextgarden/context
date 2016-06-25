@@ -141,22 +141,23 @@ local function step_make_chart(settings)
     end
     --
     context("text_line_color   := \\MPcolor{%s} ;", textsettings.framecolor)
-    context("text_line_width   := %p ;", textsettings.rulethickness)
+    context("text_line_width   := %p ;",            textsettings.rulethickness)
     context("text_fill_color   := \\MPcolor{%s} ;", textsettings.backgroundcolor)
-    context("text_offset       := %p ;", textsettings.offset)
-    context("text_distance_set := %p ;", textsettings.distance)
+    context("text_offset       := %p ;",            textsettings.offset)
+    context("text_distance_set := %p ;",            textsettings.distance)
     --
-    context("cell_line_color := \\MPcolor{%s} ;", cellsettings.framecolor)
-    context("cell_line_width := %p ;", cellsettings.rulethickness)
-    context("cell_fill_color := \\MPcolor{%s} ;", cellsettings.backgroundcolor)
-    context("cell_offset     := %p ;", cellsettings.offset)
-    context("cell_distance_x := %p ;", cellsettings.dx)
-    context("cell_distance_y := %p ;", cellsettings.dy)
+    context("cell_line_color := \\MPcolor{%s} ;",   cellsettings.framecolor)
+    context("cell_line_width := %p ;",              cellsettings.rulethickness)
+    context("cell_fill_color := \\MPcolor{%s} ;",   cellsettings.backgroundcolor)
+    context("cell_offset     := %p ;",              cellsettings.offset)
+    context("cell_distance_x := %p ;",              cellsettings.dx)
+    context("cell_distance_y := %p ;",              cellsettings.dy)
     --
-    context("line_line_color := \\MPcolor{%s} ;", linesettings.color)
-    context("line_line_width := %p ;", linesettings.rulethickness)
-    context("line_distance   := %p ;", linesettings.distance)
-    context("line_offset     := %p ;", linesettings.offset)
+    context("line_line_color := \\MPcolor{%s} ;",   linesettings.color)
+    context("line_line_width := %p ;",              linesettings.rulethickness)
+    context("line_distance   := %p ;",              linesettings.distance)
+    context("line_offset     := %p ;",              linesettings.offset)
+    context("line_height     := %p ;",              linesettings.height)
     --
     for i=1,chart.count do
         local step = steps[i]
@@ -167,31 +168,34 @@ local function step_make_chart(settings)
         if ali then
             local text = ali.text
             local shape = ali.shape
-            context('step_cell_ali(%s,%s,%s,\\MPcolor{%s},\\MPcolor{%s},%p) ;',
+            context('step_cell_ali(%s,%s,%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i) ;',
                 tonumber(text.left) or 0,
                 tonumber(text.middle) or 0,
                 tonumber(text.right) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
-                shape.rulethickness
+                shape.rulethickness,
+                tonumber(shape.alternative) or 24
             )
         end
         if top then
             local shape = top.shape
-            context('step_cell_top(%s,\\MPcolor{%s},\\MPcolor{%s},%p) ;',
+            context('step_cell_top(%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i) ;',
                 tonumber(top.text.top) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
-                shape.rulethickness
+                shape.rulethickness,
+                tonumber(shape.alternative) or 24
             )
         end
         if bot then
             local shape = bot.shape
-            context('step_cell_bot(%s,\\MPcolor{%s},\\MPcolor{%s},%p) ;',
+            context('step_cell_bot(%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i) ;',
                 tonumber(bot.text.bot) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
-                shape.rulethickness
+                shape.rulethickness,
+                tonumber(shape.alternative) or 24
             )
         end
         local top = step.text_top
@@ -200,34 +204,49 @@ local function step_make_chart(settings)
         local s_t = step.start_t
         local s_m = step.start_m
         local s_b = step.start_b
-        if vertical then
-            top, bot, s_t, s_b = bot, top, s_b, s_t
-        end
+--         if vertical then
+--             top, bot, s_t, s_b = bot, top, s_b, s_t
+--         end
         if top then
             local shape = top.shape
-            context('step_text_top(%s,\\MPcolor{%s},\\MPcolor{%s},%p) ;',
+            local line  = top.line
+            context('step_text_top(%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i,\\MPcolor{%s},%p,%i) ;',
                 tonumber(top.text.top) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
-                shape.rulethickness
+                shape.rulethickness,
+                tonumber(shape.alternative) or 24,
+                line.color,
+                line.rulethickness,
+                tonumber(line.alternative) or 1
             )
         end
         if mid then -- used ?
             local shape = mid.shape
-            context('step_text_mid(%s,\\MPcolor{%s},\\MPcolor{%s},%p) ;',
+            local line  = mid.line
+            context('step_text_mid(%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i,\\MPcolor{%s},%p,%i) ;',
                 tonumber(mid.text.mid) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
-                shape.rulethickness
+                shape.rulethickness,
+                tonumber(shape.alternative) or 24,
+                line.color,
+                line.rulethickness,
+                tonumber(line.alternative) or 1
             )
         end
         if bot then
             local shape = bot.shape
-            context('step_text_bot(%s,\\MPcolor{%s},\\MPcolor{%s},%p) ;',
+            local line  = bot.line
+            context('step_text_bot(%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i,\\MPcolor{%s},%p,%i) ;',
                 tonumber(bot.text.bot) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
-                shape.rulethickness
+                shape.rulethickness,
+                tonumber(shape.alternative) or 24,
+                line.color,
+                line.rulethickness,
+                tonumber(line.alternative) or 1
             )
         end
         context('start_t[%i] := %i ;',i,s_t)
@@ -271,18 +290,15 @@ local function step_text(spec)
         local c = count
         while true do
             local step = steps[c]
-            if step.text_bot then
+            if step.text_top then
                 c = c + 1
                 step = steps[c]
             else
-                step.text_bot = spec
+                step.text_top = spec
                 step.start_b  = count
                 break
             end
         end
--- local step = steps[c]
--- step.text_bot = spec
--- step.start_b  = count
     end
 end
 

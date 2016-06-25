@@ -84,21 +84,13 @@
 \unexpanded\def\mpsometxt % no _ catcode
   {\doifelsenextoptionalcs\meta_some_txt_indeed_yes\meta_some_txt_indeed_nop}
 
-% \def\meta_some_txt_indeed_yes[#1]%
-%   {\def\currenttextext{#1}%
-%    \csname\??graphictexarguments
-%      \ifcsname\??graphictexarguments0:#1\endcsname0\else
-%      \ifcsname\??graphictexarguments1:#1\endcsname1\else
-%                                        ?\fi\fi
-%    \endcsname}
-
 \def\meta_some_txt_indeed_yes[#1]%
   {\def\currenttextext{#1}%
-   \ifcsname\??graphictexarguments0:#1\endcsname
-     \lastnamedcs
-   \else\ifcsname\??graphictexarguments1:#1\endcsname
-     \lastnamedcs
-   \fi\fi}
+   \csname\??graphictexarguments
+     \ifcsname\??graphictexarguments0:#1\endcsname0\else
+     \ifcsname\??graphictexarguments1:#1\endcsname1\else
+                                       ?\fi\fi
+   \endcsname}
 
 \def\meta_some_txt_indeed_nop
   {}

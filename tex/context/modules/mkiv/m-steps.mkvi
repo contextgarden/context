@@ -35,6 +35,12 @@
 \let\setupSTEPtexts \setupSTEPtext
 \let\setupSTEPlines \setupSTEPline
 
+\let\setSTEPchartsparameter\setSTEPchartparameter
+\let\setSTEPtablesparameter\setSTEPtableparameter
+\let\setSTEPcellsparameter \setSTEPcellparameter
+\let\setSTEPtextsparameter \setSTEPtextparameter
+\let\setSTEPlinesparameter \setSTEPlineparameter
+
 % numeric text_text_distance ; text_text_distance   := 20pt ;
 % numeric step_distance      ; step_distance        := 20pt ;
 
@@ -55,7 +61,7 @@
 %    \c!offset=.15\bodyfontsize]
 
 \setupSTEPcells
-  [\c!alternative=1, % TODO
+  [\c!alternative=24,
    \c!style=,
    \c!color=,
    \c!dx=\bodyfontsize,
@@ -67,7 +73,7 @@
    \c!offset=.25\bodyfontsize]
 
 \setupSTEPtexts
-  [\c!alternative=1, % TODO
+  [\c!alternative=24,
    \c!style=\v!smallbodyfont,
    \c!color=,
  % \c!background=\v!color,
@@ -78,7 +84,7 @@
    \c!offset=.25\bodyfontsize]
 
 \setupSTEPlines
-  [\c!alternative=1, % TODO
+  [\c!alternative=1,
    \c!rulethickness=.15\bodyfontsize,
    \c!height=3\bodyfontsize,
    \c!distance=.5\bodyfontsize,
@@ -113,6 +119,14 @@
 % we used to save charts but that is tricky with so much delegated to lua
 % and mp so now we do support a buffered way only
 
+\def\module_steps_syncronize
+  {\let\currentSTEPtext\p_category
+   \let\currentSTEPcell\p_category
+   \let\currentSTEPline\p_category
+   \checkSTEPcellparent
+   \checkSTEPtextparent
+   \checkSTEPlineparent}
+
 \unexpanded\def\startSTEPchart
   {\begingroup
    \dodoubleempty\module_steps_start_chart}
@@ -137,6 +151,9 @@
    \let\currentSTEPtext\p_category
    \let\currentSTEPcell\p_category
    \let\currentSTEPline\p_category
+   \checkSTEPcellparent
+   \checkSTEPtextparent
+   \checkSTEPlineparent
    \the\everySTEPchart
    \startnointerference
    \clf_step_start_chart{\currentSTEPchart}}
@@ -196,7 +213,7 @@
             alternative     {\STEPchartparameter\c!alternative}
         }
         cell {
-            alternative     {\STEPcellparameter\c!alternative} % shapes
+            alternative     {\STEPcellparameter\c!alternative}
             offset          \dimexpr\STEPcellparameter\c!offset\relax
             rulethickness   \dimexpr\STEPcellparameter\c!rulethickness\relax
             framecolor      {\STEPcellparameter\c!framecolor}
@@ -205,7 +222,7 @@
             dy              \dimexpr\STEPcellparameter\c!dy\relax
         }
         text {
-            alternative     {\STEPtextparameter\c!alternative} % shapes
+            alternative     {\STEPtextparameter\c!alternative}
             offset          \dimexpr\STEPtextparameter\c!offset\relax
             distance        \dimexpr\STEPtextparameter\c!distance\relax
             rulethickness   \dimexpr\STEPtextparameter\c!rulethickness\relax
@@ -213,7 +230,7 @@
             backgroundcolor {\STEPtextparameter\c!backgroundcolor}
         }
         line {
-            alternative     {\STEPlineparameter\c!alternative} % dash, arrow
+            alternative     {\STEPlineparameter\c!alternative}
             rulethickness   \dimexpr\STEPlineparameter\c!rulethickness\relax
             height          \dimexpr\STEPlineparameter\c!height\relax
             distance        \dimexpr\STEPlineparameter\c!distance\relax
@@ -240,12 +257,18 @@
   {\edef\p_category{#category}%
    \ifx\p_category\empty \else
      \let\currentSTEPcell\p_category
+     \let\currentSTEPline\p_category
+     \checkSTEPcellparent
+     \checkSTEPlineparent
    \fi}
 
 \def\module_steps_check_text#category%
   {\edef\p_category{#category}%
    \ifx\p_category\empty \else
      \let\currentSTEPtext\p_category
+     \let\currentSTEPline\p_category
+     \checkSTEPtextparent
+     \checkSTEPlineparent
    \fi}
 
 \def\module_steps_pass_data#1#2%
@@ -415,32 +438,35 @@
 
 % chart table cell text line
 
-\unexpanded\def\module_steps_xml_directive#1%
-  {\begincsname setSTEP#1parameter\endcsname}
+\unexpanded\def\setSTEPxmldirective#1#2#3%
+  {\begincsname setSTEP#1parameter\endcsname{#2}{#3}}
 
-\xmlinstalldirective{stepchart}{module_steps_xml_directive}
+\xmlinstalldirective{stepchart}{setSTEPxmldirective}
 
 \startxmlsetups xml:step:define
-    \xmlsetsetup{#1} {stepchart|steptable|stepaligntable} {xml:step:*}
+    \xmlsetsetup
+        {#1}
+        {stepchart|steptable|stepaligntable|cells|texts|stepcell|cell|text}
+        {xml:step:*}
 \stopxmlsetups
 
 \xmlregistersetup{xml:step:define}
 
 \startxmlsetups xml:step:stepchart
     \startSTEPchart[\c!category=\xmlatt{#1}{class}]
-        \xmlfilter{#1}{/(cells|texts|stepcell|cell|text)/command(xml:step:*)}
+        \xmlflush{#1}
     \stopSTEPchart
 \stopxmlsetups
 
 \startxmlsetups xml:step:steptable
     \startSTEPtable[\c!category=\xmlatt{#1}{class}]
-        \xmlfilter{#1}{/(cells|texts|stepcell|cell|text)/command(xml:step:*)}
+        \xmlflush{#1}
     \stopSTEPtable
 \stopxmlsetups
 
 \startxmlsetups xml:step:stepaligntable
     \startSTEPaligntable[\c!category=\xmlatt{#1}{class}]
-        \xmlfilter{#1}{/(cells|texts|stepcell|cell|text)/command(xml:step:*)}
+        \xmlflush{#1}
     \stopSTEPaligntable
 \stopxmlsetups
 

@@ -631,6 +631,8 @@ local extras   = allocate { -- private extensions
     spade           = 0x2660,
     theta1          = 0x03D1,
     twodotenleader  = 0x2025,
+
+    dotlessj        = 0x0237,
 }
 
 -- We load this table only when needed. We could use a loading mechanism

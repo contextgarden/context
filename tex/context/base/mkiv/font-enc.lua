@@ -20,7 +20,7 @@ them in tables. But we may do so some day, for consistency.</p>
 
 local report_encoding = logs.reporter("fonts","encoding")
 
-local encodings = { }
+local encodings = fonts.encodings or { }
 fonts.encodings = encodings
 
 encodings.version = 1.03
@@ -79,6 +79,7 @@ function encodings.load(filename)
         local ok, encoding, size = resolvers.loadbinfile(foundname)
         if ok and encoding then
             encoding = gsub(encoding,"%%(.-)\n","")
+            local unicoding = fonts.encodings.agl.unicodes
             local tag, vec = match(encoding,"/(%w+)%s*%[(.*)%]%s*def")
             local i = 0
             for ch in gmatch(vec,"/([%a%d%.]+)") do
@@ -89,8 +90,9 @@ function encodings.load(filename)
                     else
                         -- duplicate, play safe for tex ligs and take first
                     end
-                    if enccodes[ch] then
-                        unicodes[enccodes[ch]] = i
+                    local u = unicoding[ch] or enccodes[ch] -- enccodes have also context names
+                    if u then
+                        unicodes[u] = i
                     end
                 end
                 i = i + 1

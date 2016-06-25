@@ -93,6 +93,7 @@ def step_cell_top (expr t, c, f, l, s) =
     cell_top_lines [nofcells] := l ;
     cell_top_shapes[nofcells] := s ;
 enddef ;
+
 def step_cell_bot (expr b, c, f, l, s) =
     cells_b[nofcells] := texbox.d(chart_category,b) ;
     cell_bot_colors[nofcells] := c ;
@@ -100,27 +101,7 @@ def step_cell_bot (expr b, c, f, l, s) =
     cell_bot_lines [nofcells] := l ;
     cell_bot_shapes[nofcells] := s ;
 enddef ;
-def step_text_top (expr t, c, f, l, s) =
-    texts_t[nofcells] := texbox.d(chart_category,t) ;
-    text_top_colors[nofcells] := c ;
-    text_top_fills [nofcells] := f ;
-    text_top_lines [nofcells] := l ;
-    text_top_shapes[nofcells] := s ;
-enddef ;
-def step_text_mid (expr m, c, f, l, s) =
-    texts_m[nofcells] := texbox.d(chart_category,m) ;
-    text_mid_colors[nofcells] := c ;
-    text_mid_fills [nofcells] := f ;
-    text_mid_lines [nofcells] := l ;
-    text_mid_shapes[nofcells] := s ;
-enddef ;
-def step_text_bot (expr b, c, f, l, s) =
-    texts_b[nofcells] := texbox.d(chart_category,b) ;
-    text_bot_colors[nofcells] := c ;
-    text_bot_fills [nofcells] := f ;
-    text_bot_lines [nofcells] := l ;
-    text_bot_shapes[nofcells] := s ;
-enddef ;
+
 def step_cell_ali (expr ca, cb, cc, c, f, l, s) =
     cells_a[nofcells][1] := texbox.d(chart_category,ca) ;
     cells_a[nofcells][2] := texbox.d(chart_category,cb) ;
@@ -129,6 +110,39 @@ def step_cell_ali (expr ca, cb, cc, c, f, l, s) =
     cell_top_fills [nofcells] := f ;
     cell_top_lines [nofcells] := l ;
     cell_top_shapes[nofcells] := s ;
+enddef ;
+
+def step_text_top (expr t, tc, tf, tl, ts, lc, ll, ls) =
+    texts_t[nofcells] := texbox.d(chart_category,t) ;
+    text_top_colors[nofcells] := tc ;
+    text_top_fills [nofcells] := tf ;
+    text_top_lines [nofcells] := tl ;
+    text_top_shapes[nofcells] := ts ;
+    line_top_colors[nofcells] := lc ;
+    line_top_lines [nofcells] := ll ;
+    line_top_shapes[nofcells] := ls ;
+enddef ;
+
+def step_text_mid (expr m, tc, tf, tl, ts, lc, ll, ls) =
+    texts_m[nofcells] := texbox.d(chart_category,m) ;
+    text_mid_colors[nofcells] := tc ;
+    text_mid_fills [nofcells] := tf ;
+    text_mid_lines [nofcells] := tl ;
+    text_mid_shapes[nofcells] := ts ;
+    line_mid_colors[nofcells] := lc ;
+    line_mid_lines [nofcells] := ll ;
+    line_mid_shapes[nofcells] := ls ;
+enddef ;
+
+def step_text_bot (expr b, tc, tf, tl, ts, lc, ll, ls) =
+    texts_b[nofcells] := texbox.d(chart_category,b) ;
+    text_bot_colors[nofcells] := tc ;
+    text_bot_fills [nofcells] := tf ;
+    text_bot_lines [nofcells] := tl ;
+    text_bot_shapes[nofcells] := ts ;
+    line_bot_colors[nofcells] := lc ;
+    line_bot_lines [nofcells] := ll ;
+    line_bot_shapes[nofcells] := ls ;
 enddef ;
 
 def step_begin_chart =
@@ -146,17 +160,17 @@ def step_begin_chart =
         save text_mid_colors ; color text_mid_colors[] ;
         save text_bot_colors ; color text_bot_colors[] ;
 
-        save cell_top_fills ; color cell_top_fills[] ;
-        save cell_bot_fills ; color cell_bot_fills[] ;
-        save text_top_fills ; color text_top_fills[] ;
-        save text_mid_fills ; color text_mid_fills[] ;
-        save text_bot_fills ; color text_bot_fills[] ;
+        save cell_top_fills  ; color cell_top_fills[] ;
+        save cell_bot_fills  ; color cell_bot_fills[] ;
+        save text_top_fills  ; color text_top_fills[] ;
+        save text_mid_fills  ; color text_mid_fills[] ;
+        save text_bot_fills  ; color text_bot_fills[] ;
 
-        save cell_top_lines ; numeric cell_top_lines[] ;
-        save cell_bot_lines ; numeric cell_bot_lines[] ;
-        save text_top_lines ; numeric text_top_lines[] ;
-        save text_mid_lines ; numeric text_mid_lines[] ;
-        save text_bot_lines ; numeric text_bot_lines[] ;
+        save cell_top_lines  ; numeric cell_top_lines[] ;
+        save cell_bot_lines  ; numeric cell_bot_lines[] ;
+        save text_top_lines  ; numeric text_top_lines[] ;
+        save text_mid_lines  ; numeric text_mid_lines[] ;
+        save text_bot_lines  ; numeric text_bot_lines[] ;
 
         save cell_top_shapes ; numeric cell_top_shapes[] ;
         save cell_bot_shapes ; numeric cell_bot_shapes[] ;
@@ -164,6 +178,17 @@ def step_begin_chart =
         save text_mid_shapes ; numeric text_mid_shapes[] ;
         save text_bot_shapes ; numeric text_bot_shapes[] ;
 
+        save line_top_lines  ; numeric line_top_lines[] ;
+        save line_mid_lines  ; numeric line_mid_lines[] ;
+        save line_bot_lines  ; numeric line_bot_lines[] ;
+
+        save line_top_colors ; color line_top_colors[] ;
+        save line_mid_colors ; color line_mid_colors[] ;
+        save line_bot_colors ; color line_bot_colors[] ;
+
+        save line_top_shapes ; numeric line_top_shapes[] ;
+        save line_mid_shapes ; numeric line_mid_shapes[] ;
+        save line_bot_shapes ; numeric line_bot_shapes[] ;
 enddef ;
 
 def step_end_chart =
@@ -177,6 +202,7 @@ def step_end_chart =
     save height_t, width_t, max_height_t, max_width_t ; numeric height_t, width_t, max_height_t, max_width_t ;
     save height_m, width_m, max_height_m, max_width_m ; numeric height_m, width_m, max_height_m, max_width_m ;
     save height_b, width_b, max_height_b, max_width_b ; numeric height_b, width_b, max_height_b, max_width_b ;
+    save alternative ; numeric alternative ;
     % check rows
     one_row_only := true ;
     for i=1 upto nofcells :
@@ -203,11 +229,11 @@ def step_end_chart =
                 setbounds cells_a[c][2] to boundingbox(cells_a[c][2]) leftenlarged (delta[2]/2)
                                                                       rightenlarged(delta[2]/2) ;
                 setbounds cells_a[c][3] to boundingbox(cells_a[c][3]) rightenlarged(delta[3]) ;
-                cells_a[c][1] := cells_a[c][1] shifted (-(size[1]+size[2])/2 - text_distance_set,0) ;
-                cells_a[c][2] := cells_a[c][2] ;
-                cells_a[c][3] := cells_a[c][3] shifted ( (size[3]+size[2])/2 + text_distance_set,0) ;
+                cells_a[c][1] := cells_a[c][1] shifted (- width[1]/2 - size[2]/2 - text_distance_set,0) ;
+                cells_a[c][3] := cells_a[c][3] shifted (  width[3]/2 + size[2]/2 + text_distance_set,0) ;
                 for i=1 upto 3:
                     draw cells_a[c][i] ;
+                  % draw boundingbox cells_a[c][i] ;
                 endfor ;
             ) ;
         endfor ;
@@ -338,27 +364,23 @@ def step_end_chart =
         width_t := bbwidth(cells_t[i]) ;
         width_b := bbwidth(cells_b[i]) ;
         if width_t > 0 :
-            if false :
-                drawpredefinedshape (17, cells_t[i], cell_line_width, cell_fill_color, cell_line_color) ;
-            else :
-                fill boundingbox cells_t[i]
-                    withcolor if known cell_top_fills[i] : cell_top_fills[i] else : cell_fill_color fi ;
-                draw boundingbox cells_t[i]
-                    withpen pencircle scaled if known cell_top_lines[i] : cell_top_lines[i] else : cell_line_width fi
-                    withcolor if known cell_top_colors[i] : cell_top_colors[i] else : cell_line_color fi ;
-            fi ;
+            drawpredefinedshape (
+                if known cell_top_shapes[i] : cell_top_shapes[i] else : 24 fi,
+                cells_t[i],
+                if known cell_top_lines [i] : cell_top_lines [i] else : cell_line_width fi,
+                if known cell_top_colors[i] : cell_top_colors[i] else : cell_line_color fi,
+                if known cell_top_fills [i] : cell_top_fills [i] else : cell_fill_color fi
+            ) ;
             draw cells_t[i] ;
         fi ;
         if width_b > 0 :
-            if false :
-                drawpredefinedshape (17, cells_b[i], cell_line_width, cell_fill_color, cell_line_color) ;
-            else :
-                fill boundingbox cells_b[i]
-                    withcolor if known cell_bot_fills[i] : cell_bot_fills[i] else : cell_fill_color fi ;
-                draw boundingbox cells_b[i]
-                    withpen pencircle scaled if known cell_bot_lines[i] : cell_bot_lines[i] else : cell_line_width fi
-                    withcolor if known cell_bot_colors[i] : cell_bot_colors[i] else : cell_line_color fi ;
-            fi ;
+            drawpredefinedshape (
+                if known cell_bot_shapes[i] : cell_bot_shapes[i] else : 24 fi,
+                cells_b[i],
+                if known cell_bot_lines [i] : cell_bot_lines [i] else : cell_line_width fi,
+                if known cell_bot_colors[i] : cell_bot_colors[i] else : cell_line_color fi,
+                if known cell_bot_fills [i] : cell_bot_fills [i] else : cell_fill_color fi
+            ) ;
             draw cells_b[i] ;
         fi ;
     endfor ;
@@ -401,12 +423,24 @@ def step_end_chart =
         next_b := cells_b[i+1] ;
         if bbwidth(text_t) > 0 :
             if bbwidth(cell_t) > 0 :
-                drawarrow midtopboundary cell_t
-                    shifted (if i > 1 : line_offset else : 0 fi, cell_line_width) {up}  ..
-                    midbottomboundary text_t shifted (0,-line_distance) ..
-                    {down} midtopboundary next_t shifted(if i < nofcells - 1 : -line_offset else : 0 fi,cell_line_width)
-                    withpen pencircle scaled line_line_width
-                    withcolor line_line_color ;
+                alternative := if known line_top_shapes[i] : line_top_shapes[i] else : 1 fi ;
+                if (alternative = 1) or (alternative = 2) : drawarrow else : draw fi
+                    midtopboundary cell_t
+                        shifted (if i > 1 : line_offset else : 0 fi, cell_line_width) {up}  ..
+                    midbottomboundary text_t
+                        shifted (0,-line_distance) ..
+                    {down} midtopboundary next_t
+                        shifted (if i < nofcells - 1 : -line_offset else : 0 fi,cell_line_width)
+                if (alternative = 2) or (alternative = 4) :
+                    dashed evenly scaled (
+                        if known line_top_lines [i] : line_top_lines [i] else : line_line_width fi
+                    )
+                fi
+                    withpen pencircle scaled
+                        if known line_top_lines [i] : line_top_lines [i] else : line_line_width fi
+                    withcolor
+                        if known line_top_colors[i] : line_top_colors[i] else : line_line_color fi
+                ;
             else :
             fi ;
         fi ;
@@ -416,12 +450,24 @@ def step_end_chart =
                 next_b := next_t ;
             fi ;
             if bbwidth(cell_b) > 0 :
-                drawarrow midbottomboundary cell_b
-                    shifted (if i > 1 : line_offset else : 0 fi, -cell_line_width) {down}  ..
-                    midtopboundary text_b shifted (0, line_distance) ..
-                    {up} midbottomboundary next_b shifted (if i < nofcells - 1 : -line_offset else : 0 fi,-cell_line_width)
-                    withpen pencircle scaled line_line_width
-                    withcolor line_line_color ;
+                alternative := if known line_bot_shapes[i] : line_bot_shapes[i] else : 1 fi ;
+                if (alternative = 1) or (alternative = 2) : drawarrow else : draw fi
+                    midbottomboundary cell_b
+                        shifted (if i > 1 : line_offset else : 0 fi, -cell_line_width) {down}  ..
+                    midtopboundary text_b
+                        shifted (0, line_distance) ..
+                    {up} midbottomboundary next_b
+                        shifted (if i < nofcells - 1 : -line_offset else : 0 fi,-cell_line_width)
+                if (alternative = 2) or (alternative = 4) :
+                    dashed evenly scaled (
+                        if known line_top_lines [i] : line_top_lines [i] else : line_line_width fi
+                    )
+                fi
+                    withpen pencircle scaled
+                        if known line_bot_lines [i] : line_bot_lines [i] else : line_line_width fi
+                    withcolor
+                        if known line_bot_colors[i] : line_bot_colors[i] else : line_line_color fi
+                ;
             else :
             fi ;
         fi ;
@@ -429,19 +475,23 @@ def step_end_chart =
     % draw top and bottom text boxes
     for i=1 upto nofcells-1 :
         if bbwidth(texts_t[i]) > 0 :
-            fill boundingbox texts_t[i]
-                withcolor if known text_top_fills[i] : text_top_fills[i] else : text_fill_color fi ;
-            draw boundingbox texts_t[i]
-                withpen pencircle scaled if known text_top_lines[i] : text_top_lines[i] else : text_line_width fi
-                withcolor if known text_top_colors[i] : text_top_colors[i] else : text_line_color fi ;
+            drawpredefinedshape (
+                if known text_top_shapes[i] : text_top_shapes[i] else : 24 fi,
+                texts_t[i],
+                if known text_top_lines [i] : text_top_lines [i] else : text_line_width fi,
+                if known text_top_colors[i] : text_top_colors[i] else : text_line_color fi,
+                if known text_top_fills [i] : text_top_fills [i] else : text_fill_color fi
+            ) ;
             draw texts_t[i] ;
         fi ;
         if bbwidth(texts_b[i]) > 0 :
-            fill boundingbox texts_b[i]
-                withcolor if known text_bot_fills[i] : text_bot_fills[i] else : text_fill_color fi ;
-            draw boundingbox texts_b[i]
-                withpen pencircle scaled if known text_bot_lines[i] : text_bot_lines[i] else : text_line_width fi
-                withcolor if known text_bot_colors[i] : text_bot_colors[i] else : text_line_color fi ;
+            drawpredefinedshape (
+                if known text_bot_shapes[i] : text_bot_shapes[i] else : 24 fi,
+                texts_b[i],
+                if known text_bot_lines [i] : text_bot_lines [i] else : text_line_width fi,
+                if known text_bot_colors[i] : text_bot_colors[i] else : text_line_color fi,
+                if known text_bot_fills [i] : text_bot_fills [i] else : text_fill_color fi
+            ) ;
             draw texts_b[i] ;
         fi ;
     endfor ;

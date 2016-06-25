@@ -16,8 +16,10 @@ return {
         },
         ["Minion-BoldMath"] = {
             default   = "file:MinionMath-Semibold.otf",
+        },
         ["Minion-MediumMath"] = {
             default   = "file:MinionMath-Semibold.otf",
+        },
     },
     mathematics = {
         kerns = {
