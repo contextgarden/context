@@ -7,12 +7,17 @@ if not modules then modules = { } end modules ['luatex-plain-tfm'] = {
 }
 
 -- \font\foo=file:luatex-plain-tfm.lua:tfm=csr10;enc=csr;pfb=csr10 at 12pt
+-- \font\bar=file:luatex-plain-tfm.lua:tfm=csr10;enc=csr           at 12pt
 --
--- \foo áäčďěíĺľňóôŕřšťúýž ff ffi \input tufte
+-- \foo áäčďěíĺľňóôŕřšťúýž ff ffi \input tufte\par
+-- \bar áäčďěíĺľňóôŕřšťúýž ff ffi \input tufte\par
+
+local outfiles = { }
 
 return function(specification)
 
     local size = specification.size
+    local name = specification.name
     local feat = specification.features and specification.features.normal
 
     if not feat then
@@ -21,7 +26,7 @@ return function(specification)
 
     local tfm = feat.tfm
     local enc = feat.enc or tfm
-    local pfb = feat.pfb or tfm
+    local pfb = feat.pfb
 
     if not tfm then
         return
@@ -29,7 +34,6 @@ return function(specification)
 
     local tfmfile = tfm .. ".tfm"
     local encfile = enc .. ".enc"
-    local pfbfile = pfb .. ".pfb"
 
     local tfmdata, id = fonts.constructors.readanddefine("file:"..tfmfile,size)
 
@@ -44,38 +48,28 @@ return function(specification)
 
     if tfmdata and encoding and unicoding then
 
+        tfmdata = table.copy(tfmdata) -- good enough for small fonts
+
         local characters = { }
         local originals  = tfmdata.characters
         local indices    = { }
         local parentfont = { "font", 1 }
-        local mapline    = tfm .. "<" .. pfbfile -- .."<"..encfile
-
-        local dummy = unicoding.foo -- foo forces loading
+        local private    = fonts.constructors.privateoffset
 
         -- create characters table
 
-        for name, index in next, encoding do
-            local unicode = unicoding[name]
-            if unicode then
-                local original = originals[index]
-                original.name = name -- so one can lookup weird names
-                original.commands = { parentfont, { "char", index } }
-                characters[unicode] = original
-                indices[index] = unicode
-            else
-                -- unknown name
+        for name, index in table.sortedhash(encoding) do -- predictable order
+            local unicode  = unicoding[name]
+            local original = originals[index]
+            if not unicode then
+                unicode = private
+                private = private + 1
+                report_tfm("glyph %a in font %a gets private unicode %U",name,tfmfile,private)
             end
-        end
-
-        -- also include ligatures and whatever left
-
-        local p = fonts.constructors.privateoffset
-        for k, v in next, originals do
-            if not indices[k] then
-                characters[p] = v
-                indices[k] = p
-                p = p + 1
-            end
+            characters[unicode] = original
+            indices[index]      = unicode
+            original.name       = name -- so one can lookup weird names
+            original.commands   = { parentfont, { "char", index } }
         end
 
         -- redo kerns and ligatures
@@ -106,8 +100,21 @@ return function(specification)
         tfmdata.fonts      = { { id = id } }
         tfmdata.characters = characters
 
-        pdf.mapline(mapline)
+        -- resources
+
+        local outfile = outfiles[tfmfile]
+
+        if outfile == nil then
+            if pfb then
+                outfile = pfb .. ".pfb"
+                pdf.mapline(tfm .. "<" .. outfile)
+            else
+                outfile = false
+            end
+            outfiles[tfmfile] = outfile
+        end
 
     end
+
     return tfmdata
 end

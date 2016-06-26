@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-tfm'] = {
     license   = "see context related readme files"
 }
 
-local next = next
+local next, type = next, type
 local match = string.match
 
 local trace_defining           = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
@@ -69,6 +69,10 @@ function tfm.setfeatures(tfmdata,features)
     end
 end
 
+function tfm.reencode(tfmdata,specification)
+    return tfmdata
+end
+
 local depth = { } -- table.setmetatableindex("number")
 
 local function read_from_tfm(specification)
@@ -80,17 +84,20 @@ local function read_from_tfm(specification)
     end
     local tfmdata = font.read_tfm(filename,size) -- not cached, fast enough
     if tfmdata then
+
+        tfmdata = tfm.reencode(tfmdata,specification) -- not a manipulator, has to come earlier
+
         local features      = specification.features and specification.features.normal or { }
         local resources     = tfmdata.resources  or { }
         local properties    = tfmdata.properties or { }
         local parameters    = tfmdata.parameters or { }
         local shared        = tfmdata.shared     or { }
+        --
         properties.name     = tfmdata.name
         properties.fontname = tfmdata.fontname
         properties.psname   = tfmdata.psname
         properties.filename = specification.filename
         properties.format   = fonts.formats.tfm -- better than nothing
-        parameters.size     = size
         --
         tfmdata.properties  = properties
         tfmdata.resources   = resources
@@ -100,6 +107,8 @@ local function read_from_tfm(specification)
         shared.rawdata      = { }
         shared.features     = features
         shared.processes    = next(features) and tfm.setfeatures(tfmdata,features) or nil
+        --
+        parameters.size          = size
         parameters.slant         = parameters.slant          or parameters[1] or 0
         parameters.space         = parameters.space          or parameters[2] or 0
         parameters.space_stretch = parameters.space_stretch  or parameters[3] or 0
@@ -146,7 +155,7 @@ local function read_from_tfm(specification)
         end
         --
         local allfeatures = tfmdata.shared.features or specification.features.normal
-        constructors.applymanipulators("tfm",tfmdata,allfeatures.normal,trace_features,report_tfm)
+        constructors.applymanipulators("tfm",tfmdata,allfeatures,trace_features,report_tfm)
         if not features.encoding then
             local encoding, filename = match(properties.filename,"^(.-)%-(.*)$") -- context: encoding-name.*
             if filename and encoding and encodings.known and encodings.known[encoding] then
@@ -199,3 +208,154 @@ function readers.tfm(specification)
 end
 
 readers.ofm = readers.tfm
+
+-- bonus for old times sake:
+
+do
+
+    local outfiles = { }
+
+    local tfmcache = table.setmetatableindex(function(t,tfmdata)
+        local id = font.define(tfmdata)
+        t[tfmdata] = id
+        return id
+    end)
+
+    local encdone  = table.setmetatableindex("table")
+
+    function tfm.reencode(tfmdata,specification)
+
+        local features = specification.features
+
+        if not features then
+            return tfmdata
+        end
+
+        local features = features.normal
+
+        if not features then
+            return tfmdata
+        end
+
+        local tfmfile = file.basename(tfmdata.name)
+        local encfile = features.reencode -- or features.enc
+        local pfbfile = features.pfbfile  -- or features.pfb
+        local bitmap  = features.bitmap   -- or features.pk
+
+        if not encfile then
+            return tfmdata
+        end
+
+        local pfbfile = outfiles[tfmfile]
+
+        if pfbfile == nil then
+            if bitmap then
+                pfbfile = false
+            elseif type(pfbfile) ~= "string" then
+                pfbfile = tfmfile
+            end
+            if type(pfbfile) == "string" then
+                pfbfile = file.addsuffix(pfbfile,"pfb")
+                pdf.mapline(tfmfile .. "<" .. pfbfile)
+                report_tfm("using type1 shapes from %a for %a",pfbfile,tfmfile)
+            else
+                report_tfm("using bitmap shapes for %a",tfmfile)
+                pfbfile = false -- use bitmap
+            end
+            outfiles[tfmfile] = pfbfile
+        end
+
+        local encoding = false
+
+        if type(encfile) == "string" and encfile ~= "auto" then
+            encoding = fonts.encodings.load(file.addsuffix(encfile,"enc"))
+            if encoding then
+                encoding = encoding.vector
+            end
+        elseif type(pfbfile) == "string" then
+            local pfb = fonts.constructors.handlers.pfb
+         -- report_tfm("using encoding from %a",pfbfile)
+            if pfb and pfb.loadvector then
+                local v, e = pfb.loadvector(pfbfile)
+                if e then
+                    encoding = e
+                end
+            end
+        end
+
+        if not encoding then
+            report_tfm("bad encoding for %a, quitting",tfmfile)
+            return tfmdata
+        end
+
+        local unicoding  = fonts.encodings.agl and fonts.encodings.agl.unicodes
+        local virtualid  = tfmcache[tfmdata]
+        local tfmdata    = table.copy(tfmdata) -- good enough for small fonts
+        local characters = { }
+        local originals  = tfmdata.characters
+        local indices    = { }
+        local parentfont = { "font", 1 }
+        local private    = fonts.constructors.privateoffset
+        local reported   = encdone[tfmfile][encfile]
+
+        -- create characters table
+
+        for index, name in table.sortedhash(encoding) do -- predictable order
+            local unicode  = unicoding[name]
+            local original = originals[index]
+            if original then
+                if not unicode then
+                    unicode = private
+                    private = private + 1
+                    if not reported then
+                        report_tfm("glyph %a in font %a with encoding %a gets unicode %U",name,tfmfile,encfile,unicode)
+                    end
+                end
+                characters[unicode] = original
+                indices[index]      = unicode
+                original.name       = name -- so one can lookup weird names
+                original.commands   = { parentfont, { "char", index } }
+            else
+                report_tfm("bad index %a in font %a with name %a",index,tfmfile,name)
+            end
+        end
+
+        encdone[tfmfile][encfile] = true
+
+        -- redo kerns and ligatures
+
+        for k, v in next, characters do
+            local kerns = v.kerns
+            if kerns then
+                local t = { }
+                for k, v in next, kerns do
+                    local i = indices[k]
+                    if i then
+                        t[i] = v
+                    end
+                end
+                v.kerns = next(t) and t or nil
+            end
+            local ligatures = v.ligatures
+            if ligatures then
+                local t = { }
+                for k, v in next, ligatures do
+                    local i = indices[k]
+                    if i then
+                        t[i] = v
+                        v.char = indices[v.char]
+                    end
+                end
+                v.ligatures = next(t) and t or nil
+            end
+        end
+
+        -- wrap up
+
+        tfmdata.fonts      = { { id = virtualid } }
+        tfmdata.characters = characters
+
+        return tfmdata
+    end
+
+end

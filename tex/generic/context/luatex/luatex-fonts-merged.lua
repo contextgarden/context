@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 06/25/16 14:38:07
+-- merge date  : 06/26/16 19:00:04
 
 do -- begin closure to overcome local limits and interference
 
@@ -7440,7 +7440,7 @@ if not modules then modules={} end modules ['font-tfm']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local next=next
+local next,type=next,type
 local match=string.match
 local trace_defining=false trackers.register("fonts.defining",function(v) trace_defining=v end)
 local trace_features=false trackers.register("tfm.features",function(v) trace_features=v end)
@@ -7468,6 +7468,9 @@ function tfm.setfeatures(tfmdata,features)
     return {} 
   end
 end
+function tfm.reencode(tfmdata,specification)
+  return tfmdata
+end
 local depth={} 
 local function read_from_tfm(specification)
   local filename=specification.filename
@@ -7478,6 +7481,7 @@ local function read_from_tfm(specification)
   end
   local tfmdata=font.read_tfm(filename,size) 
   if tfmdata then
+    tfmdata=tfm.reencode(tfmdata,specification) 
     local features=specification.features and specification.features.normal or {}
     local resources=tfmdata.resources or {}
     local properties=tfmdata.properties or {}
@@ -7487,8 +7491,7 @@ local function read_from_tfm(specification)
     properties.fontname=tfmdata.fontname
     properties.psname=tfmdata.psname
     properties.filename=specification.filename
-    properties.format=fonts.formats.tfm 
-    parameters.size=size
+    properties.format=fonts.formats.tfm
     tfmdata.properties=properties
     tfmdata.resources=resources
     tfmdata.parameters=parameters
@@ -7496,6 +7499,7 @@ local function read_from_tfm(specification)
     shared.rawdata={}
     shared.features=features
     shared.processes=next(features) and tfm.setfeatures(tfmdata,features) or nil
+    parameters.size=size
     parameters.slant=parameters.slant     or parameters[1] or 0
     parameters.space=parameters.space     or parameters[2] or 0
     parameters.space_stretch=parameters.space_stretch or parameters[3] or 0
@@ -7539,7 +7543,7 @@ local function read_from_tfm(specification)
       end
     end
     local allfeatures=tfmdata.shared.features or specification.features.normal
-    constructors.applymanipulators("tfm",tfmdata,allfeatures.normal,trace_features,report_tfm)
+    constructors.applymanipulators("tfm",tfmdata,allfeatures,trace_features,report_tfm)
     if not features.encoding then
       local encoding,filename=match(properties.filename,"^(.-)%-(.*)$") 
       if filename and encoding and encodings.known and encodings.known[encoding] then
@@ -7586,6 +7590,125 @@ function readers.tfm(specification)
   return check_tfm(specification,fullname)
 end
 readers.ofm=readers.tfm
+do
+  local outfiles={}
+  local tfmcache=table.setmetatableindex(function(t,tfmdata)
+    local id=font.define(tfmdata)
+    t[tfmdata]=id
+    return id
+  end)
+  local encdone=table.setmetatableindex("table")
+  function tfm.reencode(tfmdata,specification)
+    local features=specification.features
+    if not features then
+      return tfmdata
+    end
+    local features=features.normal
+    if not features then
+      return tfmdata
+    end
+    local tfmfile=file.basename(tfmdata.name)
+    local encfile=features.reencode 
+    local pfbfile=features.pfbfile 
+    local bitmap=features.bitmap  
+    if not encfile then
+      return tfmdata
+    end
+    local pfbfile=outfiles[tfmfile]
+    if pfbfile==nil then
+      if bitmap then
+        pfbfile=false
+      elseif type(pfbfile)~="string" then
+        pfbfile=tfmfile
+      end
+      if type(pfbfile)=="string" then
+        pfbfile=file.addsuffix(pfbfile,"pfb")
+        pdf.mapline(tfmfile.."<"..pfbfile)
+        report_tfm("using type1 shapes from %a for %a",pfbfile,tfmfile)
+      else
+        report_tfm("using bitmap shapes for %a",tfmfile)
+        pfbfile=false 
+      end
+      outfiles[tfmfile]=pfbfile
+    end
+    local encoding=false
+    if type(encfile)=="string" and encfile~="auto" then
+      encoding=fonts.encodings.load(file.addsuffix(encfile,"enc"))
+      if encoding then
+        encoding=encoding.vector
+      end
+    elseif type(pfbfile)=="string" then
+      local pfb=fonts.constructors.handlers.pfb
+      if pfb and pfb.loadvector then
+        local v,e=pfb.loadvector(pfbfile)
+        if e then
+          encoding=e
+        end
+      end
+    end
+    if not encoding then
+      report_tfm("bad encoding for %a, quitting",tfmfile)
+      return tfmdata
+    end
+    local unicoding=fonts.encodings.agl and fonts.encodings.agl.unicodes
+    local virtualid=tfmcache[tfmdata]
+    local tfmdata=table.copy(tfmdata) 
+    local characters={}
+    local originals=tfmdata.characters
+    local indices={}
+    local parentfont={ "font",1 }
+    local private=fonts.constructors.privateoffset
+    local reported=encdone[tfmfile][encfile]
+    for index,name in table.sortedhash(encoding) do 
+      local unicode=unicoding[name]
+      local original=originals[index]
+      if original then
+        if not unicode then
+          unicode=private
+          private=private+1
+          if not reported then
+            report_tfm("glyph %a in font %a with encoding %a gets unicode %U",name,tfmfile,encfile,unicode)
+          end
+        end
+        characters[unicode]=original
+        indices[index]=unicode
+        original.name=name 
+        original.commands={ parentfont,{ "char",index } }
+      else
+        report_tfm("bad index %a in font %a with name %a",index,tfmfile,name)
+      end
+    end
+    encdone[tfmfile][encfile]=true
+    for k,v in next,characters do
+      local kerns=v.kerns
+      if kerns then
+        local t={}
+        for k,v in next,kerns do
+          local i=indices[k]
+          if i then
+            t[i]=v
+          end
+        end
+        v.kerns=next(t) and t or nil
+      end
+      local ligatures=v.ligatures
+      if ligatures then
+        local t={}
+        for k,v in next,ligatures do
+          local i=indices[k]
+          if i then
+            t[i]=v
+            v.char=indices[v.char]
+          end
+        end
+        v.ligatures=next(t) and t or nil
+      end
+    end
+    tfmdata.fonts={ { id=virtualid } }
+    tfmdata.characters=characters
+    return tfmdata
+  end
+end
 
 end -- closure
 
@@ -23376,17 +23499,17 @@ if not modules then modules={} end modules ['font-onr']={
   license="see context related readme files"
 }
 local fonts,logs,trackers,resolvers=fonts,logs,trackers,resolvers
-local next,type,tonumber,rawget=next,type,tonumber,rawget
+local next,type,tonumber,rawget,rawset=next,type,tonumber,rawget,rawset
 local match,lower,gsub,strip,find=string.match,string.lower,string.gsub,string.strip,string.find
 local char,byte,sub=string.char,string.byte,string.sub
 local abs=math.abs
 local bxor,rshift=bit32.bxor,bit32.rshift
-local P,S,R,Cmt,C,Ct,Cs,Carg=lpeg.P,lpeg.S,lpeg.R,lpeg.Cmt,lpeg.C,lpeg.Ct,lpeg.Cs,lpeg.Carg
+local P,S,R,Cmt,C,Ct,Cs,Carg,Cf,Cg=lpeg.P,lpeg.S,lpeg.R,lpeg.Cmt,lpeg.C,lpeg.Ct,lpeg.Cs,lpeg.Carg,lpeg.Cf,lpeg.Cg
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local trace_indexing=false trackers.register("afm.indexing",function(v) trace_indexing=v end)
 local trace_loading=false trackers.register("afm.loading",function(v) trace_loading=v end)
 local report_afm=logs.reporter("fonts","afm loading")
-local report_afm=logs.reporter("fonts","pfb loading")
+local report_pfb=logs.reporter("fonts","pfb loading")
 fonts=fonts or {}
 local handlers=fonts.handlers or {}
 fonts.handlers=handlers
@@ -23411,16 +23534,25 @@ do
   end
   local initialize=function(str,position,size)
     n=0
-    m=tonumber(size)
+    m=size 
     return position+1
   end
   local charstrings=P("/CharStrings")
+  local encoding=P("/Encoding")
+  local dup=P("dup")
+  local put=P("put")
+  local array=P("array")
   local name=P("/")*C((R("az")+R("AZ")+R("09")+S("-_."))^1)
-  local size=C(R("09")^1)
+  local digits=R("09")^1
+  local cardinal=digits/tonumber
   local spaces=P(" ")^1
+  local spacing=patterns.whitespace^0
   local p_filternames=Ct (
-    (1-charstrings)^0*charstrings*spaces*Cmt(size,initialize)*(Cmt(name*P(" ")^1*C(R("09")^1),progress)+P(1))^1
+    (1-charstrings)^0*charstrings*spaces*Cmt(cardinal,initialize)*(Cmt(name*spaces*cardinal,progress)+P(1))^1
   )
+  local p_filterencoding=(1-encoding)^0*encoding*spaces*digits*spaces*array*(1-dup)^0*Cf(
+      Ct("")*Cg(spacing*dup*spaces*cardinal*spaces*name*spaces*put)^1
+,rawset)
   local decrypt
   do
     local r,c1,c2,n=0,0,0,0
@@ -23460,8 +23592,12 @@ do
       report_pfb("no vector in %a",filename)
       return
     end
-    return vector
+    local encoding=lpegmatch(p_filterencoding,ascii)
+    return vector,encoding
   end
+  local pfb=handlers.pfb or {}
+  handlers.pfb=pfb
+  pfb.loadvector=loadpfbvector
   get_indexes=function(data,pfbname)
     local vector=loadpfbvector(pfbname)
     if vector then
