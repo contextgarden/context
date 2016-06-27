@@ -10,11 +10,14 @@ if not modules then modules = { } end modules ['x-flow'] = {
 
 moduledata.steps = moduledata.steps or { }
 
-local context      = context
-local variables    = interfaces.variables
+local context    = context
+local variables  = interfaces.variables
+local formatters = string.formatters
+----- mpcolor    = attributes.colors.mpnamedcolor
+local concat     = table.concat
 
-local report       = logs.reporter("stepcharts")
-local trace        = false
+local report     = logs.reporter("stepcharts")
+local trace      = false
 
 trackers.register("stepcharts",function(v) trace = v end)
 
@@ -119,56 +122,93 @@ local function step_make_chart(settings)
     local textsettings = settings.text
     local cellsettings = settings.cell
     local linesettings = settings.line
+
+    local start = context.startMPcode
+    local stop  = context.stopMPcode
+    local flush = context
+
+    if false then
+
+        -- some 2% faster at most, so neglectable as this kind of graphics
+        -- is hardly used in quantity but it saves mem and tokens in tracing
+        -- and we lose some aspects, like outer color and so (currently)
+
+        local mpcode = false
+
+        local function start()
+            mpcode = { }
+        end
+        local function stop()
+            metapost.graphic {
+                instance        = "metafun",
+                format          = "metafun",
+                data            = concat(mpcode,"\n"),
+             -- initializations = "",
+             -- extensions      = "",
+             -- inclusions      = "",
+             -- definitions     = "",
+             -- figure          = "",
+                method          = "double",
+            }
+            mpcode = false
+        end
+        local function flush(fmt,first,...)
+            if first then
+                mpcode[#mpcode+1] = formatters[fmt](first,...)
+            else
+                mpcode[#mpcode+1] = fmt
+            end
+        end
+
+    end
     --
-    -- just process MP directly so that we can pass an array
-    --
-    context.startMPcode()
-    context("if unknown context_cell : input mp-step.mpiv ; fi ;")
-    context("step_begin_chart ;")
+    start()
+    flush("if unknown context_cell : input mp-step.mpiv ; fi ;")
+    flush("step_begin_chart ;")
     --
     local alternative = utilities.parsers.settings_to_hash(chartsettings.alternative)
     local vertical    = alternative[variables.vertical]
     local align       = alternative[variables.three]
     local category    = chartsettings.category
     --
-    context('chart_category := "%s" ;',category)
+    flush('chart_category := "%s" ;',category)
     --
     if vertical then
-        context("chart_vertical := true ;")
+        flush("chart_vertical := true ;")
     end
     if align then
-        context("chart_align := true ;")
+        flush("chart_align := true ;")
     end
     --
-    context("text_line_color   := \\MPcolor{%s} ;", textsettings.framecolor)
-    context("text_line_width   := %p ;",            textsettings.rulethickness)
-    context("text_fill_color   := \\MPcolor{%s} ;", textsettings.backgroundcolor)
-    context("text_offset       := %p ;",            textsettings.offset)
-    context("text_distance_set := %p ;",            textsettings.distance)
+    flush("text_line_color   := resolvedcolor(%q) ;", textsettings.framecolor)
+    flush("text_line_width   := %p ;",                textsettings.rulethickness)
+    flush("text_fill_color   := resolvedcolor(%q) ;", textsettings.backgroundcolor)
+    flush("text_offset       := %p ;",                textsettings.offset)
+    flush("text_distance_set := %p ;",                textsettings.distance)
     --
-    context("cell_line_color := \\MPcolor{%s} ;",   cellsettings.framecolor)
-    context("cell_line_width := %p ;",              cellsettings.rulethickness)
-    context("cell_fill_color := \\MPcolor{%s} ;",   cellsettings.backgroundcolor)
-    context("cell_offset     := %p ;",              cellsettings.offset)
-    context("cell_distance_x := %p ;",              cellsettings.dx)
-    context("cell_distance_y := %p ;",              cellsettings.dy)
+    flush("cell_line_color := resolvedcolor(%q) ;", cellsettings.framecolor)
+    flush("cell_line_width := %p ;",                cellsettings.rulethickness)
+    flush("cell_fill_color := resolvedcolor(%q) ;", cellsettings.backgroundcolor)
+    flush("cell_offset     := %p ;",                cellsettings.offset)
+    flush("cell_distance_x := %p ;",                cellsettings.dx)
+    flush("cell_distance_y := %p ;",                cellsettings.dy)
     --
-    context("line_line_color := \\MPcolor{%s} ;",   linesettings.color)
-    context("line_line_width := %p ;",              linesettings.rulethickness)
-    context("line_distance   := %p ;",              linesettings.distance)
-    context("line_offset     := %p ;",              linesettings.offset)
-    context("line_height     := %p ;",              linesettings.height)
+    flush("line_line_color := resolvedcolor(%q) ;", linesettings.color)
+    flush("line_line_width := %p ;",                linesettings.rulethickness)
+    flush("line_distance   := %p ;",                linesettings.distance)
+    flush("line_offset     := %p ;",                linesettings.offset)
+    flush("line_height     := %p ;",                linesettings.height)
     --
     for i=1,chart.count do
         local step = steps[i]
-        context("step_begin_cell ;")
+        flush("step_begin_cell ;")
         local ali = step.cell_ali
         local top = step.cell_top
         local bot = step.cell_bot
         if ali then
             local text = ali.text
             local shape = ali.shape
-            context('step_cell_ali(%s,%s,%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i) ;',
+            flush('step_cell_ali(%s,%s,%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i) ;',
                 tonumber(text.left) or 0,
                 tonumber(text.middle) or 0,
                 tonumber(text.right) or 0,
@@ -180,7 +220,7 @@ local function step_make_chart(settings)
         end
         if top then
             local shape = top.shape
-            context('step_cell_top(%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i) ;',
+            flush('step_cell_top(%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i) ;',
                 tonumber(top.text.top) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
@@ -190,7 +230,7 @@ local function step_make_chart(settings)
         end
         if bot then
             local shape = bot.shape
-            context('step_cell_bot(%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i) ;',
+            flush('step_cell_bot(%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i) ;',
                 tonumber(bot.text.bot) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
@@ -204,13 +244,10 @@ local function step_make_chart(settings)
         local s_t = step.start_t
         local s_m = step.start_m
         local s_b = step.start_b
---         if vertical then
---             top, bot, s_t, s_b = bot, top, s_b, s_t
---         end
         if top then
             local shape = top.shape
             local line  = top.line
-            context('step_text_top(%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i,\\MPcolor{%s},%p,%i) ;',
+            flush('step_text_top(%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i,resolvedcolor(%q),%p,%i) ;',
                 tonumber(top.text.top) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
@@ -224,7 +261,7 @@ local function step_make_chart(settings)
         if mid then -- used ?
             local shape = mid.shape
             local line  = mid.line
-            context('step_text_mid(%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i,\\MPcolor{%s},%p,%i) ;',
+            flush('step_text_mid(%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i,resolvedcolor(%q),%p,%i) ;',
                 tonumber(mid.text.mid) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
@@ -238,7 +275,7 @@ local function step_make_chart(settings)
         if bot then
             local shape = bot.shape
             local line  = bot.line
-            context('step_text_bot(%s,\\MPcolor{%s},\\MPcolor{%s},%p,%i,\\MPcolor{%s},%p,%i) ;',
+            flush('step_text_bot(%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i,resolvedcolor(%q),%p,%i) ;',
                 tonumber(bot.text.bot) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
@@ -249,14 +286,14 @@ local function step_make_chart(settings)
                 tonumber(line.alternative) or 1
             )
         end
-        context('start_t[%i] := %i ;',i,s_t)
-        context('start_m[%i] := %i ;',i,s_m)
-        context('start_b[%i] := %i ;',i,s_b)
-        context("step_end_cell ;")
+        flush('start_t[%i] := %i ;',i,s_t)
+        flush('start_m[%i] := %i ;',i,s_m)
+        flush('start_b[%i] := %i ;',i,s_b)
+        flush("step_end_cell ;")
     end
     --
-    context("step_end_chart ;")
-    context.stopMPcode()
+    flush("step_end_chart ;")
+    stop()
 end
 
 local function step_cells(spec)
@@ -299,16 +336,6 @@ local function step_text(spec)
                 break
             end
         end
-    end
-end
-
-local function step_textset(spec)
-    if count > 0 then
-        count = count + 1
-        local step = steps[count]
-        step.text_top = spec
-        step.text_mid = spec
-        step.text_bot = spec
     end
 end
 
@@ -444,12 +471,6 @@ interfaces.implement {
     name      = "step_text",
     arguments = step_spec,
     actions   = step_text,
-}
-
-interfaces.implement {
-    name      = "step_textset",
-    arguments = step_spec,
-    actions   = step_textset,
 }
 
 interfaces.implement {

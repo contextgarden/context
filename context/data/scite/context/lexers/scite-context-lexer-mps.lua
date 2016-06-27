@@ -98,7 +98,8 @@ local primitive  = token("primitive", exact_match(metapostprimitives))
 local identifier = token("default",   cstoken^1)
 local number     = token("number",    number)
 local grouping   = token("grouping",  S("()[]{}")) -- can be an option
-local special    = token("special",   S("#()[]{}<>=:\"")) -- or else := <> etc split
+local suffix     = token("number",    P("#@") + P("@#") + P("#"))
+local special    = token("special",   P("#@") + P("@#") + S("#()[]{}<>=:\"")) -- or else := <> etc split
 local texlike    = token("warning",   P("\\") * cstokentex^1)
 local extra      = token("extra",     P("+-+") + P("++") + S("`~%^&_-+*/\'|\\"))
 
@@ -134,6 +135,7 @@ metafunlexer._rules = {
     { "primitive",  primitive  },
     { "luacall",    luacall    },
     { "texstuff",   texstuff   },
+    { "suffix",     suffix     },
     { "identifier", identifier },
     { "number",     number     },
     { "quoted",     quoted     },

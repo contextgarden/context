@@ -247,7 +247,6 @@
 \unexpanded\def\module_steps_texts      {\dosingleempty\module_steps_texts_indeed}
 \unexpanded\def\module_steps_cell       {\dosingleempty\module_steps_cell_indeed}
 \unexpanded\def\module_steps_text       {\dosingleempty\module_steps_text_indeed}
-%unexpanded\def\module_steps_textset    {\dosingleempty\module_steps_textset_indeed}
 \unexpanded\def\module_steps_toptext    {\dosingleempty\module_steps_toptext_indeed}
 \unexpanded\def\module_steps_bottext    {\dosingleempty\module_steps_bottext_indeed}
 \unexpanded\def\module_steps_topcell    {\dosingleempty\module_steps_topcell_indeed}
@@ -358,22 +357,6 @@
    }%
    \endgroup}
 
-% \def\module_steps_textset_indeed[#category]#left#middle#right%
-%   {\begingroup
-%    \iffirstargument
-%      \module_steps_check_text{#category}%
-%    \fi
-%    \useSTEPtextstyleandcolor\c!style\c!color
-%    \setSTEPbox\module_steps_tag_a{#left}%
-%    \setSTEPbox\module_steps_tag_b{#middle}%
-%    \setSTEPbox\module_steps_tag_c{#right}%
-%    \clf_step_textset \module_steps_pass_data \STEPtextparameter {
-%      left   {\module_steps_tag_a}
-%      middle {\module_steps_tag_a}
-%      right  {\module_steps_tag_a}
-%    }%
-%    \endgroup}
-
 \def\module_steps_toptext_indeed[#category]#top%
   {\begingroup
    \iffirstargument
@@ -427,16 +410,13 @@
     \let\texts  \module_steps_texts
     \let\cell   \module_steps_cell
     \let\text   \module_steps_text
-    \let\textset\module_steps_textset
     \let\toptext\module_steps_toptext
     \let\bottext\module_steps_bottext
     \let\topcell\module_steps_topcell
     \let\botcell\module_steps_botcell
 \to \everySTEPchart
 
-% todo: mapping can be done in lua
-
-% chart table cell text line
+% The xml interface:
 
 \unexpanded\def\setSTEPxmldirective#1#2#3%
   {\begincsname setSTEP#1parameter\endcsname{#2}{#3}}
@@ -557,14 +537,6 @@
     \cells {four}  {two}   \texts{$+5$}{$-5$}
     \cells {five}  {one}
 \stopSTEPchart
-
-\startSTEPtable
-    \cell {one}   \textset{$x$}  {=}{$a+b+c$}
-    \cell {two}   \textset{$c+d$}{=}{$y$}
-    \cell {three}
-\stopSTEPtable
-
-\page
 
 \startbuffer
 <stepchart>

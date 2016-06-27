@@ -87,7 +87,20 @@ end
 
 mp.print = mpprint
 
-table.setmetatablecall(mp,function(t,k) mpprint(k) end)
+-- We had this:
+--
+--   table.setmetatablecall(mp,function(t,k) mpprint(k) end)
+--
+-- but the next one is more interesting because we cannot use calls like:
+--
+--   lua.mp.somedefdname("foo")
+--
+-- which is due to expansion of somedefdname during suffix creation. So:
+--
+--   lua.mp("somedefdname","foo")
+
+
+table.setmetatablecall(mp,function(t,k,...) return t[k](...) end)
 
 function mp.boolean(n)
     n = n + 1
@@ -154,6 +167,12 @@ end
 function mp.size(t)
     n = n + 1
     buffer[n] = type(t) == "table" and f_numeric(#t) or "0"
+end
+
+local mpnamedcolor = attributes.colors.mpnamedcolor
+
+mp.NamedColor = function(str)
+    mpprint(mpnamedcolor(str))
 end
 
 -- experiment: names can change

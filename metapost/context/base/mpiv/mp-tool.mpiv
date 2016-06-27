@@ -143,6 +143,8 @@ vardef colordecimals primary c =
         decimal cyanpart c & ":" & decimal magentapart c & ":" & decimal yellowpart c & ":" & decimal blackpart c
     elseif rgbcolor c :
         decimal redpart c & ":" & decimal greenpart c & ":" & decimal bluepart c
+    elseif string c:
+        colordecimals resolvedcolor(c)
     else :
         decimal c
     fi
@@ -817,6 +819,16 @@ enddef ;
 
 %D Some colors.
 
+def resolvedcolor(expr s) =
+    .5white
+enddef ;
+
+let normalwithcolor = withcolor ;
+
+def withcolor primary c =
+    normalwithcolor if string c : resolvedcolor(c) else : c fi
+enddef ;
+
 def colortype(expr c) =
     if cmykcolor c : cmykcolor elseif rgbcolor c : rgbcolor else : grayscale fi
 enddef ;
@@ -829,24 +841,26 @@ vardef blackcolor expr c =
     if cmykcolor c : (0,0,0,1) elseif rgbcolor c : (0,0,0)  else : 0 fi
 enddef ;
 
-vardef complementary expr c = (
-        if cmykcolor c : (1,1,1,1) -
-    elseif rgbcolor  c : (1,1,1) -
-    elseif pair      c : (1,1) -
-    elseif numeric   c :  1 -
-        fi c
-) enddef ;
+vardef complementary expr c =
+        if cmykcolor c : (1,1,1,1) - c
+    elseif rgbcolor  c : (1,1,1) - c
+    elseif pair      c : (1,1) - c
+    elseif numeric   c :  1 - c
+    elseif string    c : complementary resolvedcolor(c)
+        fi
+enddef ;
 
 vardef complemented expr c =
     save m ;
         if cmykcolor c : m := max(cyanpart c, magentapart c, yellowpart c, blackpart c) ;
-                         ( (m,m,m,m) -
+                         (m,m,m,m) - c
     elseif rgbcolor  c : m := max(redpart c, greenpart c, bluepart c) ;
-                         ( (m,m,m) -
+                         (m,m,m) - c
     elseif pair      c : m := max(xpart c, ypart c) ;
-                         ( (m,m) -
-    elseif numeric   c : ( m -
-        fi c )
+                         (m,m) - c
+    elseif numeric   c : m - c
+    elseif string    c : complemented resolvedcolor(c)
+        fi
 enddef ;
 
 %D Well, this is the dangerous and naive version:
@@ -1014,6 +1028,8 @@ primarydef p randomized s = (
         else :
             ((uniformdeviate s) * p)
         fi
+    elseif string p :
+        resolvedcolor(p) randomized s
     else :
         p + uniformdeviate s
     fi
@@ -1699,6 +1715,8 @@ vardef grayed primary p =
         tripled(.30*(1-cyanpart i)+.59*(1-magentapart i)+.11*(1-yellowpart i)+blackpart i)
     elseif greycolor p :
         p
+    elseif string p :
+        grayed resolvedcolor(p)
     elseif picture p :
         image (
             for i within p :
@@ -1854,14 +1872,16 @@ inner end ;
 
 % this will be redone (when needed) using scripts and backend handling
 
-let normalwithcolor = withcolor ;
+let mfun_remap_colors_normalwithcolor = normalwithcolor ;
 
 def remapcolors =
-    def withcolor primary c = normalwithcolor remappedcolor(c) enddef ;
+    def normalwithcolor primary c =
+        mfun_remap_colors_normalwithcolor remappedcolor(c)
+    enddef ;
 enddef ;
 
 def normalcolors =
-    let withcolor = normalwithcolor ;
+    let normalwithcolor = mfun_remap_colors_normalwithcolor ;
 enddef ;
 
 def resetcolormap =
