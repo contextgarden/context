@@ -35,9 +35,7 @@ local trace_loading      = false  trackers.register("afm.loading",    function(v
 local report_afm         = logs.reporter("fonts","afm loading")
 local report_pfb         = logs.reporter("fonts","pfb loading")
 
-fonts                    = fonts or { }
-local handlers           = fonts.handlers or { }
-fonts.handlers           = handlers
+local handlers           = fonts.handlers
 local afm                = handlers.afm or { }
 handlers.afm             = afm
 local readers            = afm.readers or { }
@@ -159,10 +157,15 @@ do
 
         local vector = lpegmatch(p_filternames,binary)
 
-        if vector[1] == ".notdef" then
-            -- tricky
-            vector[0] = table.remove(vector,1)
+--         if vector[1] == ".notdef" then
+--             -- tricky
+--             vector[0] = table.remove(vector,1)
+--         end
+
+        for i=1,#vector do
+            vector[i-1] = vector[i]
         end
+        vector[#vector] = nil
 
         if not vector then
             report_pfb("no vector in %a",filename)

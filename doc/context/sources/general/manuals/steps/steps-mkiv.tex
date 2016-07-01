@@ -1,0 +1,655 @@
+\environment manuals-xml-environment.tex
+
+\useMPlibrary [ove]
+
+\usemodule[x][mathml]
+\usemodule[m][steps]
+
+\startdocument[title=Steps,author=Hans Hagen,palet=steps]
+
+\startbuffer
+\startSTEPchart
+\cell {A}
+\cell {one}   \text{+2}
+\cell {two}   \text{+3}
+\cell {three} \text{+4}
+\cell {four}  \text{+5}
+\cell {five}
+\stopSTEPchart
+\stopbuffer
+
+\startsection[title=Description]
+
+This module is written in the process of defining a couple of styles for an
+educational math book. The macros provide you a way to visualize steps in for
+instance solving equations.
+
+The horizontal visualization is called stepchart, while the vertical alternative
+carries the name steptable. The vertical alternative has a special case that
+permits alignment on a mid symbol (in most cases a relation).
+
+The implementation uses a combination of \TEX\ and \METAPOST, and is set up in
+such a way that hyperlinks and alike will work okay.
+
+\stopsection
+
+\startsection[title=Structure]
+
+The horizontal stepcharts have at most four rows: two rows of cells with each an
+associated row of texts. The plural elements \type {cells} and \type {texts} each
+have two subelements. The \type {texts} elements are put between \type {cells}.
+
+\startbuffer
+<stepchart>
+  <cells> <top> some text </top> <bot> some text </bot> </cells>
+  <texts> <top> text </top> <bot> text </bot> </texts>
+  <cells> <top> some text </top> <bot> some text </bot> </cells>
+</stepchart>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+When a singular \type {cell} element is used in combination with the plural \type
+{texts}, we get one row of step cells with both top and bottom texts.
+
+\startbuffer
+<stepchart>
+  <cell> some text </cell>
+  <texts> <top> text </top> <bot> text </bot> </texts>
+  <cell> some text </cell>
+</stepchart>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+The third horizontal alternative only has singular elements, and as a result the
+texts are put above the step cells.
+
+\startbuffer
+<stepchart>
+  <cell> some cell </cell>
+  <cell> another cell </cell> <text> a bit of text </text>
+  <cell> third cell </cell> <text> more text </text>
+  <cell> last cell </cell>
+</stepchart>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+Normally, the lines go from cell to cell via a text. When you let the \type
+{cell} element follow by more than one \type {text} element (or their plural
+forms), all lines will start at the same point.
+
+\startbuffer
+<stepchart>
+  <cell> some text </cell>
+  <cell> some text </cell> <text> text 1 </text> <text> text 2 </text>
+  <cell> some text </cell>
+  <cell> some text </cell> <text> text 3 </text>
+  <cell> some text </cell>
+</stepchart>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+The vertical alternative (of course) looks different and permits pretty long
+explanations.
+
+\startbuffer
+<steptable>
+  <cell> cell 1 </cell>
+  <text> text 1 </text>
+  <cell> cell 2 </cell>
+  <text> text 2 </text>
+  <cell> cell 3 </cell>
+</steptable>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+When the plural element \type {cells} is used, three sub||elements are expected.
+These align around the mid element \type {c2}.
+
+\startbuffer
+<stepaligntable>
+  <cells> <c1> left </c1> <c2> center </c2> <c3> right </c3> </cells>
+  <text> text </text>
+  <cells> <c1> lft </c1> <c2> ctr </c2> <c3> rgt </c3> </cells>
+  <text> text </text>
+  <cells> <c1> l </c1> <c2> c </c2> <c3> r </c3> </cells>
+</stepaligntable>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\stopsection
+
+\startsection[title=Usage]
+
+The step chart module is loaded with:
+
+\starttyping
+\usemodule[cell] % was step
+\stoptyping
+
+\noindentation but in the case of embedded math, you should also load the \MATHML\ module:
+
+\starttyping
+\usemodule[cell,mathml]
+\stoptyping
+
+\stopsection
+
+\startsection[title=\XML\ example]
+
+Because we don't want to clutter the examples with \MATHML\ we stick to a simple
+mapping:
+
+\startbuffer
+\startxmlsetups xml:math:simple
+    \xmlsetsetup {#1} {m} {xml:math:simple:tex}
+\stopxmlsetups
+
+\startxmlsetups xml:math:simple:tex
+    \mathematics{\xmlflush{#1}}
+\stopxmlsetups
+
+\xmlregistersetup{xml:math:simple}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+So, in the next examples the \type {m} element contains \TEX\ math.
+
+\startbuffer
+<stepchart>
+  <cells> <top> A           </top> <bot> B           </bot> </cells>
+  <cells> <top> one         </top> <bot> five        </bot> </cells>
+  <texts> <top> <m> +2 </m> </top> <bot> <m> -2 </m> </bot> </texts>
+  <cells> <top> two         </top> <bot> four        </bot> </cells>
+  <texts> <top> <m> +3 </m> </top> <bot> <m> -3 </m> </bot> </texts>
+  <cells> <top> three       </top> <bot> three       </bot> </cells>
+  <texts> <top> <m> +4 </m> </top> <bot> <m> -4 </m> </bot> </texts>
+  <cells> <top> four        </top> <bot> two         </bot> </cells>
+  <texts> <top> <m> +5 </m> </top> <bot> <m> -5 </m> </bot> </texts>
+  <cells> <top> five        </top> <bot> one         </bot> </cells>
+</stepchart>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\startbuffer
+<stepchart>
+  <cell> A     </cell>
+  <cell> one   </cell> <text> <m> +2 </m> </text>
+  <cell> two   </cell> <text> <m> +3 </m> </text>
+  <cell> three </cell> <text> <m> +4 </m> </text>
+  <cell> four  </cell> <text> <m> +5 </m> </text>
+  <cell> five  </cell>
+</stepchart>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\startbuffer
+<steptable>
+  <cell>
+    <math xmlns="mathml">
+      <apply> <eq/> <ci> c </ci>
+        <apply> <plus/>
+          <apply> <times/> <cn> 2 </cn> <ci> a </ci> </apply>
+          <apply> <times/> <cn> 3 </cn> <ci> b </ci> </apply>
+        </apply>
+      </apply>
+    </math>
+  </cell>
+  <text> with
+    <math xmlns="mathml">
+      <apply> <eq/> <ci> a </ci> <cn> 5 </cn> </apply>
+    </math>
+  </text>
+  <cell>
+    <math xmlns="mathml">
+      <apply> <eq/> <ci> c </ci>
+        <apply> <plus/> <cn> 10 </cn>
+          <apply> <times/> <cn> 3 </cn> <ci> b </ci> </apply>
+        </apply>
+      </apply>
+    </math>
+  </cell>
+  <text> and
+    <math xmlns="mathml">
+      <apply> <eq/> <ci> b </ci> <cn> 6 </cn> </apply>
+    </math>
+  </text>
+  <cell>
+    <math xmlns="mathml">
+      <apply> <eq/> <ci> c </ci>
+        <apply> <plus/> <cn> 10 </cn> <cn> 18 </cn> </apply>
+      </apply>
+    </math>
+  </cell>
+  <text>
+    we get
+  </text>
+  <cell>
+    <math xmlns="mathml">
+      <apply> <eq/> <ci> c </ci> <cn> 28 </cn> </apply>
+    </math>
+  </cell>
+</steptable>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\startbuffer
+<stepaligntable>
+  <cells>
+    <c1> <m>c</m> </c1> <c2> <m>=</m> </c2> <c3> <m>2a+3b</m> </c3>
+  </cells>
+  <text>
+    with <m>a=5</m>
+  </text>
+  <cells>
+    <c1> <m>c</m> </c1> <c2> <m>=</m> </c2> <c3> <m>10+3b</m> </c3>
+  </cells>
+  <text>
+    and <m>b=6</m>
+  </text>
+  <cells>
+    <c1> <m>c</m> </c1> <c2> <m>=</m> </c2> <c3> <m>10+18</m> </c3>
+  </cells>
+  <text>
+    we get
+  </text>
+  <cells>
+    <c1> <m>c</m> </c1> <c2> <m>=</m> </c2> <c3> <m>28</m> </c3>
+  </cells>
+</stepaligntable>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\stopsection
+
+\startsection[title=\TEX\ example]
+
+\startbuffer
+\startSTEPchart
+\cells {A}            {B}
+\cells {one}          {five or more} \texts{$+2$}{$-2$}
+\cells {two}          {four}         \texts{$+3$}{$-3$}
+\cells {three}        {three}        \texts{$+4$}{$-4$}
+\cells {four}         {two}          \texts{$+5$}{$-5$}
+\cells {five or more} {one}
+\stopSTEPchart
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startSTEPchart
+\cell {A}
+\cell {one}          \texts{$+2$}{$-2$}
+\cell {two}          \texts{$+3$}{$-3$}
+\cell {three}        \texts{$+4$}{$-4$}
+\cell {four}         \texts{$+5$}{$-5$}
+\cell {five or more}
+\stopSTEPchart
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startSTEPchart
+\cells {A}            {B}
+\cells {one}          {five or more} \texts{$+2$}{}
+\cells {two}          {four}         \texts{}{$-3$}
+\cells {three}        {three}        \texts{$+4$}{}
+\cells {four}         {two}          \texts{}{$-5$}
+\cells {five or more} {one}
+\stopSTEPchart
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startSTEPchart
+\cell {A}
+\cell {one}   \text{+2} \text{+3} \text{+4} \text{+5}
+\cell {two}
+\cell {three}
+\cell {four}
+\cell {five}
+\stopSTEPchart
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startSTEPchart
+\cell {A}
+\cell {one}   \texts{}{+2} \texts{}{+3}
+\cell {two}
+\cell {three} \texts{+4}{} \texts{+5}{}
+\cell {four}
+\cell {five}
+\stopSTEPchart
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startSTEPchart
+\cell {A}
+\cell {one}   \text{+2}
+\cell {two}   \text{+3}
+\cell {three} \text{+4}
+\cell {four}  \text{+5}
+\cell {five}
+\stopSTEPchart
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startSTEPtable
+\cell {$c=2a+3b$}
+\text {with $a=5$}
+\cell {$c=10+3b$}
+\text {and $b=6$}
+\cell {$c=10+18$}
+\text {we get}
+\cell {$c=28$}
+\stopSTEPtable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startSTEPaligntable
+\cells {$2c$} {$=$} {$2a+3b$}
+\text  {with $a=5$}
+\cells {$2c$}{$=$} {$10+3b$}
+\text  {and $b=6$}
+\cells {$2c$} {$=$} {$10+18$}
+\text  {we get}
+\cells {$2c$} {$=$} {$28$}
+\text  {and therefore}
+\cells {$c$} {$=$} {$28/2$}
+\text  {which reduces to}
+\cells {$c$} {$=$} {$14$}
+\stopSTEPaligntable
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startSTEPchart
+    \cells {A}     {B}
+    \cells {one}   {five}  \texts{$+2$}{$-2$}
+    \cells {two}   {four}  \texts{$+3$}{$-3$}
+    \cells {three} {three} \texts{$+4$}{$-4$}
+    \cells {four}  {two}   \texts{$+5$}{$-5$}
+    \cells {five}  {one}
+\stopSTEPchart
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsection
+
+\startsection[title=Configuring]
+
+The charts and tables can have their own spacing set. Quite certainly the
+distances between cells will differ.
+
+\starttabulate[|Tl|l|]
+\HL
+\NC \rlap{\tex{setupSTEPcharts} \tex{setupSTEPtables}} \NC \NC \NR
+\HL
+\NC after     \NC hook for commands to execute after the table \NC \NR
+\NC before    \NC hook for commands to execute before the table \NC \NR
+% \NC method    \NC line drawing method\NC \NR
+% \NC height    \NC height of the connecting line \NC \NR
+% \NC offset    \NC the distance between lines and cells and texts \NC \NR
+% \NC hoffset   \NC the horizontal distance between cells \NC \NR
+% \NC voffset   \NC the vertical distance between cells \NC \NR
+\HL
+\stoptabulate
+
+Both charts and tables have common settings with respect to the cells, texts and
+lines.
+
+\starttabulate[|Tl|l|]
+\HL
+\NC \rlap{\tex{setupSTEPcells} \tex{setupSTEPtexts}} \NC \NC \NR
+\HL
+\NC alternative   \NC the kind of shape to be drawn \NC \NR
+\NC backgroundcolor \NC the background color identified by name \NC \NR
+\NC rulethickness   \NC the width of frame around cells \NC \NR
+\NC framecolor      \NC the frame color identified by name \NC \NR
+\NC offset          \NC the space between content and frame \NC \NR
+\NC style           \NC a (preferable named) style \NC \NR
+\NC color           \NC the color of the content \NC \NR
+\HL
+\stoptabulate
+
+\starttabulate[|Tl|l|]
+\HL
+\NC \rlap{\tex{setupSTEPlines}} \NC \NC \NR
+\HL
+\NC alternative   \NC the kind of line to draw between cells \NC \NR
+\NC distance      \NC the distance between lines and text \NC \NR
+\NC offset        \NC the shift to the right of the start of the line \NC \NR
+\NC height        \NC the height of the (curved) line \NC \NR
+\NC rulethickness \NC the width of the lines between cells \NC \NR
+\NC color         \NC the line color identified by name \NC \NR
+\HL
+\stoptabulate
+
+In \TEX, some of the settings, like \type {style} and \type {color} can be set
+between elements. In \XML, the settings are passed as processing instructions.
+
+\startbuffer
+\startSTEPchart
+\cell {A}
+\cell {one}   \text{+2}
+\cell {two}   \text{+3}
+\start
+    \setupSTEPcells[color=darkred,style=bold]
+    \cell {three} \text{+4}
+    \cell {four}  \text{+5}
+\stop
+\cell {five}
+\stopSTEPchart
+\stopbuffer
+
+\typebuffer \getbuffer
+
+There are a couple of alternative shapes available. The most relevant ones are:
+\removeunwantedspaces \dostepwiserecurse   {5} {9} {1} { \TestShape {\recurselevel}}
+\removeunwantedspaces \dostepwiserecurse {12} {19} {1} { \TestShape {\recurselevel}}
+\removeunwantedspaces \dostepwiserecurse {22} {29} {1} { \TestShape {\recurselevel}}.
+
+Although it is not too wise to set up the layout in the middle of a document, for
+graphics one can seldom get by some local fine||tuning. Here we encounter a
+rather fundamental difference between \TEX\ and \XML. In \TEX, you can easily
+change settings on a temporary basis by using groups. In \XML\ on the other hand,
+settings are bound to a category. So, in \TEX\ you can do this:
+
+\startbuffer
+\setupSTEPcells
+  [important]
+  [color=darkgreen,
+   style=bold]
+
+\startSTEPchart
+\cell {A}
+\cell {one} \text{+2}
+\cell {two} \text{+3}
+\cell [important] {three} \text{+4}
+\cell [important] {four}  \text{+5}
+\cell {five}
+\stopSTEPchart
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\noindentation An \XML\ example is:
+
+\startbuffer
+\setupSTEPcells[demo-1][alternative=5]
+\setupSTEPcells[demo-1][framecolor=darkred]
+\setupSTEPtexts[demo-1][framecolor=darkgreen]
+\setupSTEPlines[demo-1][alternative=4]
+\setupSTEPtexts[demo-2][style=bold]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\noindentation This will be applied to:
+
+\startbuffer
+<steptable class="demo-1">
+  <cell> type 5 </cell>
+  <text> type 6 </text>
+  <cell> type 7 </cell>
+  <text class="demo-2"> type 8 </text>
+  <cell> type 9 </cell>
+</steptable>
+\stopbuffer
+
+\typebuffer
+
+\noindentation so that we get:
+
+\processxmlbuffer
+
+You can also use processing instructions:
+
+\startbuffer
+<stepchart>
+  <cells> <top> some text 1 </top> <bot> some text 2 </bot> </cells>
+  <?context-stepchart-directive text color darkred ?>
+  <texts> <top> text 3 </top> <bot> text 4 </bot> </texts>
+  <cells> <top> some text 5 </top> <bot> some text 6 </bot> </cells>
+  <?context-stepchart-directive text color darkblue ?>
+  <texts> <top> text 7t </top> </texts>
+  <cells> <top> some text 8 </top> </cells>
+</stepchart>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\startbuffer
+<steptable>
+  <?context-stepchart-directive cell alternative 12 ?>
+  <cell> cell 12 </cell> <text>  12 to 13 </text>
+  <?context-stepchart-directive cell alternative 13 ?>
+  <cell> cell 13 </cell> <text>  13 to 14 </text>
+  <?context-stepchart-directive cell alternative 14 ?>
+  <cell> cell 14 </cell> <text>  14 to 15 </text>
+  <?context-stepchart-directive cell alternative 15 ?>
+  <cell> cell 15 </cell>
+</steptable>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+Some settings apply to the whole chart. In \TEX\ this is easy since we
+can group the whole chart including settings but in \XML\ this is somewhat
+problematic. We can however fall back on basic tex commands but it's
+probably better to use as category (class), like:
+
+\startbuffer
+\setupSTEPtexts[demo-5][distance=3em]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\noindentation So, the following works as expected:
+
+\startbuffer
+<document>
+  <?context-tex-directive start ?>
+  <?context-stepchart-directive text distance 1em ?>
+  <stepaligntable>
+  <cells> <c1>a</c1> <c2>b</c2> <c3>c</c3> </cells>
+  <text> test 1 </text>
+  <cells> <c1>aa</c1> <c2>b</c2> <c3>ccc</c3> </cells>
+  </stepaligntable>
+  <?context-tex-directive stop ?>
+  <stepaligntable>
+    <cells> <c1>a</c1> <c2>b</c2> <c3>c</c3> </cells>
+    <text> test 2 </text>
+    <cells> <c1>aa</c1> <c2>b</c2> <c3>ccc</c3> </cells>
+  </stepaligntable>
+  <stepaligntable class="demo-5">
+    <cells> <c1>a</c1> <c2>b</c2> <c3>c</c3> </cells>
+    <text> test 3 </text>
+    <cells> <c1>aa</c1> <c2>b</c2> <c3>ccc</c3> </cells>
+  </stepaligntable>
+</document>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\startbuffer
+<document>
+  <?context-tex-directive start ?>
+  <?context-stepchart-directive cell dx 10ex ?>
+  <stepchart>
+    <cells> <top> from here </top> <bot> there </bot> </cells>
+    <texts> <top> to        </top> <bot> to    </bot> </texts>
+    <cells> <top> and here  </top> <bot> there </bot> </cells>
+  </stepchart>
+  <?context-tex-directive stop ?>
+</document>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\startbuffer
+<document>
+  <?context-tex-directive start ?>
+  <?context-stepchart-directive line height 30pt ?>
+  <?context-stepchart-directive line offset  5pt ?>
+  <steptable>
+    <cell> some cell </cell>
+    <cell> another cell </cell> <text> a bit of text </text>
+    <cell> third cell </cell> <text> more text </text>
+    <cell> last cell </cell>
+  </steptable>
+  <?context-tex-directive stop ?>
+</document>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\startbuffer
+<document>
+  <?context-tex-directive start ?>
+  <?context-stepchart-directive line height 30pt ?>
+  <?context-stepchart-directive line offset 15pt ?>
+  <stepchart>
+    <cell> some cell </cell>
+    <cell> another cell </cell> <text> a bit of text </text>
+    <cell> third cell </cell> <text> more text </text>
+    <cell> last cell </cell>
+  </stepchart>
+  <?context-tex-directive stop ?>
+</document>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+\stopsection
+
+\startsection[title=Documentation]
+
+There is no additional documentation on this module.
+
+\stopsection
+
+\stopdocument

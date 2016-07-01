@@ -260,6 +260,9 @@ local function setextrafeatures(tfmdata)
             local f = g.features
             if f then
                 for feature, specification in next, f do
+                    -- not needed but nicer:
+                    specification.name = specification.name or feature
+                    --
                     addotffeature(tfmdata.shared.rawdata,feature,specification)
                     registerotffeature {
                         name        = feature,

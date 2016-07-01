@@ -21,6 +21,17 @@
 %D This module implements color. Since \MKII\ and \MKIV\ use a completely
 %D different approach, this module only implements a few generic mechanisms.
 
+\installcorenamespace{color}
+\installcorenamespace{colorattribute}
+\installcorenamespace{transparencyattribute}
+\installcorenamespace{colorsetter}
+\installcorenamespace{transparencysetter}
+\installcorenamespace{colorpaletspecification}
+\installcorenamespace{colorpalet}
+\installcorenamespace{colorstack}
+\installcorenamespace{colorconversions}
+\installcorenamespace{colornumber}
+
 \registerctxluafile{colo-ini}{1.000}
 \registerctxluafile{colo-icc}{1.000}
 
@@ -57,16 +68,6 @@
 \let\currentcolorname  \empty
 \let\currentcolorpalet \empty
 \let\currentcolorprefix\empty % \currentcolorpalet:
-
-\installcorenamespace{color}
-\installcorenamespace{colorattribute}
-\installcorenamespace{transparencyattribute}
-\installcorenamespace{colorsetter}
-\installcorenamespace{transparencysetter}
-\installcorenamespace{colorpaletspecification}
-\installcorenamespace{colorpalet}
-\installcorenamespace{colorstack}
-\installcorenamespace{colorconversions}
 
 %D \macros
 %D   {definecolor,defineglobalcolor,definenamedcolor,definespotcolor,definemultitonecolor,
@@ -466,17 +467,37 @@
 \unexpanded\def\setuppalet
   {\dosingleempty\colo_palets_setup}
 
+% \def\colo_palets_setup[#1]%
+%   {\edef\currentcolorpalet{#1}%
+%    \ifx\currentcolorpalet\empty
+%      % seems to be a reset
+%      \let\currentcolorprefix\empty
+%    \else\ifcsname\??paletlist\currentcolorpalet\endcsname
+%      \edef\currentcolorprefix{#1:}%
+%    \else
+%      \colo_helpers_show_message\m!colors7\currentcolorpalet
+%      \let\currentcolorpalet\empty
+%      \let\currentcolorprefix\empty
+%    \fi\fi
+%    \the\everysetuppalet
+%    \colo_helpers_initialize_maintextcolor}
+
+\newtoks\t_colo_prefix % used in mp interface
+
 \def\colo_palets_setup[#1]%
   {\edef\currentcolorpalet{#1}%
    \ifx\currentcolorpalet\empty
      % seems to be a reset
      \let\currentcolorprefix\empty
+   \t_colo_prefix\emptytoks
    \else\ifcsname\??paletlist\currentcolorpalet\endcsname
      \edef\currentcolorprefix{#1:}%
+     \t_colo_prefix\expandafter{\currentcolorprefix}%
    \else
      \colo_helpers_show_message\m!colors7\currentcolorpalet
      \let\currentcolorpalet\empty
      \let\currentcolorprefix\empty
+     \t_colo_prefix\emptytoks
    \fi\fi
    \the\everysetuppalet
    \colo_helpers_initialize_maintextcolor}
@@ -732,6 +753,23 @@
 
 % todo: check if color is overloading a non-color command
 
+% \let\colo_basics_synchronize\gobbleoneargument  % used in mp interface
+% \let\colo_basics_inherit    \gobbletwoarguments % used in mp interface
+
+\def\colo_basics_allocate#1%
+  {\expandafter\newcount\csname\??colornumber#1\endcsname
+   \clf_synccolorcount{#1}\c_syst_last_allocated_count}
+
+\def\colo_basics_synchronize#1%
+  {\ifcsname\??colornumber#1\endcsname\else
+     \colo_basics_allocate{#1}%
+   \fi
+   \clf_synccolor{#1}%
+  %\csname\??colornumber#1\endcsname\csname\??colorattribute#1\endcsname
+   \lastnamedcs\csname\??colorattribute#1\endcsname}
+
+\let\colo_basics_inherit\clf_synccolorclone
+
 \newcount\c_colo_protection
 
 \unexpanded\def\startprotectedcolors
@@ -742,30 +780,35 @@
 
 \def\colo_basics_define[#1][#2]%
   {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
+   \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
      \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\colo_basics_define_global[#1][#2]%
   {\clf_defineprocesscolorglobal{#1}{#2}\v_colo_freeze_state\relax
+   \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
      \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\colo_basics_define_named[#1][#2]% currently same as define
   {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
+   \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
      \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\dodefinefastcolor[#1][#2]% still not fast but ok (might change)
   {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
+   \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
      \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\colo_basics_defined_and_activated#1%
-  {\clf_defineprocesscolordummy{#1}%
+  {\clf_defineprocesscolordummy{#1}% we could pass dummy here too
+   \colo_basics_synchronize{d_u_m_m_y}%
    \colo_helpers_activate_dummy}
 
 \def\colo_basics_define_process
@@ -777,12 +820,14 @@
 
 \def\colo_basics_define_process_yes[#1][#2][#3]%
   {\clf_defineprocesscolorlocal{#1}{\processcolorcomponents{#2},#3}\v_colo_freeze_state\relax
+   \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
      \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\colo_basics_define_process_nop[#1][#2][#3]%
   {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
+   \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
      \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
@@ -794,12 +839,14 @@
 
 \def\colo_basics_define_spot[#1][#2][#3]%
   {\clf_definespotcolorglobal{#1}{#2}{#3}%
+   \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
      \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
 \def\colo_basics_define_multitone[#1][#2][#3][#4]%
   {\clf_definemultitonecolorglobal{#1}{#2}{#3}{#4}%
+   \colo_basics_synchronize{#1}%
    \ifcase\c_colo_protection
      \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
@@ -868,6 +915,7 @@
      {#5}%
      \v_colo_freeze_state
    \relax
+   \colo_basics_synchronize{#1}%
    \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}}
 
 %D Here is a more efficient helper for pgf:
@@ -1017,11 +1065,6 @@
 \letvalue{\??colorsetter       }\empty \letvalue{\??colorattribute       }\!!zerocount
 \letvalue{\??transparencysetter}\empty \letvalue{\??transparencyattribute}\!!zerocount
 
-%def\colo_helpers_inherited_direct_cs#1{\csname\??colorsetter          \ifcsname\??colorsetter          #1\endcsname#1\fi\endcsname}
-%def\colo_helpers_inherited_direct_ca#1{\csname\??colorattribute       \ifcsname\??colorattribute       #1\endcsname#1\fi\endcsname}
-%def\colo_helpers_inherited_direct_ts#1{\csname\??transparencysetter   \ifcsname\??transparencysetter   #1\endcsname#1\fi\endcsname}
-%def\colo_helpers_inherited_direct_ta#1{\csname\??transparencyattribute\ifcsname\??transparencyattribute#1\endcsname#1\fi\endcsname}
-
 \def\colo_helpers_inherited_direct_cs#1{\ifcsname\??colorsetter          #1\endcsname\lastnamedcs\fi}
 \def\colo_helpers_inherited_direct_ca#1{\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\!!zerocount\fi}
 \def\colo_helpers_inherited_direct_ts#1{\ifcsname\??transparencysetter   #1\endcsname\lastnamedcs\fi}
@@ -1047,26 +1090,6 @@
    \fi
 \to \everysetupcolors
 
-% \def\colo_palets_define_set#1#2#3%
-%   {\doifelseassignment{#3}% \definepalet[test][xx={y=.4}]
-%      {\definecolor[\??colorpalet#1:#2][#3]%
-%       \colo_helpers_set_value{\??colorsetter          #1:#2}{\colo_helpers_inherited_palet_ca{#1}{#2}}%
-%       \colo_helpers_set_value{\??colorattribute       #1:#2}{\colo_helpers_inherited_palet_cs{#1}{#2}}%
-%       \colo_helpers_set_value{\??transparencysetter   #1:#2}{\colo_helpers_inherited_palet_ta{#1}{#2}}%
-%       \colo_helpers_set_value{\??transparencyattribute#1:#2}{\colo_helpers_inherited_palet_ts{#1}{#2}}}
-%      {\ifcsname\??colorsetter#3\endcsname % \definepalet[test][xx=green]
-%         \colo_helpers_set_value{\??colorsetter          #1:#2}{\colo_helpers_inherited_direct_cs{#3}}%
-%         \colo_helpers_set_value{\??colorattribute       #1:#2}{\colo_helpers_inherited_direct_ca{#3}}%
-%         \colo_helpers_set_value{\??transparencysetter   #1:#2}{\colo_helpers_inherited_direct_ts{#3}}%
-%         \colo_helpers_set_value{\??transparencyattribute#1:#2}{\colo_helpers_inherited_direct_ta{#3}}%
-%       \else
-%         % not entered when making format
-%         \localundefine{\??colorsetter          #1:#2}%
-%         \localundefine{\??colorattribute       #1:#2}%
-%         \localundefine{\??transparencysetter   #1:#2}%
-%         \localundefine{\??transparencyattribute#1:#2}%
-%       \fi}}
-
 \def\colo_palets_define_set#1#2#3%
   {\doifelseassignment{#3}% \definepalet[test][xx={y=.4}]
      {\colo_palets_define_assign}%
@@ -1080,7 +1103,8 @@
    {#1}{#2}{#3}}
 
 \def\colo_palets_define_inherit#1#2#3%
-  {\colo_helpers_set_value{\??colorsetter          #1:#2}{\colo_helpers_inherited_direct_cs{#3}}%
+  {\colo_basics_inherit{#1:#2}{#3}%
+   \colo_helpers_set_value{\??colorsetter          #1:#2}{\colo_helpers_inherited_direct_cs{#3}}%
    \colo_helpers_set_value{\??colorattribute       #1:#2}{\colo_helpers_inherited_direct_ca{#3}}%
    \colo_helpers_set_value{\??transparencysetter   #1:#2}{\colo_helpers_inherited_direct_ts{#3}}%
    \colo_helpers_set_value{\??transparencyattribute#1:#2}{\colo_helpers_inherited_direct_ta{#3}}}

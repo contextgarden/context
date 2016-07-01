@@ -33,6 +33,7 @@ interfaces.formats        = mark(interfaces.formats        or { })
 interfaces.translations   = mark(interfaces.translations   or { })
 interfaces.setupstrings   = mark(interfaces.setupstrings   or { })
 interfaces.corenamespaces = mark(interfaces.corenamespaces or { })
+interfaces.usednamespaces = mark(interfaces.usednamespaces or { })
 
 local registerstorage     = storage.register
 local sharedstorage       = storage.shared
@@ -44,6 +45,7 @@ local formats             = interfaces.formats
 local translations        = interfaces.translations
 local setupstrings        = interfaces.setupstrings
 local corenamespaces      = interfaces.corenamespaces
+local usednamespaces      = interfaces.usednamespaces
 local reporters           = { } -- just an optimization
 
 registerstorage("interfaces/constants",      constants,      "interfaces.constants")
@@ -53,6 +55,7 @@ registerstorage("interfaces/formats",        formats,        "interfaces.formats
 registerstorage("interfaces/translations",   translations,   "interfaces.translations")
 registerstorage("interfaces/setupstrings",   setupstrings,   "interfaces.setupstrings")
 registerstorage("interfaces/corenamespaces", corenamespaces, "interfaces.corenamespaces")
+registerstorage("interfaces/usednamespaces", usednamespaces, "interfaces.usednamespaces")
 
 interfaces.interfaces = {
     "cs", "de", "en", "fr", "it", "nl", "ro", "pe",
@@ -95,6 +98,11 @@ setmetatableindex(setupstrings, valueiskey)
 
 function interfaces.registernamespace(n,namespace)
     corenamespaces[n] = namespace
+    usednamespaces[namespace] = n
+end
+
+function interfaces.getnamespace(n)
+    return usednamespaces[n] .. ">"
 end
 
 local function resolve(t,k)

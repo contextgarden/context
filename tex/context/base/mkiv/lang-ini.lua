@@ -20,8 +20,8 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 
 local type, tonumber = type, tonumber
 local utfbyte = utf.byte
-local format, gsub = string.format, string.gsub
-local concat, sortedkeys, sortedpairs = table.concat, table.sortedkeys, table.sortedpairs
+local format, gsub, gmatch, find = string.format, string.gsub, string.gmatch, string.find
+local concat, sortedkeys, sortedpairs, keys, insert = table.concat, table.sortedkeys, table.sortedpairs, table.keys, table.insert
 local utfbytes, strip = string.utfvalues, string.strip
 
 local context   = context
@@ -29,6 +29,7 @@ local commands  = commands
 local implement = interfaces.implement
 
 local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_set = utilities.parsers.settings_to_set
 
 local trace_patterns = false  trackers.register("languages.patterns", function(v) trace_patterns = v end)
 
@@ -119,7 +120,7 @@ local function validdata(loaded,what,tag)
     if dataset then
         local data = dataset.data
         if not data or data == "" then
-            return nil
+            -- nothing
         elseif dataset.compression == "zlib" then
             data = zlib.decompress(data)
             if dataset.length and dataset.length ~= #data then
@@ -157,13 +158,94 @@ local function sethjcodes(instance,loaded,what)
     end
 end
 
+-- 2'2 conflicts with 4' ... and luatex barks on it
+
+local P, R, Cs, Ct, lpegmatch, lpegpatterns = lpeg.P, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.match, lpeg.patterns
+
+local utfsplit = utf.split
+
+local space       = lpegpatterns.space
+local whitespace  = lpegpatterns.whitespace^1
+local nospace     = lpegpatterns.utf8char - whitespace
+local digit       = lpegpatterns.digit
+----- endofstring = #whitespace + P(-1)
+local endofstring = #whitespace
+
+local word        = (digit/"")^0 * (digit/"" * endofstring + digit/" " + nospace)^1
+local anyword     = (1-whitespace)^1
+local analyze     = Ct((whitespace + Cs(word))^1)
+
+local function unique(tag,requested,loaded)
+    local nofloaded = #loaded
+    if nofloaded == 0 then
+        return ""
+    elseif nofloaded == 1 then
+        return loaded[1]
+    else
+        insert(loaded,1," ") -- no need then for special first word
+     -- insert(loaded,  " ")
+        loaded = concat(loaded," ")
+        local t = lpegmatch(analyze,loaded) or { }
+        local h = { }
+        local b = { }
+        for i=1,#t do
+            local ti = t[i]
+            local hi = h[ti]
+            if not hi then
+                h[ti] = 1
+            elseif hi == 1 then
+                h[ti] = 2
+                b[#b+1] = utfsplit(ti," ")
+            end
+        end
+        -- sort
+        local nofbad = #b
+        if nofbad > 0 then
+            local word
+            for i=1,nofbad do
+                local bi = b[i]
+                local p = P(bi[1])
+                for i=2,#bi do
+                    p = p * digit * P(bi[i])
+                end
+                if word then
+                    word = word + p
+                else
+                    word = p
+                end
+                report_initialization("language %a, patterns %a, discarding conflict (0-9)%{[0-9]}t(0-9)",tag,requested,bi)
+            end
+            t, h, b = nil, nil, nil -- permit gc
+            local someword = digit^0 * word * digit^0 * endofstring / ""
+         -- local strip    = Cs(someword^-1 * (someword + anyword + whitespace)^1)
+            local strip    = Cs((someword + anyword + whitespace)^1)
+            return lpegmatch(strip,loaded) or loaded
+        else
+            return loaded
+        end
+    end
+end
+
 local function loaddefinitions(tag,specification)
     statistics.starttiming(languages)
     local data, instance = resolve(tag)
-    local definitions = settings_to_array(specification.patterns or "")
+    local requested = specification.patterns or ""
+    local definitions = settings_to_array(requested)
     if #definitions > 0 then
         if trace_patterns then
             report_initialization("pattern specification for language %a: %s",tag,specification.patterns)
+        end
+        local ploaded = instance:patterns()
+        local eloaded = instance:hyphenation()
+        if not ploaded or ploaded == ""  then
+            ploaded = { }
+        else
+            ploaded = { ploaded }
+        end
+        if not eloaded or eloaded == ""  then
+            eloaded = { }
+        else
+            eloaded = { eloaded }
         end
         local dataused  = data.used
         local ok        = false
@@ -178,6 +260,9 @@ local function loaddefinitions(tag,specification)
                     report_initialization("clearing patterns for language %a",tag)
                 end
                 instance:clear_patterns()
+                instance:clear_hyphenation()
+                ploaded = { }
+                eloaded = { }
             elseif not dataused[definition] then
                 dataused[definition] = definition
                 local filename = "lang-" .. definition .. ".lua"
@@ -195,8 +280,14 @@ local function loaddefinitions(tag,specification)
                         ok, nofloaded = true, nofloaded + 1
                         sethjcodes(instance,loaded,"patterns")
                         sethjcodes(instance,loaded,"exceptions")
-                        instance:patterns   (validdata(loaded,"patterns",  tag) or "")
-                        instance:hyphenation(validdata(loaded,"exceptions",tag) or "")
+                        local p = validdata(loaded,"patterns",tag)
+                        local e = validdata(loaded,"exceptions",tag)
+                        if p and p ~= "" then
+                            ploaded[#ploaded+1] = p
+                        end
+                        if e and e ~= "" then
+                            eloaded[#eloaded+1] = e
+                        end
                         resources[#resources+1] = loaded -- so we can use them otherwise
                     else
                         report_initialization("invalid definition %a for language %a in %a",definition,tag,filename)
@@ -207,6 +298,14 @@ local function loaddefinitions(tag,specification)
             elseif trace_patterns then
                 report_initialization("definition %a for language %a already loaded",definition,tag)
             end
+        end
+        if #ploaded > 0 then
+            instance:clear_patterns()
+            instance:patterns(unique(tag,requested,ploaded))
+        end
+        if #eloaded > 0 then
+            instance:clear_hyphenation()
+            instance:hyphenation(concat(eloaded," "))
         end
         return ok
     elseif trace_patterns then

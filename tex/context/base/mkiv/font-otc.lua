@@ -92,11 +92,18 @@ local function addfeature(data,feature,specifications)
     -- todo: add some validator / check code so that we're more tolerant to
     -- user errors
 
+    if not specifications then
+        report_otf("missing specification")
+        return
+    end
+
     local descriptions = data.descriptions
     local resources    = data.resources
     local features     = resources.features
     local sequences    = resources.sequences
+
     if not features or not sequences then
+        report_otf("missing specification")
         return
     end
 
@@ -120,8 +127,9 @@ local function addfeature(data,feature,specifications)
     local skip         = 0
     local aglunicodes  = false
 
-    local specifications = validspecification(specifications,name)
+    local specifications = validspecification(specifications,feature)
     if not specifications then
+     -- report_otf("invalid specification")
         return
     end
 
@@ -650,7 +658,7 @@ local function enhance(data,filename,raw)
     end
 end
 
--- otf.enhancers.enhance = enhance
+otf.enhancers.enhance = enhance
 
 otf.enhancers.register("check extra features",enhance)
 

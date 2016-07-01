@@ -1,0 +1,385 @@
+% language=uk
+%
+% author  : Hans Hagen, PRAGMA ADE, NL
+% license : Creative Commons, Attribution-NonCommercial-ShareAlike 3.0 Unported
+
+\usemodule[abr-01]
+
+\startmode[booklet]
+
+  \setuppapersize [A4][oversized]
+
+\stopmode
+
+% \setuppapersize[A4][doubleoversized,landscape]
+% \setuparranging[2UP]
+% \setuppagenumbering[alternative={singlesided,doublesided}]
+
+\setuplayout
+  [location=middle,
+   marking=on]
+
+% \logo [EXAMPLE] {eXaMpLe}
+
+\setuptabulate
+  [rulethickness=1pt,
+   rulecolor=darkgreen]
+
+\setuptables
+  [rulethickness=1pt,
+   rulecolor=darkgreen]
+
+% \usesymbols
+%   [cc]
+
+\setuplayout
+  [width=middle,
+   topspace=2cm,
+   top=1cm,
+   cutspace=1.5cm, % 2.0cm
+   backspace=3.5cm,
+   header=1cm,
+   footer=1.5cm,
+   bottom=1cm,
+   leftmargin=2.5cm,
+   rightmargin=1cm,
+   margindistance=.5cm,
+   height=middle]
+
+\definelayout
+  [titlepage]
+  [topspace=2cm,
+   backspace=1.5cm,
+   bottomspace=1.5cm]
+
+\startmode[screen]
+
+    \setuppapersize
+      [S6][S6]
+
+    \setuplayout
+      [topspace=1cm,
+       bottomspace=1.5cm,
+       top=1cm,
+       header=0cm,
+       footer=.5cm,
+       bottom=1cm]
+
+    \setupinteraction
+      [state=start,
+       color=,
+       contrastcolor=,
+       style=,
+       menu=on]
+
+    \setupinteractionmenu
+      [bottom]
+      [left=\hfill,
+       middle=\hskip.25cm,
+       background=color,
+       backgroundcolor=darkgray,
+       color=lightgray,
+       contrastcolor=lightgray,
+       style=\bfb\setstrut\strut,
+       offset=2pt,
+       height=fit,
+       frame=off]
+
+    \startinteractionmenu[bottom]
+        \startbut [PreviousJump]  GoBack   \stopbut
+        \startbut [previouspage]  Previous \stopbut
+        \startbut [nextpage]      Next     \stopbut
+        \startbut [CloseDocument] Exit     \stopbut
+    \stopinteractionmenu
+
+\stopmode
+
+\setupbodyfont[dejavu,11pt]
+
+\definecolor [cyan]        [g=.4,b=.4]
+\definecolor [magenta]     [r=.4,b=.4]
+\definecolor [yellow]      [r=.4,g=.4]
+\definecolor [red]         [r=.4]
+\definecolor [green]       [g=.4]
+\definecolor [blue]        [b=.4]
+\definecolor [gray]        [s=.4]
+
+\definecolor [lightgray]   [s=.8]
+
+\definecolor [FillColor]   [gray]
+
+\definecolor [NumberColor] [red]
+\definecolor [BannerColor] [green]
+\definecolor [AspectColor] [blue]
+
+% *rgb  *rgy *rby *gby  *rgc *rbc *gbc   rgm  rbm  gbm
+% *cmy   cmr  cyr  myr   cmg  cyr  myg   cmb  cyb  myb
+
+\definepalet[steps]  [NumberColor=red,  BannerColor=green,  AspectColor=blue]
+\definepalet[mathml] [NumberColor=cyan, BannerColor=magenta,AspectColor=yellow]
+\definepalet[chemml] [NumberColor=red,  BannerColor=green,  AspectColor=yellow]
+\definepalet[physml] [NumberColor=red,  BannerColor=blue,   AspectColor=yellow]
+\definepalet[figures][NumberColor=green,BannerColor=blue,   AspectColor=yellow]
+\definepalet[charts] [NumberColor=red,  BannerColor=green,  AspectColor=cyan]
+\definepalet[examns] [NumberColor=red,  BannerColor=green,  AspectColor=cyan]
+\definepalet[general][NumberColor=red,  BannerColor=blue,   AspectColor=cyan]
+\definepalet[tables] [NumberColor=green,BannerColor=blue,   AspectColor=cyan]
+
+\setupindenting
+  [medium]
+
+\indenting
+  [yes]
+
+\defineoverlay
+  [nextpage]
+  [\overlaybutton{nextpage}]
+
+\startusableMPgraphic{cover}
+    path p, q ; color maincolor[], fillcolor ; numeric r, w, h ;
+    numeric cellwidth, cellspread, linewidth ;
+    maincolor[0] := \MPcolor{BannerColor} ;
+    maincolor[1] := \MPcolor{AspectColor} ;
+    maincolor[2] := \MPcolor{NumberColor} ;
+    fillcolor    := \MPcolor{FillColor} ;
+    cellwidth    := 75pt ;
+    cellspread   := 50pt ;
+    linewidth    := 1/10pt ;
+    w := OverlayWidth  + cellwidth ;
+    h := OverlayHeight + cellwidth ;
+    q := unitsquare xyscaled (OverlayWidth,OverlayHeight) ;
+    fill unitsquare xyscaled (w,h) withcolor fillcolor ;
+    set_grid (w,h,cellwidth-cellspread,cellwidth-cellspread) ;
+    forever :
+        if new_on_grid(uniformdeviate w, uniformdeviate h) :
+            draw image (
+                p := unitsquare ;
+                r := floor(uniformdeviate 3) ;
+                fill p enlarged linewidth withcolor fillcolor ;
+                fill p withcolor maincolor[r] ;
+                draw
+                    if r = 0 :
+                        urcorner p -- .5[llcorner p,ulcorner p] -- lrcorner p
+                    elseif r = 1 :
+                        ulcorner p -- .5[lrcorner p,urcorner p] -- llcorner p
+                    else :
+                        urcorner p -- llcorner p
+                    fi
+                    withpen pencircle scaled linewidth withcolor fillcolor ;
+            )
+                scaled (cellwidth randomized cellspread)
+                shifted (dx,dy) ;
+        fi ;
+        exitif grid_full ;
+    endfor ;
+  % currentpicture := currentpicture shifted -(cellwidth,cellwidth) ;
+  % clip currentpicture to q ;
+\stopusableMPgraphic
+
+\defineoverlay
+  [cover]
+  [\useMPgraphic{cover}]
+
+\setupbackgrounds
+  [page]
+  [offset=3mm]
+
+\defineoverlay
+  [page]
+  [\reuseMPgraphic{page}]
+
+\startreusableMPgraphic{page}
+    StartPage ;
+        path p ; p :=
+            ulcorner Page --
+            llcorner Page --
+            llcorner Page shifted (BackSpace-LeftMarginDistance,0) --
+            ulcorner Page shifted (BackSpace-LeftMarginDistance,0) -- cycle ;
+        fill
+            (p enlarged PageOffset) rightenlarged -PageOffset
+            withcolor \MPcolor{FillColor} ;
+        picture t ; t := textext("\bfb \lightgray \ConTeXt\ XML") rotated 90 ;
+        setbounds t to boundingbox t enlarged ExHeight ;
+        t := image ( label.llft(t,urcorner Page )) ;
+        fill boundingbox t topenlarged PageOffset rightenlarged PageOffset withcolor \MPcolor{FillColor} ;
+        draw t ;
+    StopPage ;
+    setbounds currentpicture to boundingbox currentpicture enlarged PageOffset ;
+\stopreusableMPgraphic
+
+\setuphead
+  [section]
+  [command=\texdefinition{document:head:section},
+   color=lightgray,
+   style=\bfb,
+   before={\blank[2*big]},
+   after={\blank[2*big]},]
+
+\starttexdefinition document:head:section #1#2
+    \hbox {
+        \hskip-\marginwidth
+        \hskip-\margindistance
+        \framed [
+            width=.5\textwidth,
+            offset=2pt,
+            frame=off,
+            background=color,
+            backgroundcolor=AspectColor
+        ] {
+            \hskip.25cm
+            #2
+            \hfill
+        }
+    }
+\stoptexdefinition
+
+\setupheadertexts
+  []
+
+\setupbottom
+  [margin]
+  [color=lightgray,
+   style=\bfb]
+
+\setuptyping
+  [color=green]
+
+\setuptype
+  [color=green]
+
+\doifmodeelse {booklet} {
+
+   \setupbottomtexts
+     [margin]
+     [\setup{document:pagenumber}] []
+     [\setup{document:pagenumber}] []
+
+} {
+
+    \setupbottomtexts
+      [margin]
+      [\setup{document:pagenumber}] []
+
+}
+
+\setvariables
+  [document]
+  [title=No Title,
+   author=No Author]
+
+\startmode[atpragma]
+
+    \setvariables
+      [document]
+      [line:1=Con\TeX t XML,
+       line:2=Pragma ADE / Hasselt NL,
+       line:3=MkIV]
+
+\stopmode
+
+\startsetups document:pagenumber
+    \hbox to \marginwidth {
+        \framed [
+            width=.25\textwidth,
+            offset=2pt,
+            frame=off,
+            background=color,
+            backgroundcolor=NumberColor
+        ] {
+            \hskip.25cm
+            \documentvariable{title}
+            \hfill
+            \pagenumber
+            \hskip.25cm
+        }
+    }
+\stopsetups
+
+\startsetups document:start
+
+    \doifsomething {\documentvariable{palet}} {
+        \setuppalet[\documentvariable{palet}]
+    }
+
+    \setupbackgrounds
+      [page]
+      [background={cover,nextpage}]
+
+    \setuplayout
+      [titlepage]
+
+    \startstandardmakeup[bottomstate=stop]
+        \raggedcenter
+        \lightgray
+        \start
+            \definedfont[SansBold at 100pt]
+            \setupinterlinespace
+            \WORD{\documentvariable{title}}
+            \par
+        \stop
+        \vfilll
+        \doifsomething {\documentvariable{line:1}} {
+            \dontleavehmode\hbox{\definedfont[SansBold at 50pt]\setstrut\strut\documentvariable{line:1}}
+        }
+        \doifsomething {\documentvariable{line:2}} {
+            \vskip25pt
+            \dontleavehmode\hbox{\definedfont[SansBold at 25pt]\setstrut\strut\documentvariable{line:2}}
+        }
+        \doifsomething {\documentvariable{line:3}} {
+            \vskip25pt
+            \dontleavehmode\hbox{\definedfont[SansBold at 25pt]\setstrut\strut\documentvariable{line:3}}
+        }
+    \stopstandardmakeup
+
+    \setuplayout
+
+    \setupbackgrounds
+      [page]
+      [background={page,banner}]
+
+\stopsetups
+
+\startsetups document:stop
+
+    \definecolor[AspectColor][green]
+
+    \startsubject[title=Colofon]
+
+        This manual is part of the \CONTEXT\ distribution, and is authored and maintained by   \space
+        \documentvariable{author}. \CONTEXT\ is developed at \PRAGMA, Hasselt, The Netherlands.\space
+        This manual is produced on \currentdate.
+
+    \stopsubject
+
+\stopsetups
+
+% \usemodule[set-11]
+
+% \setupframedtexts
+%   [setuptext]
+%   [rulethickness=1pt,
+%    framecolor=green,
+%    background=color,
+%    backgroundcolor=lightgray]
+
+% titles:
+
+% Description
+% Structure
+% Usage
+% XML example
+% \TeX\ example
+% Configuring
+% Documentation
+
+\continueifinputfile{s-man-10.mkiv}
+
+\startdocument[title=Title,author=Author,palet=steps]
+
+    \startsection[title=Test]
+
+        \input knuth
+
+    \stopsection
+
+\stopdocument

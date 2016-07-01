@@ -27,9 +27,6 @@ local sequencers        = utilities.sequencers
 local textlineactions   = resolvers.openers.helpers.textlineactions
 local setmetatableindex = table.setmetatableindex
 
-local implement         = interfaces.implement
-local setmacro          = interfaces.setmacro
-
 --[[ldx--
 <p>We will hook regime handling code into the input methods.</p>
 --ldx]]--
@@ -261,56 +258,6 @@ if sequencers then
 
 end
 
--- interface:
-
-implement {
-    name      = "enableregime",
-    arguments = "string",
-    actions   = function(regime) setmacro("currentregime",enable(regime)) end
-}
-
-implement {
-    name      = "disableregime",
-    actions   = function() setmacro("currentregime",disable()) end
-}
-
-implement {
-    name      = "pushregime",
-    actions   = push
-}
-
-implement {
-    name      = "popregime",
-    actions   = pop
-}
-
-local stack = { }
-
-implement {
-    name      = "startregime",
-    arguments = "string",
-    actions   = function(regime)
-        insert(stack,currentregime)
-        if trace_translating then
-            report_translating("start using %a",regime)
-        end
-        setmacro("currentregime",enable(regime))
-    end
-}
-
-implement {
-    name      = "stopregime",
-    actions   = function()
-        if #stack > 0 then
-            local regime = remove(stack)
-            if trace_translating then
-                report_translating("stop using %a",regime)
-            end
-            setmacro("currentregime",enable(regime))
-        end
-    end
-}
-
 -- Next we provide some hacks. Unfortunately we run into crappy encoded
 -- (read : mixed) encoded xml files that have these Ã« Ã¤ Ã¶ Ã¼ sequences
 -- instead of ë ä ö ü
@@ -434,3 +381,60 @@ end
 -- local old = "Pozn" .. char(0xE1) .. "mky"
 -- local new = fromregime("cp1250",old)
 -- report_translating("%s -> %s",old,new)
+
+-- interface (might move to regi-tex.lua)
+
+if interfaces then
+
+    local implement = interfaces.implement
+    local setmacro  = interfaces.setmacro
+
+    implement {
+        name      = "enableregime",
+        arguments = "string",
+        actions   = function(regime) setmacro("currentregime",enable(regime)) end
+    }
+
+    implement {
+        name      = "disableregime",
+        actions   = function() setmacro("currentregime",disable()) end
+    }
+
+    implement {
+        name      = "pushregime",
+        actions   = push
+    }
+
+    implement {
+        name      = "popregime",
+        actions   = pop
+    }
+
+    local stack = { }
+
+    implement {
+        name      = "startregime",
+        arguments = "string",
+        actions   = function(regime)
+            insert(stack,currentregime)
+            if trace_translating then
+                report_translating("start using %a",regime)
+            end
+            setmacro("currentregime",enable(regime))
+        end
+    }
+
+    implement {
+        name      = "stopregime",
+        actions   = function()
+            if #stack > 0 then
+                local regime = remove(stack)
+                if trace_translating then
+                    report_translating("stop using %a",regime)
+                end
+                setmacro("currentregime",enable(regime))
+            end
+        end
+    }
+
+end

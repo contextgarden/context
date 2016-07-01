@@ -170,7 +170,6 @@ methods[2] = function(head,start) -- ( => (-
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
-     -- setfield(start,"attr",copy_nodelist(getfield(tmp,"attr"))) -- just a copy will do
         setfield(start,"attr",getfield(tmp,"attr"))
         setfield(start,"replace",tmp)
         local tmp = copy_node(tmp)
@@ -189,7 +188,6 @@ methods[3] = function(head,start) -- ) => -)
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
-     -- setfield(start,"attr",copy_nodelist(getfield(tmp,"attr"))) -- just a copy will do
         setfield(start,"attr",getfield(tmp,"attr"))
         setfield(start,"replace",tmp)
         local tmp = copy_node(tmp)
@@ -208,7 +206,6 @@ methods[4] = function(head,start) -- - => - - -
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
-     -- setfield(start,"attr",copy_nodelist(getfield(tmp,"attr"))) -- just a copy will do
         setfield(start,"attr",getfield(tmp,"attr"))
         setdisc(start,copy_node(tmp),copy_node(tmp),tmp)
         insert_break(head,start,start,10000,10000)
@@ -237,7 +234,6 @@ methods[5] = function(head,start,stop,settings) -- x => p q r
             middle = tonodes(tostring(middle),font,attr)
         end
         setdisc(start,left,right,middle)
-     -- setfield(start,"attr",copy_nodelist(attr)) -- todo: critical only -- just a copy will do
         setfield(start,"attr",attr) -- todo: critical only -- just a copy will do
         free_node(tmp)
         insert_break(head,start,start,10000,10000)
@@ -272,6 +268,7 @@ function breakpoints.handler(head)
                 if map then
                     local cmap = map[char]
                     if cmap then
+                        setattr(current,a_breakpoints,unsetvalue) -- should not be needed
                         -- for now we collect but when found ok we can move the handler here
                         -- although it saves nothing in terms of performance
                         local lang = getfield(current,"lang")
@@ -301,7 +298,6 @@ function breakpoints.handler(head)
                         else
                             current = getnext(current)
                         end
-                        setattr(start,a_breakpoints,unsetvalue) -- should not be needed
                     else
                         current = getnext(current)
                     end

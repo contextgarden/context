@@ -172,8 +172,8 @@
      scale         {\chemicalparameter\c!scale}%
      rotation      {\chemicalparameter\c!rotation}%
      symalign      {\chemicalparameter\c!symalign}%
-     axis          {\chemicalparameter\c!axis}%
-     framecolor    {\MPcolor{\chemicalparameter\c!framecolor}}%
+     axis          {\chemicalparameter\c!axis}% was \MPcolor{...}
+     framecolor    {\chemicalparameter\c!framecolor}%
      rulethickness {\number\dimexpr\chemicalparameter\c!rulethickness}%
      offset        {\number\dimexpr\chemicalparameter\c!offset}%
      unit          {\number\dimexpr\chemicalparameter\c!unit}%
@@ -228,7 +228,7 @@
       {#2}%
       {\detokenize{#3}}%
       {\the\dimexpr\chemicalparameter\c!rulethickness}% todo: scaled points
-      {\MPcolor{\chemicalparameter\c!rulecolor}}%     % we can precalculate this for speedup
+      {\chemicalparameter\c!rulecolor}%
    \relax
    \ignorespaces}
 
@@ -237,7 +237,7 @@
       {#1}%
       {\detokenize{#2}}%
       {\the\dimexpr\chemicalparameter\c!rulethickness}% todo: scaled points
-      {\MPcolor{\chemicalparameter\c!rulecolor}}%     % we can precalculate this for speedup
+      {\chemicalparameter\c!rulecolor}%
    \relax
    \ignorespaces}
 

@@ -50,16 +50,26 @@ pair
     chem_pair[], % scratch
     chem_sb_pair, chem_sb_pair.m, chem_sb_pair.p, chem_sb_pair.b ;
 
+
+
 picture
-    chem_pic, % scratch
+    chem_pic; % scratch
     % The use of dashpattern is found to dot the starting point with chem_sb_dash.m...
     %chem_sb_dash, chem_sb_dash.m, chem_sb_dash.p, chem_sb_dash.b,
+
+% nice hack but now redone
+%
+% picture chem_axis_color ;
+%
+% chem_axis_color := image(draw origin withcolor axiscolor) ; % so we handle all color models
+%
+% withpen pencircle scaled chem_axis_rulethickness withcolor colorpart(chem_axis_color) ;
+
+string
     chem_axis_color ;
 
 transform
     chem_t ; % scratch
-
-color lightblue ; lightblue := (173/255,216/255,230/255) ;
 
 % debugging
 
@@ -67,7 +77,7 @@ boolean chem_trace_nesting     ; chem_trace_nesting     := false ;
 boolean chem_trace_text        ; chem_trace_text        := false ;
 boolean chem_trace_boundingbox ; chem_trace_boundingbox := false ;
 
-chem_axis_color         := image(draw origin withcolor lightblue) ;
+chem_axis_color         := "lightblue" ;
 chem_setting_axis       := false ;
 chem_axis_rulethickness := 1pt ;
 chem_emwidth            := 10pt ; % EmWidth or \the\emwidth does not work...
@@ -333,7 +343,7 @@ def chem_start_structure(expr i, l, r, t, b, rotation, unit, bond, scale, offset
     chem_setting_offset     := offset ;
     chem_setting_axis       := if boolean axis : axis else : (axis<>0) fi ;
     chem_axis_rulethickness := .75*(rulethickness) ; % axis 50% thinner than frame and bonds.
-    chem_axis_color         := image(draw origin withcolor axiscolor) ; % so we handle all color models
+    chem_axis_color         := axiscolor ;
 
     chem_reset ;
 enddef ;
@@ -367,24 +377,24 @@ vardef chem_stop_structure =
         % draw the axes to the bounding box of the entire structure,
         % not necessarily the bounding box of the final figure
         draw (l,0) -- (r,0)
-            withpen pencircle scaled chem_axis_rulethickness withcolor colorpart(chem_axis_color) ;
+            withpen pencircle scaled chem_axis_rulethickness withcolor chem_axis_color ;
         draw (0,b) -- (0,t)
-            withpen pencircle scaled chem_axis_rulethickness withcolor colorpart(chem_axis_color) ;
+            withpen pencircle scaled chem_axis_rulethickness withcolor chem_axis_color ;
         for i = 0 step  chem_num0 until r :
             draw (i,-chem_num1) -- (i,chem_num1)
-            withpen pencircle scaled chem_axis_rulethickness withcolor colorpart(chem_axis_color) ;
+            withpen pencircle scaled chem_axis_rulethickness withcolor chem_axis_color ;
         endfor
         for i = 0 step -chem_num0 until l :
             draw (i,-chem_num1) -- (i,chem_num1)
-            withpen pencircle scaled chem_axis_rulethickness withcolor colorpart(chem_axis_color) ;
+            withpen pencircle scaled chem_axis_rulethickness withcolor chem_axis_color ;
         endfor
         for i = 0 step  chem_num0 until t :
             draw (-chem_num1,i) -- (chem_num1,i)
-            withpen pencircle scaled chem_axis_rulethickness withcolor colorpart(chem_axis_color) ;
+            withpen pencircle scaled chem_axis_rulethickness withcolor chem_axis_color ;
         endfor
         for i = 0 step -chem_num0 until b :
             draw (-chem_num1,i) -- (chem_num1,i)
-            withpen pencircle scaled chem_axis_rulethickness withcolor colorpart(chem_axis_color) ;
+            withpen pencircle scaled chem_axis_rulethickness withcolor chem_axis_color ;
         endfor
         addto currentpicture also chem_pic ;
     fi ;
@@ -406,9 +416,8 @@ vardef chem_stop_component  = enddef ;
 
 vardef chem_pb = % PB :
     if chem_trace_nesting :
-        draw boundingbox currentpicture
-                    withpen pencircle scaled 1mm withcolor colorpart(chem_axis_color) ;
-        draw origin withpen pencircle scaled 2mm withcolor colorpart(chem_axis_color) ;
+        draw boundingbox currentpicture withpen pencircle scaled 1mm withcolor chem_axis_color ;
+        draw origin withpen pencircle scaled 2mm withcolor chem_axis_color ;
     fi ;
     chem_doing_pb := true ;
 enddef ;
@@ -507,21 +516,21 @@ enddef ;
 vardef chem_draw (expr what, r, c) (text extra) =
     draw what
         withpen pencircle scaled r
-        withcolor c %\MPcolor{c}
+        withcolor c
         extra ;
 enddef ;
 
 vardef chem_fill (expr what, r, c) (text extra) =
     fill what
         withpen pencircle scaled r
-        withcolor c %\MPcolor{c}
+        withcolor c
         extra ;
 enddef ;
 
 vardef chem_drawarrow (expr what, r, c) (text extra) =
     drawarrow what
         withpen pencircle scaled r
-        withcolor c %\MPcolor{c}
+        withcolor c
         extra ;
 enddef ;
 
@@ -1691,14 +1700,14 @@ vardef chem_line (suffix $) (expr f, t, r, c) = % LINE
     draw if f=t : origin else : chem_marked(f) fi -- chem_marked(t)
         % no chem_transformed
         withpen pencircle scaled r
-        withcolor c %\MPcolor{c}
+        withcolor c
 enddef ;
 
 vardef chem_dash (suffix $) (expr f, t, r, c) = % DASH
     draw if f=t : origin else : chem_marked(f) fi -- chem_marked(t)
         % no chem_transformed
         withpen pencircle scaled r
-        withcolor c %\MPcolor{c}
+        withcolor c
         dashed evenly ;
 enddef ;
 
@@ -1706,7 +1715,7 @@ vardef chem_arrow (suffix $) (expr f, t, r, c) = % ARROW
     drawarrow if f=t : origin else : chem_marked(f) fi -- chem_marked(t)
         % no chem_transformed
         withpen pencircle scaled r
-        withcolor c %\MPcolor{c}
+        withcolor c
 enddef ;
 
 

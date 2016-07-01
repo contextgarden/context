@@ -11,7 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
-% step prefixes .. no save needed
+% maybe todo: step prefixes .. no save needed
+% not todo  : make it unreadable by lots of suffix compaction
 
 if known context_cell : endinput ; fi ;
 

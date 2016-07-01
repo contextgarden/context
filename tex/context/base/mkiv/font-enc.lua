@@ -78,24 +78,32 @@ function encodings.load(filename)
     if foundname and foundname ~= "" then
         local ok, encoding, size = resolvers.loadbinfile(foundname)
         if ok and encoding then
-            encoding = gsub(encoding,"%%(.-)\n","")
-            local unicoding = fonts.encodings.agl.unicodes
-            local tag, vec = match(encoding,"/(%w+)%s*%[(.*)%]%s*def")
-            local i = 0
-            for ch in gmatch(vec,"/([%a%d%.]+)") do
-                if ch ~= ".notdef" then
-                    vector[i] = ch
-                    if not hash[ch] then
-                        hash[ch] = i
-                    else
-                        -- duplicate, play safe for tex ligs and take first
+            encoding = gsub(encoding,"%%(.-)[\n\r]+","")
+            if encoding then
+                local unicoding = fonts.encodings.agl.unicodes
+                local tag, vec = match(encoding,"[/]*(%w+)%s*%[(.*)%]%s*def")
+                if vec then
+                    local i = 0
+                    for ch in gmatch(vec,"/([%a%d%.]+)") do
+                        if ch ~= ".notdef" then
+                            vector[i] = ch
+                            if not hash[ch] then
+                                hash[ch] = i
+                            else
+                                -- duplicate, play safe for tex ligs and take first
+                            end
+                            local u = unicoding[ch] or enccodes[ch] -- enccodes have also context names
+                            if u then
+                                unicodes[u] = i
+                            end
+                        end
+                        i = i + 1
                     end
-                    local u = unicoding[ch] or enccodes[ch] -- enccodes have also context names
-                    if u then
-                        unicodes[u] = i
-                    end
+                else
+                    report_encoding("reading vector in encoding file %a fails",filename)
                 end
-                i = i + 1
+            else
+                report_encoding("reading encoding file %a fails",filename)
             end
         end
     end

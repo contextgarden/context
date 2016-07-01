@@ -26,6 +26,9 @@ local context             = context
 local commands            = commands
 
 local implement           = interfaces.implement
+local getnamespace        = interfaces.getnamespace
+
+local mark                = utilities.storage.mark
 
 local settings_to_hash_strict = utilities.parsers.settings_to_hash_strict
 
@@ -33,8 +36,11 @@ local colors              = attributes.colors
 local transparencies      = attributes.transparencies
 local colorintents        = attributes.colorintents
 local registrations       = backends.registrations
+
 local texsetattribute     = tex.setattribute
 local texgetattribute     = tex.getattribute
+local texgetcount         = tex.getcount
+local texgettoks          = tex.gettoks
 
 local a_color             = attributes.private('color')
 local a_transparency      = attributes.private('transparency')
@@ -46,12 +52,30 @@ local attributes_list     = attributes.list
 local colorvalues         = colors.values
 local transparencyvalues  = transparencies.values
 
-colors.sets               = colors.sets or { } -- sets are mostly used for
+colors.sets               = mark(colors.sets or { }) -- sets are mostly used for
 local colorsets           = colors.sets        -- showing lists of defined
 local colorset            = { }                -- colors
 colorsets.default         = colorset
+local valid               = mark(colors.valid or { })
+colors.valid              = valid
+local counts              = mark(colors.counts or { })
+colors.counts             = counts
 
-storage.register("attributes/colors/sets",colorsets,"attributes.colors.sets")
+storage.register("attributes/colors/sets",   colorsets, "attributes.colors.sets")
+storage.register("attributes/colors/valid",  valid,     "attributes.colors.valid")
+storage.register("attributes/colors/counts", counts,    "attributes.colors.counts")
+
+local function synccolor(name)
+    valid[name] = true
+end
+
+local function synccolorclone(name,clone)
+    valid[name] = clone
+end
+
+local function synccolorcount(name,n)
+    counts[name] = n
+end
 
 local stack = { }
 
@@ -585,9 +609,111 @@ local function mpcolor(model,ca,ta,default)
     return formatters["(%s,%s,%s)"](default,default,default)
 end
 
+-- local function mpnamedcolor(name)
+--     return mpcolor(texgetattribute(a_colorspace),l_color[name] or l_color.black,l_transparency[name] or false)
+-- end
+
+local colornamespace  = getnamespace("colornumber")
+local paletnamespace  = getnamespace("colorpalet")
+
+-- local function mpnamedcolor(name)
+--     local prefix = texgettoks("t_colo_prefix")
+--     local cn
+--     if prefix ~= "" then
+--         local v = valid[prefix..name]
+--         if not v then
+--             local n = paletnamespace .. prefix .. name
+--             local p = valid[n]
+--             if p == true then
+--                 cn = colornamespace .. n
+--             elseif p then
+--                 cn = colornamespace .. p
+--             else
+--                 cn = colornamespace .. name
+--             end
+--         elseif v == true then
+--             cn = colornamespace .. paletnamespace .. prefix .. name
+--         else
+--             cn = colornamespace .. v
+--         end
+--     elseif valid[name] then
+--         cn = colornamespace .. name
+--     else
+--         return mpcolor(texgetattribute(a_colorspace),l_color.black)
+--     end
+--  -- return mpcolor(texgetattribute(a_colorspace),l_color[name] or l_color.black)
+--     return mpcolor(texgetattribute(a_colorspace),texgetcount(cn),l_transparency[name])
+-- end
+
+-- local function mpnamedcolor(name)
+--     local colorspace = texgetattribute(a_colorspace)
+--     local prefix = texgettoks("t_colo_prefix")
+--     local cn
+--     if prefix ~= "" then
+--         local v = valid[prefix..name]
+--         if not v then
+--             local n = paletnamespace .. prefix .. name
+--             local p = valid[n]
+--             if p == true then
+--                 cn = n
+--             elseif p then
+--                 cn = p
+--             else
+--                 cn = name
+--             end
+--         elseif v == true then
+--             cn = paletnamespace .. prefix .. name
+--         else
+--             cn = v
+--         end
+--     elseif valid[name] then
+--         cn = name
+--     else
+--         return mpcolor(colorspace,l_color.black)
+--     end
+--     cn = counts[cn]
+--     cn = cn and texgetcount(cn) or l_color[name] or l_color.black -- fall back to old method
+--     return mpcolor(colorspace,cn,l_transparency[name])
+-- end
+
 local function mpnamedcolor(name)
-    return mpcolor(texgetattribute(a_colorspace),l_color[name] or l_color.black)
+    local space  = texgetattribute(a_colorspace)
+    local prefix = texgettoks("t_colo_prefix")
+    local color
+    if prefix ~= "" then
+        color = valid[prefix..name]
+        if not color then
+            local n = paletnamespace .. prefix .. name
+            color = valid[n]
+            if not color then
+                color = name
+            elseif color == true then
+                color = n
+            end
+        elseif color == true then
+            color = paletnamespace .. prefix .. name
+        end
+    elseif valid[name] then
+        color = name
+    else
+        return mpcolor(space,l_color.black)
+    end
+    color = counts[color]
+    if color then
+        color = texgetcount(color)
+    else
+        color = l_color[name] -- fall back on old method
+    end
+    if color then
+        return mpcolor(space,color,l_transparency[name])
+    else
+        return mpcolor(space,l_color.black)
+    end
 end
+
+-- mp.NamedColor = function(str)
+--     mpprint(mpnamedcolor(str))
+-- end
 
 local function mpoptions(model,ca,ta,default) -- will move to mlib-col
     return formatters["withcolor %s"](mpcolor(model,ca,ta,default))
@@ -867,6 +993,24 @@ end
 -- interface
 
 local setcolormodel = colors.setmodel
+
+implement {
+    name      = "synccolorcount",
+    actions   = synccolorcount,
+    arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "synccolor",
+    actions   = synccolor,
+    arguments = "string",
+}
+
+implement {
+    name      = "synccolorclone",
+    actions   = synccolorclone,
+    arguments = { "string", "string" },
+}
 
 implement {
     name      = "setcolormodel",

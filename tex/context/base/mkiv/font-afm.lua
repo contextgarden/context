@@ -1168,8 +1168,6 @@ registerafmfeature {
 
 -- readers
 
-local check_tfm   = readers.check_tfm
-
 fonts.formats.afm = "type1"
 fonts.formats.pfb = "type1"
 
@@ -1205,7 +1203,8 @@ function readers.afm(specification,method)
             tfmdata = check_afm(specification,specification.name .. "." .. forced)
         end
         if not tfmdata then
-            method = method or definers.method or "afm or tfm"
+            local check_tfm = readers.check_tfm
+            method = (check_tfm and (method or definers.method or "afm or tfm")) or "afm"
             if method == "tfm" then
                 tfmdata = check_tfm(specification,specification.name)
             elseif method == "afm" then

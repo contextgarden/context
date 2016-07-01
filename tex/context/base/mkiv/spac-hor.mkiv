@@ -767,14 +767,14 @@
 \let\stopnarrow\spac_narrower_stop
 
 \newdimen\d_spac_effective_hsize     \def\effectivehsize    {\hsize}
-\newdimen\d_spac_effective_leftskip  \def\effectiveleftskip {\leftskip}
-\newdimen\d_spac_effective_rightskip \def\effectiverightskip{\rightskip}
+\newdimen\d_spac_effective_leftskip  \def\effectiveleftskip {\dimexpr\leftskip \relax}
+\newdimen\d_spac_effective_rightskip \def\effectiverightskip{\dimexpr\rightskip\relax}
 
 \unexpanded\def\seteffectivehsize
   {\setlocalhsize
    \d_spac_effective_hsize    \localhsize
-   \d_spac_effective_leftskip \leftskip
-   \d_spac_effective_rightskip\rightskip
+   \d_spac_effective_leftskip 1\leftskip
+   \d_spac_effective_rightskip1\rightskip
    \let\effectivehsize    \d_spac_effective_hsize
    \let\effectiveleftskip \d_spac_effective_leftskip
    \let\effectiverightskip\d_spac_effective_rightskip}

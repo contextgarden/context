@@ -200,6 +200,16 @@
 
 \countdef   \normalpagebox            =   127 \normalpagebox            = 255  % hardcoded in pdftex/xetex
 
+% Only to be used by developers in very special cases!
+
+% \def\lastallocatedcount    {\the\c_syst_last_allocated_count}
+% \def\lastallocateddimen    {\the\c_syst_last_allocated_dimen}
+% \def\lastallocatedskip     {\the\c_syst_last_allocated_skip}
+% \def\lastallocatedmuskip   {\the\c_syst_last_allocated_muskip}
+% \def\lastallocatedbox      {\the\c_syst_last_allocated_dimen}
+% \def\lastallocatedtoks     {\the\c_syst_last_allocated_toks}
+% \def\lastallocatedattribute{\the\c_syst_last_allocated_attribute}
+
 % A few traditional allocations (these might go):
 
 \countdef   \count@                   =   255 % hm, used in \newif .. todo: replace it there
