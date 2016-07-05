@@ -84,20 +84,21 @@ _plib_ = jobpositions -- might go
 
 local default = { -- not r and paragraphs etc
     __index = {
-        x  = 0,     -- x position baseline
-        y  = 0,     -- y position baseline
-        w  = 0,     -- width
-        h  = 0,     -- height
-        d  = 0,     -- depth
-        p  = 0,     -- page
-        n  = 0,     -- paragraph
-        ls = 0,     -- leftskip
-        rs = 0,     -- rightskip
-        hi = 0,     -- hangindent
-        ha = 0,     -- hangafter
-        hs = 0,     -- hsize
-        pi = 0,     -- parindent
-        ps = false, -- parshape
+        x   = 0,     -- x position baseline
+        y   = 0,     -- y position baseline
+        w   = 0,     -- width
+        h   = 0,     -- height
+        d   = 0,     -- depth
+        p   = 0,     -- page
+        n   = 0,     -- paragraph
+        ls  = 0,     -- leftskip
+        rs  = 0,     -- rightskip
+        hi  = 0,     -- hangindent
+        ha  = 0,     -- hangafter
+        hs  = 0,     -- hsize
+        pi  = 0,     -- parindent
+        ps  = false, -- parshape
+        dir = 0,
     }
 }
 
@@ -209,20 +210,20 @@ local getpos  = function() getpos  = backends.codeinjections.getpos  return getp
 local gethpos = function() gethpos = backends.codeinjections.gethpos return gethpos() end
 local getvpos = function() getvpos = backends.codeinjections.getvpos return getvpos() end
 
-local function setdim(name,w,h,d,extra) -- will be used when we move to sp allover
-    local x, y = getpos()
-    tobesaved[name] = {
-        p = texgetcount("realpageno"),
-        x = x ~= 0 and x or nil,
-        y = y ~= 0 and y or nil,
-        w = w ~= 0 and w or nil,
-        h = h ~= 0 and h or nil,
-        d = d ~= 0 and d or nil,
-        e = extra ~= "" and extra or nil,
-        r = region,
-        c = column,
-    }
-end
+-- local function setdim(name,w,h,d,extra) -- not used
+--     local x, y = getpos()
+--     tobesaved[name] = {
+--         p = texgetcount("realpageno"),
+--         x = x ~= 0 and x or nil,
+--         y = y ~= 0 and y or nil,
+--         w = w ~= 0 and w or nil,
+--         h = h ~= 0 and h or nil,
+--         d = d ~= 0 and d or nil,
+--         e = extra ~= "" and extra or nil,
+--         r = region,
+--         c = column,
+--     }
+-- end
 
 local function setall(name,p,x,y,w,h,d,extra)
     tobesaved[name] = {
@@ -235,6 +236,7 @@ local function setall(name,p,x,y,w,h,d,extra)
         e = extra ~= "" and extra or nil,
         r = region,
         c = column,
+r2l = texgetcount("inlinelefttoright") == 1 and true or nil,
     }
 end
 
@@ -310,7 +312,7 @@ local function get(id,index)
     end
 end
 
-jobpositions.setdim = setdim
+------------.setdim = setdim
 jobpositions.setall = setall
 jobpositions.set    = set
 jobpositions.get    = get
@@ -538,6 +540,7 @@ scanners.dosetposition = function() -- name
         x = true,
         y = true,
         n = nofparagraphs > 0 and nofparagraphs or nil,
+r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
  -- context(new_latelua_node(f_enhance(name)))
     context(new_latelua_node(function() enhance(tobesaved[name]) end))
@@ -558,6 +561,7 @@ scanners.dosetpositionwhd = function() -- name w h d extra
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
+r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
  -- context(new_latelua_node(f_enhance(name)))
     context(new_latelua_node(function() enhance(tobesaved[name]) end))
@@ -579,6 +583,7 @@ scanners.dosetpositionbox = function() -- name box
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
+r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
  -- context(new_latelua_node(f_enhance(name)))
     context(new_latelua_node(function() enhance(tobesaved[name]) end))
@@ -600,6 +605,7 @@ scanners.dosetpositionplus = function() -- name w h d extra
         d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
         e = scanstring(),
+r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
  -- context(new_latelua_node(f_enhance(name)))
     context(new_latelua_node(function() enhance(tobesaved[name]) end))
@@ -619,6 +625,7 @@ scanners.dosetpositionstrut = function() -- name
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
+r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
  -- context(new_latelua_node(f_enhance(name)))
     context(new_latelua_node(function() enhance(tobesaved[name]) end))

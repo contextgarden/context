@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['lpdf-fmt'] = {
 -- context --directives="backend.format=PDF/X-1a:2001" --trackers=backend.format yourfile
 
 local lower, gmatch, format, find = string.lower, string.gmatch, string.format, string.find
-local concat, serialize = table.concat, table.serialize
+local concat, serialize, sortedhash = table.concat, table.serialize, table.sortedhash
 
 local trace_format    = false  trackers.register("backend.format",    function(v) trace_format    = v end)
 local trace_variables = false  trackers.register("backend.variables", function(v) trace_variables = v end)
@@ -85,7 +85,7 @@ local formatspecification, formatname = nil, nil
 -- * correspondent document wide flags (write once) needed for permission tests
 
 local formats = utilities.storage.allocate {
-    ["version"] = {
+    version = {
         external_icc_profiles   = 1.4, -- 'p' in name; URL reference of output intent
         jbig2_compression       = 1.4,
         jpeg2000_compression    = 1.5, -- not supported yet
@@ -95,7 +95,7 @@ local formats = utilities.storage.allocate {
         transparency            = 1.4,
         object_compression      = 1.5,
     },
-    ["default"] = {
+    default = {
         pdf_version             = 1.7,  -- todo: block tex primitive
         format_name             = "default",
         xmp_file                = "lpdf-pdx.xml",
@@ -118,294 +118,296 @@ local formats = utilities.storage.allocate {
             -- nothing
         end
     },
-    ["pdf/x-1a:2001"] = {
-        pdf_version             = 1.3,
-        format_name             = "PDF/X-1a:2001",
-        xmp_file                = "lpdf-pdx.xml",
-        gts_flag                = "GTS_PDFX",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        spot_colors             = true,
-        internal_icc_profiles   = true,
-        inject_metadata         = function()
-            addtoinfo("GTS_PDFXVersion","PDF/X-1a:2001")
-            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-1a:2001</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
-        end
-    },
-    ["pdf/x-1a:2003"] = {
-        pdf_version             = 1.4,
-        format_name             = "PDF/X-1a:2003",
-        xmp_file                = "lpdf-pdx.xml",
-        gts_flag                = "GTS_PDFX",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        spot_colors             = true,
-        internal_icc_profiles   = true,
-        inject_metadata         = function()
-            addtoinfo("GTS_PDFXVersion","PDF/X-1a:2003")
-            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-1a:2003</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
-        end
-    },
-    ["pdf/x-3:2002"] = {
-        pdf_version             = 1.3,
-        format_name             = "PDF/X-3:2002",
-        xmp_file                = "lpdf-pdx.xml",
-        gts_flag                = "GTS_PDFX",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        calibrated_rgb_colors   = true,
-        spot_colors             = true,
-        cielab_colors           = true,
-        internal_icc_profiles   = true,
-        include_intents         = true,
-        inject_metadata         = function()
-            addtoinfo("GTS_PDFXVersion","PDF/X-3:2002")
-        end
-    },
-    ["pdf/x-3:2003"] = {
-        pdf_version             = 1.4,
-        format_name             = "PDF/X-3:2003",
-        xmp_file                = "lpdf-pdx.xml",
-        gts_flag                = "GTS_PDFX",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        calibrated_rgb_colors   = true,
-        spot_colors             = true,
-        cielab_colors           = true,
-        internal_icc_profiles   = true,
-        include_intents         = true,
-        jbig2_compression       = true,
-        inject_metadata         = function()
-            addtoinfo("GTS_PDFXVersion","PDF/X-3:2003")
-        end
-    },
-    ["pdf/x-4"] = {
-        pdf_version             = 1.6,
-        format_name             = "PDF/X-4",
-        xmp_file                = "lpdf-pdx.xml",
-        gts_flag                = "GTS_PDFX",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        calibrated_rgb_colors   = true,
-        spot_colors             = true,
-        cielab_colors           = true,
-        internal_icc_profiles   = true,
-        include_intents         = true,
-        optional_content        = true,
-        transparency            = true,
-        jbig2_compression       = true,
-        jpeg2000_compression    = true,
-        object_compression      = true,
-        inject_metadata         = function()
-            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
-            insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
-            insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:RenditionClass>default</xmpMM:RenditionClass>",false)
-        end
-    },
-    ["pdf/x-4p"] = {
-        pdf_version             = 1.6,
-        format_name             = "PDF/X-4p",
-        xmp_file                = "lpdf-pdx.xml",
-        gts_flag                = "GTS_PDFX",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        calibrated_rgb_colors   = true,
-        spot_colors             = true,
-        cielab_colors           = true,
-        internal_icc_profiles   = true,
-        external_icc_profiles   = true,
-        include_intents         = true,
-        optional_content        = true,
-        transparency            = true,
-        jbig2_compression       = true,
-        jpeg2000_compression    = true,
-        object_compression      = true,
-        inject_metadata         = function()
-            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4p</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
-            insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
-            insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:RenditionClass>default</xmpMM:RenditionClass>",false)
-        end
-    },
-    ["pdf/x-5g"] = {
-        pdf_version             = 1.6,
-        format_name             = "PDF/X-5g",
-        xmp_file                = "lpdf-pdx.xml",
-        gts_flag                = "GTS_PDFX",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        calibrated_rgb_colors   = true,
-        spot_colors             = true,
-        cielab_colors           = true,
-        internal_icc_profiles   = true,
-        include_intents         = true,
-        open_prepress_interface = true,
-        optional_content        = true,
-        transparency            = true,
-        jbig2_compression       = true,
-        jpeg2000_compression    = true,
-        object_compression      = true,
-        inject_metadata         = function()
-            -- todo
-        end
-    },
-    ["pdf/x-5pg"] = {
-        pdf_version             = 1.6,
-        format_name             = "PDF/X-5pg",
-        xmp_file                = "lpdf-pdx.xml",
-        gts_flag                = "GTS_PDFX",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        calibrated_rgb_colors   = true,
-        spot_colors             = true,
-        cielab_colors           = true,
-        internal_icc_profiles   = true,
-        external_icc_profiles   = true,
-        include_intents         = true,
-        open_prepress_interface = true,
-        optional_content        = true,
-        transparency            = true,
-        jbig2_compression       = true,
-        jpeg2000_compression    = true,
-        object_compression      = true,
-        inject_metadata         = function()
-            -- todo
-        end
-    },
-    ["pdf/x-5n"] = {
-        pdf_version             = 1.6,
-        format_name             = "PDF/X-5n",
-        xmp_file                = "lpdf-pdx.xml",
-        gts_flag                = "GTS_PDFX",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        calibrated_rgb_colors   = true,
-        spot_colors             = true,
-        cielab_colors           = true,
-        internal_icc_profiles   = true,
-        include_intents         = true,
-        optional_content        = true,
-        transparency            = true,
-        jbig2_compression       = true,
-        jpeg2000_compression    = true,
-        nchannel_colorspace     = true,
-        object_compression      = true,
-        inject_metadata         = function()
-            -- todo
-        end
-    },
-    ["pdf/a-1a:2005"] = {
-        pdf_version             = 1.4,
-        format_name             = "pdf/a-1a:2005",
-        xmp_file                = "lpdf-pda.xml",
-        gts_flag                = "GTS_PDFA1",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        spot_colors             = true,
-        calibrated_rgb_colors   = true, -- unknown
-        cielab_colors           = true, -- unknown
-        include_intents         = true,
-        forms                   = true, -- NEW; forms are allowed (with limitations); no JS,  other restrictions are unknown (TODO)
-        tagging                 = true, -- NEW; the only difference to PDF/A-1b
-        internal_icc_profiles   = true,
-        inject_metadata         = function()
-            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
-        end
-    },
-    ["pdf/a-1b:2005"] = {
-        pdf_version             = 1.4,
-        format_name             = "pdf/a-1b:2005",
-        xmp_file                = "lpdf-pda.xml",
-        gts_flag                = "GTS_PDFA1",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        spot_colors             = true,
-        calibrated_rgb_colors   = true, -- unknown
-        cielab_colors           = true, -- unknown
-        include_intents         = true,
-        forms                   = true,
-        internal_icc_profiles   = true,
-        inject_metadata         = function()
-            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
-        end
-    },
-    ["pdf/a-2a"] = { -- untested; only PDF/A Attachments are allowed
-        pdf_version             = 1.7,
-        format_name             = "pdf/a-2a",
-        xmp_file                = "lpdf-pda.xml",
-        gts_flag                = "GTS_PDFA2",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        spot_colors             = true,
-        calibrated_rgb_colors   = true, -- unknown
-        cielab_colors           = true, -- unknown
-        include_intents         = true,
-        forms                   = true,
-        tagging                 = true,
-        internal_icc_profiles   = true,
-        transparency            = true, -- NEW
-        jbig2_compression       = true,
-        jpeg2000_compression    = true, -- NEW
-        object_compression      = true,
-        inject_metadata         = function()
-            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
-        end
-    },
-    ["pdf/a-3a"] = { -- untested; NEW: any type of attachment is allowed
-        pdf_version             = 1.7,
-        format_name             = "pdf/a-3a",
-        xmp_file                = "lpdf-pda.xml",
-        gts_flag                = "GTS_PDFA3",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        spot_colors             = true,
-        calibrated_rgb_colors   = true, -- unknown
-        cielab_colors           = true, -- unknown
-        include_intents         = true,
-        forms                   = true,
-        tagging                 = true,
-        internal_icc_profiles   = true,
-        transparency            = true,
-        jbig2_compression       = true,
-        jpeg2000_compression    = true,
-        object_compression      = true,
-        inject_metadata         = function()
-            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
-        end
-    },
-    ["pdf/ua-1"] = { -- based on PDF/A-3a, but no 'gts_flag'
-        pdf_version             = 1.7,
-        format_name             = "pdf/ua-1",
-        xmp_file                = "lpdf-pua.xml",
-        gray_scale              = true,
-        cmyk_colors             = true,
-        rgb_colors              = true,
-        spot_colors             = true,
-        calibrated_rgb_colors   = true, -- unknown
-        cielab_colors           = true, -- unknown
-        include_intents         = true,
-        forms                   = true,
-        tagging                 = true,
-        internal_icc_profiles   = true,
-        transparency            = true,
-        jbig2_compression       = true,
-        jpeg2000_compression    = true,
-        object_compression      = true,
-        inject_metadata         = function()
-            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
-            injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfuaid='http://www.aiim.org/pdfua/ns/id/'><pdfuaid:part>1</pdfuaid:part></rdf:Description>",false)
-        end
-    },
+    data = {
+        ["pdf/x-1a:2001"] = {
+            pdf_version             = 1.3,
+            format_name             = "PDF/X-1a:2001",
+            xmp_file                = "lpdf-pdx.xml",
+            gts_flag                = "GTS_PDFX",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            spot_colors             = true,
+            internal_icc_profiles   = true,
+            inject_metadata         = function()
+                addtoinfo("GTS_PDFXVersion","PDF/X-1a:2001")
+                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-1a:2001</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
+            end
+        },
+        ["pdf/x-1a:2003"] = {
+            pdf_version             = 1.4,
+            format_name             = "PDF/X-1a:2003",
+            xmp_file                = "lpdf-pdx.xml",
+            gts_flag                = "GTS_PDFX",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            spot_colors             = true,
+            internal_icc_profiles   = true,
+            inject_metadata         = function()
+                addtoinfo("GTS_PDFXVersion","PDF/X-1a:2003")
+                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-1a:2003</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
+            end
+        },
+        ["pdf/x-3:2002"] = {
+            pdf_version             = 1.3,
+            format_name             = "PDF/X-3:2002",
+            xmp_file                = "lpdf-pdx.xml",
+            gts_flag                = "GTS_PDFX",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            calibrated_rgb_colors   = true,
+            spot_colors             = true,
+            cielab_colors           = true,
+            internal_icc_profiles   = true,
+            include_intents         = true,
+            inject_metadata         = function()
+                addtoinfo("GTS_PDFXVersion","PDF/X-3:2002")
+            end
+        },
+        ["pdf/x-3:2003"] = {
+            pdf_version             = 1.4,
+            format_name             = "PDF/X-3:2003",
+            xmp_file                = "lpdf-pdx.xml",
+            gts_flag                = "GTS_PDFX",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            calibrated_rgb_colors   = true,
+            spot_colors             = true,
+            cielab_colors           = true,
+            internal_icc_profiles   = true,
+            include_intents         = true,
+            jbig2_compression       = true,
+            inject_metadata         = function()
+                addtoinfo("GTS_PDFXVersion","PDF/X-3:2003")
+            end
+        },
+        ["pdf/x-4"] = {
+            pdf_version             = 1.6,
+            format_name             = "PDF/X-4",
+            xmp_file                = "lpdf-pdx.xml",
+            gts_flag                = "GTS_PDFX",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            calibrated_rgb_colors   = true,
+            spot_colors             = true,
+            cielab_colors           = true,
+            internal_icc_profiles   = true,
+            include_intents         = true,
+            optional_content        = true,
+            transparency            = true,
+            jbig2_compression       = true,
+            jpeg2000_compression    = true,
+            object_compression      = true,
+            inject_metadata         = function()
+                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
+                insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
+                insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:RenditionClass>default</xmpMM:RenditionClass>",false)
+            end
+        },
+        ["pdf/x-4p"] = {
+            pdf_version             = 1.6,
+            format_name             = "PDF/X-4p",
+            xmp_file                = "lpdf-pdx.xml",
+            gts_flag                = "GTS_PDFX",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            calibrated_rgb_colors   = true,
+            spot_colors             = true,
+            cielab_colors           = true,
+            internal_icc_profiles   = true,
+            external_icc_profiles   = true,
+            include_intents         = true,
+            optional_content        = true,
+            transparency            = true,
+            jbig2_compression       = true,
+            jpeg2000_compression    = true,
+            object_compression      = true,
+            inject_metadata         = function()
+                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4p</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
+                insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
+                insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:RenditionClass>default</xmpMM:RenditionClass>",false)
+            end
+        },
+        ["pdf/x-5g"] = {
+            pdf_version             = 1.6,
+            format_name             = "PDF/X-5g",
+            xmp_file                = "lpdf-pdx.xml",
+            gts_flag                = "GTS_PDFX",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            calibrated_rgb_colors   = true,
+            spot_colors             = true,
+            cielab_colors           = true,
+            internal_icc_profiles   = true,
+            include_intents         = true,
+            open_prepress_interface = true,
+            optional_content        = true,
+            transparency            = true,
+            jbig2_compression       = true,
+            jpeg2000_compression    = true,
+            object_compression      = true,
+            inject_metadata         = function()
+                -- todo
+            end
+        },
+        ["pdf/x-5pg"] = {
+            pdf_version             = 1.6,
+            format_name             = "PDF/X-5pg",
+            xmp_file                = "lpdf-pdx.xml",
+            gts_flag                = "GTS_PDFX",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            calibrated_rgb_colors   = true,
+            spot_colors             = true,
+            cielab_colors           = true,
+            internal_icc_profiles   = true,
+            external_icc_profiles   = true,
+            include_intents         = true,
+            open_prepress_interface = true,
+            optional_content        = true,
+            transparency            = true,
+            jbig2_compression       = true,
+            jpeg2000_compression    = true,
+            object_compression      = true,
+            inject_metadata         = function()
+                -- todo
+            end
+        },
+        ["pdf/x-5n"] = {
+            pdf_version             = 1.6,
+            format_name             = "PDF/X-5n",
+            xmp_file                = "lpdf-pdx.xml",
+            gts_flag                = "GTS_PDFX",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            calibrated_rgb_colors   = true,
+            spot_colors             = true,
+            cielab_colors           = true,
+            internal_icc_profiles   = true,
+            include_intents         = true,
+            optional_content        = true,
+            transparency            = true,
+            jbig2_compression       = true,
+            jpeg2000_compression    = true,
+            nchannel_colorspace     = true,
+            object_compression      = true,
+            inject_metadata         = function()
+                -- todo
+            end
+        },
+        ["pdf/a-1a:2005"] = {
+            pdf_version             = 1.4,
+            format_name             = "pdf/a-1a:2005",
+            xmp_file                = "lpdf-pda.xml",
+            gts_flag                = "GTS_PDFA1",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            spot_colors             = true,
+            calibrated_rgb_colors   = true, -- unknown
+            cielab_colors           = true, -- unknown
+            include_intents         = true,
+            forms                   = true, -- NEW; forms are allowed (with limitations); no JS,  other restrictions are unknown (TODO)
+            tagging                 = true, -- NEW; the only difference to PDF/A-1b
+            internal_icc_profiles   = true,
+            inject_metadata         = function()
+                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
+            end
+        },
+        ["pdf/a-1b:2005"] = {
+            pdf_version             = 1.4,
+            format_name             = "pdf/a-1b:2005",
+            xmp_file                = "lpdf-pda.xml",
+            gts_flag                = "GTS_PDFA1",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            spot_colors             = true,
+            calibrated_rgb_colors   = true, -- unknown
+            cielab_colors           = true, -- unknown
+            include_intents         = true,
+            forms                   = true,
+            internal_icc_profiles   = true,
+            inject_metadata         = function()
+                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
+            end
+        },
+        ["pdf/a-2a"] = { -- untested; only PDF/A Attachments are allowed
+            pdf_version             = 1.7,
+            format_name             = "pdf/a-2a",
+            xmp_file                = "lpdf-pda.xml",
+            gts_flag                = "GTS_PDFA2",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            spot_colors             = true,
+            calibrated_rgb_colors   = true, -- unknown
+            cielab_colors           = true, -- unknown
+            include_intents         = true,
+            forms                   = true,
+            tagging                 = true,
+            internal_icc_profiles   = true,
+            transparency            = true, -- NEW
+            jbig2_compression       = true,
+            jpeg2000_compression    = true, -- NEW
+            object_compression      = true,
+            inject_metadata         = function()
+                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
+            end
+        },
+        ["pdf/a-3a"] = { -- untested; NEW: any type of attachment is allowed
+            pdf_version             = 1.7,
+            format_name             = "pdf/a-3a",
+            xmp_file                = "lpdf-pda.xml",
+            gts_flag                = "GTS_PDFA3",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            spot_colors             = true,
+            calibrated_rgb_colors   = true, -- unknown
+            cielab_colors           = true, -- unknown
+            include_intents         = true,
+            forms                   = true,
+            tagging                 = true,
+            internal_icc_profiles   = true,
+            transparency            = true,
+            jbig2_compression       = true,
+            jpeg2000_compression    = true,
+            object_compression      = true,
+            inject_metadata         = function()
+                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
+            end
+        },
+        ["pdf/ua-1"] = { -- based on PDF/A-3a, but no 'gts_flag'
+            pdf_version             = 1.7,
+            format_name             = "pdf/ua-1",
+            xmp_file                = "lpdf-pua.xml",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            spot_colors             = true,
+            calibrated_rgb_colors   = true, -- unknown
+            cielab_colors           = true, -- unknown
+            include_intents         = true,
+            forms                   = true,
+            tagging                 = true,
+            internal_icc_profiles   = true,
+            transparency            = true,
+            jbig2_compression       = true,
+            jpeg2000_compression    = true,
+            object_compression      = true,
+            inject_metadata         = function()
+                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
+                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfuaid='http://www.aiim.org/pdfua/ns/id/'><pdfuaid:part>1</pdfuaid:part></rdf:Description>",false)
+            end
+        },
+    }
 }
 
 lpdf.formats = formats -- it does not hurt to have this one visible
@@ -701,7 +703,7 @@ function codeinjections.setformat(s)
     local option   = s.option or ""
     local filename = s.file or ""
     if format ~= "" then
-        local spec = formats[lower(format)]
+        local spec = formats.data[lower(format)]
         if spec then
             formatspecification = spec
             formatname = spec.format_name
@@ -769,7 +771,7 @@ function codeinjections.setformat(s)
             handleiccprofile("color profile",spec,profile,filename,handledefaultprofile,options,true)
             handleiccprofile("output intent",spec,intent,filename,handleoutputintent,options,false)
             if trace_variables then
-                for k, v in table.sortedhash(formats.default) do
+                for k, v in sortedhash(formats.default) do
                     local v = formatspecification[k]
                     if type(v) ~= "function" then
                         report_backend("%a = %a",k,v or false)
@@ -813,30 +815,28 @@ end
 
 function codeinjections.supportedformats()
     local t = { }
-    for k, v in table.sortedhash(formats) do
-        if find(k,"pdf",1,true) then
-            t[#t+1] = k
-        end
+    for k, v in sortedhash(formats.data) do
+        t[#t+1] = k
     end
     return t
 end
 
---~ The following is somewhat cleaner but then we need to flag that there are
---~ color spaces set so that the page flusher does not optimize the (at that
---~ moment) still empty array away. So, next(d_colorspaces) should then become
---~ a different test, i.e. also on flag. I'll add that when we need more forward
---~ referencing.
---~
---~ local function embedprofile = handledefaultprofile
---~
---~ local function flushembeddedprofiles()
---~     for colorspace, filename in next, defaults do
---~         embedprofile(colorspace,filename)
---~     end
---~ end
---~
---~ local function handledefaultprofile(s)
---~     defaults[lower(s.colorspace)] = s.filename
---~ end
---~
---~ lpdf.registerdocumentfinalizer(flushembeddedprofiles,1,"embedded color profiles")
+-- The following is somewhat cleaner but then we need to flag that there are
+-- color spaces set so that the page flusher does not optimize the (at that
+-- moment) still empty array away. So, next(d_colorspaces) should then become
+-- a different test, i.e. also on flag. I'll add that when we need more forward
+-- referencing.
+--
+-- local function embedprofile = handledefaultprofile
+--
+-- local function flushembeddedprofiles()
+--     for colorspace, filename in next, defaults do
+--         embedprofile(colorspace,filename)
+--     end
+-- end
+--
+-- local function handledefaultprofile(s)
+--     defaults[lower(s.colorspace)] = s.filename
+-- end
+--
+-- lpdf.registerdocumentfinalizer(flushembeddedprofiles,1,"embedded color profiles")

@@ -30,13 +30,14 @@ if not nodes.properties then return end
 
 local next, rawget = next, rawget
 local fastcopy = table.fastcopy
+local floor = math.floor
 
 local registertracker = trackers.register
 
 local trace_injections  = false  registertracker("fonts.injections",         function(v) trace_injections = v end)
 local trace_marks       = false  registertracker("fonts.injections.marks",   function(v) trace_marks      = v end)
 local trace_cursive     = false  registertracker("fonts.injections.cursive", function(v) trace_cursive    = v end)
-local trace_spaces      = false  registertracker("otf.spaces",               function(v) trace_spaces  = v end)
+local trace_spaces      = false  registertracker("fonts.injections.spaces",  function(v) trace_spaces  = v end)
 
 -- use_advance is just an experiment: it makes copying glyphs (instead of new_glyph) dangerous
 
@@ -1448,7 +1449,7 @@ local function injectspaces(head)
         rightkerns = trig.right
         local par  = fontdata[font].parameters -- fallback for generic
         factor     = par.factor
-        threshold  = par.spacing.width - 1 -- get rid of rounding errors
+        threshold  = floor(par.spacing.width - 2) -- get rid of rounding errors
         lastfont   = font
     end
 

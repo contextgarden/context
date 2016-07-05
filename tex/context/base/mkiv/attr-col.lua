@@ -12,8 +12,7 @@ if not modules then modules = { } end modules ['attr-col'] = {
 -- list could as well refer to the tables (instead of numbers that
 -- index into another table) .. depends on what we need
 
-local type = type
-local format = string.format
+local type, tonumber = type, tonumber
 local concat = table.concat
 local min, max, floor = math.min, math.max, math.floor
 
@@ -25,6 +24,14 @@ local backends              = backends
 local storage               = storage
 local context               = context
 local tex                   = tex
+
+local variables             = interfaces.variables
+local v_yes                 = variables.yes
+local v_no                  = variables.no
+
+local p_split_comma         = lpeg.tsplitat(",")
+local p_split_colon         = lpeg.splitat(":")
+local lpegmatch             = lpeg.match
 
 local allocate              = utilities.storage.allocate
 local setmetatableindex     = table.setmetatableindex
@@ -145,27 +152,20 @@ end
 local function rgbtogray(r,g,b)
     if not r then
         return 0
-    elseif colors.weightgray then
+    end
+    local w = colors.weightgray
+    if w == true then
         return .30*r + .59*g + .11*b
-    else
+    elseif not w then
         return r/3 + g/3 + b/3
+    else
+        return w[1]*r + w[2]*g + w[3]*b
     end
 end
 
 local function cmyktogray(c,m,y,k)
     return rgbtogray(cmyktorgb(c,m,y,k))
 end
-
--- not critical so not needed:
---
--- local function cmyktogray(c,m,y,k)
---     local r, g, b = 1.0 - min(1.0,c+k), 1.0 - min(1.0,m+k), 1.0 - min(1.0,y+k)
---     if colors.weightgray then
---         return .30*r + .59*g + .11*b
---     else
---         return r/3 + g/3 + b/3
---     end
--- end
 
 -- http://en.wikipedia.org/wiki/HSI_color_space
 -- http://nl.wikipedia.org/wiki/HSV_(kleurruimte)
@@ -264,9 +264,6 @@ end
 --~     return { 5, .5, .5, .5, .5, 0, 0, 0, .5, parent, f, d, p }
 --~ end
 
-local p_split   = lpeg.tsplitat(",")
-local lpegmatch = lpeg.match
-
 function colors.spot(parent,f,d,p)
  -- inspect(parent) inspect(f) inspect(d) inspect(p)
     if type(p) == "number" then
@@ -283,8 +280,8 @@ function colors.spot(parent,f,d,p)
         end
     else
         -- todo, multitone (maybe p should be a table)
-        local ps = lpegmatch(p_split,p)
-        local ds = lpegmatch(p_split,d)
+        local ps = lpegmatch(p_split_comma,p)
+        local ds = lpegmatch(p_split_comma,d)
         local c, m, y, k = 0, 0, 0, 0
         local done = false
         for i=1,#ps do
@@ -364,10 +361,31 @@ function colors.filter(n)
     return concat(data[n],":",5)
 end
 
+-- unweighted (flat) gray could be another model but a bit work as we need to check:
+--
+--   attr-col colo-ini colo-run
+--   grph-inc grph-wnd
+--   lpdf-col lpdf-fmt lpdf-fld lpdf-grp
+--   meta-pdf meta-pdh mlib-pps
+--
+-- but as we never needed it we happily delay that.
+
 function colors.setmodel(name,weightgray)
-    colors.model = name
-    colors.default = models[name] or 1
-    colors.weightgray = weightgray ~= false
+    if weightgray == true or weightgray == v_yes then
+        weightgray = true
+    elseif weightgray == false or weightgray == v_no then
+        weightgray = false
+    else
+        local r, g, b = lpegmatch(p_split_colon,weightgray)
+        if r and g and b then
+            weightgray = { r, g, b }
+        else
+            weightgray = true
+        end
+    end
+    colors.model      = name              -- global, not useful that way
+    colors.default    = models[name] or 1 -- global
+    colors.weightgray = weightgray        -- global
     return colors.default
 end
 

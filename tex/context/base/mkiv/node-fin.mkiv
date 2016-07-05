@@ -34,46 +34,47 @@
 
 \definesystemattribute[trigger][public]
 
-\newcount\attributeboxcount
+\newcount\c_syst_attr_trigger
 
 \edef\startinheritattributes{\attribute\triggerattribute\plusone}
 \edef\stopinheritattributes {\attribute\triggerattribute\attributeunsetvalue}
 
-\def\doattributedcopy{\afterassignment\dodoattributedcopy\attributeboxcount}
-\def\doattributedbox {\afterassignment\dodoattributedbox \attributeboxcount}
+\def\syst_attr_trigger_copy_yes{\afterassignment\syst_attr_trigger_copy_indeed\c_syst_attr_trigger}
+\def\syst_attr_trigger_dump_yes{\afterassignment\syst_attr_trigger_dump_indeed\c_syst_attr_trigger}
 
-\def\dodoattributedcopy
-  {\startinheritattributes
-   \ifvbox\attributeboxcount
-     \vpack{\unvcopy\attributeboxcount}%
+\def\syst_attr_trigger_copy_indeed
+  {\ifvbox\c_syst_attr_trigger
+     \vpack attr \triggerattribute \plusone {\unvcopy\c_syst_attr_trigger}%
    \else
-     \hpack{\unhcopy\attributeboxcount}%
-   \fi
-   \stopinheritattributes}
+     \hpack attr \triggerattribute \plusone {\unhcopy\c_syst_attr_trigger}%
+   \fi}
 
-\def\dodoattributedbox
-  {\startinheritattributes
-   \ifvbox\attributeboxcount
-     \vpack{\unvbox\attributeboxcount}%
+\def\syst_attr_trigger_dump_indeed
+  {\ifvbox\c_syst_attr_trigger
+     \vpack attr \triggerattribute \plusone {\unvbox\c_syst_attr_trigger}%
    \else
-     \hpack{\unhbox\attributeboxcount}%
-   \fi
-   \stopinheritattributes}
+     \hpack attr \triggerattribute \plusone {\unhbox\c_syst_attr_trigger}%
+   \fi}
 
-\def\enableattributeinheritance
+\unexpanded\def\enableattributeinheritance
   {\clf_enablestatetriggering
-   \let\attributedcopy\doattributedcopy
-   \let\attributedbox \doattributedbox}
+   \let\attributedcopy\syst_attr_trigger_copy_yes
+   \let\attributedbox \syst_attr_trigger_dump_yes}
 
-\def\disableattributeinheritance
+\unexpanded\def\disableattributeinheritance
   {\clf_disablestatetriggering
    \let\attributedcopy\copy
    \let\attributedbox \box}
 
 \disableattributeinheritance
 
+\installtexdirective
+  {attributes.inheritance}
+  {\enableattributeinheritance}
+  {\disableattributeinheritance}
+
 % \appendtoks
-%     \enableattributeinheritance % will become default
+%     \enableattributeinheritance % might become default
 % \to\everyjob
 
 \protect \endinput

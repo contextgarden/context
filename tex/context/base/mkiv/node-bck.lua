@@ -47,7 +47,7 @@ local new_glue          = nodepool.glue
 
 local a_color           = attributes.private('color')
 local a_transparency    = attributes.private('transparency')
-local a_colorspace      = attributes.private('colormodel')
+local a_colormodel      = attributes.private('colormodel')
 local a_background      = attributes.private('background')
 local a_alignbackground = attributes.private('alignbackground')
 
@@ -70,7 +70,7 @@ local function add_backgrounds(head) -- rather old code .. to be redone
                 if background then
                     -- direct to hbox
                     -- colorspace is already set so we can omit that and stick to color
-                    local mode = getattr(current,a_colorspace)
+                    local mode = getattr(current,a_colormodel)
                     if mode then
                         local height = getfield(current,"height")
                         local depth = getfield(current,"depth")
@@ -79,7 +79,7 @@ local function add_backgrounds(head) -- rather old code .. to be redone
                         local rule = new_rule(width,height,depth)
                         local color = getattr(current,a_color)
                         local transparency = getattr(current,a_transparency)
-                        setattr(rule,a_colorspace,mode)
+                        setattr(rule,a_colormodel,mode)
                         if color then
                             setattr(rule,a_color,color)
                         end
@@ -132,13 +132,13 @@ local function add_alignbackgrounds(head)
                     -- current has subtype 5 (cell)
                     local width = getfield(current,"width")
                     if width > 0 then
-                        local mode = getattr(found,a_colorspace)
+                        local mode = getattr(found,a_colormodel)
                         if mode then
                             local glue = new_glue(-width)
                             local rule = new_rule(width,getfield(current,"height"),getfield(current,"depth"))
                             local color = getattr(found,a_color)
                             local transparency = getattr(found,a_transparency)
-                            setattr(rule,a_colorspace,mode)
+                            setattr(rule,a_colormodel,mode)
                             if color then
                                 setattr(rule,a_color,color)
                             end

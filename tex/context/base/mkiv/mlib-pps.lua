@@ -61,6 +61,7 @@ local makempy              = metapost.makempy
 local nooutercolor         = "0 g 0 G"
 local nooutertransparency  = "/Tr0 gs" -- only when set
 local outercolormode       = 0
+local outercolormodel      = 1
 local outercolor           = nooutercolor
 local outertransparency    = nooutertransparency
 local innercolor           = nooutercolor
@@ -72,7 +73,8 @@ local pdftransparency      = lpdf.transparency
 function metapost.setoutercolor(mode,colormodel,colorattribute,transparencyattribute)
     -- has always to be called before conversion
     -- todo: transparency (not in the mood now)
-    outercolormode = mode
+    outercolormode  = mode
+    outercolormodel = colormodel
     if mode == 1 or mode == 3 then
         -- inherit from outer (registered color)
         outercolor        = pdfcolor(colormodel,colorattribute)    or nooutercolor
@@ -446,6 +448,11 @@ function models.gray(cr)
     return checked_color_pair(f_gray,s,s)
 end
 
+models[1] = models.all
+models[2] = models.gray
+models[3] = models.rgb
+models[4] = models.cmyk
+
 setmetatableindex(models, function(t,k)
     local v = models.gray
     t[k] = v
@@ -453,7 +460,8 @@ setmetatableindex(models, function(t,k)
 end)
 
 local function colorconverter(cs)
-    return models[colors.model](cs)
+ -- return models[colors.model](cs)
+    return models[outercolormodel](cs)
 end
 
 local btex      = P("btex")
@@ -868,6 +876,9 @@ end
 
 function metapost.resetplugins(t) -- intialize plugins, before figure
     if top.plugmode then
+
+        outercolormodel = colors.currentmodel() -- currently overloads the one set at the tex end
+
         -- plugins can have been added
         resetter  = resetteractions.runner
         analyzer  = analyzeractions.runner

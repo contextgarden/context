@@ -59,10 +59,11 @@
 \newconditional\c_colo_rgb_supported
 \newconditional\c_colo_cmyk_supported
 \newconditional\c_colo_spot_supported   % backend driven
-\newconditional\c_colo_weight_gray      \settrue\c_colo_weight_gray
 \newconditional\c_colo_convert_gray     \settrue\c_colo_convert_gray
 \newconditional\c_colo_enabled
 \newconditional\c_colo_expanded
+
+\let\m_colo_weight_gray\v!yes
 
 \let\currentcolormodel \empty
 \let\currentcolorname  \empty
@@ -219,7 +220,6 @@
 % \newtoks\everysetupcolors
 
 \let\v_colo_freeze_state\s!false
-\let\v_colo_weight_state\s!false
 
 \setvalue{\??colorconversions\v!yes}%
   {\settrue \c_colo_convert_gray}
@@ -233,16 +233,11 @@
    %
    \doifelse{\directcolorsparameter\c!spot     }\v!yes  \settrue \setfalse\c_colo_spot_supported
    \doifelse{\directcolorsparameter\c!expansion}\v!yes  \settrue \setfalse\c_colo_expanded
-   \doifelse{\directcolorsparameter\c!factor   }\v!no   \setfalse\settrue \c_colo_weight_gray
    \doifelse{\directcolorsparameter\c!rgb      }\v!yes  \settrue \setfalse\c_colo_rgb_supported
    \doifelse{\directcolorsparameter\c!cmyk     }\v!yes  \settrue \setfalse\c_colo_cmyk_supported
    \doifelse{\directcolorsparameter\c!state    }\v!start\settrue \setfalse\c_colo_enabled
    %
-   \ifconditional\c_colo_weight_gray
-     \let\v_colo_weight_state\s!true
-   \else
-     \let\v_colo_weight_state\s!false
-   \fi
+   \edef\m_colo_weight_gray{\directcolorsparameter\c!factor}%
    %
    \ifconditional\c_colo_expanded
      \let\v_colo_freeze_state\s!true
@@ -626,7 +621,7 @@
 
 \def\colo_helpers_set_model#1% direct
   {\edef\currentcolormodel{#1}%
-   \clf_setcolormodel{\currentcolormodel}\v_colo_weight_state\relax} % sets attribute at lua end
+   \clf_setcolormodel{\currentcolormodel}{\m_colo_weight_gray}} % sets attribute at lua end
 
 \colo_helpers_set_model\s!all
 

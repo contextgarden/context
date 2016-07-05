@@ -79,7 +79,7 @@ initials.actions        = actions
 local a_initial         = attributes.private("initial")
 local a_color           = attributes.private('color')
 local a_transparency    = attributes.private('transparency')
-local a_colorspace      = attributes.private('colormodel')
+local a_colormodel      = attributes.private('colormodel')
 
 local category          = characters.category
 
@@ -267,7 +267,7 @@ actions[v_default] = function(head,setting)
 
                     -- can be a helper
                     if ca and ca > 0 then
-                        setattr(current,a_colorspace,ma == 0 and 1 or ma)
+                        setattr(current,a_colormodel,ma == 0 and 1 or ma)
                         setattr(current,a_color,ca)
                     end
                     if ta and ta > 0 then

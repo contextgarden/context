@@ -315,6 +315,9 @@
 \def\documentvariable#name%
   {\getvariable\s!document{#name}}
 
+\unexpanded\def\unexpandeddocumentvariable#name%
+  {\getvariable\s!document{#name}}
+
 \unexpanded\def\setupdocument[#settings]%
   {\setvariables[\s!document][#settings]%
    \the\everysetupdocument\relax}

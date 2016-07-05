@@ -19,7 +19,7 @@ local getattribute   = tex.getattribute
 
 local a_color        = attributes.private('color')
 local a_transparency = attributes.private('transparency')
-local a_colorspace   = attributes.private('colormodel')
+local a_colormodel   = attributes.private('colormodel')
 
 local mpcolor        = attributes.colors.mpcolor
 
@@ -77,6 +77,8 @@ RuleOption := "%option%" ;
 RuleWidth := %width% ;
 RuleHeight := %height% ;
 RuleDepth := %depth% ;
+RuleH := %h% ;
+RuleV := %v% ;
 RuleThickness := %line% ;
 RuleFactor := %factor% ;
 RuleOffset := %offset% ;
@@ -100,6 +102,8 @@ def RuleColor = %color% enddef ;
             color           = mpcolor(p.ma,p.ca,p.ta),
             option          = p.option or "",
             direction       = p.direction or "TLT",
+            h               = h * bpfactor,
+            v               = v * bpfactor,
 
         }
         if not initialized then
@@ -169,7 +173,7 @@ interfaces.implement {
     } } ,
     actions = function(t)
         local r = userrule(t)
-        local ma = getattribute(a_colorspace) or 1
+        local ma = getattribute(a_colormodel) or 1
         local ca = getattribute(a_color)
         local ta = getattribute(a_transparency)
         if t.type == "mp" then
@@ -177,7 +181,7 @@ interfaces.implement {
             t.ca = ca
             t.ta = ta
         else
-            r[a_colorspace]   = ma
+            r[a_colormodel]   = ma
             r[a_color]        = ca
             r[a_transparency] = ta
         end
@@ -201,7 +205,7 @@ interfaces.implement {
             depth  = 0.25*factor,
             width  = floor(random(t.min,t.max)/10000) * 10000,
             line   = 0.10*factor,
-            ma     = getattribute(a_colorspace) or 1,
+            ma     = getattribute(a_colormodel) or 1,
             ca     = getattribute(a_color),
             ta     = getattribute(a_transparency),
             type   = "mp",

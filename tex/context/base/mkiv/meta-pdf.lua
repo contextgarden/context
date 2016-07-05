@@ -541,13 +541,13 @@ end
 
 -- main converter
 
-local a_colorspace = attributes.private('colormodel')
+local a_colormodel = attributes.private('colormodel')
 
 function mptopdf.convertmpstopdf(name)
     resetall()
     local ok, m_data, n = resolvers.loadbinfile(name, 'tex') -- we need a binary load !
     if ok then
-        mps.colormodel = texgetattribute(a_colorspace)
+        mps.colormodel = texgetattribute(a_colormodel)
         statistics.starttiming(mptopdf)
         mptopdf.nofconverted = mptopdf.nofconverted + 1
         pdfcode(formatters["\\letterpercent\\space mptopdf begin: n=%s, file=%s"](mptopdf.nofconverted,file.basename(name)))

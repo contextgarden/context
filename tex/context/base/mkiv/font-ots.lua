@@ -239,6 +239,7 @@ local cursonce           = true
 
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
+local fontfeatures       = fonthashes.features
 
 local otffeatures        = fonts.constructors.features.otf
 local registerotffeature = otffeatures.register
@@ -3596,12 +3597,29 @@ otf.handlers = handlers -- used in devanagari
 
 local setspacekerns = nodes.injections.setspacekerns if not setspacekerns then os.exit() end
 
-function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
- -- if not setspacekerns then
- --     setspacekerns = nodes.injections.setspacekerns
- -- end
-    setspacekerns(font,sequence)
-    return head, start, true
+if fontfeatures then
+
+    function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
+        local features = fontfeatures[font]
+        local enabled  = features.spacekern == true and features.kern == true
+        if enabled then
+            setspacekerns(font,sequence)
+        end
+        return head, start, enabled
+    end
+
+else -- generic (no hashes)
+
+    function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
+        local shared   = identifiers[font].shared
+        local features = shared and shared.features
+        local enabled  = features and features.spacekern == true and features.kern == true
+        if enabled then
+            setspacekerns(font,sequence)
+        end
+        return head, start, enabled
+    end
+
 end
 
 local function hasspacekerns(data)
@@ -3636,11 +3654,13 @@ otf.readers.registerextender {
     end
 }
 
+-- we merge the lookups but we still honor the language / script
+
 local function spaceinitializer(tfmdata,value) -- attr
     local resources  = tfmdata.resources
     local spacekerns = resources and resources.spacekerns
-    if spacekerns == nil then
-        local properties = tfmdata.properties
+    local properties = tfmdata.properties
+    if value and spacekerns == nil then
         if properties and properties.hasspacekerns then
             local sequences = resources.sequences
             local left  = { }
@@ -3653,7 +3673,20 @@ local function spaceinitializer(tfmdata,value) -- attr
                 if steps then
                     local kern = sequence.features.kern
                     if kern then
-                        feat = feat or kern -- or maybe merge
+                        if feat then
+                            for script, languages in next, kern do
+                                local f = feat[k]
+                                if f then
+                                    for l in next, languages do
+                                        f[l] = true
+                                    end
+                                else
+                                    feat[script] = languages
+                                end
+                            end
+                        else
+                            feat = kern
+                        end
                         for i=1,#steps do
                             local step = steps[i]
                             local coverage = step.coverage

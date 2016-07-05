@@ -316,17 +316,21 @@
    \dostarttagged\t!mathtablecell\empty}
 
 \def\math_left_of_equalign
-  {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
-     \ifcase\csname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname\or
-       \relax \or \hfill \or \hfill
-     \fi
+  {\edef\p_location{\formulaparameter\c!location}%
+   \ifx\p_location\v!left
+      \box\b_strc_formulas_number
+   \fi
+   \ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+     \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
    \fi}
 
 \def\math_right_of_eqalign
   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
-     \ifcase\csname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname\or
-       \hfill \or \relax \or \hfill
-     \fi
+     \ifcase\lastnamedcs \or \hfill \or \relax \or \hfill \fi
+   \fi
+   \edef\p_location{\formulaparameter\c!location}%
+   \ifx\p_location\v!left\else
+      \box\b_strc_formulas_number
    \fi}
 
 \def\math_eqalign_set_column#1% we could just add to the preamble (as with other alignments)

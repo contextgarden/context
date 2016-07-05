@@ -44,7 +44,7 @@ local texgettoks          = tex.gettoks
 
 local a_color             = attributes.private('color')
 local a_transparency      = attributes.private('transparency')
-local a_colorspace        = attributes.private('colormodel')
+local a_colormodel        = attributes.private('colormodel')
 
 local register_color      = colors.register
 local attributes_list     = attributes.list
@@ -64,6 +64,12 @@ colors.counts             = counts
 storage.register("attributes/colors/sets",   colorsets, "attributes.colors.sets")
 storage.register("attributes/colors/valid",  valid,     "attributes.colors.valid")
 storage.register("attributes/colors/counts", counts,    "attributes.colors.counts")
+
+local function currentmodel()
+    return texgetattribute(a_colormodel)
+end
+
+colors.currentmodel = currentmodel
 
 local function synccolor(name)
     valid[name] = true
@@ -223,11 +229,16 @@ local transparent = {
     luminosity = 16,
 }
 
-local gray_okay, rgb_okay, cmyk_okay, spot_okay, multichannel_okay, forced = true, true, true, true, true, false
+local gray_okay   = true
+local rgb_okay    = true
+local cmyk_okay   = true
+local spot_okay   = true
+local multi_okay  = true
+local forced      = false
 
-function colors.forcesupport(gray,rgb,cmyk,spot,multichannel) -- pdfx driven
-    gray_okay, rgb_okay, cmyk_okay, spot_okay, multichannel_okay, forced = gray, rgb, cmyk, spot, multichannel, true
-    report_colors("supported models: gray %a, rgb %a, cmyk %a, spot %a",gray,rgb,cmyk,spot) -- multichannel=%l multichannel
+function colors.forcesupport(gray,rgb,cmyk,spot,multi) -- pdfx driven
+    gray_okay, rgb_okay, cmyk_okay, spot_okay, multi_okay, forced = gray, rgb, cmyk, spot, multi, true
+    report_colors("supported models: gray %a, rgb %a, cmyk %a, spot %a",gray,rgb,cmyk,spot)
 end
 
 local function forcedmodel(model) -- delayed till the backend but mp directly
@@ -289,7 +300,7 @@ local function do_registerspotcolor(parent,parentnumber,e,f,d,p)
     if not registered[parent] then
         local v = colorvalues[parentnumber]
         if v then
-            local model = colors.default -- else problems with shading etc
+            local model = currentmodel()
             if model == 1 then
                 model = v[1]
             end
@@ -312,7 +323,7 @@ end
 --     if not registered[parent] then
 --         local v = colorvalues[parentnumber]
 --         if v then
---             local model = colors.default -- else problems with shading etc
+--             local model = currentmodel()
 --             if model == 1 then
 --                 model = v[1]
 --             end
@@ -610,74 +621,14 @@ local function mpcolor(model,ca,ta,default)
 end
 
 -- local function mpnamedcolor(name)
---     return mpcolor(texgetattribute(a_colorspace),l_color[name] or l_color.black,l_transparency[name] or false)
+--     return mpcolor(texgetattribute(a_colormodel),l_color[name] or l_color.black,l_transparency[name] or false)
 -- end
 
 local colornamespace  = getnamespace("colornumber")
 local paletnamespace  = getnamespace("colorpalet")
 
--- local function mpnamedcolor(name)
---     local prefix = texgettoks("t_colo_prefix")
---     local cn
---     if prefix ~= "" then
---         local v = valid[prefix..name]
---         if not v then
---             local n = paletnamespace .. prefix .. name
---             local p = valid[n]
---             if p == true then
---                 cn = colornamespace .. n
---             elseif p then
---                 cn = colornamespace .. p
---             else
---                 cn = colornamespace .. name
---             end
---         elseif v == true then
---             cn = colornamespace .. paletnamespace .. prefix .. name
---         else
---             cn = colornamespace .. v
---         end
---     elseif valid[name] then
---         cn = colornamespace .. name
---     else
---         return mpcolor(texgetattribute(a_colorspace),l_color.black)
---     end
---  -- return mpcolor(texgetattribute(a_colorspace),l_color[name] or l_color.black)
---     return mpcolor(texgetattribute(a_colorspace),texgetcount(cn),l_transparency[name])
--- end
-
--- local function mpnamedcolor(name)
---     local colorspace = texgetattribute(a_colorspace)
---     local prefix = texgettoks("t_colo_prefix")
---     local cn
---     if prefix ~= "" then
---         local v = valid[prefix..name]
---         if not v then
---             local n = paletnamespace .. prefix .. name
---             local p = valid[n]
---             if p == true then
---                 cn = n
---             elseif p then
---                 cn = p
---             else
---                 cn = name
---             end
---         elseif v == true then
---             cn = paletnamespace .. prefix .. name
---         else
---             cn = v
---         end
---     elseif valid[name] then
---         cn = name
---     else
---         return mpcolor(colorspace,l_color.black)
---     end
---     cn = counts[cn]
---     cn = cn and texgetcount(cn) or l_color[name] or l_color.black -- fall back to old method
---     return mpcolor(colorspace,cn,l_transparency[name])
--- end
-
-local function mpnamedcolor(name)
-    local space  = texgetattribute(a_colorspace)
+local function namedcolorattributes(name)
+    local space  = texgetattribute(a_colormodel)
     local prefix = texgettoks("t_colo_prefix")
     local color
     if prefix ~= "" then
@@ -696,7 +647,7 @@ local function mpnamedcolor(name)
     elseif valid[name] then
         color = name
     else
-        return mpcolor(space,l_color.black)
+        return space, l_color.black
     end
     color = counts[color]
     if color then
@@ -705,23 +656,32 @@ local function mpnamedcolor(name)
         color = l_color[name] -- fall back on old method
     end
     if color then
-        return mpcolor(space,color,l_transparency[name])
+        return space, color, l_transparency[name]
     else
-        return mpcolor(space,l_color.black)
+        return space, l_color.black
     end
 end
 
--- mp.NamedColor = function(str)
---     mpprint(mpnamedcolor(str))
--- end
+colors.namedcolorattributes = namedcolorattributes -- can be used local
 
-local function mpoptions(model,ca,ta,default) -- will move to mlib-col
+local function mpnamedcolor(name)
+    return mpcolor(namedcolorattributes(name))
+end
+
+local function mpoptions(model,ca,ta,default) -- will move to mlib-col .. not really needed
     return formatters["withcolor %s"](mpcolor(model,ca,ta,default))
 end
 
 colors.mpcolor      = mpcolor
 colors.mpnamedcolor = mpnamedcolor
 colors.mpoptions    = mpoptions
+
+-- elsewhere:
+--
+-- mp.NamedColor = function(str)
+--     mpprint(mpnamedcolor(str))
+-- end
+
 
 -- local function formatcolor(ca,separator)
 --     local cv = colorvalues[ca]
@@ -1014,9 +974,9 @@ implement {
 
 implement {
     name      = "setcolormodel",
-    arguments = { "string", "boolean" },
+    arguments = { "string", "string" },
     actions   = function(model,weight)
-        texsetattribute(a_colorspace,setcolormodel(model,weight))
+        texsetattribute(a_colormodel,setcolormodel(model,weight))
     end
 }
 
@@ -1144,7 +1104,7 @@ do
             if model and model ~= 0 then
                 model = model
             else
-                model = forcedmodel(texgetattribute(a_colorspace))
+                model = forcedmodel(texgetattribute(a_colormodel))
                 if model == 1 then
                     model = cv[1]
                 end

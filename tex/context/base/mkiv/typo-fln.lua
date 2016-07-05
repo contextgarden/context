@@ -70,7 +70,7 @@ firstlines.actions       = actions
 local a_firstline        = attributes.private('firstline')
 local a_color            = attributes.private('color')
 local a_transparency     = attributes.private('transparency')
-local a_colorspace       = attributes.private('colormodel')
+local a_colormodel       = attributes.private('colormodel')
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
@@ -209,7 +209,7 @@ actions[v_line] = function(head,setting)
         end
         setfield(start,"font",font)
         if ca and ca > 0 then
-            setattr(start,a_colorspace,ma == 0 and 1 or ma)
+            setattr(start,a_colormodel,ma == 0 and 1 or ma)
             setattr(start,a_color,ca)
         end
         if ta and ta > 0 then
@@ -302,7 +302,7 @@ actions[v_word] = function(head,setting)
                 ok = true
             end
             if ca and ca > 0 then
-                setattr(start,a_colorspace,ma == 0 and 1 or ma)
+                setattr(start,a_colormodel,ma == 0 and 1 or ma)
                 setattr(start,a_color,ca)
             end
             if ta and ta > 0 then

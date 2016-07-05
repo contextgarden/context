@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['good-ini'] = {
 
 local type, next = type, next
 local gmatch = string.gmatch
+local sortedhash, insert = table.sortedhash, table.insert
 
 local fonts              = fonts
 
@@ -41,6 +42,8 @@ local list               = fontgoodies.list or { }
 fontgoodies.list         = list -- no allocate as we want to see what is there
 
 fontgoodies.suffixes     = { "lfg", "lua" } -- lfg is context specific and should not be used elsewhere
+
+local contextsetups      = fonts.specifiers.contextsetups
 
 function fontgoodies.report(what,trace,goodies)
     if trace_goodies or trace then
@@ -80,11 +83,12 @@ local function loadgoodies(filename) -- maybe a merge is better
                 report_goodies("goodie file %a is loaded",fullname)
             end
             goodies.name = goodies.name or "no name"
-            for name, fnc in next, list do
+            for i=1,#list do
+                local g = list[i]
                 if trace_goodies then
-                    report_goodies("handling goodie %a",name)
+                    report_goodies("handling goodie %a",g[1])
                 end
-                fnc(goodies)
+                g[2](goodies)
             end
             goodies.initialized = true
             data[filename] = goodies
@@ -93,8 +97,20 @@ local function loadgoodies(filename) -- maybe a merge is better
     return goodies
 end
 
-function fontgoodies.register(name,fnc) -- will be a proper sequencer
-    list[name] = fnc
+function fontgoodies.register(name,fnc,prepend) -- will be a proper sequencer
+    for i=1,#list do
+        local g = list[i]
+        if g[1] == name then
+            g[2] = fnc --overload
+            return
+        end
+    end
+    local g = { name, fnc }
+    if prepend then
+        insert(list,g,prepend == true and 1 or prepend)
+    else
+        insert(list,g)
+    end
 end
 
 fontgoodies.load = loadgoodies
@@ -137,8 +153,20 @@ local function flattenedfeatures(t,tt)
     local tt = tt or { }
     for i=1,#t do
         local ti = t[i]
-        if type(ti) == "table" then
+        local ty = type(ti)
+        if ty == "table" then
             flattenedfeatures(ti,tt)
+        elseif ty == "string" then
+            local set = contextsetups[ti]
+            if set then
+                for k, v in next, set do
+                    if k ~= "number" then
+                        tt[k] = v or nil
+                    end
+                end
+            else
+                -- bad
+            end
         elseif tt[ti] == nil then
             tt[ti] = true
         end
@@ -214,9 +242,9 @@ function fontgoodies.registerpostprocessor(tfmdata,f,prepend)
     if not postprocessors then
         tfmdata.postprocessors = { f }
     elseif prepend then
-        table.insert(postprocessors,f,1)
+        insert(postprocessors,f,prepend == true and 1 or prepend)
     else
-        table.insert(postprocessors,f)
+        insert(postprocessors,f)
     end
 end
 
@@ -259,15 +287,32 @@ local function setextrafeatures(tfmdata)
             local g = goodies[i]
             local f = g.features
             if f then
-                for feature, specification in next, f do
-                    -- not needed but nicer:
-                    specification.name = specification.name or feature
-                    --
-                    addotffeature(tfmdata.shared.rawdata,feature,specification)
-                    registerotffeature {
-                        name        = feature,
-                        description = formatters["extra: %s"](feature)
-                    }
+                local rawdata = tfmdata.shared.rawdata
+                local done    = { }
+                -- indexed
+                for i=1,#f do
+                    local specification = f[i]
+                    local feature = specification.name
+                    if feature then
+                        addotffeature(rawdata,feature,specification)
+                        registerotffeature {
+                            name        = feature,
+                            description = formatters["extra: %s"](feature)
+                        }
+                    end
+                    done[i] = true
+                end
+                -- hashed
+                for feature, specification in sortedhash(f) do
+                    if not done[feature] then
+                        feature = specification.name or feature
+                        specification.name = feature
+                        addotffeature(rawdata,feature,specification)
+                        registerotffeature {
+                            name        = feature,
+                            description = formatters["extra: %s"](feature)
+                        }
+                    end
                 end
             end
         end

@@ -35,7 +35,8 @@ local f_pair    = formatters["(%p,%p)"]
 local f_path    = formatters["%--t--cycle"]
 
 local function regionarea(r)
-    local rx, ry = r.x, r.y
+    local rx = r.x
+    local ry = r.y
     local rw = rx + r.w
     local rh = ry + r.h
     local rd = ry - r.d
@@ -103,7 +104,8 @@ local function finish(t)
 end
 
 local function clip(t,ytop,ybot)
-    local first, last = 1, #t
+    local first = 1
+    local last  = #t
     for i=first,last do
         local y = t[i][2]
         if ytop < y then
@@ -125,15 +127,15 @@ end
 
 -- todo: mark regions and free paragraphs in collected
 
-local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang)
+local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang,r2l)
     -- we assume that we only hang per page and not cross pages
     -- which makes sense as hanging is only uses in special cases
     --
     -- we can remove data as soon as a page is done so we could
     -- remember per page and discard areas after each shipout
-    local leftshape, rightshape
-    leftshape  = { { rx, rh } } -- spikes get removed so we can start at the edge
-    rightshape = { { rw, rh } } -- even if we hang next
+    local delta      = r2l and (rw - rx) or 0
+    local leftshape  = { { rx + delta, rh } } -- spikes get removed so we can start at the edge
+    local rightshape = { { rw - delta, rh } } -- even if we hang next
     local paragraphs = r.paragraphs
     local extending = false
     if paragraphs then
@@ -151,16 +153,16 @@ local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang)
                 -- ha < 0 hi > 0 : left  top
                 if ha < 0 then
                     if hi < 0 then -- right
-                        add(rightshape,rw, py_ph,"up")
-                        add(rightshape,rw + hi,py_ph,"up")
-                        add(rightshape,rw + hi,py_ph + hang,"up")
-                        add(rightshape,rw, py_ph + hang,"up")
+                        add(rightshape,rw - delta, py_ph,"up")
+                        add(rightshape,rw - delta + hi,py_ph,"up")
+                        add(rightshape,rw - delta + hi,py_ph + hang,"up")
+                        add(rightshape,rw - delta, py_ph + hang,"up")
                     else
                         -- left
-                        add(leftshape,rx,py_ph,"down")
-                        add(leftshape,rx + hi,py_ph,"down")
-                        add(leftshape,rx + hi,py_ph + hang,"down")
-                        add(leftshape,rx,py_ph + hang,"down")
+                        add(leftshape,rx + delta,py_ph,"down")
+                        add(leftshape,rx + delta + hi,py_ph,"down")
+                        add(leftshape,rx + delta + hi,py_ph + hang,"down")
+                        add(leftshape,rx + delta,py_ph + hang,"down")
                     end
                 else
                     -- maybe some day
@@ -181,11 +183,11 @@ local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang)
                         local p = ps[i]
                         local l = p[1]
                         local w = p[2]
-                        add(leftshape,rx + l, py_ph,"up")
-                        add(rightshape,rx + l + w, py_ph,"down")
+                        add(leftshape, rx + delta + l, py_ph,"up")
+                        add(rightshape,rx - delta + l + w, py_ph,"down")
                         py_ph = py_ph - step
-                        add(leftshape,rx + l, py_ph,"up")
-                        add(rightshape,rx + l + w, py_ph,"down")
+                        add(leftshape, rx + delta + l, py_ph,"up")
+                        add(rightshape,rx - delta + l + w, py_ph,"down")
                     end
                     extending = true
                 elseif extending then
@@ -194,10 +196,10 @@ local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang)
                     local pd = p.d
                     local py_ph = py + ph
                     local py_pd = py - pd
-                    add(leftshape,leftshape[#leftshape][1],py_ph,"up")
+                    add(leftshape, leftshape [#leftshape ][1],py_ph,"up")
                     add(rightshape,rightshape[#rightshape][1],py_ph,"down")
-                    add(leftshape,rx,py_ph,"up")  -- shouldn't this be py_pd
-                    add(rightshape,rw,py_ph,"down") -- shouldn't this be py_pd
+                    add(leftshape, rx + delta,py_ph,"up")  -- shouldn't this be py_pd
+                    add(rightshape,rw - delta,py_ph,"down") -- shouldn't this be py_pd
                     extending = false
                 end
             end
@@ -206,11 +208,11 @@ local function shapes(r,rx,ry,rw,rh,rd,lytop,lybot,rytop,rybot,obeyhang)
     -- we can have a simple variant when no paragraphs
     if extending then
         -- not ok
-        leftshape[#leftshape][2] = rd
-        rightshape[#rightshape][2] = rw
+        leftshape [#leftshape] [2] = rd
+        rightshape[#rightshape][2] = rd
     else
-        add(leftshape,rx,rd,"up")
-        add(rightshape,rw,rd,"down")
+        add(leftshape, rx + delta,rd,"up")
+        add(rightshape,rw - delta,rd,"down")
     end
     return clip(leftshape,lytop,lybot), clip(rightshape,rytop,rybot)
 end
@@ -242,6 +244,14 @@ local function singlepart(b,e,r,left,right,obeyhang)
         -- (at least visually) injected then it's best to stress the issue.
         ex = rw
     end
+-- if b.r2l then
+--     print("BEGIN r2l")
+--     bx = b.w - bx
+-- end
+-- if e.r2l then
+--     print("END r2l")
+--     ex = e.w - ex
+-- end
     local area
     if by == ey then
         area = {
@@ -252,7 +262,7 @@ local function singlepart(b,e,r,left,right,obeyhang)
         }
     else
         area = { }
-        local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,bd,ed,bh,eh,obeyhang)
+        local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,bd,ed,bh,eh,obeyhang,b.r2l)
         add(area,bx,bh-ry)
         for i=1,#rightshapes do
             local ri = rightshapes[i]
@@ -292,7 +302,7 @@ local function firstpart(b,r,left,right,obeyhang)
     local bh = by + b.h
     local bd = by - b.d
     local area = { }
-    local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,bd,rd,bh,rd,obeyhang)
+    local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,bd,rd,bh,rd,obeyhang,b.r2l)
     add(area,bx,bh-ry)
     for i=1,#rightshapes do
         local ri = rightshapes[i]
@@ -317,7 +327,8 @@ local function firstpart(b,r,left,right,obeyhang)
 end
 
 local function middlepart(r,left,right,obeyhang)
-    local rx, ry = r.x, r.y
+    local rx = r.x
+    local ry = r.y
     local rw = rx + r.w
     local rh = ry + r.h
     local rd = ry - r.d
@@ -361,7 +372,7 @@ local function lastpart(e,r,left,right,obeyhang)
     local ed = ey - e.d
     local area = { }
     -- two cases: till end and halfway e line
-    local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,rh,ed,rh,eh,obeyhang)
+    local leftshapes, rightshapes = shapes(r,rx,ry,rw,rh,rd,rh,ed,rh,eh,obeyhang,e.r2l)
     for i=1,#rightshapes do
         local ri = rightshapes[i]
         add(area,ri[1],ri[2]-ry)

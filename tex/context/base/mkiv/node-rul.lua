@@ -102,7 +102,7 @@ local a_ruled            = attributes.private('ruled')
 local a_runningtext      = attributes.private('runningtext')
 local a_color            = attributes.private('color')
 local a_transparency     = attributes.private('transparency')
-local a_colorspace       = attributes.private('colormodel')
+local a_colormodel       = attributes.private('colormodel')
 
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
@@ -368,7 +368,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     local ma            = d.ma
     local ca            = d.ca
     local ta            = d.ta
-    local colorspace    = ma > 0 and ma or getattr(f,a_colorspace) or 1
+    local colorspace    = ma > 0 and ma or getattr(f,a_colormodel) or 1
     local color         = ca > 0 and ca or getattr(f,a_color)
     local transparency  = ta > 0 and ta or getattr(f,a_transparency)
     local foreground    = order == v_foreground
@@ -436,7 +436,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             local dp = -(offset+(i-1)*dy)*e + rulethickness + m
             local r = new_rule(w,ht,dp)
             if color then
-                setattr(r,a_colorspace,colorspace)
+                setattr(r,a_colormodel,colorspace)
                 setattr(r,a_color,color)
             end
             if transparency then

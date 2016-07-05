@@ -462,7 +462,7 @@
            \strc_formulas_handle_sub_numbering
          \fi
        \fi
-      \strc_formulas_reference_trace
+       \strc_formulas_reference_trace
      \egroup
    \fi}
 
@@ -1035,7 +1035,8 @@
 
 \unexpanded\def\strc_formulas_number_again[#1]%
   {\def\currentformulareference{#1}%
-   \strc_formulas_number_indeed}
+  %\glet\strc_formulas_place_number\relax
+   \strc_formulas_place_number_in_box}
 
 \unexpanded\def\placeformula
   {\global\settrue\c_strc_formulas_inside_place
@@ -1135,16 +1136,19 @@
    \ifcase\c_strc_formulas_nested_number_mode
      % nothing
    \or
-     \strc_formulas_number % hm, looks ahead for []
+     \expandafter\strc_formulas_number % hm, looks ahead for []
    \or
      % nothing
    \or
-     \strc_formulas_number % hm, looks ahead for []
+     \expandafter\strc_formulas_number % hm, looks ahead for []
    \fi}
 
 \def\strc_formulas_place_number_indeed
+  {\glet\strc_formulas_place_number\relax
+   \strc_formulas_place_number_in_box}
+
+\def\strc_formulas_place_number_in_box
   {\dostarttagged\t!formulacaption\empty
-   \glet\strc_formulas_place_number\relax
    \global\setbox\b_strc_formulas_number\hbox{\strc_formulas_number_indeed}%
    \dostoptagged}
 

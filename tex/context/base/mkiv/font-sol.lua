@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-sol'] = { -- this was: node
     license   = "see context related readme files"
 }
 
+-- We can speed this up.
+
 -- This module is dedicated to the oriental tex project and for
 -- the moment is too experimental to be publicly supported.
 --
@@ -163,9 +165,10 @@ local dummy              = {
 
 local function checksettings(r,settings)
     local s = r.settings
-    local method = settings_to_hash(settings.method or "")
+    local method = settings_to_array(settings.method or "")
     local optimize, preroll, splitwords
-    for k, v in next, method do
+    for i=1,#method do
+        local k = method[i]
         if k == v_preroll then
             preroll = true
         elseif k == v_split then
@@ -232,6 +235,7 @@ local function convert(featuresets,name,list)
                 fs = contextsetups[feature]
                 fn = fs and fs.number
             end
+-- inspect(fs)
             if fn then
                 nofnumbers = nofnumbers + 1
                 numbers[nofnumbers] = fn
@@ -619,7 +623,7 @@ first = tonut(first)
                 local temp, b = repack_hlist(list,width,'exactly',listdir)
                 if b > badness then
                     if trace_optimize then
-                        report_optimizers("line %a, badness before %a, after %a, criterium %a, verdict %a",line,badness,b,criterium,"quit")
+                        report_optimizers("line %a, set %a, badness before %a, after %a, criterium %a, verdict %a",line,set or "?",badness,b,criterium,"quit")
                     end
                     -- remove last insert
                     setlink(prev,h)
@@ -632,11 +636,11 @@ first = tonut(first)
                     free_nodelist(first)
                 else
                     if trace_optimize then
-                        report_optimizers("line %a, badness before: %a, after %a, criterium %a, verdict %a",line,badness,b,criterium,"continue")
+                        report_optimizers("line %a, set %a, badness before: %a, after %a, criterium %a, verdict %a",line,set or "?",badness,b,criterium,"continue")
                     end
                     -- free old h->t
                     setnext(t)
-                    free_nodelist(h) -- somhow fails
+                    free_nodelist(h) -- somehow fails
                     if not encapsulate then
                         word[2] = first
                         word[3] = last

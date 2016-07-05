@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/01/16 16:49:52
+-- merge date  : 07/05/16 22:55:02
 
 do -- begin closure to overcome local limits and interference
 
@@ -16263,11 +16263,12 @@ if not modules then modules={} end modules ['font-otj']={
 if not nodes.properties then return end
 local next,rawget=next,rawget
 local fastcopy=table.fastcopy
+local floor=math.floor
 local registertracker=trackers.register
 local trace_injections=false registertracker("fonts.injections",function(v) trace_injections=v end)
 local trace_marks=false registertracker("fonts.injections.marks",function(v) trace_marks=v end)
 local trace_cursive=false registertracker("fonts.injections.cursive",function(v) trace_cursive=v end)
-local trace_spaces=false registertracker("otf.spaces",function(v) trace_spaces=v end)
+local trace_spaces=false registertracker("fonts.injections.spaces",function(v) trace_spaces=v end)
 local use_advance=false directives.register("fonts.injections.advance",function(v) use_advance=v end)
 local report_injections=logs.reporter("fonts","injections")
 local report_spaces=logs.reporter("fonts","spaces")
@@ -17467,7 +17468,7 @@ local function injectspaces(head)
     rightkerns=trig.right
     local par=fontdata[font].parameters 
     factor=par.factor
-    threshold=par.spacing.width-1 
+    threshold=floor(par.spacing.width-2) 
     lastfont=font
   end
   for n in traverse_id(glue_code,tonut(head)) do
@@ -18051,6 +18052,7 @@ local getligaindex=injections.getligaindex
 local cursonce=true
 local fonthashes=fonts.hashes
 local fontdata=fonthashes.identifiers
+local fontfeatures=fonthashes.features
 local otffeatures=fonts.constructors.features.otf
 local registerotffeature=otffeatures.register
 local onetimemessage=fonts.loggers.onetimemessage or function() end
@@ -20873,9 +20875,25 @@ otf.nodemodeinitializer=featuresinitializer
 otf.featuresprocessor=featuresprocessor
 otf.handlers=handlers
 local setspacekerns=nodes.injections.setspacekerns if not setspacekerns then os.exit() end
-function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
-  setspacekerns(font,sequence)
-  return head,start,true
+if fontfeatures then
+  function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
+    local features=fontfeatures[font]
+    local enabled=features.spacekern==true and features.kern==true
+    if enabled then
+      setspacekerns(font,sequence)
+    end
+    return head,start,enabled
+  end
+else 
+  function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
+    local shared=identifiers[font].shared
+    local features=shared and shared.features
+    local enabled=features and features.spacekern==true and features.kern==true
+    if enabled then
+      setspacekerns(font,sequence)
+    end
+    return head,start,enabled
+  end
 end
 local function hasspacekerns(data)
   local sequences=data.resources.sequences
@@ -20909,8 +20927,8 @@ otf.readers.registerextender {
 local function spaceinitializer(tfmdata,value) 
   local resources=tfmdata.resources
   local spacekerns=resources and resources.spacekerns
-  if spacekerns==nil then
-    local properties=tfmdata.properties
+  local properties=tfmdata.properties
+  if value and spacekerns==nil then
     if properties and properties.hasspacekerns then
       local sequences=resources.sequences
       local left={}
@@ -20923,7 +20941,20 @@ local function spaceinitializer(tfmdata,value)
         if steps then
           local kern=sequence.features.kern
           if kern then
-            feat=feat or kern 
+            if feat then
+              for script,languages in next,kern do
+                local f=feat[k]
+                if f then
+                  for l in next,languages do
+                    f[l]=true
+                  end
+                else
+                  feat[script]=languages
+                end
+              end
+            else
+              feat=kern
+            end
             for i=1,#steps do
               local step=steps[i]
               local coverage=step.coverage
