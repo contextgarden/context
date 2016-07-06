@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['attr-col'] = {
 
 local type, tonumber = type, tonumber
 local concat = table.concat
-local min, max, floor = math.min, math.max, math.floor
+local min, max, floor, mod = math.min, math.max, math.floor, math.mod
 
 local attributes            = attributes
 local nodes                 = nodes
@@ -170,13 +170,31 @@ end
 -- http://en.wikipedia.org/wiki/HSI_color_space
 -- http://nl.wikipedia.org/wiki/HSV_(kleurruimte)
 
+-- 	h /= 60;			// sector 0 to 5
+-- 	i = floor( h );
+-- 	f = h - i;			// factorial part of h
+
 local function hsvtorgb(h,s,v)
- -- h = h % 360
-    local hd = h/60
-    local hf = floor(hd)
-    local hi = hf % 6
- -- local f =  hd - hi
-    local f =  hd - hf
+    if s > 1 then
+        s = 1
+    elseif s < 0 then
+        s = 0
+    elseif s == 0 then
+        return v, v, v
+    end
+    if v > 1 then
+        s = 1
+    elseif v < 0 then
+        v = 0
+    end
+    if h < 0 then
+        h = 0
+    elseif h >= 360 then
+        h = mod(h,360)
+    end
+    local hd = h / 60
+    local hi = floor(hd)
+    local f =  hd - hi
     local p = v * (1 - s)
     local q = v * (1 - f * s)
     local t = v * (1 - (1 - f) * s)
@@ -193,7 +211,8 @@ local function hsvtorgb(h,s,v)
     elseif hi == 5 then
         return v, p, q
     else
-        print("error in hsv -> rgb",hi,h,s,v)
+        print("error in hsv -> rgb",h,s,v)
+        return 0, 0, 0
     end
 end
 

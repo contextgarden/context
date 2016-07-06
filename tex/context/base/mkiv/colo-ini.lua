@@ -344,8 +344,8 @@ function colors.definesimplegray(name,s)
 end
 
 local hexdigit    = R("09","AF","af")
-local hexnumber   = hexdigit * hexdigit / function(s) return tonumber(s,16)/255 end + Cc(0)
-local hexpattern  = hexnumber^-3 * P(-1)
+local hexnumber   = hexdigit * hexdigit / function(s) return tonumber(s,16)/255 end
+local hexpattern  = hexnumber * (P(-1) + hexnumber * hexnumber * P(-1))
 local hexcolor    = Cc("H") * P("#") * hexpattern
 
 local left        = P("(")
@@ -408,7 +408,11 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
                         local x = settings.x or h
                         if x then
                             r, g, b = lpegmatch(hexpattern,x) -- can be inlined
-                            definecolor(name, register_color(name,'rgb',r,g,b), global)
+                            if r and g and b then
+                                definecolor(name, register_color(name,'rgb',r,g,b), global)
+                            else
+                                definecolor(name, register_color(name,'gray',r or 0), global)
+                            end
                         else
                             definecolor(name, register_color(name,'gray',tonumber(s) or 0), global)
                         end
