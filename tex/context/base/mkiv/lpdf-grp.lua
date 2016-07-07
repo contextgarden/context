@@ -16,7 +16,7 @@ local backends, lpdf = backends, lpdf
 local nodeinjections = backends.pdf.nodeinjections
 
 local colors         = attributes.colors
-local basepoints     = number.dimenfactors["bp"]
+local basepoints     = number.dimenfactors.bp
 
 local nodeinjections = backends.pdf.nodeinjections
 local codeinjections = backends.pdf.codeinjections
@@ -266,8 +266,6 @@ end
 
 -- temp hack
 
-local factor = number.dimenfactors.bp
-
 function img.package(image) -- see lpdf-u3d **
     local boundingbox = image.bbox
     local imagetag    = "Im" .. image.index
@@ -287,8 +285,39 @@ function img.package(image) -- see lpdf-u3d **
     local xform = img.scan {
         attr   = resources(),
         stream = formatters["%F 0 0 %F 0 0 cm /%s Do"](width,height,imagetag),
-        bbox   = { 0, 0, width/factor, height/factor },
+        bbox   = { 0, 0, width/basepoints, height/basepoints },
     }
     img.immediatewrite(xform)
     return xform
+end
+
+-- experimental
+
+local nofpatterns = 0
+local f_pattern   = formatters["q /Pattern cs /%s scn 0 0 %F %F re f Q"] -- q Q is not really needed
+
+local texsavebox  = tex.saveboxresource
+
+function lpdf.registerpattern(specification)
+    nofpatterns = nofpatterns + 1
+    local d = pdfdictionary {
+        Type        = pdfconstant("Pattern"),
+        PatternType = 1,
+        PaintType   = 1,
+        TilingType  = 2,
+        XStep       = (specification.width  or 10) * basepoints,
+        YStep       = (specification.height or 10) * basepoints,
+        Matrix      = {
+            1, 0, 0, 1,
+            (specification.hoffset or 0) * basepoints,
+            (specification.voffset or 0) * basepoints,
+        },
+    }
+    local n = texsavebox(specification.number,d(),lpdf.collectedresources(),true,1)
+    lpdf.adddocumentpattern("Pt" .. nofpatterns,lpdf.reference(n))
+    return nofpatterns
+end
+
+function lpdf.patternstream(n,width,height)
+    return f_pattern("Pt" .. n,width*basepoints,height*basepoints)
 end

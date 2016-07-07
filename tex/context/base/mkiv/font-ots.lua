@@ -134,12 +134,8 @@ local trace_discruns     = false  registertracker("otf.discruns",     function(v
 local trace_compruns     = false  registertracker("otf.compruns",     function(v) trace_compruns     = v end)
 local trace_testruns     = false  registertracker("otf.testruns",     function(v) trace_testruns     = v end)
 
-local quit_on_no_replacement = true  -- maybe per font
-local zwnjruns               = true
-local optimizekerns          = true
-
-registerdirective("otf.zwnjruns",                 function(v) zwnjruns = v end)
-registerdirective("otf.chain.quitonnoreplacement",function(value) quit_on_no_replacement = value end)
+----- zwnjruns           = true   registerdirective("otf.zwnjruns",     function(v) zwnjruns = v end)
+local optimizekerns      = true
 
 local report_direct   = logs.reporter("fonts","otf direct")
 local report_subchain = logs.reporter("fonts","otf subchain")
@@ -270,16 +266,8 @@ local notmatchreplace = { }
 
 local handlers        = { }
 
--- helper
-
-local function isspace(n)
-    if getid(n) == glue_code then
-        local w = getfield(n,"width")
-        if w >= threshold then
-            return 32
-        end
-    end
-end
+local isspace         = injections.isspace
+local getthreshold    = injections.getthreshold
 
 -- we use this for special testing and documentation
 
@@ -606,7 +594,7 @@ end
     return head, base
 end
 
-local function multiple_glyphs(head,start,multiple,ignoremarks)
+local function multiple_glyphs(head,start,multiple,ignoremarks,what)
     local nofmultiples = #multiple
     if nofmultiples > 0 then
         resetinjection(start)
@@ -614,16 +602,28 @@ local function multiple_glyphs(head,start,multiple,ignoremarks)
         if nofmultiples > 1 then
             local sn = getnext(start)
             for k=2,nofmultiples do
--- untested:
---
--- while ignoremarks and marks[getchar(sn)] then
---     local sn = getnext(sn)
--- end
+             -- untested:
+             --
+             -- while ignoremarks and marks[getchar(sn)] then
+             --     local sn = getnext(sn)
+             -- end
                 local n = copy_node(start) -- ignore components
                 resetinjection(n)
                 setchar(n,multiple[k])
                 insert_node_after(head,start,n)
                 start = n
+            end
+            if what == true then
+                -- we're ok
+            elseif what > 1 then
+                local m = multiple[nofmultiples]
+                for i=2,what do
+                    local n = copy_node(start) -- ignore components
+                    resetinjection(n)
+                    setchar(n,m)
+                    insert_node_after(head,start,n)
+                    start = n
+                end
             end
         end
         return head, start, true
@@ -706,7 +706,7 @@ function handlers.gsub_multiple(head,start,dataset,sequence,multiple)
     if trace_multiples then
         logprocess("%s: replacing %s by multiple %s",pref(dataset,sequence),gref(getchar(start)),gref(multiple))
     end
-    return multiple_glyphs(head,start,multiple,sequence.flags[1])
+    return multiple_glyphs(head,start,multiple,sequence.flags[1],dataset[1])
 end
 
 function handlers.gsub_ligature(head,start,dataset,sequence,ligature)
@@ -1238,7 +1238,7 @@ function chainprocs.gsub_multiple(head,start,stop,dataset,sequence,currentlookup
         if trace_multiples then
             logprocess("%s: replacing %s by multiple characters %s",cref(dataset,sequence),gref(startchar),gref(replacement))
         end
-        return multiple_glyphs(head,start,replacement,sequence.flags[1])
+        return multiple_glyphs(head,start,replacement,sequence.flags[1],dataset[1])
     end
     return head, start, false
 end
@@ -1263,7 +1263,7 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
     end
     local kind    = dataset[4]
     local what    = dataset[1]
-    local value   = what == true and tfmdata.shared.features[kind] or what
+    local value   = what == true and tfmdata.shared.features[kind] or what -- todo: optimize in ctx
     local current = start
     while current do
         local currentchar = ischar(current)
@@ -2296,16 +2296,13 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                     end
                                     -- maybe only if match
                                     prev = getprev(prev)
-                                elseif seq[n][32] then
+                                elseif seq[n][32] and isspace(prev,threshold) then
                                     n = n - 1
                                     prev = getprev(prev)
                                 else
                                     match = false
                                     break
                                 end
-                            elseif seq[n][32] then -- somewhat special, as zapfino can have many preceding spaces
-                                n = n - 1
-                                prev = getprev(prev) -- was absent
                             else
                                 match = false
                                 break
@@ -2425,15 +2422,13 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                 end
                                 -- maybe only if match
                                 current = getnext(current)
-                            elseif seq[n][32] then -- brrr
+                            elseif seq[n][32] and isspace(current,threshold) then
                                 n = n + 1
+                                current = getnext(current)
                             else
                                 match = false
                                 break
                             end
-                        elseif seq[n][32] then
-                            n = n + 1
-                            current = getnext(current)
                         else
                             match = false
                             break
@@ -2546,7 +2541,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                 if replacements then
                     head, start, done = reversesub(head,start,last,dataset,sequence,replacements,rlmode)
                 else
-                    done = quit_on_no_replacement -- can be meant to be skipped / quite inconsistent in fonts
+                    done = true
                     if trace_contexts then
                         logprocess("%s: skipping match",cref(dataset,sequence))
                     end
@@ -2729,10 +2724,10 @@ local function kernrun(disc,k_run,font,attr,...)
         end
     end
     --
-    if prev and (pre or replace) and not ischar(prev,font) then
+    if prev and not ischar(prev,font) then  -- and (pre or replace)
         prev = false
     end
-    if next and (post or replace) and not ischar(next,font) then
+    if next and not ischar(next,font) then  -- and (post or replace)
         next = false
     end
     --
@@ -3307,13 +3302,13 @@ local function featuresprocessor(head,font,attr)
 
     if nesting == 1 then
 
-        currentfont     = font
-        tfmdata         = fontdata[font]
-        descriptions    = tfmdata.descriptions
-        characters      = tfmdata.characters
-        marks           = tfmdata.resources.marks
-        factor          = tfmdata.parameters.factor
-        threshold       = tfmdata.parameters.spacing.width or 65536*10
+        currentfont   = font
+        tfmdata       = fontdata[font]
+        descriptions  = tfmdata.descriptions
+        characters    = tfmdata.characters
+        marks         = tfmdata.resources.marks
+        threshold,
+        factor        = getthreshold(font)
 
     elseif currentfont ~= font then
 
@@ -3372,14 +3367,11 @@ local function featuresprocessor(head,font,attr)
         local nofsteps     = sequence.nofsteps
         if not steps then
             -- this permits injection, watch the different arguments
-            local h, d, ok = handler(head,start,dataset,sequence,nil,nil,nil,0,font,attr)
+            local h, d, ok = handler(head,head,dataset,sequence,nil,nil,nil,0,font,attr)
             if ok then
                 success = true
                 if h then
                     head = h
-                end
-                if d then
-                    start = d
                 end
             end
         elseif typ == "gsub_reversecontextchain" then
@@ -3611,7 +3603,7 @@ if fontfeatures then
 else -- generic (no hashes)
 
     function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
-        local shared   = identifiers[font].shared
+        local shared   = fontdata[font].shared
         local features = shared and shared.features
         local enabled  = features and features.spacekern == true and features.kern == true
         if enabled then

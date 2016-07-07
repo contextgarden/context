@@ -24,14 +24,15 @@ local new_node       = nuts.new
 local nodepool       = nuts.pool
 local register       = nodepool.register
 
-local pdfliteral     = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfliteral,"mode",1)
-local pdfsave        = register(new_node("whatsit", whatsitcodes.pdfsave))
-local pdfrestore     = register(new_node("whatsit", whatsitcodes.pdfrestore))
-local pdfsetmatrix   = register(new_node("whatsit", whatsitcodes.pdfsetmatrix))
------ pdfdest        = register(new_node("whatsit", whatsitcodes.pdfdest))       setfield(pdfdest,"named_id",1) -- xyz_zoom untouched
------ pdfannot       = register(new_node("whatsit", whatsitcodes.pdfannot))
+local pdfpageliteral   = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfpageliteral,  "mode",0)
+local pdfdirectliteral = register(new_node("whatsit", whatsitcodes.pdfliteral))    setfield(pdfdirectliteral,"mode",1)
+local pdfsave          = register(new_node("whatsit", whatsitcodes.pdfsave))
+local pdfrestore       = register(new_node("whatsit", whatsitcodes.pdfrestore))
+local pdfsetmatrix     = register(new_node("whatsit", whatsitcodes.pdfsetmatrix))
+----- pdfdest          = register(new_node("whatsit", whatsitcodes.pdfdest))       setfield(pdfdest,"named_id",1) -- xyz_zoom untouched
+----- pdfannot         = register(new_node("whatsit", whatsitcodes.pdfannot))
 
-local variables      = interfaces.variables
+local variables = interfaces.variables
 
 local views = { -- beware, we do support the pdf keys but this is *not* official
     xyz   = 0, [variables.standard]  = 0,
@@ -44,18 +45,23 @@ local views = { -- beware, we do support the pdf keys but this is *not* official
     fitr  = 7,
 }
 
-function nodepool.pdfliteral(str)
-    local t = copy_node(pdfliteral)
+local function pdfpage(str)
+    local t = copy_node(pdfpageliteral)
     setfield(t,"data",str)
     return t
 end
 
-function nodepool.pdfdirect(str)
-    local t = copy_node(pdfliteral)
+local function pdfdirect(str)
+    local t = copy_node(pdfdirectliteral)
     setfield(t,"data",str)
-    setfield(t,"mode",1)
     return t
 end
+
+nodepool.pdfpage          = pdfpage
+nodepool.pdfpageliteral   = pdfpage
+nodepool.pdfdirect        = pdfdirect
+nodepool.pdfdirectliteral = pdfdirect
+nodepool.pdfliteral       = pdfdirect
 
 function nodepool.pdfsave()
     return copy_node(pdfsave)

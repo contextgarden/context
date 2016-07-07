@@ -44,12 +44,46 @@ local types = {
     chainposition     = "gpos_contextchain",
 }
 
+local names = {
+    gsub_single              = "gsub",
+    gsub_multiple            = "gsub",
+    gsub_alternate           = "gsub",
+    gsub_ligature            = "gsub",
+    gsub_context             = "gsub",
+    gsub_contextchain        = "gsub",
+    gsub_reversecontextchain = "gsub",
+    gpos_single              = "gpos",
+    gpos_pair                = "gpos",
+    gpos_cursive             = "gpos",
+    gpos_mark2base           = "gpos",
+    gpos_mark2ligature       = "gpos",
+    gpos_mark2mark           = "gpos",
+    gpos_context             = "gpos",
+    gpos_contextchain        = "gpos",
+}
+
 setmetatableindex(types, function(t,k) t[k] = k return k end) -- "key"
 
 local everywhere = { ["*"] = { ["*"] = true } } -- or: { ["*"] = { "*" } }
 local noflags    = { false, false, false, false }
 
 -- beware: shared, maybe we should copy the sequence
+
+local function getrange(sequences,category)
+    local count = #sequences
+    local first = nil
+    local last  = nil
+    for i=1,count do
+        local t = sequences[i].type
+        if t and names[t] == category then
+            if not first then
+                first = i
+            end
+            last  = i
+        end
+    end
+    return first or 1, last or count
+end
 
 local function validspecification(specification,name)
     local dataset = specification.dataset
@@ -434,6 +468,74 @@ local function addfeature(data,feature,specifications)
 
     local dataset = specifications.dataset
 
+    local function report(name,category,position,first,last,sequences)
+        report_otf("injecting name %a of category %a at position %i in [%i,%i] of [%i,%i]",
+            name,category,position,first,last,1,#sequences)
+    end
+
+    local function inject(specification,sequences,sequence,first,last,category,name)
+        local position = specification.position or false
+        if not position then
+            position = specification.prepend
+            if position == true then
+                if trace_loading then
+                    report(name,category,first,first,last,sequences)
+                end
+                insert(sequences,first,sequence)
+                return
+            end
+        end
+        if not position then
+            position = specification.append
+            if position == true then
+                if trace_loading then
+                    report(name,category,last+1,first,last,sequences)
+                end
+                insert(sequences,last+1,sequence)
+                return
+            end
+        end
+        local kind = type(position)
+        if kind == "string" then
+            local index = false
+            for i=first,last do
+                local s = sequences[i]
+                local f = s.features
+                if f then
+                    for k in next, f do
+                        if k == position then
+                            index = i
+                            break
+                        end
+                    end
+                    if index then
+                        break
+                    end
+                end
+            end
+            if index then
+                position = index
+            else
+                position = last + 1
+            end
+        elseif kind == "number" then
+            if position < 0 then
+                position = last - position + 1
+            end
+            if position > last then
+                position = last + 1
+            elseif position < first then
+                position = first
+            end
+        else
+            position = last + 1
+        end
+        if trace_loading then
+            report(name,category,position,first,last,sequences)
+        end
+        insert(sequences,position,sequence)
+    end
+
     for s=1,#dataset do
         local specification = dataset[s]
         local valid = specification.valid -- nowhere used
@@ -546,6 +648,7 @@ local function addfeature(data,feature,specifications)
                 if featureflags[1] then featureflags[1] = "mark" end
                 if featureflags[2] then featureflags[2] = "ligature" end
                 if featureflags[3] then featureflags[3] = "base" end
+                local steptype = types[featuretype]
                 local sequence = {
                     chain     = featurechain,
                     features  = { [feature] = askedfeatures },
@@ -554,41 +657,11 @@ local function addfeature(data,feature,specifications)
                     order     = featureorder,
                     [stepkey] = steps,
                     nofsteps  = nofsteps,
-                    type      = types[featuretype],
+                    type      = steptype,
                 }
-                -- todo : before|after|index
-                local prepend = specification.prepend
-                if prepend == true then
-                    prepend = 1
-                end
-                if type(prepend) == "number" then
-                    -- okay
-                elseif type(prepend) == "string" then
-                    local index = false
-                    for i=1,#sequences do
-                        local s = sequences[i]
-                        local f = s.features
-                        if f then
-                            for k in next, f do
-                                if k == prepend then
-                                    index = i
-                                    break
-                                end
-                            end
-                            if index then
-                                break
-                            end
-                        end
-                    end
-                    prepend = index
-                elseif prepend == true then
-                    prepend = 1
-                end
-                if not prepend or prepend <= 0 or prepend > #sequences  then
-                    insert(sequences,sequence)
-                else
-                    insert(sequences,prepend,sequence)
-                end
+                -- position | prepend | append
+                local first, last = getrange(sequences,category)
+                inject(specification,sequences,sequence,first,last,category,feature)
                 -- register in metadata (merge as there can be a few)
                 local features = fontfeatures[category]
                 if not features then

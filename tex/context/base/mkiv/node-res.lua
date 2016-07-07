@@ -495,7 +495,7 @@ function nutpool.noad()
     return copy_nut(noad)
 end
 
-function nutpool.hlist(list,width,height,depth,shift)
+local function new_hlist(list,width,height,depth,shift)
     local n = copy_nut(hlist)
     if list then
         setlist(n,list)
@@ -515,7 +515,7 @@ function nutpool.hlist(list,width,height,depth,shift)
     return n
 end
 
-function nutpool.vlist(list,width,height,depth,shift)
+local function new_vlist(list,width,height,depth,shift)
     local n = copy_nut(vlist)
     if list then
         setlist(n,list)
@@ -533,6 +533,17 @@ function nutpool.vlist(list,width,height,depth,shift)
         setfield(n,"shift",shift)
     end
     return n
+end
+
+nutpool.hlist = new_hlist
+nutpool.vlist = new_vlist
+
+function nodepool.hlist(list,width,height,depth,shift)
+    return tonode(new_hlist(list and tonut(list),width,height,depth,shift))
+end
+
+function nodepool.vlist(list,width,height,depth,shift)
+    return tonode(new_vlist(list and tonut(list),width,height,depth,shift))
 end
 
 -- local num = userids["my id"]

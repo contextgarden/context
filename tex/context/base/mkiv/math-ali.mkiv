@@ -27,24 +27,24 @@
 
 % n>1 ### needed, strange # interaction in recurse
 
-\newtoks\c_math_align_a
-\newtoks\c_math_align_b
-\newtoks\c_math_align_c
+\newtoks\t_math_align_a
+\newtoks\t_math_align_b
+\newtoks\t_math_align_c
 
 \def\displayopenupvalue{.25\bodyfontsize}
 
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
    \dorecurse{\mathalignmentparameter\c!m}\math_build_eqalign_step
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_c}}}
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_c}}}
 
 \unexpanded\def\math_build_eqalign_step % make sure no expansion in tracing
   {\ifnum\recurselevel>\plusone
      \scratchtoks\expandafter{\the\scratchtoks\tabskip\mathalignmentparameter\c!distance\aligntab\tabskip\zeropoint}%
    \fi
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_a}}%
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_a}}%
    \dorecurse{\numexpr\mathalignmentparameter\c!n-\plusone\relax}
-     {\normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_b}}}}
+     {\normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_b}}}}
 
 \def\math_math_in_eqalign#1%
   {\startforceddisplaymath
@@ -83,15 +83,80 @@
 
 % use zeroskipplusfill
 
+% \def\math_prepare_r_eqalign_no
+%   {\t_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
+%    \t_math_align_b{\aligntab\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
+%    \ifnum\mathraggedstatus=\plusone
+%      \t_math_align_c{\hfil\aligntab\span\math_text_in_eqalign{\alignmark\alignmark}\tabskip\zeropoint}%
+%    \else\ifnum\mathraggedstatus=\plusthree
+%      \t_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill\aligntab\span\math_text_in_eqalign{\alignmark\alignmark}\tabskip\zeropoint}%
+%    \else
+%      \t_math_align_c{\hfil\tabskip\centering\aligntab\llap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\zeropoint}%
+%    \fi\fi
+%    \global\mathnumberstatus\zerocount
+%    \math_build_eqalign
+%    \the\mathdisplayaligntweaks
+%    \tabskip\centering}
+
+% \def\math_prepare_l_eqalign_no  % \checkeddisplaymath
+%   {\t_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
+%    \t_math_align_b{\aligntab\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
+%    % problem: number is handled after rest and so ends up in the margin
+%    \ifnum\mathraggedstatus=\plusone
+%      \t_math_align_c{\hfil\aligntab\kern-\displaywidth\rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
+%    \else\ifnum\mathraggedstatus=\plusthree
+%      \t_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill\aligntab\kern-\displaywidth\span\math_rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
+%    \else
+%      \t_math_align_c{\hfil\tabskip\centering\aligntab\kern-\displaywidth\rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
+%    \fi\fi
+%    \global\mathnumberstatus\zerocount
+%    \math_build_eqalign
+%    \the\mathdisplayaligntweaks
+%    \tabskip\centering}
+
 \def\math_prepare_r_eqalign_no
-  {\c_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
-   \c_math_align_b{\aligntab\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
+  {\t_math_align_a
+     {\strut
+      \tabskip\zeropoint
+      \alignmark\alignmark % for picking up the number
+      \aligntab
+      \math_first_in_eqalign
+      \hfil
+      \math_left_of_equalign
+      \span
+      \math_math_in_eqalign{\alignmark\alignmark}%
+      \math_right_of_eqalign
+      \tabskip\zeropoint}%
+   \t_math_align_b
+     {\aligntab
+      \math_next_in_eqalign
+      \math_left_of_equalign
+      \span
+      \math_math_in_eqalign{\alignmark\alignmark}%
+      \math_right_of_eqalign
+      \tabskip\zeropoint}%
    \ifnum\mathraggedstatus=\plusone
-     \c_math_align_c{\hfil\aligntab\span\math_text_in_eqalign{\alignmark\alignmark}\tabskip\zeropoint}%
+     \t_math_align_c
+       {\hfil
+        \aligntab
+        \span
+        \math_text_in_eqalign{\alignmark\alignmark}%
+        \tabskip\zeropoint}%
    \else\ifnum\mathraggedstatus=\plusthree
-     \c_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill\aligntab\span\math_text_in_eqalign{\alignmark\alignmark}\tabskip\zeropoint}%
+     \t_math_align_c
+       {\hfil
+        \tabskip\zeropoint\s!plus 1\s!fill
+        \aligntab
+        \span
+        \math_text_in_eqalign{\alignmark\alignmark}%
+        \tabskip\zeropoint}%
    \else
-     \c_math_align_c{\hfil\tabskip\centering\aligntab\llap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\zeropoint}%
+     \t_math_align_c
+       {\hfil
+        \tabskip\centering
+        \aligntab
+        \llap{\span\math_text_in_eqalign{\alignmark\alignmark}}%
+        \tabskip\zeropoint}%
    \fi\fi
    \global\mathnumberstatus\zerocount
    \math_build_eqalign
@@ -99,15 +164,50 @@
    \tabskip\centering}
 
 \def\math_prepare_l_eqalign_no  % \checkeddisplaymath
-  {\c_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
-   \c_math_align_b{\aligntab\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
-   % problem: number is handled after rest and so ends up in the margin
+  {\t_math_align_a
+    {\strut
+     \tabskip\zeropoint
+     \alignmark\alignmark % for picking up the number
+     \aligntab
+     \math_first_in_eqalign
+     \hfil
+     \math_left_of_equalign
+     \span
+     \math_math_in_eqalign{\alignmark\alignmark}%
+     \math_right_of_eqalign
+     \tabskip\zeropoint}%
+   \t_math_align_b
+     {\aligntab
+      \math_next_in_eqalign
+      \math_left_of_equalign
+      \span
+      \math_math_in_eqalign{\alignmark\alignmark}%
+      \math_right_of_eqalign
+      \tabskip\zeropoint}%
    \ifnum\mathraggedstatus=\plusone
-     \c_math_align_c{\hfil\aligntab\kern-\displaywidth\rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
+     \t_math_align_c
+       {\hfil
+       \aligntab
+       \kern-\displaywidth
+       \rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}%
+       \tabskip\displaywidth}%
    \else\ifnum\mathraggedstatus=\plusthree
-     \c_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill\aligntab\kern-\displaywidth\span\math_rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
+     \t_math_align_c
+       {\hfil
+        \tabskip\zeropoint\s!plus 1\s!fill
+        \aligntab
+        \kern-\displaywidth
+        \span
+        \math_rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}%
+        \tabskip\displaywidth}%
    \else
-     \c_math_align_c{\hfil\tabskip\centering\aligntab\kern-\displaywidth\rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
+     \t_math_align_c
+       {\hfil
+        \tabskip\centering
+        \aligntab
+        \kern-\displaywidth
+        \rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}%
+        \tabskip\displaywidth}%
    \fi\fi
    \global\mathnumberstatus\zerocount
    \math_build_eqalign
@@ -176,25 +276,47 @@
 
 \newtoks \everymathalignment
 
-\def\math_alignment_NR_indeed[#1][#2]%
-  {\strc_formulas_place_number_nested{#1}{#2}% to be tagged (better an attribute)
+% \def\math_alignment_NC_first
+%   {\glet\math_alignment_NC\math_alignment_NC_rest}
+%
+% \def\math_alignment_NR
+%   {\aligntab
+%    \dostoptagged % finish cell
+%    \dodoubleempty\math_alignment_NR_indeed} % use xx from tabulate
+%
+% \def\math_alignment_NR_indeed[#1][#2]%
+%   {\strc_formulas_place_number_nested{#1}{#2}% to be tagged (better an attribute)
+%    \crcr
+%    \dostoptagged % finish row
+%    \noalign{\glet\math_alignment_NC\math_alignment_NC_first}} % noalign used for change state, conditional does not work here
+
+% \def\math_alignment_NC_first#1\NR
+%   {\glet\math_alignment_NC\math_alignment_NC_rest
+%    \dotripleempty\math_alignment_NC_first_indeed[{#1}]}
+
+% \def\math_alignment_NC_first_indeed[#1][#2][#3]%
+%   {\strc_formulas_place_number_nested{#2}{#3}\aligntab#1\NR}
+
+\def\math_alignment_NC_first#1\NR
+  {\glet\math_alignment_NC\math_alignment_NC_rest
+   \scratchtoks{\aligntab#1\NR}%
+   \dodoubleempty\math_alignment_NC_first_indeed}
+
+\def\math_alignment_NC_first_indeed[#1][#2]%
+  {\strc_formulas_place_number_nested{#1}{#2}\the\scratchtoks}
+
+\def\math_alignment_NR
+  {\aligntab
+   \dostoptagged % finish cell
    \crcr
    \dostoptagged % finish row
    \noalign{\glet\math_alignment_NC\math_alignment_NC_first}} % noalign used for change state, conditional does not work here
-
-\def\math_alignment_NC_first
-  {\glet\math_alignment_NC\math_alignment_NC_rest}
 
 \def\math_alignment_NC_rest
   {\aligntab}
 
 \def\math_alignment_EQ
   {\NC=}
-
-\def\math_alignment_NR
-  {\aligntab
-   \dostoptagged % finish cell
-   \dodoubleempty\math_alignment_NR_indeed} % use xx from tabulate
 
 \appendtoks
    \glet\math_alignment_NC\math_alignment_NC_first
@@ -316,9 +438,10 @@
    \dostarttagged\t!mathtablecell\empty}
 
 \def\math_left_of_equalign
-  {\edef\p_location{\formulaparameter\c!location}%
-   \ifx\p_location\v!left
-      \box\b_strc_formulas_number
+  {\ifcase\wd\b_strc_formulas_number\else
+     \ifcase\c_strc_math_number_location\or
+       \box\b_strc_formulas_number
+     \fi
    \fi
    \ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
      \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
@@ -328,9 +451,10 @@
   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
      \ifcase\lastnamedcs \or \hfill \or \relax \or \hfill \fi
    \fi
-   \edef\p_location{\formulaparameter\c!location}%
-   \ifx\p_location\v!left\else
-      \box\b_strc_formulas_number
+   \ifcase\wd\b_strc_formulas_number\else
+     \ifcase\c_strc_math_number_location\or\or
+       \box\b_strc_formulas_number
+     \fi
    \fi}
 
 \def\math_eqalign_set_column#1% we could just add to the preamble (as with other alignments)
@@ -699,19 +823,19 @@
 \definemathmatrix[\v!mathmatrix]
 
 \def\math_matrix_prepare
-  {\c_math_align_a{\strut\math_first_in_eqalign\math_left_of_equalign\span
+  {\t_math_align_a{\strut\math_first_in_eqalign\math_left_of_equalign\span
             \math_text_in_eqalign{\mathmatrixparameter\c!style\alignmark\alignmark}\math_right_of_eqalign}%
-   \c_math_align_b{\aligntab\hskip\mathmatrixparameter\c!distance
+   \t_math_align_b{\aligntab\hskip\mathmatrixparameter\c!distance
             \math_next_in_eqalign\math_left_of_equalign\span
             \math_text_in_eqalign{\mathmatrixparameter\c!style\alignmark\alignmark}\math_right_of_eqalign}%
-   \c_math_align_c{\aligntab\aligntab\hskip\mathmatrixparameter\c!distance
+   \t_math_align_c{\aligntab\aligntab\hskip\mathmatrixparameter\c!distance
             \math_left_of_equalign\span
             \math_text_in_eqalign{\mathmatrixparameter\c!style\alignmark\alignmark}\math_right_of_eqalign}%
    \scratchtoks\emptytoks
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_a}}%
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_a}}%
    \dorecurse{\numexpr\scratchcounter-\plusone\relax}
-     {\normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_b}}}%
-   \normalexpanded{\scratchtoks{\the\scratchtoks\the\c_math_align_c}}%
+     {\normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_b}}}%
+   \normalexpanded{\scratchtoks{\the\scratchtoks\the\t_math_align_c}}%
    \halign \expandafter \bgroup\the\scratchtoks \crcr}
 
 \unexpanded\def\math_matrix_NC_indeed
@@ -1033,9 +1157,8 @@
 
 %D The following code comes from \type {math-str.mkiv}.
 %D
-%D Here we implement a basic math alignment mechanism. Numbers
-%D are also handled. The macros \type {\startinnermath} and
-%D \type {\stopinnermath} can be overloaded in specialized
+%D Here we implement a basic math alignment mechanism. Numbers are also handled. The macros
+%D \type {\startinnermath} and \type {\stopinnermath} can be overloaded in specialized
 %D modules.
 
 \installcorenamespace{mathinnerstart}
@@ -1332,7 +1455,7 @@
    \useformulacolorparameter\c!color
    \c_strc_math_number_location\ifx\p_location\v!left\plusone\else\ifx\p_location\v!right\plustwo\else\zerocount\fi\fi
    %
-   \strc_formulas_place_number
+  %\strc_formulas_place_number % not here as we can have inner alignment numbers
    \dontcomplain
    \setbox\b_strc_math_display\math_hbox\bgroup % \checkeddisplaymath
      \mathinnerstrut

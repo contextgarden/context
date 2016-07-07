@@ -774,25 +774,32 @@
   {\advance\c_colo_protection\minusone}
 
 \def\colo_basics_define[#1][#2]%
-  {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
-   \colo_basics_synchronize{#1}%
-   \ifcase\c_colo_protection
-     \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
+  {\edef\m_colo_old{#1}%
+   \edef\m_colo_new{#2}%
+   \ifx\m_colo_old\m_colo_new
+     % maybe a warning
+   \else
+     \clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
+     \colo_basics_synchronize{#1}%
+     \ifcase\c_colo_protection
+       \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
+     \fi
    \fi}
 
 \def\colo_basics_define_global[#1][#2]%
-  {\clf_defineprocesscolorglobal{#1}{#2}\v_colo_freeze_state\relax
-   \colo_basics_synchronize{#1}%
-   \ifcase\c_colo_protection
-     \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
+  {\edef\m_colo_old{#1}%
+   \edef\m_colo_new{#2}%
+   \ifx\m_colo_old\m_colo_new
+     % maybe a warning
+   \else
+     \clf_defineprocesscolorglobal{#1}{#2}\v_colo_freeze_state\relax
+     \colo_basics_synchronize{#1}%
+     \ifcase\c_colo_protection
+       \unexpanded\setgvalue{#1}{\colo_helpers_activate{#1}}%
+     \fi
    \fi}
 
-\def\colo_basics_define_named[#1][#2]% currently same as define
-  {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax
-   \colo_basics_synchronize{#1}%
-   \ifcase\c_colo_protection
-     \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
-   \fi}
+\let\colo_basics_define_named\colo_basics_define
 
 \def\dodefinefastcolor[#1][#2]% still not fast but ok (might change)
   {\clf_defineprocesscolorlocal{#1}{#2}\v_colo_freeze_state\relax

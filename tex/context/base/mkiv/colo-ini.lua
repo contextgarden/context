@@ -229,6 +229,8 @@ local transparent = {
     luminosity = 16,
 }
 
+transparencies.names = transparent
+
 local gray_okay   = true
 local rgb_okay    = true
 local cmyk_okay   = true
@@ -377,6 +379,21 @@ end)
 
 local defineintermediatecolor
 
+local function resolvedname(name)
+    local color
+    if valid[name] then
+        color = counts[name]
+        if color then
+            color = texgetcount(color)
+        else
+            color = l_color[name] -- fall back on old method
+        end
+    else
+        color = l_color[name] -- fall back on old method
+    end
+    return color, l_transparency[name]
+end
+
 local function defineprocesscolor(name,str,global,freeze) -- still inconsistent color vs transparent
     local what, one, two, three = lpegmatch(specialcolor,str)
     if what == "H" then
@@ -384,10 +401,16 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
         definecolor(name, register_color(name,'rgb',one,two,three),global)
     elseif what == "M" then
         -- intermediate
-        return defineintermediatecolor(name,one,l_color[two],l_color[three],l_transparency[two],l_transparency[three],"",global,freeze)
+     -- return defineintermediatecolor(name,one,l_color[two],l_color[three],l_transparency[two],l_transparency[three],"",global,freeze)
+        local c1, t1 = resolvedname(two)
+        local c2, t2 = resolvedname(three)
+        return defineintermediatecolor(name,one,c1,c2,t1,t2,"",global,freeze)
     elseif what == "P" then
         -- pgf for tikz
-        return defineintermediatecolor(name,two,l_color[one],l_color[three],l_transparency[one],l_transparency[three],"",global,freeze)
+     -- return defineintermediatecolor(name,two,l_color[one],l_color[three],l_transparency[one],l_transparency[three],"",global,freeze)
+        local c1, t1 = resolvedname(one)
+        local c2, t2 = resolvedname(three)
+        return defineintermediatecolor(name,two,c1,c1,t1,t2,"",global,freeze)
     else
         local settings = settings_to_hash_strict(str)
         if settings then
@@ -470,7 +493,7 @@ local function definespotcolor(name,parent,str,global)
                     if ta and tt then
                         definetransparent(name, transparencies.register(name,transparent[ta] or tonumber(ta) or 1,tonumber(tt) or 1), global)
                     elseif colors.couple then
-                    --~ definetransparent(name, transparencies.register(nil, 1, 1), global) -- can be sped up
+                     -- definetransparent(name, transparencies.register(nil, 1, 1), global) -- can be sped up
                         definetransparent(name, 0, global) -- can be sped up
                     end
                 end
@@ -547,7 +570,11 @@ local function definemultitonecolor(name,multispec,colorspec,selfspec)
         nn = concat(nn,'_')
         local parent = gsub(lower(nn),"[^%d%a%.]+","_")
         if not colorspec or colorspec == "" then
-            local cc = { } for i=1,max do cc[i] = l_color[dd[i]] end
+            local cc = { }
+            for i=1,max do
+--                 cc[i] = l_color[dd[i]]
+                cc[i] = resolvedname(dd[i])
+            end
             definemixcolor(name,parent,pp,cc,global,freeze) -- can become local
         else
             if selfspec ~= "" then
@@ -823,11 +850,19 @@ local min = math.min
 
 local function inbetween(one,two,i,fraction)
     local o, t = one[i], two[i]
+    local c = fraction < 0
+    if c then
+        fraction = - fraction
+    end
     local otf = o + fraction * (t - o)
     if otf > 1 then
         otf = 1
     end
-    return otf
+    if c then
+        return 1 - otf
+    else
+        return otf
+    end
 end
 
 local function justone(one,fraction,i)
@@ -848,7 +883,7 @@ end
 
 defineintermediatecolor = function(name,fraction,c_one,c_two,a_one,a_two,specs,global,freeze)
     fraction = tonumber(fraction) or 1
-    local one, two = colorvalues[c_one], colorvalues[c_two]
+    local one, two = colorvalues[c_one], colorvalues[c_two] -- beware, it uses the globals
     if one then
         if two then
             local csone, cstwo = one[1], two[1]

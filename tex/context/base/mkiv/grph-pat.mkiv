@@ -1,0 +1,125 @@
+%D \module
+%D   [       file=grph-par,
+%D        version=2016.07.08,
+%D          title=\CONTEXT\ Graphic Macros,
+%D       subtitle=Patterns,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This works ok in Okular and MuPDF but somehow xforms don't work in Acrobat
+%D (full nor reader). Also the basic offset is kind of unspecified. So \unknown\
+%D we're dealing with a fragile feature. So, don't rely on where the first (ulr)
+%D tile occurs.
+%D
+%D The two commands introduced here are not documented (yet).
+
+\writestatus{loading}{ConTeXt Graphic Macros / Patterns}
+
+\unprotect
+
+\registerctxluafile{grph-pat}{1.001}
+
+\unexpanded\def\registerpattern
+  {\begingroup
+   \letdummyparameter\c!name   \s!dummy
+   \letdummyparameter\c!width  \v!auto
+   \letdummyparameter\c!height \v!auto
+   \letdummyparameter\c!hoffset\zeropoint
+   \letdummyparameter\c!voffset\zeropoint
+   \dodoubleempty\syst_boxes_registerpattern}
+
+\def\syst_boxes_registerpattern[#1][#2]%
+  {\ifsecondargument
+     \setdummyparameter\c!name{#1}%
+     \getdummyparameters[#2]%
+   \else\iffirstargument
+     \doifassignmentelse{#1}
+       {\getdummyparameters[#1]}%
+       {\setdummyparameter\c!name{#1}}%
+   \fi\fi
+   \dowithnextboxcs\syst_boxes_registerpattern_indeed\hbox}
+
+\edef\v!auto_m{-\v!auto}
+
+\def\syst_boxes_registerpattern_indeed
+  {%\finalizeobjectbox\nextbox
+   \edef\p_width  {\dummyparameter\c!width}%
+   \edef\p_height {\dummyparameter\c!height}%
+   \edef\p_hoffset{\dummyparameter\c!hoffset}%
+   \edef\p_voffset{\dummyparameter\c!voffset}%
+   \scratchwidth  \dimexpr\ifx\p_width  \v!auto\wd  \nextbox   \else\p_width  \fi\relax
+   \scratchheight \dimexpr\ifx\p_height \v!auto\htdp\nextbox   \else\p_height \fi\relax
+   \scratchhoffset\dimexpr\ifx\p_hoffset\v!auto\scratchwidth /2\else\ifx\p_hoffset\v!auto_m-\scratchwidth /2\else\p_hoffset\fi\fi\relax
+   \scratchvoffset\dimexpr\ifx\p_voffset\v!auto\scratchheight/2\else\ifx\p_voffset\v!auto_m-\scratchheight/2\else\p_voffset\fi\fi\relax
+   \clf_registerpattern
+      name    {\dummyparameter\c!name}
+      number  \nextbox
+      width   \scratchwidth
+      height  \scratchheight
+      hoffset \scratchhoffset
+      voffset \scratchvoffset
+   \relax
+   \endgroup}
+
+\unexpanded\def\applypattern
+  {\hbox\bgroup
+   \letdummyparameter\c!name  \s!dummy
+   \letdummyparameter\c!width \zeropoint
+   \letdummyparameter\c!height\zeropoint
+   \dodoubleempty\syst_boxes_applypattern}
+
+\def\syst_boxes_applypattern[#1][#2]%
+  {\ifsecondargument
+     \setdummyparameter\c!name{#1}%
+     \getdummyparameters[#2]%
+   \else\iffirstargument
+     \doifassignmentelse{#1}
+       {\getdummyparameters[#1]}%
+       {\setdummyparameter\c!name{#1}}%
+   \fi\fi
+   \clf_applypattern
+      name   {\dummyparameter\c!name}
+      number \nextbox
+      width  \dimexpr\dummyparameter\c!width\relax
+      height \dimexpr\dummyparameter\c!height\relax
+   \relax
+   \box\nextbox
+   \egroup}
+
+\protect
+
+\continueifinputfile{grph-pat.mkiv}
+
+\nopdfcompression
+
+\starttext
+
+    \registerpattern[demo]{It \darkred Works!}
+
+    \framed[offset=overlay]{\applypattern[demo][width=7cm,height=4cm]}
+
+    \blank
+
+    \registerpattern[name=more,hoffset=0bp,voffset=0pt]{\externalfigure[cow.pdf][width=1cm]}
+
+    \framed[offset=overlay]{\applypattern[name=more,width=7cm,height=4cm]}
+
+    \blank
+
+    \registerpattern[name=more,hoffset=auto,voffset=auto]{\externalfigure[cow.pdf][width=1cm]}
+
+    \framed[offset=overlay]{\applypattern[name=more,width=7cm,height=4cm]}
+
+    \blank
+
+    \registerpattern[name=more,hoffset=-auto,voffset=-auto]{\externalfigure[cow.pdf][width=1cm]}
+
+    \framed[offset=overlay]{\applypattern[name=more,width=7cm,height=4cm]}
+
+\stoptext
+

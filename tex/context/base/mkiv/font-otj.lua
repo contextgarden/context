@@ -30,7 +30,6 @@ if not nodes.properties then return end
 
 local next, rawget = next, rawget
 local fastcopy = table.fastcopy
-local floor = math.floor
 
 local registertracker = trackers.register
 
@@ -1423,6 +1422,48 @@ function nodes.injections.setspacekerns(font,sequence)
     end
 end
 
+local getthreshold
+
+if context then
+
+    local threshold  =  1 -- todo: add a few methods for context
+    local parameters = fonts.hashes.parameters
+
+    directives.register("otf.threshold", function(v) threshold = tonumber(v) or 1 end)
+
+    getthreshold  = function(font)
+        local p = parameters[font]
+        local f = p.factor
+        local s = p.spacing
+        local t = threshold * (s and s.width or p.space or 0) - 2
+        return t > 0 and t or 0, f
+    end
+
+else
+
+    injections.threshold = 0
+
+    getthreshold  = function(font)
+        local p = fontdata[font].parameters
+        local f = p.factor
+        local s = p.spacing
+        local t = injections.threshold * (s and s.width or p.space or 0) - 2
+        return t > 0 and t or 0, f
+    end
+
+end
+
+injections.getthreshold = getthreshold
+
+function injections.isspace(n,threshold)
+    if getid(n) == glue_code then
+        local w = getfield(n,"width")
+        if threshold and w > threshold then -- was >=
+            return 32
+        end
+    end
+end
+
 local function injectspaces(head)
 
     if not triggers then
@@ -1439,18 +1480,11 @@ local function injectspaces(head)
     local rightkern  = false
 
     local function updatefont(font,trig)
-     -- local resources  = resources[font]
-     -- local spacekerns = resources.spacekerns
-     -- if spacekerns then
-     --     leftkerns  = spacekerns.left
-     --     rightkerns = spacekerns.right
-     -- end
         leftkerns  = trig.left
         rightkerns = trig.right
-        local par  = fontdata[font].parameters -- fallback for generic
-        factor     = par.factor
-        threshold  = floor(par.spacing.width - 2) -- get rid of rounding errors
         lastfont   = font
+        threshold,
+        factor     = getthreshold(font)
     end
 
     for n in traverse_id(glue_code,tonut(head)) do
@@ -1470,7 +1504,7 @@ local function injectspaces(head)
             end
         end
         if prevchar then
-            local font = getfont(next)
+            local font = getfont(prev)
             local trig = triggers[font]
             if trig then
                 if lastfont ~= font then
@@ -1483,7 +1517,7 @@ local function injectspaces(head)
         end
         if leftkern then
             local old = getfield(n,"width")
-            if old >= threshold then
+            if old > threshold then
                 if rightkern then
                     local new = old + (leftkern + rightkern) * factor
                     if trace_spaces then
@@ -1502,7 +1536,7 @@ local function injectspaces(head)
             leftkern  = false
         elseif rightkern then
             local old = getfield(n,"width")
-            if old >= threshold then
+            if old > threshold then
                 local new = old + rightkern * factor
                 if trace_spaces then
                     report_spaces("[%p -> %p] %C",nextchar,old,new)

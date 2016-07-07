@@ -514,8 +514,15 @@ local mt_v = { __lpdftype = "verbose",    __tostring = tostring_v, __call = valu
 
 local function pdfstream(t) -- we need to add attributes
     if t then
-        for i=1,#t do
-            t[i] = tostring(t[i])
+        local tt = type(t)
+        if tt == "table" then
+            for i=1,#t do
+                t[i] = tostring(t[i])
+            end
+        elseif tt == "string" then
+            t= { t }
+        else
+            t= { tostring(t) }
         end
     end
     return setmetatable(t or { },mt_x)
