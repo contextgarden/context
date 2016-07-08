@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definemathradical" file="math-rad.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathradical"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathradical" file="math-rad.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="alternative">
+                    <cd:constant type="default"/>
+                    <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="mp"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="mpoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="mp">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathradical" generated="yes" variant="generated" file="math-rad.mkvi">
+        <cd:sequence>
+            <cd:variable value="mathradical"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-text-optional"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="sqrt" file="math-rad.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-text-optional"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

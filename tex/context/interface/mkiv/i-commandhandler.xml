@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="installparameterhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installrootparameterhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installparameterhashhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installparametersethandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installstyleandcolorhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installdefinehandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installsetuphandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installswitchsetuphandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installautosetuphandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installbasicparameterhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installbasicautosetuphandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installcommandhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installswitchcommandhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installautocommandhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installsimplecommandhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installdirectparameterhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installdirectsetuphandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installdirectparametersethandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installdirectstyleandcolorhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installdirectcommandhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installsetuponlycommandhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="relateparameterhandlers" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installactionhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installnamespace" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installcorenamespace" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definenamespace" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="name">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="parent">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="list"/>
+                </cd:parameter>
+                <cd:parameter name="setup">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="list"/>
+                </cd:parameter>
+                <cd:parameter name="set">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="list"/>
+                </cd:parameter>
+                <cd:parameter name="frame">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="listnamespaces" file="mult-aux.mkiv"/>
+
+    <cd:command name="showparentchain" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsecommandhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifcommandhandlerelse" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifcommandhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifnotcommandhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installdefinitionset" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installdefinitionsetmember" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installparentinjector" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installframedcommandhandler" file="pack-rul.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installframedautocommandhandler" file="pack-rul.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installsimpleframedcommandhandler" file="pack-rul.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

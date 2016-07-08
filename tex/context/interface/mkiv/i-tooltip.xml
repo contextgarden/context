@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definetooltip" file="scrn-fld.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptooltip"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuptooltip" file="scrn-fld.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="location">
+                    <cd:constant type="left"/>
+                    <cd:constant type="middle"/>
+                    <cd:constant type="right" default="yes"/>
+                </cd:parameter>
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tooltip" generated="yes" variant="generated:1" file="scrn-fld.mkvi">
+        <cd:sequence>
+            <cd:variable value="tooltip"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptooltip"/>
+            </cd:assignments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tooltip" generated="yes" variant="generated:2" file="scrn-fld.mkvi">
+        <cd:sequence>
+            <cd:variable value="tooltip"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="left"/>
+                <cd:constant type="middle"/>
+                <cd:constant type="right"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tooltip" variant="1" file="scrn-fld.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptooltip"/>
+            </cd:assignments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tooltip" variant="2" file="scrn-fld.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="left"/>
+                <cd:constant type="middle"/>
+                <cd:constant type="right"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

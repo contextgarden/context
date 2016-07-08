@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definescale" file="grph-trf.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupscale"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupscale" file="grph-trf.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="scale">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="xscale">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="yscale">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="depth">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="lines">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="broad"/>
+                    <cd:constant type="max"/>
+                    <cd:constant type="auto"/>
+                    <cd:constant type="default"/>
+                </cd:parameter>
+                <cd:parameter name="hfactor">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="broad"/>
+                    <cd:constant type="max"/>
+                    <cd:constant type="auto"/>
+                    <cd:constant type="default"/>
+                </cd:parameter>
+                <cd:parameter name="wfactor">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="broad"/>
+                    <cd:constant type="max"/>
+                    <cd:constant type="auto"/>
+                    <cd:constant type="default"/>
+                </cd:parameter>
+                <cd:parameter name="maxwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="maxheight">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="s">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="sx">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="sy">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="equalwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="equalheight">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="grid">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="fit"/>
+                    <cd:constant type="height"/>
+                    <cd:constant type="depth"/>
+                    <cd:constant type="halfline"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="scale" file="grph-trf.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupscale"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fastscale" file="grph-trf.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fastsxsy" file="grph-trf.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-number"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineexternalfigure" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupexternalfigure"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="defineexternalfigures" file="grph-inc.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupexternalfigure"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupexternalfigure" file="grph-inc.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="label">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="page">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="object">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="prefix">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="pdf"/>
+                    <cd:constant type="mps"/>
+                    <cd:constant type="jpg"/>
+                    <cd:constant type="png"/>
+                    <cd:constant type="jp2"/>
+                    <cd:constant type="jbig"/>
+                    <cd:constant type="svg"/>
+                    <cd:constant type="eps"/>
+                    <cd:constant type="gif"/>
+                    <cd:constant type="tif"/>
+                    <cd:constant type="mov"/>
+                    <cd:constant type="buffer"/>
+                    <cd:constant type="tex"/>
+                    <cd:constant type="cld"/>
+                    <cd:constant type="auto"/>
+                </cd:parameter>
+                <cd:parameter name="controls">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="preview">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="mask">
+                    <cd:constant type="none"/>
+                </cd:parameter>
+                <cd:parameter name="resolution">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="repeat">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="broad"/>
+                    <cd:constant type="max"/>
+                    <cd:constant type="auto"/>
+                    <cd:constant type="default"/>
+                </cd:parameter>
+                <cd:parameter name="hfactor">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="broad"/>
+                    <cd:constant type="max"/>
+                    <cd:constant type="auto"/>
+                    <cd:constant type="default"/>
+                </cd:parameter>
+                <cd:parameter name="wfactor">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="broad"/>
+                    <cd:constant type="max"/>
+                    <cd:constant type="auto"/>
+                    <cd:constant type="default"/>
+                </cd:parameter>
+                <cd:parameter name="maxwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="maxheight">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="equalwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="equalheight">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="scale">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="xscale">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="yscale">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="s">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="sx">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="sy">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="lines">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="location">
+                    <cd:constant type="local" default="yes"/>
+                    <cd:constant type="global" default="yes"/>
+                    <cd:constant type="default"/>
+                </cd:parameter>
+                <cd:parameter name="directory">
+                    <cd:constant type="cd:path"/>
+                </cd:parameter>
+                <cd:parameter name="option">
+                    <cd:constant type="test"/>
+                    <cd:constant type="frame"/>
+                    <cd:constant type="empty"/>
+                </cd:parameter>
+                <cd:parameter name="forgroundcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="reset">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="background">
+                    <cd:constant type="color"/>
+                    <cd:constant type="foreground"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="frame">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="backgroundcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:inherit name="setupalign"/>
+                </cd:parameter>
+                <cd:parameter name="xmax">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="ymax">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="frames">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="interaction">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="all"/>
+                    <cd:constant type="none" default="yes"/>
+                    <cd:constant type="reference"/>
+                    <cd:constant type="layer"/>
+                    <cd:constant type="bookmark"/>
+                </cd:parameter>
+                <cd:parameter name="bodyfont">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="comment">
+                    <cd:constant type="cd:command"/>
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="size">
+                    <cd:constant type="none"/>
+                    <cd:constant type="media"/>
+                    <cd:constant type="crop"/>
+                    <cd:constant type="trim"/>
+                    <cd:constant type="art"/>
+                </cd:parameter>
+                <cd:parameter name="cache">
+                    <cd:constant type="cd:path"/>
+                </cd:parameter>
+                <cd:parameter name="resources">
+                    <cd:constant type="cd:path"/>
+                </cd:parameter>
+                <cd:parameter name="display">
+                    <cd:constant type="cd:file"/> <!-- an alternative figure often low res .. old school pdf stuff -->
+                </cd:parameter>
+                <cd:parameter name="conversion">
+                    <cd:constant type="cd:text"/> <!-- a extra (kind of) suffix that triggers conversion -->
+                </cd:parameter>
+                <cd:parameter name="order">
+                    <cd:constant type="cd:list"/> <!-- a list of suffixes/types to check -->
+                </cd:parameter>
+                <cd:parameter name="crossreference">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <!-- only passed by the system: -->
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="setupexternalfigures" file="grph-inc.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupexternalfigure"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="useexternalfigure" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-file"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupexternalfigure"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="externalfigure" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupexternalfigure"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getfiguredimensions" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupexternalfigure"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="figurewidth" file="grph-inc.mkiv"/>
+
+    <cd:command name="figureheight" file="grph-inc.mkiv"/>
+
+    <cd:command name="figurenaturalwidth" file="grph-inc.mkiv"/>
+
+    <cd:command name="figurenaturalheight" file="grph-inc.mkiv"/>
+
+    <cd:command name="figurefullname" file="grph-inc.mkiv"/>
+
+    <cd:command name="figurefilename" file="grph-inc.mkiv"/>
+
+    <cd:command name="figurefilepath" file="grph-inc.mkiv"/>
+
+    <cd:command name="figurefiletype" file="grph-inc.mkiv"/>
+
+    <cd:command name="noffigurepages" file="grph-inc.mkiv"/>
+
+    <cd:command name="definegraphictypesynonym" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsefigure" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doiffigureelse" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="registerexternalfigure" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupexternalfigure"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usefigurebase" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="reset"/>
+                <cd:constant type="cd:file"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="externalfigurecollection" type="environment" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="externalfigurecollectionminwidth" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="externalfigurecollectionmaxwidth" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="externalfigurecollectionminheight" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="externalfigurecollectionmaxheight" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="externalfigurecollectionparameter" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-key"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="efcminwidth" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="efcmaxwidth" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="efcminheight" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="efcmaxheight" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="efcparameter" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-key"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="overlayfigure" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bitmapimage" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="color">
+                    <cd:constant type="rgb"/>
+                    <cd:constant type="cmyk"/>
+                    <cd:constant type="gray"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="x">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="y">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bitmapimage" type="environment" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="color">
+                    <cd:constant type="rgb"/>
+                    <cd:constant type="cmyk"/>
+                    <cd:constant type="gray"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="x">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="y">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="typesetbuffer" file="grph-fig.mkiv">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="*"/>
+                <cd:constant type="cd:buffer"/>
+            </cd:keywords>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupexternalfigure"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definetypesetting" file="grph-fig.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-text-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupexternalfigure"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="typesetfile" file="grph-fig.mkiv">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:file"/>
+            </cd:keywords>
+            <cd:keywords optional="yes">
+                <cd:constant type="cd:file"/>
+                <cd:constant type="cd:text"/>
+            </cd:keywords>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupexternalfigure"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="backgroundimage" file="pack-box.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="backgroundimagefill" file="pack-box.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

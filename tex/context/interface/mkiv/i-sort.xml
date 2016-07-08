@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definesorting" file="strc-syn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-singular"/>
+            <cd:resolve name="keyword-plural"/>
+            <cd:keywords optional="yes">
+                <cd:constant type="none"/>
+                <cd:constant type="cd:csname"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupsorting" file="strc-syn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-singular-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="expansion">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="xml"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="first"/>
+                    <cd:constant type="last"/>
+                    <cd:constant type="normal"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="next">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:threearguments"/>
+                </cd:parameter>
+                <cd:parameter name="textcommand">
+                    <cd:constant type="cd:oneargument"/>
+                </cd:parameter>
+                <cd:parameter name="synonymcommand">
+                    <cd:constant type="cd:oneargument"/>
+                </cd:parameter>
+                <cd:parameter name="language">
+                    <cd:resolve name="value-sortorder"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:resolve name="value-sortmethod"/>
+                </cd:parameter>
+                <cd:parameter name="criterium">
+                    <cd:constant type="current"/>
+                    <cd:constant type="previous"/>
+                    <cd:constant type="local"/>
+                    <cd:constant type="text"/>
+                    <cd:constant type="all" default="yes"/>
+                    <cd:constant type="cd:section"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="textstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="textcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="synonymstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="synonymcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="sorting" generated="yes" variant="generated" file="strc-syn.mkiv">
+        <cd:sequence>
+            <cd:variable value="sorting"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definesort" file="strc-syn.mkiv">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="yes"/>
+                <cd:constant type="no" default="yes"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-singular"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placelistofsorts" generated="yes" variant="generated" file="strc-syn.mkiv">
+        <cd:sequence>
+            <cd:string value="placelistof"/>
+            <cd:variable value="sorts"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupsorting"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="completelistofsorts" generated="yes" variant="generated" file="strc-syn.mkiv">
+        <cd:sequence>
+            <cd:string value="completelistof"/>
+            <cd:variable value="sorts"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupsorting"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsecurrentsortingused" file="strc-syn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetusedsortings" file="strc-syn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-singular"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="registersort" file="strc-syn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-singular"/>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placelistofsorts" file="strc-syn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-singular"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupsorting"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="completelistofsorts" file="strc-syn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-singular"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupsorting"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="logo" file="strc-syn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placelistoflogos" file="strc-syn.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupsorting"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="completelistoflogos" file="strc-syn.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupsorting"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="setupTABLE" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="r"/>
+                <cd:constant type="c"/>
+                <cd:constant type="x"/>
+                <cd:constant type="y"/>
+                <cd:constant type="row"/>
+                <cd:constant type="column"/>
+                <cd:constant type="first"/>
+                <cd:constant type="last"/>
+                <cd:constant type="start"/>
+                <cd:constant type="header"/>
+                <cd:constant type="each"/>
+                <cd:constant type="odd"/>
+                <cd:constant type="even"/>
+                <cd:constant type="one"/>
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:number" prefix="-" method="none"/>
+            </cd:keywords>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="first"/>
+                <cd:constant type="least"/>
+                <cd:constant type="each"/>
+                <cd:constant type="two"/>
+                <cd:constant type="odd"/>
+                <cd:constant type="even"/>
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:number" prefix="-" method="none"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:parameter name="extras">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="headcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="headstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="leftmargindistance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rightmargindistance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="columndistance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="maxwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="setups">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="textwidth">
+                    <cd:constant type="cd:dimension"/>
+                    <cd:constant type="local" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="split">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="repeat"/>
+                    <cd:constant type="auto" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="header">
+                    <cd:constant type="repeat"/>
+                </cd:parameter>
+                <cd:parameter name="option">
+                    <cd:constant type="stretch"/>
+                    <cd:constant type="tight"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="samepage">
+                    <cd:constant type="before"/>
+                    <cd:constant type="after"/>
+                    <cd:constant type="both"/>
+                </cd:parameter>
+                <cd:parameter name="spaceinbetween">
+                    <cd:inherit name="blank"/>
+                </cd:parameter>
+                <cd:parameter name="splitoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="aligncharacter">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="alignmentcharacter">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLE" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TD" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="nx">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="ny">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="nc">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="nr">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="m">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="action">
+                    <cd:constant type="cd:reference"/>
+                </cd:parameter>
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TR" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TC" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="bTD"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TX" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="bTD"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TY" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TH" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="bTD"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TN" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="bTD"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLEhead" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLEnext" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLEbody" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLEfoot" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defineTABLEsetup" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TDs" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TRs" type="environment" begin="b" end="e" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLE" type="environment" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLEhead" type="environment" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLEnext" type="environment" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLEbody" type="environment" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLEfoot" type="environment" file="tabl-ntb.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

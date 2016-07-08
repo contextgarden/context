@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="texcode" type="environment" file="catc-ctx.mkiv"/>
+
+    <cd:command name="contextcode" type="environment" file="catc-ctx.mkiv"/>
+
+    <cd:command name="contextdefinitioncode" type="environment" file="catc-ctx.mkiv"/>
+
+    <cd:command name="protect" type="environment" begin="un" end="​" file="catc-def.mkiv"/><!-- end="zero width space" -->
+
+    <cd:command name="newcatcodetable" file="catc-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="catcodetable" type="environment" file="catc-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="extendedcatcodetable" type="environment" file="catc-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installactivecharacter" file="catc-act.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defineactivecharacter" file="catc-act.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installanddefineactivecharacter" file="catc-act.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="makecharacteractive" file="catc-act.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="permitcircumflexescape" file="catc-ini.mkiv"/>
+
+    <cd:command name="permitcaretescape" file="catc-ini.mkiv"/>
+
+    <cd:command name="letcatcodecommand" file="catc-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:keywords delimiters="none">
+                <cd:constant type="cd:character"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defcatcodecommand" file="catc-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:keywords delimiters="none">
+                <cd:constant type="cd:character"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="uedcatcodecommand" file="catc-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:keywords delimiters="none">
+                <cd:constant type="cd:character"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="catcodetable" type="environment" begin="push" end="pop" file="catc-ini.mkiv"/>
+
+    <cd:command name="restorecatcodes" file="catc-ini.mkiv"/>
+
+    <cd:command name="setcatcodetable" file="catc-ini.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tracecatcodetables" file="catc-ini.mkiv"/>
+
+    <cd:command name="catcodetablename" file="catc-ini.mkiv"/>
+
+    <cd:command name="rescan" file="catc-sym.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rescanwithsetup" file="catc-sym.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

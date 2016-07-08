@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineitemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupitemgroup"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupitemgroup" variant="1" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="each"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="intro"/>
+                <cd:constant type="random"/>
+                <cd:constant type="continue"/>
+                <cd:constant type="packed"/>
+                <cd:constant type="autointro"/>
+                <cd:constant type="broad"/>
+                <cd:constant type="text"/>
+                <cd:constant type="before"/>
+                <cd:constant type="after"/>
+                <cd:constant type="nowhite"/>
+                <cd:constant type="margin"/>
+                <cd:constant type="inmargin"/>
+                <cd:constant type="atmargin"/>
+                <cd:constant type="intext"/>
+                <cd:constant type="loose"/>
+                <cd:constant type="fit"/>
+                <cd:constant type="nofit"/>
+                <cd:constant type="paragraph"/>
+                <cd:constant type="joinedup"/>
+                <cd:constant type="serried"/>
+                <cd:constant type="stopper"/>
+                <cd:constant type="unpacked"/>
+                <cd:constant type="repeat"/>
+                <cd:constant type="norepeat"/>
+                <cd:constant type="reverse"/>
+                <cd:constant type="columns"/>
+                <cd:constant type="one"/>
+                <cd:constant type="two"/>
+                <cd:constant type="three"/>
+                <cd:constant type="four"/>
+                <cd:constant type="five"/>
+                <cd:constant type="six"/>
+                <cd:constant type="seven"/>
+                <cd:constant type="eight"/>
+                <cd:constant type="nine"/>
+                <cd:constant type="standard"/>
+                <cd:constant type="broad" prefix="cd:number" method="factor"/>
+                <cd:constant type="serried" prefix="cd:number" method="factor"/>
+                <cd:constant type="horizontal"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="inbetween">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="beforehead">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="afterhead">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="lefttext">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="righttext">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="step">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="margin">
+                    <cd:resolve name="value-leftskip"/>
+                </cd:parameter>
+                <cd:parameter name="leftmargin">
+                    <cd:resolve name="value-leftskip"/>
+                </cd:parameter>
+                <cd:parameter name="rightmargin">
+                    <cd:resolve name="value-rightskip"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:inherit name="setupalign"/>
+                </cd:parameter>
+                <cd:parameter name="indenting">
+                    <cd:resolve name="setupindenting"/>
+                </cd:parameter>
+                <cd:parameter name="start">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="symalign">
+                    <cd:constant type="left"/>
+                    <cd:constant type="middle"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="flushleft"/>
+                    <cd:constant type="center"/>
+                    <cd:constant type="flushright"/>
+                </cd:parameter>
+                <cd:parameter name="symbol">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="indentnext">
+                    <cd:resolve name="value-indentnext"/>
+                </cd:parameter>
+                <cd:parameter name="inner">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:csname"/>
+                </cd:parameter>
+                <cd:parameter name="items">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="maxwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="itemalign">
+                    <cd:resolve name="value-alignsimple"/>
+                </cd:parameter>
+                <cd:parameter name="alignsymbol">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="textdistance">
+                    <cd:constant type="small"/>
+                    <cd:constant type="medium"/>
+                    <cd:constant type="big"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="space" default="yes"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="placestopper">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="headstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="headcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="marstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="marcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="symstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="symcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:inherit name="setupcounter"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupitemgroup" variant="2" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number" prefix="cd:name" method="range"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="inbetween">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="beforehead">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="afterhead">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="lefttext">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="righttext">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="step">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="option">
+                    <cd:constant type="intro"/>
+                    <cd:constant type="random"/>
+                    <cd:constant type="continue"/>
+                    <cd:constant type="packed"/>
+                    <cd:constant type="autointro"/>
+                    <cd:constant type="broad"/>
+                    <cd:constant type="text"/>
+                    <cd:constant type="before"/>
+                    <cd:constant type="after"/>
+                    <cd:constant type="nowhite"/>
+                    <cd:constant type="margin"/>
+                    <cd:constant type="inmargin"/>
+                    <cd:constant type="atmargin"/>
+                    <cd:constant type="intext"/>
+                    <cd:constant type="loose"/>
+                    <cd:constant type="fit"/>
+                    <cd:constant type="nofit"/>
+                    <cd:constant type="paragraph"/>
+                    <cd:constant type="joinedup"/>
+                    <cd:constant type="serried"/>
+                    <cd:constant type="stopper"/>
+                    <cd:constant type="unpacked"/>
+                    <cd:constant type="repeat"/>
+                    <cd:constant type="norepeat"/>
+                    <cd:constant type="reverse"/>
+                    <cd:constant type="columns"/>
+                    <cd:constant type="one"/>
+                    <cd:constant type="two"/>
+                    <cd:constant type="three"/>
+                    <cd:constant type="four"/>
+                    <cd:constant type="five"/>
+                    <cd:constant type="six"/>
+                    <cd:constant type="seven"/>
+                    <cd:constant type="eight"/>
+                    <cd:constant type="nine"/>
+                    <cd:constant type="standard"/>
+                    <cd:constant type="broad" prefix="cd:number" method="factor"/>
+                    <cd:constant type="serried" prefix="cd:number" method="factor"/>
+                    <cd:constant type="horizontal"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="margin">
+                    <cd:resolve name="value-leftskip"/>
+                </cd:parameter>
+                <cd:parameter name="leftmargin">
+                    <cd:resolve name="value-leftskip"/>
+                </cd:parameter>
+                <cd:parameter name="rightmargin">
+                    <cd:resolve name="value-rightskip"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:inherit name="setupalign"/>
+                </cd:parameter>
+                <cd:parameter name="indenting">
+                    <cd:resolve name="setupindenting"/>
+                </cd:parameter>
+                <cd:parameter name="start">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="symalign">
+                    <cd:constant type="left"/>
+                    <cd:constant type="middle"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="flushleft"/>
+                    <cd:constant type="center"/>
+                    <cd:constant type="flushright"/>
+                </cd:parameter>
+                <cd:parameter name="symbol">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="indentnext">
+                    <cd:resolve name="value-indentnext"/>
+                </cd:parameter>
+                <cd:parameter name="inner">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:csname"/>
+                </cd:parameter>
+                <cd:parameter name="items">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="maxwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="itemalign">
+                    <cd:resolve name="value-alignsimple"/>
+                </cd:parameter>
+                <cd:parameter name="alignsymbol">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="textdistance">
+                    <cd:constant type="small"/>
+                    <cd:constant type="medium"/>
+                    <cd:constant type="big"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="space" default="yes"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="placestopper">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="headstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="headcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="marstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="marcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="symstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="symcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:inherit name="setupcounter"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="itemgroup" type="environment" generated="yes" variant="generated" file="strc-itm.mkvi">
+        <cd:sequence>
+            <cd:variable value="itemgroup"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:inherit name="setupitemgroup"/>
+            </cd:keywords>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupitemgroup"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="itemgroup" type="environment" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords list="yes" optional="yes">
+                <cd:inherit name="setupitemgroup"/>
+            </cd:keywords>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupitemgroup"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="item" variant="itemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="itemtag" variant="itemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="itm" variant="itemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="but" variant="itemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+            <cd:resolve name="keyword-reference-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="nop" variant="itemgroup" file="strc-itm.mkvi"/>
+
+    <cd:command name="txt" variant="itemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="keyword-reference-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="head" variant="itemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:delimiter name="par"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="headsym" variant="itemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="keyword-reference-list-optional"/>
+            <cd:resolve name="argument-text-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="sym" variant="itemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ran" variant="itemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mar" variant="itemgroup" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="sub" variant="itemgroup" file="strc-itm.mkvi"/>
+
+    <cd:command name="its" variant="itemgroup" file="strc-itm.mkvi"/>
+
+    <cd:command name="item" type="environment" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="head" type="environment" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-list-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="specialitem" type="environment" variant="1" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="item" default="yes"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-reference-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="specialitem" type="environment" variant="2" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="sym"/>
+                <cd:constant type="ran"/>
+                <cd:constant type="mar"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="specialitem" type="environment" variant="3" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="sub"/>
+                <cd:constant type="its"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="itemize" type="environment" file="strc-itm.mkvi">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:inherit name="setupitemgroup"/>
+            </cd:keywords>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupitemgroup"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

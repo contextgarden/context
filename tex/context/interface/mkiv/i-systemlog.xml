@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="systemlog" file="core-sys.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="systemlogfirst" file="core-sys.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="systemloglast" file="core-sys.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

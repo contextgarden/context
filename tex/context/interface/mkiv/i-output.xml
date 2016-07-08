@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineoutputroutine" file="page-otr.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupoutputroutine"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupoutputroutine" variant="1" file="page-otr.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="cd:key">
+                    <cd:constant type="cd:csname"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupoutputroutine" variant="2" file="page-otr.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defineoutputroutinecommand" file="page-otr.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-key-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="traceoutputroutines" file="page-otr.mkvi"/>
+
+    <cd:command name="installoutputroutine" file="page-otr.mkvi">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

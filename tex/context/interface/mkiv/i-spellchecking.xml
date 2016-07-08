@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="setupspellchecking" file="lang-wrd.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="state">
+                    <cd:constant type="start"/>
+                    <cd:constant type="stop" defult="yes"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="1"/>
+                    <cd:constant type="2"/>
+                    <cd:constant type="3"/>
+                </cd:parameter>
+                <cd:parameter name="list">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="loadspellchecklist" file="lang-wrd.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

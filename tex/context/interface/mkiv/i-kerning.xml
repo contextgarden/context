@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definecharacterkerning" file="typo-krn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupcharacterkerning"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupcharacterkerning" file="typo-krn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="factor">
+                    <cd:constant type="max"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="features">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setcharacterkerning" file="typo-krn.mkiv">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="reset"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetcharacterkerning" file="typo-krn.mkiv"/>
+
+    <cd:command name="characterkerning" generated="yes" variant="generated" file="typo-krn.mkiv">
+        <cd:sequence>
+            <cd:variable value="characterkerning"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-number-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="kerncharacters" file="typo-krn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-number-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="letterspacing" file="typo-krn.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-number-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="stretched" file="typo-krn.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupstretched"/>
+            </cd:assignments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupstretched" file="typo-krn.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupcharacterkerning"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

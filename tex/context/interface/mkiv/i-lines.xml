@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="noflines" file="supp-box.mkiv"/>
+
+    <cd:command name="getnoflines" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dimension"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getroundednoflines" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dimension"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getrawnoflines" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dimension"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="determinenoflines" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definelines" file="spac-lin.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplines"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuplines" file="spac-lin.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="option">
+                    <cd:constant type="packed"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="inbetween">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="indenting">
+                    <cd:inherit name="setupindenting"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:inherit name="setupalign"/>
+                </cd:parameter>
+                <cd:parameter name="space">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="on"/>
+                    <cd:constant type="off"/>
+                    <cd:constant type="fixed"/>
+                    <cd:constant type="default" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="lines" type="environment" generated="yes" variant="generated" file="spac-lin.mkiv">
+        <cd:sequence>
+            <cd:variable value="lines"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplines"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="lines" type="environment" file="spac-lin.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplines"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="emptylines" file="spac-lin.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-number-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

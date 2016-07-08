@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="setupdirections" file="typo-dir.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="bidi">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                    <cd:constant type="local"/>
+                    <cd:constant type="global"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="one"/>
+                    <cd:constant type="two"/>
+                    <cd:constant type="default" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="fences">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setdirection" file="typo-dir.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetdirection" file="typo-dir.mkiv"/>
+
+    <!--
+
+        <cd:command name="lefttorightmark" file="typo-dir.mkiv"/>
+
+        <cd:command name="righttoleftmark" file="typo-dir.mkiv"/>
+
+        <cd:command name="lrm" file="typo-dir.mkiv"/>
+
+        <cd:command name="rlm" file="typo-dir.mkiv"/>
+
+    -->
+
+    <cd:command name="showdirsinmargin" file="supp-dir.mkiv"/>
+
+    <cd:command name="istltdir" file="supp-dir.mkiv">
+        <cd:arguments>
+            <cd:keywords delimiters="none">
+                <cd:constant type="TLT"/>
+                <cd:constant type="TRT"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="istrtdir" file="supp-dir.mkiv">
+        <cd:arguments>
+            <cd:keywords delimiters="none">
+                <cd:constant type="TLT"/>
+                <cd:constant type="TRT"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

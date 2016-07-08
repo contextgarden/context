@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineparagraphs" file="tabl-mis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupparagraphs"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupparagraphs" variant="1" file="tabl-mis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="each"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                    <cd:constant type="fit" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="top">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="bottom">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:inherit name="setupalign"/>
+                </cd:parameter>
+                <cd:parameter name="inner">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="rule">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rulecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupparagraphs" variant="2" file="tabl-mis.mkiv">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="cd:number" prefix="cd:name" method="range"/>
+            </cd:keywords>
+            <cd:assignments list="yes">
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                    <cd:constant type="fit" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="top">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="bottom">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:inherit name="setupalign"/>
+                </cd:parameter>
+                <cd:parameter name="inner">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="rule">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rulecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="paragraphs" type="environment" file="tabl-mis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="nextparagraphs" file="tabl-mis.mkiv"/>
+
+    <cd:command name="paragraphs" type="environment" generated="yes" variant="generated" file="tabl-mis.mkiv">
+        <cd:sequence>
+            <cd:variable value="paragraphs"/>
+        </cd:sequence>
+    </cd:command>
+
+    <cd:command name="paragraphs" generated="yes" variant="generated" file="tabl-mis.mkiv">
+        <cd:sequence>
+            <cd:variable value="paragraphs"/>
+        </cd:sequence>
+    </cd:command>
+
+    <cd:command name="nextparagraphs" generated="yes" variant="generated" file="tabl-mis.mkiv">
+        <cd:sequence>
+            <cd:string value="next"/>
+            <cd:variable value="paragraphs"/>
+        </cd:sequence>
+    </cd:command>
+
+    <cd:command name="paragraphscell" type="environment" file="tabl-mis.mkiv"/>
+
+</cd:interface>

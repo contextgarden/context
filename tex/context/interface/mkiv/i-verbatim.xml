@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definetype" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptype"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuptype" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="option">
+                    <cd:constant type="mp"/>
+                    <cd:constant type="lua"/>
+                    <cd:constant type="xml"/>
+                    <cd:constant type="parsed-xml"/>
+                    <cd:constant type="nested"/>
+                    <cd:constant type="tex"/>
+                    <cd:constant type="context"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:csname"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="tab">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="compact">
+                    <cd:constant type="absolute"/>
+                    <cd:constant type="last"/>
+                    <cd:constant type="all" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="escape">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="cd:text"/>
+                    <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="lines">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="normal"/>
+                    <cd:constant type="hyphenated"/>
+                </cd:parameter>
+                <cd:parameter name="space">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                    <cd:constant type="normal"/>
+                    <cd:constant type="fixed"/>
+                    <cd:constant type="stretch"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>        
+
+    <cd:command name="type" variant="1" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptype"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="type" variant="2" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptype"/>
+            </cd:assignments>
+            <cd:angles/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="typ" variant="1" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptype"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="typ" variant="2" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptype"/>
+            </cd:assignments>
+            <cd:angles/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="type" generated="yes" variant="generated:1" file="buff-ver.mkiv">
+        <cd:sequence>
+            <cd:variable value="type"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptype"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="type" generated="yes" variant="generated:2" file="buff-ver.mkiv">
+        <cd:sequence>
+            <cd:variable value="type"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptype"/>
+            </cd:assignments>
+            <cd:angles/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definetyping" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptyping"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuptyping" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional-list"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="oddmargin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="evenmargin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="margin">
+                    <cd:resolve name="value-leftskip"/>
+                </cd:parameter>
+                <cd:parameter name="option">
+                    <cd:constant type="mp"/>
+                    <cd:constant type="lua"/>
+                    <cd:constant type="xml"/>
+                    <cd:constant type="parsed-xml"/>
+                    <cd:constant type="nested"/>
+                    <cd:constant type="tex"/>
+                    <cd:constant type="context"/>
+                    <cd:constant type="none" default="yes"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:inherit name="setupalign"/>
+                </cd:parameter>
+                <cd:parameter name="lines">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="normal"/>
+                    <cd:constant type="hyphenated"/>
+                </cd:parameter>
+                <cd:parameter name="space">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                    <cd:constant type="normal"/>
+                    <cd:constant type="fixed"/>
+                    <cd:constant type="stretch"/>
+                </cd:parameter>
+                <cd:parameter name="keeptogether">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="strip">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="range">
+                    <cd:constant type="cd:number"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="tab">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="escape">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="cd:text"/>
+                    <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
+                </cd:parameter>
+                <cd:parameter name="indentnext">
+                    <cd:resolve name="value-indentnext"/>
+                </cd:parameter>
+                <cd:parameter name="continue">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="start">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="stop">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="step">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="numbering">
+                    <cd:constant type="file"/>
+                    <cd:constant type="line"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="blank">
+                    <cd:inherit name="blank"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="typing" type="environment" variant="1" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptyping"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="typing" type="environment" variant="2" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="continue"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="typing" type="environment" generated="yes" variant="generated:1" file="buff-ver.mkiv">
+        <cd:sequence>
+            <cd:variable value="typing"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptyping"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="typing" type="environment" generated="yes" variant="generated:2" file="buff-ver.mkiv">
+        <cd:sequence>
+            <cd:variable value="typing"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="continue"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tex" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="arg" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mat" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dis" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="astype" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="asciistr" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="verbatim" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="filename" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="typefile" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptyping"/>
+            </cd:assignments>
+            <cd:resolve name="argument-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsetypingfile" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doiftypingfileelse" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="LUA" type="environment" variant="1" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptyping"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="LUA" type="environment" variant="2" file="buff-ver.mkiv">
+        <cd:sequence>
+            <cd:variable value="lua"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="continue"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="MP" type="environment" variant="1" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptyping"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="MP" type="environment" variant="2" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="continue"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="XML" type="environment" variant="1" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptyping"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="XML" type="environment" variant="2" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="continue"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="PARSEDXML" type="environment" variant="1" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptyping"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="PARSEDXML" type="environment" variant="2" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="continue"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TEX" type="environment" variant="1" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptyping"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TEX" type="environment" variant="2" file="buff-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="continue"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

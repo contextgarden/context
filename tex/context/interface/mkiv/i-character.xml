@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="letteropenbrace" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterclosebrace" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterampersand" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterless" file="catc-sym.mkiv"/>
+
+    <cd:command name="lettermore" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterhash" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterdoublequote" file="catc-sym.mkiv"/>
+
+    <cd:command name="lettersinglequote" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterdollar" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterpercent" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterhat" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterunderscore" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterbar" file="catc-sym.mkiv"/>
+
+    <cd:command name="lettertilde" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterbackslash" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterslash" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterquestionmark" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterat" file="catc-sym.mkiv"/>
+
+    <cd:command name="lettercolon" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterescape" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterbgroup" file="catc-sym.mkiv"/>
+
+    <cd:command name="letteregroup" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterleftbrace" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterrightbrace" file="catc-sym.mkiv"/>
+
+    <cd:command name="letterexclamationmark" file="catc-sym.mkiv"/>
+
+    <cd:command name="utfchar" file="char-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="safechar" file="char-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="checkedchar" file="char-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="textormathchar" file="char-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="chardescription" file="char-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="percent" file="enco-ini.mkiv"/>
+
+    <cd:command name="procent" file="enco-ini.mkiv"/>
+
+    <cd:command name="ampersand" file="enco-ini.mkiv"/>
+
+    <cd:command name="dollar" file="enco-ini.mkiv"/>
+
+    <cd:command name="hash" file="enco-ini.mkiv"/>
+
+    <cd:command name="hyphen" file="enco-ini.mkiv"/>
+
+    <cd:command name="lowerleftsingleninequote" file="enco-ini.mkiv"/>
+
+    <cd:command name="lowerleftdoubleninequote" file="enco-ini.mkiv"/>
+
+    <cd:command name="lowerrightsingleninequote" file="enco-ini.mkiv"/>
+
+    <cd:command name="lowerrightdoubleninequote" file="enco-ini.mkiv"/>
+
+    <cd:command name="upperleftsingleninequote" file="enco-ini.mkiv"/>
+
+    <cd:command name="upperleftdoubleninequote" file="enco-ini.mkiv"/>
+
+    <cd:command name="upperrightsingleninequote" file="enco-ini.mkiv"/>
+
+    <cd:command name="upperrightdoubleninequote" file="enco-ini.mkiv"/>
+
+    <cd:command name="upperleftsinglesixquote" file="enco-ini.mkiv"/>
+
+    <cd:command name="upperleftdoublesixquote" file="enco-ini.mkiv"/>
+
+    <cd:command name="upperrightsinglesixquote" file="enco-ini.mkiv"/>
+
+    <cd:command name="upperrightdoublesixquote" file="enco-ini.mkiv"/>
+
+    <cd:command name="leftsubguillemot" file="enco-ini.mkiv"/>
+
+    <cd:command name="rightsubguillemot" file="enco-ini.mkiv"/>
+
+    <cd:command name="textcontrolspace" file="enco-ini.mkiv"/>
+
+    <cd:command name="textvisiblespace" file="enco-ini.mkiv"/>
+
+    <cd:command name="textminus" file="enco-ini.mkiv"/>
+
+    <cd:command name="textplus" file="enco-ini.mkiv"/>
+
+</cd:interface>

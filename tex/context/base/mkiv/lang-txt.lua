@@ -552,7 +552,7 @@ data.labels={
    },
   },
   ["april:mnem"]={
-  labels={
+   labels={
     af="",
     ca="",
     cs="dub.",
@@ -2298,6 +2298,78 @@ data.labels={
     tr="çarşamba",
     ua="середа",
     vi="thứ tư",
+   },
+  },
+  ["august:jalali"] = {
+   labels = {
+    en = "Aban",
+    fa = "آبان",
+   },
+  },
+  ["november:jalali"] = {
+   labels = {
+    en = "Bahman",
+    fa = "unset",
+   },
+  },
+  ["september:jalali"] = {
+   labels = {
+    en = "Azar",
+    fa = "آذر",
+   },
+  },
+  ["october:jalali"] = {
+   labels = {
+    en = "Dey",
+    fa = "دی",
+   },
+  },
+  ["december:jalali"] = {
+   labels = {
+    en = "Esfand",
+    fa = "اسفند",
+   },
+  },
+  ["januari:jalali"] = {
+   labels = {
+    en = "Farvardin",
+    fa = "فروردین",
+   },
+  },
+  ["march:jalali"] = {
+   labels = {
+    en = "Khordad",
+    fa = "خرداد",
+   },
+  },
+  ["july:jalali"] = {
+   labels = {
+    en = "Mehr",
+    fa = "مهر",
+   },
+  },
+  ["may:jalali"] = {
+   labels = {
+    en = "Mordad",
+    fa = "مرداد",
+   },
+  },
+  ["februari:jalali"] = {
+   labels = {
+    en = "Ordibehesht",
+    fa = "اردیبهشت",
+   },
+  },
+  ["june:jalali"] = {
+   labels = {
+    en = "Shahrivar",
+    fa = "شهریور",
+   },
+  },
+  ["april:jalali"] = {
+   labels = {
+    en = "Tir",
+    fa = "تیر",
    },
   },
  },

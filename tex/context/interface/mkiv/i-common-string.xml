@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <!--       *  -->
+    <!-- \... ... -->
+    <!--          -->
+    <!-- * TRUE   -->
+
+    <cd:define name="string-true">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:true"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *  -->
+    <!-- \... ... -->
+    <!--          -->
+    <!-- * FALSE  -->
+
+    <cd:define name="string-false">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:false"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *      -->
+    <!-- \... ...     -->
+    <!--              -->
+    <!-- * IDENTIFIER -->
+
+    <cd:define name="string-name">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:name"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *  -->
+    <!-- \... ... -->
+    <!--          -->
+    <!-- * TEXT   -->
+
+    <cd:define name="string-text">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:text"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *     -->
+    <!-- \... ...    -->
+    <!--             -->
+    <!-- * CHARACTER -->
+
+    <cd:define name="string-character">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:character"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *  -->
+    <!-- \... ... -->
+    <!--          -->
+    <!-- * NUMBER -->
+
+    <cd:define name="string-number">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:number"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="string-number-optional">
+        <cd:keywords delimiters="none" optional="yes">
+            <cd:constant type="cd:number"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *   -->
+    <!-- \... ...  -->
+    <!--           -->
+    <!-- * CONTENT -->
+
+    <cd:define name="string-content">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:content"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *   -->
+    <!-- \... ...  -->
+    <!--           -->
+    <!-- * COMMAND -->
+
+    <cd:define name="string-command">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:command"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *  -->
+    <!-- \... ... -->
+    <!--          -->
+    <!-- * FILE   -->
+
+    <cd:define name="string-file">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:file"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *  -->
+    <!-- \... ... -->
+    <!--          -->
+    <!-- * FONT   -->
+
+    <cd:define name="string-font">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:font"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *     -->
+    <!-- \... ...    -->
+    <!--             -->
+    <!-- * DIMENSION -->
+
+    <cd:define name="string-dimension">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:dimension"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *  -->
+    <!-- \... ... -->
+    <!--          -->
+    <!-- * BOX    -->
+
+    <cd:define name="string-box">
+        <cd:keywords delimiters="none">
+            <cd:constant type="cd:csname"/>
+            <cd:constant type="cd:number"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *      -->
+    <!-- \... ...     -->
+    <!--              -->
+    <!-- * BOXOPTIONS -->
+
+    <cd:define name="string-boxoptions">
+        <cd:keywords delimiters="none" optional="yes">
+            <cd:constant type="cd:text"/>
+        </cd:keywords>
+    </cd:define>
+
+</cd:interface>

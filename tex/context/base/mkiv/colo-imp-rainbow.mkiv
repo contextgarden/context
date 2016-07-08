@@ -1,0 +1,252 @@
+%D \module
+%D   [       file=colo-imp-rainbow,
+%D        version=2016.03.21,
+%D          title=\CONTEXT\ Color Macros,
+%D       subtitle=X11,
+%D         author=Alan Braslau]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D \subsubject{For scientists by scientists}
+%D
+%D We define color groups having equal gray scale values by either reducing 
+%D their rgb values to darken them or by adding equal amounts of $r=g=b$ to 
+%D lighten them.
+%D
+%D \startformula
+%D s = .3r + .59g + .11b
+%D \stopformula
+%D
+%D By the way, \CONTEXT\ has always used this formula internally when colors 
+%D are converted to gray. 
+
+\definecolorgroup
+  [gray]
+  [0.1:0.1:0.1,
+   0.2:0.2:0.2,
+   0.3:0.3:0.3,
+   0.4:0.4:0.4,
+   0.5:0.5:0.5,
+   0.6:0.6:0.6,
+   0.7:0.7:0.7,
+   0.8:0.8:0.8,
+   0.9:0.9:0.9,
+   1.0:1.0:1.0]
+
+\definecolorgroup
+  [red]
+  [0.333:0.000:0.000,
+   0.667:0.000:0.000,
+   1.000:0.000:0.000,
+   1.000:0.143:0.143,
+   1.000:0.286:0.286,
+   1.000:0.429:0.429,
+   1.000:0.571:0.571,
+   1.000:0.714:0.714,
+   1.000:0.857:0.857]
+
+\definecolorgroup
+  [green]
+  [0.000:0.169:0.000,
+   0.000:0.339:0.000,
+   0.000:0.508:0.000,
+   0.000:0.678:0.000,
+   0.000:0.847:0.000,
+   0.024:1.000:0.024,
+   0.268:1.000:0.268,
+   0.512:1.000:0.512,
+   0.756:1.000:0.756]
+
+\definecolorgroup
+  [blue]
+  [0.000:0.000:0.909,
+   0.101:0.101:1.000,
+   0.213:0.213:1.000,
+   0.326:0.326:1.000,
+   0.438:0.438:1.000,
+   0.551:0.551:1.000,
+   0.663:0.663:1.000,
+   0.775:0.775:1.000,
+   0.888:0.888:1.000]
+
+\definecolorgroup
+  [cyan]
+  [0.000:0.143:0.143,
+   0.000:0.286:0.286,
+   0.000:0.429:0.429,
+   0.000:0.571:0.571,
+   0.000:0.714:0.714,
+   0.000:0.857:0.857,
+   0.000:1.000:1.000,
+   0.333:1.000:1.000,
+   0.667:1.000:1.000]
+
+\definecolorgroup
+  [magenta]
+  [0.244:0.000:0.244,
+   0.488:0.000:0.488,
+   0.732:0.000:0.732,
+   0.976:0.000:0.976,
+   1.000:0.153:1.000,
+   1.000:0.322:1.000,
+   1.000:0.492:1.000,
+   1.000:0.661:1.000,
+   1.000:0.831:1.000]
+
+\definecolorgroup
+  [yellow]
+  [0.112:0.112:0.000,
+   0.225:0.225:0.000,
+   0.337:0.337:0.000,
+   0.449:0.449:0.000,
+   0.562:0.562:0.000,
+   0.674:0.674:0.000,
+   0.787:0.787:0.000,
+   0.899:0.899:0.000,
+   1.000:1.000:0.091]
+
+\definecolorgroup
+  [orange]
+  [0.147:0.095:0.000,
+   0.293:0.190:0.000,
+   0.440:0.285:0.000,
+   0.587:0.380:0.000,
+   0.733:0.475:0.000,
+   0.880:0.569:0.000,
+   1.000:0.673:0.026,
+   1.000:0.816:0.169,
+   1.000:0.959:0.312]
+
+\definecolorgroup
+  [violet]
+  [0.137:0.075:0.137,
+   0.273:0.149:0.273,
+   0.410:0.224:0.410,
+   0.546:0.298:0.546,
+   0.683:0.373:0.683,
+   0.819:0.448:0.819,
+   0.950:0.527:0.950,
+   1.000:0.661:1.000,
+   1.000:0.831:1.000]
+
+\definecolorgroup
+  [brown]
+  [0.209:0.053:0.053,
+   0.417:0.106:0.106,
+   0.627:0.160:0.160,
+   0.737:0.255:0.255,
+   0.837:0.355:0.355,
+   0.937:0.455:0.455,
+   1.000:0.571:0.571,
+   1.000:0.714:0.714,
+   1.000:0.857:0.857]
+
+%D Define \quote{rainbow} color palets having equal grayscale values.
+%D The names correspond to the number color codes used on electrical resistances.
+
+\dorecurse {9} {
+  \definepalet
+    [rainbow#1]
+    [  one#1=brown:#1,
+       two#1=red:#1,
+     three#1=orange:#1,
+      four#1=yellow:#1,
+      five#1=green:#1,
+       six#1=blue:#1,
+     seven#1=violet:#1,
+     eight#1=gray:#1]
+}
+
+%D Define two more color palets showing grayscale contrast.
+%D Note that \emph{none} of these palets are very aesthetic!
+
+\definepalet
+  [rainbow0]
+  [  one0=brown:8,
+     two0=red:7,
+   three0=orange:6,
+    four0=yellow:5,
+    five0=green:4,
+     six0=blue:3,
+   seven0=violet:2,
+   eight0=gray:1]
+
+\definepalet
+  [rainbow]
+  [ zero=black,
+     one=brown:1,
+     two=red:2,
+   three=orange:3,
+    four=yellow:4,
+    five=green:5,
+     six=blue:6,
+   seven=violet:7,
+   eight=gray:8,
+    nine=white]
+
+\continueifinputfile{colo-imp-rainbow.mkiv}
+
+\usemodule[art-01] \setupbodyfont[8pt]
+
+\starttexdefinition ShowSomething #1
+    \startpacked
+        \dorecurse {9} {
+            \dontleavehmode
+            \start
+                \ttbf
+                \color      [#1:##1] {\hbox to 6em{#1:##1\hss}}
+                \tttf
+                \quad
+                \colorvalue {#1:##1}
+                \quad
+                \grayvalue  {#1:##1}
+                \quad
+            \stop
+            \par
+        }
+    \stoppacked
+\stoptexdefinition
+
+\starttext
+
+    \startcolumns [n=2,distance=0pt]
+        \ShowSomething {gray}
+        \ShowSomething {brown}
+        \ShowSomething {red}
+        \ShowSomething {orange}
+        \ShowSomething {yellow}
+        \ShowSomething {green}
+        \column
+        \ShowSomething {cyan}
+        \ShowSomething {blue}
+        \ShowSomething {magenta}
+        \ShowSomething {violet}
+    \stopcolumns
+
+    \startalignment [flushleft]
+        \dontleavehmode
+        \showcolorgroup [brown]   [vertical,name,number]
+        \showcolorgroup [red]     [vertical,name]
+        \showcolorgroup [orange]  [vertical,name]
+        \showcolorgroup [yellow]  [vertical,name]
+        \showcolorgroup [green]   [vertical,name]
+        \showcolorgroup [cyan]    [vertical,name]
+        \showcolorgroup [blue]    [vertical,name]
+        \showcolorgroup [violet]  [vertical,name]
+        \showcolorgroup [magenta] [vertical,name]
+        \showcolorgroup [gray]    [vertical,name]
+    \stopalignment
+
+    \page
+
+    \dorecurse {9} {
+        \comparepalet [rainbow#1]
+    }
+
+    \comparepalet [rainbow0]
+
+    \comparepalet [rainbow]
+
+\stoptext

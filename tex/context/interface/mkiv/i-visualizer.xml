@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="ruledhbox" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ruledvbox" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ruledvtop" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ruledtopv" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ruledhpack" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ruledvpack" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ruledtpack" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ruledmbox" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="filledhboxr" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="filledhboxg" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="filledhboxb" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="filledhboxc" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="filledhboxm" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="filledhboxy" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="filledhboxk" file="trac-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showmakeup" file="trc-vis.mkiv">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="makeup" default="yes"/>
+                <cd:constant type="all"/>
+                <cd:constant type="boxes"/>
+                <cd:constant type="glyph"/>
+                <cd:constant type="fontkern"/>
+                <cd:constant type="hbox"/>
+                <cd:constant type="vbox"/>
+                <cd:constant type="vtop"/>
+                <cd:constant type="kern"/>
+                <cd:constant type="glue"/>
+                <cd:constant type="penalty"/>
+                <cd:constant type="strut"/>
+                <cd:constant type="whatsit"/>
+                <cd:constant type="simple"/>
+                <cd:constant type="simplehbox"/>
+                <cd:constant type="simplevbox"/>
+                <cd:constant type="simplevtop"/>
+                <cd:constant type="user"/>
+                <cd:constant type="math"/>
+                <cd:constant type="italic"/>
+                <cd:constant type="origin"/>
+                <cd:constant type="reset"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showallmakeup" file="trc-vis.mkiv"/>
+
+    <cd:command name="showboxes" file="trc-vis.mkiv"/>
+
+    <cd:command name="showglyphs" file="trc-vis.mkiv"/>
+
+    <cd:command name="showfontkerns" file="trc-vis.mkiv"/>
+
+    <cd:command name="setvisualizerfont" file="trc-vis.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-font-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetvisualizers" file="trc-vis.mkiv"/>
+
+</cd:interface>

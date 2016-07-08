@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineinterlinespace" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupinterlinespace"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupinterlinespace" variant="1" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="line">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="depth">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="minheight">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="mindepth">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="top">
+                    <cd:constant type="cd:number"/>
+                    <cd:constant type="height"/>
+                </cd:parameter>
+                <cd:parameter name="bottom">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="stretch">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="shrink">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupinterlinespace" variant="2" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="on"/>
+                <cd:constant type="off"/>
+                <cd:constant type="reset"/>
+                <cd:constant type="auto"/>
+                <cd:constant type="small"/>
+                <cd:constant type="medium"/>
+                <cd:constant type="big"/>
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:dimension"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupinterlinespace" variant="3" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuplocalinterlinespace" variant="1" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupinterlinespace"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuplocalinterlinespace" variant="2" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="on"/>
+                <cd:constant type="off"/>
+                <cd:constant type="reset"/>
+                <cd:constant type="auto"/>
+                <cd:constant type="small"/>
+                <cd:constant type="medium"/>
+                <cd:constant type="big"/>
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:dimension"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuplocalinterlinespace" variant="3" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="switchtointerlinespace" variant="1" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupinterlinespace"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="switchtointerlinespace" variant="2" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="on"/>
+                <cd:constant type="off"/>
+                <cd:constant type="reset"/>
+                <cd:constant type="auto"/>
+                <cd:constant type="small"/>
+                <cd:constant type="medium"/>
+                <cd:constant type="big"/>
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:dimension"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="switchtointerlinespace" variant="3" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dosetupcheckedinterlinespace" variant="1" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:assignments delimiters="braces" list="yes">
+                <cd:inherit name="setupinterlinespace"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dosetupcheckedinterlinespace" variant="2" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords delimiters="braces" list="yes">
+                <cd:constant type="on"/>
+                <cd:constant type="off"/>
+                <cd:constant type="reset"/>
+                <cd:constant type="auto"/>
+                <cd:constant type="small"/>
+                <cd:constant type="medium"/>
+                <cd:constant type="big"/>
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:dimension"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dosetupcheckedinterlinespace" variant="3" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="useinterlinespaceparameter" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

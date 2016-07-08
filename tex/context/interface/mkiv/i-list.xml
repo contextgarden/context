@@ -1,0 +1,620 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definelist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-list-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuplist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-list-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="state">
+                    <cd:constant type="start" default="yes"/>
+                    <cd:constant type="stop"/>
+                </cd:parameter>
+                <cd:parameter name="location">
+                    <cd:constant type="none"/>
+                    <cd:constant type="here"/>
+                </cd:parameter>
+                <cd:parameter name="type">
+                    <cd:constant type="simple"/>
+                    <cd:constant type="command"/>
+                    <cd:constant type="userdata"/>
+                </cd:parameter>
+                <cd:parameter name="criterium">
+                    <cd:constant type="local" default="yes"/>
+                    <cd:constant type="intro"/>
+                    <cd:constant type="reference"/>
+                    <cd:constant type="reference" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="all"/>
+                    <cd:constant type="all" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="text"/>
+                    <cd:constant type="text" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="current"/>
+                    <cd:constant type="current" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="here"/>
+                    <cd:constant type="previous"/>
+                    <cd:constant type="previous" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="component"/>
+                    <cd:constant type="cd:section"/>
+                    <cd:constant type="cd:section" prefix="cd:sectionblock" method="range"/>
+                </cd:parameter>
+                <cd:parameter name="list">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="broad"/>
+                    <cd:constant type="auto"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="broad" default="yes"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="depth">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="broad" default="yes"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="symbol">
+                    <cd:constant type="one"/>
+                    <cd:constant type="two"/>
+                    <cd:constant type="three"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="default" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="label">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="starter">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="stopper">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:threeargument"/>
+                </cd:parameter>
+                <cd:parameter name="numbercommand">
+                    <cd:constant type="cd:oneargument"/>
+                </cd:parameter>
+                <cd:parameter name="textcommand">
+                    <cd:constant type="cd:oneargument"/>
+                </cd:parameter>
+                <cd:parameter name="pagecommand">
+                    <cd:constant type="cd:oneargument"/>
+                </cd:parameter>
+                <cd:parameter name="pagenumber">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="always"/>
+                </cd:parameter>
+                <cd:parameter name="headnumber">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="always"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="inbetween">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="margin">
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="aligntitle">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="numberalign">
+                    <cd:resolve name="value-alignsimple"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:inherit name="setupalign"/>
+                </cd:parameter>
+                <cd:parameter name="hang">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="interaction">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="all" default="yes"/>
+                    <cd:constant type="number"/>
+                    <cd:constant type="text"/>
+                    <cd:constant type="title"/>
+                    <cd:constant type="page"/>
+                    <cd:constant type="sectionnumber"/>
+                    <cd:constant type="pagenumber"/>
+                </cd:parameter>
+                <cd:parameter name="limittext">
+                    <cd:resolve name="value-limittext"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="numberstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="numbercolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="textstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="textcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="pagestyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="pagecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="reference">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="extras">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="order">
+                    <cd:constant type="command"/>
+                    <cd:constant type="all"/>
+                    <cd:constant type="title"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="a"/>
+                    <cd:constant type="b" default="yes"/>
+                    <cd:constant type="c"/>
+                    <cd:constant type="d"/>
+                    <cd:constant type="e"/>
+                    <cd:constant type="f"/>
+                    <cd:constant type="g"/>
+                    <cd:constant type="left"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="top"/>
+                    <cd:constant type="bottom"/>
+                    <cd:constant type="command"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="interactive"/>
+                    <cd:constant type="paragraph"/>
+                    <cd:constant type="horizontal"/>
+                    <cd:constant type="vertical"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="maxwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="pageprefix">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="pageprefixseparatorset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="pageprefixconversionset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="pageprefixset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="pageprefixsegments">
+                    <cd:resolve name="value-prefixsegments"/>
+                </cd:parameter>
+                <cd:parameter name="pageprefixconnector">
+                    <cd:resolve name="value-connector"/>
+                </cd:parameter>
+                <cd:parameter name="pageconversionset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="pagestarter">
+                    <cd:resolve name="value-starter"/>
+                </cd:parameter>
+                <cd:parameter name="pagestopper">
+                    <cd:resolve name="value-stopper"/>
+                </cd:parameter>
+                <!--
+                    <cd:parameter name="prefix">
+                        <cd:constant type="yes"/>
+                        <cd:constant type="no"/>
+                    </cd:parameter>
+                    <cd:parameter name="prefixseparatorset">
+                        <cd:constant type="cd:name"/>
+                    </cd:parameter>
+                    <cd:parameter name="prefixconversionset">
+                        <cd:constant type="cd:name"/>
+                    </cd:parameter>
+                    <cd:parameter name="prefixstarter">
+                        <cd:resolve name="value-starter"/>
+                    </cd:parameter>
+                    <cd:parameter name="prefixstopper">
+                        <cd:resolve name="value-stopper"/>
+                    </cd:parameter>
+                    <cd:parameter name="prefixset">
+                        <cd:constant type="cd:name"/>
+                    </cd:parameter>
+                    <cd:parameter name="prefixsegments">
+                        <cd:resolve name="value-prefixsegments"/>
+                    </cd:parameter>
+                    <cd:parameter name="prefixconnector">
+                        <cd:resolve name="value-connector"/>
+                    </cd:parameter>
+                    <cd:parameter name="numberseparatorset">
+                        <cd:constant type="cd:name"/>
+                    </cd:parameter>
+                    <cd:parameter name="numberconversionset">
+                        <cd:constant type="cd:name"/>
+                    </cd:parameter>
+                    <cd:parameter name="numberstarter">
+                        <cd:resolve name="value-starter"/>
+                    </cd:parameter>
+                    <cd:parameter name="numberstopper">
+                        <cd:resolve name="value-stopper"/>
+                    </cd:parameter>
+                    <cd:parameter name="numbersegments">
+                        <cd:resolve name="value-numbersegments"/>
+                    </cd:parameter>
+                -->
+                <cd:inherit name="setupcounter"/>
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="setuplists" file="strc-lst.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-list-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuplist"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="doifelselist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-list"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doiflistelse" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-list"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="writebetweenlist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-list"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="writedatatolist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-list"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="writetolist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-list"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placelist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-list-list"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placerawlist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-list"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="completelist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-list"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definecombinedlist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-list-list"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupcombinedlist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-list"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placecombinedlist" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-list"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupcombinedlist" generated="yes" variant="generated" file="strc-lst.mkvi">
+        <cd:sequence>
+            <cd:string value="setup"/>
+            <cd:variable value="combinedlist"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placecombinedlist" generated="yes" variant="generated" file="strc-lst.mkvi">
+        <cd:sequence>
+            <cd:string value="place"/>
+            <cd:variable value="combinedlist"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="completecombinedlist" generated="yes" variant="generated" file="strc-lst.mkvi">
+        <cd:sequence>
+            <cd:string value="complete"/>
+            <cd:variable value="combinedlist"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupcontent" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placecontent" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="completecontent" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="structurelistuservariable" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rawstructurelistuservariable" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsestructurelisthaspage" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifstructurelisthaspageelse" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsestructurelisthasnumber" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifstructurelisthasnumberelse" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definelistextra" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplistextra"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuplistextra" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definelistalternative" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplistalternative"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuplistalternative" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:threearguments"/>
+                </cd:parameter>
+                <cd:parameter name="renderingsetup">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="stretch">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="filler">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="determinelistcharacteristics" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-list-list"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="currentlistentrynumber" file="strc-lst.mkvi"/>
+
+    <cd:command name="currentlistentrytitle" file="strc-lst.mkvi"/>
+
+    <cd:command name="currentlistentrytitlerendered" file="strc-lst.mkvi"/>
+
+    <cd:command name="currentlistentrypagenumber" file="strc-lst.mkvi"/>
+
+    <cd:command name="currentlistsymbol" file="strc-lst.mkvi"/>
+
+    <cd:command name="listlength" file="strc-lst.mkvi"/>
+
+    <cd:command name="currentlistentrywrapper" type="environment" file="strc-lst.mkvi"/>
+
+    <cd:command name="currentlistentryreferenceattribute" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="number"/>
+                <cd:constant type="text"/>
+                <cd:constant type="pagenumber"/>
+                <cd:constant type="all"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="currentlistentrydestinationattribute" file="strc-lst.mkvi"/>
+
+    <cd:command name="currentlistentrylimitedtext" file="strc-lst.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

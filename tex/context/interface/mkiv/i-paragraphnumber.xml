@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="setupparagraphnumbering" file="page-par.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="state">
+                    <cd:constant type="start"/>
+                    <cd:constant type="stop" default="yes"/>
+                    <cd:constant type="line"/>
+                    <cd:constant type="reset"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

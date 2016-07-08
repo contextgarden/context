@@ -284,6 +284,18 @@ specific date with \type {\date}, for instance:
 \LL
 \stoptabulate
 
+There are also some converters built in (more can be added), for instance:
+
+\startbuffer
+The current {\em gregorian} date \currentdate [month, day, {, }, year] is
+in {\em jalali} \currentdate [jalali:to, month, day, {, }, year] but we
+can also as a specific one, so {\em jalali} \date [y=1395, m=4, d=18]
+[month, day, {, }, year] is {\em gregorian} \date [y=1395, m=4, d=18]
+[jalali:from, month, day, {, }, year].
+\stopbuffer
+
+\typebuffer \startnarrower \getbuffer stopnarrower
+
 \stopsection
 
 % \startsection[title=Counters]

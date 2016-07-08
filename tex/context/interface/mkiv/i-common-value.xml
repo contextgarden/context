@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <!-- style = ... -->
+
+    <cd:define name="value-style">
+        <cd:constant type="cd:style"/>
+        <cd:constant type="cd:command"/>
+    </cd:define>
+
+    <!-- mathstyle = ... -->
+
+    <cd:define name="value-mathstyle">
+        <cd:constant type="display"/>
+        <cd:constant type="text"/>
+        <cd:constant type="script"/>
+        <cd:constant type="scriptscript"/>
+        <cd:constant type="cramped"/>
+        <cd:constant type="uncramped"/>
+        <cd:constant type="normal"/>
+        <cd:constant type="packed"/>
+        <cd:constant type="small"/>
+        <cd:constant type="big"/>
+    </cd:define>
+
+    <!-- leftmargin = ... -->
+
+    <cd:define name="value-leftskip">
+        <cd:constant type="yes"/>
+        <cd:constant type="no"/>
+        <cd:constant type="standard"/>
+        <cd:constant type="cd:dimension"/>
+    </cd:define>
+
+    <!-- rightmargin = ... -->
+
+    <cd:define name="value-rightskip">
+        <cd:constant type="yes"/>
+        <cd:constant type="no"/>
+        <cd:constant type="standard"/>
+        <cd:constant type="cd:dimension"/>
+    </cd:define>
+
+    <!-- indentnext = ... -->
+
+    <cd:define name="value-indentnext">
+        <cd:constant type="yes"/>
+        <cd:constant type="no"/>
+        <cd:constant type="auto"/>
+    </cd:define>
+
+    <!-- limittext = ... -->
+
+    <cd:define name="value-limittext">
+        <cd:constant type="yes"/>
+        <cd:constant type="no"/>
+        <cd:constant type="cd:text"/>
+    </cd:define>
+
+    <!-- prefixsegments = ... -->
+
+    <cd:define name="value-prefixsegments">
+        <cd:constant type="cd:number"/>
+        <cd:constant type="cd:number" prefix="cd:number" method="range"/>
+        <cd:constant type="*" prefix="cd:number" method="range"/>
+        <cd:constant type="all" prefix="cd:number" method="range"/>
+        <cd:constant type="cd:section"/>
+        <cd:constant type="cd:section" prefix="cd:section" method="range"/>
+        <cd:constant type="*" prefix="cd:section" method="range"/>
+        <cd:constant type="all" prefix="cd:section" method="range"/>
+    </cd:define>
+
+    <!-- numbersegments = ... -->
+
+    <cd:define name="value-numbersegments">
+        <cd:constant type="cd:number"/>
+        <cd:constant type="cd:number" prefix="cd:number" method="range"/>
+        <cd:constant type="*" prefix="cd:number" method="range"/>
+        <cd:constant type="all" prefix="cd:number" method="range"/>
+    </cd:define>
+
+    <!-- starter = ... -->
+
+    <cd:define name="value-starter">
+        <cd:constant type="cd:command"/>
+        <cd:constant type="cd:command" prefix="cd:processor" method="apply"/>
+    </cd:define>
+
+    <!-- stopper = ... -->
+
+    <cd:define name="value-stopper">
+        <cd:constant type="cd:command"/>
+        <cd:constant type="cd:command" prefix="cd:processor" method="apply"/>
+    </cd:define>
+
+    <!-- connector = ... -->
+
+    <cd:define name="value-connector">
+        <cd:constant type="cd:command"/>
+        <cd:constant type="cd:command" prefix="cd:processor" method="apply"/>
+    </cd:define>
+
+    <!-- textstate = ... -->
+
+    <cd:define name="value-textstate">
+        <cd:constant type="start"/>
+        <cd:constant type="stop"/>
+        <cd:constant type="high"/>
+        <cd:constant type="none"/>
+        <cd:constant type="normal"/>
+        <cd:constant type="empty"/>
+        <cd:constant type="nomarking"/>
+        <cd:constant type="cd:name"/>
+    </cd:define>
+
+    <!-- pagebreak = ... -->
+
+    <cd:define name="value-pagebreak">
+        <cd:constant type="empty"/>
+        <cd:constant type="header"/>
+        <cd:constant type="footer"/>
+        <cd:constant type="dummy"/>
+        <cd:constant type="frame"/>
+        <cd:constant type="cd:number"/>
+        <cd:constant type="cd:number" prefix="+" method="none"/>
+        <cd:constant type="default"/>
+        <cd:constant type="reset"/>
+        <cd:constant type="disable"/>
+        <cd:constant type="yes"/>
+        <cd:constant type="no"/>
+        <cd:constant type="makeup"/>
+        <cd:constant type="blank"/>
+        <cd:constant type="preference"/>
+        <cd:constant type="bigpreference"/>
+        <cd:constant type="left"/>
+        <cd:constant type="right"/>
+        <cd:constant type="even"/>
+        <cd:constant type="odd"/>
+        <cd:constant type="quadruple"/>
+        <cd:constant type="last"/>
+        <cd:constant type="lastpage"/>
+        <cd:constant type="start"/>
+        <cd:constant type="stop"/>
+    </cd:define>
+
+    <!-- columnbreak = ... -->
+
+    <cd:define name="value-columnbreak">
+        <cd:constant type="yes"/>
+        <cd:constant type="no"/>
+        <cd:constant type="preference"/>
+        <cd:constant type="local"/>
+        <cd:constant type="force"/>
+        <cd:constant type="first"/>
+        <cd:constant type="last"/>
+        <cd:constant type="cd:number"/>
+    </cd:define>
+
+    <!-- alignline = ... -->
+
+    <cd:define name="value-alignline">
+        <cd:constant type="left"/>
+        <cd:constant type="right"/>
+        <cd:constant type="middle"/>
+        <cd:constant type="flushleft"/>
+        <cd:constant type="flushright"/>
+        <cd:constant type="center"/>
+        <cd:constant type="max"/>
+        <cd:constant type="inner"/>
+        <cd:constant type="outer"/>
+        <cd:constant type="innermargin"/>
+        <cd:constant type="outermargin"/>
+        <cd:constant type="inneredge"/>
+        <cd:constant type="outeredge"/>
+        <cd:constant type="backspace"/>
+        <cd:constant type="cutspace"/>
+        <cd:constant type="leftmargin"/>
+        <cd:constant type="rightmargin"/>
+        <cd:constant type="leftedge"/>
+        <cd:constant type="rightedge"/>
+    </cd:define>
+
+    <!-- alignsimple = ... -->
+
+    <cd:define name="value-alignsimple">
+        <cd:constant type="left"/>
+        <cd:constant type="right"/>
+        <cd:constant type="middle"/>
+        <cd:constant type="flushleft"/>
+        <cd:constant type="flushright"/>
+        <cd:constant type="inner"/>
+        <cd:constant type="outer"/>
+    </cd:define>
+
+    <!-- aligned = ... -->
+
+    <cd:define name="value-aligned">
+        <cd:constant type="left"/>
+        <cd:constant type="middle"/>
+        <cd:constant type="right"/>
+        <cd:constant type="top"/>
+        <cd:constant type="bottom"/>
+        <cd:constant type="line"/>
+        <cd:constant type="l"/>
+        <cd:constant type="c"/>
+        <cd:constant type="r"/>
+        <cd:constant type="m"/>
+        <cd:constant type="t"/>
+        <cd:constant type="b"/>
+        <cd:constant type="g"/>
+    </cd:define>
+
+    <!-- floatlocation = ... -->
+
+    <cd:define name="value-floatlocation">
+        <cd:constant type="split"/>
+        <cd:constant type="always"/>
+        <cd:constant type="left"/>
+        <cd:constant type="right"/>
+        <cd:constant type="inner"/>
+        <cd:constant type="outer"/>
+        <cd:constant type="backspace"/>
+        <cd:constant type="cutspace"/>
+        <cd:constant type="inleft"/>
+        <cd:constant type="inright"/>
+        <cd:constant type="inmargin"/>
+        <cd:constant type="leftmargin"/>
+        <cd:constant type="rightmargin"/>
+        <cd:constant type="leftedge"/>
+        <cd:constant type="rightedge"/>
+        <cd:constant type="innermargin"/>
+        <cd:constant type="outermargin"/>
+        <cd:constant type="inneredge"/>
+        <cd:constant type="outeredge"/>
+        <cd:constant type="text"/>
+        <cd:constant type="opposite"/>
+        <cd:constant type="reset"/>
+        <cd:constant type="height"/>
+        <cd:constant type="depth"/>
+        <cd:constant type="line" prefix="cd:sign" method="none"/>
+        <cd:constant type="halfline"/>
+        <cd:constant type="grid"/>
+        <cd:constant type="high"/>
+        <cd:constant type="low"/>
+        <cd:constant type="fit"/>
+        <cd:constant type="90"/>
+        <cd:constant type="180"/>
+        <cd:constant type="270"/>
+        <cd:constant type="nonumber"/>
+        <cd:constant type="none"/>
+        <cd:constant type="local"/>
+        <cd:constant type="here"/>
+        <cd:constant type="force"/>
+        <cd:constant type="margin"/>
+        <cd:constant type="hang" prefix="cd:sign" method="none"/>
+        <cd:constant type="hanging"/>
+        <cd:constant type="tall"/>
+        <cd:constant type="both"/>
+        <cd:constant type="middle"/>
+        <cd:constant type="offset"/>
+        <cd:constant type="top"/>
+        <cd:constant type="bottom"/>
+        <cd:constant type="auto"/>
+        <cd:constant type="page"/>
+        <cd:constant type="leftpage"/>
+        <cd:constant type="rightpage"/>
+        <cd:constant type="somewhere"/>
+    </cd:define>
+
+    <!-- sortorder = ... -->
+
+    <cd:define name="value-sortorder">
+        <cd:constant type="default"/>
+        <cd:constant type="DIN␣5007-1"/>
+        <cd:constant type="DIN␣5007-2"/>
+        <cd:constant type="Duden"/>
+        <cd:constant type="de-DE"/>
+        <cd:constant type="de-CH"/>
+        <cd:constant type="de-AT"/>
+        <cd:constant type="ru-iso9"/>
+        <cd:constant type="ocs-scn"/>
+        <cd:constant type="cd:language"/>
+    </cd:define>
+
+    <!-- sortmethod = ... -->
+
+    <cd:define name="value-sortmethod">
+        <cd:constant type="default"/>
+        <cd:constant type="before"/>
+        <cd:constant type="after"/>
+        <cd:constant type="first"/>
+        <cd:constant type="last"/>
+        <cd:constant type="ch"/>
+        <cd:constant type="mm"/>
+        <cd:constant type="zm"/>
+        <cd:constant type="pm"/>
+        <cd:constant type="mc"/>
+        <cd:constant type="zc"/>
+        <cd:constant type="pc"/>
+        <cd:constant type="uc"/>
+    </cd:define>
+
+    <!-- referenceprefix = ... -->
+
+    <cd:define name="value-referenceprefix">
+        <cd:constant type="+"/>
+        <cd:constant type="-"/>
+        <cd:constant type="cd:text"/>
+    </cd:define>
+
+    <!-- referencetype = ... -->
+
+    <cd:define name="value-referencetype">
+        <cd:constant type="default"/>
+        <cd:constant type="text"/>
+        <cd:constant type="title"/>
+        <cd:constant type="number"/>
+        <cd:constant type="page"/>
+        <cd:constant type="realpage"/>
+    </cd:define>
+
+    <!-- markposition = ... -->
+
+    <cd:define name="value-markposition">
+        <cd:constant type="first"/>
+        <cd:constant type="last"/>
+        <cd:constant type="current"/>
+        <cd:constant type="previous"/>
+        <cd:constant type="next"/>
+        <cd:constant type="top"/>
+        <cd:constant type="bottom"/>
+        <cd:constant type="default"/>
+        <cd:constant type="both"/>
+        <cd:constant type="all"/>
+        <cd:constant type="nocheck" prefix="first" method="range"/>
+        <cd:constant type="nocheck" prefix="last" method="range"/>
+        <cd:constant type="nocheck" prefix="previous" method="range"/>
+        <cd:constant type="nocheck" prefix="next" method="range"/>
+        <cd:constant type="nocheck" prefix="top" method="range"/>
+        <cd:constant type="nocheck" prefix="bottom" method="range"/>
+    </cd:define>
+
+    <!-- strut = ... -->
+
+    <cd:define name="value-strut">
+        <cd:constant type="yes"/>
+        <cd:constant type="no"/>
+        <cd:constant type="auto"/>
+        <cd:constant type="cap"/>
+        <cd:constant type="fit"/>
+        <cd:constant type="line"/>
+        <cd:constant type="default"/>
+        <cd:constant type="cd:character"/>
+    </cd:define>
+
+    <!-- grid = ... -->
+
+    <cd:define name="value-grid">
+        <cd:constant type="normal"/>
+        <cd:constant type="standard"/>
+        <cd:constant type="yes"/>
+        <cd:constant type="strict"/>
+        <cd:constant type="tolerant"/>
+        <cd:constant type="top"/>
+        <cd:constant type="bottom"/>
+        <cd:constant type="both"/>
+        <cd:constant type="broad"/>
+        <cd:constant type="fit"/>
+        <cd:constant type="first"/>
+        <cd:constant type="last"/>
+        <cd:constant type="high"/>
+        <cd:constant type="one"/>
+        <cd:constant type="low"/>
+        <cd:constant type="none"/>
+        <cd:constant type="line"/>
+        <cd:constant type="strut"/>
+        <cd:constant type="box"/>
+        <cd:constant type="min"/>
+        <cd:constant type="max"/>
+        <cd:constant type="middle"/>
+        <cd:constant type="cd:name"/>
+    </cd:define>
+
+    <!-- papersize = ... -->
+
+    <cd:define name="value-papersize">
+        <cd:constant type="A0"/>
+        <cd:constant type="A1"/>
+        <cd:constant type="A2"/>
+        <cd:constant type="A3"/>
+        <cd:constant type="A4"/>
+        <cd:constant type="A5"/>
+        <cd:constant type="A6"/>
+        <cd:constant type="A7"/>
+        <cd:constant type="A8"/>
+        <cd:constant type="A9"/>
+        <cd:constant type="A10"/>
+        <cd:constant type="A4/2"/>
+        <cd:constant type="B0"/>
+        <cd:constant type="B1"/>
+        <cd:constant type="B2"/>
+        <cd:constant type="B3"/>
+        <cd:constant type="B4"/>
+        <cd:constant type="B5"/>
+        <cd:constant type="B6"/>
+        <cd:constant type="B7"/>
+        <cd:constant type="B8"/>
+        <cd:constant type="B9"/>
+        <cd:constant type="B10"/>
+        <cd:constant type="C0"/>
+        <cd:constant type="C1"/>
+        <cd:constant type="C2"/>
+        <cd:constant type="C3"/>
+        <cd:constant type="C4"/>
+        <cd:constant type="C5"/>
+        <cd:constant type="C6"/>
+        <cd:constant type="C7"/>
+        <cd:constant type="C8"/>
+        <cd:constant type="C9"/>
+        <cd:constant type="C10"/>
+        <cd:constant type="4␣A0"/>
+        <cd:constant type="2␣A0"/>
+        <cd:constant type="C6/C5"/>
+        <cd:constant type="S3"/>
+        <cd:constant type="S4"/>
+        <cd:constant type="S5"/>
+        <cd:constant type="S6"/>
+        <cd:constant type="S8"/>
+        <cd:constant type="SL"/>
+        <cd:constant type="SM"/>
+        <cd:constant type="SW"/>
+        <cd:constant type="HD"/>
+        <cd:constant type="HD+"/>
+        <cd:constant type="HD-"/>
+        <cd:constant type="S33"/>
+        <cd:constant type="S44"/>
+        <cd:constant type="S55"/>
+        <cd:constant type="S66"/>
+        <cd:constant type="CD"/>
+        <cd:constant type="letter"/>
+        <cd:constant type="ledger"/>
+        <cd:constant type="tabloid"/>
+        <cd:constant type="legal"/>
+        <cd:constant type="folio"/>
+        <cd:constant type="executive"/>
+        <cd:constant type="A"/>
+        <cd:constant type="B"/>
+        <cd:constant type="C"/>
+        <cd:constant type="envelope␣9"/>
+        <cd:constant type="envelope␣10"/>
+        <cd:constant type="envelope␣11"/>
+        <cd:constant type="envelope␣12"/>
+        <cd:constant type="envelope␣14"/>
+        <cd:constant type="monarch"/>
+        <cd:constant type="check"/>
+        <cd:constant type="DL"/>
+        <cd:constant type="E4"/>
+        <cd:constant type="RA0"/>
+        <cd:constant type="RA1"/>
+        <cd:constant type="RA2"/>
+        <cd:constant type="RA3"/>
+        <cd:constant type="RA4"/>
+        <cd:constant type="SRA0"/>
+        <cd:constant type="SRA1"/>
+        <cd:constant type="SRA2"/>
+        <cd:constant type="SRA3"/>
+        <cd:constant type="SRA4"/>
+        <cd:constant type="G5"/>
+        <cd:constant type="E5"/>
+        <cd:constant type="A3plus"/>
+        <cd:constant type="business"/>
+        <cd:constant type="businessUS"/>
+        <cd:constant type="oversized"/>
+        <cd:constant type="undersized"/>
+        <cd:constant type="doublesized"/>
+        <cd:constant type="doubleoversized"/>
+        <cd:constant type="doublewide"/>
+    </cd:define>
+
+    <!-- btxalternative = ... -->
+
+    <cd:define name="value-btxalternative">
+        <cd:constant type="default"/>
+        <cd:constant type="category"/>
+        <cd:constant type="entry"/>
+        <cd:constant type="short"/>
+        <cd:constant type="page"/>
+        <cd:constant type="num"/>
+        <cd:constant type="textnum"/>
+        <cd:constant type="year"/>
+        <cd:constant type="index"/>
+        <cd:constant type="tag"/>
+        <cd:constant type="keywords"/>
+        <cd:constant type="author"/>
+        <cd:constant type="authoryears"/>
+        <cd:constant type="authornum"/>
+        <cd:constant type="authoryear"/>
+    </cd:define>
+
+    <!-- btxfield = ... -->
+
+    <cd:define name="value-btxfield">
+        <cd:constant type="address"/>
+        <cd:constant type="assignee"/>
+        <cd:constant type="author"/>
+        <cd:constant type="booktitle"/>
+        <cd:constant type="chapter"/>
+        <cd:constant type="day"/>
+        <cd:constant type="dayfiled"/>
+        <cd:constant type="edition"/>
+        <cd:constant type="editor"/>
+        <cd:constant type="howpublished"/>
+        <cd:constant type="institution"/>
+        <cd:constant type="journal"/>
+        <cd:constant type="language"/>
+        <cd:constant type="month"/>
+        <cd:constant type="monthfiled"/>
+        <cd:constant type="nationality"/>
+        <cd:constant type="note"/>
+        <cd:constant type="number"/>
+        <cd:constant type="one"/>
+        <cd:constant type="two"/>
+        <cd:constant type="organization"/>
+        <cd:constant type="pages"/>
+        <cd:constant type="publisher"/>
+        <cd:constant type="school"/>
+        <cd:constant type="series"/>
+        <cd:constant type="title"/>
+        <cd:constant type="type"/>
+        <cd:constant type="volume"/>
+        <cd:constant type="year"/>
+        <cd:constant type="yearfiled"/>
+        <cd:constant type="cd:name"/>
+    </cd:define>
+
+    <!-- btxauthor = ... -->
+
+    <cd:define name="value-btxauthor">
+        <cd:constant type="author"/>
+        <cd:constant type="editor"/>
+    </cd:define>
+
+</cd:interface>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definepositioning" file="pack-pos.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuppositioning"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuppositioning" file="pack-pos.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="offset">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="unit">
+                    <cd:constant type="ex"/>
+                    <cd:constant type="em"/>
+                    <cd:constant type="pt"/>
+                    <cd:constant type="in"/>
+                    <cd:constant type="cm" default="yes"/>
+                    <cd:constant type="mm"/>
+                    <cd:constant type="sp"/>
+                    <cd:constant type="bp"/>
+                    <cd:constant type="pc"/>
+                    <cd:constant type="dd"/>
+                    <cd:constant type="cc"/>
+                    <cd:constant type="nc"/>
+                </cd:parameter>
+                <cd:parameter name="state">
+                    <cd:constant type="start" default="yes"/>
+                    <cd:constant type="overlay"/>
+                </cd:parameter>
+                <cd:parameter name="xoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="yoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="xstep">
+                    <cd:constant type="absolute" default="yes"/>
+                    <cd:constant type="relative"/>
+                </cd:parameter>
+                <cd:parameter name="ystep">
+                    <cd:constant type="absolute" default="yes"/>
+                    <cd:constant type="relative"/>
+                </cd:parameter>
+                <cd:parameter name="xscale">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="yscale">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="xfactor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="yfactor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="scale">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="positioning" type="environment" file="pack-pos.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuppositioning"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="position" file="pack-pos.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuppositioning"/>
+            </cd:assignments>
+            <cd:position list="yes"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

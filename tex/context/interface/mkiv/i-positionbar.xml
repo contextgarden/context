@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="setuppositionbar" file="pack-bar.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="min">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="max">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="text">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="depth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="horizontalpositionbar" file="pack-bar.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuppositionbar"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="verticalpositionbar" file="pack-bar.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuppositionbar"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="horizontalgrowingbar" file="pack-bar.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuppositionbar"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="verticalgrowingbar" file="pack-bar.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuppositionbar"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

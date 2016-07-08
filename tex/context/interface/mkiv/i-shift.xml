@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineshift" file="node.rul.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupshift"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupshift" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="continue">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="unit">
+                    <cd:constant type="ex" default="yes"/>
+                    <cd:constant type="em"/>
+                    <cd:constant type="pt"/>
+                    <cd:constant type="in"/>
+                    <cd:constant type="cm"/>
+                    <cd:constant type="mm"/>
+                    <cd:constant type="sp"/>
+                    <cd:constant type="bp"/>
+                    <cd:constant type="pc"/>
+                    <cd:constant type="dd"/>
+                    <cd:constant type="cc"/>
+                    <cd:constant type="nc"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="dy">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:inherit name="setupalign"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="shift" generated="yes" variant="generated" file="node-rul.mkiv">
+        <cd:sequence>
+            <cd:variable value="shift"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="shift" type="environment" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="shiftup" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="shiftdown" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

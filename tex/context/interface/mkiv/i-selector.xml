@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineselector" file="core-env.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupselector"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupselector" file="core-env.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="m">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="select" file="core-env.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="directselect" file="core-env.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
+            <cd:content optional="yes"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="insertpages" file="page-sel.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+            <cd:resolve name="keyword-number-list-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="filterpages" file="page-sel.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+            <cd:keywords list="yes">
+                <cd:constant type="even"/>
+                <cd:constant type="odd"/>
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:number" prefix="cd:number" method="range"/>
+            </cd:keywords>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="copypages" file="page-sel.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="marking">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupexternalfigure"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="combinepages" file="page-sel.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="alternative">
+                    <cd:constant type="a" default="yes"/>
+                    <cd:constant type="b"/>
+                    <cd:constant type="c"/>
+                    <cd:constant type="horizontal"/>
+                    <cd:constant type="vertical"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="nx">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="ny">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="start">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="stop">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="top">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="bottom">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="inbetween">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="frame">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="background">
+                    <cd:constant type="foreground"/>
+                    <cd:constant type="color"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="backgroundcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="slicepages" file="page-sel.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="hoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="voffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="hoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="voffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

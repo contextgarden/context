@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definehelp" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuphelp"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuphelp" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="help" generated="yes" variant="generated" file="scrn-hlp.mkvi">
+        <cd:sequence>
+            <cd:variable value="help"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-optional"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="help" type="environment" generated="yes" variant="generated" file="scrn-hlp.mkvi">
+        <cd:sequence>
+            <cd:variable value="help"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsehelp" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifhelpelse" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placehelp" file="scrn-hlp.mkvi"/>
+
+    <cd:command name="showhelp" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="helptext" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-optional"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="helptext" type="environment" file="scrn-hlp.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definesectionblock" file="strc-sbe.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupsectionblock"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupsectionblock" file="strc-sbe.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="page">
+                    <cd:inherit name="page"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="number">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setsectionblock" file="strc-sbe.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="bookmark">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="sectionblock" type="environment" file="strc-sbe.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="bookmark">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:inherit name="setupsectionblock"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="sectionblock" type="environment" generated="yes" variant="generated" file="strc-sbe.mkiv">
+        <cd:sequence>
+            <cd:variable value="sectionblock"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="bookmark">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:inherit name="setupsectionblock"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="sectionblockenvironment" type="environment" file="strc-sbe.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="frontmatter" type="environment" file="strc-sbe.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="bookmark">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:inherit name="setupsectionblock"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bodymatter" type="environment" file="strc-sbe.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="bookmark">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:inherit name="setupsectionblock"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="appendices" type="environment" file="strc-sbe.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="bookmark">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:inherit name="setupsectionblock"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="backmatter" type="environment" file="strc-sbe.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="bookmark">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:inherit name="setupsectionblock"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

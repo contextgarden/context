@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <!--
+
+        <cd:command name="definelayouttarget" file="page-lay.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuplayouttarget"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setuplayouttarget" file="page-lay.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="top">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="bottom">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="left">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="right">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="method">
+                        <cd:constant type="normal" default="yes"/>
+                        <cd:constant type="none"/>
+                        <cd:constant type="cd:name"/>
+                    </cd:parameter>
+                    <cd:parameter name="scale">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="nx">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="ny">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="dx">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="dy">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="width">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="height">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="topspace">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="backspace">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="offset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="page">
+                        <cd:constant type="reset"/>
+                        <cd:constant type="landscape"/>
+                        <cd:constant type="mirrored"/>
+                        <cd:constant type="negative"/>
+                        <cd:constant type="rotated"/>
+                        <cd:constant type="90"/>
+                        <cd:constant type="180"/>
+                        <cd:constant type="270"/>
+                        <cd:constant type="cd:name"/>
+                    </cd:parameter>
+                    <cd:parameter name="paper">
+                        <cd:constant type="reset"/>
+                        <cd:constant type="landscape"/>
+                        <cd:constant type="mirrored"/>
+                        <cd:constant type="negative"/>
+                        <cd:constant type="rotated"/>
+                        <cd:constant type="90"/>
+                        <cd:constant type="180"/>
+                        <cd:constant type="270"/>
+                        <cd:constant type="cd:name"/>
+                    </cd:parameter>
+                    <cd:parameter name="option">
+                        <cd:constant type="fit"/>
+                        <cd:constant type="max" default="yes"/>
+                    </cd:parameter>
+                    <cd:parameter name="distance">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="definepapersize" variant="1" file="page-lay.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="top">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="bottom">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="page">
+                    <cd:inherit name="setuppapersize"/>
+                </cd:parameter>
+                <cd:parameter name="paper">
+                    <cd:inherit name="setuppapersize"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definepapersize" variant="2" file="page-lay.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords list="yes">
+                <cd:inherit name="setuppapersize"/>
+            </cd:keywords>
+            <cd:keywords list="yes" optional="yes">
+                <cd:inherit name="setuppapersize"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuppapersize" variant="1" file="page-lay.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="reset"/>
+                <cd:constant type="landscape"/>
+                <cd:constant type="mirrored"/>
+                <cd:constant type="negative"/>
+                <cd:constant type="rotated"/>
+                <cd:constant type="90"/>
+                <cd:constant type="180"/>
+                <cd:constant type="270"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="reset"/>
+                <cd:constant type="landscape"/>
+                <cd:constant type="mirrored"/>
+                <cd:constant type="negative"/>
+                <cd:constant type="rotated"/>
+                <cd:constant type="90"/>
+                <cd:constant type="180"/>
+                <cd:constant type="270"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="setuppapersize" variant="2" file="page-lay.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuplayouttarget"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setuppaper" file="page-lay.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuplayouttarget"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setuppapersize" variant="2" file="page-lay.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="top">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="bottom">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="scale">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="nx">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="ny">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="dx">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="dy">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="topspace">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="backspace">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="page">
+                    <cd:constant type="reset"/>
+                    <cd:constant type="landscape"/>
+                    <cd:constant type="mirrored"/>
+                    <cd:constant type="negative"/>
+                    <cd:constant type="rotated"/>
+                    <cd:constant type="90"/>
+                    <cd:constant type="180"/>
+                    <cd:constant type="270"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="paper">
+                    <cd:constant type="reset"/>
+                    <cd:constant type="landscape"/>
+                    <cd:constant type="mirrored"/>
+                    <cd:constant type="negative"/>
+                    <cd:constant type="rotated"/>
+                    <cd:constant type="90"/>
+                    <cd:constant type="180"/>
+                    <cd:constant type="270"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="option">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="max" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuppaper" file="page-lay.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuppapersize"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="adaptpapersize" file="page-lay.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:inherit name="setuppapersize"/>
+            </cd:keywords>
+            <cd:keywords list="yes" optional="yes">
+                <cd:inherit name="setuppapersize"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

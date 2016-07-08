@@ -1,0 +1,1124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="btxrenderingdefinitions" type="environment" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="loadbtxdefinitionfile" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="loadbtxreplacementfile" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definebtx" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupbtx"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupbtx" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="specification">
+                    <cd:constant type="default"/>
+                    <cd:constant type="apa"/>
+                    <cd:constant type="aps"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="dataset">
+                    <cd:constant type="default"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:oneargument"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="authorconversion">
+                    <cd:constant type="normal"/>
+                    <cd:constant type="normalshort"/>
+                    <cd:constant type="normalinverted"/>
+                    <cd:constant type="invertedshort"/>
+                    <cd:constant type="short"/>
+                </cd:parameter>
+                <cd:parameter name="etallimit">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="etaldisplay">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="etaloption">
+                    <cd:constant type="last"/>
+                </cd:parameter>
+                <cd:parameter name="stopper">
+                    <cd:constant type="initials"/>
+                </cd:parameter>
+                <cd:parameter name="interaction">
+                    <cd:constant type="start" default="yes"/>
+                    <cd:constant type="stop"/>
+                    <cd:constant type="all"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:resolve name="value-btxalternative"/>
+                </cd:parameter>
+                <cd:parameter name="sorttype">
+                    <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="reverse"/>
+                </cd:parameter>
+                <cd:parameter name="compress">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <!--
+                    <cd:parameter name="author">
+                        <cd:constant type="???"/>
+                    </cd:parameter>
+                -->
+                <cd:parameter name="default">
+                    <cd:constant type="default"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <!--
+                    <cd:parameter name="cd:key">
+                        <cd:constant type="cd:value"/>
+                    </cd:parameter>
+                -->
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupbtx" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usingbtxspecification" type="environment" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definebtxdataset" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupbtxdataset"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupbtxdataset" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="language">
+                    <cd:constant type="cd:language"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definebtxregister" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupbtxregister"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupbtxregister" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="state">
+                    <cd:constant type="start"/>
+                    <cd:constant type="stop"/>
+                </cd:parameter>
+                <cd:parameter name="dataset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="field">
+                    <cd:constant type="keyword"/>
+                    <cd:constant type="range"/>
+                    <cd:constant type="pagenumber"/>
+                    <cd:constant type="author"/>
+                </cd:parameter>
+                <cd:parameter name="register">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="once"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="normalshort"/>
+                    <cd:constant type="invertedshort"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definebtxrendering" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupbtxrendering"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupbtxrendering" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="textstate">
+                    <cd:constant type="start"/>
+                    <cd:constant type="stop"/>
+                </cd:parameter>
+                <cd:parameter name="pagestate">
+                    <cd:constant type="start"/>
+                    <cd:constant type="stop"/>
+                </cd:parameter>
+                <cd:parameter name="separator">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="criterium">
+                    <cd:constant type="previous"/>
+                    <cd:constant type="cite"/>
+                    <cd:constant type="here"/>
+                    <cd:constant type="all"/>
+                    <cd:constant type="none"/>
+                </cd:parameter>
+                <cd:parameter name="specification">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="title">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="dataset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <!--
+                    <cd:parameter name="reference">
+                        <cd:constant type="???"/>
+                    </cd:parameter>
+                -->
+                <cd:parameter name="method">
+                    <cd:constant type="dataset"/>
+                    <cd:constant type="force"/>
+                    <cd:constant type="local"/>
+                    <cd:constant type="global"/>
+                    <cd:constant type="none"/>
+                </cd:parameter>
+                <!--
+                    <cd:parameter name="keyword">
+                        <cd:constant type="???"/>
+                    </cd:parameter>
+                -->
+                <cd:parameter name="sorttype">
+                    <cd:constant type="short"/>
+                    <cd:constant type="dataset"/>
+                    <cd:constant type="list"/>
+                    <cd:constant type="reference"/>
+                    <cd:constant type="used"/>
+                    <cd:constant type="default"/>
+                    <cd:constant type="cite"/>
+                    <cd:constant type="index"/>
+                </cd:parameter>
+                <cd:parameter name="repeat">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <!--
+                    <cd:parameter name="ignore">
+                        <cd:constant type="???"/>
+                    </cd:parameter>
+                -->
+                <cd:parameter name="group">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="numbering">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="num"/>
+                    <cd:constant type="index"/>
+                    <cd:constant type="tag"/>
+                    <cd:constant type="short"/>
+                    <cd:constant type="page"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usebtxdataset" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="keyword-file"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="specification">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="publication" type="environment" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="tag">
+                    <cd:constant type="cd:reference"/>
+                </cd:parameter>
+                <cd:parameter name="category">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="k">
+                    <cd:constant type="cd:reference"/>
+                </cd:parameter>
+                <cd:parameter name="t">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupbtxlist" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuplist"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="completebtxrendering" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupbtxrendering"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placebtxrendering" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupbtxrendering"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="completelistofpublications" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupbtxrendering"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placelistofpublications" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupbtxrendering"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxhybridcite" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxhybridcite" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxhybridcite" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxhybridcite" variant="4" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxlistcitation" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxlistcitation" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxlistcitation" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxtextcitation" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxtextcitation" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxtextcitation" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxalwayscitation" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxalwayscitation" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxalwayscitation" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bthiddencitation" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="listcitation" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="listcitation" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="listcitation" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="listcite" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="listcite" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="listcite" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="textcitation" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="textcitation" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="textcitation" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="textcite" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="textcite" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="textcite" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="alwayscitation" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="alwayscitation" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="alwayscitation" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="alwayscite" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="alwayscite" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="alwayscite" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hiddencitation" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hiddencite" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="citation" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="citation" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="citation" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="citation" variant="4" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="cite" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="cite" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="assignment-citedata-list"/>
+            <cd:resolve name="assignment-userdata-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="cite" variant="3" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-btxalternative-optional"/>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="cite" variant="4" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="nocitation" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="nocitation" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="nocite" variant="1" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="nocite" variant="2" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="savebtxdataset" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="keyword-file-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="dataset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="type">
+                    <cd:constant type="bib"/>
+                    <cd:constant type="lua"/>
+                    <cd:constant type="xml"/>
+                </cd:parameter>
+                <cd:parameter name="file">
+                    <cd:constant type="cd:file"/>
+                </cd:parameter>
+                <cd:parameter name="criterium">
+                    <cd:constant type="all"/>
+                    <cd:constant type="text"/>
+                    <cd:constant type="intro"/>
+                    <cd:constant type="reference"/>
+                    <cd:constant type="current"/>
+                    <cd:constant type="here"/>
+                    <cd:constant type="previous"/>
+                    <cd:constant type="local"/>
+                    <cd:constant type="component"/>
+                    <cd:constant type="all" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="reference" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="current" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="previous" prefix="cd:sectionblock" method="range"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placecitation" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-reference"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usebtxdefinitions" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxfield" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdetail" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxflush" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdirect" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxfieldname" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxfieldtype" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxfoundname" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxfoundtype" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxauthorfield" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="initials"/>
+                <cd:constant type="firstnames"/>
+                <cd:constant type="vons"/>
+                <cd:constant type="surnames"/>
+                <cd:constant type="juniors"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdoifelse" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdoif" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdoifnot" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxsetup" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdoifelsesameaspreviouschecked" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="always"/>
+                <cd:constant type="doublesided"/>
+            </cd:keywords>
+            <cd:resolve name="argument-btxfield"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdoifelsesameasprevious" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdoifelsecombiinlist" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdoifsameaspreviouscheckedelse" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="always"/>
+                <cd:constant type="doublesided"/>
+            </cd:keywords>
+            <cd:resolve name="argument-btxfield"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdoifsameaspreviouselse" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxfield"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdoifcombiinlistelse" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="currentbtxuservariable" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdoifelseuservariable" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxdoifuservariableelse" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxremapauthor" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-text"/>
+            <cd:resolve name="keyword-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxflushauthor" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="num"/>
+                <cd:constant type="normal"/>
+                <cd:constant type="normalshort"/>
+                <cd:constant type="inverted"/>
+                <cd:constant type="invertedshort"/>
+            </cd:keywords>
+            <cd:resolve name="argument-btxauthor"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxflushsuffix" file="publ-ini.mkiv"/>
+
+    <cd:command name="btxflushauthorname" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxauthor"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxflushauthornormal" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxauthor"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxflushauthornormalshort" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxauthor"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxflushauthorinverted" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxauthor"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxflushauthorinvertedshort" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-btxauthor"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxsingularplural" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="editor"/>
+                <cd:constant type="producer"/>
+                <cd:constant type="director"/>
+            </cd:keywords>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxsingularorplural" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="editor"/>
+                <cd:constant type="producer"/>
+                <cd:constant type="director"/>
+            </cd:keywords>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxoneorrange" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="volume"/>
+                <cd:constant type="pages"/>
+            </cd:keywords>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxfirstofrange" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="volume"/>
+                <cd:constant type="pages"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxloadjournalist" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxsavejournalist" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxaddjournal" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxexpandedjournal" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="btxabbreviatedjournal" file="publ-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showbtxdatasetfields" variant="1" file="publ-tra.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="specification">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="dataset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="field">
+                    <cd:resolve name="value-btxfield"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showbtxdatasetfields" variant="2" file="publ-tra.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showbtxdatasetcompleteness" variant="1" file="publ-tra.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="specification">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="dataset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="field">
+                    <cd:resolve name="value-btxfield"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showbtxdatasetcompleteness" variant="2" file="publ-tra.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showbtxdatasetauthors" variant="1" file="publ-tra.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="specification">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="dataset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="field">
+                    <cd:resolve name="value-btxfield"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showbtxdatasetauthors" variant="2" file="publ-tra.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showbtxhashedauthors" file="publ-tra.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-dummy-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showbtxfields" variant="1" file="publ-tra.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="rotation">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="specification">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showbtxfields" variant="2" file="publ-tra.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showbtxtables" file="publ-tra.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-dummy-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

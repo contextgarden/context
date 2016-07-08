@@ -275,6 +275,18 @@
   [\c!left={(},
    \c!right={)}]
 
+\definebtx
+  [\s!default:\s!cite:lefttext]
+  [\s!default:\s!cite]
+  [\c!left=,
+   \c!right=]
+
+\definebtx
+  [\s!default:\s!cite:righttext]
+  [\s!default:\s!cite]
+  [\c!left=,
+   \c!right=]
+
 % Multilingual text strings
 
 \setupbtxlabeltext
@@ -496,11 +508,11 @@
 
 %D Experiment:
 
-\startsetups btx:default:lefttext
+\startsetups btx:default:cite:lefttext
     \currentbtxlefttext
 \stopsetups
 
-\startsetups btx:default:righttext
+\startsetups btx:default:cite:righttext
     \currentbtxrighttext
 \stopsetups
 

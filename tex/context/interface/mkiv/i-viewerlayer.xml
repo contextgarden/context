@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineviewerlayer" file="attr-lay.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupviewerlayer"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupviewerlayer" file="attr-lay.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="title">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="state">
+                    <cd:constant type="start" default="yes"/>
+                    <cd:constant type="stop"/>
+                </cd:parameter>
+                <cd:parameter name="export">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="printable">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="scope">
+                    <cd:constant type="local" default="yes"/>
+                    <cd:constant type="global"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="none" default="yes"/>
+                    <cd:constant type="command"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+    
+    <cd:command name="viewerlayer" type="environment" file="attr-lay.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="viewerlayer" type="environment" generated="yes" variant="generated" file="attr-lay.mkiv">
+        <cd:sequence>
+            <cd:variable value="viewerlayer"/>
+        </cd:sequence>
+    </cd:command>
+
+    <cd:command name="viewerlayer" file="attr-lay.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showlayoutcomponents" file="attr-lay.mkiv"/>
+
+</cd:interface>

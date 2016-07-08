@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definemathfence" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathfence"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathfence" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="command">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="middle">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="mathstyle">
+                    <cd:resolve name="value-mathstyle"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="state">
+                    <cd:constant type="auto"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fence" generated="yes" variant="generated" file="math-fen.mkiv">
+        <cd:sequence>
+            <cd:variable value="fence"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fenced" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fence" file="math-fen.mkiv"/>
+
+    <cd:command name="left" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="middle" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="right" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="big" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="Big" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bigg" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="Bigg" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bigl" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bigm" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bigr" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="Bigl" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="Bigm" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="Bigr" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="biggl" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="biggm" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="biggr" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="Biggl" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="Biggm" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="Biggr" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="lfence" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mfence" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rfence" file="math-fen.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-character"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="checkedfences" type="environment" file="math-fen.mkiv"/>
+
+</cd:interface>

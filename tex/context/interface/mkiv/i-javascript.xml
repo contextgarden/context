@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="JScode" type="environment" file="java-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-name"/>
+            <cd:keywords delimiters="none">
+                <cd:constant type="uses"/>
+            </cd:keywords>
+            <cd:resolve name="string-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="JSpreamble" type="environment" file="java-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-name"/>
+            <cd:keywords delimiters="none">
+                <cd:constant type="used"/>
+            </cd:keywords>
+            <cd:keywords delimiters="none">
+                <cd:constant type="now"/>
+                <cd:constant type="later"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setJSpreamble" file="java-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="addtoJSpreamble" file="java-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="useJSscripts" file="java-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+            <cd:resolve name="keyword-name-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

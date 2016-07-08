@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<!--
+
+    Right from the start the ConTeXt user interface was sytematic enough to be described using a
+    common framework. First it was done in the TeX language at the top of the files where features
+    were implemented. Later we switched to XML where all definitions were moved to one file. That
+    file could be translated to different user interfaces.
+
+    The current XML files are a follow up on this. Instead of one big file we now have many small
+    files, and support for shared (XML) definitions has been extended. Many more commands are defined,
+    including those considered low level. There are no longer translated files needed but you can
+    still generate them.
+
+    These files can be used to generate overviews (see x-setups-*.mkiv) but also for generating
+    information for text editors. We also use them for the (local) help service.
+
+    Wolfgang Schuster & Hans Hagen
+
+-->
+
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:interfacefile filename="i-common-definitions.xml"/>
+
+    <cd:interfacefile filename="i-accent.xml"/>
+    <cd:interfacefile filename="i-align.xml"/>
+    <cd:interfacefile filename="i-anchor.xml"/>
+    <cd:interfacefile filename="i-attachment.xml"/>
+    <cd:interfacefile filename="i-attribute.xml"/>
+    <cd:interfacefile filename="i-backend.xml"/>
+    <cd:interfacefile filename="i-background.xml"/>
+    <cd:interfacefile filename="i-bar.xml"/>
+    <cd:interfacefile filename="i-blackrule.xml"/>
+    <cd:interfacefile filename="i-bleed.xml"/>
+    <cd:interfacefile filename="i-block.xml"/>
+    <cd:interfacefile filename="i-bookmark.xml"/>
+    <cd:interfacefile filename="i-boxes.xml"/>
+    <cd:interfacefile filename="i-buffer.xml"/>
+    <cd:interfacefile filename="i-button.xml"/>
+    <cd:interfacefile filename="i-capitals.xml"/>
+    <cd:interfacefile filename="i-catcodes.xml"/>
+    <cd:interfacefile filename="i-character.xml"/>
+    <cd:interfacefile filename="i-characteralign.xml"/>
+    <cd:interfacefile filename="i-characterspacing.xml"/>
+    <cd:interfacefile filename="i-characterstripping.xml"/>
+    <cd:interfacefile filename="i-charwidth.xml"/>
+    <cd:interfacefile filename="i-chemical.xml"/>
+    <cd:interfacefile filename="i-cleaning.xml"/>
+    <cd:interfacefile filename="i-clipping.xml"/>
+    <cd:interfacefile filename="i-collector.xml"/>
+    <cd:interfacefile filename="i-color.xml"/>
+    <cd:interfacefile filename="i-columns.xml"/>
+    <cd:interfacefile filename="i-combination.xml"/>
+    <cd:interfacefile filename="i-commandhandler.xml"/>
+    <cd:interfacefile filename="i-comment.xml"/>
+    <cd:interfacefile filename="i-conversion.xml"/>
+    <cd:interfacefile filename="i-counter.xml"/>
+    <cd:interfacefile filename="i-dataset.xml"/>
+    <cd:interfacefile filename="i-define.xml"/>
+    <cd:interfacefile filename="i-delimitedtext.xml"/>
+    <cd:interfacefile filename="i-description.xml"/>
+    <cd:interfacefile filename="i-digits.xml"/>
+    <cd:interfacefile filename="i-dimension.xml"/>
+    <cd:interfacefile filename="i-direction.xml"/>
+    <cd:interfacefile filename="i-document.xml"/>
+    <cd:interfacefile filename="i-dummy.xml"/>
+    <cd:interfacefile filename="i-effect.xml"/>
+    <cd:interfacefile filename="i-enumeration.xml"/>
+    <cd:interfacefile filename="i-export.xml"/>
+    <cd:interfacefile filename="i-field.xml"/>
+    <cd:interfacefile filename="i-figure.xml"/>
+    <cd:interfacefile filename="i-file.xml"/>
+    <cd:interfacefile filename="i-filler.xml"/>
+    <cd:interfacefile filename="i-fillinline.xml"/>
+    <cd:interfacefile filename="i-fillinrule.xml"/>
+    <cd:interfacefile filename="i-firstline.xml"/>
+    <cd:interfacefile filename="i-fittingpage.xml"/>
+    <cd:interfacefile filename="i-floats.xml"/>
+    <cd:interfacefile filename="i-fontfamily.xml"/>
+    <cd:interfacefile filename="i-fonts.xml"/>
+    <cd:interfacefile filename="i-form.xml"/>
+    <cd:interfacefile filename="i-formula.xml"/>
+    <cd:interfacefile filename="i-fraction.xml"/>
+    <cd:interfacefile filename="i-framed.xml"/>
+    <cd:interfacefile filename="i-graphics.xml"/>
+    <cd:interfacefile filename="i-grid.xml"/>
+    <cd:interfacefile filename="i-help.xml"/>
+    <cd:interfacefile filename="i-highlight.xml"/>
+    <cd:interfacefile filename="i-hspace.xml"/>
+    <cd:interfacefile filename="i-hyphenation.xml"/>
+    <cd:interfacefile filename="i-imposition.xml"/>
+    <cd:interfacefile filename="i-indent.xml"/>
+    <cd:interfacefile filename="i-indentedtext.xml"/>
+    <cd:interfacefile filename="i-initial.xml"/>
+    <cd:interfacefile filename="i-injector.xml"/>
+    <cd:interfacefile filename="i-insertion.xml"/>
+    <cd:interfacefile filename="i-interaction.xml"/>
+    <cd:interfacefile filename="i-interactionbar.xml"/>
+    <cd:interfacefile filename="i-interactionmenu.xml"/>
+    <cd:interfacefile filename="i-interactionscreen.xml"/>
+    <cd:interfacefile filename="i-interface.xml"/>
+    <cd:interfacefile filename="i-interlinespace.xml"/>
+    <cd:interfacefile filename="i-interlinespace.xml"/>
+    <cd:interfacefile filename="i-italiccorrection.xml"/>
+    <cd:interfacefile filename="i-itemgroup.xml"/>
+    <cd:interfacefile filename="i-items.xml"/>
+    <cd:interfacefile filename="i-javascript.xml"/>
+    <cd:interfacefile filename="i-kerning.xml"/>
+    <cd:interfacefile filename="i-label.xml"/>
+    <cd:interfacefile filename="i-labeltext.xml"/>
+    <cd:interfacefile filename="i-language.xml"/>
+    <cd:interfacefile filename="i-layer.xml"/>
+    <cd:interfacefile filename="i-layout.xml"/>
+    <cd:interfacefile filename="i-linenumber.xml"/>
+    <cd:interfacefile filename="i-lines.xml"/>
+    <cd:interfacefile filename="i-linetable.xml"/>
+    <cd:interfacefile filename="i-linewidth.xml"/>
+    <cd:interfacefile filename="i-list.xml"/>
+    <cd:interfacefile filename="i-logo.xml"/>
+    <cd:interfacefile filename="i-lohi.xml"/>
+    <cd:interfacefile filename="i-lua.xml"/>
+    <cd:interfacefile filename="i-makeup.xml"/>
+    <cd:interfacefile filename="i-marginblock.xml"/>
+    <cd:interfacefile filename="i-margindata.xml"/>
+    <cd:interfacefile filename="i-marker.xml"/>
+    <cd:interfacefile filename="i-marking.xml"/>
+    <cd:interfacefile filename="i-math.xml"/>
+    <cd:interfacefile filename="i-mathalignment.xml"/>
+    <cd:interfacefile filename="i-mathcases.xml"/>
+    <cd:interfacefile filename="i-mathfence.xml"/>
+    <cd:interfacefile filename="i-mathmatrix.xml"/>
+    <cd:interfacefile filename="i-mathornament.xml"/>
+    <cd:interfacefile filename="i-mathradical.xml"/>
+    <cd:interfacefile filename="i-mathstackers.xml"/>
+    <cd:interfacefile filename="i-metapost.xml"/>
+    <cd:interfacefile filename="i-mixedcolumns.xml"/>
+    <cd:interfacefile filename="i-modes.xml"/>
+    <cd:interfacefile filename="i-modules.xml"/>
+    <cd:interfacefile filename="i-narrow.xml"/>
+    <cd:interfacefile filename="i-naturaltable.xml"/>
+    <cd:interfacefile filename="i-note.xml"/>
+    <cd:interfacefile filename="i-object.xml"/>
+    <cd:interfacefile filename="i-offset.xml"/>
+    <cd:interfacefile filename="i-opposite.xml"/>
+    <cd:interfacefile filename="i-ornament.xml"/>
+    <cd:interfacefile filename="i-output.xml"/>
+    <cd:interfacefile filename="i-overlay.xml"/>
+    <cd:interfacefile filename="i-pagebreak.xml"/>
+    <cd:interfacefile filename="i-pagecomment.xml"/>
+    <cd:interfacefile filename="i-pagefigure.xml"/>
+    <cd:interfacefile filename="i-pagegrid.xml"/>
+    <cd:interfacefile filename="i-pageinjection.xml"/>
+    <cd:interfacefile filename="i-pagelayout.xml"/>
+    <cd:interfacefile filename="i-pagenumber.xml"/>
+    <cd:interfacefile filename="i-pageselection.xml"/>
+    <cd:interfacefile filename="i-pageshift.xml"/>
+    <cd:interfacefile filename="i-pagestate.xml"/>
+    <cd:interfacefile filename="i-pairedbox.xml"/>
+    <cd:interfacefile filename="i-papersize.xml"/>
+    <cd:interfacefile filename="i-paragraph.xml"/>
+    <cd:interfacefile filename="i-paragraphnumber.xml"/>
+    <cd:interfacefile filename="i-paragraphs.xml"/>
+    <cd:interfacefile filename="i-parallel.xml"/>
+    <cd:interfacefile filename="i-parbuilder.xml"/>
+    <cd:interfacefile filename="i-pdf.xml"/>
+    <cd:interfacefile filename="i-penalty.xml"/>
+    <cd:interfacefile filename="i-periods.xml"/>
+    <cd:interfacefile filename="i-phantom.xml"/>
+    <cd:interfacefile filename="i-placement.xml"/>
+    <cd:interfacefile filename="i-position.xml"/>
+    <cd:interfacefile filename="i-positionbar.xml"/>
+    <cd:interfacefile filename="i-positioning.xml"/>
+    <cd:interfacefile filename="i-postponing.xml"/>
+    <cd:interfacefile filename="i-processor.xml"/>
+    <cd:interfacefile filename="i-profile.xml"/>
+    <cd:interfacefile filename="i-publication.xml"/>
+    <cd:interfacefile filename="i-random.xml"/>
+    <cd:interfacefile filename="i-references.xml"/>
+    <cd:interfacefile filename="i-regime.xml"/>
+    <cd:interfacefile filename="i-register.xml"/>
+    <cd:interfacefile filename="i-renderingwindow.xml"/>
+    <cd:interfacefile filename="i-replacement.xml"/>
+    <cd:interfacefile filename="i-rotatation.xml"/>
+    <cd:interfacefile filename="i-scale.xml"/>
+    <cd:interfacefile filename="i-script.xml"/>
+    <cd:interfacefile filename="i-section.xml"/>
+    <cd:interfacefile filename="i-sectionblock.xml"/>
+    <cd:interfacefile filename="i-selector.xml"/>
+    <cd:interfacefile filename="i-setups.xml"/>
+    <cd:interfacefile filename="i-shift.xml"/>
+    <cd:interfacefile filename="i-sidebar.xml"/>
+    <cd:interfacefile filename="i-smash.xml"/>
+    <cd:interfacefile filename="i-sort.xml"/>
+    <cd:interfacefile filename="i-soundtrack.xml"/>
+    <cd:interfacefile filename="i-spellchecking.xml"/>
+    <cd:interfacefile filename="i-startstop.xml"/>
+    <cd:interfacefile filename="i-stream.xml"/>
+    <cd:interfacefile filename="i-string.xml"/>
+    <cd:interfacefile filename="i-strut.xml"/>
+    <cd:interfacefile filename="i-symbol.xml"/>
+    <cd:interfacefile filename="i-synonym.xml"/>
+    <cd:interfacefile filename="i-system.xml"/>
+    <cd:interfacefile filename="i-systemlog.xml"/>
+    <cd:interfacefile filename="i-table.xml"/>
+    <cd:interfacefile filename="i-tabulation.xml"/>
+    <cd:interfacefile filename="i-tagging.xml"/>
+    <cd:interfacefile filename="i-textbackground.xml"/>
+    <cd:interfacefile filename="i-textflow.xml"/>
+    <cd:interfacefile filename="i-textrule.xml"/>
+    <cd:interfacefile filename="i-texts.xml"/>
+    <cd:interfacefile filename="i-thinrule.xml"/>
+    <cd:interfacefile filename="i-token.xml"/>
+    <cd:interfacefile filename="i-tolerance.xml"/>
+    <cd:interfacefile filename="i-tooltip.xml"/>
+    <cd:interfacefile filename="i-tracker.xml"/>
+    <cd:interfacefile filename="i-translation.xml"/>
+    <cd:interfacefile filename="i-twopassdata.xml"/>
+    <cd:interfacefile filename="i-typography.xml"/>
+    <cd:interfacefile filename="i-unit.xml"/>
+    <cd:interfacefile filename="i-variables.xml"/>
+    <cd:interfacefile filename="i-verbatim.xml"/>
+    <cd:interfacefile filename="i-version.xml"/>
+    <cd:interfacefile filename="i-viewerlayer.xml"/>
+    <cd:interfacefile filename="i-visualizer.xml"/>
+    <cd:interfacefile filename="i-vspace.xml"/>
+    <cd:interfacefile filename="i-whitespace.xml"/>
+    <cd:interfacefile filename="i-xml.xml"/>
+    <cd:interfacefile filename="i-xtable.xml"/>
+
+</cd:interface>

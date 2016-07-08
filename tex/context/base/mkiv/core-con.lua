@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['core-con'] = {
     license   = "see context related readme files"
 }
 
--- todo: split into char-lan.lua and core-con.lua
+-- todo: split into lang-con.lua and core-con.lua
 
 --[[ldx--
 <p>This module implements a bunch of conversions. Some are more
@@ -41,6 +41,13 @@ local converters         = converters
 
 languages                = languages  or { }
 local languages          = languages
+
+local ctx_labeltext      = context.labeltext
+local ctx_LABELTEXT      = context.LABELTEXT
+local ctx_WORD           = context.WORD
+local ctx_space          = context.space
+local ctx_convertnumber  = context.convertnumber
+local ctx_highordinalstr = context.highordinalstr
 
 converters.number  = tonumber
 converters.numbers = tonumber
@@ -683,94 +690,104 @@ implement {
 -- -- the original.
 -- --
 -- -- Conversion by Hans Hagen
---
--- local g_days_in_month = { [0]=31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
--- local j_days_in_month = { [0]=31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29 }
---
--- local function div(a,b)
---   return math.floor(a/b)
+
+local g_days_in_month = { [0] = 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+local j_days_in_month = { [0] = 31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29 }
+
+local div = math.div
+local mod = math.mod
+
+function gregorian_to_jalali(gy,gm,gd)
+    local jy, jm, jd, g_day_no, j_day_no, j_np, i
+    gy, gm, gd = gy - 1600, gm - 1, gd - 1
+    g_day_no = 365*gy + div((gy+3),4) - div((gy+99),100) + div((gy+399),400)
+    i = 0
+    while i < gm do
+        g_day_no = g_day_no + g_days_in_month[i]
+        i = i + 1
+    end
+    if (gm>1 and ((gy%4==0 and gy%100~=0) or (gy%400==0))) then
+        g_day_no = g_day_no + 1
+    end
+    g_day_no = g_day_no + gd
+    j_day_no = g_day_no - 79
+    j_np = div(j_day_no,12053)
+    j_day_no = mod(j_day_no,12053)
+    jy = 979 + 33*j_np + 4*div(j_day_no,1461)
+    j_day_no = mod(j_day_no,1461)
+    if j_day_no >= 366 then
+        jy = jy + div((j_day_no-1),365)
+        j_day_no = mod((j_day_no-1),365)
+    end
+    i = 0
+    while i < 11 and j_day_no >= j_days_in_month[i] do
+        j_day_no = j_day_no - j_days_in_month[i]
+        i = i + 1
+    end
+    jm = i + 1
+    jd = j_day_no + 1
+    return jy, jm, jd
+end
+
+function jalali_to_gregorian(jy,jm,jd)
+    local gy, gm, gd, g_day_no, j_day_no, leap, i
+    jy, jm, jd = jy - 979, jm - 1, jd - 1
+    j_day_no = 365*jy + div(jy,33)*8 + div((mod(jy,33)+3),4)
+    for i=0,jm-1,1 do
+        j_day_no = j_day_no + j_days_in_month[i]
+    end
+    j_day_no = j_day_no + jd
+    g_day_no = j_day_no + 79
+    gy = 1600 + 400*div(g_day_no,146097)
+    g_day_no = mod(g_day_no, 146097)
+    leap = 1
+    if g_day_no >= 36525 then
+        g_day_no = g_day_no - 1
+        gy = gy + 100*div(g_day_no,36524)
+        g_day_no = mod(g_day_no, 36524)
+        if g_day_no >= 365 then
+            g_day_no = g_day_no + 1
+        else
+            leap = 0
+        end
+    end
+    gy = gy  + 4*div(g_day_no,1461)
+    g_day_no = mod(g_day_no, 1461)
+    if g_day_no >= 366 then
+        leap = 0
+        g_day_no = g_day_no - 1
+        gy = gy + div(g_day_no, 365)
+        g_day_no = mod(g_day_no, 365)
+    end
+    i = 0
+    while true do
+        local d = g_days_in_month[i] + ((i == 1 and leap) or 0)
+        if g_day_no >= d then
+            g_day_no = g_day_no - d
+            i = i + 1
+        else
+            break
+        end
+    end
+    gm = i + 1
+    gd = g_day_no + 1
+    return gy, gm, gd
+end
+
+-- local function test(yg,mg,dg,yj,mj,dj)
+--     local y1, m1, d1 = jalali_to_gregorian(yj,mj,dj)
+--     local y2, m2, d2 = gregorian_to_jalali(yg,mg,dg)
+--     print(y1 == yg and m1 == mg and d1 == dg, yg,mg,dg, y1,m1,d1)
+--     print(y2 == yj and m2 == mj and d2 == dj, yj,mj,dj, y2,m2,d2)
 -- end
---
--- local function remainder(a,b)
---   return a - div(a,b)*b
--- end
---
--- function gregorian_to_jalali(gy,gm,gd)
---     local jy, jm, jd, g_day_no, j_day_no, j_np, i
---     gy, gm, gd = gy - 1600, gm - 1, gd - 1
---     g_day_no = 365*gy + div((gy+3),4) - div((gy+99),100) + div((gy+399),400)
---     i = 0
---     while i < gm do
---         g_day_no = g_day_no + g_days_in_month[i]
---         i = i + 1
---     end
---     if (gm>1 and ((gy%4==0 and gy%100~=0) or (gy%400==0))) then
---         g_day_no = g_day_no + 1
---     end
---     g_day_no = g_day_no + gd
---     j_day_no = g_day_no - 79
---     j_np = div(j_day_no,12053)
---     j_day_no = remainder(j_day_no,12053)
---     jy = 979 + 33*j_np + 4*div(j_day_no,1461)
---     j_day_no = remainder(j_day_no,1461)
---     if j_day_no >= 366 then
---         jy = jy + div((j_day_no-1),365)
---         j_day_no = remainder((j_day_no-1),365)
---     end
---     i = 0
---     while i < 11 and j_day_no >= j_days_in_month[i] do
---         j_day_no = j_day_no - j_days_in_month[i]
---         i = i + 1
---     end
---     jm = i + 1
---     jd = j_day_no + 1
---     return jy, jm, jd
--- end
---
--- function jalali_to_gregorian(jy,jm,jd)
---     local gy, gm, gd, g_day_no, j_day_no, leap, i
---     jy, jm, jd = jy - 979, jm - 1, jd - 1
---     j_day_no = 365*jy + div(jy,33)*8 + div((remainder(jy,33)+3),4)
---     i = 0
---     while i < jm do
---         j_day_no = j_day_no + j_days_in_month[i]
---         i = i + 1
---     end
---     j_day_no = j_day_no + jd
---     g_day_no = j_day_no + 79
---     gy = 1600 + 400*div(g_day_no,146097)
---     g_day_no = remainder (g_day_no, 146097)
---     leap = 1
---     if g_day_no >= 36525 then
---         g_day_no = g_day_no - 1
---         gy = gy + 100*div(g_day_no,36524)
---         g_day_no = remainder (g_day_no, 36524)
---         if g_day_no >= 365 then
---             g_day_no = g_day_no + 1
---         else
---             leap = 0
---         end
---     end
---     gy = gy  + 4*div(g_day_no,1461)
---     g_day_no = remainder (g_day_no, 1461)
---     if g_day_no >= 366 then
---         leap = 0
---         g_day_no = g_day_no - 1
---         gy = gy + div(g_day_no, 365)
---         g_day_no = remainder(g_day_no, 365)
---     end
---     i = 0
---     while g_day_no >= g_days_in_month[i] + ((i == 1 and leap) or 0) do
---         g_day_no = g_day_no - g_days_in_month[i] + ((i == 1 and leap) or 0)
---         i = i + 1
---     end
---     gm = i + 1
---     gd = g_day_no + 1
---     return gy, gm, gd
--- end
---
--- print(gregorian_to_jalali(2009,02,24))
--- print(jalali_to_gregorian(1387,12,06))
+
+-- test(1953,08,19, 1332,05,28)
+-- test(1979,02,11, 1357,11,22)
+-- test(2000,02,28, 1378,12,09)
+-- test(2000,03,01, 1378,12,11)
+-- test(2009,02,24, 1387,12,06)
+-- test(2015,03,21, 1394,01,01)
+-- test(2016,03,20, 1395,01,01)
 
 -- -- more efficient but needs testing
 
@@ -850,7 +867,7 @@ local function ctxordinal(n,language)
     local o = t and t(n)
     context(n)
     if o then
-        context.highordinalstr(o)
+        ctx_highordinalstr(o)
     end
 end
 
@@ -1204,25 +1221,25 @@ end
 
 implement {
     name      = "dayname",
-    actions   = { dayname,  context.labeltext },
+    actions   = { dayname,  ctx_labeltext },
     arguments = "integer",
 }
 
 implement {
     name      = "weekdayname",
-    actions   = { weekdayname,  context.labeltext },
+    actions   = { weekdayname,  ctx_labeltext },
     arguments = { "integer", "integer", "integer" }
 }
 
 implement {
     name      = "monthname",
-    actions   = { monthname,  context.labeltext },
+    actions   = { monthname,  ctx_labeltext },
     arguments = { "integer" }
 }
 
 implement {
     name      = "monthmnem",
-    actions   = { monthmnem,  context.labeltext },
+    actions   = { monthmnem,  ctx_labeltext },
     arguments = { "integer" }
 }
 
@@ -1241,6 +1258,16 @@ local spaced = {
     [v_day]     = true,
 }
 
+local converters = {
+    ["jalali:to"]   = gregorian_to_jalali,
+    ["jalali:from"] = jalali_to_gregorian,
+}
+
+local variants = {
+    mnem   = monthmnems,
+    jalali = setmetatableindex(function(t,k) return months[k] .. ":jalali" end),
+}
+
 local function currentdate(str,currentlanguage) -- second argument false : no label
     local list       = utilities.parsers.settings_to_array(str)
     local splitlabel = languages.labels.split or string.itself -- we need to get the loading order right
@@ -1253,89 +1280,96 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
     end
     for i=1,#list do
         local entry = list[i]
-        local tag, plus = splitlabel(entry)
-        local ordinal, mnemonic, whatordinal, highordinal = false, false, nil, false
-        if not tag then
-            tag = entry
-        elseif plus == "+" or plus == "ord" then
-            ordinal = true
-        elseif plus == "++" or plus == "highord" then
-            ordinal = true
-            highordinal = true
-        elseif plus == "mnem" then
-            mnemonic = true
-        end
-        if not auto and spaced[tag] then
-            context.space()
-        end
-        auto = false
-        if tag == v_year or tag == "y" or tag == "Y" then
-            context(year)
-        elseif tag == "yy" or tag == "YY" then
-            context("%02i",year % 100)
-        elseif tag == v_month or tag == "m" then
-            if currentlanguage == false then
-                context(months[month])
-            elseif mnemonic then
-                context.labeltext(variables[monthmnems[month]])
-            else
-                context.labeltext(variables[months[month]])
+        local convert = converters[entry]
+        if convert then
+            year, month, day = convert(year,month,day)
+        else
+            local tag, plus = splitlabel(entry)
+            local ordinal, mnemonic, whatordinal, highordinal = false, false, nil, false
+            if not tag then
+                tag = entry
+            elseif plus == "+" or plus == "ord" then
+                ordinal = true
+            elseif plus == "++" or plus == "highord" then
+                ordinal = true
+                highordinal = true
+         -- elseif plus == "mnem" then
+         --     mnemonic = true
+            elseif plus then -- elseif plus == "mnem" then
+                mnemonic = variants[plus]
             end
-        elseif tag == v_MONTH then
-            if currentlanguage == false then
-                context.WORD(variables[months[month]])
-            elseif mnemonic then
-                context.LABELTEXT(variables[monthmnems[month]])
-            else
-                context.LABELTEXT(variables[months[month]])
+            if not auto and spaced[tag] then
+                ctx_space()
             end
-        elseif tag == "mm" then
-            context("%02i",month)
-        elseif tag == "M" then
-            context(month)
-        elseif tag == v_day or tag == "d" then
-            if currentlanguage == false then
-                context(days[day])
-            else
-                context.convertnumber(v_day,day) -- why not direct
+            auto = false
+            if tag == v_year or tag == "y" or tag == "Y" then
+                context(year)
+            elseif tag == "yy" or tag == "YY" then
+                context("%02i",year % 100)
+            elseif tag == v_month or tag == "m" then
+                if currentlanguage == false then
+                    context(months[month])
+                elseif mnemonic then
+                    ctx_labeltext(variables[mnemonic[month]])
+                else
+                    ctx_labeltext(variables[months[month]])
+                end
+            elseif tag == v_MONTH then
+                if currentlanguage == false then
+                    ctx_WORD(variables[months[month]])
+                elseif mnemonic then
+                    ctx_LABELTEXT(variables[mnemonic[month]])
+                else
+                    ctx_LABELTEXT(variables[months[month]])
+                end
+            elseif tag == "mm" then
+                context("%02i",month)
+            elseif tag == "M" then
+                context(month)
+            elseif tag == v_day or tag == "d" then
+                if currentlanguage == false then
+                    context(days[day])
+                else
+                    ctx_convertnumber(v_day,day) -- why not direct
+                end
+                whatordinal = day
+            elseif tag == "dd" then
+                context("%02i",day)
+                whatordinal = day
+            elseif tag == "D" then
+                context(day)
+                whatordinal = day
+            elseif tag == v_weekday or tag == "w" then
+                local wd = weekday(day,month,year)
+                if currentlanguage == false then
+                    context(days[wd])
+                else
+                    ctx_labeltext(variables[days[wd]])
+                end
+            elseif tag == v_WEEKDAY then
+                local wd = weekday(day,month,year)
+                if currentlanguage == false then
+                    ctx_WORD(days[wd])
+                else
+                    ctx_LABELTEXT(variables[days[wd]])
+                end
+            elseif tag == "W" then
+                context(weekday(day,month,year))
+            elseif tag == v_referral then
+                context("%04i%02i%02i",year,month,day)
+            elseif tag == v_space or tag == "\\ " then
+                ctx_space()
+                auto = true
+            elseif tag ~= "" then
+                context(tag)
+                auto = true
             end
-            whatordinal = day
-        elseif tag == "dd" then
-            context("%02i",day)
-            whatordinal = day
-        elseif tag == "D" then
-            context(day)
-            whatordinal = day
-        elseif tag == v_weekday or tag == "w" then
-            local wd = weekday(day,month,year)
-            if currentlanguage == false then
-                context(days[wd])
-            else
-                context.labeltext(variables[days[wd]])
-            end
-        elseif tag == v_WEEKDAY then
-            local wd = weekday(day,month,year)
-            if currentlanguage == false then
-                context.WORD(days[wd])
-            else
-                context.LABELTEXT(variables[days[wd]])
-            end
-        elseif tag == "W" then
-            context(weekday(day,month,year))
-        elseif tag == v_referral then
-            context("%04i%02i%02i",year,month,day)
-        elseif tag == v_space or tag == "\\ " then
-            context.space()
-            auto = true
-        elseif tag ~= "" then
-            context(tag)
-            auto = true
-        end
-        if ordinal and whatordinal then
-            if currentlanguage == false then
-                -- ignore
-            else
-                context[highordinal and "highordinalstr" or "ordinalstr"](converters.ordinal(whatordinal,currentlanguage))
+            if ordinal and whatordinal then
+                if currentlanguage == false then
+                    -- ignore
+                else
+                    context[highordinal and "highordinalstr" or "ordinalstr"](converters.ordinal(whatordinal,currentlanguage))
+                end
             end
         end
     end

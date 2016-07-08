@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definetabulation" file="tabl-tbl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptabulation"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuptabulation" file="tabl-tbl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="format">
+                    <cd:constant type="cd:template"/>
+                    <cd:constant type="none"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="small"/>
+                    <cd:constant type="medium" default="yes"/>
+                    <cd:constant type="big"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="blank"/>
+                    <cd:constant type="depth" default="yes"/>
+                    <cd:constant type="grid"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:constant type="left"/>
+                    <cd:constant type="middle"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rule">
+                    <cd:constant type="line"/>
+                    <cd:constant type="normal" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="rulecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="bodyfont">
+                    <cd:inherit name="setupbodyfont"/>
+                </cd:parameter>
+                <cd:parameter name="indenting">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="split">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="repeat"/>
+                    <cd:constant type="auto" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="unit">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="margin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="inner">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="EQ">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="header">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="repeat"/>
+                    <cd:constant type="text"/>
+                </cd:parameter>
+                <cd:parameter name="frame">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="title">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tabulation" type="environment" generated="yes" variant="generated" file="tabl-tbl.mkiv">
+        <cd:sequence>
+            <cd:variable value="tabulation"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptabulation"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definetabulate" file="tabl-tbl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:template optional="yes"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuptabulate" file="tabl-tbl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuptabulation"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tabulate" type="environment" file="tabl-tbl.mkiv">
+        <cd:arguments>
+            <cd:template optional="yes"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptabulate"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tabulate" type="environment" generated="yes" variant="generated" file="tabl-tbl.mkiv">
+        <cd:sequence>
+            <cd:variable value="tabulate"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptabulate"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tabulatehead" type="environment" file="tabl-tbl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tabulatetail" type="environment" file="tabl-tbl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tabulaterule" file="tabl-tbl.mkiv"/>
+
+    <cd:command name="tabulateline" file="tabl-tbl.mkiv"/>
+
+    <cd:command name="tabulateautorule" file="tabl-tbl.mkiv"/>
+
+    <cd:command name="tabulateautoline" file="tabl-tbl.mkiv"/>
+
+    <cd:command name="legend" type="environment" file="tabl-tbl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptabulate"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fact" type="environment" file="tabl-tbl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptabulate"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="VL" scope="tabulate" file="tabl-tbl.mkiv">
+            <cd:arguments>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:constant type="cd:number"/>
+                    <cd:constant type="cd:color"/>
+                </cd:keywords>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="NC" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="RC" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="HC" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="EQ" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="RQ" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="HQ" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="NG" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="NN" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="ND" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="NR" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="NB" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="CC" scope="tabulate" file="tabl-tbl.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-color-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="CL" scope="tabulate" file="tabl-tbl.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-color-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="CM" scope="tabulate" file="tabl-tbl.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-color-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="CR" scope="tabulate" file="tabl-tbl.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-color-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="SR" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="FR" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="MR" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="LR" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="AR" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="FL" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="ML" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="LL" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="TL" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="BL" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="HL" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+        <cd:command name="HR" scope="tabulate" file="tabl-tbl.mkiv"/>
+
+    -->
+
+</cd:interface>

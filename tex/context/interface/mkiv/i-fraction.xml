@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definemathfraction" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathfraction"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathfraction" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="topdistance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="bottomdistance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="margin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="strut">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="math"/>
+                    <cd:constant type="tight"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="inner" default="yes"/>
+                    <cd:constant type="outer"/>
+                    <cd:constant type="both"/>
+                </cd:parameter>
+                <cd:parameter name="rule">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="auto" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="mathstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="no"/>
+                    <cd:constant type="none" default="yes"/>
+                    <cd:constant type="overlay"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="setupmathfractions" file="math-frc.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupmathfraction"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="fraction" generated="yes" variant="generated" file="math-frc.mkiv">
+        <cd:sequence>
+            <cd:variable value="fraction"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="frac" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="xfrac" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="xxfrac" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tfrac" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="sfrac" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dfrac" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="binom" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dbinom" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tbinom" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="splitfrac" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="splitdfrac" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="cfrac" file="math-frc.mkiv">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="l"/>
+                <cd:constant type="c"/>
+                <cd:constant type="r"/>
+                <cd:constant type="ll"/>
+                <cd:constant type="lc"/>
+                <cd:constant type="lr"/>
+                <cd:constant type="cl"/>
+                <cd:constant type="cc"/>
+                <cd:constant type="cr"/>
+                <cd:constant type="rl"/>
+                <cd:constant type="rc"/>
+                <cd:constant type="rr"/>
+            </cd:keywords>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

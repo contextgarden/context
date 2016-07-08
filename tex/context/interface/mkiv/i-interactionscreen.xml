@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="setupinteractionscreen" file="scrn-pag.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="width">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="max"/>
+                    <cd:constant type="tight"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="max"/>
+                    <cd:constant type="tight"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="backspace">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="horoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="veroffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="topspace">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="option" list="yes">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="max"/>
+                    <cd:constant type="singlesided"/>
+                    <cd:constant type="doublesided"/>
+                    <cd:constant type="bookmark"/>
+                    <cd:constant type="auto" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="default"/>
+                    <cd:constant type="fixed"/>
+                    <cd:constant type="landscape"/>
+                    <cd:constant type="portrait"/>
+                    <cd:constant type="page"/>
+                    <cd:constant type="paper"/>
+                </cd:parameter>
+                <cd:parameter name="copies">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="delay">
+                    <cd:constant type="none" default="yes"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="screen" file="scrn-pag.mkvi">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:inherit name="page"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="text" type="environment" file="file-job.mkvi"/>
+
+    <cd:command name="text" type="environment" begin="autostart" end="autostop" file="file-job.mkvi"/>
+
+    <cd:command name="notext" type="environment" file="file-job.mkvi"/>
+
+    <cd:command name="environment" type="environment" variant="1" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="cd:file"/>
+                <cd:constant type="*"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="environment" type="environment" variant="2" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="none">
+                <cd:constant type="cd:file"/>
+                <cd:constant type="*"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="environment" variant="1" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="environment" variant="2" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="string-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="useenvironment" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="currentenvironment" file="file-job.mkvi"/>
+
+    <cd:command name="project" type="environment" variant="1" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="cd:file"/>
+                <cd:constant type="*"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="project" type="environment" variant="2" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="none">
+                <cd:constant type="cd:file"/>
+                <cd:constant type="*"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="project" variant="1" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="project" variant="2" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="string-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="useproject" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="currentproject" file="file-job.mkvi"/>
+
+    <cd:command name="product" type="environment" variant="1" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="cd:file"/>
+                <cd:constant type="*"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="product" type="environment" variant="2" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="none">
+                <cd:constant type="cd:file"/>
+                <cd:constant type="*"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="product" variant="1" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="product" variant="2" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="string-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="useproduct" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="currentproduct" file="file-job.mkvi"/>
+
+    <cd:command name="component" type="environment" variant="1" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="cd:file"/>
+                <cd:constant type="*"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="component" type="environment" variant="2" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:keywords delimiters="none">
+                <cd:constant type="cd:file"/>
+                <cd:constant type="*"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="component" variant="1" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="component" variant="2" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="string-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usecomponent" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="currentcomponent" file="file-job.mkvi"/>
+
+    <cd:command name="document" type="environment" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupdocument"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupdocument" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="metadata:author">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="metadata:title">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="metadata:subject">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="metadata:keywords">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="cd:key">
+                    <cd:constant type="cd:value"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="presetdocument" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupdocument"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="documentvariable" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

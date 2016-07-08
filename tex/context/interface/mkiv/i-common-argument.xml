@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <!--        *     -->
+    <!-- \... {...}   -->
+    <!--              -->
+    <!-- * IDENTIFIER -->
+
+    <cd:define name="argument-name">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:name"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-name-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:constant type="cd:name"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-name-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:constant type="cd:name"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-name-list-optional">
+        <cd:keywords delimiters="braces" list="yes" optional="yes">
+            <cd:constant type="cd:name"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * NUMBER   -->
+
+    <cd:define name="argument-number">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:number"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-number-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:constant type="cd:number"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-number-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:constant type="cd:number"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-number-list-optional">
+        <cd:keywords delimiters="braces" list="yes" optional="yes">
+            <cd:constant type="cd:number"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * TEXT     -->
+
+    <cd:define name="argument-text">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:text"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-text-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:constant type="cd:text"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-text-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:constant type="cd:text"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-text-list-optional">
+        <cd:keywords delimiters="braces" list="yes" optional="yes">
+            <cd:constant type="cd:text"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * FILE     -->
+
+    <cd:define name="argument-file">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:file"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-file-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:constant type="cd:file"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-file-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:constant type="cd:file"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-file-list-optional">
+        <cd:keywords delimiters="braces" list="yes" optional="yes">
+            <cd:constant type="cd:file"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *    -->
+    <!-- \... {...}  -->
+    <!--             -->
+    <!-- * DIMENSION -->
+
+    <cd:define name="argument-dimension">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:dimension"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-dimension-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:constant type="cd:dimension"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-dimension-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:constant type="cd:dimension"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-dimension-list-optional">
+        <cd:keywords delimiters="braces" list="yes" optional="yes">
+            <cd:constant type="cd:dimension"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * DUMMY    -->
+
+    <cd:define name="argument-dummy">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:text"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-dummy-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:constant type="cd:text"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-dummy-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:constant type="cd:text"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-dummy-list-optional">
+        <cd:keywords delimiters="braces" list="yes" optional="yes">
+            <cd:constant type="cd:text"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * KEY      -->
+
+    <cd:define name="argument-key">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:key"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-key-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:constant type="cd:key"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-key-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:constant type="cd:key"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-key-list-optional">
+        <cd:keywords delimiters="braces" list="yes" optional="yes">
+            <cd:constant type="cd:key"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *    -->
+    <!-- \... {...}  -->
+    <!--             -->
+    <!-- * REFERENCE -->
+
+    <cd:define name="argument-reference">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:reference"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-reference-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:constant type="cd:reference"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * COMMAND -->
+
+    <cd:define name="argument-command">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:command"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-command-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:constant type="cd:command"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * VALUE    -->
+
+    <cd:define name="argument-value">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:value"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * FONT     -->
+
+    <cd:define name="argument-font">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:font"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * COLOR    -->
+
+    <cd:define name="argument-color">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:color"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * NODE     -->
+
+    <cd:define name="argument-node">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:node"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * LPATH    -->
+
+    <cd:define name="argument-lpath">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:lpath"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * XMLSETUP -->
+
+    <cd:define name="argument-xmlsetup">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:xmlsetup"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * SECTION  -->
+
+    <cd:define name="argument-section">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:section"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * LIST     -->
+
+    <cd:define name="argument-list">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:list"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * MARK     -->
+
+    <cd:define name="argument-mark">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:mark"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * LANGUAGE -->
+
+    <cd:define name="argument-language">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:language"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * FIRST    -->
+
+    <cd:define name="argument-first">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:first"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * LAST     -->
+
+    <cd:define name="argument-last">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:last"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * BUFFER   -->
+
+    <cd:define name="argument-buffer">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:buffer"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * SETUP    -->
+
+    <cd:define name="argument-setup">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:setup"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * CATEGORY -->
+
+    <cd:define name="argument-category">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:category"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *    -->
+    <!-- \... {...}  -->
+    <!--             -->
+    <!-- * CHARACTER -->
+
+    <cd:define name="argument-character">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:character"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * CSNAME   -->
+
+    <cd:define name="argument-csname">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:csname"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * TRUE     -->
+
+    <cd:define name="argument-true">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:true"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * FALSE    -->
+
+    <cd:define name="argument-false">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:false"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *    -->
+    <!-- \... {...}  -->
+    <!--             -->
+    <!-- * ALIGNLINE -->
+
+    <cd:define name="argument-alignline">
+        <cd:keywords delimiters="braces">
+            <cd:resolve name="value-alignline"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *      -->
+    <!-- \... {...}    -->
+    <!--               -->
+    <!-- * ALIGNSIMPLE -->
+
+    <cd:define name="argument-alignsimple">
+        <cd:keywords delimiters="braces">
+            <cd:resolve name="value-alignsimple"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * BTXFIELD -->
+
+    <cd:define name="argument-btxfield">
+        <cd:keywords delimiters="braces">
+            <cd:resolve name="value-btxfield"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *    -->
+    <!-- \... {...}  -->
+    <!--             -->
+    <!-- * BTXAUTHOR -->
+
+    <cd:define name="argument-btxauthor">
+        <cd:keywords delimiters="braces">
+            <cd:resolve name="value-btxauthor"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!-- math formula directives -->
+
+    <cd:define name="argument-formula">
+        <cd:keywords list="yes" optional="yes">
+            <cd:constant type="packed"/>
+            <cd:constant type="tight"/>
+            <cd:constant type="middle"/>
+            <cd:constant type="frame"/>
+            <cd:inherit name="setupbodyfont"/>
+        </cd:keywords>
+    </cd:define>
+
+</cd:interface>

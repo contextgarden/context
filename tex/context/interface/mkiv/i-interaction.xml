@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineinteraction" file="scrn-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupinteraction"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupinteraction" variant="1" file="scrn-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="state">
+                    <cd:constant type="start"/>
+                    <cd:constant type="stop" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="contrastcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="title">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="subtitle">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="author">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="date">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="keyword">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="focus">
+                    <cd:constant type="standard"/>
+                    <cd:constant type="frame"/>
+                    <cd:constant type="width"/>
+                    <cd:constant type="minwidth"/>
+                    <cd:constant type="height"/>
+                    <cd:constant type="minheight"/>
+                    <cd:constant type="fit" default="yes"/>
+                    <cd:constant type="tight"/>
+                    <!--
+                        <cd:constant type="xyz"/>
+                        <cd:constant type="fitr"/>
+                        <cd:constant type="fith"/>
+                        <cd:constant type="fitbh"/>
+                        <cd:constant type="fitv"/>
+                        <cd:constant type="fitbv"/>
+                        <cd:constant type="fitb"/>
+                    -->
+                </cd:parameter>
+                <cd:parameter name="menu">
+                    <cd:constant type="on"/>
+                    <cd:constant type="off" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="fieldlayer">
+                    <cd:constant type="auto"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="calculate">
+                    <cd:constant type="cd:reference"/>
+                </cd:parameter>
+                <cd:parameter name="click">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="display">
+                    <cd:constant type="normal"/>
+                    <cd:constant type="new"/>
+                </cd:parameter>
+                <cd:parameter name="page">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="page"/>
+                    <cd:constant type="name"/>
+                    <cd:constant type="auto"/>
+                </cd:parameter>
+                <cd:parameter name="openaction">
+                    <cd:constant type="cd:reference"/>
+                </cd:parameter>
+                <cd:parameter name="closeaction">
+                    <cd:constant type="cd:reference"/>
+                </cd:parameter>
+                <cd:parameter name="openpageaction">
+                    <cd:constant type="cd:reference"/>
+                </cd:parameter>
+                <cd:parameter name="closepageaction">
+                    <cd:constant type="cd:reference"/>
+                </cd:parameter>
+                <cd:parameter name="symbolset">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="depth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="focusoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupinteraction" variant="2" file="scrn-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="interaction" type="environment" file="scrn-ini.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="hidden"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setinteraction" file="scrn-ini.mkvi">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="hidden"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelselocation" file="scrn-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doiflocationelse" file="scrn-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>
