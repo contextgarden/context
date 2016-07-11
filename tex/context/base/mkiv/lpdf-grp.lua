@@ -313,8 +313,11 @@ function lpdf.registerpattern(specification)
             (specification.voffset or 0) * basepoints,
         },
     }
-    local n = texsavebox(specification.number,d(),lpdf.collectedresources(),true,1)
-    lpdf.adddocumentpattern("Pt" .. nofpatterns,lpdf.reference(n))
+    local resources  = lpdf.collectedresources{ patterns = false }
+    local attributes = d()
+    local onlybounds = 1
+    local patternobj = texsavebox(specification.number,attributes,resources,true,onlybounds)
+    lpdf.adddocumentpattern("Pt" .. nofpatterns,lpdf.reference(patternobj ))
     return nofpatterns
 end
 

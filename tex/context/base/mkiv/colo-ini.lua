@@ -517,8 +517,15 @@ end
 
 local function f(i,colors,fraction)
     local otf = 0
-    for c=1,#colors do
-        otf = otf + (tonumber(fraction[c]) or 1) * colors[c][i]
+    if type(fraction) == "table" then
+        for c=1,#colors do
+            otf = otf + (tonumber(fraction[c]) or 1) * colors[c][i]
+        end
+    else
+        fraction = tonumber(fraction)
+        for c=1,#colors do
+            otf = otf + fraction * colors[c]
+        end
     end
     if otf > 1 then
         otf = 1

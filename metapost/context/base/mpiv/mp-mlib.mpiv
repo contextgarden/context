@@ -54,7 +54,6 @@ vardef transparency_alternative_to_number(expr name) =
     fi
 enddef ;
 
-
 def namedcolor (expr n) =
     1
     withprescript "sp_type=named"
@@ -77,10 +76,10 @@ enddef ;
 %     withprescript "sp_value="      & value
 % enddef ;
 
-def spotcolor(expr n, v) =
+def spotcolor(expr name, v) =
     1
     withprescript "sp_type=spot"
-    withprescript "sp_name="  & n
+    withprescript "sp_name="  & name
     withprescript "sp_value=" & colordecimals v
 enddef ;
 

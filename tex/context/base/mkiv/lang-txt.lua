@@ -2309,7 +2309,7 @@ data.labels={
   ["november:jalali"] = {
    labels = {
     en = "Bahman",
-    fa = "unset",
+    fa = "بهمن",
    },
   },
   ["september:jalali"] = {
@@ -2330,7 +2330,7 @@ data.labels={
     fa = "اسفند",
    },
   },
-  ["januari:jalali"] = {
+  ["january:jalali"] = {
    labels = {
     en = "Farvardin",
     fa = "فروردین",
@@ -2354,7 +2354,7 @@ data.labels={
     fa = "مرداد",
    },
   },
-  ["februari:jalali"] = {
+  ["february:jalali"] = {
    labels = {
     en = "Ordibehesht",
     fa = "اردیبهشت",

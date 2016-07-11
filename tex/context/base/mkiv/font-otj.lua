@@ -1092,6 +1092,10 @@ local function inject_everything(head,where)
                             nofmarks = nofmarks + 1
                             marks[nofmarks] = current
                         else
+local yoffset = i.yoffset
+if yoffset and yoffset ~= 0 then
+    setfield(current,"yoffset",yoffset)
+end
                             if hascursives then
                                 local cursivex = i.cursivex
                                 if cursivex then
@@ -1144,10 +1148,10 @@ local function inject_everything(head,where)
                                 end
                             end
                             -- left|glyph|right
-                            local yoffset = i.yoffset
-                            if yoffset and yoffset ~= 0 then
-                                setfield(current,"yoffset",yoffset)
-                            end
+--                             local yoffset = i.yoffset
+--                             if yoffset and yoffset ~= 0 then
+--                                 setfield(current,"yoffset",yoffset)
+--                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
                                 insert_node_before(head,current,newkern(leftkern))

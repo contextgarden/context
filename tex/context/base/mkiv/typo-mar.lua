@@ -930,7 +930,8 @@ function margins.finalhandler(head)
         end
         head = tonut(head)
         local head, done = finalhandler(head)
-        resetstacked(true)
+--         resetstacked(true)
+resetstacked(nofdelayed==0)
         head = tonode(head)
         return head, done
     else

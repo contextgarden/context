@@ -1009,11 +1009,20 @@ do
     local function flushpatterns   () if next(d_patterns   ) then trace_flush("patterns")    pdfimmediateobject(r_patterns,   tostring(d_patterns   )) end end
     local function flushshades     () if next(d_shades     ) then trace_flush("shades")      pdfimmediateobject(r_shades,     tostring(d_shades     )) end end
 
-    function lpdf.collectedresources()
+    -- patterns are special as they need resources to so we can get recursive references and in that case
+    -- acrobat doesn't show anything (other viewers handle it well)
+    --
+    -- todo: share them
+    -- todo: force when not yet set
+
+    function lpdf.collectedresources(options)
         local ExtGState  = next(d_extgstates ) and p_extgstates
         local ColorSpace = next(d_colorspaces) and p_colorspaces
         local Pattern    = next(d_patterns   ) and p_patterns
         local Shading    = next(d_shades     ) and p_shades
+        if options and options.patterns == false then
+            Pattern = nil
+        end
         if ExtGState or ColorSpace or Pattern or Shading then
             local collected = pdfdictionary {
                 ExtGState  = ExtGState,

@@ -45,6 +45,9 @@
 %D
 %D This macros inserts the page, according to the settings provided.
 
+%D Beware: width is not the width of the image, but height can be used to control
+%D its dimensions.
+
 \installcorenamespace{withpages}
 
 \installsetuponlycommandhandler \??withpages {withpages}
@@ -108,13 +111,19 @@
    \egroup}
 
 \def\page_selectors_filter_a_page#filename#page%
-  {\hbox to \textwidth
+  {\hpack to \textwidth
      {\ifdim\scratchwidth>\zeropoint
         \rightorleftpageaction{\scratchwidth\zeropoint}{\hfill}%
       \fi
-      \setbox\scratchbox\hbox
+      \setbox\scratchbox\hpack
         {\hskip-\scratchwidth
-         \externalfigure[#filename][\c!page=#page,\c!height=\textheight]\hss}%
+         \edef\p_category{\directwithpagesparameter\c!category}% \useexternalfigure[foo][width=\textwidth]
+         \ifx\p_category\empty
+           \externalfigure[#filename][\c!page=#page,\c!height=\textheight]%
+         \else
+           \externalfigure[#filename][\p_category][\c!page=#page]%
+         \fi
+         \hss}%
       \wd\scratchbox\zeropoint
       \box\scratchbox}
    \page}
@@ -132,7 +141,7 @@
      {\vbox to \textheight
         {\hsize\textwidth
          \centeredbox
-           {\doifelse{\directwithpagesparameter\c!marking}\v!on\cuthbox\hbox % only place where cuthbox is used
+           {\doifelse{\directwithpagesparameter\c!marking}\v!on\cuthbox\hpack % only place where cuthbox is used
               {\ifdim\scratchoffset>\zeropoint\relax
                  \advance\vsize -2\scratchoffset
                  \advance\hsize -2\scratchoffset
@@ -199,7 +208,7 @@
    \directwithpagesparameter\c!after
    \egroup}
 
-\setvalue{\??combinepagesalternative\v!a}%
+\setvalue{\??combinepagesalternative\v!a}% use hpacks
   {\global\combinedpagescounter\directwithpagesparameter\c!start\relax
    \doloop
      {\vbox to \textheight

@@ -32,6 +32,9 @@
                 <cd:parameter name="width">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="category">
+                    <cd:constant type="cd:string"/>
+                </cd:parameter>
                 <cd:parameter name="n">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>

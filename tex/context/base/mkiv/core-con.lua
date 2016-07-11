@@ -1258,7 +1258,7 @@ local spaced = {
     [v_day]     = true,
 }
 
-local converters = {
+local dateconverters = {
     ["jalali:to"]   = gregorian_to_jalali,
     ["jalali:from"] = jalali_to_gregorian,
 }
@@ -1280,7 +1280,7 @@ local function currentdate(str,currentlanguage) -- second argument false : no la
     end
     for i=1,#list do
         local entry = list[i]
-        local convert = converters[entry]
+        local convert = dateconverters[entry]
         if convert then
             year, month, day = convert(year,month,day)
         else

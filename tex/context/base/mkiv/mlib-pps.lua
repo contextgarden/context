@@ -1382,7 +1382,7 @@ local function tr_process(object,prescript,before,after)
                 defineprocesscolor(sp_temp,r and r(unpack(s)) or "s=0",true,true)
                 definespotcolor(sp_name,sp_temp,"p=1",true)
                 sp_type = "named"
-            elseif sp_type == "multitone" then
+            elseif sp_type == "multitone" then -- (fractions of a multitone) don't work well in mupdf
                 local sp_value = prescript.sp_value or "s:1"
                 local sp_spec  = { }
                 local sp_list  = split(sp_value," ")
