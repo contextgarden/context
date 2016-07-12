@@ -334,7 +334,7 @@ local f_number           = formatters['chem_%s%s(%s,%s,"\\chemicaltext{%s}");']
 local f_text             = f_number
 local f_empty_normal     = formatters['chem_%s(%s,%s,"");']
 local f_empty_center     = formatters['chem_c%s(%s,%s,"");']
-local f_transform        = formatters['chem_%s(%s,%s,%s);']
+local f_transform        = formatters['chem_%s(%s,%s,%q);']
 
 local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_variant)
     insert(stack,{ spec = spec, text = text, n = n })

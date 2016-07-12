@@ -2747,7 +2747,10 @@ data.labels={
    labels = {
     en = "Master's thesis",
     fr = "Thèse de master (DEA, DESS, master)",
+    nl = "Masterproef",
     de = "Masterarbeit",
+    it = "Tesi di laurea",
+    es = "Tesis de maestría",
    },
   },
   ["phdthesis"] = {
@@ -2755,6 +2758,9 @@ data.labels={
     en = "PhD thesis",
     fr = "Thèse de doctorat",
     de = "Dissertation",
+    nl = "Proefschrift",
+    it = "Tesi di dottorato",
+    es = "Tesis doctoral",
    },
   },
   ["technicalreport"] = {
@@ -2762,6 +2768,9 @@ data.labels={
     en = "Technical report",
     fr = "Rapport technique",
     de = "Technischer Bericht",
+    nl = "Technisch rapport",
+    it = "Relazione tecnica",
+    es = "Informe técnico",
    },
   },
   --
@@ -2770,6 +2779,7 @@ data.labels={
     en = "editor",
     fr = "éditeur",
     de = "Herausgeber",
+    it = "a cura di",
    },
   },
   ["editors"] = {
@@ -2777,6 +2787,8 @@ data.labels={
     en = "editors",
     fr = "éditeurs",
     de = "Herausgeber",
+    it = "a cura di",
+    es = "editores",
    },
   },
   ["edition"] = {
@@ -2784,19 +2796,24 @@ data.labels={
     en = "edition",
     fr = "édition",
     de = "Auflage",
-   },
+    nl = "editie", 
+    it = "edizione",
+    es = "edición",
+    },
   },
   --
   ["volume"] = {
    labels = {
     en = "volume",
     de = "Band",
+    nl = "deel",   
    },
   },
   ["Volume"] = {
    labels = {
     en = "Volume",
     de = "Band",
+    nl = "Deel",   
    },
   },
   ["number"] = {
@@ -2804,6 +2821,7 @@ data.labels={
     en = "number",
     fr = "numéro",
     de = "Numer",
+    nl = "nummer",   
    },
   },
   ["Number"] = {
@@ -2811,13 +2829,14 @@ data.labels={
     en = "Number",
     fr = "Numéro",
     de = "Numer",
+    nl = "Nummer",   
    },
   },
   ["in"] = {
    labels = {
     en = "in",
     fr = "dans",
-    de = "in",
+    es = "en",
    },
   },
   ["of"] = {
@@ -2825,6 +2844,7 @@ data.labels={
     en = "of",
     fr = "de",
     de = "von",
+    nl = "van", 
    },
   },
   --
@@ -2832,7 +2852,7 @@ data.labels={
    labels = {
     en = "In",
     fr = "Dans",
-    de = "In",
+    es = "En",
    },
   },
   --
@@ -2852,13 +2872,18 @@ data.labels={
    labels = {
     en = "pages",
     de = "Seiten",
+    nl = "paginas"
    },
   },
   --
   ["and"] = {
    labels = {
     en = "and",
+    fr = "et",
     de = "und",
+    nl = "en",
+    it = "e",
+    es = "y",
    },
   },
   ["others"] = {

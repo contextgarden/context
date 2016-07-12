@@ -909,11 +909,12 @@
 
 \def\colo_basics_define_intermediate_indeed[#1][#2,#3,#4][#5]%
   {\clf_defineintermediatecolor % not global
-     {#1}{#2}%
-     \thecolorattribute{#3} %
-     \thecolorattribute{#4} %
-     \thetransparencyattribute{#3} %
-     \thetransparencyattribute{#4} %
+     {#1}%
+     {#2}%
+     \rawcolorattribute{#3} %
+     \rawcolorattribute{#4} %
+     \rawtransparencyattribute{#3} %
+     \rawtransparencyattribute{#4} %
      {#5}%
      \v_colo_freeze_state
    \relax
@@ -1207,6 +1208,9 @@
 
 %def\thecolorattribute       #1{\number\csname\??colorattribute       \ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??colorattribute       #1\endcsname#1\fi\fi\endcsname}
 %def\thetransparencyattribute#1{\number\csname\??transparencyattribute\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??transparencyattribute#1\endcsname#1\fi\fi\endcsname}
+
+\def\rawcolorattribute       #1{\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\else\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\zerocount\fi\fi}
+\def\rawtransparencyattribute#1{\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\lastnamedcs\else\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\zerocount\fi\fi}
 
 \def\thecolorattribute       #1{\number\ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\lastnamedcs\else\ifcsname\??colorattribute       #1\endcsname\lastnamedcs\else\zerocount\fi\fi}
 \def\thetransparencyattribute#1{\number\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\lastnamedcs\else\ifcsname\??transparencyattribute#1\endcsname\lastnamedcs\else\zerocount\fi\fi}
