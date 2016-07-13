@@ -7065,7 +7065,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 23253, stripped down to: 16177
+-- original size: 23635, stripped down to: 16487
 
 if not modules then modules={} end modules ['util-prs']={
   version=1.001,
@@ -7226,6 +7226,21 @@ function parsers.settings_to_array(str,strict)
   else
     return { str }
   end
+end
+function parsers.settings_to_numbers(str)
+  if not str or str=="" then
+    return {}
+  end
+  if type(str)=="table" then
+  elseif find(str,",",1,true) then
+    str=lpegmatch(pattern,str)
+  else
+    return { tonumber(str) }
+  end
+  for i=1,#str do
+    str[i]=tonumber(str[i])
+  end
+  return str
 end
 local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C((nestedbraces+nestedbrackets+nestedparents+(1-comma))^0)
 local pattern=spaces*Ct(value*(separator*value)^0)
@@ -18783,8 +18798,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 798874
--- stripped bytes    : 289869
+-- original bytes    : 799256
+-- stripped bytes    : 289941
 
 -- end library merge
 

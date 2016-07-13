@@ -6591,6 +6591,10 @@ return {
    ["pe"]="apa",
    ["ro"]="apa",
   },
+  ["arguments"]={
+   ["en"]="arguments",
+   ["nl"]="argumenten",
+  },
   ["arrow"]={
    ["cs"]="sipka",
    ["de"]="pfeil",

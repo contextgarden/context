@@ -67,7 +67,11 @@
   {\bgroup
    \dontcomplain
    \getfiguredimensions[#filename]%
-   \setupcurrentwithpages[\c!width=\zeropoint,\c!n=\noffigurepages,#settings]%
+   \setupcurrentwithpages
+     [\c!width=\zeropoint,%
+      \c!n=\noffigurepages,%
+      \c!category=,%
+      #settings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchwidth\directwithpagesparameter\c!width\relax
    \doifinset0{#emptylist}
@@ -85,7 +89,11 @@
   {\bgroup
    \dontcomplain
    \getfiguredimensions[#filename]%
-   \setupcurrentwithpages[\c!width=\zeropoint,\c!n=\noffigurepages,#settings]%
+   \setupcurrentwithpages
+     [\c!width=\zeropoint,%
+      \c!n=\noffigurepages,%
+      \c!category=,%
+      #settings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchwidth\directwithpagesparameter\c!width\relax
    \edef\p_selection{#selection}%
@@ -134,7 +142,12 @@
 \def\page_selectors_copy[#filename][#settings][#figuresettings]%
   {\bgroup
    \getfiguredimensions[#filename]%
-   \setupcurrentwithpages[\c!marking=\v!off,\c!offset=\zeropoint,\c!n=\noffigurepages,#settings]%
+   \setupcurrentwithpages
+     [\c!marking=\v!off,%
+      \c!offset=\zeropoint,%
+      \c!n=\noffigurepages,%
+      \c!category=,%
+      #settings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchoffset\directwithpagesparameter\c!offset\relax
    \dorecurse\c_page_selectors_n
@@ -196,6 +209,7 @@
       \c!before=\page,\c!after=\page,\c!inbetween=\blank,
       \c!frame=,\c!background=,\c!backgroundcolor=,
       \c!name={#filename},
+      \c!category=,
       #settings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \directwithpagesparameter\c!before
@@ -331,8 +345,14 @@
    \global\let\slicedpagenumber\!!zerocount
    \getfiguredimensions[#filename]%
    \setupcurrentwithpages
-     [\c!offset=\zeropoint,\c!hoffset=\zeropoint,\c!voffset=\zeropoint,
-      \c!width=\figurewidth,\c!height=\figureheight,\c!n=\noffigurepages,#oddsettings]%
+     [\c!offset=\zeropoint,%
+      \c!hoffset=\zeropoint,%
+      \c!voffset=\zeropoint,
+      \c!width=\figurewidth,%
+      \c!height=\figureheight,%
+      \c!n=\noffigurepages,%
+      \c!category=,%
+      #oddsettings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \ifnum\c_page_selectors_n>\zerocount
      \definepapersize

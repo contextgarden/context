@@ -182,7 +182,7 @@ local function checkandconvert(ca,cb,model)
             normalize(cb,ca)
         end
         if not model then
-            model = colors.model
+            model = colors.currentnamedmodel()
         end
         if model == "all" then
             model= (#ca == 4 and "cmyk") or (#ca == 3 and "rgb") or "gray"
@@ -460,7 +460,7 @@ setmetatableindex(models, function(t,k)
 end)
 
 local function colorconverter(cs)
- -- return models[colors.model](cs)
+ -- return models[colors.currentmodel()](cs)
     return models[outercolormodel](cs)
 end
 

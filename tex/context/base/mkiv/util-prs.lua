@@ -193,6 +193,23 @@ function parsers.settings_to_array(str,strict)
     end
 end
 
+function parsers.settings_to_numbers(str)
+    if not str or str == "" then
+        return { }
+    end
+    if type(str) == "table" then
+        -- fall through
+    elseif find(str,",",1,true) then
+        str = lpegmatch(pattern,str)
+    else
+        return { tonumber(str) }
+    end
+    for i=1,#str do
+        str[i] = tonumber(str[i])
+    end
+    return str
+end
+
 local value     = P(lbrace * C((nobrace + nestedbraces)^0) * rbrace)
                 + C((nestedbraces + nestedbrackets + nestedparents + (1-comma))^0)
 local pattern   = spaces * Ct(value*(separator*value)^0)

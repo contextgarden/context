@@ -119,15 +119,27 @@
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
    \syst_mode_prefix\lastnamedcs\preventedmode}
 
+% \def\syst_modes_enable_indeed#1% we can speed it up by moving the new outside
+%   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+%    \ifnum\csname\??mode#1\endcsname=\preventedmode \else
+%      \syst_mode_prefix\lastnamedcs\enabledmode
+%    \fi}
+%
+% \def\syst_modes_disable_indeed#1%
+%   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+%    \ifnum\csname\??mode#1\endcsname=\preventedmode \else
+%      \syst_mode_prefix\lastnamedcs\disabledmode
+%    \fi}
+
 \def\syst_modes_enable_indeed#1% we can speed it up by moving the new outside
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \ifnum\csname\??mode#1\endcsname=\preventedmode \else
+   \ifnum\lastnamedcs=\preventedmode\else
      \syst_mode_prefix\lastnamedcs\enabledmode
    \fi}
 
 \def\syst_modes_disable_indeed#1%
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
-   \ifnum\csname\??mode#1\endcsname=\preventedmode \else
+   \ifnum\lastnamedcs=\preventedmode\else
      \syst_mode_prefix\lastnamedcs\disabledmode
    \fi}
 
@@ -146,6 +158,18 @@
    \edef\m_modes_asked{#2}%
    \rawprocesscommacommand[#1]\syst_modes_define_indeed}
 
+% \def\syst_modes_define_indeed#1%
+%   {\ifcsname\??mode#1\endcsname
+%      % already set
+%    \else
+%      \syst_modes_new{#1}
+%    \fi
+%    \ifx\m_modes_asked\v!keep
+%      % not changes, disabled when undefined
+%    \else
+%      \csname\??mode#1\endcsname\ifx\m_modes_asked\v!yes\enabledmode\else\disabledmode\fi
+%    \fi}
+
 \def\syst_modes_define_indeed#1%
   {\ifcsname\??mode#1\endcsname
      % already set
@@ -155,7 +179,7 @@
    \ifx\m_modes_asked\v!keep
      % not changes, disabled when undefined
    \else
-     \csname\??mode#1\endcsname\ifx\m_modes_asked\v!yes\enabledmode\else\disabledmode\fi
+     \lastnamedcs\ifx\m_modes_asked\v!yes\enabledmode\else\disabledmode\fi
    \fi}
 
 % handy for mp

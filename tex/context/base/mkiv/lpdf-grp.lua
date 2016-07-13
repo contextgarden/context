@@ -35,32 +35,15 @@ local pdfflushobject = lpdf.flushobject
 -- 22 : << /Bounds [ ] /Domain [ 0.0 1.0 ] /Encode [ 0.0 1.0 ] /FunctionType 3 /Functions [ 31 0 R ] >>
 -- 31 : << /C0 [ 1.0 0.0 ] /C1 [ 0.0 1.0 ] /Domain [ 0.0 1.0 ] /FunctionType 2 /N 1.0 >>
 
-local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps)
-    if steps then
-        color_a = color_a[1]
-        color_b = color_b[1]
-    end
-    local f = pdfdictionary {
-        FunctionType = 2,
-        Domain       = pdfarray(domain), -- domain is actually a string
-        C0           = pdfarray(color_a),
-        C1           = pdfarray(color_b),
-        N            = tonumber(n),
-    }
-    separation = separation and registrations.getspotcolorreference(separation)
-    local s = pdfdictionary {
-        ShadingType = stype,
-        ColorSpace  = separation and pdfreference(separation) or pdfconstant(colorspace),
-        Function    = pdfreference(pdfflushobject(f)),
-        Coords      = pdfarray(coordinates),
-        Extend      = pdfarray { true, true },
-        AntiAlias   = pdfboolean(true),
-    }
-    lpdf.adddocumentshade(name,pdfreference(pdfflushobject(s)))
-end
-
 local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
     local func = nil
+    --
+    -- domain has to be consistently added in all dictionaries here otherwise
+    -- acrobat fails with a drawing error
+    --
+    domain = pdfarray(domain)
+    n      = tonumber(n)
+    --
     if steps then
         local list   = pdfarray()
         local bounds = pdfarray()
@@ -71,10 +54,10 @@ local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,
             encode[2*i]   = 1
             list  [i]     = pdfdictionary {
                 FunctionType = 2,
-                Domain       = pdfarray(domain), -- domain is actually a string
+                Domain       = domain,
                 C0           = pdfarray(color_a[i]),
                 C1           = pdfarray(color_b[i]),
-                N            = tonumber(n),
+                N            = n,
             }
         end
         func = pdfdictionary {
@@ -82,21 +65,22 @@ local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,
             Bounds       = bounds,
             Encode       = encode,
             Functions    = list,
-            Domain       = pdfarray(domain), -- domain is actually a string
+            Domain       = domain,
         }
     else
         func = pdfdictionary {
             FunctionType = 2,
-            Domain       = pdfarray(domain), -- domain is actually a string
+            Domain       = domain,
             C0           = pdfarray(color_a),
             C1           = pdfarray(color_b),
-            N            = tonumber(n),
+            N            = n,
         }
     end
     separation = separation and registrations.getspotcolorreference(separation)
     local s = pdfdictionary {
         ShadingType = stype,
         ColorSpace  = separation and pdfreference(separation) or pdfconstant(colorspace),
+        Domain      = domain,
         Function    = pdfreference(pdfflushobject(func)),
         Coords      = pdfarray(coordinates),
         Extend      = pdfarray { true, true },

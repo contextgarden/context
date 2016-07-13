@@ -54,8 +54,8 @@ vardef transparency_alternative_to_number(expr name) =
     fi
 enddef ;
 
-def namedcolor (expr n) =
-    1
+def namedcolor expr n =
+    (1)
     withprescript "sp_type=named"
     withprescript "sp_name=" & n
 enddef ;
@@ -77,21 +77,21 @@ enddef ;
 % enddef ;
 
 def spotcolor(expr name, v) =
-    1
+    (1)
     withprescript "sp_type=spot"
     withprescript "sp_name="  & name
     withprescript "sp_value=" & colordecimals v
 enddef ;
 
 def multitonecolor(expr name)(text t) =
-    1
+    (1)
     withprescript "sp_type=multitone"
     withprescript "sp_name=" & name
     withprescript "sp_value=" & colordecimalslist(t)
 enddef ;
 
 def transparent(expr a, t)(text c) = % use withtransparency instead
-    1 % this permits withcolor x intoshade y
+    (1) % this permits withcolor x intoshade y
     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(a)
     withprescript "tr_transparency=" & decimal t
     withcolor c
@@ -1537,9 +1537,18 @@ def nofill   text t = fill t withpostscript "collect" enddef ;
 
 % so we can do: withcolor "red"
 
-def resolvedcolor(expr s) =
+def resolvedcolor expr s =
   % lua.mp.namedcolor(s)                    % conflicts with macro namedcolor
   % lua.mp.NamedColor(s)                    % okay but, can also be
   % lua.mp("NamedColor",s)                  % which gives expansion mess
     runscript("mp.NamedColor('" & s & "')") % faster anyway
 enddef ;
+
+% A comment will end up on top of the graphic in the output. This can be handy for
+% locating a graphic: comment("test graphic").
+
+def comment(expr str) =
+    special "metapost.comment[[" & str & "]]" ;
+enddef ;
+
+comment("test graphic");

@@ -628,6 +628,7 @@
 		<cd:constant name='anchor' value='anker'/>
 		<cd:constant name='andtext' value='andtext'/>
 		<cd:constant name='apa' value='apa'/>
+		<cd:constant name='arguments' value='argumenten'/>
 		<cd:constant name='arrow' value='pijl'/>
 		<cd:constant name='artauthor' value='artauthor'/>
 		<cd:constant name='artauthoretaldisplay' value='artauthoretaldisplay'/>

@@ -410,7 +410,7 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
      -- return defineintermediatecolor(name,two,l_color[one],l_color[three],l_transparency[one],l_transparency[three],"",global,freeze)
         local c1, t1 = resolvedname(one)
         local c2, t2 = resolvedname(three)
-        return defineintermediatecolor(name,two,c1,c1,t1,t2,"",global,freeze)
+        return defineintermediatecolor(name,two,c1,c2,t1,t2,"",global,freeze)
     else
         local settings = settings_to_hash_strict(str)
         if settings then
@@ -476,6 +476,11 @@ local function isblack(ca) -- maybe commands
 end
 
 colors.isblack = isblack
+
+-- local m, c, t = attributes.colors.namedcolorattributes(parent)
+-- if c and c > 1 then -- 1 is black
+-- local v = attributes.colors.values[c]
+
 
 local function definespotcolor(name,parent,str,global)
     if parent == "" or find(parent,"=",1,true) then
@@ -817,6 +822,10 @@ end
 
 local function spotcolorname(ca,default)
     local cv, v = colorvalues[ca], "unknown"
+    if not cv and type(ca) == "string" then
+        ca = resolvedname(ca) -- we could metatable colorvalues
+        cv = colorvalues[ca]
+    end
     if cv and cv[1] == 5 then
         v = cv[10]
     end
@@ -825,6 +834,10 @@ end
 
 local function spotcolorparent(ca,default)
     local cv, v = colorvalues[ca], "unknown"
+    if not cv and type(ca) == "string" then
+        ca = resolvedname(ca) -- we could metatable colorvalues
+        cv = colorvalues[ca]
+    end
     if cv and cv[1] == 5 then
         v = cv[12]
         if v == "" then
@@ -836,6 +849,10 @@ end
 
 local function spotcolorvalue(ca,default)
     local cv, v = colorvalues[ca], 0
+    if not cv and type(ca) == "string" then
+        ca = resolvedname(ca) -- we could metatable colorvalues
+        cv = colorvalues[ca]
+    end
     if cv and cv[1] == 5 then
        v = cv[13]
     end
@@ -1085,9 +1102,9 @@ implement {
 implement { name = "spotcolorname",          actions = { spotcolorname,          context }, arguments = "integer" }
 implement { name = "spotcolorparent",        actions = { spotcolorparent,        context }, arguments = "integer" }
 implement { name = "spotcolorvalue",         actions = { spotcolorvalue,         context }, arguments = "integer" }
-implement { name = "colorcomponents",        actions = { colorcomponents,        context }, arguments = "integer" }
-implement { name = "transparencycomponents", actions = { transparencycomponents, context }, arguments = "integer" }
-implement { name = "processcolorcomponents", actions = { processcolorcomponents, context }, arguments = "integer" }
+implement { name = "colorcomponents",        actions = { colorcomponents,        context }, arguments = { "integer", tokens.constant(",") } }
+implement { name = "transparencycomponents", actions = { transparencycomponents, context }, arguments = { "integer", tokens.constant(",") } }
+implement { name = "processcolorcomponents", actions = { processcolorcomponents, context }, arguments = { "integer", tokens.constant(",") } }
 implement { name = "formatcolor",            actions = { formatcolor,            context }, arguments = { "integer", "string" } }
 implement { name = "formatgray",             actions = { formatgray,             context }, arguments = { "integer", "string" } }
 
@@ -1194,6 +1211,10 @@ function colors.spec(name)
         r = t[3], g = t[4], b = t[5],
         c = t[6], m = t[7], y = t[8], k = t[9],
     }
+end
+
+function colors.currentnamedmodel()
+    return models[texgetattribute(a_colormodel)] or "gray"
 end
 
 -- inspect(attributes.colors.spec("red"))

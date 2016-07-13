@@ -136,15 +136,13 @@ function pdfflusher.comment(message)
         message = formatters["%% mps graphic %s: %s"](metapost.n,message)
         if experiment then
             context(pdfliteral(message))
+        elseif savedliterals then
+            local last = #savedliterals + 1
+            savedliterals[last] = message
+            context.MPLIBtoPDF(last)
         else
-            if savedliterals then
-                local last = #savedliterals + 1
-                savedliterals[last] = message
-                context.MPLIBtoPDF(last)
-            else
-                savedliterals = { message }
-                context.MPLIBtoPDF(1)
-            end
+            savedliterals = { message }
+            context.MPLIBtoPDF(1)
         end
     end
 end
@@ -393,6 +391,8 @@ local function setvariables(figure)
     return variables
 end
 
+function metapost.comment() end
+
 function metapost.flush(result,flusher,askedfig)
     if result then
         local figures = result.fig
@@ -408,6 +408,7 @@ function metapost.flush(result,flusher,askedfig)
             local textfigure = flusher.textfigure
             local processspecial = flusher.processspecial or metapost.processspecial
             local variables  = setvariables(figure) -- also resets then in case of not found
+            metapost.comment = flusher.comment
             for index=1,#figures do
                 local figure = figures[index]
                 local properties = setproperties(figure)
@@ -632,6 +633,7 @@ function metapost.flush(result,flusher,askedfig)
                     end
                 end
             end
+            function metapost.comment() end
         end
     end
 end

@@ -85,6 +85,9 @@
                 <cd:parameter name="color">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
+                <cd:parameter name="arguments">
+                    <cd:constant type="cd:string"/>
+                </cd:parameter>
                 <cd:parameter name="repeat">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>

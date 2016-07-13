@@ -21,6 +21,7 @@
 \writestatus{loading}{ConTeXt Graphic Macros / Figure Inclusion}
 
 \registerctxluafile{grph-inc}{1.001}
+\registerctxluafile{grph-con}{1.001}
 \registerctxluafile{grph-fil}{1.001}
 \registerctxluafile{grph-mem}{1.001}
 \registerctxluafile{grph-u3d}{1.001} % this will change
@@ -60,6 +61,7 @@
    \c!preset         =\v!yes,
    \c!split          =,
    \c!color          =,
+   \c!arguments      =,
    \c!symbol         =\v!no,
    \c!controls       =\v!no,
    \c!resources      =,
@@ -330,7 +332,8 @@
         mask       {\externalfigureparameter\c!mask}%
         conversion {\externalfigureparameter\c!conversion}%
         resolution {\externalfigureparameter\c!resolution}%
-        color      {\internalspotcolorparent{\externalfigureparameter\c!color}}% hack is needed
+        color      {\externalfigureparameter\c!color}% unprocessed raw key
+        arguments  {\externalfigureparameter\c!arguments}% used for converters
         repeat     {\externalfigureparameter\c!repeat}%
     \ifx\p_width\empty \else
         width      \dimexpr\p_width\relax
@@ -528,6 +531,9 @@
 \def\figurefilepage      {\clf_figurerequest{page}{1}}
 \def\figurefileoptions   {\clf_figurerequest{options}{}}
 \def\figurefileconversion{\clf_figurerequest{conversion}{}}
+\def\figurefileresolution{\clf_figurerequest{resolution}{}}
+\def\figurefilecolor     {\clf_figurerequest{color}{}}
+\def\figurefilearguments {\clf_figurerequest{arguments}{}}
 \def\figurefilecache     {\clf_figurerequest{cache}{}}
 \def\figurefileprefix    {\clf_figurerequest{prefix}{}}
 

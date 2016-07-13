@@ -659,6 +659,9 @@
      \directvspacing\p_spaceafter
    \fi\fi}
 
+% \newtoks\everybeforedisplay
+% \appendtoks\page_sides_check_floats_indeed\to\everybeforedisplay
+
 \unexpanded\def\beforedisplayspace
   {\ifhmode
      \par
@@ -669,7 +672,8 @@
    \fi
    \ifhmode
      \par
-   \fi}
+   \fi
+   \page_sides_check_floats_indeed} % probably needs more
 
 \unexpanded\def\afterdisplayspace
   {\ifhmode
