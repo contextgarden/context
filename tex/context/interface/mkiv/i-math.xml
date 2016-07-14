@@ -91,6 +91,9 @@
                     <cd:constant type="displaylimits"/>
                     <cd:constant type="none"/>
                 </cd:parameter>
+                <cd:parameter name="stylealternative">
+                     <cd:constant type="cd:list"/>
+                </cd:parameter>
                 <cd:parameter name="default">
                     <cd:constant type="normal"/>
                     <cd:constant type="italic" default="yes"/>

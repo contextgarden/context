@@ -787,7 +787,7 @@
      \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
      \rawprocesscommalist[#1]\tabl_tabulate_set_vrule_command
    \fi
-      \tabl_tabulate_set_preamble#2\relax\relax % permits i without n
+     \tabl_tabulate_set_preamble#2\relax\relax % permits i without n
    \ifcase\c_tabl_tabulate_modus\relax
      \tabl_tabulate_set_width_normal
    \or % fixed width
@@ -1213,10 +1213,28 @@
 
 % todo: spacing around tabulate when bodyfont is set
 
+\let\tabl_tabulate_inside_before   \relax
+\let\tabl_tabulate_inside_after    \relax
+\let\tabl_tabulate_inside_inbetween\relax
+
+\def\tabl_tabulate_outside_before
+  {\whitespace
+   \tabulationparameter\c!before}
+
+\def\tabl_tabulate_outside_after
+  {\tabulationparameter\c!after}
+
+\def\tabl_tabulate_outside_inbetween
+  {\doifempty{\tabulationparameter\c!after}
+     {\vskip\strutdp
+      \verticalstrut
+      \vskip-\struttotal}}
+
 \unexpanded\def\tabl_tabulate_start_building
-  {\ifinsidefloat \else
-     \whitespace
-     \tabulationparameter\c!before
+  {\ifinsidefloat
+     \tabl_tabulate_inside_before
+   \else
+     \tabl_tabulate_outside_before
    \fi
    \bgroup % settings
    %
@@ -1232,6 +1250,15 @@
    \edef\p_rulethickness{\tabulationparameter\c!rulethickness}%
    \edef\p_bodyfont     {\tabulationparameter\c!bodyfont}
    \edef\p_indenting    {\tabulationparameter\c!indenting}%
+   \edef\p_keeptogether {\tabulationparameter\c!keeptogether}%
+   %
+   \ifx\p_keeptogether\v!no
+     \settrue \c_tabl_tabulate_tolerant_break
+    %\setfalse\c_tabl_tabulate_handlepbreak
+   \else
+     \setfalse\c_tabl_tabulate_tolerant_break
+    %\settrue \c_tabl_tabulate_handlepbreak
+   \fi
    %
    \settrue\c_tabl_tabulate_split
    \csname\??tabulatesplit\tabulationparameter\c!split\endcsname
@@ -1958,11 +1985,10 @@
    \tabl_tabulate_column_rule_separator_inject
    \tabl_tabulate_nobreak_inject
    \tabl_tabulate_hrule_inject
-   \ifinsidefloat\else
-     \doifempty{\tabulationparameter\c!after}
-       {\vskip\strutdp
-        \verticalstrut
-        \vskip-\struttotal}%
+   \ifinsidefloat
+     \tabl_tabulate_inside_inbetween
+   \else
+     \tabl_tabulate_outside_inbetween
    \fi
    \stoptabulatenoalign}
 
@@ -2164,18 +2190,19 @@
    \dontcomplain
    \forgetall % hm, interference with preceding \forgetparindent probably bug, to be solved
    \everypar\everytabulatepar
-   \setbox0\vbox % outside \if because of line counting
+   \setbox\scratchbox\vbox % outside \if because of line counting
      {\notesenabledfalse
       \d_tabl_tabulate_indent\zeropoint
       \settrialtypesetting % very important
       \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}}%
    \ifnum\c_tabl_tabulate_nofauto>\zerocount
      % so, even if the natural size is larger, in the final run, we force the calculated width
-     \d_tabl_tabulate_width\dimexpr\hsize-\wd0-\d_tabl_tabulate_width_p-\d_tabl_tabulate_width_w\relax
+     \d_tabl_tabulate_width\dimexpr\hsize-\wd\scratchbox-\d_tabl_tabulate_width_p-\d_tabl_tabulate_width_w\relax
      \ifnum\c_tabl_tabulate_nofauto>\zerocount
        \divide\d_tabl_tabulate_width \c_tabl_tabulate_nofauto\relax
      \fi
    \fi
+   \setbox\scratchbox\emptybox % free memory
    \ifconditional\c_tabl_tabulate_split
      \splittopskip\strutht
      \glet\tabl_tabulate_flush_collected_indeed\empty
@@ -2232,8 +2259,10 @@
      \tabl_split_box\b_tabl_tabulate
    \fi
    %
-   \ifinsidefloat \else
-     \tabulationparameter\c!after
+   \ifinsidefloat
+     \tabl_tabulate_inside_after
+   \else
+     \tabl_tabulate_outside_after
    \fi
    \egroup} % whole thing
 

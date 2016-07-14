@@ -1180,6 +1180,7 @@
 		<cd:constant name='strip' value='strip'/>
 		<cd:constant name='strut' value='بست'/>
 		<cd:constant name='style' value='سبک'/>
+		<cd:constant name='stylealternative' value='stylealternative'/>
 		<cd:constant name='sub' value='زیر'/>
 		<cd:constant name='subtitle' value='زیرعنوان'/>
 		<cd:constant name='suffix' value='پسوند'/>

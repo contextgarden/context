@@ -91,6 +91,10 @@
                 <cd:parameter name="title">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>
+                <cd:parameter name="keeptogether">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

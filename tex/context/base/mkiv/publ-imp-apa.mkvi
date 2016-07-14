@@ -33,7 +33,7 @@
   [apa]
   [\c!default=default,
    \c!specification=apa,
-   \c!otherstext={\btxspace\btxlabeltext{apa:others}},
+   \c!otherstext={\btxspace\btxlabeltext{others}},
    %c!journalconversion=\v!normal,
    \c!monthconversion=\v!month]
 
@@ -101,8 +101,8 @@
   [apa:\s!list:\s!page]
   [apa:\s!list]
   [\c!separator:2={\btxcomma},
-   \c!separator:3={\btxcomma\btxlabeltext{apa:and}\space},
-   \c!separator:4={\btxspace\btxlabeltext{apa:and}\space},
+   \c!separator:3={\btxcomma\btxlabeltext{and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{and}\space},
    \c!left={\btxleftparenthesis},
    \c!right={\btxrightparenthesis},
    \c!command={\wordright}]
@@ -274,15 +274,15 @@
   [apa:\s!cite]
   [apa]
   [\c!alternative=authoryear,
-   \c!otherstext={\btxcomma\btxlabeltext{apa:others}},
+   \c!otherstext={\btxcomma\btxlabeltext{others}},
    \c!etallimit=5,
    \c!etaldisplay=1, % TODO: when 2-4, show all first time, etaldisplay subsequently...
    \c!authorconversion=\v!name,
    \c!sorttype=normal,
    \c!compress=\v!yes, % note that cite sorts only work with compress=yes.
    \c!separator:names:2={\btxcomma},
-   \c!separator:names:3={\btxcomma\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:names:4={\btxspace\btxlabeltext{apa:and}\space}] % not \textampersand
+   \c!separator:names:3={\btxcomma\btxlabeltext{and}\space}, % not \textampersand
+   \c!separator:names:4={\btxspace\btxlabeltext{and}\space}] % not \textampersand
 
 \definebtx
   [apa:\s!cite:name]
@@ -358,15 +358,15 @@
   [apa:\s!cite:year]
   [apa:\s!cite]
   [\c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
-   \c!separator:3={\btxcomma\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:4={\btxspace\btxlabeltext{apa:and}\space}] % not \textampersand
+   \c!separator:3={\btxcomma\btxlabeltext{and}\space}, % not \textampersand
+   \c!separator:4={\btxspace\btxlabeltext{and}\space}] % not \textampersand
 
 \definebtx
   [apa:\s!cite:title]
   [apa:\s!cite]
   [\c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
-   \c!separator:3={\btxcomma\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:4={\btxspace\btxlabeltext{apa:and}\space}, % not \textampersand
+   \c!separator:3={\btxcomma\btxlabeltext{and}\space}, % not \textampersand
+   \c!separator:4={\btxspace\btxlabeltext{and}\space}, % not \textampersand
    \c!command={\language[\currentbtxlanguage]}, % BAH
    \c!sorttype=none,
    \c!style=\v!italic]
@@ -394,8 +394,8 @@
   [\c!left=,
    \c!right=,
    \c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
-   \c!separator:3={\btxcomma\btxlabeltext{apa:and}\space}, % not \textampersand
-   \c!separator:4={\btxspace\btxlabeltext{apa:and}\space}] % not \textampersand
+   \c!separator:3={\btxcomma\btxlabeltext{and}\space}, % not \textampersand
+   \c!separator:4={\btxspace\btxlabeltext{and}\space}] % not \textampersand
 
 \definebtx
   [apa:\s!cite:pages]
@@ -440,8 +440,8 @@
   [\c!left={Ref.\nbsp},
    \c!right=,
    \c!separator:2={\btxcomma},
-   \c!separator:3={\btxspace\btxlabeltext{apa:and}\space},
-   \c!separator:4={\btxspace\btxlabeltext{apa:and}\space}]
+   \c!separator:3={\btxspace\btxlabeltext{and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{and}\space}]
 
 \definebtx
   [apa:\s!cite:entry]
@@ -463,21 +463,21 @@
 
 \setupbtxlabeltext
   [en]
-  [apa:and=and,
+  [%apa:and=and,
    apa:number={no.},
    apa:edition={ed.},
    apa:Editor={Ed.},
    apa:Editors={Eds.},
    apa:Volume={Vol.},
    apa:Volumes={Vols.},
-   apa:others={et al.},
+  %apa:others={et al.},
    apa:with=with,
-   apa:page={p.},
-   apa:pages={pp.},
+  %apa:page={p.},
+  %apa:pages={pp.},
    apa:nd={n.d.},     % no date
-   apa:mastersthesis={Master's thesis},
-   apa:phdthesis={Doctoral dissertation},
-   apa:technicalreport={Tech. Rep.},  % Technical report
+  %apa:mastersthesis={Master's thesis},
+  %apa:phdthesis={Doctoral dissertation},
+  %apa:technicalreport={Tech. Rep.},  % Technical report
    apa:supplement={Suppl.},           % Supplement (not used?)
    apa:patent=Patent,
    apa:MotionPicture={Motion picture},
@@ -489,26 +489,26 @@
    apa:Author=Author,
    apa:Translator={Trans.},           % Translator(s)
    apa:Advanced={Advanced online publication},
-   apa:Retrieved={Available from},    % {Retrieved from},
-   apa:In=In]
+   apa:Retrieved={Available from}]    % {Retrieved from},
+  %apa:In=In]
 
 \setupbtxlabeltext
   [nl]
-  [apa:and=en,
+  [%apa:and=en,
    apa:number={nr.},
    apa:edition={ed.}, % editie
    apa:Editor=Editor, % Ed./Eds.
    apa:Editors=Editors,
    apa:Volume={Vol.},
    apa:Volumes={Vols.},
-   apa:others={et al.},
+  %apa:others={et al.},
    apa:with=met,
-   apa:page={p.},
-   apa:pages={pp.},
+  %apa:page={p.},
+  %apa:pages={pp.},
    apa:nd={g.d.}      % geen datum
-   apa:mastersthesis=Masterproef,
-   apa:phdthesis=Proefschrift,
-   apa:technicalreport={Technisch rapport},  % Technical report
+  %apa:mastersthesis=Masterproef,
+  %apa:phdthesis=Proefschrift,
+  %apa:technicalreport={Technisch rapport},  % Technical report
    apa:supplement=Supplement,
    apa:patent=Octrooi,
    apa:MotionPicture=Film, % ?
@@ -520,26 +520,26 @@
    apa:Author=Auteur,
    apa:Translator=Vertaler,
    apa:Advanced={Geavanceerde online publicatie},
-   apa:Retrieved={Beschikbaar vanaf},    % {Ontvangen van},
-   apa:In=In]
+   apa:Retrieved={Beschikbaar vanaf}]    % {Ontvangen van},
+  %apa:In=In]
 
 \setupbtxlabeltext
   [fr]
-  [apa:and=et,
+  [%apa:and=et,
    apa:number={n\high{o}},
    apa:edition={édition},
    apa:Editor=Éditeur,
    apa:Editors=Éditeurs,
    apa:Volume=Volume,
    apa:Volumes=Volumes,
-   apa:others={et al.},
+  %apa:others={et al.},
    apa:with=avec,
-   apa:page={p.},
-   apa:pages={pp.},
+  %apa:page={p.},
+  %apa:pages={pp.},
    apa:nd={s.d.}      % sans date
-   apa:mastersthesis={Thèse de master (DEA, DESS, master)},
-   apa:phdthesis={Thèse de doctorat},
-   apa:technicalreport={Rapport technique},
+  %apa:mastersthesis={Thèse de master (DEA, DESS, master)},
+  %apa:phdthesis={Thèse de doctorat},
+  %apa:technicalreport={Rapport technique},
    apa:supplement=Supplément,
    apa:patent=Brevet,
    apa:MotionPicture={Film cinématographique},
@@ -551,26 +551,26 @@
    apa:Author=Auteur,
    apa:Translator=Traducteur,
    apa:Advanced={Publication en ligne anticipée},
-   apa:Retrieved={Disponible à},      % {Téléchargé de},
-   apa:In=Dans]
+   apa:Retrieved={Disponible à}]      % {Téléchargé de},
+  %apa:In=Dans]
 
 \setupbtxlabeltext
   [de]
-  [apa:and=und,
+  [%apa:and=und,
    apa:number={nr.},
    apa:edition=Auf\/lage,
    apa:Editor=Herausgeber, % Hrsg./Hg.
    apa:Editors=Herausgeber,
    apa:Volume=Band,        % Bd.
    apa:Volumes={Bände},
-   apa:others={et al.},
+  %apa:others={et al.},
    apa:with=mit,
-   apa:page={S.},
-   apa:pages={S.},
+  %apa:page={S.},
+  %apa:pages={S.},
    apa:nd={o.D.},          % ohne Datum (mostly: o.J. / ohne Jahr)
-   apa:mastersthesis={Masterarbeit},
-   apa:phdthesis={Dissertation},
-   apa:technicalreport={Technischer Bericht},
+  %apa:mastersthesis={Masterarbeit},
+  %apa:phdthesis={Dissertation},
+  %apa:technicalreport={Technischer Bericht},
    apa:supplement={Beilage},          % Supplement
    apa:patent=Patent,
    apa:MotionPicture=Kinofilm, % ?
@@ -582,28 +582,28 @@
    apa:Author=Autor,
    apa:Translator={Übersetzer},       % Übers.
    apa:Advanced={Erweiterte Online-Publikation},
-   apa:Retrieved={heruntergeladen von},
-   apa:In=In]
+   apa:Retrieved={heruntergeladen von}]
+  %apa:In=In]
 
 % thanks: Andrea Valle
 
 \setupbtxlabeltext
   [it]
-  [apa:and=e,
+  [%apa:and=e,
    apa:number={nº},
    apa:edition={ed.}, % edizione
    apa:Editor={A cura di},
    apa:Editors={A cura di},
    apa:Volume={Vol.},  % Volume
    apa:Volumes={Vol.}, % Volumi
-   apa:others={et al.},
+  %apa:others={et al.},
    apa:with=con,
-   apa:page={p.},
-   apa:pages={pp.},
+  %apa:page={p.},
+  %apa:pages={pp.},
    apa:nd={s.d.},     % senza data
-   apa:mastersthesis={Tesi di laurea},
-   apa:phdthesis={Tesi di dottorato},
-   apa:technicalreport={Relazione tecnica},
+  %apa:mastersthesis={Tesi di laurea},
+  %apa:phdthesis={Tesi di dottorato},
+  %apa:technicalreport={Relazione tecnica},
    apa:supplement={Supplemento},
    apa:patent=Brevetto,
    apa:MotionPicture=Film, % ?
@@ -615,26 +615,26 @@
    apa:Author=Autore,
    apa:Translator={Trad.},                        % Translator(s)
    apa:Advanced={Pre-pubblicazione on line},
-   apa:Retrieved={Accessible online},
-   apa:In=In]
+   apa:Retrieved={Accessible online}]
+  %apa:In=In]
 
 \setupbtxlabeltext
   [es]
-  [apa:and=y,
+  [%apa:and=y,
    apa:number={nº},
    apa:edition={ed.}, % edición
    apa:Editor=Editor, % Ed./Eds.
    apa:Editors=Editores,
    apa:Volume={Vol.},   % Volumen
    apa:Volumes={Vols.}, % Volúmenes
-   apa:others={et al.},
+  %apa:others={et al.},
    apa:with=con,
-   apa:page={p.},
-   apa:pages={pp.},
+  %apa:page={p.},
+  %apa:pages={pp.},
    apa:nd={s.f.},     % sin fecha
-   apa:mastersthesis={Tesis de maestría},
-   apa:phdthesis={Tesis doctoral},
-   apa:technicalreport={Informe técnico},
+  %apa:mastersthesis={Tesis de maestría},
+  %apa:phdthesis={Tesis doctoral},
+  %apa:technicalreport={Informe técnico},
    apa:supplement=Suplemento,
    apa:patent=Patente,
    apa:MotionPicture=Cinematográfica,
@@ -646,8 +646,8 @@
    apa:Author=Autor,
    apa:Translator=Traductor,
    apa:Advanced={Publicación en línea avanzada},
-   apa:Retrieved={Disponible desde},    % {Obtenido de},
-   apa:In=En]
+   apa:Retrieved={Disponible desde}]    % {Obtenido de},
+  %apa:In=En]
 
 % cite setups
 
@@ -686,9 +686,9 @@
 
 \startsetups [btx:apa:list:page-or-pages]
     \ifx\currentbtxlastpage\empty
-        \btxlabeltext{apa:page}
+        \btxlabeltext{p}.
     \else
-        \btxlabeltext{apa:pages}
+        \btxlabeltext{pp}.
     \fi
     \btxnbsp
 \stopsetups
@@ -918,7 +918,7 @@
 
 \starttexdefinition unexpanded btx:apa:editor-in
     \btxdoif {booktitle} {
-        \btxlabeltext{apa:In}
+        \btxlabeltext{In}
         \doifnot {\btxfoundname{author}} {editor} {
             \btxspace
             \texdefinition{btx:apa:author-or-editor} {editor}
@@ -950,7 +950,7 @@
                 \btxflush{type}
             }
         } {
-            \btxlabeltext{apa:technicalreport}
+            \btxlabeltext{technicalreport}
         }
     }
     \btxdoif {volume} {
@@ -978,9 +978,9 @@
     \btxdoif {pages} {
         \texdefinition{btx:apa:leftparenthesis-or-comma}
         \btxoneorrange {pages} {
-            \btxlabeltext{apa:page}
+            \btxlabeltext{p}.
         } {
-            \btxlabeltext{apa:pages}
+            \btxlabeltext{pp}.
         }
         \btxnbsp
         \btxflush{pages}
@@ -1030,9 +1030,9 @@
             \btxcomma
             \doif {\currentbtxcategory} {newspaper} {
                 \btxoneorrange {pages} {
-                    \btxlabeltext{apa:page}
+                    \btxlabeltext{p}.
                 } {
-                    \btxlabeltext{apa:pages}
+                    \btxlabeltext{pp}.
                 }
                 \btxnbsp
             }
@@ -1285,7 +1285,7 @@
             \btxflush{type}
         }
     } {
-        \btxlabeltext{apa:\currentbtxcategory}
+        \btxlabeltext{\currentbtxcategory}
     }
     \btxrightparenthesis
     \btxdoif {school} {
@@ -1439,7 +1439,7 @@
     }
     \doifnot {\btxfoundname{title}} {album} {
         \btxdoif {album} {
-            \btxlabeltext{apa:In}
+            \btxlabeltext{In}
             \btxspace
             \btxflush{album}
             \btxperiod

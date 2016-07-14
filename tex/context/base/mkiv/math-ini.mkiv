@@ -337,13 +337,13 @@
 \unexpanded\def\math_set_font_style    #1{\ifmmode\clf_setmathstyle{#1}\fi}
 \unexpanded\def\math_set_font_alternate#1{\ifmmode\clf_setmathalternate\defaultmathfamily{#1}\fi}
 
-\installcorenamespace{mathstylealternate} % might become a setuphandler
+\installcorenamespace{mathstylealternative} % might become a setuphandler
 
 \unexpanded\def\math_set_font_style_alternate#1%
-  {\ifcsname\??mathstylealternate\fontclass:#1\endcsname
+  {\ifcsname\??mathstylealternative\fontclass:#1\endcsname
     %\expandafter\math_set_font_alternate\csname\??mathstylealternate\fontclass:#1\endcsname
      \expandafter\math_set_font_alternate\lastnamedcs
-   \else\ifcsname\??mathstylealternate#1\endcsname
+   \else\ifcsname\??mathstylealternative#1\endcsname
     %\expandafter\math_set_font_alternate\csname\??mathstylealternate#1\endcsname
      \expandafter\math_set_font_alternate\lastnamedcs
    \fi\fi}
@@ -353,19 +353,26 @@
 
 \def\math_setup_rendering[#1][#2]%
   {\ifsecondargument
-     \getparameters[\??mathstylealternate#1:][#2]%
+     \getparameters[\??mathstylealternative#1:][#2]%
    \else
-     \getparameters[\??mathstylealternate][#1]%
+     \getparameters[\??mathstylealternative][#1]%
    \fi}
+
+\appendtoks
+    \edef\p_stylealternative{\mathematicsparameter\c!stylealternative}%
+    \ifx\p_stylealternative\empty\else
+        \clf_presetmathalternate\defaultmathfamily{\p_stylealternative}%
+    \fi
+\to \everymathematics
 
 % if there were many features we could have a feature pass over math nodes but it makes no
 % sense now so we have commands to deal with it
 
-\unexpanded\def\mathaltcalligraphic{\math_set_font_alternate{calligraphic}\cal} % set via goody file
-%unexpanded\def\mathslashedzero    {\math_set_font_alternate{zero}0}            % set via goody file or automatic
-\unexpanded\def\mathdotless        {\math_set_font_alternate{dotless}}          % set via goody file or automatic
-\unexpanded\def\mathdotlessi       {{\mathdotless i}}
-\unexpanded\def\mathdotlessj       {{\mathdotless j}}
+\unexpanded\def\mathaltcalligraphic{\math_set_font_alternate{calligraphic}\cal}          % set via goody file
+\unexpanded\def\mathslashedzero    {\begingroup\math_set_font_alternate{zero}∅\endgroup} % set via goody file or automatic
+\unexpanded\def\mathdotless        {\math_set_font_alternate{dotless}}                   % set via goody file or automatic
+\unexpanded\def\mathdotlessi       {\begingroup\mathdotless i\endgroup}
+\unexpanded\def\mathdotlessj       {\begingroup\mathdotless j\endgroup}
 
 \let\mathaltcal\mathaltcalligraphic
 
@@ -379,11 +386,13 @@
     \let\dotlessj   \autodotlessj
 \to \everymathematics
 
-\let\setmathattribute         \math_set_attribute
-\let\setmathalphabet          \math_set_alphabet
-\let\setmathfontstyle         \math_set_font_style
-\let\setmathfontalternate     \math_set_font_alternate
-\let\setmathfontstylealternate\math_set_font_style_alternate
+\let\setmathattribute           \math_set_attribute
+\let\setmathalphabet            \math_set_alphabet
+\let\setmathfontstyle           \math_set_font_style
+\let\setmathfontalternate       \math_set_font_alternate
+\let\setmathfontalternative     \math_set_font_alternate
+\let\setmathfontstylealternate  \math_set_font_style_alternate
+\let\setmathfontstylealternative\math_set_font_style_alternate
 
 \let\mathalternate            \math_set_font_alternate
 

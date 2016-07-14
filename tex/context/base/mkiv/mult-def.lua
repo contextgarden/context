@@ -6574,6 +6574,10 @@ return {
    ["pe"]="جایگزین",
    ["ro"]="alternativ",
   },
+  ["stylealternative"]={
+   ["en"]="stylealternative",
+   ["nl"]="stylevariant",
+  },
   ["anchor"]={
    ["en"]="anchor",
    ["nl"]="anker",

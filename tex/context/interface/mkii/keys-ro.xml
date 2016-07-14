@@ -1180,6 +1180,7 @@
 		<cd:constant name='strip' value='strip'/>
 		<cd:constant name='strut' value='strut'/>
 		<cd:constant name='style' value='stil'/>
+		<cd:constant name='stylealternative' value='stylealternative'/>
 		<cd:constant name='sub' value='sub'/>
 		<cd:constant name='subtitle' value='subtitlu'/>
 		<cd:constant name='suffix' value='suffix'/>

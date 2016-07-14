@@ -334,7 +334,8 @@ local f_number           = formatters['chem_%s%s(%s,%s,"\\chemicaltext{%s}");']
 local f_text             = f_number
 local f_empty_normal     = formatters['chem_%s(%s,%s,"");']
 local f_empty_center     = formatters['chem_c%s(%s,%s,"");']
-local f_transform        = formatters['chem_%s(%s,%s,%q);']
+local f_transform        = formatters['chem_%s(%s,%s,%s);']
+local f_fixed            = formatters['chem_%s(%s,%s,%q);']
 
 local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_variant)
     insert(stack,{ spec = spec, text = text, n = n })
@@ -600,7 +601,7 @@ local function process(level,spec,text,n,rulethickness,rulecolor,offset,default_
                         m = m + 1 ; metacode[m] = f_transform(operation,variant,index or 1,factor)
                     end
                 elseif what == "fixed" then
-                    m = m + 1 ; metacode[m] = f_transform(operation,variant,rulethickness,rulecolor)
+                    m = m + 1 ; metacode[m] = f_fixed(operation,variant,rulethickness,rulecolor)
                 elseif trace_structure then
                     report_chemistry("level %a, ignoring undefined operation %s",level,operation)
                 end

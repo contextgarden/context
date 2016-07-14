@@ -33,15 +33,15 @@
   [aps]
   [\c!default=default,
    \c!specification=aps,
-   \c!otherstext={\btxspace{\it\btxlabeltext{aps:others}}},
+   \c!otherstext={\btxspace{\it\btxlabeltext{others}}},
    \c!etallimit=10,
    \c!etaldisplay=\btxparameter\c!etallimit,
    %c!journalconversion=\v!normal,
    \c!monthconversion=\v!month,
    \c!title=\v!yes,
    \c!separator:names:2={\btxcomma},
-   \c!separator:names:3={\btxcomma\btxlabeltext{aps:and}\space},
-   \c!separator:names:4={\btxspace\btxlabeltext{aps:and}\space}]
+   \c!separator:names:3={\btxcomma\btxlabeltext{and}\space},
+   \c!separator:names:4={\btxspace\btxlabeltext{and}\space}]
 
 % First, define and set list and rendering parameters
 
@@ -84,8 +84,8 @@
   [aps:\s!list:\s!page]
   [aps:\s!list]
   [\c!separator:2={\btxcomma},
-   \c!separator:3={\btxcomma\btxlabeltext{aps:and}\space},
-   \c!separator:4={\btxspace\btxlabeltext{aps:and}\space},
+   \c!separator:3={\btxcomma\btxlabeltext{and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{and}\space},
    \c!left={\btxleftparenthesis},
    \c!right={\btxrightparenthesis},
    \c!command={\wordright}]
@@ -353,8 +353,8 @@
   [\c!left=,
    \c!right=,
    \c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
-   \c!separator:3={\btxcomma\btxlabeltext{aps:and}\space},
-   \c!separator:4={\btxspace\btxlabeltext{aps:and}\space}]
+   \c!separator:3={\btxcomma\btxlabeltext{and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{and}\space}]
 
 \definebtx
   [aps:\s!cite:pages]
@@ -408,8 +408,8 @@
   [\c!left={Ref.\nbsp},
    \c!command=,
    \c!separator:2={\btxcomma},
-   \c!separator:3={\btxspace\btxlabeltext{aps:and}\space},
-   \c!separator:4={\btxspace\btxlabeltext{aps:and}\space}]
+   \c!separator:3={\btxspace\btxlabeltext{and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{and}\space}]
 
 \definebtx
   [aps:\s!cite:entry]
@@ -429,139 +429,139 @@
 
 \setupbtxlabeltext
   [en]
-  [aps:and=and,
+  [%aps:and=and,
    aps:number={no.},
    aps:edition={ed.},
    aps:Editor={Ed.},
    aps:Editors={Eds.},
    aps:Volume={Vol.},
    aps:Volumes={Vols.},
-   aps:others={et al.},
-   aps:page={p.},
-   aps:pages={pp.},
-   aps:mastersthesis={Master's thesis},
-   aps:phdthesis={Doctoral dissertation},
-   aps:technicalreport={Tech. Rep.},  % Technical report
+  %aps:others={et al.},
+  %aps:page={p.},
+  %aps:pages={pp.},
+  %aps:mastersthesis={Master's thesis},
+  %aps:phdthesis={Doctoral dissertation},
+  %aps:technicalreport={Tech. Rep.},  % Technical report
    aps:supplement={Suppl.},           % Supplement (not used?)
    aps:patent=Patent,
    aps:inpress={in press},
    aps:tobe={to be published},
-   aps:unpublished={unpublished},
-   aps:In=In]
+   aps:unpublished={unpublished}]
+  %aps:In=In]
 
 % Check this (google translate!!):
 
 \setupbtxlabeltext
   [nl]
-  [aps:and=en,
+  [%aps:and=en,
    aps:number={nr.},
    aps:edition={ed.}, % editie
    aps:Editor=Editor, % Ed./Eds.
    aps:Editors=Editors,
    aps:Volume={Vol.},
    aps:Volumes={Vols.},
-   aps:others={et al.},
-   aps:page={p.},
-   aps:pages={pp.},
-   aps:mastersthesis=Masterproef,
-   aps:phdthesis=Proefschrift,
-   aps:technicalreport={Technisch rapport},  % Technical report
+  %aps:others={et al.},
+  %aps:page={p.},
+  %aps:pages={pp.},
+  %aps:mastersthesis=Masterproef,
+  %aps:phdthesis=Proefschrift,
+  %aps:technicalreport={Technisch rapport},  % Technical report
    aps:supplement=Supplement,
    aps:patent=Octrooi,
    aps:inpress={in press}, % CHECK THESE!
    aps:tobe={worden gepubliceerd},
-   aps:unpublished={onuitgegeven},
-   aps:In=In]
+   aps:unpublished={onuitgegeven}]
+  %aps:In=In]
 
 \setupbtxlabeltext
   [fr]
-  [aps:and=et,
+  [%aps:and=et,
    aps:number={n\high{o}},
    aps:edition={édition},
    aps:Editor=Éditeur,
    aps:Editors=Éditeurs,
    aps:Volume=Volume,
    aps:Volumes=Volumes,
-   aps:others={et al.},
-   aps:page={p.},
-   aps:pages={pp.},
-   aps:mastersthesis={Thèse de master (DEA, DESS, master)},
-   aps:phdthesis={Thèse de doctorat},
-   aps:technicalreport={Rapport technique},
+  %aps:others={et al.},
+  %aps:page={p.},
+  %aps:pages={pp.},
+  %aps:mastersthesis={Thèse de master (DEA, DESS, master)},
+  %aps:phdthesis={Thèse de doctorat},
+  %aps:technicalreport={Rapport technique},
    aps:supplement=Supplément,
    aps:patent=Brevet,
    aps:inpress={sous impression},
    aps:tobe={à paraître},
-   aps:unpublished={inédit},          % pour un livre
-   aps:In=Dans]
+   aps:unpublished={inédit}]          % pour un livre
+  %aps:In=Dans]
 
 \setupbtxlabeltext
   [de]
-  [aps:and=und,
+  [%aps:and=und,
    aps:number={nr.},
    aps:edition=Auf\/lage,
    aps:Editor=Herausgeber, % Hrsg./Hg.
    aps:Editors=Herausgeber,
    aps:Volume=Band,        % Bd.
    aps:Volumes={Bände},
-   aps:others={et al.},
-   aps:page={S.},
-   aps:pages={S.},
-   aps:mastersthesis={Masterarbeit},
-   aps:phdthesis={Dissertation},
-   aps:technicalreport={Technischer Bericht},
+  %aps:others={et al.},
+  %aps:page={S.},
+  %aps:pages={S.},
+  %aps:mastersthesis={Masterarbeit},
+  %aps:phdthesis={Dissertation},
+  %aps:technicalreport={Technischer Bericht},
    aps:supplement={Beilage},          % Supplement
    aps:patent=Patent,
    aps:inpress={in der Presse}, % CHECK THESE!
    aps:tobe={veröffentlicht werden},
-   aps:unpublished={unveröffentlicht},
-   aps:In=In]
+   aps:unpublished={unveröffentlicht}]
+  %aps:In=In]
 
 % thanks: Andrea Valle
 
 \setupbtxlabeltext
   [it]
-  [aps:and=e,
+  [%aps:and=e,
    aps:number={nº},
    aps:edition={ed.}, % edizione
    aps:Editor={A cura di},
    aps:Editors={A cura di},
    aps:Volume={Vol.},  % Volume
    aps:Volumes={Vol.}, % Volumi
-   aps:others={et al.},
-   aps:page={p.},
-   aps:pages={pp.},
-   aps:mastersthesis={Tesi di laurea},
-   aps:phdthesis={Tesi di dottorato},
-   aps:technicalreport={Relazione tecnica},
+  %aps:others={et al.},
+  %aps:page={p.},
+  %aps:pages={pp.},
+  %aps:mastersthesis={Tesi di laurea},
+  %aps:phdthesis={Tesi di dottorato},
+  %aps:technicalreport={Relazione tecnica},
    aps:supplement={Supplemento},
    aps:patent=Brevetto,
    aps:inpress={in press}, % CHECK THESE!
    aps:tobe={da pubblicare},
-   aps:unpublished={inedito},
-   aps:In=In]
+   aps:unpublished={inedito}]
+  %aps:In=In]
 
 \setupbtxlabeltext
   [es]
-  [aps:and=y,
+  [%aps:and=y,
    aps:number={nº},
    aps:edition={ed.}, % edición
    aps:Editor=Editor, % Ed./Eds.
    aps:Editors=Editores,
    aps:Volume={Vol.},   % Volumen
    aps:Volumes={Vols.}, % Volúmenes
-   aps:others={et al.},
-   aps:page={p.},
-   aps:pages={pp.},
-   aps:mastersthesis={Tesis de maestría},
-   aps:phdthesis={Tesis doctoral},
-   aps:technicalreport={Informe técnico},
+  %aps:others={et al.},
+  %aps:page={p.},
+  %aps:pages={pp.},
+  %aps:mastersthesis={Tesis de maestría},
+  %aps:phdthesis={Tesis doctoral},
+  %aps:technicalreport={Informe técnico},
    aps:supplement=Suplemento,
    aps:patent=Patente,
    aps:inpress={en prensa}, % CHECK THESE!
    aps:tobe={que se publicará},
-   aps:unpublished={inédito},
-   aps:In=En]
+   aps:unpublished={inédito}]
+  %aps:In=En]
 
 % cite setups
 
@@ -604,9 +604,9 @@
 
 \startsetups [btx:aps:list:page-or-pages]
     \ifx\currentbtxlastpage\empty
-        \btxlabeltext{aps:page}
+        \btxlabeltext{p}.
     \else
-        \btxlabeltext{aps:pages}
+        \btxlabeltext{pp}.
     \fi
     \btxnbsp
 \stopsetups
@@ -706,7 +706,7 @@
 
 \starttexdefinition unexpanded btx:aps:editor-in
     \btxdoif {booktitle} {
-        \btxlabeltext{aps:In}
+        \btxlabeltext{In}
         \doifnot {\btxfoundname{author}} {editor} {
             \btxspace
             \texdefinition{btx:aps:author-or-editor} {editor}
@@ -724,7 +724,7 @@
                 \btxflush{type}
             }
         } {
-            \btxlabeltext{aps:technicalreport}
+            \btxlabeltext{technicalreport}
         }
         \btxcomma
     }
@@ -752,9 +752,9 @@
     }
     \btxdoif {pages} {
         \btxoneorrange {pages} {
-            \btxlabeltext{aps:page}
+            \btxlabeltext{p}.
         } {
-            \btxlabeltext{aps:pages}
+            \btxlabeltext{pp}.
         }
         \btxnbsp
         \btxflush{pages}
@@ -981,7 +981,7 @@
             \btxflush{type}
         }
     } {
-        \btxlabeltext{aps:\currentbtxcategory}
+        \btxlabeltext{\currentbtxcategory}
     }
     \btxrightparenthesis
     \btxdoif {school} {

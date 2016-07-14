@@ -24,10 +24,11 @@ if not modules then modules = { } end modules ['math-noa'] = {
 -- nota bene: uunderdelimiter uoverdelimiter etc are radicals (we have 5 types)
 
 local utfchar, utfbyte = utf.char, utf.byte
-local formatters = string.formatters
+local formatters, gmatch = string.formatters, string.gmatch
 local sortedhash = table.sortedhash
 local insert, remove = table.insert, table.remove
 local div = math.div
+local setbit, hasbit = number.setbit, number.hasbit
 
 local fonts                = fonts
 local nodes                = nodes
@@ -43,6 +44,7 @@ local privateattribute     = attributes.private
 local registertracker      = trackers.register
 local registerdirective    = directives.register
 local logreporter          = logs.reporter
+local setmetatableindex    = table.setmetatableindex
 
 local trace_remapping      = false  registertracker("math.remapping",   function(v) trace_remapping   = v end)
 local trace_processing     = false  registertracker("math.processing",  function(v) trace_processing  = v end)
@@ -119,6 +121,7 @@ local fontitalics          = fonthashes.italics
 
 local variables            = interfaces.variables
 local texsetattribute      = tex.setattribute
+local texgetattribute      = tex.getattribute
 local unsetvalue           = attributes.unsetvalue
 local implement            = interfaces.implement
 
@@ -357,7 +360,7 @@ noads.processouter  = process
 local unknowns = { }
 local checked  = { } -- simple case
 local tracked  = false  trackers.register("fonts.missing", function(v) tracked = v end)
-local cached   = table.setmetatableindex("table") -- complex case
+local cached   = setmetatableindex("table") -- complex case
 
 local function errorchar(font,char)
     local done = unknowns[char]
@@ -786,7 +789,7 @@ local function convert_close(close,first,middle)
     return close
 end
 
-local stacks = table.setmetatableindex("table")
+local stacks = setmetatableindex("table")
 
 local function processfences(pointer,n,parent)
     local current = pointer
@@ -1005,120 +1008,214 @@ end)
 -- todo: set alternate for specific symbols
 -- todo: no need to do this when already loaded
 
-local defaults = {
-    dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
- -- zero    = { feature = 'zero', value = 1, comment = "Slashed or Dotted Zero" }, -- in no math font (yet)
-}
+do
 
-local function initializemathalternates(tfmdata)
-    local goodies  = tfmdata.goodies
-    local autolist = table.copy(defaults)
+    local last = 0
 
-    local function setthem(alternates)
-        local resources     = tfmdata.resources -- was tfmdata.shared
-        local lastattribute = 0
-        local attributes    = { }
-        for k, v in sortedhash(alternates) do
-            lastattribute = lastattribute + 1
-            v.attribute   = lastattribute
-            attributes[lastattribute] = v
-        end
-        resources.mathalternates           = alternates -- to be checked if shared is ok here
-        resources.mathalternatesattributes = attributes -- to be checked if shared is ok here
-    end
+    local known = setmetatableindex(function(t,k)
+        local v = setbit(0,2^last)
+        t[k] = v
+        last = last + 1
+        return v
+    end)
 
-    if goodies then
-        local done = { }
-        for i=1,#goodies do
-            -- first one counts
-            -- we can consider sharing the attributes ... todo (only once scan)
-            local mathgoodies = goodies[i].mathematics
-            local alternates  = mathgoodies and mathgoodies.alternates
-            if alternates then
-                if trace_goodies then
-                    report_goodies("loading alternates for font %a",tfmdata.properties.name)
-                end
-                for k, v in next, autolist do
-                    if not alternates[k] then
-                        alternates[k] = v
-                    end
-                end
-                setthem(alternates)
-                return
-            end
-        end
-    end
-
-    if trace_goodies then
-        report_goodies("loading default alternates for font %a",tfmdata.properties.name)
-    end
-    setthem(autolist)
-
-end
-
-registerotffeature {
-    name        = "mathalternates",
-    description = "additional math alternative shapes",
-    initializers = {
-        base = initializemathalternates,
-        node = initializemathalternates,
+    local defaults = {
+        dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
+     -- zero    = { feature = 'zero', value = 1, comment = "Slashed or Dotted Zero" }, -- in no math font (yet)
     }
-}
 
--- local getalternate = otf.getalternate (runtime new method so ...)
+    local function initializemathalternates(tfmdata)
+        local goodies  = tfmdata.goodies
+        local autolist = defaults -- table.copy(defaults)
 
--- todo: not shared but copies ... one never knows
-
-local a_mathalternate = privateattribute("mathalternate")
-
-local alternate = { } -- processors.alternate = alternate
-
-function mathematics.setalternate(fam,tag)
-    local id        = font_of_family(fam)
-    local tfmdata   = fontdata[id]
-    local resources = tfmdata.resources -- was tfmdata.shared
-    if resources then
-        local mathalternates = resources.mathalternates
-        if mathalternates then
-            local m = mathalternates[tag]
-            texsetattribute(a_mathalternate,m and m.attribute or unsetvalue)
+        local function setthem(newalternates)
+            local resources      = tfmdata.resources -- was tfmdata.shared
+            local mathalternates = resources.mathalternates
+            local alternates, attributes, registered, presets
+            if mathalternates then
+                alternates = mathalternates.alternates
+                attributes = mathalternates.attributes
+                registered = mathalternates.registered
+            else
+                alternates, attributes, registered = { }, { }, { }
+                mathalternates = {
+                    attributes = attributes,
+                    alternates = alternates,
+                    registered = registered,
+                    presets    = { },
+                }
+                resources.mathalternates = mathalternates
+            end
+            --
+            for name, data in sortedhash(newalternates) do
+                if alternates[name] then
+                    -- ignore
+                else
+                    local attr = known[name]
+                    attributes[attr] = data
+                    alternates[name] = attr
+                    registered[#registered+1] = attr
+                end
+            end
         end
-    end
-end
 
-implement {
-    name      = "setmathalternate",
-    actions   = mathematics.setalternate,
-    arguments = { "integer", "string" }
-}
-
-alternate[math_char] = function(pointer)
-    local a = getattr(pointer,a_mathalternate)
-    if a and a > 0 then
-        setattr(pointer,a_mathalternate,0)
-        local tfmdata   = fontdata[getfont(pointer)]
-        local resources = tfmdata.resources -- was tfmdata.shared
-        if resources then
-            local mathalternatesattributes = resources.mathalternatesattributes
-            if mathalternatesattributes then
-                local what = mathalternatesattributes[a]
-                local char = getchar(pointer)
-                local alt  = otf.getalternate(tfmdata,char,what.feature,what.value)
-                if alt ~= char then
-                    if trace_alternates then
-                        report_alternates("alternate %a, value %a, replacing glyph %U by glyph %U",
-                            tostring(what.feature),tostring(what.value),getchar(pointer),alt)
+        if goodies then
+            local done = { }
+            for i=1,#goodies do
+                -- first one counts
+                -- we can consider sharing the attributes ... todo (only once scan)
+                local mathgoodies = goodies[i].mathematics
+                local alternates  = mathgoodies and mathgoodies.alternates
+                if alternates then
+                    if trace_goodies then
+                        report_goodies("loading alternates for font %a",tfmdata.properties.name)
                     end
-                    setchar(pointer,alt)
+                    for k, v in next, autolist do
+                        if not alternates[k] then
+                            alternates[k] = v
+                        end
+                    end
+                    setthem(alternates)
+                    return
+                end
+            end
+        end
+
+        if trace_goodies then
+            report_goodies("loading default alternates for font %a",tfmdata.properties.name)
+        end
+        setthem(autolist)
+
+    end
+
+    registerotffeature {
+        name        = "mathalternates",
+        description = "additional math alternative shapes",
+        initializers = {
+            base = initializemathalternates,
+            node = initializemathalternates,
+        }
+    }
+
+    -- local getalternate = otf.getalternate (runtime new method so ...)
+
+    -- todo: not shared but copies ... one never knows
+
+    local a_mathalternate = privateattribute("mathalternate")
+    local alternate       = { } -- processors.alternate = alternate
+
+    local function getalternate(fam,tag)
+        local id        = font_of_family(fam)
+        local tfmdata   = fontdata[id]
+        local resources = tfmdata.resources -- was tfmdata.shared
+        local attribute = unsetvalue
+        if resources then
+            local mathalternates = resources.mathalternates
+            if mathalternates then
+                local presets = mathalternates.presets
+                if presets then
+                    attribute = presets[tag]
+                    if not attribute then
+                        attribute  = 0
+                        local alternates = mathalternates.alternates
+                        for s in gmatch(tag,"[^, ]+") do
+                            local a = alternates[s] -- or known[s]
+                            if a then
+                                attribute = attribute + a
+                            end
+                        end
+                        if attribute == 0 then
+                            attribute = unsetvalue
+                        end
+                        presets[tag] = attribute
+                    end
+                end
+            end
+        end
+        return attribute
+    end
+
+    local function presetalternate(fam,tag)
+        texsetattribute(a_mathalternate,getalternate(fam,tag))
+    end
+
+    implement {
+        name      = "presetmathalternate",
+        actions   = presetalternate,
+        arguments = { "integer", "string" }
+    }
+
+--     local function setalternate(fam,tag)
+--         local id        = font_of_family(fam)
+--         local tfmdata   = fontdata[id]
+--         local resources = tfmdata.resources -- was tfmdata.shared
+--         if resources then
+--             local mathalternates = resources.mathalternates
+--             if mathalternates then
+--                 local v = mathalternates.alternates[tag]
+--                 if v then
+--                     local a = texgetattribute(a_mathalternate)
+--                     if a and a > 0 then
+--                         v = setbit(a,v)
+--                     end
+--                     texsetattribute(a_mathalternate,v)
+--                 end
+--             end
+--         end
+--     end
+
+    local function setalternate(fam,tag)
+        local a = texgetattribute(a_mathalternate)
+        local v = getalternate(fam,tag)
+        if a and a > 0 then
+            v = a + v
+        end
+        texsetattribute(a_mathalternate,v)
+    end
+
+    implement {
+        name      = "setmathalternate",
+        actions   = setalternate,
+        arguments = { "integer", "string" }
+    }
+
+    alternate[math_char] = function(pointer) -- slow
+        local a = getattr(pointer,a_mathalternate)
+        if a and a > 0 then
+            setattr(pointer,a_mathalternate,0)
+            local tfmdata   = fontdata[getfont(pointer)]
+            local resources = tfmdata.resources -- was tfmdata.shared
+            if resources then
+                local mathalternates = resources.mathalternates
+                if mathalternates then
+                    local attributes = mathalternates.attributes
+                    local registered = mathalternates.registered
+                    for i=1,#registered do
+                        local r = registered[i]
+                        if hasbit(a,r) then
+                            local what = attributes[r]
+                            local char = getchar(pointer)
+                            local alt  = otf.getalternate(tfmdata,char,what.feature,what.value)
+                            if alt ~= char then
+                                if trace_alternates then
+                                    report_alternates("alternate %a, value %a, replacing glyph %U by glyph %U",
+                                        tostring(what.feature),tostring(what.value),getchar(pointer),alt)
+                                end
+                                setchar(pointer,alt)
+                                break
+                            end
+                        end
+                    end
                 end
             end
         end
     end
-end
 
-function handlers.alternates(head,style,penalties)
-    processnoads(head,alternate,"alternate")
-    return true
+    function handlers.alternates(head,style,penalties)
+        processnoads(head,alternate,"alternate")
+        return true
+    end
+
 end
 
 -- italics: we assume that only characters matter
