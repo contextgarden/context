@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/14/16 19:52:26
+-- merge date  : 07/15/16 23:30:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -4103,7 +4103,9 @@ if not modules then modules={} end modules ['util-fil']={
   license="see context related readme files"
 }
 local byte=string.byte
+local char=string.char
 local extract=bit32.extract
+local floor=math.floor
 utilities=utilities or {}
 local files={}
 utilities.files=files
@@ -4122,6 +4124,7 @@ end
 function files.size(f)
   return f:seek("end")
 end
+files.getsize=files.size
 function files.setposition(f,n)
   if zerobased[f] then
     f:seek("set",n)
@@ -4241,6 +4244,28 @@ function files.skipshort(f,n)
 end
 function files.skiplong(f,n)
   f:read(4*(n or 1))
+end
+function files.writecardinal2(f,n)
+  local a=char(n%256)
+  n=floor(n/256)
+  local b=char(n%256)
+  f:write(b,a)
+end
+function files.writecardinal4(f,n)
+  local a=char(n%256)
+  n=floor(n/256)
+  local b=char(n%256)
+  n=floor(n/256)
+  local c=char(n%256)
+  n=floor(n/256)
+  local d=char(n%256)
+  f:write(d,c,b,a)
+end
+function files.writestring(f,s)
+  f:write(char(byte(s,1,#s)))
+end
+function files.writebyte(f,b)
+  f:write(char(b))
 end
 
 end -- closure
@@ -7608,7 +7633,9 @@ handlers.otf=otf
 local readers=otf.readers or {}
 otf.readers=readers
 local streamreader=utilities.files  
+local streamwriter=utilities.files
 readers.streamreader=streamreader
+readers.streamwriter=streamwriter
 local openfile=streamreader.open
 local closefile=streamreader.close
 local setposition=streamreader.setposition
@@ -15613,10 +15640,38 @@ local function copytotfm(data,cache_id)
     }
   end
 end
+local converters={
+  woff={
+    cachename="webfonts",
+    action=otf.readers.woff2otf,
+  }
+}
+local function checkconversion(specification)
+  local filename=specification.filename
+  local converter=converters[lower(file.suffix(filename))]
+  if converter then
+    local base=file.basename(filename)
+    local name=file.removesuffix(base)
+    local attr=lfs.attributes(filename)
+    local size=attr and attr.size or 0
+    local time=attr and attr.modification or 0
+    if size>0 then
+      local cleanname=containers.cleanname(name)
+      local cachename=caches.setfirstwritablefile(cleanname,converter.cachename)
+      if not io.exists(cachename) or (time~=lfs.attributes(cachename).modification) then
+        report_otf("caching font %a in %a",filename,cachename)
+        converter.action(filename,cachename) 
+        lfs.touch(cachename,time,time)
+      end
+      specification.filename=cachename
+    end
+  end
+end
 local function otftotfm(specification)
   local cache_id=specification.hash
   local tfmdata=containers.read(constructors.cache,cache_id)
   if not tfmdata then
+    checkconversion(specification) 
     local name=specification.name
     local sub=specification.sub
     local subindex=specification.subindex
@@ -15824,9 +15879,13 @@ local function opentypereader(specification,suffix)
   end
 end
 readers.opentype=opentypereader 
-function readers.otf (specification) return opentypereader(specification,"otf") end
-function readers.ttf (specification) return opentypereader(specification,"ttf") end
-function readers.ttc (specification) return opentypereader(specification,"ttf") end
+function readers.otf(specification) return opentypereader(specification,"otf") end
+function readers.ttf(specification) return opentypereader(specification,"ttf") end
+function readers.ttc(specification) return opentypereader(specification,"ttf") end
+function readers.woff(specification)
+  checkconversion(specification)
+  opentypereader(specification,"")
+end
 function otf.scriptandlanguage(tfmdata,attr)
   local properties=tfmdata.properties
   return properties.script or "dflt",properties.language or "dflt"

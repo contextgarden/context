@@ -1007,6 +1007,7 @@ end)
 
 -- todo: set alternate for specific symbols
 -- todo: no need to do this when already loaded
+-- todo: use a fonts.hashes.mathalternates
 
 do
 
@@ -1043,6 +1044,7 @@ do
                     alternates = alternates,
                     registered = registered,
                     presets    = { },
+hashes = setmetatableindex("table")
                 }
                 resources.mathalternates = mathalternates
             end
@@ -1103,11 +1105,11 @@ do
 
     local a_mathalternate = privateattribute("mathalternate")
     local alternate       = { } -- processors.alternate = alternate
+    local fontdata        = fonts.hashes.identifiers
+    local fontresources   = fonts.hashes.resources
 
     local function getalternate(fam,tag)
-        local id        = font_of_family(fam)
-        local tfmdata   = fontdata[id]
-        local resources = tfmdata.resources -- was tfmdata.shared
+        local resources = fontresources[font_of_family(fam)]
         local attribute = unsetvalue
         if resources then
             local mathalternates = resources.mathalternates
@@ -1145,25 +1147,6 @@ do
         arguments = { "integer", "string" }
     }
 
---     local function setalternate(fam,tag)
---         local id        = font_of_family(fam)
---         local tfmdata   = fontdata[id]
---         local resources = tfmdata.resources -- was tfmdata.shared
---         if resources then
---             local mathalternates = resources.mathalternates
---             if mathalternates then
---                 local v = mathalternates.alternates[tag]
---                 if v then
---                     local a = texgetattribute(a_mathalternate)
---                     if a and a > 0 then
---                         v = setbit(a,v)
---                     end
---                     texsetattribute(a_mathalternate,v)
---                 end
---             end
---         end
---     end
-
     local function setalternate(fam,tag)
         local a = texgetattribute(a_mathalternate)
         local v = getalternate(fam,tag)
@@ -1183,24 +1166,31 @@ do
         local a = getattr(pointer,a_mathalternate)
         if a and a > 0 then
             setattr(pointer,a_mathalternate,0)
-            local tfmdata   = fontdata[getfont(pointer)]
-            local resources = tfmdata.resources -- was tfmdata.shared
+            local fontid    = getfont(pointer)
+            local resources = fontresources[fontid]
             if resources then
                 local mathalternates = resources.mathalternates
                 if mathalternates then
                     local attributes = mathalternates.attributes
                     local registered = mathalternates.registered
+                    local hashes     = mathalternates.hashes
                     for i=1,#registered do
                         local r = registered[i]
                         if hasbit(a,r) then
-                            local what = attributes[r]
                             local char = getchar(pointer)
-                            local alt  = otf.getalternate(tfmdata,char,what.feature,what.value)
-                            if alt ~= char then
-                                if trace_alternates then
+                            local alt  = hashes[i][char]
+                            if alt == nil then
+                                local what = attributes[r]
+                                alt = otf.getalternate(fontdata[fontid],char,what.feature,what.value) or false
+                                if alt == char then
+                                    alt = false
+                                elseif trace_alternates then
                                     report_alternates("alternate %a, value %a, replacing glyph %U by glyph %U",
                                         tostring(what.feature),tostring(what.value),getchar(pointer),alt)
                                 end
+                                hashes[i][char] = alt
+                            end
+                            if alt then
                                 setchar(pointer,alt)
                                 break
                             end

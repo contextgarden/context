@@ -37,6 +37,8 @@ local transparencies      = attributes.transparencies
 local colorintents        = attributes.colorintents
 local registrations       = backends.registrations
 
+local v_reset             = interfaces.variables.reset
+
 local texsetattribute     = tex.setattribute
 local texgetattribute     = tex.getattribute
 local texgetcount         = tex.getcount
@@ -290,8 +292,32 @@ colors.forcedmodel = forcedmodel
 
 colors.couple = true
 
-local function definetransparency(name,n)
-    transparent[name] = n
+local function definetransparency(name,n,global)
+    if n == v_reset then
+        definetransparent(name, 0, global) -- or attributes.unsetvalue
+        return
+    end
+    local a = tonumber(n)
+    if a then
+        transparent[name] = a -- 0 .. 16
+        return
+    end
+    local a = transparent[name]
+    if a then
+        transparent[name] = a
+        return
+    end
+    local settings = settings_to_hash_strict(n)
+    if settings then
+        local a, t = settings.a, settings.t
+        if a and t then
+            definetransparent(name, transparencies.register(name,transparent[a] or tonumber(a) or 1,tonumber(t) or 1), global)
+        else
+            definetransparent(name, 0, global)
+        end
+    else
+        inherittransparent(name, n, global)
+    end
 end
 
 colors.definetransparency = definetransparency
@@ -1090,7 +1116,13 @@ implement {
 implement {
     name      = "definetransparency",
     actions   = definetransparency,
-    arguments = { "string", "integer" }
+    arguments = { "string", "string" }
+}
+
+implement {
+    name      = "definetransparencyglobal",
+    actions   = definetransparency,
+    arguments = { "string", "string", true }
 }
 
 implement {

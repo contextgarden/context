@@ -69,7 +69,8 @@
 \unexpanded\def\setupalwcolor{}
 \unexpanded\def\setupoptcolor{darkgray}
 
-\unexpanded\def\setupvarword#1{{\sl\detokenize{#1}}}
+% \unexpanded\def\setupvarword#1{{\sl\detokenize{#1}}}
+\unexpanded\def\setupvarword#1{\detokenize{#1}}
 \unexpanded\def\setupintword#1{\WORD{\detokenize{#1}}}
 \unexpanded\def\setuptxtword#1{\detokenize{#1}}
 
@@ -229,7 +230,7 @@
             local g = getsetupstring(s)
             if not find(s,"^cd:") then
                 setuptxtword(g)
-            elseif find(s,"%-.$") then
+            elseif find(s,"%-.$") then -- singular | plural
                 setupvarword(g)
             else
                 setupintword(g) -- cap
@@ -744,26 +745,35 @@
 \unexpanded\def\show_setup_any#1#2%
   {\bgroup
    \global\advance\c_cmd_current_argument\plusone
+   \doif{\xmlatt{#1}{optional}}{yes}\donetrue\donefalse
    \setbox0=\hbox
-     {\doifelse{\xmlatt{#1}{list}}{yes}
+     {\ifdone\sl\fi
+      \doifelse{\xmlatt{#1}{list}}{yes}
         {\getsetupstring{cd:#2-l}}%
         {\getsetupstring{cd:#2-s}}}%
    \setbox2=\hbox to \wd0
      {\hss
-      \raise1.25\exheight\hbox
-        {\txx\ifcase\c_cmd_maximum_argument \relax
-           \or*\else\the\c_cmd_current_argument
-         \fi}%
+      \ifcase\c_cmd_kind\else
+        \ifcase\c_cmd_maximum_argument \relax
+        \or
+          \raise1.25\exheight\hbox
+            {\txx *}%
+        \else
+          \raise1.25\exheight\hbox
+            {\txx\the\c_cmd_current_argument}%
+         \fi
+      \fi
       \hss}%
    \setbox4=\hbox to \wd0
      {\hss
-      \lower2\exheight\hbox
-        \bgroup
-          \txx
-          \doif {\xmlatt{#1}{optional}} {yes}
-            {\getsetupstring{cd:optional}}%
-        \egroup
-      \hss}%
+      \ifdone
+        \lower2\exheight\hbox
+          \bgroup
+            \txx
+            \getsetupstring{cd:optional}%
+          \egroup
+        \hss
+      \fi}%
    \ht2\ht\strutbox
    \dp4\dp\strutbox
    \hskip.5\emwidth

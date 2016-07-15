@@ -77,24 +77,7 @@
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
                 <cd:parameter name="a">
-                    <cd:constant type="cd:number"/>
-                    <cd:constant type="none"/>
-                    <cd:constant type="normal"/>
-                    <cd:constant type="multiply"/>
-                    <cd:constant type="screen"/>
-                    <cd:constant type="overlay"/>
-                    <cd:constant type="softlight"/>
-                    <cd:constant type="hardlight"/>
-                    <cd:constant type="colordodge"/>
-                    <cd:constant type="colorburn"/>
-                    <cd:constant type="darken"/>
-                    <cd:constant type="lighten"/>
-                    <cd:constant type="difference"/>
-                    <cd:constant type="exclusion"/>
-                    <cd:constant type="hue"/>
-                    <cd:constant type="saturation"/>
-                    <cd:constant type="color"/>
-                    <cd:constant type="luminosity"/>
+                    <cd:resolve name="value-transparency"/>
                 </cd:parameter>
                 <cd:parameter name="t">
                     <cd:constant type="cd:number"/>
@@ -158,24 +141,7 @@
             <cd:resolve name="keyword-color"/>
             <cd:assignments list="yes">
                 <cd:parameter name="a">
-                    <cd:constant type="cd:number"/>
-                    <cd:constant type="none"/>
-                    <cd:constant type="normal"/>
-                    <cd:constant type="multiply"/>
-                    <cd:constant type="screen"/>
-                    <cd:constant type="overlay"/>
-                    <cd:constant type="softlight"/>
-                    <cd:constant type="hardlight"/>
-                    <cd:constant type="colordodge"/>
-                    <cd:constant type="colorburn"/>
-                    <cd:constant type="darken"/>
-                    <cd:constant type="lighten"/>
-                    <cd:constant type="difference"/>
-                    <cd:constant type="exclusion"/>
-                    <cd:constant type="hue"/>
-                    <cd:constant type="saturation"/>
-                    <cd:constant type="color"/>
-                    <cd:constant type="luminosity"/>
+                    <cd:resolve name="value-transparency"/>
                 </cd:parameter>
                 <cd:parameter name="t">
                     <cd:constant type="cd:number"/>
@@ -207,10 +173,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetransparency" file="colo-ini.mkiv">
+    <cd:command name="definetransparency" variant="1" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definetransparency" variant="2" file="colo-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="a">
+                    <cd:resolve name="value-transparency"/>
+                </cd:parameter>
+                <cd:parameter name="t">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definetransparency" variant="3" file="colo-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
@@ -221,6 +208,20 @@
     </cd:command>
 
     <cd:command name="color" file="colo-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-color"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="coloronly" file="colo-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-color"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transparent" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
             <cd:content/>
@@ -251,6 +252,18 @@
     </cd:command>
 
     <cd:command name="color" type="environment" file="colo-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-color"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="coloronly" type="environment" file="colo-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-color"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transparent" type="environment" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>

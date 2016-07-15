@@ -61,6 +61,26 @@
     <empty>
 \stopsetups
 
+\startsetups btx:cite:lefttext
+  \ifx\currentbtxlefttext\empty
+  \else
+    \setbtxparameterset{\s!cite}{lefttext}
+    \btxparameter\c!left
+    \currentbtxlefttext
+    \btxparameter\c!right
+  \fi
+\stopsetups
+
+\startsetups btx:cite:righttext
+  \ifx\currentbtxrighttext\empty
+  \else
+    \setbtxparameterset{\s!cite}{righttext}
+    \btxparameter\c!left
+    \currentbtxrighttext
+    \btxparameter\c!right
+  \fi
+\stopsetups
+
 \startsetups btx:cite:invalid
      \btxcitereference
      {\tt <\currentbtxreference>}
@@ -103,7 +123,8 @@
 
 \startsetups btx:cite:normal
     \texdefinition{\s!btx:\s!cite:concat}
-    \currentbtxlefttext
+    %\currentbtxlefttext
+    \fastsetup{\s!btx:\s!cite:lefttext}
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
     \else\ifx\currentbtxsecond\empty
@@ -140,12 +161,14 @@
              }
         }
     \fi\fi
-    \currentbtxrighttext
+    %\currentbtxrighttext
+    \fastsetup{\s!btx:\s!cite:righttext}
 \stopsetups
 
 \startsetups btx:cite:range
     \texdefinition{\s!btx:\s!cite:concat}
-    \currentbtxlefttext
+    %\currentbtxlefttext
+    \fastsetup{\s!btx:\s!cite:lefttext}
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
     \else
@@ -161,14 +184,16 @@
             }
         }
     \fi
-    \currentbtxrighttext
+    %\currentbtxrighttext
+    \fastsetup{\s!btx:\s!cite:righttext}
 \stopsetups
 
 % somehow related to keywords:
 
 \startsetups btx:cite:listelement
     \texdefinition{\s!btx:\s!cite:concat}
-    \currentbtxlefttext
+    %\currentbtxlefttext
+    \fastsetup{\s!btx:\s!cite:lefttext}
     \ifx\currentbtxfirst\empty
         \fastsetup{\s!btx:\s!cite:\s!empty}
     \else
@@ -177,14 +202,17 @@
            \currentbtxfirst
        }
     \fi
-    \currentbtxrighttext
+    %\currentbtxrighttext
+    \fastsetup{\s!btx:\s!cite:righttext}
 \stopsetups
 
 \startsetups \s!btx:\s!cite:entry
     \texdefinition{\s!btx:\s!cite:concat}
-    \currentbtxlefttext
+    %\currentbtxlefttext
+    \fastsetup{\s!btx:\s!cite:lefttext}
     \btxhandleciteentry
-    \currentbtxrighttext
+    %\currentbtxrighttext
+    \fastsetup{\s!btx:\s!cite:righttext}
 \stopsetups
 
 % these three are goodies to get something but are not set up as it makes no
@@ -259,7 +287,7 @@
     \fastsetup{\s!btx:\s!cite:normal}
 \stopsetups
 
-% the following is kind of specific, but can be used in many renderings
+% the following are kind of specific, but can be used in many renderings
 
 \startsetups btx:cite:url
     \ifx\currentbtxfirst\empty
@@ -267,13 +295,29 @@
     \else\ifconditional\btxinteractive
         \goto {
             \btxcitereference
-            \hyphenatedurl{\doif{\currentbtxcitealternative}{doi}{doi:}\currentbtxfirst}
+            \hyphenatedurl{\currentbtxfirst}
         } [
-            url(\doif{\currentbtxcitealternative}{doi}{http://dx.doi.org/}\currentbtxfirst)
+            url(\currentbtxfirst)
         ]
     \else
         \btxcitereference
-        \hyphenatedurl{\doif{\currentbtxcitealternative}{doi}{doi:}\currentbtxfirst}
+        \hyphenatedurl{\currentbtxfirst}
+    \fi\fi
+\stopsetups
+
+\startsetups btx:cite:doi
+    \ifx\currentbtxfirst\empty
+        \fastsetup{\s!btx:\s!cite:\s!empty}
+    \else\ifconditional\btxinteractive
+        \goto {
+            \btxcitereference
+            \hyphenatedurl{doi:\currentbtxfirst}
+        } [
+            url(http://dx.doi.org/\currentbtxfirst)
+        ]
+    \else
+        \btxcitereference
+        \hyphenatedurl{doi:\currentbtxfirst}
     \fi\fi
 \stopsetups
 

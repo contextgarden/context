@@ -2773,6 +2773,16 @@ data.labels={
     es = "Informe técnico",
    },
   },
+  ["patent"] = {
+   labels = {
+    en = "Patent",
+    nl = "Octrooi",
+    fr = "Brevet",
+    de = "Patent",
+    it = "Brevetto",
+    es = "Patente",
+   },
+  },
   --
   ["editor"] = {
    labels = {
@@ -2858,14 +2868,14 @@ data.labels={
   --
   ["p"] = {
    labels = {
-    en = "p",
-    de = "S",
+    en = "p.",
+    de = "S.",
    },
   },
   ["pp"] = {
    labels = {
-    en = "pp",
-    de = "S",
+    en = "pp.",
+    de = "S.",
    },
   },
   ["pages"] = {
@@ -2884,6 +2894,16 @@ data.labels={
     nl = "en",
     it = "e",
     es = "y",
+   },
+  },
+  ["with"] = {
+   labels = {
+    en = "with",
+    nl = "met",
+    fr = "avec",
+    de = "mit",
+    it = "con",
+    es = "con",
    },
   },
   ["others"] = {
