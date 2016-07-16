@@ -1,8 +1,8 @@
 % language=uk
 
-\environment languages-environment
-
 \startcomponent languages-numbering
+
+\environment languages-environment
 
 \startchapter[title=Numbering][color=darkgreen]
 
@@ -19,13 +19,13 @@ how English, Spanish and Slovenian numbers:
 \blank
 \startpacked
 \startcolor[maincolor]
-\noindentation\dontleavehmode
+\dontleavehmode
     {\ttbf\mainlanguage[en]\dorecurse{28}
         {\hbox to 1.5em{\convertnumber{alphabetic}{#1}\hss}}}\par
-\noindentation\dontleavehmode
+\dontleavehmode
     {\ttbf\mainlanguage[es]\dorecurse{28}
         {\hbox to 1.5em{\convertnumber{alphabetic}{#1}\hss}}}\par
-\noindentation\dontleavehmode
+\dontleavehmode
     {\ttbf\mainlanguage[sl]\dorecurse{28}
         {\hbox to 1.5em{\convertnumber{alphabetic}{#1}\hss}}}\par
 \stopcolor
@@ -153,7 +153,7 @@ application:
 
 \typebuffer
 
-\noindentation What renders as:
+What renders as:
 
 \startlines[color=maincolor]
 \getbuffer
@@ -170,7 +170,7 @@ a label text depending on the valu ebeing non|-|zero.
 
 \typebuffer
 
-\noindentation This gives:
+This gives:
 
 \startlines[color=maincolor]
 \getbuffer
@@ -190,7 +190,7 @@ So,
 
 \typebuffer
 
-\noindentation Gives:
+Gives:
 
 \startlines[color=maincolor]
 \getbuffer
@@ -200,17 +200,17 @@ There are also some non language related converters that we mention here for
 completeness:
 
 \blank
-\noindentation\type {set 0}: \startcolor[maincolor]\dorecurse{20}{\convertnumber{set 0}{#1} }\stopcolor\par
-\noindentation\type {set 1}: \startcolor[maincolor]\dorecurse{20}{\convertnumber{set 1}{#1} }\stopcolor\par
-\noindentation\type {set 2}: \startcolor[maincolor]\dorecurse{20}{\convertnumber{set 2}{#1} }\stopcolor\par
-\noindentation\type {set 3}: \startcolor[maincolor]\dorecurse{20}{\convertnumber{set 3}{#1} }\stopcolor\par
+\type {set 0}: \startcolor[maincolor]\dorecurse{20}{\convertnumber{set 0}{#1} }\stopcolor\par
+\type {set 1}: \startcolor[maincolor]\dorecurse{20}{\convertnumber{set 1}{#1} }\stopcolor\par
+\type {set 2}: \startcolor[maincolor]\dorecurse{20}{\convertnumber{set 2}{#1} }\stopcolor\par
+\type {set 3}: \startcolor[maincolor]\dorecurse{20}{\convertnumber{set 3}{#1} }\stopcolor\par
 \blank
 
 When a set overruns we start again at the first element.
 
-\noindentation The ordinal converter produces output like \color [maincolor]
-{\convertnumber {ordinal}{123}} and \color [maincolor] {\convertnumber
-{ordinal}{654}}. The corresponding string renderer is \type {\highordinalstr}.
+The ordinal converter produces output like \color [maincolor] {\convertnumber
+{ordinal}{123}} and \color [maincolor] {\convertnumber {ordinal}{654}}. The
+corresponding string renderer is \type {\highordinalstr}.
 
 % quite limited currently op not documented here:
 %
@@ -250,7 +250,7 @@ specific date with \type {\date}, for instance:
 \getbuffer
 \stoplines
 
-\noindentation Possible elements of the specification are:
+Possible elements of the specification are:
 
 \starttabulate
 \FL
@@ -294,7 +294,7 @@ can also as a specific one, so {\em jalali} \date [y=1395, m=4, d=18]
 [jalali:from, month, day, {, }, year].
 \stopbuffer
 
-\typebuffer \startnarrower \getbuffer stopnarrower
+\typebuffer \startnarrower \getbuffer \stopnarrower
 
 \stopsection
 

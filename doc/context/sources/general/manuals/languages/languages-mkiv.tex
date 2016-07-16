@@ -15,39 +15,47 @@
 
 \enablemode[simple] % ,oversized
 
-\startproduct languages-mkiv
+\startbuffer[abstract]
+
+    This book explains how we support languages (and scripts) in \CONTEXT\ \MKIV\
+    and \LUATEX. Some of the mechanisms discussed are generic and not \CONTEXT\
+    specific. We discuss the way languages are dealt with in the engine,
+    hyphenation, standard features and additional goodies. Tracing and the
+    extensibility of code are also discussed.
+
+\stopbuffer
 
 \environment languages-environment
 
-\setupbackgrounds[page][background=]
+\startdocument
+  [author=Hans Hagen,
+   title=Languages in \ConTeXt,
+   subtitle=explaining luatex and mkiv,
+   affiliation=PRAGMA ADE,
+   comment=work in progress,
+   cover:color:1=darkmagenta,
+   cover:color:2=darkorange,
+   cover:color:3=darkyellow,
+   cover:color:4=darkcyan,
+   cover:color:5=darkgray]
 
-\component languages-cover
+    \startfrontmatter
+        \component manuals-explaining-contents
+        \component languages-introduction
+    \stopfrontmatter
 
-% \startcovermatter
+    \startbodymatter
+        \component languages-basics
+        \component languages-hyphenation
+        \component languages-labels
+        \component languages-numbering
+        \component languages-typesetting
+        \component languages-goodies
+        \component languages-sorting
+    \stopbodymatter
 
-\page[dummy] \setupbackgrounds[page][background=page] \resetuserpagenumber
+    \startappendices
+        \component languages-appendix
+    \stopappendices
 
-% \stopcovermatter
-
-\startfrontmatter
-    \component languages-contents
-    \component languages-introduction
-\stopfrontmatter
-
-\startbodymatter
-    \component languages-basics
-    \component languages-hyphenation
-    \component languages-labels
-    \component languages-numbering
-    \component languages-typesetting
-    \component languages-goodies
-    \component languages-sorting
-\stopbodymatter
-
-\startappendices
-    \component languages-appendix
-\stopappendices
-
-\component languages-back
-
-\stopproduct
+\stopdocument

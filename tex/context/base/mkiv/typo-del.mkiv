@@ -267,9 +267,18 @@
 
 \def\c_typo_delimited_nesting{\csname\??delimitedtextlevel\currentparentdelimitedtext\endcsname}
 
-\def\typo_delimited_push#1%
-  {\globalpushmacro\currentdelimitedtext
-   \def\currentdelimitedtext{#1}%
+% the \setlanguageparameter macro sets but we are ungrouped .. only used here
+%
+% \currentusedlanguage
+% \usedlanguageparameter
+
+\let\currentdelimitedlanguage\empty
+
+\def\typo_delimited_push#1#2%
+  {\globalpushmacro\currentdelimitedtext     % can we combine these two
+   \globalpushmacro\currentdelimitedlanguage
+   \edef\currentdelimitedtext{#1}%
+   \edef\currentdelimitedlanguage{#2}%
    \setlanguageparameter\delimitedtextparameter
    \let\currentparentdelimitedtext\currentdelimitedtext
    \global\advance\c_typo_delimited_nesting\plusone
@@ -279,6 +288,7 @@
 
 \def\typo_delimited_pop
   {\global\advance\c_typo_delimited_nesting\minusone
+   \globalpopmacro\currentdelimitedlanguage
    \globalpopmacro\currentdelimitedtext}
 
 \installcorenamespace{delimitedtext}
@@ -308,6 +318,7 @@
    \c!right=,
   %\c!level=0,
    \c!method=,
+  %\c!language\v!local,
    \c!repeat=\v!no]
 
 \def\typo_delimited_repeat_ideed
@@ -317,9 +328,12 @@
 
 \let\typo_delimited_repeat\relax
 
-\unexpanded\def\startdelimitedtext[#1]%
+\unexpanded\def\startdelimitedtext
+  {\dodoubleempty\typo_delimited_text_start}
+
+\unexpanded\def\typo_delimited_text_start[#1][#2]%
   {\begingroup
-   \typo_delimited_push{#1}%
+   \typo_delimited_push{#1}{#2}%
    \dostarttaggedchained\t!delimitedblock\currentdelimitedtext\??delimitedtext
    \edef\p_delimited_method{\delimitedtextparameter\c!method}%
    \ifx\p_delimited_method\s!font
@@ -355,10 +369,22 @@
    \fi\fi}
 
 \def\typo_delimitedtexts_finish_font
-  {\removeunwantedspaces
+  {\removeunwantedspaces % again ?
    \dostarttagged\t!delimitedsymbol\empty
    \dotagsetdelimitedsymbol\s!right
    \delimitedtextparameter\c!right
+   \dostoptagged}
+
+\def\typo_delimited_start_content
+  {\dostarttagged\t!delimitedcontent\empty
+   \begingroup
+   \douselanguageparameter\currentdelimitedlanguage
+   \ignorespaces}
+
+\def\typo_delimited_stop_content
+  {\removeunwantedspaces
+   \removelastskip % redundant
+   \endgroup
    \dostoptagged}
 
 \def\typo_delimited_start_par
@@ -400,13 +426,10 @@
    \setnextleftdelimitedtextmark
    \setnextrightdelimitedtextmark
    %
-   \ignorespaces
-   \dostarttagged\t!delimitedcontent\empty}
+   \typo_delimited_start_content}
 
 \def\typo_delimited_stop_par
-  {\removeunwantedspaces
-   \removelastskip
-   \dostoptagged
+  {\typo_delimited_stop_content
    \rightdelimitedtextmark
    \carryoverpar\endgroup % new per 2013-01-21 ... please left floats
    \popmacro\checkindentation
@@ -424,12 +447,10 @@
    \begingroup
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_handle_left\c!left
-   \ignorespaces
-   \dostarttagged\t!delimitedcontent\empty}
+   \typo_delimited_start_content}
 
 \def\typo_delimited_stop_txt
-  {\removeunwantedspaces
-   \dostoptagged
+  {\typo_delimited_stop_content
    \typo_delimited_handle_right\c!right
    \endgroup}
 
@@ -439,9 +460,12 @@
    \typo_delimited_pop
    \endgroup}
 
-\unexpanded\def\delimitedtext[#1]%
+\unexpanded\def\delimitedtext
+  {\dodoubleempty\typo_delimited_text}
+
+\unexpanded\def\typo_delimited_text[#1][#2]%
   {\dontleavehmode % following ones can be omited
-   \typo_delimited_push{#1}%
+   \typo_delimited_push{#1}{#2}%
    \edef\p_delimited_method{\delimitedtextparameter\c!method}%
    \ifx\p_delimited_method\s!font
      \expandafter\typo_delimited_fontdriven
@@ -569,7 +593,7 @@
 % \stoptext
 
 \def\typo_delimited_handle_middle#1%
-  {\dostoptagged
+  {\typo_delimited_stop_content
    \begingroup
    \usedelimitedtextstyleandcolor\c!symstyle\c!symcolor
    \setbox\scratchbox\hbox{\delimitedtextparameter#1}%
@@ -591,7 +615,7 @@
      \kern\d_typo_delimited_signal % +- \prewordbreak
    \fi
    \endgroup
-   \dostarttagged\t!delimitedcontent\empty}
+   \typo_delimited_start_content}
 
 \def\typo_delimited_handle_left#1%
   {\begingroup
@@ -652,10 +676,10 @@
      {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext % block?
       \usedelimitedtextstyleandcolor\c!style\c!color
       \typo_delimited_handle_left\c!left
-      \dostarttagged\t!delimitedcontent\empty}
-     {\dostoptagged
+      \typo_delimited_start_content}
+     {\typo_delimited_stop_content
       \typo_delimited_handle_right\c!right
-      \removelastskip
+      \removelastskip % hm
       \dostoptagged
       \typo_delimited_pop}}
 
@@ -667,52 +691,56 @@
      \expandafter\typo_delimited_quoted
    \fi}
 
-\def\typo_delimited_quoted_b
-  {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
+\def\typo_delimited_quoted
+  {\dontleavehmode
+   \begingroup
+   \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \typo_delimited_handle_left\c!left
    \usedelimitedtextstyleandcolor\c!style\c!color
-   \dostarttagged\t!delimitedcontent\empty}
+   \typo_delimited_start_content
+   \bgroup
+   \aftergroup\typo_delimited_quoted_e
+   \let\next=}
 
 \def\typo_delimited_quoted_e
-  {\dostoptagged
+  {\typo_delimited_stop_content
    \typo_delimited_handle_right\c!right
    \removelastskip % ?
    \dostoptagged
-   \typo_delimited_pop}
+   \typo_delimited_pop
+   \endgroup}
 
-\def\typo_delimited_attributed_b
-  {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
+\def\typo_delimited_attributed
+  {\dontleavehmode
+   \begingroup
+   \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
-   \dostarttagged\t!delimitedcontent\empty
-   \ignorespaces}
+   \typo_delimited_start_content
+   \typo_delimited_attributed_e
+   \let\next=}
 
 \def\typo_delimited_attributed_e
-  {\dostoptagged
+  {\typo_delimited_stop_content
    \dostoptagged
-   \typo_delimited_pop}
+   \typo_delimited_pop
+   \endgroup}
 
-\def\typo_delimited_fontdriven_b
-  {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
+\def\typo_delimited_fontdriven
+  {\dontleavehmode
+   \begingroup
+   \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
    \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
-   \dostarttagged\t!delimitedcontent\empty}
+   \typo_delimited_start_content
+   \aftergroup\typo_delimited_fontdriven_e
+   \let\next=}
 
 \def\typo_delimited_fontdriven_e
-  {\dostoptagged
+  {\typo_delimited_stop_content
    \usedlanguageparameter{\c!right\currentparentdelimitedtext}% was: \currentdelimitedtext
    \dostoptagged
-   \typo_delimited_pop}
-
-% We now assume proper argument usage (so no longer grouped
-% command).
-
-% \def\typo_delimited_quoted    {\groupedcommand      \typo_delimited_quoted_b    \typo_delimited_quoted_e    }
-% \def\typo_delimited_attributed{\groupedcommand      \typo_delimited_attributed_b\typo_delimited_attributed_e}
-% \def\typo_delimited_fontdriven{\simplegroupedcommand\typo_delimited_fontdriven_b\typo_delimited_fontdriven_e}
-
-\def\typo_delimited_quoted    {\bgroup\typo_delimited_quoted_b    \aftergroup\typo_delimited_quoted_e    \let\next=}
-\def\typo_delimited_attributed{\bgroup\typo_delimited_attributed_b\aftergroup\typo_delimited_attributed_e\let\next=}
-\def\typo_delimited_fontdriven{\bgroup\typo_delimited_fontdriven_b\aftergroup\typo_delimited_fontdriven_e\let\next=}
+   \typo_delimited_pop
+   \endgroup}
 
 % testcase for nesting:
 %

@@ -1040,7 +1040,7 @@ primarydef p randomized s = (
             ((uniformdeviate s) * p)
         fi
     elseif string p :
-        resolvedcolor(p) randomized s
+        (resolvedcolor(p)) randomized s
     else :
         p + uniformdeviate s
     fi

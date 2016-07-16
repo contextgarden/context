@@ -1,8 +1,8 @@
 % language=uk
 
-\environment languages-environment
-
 \startcomponent languages-hyphenation
+
+\environment languages-environment
 
 \startchapter[title=Hyphenation][color=darkmagenta]
 
@@ -339,7 +339,7 @@ aaaaabbbbb \par
 
 \typebuffer
 
-\noindentation This code is self explaining and results in:
+This code is self explaining and results in:
 
 \blank
 
@@ -347,8 +347,7 @@ aaaaabbbbb \par
 \setupindenting[no]\hsize 1mm \lefthyphenmin 1 \righthyphenmin 1 \getbuffer
 \stophyphenation
 
-\noindentation There can be multiple hyphens and even multiple words in such a
-specification:
+There can be multiple hyphens and even multiple words in such a specification:
 
 \startbuffer
 \registerhyphenationexception[aaaaa-bbbbb cc-ccc-ddd-dd]
@@ -358,7 +357,7 @@ cccccddddd \par
 
 \typebuffer
 
-\noindentation We get:
+We get:
 
 \blank
 
@@ -520,7 +519,7 @@ When applied to one the tufte example we get:
 \starthyphenation[traditional]
     \setuptolerance[tolerant]
     \sethyphenationfeatures[demo]
-    \noindentation % \dontleavehmode
+    \dontleavehmode
     \input tufte\relax
 \stophyphenation
 \stopbuffer
@@ -626,7 +625,7 @@ So, we only break a line after symbols.
     \stophyphenation
 \stoplinecorrection
 
-\noindentation A quick test can look as follows:
+A quick test can look as follows:
 
 \startbuffer
 \starthyphenation[traditional]
@@ -663,7 +662,7 @@ superef\zwnj fective
 
 \typebuffer[sample]
 
-\noindentation and define two featuresets:
+and define two featuresets:
 
 \startbuffer
 \definehyphenationfeatures
@@ -678,7 +677,7 @@ superef\zwnj fective
 
 \typebuffer \getbuffer
 
-\noindentation We limit the width to 1mm and get:
+We limit the width to 1mm and get:
 
 \startlinecorrection[blank]
 \bTABLE[option=stretch,offset=.5ex]
@@ -748,7 +747,7 @@ same as the breakpoints mechanism (compounds).
 \starthyphenation[traditional]
     \sethyphenationfeatures[demo-3]
     \dontcomplain
-    \hsize 1mm \noindentation
+    \hsize 1mm
     we use (super)special(ized) patterns
 \stophyphenation
 \stopbuffer
@@ -764,11 +763,11 @@ We can make this more clever by adding patterns:
 
 \typebuffer \blank \getbuffer \blank
 
-\noindentation This gives:
+This gives:
 
 \blank \getbuffer[demo] \blank
 
-\noindentation A detailed trace shows that these patterns get applied:
+A detailed trace shows that these patterns get applied:
 
 \starthyphenation[traditional]
     \ttx
@@ -778,8 +777,8 @@ We can make this more clever by adding patterns:
 \unregisterhyphenationpattern[en][)9]
 \unregisterhyphenationpattern[en][9(]
 
-\noindentation The somewhat weird hyphens at the edges will in practice not show
-up because there is always one regular character there.
+The somewhat weird hyphens at the edges will in practice not show up because
+there is always one regular character there.
 
 \stopsection
 

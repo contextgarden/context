@@ -1538,16 +1538,20 @@ def nofill   text t = fill t withpostscript "collect" enddef ;
 % so we can do: withcolor "red"
 
 def resolvedcolor expr s =
-  % lua.mp.namedcolor(s)                    % conflicts with macro namedcolor
-  % lua.mp.NamedColor(s)                    % okay but, can also be
-  % lua.mp("NamedColor",s)                  % which gives expansion mess
-    runscript("mp.NamedColor('" & s & "')") % faster anyway
+  % lua.mp.namedcolor(s)   % conflicts with macro namedcolor
+  % lua.mp.NamedColor(s)   % okay but, can also be
+  % lua.mp("NamedColor",s) % which gives expansion mess
+    if string s :
+        runscript("mp.NamedColor('" & s & "')") % faster anyway
+    else :
+        s
+    fi
 enddef ;
 
 % A comment will end up on top of the graphic in the output. This can be handy for
 % locating a graphic: comment("test graphic").
 
-def comment(expr str) =
+def comment expr str =
     special "metapost.comment[[" & str & "]]" ;
 enddef ;
 

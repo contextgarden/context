@@ -679,20 +679,26 @@
 %D
 %D These speak for themselves. See \type {colo-ext} for usage.
 
+% \def\negatedcolorcomponent#1%
+%   {\ifdim\dimexpr\onepoint-#1\onepoint\relax<\zeropoint
+%      \!!zerocount
+%    \else
+%      \expandafter\withoutpt\the\dimexpr\onepoint-#1\onepoint\relax
+%    \fi}
+%
+% \unexpanded\def\negatecolorcomponent#1% #1 = \macro
+%   {\scratchdimen\onepoint\advance\scratchdimen-#1\onepoint
+%    \ifdim\scratchdimen<\zeropoint\scratchdimen\zeropoint\fi
+%    \edef#1{\withoutpt\the\scratchdimen}}
+%
+% \unexpanded\def\negatecolorcomponent#1% #1 = \macro
+%   {\edef#1{\negatedcolorcomponent{#1}}}
+
 \unexpanded\def\negatecolorcomponent#1% #1 = \macro
-  {\scratchdimen\onepoint\advance\scratchdimen-#1\onepoint
-   \ifdim\scratchdimen<\zeropoint\scratchdimen\zeropoint\fi
-   \edef#1{\withoutpt\the\scratchdimen}}
+  {\edef#1{\clf_negatecolorcomponent{#1}}}
 
 \def\negatedcolorcomponent#1%
-  {\ifdim\dimexpr\onepoint-#1\onepoint\relax<\zeropoint
-     \!!zerocount
-   \else
-     \expandafter\withoutpt\the\dimexpr\onepoint-#1\onepoint\relax
-   \fi}
-
-\unexpanded\def\negatecolorcomponent#1% #1 = \macro
-  {\edef#1{\negatedcolorcomponent{#1}}}
+  {\clf_negatecolorcomponent{#1}}
 
 %D \macros
 %D   {MPcolor}
@@ -1329,7 +1335,6 @@
      \attribute\colormodelattribute
      \colo_helpers_inherited_current_ca{#1} %
      \colo_helpers_inherited_current_ta{#1} }
-
 
 \def\thecolormodelattribute    {\the\attribute\colormodelattribute}
 

@@ -391,7 +391,9 @@ local function setvariables(figure)
     return variables
 end
 
-function metapost.comment() end
+local function nocomment() end
+
+metapost.comment = nocomment
 
 function metapost.flush(result,flusher,askedfig)
     if result then
@@ -408,7 +410,7 @@ function metapost.flush(result,flusher,askedfig)
             local textfigure = flusher.textfigure
             local processspecial = flusher.processspecial or metapost.processspecial
             local variables  = setvariables(figure) -- also resets then in case of not found
-            metapost.comment = flusher.comment
+            metapost.comment = flusher.comment or nocomment
             for index=1,#figures do
                 local figure = figures[index]
                 local properties = setproperties(figure)
@@ -633,7 +635,7 @@ function metapost.flush(result,flusher,askedfig)
                     end
                 end
             end
-            function metapost.comment() end
+            metapost.comment = nocomment
         end
     end
 end

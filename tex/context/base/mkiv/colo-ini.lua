@@ -1251,3 +1251,12 @@ end
 
 -- inspect(attributes.colors.spec("red"))
 -- inspect(attributes.colors.spec("red socks"))
+
+implement {
+    name      = "negatedcolorcomponent",
+    arguments = "string",
+    actions   = function(s)
+        s = 1 - (tonumber(s) or 0)
+        context((s < 0 and 0) or (s > 1 and 1) or s)
+    end
+}

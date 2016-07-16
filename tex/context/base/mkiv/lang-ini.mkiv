@@ -583,36 +583,26 @@
 
 %D Fast switcher
 
-% \def\lang_basics_switch_asked
-%   {\ifx\askedlanguage\empty \else
-%      \ifcsname\??languagelinked\askedlanguage\endcsname
-%        \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
-%        \ifx\currentlanguage\askedlanguage \else
-%          \setcurrentlanguage\currentmainlanguage\askedlanguage
-%          \lang_basics_synchronize
-%        \fi
-%      \fi
-%    \fi}
-
 \def\lang_basics_switch_asked
-  {\ifx\askedlanguage\empty \else
-     \ifcsname\??languagelinked\askedlanguage\endcsname
-      %\edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
-       \edef\askedlanguage{\lastnamedcs}%
-       \ifx\currentlanguage\askedlanguage \else
-         \setcurrentlanguage\currentmainlanguage\askedlanguage
-         \lang_basics_synchronize
-       \fi
+  {\ifcsname\??languagelinked\askedlanguage\endcsname
+     \edef\askedlanguage{\lastnamedcs}%
+     \ifx\currentlanguage\askedlanguage \else
+       \setcurrentlanguage\currentmainlanguage\askedlanguage
+       \lang_basics_synchronize
      \fi
    \fi}
 
 \unexpanded\def\uselanguageparameter#1%
   {\edef\askedlanguage{#1\c!language}%
-   \lang_basics_switch_asked}
+   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
+
+\unexpanded\def\douselanguageparameter#1% fast setter
+  {\edef\askedlanguage{#1}%
+   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
 
 \unexpanded\def\lang_basics_set_current[#1]%
   {\edef\askedlanguage{#1}%
-   \lang_basics_switch_asked}
+   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
 
 \unexpanded\def\language
   {\doifelsenextoptionalcs\lang_basics_set_current\normallanguage}

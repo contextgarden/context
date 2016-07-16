@@ -1,8 +1,8 @@
 % language=uk
 
-\environment languages-environment
-
 \startcomponent languages-basics
+
+\environment languages-environment
 
 \startchapter[title=Some basics][color=darkyellow]
 
@@ -35,11 +35,11 @@ up to users to provide the information.}
 
 \getbuffer
 
-\noindentation You can call up such a table with the following commands:
+You can call up such a table with the following commands:
 
 \typebuffer
 
-\noindentation Instead you can run \type {context --global languages-system.mkiv}.
+Instead you can run \type {context --global languages-system.mkiv}.
 
 As you can see, many languages have hyphenation patterns but for Japanese,
 Korean, Chinese as well as Arabic languages they make no sense. The patterns are
@@ -107,7 +107,7 @@ In the line 4 we have a \type {\-} between the two words, and in the last
 line just a \type {-}. If you look closely you will notice that the snippets
 can be quite small. If we typeset a word with a 1mm text width we get this:
 
-\blank \noindentation \start \en \hsize 1mm incredibly \par \stop \blank
+\blank \start \en \hsize 1mm incredibly \par \stop \blank
 
 If you are familiar with the details of hyphenation, you know that the number of
 characters at the end and beginning of a word is controlled by the two variables
@@ -122,7 +122,7 @@ a language. It is insensitive for capitalization as the following text shows:
 
 \blank
 
-\startnarrower \noindentation
+\startnarrower
 \hyphenatedword {This time the musical distraction while developing code came
 from watching youtube performances of Cory Henry (also known from Snarky Puppy,
 a conglomerate of excellent players). Just search the web for his name with \quote
@@ -139,7 +139,7 @@ are of course many more fantastic musicians.}
 
 \blank
 
-\noindentation Of course, names are often short and don't need to be hyphenated
+Of course, names are often short and don't need to be hyphenated
 (or the left and right settings prohibit it). Another complication with names is
 that they can come from another language so we either need to switch language
 temporarily or we need to add an exception (more about that later).
@@ -315,9 +315,9 @@ are several ways to do this:
 
 \typebuffer
 
-\noindentation This typesets:
+This typesets:
 
-\blank \start \setupindenting[no] \getbuffer \stop \blank
+\blank \startpacked \setupindenting[no] \getbuffer \stoppacked \blank
 
 When you use setups you can use the following trick:
 
@@ -337,7 +337,7 @@ When you use setups you can use the following trick:
 
 \typebuffer
 
-\noindentation As expected we get:
+As expected we get:
 
 \blank \start \setupindenting[no] \getbuffer \stop \blank
 
