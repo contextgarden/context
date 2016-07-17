@@ -782,6 +782,73 @@ there is always one regular character there.
 
 \stopsection
 
+\startsection[title=Counting]
+
+There is not much you can do about patterns. It's a craft to make them and so
+they are shipped with the distribution. In order to hyphenate well, \TEX\ looks
+at some character properties. In \CONTEXT\ only the characters used in the
+patterns of a language get tagged as valid in a word.
+
+The following example illustrates that there can be corner cases. In fact, this
+example might render differently depending on the patterns available. First we
+define an extra language, based on French.
+
+\startbuffer
+\installlanguage[frf][default=fr,patterns=fr,factor=yes]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here we set the \type {factor} parameter which tells the loader that it should
+look at the characters used in a special way: some count for none, and some count
+for more than one when determining the min values used to determine if and where
+hyphenation is to be applied.
+
+\startbuffer
+\startmixedcolumns[n=3,balance=yes]
+    \hsize 1mm \dontcomplain
+    \language[fr]  aesop oedipus æsop œdipus \column
+    \hsize 1mm \dontcomplain
+    \language[frf] aesop oedipus æsop œdipus \column
+    \startexceptions æ-sop \stopexceptions
+    \hsize 1mm \dontcomplain
+    \language[frf] aesop oedipus æsop œdipus
+\stopmixedcolumns
+\stopbuffer
+
+\typebuffer
+
+We get three (when writing this manual) different columns:
+
+\getbuffer
+
+The trick is in the \type {factor}: when set to \type {yes} an \type {æ} is
+counted as two characters. Combining marks count as zero but you will not
+find them being used as we already resolve them in an earlier stage.
+
+\startluacode
+context.startcolumns { n = 2 }
+context.starttabulate { "|Tc|c|c|l|" }
+for u, data in table.sortedhash(languages.hjcounts) do
+    if data.category ~= "combining" then
+        context.NC() context("%05U",u)
+        context.NC() context("%c",u)
+        context.NC() context(data.count)
+        context.NC() context(data.category)
+        context.NC() context.NR()
+    end
+end
+context.stoptabulate()
+context.stopcolumns()
+\stopluacode
+
+It is very unlikely to find an \type {ﬃ} in the input and even an \type {ĳ} is
+rare. The \type {æ} is marked as character and the \type {œ} a ligatyure in
+\UNICODE. Maybe all the characters here are dubious but al least we provide a
+way to experiment with them.
+
+\stopsection
+
 \startsection[title=Tracing]
 
 Among the tracing options (low level trackers) there is one for pattern developers:

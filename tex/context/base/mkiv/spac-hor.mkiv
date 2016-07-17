@@ -692,7 +692,7 @@
    \global\s_spac_narrower_left  \zeropoint
    \global\s_spac_narrower_right \zeropoint
    \global\s_spac_narrower_middle\zeropoint
-   \processcommalistwithparameters[#1]\spac_narrower_initialize
+   \normalexpanded{\processcommalistwithparameters[#1]}\spac_narrower_initialize
    \advance\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
    \advance\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
    \seteffectivehsize}

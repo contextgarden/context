@@ -22,7 +22,7 @@ local type, tonumber = type, tonumber
 local utfbyte = utf.byte
 local format, gsub, gmatch, find = string.format, string.gsub, string.gmatch, string.find
 local concat, sortedkeys, sortedpairs, keys, insert = table.concat, table.sortedkeys, table.sortedpairs, table.keys, table.insert
-local utfbytes, strip = string.utfvalues, string.strip
+local utfbytes, strip, utfcharacters = string.utfvalues, string.strip, utf.characters
 
 local context   = context
 local commands  = commands
@@ -71,6 +71,11 @@ storage.register("languages/registered",registered,"languages.registered")
 storage.register("languages/associated",associated,"languages.associated")
 storage.register("languages/numbers",   numbers,   "languages.numbers")
 storage.register("languages/data",      data,      "languages.data")
+
+local variables = interfaces.variables
+
+local v_reset   = variables.reset
+local v_yes     = variables.yes
 
 local nofloaded  = 0
 
@@ -133,25 +138,63 @@ local function validdata(loaded,what,tag)
     end
 end
 
-local function sethjcodes(instance,loaded,what)
+-- languages.hjcounts[unicode].count
+
+-- hjcode: 0       not to be hyphenated
+--         1--31   length
+--         32      zero length
+--         > 32    hyphenated with length 1
+
+local function sethjcodes(instance,loaded,what,factor)
     local l = loaded[what]
     local c = l and l.characters
     if c then
-        local h = l.codehash
+        local hjcounts = factor and languages.hjcounts or false
+        --
+        local h = loaded.codehash
         if not h then
             h = { }
-            l.codehash = h
+            loaded.codehash = h
         end
+        --
+        local function setcode(l)
+            local u = uccodes[l]
+            local s = 1
+            if hjcounts then
+                local c = hjcounts[l]
+                if c then
+                    c = c.count
+                    if not c then
+                        -- error, keep as 1
+                    elseif c <= 0 then
+                        -- counts as 0 i.e. ignored
+                        s = 32
+                    elseif c >= 31 then
+                        -- counts as 31
+                        s = 31
+                    else
+                        -- count c times
+                        s = c
+                    end
+                end
+            end
+            sethjcode(instance,l,s)
+            h[l] = s
+            if u ~= l and type(u) == "number" then
+                sethjcode(instance,u,s)
+                h[u] = s
+            end
+        end
+        --
         local s = tex.savinghyphcodes
         tex.savinghyphcodes = 0
-        for l in utfbytes(c) do
-            local u = uccodes[l]
-            sethjcode(instance,l,l)
-            h[l] = l
-            if type(u) == "number" then
-                -- we don't want ß -> SS
-                sethjcode(instance,u,l)
-                h[u] = l
+        if type(c) == "table" then
+            for l in next, c do
+                setcode(utfbyte(l))
+            end
+        else
+            for l in utfbytes(c) do
+                setcode(l)
             end
         end
         tex.savinghyphcodes = s
@@ -255,7 +298,7 @@ local function loaddefinitions(tag,specification)
             local definition = definitions[i]
             if definition == "" then
                 -- error
-            elseif definition == "reset" then -- interfaces.variables.reset
+            elseif definition == v_reset then
                 if trace_patterns then
                     report_initialization("clearing patterns for language %a",tag)
                 end
@@ -278,8 +321,8 @@ local function loaddefinitions(tag,specification)
                     local loaded = table.load(fullname,gzipped and gzip.load)
                     if loaded then -- todo: version test
                         ok, nofloaded = true, nofloaded + 1
-                        sethjcodes(instance,loaded,"patterns")
-                        sethjcodes(instance,loaded,"exceptions")
+                        sethjcodes(instance,loaded,"patterns",specification.factor)
+                        sethjcodes(instance,loaded,"exceptions",specification.factor)
                         local p = validdata(loaded,"patterns",tag)
                         local e = validdata(loaded,"exceptions",tag)
                         if p and p ~= "" then
@@ -396,10 +439,11 @@ if environment.initex then
 
 else
 
-    function languages.getnumber(tag,default,patterns)
+    function languages.getnumber(tag,default,patterns,factor)
         local l = registered[tag]
         if l then
             if l.dirty then
+                l.factor = factor == v_yes and true or false
                 if trace_patterns then
                     report_initialization("checking patterns for %a with default %a",tag,default)
                 end
@@ -454,19 +498,43 @@ function languages.postexhyphenchar(what) return postexhyphenchar(tolang(what)) 
 -- e['user-friendly'] = 'user=friend-ly'
 -- e['exceptionally-friendly'] = 'excep-tionally=friend-ly'
 
+local invalid = { "{", "}", "-" }
+
+local function collecthjcodes(data,str)
+    local found = data.extras and data.extras.characters or { }
+    for s in utfcharacters(str) do
+        if not found[s] then
+            found[s] = true
+        end
+    end
+    for i=1,#invalid do -- less checks this way
+        local c = invalid[i]
+        if found[c] then
+            found[c] = nil
+        end
+    end
+    data.extras = { characters = found }
+    sethjcodes(data.instance,data,"extras",data.factor)
+end
+
 function languages.loadwords(tag,filename)
     local data, instance = resolve(tag)
     if data then
         statistics.starttiming(languages)
-        instance:hyphenation(io.loaddata(filename) or "")
+        local str = io.loaddata(filename) or ""
+        collecthjcodes(data,str)
+        instance:hyphenation(str)
         statistics.stoptiming(languages)
     end
 end
 
+
 function languages.setexceptions(tag,str)
     local data, instance = resolve(tag)
     if data then
-        instance:hyphenation(strip(str)) -- we need to strip leading spaces
+        str = strip(str) -- we need to strip leading spaces
+        collecthjcodes(data,str)
+        instance:hyphenation(str)
     end
 end
 
@@ -523,7 +591,7 @@ end)
 implement {
     name      = "languagenumber",
     actions   = { languages.getnumber, context },
-    arguments = { "string", "string", "string" }
+    arguments = { "string", "string", "string", "string" }
 }
 
 implement {
@@ -554,7 +622,6 @@ implement {
     actions   = languages.setexceptions,
     arguments = { "string", "string" }
 }
-
 
 implement {
     name      = "currentprehyphenchar",

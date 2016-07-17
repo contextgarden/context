@@ -333,11 +333,11 @@ local function hyphenate(dictionary,word,n) -- odd is okay
     end
     local l = 1
     local w = { "." }
- -- local d = dictionary.codehash or lcchars[c]
+ -- local d = dictionary.codehash
     for i=1,n do
         local c = word[i]
+     -- l = l + (d[c] or 1)
         l = l + 1
-     -- w[l] = d[c] or c -- needs testing
         w[l] = lcchars[c] or c
     end
     l = l + 1

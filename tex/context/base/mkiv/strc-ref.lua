@@ -20,6 +20,7 @@ local rawget, tonumber, type = rawget, tonumber, type
 local lpegmatch = lpeg.match
 local insert, remove, copytable = table.insert, table.remove, table.copy
 local formatters = string.formatters
+local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
 
 local allocate           = utilities.storage.allocate
 local mark               = utilities.storage.mark
@@ -33,9 +34,7 @@ local trace_empty        = false  trackers.register("structures.referencing.empt
 
 local check_duplicates   = true
 
-directives.register("structures.referencing.checkduplicates", function(v)
-    check_duplicates = v
-end)
+directives.register("structures.referencing.checkduplicates", function(v) check_duplicates = v end)
 
 local report_references  = logs.reporter("references")
 local report_unknown     = logs.reporter("references","unknown")
@@ -580,13 +579,24 @@ end)
 
 -- urls
 
-local urls      = references.urls or { }
-references.urls = urls
-local urldata   = urls.data or { }
-urls.data       = urldata
+local urls       = references.urls or { }
+references.urls  = urls
+local urldata    = urls.data or { }
+urls.data        = urldata
+
+local p_untexurl = Cs ( (
+    P("\\")/"" * (P("%")/"%%" + P(1))
+  + P(" ")/"%%20"
+  + P(1)
+)^1 )
+
+function urls.untex(url)
+    return lpegmatch(p_untexurl,url) or url
+end
 
 function urls.define(name,url,file,description)
     if name and name ~= "" then
+     -- url = lpegmatch(replacer,url)
         urldata[name] = { url or "", file or "", description or url or file or ""}
     end
 end

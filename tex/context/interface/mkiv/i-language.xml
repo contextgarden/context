@@ -40,6 +40,10 @@
                 <cd:parameter name="patterns">
                     <cd:constant type="cd:file"/>
                 </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
                 <cd:parameter name="lefthyphenmin">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
@@ -127,7 +131,7 @@
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
-            
+
     <cd:command name="doiflanguageelse" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-language"/>
@@ -143,7 +147,7 @@
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
-            
+
     <cd:command name="doifpatternselse" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-language"/>

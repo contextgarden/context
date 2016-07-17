@@ -278,7 +278,11 @@
   {\globalpushmacro\currentdelimitedtext     % can we combine these two
    \globalpushmacro\currentdelimitedlanguage
    \edef\currentdelimitedtext{#1}%
-   \edef\currentdelimitedlanguage{#2}%
+   \edef\m_delimited_argument{#2}%
+   \doiflanguageelse\m_delimited_argument
+     {\let\currentdelimitedlanguage\m_delimited_argument
+      \let\m_delimited_argument\empty}%
+     {\let\currentdelimitedlanguage\empty}%
    \setlanguageparameter\delimitedtextparameter
    \let\currentparentdelimitedtext\currentdelimitedtext
    \global\advance\c_typo_delimited_nesting\plusone
@@ -399,14 +403,19 @@
      \blank[\p_delimited_spacebefore]%
    \fi
    \delimitedtextparameter\c!before
-   \edef\m_typo_delimited_narrower{#1}%
-   \ifx\m_typo_delimited_narrower\empty
+   \iffirstargument
+     \edef\m_delimited_argument{#1}%
+   \fi
+   \ifx\m_delimited_argument\empty
+     \let\m_delimited_argument\m_delimited_argument
+   \fi
+   \ifx\m_delimited_argument\empty
      \endgraf
      \doadaptleftskip {\delimitedtextparameter\c!leftmargin}%
      \doadaptrightskip{\delimitedtextparameter\c!rightmargin}%
      \let\typo_delimited_stop_par_indeed\endgraf
    \else % backward compatible direct directive
-     \startnarrower[#1]%
+     \startnarrower[\m_delimited_argument]%
      \let\typo_delimited_stop_par_indeed\stopnarrower
    \fi
    % so far

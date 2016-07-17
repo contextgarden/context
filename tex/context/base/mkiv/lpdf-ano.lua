@@ -25,7 +25,8 @@ local trace_references        = false  trackers.register("references.references"
 local trace_destinations      = false  trackers.register("references.destinations", function(v) trace_destinations = v end)
 local trace_bookmarks         = false  trackers.register("references.bookmarks",    function(v) trace_bookmarks    = v end)
 
-local log_destinations        = false  directives.register("destinations.log",      function(v) log_destinations   = v end)
+local log_destinations        = false  directives.register("destinations.log",     function(v) log_destinations = v end)
+local untex_urls              = true   directives.register("references.untexurls", function(v) untex_urls       = v end)
 
 local report_reference        = logs.reporter("backend","references")
 local report_destination      = logs.reporter("backend","destinations")
@@ -579,9 +580,14 @@ local function pdffilelink(filename,destination,page,actions)
     }
 end
 
+local untex = references.urls.untex
+
 local function pdfurllink(url,destination,page)
     if not url or url == "" then
         return false
+    end
+    if untex_urls then
+        url = untex(url) -- last minute cleanup of \* and spaces
     end
     if destination and destination ~= "" then
         url = url .. "#" .. destination

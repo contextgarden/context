@@ -24,6 +24,7 @@
 
 \registerctxluafile{lang-ini}{1.001}
 \registerctxluafile{lang-def}{1.001}
+\registerctxluafile{lang-cnt}{1.001}
 
 \unprotect
 
@@ -458,6 +459,7 @@
         {\currentlanguage}%
         {\defaultlanguage\currentlanguage}%
         {\languageparameter\s!patterns}%
+        {\languageparameter\c!factor}%
       \relax
    \normallanguage\csname\??languagenumbers\currentlanguage\endcsname}
 
@@ -798,6 +800,9 @@
    \fi
    \clf_setlanguageexceptions{\askedlanguage}{#2}%
    \endgroup}
+
+\unexpanded\def\hyphenation
+  {\clf_setlanguageexceptions{\currentlanguage}}
 
 %D For the moment here:
 
