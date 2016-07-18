@@ -372,7 +372,11 @@
      \doifelseassignment{#2}
        {\definelayouttarget[#1][#2]}
        {\setevalue{\??layoutpaper#1}{#2}%
-        \setevalue{\??layoutprint#1}{#3}}%
+        \ifthirdargument
+          \setevalue{\??layoutprint#1}{#3}%
+        \else
+          \setevalue{\??layoutprint#1}{#2}%
+        \fi}%
    \fi}
 
 \appendtoks
@@ -447,15 +451,12 @@
 \let\setuppaper\page_paper_setup_size_settings
 
 \unexpanded\def\adaptpapersize
-  {\global\let\page_paper_reinstate\page_paper_reinstate_indeed
+  {\glet\page_paper_reinstate\page_paper_restore
    \setuppapersize}
-
-\unexpanded\def\page_paper_reinstate_indeed
-  {\page_paper_restore
-   \global\let\page_paper_reinstate\relax}
 
 \appendtoks
     \page_paper_reinstate
+    \global\let\page_paper_reinstate\relax
 \to \everyaftershipout
 
 \unexpanded\def\page_paper_set_restore#1#2%

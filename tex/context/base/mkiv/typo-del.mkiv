@@ -279,11 +279,29 @@
    \globalpushmacro\currentdelimitedlanguage
    \edef\currentdelimitedtext{#1}%
    \edef\m_delimited_argument{#2}%
-   \doiflanguageelse\m_delimited_argument
-     {\let\currentdelimitedlanguage\m_delimited_argument
-      \let\m_delimited_argument\empty}%
-     {\let\currentdelimitedlanguage\empty}%
-   \setlanguageparameter\delimitedtextparameter
+   \expandafter\splitstring\m_delimited_argument\at:\to\outerdelimitedlanguage\and\innerdelimitedlanguage
+   \edef\m_delimited_argument_checked{\outerdelimitedlanguage:}%
+   \ifx\m_delimited_argument\m_delimited_argument_checked
+     \let\currentdelimitedlanguage\empty
+     \setlanguageparameter\delimitedtextparameter
+   \else
+     \ifx\innerdelimitedlanguage\empty
+       \let\currentdelimitedlanguage\empty
+     \else
+       \doiflanguageelse\innerdelimitedlanguage
+         {\let\currentdelimitedlanguage\innerdelimitedlanguage
+          \let\m_delimited_argument\empty}%
+         {\let\currentdelimitedlanguage\empty}%
+     \fi
+     \ifx\outerdelimitedlanguage\empty
+       \setlanguageparameter\delimitedtextparameter
+     \else
+       \doiflanguageelse\outerdelimitedlanguage
+         {\let\currentlanguage\outerdelimitedlanguage
+          \let\m_delimited_argument\empty}%
+         {\setlanguageparameter\delimitedtextparameter}%
+     \fi
+   \fi
    \let\currentparentdelimitedtext\currentdelimitedtext
    \global\advance\c_typo_delimited_nesting\plusone
    \edef\delimitedtextlevel{\number\c_typo_delimited_nesting}%
@@ -379,15 +397,31 @@
    \delimitedtextparameter\c!right
    \dostoptagged}
 
+\def\typo_delimited_show_language_indeed#1#2%
+  {\begingroup
+   \infofont
+   \setbox\scratchbox\hpack{\lower\strutht\hbox to \zeropoint{\darkred#1\currentlanguage:\currentdelimitedlanguage#2}}%
+   \vsmashbox\scratchbox
+   \box\scratchbox
+   \endgroup}
+
+\let\typo_delimited_show_language\gobbletwoarguments
+
+\installtextracker{delimited.language}
+  {\let\typo_delimited_show_language\typo_delimited_show_language_indeed}
+  {\let\typo_delimited_show_language\gobbletwoarguments}
+
 \def\typo_delimited_start_content
   {\dostarttagged\t!delimitedcontent\empty
    \begingroup
    \douselanguageparameter\currentdelimitedlanguage
+   \typo_delimited_show_language<\hss
    \ignorespaces}
 
 \def\typo_delimited_stop_content
   {\removeunwantedspaces
    \removelastskip % redundant
+   \typo_delimited_show_language\hss<%
    \endgroup
    \dostoptagged}
 
