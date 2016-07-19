@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['page-str'] = {
 
 -- streams -> managers.streams
 
--- work in progresss .. unfinished
+-- work in progresss .. unfinished .. non-optimized
 
 local concat, insert, remove = table.concat, table.insert, table.remove
 
@@ -20,11 +20,11 @@ local implement         = interfaces.implement
 
 local nodecodes         = nodes.nodecodes
 
-local slide_node_list   = node.slide
-local write_node        = node.write
-local flush_node        = node.flush
-local copy_node_list    = node.copy_list
-local vpack_node_list   = node.vpack
+local slide_node_list   = nodes.slide
+local write_node        = nodes.write
+local flush_node        = nodes.flush
+local copy_node_list    = nodes.copy_list
+local vpack_node_list   = nodes.vpack
 
 local settings_to_array = utilities.parsers.settings_to_array
 

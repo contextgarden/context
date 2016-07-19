@@ -1673,7 +1673,7 @@ tail node.
     node.slide(<node> n)
 \stopfunctioncall
 
-\subsubsection{\type {node.check_discretionaries}}
+\subsubsection{\type {node.check_discretionary} and \type {node.check_discretionaries}}
 
 When you fool around with disc nodes you need to be aware of the fact that they
 have a special internal data structure. As long as you reassign the fields when
@@ -1683,8 +1683,12 @@ the linebreak routien kicks in. You can call this function to check the list for
 issues with disc nodes.
 
 \startfunctioncall
-node.check_discretionaries(<node> n)
+node.check_discretionary(<node> n)
+node.check_discretionaries(<node> head)
 \stopfunctioncall
+
+The plural variant runs over all disc nodes in a list, the singular variant
+checks one node only (it also checks if the node is a disc node).
 
 \subsubsection{\type {node.family_font}}
 

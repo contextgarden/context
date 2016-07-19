@@ -30,7 +30,6 @@ local getfield         = nuts.getfield
 local setfield         = nuts.setfield
 local getlist          = nuts.getlist
 local setlist          = nuts.setlist
-local flushnode        = nuts.flush
 local removenode       = nuts.remove
 local traverse         = nuts.traverse
 local traverse_id      = nuts.traverse_id
