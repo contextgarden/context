@@ -45,9 +45,9 @@ local setprev            = nuts.setprev
 local setboth            = nuts.setboth
 local setsubtype         = nuts.setsubtype
 
-local copy_node          = nuts.copy
-local copy_nodelist      = nuts.copy_list
-local free_node          = nuts.free
+local copy_node          = nuts.copy_node
+local copy_node_list     = nuts.copy_list
+local flush_node         = nuts.flush_node
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
@@ -156,7 +156,7 @@ methods[6] = function(head,start,stop,settings,kern)
             else
                 setprev(start)
                 setnext(stop)
-                setdisc(d,start,nil,copy_nodelist(start))
+                setdisc(d,start,nil,copy_node_list(start))
             end
             stop = r
         end
@@ -235,7 +235,7 @@ methods[5] = function(head,start,stop,settings) -- x => p q r
         end
         setdisc(start,left,right,middle)
         setfield(start,"attr",attr) -- todo: critical only -- just a copy will do
-        free_node(tmp)
+        flush_node(tmp)
         insert_break(head,start,start,10000,10000)
     end
     return head, start

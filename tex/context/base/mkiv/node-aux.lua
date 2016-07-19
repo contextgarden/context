@@ -45,7 +45,7 @@ local setprev            = nuts.setprev
 
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
-local free_node          = nuts.free
+local flush_node         = nuts.flush
 local hpack_nodes        = nuts.hpack
 local unset_attribute    = nuts.unset_attribute
 local first_glyph        = nuts.first_glyph
@@ -120,7 +120,7 @@ end
 function nuts.takelist(n)
     local l = getlist(n)
     setlist(n)
-    free_node(n)
+    flush_node(n)
     return l
 end
 
@@ -133,7 +133,7 @@ local function repackhlist(list,...)
     local temp, b = hpack_nodes(list,...)
     list = getlist(temp)
     setlist(temp)
-    free_node(temp)
+    flush_node(temp)
     return list, b
 end
 
@@ -454,7 +454,7 @@ local function rehpack(n,width)
     setfield(n,"glue_sign", getfield(temp,"glue_sign"))
     setfield(n,"glue_order",getfield(temp,"glue_order"))
     setlist(temp)
-    free_node(temp)
+    flush_node(temp)
     return n
 end
 

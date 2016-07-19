@@ -8,27 +8,27 @@ if not modules then modules = { } end modules ['scrn-hlp'] = {
 
 local tonumber = tonumber
 
-local help           = { }
-interactions.help    = help
+local help            = { }
+interactions.help     = help
 
-local context        = context
-local implement      = interfaces.implement
+local context         = context
+local implement       = interfaces.implement
 
-local formatters     = string.formatters
+local formatters      = string.formatters
 
-local a_help         = attributes.private("help")
+local a_help          = attributes.private("help")
 
-local copy_nodelist  = node.copy_list
-local hpack_nodelist = node.hpack
+local copy_node_list  = node.copy_list
+local hpack_node_list = node.hpack
 
-local register_list  = nodes.pool.register
+local register_list   = nodes.pool.register
 
-local texgetbox      = tex.getbox
+local texgetbox       = tex.getbox
 
-local nodecodes      = nodes.nodecodes
+local nodecodes       = nodes.nodecodes
 
-local hlist_code     = nodecodes.hlist
-local vlist_code     = nodecodes.vlist
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
 
 local data, references = { }, { }
 
@@ -59,7 +59,7 @@ local function register(specification)
             interactions.javascripts.setpreamble("HelpTexts",helpscript)
             helpscript = false
         end
-        local b = copy_nodelist(texgetbox(box))
+        local b = copy_node_list(texgetbox(box))
         register_list(b)
         data[number] = b
         if name and name ~= "" then
@@ -128,7 +128,7 @@ implement {
             for i=1,#used do
                 local d = data[used[i]]
                 if d and not done[d] then
-                    local box = hpack_nodelist(copy_nodelist(d))
+                    local box = hpack_node_list(copy_node_list(d))
                     context(false,box)
                     done[d] = true
                 else

@@ -72,7 +72,7 @@ local setsubtype       = nuts.setsubtype
 
 local copy_node_list   = nuts.copy_list
 local hpack_node_list  = nuts.hpack
-local free_node_list   = nuts.flush_list
+local flush_node_list  = nuts.flush_list
 local traverse_nodes   = nuts.traverse
 local traverse_id      = nuts.traverse_id
 local protect_glyphs   = nuts.protect_glyphs
@@ -270,7 +270,7 @@ function step_tracers.reset()
     for i=1,#collection do
         local c = collection[i]
         if c then
-            free_node_list(c)
+            flush_node_list(c)
         end
     end
     collection, messages = { }, { }

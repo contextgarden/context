@@ -263,7 +263,7 @@ actions[v_default] = function(head,setting)
 -- nodes.handlers.characters(g)
 -- nodes.handlers.protectglyphs(g)
 -- setchar(current,g.char)
--- nodes.free(g)
+-- nodes.flush_node(g)
 
                     -- can be a helper
                     if ca and ca > 0 then

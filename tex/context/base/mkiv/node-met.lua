@@ -60,60 +60,62 @@ end
 -- We start with some helpers and provide all relevant basic functions in the
 -- node namespace as well.
 
-nodes                      = nodes or { }
-local nodes                = nodes
+nodes                       = nodes or { }
+local nodes                 = nodes
 
------ gonuts               = type(node.direct) == "table"
------.gonuts               = gonuts
+----- gonuts                = type(node.direct) == "table"
+-----.gonuts                = gonuts
 
-local nodecodes            = nodes.nodecodes
-local hlist_code           = nodecodes.hlist
-local vlist_code           = nodecodes.vlist
+local nodecodes             = nodes.nodecodes
+local hlist_code            = nodecodes.hlist
+local vlist_code            = nodecodes.vlist
 
-nodes.tostring             = node.tostring or tostring
-nodes.copy                 = node.copy
-nodes.copy_list            = node.copy_list
-nodes.delete               = node.delete
-nodes.dimensions           = node.dimensions
-nodes.end_of_math          = node.end_of_math
-nodes.flush_list           = node.flush_list
-nodes.flush_node           = node.flush_node
-nodes.free                 = node.free
-nodes.insert_after         = node.insert_after
-nodes.insert_before        = node.insert_before
-nodes.hpack                = node.hpack
-nodes.new                  = node.new
-nodes.tail                 = node.tail
-nodes.traverse             = node.traverse
-nodes.traverse_id          = node.traverse_id
-nodes.traverse_char        = node.traverse_char
-nodes.slide                = node.slide
-nodes.vpack                = node.vpack
-nodes.fields               = node.fields
-nodes.is_node              = node.is_node
-nodes.setglue              = node.setglue
+nodes.tostring              = node.tostring or tostring
+nodes.copy                  = node.copy
+nodes.copy_node             = node.copy
+nodes.copy_list             = node.copy_list
+nodes.delete                = node.delete
+nodes.dimensions            = node.dimensions
+nodes.end_of_math           = node.end_of_math
+nodes.flush                 = node.flush_node
+nodes.flush_node            = node.flush_node
+nodes.flush_list            = node.flush_list
+nodes.free                  = node.free
+nodes.insert_after          = node.insert_after
+nodes.insert_before         = node.insert_before
+nodes.hpack                 = node.hpack
+nodes.new                   = node.new
+nodes.tail                  = node.tail
+nodes.traverse              = node.traverse
+nodes.traverse_id           = node.traverse_id
+nodes.traverse_char         = node.traverse_char
+nodes.slide                 = node.slide
+nodes.vpack                 = node.vpack
+nodes.fields                = node.fields
+nodes.is_node               = node.is_node
+nodes.setglue               = node.setglue
 
-nodes.first_glyph          = node.first_glyph
-nodes.has_glyph            = node.has_glyph or node.first_glyph
+nodes.first_glyph           = node.first_glyph
+nodes.has_glyph             = node.has_glyph or node.first_glyph
 
-nodes.current_attr         = node.current_attr
-nodes.do_ligature_n        = node.do_ligature_n
-nodes.has_field            = node.has_field
-nodes.last_node            = node.last_node
-nodes.usedlist             = node.usedlist
-nodes.protrusion_skippable = node.protrusion_skippable
-nodes.write                = node.write
+nodes.current_attr          = node.current_attr
+nodes.has_field             = node.has_field
+nodes.last_node             = node.last_node
+nodes.usedlist              = node.usedlist
+nodes.protrusion_skippable  = node.protrusion_skippable
+nodes.check_discretionaries = node.check_discretionaries
+nodes.write                 = node.write
 
-nodes.has_attribute        = node.has_attribute
-nodes.set_attribute        = node.set_attribute
-nodes.unset_attribute      = node.unset_attribute
+nodes.has_attribute         = node.has_attribute
+nodes.set_attribute         = node.set_attribute
+nodes.unset_attribute       = node.unset_attribute
 
-nodes.protect_glyphs       = node.protect_glyphs
-nodes.protect_glyph        = node.protect_glyph
-nodes.unprotect_glyphs     = node.unprotect_glyphs
-nodes.kerning              = node.kerning
-nodes.ligaturing           = node.ligaturing
-nodes.mlist_to_hlist       = node.mlist_to_hlist
+nodes.protect_glyphs        = node.protect_glyphs
+nodes.protect_glyph         = node.protect_glyph
+nodes.unprotect_glyphs      = node.unprotect_glyphs
+nodes.kerning               = node.kerning
+nodes.ligaturing            = node.ligaturing
+nodes.mlist_to_hlist        = node.mlist_to_hlist
 
 if LUATEXVERSION < 0.97 then
 
@@ -211,7 +213,7 @@ nodes.getbox            = node.getbox  or tex.getbox
 nodes.setbox            = node.setbox  or tex.setbox
 nodes.getskip           = node.getskip or tex.get
 
-local n_free_node       = nodes.free
+local n_flush_node      = nodes.flush
 local n_copy_node       = nodes.copy
 local n_copy_list       = nodes.copy_list
 local n_find_tail       = nodes.tail
@@ -227,7 +229,7 @@ local function remove(head,current,free_too)
     if not t then
         -- forget about it
     elseif free_too then
-        n_free_node(t)
+        n_flush_node(t)
         t = nil
     else
         n_setboth(t)
@@ -264,10 +266,10 @@ function nodes.replace(head,current,new) -- no head returned if false
         if head == current then
             head = new
         end
-        n_free_node(current)
+        n_flush_node(current)
         return head, new
     else
-        n_free_node(current)
+        n_flush_node(current)
         return new
     end
 end
@@ -464,7 +466,7 @@ metatable.__sub = function(first,second)
         local tail = n_find_tail(first)
         for i=1,second do
             local prev = n_getprev(tail)
-            n_free_node(tail) -- can become flushlist/flushnode
+            n_flush_node(tail) -- can become flushlist/flushnode
             if prev then
                 tail = prev
             else
@@ -499,7 +501,7 @@ metatable.__add = function(first,second)
         local head = second
         for i=1,first do
             local second = n_getnext(head)
-            n_free_node(head) -- can become flushlist/flushnode
+            n_flush_node(head) -- can become flushlist/flushnode
             if second then
                 head = second
             else

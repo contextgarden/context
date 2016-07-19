@@ -73,9 +73,9 @@ local setnext            = nuts.setnext
 local setlist            = nuts.setlist
 
 local find_node_tail     = nuts.tail
-local free_node          = nuts.free
-local free_nodelist      = nuts.flush_list
-local copy_nodelist      = nuts.copy_list
+local flush_node         = nuts.flush_node
+local flush_node_list    = nuts.flush_list
+local copy_node_list     = nuts.copy_list
 local traverse_nodes     = nuts.traverse
 local traverse_ids       = nuts.traverse_id
 local hpack_nodes        = nuts.hpack
@@ -351,7 +351,7 @@ function splitters.split(head)
     local function flush() -- we can move this
         local font = getfont(start)
         local last = getnext(stop)
-        local list = last and copy_nodelist(start,last) or copy_nodelist(start)
+        local list = last and copy_node_list(start,last) or copy_node_list(start)
         local n = #cache + 1
         if encapsulate then
             local user_one = new_usernumber(splitter_one,n)
@@ -577,7 +577,7 @@ local function doit(word,list,best,width,badness,line,set,listdir)
             local featurenumber = features[best] -- not ok probably
             if featurenumber then
                 noftries = noftries + 1
-                local first = copy_nodelist(original)
+                local first = copy_node_list(original)
                 if not trace_colors then
                     for n in traverse_nodes(first) do -- maybe fast force so no attr needed
                         setattr(n,0,featurenumber) -- this forces dynamics
@@ -609,7 +609,7 @@ first = tonut(first)
                 if getid(first) == whatsit_code then
                     local temp = first
                     first = getnext(first)
-                    free_node(temp)
+                    flush_node(temp)
                 end
                 local last = find_node_tail(first)
                 -- replace [u]h->t by [u]first->last
@@ -633,14 +633,14 @@ first = tonut(first)
                         setnext(t)
                     end
                     setnext(last)
-                    free_nodelist(first)
+                    flush_node_list(first)
                 else
                     if trace_optimize then
                         report_optimizers("line %a, set %a, badness before: %a, after %a, criterium %a, verdict %a",line,set or "?",badness,b,criterium,"continue")
                     end
                     -- free old h->t
                     setnext(t)
-                    free_nodelist(h) -- somehow fails
+                    flush_node_list(h) -- somehow fails
                     if not encapsulate then
                         word[2] = first
                         word[3] = last
@@ -787,9 +787,9 @@ function splitters.optimize(head)
                     local bb, base
                     for i=1,max do
                         if base then
-                            free_nodelist(base)
+                            flush_node_list(base)
                         end
-                        base = copy_nodelist(list)
+                        base = copy_node_list(list)
                         local words = collect_words(base) -- beware: words is adapted
                         for j=i,max do
                             local temp, done, changes, b = optimize(words,base,j,width,badness,line,set,dir)
@@ -815,7 +815,7 @@ function splitters.optimize(head)
                             break
                         end
                     end
-                    free_nodelist(base)
+                    flush_node_list(base)
                 end
                 local words = collect_words(list)
                 for best=lastbest or 1,max do
@@ -843,7 +843,7 @@ function splitters.optimize(head)
     end
     for i=1,nc do
         local ci = cache[i]
-        free_nodelist(ci.original)
+        flush_node_list(ci.original)
     end
     cache = { }
     tex.hbadness = tex_hbadness

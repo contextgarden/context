@@ -91,7 +91,7 @@ local line_code           = listcodes.line
 local new_rule            = nodepool.rule
 local new_kern            = nodepool.kern
 
-local free_node           = nuts.free
+local flush_node          = nuts.flush
 
 local tosequence          = nodes.tosequence
 
@@ -121,7 +121,7 @@ local function vlist_dimensions(start,stop) -- also needs the stretch and so
     local h = getfield(v,"height")
     local d = getfield(v,"depth")
     setlist(v) -- not needed
-    free_node(v)
+    flush_node(v)
     if temp then
         setnext(stop,temp)
     end

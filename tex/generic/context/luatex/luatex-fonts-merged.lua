@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/18/16 16:46:35
+-- merge date  : 07/19/16 20:34:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -4729,7 +4729,7 @@ end
 nodes.nodecodes=nodecodes
 nodes.glyphcodes=glyphcodes
 nodes.disccodes=disccodes
-local free_node=node.free
+local flush_node=node.flush_node
 local remove_node=node.remove
 local new_node=node.new
 local traverse_id=node.traverse_id
@@ -4749,7 +4749,7 @@ function nodes.remove(head,current,free_too)
   head,current=remove_node(head,current)
   if t then
     if free_too then
-      free_node(t)
+      flush_node(t)
       t=nil
     else
       t.next,t.prev=nil,nil
@@ -4773,12 +4773,14 @@ nodes.getattr=getfield
 nodes.setattr=setfield
 nodes.tostring=node.tostring or tostring
 nodes.copy=node.copy
+nodes.copy_node=node.copy
 nodes.copy_list=node.copy_list
 nodes.delete=node.delete
 nodes.dimensions=node.dimensions
 nodes.end_of_math=node.end_of_math
 nodes.flush_list=node.flush_list
 nodes.flush_node=node.flush_node
+nodes.flush=node.flush_node
 nodes.free=node.free
 nodes.insert_after=node.insert_after
 nodes.insert_before=node.insert_before
@@ -4792,7 +4794,6 @@ nodes.vpack=node.vpack
 nodes.first_glyph=node.first_glyph
 nodes.has_glyph=node.has_glyph or node.first_glyph
 nodes.current_attr=node.current_attr
-nodes.do_ligature_n=node.do_ligature_n
 nodes.has_field=node.has_field
 nodes.last_node=node.last_node
 nodes.usedlist=node.usedlist
@@ -4879,9 +4880,12 @@ nuts.insert_before=direct.insert_before
 nuts.insert_after=direct.insert_after
 nuts.delete=direct.delete
 nuts.copy=direct.copy
+nuts.copy_node=direct.copy
 nuts.copy_list=direct.copy_list
 nuts.tail=direct.tail
 nuts.flush_list=direct.flush_list
+nuts.flush_node=direct.flush_node
+nuts.flush=direct.flush
 nuts.free=direct.free
 nuts.remove=direct.remove
 nuts.is_node=direct.is_node
@@ -18101,7 +18105,7 @@ local copy_node=nuts.copy
 local copy_node_list=nuts.copy_list
 local find_node_tail=nuts.tail
 local flush_node_list=nuts.flush_list
-local free_node=nuts.free
+local flush_node=nuts.flush_node
 local end_of_math=nuts.end_of_math
 local traverse_nodes=nuts.traverse
 local traverse_id=nuts.traverse_id
@@ -18235,7 +18239,7 @@ end
 local function flattendisk(head,disc)
   local _,_,replace,_,_,replacetail=getdisc(disc,true)
   setfield(disc,"replace",nil)
-  free_node(disc)
+  flush_node(disc)
   if head==disc then
     local next=getnext(disc)
     if replace then
@@ -21146,9 +21150,9 @@ local setprop=nuts.setprop
 local ischar=nuts.is_char
 local insert_node_after=nuts.insert_after
 local copy_node=nuts.copy
-local free_node=nuts.free
 local remove_node=nuts.remove
 local flush_list=nuts.flush_list
+local flush_node=nuts.flush_node
 local copyinjection=nodes.injections.copy 
 local unsetvalue=attributes.unsetvalue
 local fontdata=fonts.hashes.identifiers
@@ -21658,7 +21662,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
     if current==stop then
       stop=getprev(stop)
       head=remove_node(head,current)
-      free_node(current)
+      flush_node(current)
       return head,stop,nbspaces
     else
       nbspaces=nbspaces+1
@@ -21696,7 +21700,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                 setchar(current,getchar(tempcurrent)) 
                 local freenode=getnext(current)
                 setlink(current,tmp)
-                free_node(freenode)
+                flush_node(freenode)
                 flush_list(tempcurrent)
                 if changestop then
                   stop=current
@@ -21933,7 +21937,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
   if getchar(base)==c_nbsp then
     nbspaces=nbspaces-1
     head=remove_node(head,base)
-    free_node(base)
+    flush_node(base)
   end
   return head,stop,nbspaces
 end
@@ -22301,7 +22305,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces)
     if current==stop then
       stop=getprev(stop)
       head=remove_node(head,current)
-      free_node(current)
+      flush_node(current)
       return head,stop,nbspaces
     else
       nbspaces=nbspaces+1
@@ -22486,7 +22490,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces)
   if getchar(base)==c_nbsp then
     nbspaces=nbspaces-1
     head=remove_node(head,base)
-    free_node(base)
+    flush_node(base)
   end
   return head,stop,nbspaces
 end
@@ -25717,7 +25721,7 @@ local fonts=fonts
 local nodes=nodes
 local nuts=nodes.nuts 
 local traverse_id=nuts.traverse_id
-local free_node=nuts.free
+local flush_node=nuts.flush_node
 local glyph_code=nodes.nodecodes.glyph
 local disc_code=nodes.nodecodes.disc
 local tonode=nuts.tonode
@@ -25841,7 +25845,7 @@ function nodes.handlers.nodepass(head)
             end
           end
         end
-        free_node(r)
+        flush_node(r)
       end
     end
     for d in traverse_id(disc_code,nuthead) do

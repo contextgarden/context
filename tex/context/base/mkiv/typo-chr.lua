@@ -93,7 +93,7 @@ local glyph_code      = nodecodes.glyph
 local localpar_code   = nodecodes.localpar
 
 local texnest         = tex.nest
-local free_node       = node.free
+local flush_node      = node.flush_node
 local flush_list      = node.flush_list
 
 local settexattribute = tex.setattribute
@@ -134,7 +134,7 @@ local actions = {
     remove = function(specification)
         local n = pickup()
         if n then
-            free_node(n)
+            flush_node(n)
         end
     end,
     push = function(specification)

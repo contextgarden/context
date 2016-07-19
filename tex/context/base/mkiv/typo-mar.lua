@@ -63,7 +63,7 @@ local tonut              = nuts.tonut
 
 local hpack_nodes        = nuts.hpack
 local traverse_id        = nuts.traverse_id
-local free_node_list     = nuts.flush_list
+local flush_node_list    = nuts.flush_list
 local linked_nodes       = nuts.linked
 
 local getfield           = nuts.getfield
@@ -248,7 +248,7 @@ function margins.save(t)
                 local si = store[i]
                 if si.name == name then
                     local s = remove(store,i)
-                    free_node_list(s.box)
+                    flush_node_list(s.box)
                 end
             end
         else
@@ -256,7 +256,7 @@ function margins.save(t)
                 local si = store[i]
                 if si.name == name then
                     local s = remove(store,i)
-                    free_node_list(s.box)
+                    flush_node_list(s.box)
                 end
             end
         end

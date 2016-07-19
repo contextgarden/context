@@ -158,49 +158,51 @@ end
 
 -- helpers
 
-nuts.tostring             = direct.tostring
-nuts.copy                 = direct.copy
-nuts.copy_list            = direct.copy_list
-nuts.delete               = direct.delete
-nuts.dimensions           = direct.dimensions
-nuts.end_of_math          = direct.end_of_math
-nuts.flush_list           = direct.flush_list
-nuts.flush_node           = direct.flush_node
-nuts.free                 = direct.free
-nuts.insert_after         = direct.insert_after
-nuts.insert_before        = direct.insert_before
-nuts.hpack                = direct.hpack
-nuts.new                  = direct.new
-nuts.tail                 = direct.tail
-nuts.traverse             = direct.traverse
-nuts.traverse_id          = direct.traverse_id
-nuts.traverse_char        = direct.traverse_char
-nuts.slide                = direct.slide
-nuts.writable_spec        = direct.writable_spec
-nuts.vpack                = direct.vpack
-nuts.is_node              = direct.is_node
-nuts.is_direct            = direct.is_direct
-nuts.is_nut               = direct.is_direct
-nuts.first_glyph          = direct.first_glyph
-nuts.has_glyph            = direct.has_glyph or direct.first_glyph
+nuts.tostring              = direct.tostring
+nuts.copy                  = direct.copy
+nuts.copy_node             = direct.copy
+nuts.copy_list             = direct.copy_list
+nuts.delete                = direct.delete
+nuts.dimensions            = direct.dimensions
+nuts.end_of_math           = direct.end_of_math
+nuts.flush                 = direct.flush_node
+nuts.flush_node            = direct.flush_node
+nuts.flush_list            = direct.flush_list
+nuts.free                  = direct.free
+nuts.insert_after          = direct.insert_after
+nuts.insert_before         = direct.insert_before
+nuts.hpack                 = direct.hpack
+nuts.new                   = direct.new
+nuts.tail                  = direct.tail
+nuts.traverse              = direct.traverse
+nuts.traverse_id           = direct.traverse_id
+nuts.traverse_char         = direct.traverse_char
+nuts.slide                 = direct.slide
+nuts.writable_spec         = direct.writable_spec
+nuts.vpack                 = direct.vpack
+nuts.is_node               = direct.is_node
+nuts.is_direct             = direct.is_direct
+nuts.is_nut                = direct.is_direct
+nuts.first_glyph           = direct.first_glyph
+nuts.has_glyph             = direct.has_glyph or direct.first_glyph
 
-nuts.current_attr         = direct.current_attr
-nuts.do_ligature_n        = direct.do_ligature_n
-nuts.has_field            = direct.has_field
-nuts.last_node            = direct.last_node
-nuts.usedlist             = direct.usedlist
-nuts.protrusion_skippable = direct.protrusion_skippable
-nuts.write                = direct.write
+nuts.current_attr          = direct.current_attr
+nuts.has_field             = direct.has_field
+nuts.last_node             = direct.last_node
+nuts.usedlist              = direct.usedlist
+nuts.protrusion_skippable  = direct.protrusion_skippable
+nuts.check_discretionaries = direct.check_discretionaries
+nuts.write                 = direct.write
 
-nuts.has_attribute        = direct.has_attribute
-nuts.set_attribute        = direct.set_attribute
-nuts.unset_attribute      = direct.unset_attribute
+nuts.has_attribute         = direct.has_attribute
+nuts.set_attribute         = direct.set_attribute
+nuts.unset_attribute       = direct.unset_attribute
 
-nuts.protect_glyphs       = direct.protect_glyphs
-nuts.protect_glyph        = direct.protect_glyph
-nuts.unprotect_glyphs     = direct.unprotect_glyphs
-nuts.ligaturing           = direct.ligaturing
-nuts.kerning              = direct.kerning
+nuts.protect_glyphs        = direct.protect_glyphs
+nuts.protect_glyph         = direct.protect_glyph
+nuts.unprotect_glyphs      = direct.unprotect_glyphs
+nuts.ligaturing            = direct.ligaturing
+nuts.kerning               = direct.kerning
 
 if not direct.mlist_to_hlist then -- needed
 
@@ -223,46 +225,46 @@ if LUATEXVERSION < 0.97 then
 
 end
 
-local getglue      = direct.getglue
-local setglue      = direct.setglue
-local is_zero_glue = direct.is_zero_glue
+local getglue              = direct.getglue
+local setglue              = direct.setglue
+local is_zero_glue         = direct.is_zero_glue
 
-nuts.effective_glue = direct.effective_glue
-nuts.getglue        = getglue
-nuts.setglue        = setglue
-nuts.is_zero_glue   = is_zero_glue
+nuts.effective_glue        = direct.effective_glue
+nuts.getglue               = getglue
+nuts.setglue               = setglue
+nuts.is_zero_glue          = is_zero_glue
 
-nuts.getdisc    = direct.getdisc
-nuts.setdisc    = direct.setdisc
-nuts.setchar    = direct.setchar
-nuts.setnext    = direct.setnext
-nuts.setprev    = direct.setprev
-nuts.setboth    = direct.setboth
-nuts.getboth    = direct.getboth
-nuts.setlink    = direct.setlink
-nuts.setlist    = direct.setlist
-nuts.setleader  = direct.setleader
-nuts.setsubtype = direct.setsubtype
+nuts.getdisc               = direct.getdisc
+nuts.setdisc               = direct.setdisc
+nuts.setchar               = direct.setchar
+nuts.setnext               = direct.setnext
+nuts.setprev               = direct.setprev
+nuts.setboth               = direct.setboth
+nuts.getboth               = direct.getboth
+nuts.setlink               = direct.setlink
+nuts.setlist               = direct.setlist
+nuts.setleader             = direct.setleader
+nuts.setsubtype            = direct.setsubtype
 
-nuts.is_char    = direct.is_char
-nuts.ischar     = direct.is_char
-nuts.is_glyph   = direct.is_glyph
-nuts.isglyph    = direct.is_glyph
+nuts.is_char               = direct.is_char
+nuts.ischar                = direct.is_char
+nuts.is_glyph              = direct.is_glyph
+nuts.isglyph               = direct.is_glyph
 
-local d_remove_node     = direct.remove
-local d_free_node       = direct.free
-local d_getnext         = direct.getnext
-local d_getprev         = direct.getprev
-local d_getid           = direct.getid
-local d_getlist         = direct.getlist
-local d_find_tail       = direct.tail
-local d_insert_after    = direct.insert_after
-local d_insert_before   = direct.insert_before
-local d_slide           = direct.slide
------ d_copy_node       = direct.copy
-local d_traverse        = direct.traverse
-local d_setlink         = direct.setlink
-local d_setboth         = direct.setboth
+local d_remove_node        = direct.remove
+local d_flush_node         = direct.flush_node
+local d_getnext            = direct.getnext
+local d_getprev            = direct.getprev
+local d_getid              = direct.getid
+local d_getlist            = direct.getlist
+local d_find_tail          = direct.tail
+local d_insert_after       = direct.insert_after
+local d_insert_before      = direct.insert_before
+local d_slide              = direct.slide
+----- d_copy_node          = direct.copy
+local d_traverse           = direct.traverse
+local d_setlink            = direct.setlink
+local d_setboth            = direct.setboth
 
 local function remove(head,current,free_too)
     local t = current
@@ -270,7 +272,7 @@ local function remove(head,current,free_too)
     if not t then
         -- forget about it
     elseif free_too then
-        d_free_node(t)
+        d_flush_node(t)
         t = nil
     else
         d_setboth(t) -- (t,nil,nil)
@@ -301,10 +303,10 @@ function nuts.replace(head,current,new) -- no head returned if false
         if head == current then
             head = new
         end
-        d_free_node(current)
+        d_flush_node(current)
         return head, new
     else
-        d_free_node(current)
+        d_flush_node(current)
         return new
     end
 end

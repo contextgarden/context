@@ -710,6 +710,7 @@
 
 \starttexdefinition unexpanded btx:aps:journal-volume-year
     \btxdoif {journal} {
+        \btxspace
         \btxstartstyleandcolor [aps:\s!list:journal]
             % expandedjournal abbreviatedjournal
             \btxflush{expandedjournal -> journal}
@@ -1020,7 +1021,6 @@
         \italiccorrection
     \endgroup
     \texdefinition{btx:aps:doi-url} {\texdefinition{btx:aps:publisher-wherefrom-year}}
-    \texdefinition{btx:aps:url}
     \texdefinition{btx:aps:note}
 \stopsetups
 
@@ -1037,11 +1037,10 @@
     \btxdoif {organization} {
         \btxspace
         \btxflush{organization}
-        \btxperiod
+        \btxcomma
     }
     \btxdoif {howpublished} {
-        \btxspace
-        \btxflush{howpublished}
+        \texdefinition{btx:aps:doi-url} {\btxspace\btxflush{howpublished}}
     }
     \btxleftparenthesis
     \texdefinition{btx:aps:year}

@@ -47,7 +47,7 @@ local setnext       = nuts.setnext
 local setbox        = nuts.setbox
 local setlist       = nuts.setlist
 
-local free_node     = nuts.free
+local flush_node    = nuts.flush_node
 local flush_list    = nuts.flush_list
 local copy_node     = nuts.copy
 local copy_list     = nuts.copy_list
@@ -113,7 +113,7 @@ local function hyphenatedlist(head,usecolor)
             if next then
                 setlink(tail,next)
             end
-         -- free_node(current)
+         -- flush_node(current)
         elseif id == vlist_code or id == hlist_code then
             hyphenatedlist(getlist(current))
         end
@@ -331,7 +331,7 @@ implement {
                     else
                         tail = prev
                     end
-                    free_node(temp)
+                    flush_node(temp)
                 end
                 -- done
                 setnext(tail)
@@ -408,7 +408,7 @@ local function setboxtonaturalwd(n)
     local old = takebox(n)
     local new = hpack(getlist(old))
     setlist(old,nil)
-    free_node(old)
+    flush_node(old)
     setbox(n,new)
 end
 

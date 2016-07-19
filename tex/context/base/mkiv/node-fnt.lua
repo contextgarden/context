@@ -65,7 +65,7 @@ local ischar            = nuts.ischar  -- checked
 local traverse_id       = nuts.traverse_id
 local traverse_char     = nuts.traverse_char
 local protect_glyph     = nuts.protect_glyph
-local free_node         = nuts.free
+local flush_node        = nuts.flush
 
 local disc_code         = nodecodes.disc
 local boundary_code     = nodecodes.boundary
@@ -329,7 +329,7 @@ function handlers.characters(head)
                     end
                 end
             end
-            free_node(r)
+            flush_node(r)
         end
     end
 

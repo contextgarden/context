@@ -41,7 +41,7 @@ local listtoutf           = nodes.listtoutf
 
 local hpack               = nuts.hpack
 local vpack               = nuts.vpack
-local freenode            = nuts.free
+local flushnode           = nuts.flush
 local concatnodes         = nuts.concat
 local slidenodes          = nuts.slide -- ok here as we mess with prev links intermediately
 
@@ -981,7 +981,7 @@ end
 local function cleanup(result)
     local discarded = result.discarded
     for i=1,#discarded do
-        freenode(discarded[i])
+        flushnode(discarded[i])
     end
     result.discarded = { }
 end

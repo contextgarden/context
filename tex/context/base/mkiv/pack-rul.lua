@@ -48,7 +48,7 @@ local getbox          = nuts.getbox
 local hpack           = nuts.hpack
 local traverse_id     = nuts.traverse_id
 local node_dimensions = nuts.dimensions
-local free_node       = nuts.free
+local flush_node      = nuts.flush
 
 local checkformath    = false
 
@@ -125,7 +125,7 @@ local function doreshapeframedbox(n)
                                 setfield(h,"glue_order",getfield(p,"glue_order"))
                                 setfield(h,"glue_sign",getfield(p,"glue_sign"))
                                 setlist(p)
-                                free_node(p)
+                                flush_node(p)
                             elseif checkformath and subtype == equation_code then
                              -- display formulas use a shift
                                 if nofnonzero == 1 then

@@ -217,12 +217,12 @@ local setprev              = nuts.setprev
 local setdisc              = nuts.setdisc
 local setsubtype           = nuts.setsubtype
 
-local slide_nodelist       = nuts.slide -- get rid of this, probably ok > 78.2
+local slide_node_list      = nuts.slide -- get rid of this, probably ok > 78.2
 local find_tail            = nuts.tail
 local new_node             = nuts.new
 local copy_node            = nuts.copy
-local flush_node           = nuts.free
-local flush_nodelist       = nuts.flush_list
+local flush_node           = nuts.flush
+local flush_node_list      = nuts.flush_list
 ----- hpack_nodes          = nuts.hpack
 local xpack_nodes          = nuts.hpack
 local replace_node         = nuts.replace
@@ -845,7 +845,7 @@ local function append_to_vlist(par, b)
             local s = d < par.line_skip_limit and new_lineskip(par.lineskip) or new_baselineskip(d)
             local head_field = par.head_field
             if head_field then
-                local n = slide_nodelist(head_field) -- todo: find_tail
+                local n = slide_node_list(head_field) -- todo: find_tail
                 setlink(n,s)
             else
                 par.head_field = s
@@ -854,7 +854,7 @@ local function append_to_vlist(par, b)
     end
     local head_field = par.head_field
     if head_field then
-        local n = slide_nodelist(head_field) -- todo: find_tail
+        local n = slide_node_list(head_field) -- todo: find_tail
         setlink(n,b)
     else
         par.head_field = b
@@ -869,7 +869,7 @@ end
 local function append_list(par, b)
     local head_field = par.head_field
     if head_field then
-        local n = slide_nodelist(head_field) -- todo: find_tail
+        local n = slide_node_list(head_field) -- todo: find_tail
         setlink(n,b)
     else
         par.head_field = b
@@ -975,7 +975,7 @@ local function initialize_line_break(head,display)
 
         prev_depth                   = texnest[texnest.ptr].prevdepth,
 
-        final_par_glue               = slide_nodelist(head), -- todo: we know tail already, slow
+        final_par_glue               = slide_node_list(head), -- todo: we know tail already, slow
 
         par_break_dir                = tex.pardir,
         line_break_dir               = tex.pardir,
@@ -1210,7 +1210,7 @@ local function post_line_break(par)
 
         if not lastnode then
             -- only at the end
-            lastnode = slide_nodelist(head) -- todo: find_tail
+            lastnode = slide_node_list(head) -- todo: find_tail
             if lastnode == par.final_par_glue then
                 lineend  = lastnode
                 lastnode = getprev(lastnode)
@@ -1233,7 +1233,7 @@ local function post_line_break(par)
                         report_parbuilders('unsupported disc at location %a',3)
                     end
                     if pre then
-                        flush_nodelist(pre)
+                        flush_node_list(pre)
                         pre = nil -- signal
                     end
                     if replace then
@@ -1244,13 +1244,13 @@ local function post_line_break(par)
                     setdisc(lastnode,pre,post,replace)
                     local pre, post, replace = getdisc(prevlast)
                     if pre then
-                        flush_nodelist(pre)
+                        flush_node_list(pre)
                     end
                     if replace then
-                        flush_nodelist(replace)
+                        flush_node_list(replace)
                     end
                     if post then
-                        flush_nodelist(post)
+                        flush_node_list(post)
                     end
                     setdisc(prevlast) -- nil,nil,nil
                 elseif subtype == first_disc_code then
@@ -1263,7 +1263,7 @@ local function post_line_break(par)
                     setfield(lastnode,"post") -- nil
                 end
                 if replace then
-                    flush_nodelist(replace)
+                    flush_node_list(replace)
                 end
                 if pre then
                     setlink(prevlast,pre)
@@ -1454,7 +1454,7 @@ local function post_line_break(par)
             end
             if current ~= head then
                 setnext(current)
-                flush_nodelist(getnext(head))
+                flush_node_list(getnext(head))
                 setlink(head,next)
             end
         end
@@ -2826,8 +2826,8 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
 
     local adjust_head       = texlists.adjust_head
     local pre_adjust_head   = texlists.pre_adjust_head
-    local adjust_tail       = adjust_head and slide_nodelist(adjust_head) -- todo: find_tail
-    local pre_adjust_tail   = pre_adjust_head and slide_nodelist(pre_adjust_head) -- todo: find_tail
+    local adjust_tail       = adjust_head and slide_node_list(adjust_head) -- todo: find_tail
+    local pre_adjust_tail   = pre_adjust_head and slide_node_list(pre_adjust_head) -- todo: find_tail
 
     new_dir_stack(hpack_dir)
 
@@ -2971,7 +2971,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                 else
                     adjust_head = list
                 end
-                adjust_tail = slide_nodelist(list) -- find_tail(list)
+                adjust_tail = slide_node_list(list) -- find_tail(list)
             elseif id == dir_code then
                 hpack_dir = checked_line_dir(stack,current) or hpack_dir
             elseif id == marginkern_code then
@@ -3126,7 +3126,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                 local overfullrule = tex.overfullrule
                 if fuzz > hfuzz and overfullrule > 0 then
                     -- weird, is always called and no rules shows up
-                    setfield(slide_nodelist(list),"next",new_rule(overfullrule,nil,nil,hlist.dir)) -- todo: find_tail
+                    setfield(slide_node_list(list),"next",new_rule(overfullrule,nil,nil,hlist.dir)) -- todo: find_tail
                 end
                 diagnostics.overfull_hbox(hlist,line,-delta)
             end

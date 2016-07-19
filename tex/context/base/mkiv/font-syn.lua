@@ -517,8 +517,10 @@ local function cleanfilename(fullname,defaultsuffix)
 end
 
 local sorter = function(a,b)
-    return a > b -- to be checked
+    return a > b -- longest first
 end
+
+-- local sorter = nil
 
 names.cleanname     = cleanname
 names.cleanfilename = cleanfilename
@@ -938,8 +940,9 @@ local function sorthashes()
         sort(sorted_mappings [l],sorter)
         sort(sorted_fallbacks[l],sorter)
     end
-    data.sorted_families = table.keys(data.families)
-    sort(data.sorted_families,sorter)
+    local sorted_families = table.keys(data.families)
+    data.sorted_families  = sorted_families
+    sort(sorted_families,sorter)
 end
 
 local function unpackreferences()

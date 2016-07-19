@@ -79,7 +79,7 @@ local setlist    = nuts.setlist
 
 local copy_nut   = nuts.copy
 local new_nut    = nuts.new
-local free_nut   = nuts.free
+local flush_nut  = nuts.flush
 
 local copy_node  = nodes.copy
 local new_node   = nodes.new
@@ -631,13 +631,13 @@ local function cleanup(nofboxes) -- todo
     local nr = nofreserved
     for i=1,nofreserved do
         local ri = reserved[i]
-        free_nut(reserved[i])
+        flush_nut(reserved[i])
     end
     if nofboxes then
         for i=0,nofboxes do
             local l = getbox(i)
             if l then
-                free_nut(l) -- also list ?
+                flush_nut(l) -- also list ?
                 nl = nl + 1
             end
         end

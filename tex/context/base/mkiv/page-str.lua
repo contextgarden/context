@@ -20,11 +20,11 @@ local implement         = interfaces.implement
 
 local nodecodes         = nodes.nodecodes
 
-local slide_nodelist    = node.slide
+local slide_node_list   = node.slide
 local write_node        = node.write
-local free_node         = node.free
-local copy_nodelist     = node.copy_list
-local vpack_nodelist    = node.vpack
+local flush_node        = node.flush
+local copy_node_list    = node.copy_list
+local vpack_node_list   = node.vpack
 
 local settings_to_array = utilities.parsers.settings_to_array
 
@@ -72,7 +72,7 @@ function streams.collect(head,where)
         end
         local last = dana[#dana]
         if last then
-            local tail = slide_nodelist(last)
+            local tail = slide_node_list(last)
             tail.next, head.prev = head, tail
         elseif last == false then
             dana[#dana] = head
@@ -116,7 +116,7 @@ function streams.flush(name,copy) -- problem: we need to migrate afterwards
             for i=1,dn do
                 local di = dana[i]
                 if di then
-                    write_node(copy_nodelist(di.list)) -- list, will be option
+                    write_node(copy_node_list(di.list)) -- list, will be option
                 end
             end
             if copy then
@@ -131,7 +131,7 @@ function streams.flush(name,copy) -- problem: we need to migrate afterwards
                 if di then
                     write_node(di.list) -- list, will be option
                     di.list = nil
-                    free_node(di)
+                    flush_node(di)
                 end
             end
         end
@@ -164,7 +164,7 @@ function streams.synchronize(list) -- this is an experiment !
             local dana = data[name]
             local slot = dana[m]
             if slot then
-                local vbox = vpack_nodelist(slot)
+                local vbox = vpack_node_list(slot)
                 local ht, dp = vbox.height, vbox.depth
                 if ht > height then
                     height = ht
@@ -201,11 +201,11 @@ function streams.synchronize(list) -- this is an experiment !
                     else
                         -- this is not yet ok as we also need to keep an eye on vertical spacing
                         -- so we might need to do some splitting or whatever
-                        local tail = vbox.list and slide_nodelist(vbox.list)
+                        local tail = vbox.list and slide_node_list(vbox.list)
                         local n, delta = 0, delta_height -- for tracing
                         while delta > 0 do
                             -- we need to add some interline penalties
-                            local line = copy_nodelist(texgetbox("strutbox"))
+                            local line = copy_node_list(texgetbox("strutbox"))
                             line.height, line.depth = strutht, strutdp
                             if tail then
                                 tail.next, line.prev = line, tail
@@ -213,9 +213,9 @@ function streams.synchronize(list) -- this is an experiment !
                             tail = line
                             n, delta = n +1, delta - struthtdp
                         end
-                        dana[m] = vpack_nodelist(vbox.list)
+                        dana[m] = vpack_node_list(vbox.list)
                         vbox.list = nil
-                        free_node(vbox)
+                        flush_node(vbox)
                         if trace_flushing then
                             report_streams("slot %s:%s with delta (%p,%p) is compensated by %s lines",m,i,delta_height,delta_depth,n)
                         end

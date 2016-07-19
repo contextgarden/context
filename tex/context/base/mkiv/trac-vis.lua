@@ -94,8 +94,7 @@ local getdisc             = nuts.getdisc
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
 local copy_list           = nuts.copy_list
-local free_node           = nuts.free
-local free_node_list      = nuts.flush_list
+local flush_node_list     = nuts.flush_list
 local insert_node_before  = nuts.insert_before
 local insert_node_after   = nuts.insert_after
 local traverse_nodes      = nuts.traverse
@@ -970,7 +969,7 @@ do
     local function freed(cache)
         local n = 0
         for k, v in next, cache do
-            free_node_list(v)
+            flush_node_list(v)
             n = n + 1
         end
         if n == 0 then

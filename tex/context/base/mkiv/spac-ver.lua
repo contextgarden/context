@@ -97,7 +97,7 @@ local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
 
 local find_node_tail      = nuts.tail
-local free_node           = nuts.free
+local flush_node          = nuts.flush_node
 local traverse_nodes      = nuts.traverse
 local traverse_nodes_id   = nuts.traverse_id
 local insert_node_before  = nuts.insert_before
@@ -1299,7 +1299,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     trace_done("flushed due to forced " .. why,glue_data)
                 end
                 head = forced_skip(head,current,getfield(glue_data,"width") or 0,"before",trace)
-                free_node(glue_data)
+                flush_node(glue_data)
             else
                 local w = getfield(glue_data,"width")
                 if w ~= 0 then
@@ -1314,7 +1314,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                     head = insert_node_before(head,current,glue_data)
                 else
                  -- report_vspacing("needs checking (%s): %p",skipcodes[getsubtype(glue_data)],w)
-                    free_node(glue_data)
+                    flush_node(glue_data)
                 end
             end
         end
@@ -1574,7 +1574,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                         trace_skip("force",sc,so,sp,current)
                     end
                     glue_order = so
-                    free_node(glue_data)
+                    flush_node(glue_data)
                     head, current, glue_data = remove_node(head, current)
                 elseif glue_order == so then
                     -- is now exclusive, maybe support goback as combi, else why a set
@@ -1585,7 +1585,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                             if trace then
                                 trace_skip("largest",sc,so,sp,current)
                             end
-                            free_node(glue_data)
+                            flush_node(glue_data)
                             head, current, glue_data = remove_node(head,current)
                         else
                             if trace then
@@ -1597,7 +1597,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                         if trace then
                             trace_skip("goback",sc,so,sp,current)
                         end
-                        free_node(glue_data)
+                        flush_node(glue_data)
                         head, current, glue_data = remove_node(head,current)
                     elseif sc == force then
                         -- last one counts, some day we can provide an accumulator and largest etc
@@ -1605,13 +1605,13 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                         if trace then
                             trace_skip("force",sc,so,sp,current)
                         end
-                        free_node(glue_data)
+                        flush_node(glue_data)
                         head, current, glue_data = remove_node(head, current)
                     elseif sc == penalty then
                         if trace then
                             trace_skip("penalty",sc,so,sp,current)
                         end
-                        free_node(glue_data)
+                        flush_node(glue_data)
                         glue_data = nil
                         head, current = remove_node(head, current, true)
                     elseif sc == add then
@@ -1821,7 +1821,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
         end
         if force_glue then
             head, tail = forced_skip(head,tail,getfield(glue_data,"width") or 0,"after",trace)
-            free_node(glue_data)
+            flush_node(glue_data)
             glue_data = nil
         else
             head, tail = insert_node_after(head,tail,glue_data)

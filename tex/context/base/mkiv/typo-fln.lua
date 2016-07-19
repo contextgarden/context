@@ -53,8 +53,8 @@ local disc_code          = nodecodes.disc
 local kern_code          = nodecodes.kern
 
 local traverse_id        = nuts.traverse_id
-local free_node_list     = nuts.flush_list
-local free_node          = nuts.flush_node
+local flush_node_list    = nuts.flush_list
+local flush_node         = nuts.flush_node
 local copy_node_list     = nuts.copy_list
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
@@ -264,7 +264,7 @@ actions[v_line] = function(head,setting)
                     end
                 end
                 setdisc(disc,pre,post,replace)
-                free_node(disc)
+                flush_node(disc)
             end
             if linebreak == n then
                 if trace_firstlines then
@@ -278,7 +278,7 @@ actions[v_line] = function(head,setting)
             start = getnext(start)
         end
     end
-    free_node_list(temp)
+    flush_node_list(temp)
     return head, true
 end
 

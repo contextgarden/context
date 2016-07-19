@@ -230,7 +230,7 @@ local copy_node          = nuts.copy
 local copy_node_list     = nuts.copy_list
 local find_node_tail     = nuts.tail
 local flush_node_list    = nuts.flush_list
-local free_node          = nuts.free
+local flush_node         = nuts.flush_node
 local end_of_math        = nuts.end_of_math
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
@@ -404,7 +404,7 @@ end
 local function flattendisk(head,disc)
     local replace = getfield(disc,"replace")
     setfield(disc,"replace",nil)
-    free_node(disc)
+    flush_node(disc)
     if head == disc then
         local next = getnext(disc)
         if replace then

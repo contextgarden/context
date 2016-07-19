@@ -8,42 +8,42 @@ if not modules then modules = { } end modules ['node-acc'] = {
 
 local nodes, node = nodes, node
 
-local nodecodes      = nodes.nodecodes
-local tasks          = nodes.tasks
+local nodecodes       = nodes.nodecodes
+local tasks           = nodes.tasks
 
-local nuts           = nodes.nuts
-local tonut          = nodes.tonut
-local tonode         = nodes.tonode
+local nuts            = nodes.nuts
+local tonut           = nodes.tonut
+local tonode          = nodes.tonode
 
-local getid          = nuts.getid
-local getfield       = nuts.getfield
-local getattr        = nuts.getattr
-local getlist        = nuts.getlist
-local getchar        = nuts.getchar
-local getnext        = nuts.getnext
+local getid           = nuts.getid
+local getfield        = nuts.getfield
+local getattr         = nuts.getattr
+local getlist         = nuts.getlist
+local getchar         = nuts.getchar
+local getnext         = nuts.getnext
 
-local setfield       = nuts.setfield
-local setattr        = nuts.setattr
-local setlink        = nuts.setlink
-local setchar        = nuts.setchar
-local setsubtype     = nuts.setsubtype
+local setfield        = nuts.setfield
+local setattr         = nuts.setattr
+local setlink         = nuts.setlink
+local setchar         = nuts.setchar
+local setsubtype      = nuts.setsubtype
 
------ traverse_nodes = nuts.traverse
-local traverse_id    = nuts.traverse_id
-local copy_node      = nuts.copy
-local free_nodelist  = nuts.flush_list
-local insert_after   = nuts.insert_after
+----- traverse_nodes  = nuts.traverse
+local traverse_id     = nuts.traverse_id
+local copy_node       = nuts.copy
+local flush_node_list = nuts.flush_list
+local insert_after    = nuts.insert_after
 
-local glue_code      = nodecodes.glue
------ kern_code      = nodecodes.kern
-local glyph_code     = nodecodes.glyph
-local hlist_code     = nodecodes.hlist
-local vlist_code     = nodecodes.vlist
+local glue_code       = nodecodes.glue
+----- kern_code       = nodecodes.kern
+local glyph_code      = nodecodes.glyph
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
 
-local a_characters   = attributes.private("characters")
+local a_characters    = attributes.private("characters")
 
-local threshold      = 65536 -- not used
-local nofreplaced    = 0
+local threshold       = 65536 -- not used
+local nofreplaced     = 0
 
 -- todo: nbsp etc
 -- todo: collapse kerns
@@ -62,7 +62,7 @@ local function injectspaces(head)
                 local g = copy_node(p)
                 local c = getfield(g,"components")
                 if c then -- it happens that we copied a ligature
-                    free_nodelist(c)
+                    flush_node_list(c)
                     setfield(g,"components",nil)
                     setsubtype(g,256)
                 end

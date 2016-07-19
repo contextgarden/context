@@ -24,7 +24,7 @@ local tonut              = nuts.tonut
 -- check what is used
 
 local find_node_tail     = nuts.tail
-local free_node          = nuts.free
+local flush_node         = nuts.flush_node
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local end_of_math        = nuts.end_of_math
@@ -410,7 +410,7 @@ function kerns.handler(head)
                         end
                         start = c
                         setfield(s,"components",nil)
-                        free_node(s)
+                        flush_node(s)
                         c = getfield(start,"components")
                     end
                 end

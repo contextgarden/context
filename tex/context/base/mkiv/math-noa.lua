@@ -102,7 +102,7 @@ local getchar              = nuts.getchar
 local getfont              = nuts.getfont
 local getattr              = nuts.getattr
 
-local free_node            = nuts.free
+local flush_node           = nuts.flush
 local new_node             = nuts.new -- todo: pool: math_noad math_sub
 local copy_node            = nuts.copy
 local slide_nodes          = nuts.slide
@@ -711,7 +711,7 @@ local function makefence(what,char)
         end
         setfield(d,"small_char",chr)
         setfield(d,"small_fam", fam)
-        free_node(sym)
+        flush_node(sym)
     end
     setsubtype(f,what)
     setfield(f,"delim",d)
@@ -734,7 +734,7 @@ local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
                 local next  = getnext(current)
                 local fence = makefence(middle_fence_code,current)
                 setfield(current,"nucleus",nil)
-                free_node(current)
+                flush_node(current)
                 middle[current] = nil
                 -- replace_node
                 setlink(prev,fence)
@@ -759,7 +759,7 @@ local function convert_both(open,close,middle)
         local f_c = makefence(right_fence_code,close)
         makelist(open,f_o,o_next,c_prev,f_c,middle)
         setfield(close,"nucleus",nil)
-        free_node(close)
+        flush_node(close)
         if c_next then
             setprev(c_next,open)
         end
@@ -1502,7 +1502,7 @@ local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to tur
                                             setfield(parent,"sub",getfield(next_noad,"sub"))
                                             setfield(next_noad,"sup",nil)
                                             setfield(next_noad,"sub",nil)
-                                            free_node(next_noad)
+                                            flush_node(next_noad)
                                             collapsepair(pointer,what,n,parent,true)
                                          -- if not nested and movesub[current_char] then
                                          --     movesubscript(parent,current_nucleus,current_char)
@@ -1584,7 +1584,7 @@ variants[math_char] = function(pointer,what,n,parent) -- also set export value
                 end
                 setprev(next,pointer)
                 setnext(parent,getnext(next))
-                free_node(next)
+                flush_node(next)
             end
         end
     end
