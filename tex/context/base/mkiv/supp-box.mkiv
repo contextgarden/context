@@ -2923,6 +2923,19 @@
 \unexpanded\def\runninghbox{\hbox attr \runningtextattribute \plusone}     % not yet in i-*
 \unexpanded\def\runninghbox{\hbox attr \runningtextattribute \fontid\font} % not yet in i-*
 
+%D To complement lua (yet undocumented):
+
+\unexpanded\def\beginvbox{\vbox\bgroup}  \let\endvbox\egroup
+\unexpanded\def\beginhbox{\hbox\bgroup}  \let\endhbox\egroup
+
+\unexpanded\def\setvboxregister#1{\setbox#1\vbox}
+\unexpanded\def\sethboxregister#1{\setbox#1\hbox}
+
+\unexpanded\def\flushboxregister#1{\box\numexpr#1\relax}
+
+\unexpanded\def\starthboxregister#1{\setbox#1\hbox\bgroup}  \let\stophboxregister\egroup
+\unexpanded\def\startvboxregister#1{\setbox#1\hbox\bgroup}  \let\stopvboxregister\egroup
+
 \protect \endinput
 
 % a bit of test code:

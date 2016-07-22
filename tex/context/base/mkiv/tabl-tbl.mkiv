@@ -2520,4 +2520,34 @@
 
 \definetabulate[tabulate] \setuptabulate[tabulate][\c!format=\v!none] % so no \v! here
 
+%D The following helpers are just there because we also have them at the \LUA\ end:
+%D
+%D \startbuffer
+%D \starttabulate[|l|c|r|]
+%D     \tabulaterow    {a,b,c}
+%D     \tabulaterowbold{aa,bb,cc}
+%D     \tabulaterowtype{aaa,bbb,ccc}
+%D     \tabulaterowtyp {aaaa,bbbb,cccc}
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\def\tabl_tabulate_compact_row#1#2%
+  {\NC\tabl_tabulate_compact_step#1#2,\end,}
+
+\def\tabl_tabulate_compact_step#1#2#3,%
+  {\ifx#2\end
+     \NR
+     \expandafter\gobbleoneargument
+   \else
+     #1{#2#3}\NC
+     \expandafter\tabl_tabulate_compact_step
+   \fi#1}
+
+\unexpanded\def\tabulaterow    {\tabl_tabulate_compact_row\relax}
+\unexpanded\def\tabulaterowbold{\tabl_tabulate_compact_row\bold}
+\unexpanded\def\tabulaterowtype{\tabl_tabulate_compact_row\type}
+\unexpanded\def\tabulaterowtyp {\tabl_tabulate_compact_row\typ}
+
 \protect \endinput

@@ -105,13 +105,19 @@ local v_auto            = variables.auto
 
 local maxdimen          = 2^30-1
 
+local ctx_doscalefigure            = context.doscalefigure
+local ctx_relocateexternalfigure   = context.relocateexternalfigure
+local ctx_startfoundexternalfigure = context.startfoundexternalfigure
+local ctx_stopfoundexternalfigure  = context.stopfoundexternalfigure
+local ctx_dosetfigureobject        = context.dosetfigureobject
+local ctx_doboxfigureobject        = context.doboxfigureobject
+
 function images.check(figure)
     if figure then
         local width  = figure.width
         local height = figure.height
         if width <= 0 or height <= 0 then
-            report_inclusion("image %a has bad dimensions (%p,%p), discarding",
-                figure.filename,width,height)
+            report_inclusion("image %a has bad dimensions (%p,%p), discarding",figure.filename,width,height)
             return false, "bad dimensions"
         end
         local xres    = figure.xres
@@ -1227,7 +1233,7 @@ end
 
 function figures.scale(data) -- will become lua code
     data = data or callstack[#callstack] or lastfiguredata
-    context.doscalefigure()
+    ctx_doscalefigure()
     return data
 end
 
@@ -1402,7 +1408,7 @@ function includers.generic(data)
         box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
         texsetbox(nr,box)
         ds.objectnumber = figure.objnum
-        context.relocateexternalfigure()
+        ctx_relocateexternalfigure()
     end
     return data
 end
@@ -1419,9 +1425,9 @@ local function checkers_nongeneric(data,command) -- todo: macros and context.*
             if type(command) == "function" then
                 command()
             end
-            context.dosetfigureobject("FIG",hash)
+            ctx_dosetfigureobject("FIG",hash)
         end
-        context.doboxfigureobject("FIG",hash)
+        ctx_doboxfigureobject("FIG",hash)
     elseif type(command) == "function" then
         command()
     end
@@ -1448,7 +1454,7 @@ function checkers.mov(data)
         report_inclusion("including movie %a, width %p, height %p",foundname,width,height)
     end
     -- we need to push the node.write in between ... we could make a shared helper for this
-    context.startfoundexternalfigure(width .. "sp",height .. "sp")
+    ctx_startfoundexternalfigure(width .. "sp",height .. "sp")
     context(function()
         nodeinjections.insertmovie {
             width      = width,
@@ -1461,7 +1467,7 @@ function checkers.mov(data)
             foundname  = foundname,
         }
     end)
-    context.stopfoundexternalfigure()
+    ctx_stopfoundexternalfigure()
     return data
 end
 
@@ -1472,6 +1478,9 @@ includers.mov = includers.nongeneric
 internalschemes.mprun = true
 
 -- mprun.foo.1 mprun.6 mprun:foo.2
+
+local ctx_docheckfiguremprun = context.docheckfiguremprun
+local ctx_docheckfiguremps   = context.docheckfiguremps
 
 local function internal(askedname)
     local spec, mprun, mpnum = match(lower(askedname),"mprun([:%.]?)(.-)%.(%d+)")
@@ -1494,9 +1503,9 @@ end
 function checkers.mps(data)
     local mprun, mpnum = internal(data.used.fullname)
     if mpnum then
-        return checkers_nongeneric(data,function() context.docheckfiguremprun(mprun,mpnum) end)
+        return checkers_nongeneric(data,function() ctx_docheckfiguremprun(mprun,mpnum) end)
     else
-        return checkers_nongeneric(data,function() context.docheckfiguremps(data.used.fullname) end)
+        return checkers_nongeneric(data,function() ctx_docheckfiguremps(data.used.fullname) end)
     end
 end
 
@@ -1504,18 +1513,22 @@ includers.mps = includers.nongeneric
 
 -- -- -- tex -- -- --
 
+local ctx_docheckfiguretex = context.docheckfiguretex
+
 function existers.tex(askedname)
     askedname = resolvers.findfile(askedname)
     return askedname ~= "" and askedname or false, true, "tex", true
 end
 
 function checkers.tex(data)
-    return checkers_nongeneric(data,function() context.docheckfiguretex(data.used.fullname) end)
+    return checkers_nongeneric(data,function() ctx_docheckfiguretex(data.used.fullname) end)
 end
 
 includers.tex = includers.nongeneric
 
 -- -- -- buffer -- -- --
+
+local ctx_docheckfigurebuffer = context.docheckfigurebuffer
 
 function existers.buffer(askedname)
     local name = file.nameonly(askedname)
@@ -1524,7 +1537,7 @@ function existers.buffer(askedname)
 end
 
 function checkers.buffer(data)
-    return checkers_nongeneric(data,function() context.docheckfigurebuffer(file.nameonly(data.used.fullname)) end)
+    return checkers_nongeneric(data,function() ctx_docheckfigurebuffer(file.nameonly(data.used.fullname)) end)
 end
 
 includers.buffers = includers.nongeneric
@@ -1547,13 +1560,15 @@ includers.auto = includers.generic
 
 -- -- -- cld -- -- --
 
+local ctx_docheckfigurecld = context.docheckfigurecld
+
 function existers.cld(askedname)
     askedname = resolvers.findfile(askedname)
     return askedname ~= "" and askedname or false, true, "cld", true
 end
 
 function checkers.cld(data)
-    return checkers_nongeneric(data,function() context.docheckfigurecld(data.used.fullname) end)
+    return checkers_nongeneric(data,function() ctx_docheckfigurecld(data.used.fullname) end)
 end
 
 includers.cld = includers.nongeneric
@@ -1876,6 +1891,8 @@ implement {
 
 local registered = { }
 
+local ctx_doexternalfigurerepeat = context.doexternalfigurerepeat
+
 interfaces.implement {
     name      = "figure_register_page",
     arguments = { "string", "string", "string" },
@@ -1898,7 +1915,7 @@ interfaces.implement {
     actions   = function(n)
         local f = registered[tonumber(n)]
         if f then
-            context.doexternalfigurerepeat(f[1],f[2],f[3],n)
+            ctx_doexternalfigurerepeat(f[1],f[2],f[3],n)
         end
     end
 }

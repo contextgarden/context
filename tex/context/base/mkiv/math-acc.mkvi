@@ -178,4 +178,35 @@
    \stopusemathstyleparameter
    \endgroup}
 
+%D Relative new:
+
+\newconditional\c_math_accents_auto_dotless \settrue\c_math_accents_auto_dotless % cf opentype math
+
+\let\normalgrave   \grave      \unexpanded\def\dotlessgrave   #1{\normalgrave   {\mathdotless#1}}
+\let\normalddot    \ddot       \unexpanded\def\dotlessddot    #1{\normalddot    {\mathdotless#1}}
+\let\normalbar     \bar        \unexpanded\def\dotlessbar     #1{\normalbar     {\mathdotless#1}}
+\let\normalacute   \acute      \unexpanded\def\dotlessacute   #1{\normalacute   {\mathdotless#1}}
+\let\normalhat     \hat        \unexpanded\def\dotlesshat     #1{\normalhat     {\mathdotless#1}}
+\let\normalcheck   \check      \unexpanded\def\dotlesscheck   #1{\normalcheck   {\mathdotless#1}}
+\let\normalbreve   \breve      \unexpanded\def\dotlessbreve   #1{\normalbreve   {\mathdotless#1}}
+\let\normaldot     \dot        \unexpanded\def\dotlessdot     #1{\normaldot     {\mathdotless#1}}
+\let\normalmathring\mathring   \unexpanded\def\dotlessmathring#1{\normalmathring{\mathdotless#1}}
+\let\normaltilde   \tilde      \unexpanded\def\dotlesstilde   #1{\normaltilde   {\mathdotless#1}}
+\let\normaldddot   \dddot      \unexpanded\def\dotlessdddot   #1{\normaldddot   {\mathdotless#1}}
+
+\def\math_accents_auto_dotless#1#2%
+  {\ifconditional\c_math_accents_auto_dotless\expandafter#2\else\expandafter#1\fi}
+
+\unexpanded\def\grave   {\math_accents_auto_dotless\normalgrave   \dotlessgrave   }
+\unexpanded\def\ddot    {\math_accents_auto_dotless\normalddot    \dotlessddot    }
+\unexpanded\def\bar     {\math_accents_auto_dotless\normalbar     \dotlessbar     }
+\unexpanded\def\acute   {\math_accents_auto_dotless\normalacute   \dotlessacute   }
+\unexpanded\def\hat     {\math_accents_auto_dotless\normalhat     \dotlesshat     }
+\unexpanded\def\check   {\math_accents_auto_dotless\normalcheck   \dotlesscheck   }
+\unexpanded\def\breve   {\math_accents_auto_dotless\normalbreve   \dotlessbreve   }
+\unexpanded\def\dot     {\math_accents_auto_dotless\normaldot     \dotlessdot     }
+\unexpanded\def\mathring{\math_accents_auto_dotless\normalmathring\dotlessmathring}
+\unexpanded\def\tilde   {\math_accents_auto_dotless\normaltilde   \dotlesstilde   }
+\unexpanded\def\dddot   {\math_accents_auto_dotless\normaldddot   \dotlessdddot   }
+
 \protect \endinput

@@ -108,18 +108,18 @@ colors.pushset = pushset
 colors.popset  = popset
 colors.setlist = setlist
 
-local context_colordefagc = context.colordefagc
-local context_colordefagt = context.colordefagt
-local context_colordefalc = context.colordefalc
-local context_colordefalt = context.colordefalt
-local context_colordeffgc = context.colordeffgc
-local context_colordeffgt = context.colordeffgt
-local context_colordefflc = context.colordefflc
-local context_colordefflt = context.colordefflt
-local context_colordefrgc = context.colordefrgc
-local context_colordefrgt = context.colordefrgt
-local context_colordefrlc = context.colordefrlc
-local context_colordefrlt = context.colordefrlt
+local ctx_colordefagc = context.colordefagc
+local ctx_colordefagt = context.colordefagt
+local ctx_colordefalc = context.colordefalc
+local ctx_colordefalt = context.colordefalt
+local ctx_colordeffgc = context.colordeffgc
+local ctx_colordeffgt = context.colordeffgt
+local ctx_colordefflc = context.colordefflc
+local ctx_colordefflt = context.colordefflt
+local ctx_colordefrgc = context.colordefrgc
+local ctx_colordefrgt = context.colordefrgt
+local ctx_colordefrlc = context.colordefrlc
+local ctx_colordefrlt = context.colordefrlt
 
 local function definecolor(name, ca, global)
     if ca and ca > 0 then
@@ -127,18 +127,18 @@ local function definecolor(name, ca, global)
             if trace_define then
                 report_colors("define global color %a with attribute %a",name,ca)
             end
-            context_colordefagc(name,ca)
+            ctx_colordefagc(name,ca)
         else
             if trace_define then
                 report_colors("define local color %a with attribute %a",name,ca)
             end
-            context_colordefalc(name,ca)
+            ctx_colordefalc(name,ca)
         end
     else
         if global then
-            context_colordefrgc(name)
+            ctx_colordefrgc(name)
         else
-            context_colordefrlc(name)
+            ctx_colordefrlc(name)
         end
     end
     colorset[name] = true-- maybe we can store more
@@ -150,18 +150,18 @@ local function inheritcolor(name, ca, global)
             if trace_define then
                 report_colors("inherit global color %a with attribute %a",name,ca)
             end
-            context_colordeffgc(name,ca) -- some day we will set the macro directly
+            ctx_colordeffgc(name,ca) -- some day we will set the macro directly
         else
             if trace_define then
                 report_colors("inherit local color %a with attribute %a",name,ca)
             end
-            context_colordefflc(name,ca)
+            ctx_colordefflc(name,ca)
         end
     else
         if global then
-            context_colordefrgc(name)
+            ctx_colordefrgc(name)
         else
-            context_colordefrlc(name)
+            ctx_colordefrlc(name)
         end
     end
     colorset[name] = true-- maybe we can store more
@@ -173,18 +173,18 @@ local function definetransparent(name, ta, global)
             if trace_define then
                 report_colors("define global transparency %a with attribute %a",name,ta)
             end
-            context_colordefagt(name,ta)
+            ctx_colordefagt(name,ta)
         else
             if trace_define then
                 report_colors("define local transparency %a with attribute %a",name,ta)
             end
-            context_colordefalt(name,ta)
+            ctx_colordefalt(name,ta)
         end
     else
         if global then
-            context_colordefrgt(name)
+            ctx_colordefrgt(name)
         else
-            context_colordefrlt(name)
+            ctx_colordefrlt(name)
         end
     end
 end
@@ -195,18 +195,18 @@ local function inherittransparent(name, ta, global)
             if trace_define then
                 report_colors("inherit global transparency %a with attribute %a",name,ta)
             end
-            context_colordeffgt(name,ta)
+            ctx_colordeffgt(name,ta)
         else
             if trace_define then
                 report_colors("inherit local transparency %a with attribute %a",name,ta)
             end
-            context_colordefflt(name,ta)
+            ctx_colordefflt(name,ta)
         end
     else
         if global then
-            context_colordefrgt(name)
+            ctx_colordefrgt(name)
         else
-            context_colordefrlt(name)
+            ctx_colordefrlt(name)
         end
     end
 end

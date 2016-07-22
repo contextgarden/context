@@ -35,6 +35,7 @@ local scanners          = interfaces.scanners
 
 local commands          = commands
 local context           = context
+local ctxnode           = context.flushnode
 
 local tex               = tex
 local texgetcount       = tex.getcount
@@ -380,8 +381,8 @@ scanners.bposcolumnregistered = function() -- tag
     local tag = scanstring()
     insert(columns,tag)
     column = tag
- -- context(new_latelua_node(f_b_column(tag)))
-    context(new_latelua_node(function() b_column(tag) end))
+ -- ctxnode(new_latelua_node(f_b_column(tag)))
+    ctxnode(new_latelua_node(function() b_column(tag) end))
 end
 
 scanners.eposcolumn = function()
@@ -390,8 +391,8 @@ scanners.eposcolumn = function()
 end
 
 scanners.eposcolumnregistered = function()
- -- context(new_latelua_node(f_e_column()))
-    context(new_latelua_node(e_column))
+ -- ctxnode(new_latelua_node(f_e_column()))
+    ctxnode(new_latelua_node(e_column))
     remove(columns)
     column = columns[#columns]
 end
@@ -479,12 +480,6 @@ function jobpositions.gettobesaved(name,tag)
     end
 end
 
--- scanners.pos = function(name,t) -- name t
---     local name = scanstring()
---     tobesaved[name] = scanstring()
---     context(new_latelua_node(f_enhance(name)))
--- end
-
 local nofparagraphs = 0
 
 scanners.parpos = function() -- todo: relate to localpar (so this is an intermediate variant)
@@ -527,8 +522,8 @@ scanners.parpos = function() -- todo: relate to localpar (so this is an intermed
     end
     local tag = f_p_tag(nofparagraphs)
     tobesaved[tag] = t
- -- context(new_latelua_node(f_enhance(tag)))
-    context(new_latelua_node(function() enhance(tobesaved[tag]) end))
+ -- ctxnode(new_latelua_node(f_enhance(tag)))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[tag]) end))
 end
 
 scanners.dosetposition = function() -- name
@@ -542,8 +537,8 @@ scanners.dosetposition = function() -- name
         n = nofparagraphs > 0 and nofparagraphs or nil,
 r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- context(new_latelua_node(f_enhance(name)))
-    context(new_latelua_node(function() enhance(tobesaved[name]) end))
+ -- ctxnode(new_latelua_node(f_enhance(name)))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionwhd = function() -- name w h d extra
@@ -563,8 +558,8 @@ scanners.dosetpositionwhd = function() -- name w h d extra
         n = nofparagraphs > 0 and nofparagraphs or nil,
 r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- context(new_latelua_node(f_enhance(name)))
-    context(new_latelua_node(function() enhance(tobesaved[name]) end))
+ -- ctxnode(new_latelua_node(f_enhance(name)))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionbox = function() -- name box
@@ -585,8 +580,8 @@ scanners.dosetpositionbox = function() -- name box
         n = nofparagraphs > 0 and nofparagraphs or nil,
 r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- context(new_latelua_node(f_enhance(name)))
-    context(new_latelua_node(function() enhance(tobesaved[name]) end))
+ -- ctxnode(new_latelua_node(f_enhance(name)))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionplus = function() -- name w h d extra
@@ -607,8 +602,8 @@ scanners.dosetpositionplus = function() -- name w h d extra
         e = scanstring(),
 r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- context(new_latelua_node(f_enhance(name)))
-    context(new_latelua_node(function() enhance(tobesaved[name]) end))
+ -- ctxnode(new_latelua_node(f_enhance(name)))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 scanners.dosetpositionstrut = function() -- name
@@ -627,8 +622,8 @@ scanners.dosetpositionstrut = function() -- name
         n = nofparagraphs > 0 and nofparagraphs or nil,
 r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- context(new_latelua_node(f_enhance(name)))
-    context(new_latelua_node(function() enhance(tobesaved[name]) end))
+ -- ctxnode(new_latelua_node(f_enhance(name)))
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
 function jobpositions.getreserved(tag,n)

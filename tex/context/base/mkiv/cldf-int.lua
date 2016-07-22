@@ -172,51 +172,51 @@ function interfaces.tolist(t)
     return concat(r,", ")
 end
 
---~ \startluacode
---~ function test(opt_1, opt_2, arg_1)
---~     context.startnarrower()
---~     context("options 1: %s",interfaces.tolist(opt_1))
---~     context.par()
---~     context("options 2: %s",interfaces.tolist(opt_2))
---~     context.par()
---~     context("argument 1: %s",arg_1)
---~     context.stopnarrower()
---~ end
-
---~ interfaces.definecommand {
---~     name = "test",
---~     arguments = {
---~         { "option", "list" },
---~         { "option", "hash" },
---~         { "content", "string" },
---~     },
---~     macro = test,
---~ }
---~ \stopluacode
-
---~ test: \test[1][a=3]{whatever}
-
---~ \startluacode
---~ local function startmore(opt_1)
---~     context.startnarrower()
---~     context("start more, options: %s",interfaces.tolist(opt_1))
---~     context.startnarrower()
---~ end
-
---~ local function stopmore(opt_1)
---~     context.stopnarrower()
---~     context("stop more, options: %s",interfaces.tolist(opt_1))
---~     context.stopnarrower()
---~ end
-
---~ interfaces.definecommand ( "more", {
---~     environment = true,
---~     arguments = {
---~         { "option", "list" },
---~     },
---~     starter = startmore,
---~     stopper = stopmore,
---~ } )
---~ \stopluacode
-
---~ more: \startmore[1] one \startmore[2] two \stopmore one \stopmore
+-- \startluacode
+-- function test(opt_1, opt_2, arg_1)
+--     context.startnarrower()
+--     context("options 1: %s",interfaces.tolist(opt_1))
+--     context.par()
+--     context("options 2: %s",interfaces.tolist(opt_2))
+--     context.par()
+--     context("argument 1: %s",arg_1)
+--     context.stopnarrower()
+-- end
+--
+-- interfaces.definecommand {
+--     name = "test",
+--     arguments = {
+--         { "option", "list" },
+--         { "option", "hash" },
+--         { "content", "string" },
+--     },
+--     macro = test,
+-- }
+-- \stopluacode
+--
+-- test: \test[1][a=3]{whatever}
+--
+-- \startluacode
+-- local function startmore(opt_1)
+--     context.startnarrower()
+--     context("start more, options: %s",interfaces.tolist(opt_1))
+--     context.startnarrower()
+-- end
+--
+-- local function stopmore(opt_1)
+--     context.stopnarrower()
+--     context("stop more, options: %s",interfaces.tolist(opt_1))
+--     context.stopnarrower()
+-- end
+--
+-- interfaces.definecommand ( "more", {
+--     environment = true,
+--     arguments = {
+--         { "option", "list" },
+--     },
+--     starter = startmore,
+--     stopper = stopmore,
+-- } )
+-- \stopluacode
+--
+-- more: \startmore[1] one \startmore[2] two \stopmore one \stopmore

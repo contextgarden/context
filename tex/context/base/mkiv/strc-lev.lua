@@ -35,6 +35,11 @@ local function definesectionlevels(category,list)
     levels[category] = list
 end
 
+local ctx_nostarthead = context.nostarthead
+local ctx_dostarthead = context.dostarthead
+local ctx_nostophead  = context.nostophead
+local ctx_dostophead  = context.dostophead
+
 local function startsectionlevel(n,category,current)
     category = category ~= "" and category or v_default
     local lc = levels[category]
@@ -47,13 +52,13 @@ local function startsectionlevel(n,category,current)
     end
     level = level + 1
     if not lc or level > #lc then
-        context.nostarthead { f_two_colon(category,level) }
+        ctx_nostarthead { f_two_colon(category,level) }
     else
         local lcl = lc[level]
         if n > #lcl then
             n = #lcl
         end
-        context.dostarthead { lc[level][n] }
+        ctx_dostarthead { lc[level][n] }
     end
     insert(categories,{ category, n })
 end
@@ -65,9 +70,9 @@ local function stopsectionlevel()
         local n = top[2]
         local lc = levels[category]
         if not lc or level > #lc then
-            context.nostophead { f_two_colon(category,level) }
+            ctx_nostophead { f_two_colon(category,level) }
         else
-            context.dostophead { lc[level][n] }
+            ctx_dostophead { lc[level][n] }
         end
         level = level - 1
     else

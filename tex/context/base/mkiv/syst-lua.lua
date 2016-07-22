@@ -10,92 +10,70 @@ local find, match = string.find, string.match
 local tonumber = tonumber
 local S, C, P, lpegmatch, lpegtsplitat = lpeg.S, lpeg.C, lpeg.P, lpeg.match, lpeg.tsplitat
 
+commands        = commands or { }
+local commands  = commands
+local context   = context
+local implement = interfaces.implement
 
-commands          = commands or { }
-local commands    = commands
-
-local implement   = interfaces.implement
+local protectedcs              = context.protectedcs -- efficient
+local ctx_firstoftwoarguments  = protectedcs.firstoftwoarguments
+local ctx_secondoftwoarguments = protectedcs.secondoftwoarguments
+local ctx_firstofoneargument   = protectedcs.firstofoneargument
+local ctx_gobbleoneargument    = protectedcs.gobbleoneargument
 
 local two_strings = interfaces.strings[2]
 
-local context     = context
------ csprint     = context.sprint
-
-local prtcatcodes = tex.prtcatcodes
-
-implement { -- will b eoverloaded later
+implement { -- will be overloaded later
     name      = "writestatus",
     arguments = two_strings,
     actions   = logs.status,
 }
 
-local ctx_firstoftwoarguments  = context.firstoftwoarguments  -- context.constructcsonly("firstoftwoarguments" )
-local ctx_secondoftwoarguments = context.secondoftwoarguments -- context.constructcsonly("secondoftwoarguments")
-local ctx_firstofoneargument   = context.firstofoneargument   -- context.constructcsonly("firstofoneargument"  )
-local ctx_gobbleoneargument    = context.gobbleoneargument    -- context.constructcsonly("gobbleoneargument"   )
-
--- contextsprint(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
--- contextsprint(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
--- contextsprint(prtcatcodes,[[\ui_ft]]) -- ctx_firstoftwoarguments
--- contextsprint(prtcatcodes,[[\ui_st]]) -- ctx_secondoftwoarguments
-
 function commands.doifelse(b)
     if b then
         ctx_firstoftwoarguments()
-     -- csprint(prtcatcodes,[[\ui_ft]]) -- ctx_firstoftwoarguments
     else
         ctx_secondoftwoarguments()
-     -- csprint(prtcatcodes,[[\ui_st]]) -- ctx_secondoftwoarguments
     end
 end
 
 function commands.doifelsesomething(b)
     if b and b ~= "" then
         ctx_firstoftwoarguments()
-     -- csprint(prtcatcodes,[[\ui_ft]]) -- ctx_firstoftwoarguments
     else
         ctx_secondoftwoarguments()
-     -- csprint(prtcatcodes,[[\ui_st]]) -- ctx_secondoftwoarguments
     end
 end
 
 function commands.doif(b)
     if b then
         ctx_firstofoneargument()
--- context.__flushdirect(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
     else
         ctx_gobbleoneargument()
--- context.__flushdirect(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
     end
 end
 
 function commands.doifsomething(b)
     if b and b ~= "" then
         ctx_firstofoneargument()
-     -- context.__flushdirect(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
     else
         ctx_gobbleoneargument()
-     -- context.__flushdirect(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
     end
 end
 
 function commands.doifnot(b)
     if b then
         ctx_gobbleoneargument()
-     -- csprint(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
     else
         ctx_firstofoneargument()
-     -- csprint(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
     end
 end
 
 function commands.doifnotthing(b)
     if b and b ~= "" then
         ctx_gobbleoneargument()
-     -- csprint(prtcatcodes,[[\ui_go]]) -- ctx_gobbleonearguments
     else
         ctx_firstofoneargument()
-     -- csprint(prtcatcodes,[[\ui_fo]]) -- ctx_firstofonearguments
     end
 end
 

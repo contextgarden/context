@@ -732,7 +732,7 @@ function chemistry.start(settings)
         if trace_structure then
             report_chemistry("skipping trial run")
         end
-        context.hrule(sp_width,sp_height,0) -- maybe depth
+        context.rule(sp_width,sp_height,0) -- maybe depth
         return
     end
     --

@@ -28,78 +28,79 @@ this mechamism will be improved so that it can replace its older cousin.
 
 local tonumber, next, rawget = tonumber, next, rawget
 
-local commands                = commands
-local context                 = context
-local tex                     = tex
+local commands            = commands
+local context             = context
+local ctxnode             = context.flushnode
 
-local implement               = interfaces.implement
+local implement           = interfaces.implement
 
-local texgetcount             = tex.getcount
-local texsetcount             = tex.setcount
-local texgetdimen             = tex.getdimen
-local texsetdimen             = tex.setdimen
-local texget                  = tex.get
+local tex                 = tex
+local texgetcount         = tex.getcount
+local texsetcount         = tex.setcount
+local texgetdimen         = tex.getdimen
+local texsetdimen         = tex.setdimen
+local texget              = tex.get
 
-local format                  = string.format
-local concat                  = table.concat
-local points                  = number.points
+local format              = string.format
+local concat              = table.concat
+local points              = number.points
 
-local todimen                 = string.todimen
+local todimen             = string.todimen
 
-local context_beginvbox       = context.beginvbox
-local context_endvbox         = context.endvbox
-local context_blank           = context.blank
-local context_nointerlineskip = context.nointerlineskip
-local context_dummyxcell      = context.dummyxcell
+local ctx_beginvbox       = context.beginvbox
+local ctx_endvbox         = context.endvbox
+local ctx_blank           = context.blank
+local ctx_nointerlineskip = context.nointerlineskip
+local ctx_dummyxcell      = context.dummyxcell
 
-local variables               = interfaces.variables
+local variables           = interfaces.variables
 
-local setmetatableindex       = table.setmetatableindex
-local settings_to_hash        = utilities.parsers.settings_to_hash
+local setmetatableindex   = table.setmetatableindex
+local settings_to_hash    = utilities.parsers.settings_to_hash
 
-local nuts                    = nodes.nuts -- here nuts gain hardly nothing
-local tonut                   = nuts.tonut
-local tonode                  = nuts.tonode
+local nuts                = nodes.nuts -- here nuts gain hardly nothing
+local tonut               = nuts.tonut
+local tonode              = nuts.tonode
 
-local getnext                 = nuts.getnext
-local getprev                 = nuts.getprev
-local getlist                 = nuts.getlist
-local getfield                = nuts.getfield
-local getbox                  = nuts.getbox
+local getnext             = nuts.getnext
+local getprev             = nuts.getprev
+local getlist             = nuts.getlist
+local getfield            = nuts.getfield
+local getbox              = nuts.getbox
 
-local setfield                = nuts.setfield
-local setlink                 = nuts.setlink
+local setfield            = nuts.setfield
+local setlink             = nuts.setlink
 
-local copy_node_list          = nuts.copy_list
-local hpack_node_list         = nuts.hpack
-local flush_node_list         = nuts.flush_list
-local takebox                 = nuts.takebox
+local copy_node_list      = nuts.copy_list
+local hpack_node_list     = nuts.hpack
+local flush_node_list     = nuts.flush_list
+local takebox             = nuts.takebox
 
-local nodepool                = nuts.pool
+local nodepool            = nuts.pool
 
-local new_glue                = nodepool.glue
-local new_kern                = nodepool.kern
-local new_hlist               = nodepool.hlist
+local new_glue            = nodepool.glue
+local new_kern            = nodepool.kern
+local new_hlist           = nodepool.hlist
 
-local v_stretch               = variables.stretch
-local v_normal                = variables.normal
-local v_width                 = variables.width
-local v_height                = variables.height
-local v_repeat                = variables["repeat"]
-local v_max                   = variables.max
-local v_fixed                 = variables.fixed
------ v_auto                  = variables.auto
-local v_before                = variables.before
-local v_after                 = variables.after
-local v_both                  = variables.both
-local v_samepage              = variables.samepage
-local v_tight                 = variables.tight
+local v_stretch           = variables.stretch
+local v_normal            = variables.normal
+local v_width             = variables.width
+local v_height            = variables.height
+local v_repeat            = variables["repeat"]
+local v_max               = variables.max
+local v_fixed             = variables.fixed
+----- v_auto              = variables.auto
+local v_before            = variables.before
+local v_after             = variables.after
+local v_both              = variables.both
+local v_samepage          = variables.samepage
+local v_tight             = variables.tight
 
-local xtables                 = { }
-typesetters.xtables           = xtables
+local xtables             = { }
+typesetters.xtables       = xtables
 
-local trace_xtable            = false
-local report_xtable           = logs.reporter("xtable")
+local trace_xtable        = false
+local report_xtable       = logs.reporter("xtable")
 
 trackers.register("xtable.construct", function(v) trace_xtable = v end)
 
@@ -920,29 +921,29 @@ local function inject(row,copy,package)
         row[1] = copy_node_list(list)
     end
     if package then
-        context_beginvbox()
-        context(tonode(list))
-        context(tonode(new_kern(row[2])))
-        context_endvbox()
-        context_nointerlineskip() -- figure out a better way
+        ctx_beginvbox()
+        ctxnode(tonode(list))
+        ctxnode(tonode(new_kern(row[2])))
+        ctx_endvbox()
+        ctx_nointerlineskip() -- figure out a better way
         if row[4] then
             -- nothing as we have a span
         elseif row[5] then
             if row[3] then
-                context_blank { v_samepage, row[3] .. "sp" }
+                ctx_blank { v_samepage, row[3] .. "sp" }
             else
-                context_blank { v_samepage }
+                ctx_blank { v_samepage }
             end
         elseif row[3] then
-            context_blank { row[3] .. "sp" } -- why blank ?
+            ctx_blank { row[3] .. "sp" } -- why blank ?
         else
-            context(tonode(new_glue(0)))
+            ctxnode(tonode(new_glue(0)))
         end
     else
-        context(tonode(list))
-        context(tonode(new_kern(row[2])))
+        ctxnode(tonode(list))
+        ctxnode(tonode(new_kern(row[2])))
         if row[3] then
-            context(tonode(new_glue(row[3])))
+            ctxnode(tonode(new_glue(row[3])))
         end
     end
 end
@@ -999,7 +1000,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
     local repeatheader = settings.header == v_repeat
     local repeatfooter = settings.footer == v_repeat
     if height and height > 0 then
-        context_beginvbox()
+        ctx_beginvbox()
         local bodystart = data.bodystart or 1
         local bodystop  = data.bodystop or #body
         if bodystart > 0 and bodystart <= bodystop then
@@ -1015,7 +1016,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                         inject(head[i],repeatheader)
                     end
                     if rowdistance > 0 then
-                        context(tonode(new_glue(rowdistance)))
+                        ctxnode(tonode(new_glue(rowdistance)))
                     end
                     if not repeatheader then
                         results[head_mode] = { }
@@ -1028,7 +1029,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                         inject(more[i],true)
                     end
                     if rowdistance > 0 then
-                        context(tonode(new_glue(rowdistance)))
+                        ctxnode(tonode(new_glue(rowdistance)))
                     end
                 end
             elseif headsize > 0 and repeatheader then -- following chunk gets head
@@ -1038,7 +1039,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                         inject(head[i],true)
                     end
                     if rowdistance > 0 then
-                        context(tonode(new_glue(rowdistance)))
+                        ctxnode(tonode(new_glue(rowdistance)))
                     end
                 end
             else -- following chunk gets nothing
@@ -1065,7 +1066,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                     -- all is flushed and footer fits
                     if footsize > 0 then
                         if rowdistance > 0 then
-                            context(tonode(new_glue(rowdistance)))
+                            ctxnode(tonode(new_glue(rowdistance)))
                         end
                         for i=1,#foot do
                             inject(foot[i])
@@ -1079,7 +1080,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                     -- todo: try to flush a few more lines
                     if repeatfooter and footsize > 0 then
                         if rowdistance > 0 then
-                            context(tonode(new_glue(rowdistance)))
+                            ctxnode(tonode(new_glue(rowdistance)))
                         end
                         for i=1,#foot do
                             inject(foot[i],true)
@@ -1105,7 +1106,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
         end
         data.bodystart = bodystart
         data.bodystop = bodystop
-        context_endvbox()
+        ctx_endvbox()
     else
         if method == variables.split then
             -- maybe also a non float mode with header/footer repeat although
@@ -1114,35 +1115,35 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
                 inject(head[i],false,true)
             end
             if #head > 0 and rowdistance > 0 then
-                context_blank { rowdistance .. "sp" }
+                ctx_blank { rowdistance .. "sp" }
             end
             for i=1,#body do
                 inject(body[i],false,true)
             end
             if #foot > 0 and rowdistance > 0 then
-                context_blank { rowdistance .. "sp" }
+                ctx_blank { rowdistance .. "sp" }
             end
             for i=1,#foot do
                 inject(foot[i],false,true)
             end
         else -- normal
-            context_beginvbox()
+            ctx_beginvbox()
             for i=1,#head do
                 inject(head[i])
             end
             if #head > 0 and rowdistance > 0 then
-                context(tonode(new_glue(rowdistance)))
+                ctxnode(tonode(new_glue(rowdistance)))
             end
             for i=1,#body do
                 inject(body[i])
             end
             if #foot > 0 and rowdistance > 0 then
-                context(tonode(new_glue(rowdistance)))
+                ctxnode(tonode(new_glue(rowdistance)))
             end
             for i=1,#foot do
                 inject(foot[i])
             end
-            context_endvbox()
+            ctx_endvbox()
         end
         results[head_mode] = { }
         results[body_mode] = { }
@@ -1199,7 +1200,7 @@ function xtables.finish_row()
     end
     if n > 0 then
         for i=1,n do
-            context_dummyxcell()
+            ctx_dummyxcell()
         end
     end
 end
@@ -1260,19 +1261,20 @@ implement { name = "x_table_c",                         actions = function() con
 do
 
     local context         = context
+    local ctxcore         = context.core
 
-    local startxtable     = context.startxtable
-    local stopxtable      = context.stopxtable
+    local startxtable     = ctxcore.startxtable
+    local stopxtable      = ctxcore.stopxtable
 
     local startcollecting = context.startcollecting
     local stopcollecting  = context.stopcollecting
 
-    function context.startxtable(...)
+    function ctxcore.startxtable(...)
         startcollecting()
         startxtable(...)
     end
 
-    function context.stopxtable()
+    function ctxcore.stopxtable()
         stopxtable()
         stopcollecting()
     end

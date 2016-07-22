@@ -9,11 +9,12 @@ if not modules then modules = { } end modules ['colo-run'] = {
 -- For historic reasons the core has a couple of tracing features. Nowadays
 -- these would end up in modules.
 
-local colors, commands, context, utilities = colors, commands, context, utilities
+local utilities = utilities
+local commands  = commands
+local context   = context
+local colors    = attributes.colors
 
-local colors = attributes.colors
-
-local private = table.tohash { "d_u_m_m_y", "maintextcolor", "themaintextcolor" }
+local private   = table.tohash { "d_u_m_m_y", "maintextcolor", "themaintextcolor" }
 
 function commands.showcolorset(name)
     local set = colors.setlist(name)

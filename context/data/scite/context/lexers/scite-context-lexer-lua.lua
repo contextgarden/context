@@ -80,7 +80,8 @@ local depricated = {
 local csnames = { -- todo: option
     "commands",
     "context",
-    "ctx",
+--     "ctxcmd",
+--     "ctx",
     "metafun",
     "metapost",
 }
@@ -211,17 +212,17 @@ local p_constants   = lexer.helpers.utfchartabletopattern(constants) * p_finish 
 local p_internals   = P("__")
                     * lexer.helpers.utfchartabletopattern(internals) * p_finish -- exact_match(internals)
 
-local p_csnames     = lexer.helpers.utfchartabletopattern(csnames) * p_finish -- just_match(csnames)
+local p_csnames     = lexer.helpers.utfchartabletopattern(csnames) -- * p_finish -- just_match(csnames)
+local p_ctnames     = P("ctx") * R("AZ","az","__")^0
 local keyword       = token("keyword", p_keywords)
 local builtin       = token("plain",   p_functions)
 local constant      = token("data",    p_constants)
 local internal      = token("data",    p_internals)
-local csname        = token("user",    p_csnames)
-                    * (
-                        optionalspace * hasargument
-                      + ( optionalspace * token("special", S(".:")) * optionalspace * token("user", validword  ) )^1
-                      + token("user", P("_") * validsuffix)
-                    )
+local csname        = token("user",    p_csnames + p_ctnames)
+                    * p_finish * optionalspace * (
+                        hasargument
+                      + ( token("special", S(".:")) * optionalspace * token("user", validword) )^1
+                      )^-1
 
 local identifier    = token("default", validword)
                     * ( optionalspace * token("special", S(".:")) * optionalspace * (

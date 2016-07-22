@@ -6,33 +6,27 @@ if not modules then modules = { } end modules ['cldf-com'] = {
     license   = "see context related readme files"
 }
 
--- todo ... needs more thinking ... a special table toolkit
+-- Some day I'll make a table toolkit ...
 
-local tostring  = tostring
-local context   = context
-local generics  = context.generics -- needs documentation
-local variables = interfaces.variables
+local tostring, select = tostring, select
 
-generics.starttabulate = "starttabulate" -- "start" .. variables.tabulate -- todo: e!start
-generics.stoptabulate  = "stoptabulate"  -- "stop"  .. variables.tabulate -- todo: e!stop
+local context = context
+local ctxcore = context.core
 
-local NC, NR = context.NC, context.NR
+local ctx_NC  = ctxcore.NC
+local ctx_NR  = ctxcore.NR
 
 local function tabulaterow(how,...)
+    local ctx_flush = how and context[how] or context
     for i=1,select("#",...) do
-        local ti = tostring(select(i,...))
-        NC()
-        if how then
-            context[how](ti)
-        else
-            context(ti)
-        end
+        ctx_NC()
+        ctx_flush(tostring(select(i,...)))
     end
-    NC()
-    NR()
+    ctx_NC()
+    ctx_NR()
 end
 
-function context.tabulaterow    (...) tabulaterow(false, ...) end
-function context.tabulaterowbold(...) tabulaterow("bold",...) end
-function context.tabulaterowtype(...) tabulaterow("type",...) end
-function context.tabulaterowtyp (...) tabulaterow("typ", ...) end
+function ctxcore.tabulaterow    (...) tabulaterow(false, ...) end
+function ctxcore.tabulaterowbold(...) tabulaterow("bold",...) end
+function ctxcore.tabulaterowtype(...) tabulaterow("type",...) end
+function ctxcore.tabulaterowtyp (...) tabulaterow("typ", ...) end

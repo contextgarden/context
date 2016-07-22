@@ -394,13 +394,15 @@ local used_wood_factor        = (50 / 15000000) / 1.2
 
 function statistics.formatruntime(runtime)
     if not environment.initex then -- else error when testing as not counters yet
+-- stoptiming(statistics) -- to be sure
         local shipped = texgetcount('nofshipouts')
         local pages = texgetcount('realpageno')
         if pages > shipped then
             pages = shipped
         end
         if shipped > 0 or pages > 0 then
-            local persecond = shipped / runtime
+            runtime = tonumber(runtime)
+            local persecond = (runtime > 0) and (shipped/runtime) or pages
             if pages == 0 then pages = shipped end
          -- if jit then
          --     local saved = watts_per_core * runtime * kg_per_watt_per_second / speedup_by_other_engine

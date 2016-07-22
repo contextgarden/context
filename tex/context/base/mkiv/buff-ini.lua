@@ -591,18 +591,25 @@ implement {
     arguments = "string"
 }
 
-local startbuffer     = context.startbuffer
-local stopbuffer      = context.stopbuffer
+do
 
-local startcollecting = context.startcollecting
-local stopcollecting  = context.stopcollecting
+    local context         = context
+    local ctxcore         = context.core
 
-function context.startbuffer(...)
-    startcollecting()
-    startbuffer(...)
-end
+    local startbuffer     = ctxcore.startbuffer
+    local stopbuffer      = ctxcore.stopbuffer
 
-function context.stopbuffer()
-    stopbuffer()
-    stopcollecting()
-end
+    local startcollecting = context.startcollecting
+    local stopcollecting  = context.stopcollecting
+
+    function ctxcore.startbuffer(...)
+        startcollecting()
+        startbuffer(...)
+    end
+
+    function ctxcore.stopbuffer()
+        stopbuffer()
+        stopcollecting()
+    end
+
+    end

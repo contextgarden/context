@@ -183,6 +183,7 @@ end
 
 function statistics.runtime()
     stoptiming(statistics)
+    stoptiming(statistics) -- somehow we can start the timer twice, but where
     return statistics.formatruntime(elapsedtime(statistics))
 end
 

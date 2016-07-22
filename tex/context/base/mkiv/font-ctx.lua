@@ -102,8 +102,8 @@ local parameters          = hashes.parameters
 
 local designsizefilename  = fontgoodies.designsizes.filename
 
-local context_char        = context.char
-local context_getvalue    = context.getvalue
+local ctx_char            = context.char
+local ctx_getvalue        = context.getvalue
 
 local otffeatures         = otf.features
 local otftables           = otf.tables
@@ -1676,13 +1676,13 @@ do -- else too many locals
 
     implement {
         name      = "fontchar",
-        actions   = { nametoslot, context_char },
+        actions   = { nametoslot, ctx_char },
         arguments = "string",
     }
 
     implement {
         name      = "fontcharbyindex",
-        actions   = { indextoslot, context_char },
+        actions   = { indextoslot, ctx_char },
         arguments = "integer",
     }
 
@@ -2084,7 +2084,7 @@ do
         name      = "setfontofid",
         arguments = "integer",
         actions   = function(id)
-            context_getvalue(csnames[id])
+            ctx_getvalue(csnames[id])
         end
     }
 
