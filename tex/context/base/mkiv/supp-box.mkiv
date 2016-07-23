@@ -2920,21 +2920,24 @@
 
 \definesystemattribute [runningtext] [public]
 
-\unexpanded\def\runninghbox{\hbox attr \runningtextattribute \plusone}     % not yet in i-*
+%unexpanded\def\runninghbox{\hbox attr \runningtextattribute \plusone}     % not yet in i-*
 \unexpanded\def\runninghbox{\hbox attr \runningtextattribute \fontid\font} % not yet in i-*
 
 %D To complement lua (yet undocumented):
 
-\unexpanded\def\beginvbox{\vbox\bgroup}  \let\endvbox\egroup
 \unexpanded\def\beginhbox{\hbox\bgroup}  \let\endhbox\egroup
+\unexpanded\def\beginvbox{\vbox\bgroup}  \let\endvbox\egroup
+\unexpanded\def\beginvtop{\vtop\bgroup}  \let\endvtop\egroup
 
-\unexpanded\def\setvboxregister#1{\setbox#1\vbox}
 \unexpanded\def\sethboxregister#1{\setbox#1\hbox}
+\unexpanded\def\setvboxregister#1{\setbox#1\vbox}
+\unexpanded\def\setvtopregister#1{\setbox#1\vtop}
 
 \unexpanded\def\flushboxregister#1{\box\numexpr#1\relax}
 
 \unexpanded\def\starthboxregister#1{\setbox#1\hbox\bgroup}  \let\stophboxregister\egroup
-\unexpanded\def\startvboxregister#1{\setbox#1\hbox\bgroup}  \let\stopvboxregister\egroup
+\unexpanded\def\startvboxregister#1{\setbox#1\vbox\bgroup}  \let\stopvboxregister\egroup
+\unexpanded\def\startvtopregister#1{\setbox#1\vtop\bgroup}  \let\stopvtopregister\egroup
 
 \protect \endinput
 

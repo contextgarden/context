@@ -34,6 +34,7 @@ local variables    = interfaces.variables
 local nodepool     = nodes.pool
 local new_rule     = nodepool.rule
 local new_glyph    = nodepool.glyph
+local current_attr = nodes.current_attr
 
 local current_font = font.current
 local texgetcount  = tex.getcount
@@ -68,28 +69,15 @@ function context.utfchar(k)
     end
 end
 
-function context.par()
-    context([[\par]]) -- no need to add {} there
-end
-
-function context.bgroup()
-    context("{")
-end
-
-function context.egroup()
-    context("}")
-end
-
-function context.space()
-    context("\\space") -- no " " as that gets intercepted
-end
-
 function context.rule(w,h,d,dir)
+    local rule
     if type(w) == "table" then
-        context(new_rule(w.width,w.height,w.depth,w.dir))
+        rule = new_rule(w.width,w.height,w.depth,w.dir)
     else
-        context(new_rule(w,h,d,dir))
+        rule = new_rule(w,h,d,dir)
     end
+    rule.attr = current_attr()
+    context(rule)
 end
 
 function context.glyph(id,k)
@@ -97,59 +85,63 @@ function context.glyph(id,k)
         if not k then
             id, k = current_font(), id
         end
-        context(new_glyph(id,k))
+        local glyph = new_glyph(id,k)
+        glyph.attr = current_attr()
+        context(glyph)
     end
 end
 
--- we also register these in core:
+local function ctx_par  () context("\\par")   end
+local function ctx_space() context("\\space") end
 
-ctxcore.par    = context.par
-ctxcore.space  = context.space
-ctxcore.bgroup = context.bgroup
-ctxcore.egroup = context.egroup
+context.par   = ctx_par
+context.space = ctx_space
+
+ctxcore.par   = ctx_par
+ctxcore.space = ctx_space
+
+local function ctx_bgroup() context("{") end
+local function ctx_egroup() context("}") end
+
+context.bgroup = ctx_bgroup
+context.egroup = ctx_egroup
+
+ctxcore.bgroup = ctx_bgroup
+ctxcore.egroup = ctx_egroup
 
 -- not yet used ... but will get variant at the tex end as well
 
-function ctxcore.sethboxregister(n) context([[\setbox %s\hbox]],n) end
-function ctxcore.setvboxregister(n) context([[\setbox %s\vbox]],n) end
-
-function ctxcore.starthboxregister(n)
-    if type(n) == "number" then
-        context([[\setbox%s\hbox{]],n)
-    else
-        context([[\setbox\%s\hbox{]],n)
-    end
+local function setboxregister(kind,n)
+    context(type(n) == "number" and [[\setbox%s\%s]] or [[\setbox\%s\%s]],n,kind)
 end
 
-function ctxcore.startvboxregister(n)
-    if type(n) == "number" then
-        context([[\setbox%s\vbox{]],n)
-    else
-        context([[\setbox\%s\vbox{]],n)
-    end
+function ctxcore.sethboxregister(n) setboxregister("hbox",n) end
+function ctxcore.setvboxregister(n) setboxregister("vbox",n) end
+function ctxcore.setvtopregister(n) setboxregister("vtop",n) end
+
+local function startboxregister(kind,n)
+    context(type(n) == "number" and [[\setbox%s\%s{]] or [[\setbox\%s\%s{]],n,kind)
 end
 
-ctxcore.stophboxregister = ctxcore.egroup
-ctxcore.stopvboxregister = ctxcore.egroup
+function ctxcore.starthboxregister(n) startboxregister("hbox",n) end
+function ctxcore.startvboxregister(n) startboxregister("vbox",n) end
+function ctxcore.startvtopregister(n) startboxregister("vtop",n) end
+
+ctxcore.stophboxregister = ctx_egroup
+ctxcore.stopvboxregister = ctx_egroup
+ctxcore.stopvtopregister = ctx_egroup
 
 function ctxcore.flushboxregister(n)
-    if type(n) == "number" then
-        context([[\box%s ]],n)
-    else
-        context([[\box\%s]],n)
-    end
+    context(type(n) == "number" and [[\box%s ]] or [[\box\%s]],n)
 end
 
-function ctxcore.beginvbox()
-    context([[\vbox{]]) -- we can do \bvbox ... \evbox (less tokens)
-end
+function ctxcore.beginhbox() context([[\hbox{]]) end
+function ctxcore.beginvbox() context([[\vbox{]]) end
+function ctxcore.beginvtop() context([[\vtop{]]) end
 
-function ctxcore.beginhbox()
-    context([[\hbox{]]) -- todo: use fast one
-end
-
-ctxcore.endvbox = ctxcore.egroup
-ctxcore.endhbox = ctxcore.egroup
+ctxcore.endhbox = ctx_egroup
+ctxcore.endvbox = ctx_egroup
+ctxcore.endvtop = ctx_egroup
 
 local function allocate(name,what,cmd)
     local a = format("c_syst_last_allocated_%s",what)

@@ -121,6 +121,11 @@
 %     \noitem \startitemize[a] \item Item 2.a. \item Item 2.b. \stopitemize
 % \stopitemize
 %
+% \startitemize[n,repeat][width=0pt]
+%   \noitem \startitemize[a][width=2em] \item Item 1.a. \item Item 1.b. \stopitemize
+%   \noitem \startitemize[a][width=2em] \item Item 2.a. \item Item 2.b. \stopitemize
+% \stopitemize
+%
 % \startbuffer
 % \item
 %   \startitemize[n]
@@ -1184,8 +1189,13 @@
 \unexpanded\def\strc_itemgroups_start_do_item
   {\startitemgroupitem}
 
-\unexpanded\def\strc_itemgroups_start_no_item % ?
-  {\startitemgroupitem}
+\unexpanded\def\strc_itemgroups_start_no_item
+  {\let\currentitemreference\empty
+   \strc_itemgroups_increment_item_counter
+  %\advance\c_strc_itemgroups_n_of_items\plusone
+   \setbox\b_strc_itemgroups\emptyhbox
+   \strc_itemgroups_check_for_repeated
+   \ignorespaces}
 
 \unexpanded\def\strc_itemgroups_start_button[#destination]%
   {\edef\m_strc_itemgroups_destination{#destination}%

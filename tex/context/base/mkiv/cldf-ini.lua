@@ -936,27 +936,8 @@ end
 --      end
 --  end
 
-local generics  = { }  context.generics = generics
-
--- local indexer = function(parent,k)
---     if type(k) == "string" then
---         local c = "\\" .. tostring(generics[k] or k)
---         local f = function(first,...)
---             if first == nil then
---                 flush(currentcatcodes,c)
---             else
---                 return writer(parent,c,first,...)
---             end
---         end
---         parent[k] = f
---         return f
---     else
---         return context -- catch
---     end
--- end
-
 local core = table.setmetatableindex(function(parent,k)
-    local c = "\\" .. tostring(generics[k] or k)
+    local c = "\\" .. k -- tostring(k)
     local f = function(first,...)
         if first == nil then
             flush(currentcatcodes,c)
@@ -986,12 +967,11 @@ context.core = core
 --
 -- indexer = function(parent,k)
 --     if type(k) == "string" then
---         local s = tostring(generics[k] or k)
---         local t = create(s)
+--         local t = create(k)
 --         if t.cmdname == "undefined_cs" then
---             report_cld("macro \\%s is not yet defined",s)
---             token.set_macro(s,"")
---             t = create(s)
+--             report_cld("macro \\%s is not yet defined",k)
+--             token.set_macro(k,"")
+--             t = create(k)
 --         end
 --         local i = t.id
 --         local f = function(first,...)
@@ -1030,7 +1010,7 @@ context.core = core
 -- end
 --
 -- local function indexer(parent,k)
---     local c = "\\" .. tostring(generics[k] or k)
+--     local c = "\\" .. k -- tostring(k)
 --     local f = function(...)
 --         return constructor(parent,k,c,...)
 --     end
@@ -1053,7 +1033,7 @@ do
     context.protectedcs = protectedcs
 
     local function fullindexer(t,k)
-        local c = "\\" .. tostring(generics[k] or k)
+        local c = "\\" .. k -- tostring(k)
         local v = function(first,...)
             if first == nil then
                 flush(prtcatcodes,c)
@@ -1066,7 +1046,7 @@ do
     end
 
     local function onlyindexer(t,k)
-        local c = "\\" .. tostring(generics[k] or k)
+        local c = "\\" .. k -- tostring(k)
         local v = function()
             flush(prtcatcodes,c)
         end
@@ -1658,7 +1638,7 @@ local formatted = { }  context.formatted = formatted
 
 local function indexer(parent,k)
     if type(k) == "string" then
-        local c = "\\" .. tostring(generics[k] or k)
+        local c = "\\" .. k
         local f = function(first,second,...)
             if first == nil then
                 flush(currentcatcodes,c)
