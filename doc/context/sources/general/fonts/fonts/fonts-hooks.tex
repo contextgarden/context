@@ -1,0 +1,585 @@
+% language=uk
+
+\startcomponent fonts-hooks
+
+\environment fonts-environment
+
+\startchapter[title=Hooks][color=darkcyan]
+
+\startsection[title=Introduction]
+
+One of the virtues of \TEX\ is its flexibility. Because we cannot predict what
+users want to mess around with, much of the underlying code has hooks. And because
+it's not too hard to add functionality that will break things we will not advocate
+all of it. Of course you can study the code and figure out what can be done and
+there is no problem with that. It's just that you shouldn't expect much support.
+
+In this chapter we collect some of these hooks. If you run into interesting ones
+that are worth mentioning, you can always ask us to add description here.
+
+\stopsection
+
+\startsection[title=Safe hooks]
+
+\startsubsection[title=Trimming fonts]
+
+Because we store font related information in \LUA\ tables there can be situations
+where the resources used outgrow memory. An example of such a font is \type
+{lastresort} that basically defined the whole \UNICODE\ range. The font is
+actually not that large as it uses similar placeholders for glyphs in a range,
+but it has rather verbose (redundant) names. As we normally don't need these, you
+can decide to strip them away.
+
+\starttyping
+\startluacode
+    fonts.handlers.otf.readers.registerextender {
+        name   = "remove names from lastresort",
+        action = function(fontdata)
+            if fontdata.metadata.fullname == "LastResort" then
+                for k, v in next, fontdata.descriptions do
+                    v.name = nil
+                end
+            end
+        end
+    }
+\stopluacode
+
+\definedfont[LastResort][lastresort*default sa 1]
+\stoptyping
+
+This will result in a much smaller font, one that has less change to crash the
+engine due to lack of memory. Extenders like this are applied once the font has
+been loaded but before it gets saved.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Loading]
+
+\startsubsection[title=Introduction]
+
+We basically have to deal with three font formats that can easily be recognized
+by the suffix of the files involved: \type {tfm} and \type {vf} files that
+describe 8 bit fonts, traditionally bitmap fonts, but as they carry only metric
+information, any 8 bit font can be described. Then there are \type {afm} files
+that contain metrics related to \TYPEONE\ fonts (stored in \type {pfb} files).
+Although such fonts could contain more than 256 shapes, the implementation was
+limited to 8 bits too. By converting \type {afm} files to \type {tfm} files,
+traditional \TEX\ can deal with \TYPEONE\ given that the backend can include them
+in the final result.
+
+In this section we will discuss some aspects of the \OPENTYPE\ font reader. As
+\TEX\ only deals with metrics (in the frontend) we need to parse them, filter
+information from it and pass the metrics to \TEX. In addition, we can use all
+kind of extra information to manipulate the so called node list but in the end
+\TEX\ is only interested in font id's (that point to a font resource) and glyph
+indexes.
+
+To overcome the 256 limitation of \TYPEONE\ fonts, in \CONTEXT\ we moved away
+from \type {tfm} files (we can of course still deal with them) and turn \type
+{afm} files into so called wide fonts. Basically we turn them in a more rich
+format that looks similar to the internal \OPENTYPE\ format we use. We will not
+go into much detail about that because \TYPEONE\ is kind of obsolete and being
+replaced by \OPENTYPE, but we will of course support the old formats simply
+because we have all these fonts around.
+
+Already early in the development of \LUATEX\ a font loader library was created
+that can turn an \OPENTYPE\ (but also a \TYPEONE) font into a \LUA\ table. This
+library is derived from \FONTFORGE\ which makes it possible to look into a font
+using that editor and at the same time get a similar view on the font in \LUA,
+which is quite handy. However, at some point in \CONTEXT\ we wanted to play with
+outlines in \METAPOST\ and for that purpose an \OPENTYPE\ reader was written in
+\LUA\ that could extract the data. Because \TYPEONE\ fonts already were done in
+\LUA\ it was a logical step to also do \OPENTYPE\ in \LUA\ so now we use an
+alternative loader that doesn't depend in the \FONTFORGE\ library. This not only
+gives more flexibility but also makes it possible to avoid some conversions
+needed to provide the \CONTEXT\ font handler with the needed information in an
+efficient way.
+
+\stopsubsection
+
+\startsubsection[title=Loading \OPENTYPE\ fonts]
+
+As with most binary media formats today an \OPENTYPE\ font file is a linked list
+of records. The top level structure is called table. There are two flavours of
+\OPENTYPE\ where the main difference is in the way the shapes are defined: they
+can be \TRUETYPE\ outlines using quadratric bezier curves or cff files using
+cubic bezier curves. The last variant is the same as \POSTSCRIPT\ \TYPEONE\
+fonts. Simplified, a quadratic curve defines the shape in points with a control
+point in between, while a quadratic one also has points but each with two control
+points (as in \METAPOST).
+
+An \OPENTYPE\ font can be large: there can be upto 65536 glyphs and lots of extra
+properties and features. In order to save space the data is rather packed using
+different numeric data types. Of course one can wonder if size really matters now
+that most bandwidth is taken by audio, video and pictures but we have to live
+with it.
+
+The definition of \OPENTYPE\ can be found on the \MICROSOFT\ website:
+\hyphenatedurl {https://www.microsoft.com/typography/otspec}. Most tables then
+could make sense for us are mentioned in the following list:
+
+\starttabulate[|Bl|l|l|]
+\NC required    \NC cmap \NC character to glyph mapping \NC \NR
+\NC             \NC head \NC font header \NC \NR
+\NC             \NC hhea \NC horizontal header \NC \NR
+\NC             \NC hmtx \NC horizontal metrics \NC \NR
+\NC             \NC maxp \NC maximum profile \NC \NR
+\NC             \NC name \NC naming table \NC \NR
+\NC             \NC os/2 \NC os/2 and windows specific metrics \NC \NR
+\NC             \NC post \NC postScript information \NC \NR
+\NC truetype    \NC glyf \NC glyph data \NC \NR
+\NC             \NC loca \NC index to location \NC \NR
+\NC postscript  \NC cff  \NC compact font format \NC \NR
+\NC             \NC vorg \NC vertical origin \NC \NR
+\NC typographic \NC base \NC baseline data \NC \NR
+\NC             \NC gdef \NC glyph definition data \NC \NR
+\NC             \NC gpos \NC glyph positioning data \NC \NR
+\NC             \NC gsub \NC glyph substitution data \NC \NR
+\NC             \NC jstf \NC justification data \NC \NR
+\NC             \NC math \NC math layout data \NC \NR
+\NC extras      \NC kern \NC kerning \NC \NR
+\NC             \NC ltsh \NC linear threshold data \NC \NR
+\NC             \NC vhea \NC vertical metrics header \NC \NR
+\NC             \NC vmtx \NC vertical metrics \NC \NR
+\NC             \NC colr \NC color table \NC \NR
+\NC             \NC cpal \NC color palette table \NC \NR
+\stoptabulate
+
+When we read these tables it depends on what we want to do with the result how
+much we will really read. For instance when we only want to identify a font and
+get some basic information we don't need to read all tables and certainly don't
+need to read them completely. If we want to have the outlines we need to read the
+\type {glyf} or \type {cff} table. If we also want to boundingbox of \POSTSCRIPT\
+shapes we even need to process the shapes so that we know the dimensions of the
+result. There is no need to summarize the format here in detail because you can
+find it on the \MICROSOFT\ site. Here I only cover some aspects that influence
+the way \TEX\ can use the fonts.
+
+One of the main differences between the readers is that the \FONTFORGE\ reader
+has a lot of (recovery) heuristics for bad fonts. Nowadays most fonts are quite
+okay, and in \CONTEXT\ we prefer to just reject bad ones. In the process of
+loading the built|-|in loader gives each glyph a name (it makes them up for
+variants needed for features). It also tries to figure out some font properties,
+like the weight. If does a pretty good job on that but it is also hard to repair
+at the \LUA\ end when it makes a bad guess. The \LUA\ variants stays closer to
+the specification, but delegates more to the final user, which is good because we
+need and want that level of control as controls is what \TEX\ is about. It also
+made it possible to support for instance colored fonts without too much effort.
+
+So what data needs to be collected? If we look at what we get eventually the list
+of glyphs is the bulk. For each glyph we collect some metric information. For
+instance we fetch the (advance) width of the glyph but also the boundingbox,
+which gives us the the height and depth.
+
+In the font file the list of glyphs starts at zero and runs up tot the total
+number of glyphs. The index in this table is used in for instance the tables that
+define the font features, for instance kerning between glyphs, or multiple glyphs
+that are turned into ligatures. Each glyph gets a name. That can be a meaningful
+one but also a rather dumb one, for instance the index number.
+
+Eventually (at least in \CONTEXT) we don't order by glyph index but by \UNICODE.
+The font file contains information about the mapping from index to \UNICODE. In
+principle other encodings are possible but we stick to \UNICODE. But, because
+many glyphs can refer to one \UNICODE\ slot, for instance a regular shape as well
+as a smallcaps or oldstyle variant. These extra glyphs we let end up in the
+private \UNICODE\ areas. This also means that with each glyph in the final table
+there is also a field that has the \UNICODE. Because we order by \UNICODE\ we
+also need to store the index. An example from a Latin Modern font is:
+
+\starttyping
+[97] = {
+    boundingbox = { 34, -10, 474, 446 },
+    index       = 28,
+    name        = "a",
+    unicode     = 97,
+    width       = 490,
+}
+\stoptyping
+
+Another example is the following. Here we end up in private space:
+
+\starttyping
+[983059] = {
+    boundingbox = { 30, -10, 734, 446 },
+    index       = 19,
+    name        = "oe.dup",
+    unicode     = 339,
+    width       = 762,
+}
+\stoptyping
+
+Yet another entry is:
+
+\starttyping
+[306] = {
+   boundingbox = { 28, -22, 790, 683 },
+   index       = 357,
+   name        = "I_J",
+   unicode     = { 73, 74 },
+   width       = 839,
+  },
+\stoptyping
+
+Here you see two \UNICODE\ numbers. That kind of information is deduced from the
+name of the glyph, using knowledge on how such names are supposed to be
+constructed, or, when that is not possible, from ligature information in the
+fonts.
+
+It makes no sense to discuss the whole font table in detail, if only because most users
+will never (need to) see it. But if your curious you can have a look at the fonts
+in the cache tree, in the \CONTEXT\ distribution from the \CONTEXT\ garden this is
+
+\starttyping
+.../tex/texmf-cache/luatex-cache/context/<somehash>/fonts/otl
+\stoptyping
+
+There can be three kind of files there, with suffixes \type {tma}, \type {tmc}
+and \type {tmb}. The first one is the table as converted from the binary font
+file. The second and third variants are just bytecode compilations of this file
+(for \LUATEX\ and|/|or \LUAJITTEX). The bytecode variants are smaller but more
+important, they load a bit faster. On my disk the largest \type{tma} file is just
+below 10 MByte (an extensive \CJK\ font) but normally they are in the few hundred
+KByte range (some are real small), with the bytecode files of course being
+relatively small to their original.
+
+However, there is a bit of cheating here. If we run the command:
+
+\starttyping
+mtxrun --script font --convert lmroman10-regular.otf
+\stoptyping
+
+A \LUA\ file is generated: \type {lmroman10-regular.lua}. This file is much larger
+than the \type {tma} file in the cache:
+
+\starttabulate[|T|T|]
+\NC 643.924 \NC lmroman10-regular.lua \NC 0.029 \NR
+\NC 209.950 \NC lmroman10-regular.tma \NC 0.010 \NR
+\NC 121.541 \NC lmroman10-regular.tmb \NC \NR
+\NC 134.564 \NC lmroman10-regular.tmc \NC 0.003 \NR
+\stoptabulate
+
+The reason for this is the following. Most information is stored in tables.
+Especially tables that describe font features can be the same all over the place.
+This is why we pack the table in a more compact format before saving it in the
+cache, and unpack it after loading. The effects on loading are neglectable but
+and it has the benefit that it saves a lot of memory. By looking at such numbers
+one should be careful with conclusions, but (assuming proper garbage collection)
+we see a memory footprint of the \type {lua} file of 2836 Kbyte, while the
+unpacked variant takes 704 Kbyte. You can imagine what happens with large \CJK\
+fonts. Loading the (larger unpacked) \type {lua} file currently costs me 0.029
+seconds, while loading and unpacking the \type {tma} file takes 0.010 seconds and
+the bytecode variant \type {tmc} 0.003 seconds.
+
+\stopsubsection
+
+\startsubsection[title=Loading \TYPEONE\ fonts]
+
+When we started with \CONTEXT\ \MKIV\ (which is shortly after we started with
+\LUATEX) the only \TFM\ files that were loaded, were those to make virtual
+\UNICODE\ math fonts, awaiting real \OPENTYPE\ math fonts. Math fonts are kind
+of special with respect to metrics and such.
+
+For \TYPEONE\ text fonts we didn't use the \TFM\ files but went for parsing \AFM\
+files. That way we could use all the glyphs provided by fonts and not be limited
+to 256 slots. So, effectively we made them \UNICODE\ and similar to \OPENTYPE. Of
+course the only features were ligatures, kerns and some special ones like \TEX\
+ligatures and replacements. With the old loader code, we always made them base
+mode fonts, which means that processing was delegated to \TEX. In the new loader
+we implement ligatures and kerns as node mode features, which means that we can
+use those fonts in base mode as well as node mode. The last options therefore
+permits to add or adapt features to \TYPEONE\ fonts as well.
+
+In the next sections we will focus on \OPENTYPE\ but as the \TYPEONE\ fonts are
+organized in a similar way, some of it also applies to this older type. The most
+important to keep in mind is that we only have \type {liga}, \type {kern} and a
+few \CONTEXT\ specific features.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=The tables]
+
+\startsubsection[title=Structure]
+
+Getting a font read for \TEX\ happens in stages. The original \OPENTYPE\ file is
+read only once. At that moment the shapes are described in the \type
+{descriptions} subtable while by the time that we pass the information to \TEX\
+they are in \type {characters}. The reason is that we go from dimensions in font
+units to dimensions in scaled points. We start with the following table:
+
+\ctxlua{context.tocontext(fonts.tables.data.original,"original_table")}
+
+The table passed \TEX\ is constructed from this one and looks like:
+
+\ctxlua{context.tocontext(fonts.tables.data.scaled,"scaled_table")}
+
+There might be a few more (often obscure) fields for special purposes. The
+characters subtable conforms to what \TEX\ expects, while the descriptions stays
+closer to \OPENTYPE. The \type {kerns} and \type {ligatures} subtables are there
+for base mode and are not present in \type {node} mode. The \type {commands} and
+\type {fonts} subtables relate to virtual fonts.
+
+\startitemize[packed]
+\startitem
+    Start with the (already) loaded \OPENTYPE\ table.
+\stopitem
+\startitem
+    Copy relevant information from \type {descriptions} to \type {characters} etc.
+\stopitem
+\startitem
+    Construct \type {properties} and \type {parameters} tables.
+\stopitem
+\startitem
+    Apply additional manipulators, for instance extend the \type {characters}
+    table, with expansion and protrusion.
+\stopitem
+\startitem
+    Scale the \type {characters}, \type {properties} and \type {parameters}.
+\stopitem
+\startitem
+    Apply additional manipulators.
+\stopitem
+\startitem
+    Pass the table to \TEX, but keep it around for later access.
+\stopitem
+\stopitemize
+
+One of the things you need to be aware of is that all references to glyphs are
+\UNICODE\ slots, either natural ones (representing a character) or a private one
+(representing an alternative representation). In \OPENTYPE\ features are defined
+in terms of glyph indices but we prefer \UNICODE\ because that is easier to deal
+with when we run over the node list. Before font processing the character field
+in a glyph node is a \UNICODE\ slot and afterwards it's still a \UNICODE\ but
+when it's a private one it can always be resolved to a non private slot of
+sequence of slots. Of course that could also be done with indices but it's just
+more natural this way.
+
+Another thing to note is that in the descriptions we're still working with font
+units ranging from $-1000$ to $+1000$, $-2048$ to $+2048$ or similar ranges. At
+the \TEX\ end we need scaled points which are much larger numbers.
+
+The question is: how often do users need to access the raw data in a font? After
+a decade of \MKIV\ and \LUATEX\ hardly any user has requested such access,
+probably because when needed easier interfaces were provided. Also, in the
+\CONTEXT\ distrubution there are some examples of manipulations that can be
+copied and adapted to personal use. There's also a danger is messing with the
+fonts (similar messing with the node lists): you never know how it interferes
+with other (maybe future) features.
+
+If you still want to do it, best is probably to start with saving the
+to|-|be|-|passed|-|to|-|\TEX\ table in a file and have a look at it. The most
+prominent subtable is the \type {characters} table and messing a bit with
+dimensions is rather harmless. You could add characters, for instance virtual
+ones, which again is harmless unless you use invalid commands. You probably want
+to stay away from the resources subtable, if only because some of its subtables
+are shared and therefore adapting them can have side effects. The top level \type
+{shared} and \type {unscaled} subtable are off limits as is the \type
+{specification}.
+
+You can save a font by consulting one of the hashes but for a specific font
+you need to know its id. You can do this by using low level accessors but better
+is to use the helpers made for this, because they prevent saving redundant
+data.
+
+% \starttyping
+% \startluacode
+% local nullfont    = fonts.hashes.identifiers[false]
+% local currentfont = fonts.hashes.identifiers[true]
+%
+% local id, tfmdata = fonts.definers.define {
+%     name = "dejavusansmono*default",
+%     size = tex.sp("6pt")
+% }
+%
+% table.save("temp-nullfont.lua",   nullfont)
+% table.save("temp-currentfont.lua",currentfont)
+% table.save("temp-definedfont.lua",tfmdata)
+% table.save("temp-definedfont.lua",fonts.hashes.identifiers[id])
+% \stopluacode
+% \stoptyping
+
+\starttyping
+\startluacode
+fonts.tables.save  {
+    filename = "temp-font-scaled.lua",
+    fontname = "dejavusansmono*default",
+    method   = "original",
+}
+\stopluacode
+\stoptyping
+
+At the \TEX\ end you can use:
+
+\starttyping
+\savefont
+  [name=dejavusansmono*default,
+   file=temp-o.lua,
+   method=original]
+\savefont
+  [name=dejavusansmono*default,
+   file=temp-s.lua,
+   method=scaled]
+\stoptyping
+
+When no \type {name} is given, the current font is used and when no \type {file}
+is given a filename is made up. The default \type {method} is \type {scaled}. The
+saved name is reported.
+
+\stopsubsection
+
+\startsubsection[title=Plug-ins]
+
+There are several places where you can hook in code: before scaling
+(initalizers), after scaling (manipulators) and while processing (processors).
+Only the first two are meant for tweaks.
+
+\starttyping
+local do_something = {
+    name        = "something",
+    description = "doing something",
+    initializers = {
+     -- position = 1,
+        base     = function(tfmdata,value,features) ... end,
+        node     = function(tfmdata,value,features) ... end,
+    },
+    manipulators = {
+     -- position = 1,
+        base     = function(tfmdata,feature,value) ... end,
+        node     = function(tfmdata,feature,value) ... end,
+    },
+    processors = {
+     -- position = 1,
+        base     = function(tfmdata,font,attr) ... end,
+        node     = function(tfmdata,font,attr) ... end,
+    }
+}
+
+fonts.constructors.features.register.otf(so_something)
+fonts.constructors.features.register.afm(so_something)
+\stoptyping
+
+A \type {initializer} is applied just before the font gets scaled. This means
+that the characterm properties and parameters are unscaled! Initializers can for
+instance be used to add extra features to fonts. You can provide an \type
+{position} key with a number to force a place in the list of initializers but of
+course you can never be sure of interference.
+
+A \type {manipulator} is applied when the font is scaled but before it gets
+passed to \TEX. It's a good place to tweak dimensions. Here you can also probide
+a \type {position}.
+
+The processors are applied when the node list gets processed, hence the \type
+{font} and optional \type {attr} arguments. The action is only applied to the
+specified font (id) and when an attribute gets passed, this is tested for a
+value. When an attribute is used, an unset attribute on the node will skip the
+action.
+
+If adapting characters and their properties is your main objetive, then there is a
+better plugin mechanism using sequencers. We illustrate this with a fake example:
+
+\starttyping
+\startluacode
+
+function document.b_copying(tfmdata)
+    logs.report("fonts","before copying: %s",tfmdata.properties.filename)
+end
+function document.a_copying(tfmdata)
+    logs.report("fonts","after copying: %s",tfmdata.properties.filename)
+end
+
+function document.b_math(tfmdata)
+    logs.report("fonts","before math: %s",tfmdata.properties.filename)
+end
+function document.a_math(tfmdata)
+    logs.report("fonts","after math: %s",tfmdata.properties.filename)
+end
+
+utilities.sequencers.appendaction(
+    "beforecopyingcharacters",
+    "before",
+    "document.a_copying"
+)
+
+utilities.sequencers.appendaction(
+    "aftercopyingcharacters",
+    "after",
+    "document.b_copying"
+)
+
+utilities.sequencers.appendaction(
+    "mathparameters",
+    "before",
+    "document.b_math"
+)
+
+utilities.sequencers.appendaction(
+    "mathparameters",
+    "after",
+    "document.a_math"
+)
+\stopluacode
+\stoptyping
+
+When we call the next command:
+
+\starttyping
+\definedfont[MathRoman at 3pt]
+\stoptyping
+
+we get this reported:
+
+\starttyping
+fonts > before math: ...../public/dejavu/texgyredejavu-math.otf
+fonts > after math: ...../public/dejavu/texgyredejavu-math.otf
+fonts > after copying: ...../public/dejavu/texgyredejavu-math.otf
+fonts > before copying: ...../public/dejavu/texgyredejavu-math.otf
+\stoptyping
+
+In between \type {before} and \type {after} we have \type {system} which is
+reserved for \CONTEXT\ actions. These actions are executed in the scaler
+function. The function get two tables passed: the original data as well as the
+target. If you ever need these hooks, you can probably best run an \type
+{inspect} on these arguments to see what you're dealing with.
+
+Fonts get reused when possible and for that a hash is calculated depending on the
+enabled features and size. If for some reason you want to adapt that hash you can
+use postprocessors. When the \type {tfmdata} table has a subtable \type
+{postprocessors}, then the actions in that subtable will be applied. When an
+action returns a string, the string will be combined with the hash. You can set
+(o rextend) the postprocessors table using the previopusly mentioned commands.
+However, in \CONTEXT\ you can best stay away from this as it might interfere. This
+mechanism is mostly provided for generic use.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Goodies]
+
+The font goodies are already discussed as an official mechanism to extend or enhance
+fonts with additional features. There are quite some goodies defined and for sure more will
+show up. Here is the full repertoire:
+
+\ctxlua{context.tocontext(fonts.tables.data.goodies,"goodie_table")}
+
+Of course you will never use all the options at the same time. The best place to
+look for examples are the \type {lfg} files in the \CONTEXT\ distribution.
+\footnote {At some point we might decide to also support goodies in the generic
+version.}
+
+\stopsection
+
+% - features
+% - subfonts
+% - outlines
+% - math
+% - hashes
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

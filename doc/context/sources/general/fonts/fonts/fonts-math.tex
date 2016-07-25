@@ -1,0 +1,998 @@
+% language=uk
+
+\startcomponent fonts-math
+
+\environment fonts-environment
+
+\startchapter[title=Math][color=darkmix-3]
+
+\startsection[title=Introduction]
+
+As one can expect, math support in \CONTEXT\ is to some extend modelled after
+what plain \TEX\ provides, plus what was later decided to be standard. This
+mostly concerns the way fonts behave and what names are used to access glyphs or
+special constructs. It means that when you come from another macro package you
+can stick to coding math the way you did before, at least the basic coding. In
+addition to this, \CONTEXT\ gives control over fonts, structure and rendering and
+most of that was either driven by personal need or user demand. To be honest,
+many of the options are probably of not much interest to the average user.
+
+As we focus on fonts we will only touch this aspect of math here. Right from when
+we started with developing \LUATEX, cleaning op the math part of \CONTEXT\ was
+part of the game. Some primitives were added that would make it possible to avoid
+unnecessary complex macros to get certain glyphs rendered, like radicals, accents
+and extensibles. This was made easy because we also support \OPENTYPE\ math and
+because we knew that eventually the Latin Modern and Gyre fonts would also
+support \OPENTYPE. In order to move forward and get rid of traditional eight bit
+fonts \CONTEXT\ \MKIV\ can construct a virtual \OPENTYPE\ font from traditional
+math fonts. It makes not much sense to discuss that here as by now this method is
+only provided for reasons of compatibility and a reference to the past. As a lot
+of time went into this it will always stay around if only to remind us of what
+we went through to get where we are now.
+
+\stopsection
+
+\startsection[title=\UNICODE\ math]
+
+Due to the limited amount of glyphs in a \TYPEONE\ font a macro package has to
+jump through loops in order to get traditional \TEX\ engines behave well. As a
+practical consequence these fonts are often a mixture of characters, symbols,
+punctuation and snippets that make up larger shapes. The font dimensions in these
+files have often special meanings too.
+
+This has all changed considerably with math being part of \UNICODE. It was however
+\MICROSOFT\ where the real action took place: the development of the first font that
+combined \UNICODE\ with \OPENTYPE\ technology. The Cambria font can be considered
+the benchmark for fonts that surfaced later. The characteristic of a math font are
+the following:
+
+\startitemize[packed]
+    \startitem All math alphabets are present: latin as well as greek, in regular,
+    italic, bold, fraktur and script variants as well as some combinations of these. \stopitem
+    \startitem The symbols that make sense are present (read: the more obscure shapes
+    can be omited). \stopitem
+    \startitem For the characters that make sense, there are two variants that render well
+    at smaller sizes: script and scriptscript. In the font they have the same size but
+    the application will scale them down. This feature is named \type {ssty}. \stopitem
+    \startitem Characters that can extend horizontally (for instance accents and arrows) or vertically
+    (like radicals and fences) have associated larger variants and carries information about
+    how to grow indefinitely. \stopitem
+    \startitem There is a whole lot of special math dimensions. Most of the ones
+    already used in \TEX\ are present. \stopitem
+    \startitem Some glyphs come in variants in order to please special usage. There
+    can also be variants for script or fraktur alphabets. \stopitem
+\stopitemize
+
+This means that in practice an \OPENTYPE\ math font is quite large. We easily
+have thousands of glyphs. It also means that creating such a font involves some
+expertise and this is one of the reasons why \TEX\ usergroups have joined forces
+in developing a suite of fonts. There are also other initiatives in the \TEX\
+community, of which Xits is an example. \footnote {This is a useable
+variant of Stix fonts with proper math features, some extra glyphs and
+experimental right||to||left shapes.} The well known Lucida Bright math font
+package has also been upgraded to a set of \OPENTYPE\ math fonts.
+
+The fact that there are not that many math fonts out there has a positive side as
+well: \CONTEXT\ comes with them pre|-|configured. Because during the development
+of \LUATEX\ we needed to have at least a couple of fonts for testing, and because
+it makes no sense to waste time on traditional fonts, the Latin Modern, Palatino,
+Times and a few more fonts were (and still are) provided as virtual \UNICODE\
+fonts.
+
+In a regular text font, what you key in is what you get out. So, when you've
+chosen a font with an italic shape, you get italic shapes, even if the smallcaps
+feature is enabled. In math, if you use the right unicodes you also get the shape
+you expect. Because in this case italic shapes are situated in one of the
+alphabets you explicitly choose a rendering. You can enter the right codepoints
+directly, so for instance if you enter \UNICODE\ character \type {U+1D434} you
+will get \mathematics {\utfchar {"1D434}}. In practice something like \type {$\bi
+A$} should also give that character if only because that is what we have been
+doing for over three decades. This means that the engine has to map a regular
+\type {A} onto the bold italic alphabet. In a traditional approach you will use
+math families for this, but in \CONTEXT\ \MKIV\ we simply use one font and one
+family and let the \MKIV\ machinery do the rest.
+
+In text mode we switch fonts styles in the following way:
+
+\startbuffer
+regular {\it italic} {\bf bold} {\bi bold italic} and so on
+\stopbuffer
+
+\typebuffer
+
+The three commands shown here are shortcuts for font switches. This input is
+converted into an internal representation and after whatever manipulations
+are applied end up as:
+
+\blank \getbuffer  \blank
+
+If we look at what fonts we end up with we get:
+
+\blank \markfonts{\getbuffer} \blank
+
+Now lets do the same in math mode:
+
+\startbuffer
+$regular {\it italic} {\bf bold} {\bi bold italic} and so on$
+\stopbuffer
+
+\typebuffer
+
+This time we get a different result:
+
+\blank \getbuffer \blank
+
+If again we analyze the fonts you see this:
+
+\blank \markfonts{\getbuffer} \blank
+
+All glyphs come from the same font. Instead of regular we get italic simply because
+math characters are italic by nature. The two character style switches are not
+really font switches but just make sure that the given input is mapped onto the
+right alphabet.
+
+A traditional approach using \TYPEONE\ fonts is to use a so called math family for
+each alphabet. In that case each alphabet maps one||to||one onto the font: when
+we switch to a bold family we just take the glyph that sits in that slot. In \MKIV\
+we have all characters in one family so behind the screens a given character is
+remapped.
+
+Now take a look at the following example:
+
+\startbuffer
+$text^{script^{scriptscript}}$
+\stopbuffer
+
+\typebuffer
+
+This renders to this, with the characters marked by font:
+
+\blank \markfonts{\getbuffer} \blank
+
+This time we have three different fonts: one for each of the three math sizes.
+But this representation is not entirely honest, because indeed we have three font
+instances for math, but the glyphs come from the same \OPENTYPE\ math font. We
+just load the same font three times, once for each size. In fact we load the
+font once, but use three copies, scaled accordingly to the relative scale the
+font prescribes.
+
+There is a whole bunch of commands to choose specific characters in math mode
+using a regular input. These are state switching commands.
+
+\def\SampleLine#1#2#3%
+  {\NC \type{#1}\space
+       \ifx#2\empty\else\type{#2}\fi\space
+       \ifx#3\empty\else\type{#3}\fi
+   \NC $#1 a$
+   \NC $#1 A$
+   \NC \NR}
+
+\starttabulate[|||||]
+\HL
+\SampleLine \mr            \empty  \empty
+\HL
+\SampleLine \mathdefault   \empty  \empty
+\SampleLine \mathscript    \empty  \empty
+\SampleLine \mathfraktur   \empty  \empty
+\SampleLine \mathblackboard\empty  \empty
+\HL
+\SampleLine \rm            \mathrm \empty
+\SampleLine \ss            \mathss \empty
+\SampleLine \tt            \mathtt \empty
+\HL
+\SampleLine \tf            \mathtf \tfmath
+\SampleLine \sl            \mathsl \slmath
+\SampleLine \it            \mathit \itmath
+\HL
+\SampleLine \bf            \mathbf \bfmath
+\SampleLine \bs            \mathbs \bsmath
+\SampleLine \bi            \mathbi \bimath
+\HL
+\stoptabulate
+
+As you can see here, some commands have synonyms. The short commands adapt
+themselves to text and mathmode, the longer ones are meant for use in math mode
+only.
+
+In text mode distinctive shapes are either a font property (the whole font looks
+that way) or a stylistic alternate (an extra feature of a font). In math mode we
+can have alternates, but in addition to the previously mentioned alphabet
+switchers we have a few more:
+
+\starttabulate[|||||]
+\HL
+\SampleLine \frak       \empty \empty
+\SampleLine \cal        \empty \empty
+\SampleLine \bbd        \empty \empty
+\SampleLine \blackboard \empty \empty
+\SampleLine \fraktur    \empty \empty
+\SampleLine \gothic     \empty \empty
+\HL
+\stoptabulate
+
+This chapter is not meant as an introduction to math but it is good to know
+that math font support in \CONTEXT\ is rather flexible. There are several
+mechanisms for remapping and converting characters and sequences into
+others and more is possible. Here is one:
+
+\startbuffer
+\startformula
+\reals {\mathbf R} \utfchar{"0211D} \utfchar{"1D411}
+\stopformula
+\stopbuffer
+
+\typebuffer \blank \getbuffer \blank
+
+Compare this to:
+
+\startbuffer
+\setupmathematics[symbolset=blackboard-to-bold]
+\startformula
+\reals {\mathbf R} \utfchar{"0211D} \utfchar{"1D411}
+\stopformula
+\stopbuffer
+
+\typebuffer \blank \start \getbuffer \stop \blank
+
+Greek is always troublesome because instead of regular text shapes math uses a
+few variants. Because in \UNICODE\ characters are only included once, we have
+gaps in the math alphabets but \MKIV\ will take care of this. \footnote {This is
+a typical example of where exceptions in a standard force all applications that
+deal with it have to implement tweaks.} Depending on the field an author has to
+choose between upright and italic greek:
+
+\startbuffer
+$\nabla \alpha \mathgreekupright \nabla \alpha \mathgreekitalic \nabla \alpha$
+\stopbuffer
+
+\typebuffer \blank \start \getbuffer \stop \blank
+
+By default \CONTEXT\ is set up as follows:
+
+\starttyping
+\setupmathematics
+  [sygreek=normal,
+   lcgreek=italic,
+   ucgreek=normal]
+\stoptyping
+
+Again, these are not features of a font. The font just provides the glyphs and
+the \TEX\ engine, controlled by \CONTEXT\ takes care of mapping characters to
+glyphs and building special constructs. The same is true for spacing. Although
+math fonts do have kerning information, most of the math spacing is controlled
+by properties of characters and not by the font.
+
+\unexpanded\def\SampleLine#1%
+  {\NC
+   \type{$a #1{+} b$}
+   \NC
+   \ruledhbox{$\mathsurround\zeropoint a#1{+}b$}
+   \NC \NR}
+
+\starttabulate[|||]
+\SampleLine \mathord
+\SampleLine \mathpunct
+\SampleLine \mathinner
+\SampleLine \mathop
+\SampleLine \mathalpha
+\SampleLine \mathnothing
+\SampleLine \mathbin
+\SampleLine \mathrel
+\stoptabulate
+
+As a user you don't have to worry about these issues because characters are tagged
+according to their usage. \footnote {There are a few more commands, like \type
+{\mathlimop}, \type {\mathnolop} and \type {mathbox} but these are used
+differently.}
+
+With \TEX\ being the oldest and still dominant math renderer it is no surprise
+that \MICROSOFT\ modelled its math renderer after \TEX\ and Cambria quite well
+suits the concept. In retrospect it is somewhat unfortunate that we're still
+stuck with some left overs (or compromises) from the past with respect to spacing
+built into the font. However, as long as this is consistent over fonts it's not
+that relevant. You can always influence the spacing with the commands mentioned.
+
+If you look at the low level definitions in for instance plain \TEX\ but also in
+\CONTEXT\ \MKII\ that relate to prime symbols it probably takes a while before you
+figure out what happens there. For instance, the prime symbol is triggered by a
+quote and multiple in a row results in primes that are spaced tightly. In
+\UNICODE\ we have slots for single, double and tripple primes. Therefore, in
+\MKIV\ we have a mechanism that accepts different kinds of input that eventually
+all end up in one of these three glyphs.
+
+\unexpanded\def\SampleLine#1%
+  {\NC \type{#1} \NC #1 \NC \NR}
+
+\starttabulate[|||]
+\SampleLine{$f^2$}
+\SampleLine{$f\prime^2$}
+\SampleLine{$f\prime\prime^2$}
+\SampleLine{$f\prime\prime\prime^2$}
+\SampleLine{$f{\prime}^2$}
+\SampleLine{$f{\prime\prime}^2$}
+\SampleLine{$f{\prime\prime\prime}^2$}
+\SampleLine{$f'(x)$}
+\SampleLine{$f''(x)$}
+\SampleLine{$f'''(x)$}
+\SampleLine{$f\utfchar{0x2032}(x)$}
+\SampleLine{$f\utfchar{0x2033}(x)$}
+\SampleLine{$f\utfchar{0x2034}(x)$}
+\SampleLine{$f\utfchar{0x2032}\utfchar{0x2032}(x)$}
+\SampleLine{$f\utfchar{0x2032}\utfchar{0x2032}\utfchar{0x2032}(x)$}
+\SampleLine{$f\utfchar{0x2033}\utfchar{0x2032}(x)$}
+\SampleLine{$f\utfchar{0x2032}\utfchar{0x2033}(x)$}
+\stoptabulate
+
+Again, this is not the same as ligature building features in text fonts, but
+handled in a different way.
+
+The \TEX\ engine understands the concept of italic correction. When an italic
+shape is followed by for instance an upright shape, you can insert a \type {\/}
+and the engine will add a correction as defined in the font. In \OPENTYPE\ we
+don't have such corrections available but we can fake it, which is what the \type
+{itlc} feature in \CONTEXT\ does. However, you need to enable this feature
+explicitly. An example of a setup is:
+
+\starttyping
+\definefontfeature
+  [default]
+  [default]
+  [itlc=yes,textitalics=yes]
+
+\setupitaliccorrection
+  [global,always]
+\stoptyping
+
+This will make sure that the right amount of correction is added between
+italic shapes and non italics or boxes. Using \type {text} instead of
+\type {always} would limit the correction to glyphs only and leaving out
+the \type {global} would permit selective (grouped) usage at the cost
+of more runtime. There is no need for the \type {\/} here.
+
+In math we also can have italic correction but there it is built into the engine
+and in traditional \TEX\ no directives are needed. Italic correction properties
+in math fonts are somewhat troublesome as their application depends on what we're
+dealing with: symbols, super- and subscripts, etc. Because early versions of
+\LUATEX\ didn't handle all of it well, if only because the fonts were not yet okay,
+the \MKIV\ math handler provides a bit of control.
+
+\def\SampleLine#1#2%
+  {\NC #1
+   \NC \setupmathematics[italics=#1]\ruledhbox{$m$ t}
+   \NC \setupmathematics[italics=#1]\ruledhbox{$m$ {\it t}}
+   \NC \setupmathematics[italics=#1]\ruledhbox{t $m$ t $m$ {\it t}}
+   \NC #2
+   \NC \NR}
+
+\starttabulate[||||||]
+\SampleLine0{no correction}
+\SampleLine1{only apply italics when the font carries them}
+\SampleLine2{apply italics provided by the font or automatically calculated}
+\SampleLine3{apply italics based on an emwidth and character properties}
+\SampleLine4{use method 1 but fall back on 3 if needed}
+\stoptabulate
+
+Because we cannot rely on fonts too much, we default to method~3 which in practice
+works out well, so the setup is:
+
+\starttyping
+\setupmathematics
+  [italics=3]
+\stoptyping
+
+There are all kind of commands that can be used to build math constructs in such a
+way that super- and subscripts are consistently rendered. It goes beyond this
+chapter to discuss them and most users will never see or use those commands. The
+main message of the examples above is that text and math use different fonts and
+properties and therefore also different methods in rendering text or a formula.
+Even if the names of mechanisms are the same (like italics) you cannot assume
+that both modes do exactly the same.
+
+\stopsection
+
+\startsection[title=Bold math]
+
+If you look at what \UNICODE\ provides you will notice that there are quite some
+bold characters. First of all there are a bunch of alphabets and because bold is
+not present in the text part of \UNICODE\ these alphabets have no holes. Then
+there are some symbols that have special meaning.
+
+\startluacode
+local find = string.find
+local NC, NR = context.NC, context.NR
+
+context.starttabulate { "|Tl||l|" }
+for unicode, entry in table.sortedhash(characters.data) do
+    local description = entry.description
+    if find(description,"^MATHEMATICAL BOLD") then
+        NC() context("U+04X",unicode)
+        NC() context.mathematics(utf.char(unicode))
+        NC() context(description)
+        NC() NR()
+    end
+end
+context.stoptabulate()
+\stopluacode
+
+The biggest mistake one can make when discussing bold math is the assumption that
+these bold alphabets are meant for section titles and other structural elements
+that need some emphasis. This is not true, in that case we would expect the whole
+formula to be bold and the bold symbols or variables would be even more bold.
+Bold math boils down to {\em all} math being bold. The reason why we show the
+list of bold characters on the previous pages is that it gives a good impression of
+fact that we're mostly given alphabets in an otherwise regular font.
+
+As Latin Modern (being derived from Computer Modern) has some bold extras in
+\MKII\ to some extend we do support a complete bold math switch but mixing bold
+formulas with regular ones has some limitations. Math typesetting consists of two
+phases: first the input is translated into a special list where references to
+fonts are not yet resolved. Instead families are used and each family has three
+sizes: text, script and scriptscript. In a second pass the formula is typeset and
+the families get translated into fonts. So, if we change the definition of a
+family, say math italic into bold math italic, then the definition that is actual
+when the second pass takes place is used.
+
+Although \LUATEX\ provides for many more families and as a consequence we could
+have replaced the \MKII\ mechanism with a more complete one, instead we just
+forgot about it and stuck to one family for regular math and another one for bold
+math. Okay, this is not entirely true as later on we added some more in order to
+deal with bidirectional typesetting.
+
+Only a few math fonts come with a bold variant. One of the objectives of the \TEX
+Gyre math font project is to explore the possibilities of bold math companions,
+but such a font will probably have less coverage, simply because no real complex
+math will end up in for instance section titles.
+
+When I wrote this down there were not that many math fonts that come with a real
+(complete) bold variant. The \CONTEXT\ math font subsystem tries to fill this gap
+as good as possible by using pseudo fonts. When a typeface doesn't define a math
+bold variant a pseudo setup is used. When a real bold font is used, it could be
+that not all alphabets are supported in which case a suitable alternative is
+tried.
+
+The Xits font, assembed from Stix and enhanced by Khaled Hosny, comes with a bold
+variant but the coverage is not complete, at least not when I wrote this
+paragraph. This can go unnoticed because \CONTEXT\ tries to work around this. On
+the other hand, it definitely has bold properties, which can be seen from the
+next example. You switch between regular and bold math with the \type {\mr} and
+\type {\mb} commands.
+
+\startbuffer
+\switchtobodyfont[xitsbidi]
+
+$             \sqrt{x } \quad
+ \mb          \sqrt{mb} \quad
+ \mathupright \sqrt{u } \quad
+ \mr          \sqrt{mr} \quad
+ \mathupright \sqrt{u } \quad
+ \mathdefault \sqrt{d }
+$
+\stopbuffer
+
+\typebuffer \blank \start \getbuffer \stop \blank
+
+You can track some of what happens with:
+
+\starttyping
+\enabletrackers[math.remapping,math.families]
+\stoptyping
+
+You will get some information about remapping or when it fails if fallback
+remapping is used. But no matter what happens with glyphs, you will notice in
+this example that the radical symbol is bold indeed.
+
+\stopsection
+
+\startsection[title=Bidirectional math]
+
+There is not that much to tell about bidirectional math typesetting, simply
+because the fonts are still in development. However, Khaled Hosny added
+some support to the Xits font. Of course you need to load this font first:
+
+\starttyping
+\switchtobodyfont[xitsbidi]
+\stoptyping
+
+In the previous chapter we mentioned bold math and as Xits also comes with
+a bold variant which means that this command loads the whole lot (which is
+fast enough anyway).
+
+Easiest is to just show a few examples. When in left to right mode we get what we
+are accustomed to:
+
+\startbuffer
+\setupmathematics[align=l2r]
+
+\startformula
+\sqrt{x^2\over 4x} \eqno(1)
+\stopformula
+
+\startformula
+5 < 6 > 4
+\stopformula
+
+\startformula
+5 \leq 6 \geq 7
+\stopformula
+\stopbuffer
+
+\typebuffer \start \switchtobodyfont[xitsbidi] \getbuffer \stop
+
+However, when we go the other way, we automatically get digits converted to
+arabic.
+
+\startbuffer
+\setupmathematics[align=r2l,bidi=yes]
+
+\startformula
+\sqrt{ف^2\over 4ب} \eqno(1)
+\stopformula
+
+\startformula
+5 < 6 > 4
+\stopformula
+
+\startformula
+5 \leq 6 \geq 7
+\stopformula
+\stopbuffer
+
+\typebuffer \start \switchtobodyfont[xitsbidi] \getbuffer \stop
+
+You don't have to worry about how the font is set up, but not that much is needed
+because \CONTEXT\ does it for you and the Xits typescripts carries the right
+definitions. Just to give you an idea, we show a feature definition: The magic is
+in the \type {rtlm} feature combined with \type {locl}.
+
+\starttyping
+\definefontfeature
+  [mathematics-r2l]
+  [mathematics]
+  [language=ara,
+   rtlm=yes,
+   locl=yes]
+\stoptyping
+
+Some symbols are mirrored too:
+
+\startbuffer
+\setupmathematics[align=r2l,bidi=yes]
+
+\startformula
+\sum^\infty_{س=0} س^2 \eqno(2)
+\stopformula
+\stopbuffer
+
+\typebuffer \start \switchtobodyfont[xitsbidi] \getbuffer \stop
+
+And of course the extensible fences are done properly too:
+
+\startbuffer
+\setupmathematics[align=r2l,bidi=yes]
+
+\startformula
+\left(\root{2} \of{155}\right)
+\stopformula
+
+\startformula
+\left[\int^{55}_{123} 666^3\right]
+\qquad\textstyle\left[\int^{55}_{123} 666^3\right]
+\stopformula
+
+\startformula
+\left\{\sum^{55}_{123} 666^3\right\}
+\stopformula
+\stopbuffer
+
+\typebuffer \start \switchtobodyfont[xitsbidi] \getbuffer \stop
+
+The real torture test is the radical sign. A mirrored shape is used
+and it grows upwards as well as leftwards.
+
+\startbuffer
+\setupmathematics[align=r2l,bidi=yes]
+
+\startformula
+\sqrt{\sqrt{\sqrt{\sqrt{\sqrt{\sqrt{\sqrt{\sqrt{\sqrt{\sqrt{55}}}}}}}}}}
+\stopformula
+\stopbuffer
+
+\typebuffer \start \switchtobodyfont[xitsbidi] \getbuffer \stop
+
+\stopsection
+
+\startsection[title=Styles]
+
+In text mode you use font switches like \type {\sl} that switches the current font
+to a slanted one. In math mode it is an alphabet switch in the same font. In
+fact, there isn't much to choose from fonts there, apart from a massive switch
+to bold, in which case \type {\bf} is just a bolder alphabet in that bolder font.
+
+A lot of things in math mode happen automatically. There are for instance always
+three instances of (the same) font active, each different in size: text, script
+and the smallest, scriptscript and when you ask for instance for a superscript
+the next smaller size is used.
+
+\starttabulate[|l|l|l|]
+\NC normal   \NC \type {\textstyle}         \NC $\textstyle         text^{script^{scriptscript}}$ \NC \NR
+\NC smaller  \NC \type {\scriptstyle}       \NC $\scriptstyle       text^{script^{scriptscript}}$ \NC \NR
+\NC smallest \NC \type {\scriptscriptstyle} \NC $\scriptscriptstyle text^{script^{scriptscript}}$ \NC \NR
+\stoptabulate
+
+In text style, superscripts can go twice smaller, but in script style only one
+smaller size is left, and in scriptscript style you're stuck with one size. The
+commands in the second column can be used to force a style.
+
+The math formula builder has an important property: the formula is typeset after
+it has been scanned completely. In a traditional setup that has some
+consequences. Take this:
+
+\starttyping
+one \sl two \bf three \bi four
+\stoptyping
+
+In a traditional setup four so called families are used and each character gets
+tagged with a family number. So we have (for instance):
+
+\blank \start \tttf
+o\low7n\low7e\low7 t\low6w\low6o\low6 t\low5h\low5r\low5e\low5e\low5 f\low9o\low9u\low9r\low9
+\stop \blank
+
+As the number of families was limited there could be at most 16 families. In
+fact, the first four were traditionally reserved for math roman, math italic,
+symbol and extensibles. Then, due to the limit of 256 characters per font,
+another few were used for additional symbol fonts. So, adding a few more variants
+could exhaust the family pool quite fast. You could argue that we could halfway
+redefine a family but this will not work as there is a one to one relationship
+between family numbers and fonts assigned to them when the formula has been
+read in (the last value counts). And grouping won't help you either.
+
+The actual (plain) situation is even more complex. As we have a limited number of
+characters per font, most symbols are accessed by name, and the name relates to a
+mathematical character definition using for instance \type {\mathchardef}. Such a
+definition refers to a slot in a specific family number and therefore font. It
+also puts a character in a so called math class. One of these, the alphanumeric
+class, with number~7, is special. Characters that are input directly on the
+keyboard (like \type {a}||\type {z} can also be tagged this way using \type
+{\mathcode}.
+
+When we switch a family, this will normally not affect a symbol defined as math
+character, simply because we refer to a specific family|/|slot combination, but
+when a character has class~7, then it will be taken from the current family. This
+permits latin letters, digits and greek letters to be typeset in different
+styles. So, in that traditional approach we have fonts that provide a bunch of
+symbols as well as some alphabets. Think for instance of a font with additional
+symbols where the regular alphabet slots contain blackboard shapes. The symbols
+are accessed directly and the characters are accessed via the regular \type
+{a}||\type {z} characters as these will adapt to the family and therefore font.
+In practice users will not notice this complication as macro packages hide the
+implementation details.
+
+In \MKIV\ the situation is different as there we have one family (or a few more
+if we use a full bold switch and|/|or bidirectional math). Although we no longer
+have the limit of 16 fonts we actually don't need that many families, at least
+not in the way we've set up \MKIV \footnote{A technical note: in principle the
+\MKIV\ approach can have a speed penalty compared to a multi||family approach but
+we don't care too much about it. Also, as we load less fonts the extra overhead gets
+compensated nicely.}
+
+\blank \start \tttf
+o\low1n\low1e\low1 t\low1w\low1o\low1 t\low1h\low1r\low1e\low1e\low1 f\low1o\low1u\low1r\low1
+\stop \blank
+
+So how does this relate to styles? Each family has three fonts and we can use the
+switch commands to choose any of these. In text mode we use the term style for a
+font switch, while in math mode it's more than that: indeed we switch a font, but
+only in size, but the spacing is also adapted. If a proper math font is used, the
+smaller sizes are actually alternates in the font, visually adapted to suit their
+use.
+
+In text mode we do this in order to limit the scope of a switch:
+
+\starttyping
+normal {\bf bold {\it italic} bold} normalbracket
+\stoptyping
+
+This is the same as:
+
+\starttyping
+normal \bgroup \bf bold \bgroup \it italic\egroup
+    \ bold\egroup \ normalbracket
+\stoptyping
+
+and:
+
+\starttyping
+normal \begingroup \bf bold \begingroup \it italic\endgroup
+    \ bold\endgroup \ normalbracket
+\stoptyping
+
+The \CONTEXT\ distribution ships with a plain math definition file that also uses
+one family but reassigns some math codes when we switch to another style. As the
+number of characters that this applies to this is efficient enough for a modern
+computer. A peek into \type {luatex-math.tex} gives an impression of what we deal
+with. However, keep in mind that the implementation in \MKIV\ goes it differently
+and is therefore more powerful. We also have hardly any definitions at the \TEX\
+end and use information from \type {char-def.lua} instead.
+
+In math mode there is a subtle difference in the way grouping works with styles:
+
+\starttyping
+text {\scriptstyle script} normal
+\stoptyping
+
+This is the same as:
+
+\starttyping
+text \bgroup\scriptstyle script\egroup\ normal
+\stoptyping
+
+but different from:
+
+\starttyping
+text \begingroup\scriptstyle script\endgroup\ script
+\stoptyping
+
+This has to do with the fact that a style switch is explicitly registered in the
+math list and grouping like this is not limiting the scope. In math mode the
+braced grouping mode actually does create a math group and there the scope of the
+switch is limited to that group. In practice users will not run into this but
+they can use macros that use \type {\begingroup}. Among other reasons, this is
+why we have a special mathstyle mechanism.
+
+\startbuffer
+\ruledhbox{$x\begingroup\scriptstyle x\endgroup x$} \quad
+\ruledhbox{$x\begingroup\setupmathstyle[script]x\endgroup x$} \quad
+\ruledhbox{$x{\setupmathstyle[script]x}x$} \quad
+\ruledhbox{$x\startmathstyle[script]x\stopmathstyle x$}
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection[blank] \dontleavehmode \getbuffer \stoplinecorrection
+
+Mechanisms that support the \type {mathstyle} parameter know how to apply the
+proper grouping so you don't have to worry there. You can best avoid using the
+verbose grouping command and stick to braces or the \type {start}||\type {stop}
+command. An example is the fence mechanism:
+
+\startbuffer
+\definemathfence
+  [fancybracket] [bracket]
+  [color=darkblue]
+\definemathfence
+  [smallbracket] [bracket]
+  [command=yes,color=darkgreen,mathstyle=small]
+\definemathfence
+  [normalbracket] [bracket]
+  [command=yes,color=darkred]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We apply this to an example:
+
+\startbuffer
+$x \fenced[bar]{\frac{1}{x}} x$ \quad
+$x \fenced[doublebar]{\frac{1}{x}} x$ \quad
+$x \fenced[bracket]{\frac{1}{x}} x$ \quad
+$x \fenced[fancybracket]{\frac{1}{x}} x$ \quad
+$x \frac{1}{n} \normalbracket{\frac{1}{n}} \smallbracket{\frac{1}{s}} x$
+\stopbuffer
+
+\typebuffer
+
+Of course these somewhat weird examples are not real but at least they
+demonstrate the principles.
+
+\startlinecorrection[blank] \dontleavehmode \getbuffer \stoplinecorrection
+
+A math style is a combination of the following keys. Their effect can depend on
+the current state, for instance you can switch cramp or size indepently.
+
+\starttabulate[|T||]
+\NC display          \NC display style, like text style but somewhat more spacy \NC \NR
+\NC text             \NC text style, normally used inline \NC \NR
+\NC script           \NC smaller than text cq. display style \NC \NR
+\NC scriptscript     \NC smaller than script style \NC \NR
+\NC cramped packed   \NC more tightly positioned superscripts \NC \NR
+\NC uncramped normal \NC normal positioned superscripts \NC \NR
+\NC small            \NC switch to the next smaller style but keep cramp state \NC \NR
+\NC big              \NC switch to the next larger style but keep cramp state \NC \NR
+\stoptabulate
+
+Future versions of \MKIV\ will provide more features (like parameter sets driven
+by keywords). As you might prefer a more symbolic approach we provide:
+
+\starttyping
+\definemathstyle[default][text,cramped]
+\stoptyping
+
+After this you can use the keyword \type {default} which has the advantage that
+you only need to change one definition in order to get different rendering.
+
+\stopsection
+
+\startsection[title=Supported fonts]
+
+As in \CONTEXT\ MKIV\ I wanted to go ahead with \UNICODE\ math as soon as the
+first version of \LUATEX\ showed up. Because at that time only Cambria was
+available I decided to provide virtual \UNICODE\ math fonts as a prelude to
+proper replacements for the popular \TYPEONE\ math fonts. In the meantime Xits
+came around and in 2012 we had quite useable math companions for the public Latin
+Modern, Pagella and Termes fonts and the \TEX\ user groups started shipping
+\OPENTYPE\ variants of Lucida. The virtual variants will still around so that we
+can compare them with the new implementations. As the official specification of
+\OPENTYPE\ math is not always clear from the beginning the \OPENTYPE\ fonts get
+improved over time. In fact, this is true not only for math fonts. Just think of
+this:
+
+\startitemize
+
+\startitem As \UNICODE\ gets extended, fonts might get more glyphs and possibly
+alternate shapes. \stopitem
+
+\startitem The more languages are supported, the more glyphs are to be available
+and features have to get language dependent instances. \stopitem
+
+\startitem The larger the font, the bigger the chance that mistakes get unnoticed
+especially when contextual subtitutions and positioning are used. \stopitem
+
+\startitem Math fonts can get more script and scriptscript alternates, more size
+variants, more advanced extensibles, bidirectional support, etc. \stopitem
+
+\stopitemize
+
+So, like regular programs, \LUATEX\ and macro packages, we now have fonts as
+component that needs occasional updating. Of course resources like hyphenation
+patterns are also subjected to this, so it's not a new aspect. But still, best
+keep en eye on font updates.
+
+While there are lots of text fonts, there are not that many math fonts, so you
+can safely assume that \CONTEXT\ ships with the proper setup for those fonts. Of
+course you have to choose a specific instance when you set up your own
+combination of fonts, but a peek into the typescripts shows the way.
+
+In the font manual and on the wiki you can find more about typescript and what is
+possible, so here we just take a look at one definition:
+
+\startnarrowtyping
+\starttypescript [serif] [dejavu] [name]
+  \definefontsynonym [Serif]           [name:dejavuserif]           [features=default]
+  \definefontsynonym [SerifBold]       [name:dejavuserifbold]       [features=default]
+  \definefontsynonym [SerifItalic]     [name:dejavuserifitalic]     [features=default]
+  \definefontsynonym [SerifBoldItalic] [name:dejavuserifbolditalic] [features=default]
+\stoptypescript
+
+\starttypescript [sans] [dejavu] [name]
+  \definefontsynonym [Sans]           [name:dejavusans]            [features=default]
+  \definefontsynonym [SansBold]       [name:dejavusansbold]        [features=default]
+  \definefontsynonym [SansItalic]     [name:dejavusansoblique]     [features=default]
+  \definefontsynonym [SansBoldItalic] [name:dejavusansboldoblique] [features=default]
+\stoptypescript
+
+\starttypescript [mono] [dejavu] [name]
+  \definefontsynonym [Mono]           [name:dejavusansmono]            [features=none]
+  \definefontsynonym [MonoBold]       [name:dejavusansmonobold]        [features=none]
+  \definefontsynonym [MonoItalic]     [name:dejavusansmonooblique]     [features=none]
+  \definefontsynonym [MonoBoldItalic] [name:dejavusansmonoboldoblique] [features=none]
+\stoptypescript
+
+\starttypescript[dejavu]
+  \definetypeface [dejavu] [rm] [serif] [dejavu] [default]
+  \definetypeface [dejavu] [ss] [sans]  [dejavu] [default]
+  \definetypeface [dejavu] [tt] [mono]  [dejavu] [default]
+  \definetypeface [dejavu] [mm] [math]  [xits]   [default] [scale=1.2]
+\stoptypescript
+\stopnarrowtyping
+
+So, in many cases you can just copy this blob and replace the font names by your
+own.
+
+Loading a font, and Dejavu is a predefined one, is done as follows:
+
+\starttyping
+\setupbodyfont[dejavu]
+\stoptyping
+
+In a similar fashion you can enable \type {cambria}, \type {pagella}, \type
+{termes}, \type {lucidaot}, etc.\ and if you don't use this command at all, you
+get Latin Modern. These fonts are part of \TEX\ distributions, including
+\CONTEXT\ stand||alone that can be downloaded from \CONTEXT\ garden.
+
+If you want to use Lucida, all you have to do when you have bought the fonts, is
+to put the \OPENTYPE\ files in a place where they can be found, for instance:
+
+\starttyping
+tex/texmf-fonts/fonts/data/lucida
+\stoptyping
+
+Of course you need to run \type {mtxrun --generate} afterwards so that the files
+can be found.
+
+\startnotabene
+    Tracing and characters coverage will be discussed here as soon as the styles
+    that are used for them are normalized.
+\stopnotabene
+
+\stopsection
+
+\startsection[title={Stylistic alternates}]
+
+Some fonts provide stylistic alternates. These can be described in goodies files
+and the Lucida setup is a good example. Here we demonstrate the effects. We
+disable the default math rendering (which takes the italic variants).
+
+\startbuffer[sa:1]
+\switchtobodyfont[lucidaot,14.4pt]
+\setupmathrendering[lucidaot][it=]
+$x
+   ^{i \leftarrow 0 = ∅}
+   _{i \leftarrow 0 = ∅}
+$
+\stopbuffer
+
+\typebuffer[sa:1]
+
+The next code enabled three alternatives:
+
+\startbuffer[sa:2]
+\switchtobodyfont[lucidaot,14.4pt]
+\setupmathrendering[lucidaot][it=]
+$x
+   ^{i \leftarrow 0 = ∅}
+   _{\setmathfontalternate{arrow}
+     \setmathfontalternate{dotless}
+     \setmathfontalternate{zero}
+     i \leftarrow 0 = ∅}
+$
+\stopbuffer
+
+\typebuffer[sa:2]
+
+Here we set them in one go:
+
+\startbuffer[sa:3]
+\switchtobodyfont[lucidaot,14.4pt]
+\setupmathrendering[lucidaot][it=]
+$x
+   ^{i \leftarrow 0 = ∅}
+   _{\setmathfontalternate{arrow,dotless,zero}
+     i \leftarrow 0 = ∅}
+$
+\stopbuffer
+\
+\typebuffer[sa:3]
+
+The last example shows how to enable these features globally:
+
+\startbuffer[sa:4]
+\switchtobodyfont[lucidaot,14.4pt]
+\setupmathrendering[lucidaot][it=]
+\setupmathematics[stylealternative={arrow,dotless,zero}]
+$x
+   ^{i \leftarrow 0 = ∅}
+   _{i \leftarrow 0 = ∅}
+$
+\stopbuffer
+
+\typebuffer[sa:4]
+
+The results are collected here:
+
+\startlinecorrection[blank]
+\startcombination[4*1]
+    {\vbox{\hsize.2\hsize\midaligned{\nospacing\getbuffer[sa:1]}}} {\bf nothing}
+    {\vbox{\hsize.2\hsize\midaligned{\nospacing\getbuffer[sa:2]}}} {\bf stepwise}
+    {\vbox{\hsize.2\hsize\midaligned{\nospacing\getbuffer[sa:3]}}} {\bf combined}
+    {\vbox{\hsize.2\hsize\midaligned{\nospacing\getbuffer[sa:4]}}} {\bf global}
+\stopcombination
+\stoplinecorrection
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

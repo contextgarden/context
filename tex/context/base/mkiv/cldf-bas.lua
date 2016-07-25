@@ -162,5 +162,5 @@ context.registers = {
     newtoks   = function(name) return allocate(name,"toks") end,
     newbox    = function(name) return allocate(name,"box","mathchar") end,
     -- not really a register but kind of belongs here
-    chardef   = function(name,u) context([[\chardef\%s=%s\relax]],name,u) end,
+    newchar   = function(name,u) context([[\chardef\%s=%s\relax]],name,u) end,
 }

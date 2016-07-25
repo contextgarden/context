@@ -1,0 +1,49 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <forall/>
+    <condition>
+      <apply> <in/>
+        <ci> x </ci> 
+        <ci> &reals; </ci> 
+      </apply>
+    </condition>
+    <apply> <eq/>
+      <apply> <power/>
+        <ci> &exponentiale; </ci>
+        <ci> x </ci> 
+      </apply>
+      <apply> <plus/>
+        <cn> 1 </cn> 
+        <ci> x </ci> 
+        <apply> <divide/>
+          <apply> <power/>
+            <ci> x </ci> 
+            <cn> 2 </cn> 
+          </apply>
+          <apply> <factorial/>
+            <cn> 2 </cn> 
+          </apply>
+        </apply>
+        <apply> <divide/>
+          <apply> <power/>
+            <ci> x </ci> 
+            <cn> 3 </cn> 
+          </apply>
+          <apply> <factorial/>
+            <cn> 3 </cn> 
+          </apply>
+        </apply>
+        <ci> &cdots; </ci>
+        <apply> <divide/>
+          <apply> <power/>
+            <ci> x </ci> 
+            <ci> n </ci> 
+          </apply>
+          <apply> <factorial/>
+            <ci> n </ci> 
+          </apply>
+        </apply>
+        <ci> &cdots; </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>

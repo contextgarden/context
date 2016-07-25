@@ -30,7 +30,7 @@ local tonumber, next, rawget = tonumber, next, rawget
 
 local commands            = commands
 local context             = context
-local ctxnode             = context.flushnode
+local ctxnode             = context.nodes.flush
 
 local implement           = interfaces.implement
 

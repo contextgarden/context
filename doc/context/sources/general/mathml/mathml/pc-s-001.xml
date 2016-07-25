@@ -1,0 +1,28 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <eq/>
+    <apply> <plus/>
+      <cn> 1 </cn> 
+      <apply> <minus/>
+        <apply> <divide/>
+          <cn> 1 </cn> 
+          <cn> 3 </cn> 
+        </apply>
+      </apply>
+      <apply> <divide/>
+        <cn> 1 </cn> 
+        <cn> 5 </cn> 
+      </apply>
+      <apply> <minus/>
+        <apply> <divide/>
+          <cn> 1 </cn> 
+          <cn> 7 </cn> 
+        </apply>
+      </apply>
+      <ci> &cdots; </ci>
+    </apply>
+    <apply> <divide/>
+      <ci> &pi; </ci>
+      <cn> 4 </cn> 
+    </apply>
+ </apply>
+</math>

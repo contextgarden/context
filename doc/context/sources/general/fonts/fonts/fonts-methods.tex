@@ -1,0 +1,376 @@
+% language=uk
+
+\startcomponent fonts-methods
+
+\environment fonts-environment
+
+\startchapter[title=Methods][color=darkyellow]
+
+\startsection[title=Introduction]
+
+A font definition looks as follows:
+
+\starttyping
+\definefont
+  [MyFont]
+  [namepart method specification size]
+\stoptyping
+
+For example:
+
+\starttyping
+\definefont
+  [MyFont]
+  [Bold*default at 12.3pt]
+\stoptyping
+
+We have already discussed the namepart and size in a previous chapter and here
+we will focus on the method. The method is represented by a character and although
+we currently only have a few methods there can be many more.
+
+\stopsection
+
+\startsection[title=: (direct features)]
+
+This one is seldom used, but those coming from another macro package to \CONTEXT\
+might use it as first attempt to defining a font.
+
+\starttyping
+\definefont
+  [MyFont]
+  [Bold:+kern;+liga; at 12.3pt]
+\stoptyping
+
+This is the \XETEX\ way of defining fonts. A \type {+} means as much as
+\quotation {turn on this feature} so you can guess what the minus sign does.
+Alternatively you can use a key/value approach with semicolons as separator. If
+no value is given the value \type {yes} is assumed.
+
+\starttyping
+\definefont
+  [MyFont]
+  [Bold:kern=yes;liga=yes; at 12.3pt]
+\stoptyping
+
+When we started supporting \XETEX\ we ran into issues with already present
+features of \CONTEXT\ as the \XETEX\ syntax also has some more obscure properties
+using slashes and brackets for signalling a file or name lookup. As in \CONTEXT\
+we prefer a more symbolic approach anyway, it never was a real issue.
+
+\stopsection
+
+\startsection[title=* (symbolic features)]
+
+The most natural way to associate a set of features with a font instance
+is the following:
+
+\starttyping
+\definefont
+  [MyFont]
+  [Bold*default at 12.3pt]
+\stoptyping
+
+This will use the featureset named \type {default} and this one is defined in
+\type {font-pre.mkiv} which might be worth looking at.
+
+\starttyping
+\definefontfeature
+  [always]
+  [mode=auto,
+   script=auto,
+   kern=yes,
+   mark=yes,
+   mkmk=yes,
+   curs=yes]
+
+\definefontfeature
+  [default]
+  [always]
+  [liga=yes,
+   tlig=yes,
+   trep=yes] % texligatures=yes,texquotes=yes
+
+\definefontfeature
+  [smallcaps]
+  [always]
+  [smcp=yes,
+   tlig=yes,
+   trep=yes] % texligatures=yes,texquotes=yes
+
+\definefontfeature
+  [oldstyle]
+  [always]
+  [onum=yes,
+   liga=yes,
+   tlig=yes,
+   trep=yes] % texligatures=yes,texquotes=yes
+
+\definefontfeature % == default unless redefined
+  [ligatures]
+  [always]
+  [liga=yes,
+   tlig=yes,
+   trep=yes]
+
+\definefontfeature % can be used for type1 fonts
+  [complete]
+  [always]
+  [compose=yes,
+   liga=yes,
+   tlig=yes,
+   trep=yes]
+
+\definefontfeature
+  [none]
+  [mode=none,
+   features=no]
+\stoptyping
+
+These definitions show that you can construct feature sets on top of existing
+ones, but keep in mind that they are defined instantly, so any change in the
+parent is not reflected in its kids.
+
+In a font definition you can specify more than one set:
+
+\starttyping
+\definefont
+  [MyFont]
+  [Bold*always,oldstyle at 12.3pt]
+\stoptyping
+
+\stopsection
+
+\startsection[title=@ (virtual features)]
+
+This method is somewhat special as it demands knowledge of the internals
+of the \CONTEXT\ font code. Much of it is still experimental but it is a
+nice playground. A good example of its usage can be found in the file
+\type {m-punk.mkiv} where we create a font out of \METAPOST\ graphics.
+
+Another example is virtual math. As in the beginning of \LUATEX\ and \MKIV\
+there were only a few \OPENTYPE\ math fonts, and as I wanted to get rid
+of the old mechanisms, it was decided to virtualize the math fonts. For
+instance a Latin Modern Roman 10 point math font can be defined as follows:
+
+\starttyping
+\definefontsynonym
+  [LMMathRoman10-Regular]
+  [LMMath10-Regular@lmroman10-math]
+\stoptyping
+
+The \type {lmroman10-math} refers to a virtual definition and in this case
+it is one using a built|-|in constructor and therefore we use a goodies
+file to specify the font. That file looks as follows:
+
+\starttyping
+return {
+  name = "lm-math",
+  version = "1.00",
+  comment = "Goodies that complement latin modern math.",
+  author = "Hans Hagen",
+  copyright = "ConTeXt development team",
+  mathematics = {
+    ...
+    virtuals = {
+      ...
+      ["lmroman10-math"] = ten,
+      ...
+    },
+    ...
+  }
+}
+\stoptyping
+
+Here \type {ten} is a previously defined table:
+
+\startnarrowtyping
+local ten = {
+  { name = "lmroman10-regular.otf", features = "virtualmath", main = true },
+  { name = "rm-lmr10.tfm", vector = "tex-mr-missing" } ,
+  { name = "lmmi10.tfm", vector = "tex-mi", skewchar = 0x7F },
+  { name = "lmmi10.tfm", vector = "tex-it", skewchar = 0x7F },
+  { name = "lmsy10.tfm", vector = "tex-sy", skewchar = 0x30, parameters = true } ,
+  { name = "lmex10.tfm", vector = "tex-ex", extension = true } ,
+  { name = "msam10.tfm", vector = "tex-ma" },
+  { name = "msbm10.tfm", vector = "tex-mb" },
+  { name = "stmary10.afm", vector = "tex-mc" },
+  { name = "lmroman10-bold.otf", vector = "tex-bf" } ,
+  { name = "lmmib10.tfm", vector = "tex-bi", skewchar = 0x7F } ,
+  { name = "lmsans10-regular.otf", vector = "tex-ss", optional = true },
+  { name = "lmmono10-regular.otf", vector = "tex-tt", optional = true },
+  { name = "eufm10.tfm", vector = "tex-fraktur", optional = true },
+  { name = "eufb10.tfm", vector = "tex-fraktur-bold", optional = true },
+}
+\stopnarrowtyping
+
+This says as much as: take \type {lmroman10-regular.otf} as starting point
+and overload slots with ones found in the following fonts. The vectors are
+predefined as they are shared with other font sets like \type {px} and
+\type {tx}.
+
+In due time more virtual methods might end up in \CONTEXT\ because they are
+a convenient way to extend or manipulate fonts.
+
+\stopsection
+
+\startsection[title=Lua fonts]
+
+You can define a font in \LUA. In the process you can use all kind of helper
+functions that \CONTEXT\ provides. Here is an example:
+
+\typefile{fonts-demo-rule.lua}
+
+This code is stored in \type {fonts-demo-rule.lua} and we can load that font
+in the usual way, by specifying a filename:
+
+\startbuffer
+\definefont
+  [MyRuleFont]
+  [file:fonts-demo-rule.lua*default sa 1]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+{\MyRuleFont So when we use it we get text typeset where all vowels are replaced
+by rules. The actualtext injection (in theory) makes it possible to cut and paste
+the text from the \PDF\ document but while writing this (mid 2016) a {\maincolor
+\type {mupdf}} based viewer couldn't handle it and {\maincolor \type {acrobat}}
+had problems with spaces.}
+
+\startbuffer
+\definefontfeature
+  [myrulefont]
+  [default]
+  [original=file:texgyrepagella-regular.otf]
+\definefont
+  [MyRuleFont]
+  [file:fonts-demo-rule.lua*myrulefont]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+{\showfontkerns \MyRuleFont The previous code demonstrates how we can pass a
+fontname to be used as base to the generator. In case you wonder how features
+behave with such fonts: as you can see here, font kerns are indeed injected.
+Compared to {\maincolor \type {Dejavu}}, the {\maincolor \type {Pagella}} font
+has quite some more kerns.}
+
+\startbuffer
+\definefontfeature
+  [myrulefont]
+  [default]
+  [original=file:texgyrepagella-regular.otf,
+   option=line]
+\definefont
+  [MyRuleFont]
+  [file:fonts-demo-rule.lua*myrulefont]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+{\MyRuleFont Here we show how the passed {\maincolor \type {option}} is handled.
+Because we no longer have a relationship with the height and depth, the real text
+is a bit harder to guess.}
+
+\stopsection
+
+\startsection[title=Old fuzzy fonts]
+
+Most natural is to use \OPENTYPE\ or \TYPEONE\ fonts. In the case of \TYPEONE\ a
+matching pair of \type {afm} and \type {pfb} files is needed. However, there can
+be situations where there is only a \type{tfm} and \type {pfb} file (or not even
+that: just a bitmap file).
+
+I will not show specimen here, simply because I don't have (nor want to have) the
+fonts needed in my development and production environments. The implementation
+was tested with a specific czech computer modern font.
+
+In a traditional (8 bit) setup we have an \type {tfm} file, a \type {pfb} file
+and a \type {enc file}. The order of the characters in the \type {tfm} file
+directly relates to the input encoding. The \type {enc} file relates that order
+to the order in the \type {pfb} file. The mapping from input encoding to font
+shape encoding happens via glyph names. In the \type {map} file we tell what
+\type {pfb} file to use with what \type {enc} file.
+
+However, in the case of the \type {csr.tfm} and \type {csr.pfb} file it looks
+like in practice the \type {enc} file is not used, probably because in the \type
+{pfb} file the standard encoding matches the order in the \type {tfm} file. This
+is of course a rather dangerous assumption, especially if information lacks to
+check it.
+
+The next example definitions demonstrate several paths to go from \UNICODE\ input
+(source file) to rendered shapes. As this is mostly meant for generic usage we
+use the low level definition code (\CONTEXT\ users are not supposed to use that
+method).
+
+\starttyping
+\font\foo=file:csr10.tfm:reencode=auto;mode=node;liga=yes;kern=yes
+\stoptyping
+
+This is the easiest way. We use the \type {tfm} file for dimensions, ligatures
+and kerns. The \type {auto} option will use the \type {pfb} file to identify the
+right mapping. We enable ligatures and kerns and we use node mode. This indicates
+that we're dealing with a pseudo \OPENTYPE\ setup here. You can provide a \type
+{pfb} file with the \type {pfbfile} feature in case the name differes from the
+\type {tfm} file.
+
+\starttyping
+\font\foo=file:csr10.tfm:reencode=csr.enc;mode=node;liga=yes;kern=yes
+\stoptyping
+
+Now we use the \type {enc} file for the encoding vector but we still need the
+\type {pfb} file for mapping that onto the right shape. You probably can best use
+\type {auto} instead.
+
+\starttyping
+\font\foo=file:csr10.tfm:reencode=csr.enc;bitmap=yes;mode=node;liga=yes;kern=yes
+\stoptyping
+
+Here we force bitmap shapes. This is a bit tricky as a different code path is
+followed in the backend. Unless the situation is too confusing, a proper \type
+{ToUnicode} is included in the output, so that cut and paste works all right,
+given that the viewer is able to deal with it (always use \ACROBAT\ as
+reference).
+
+Why do we need modes and|/|or to simulate \OPENTYPE\ behaviour? Indeed it seldom
+makes sense with \type {tfm} files but in this particular case teh font has a
+quote cheat.
+
+\starttyping
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "czechdqcheat",
+        type = "substitution",
+        data = {
+            quotedblright = "csquotedblright",
+        },
+    }
+\stopluacode
+\stoptyping
+
+We could make this a language specific feature but as this font is not meant for
+other languages it makes no sense to do so. This feature is enabled with:
+
+\starttyping
+czechdqcheat=yes
+\stoptyping
+
+This will replace one quote by another with different side bearings. Of course a
+properly bounded quote with proper kerning makes much more sense. A test case is:
+
+\starttyping
+\quotedblleft  X\quotedblright
+\quotedblright X\quotedblleft
+\stoptyping
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,484 @@
+% language=uk
+
+\startcomponent fonts-appendix
+
+\environment fonts-environment
+
+\startchapter[title=Appendix][color=darkgray]
+
+\startsection[title=The \type {tfm} file,reference=fontdata:tfm]
+
+The (binary) \type {tfm} file is not human readable but can be turned into a
+verbose property list which is not that hard to understand.
+
+\starttyping
+tftopl texnansi-lmr10.tfm
+\stoptyping
+
+Here is an excerpt from the data file. It starts with some general properties of
+the font. The \type {O} means that the value is in octal while the \type {R} is a
+real. Keep in mind that \TEX\ has no datatype \quote {real} so internally it is
+just integers representing scaled points.
+
+\startnarrowtyping
+(FAMILY LMROMAN10)
+(FACE O 352)
+(CODINGSCHEME LY1 ENCODING /TEX'N'ANSI, Y&Y/)
+(DESIGNSIZE R 10.0)
+(COMMENT DESIGNSIZE IS IN POINTS)
+(COMMENT OTHER SIZES ARE MULTIPLES OF DESIGNSIZE)
+(CHECKSUM O 4720464277)
+\stopnarrowtyping
+
+A text font has the following font dimensions:
+
+\startnarrowtyping
+(FONTDIMEN
+    (SLANT      R 0.0)
+    (SPACE      R 0.333333)
+    (STRETCH    R 0.166667)
+    (SHRINK     R 0.111112)
+    (XHEIGHT    R 0.43055)
+    (QUAD       R 1.0)
+    (EXTRASPACE R 0.111112)
+    ...
+)
+\stopnarrowtyping
+
+Kerns and ligatures are packed into a table that is basically a sequence of
+labelled entries. Here we see the entry for the character \type {f} which has
+three ligatures: \type {ff}, \type {fi} and \type {fl}. Because ligatures can be
+chained, octal slot 13 will have ligature entries for \type {ffl} and \type
+{ffi}.
+
+\startnarrowtyping
+(LIGTABLE
+    ...
+    (LABEL C f)
+    (LIG C f   O 13)
+    (LIG C i   O 14)
+    (LIG C l   O 10)
+    (KRN O 135 R 0.027779)
+    (KRN O  41 R 0.027779)
+    (KRN O  51 R 0.027779)
+    (KRN O  77 R 0.027779)
+    (KRN O 223 R 0.027779)
+    (KRN O 224 R 0.027779)
+    (KRN O 140 R 0.027779)
+    (KRN O  47 R 0.027779)
+    (STOP)
+    ...
+)
+\stopnarrowtyping
+
+Each character gets its own entry. In this case there is no depth involved so it
+is not shown. The comment is just a repetition of the entry in the ligtable.
+
+\startnarrowtyping
+(CHARACTER C f
+    (CHARWD R 0.30555)
+    (CHARHT R 0.688875)
+    (CHARIC R 0.079222)
+    (COMMENT
+          (LIG C f   O 13)
+          (LIG C i   O 14)
+          (LIG C l   O 10)
+          (KRN O 135 R 0.027779)
+          (KRN O  41 R 0.027779)
+          (KRN O  51 R 0.027779)
+          (KRN O  77 R 0.027779)
+          (KRN O 223 R 0.027779)
+          (KRN O 224 R 0.027779)
+          (KRN O 140 R 0.027779)
+          (KRN O  47 R 0.027779)
+    )
+)
+\stopnarrowtyping
+
+\stopsection
+
+\startsection[title=The \type {vf} file,reference=fontdata:vf]
+
+A virtual font specification file can be converted to a more readable format with
+\type {vftovp}, for instance:
+
+\starttyping
+vftovp eurm10.vf
+\stoptyping
+
+The information in a \type {vf} file will be combined with the data in the
+accompanying \type {tfm} file so the output looks similar:
+
+\startnarrowtyping
+(VTITLE )
+(FAMILY UNSPECIFIED)
+(FACE F MRR)
+(CODINGSCHEME TEX MATH ITALIC)
+(DESIGNSIZE R 10.0)
+(COMMENT DESIGNSIZE IS IN POINTS)
+(COMMENT OTHER SIZES ARE MULTIPLES OF DESIGNSIZE)
+(CHECKSUM O 24401046203)
+(SEVENBITSAFEFLAG TRUE)
+\stopnarrowtyping
+
+Because this font is a math font there is no space defined.
+
+\startnarrowtyping
+(FONTDIMEN
+    (SLANT      R 0.0)
+    (SPACE      R 0.0)
+    (STRETCH    R 0.0)
+    (SHRINK     R 0.0)
+    (XHEIGHT    R 0.459)
+    (QUAD       R 1.0)
+    (EXTRASPACE R 0.0)
+)
+\stopnarrowtyping
+
+A virtual font will take glyphs from another font and therefore there are entries
+that refer to these fonts. In the following definition index \type {0} is created
+(the \type {D} specifies a decimal entry).
+
+\startnarrowtyping
+(MAPFONT D 0
+    (FONTNAME     eurm10)
+    (FONTCHECKSUM O 4276740471)
+    (FONTAT       R 1.0)
+    (FONTDSIZE    R 10.0)
+)
+(MAPFONT D 1
+    (FONTNAME     cmmi10)
+    (FONTCHECKSUM O 1350061076)
+    (FONTAT       R 1.0)
+    (FONTDSIZE    R 10.0)
+)
+\stopnarrowtyping
+
+The zero indexed font is the default, so in the following entry this font is
+taken:
+
+\startnarrowtyping
+(CHARACTER C W
+    (CHARWD R 0.986)
+    (CHARHT R 0.691)
+    (CHARIC R 0.056)
+    (COMMENT
+        (KRN O 177 R  0.056)
+        (KRN O  75 R -0.056)
+        (KRN O  73 R -0.083)
+        (KRN O  72 R -0.083)
+    )
+    (MAP
+        (SETCHAR C W)
+    )
+)
+\stopnarrowtyping
+
+The next specification is a combination of two other glyphs becoming a new
+glyph. We see here that the \type {MAP} table is actually a sort of program:
+
+\startnarrowtyping
+(CHARACTER O 200
+    (CHARWD R 0.622)
+    (CHARHT R 0.691)
+    (MAP
+        (PUSH)
+        (MOVEDOWN   R -0.18)
+        (MOVERIGHT  R  0.015)
+        (SELECTFONT D  2)
+        (SETCHAR    O 40)
+        (POP)
+        (SELECTFONT D  0)
+        (SETCHAR    C  h)
+    )
+)
+\stopnarrowtyping
+
+The character information is also in the \type {tfm} companion and that is what
+\TEX\ uses. The virtual information kicks in when the backend is creating the
+page stream and embedding the fonts.
+
+\stopsection
+
+\startsection[title=The \type {map} file,reference=fontdata:map]
+
+In a map file each line maps a font name onto a file that contains the font
+shapes in bitmap or outline format. For instance in the file \type
+{lm-texnansi.map} we find the line:
+
+\startnarrowtyping
+texnansi-lmr10 LMRoman10-Regular "enclmtexnansi ReEncodeFont" <lm-texnansi.enc <lmr10.pfb
+\stopnarrowtyping
+
+The backend will fetch the glyph data from \type {lmf10.pfb} and use the given
+encoding file to resolve indices to glyph names. A \type {pfb} file can contain
+more than 256 entries so names are used to access the data. The string between
+quotes is used for the encoding vector in the resulting file.
+
+The second entry in the line is the font name that will be used. This name is
+also used to control subset behaviour. Multiple references to this name will be
+collapsed into one inclusion when possible, thereby making the file as small as
+possible. You better make sure that the names are unique for a specific font.
+
+In addition to this, there can be directives for extending the font (horizontal
+stretch) and transforming it into a slanted variant. Both are to be used with
+care.
+
+In \MKIV\ map files are only used for virtual math fonts and just as in \MKII\ we
+load such files selectively. Users don't have to worry about this.
+
+\stopsection
+
+\startsection[title=The \type {enc} file,reference=fontdata:enc]
+
+For historic reasons, an encoding file is a blob of \POSTSCRIPT, probably because
+it can be copied into the final output directly. Given that \TEX\ got extended
+anyway, you can wonder why this information never ended up in an extended \type
+{tfm} or \type {vf} file. It had definitely made the traditional process much
+more robust.
+
+\startnarrowtyping
+/enclmtexnansi[
+/.notdef
+/Euro
+...
+/dotaccent
+/hungarumlaut
+/ogonek
+...
+/ffi
+/ffl
+/dotlessi
+/dotlessj
+/grave
+...
+/thorn
+/ydieresis
+] def
+\stopnarrowtyping
+
+There are excactly 256 entries in such a vector and the names should match those
+in a \type {pfb} file.
+
+\stopsection
+
+\startsection[title=The \type {afm} file,reference=fontdata:afm]
+
+Here we show an excerpt from an \type {afm} file that comes with Latin Modern
+Roman. Just as with a \type {tfm} file we start with some general information.
+However we don't need to convert the file as is it already in human readable
+format.
+
+\startnarrowtyping
+StartFontMetrics 2.0
+Comment Generated by MetaType1 (a MetaPost-based engine)
+Comment Creation Date: 7th October 2009
+Notice Copyright 2003--2009 by B. Jackowski and J.M. Nowacki (on behalf of TeX USERS GROUPS).
+Comment Supported by CSTUG, DANTE eV, GUST, GUTenberg, NTG, and TUG.
+Comment METATYPE1/Type 1 version by B. Jackowski & J. M. Nowacki
+Comment from GUST (http://www.gust.org.pl).
+Comment This work is released under the GUST Font License.
+Comment For the most recent version of this license see
+Comment This work has the LPPL maintenance status `maintained'.
+Comment The Current Maintainer of this work is Bogus\l{}aw Jackowski and Janusz M. Nowacki.
+Comment This work consists of the files listed in the MANIFEST-Latin-Modern.txt file.
+FontName LMRoman10-Regular
+FullName LMRoman10-Regular
+FamilyName LMRoman10
+Weight Normal
+ItalicAngle 0
+IsFixedPitch false
+UnderlinePosition -146
+UnderlineThickness 40
+Version 2.004
+EncodingScheme FontSpecific
+FontBBox -430 -290 1417 1127
+CapHeight 683.33333
+XHeight 430.55556
+Descender -194.44444
+Ascender 694.44444
+Comment PFM parameters: LMRoman10 0 0 0xEE
+Comment TFM designsize: 10 (in points)
+Comment TFM fontdimen  1: 0          (slant)
+Comment TFM fontdimen  2: 3.33333    (space)
+Comment TFM fontdimen  3: 1.66667    (space stretch)
+Comment TFM fontdimen  4: 1.11111    (space shrink)
+Comment TFM fontdimen  5: 4.3055     (xheight)
+Comment TFM fontdimen  6: 10         (quad)
+Comment TFM fontdimen  7: 1.11111    (extra space)
+Comment TFM fontdimen  8: 6.833      (non-standard: uc height)
+Comment TFM fontdimen  9: 6.9445     (non-standard: ascender)
+Comment TFM fontdimen 10: 11.27      (non-standard: accented cap height)
+Comment TFM fontdimen 11: 1.94443    (non-standard: descender depth)
+Comment TFM fontdimen 12: 11.27      (non-standard: max height)
+Comment TFM fontdimen 13: 2.9        (non-standard: max depth)
+Comment TFM fontdimen 14: 5          (non-standard: digit width)
+Comment TFM fontdimen 15: 0.88889    (non-standard: uc stem)
+Comment TFM fontdimen 16: 12         (non-standard: baselineskip)
+Comment TFM fontdimen 17: 0.69444    (non-standard: lc stem)
+Comment TFM fontdimen 18: 0.55556    (non-standard: u, i.e., font unit)
+Comment TFM fontdimen 19: 0.22223    (non-standard: overshoot)
+Comment TFM fontdimen 20: 0.25       (non-standard: thin stem, hair)
+Comment TFM fontdimen 21: 0.30556    (non-standard: cap thin stem, i.e., cap_hair)
+Comment TFM headerbyte  9: FontSpecific
+Comment TFM headerbyte 49: LMRoman10
+Comment TFM headerbyte 72: 234
+\stopnarrowtyping
+
+Watch the comments! Because \TEX\ needs a couple of so called fontdimens to be
+set, the comments list the appropriate values. When a \type {tfm} file is
+generated from an \type {afm} file, these values have to be used.
+
+Each character (or glyph) gets an entry. When we run out of indices i.e.\ pass
+the 255 boundary (we start at 0) the index becomes \type {-1}. Only the width is
+specified. The height and depth have to be derived from the bounding box for
+which the specification starts with key \type {B}.
+
+\startnarrowtyping
+StartCharMetrics 821
+...
+C  32 ; WX 333.33333 ; N space     ; B   0   0   0   0 ;
+...
+C 102 ; WX 305.55556 ; N f         ; B  33   0 357 705 ; L f ff ; L i fi ; L k f_k ; L l fl ;
+C 105 ; WX 277.77777 ; N i         ; B  33   0 247 657 ;
+C 108 ; WX 277.77777 ; N l         ; B  33   0 255 694 ;
+...
+C  -1 ; WX 500       ; N Acute     ; B 181 493 388 656 ;
+C  -1 ; WX 500       ; N acute     ; B 188 510 374 698 ;
+C  -1 ; WX 500       ; N acute.ts1 ; B 208 513 392 699 ;
+...
+EndCharMetrics
+\stopnarrowtyping
+
+Watch how this font defines a space character and keep in mind that these fonts
+date from the time that there was only one kind of space. The \type {L} entry
+specifies a ligature.
+
+The names of glyphs are standardized, and even the \type {f_k} is conforming to
+standards. This standardization makes it possible to go back from glyphs to characters
+when copying text from a typeset document.
+
+The kern table is pretty large here and for a reason. First of all the file
+defines 821 glyphs so the average amount of kerns per glyph is not that large.
+But take a look at the \type {A}. Because the \type {Aacute} has the same shape
+it kerns in a similar way. This means that ideally all combined characters end up
+with the same value as their base glyph. However, in our case a bit more
+selective approach is taken. The \type {Adieresis} has a different set of kerns,
+probably to save space. It is for this reason that \OPENTYPE\ fonts have a model
+of kern classes so that similar shapes can be treated as one when setting kerns.
+You see a similar issue with ligatures, where often the right part of the shape
+kerns the same as the (stand alone) first part of the shape does.
+
+\startnarrowtyping
+StartKernData
+StartKernPairs 9230
+...
+KPX seven.prop     hyphen.prop     -37
+KPX seven.prop     four.prop       -74
+KPX seven.prop     six.prop        -18.5
+KPX hyphen.prop    one.prop        -37
+KPX hyphen.prop    two.prop        -18.5
+KPX hyphen.prop    seven.prop      -55.5
+KPX seven.oldstyle four.oldstyle   -74
+KPX A              T               -83.333
+KPX Aacute         T               -83.333
+KPX Abreve         T               -83.333
+KPX Acircumflex    T               -83.333
+...
+KPX Adieresis      C               -27.778
+...
+KPX f              bracketright     27.778
+KPX f              exclam           27.778
+KPX f              parenright       27.778
+KPX f              question         27.778
+KPX f              quotedblleft     27.778
+KPX f              quotedblleft.cm  27.778
+KPX f              quotedblright    27.778
+KPX f              quotedblright.cm 27.778
+KPX f              quoteleft        27.778
+KPX f              quoteright       27.778
+...
+KPX ff             bracketright     27.778
+KPX ff             exclam           27.778
+KPX ff             parenright       27.778
+KPX ff             question         27.778
+KPX ff             quotedblleft     27.778
+KPX ff             quotedblleft.cm  27.778
+KPX ff             quotedblright    27.778
+KPX ff             quotedblright.cm 27.778
+KPX ff             quoteleft        27.778
+KPX ff             quoteright       27.778
+...
+EndKernPairs
+EndKernData
+\stopnarrowtyping
+
+If you look closely at the names, you will notice that some glyphs have a
+variant. In \OPENTYPE\ fonts these variants are grouped in features like \type
+{oldstyle}. The first part of such a name is still part of the standardization,
+but the second part is up to the font designer.
+
+The file ends with:
+
+\startnarrowtyping
+EndFontMetrics
+\stopnarrowtyping
+
+\stopsection
+
+\startsection[title=The \type {otf} file,reference=fontdata:otf]
+
+In the \LUATEX\ manual you can find an overview of the raw \OTF\ format as
+exposed in a \LUA\ table. The first decade of \LUATEX\ we used the built|-|in
+loader but even then in \CONTEXT\ we didn't use that format directly but used it
+to create a more compact and efficient table instead. The current release of
+\CONTEXT\ uses its own loader written in \LUA, but the fundamentals have not
+changed much. The tables are cached and can be read in at high speed. The
+structure of the tables is unlikely to change much although more data might get
+added. Although you can access the data it seldom makes sense to do so. Where
+needed interfaces are provided.
+
+\stopsection
+
+\startsection[title=The \type {lfg} file,reference=fontdata:lua]
+
+We use the goodies file control what gets added, replaced, patched or manipulated
+in a font. A goodie file permits us to go beyond what font provide by default.
+The content of a goodie file differs per font. As we also use this for
+experiments, not all entries that you find in such files are meant for users.
+
+\stopsection
+
+\startsection[title=Used fonts]
+
+The examples in the document depend on the fonts used. Here is a list of fonts used
+to render this version. Because fonts might have changed in the meantime, some examples
+might come out other than intended.
+
+\startluacode
+local list = table.load("fonts-mkiv-usedfonts.lua")
+
+local NC, NR = context.NC, context.NR
+
+for i=1,#list do
+    local l = list[i]
+    context.starttabulate { "|lB|l|" }
+        local basename  = string.lower(file.basename(l.filename))
+        local version   = string.lower(l.version)
+        local filesize  = (l.size or 0) / 1000 .. " Kb"
+        local instances = l.instances or 1
+        NC() context("filename")  NC() context.type(basename)  NC() NR()
+        NC() context("instances") NC() context.type(instances) NC() NR()
+        NC() context("filesize")  NC() context.type(filesize)  NC() NR()
+        NC() context("version")   NC() context.type(version)   NC() NR()
+    context.stoptabulate()
+end
+
+\stopluacode
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

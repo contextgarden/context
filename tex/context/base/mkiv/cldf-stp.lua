@@ -37,7 +37,7 @@ local stepper = nil
 local stack   = { } -- will never be deep so no gc needed
 local depth   = 0
 
-local nextstep = function()
+local function nextstep()
     if status(stepper) == "dead" then
         stepper      = stack[depth]
         depth        = depth - 1
@@ -51,7 +51,7 @@ interfaces.implement {
     actions = nextstep,
 }
 
-local ctx_resume = context.protectedcs.clf_step
+local ctx_resume = context.protected.cs.clf_step
 
 function context.step(first,...)
     if first ~= nil then

@@ -1,0 +1,2312 @@
+% language=uk
+
+\startcomponent fonts-extensions
+
+\environment fonts-environment
+
+\startchapter[title=Extensions][color=darkorange]
+
+\startsection[title=Introduction]
+
+One of the benefits of using \TEX\ is that you can add your own features and try
+to optimize the look and feel. Of course this can also go wrong and output can
+look pretty awful when you don't know what you're doing, but on the average it
+works out well. In many aspects the move to an \UNICODE\ data path and \OPENTYPE\
+fonts is a good one and solves a lot of problems with traditional \TEX\ engines
+and helps us to avoid complex and ugly hacks. But, if you look into the source
+code of \CONTEXT\ you will notice that there's still quite some complex coding
+needed. This is because we want to control mechanisms, even if it's only for
+dealing with some border cases. It's also the reason why \LUATEX\ is what it is:
+an extensible engine, building on tradition.
+
+As always with \TEX, fonts are an area where many tuning happens and this is also
+true in \CONTEXT. In this chapter some of the extensions will be discussed. Some
+extensions run on top of the (rather generic) feature mechanism and some are
+using dedicated code.
+
+\stopsection
+
+\startsection[title=Italics]
+
+Although \OPENTYPE\ fonts are more rich in features than traditional \TEX\ and
+\TYPEONE\ fonts, one important feature is missing: italic correction. This might
+sound strange but you need to keep in mind that in practice it's a feature that
+needs to be applied manually.
+
+\starttyping
+test {\it test\/} test
+\stoptyping
+
+It is possible to automate this mechanism and this is what the \type {\em} command
+does in \MKII:
+
+\starttyping
+test {\em test} test
+\stoptyping
+
+This command knows that it switches to italic (or slanted) and when used nested it
+knows to switch back. It also knows if a bold italic or slanted font is used. Therefore
+it can add italic correction between an italic and upright shape.
+
+An italic correction is bound to a glyph and bound to a font. In \in {figure}
+[latinmodern-italic] we see how an italic shape extends out of the bounding box.
+This is not the case in Dejavu: watch \in {figure} [dejavu-italic].
+
+\startplacefigure[reference=latinmodern-italic,title={Italic overshoot in Latin Modern.}]
+    \startcombination
+        \startcontent
+            \backgroundline[gray]{\color[maincolor]{\definedfont[lmroman10-regular*default sa 8]test}}
+        \stopcontent
+        \startcaption
+            Latin Modern Roman Regular
+        \stopcaption
+        \startcontent
+            \backgroundline[gray]{\color[maincolor]{\definedfont[lmroman10-italic*default sa 8]test}}
+        \stopcontent
+        \startcaption
+            Latin Modern Roman Italic
+        \stopcaption
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[reference=dejavu-italic,title={Italic overshoot in Dejavu Serif.}]
+    \startcombination
+        \startcontent
+            \backgroundline[gray]{\color[maincolor]{\definedfont[dejavuserif*default sa 8]test}}
+        \stopcontent
+        \startcaption
+            Dejavu Regular
+        \stopcaption
+        \startcontent
+            \backgroundline[gray]{\color[maincolor]{\definedfont[dejavuserifitalic*default sa 8]test}}
+        \stopcontent
+        \startcaption
+            Dejavu Italic
+        \stopcaption
+    \stopcombination
+\stopplacefigure
+
+This means that the application of italic correction should never been applied without
+knowing the font. In  \in {figure} [italic-upright] we see an upright word following
+an italic. The space is determined by the upright one.
+
+\startplacefigure[reference=italic-upright,title={Italic followed by upright.}]
+    \startcombination
+        \startcontent
+            \backgroundline
+                [gray]
+                {\color[maincolor]{\definedfont[lmroman10-italic*default  sa 4]test}
+                 \color[maincolor]{\definedfont[lmroman10-regular*default sa 4]\space test}}
+        \stopcontent
+        \startcaption
+            Latin Modern
+        \stopcaption
+        \startcontent
+            \backgroundline
+                [gray]
+                {\color[maincolor]{\definedfont[dejavuserifitalic*default sa 4]test}%
+                 \color[maincolor]{\definedfont[dejavuserif*default       sa 4]\space test}}
+        \stopcontent
+        \startcaption
+            Dejavu
+        \stopcaption
+    \stopcombination
+\stopplacefigure
+
+Because it is to be used with care you need to enable this feature per font, You
+also need to explicitly enable the application of this correction. in \in {figure}
+[italic-one] we see italic correction in action.
+
+\startbuffer
+\definefontfeature
+  [italic]
+  [default]
+  [itlc=yes]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\startplacefigure[reference=italic-one,title={Italic correction.}]
+    \startcombination
+        \startcontent
+            \backgroundline
+                [maincolor]
+                {\color[white]{\definedfont[lmroman10-italic*default  sa 4]test}
+                 \color[white]{\definedfont[lmroman10-regular*default sa 4]\space test}}
+        \stopcontent
+        \startcaption
+            \backgroundline
+                [maincolor]
+                {\setupitaliccorrection[text]%
+                 \color[white]{\definedfont[lmroman10-italic*italic   sa 4]test}
+                 \color[white]{\definedfont[lmroman10-regular*default sa 4]\space test}}
+        \stopcaption
+        \startcontent
+            \backgroundline
+                [maincolor]
+                {\color[white]{\definedfont[dejavuserifitalic*default sa 4]test}
+                 \color[white]{\definedfont[dejavuserif*default       sa 4]\space test}}
+        \stopcontent
+        \startcaption
+            \backgroundline
+                [maincolor]
+                {\setupitaliccorrection[text]%
+                 \color[white]{\definedfont[dejavuserifitalic*italic sa 4]test}
+                 \color[white]{\definedfont[dejavuserif*default      sa 4]\space test}}
+        \stopcaption
+    \stopcombination
+\stopplacefigure
+
+This only signals the font constructor that additional italic information has
+to be added to the font metrics. As we already mentioned, the application of
+correction is driven by the \type {\/} primitive and that one consults the
+font metrics. Because the correction is not part of the original font
+metrics it is calculated automatically by adding a small value to the
+width. This value is calculated as follows:
+
+\starttyping
+factor * (parameters.uwidth or 40) / 2
+\stoptyping
+
+The \type {uwidth} parameter is sometimes part of the specification but if not, we
+take a reasonable default.  The factor is under user control:
+
+\startbuffer
+\definefontfeature
+  [moreitalic]
+  [default]
+  [itlc=5]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+This is demonstrated in \in {figure} [italic-two]. You will notice that for Latin
+Modern (any) correction makes sense, but for Dejavu it probably makes things look
+worse. This is why italic correction is disabled by default. When enabled there
+are several variants:
+
+\starttabulate[|Bl|l|]
+\NC global \NC always apply correction \NC \NR
+\NC text   \NC only apply correction to text \NC \NR
+\NC always \NC apply correction between text and boxes \NC \NR
+\NC none   \NC forget about correction \NC \NR
+\stoptabulate
+
+We keep track of the state using attributes but that comes at a (small) price in terms
+of extra memory and runtime. The \type {global} option simply assumes that we always
+need to check for correction (of course only for fonts that have this feature enables).
+In the given example we used:
+
+\starttyping
+\setupitaliccorrection
+  [text]
+\stoptyping
+
+You can combine keys:
+
+\starttyping
+\setupitaliccorrection
+  [global,always]
+\stoptyping
+
+\startplacefigure[reference=italic-two,title={Italic correction (factor 5).}]
+    \startcombination
+        \startcontent
+            \backgroundline
+                [maincolor]
+                {\color[white]{\definedfont[lmroman10-italic*default  sa 4]test}
+                 \color[white]{\definedfont[lmroman10-regular*default sa 4]\space test}}
+        \stopcontent
+        \startcaption
+            \backgroundline
+                [maincolor]
+                {\setupitaliccorrection[text]%
+                 \color[white]{\definedfont[lmroman10-italic*italic   sa 4]test}
+                 \color[white]{\definedfont[lmroman10-regular*default sa 4]\space test}}
+        \stopcaption
+        \startcontent
+            \backgroundline
+                [maincolor]
+                {\color[white]{\definedfont[dejavuserifitalic*default sa 4]test}
+                 \color[white]{\definedfont[dejavuserif*default       sa 4]\space test}}
+        \stopcontent
+        \startcaption
+            \backgroundline
+                [maincolor]
+                {\setupitaliccorrection[text]%
+                 \color[white]{\definedfont[dejavuserifitalic*italic  sa 4]test}
+                 \color[white]{\definedfont[dejavuserif*default       sa 4]\space test}}
+        \stopcaption
+    \stopcombination
+\stopplacefigure
+
+The \type {itlc} feature controls if a font gets italic correction applied. In
+principle this is all that the user needs to do, given that the mechanism is
+enabled. These is an extra feature that controls the implementation:
+
+\starttabulate[|T|T|p|]
+\NC itlc        \NC no    \NC don't apply italic correction (default) \NC \NR
+\NC             \NC yes   \NC apply italic correction \NC \NR
+\NC textitalics \NC no    \NC precalculate italic corrections (permit engine usage) \NC \NR
+\NC             \NC yes   \NC precalculate italic corrections (inhibit engine) \NC \NR
+\NC             \NC delay \NC delay calculation of corrections \NC \NR
+\stoptabulate
+
+When \type {textitalics} is set to \type {yes} or \type {delay} the mechanism
+built into the engine is completely disabled. When set to \type {no} the engine
+can kick in but normally the alternative method takes precedence so that the
+engine sees no reason for further action. You can trace italic corrections with:
+
+\starttyping
+\enabletrackers[typesetters.italics]
+\stoptyping
+
+\stopsection
+
+\startsection[title=Bounding boxes]
+
+\startbuffer
+\definefontfeature
+  [withbbox]
+  [boundingbox=yes]
+
+\definefont
+  [FontWithBB]
+  [Normal*withbbox]
+\stopbuffer
+
+\start \getbuffer \FontWithBB
+
+There are some features that are rather useless and only make sense when figuring out
+issues. An example of such a feature is the following:
+
+\typebuffer
+
+This feature adds a background to each character in a font. In some fonts a glyph
+has a tight bounding box, while on other fonts some extra space is put on the left
+and right. Keep in mind that this feature blocks colored text.
+
+\par \stop
+
+\stopsection
+
+\startsection[title=Slanting]
+
+This features (as well as the one described in the next section) are seldom used
+but provided because they were introduced in \PDFTEX.
+
+\startbuffer[define]
+\definefontfeature
+  [abitslanted]
+  [default]
+  [slant=.1]
+
+\definefontfeature
+  [abitmoreslanted]
+  [default]
+  [slant=.2]
+\stopbuffer
+
+\startbuffer[sample]
+\definedfont[Normal*abitslanted]This is a bit slanted.
+\definedfont[Normal*abitmoreslanted]And this is a bit more slanted.
+\stopbuffer
+
+\typebuffer[define,sample]
+
+The result is:
+
+\getbuffer[define]
+
+\startlines
+\getbuffer[sample]
+\stoplines
+
+\stopsection
+
+\startsection[title=Extending]
+
+The second manipulation is extending the shapes horizontally:
+
+\startbuffer[define]
+\definefontfeature
+  [abitbolder]
+  [default]
+  [extend=1.3]
+
+\definefontfeature
+  [abitnarrower]
+  [default]
+  [extend=0.7]
+\stopbuffer
+
+\startbuffer[sample]
+\definedfont[Normal*abitbolder]This looks a bit bolder.
+\definedfont[Normal*abitnarrower]And this is a bit narrower.
+\stopbuffer
+
+\typebuffer[define,sample]
+
+The result is:
+
+\getbuffer[define]
+
+\startlines
+\getbuffer[sample]
+\stoplines
+
+We can also combine slanting and extending:
+
+\startbuffer[define]
+\definefontfeature
+  [abitofboth]
+  [default]
+  [extend=1.3,
+   slant=.1]
+\stopbuffer
+
+\startbuffer[sample]
+\definedfont[Normal*abitofboth]This is a bit bolder but also slanted.
+\stopbuffer
+
+\typebuffer[define,sample]
+
+If you remember those first needle matrix printers you might recognize the
+next rendering:
+
+\getbuffer[define]
+
+\startlines
+\getbuffer[sample]
+\stoplines
+
+\stopsection
+
+\startsection[title=Fixing] % dimensions
+
+This is a rather special one. First we show a couple of definitions:
+
+\startbuffer
+\definefontfeature
+  [dimensions-a]
+  [default]
+  [dimensions={1,1,1}]
+
+\definefontfeature
+  [dimensions-b]
+  [default]
+  [dimensions={1,2,3}]
+
+\definefontfeature
+  [dimensions-c]
+  [default]
+  [dimensions={1,3,2}]
+
+\definefontfeature
+  [dimensions-d]
+  [default]
+  [dimensions={3,3,3}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+As usual you apply such a feature as follows:
+
+\starttyping
+\definefont[MyFont][Serif*dimensions-a sa 2]
+\stoptyping
+
+Alternatively you can use such a feature on its own:
+
+\starttyping
+\definefontfeature
+  [dimensions-333]
+  [dimensions={3,3,3}]
+\definefont[MyFont][Serif*default,dimensions-333 sa 2]
+\stoptyping
+
+In \in {figure} [dimensions-side-by-side] you see these four definitions in
+action. The leftmost rendering is the default rendering. The three numbers in the
+definitions represent the width (in em), height and depth (in ex).
+
+\startplacefigure[reference={dimensions-side-by-side},title={Freezing dimensions of glyphs.}]
+    \startcombination[5*1]
+        \startcontent \hbox to 7em {\hss\ruledhbox{\definedfont[Serif*default      sa 2]g}\hss}\stopcontent \startcaption default     \stopcaption
+        \startcontent \hbox to 7em {\hss\ruledhbox{\definedfont[Serif*dimensions-a sa 2]g}\hss}\stopcontent \startcaption \hbox{1em 1ex 1ex} \stopcaption
+        \startcontent \hbox to 7em {\hss\ruledhbox{\definedfont[Serif*dimensions-b sa 2]g}\hss}\stopcontent \startcaption \hbox{1em 2ex 3ex} \stopcaption
+        \startcontent \hbox to 7em {\hss\ruledhbox{\definedfont[Serif*dimensions-c sa 2]g}\hss}\stopcontent \startcaption \hbox{1em 3ex 2ex} \stopcaption
+        \startcontent \hbox to 7em {\hss\ruledhbox{\definedfont[Serif*dimensions-d sa 2]g}\hss}\stopcontent \startcaption \hbox{3em 3ex 3ex} \stopcaption
+    \stopcombination
+\stopplacefigure
+
+This feature only makes sense for fonts that need a fixed width, like the
+\CJK\ fonts that are used for asian scripts. Normally those fonts already
+have fixed dimensions, but this feature can be used to fix problematic
+fonts or add some more space. However, for such large fonts this also brings a
+larger memory footprint.
+
+A special case is the following:
+
+\startbuffer
+\definefontfeature
+  [dimensions-e]
+  [dimensions=strut]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This will make the height and depth the same as the current strut height and depth:
+
+\startbuffer
+\ruledhbox{\definedfont[Serif*default,dimensions-e at  8pt]clipped}
+\ruledhbox{\definedfont[Serif*default,dimensions-e at 12pt]clipped}
+\ruledhbox{\definedfont[Serif*default,dimensions-e at 24pt]clipped}
+\stopbuffer
+
+\typebuffer
+
+The dimensions are (in this case) limited:
+
+\startlinecorrection[blank] \dontleavehmode \hpack{\maincolor\inlinebuffer} \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Unicoding]
+
+Nowadays we will mostly use fonts that ship with a \UNICODE\ aware encoding. And
+in \CONTEXT, even if we use a \TYPEONE\ font, it gets mapped onto \UNICODE.
+However, there are some exceptions, for instance the Zapf Dingbats in \TYPEONE\
+format. These have a rather obscure private encoding and the glyph names run from
+\type {a1} upto \type {a206} and have no relation to what the glyph represents.
+
+In the case of Dingbats we're somewhat lucky that they ended up in \UNICODE, so
+we can relocate the glyphs to match their rightful place. This is done by means
+of a goodies file. We already discussed this in \in {section} [goodies] so we
+only repeat the usage.
+
+\startbuffer
+\definefontfeature
+  [dingbats]
+  [mode=base,
+   goodies=dingbats,
+   unicoding=yes]
+
+\definefontsynonym
+  [ZapfDingbats]
+  [file:uzdr.afm]
+  [features=dingbats]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+I tend to qualify the Dingbat font in \TEX\ distributions as rather unstable
+because of name changes and them either or not being included. Therefore it's best to
+use the hard coded name because that triggers the most visible error message when
+the font is not found.
+
+A font like this can for instance be used with the glyph placement macros as is
+demonstrated below. In the last line we see that a direct \UTF\ input also works
+out well.
+
+\starttabulate[|||T|]
+\HL
+\NC \type{\getglyphdirect     {ZapfDingbats*dingbats}{\number"2701}} \NC \getglyphdirect     {ZapfDingbats*dingbats}{\number"2701} \NC \NC \NR
+\NC \type{\getglyphdirect     {ZapfDingbats*dingbats}{\char"2701}}   \NC \getglyphdirect     {ZapfDingbats*dingbats}{\char"2701}   \NC \NC \NR
+\NC \type{\getnamedglyphdirect{ZapfDingbats*dingbats}{a1}}           \NC \getnamedglyphdirect{ZapfDingbats*dingbats}{a1}           \NC \NC \NR
+\NC \type{\getnamedglyphdirect{ZapfDingbats*dingbats}{a11}}          \NC \getnamedglyphdirect{ZapfDingbats*dingbats}{a11}          \NC \NC \NR
+\HL
+\NC \type{\getglyphdirect     {ZapfDingbats}{\number"2701}}          \NC \getglyphdirect     {ZapfDingbats}{\number"2701}          \NC unknown \NC \NR
+\NC \type{\getglyphdirect     {ZapfDingbats}{\char"2701}}            \NC \getglyphdirect     {ZapfDingbats}{\char"2701}            \NC unknown \NC \NR
+\NC \type{\getnamedglyphdirect{ZapfDingbats}{a1}}                    \NC \getnamedglyphdirect{ZapfDingbats}{a1}                    \NC \NC \NR
+\NC \type{\getnamedglyphdirect{ZapfDingbats}{a11}}                   \NC \getnamedglyphdirect{ZapfDingbats}{a11}                   \NC \NC \NR
+\HL
+\NC \type{\definedfont[ZapfDingbats*dingbats]✁}                      \NC \definedfont[ZapfDingbats*dingbats]✁                      \NC \NC \NR
+\HL
+\stoptabulate
+
+Keep in mind that fonts like Dejavu (that we use here as document font) already
+has these characters which is why it shows up in the verbose part of the table.
+
+\stopsection
+
+\startsection[title=Protrusion]
+
+Protrusion is a feature that \LUATEX\ inherits from \PDFTEX. It is sometimes
+referred to as hanging punctuation but in our case any character qualifies. Also,
+hanging is not frozen but can be tuned in detail. Currently the engine defines
+protrusion in terms of the emwidth which is unfortunate and likely to change.
+\footnote {In general the low level implementation can be optimized as there are
+better mechanisms in \LUATEX.}
+
+It is sometimes believed that protrusion improves for instance narrower columns,
+but I'm pretty sure that this is not the case. It is true that it is taken into
+account when breaking a paragraph into lines, and that we then have a little bit
+more width available, but at the same time it is an extra constraint: if we
+protrude we have to do it for each line (and the whole main body of text) so it's
+just a different solution space. The main reason for applying this feature is
+{\em not} that the lines look better or that we get better looking narrow lines
+but that the right and left margins look nicer. Personally I don't like half
+protrusion of punctuation and hyphens. Best is to have small values for regular
+characters to improve the visual appearance and use full protrusion for hyphens
+(and maybe punctuation).
+
+\startsubsubject[title=protrusion classes]
+
+In \CONTEXT\ we've always defined protrusion as a percentage of the width of a
+glyph. From \MKII\ we inherit the level of control as well as the ability to
+define vectors. The shared properties are collected in so called classes and the
+character specific properties in vectors. The following classes are predefined:
+
+\showprotrusionclass
+
+The names are used in the definitions:
+
+\starttyping
+\definefontfeature[default][protrusion=quality]
+\stoptyping
+
+Currently adding a class only has a \LUA\ interface.
+
+\startbuffer
+\startluacode
+fonts.protrusions.classes.myown = {
+    vector = 'myown',
+    factor = 1,
+}
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsubsubject
+
+\startsubsubject[title=protrusion vectors]
+
+Vectors are larger but not as large as you might expect. Only a subset of
+characters needs to be defined. This is because in practice only latin scripts
+are candidates and these scripts have glyphs that look a lot like each other. As
+we only operate on the horizontal direction characters like \quote
+{aàáâãäå} look the same from the left and right so we only have to define
+the protrusion for \quote {a}.
+
+As with classes, you can define your own vectors:
+
+\startbuffer
+\startluacode
+fonts.protrusions.vectors.myown = table.merged (
+    fonts.protrusions.vectors.quality,
+    {
+        [0x002C] = { 0, 2 }, -- comma
+    }
+)
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsubsubject
+
+\startsubsubject[title=protrusion vector pure]
+    \showprotrusionvector[name=pure]
+\stopsubsubject
+
+\startsubsubject[title=protrusion vector punctuation]
+    \showprotrusionvector[name=punctuation]
+\stopsubsubject
+
+\startsubsubject[title=protrusion vector alpha]
+    \showprotrusionvector[name=alpha]
+\stopsubsubject
+
+\startsubsubject[title=protrusion vector quality]
+    \showprotrusionvector[name=quality]
+\stopsubsubject
+
+\startsubsubject[title=examples of protrusion]
+
+Next we show the quality protrusion. For this we use \type {tufte.tex} as
+this one for sure will result in punctuation and other candidates for
+protrusion.
+
+\startbuffer[define]
+\definefontfeature
+  [whatever]
+  [default]
+  [protrusion=quality]
+
+\definefont[MyTestA][Serif*default  at 10pt]
+\definefont[MyTestB][Serif*whatever at 10pt]
+\stopbuffer
+
+\startbuffer[example]
+\startoverlay
+    {\ruledvbox \bgroup
+        \hsize\textwidth
+        \MyTestA
+        \setupalign[normal]
+        \input{tufte}
+     \egroup}
+    {\ruledvbox \bgroup
+        \hsize\textwidth
+        \MyTestB
+        \setupalign[hanging,normal]
+        \maincolor
+        \input{tufte}
+     \egroup}
+\stopoverlay
+\stopbuffer
+
+\typebuffer[define]
+\getbuffer [define]
+
+We use the following example. The results are shown in \in {figure}
+[protrusion:quality]. The colored text is the protruding one.
+
+\typebuffer[example]
+
+\startplacefigure[reference=protrusion:quality,title=The difference between no protrusion and quality protrusion.]
+    \getbuffer [example]
+\stopplacefigure
+
+The previously defined own class and vector is somewhat more extreme:
+
+\startbuffer[define]
+\definefontfeature
+  [whatever]
+  [default]
+  [protrusion=myown]
+
+\definefont[MyTestA][Serif*default  at 10pt]
+\definefont[MyTestB][Serif*whatever at 10pt]
+\stopbuffer
+
+\typebuffer[define]
+\getbuffer [define]
+
+In \in {figure} [protrusion:myown] we see that the somewhat extreem definition of
+the comma also pulls the preceding character into the margin.
+
+\startplacefigure[reference=protrusion:myown,title=The influence of extreme protrusion on preceding characters.]
+    \getbuffer [example]
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Expansion]
+
+Expansion is also an inheritance of \PDFTEX. \footnote {As with protrusion the
+implementation in the engine is somewhat suboptimal and inefficient and will be
+upgraded to a more \LUATEX-ish way.} This mechanism selectively expands
+characters, normally upto 5\%. One reason for applying it is that we have less
+visually incompatible spacing, especially when we have underfull or cramped
+lines. For each (broken) line the badness is reconsidered with either shrink or
+stretch applied to all characters in that line. So, in the worst case a shrunken
+line is followed by a stretched one and that can be visible when the scaling
+factors are chosen wrong.
+
+As with protrusion, the solution space is larger but so are the constraints. But
+contrary to protrusion here the look and feel of the whole line can be made
+better but at the cost of much more runtime and larger (\PDF) files.
+
+\startsubsubject[title=protrusion classes]
+
+The amount of expansion depends in the shape of the character. Vertical strokes
+are more sensitive for expansion then horizontal ones. So an \quote {o} can
+get a different scaling than an \quote {m}. As with protrusion we have collected
+the properties in classes:
+
+\showexpansionclass
+
+The smaller the step, the more instances of a font we get, the better it
+looks, and the larger the files become. it's best not to use too many stretch
+and shrink steps. A stretch of 2 and shrink of 2 and step of .25 results in
+upto 8~instances plus the regular sized one.
+
+\stopsubsubject
+
+\startsubsubject[title=expansion vectors]
+
+We only have one vector: \type {quality}:
+
+\showexpansionvector[name=quality]
+
+\stopsubsubject
+
+\startsubsubject[title=an example of expansion]
+
+We use \type {zapf.tex} as example text, if only because Hermann Zapf introduced
+this optimization. Keep in mind that you can combine expansion and protrusion.
+
+\startbuffer[define]
+\definefontfeature
+  [whatever]
+  [default]
+  [expansion=quality]
+
+\definefont[MyTestA][Serif*default  at 10pt]
+\definefont[MyTestB][Serif*whatever at 10pt]
+\stopbuffer
+
+\startbuffer[example]
+\startoverlay
+    {\ruledvbox \bgroup
+        \hsize\textwidth
+        \MyTestA
+        \setupalign[normal]
+        \input{tufte}
+     \egroup}
+    {\ruledvbox \bgroup
+        \hsize\textwidth
+        \MyTestB
+        \setupalign[hz,normal]
+        \maincolor
+        \input{tufte}
+     \egroup}
+\stopoverlay
+\stopbuffer
+
+\typebuffer[define]
+\getbuffer [define]
+
+We use the following example. The results are shown in \in {figure}
+[expansion:quality]. The colored text is the protruding one.
+
+\typebuffer[example]
+
+\startplacefigure[reference=expansion:quality,title=The difference between no expansion and quality expansion.]
+    \getbuffer [example]
+\stopplacefigure
+
+\startsubsubject[title=Expansion and kerning]
+
+When we expand glyphs we also need to look at the font kerns between them. In the
+original implementation taken from \PDFTEX\ expansion was implemented using pseudo
+fonts (with expanded glyph widths) and expansion of inter|-|character kerns was
+based on font information. In \LUATEX\ we have expansion factors in glyph nodes
+instead which is more efficient and gives a cleaner separation between front- and
+backend as the backend has no need to consult the font.
+
+For the font kerns we set the kern compensation directly and for that we use the
+average expansion factors of the neighbouring fonts so technically we support
+kerns between different fonts). This also has the advantage that kerns injected
+in node mode are treated well, given that they are tagged as font kern.
+
+So what is the effect (and need) of scaling font kerns? Let's look at an example.
+Kerns can be positive but also negative:
+
+\startlinecorrection
+\startcombination
+    {\vbox {
+        \forgetall
+        \hpack to 3cm{\hss\ruledhbox{\maincolor V\kern-1ptA}\hss}
+        \hpack to 3cm{\hss\ruledhbox{\maincolor V\kern 0ptA}\hss}
+    }} {negative}
+    {\vbox {
+        \forgetall
+        \hpack to 3cm{\hss\ruledhbox{\maincolor I\kern.25ptI}\hss}
+        \hpack to 3cm{\hss\ruledhbox{\maincolor I\kern  0ptI}\hss}
+    }} {positive}
+\stopcombination
+\stoplinecorrection
+
+If we use a rediculous amount of stretch we get the following. In the top line we
+scale the kern, in the bottom line we don't.
+
+\startlinecorrection
+\startcombination
+    {\vbox {
+        \definedfont[file:texgyrepagella-regular.otf at 12pt]%
+        \forgetall
+        \hpack to 3cm{\maincolor \hss\strut \scale[xscale=5000]{V}\kern-5pt\scale[xscale=5000]{A}\hss}
+        \hpack to 3cm{\maincolor \hss\strut \scale[xscale=5000]{V}\kern-1pt\scale[xscale=5000]{A}\hss}
+    }} {negative}
+    {\vbox {
+        \definedfont[file:texgyrepagella-regular.otf at 12pt]%
+        \forgetall
+        \hpack to 3cm{\maincolor \hss\strut \scale[xscale=5000]{I}\kern1.25pt\scale[xscale=5000]{I}\hss}
+        \hpack to 3cm{\maincolor \hss\strut \scale[xscale=5000]{I}\kern0.25pt\scale[xscale=5000]{I}\hss}
+    }} {positive}
+\stopcombination
+\stoplinecorrection
+
+The reason that we mention this is that when we apply \OPENTYPE\ features,
+positioning not necessarily result in font kerns. For instance ligatures can be
+the result of careful applied kerns and in some scripts kerns are used to connect
+glyphs. This means that we best cannot expand kerns by default. How bad is
+that? By looking at the examples above one would say \quotation {real bad}.
+
+But say that we have about 1pt of font kerns, then a 5\% expansion (which is
+already a lot) amounts to 0.05pt so to \blackrule [width=1pt, height=max,
+depth=max] we add \blackrule [width=.05pt, height=max, depth=max] which is so
+little that it probably goes unnoticed. Even if we use extreme kerns, as between
+VA, in practice the small amount of stretch or shrink added to a font kern goes
+unnoticed.
+
+In \in {figure} [hz:natural] we have overlayed the different strategies. The
+sample and width is chosen such that we see something. On a display you can
+scale up these examples and inspect if there is really something to see,
+but on paper zooming in helps, as in \in {figure} [hz:zoomed]. Even then the
+effect of expanded kerns is invisible. The used definitions are:
+
+\definecolor[hz:test:tr][r=1,a=1,t=.5]
+\definecolor[hz:test:tg][g=1,a=1,t=.5]
+\definecolor[hz:test:tb][b=1,a=1,t=.5]
+
+\startbuffer
+\setupfontexpansion
+    [extremehz]
+    [stretch=5,shrink=5,step=.5,vector=default,factor=1]
+\setupfontexpansion
+    [regularhz]
+    [stretch=2,shrink=2,step=.5,vector=default,factor=1]
+\setupfontexpansion
+    [minimalhz]
+    [stretch=2,shrink=2,step=.5,vector=default,factor=.5]
+
+\definefontfeature
+    [extremehz] [default]
+    [mode=node,expansion=extremehz]
+\definefontfeature
+    [regularhz] [default]
+    [mode=node,expansion=regularhz]
+\definefontfeature [minimalhz] [default]
+    [mode=node,expansion=minimalhz]
+
+\definefont
+    [ExtremeHzFont]
+    [file:texgyrepagella-regular.otf*extremehz at 10pt]
+\definefont
+    [RegularHzFont]
+    [file:texgyrepagella-regular.otf*regularhz at 10pt]
+\definefont
+    [MinimalHzFont]
+    [file:texgyrepagella-regular.otf*minimalhz at 10pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\edef\HzSampleText{\cldloadfile{ward}}
+
+\def\NoHzSample  {\vbox{\hsize 10cm \color[hz:test:tr]{\setupalign  [nohz]\HzSampleText\par}}}
+\def\HzSample    {\vbox{\hsize 10cm \color[hz:test:tg]{\setupalign    [hz]\HzSampleText\par}}}
+\def\FullHzSample{\vbox{\hsize 10cm \color[hz:test:tb]{\setupalign[fullhz]\HzSampleText\par}}}
+
+\startplacefigure[reference=hz:natural,title={The two expansion methods compared.}]
+    \showfontkerns
+    \dontcomplain
+    \enabledirectives[fonts.injections.fontkern]
+    \startcombination[1*3]
+        {\ExtremeHzFont\ruledhpack{\startoverlay {\NoHzSample} {\HzSample    } \stopoverlay}} {no hz \& hz}
+        {\ExtremeHzFont\ruledhpack{\startoverlay {\NoHzSample} {\FullHzSample} \stopoverlay}} {no hz \& full hz}
+        {\ExtremeHzFont\ruledhpack{\startoverlay {\HzSample  } {\FullHzSample} \stopoverlay}} {hz \& full hz}
+    \stopcombination
+    \disabledirectives[fonts.injections.fontkern]
+\stopplacefigure
+
+\startplacefigure[reference=hz:zoomed,title={The two expansion methods compared (zoomed in).}]
+    \showfontkerns
+    \dontcomplain
+    \enabledirectives[fonts.injections.fontkern]
+    \startcombination[3*3]
+
+        {\ExtremeHzFont
+         \clip[nx=6,ny=5,x=2,y=2,sx=2]{\startoverlay {\NoHzSample} {\HzSample    } \stopoverlay}} {extreme: no hz \& hz}
+        {\ExtremeHzFont
+         \clip[nx=6,ny=5,x=2,y=2,sx=2]{\startoverlay {\NoHzSample} {\FullHzSample} \stopoverlay}} {extreme: no hz \& full hz}
+        {\ExtremeHzFont
+         \clip[nx=6,ny=5,x=2,y=2,sx=2]{\startoverlay {\HzSample  } {\FullHzSample} \stopoverlay}} {extreme: hz \& full hz}
+
+        {\RegularHzFont
+         \clip[nx=6,ny=5,x=2,y=2,sx=2]{\startoverlay {\NoHzSample} {\HzSample    } \stopoverlay}} {regular: no hz \& hz}
+        {\RegularHzFont
+         \clip[nx=6,ny=5,x=2,y=2,sx=2]{\startoverlay {\NoHzSample} {\FullHzSample} \stopoverlay}} {regular: no hz \& full hz}
+        {\RegularHzFont
+         \clip[nx=6,ny=5,x=2,y=2,sx=2]{\startoverlay {\HzSample  } {\FullHzSample} \stopoverlay}} {regular: hz \& full hz}
+
+        {\MinimalHzFont
+         \clip[nx=6,ny=5,x=2,y=2,sx=2]{\startoverlay {\NoHzSample} {\HzSample    } \stopoverlay}} {minimal: no hz \& hz}
+        {\MinimalHzFont
+         \clip[nx=6,ny=5,x=2,y=2,sx=2]{\startoverlay {\NoHzSample} {\FullHzSample} \stopoverlay}} {minimal: no hz \& full hz}
+        {\MinimalHzFont
+         \clip[nx=6,ny=5,x=2,y=2,sx=2]{\startoverlay {\HzSample  } {\FullHzSample} \stopoverlay}} {minimal: hz \& full hz}
+
+    \stopcombination
+    \disabledirectives[fonts.injections.fontkern]
+\stopplacefigure
+
+In \CONTEXT\ the \type {hz} alignment option only enables expansion of glyphs, while \type
+{fullhz} also applies it to kerns. However, in the examples here we had to explicitly enable
+font kerns in node mode:
+
+\starttyping
+\enabledirectives[fonts.injections.fontkern]
+\stoptyping
+
+It will be clear that you can just stick to using the \type {hz} directive (if
+you want expansion at all) because this directive is normally disabled and
+because most fonts are processed in node mode.
+
+\stopsubsubject
+
+\stopsection
+
+\startsection[title=Composing]
+
+This feature is seldom needed but can come in handy for old fonts or when
+some special language is to be supported. When writing this section I tested
+this feature with Dejavu and only two additional characters were added:
+
+\definefontfeature
+  [default-plus-compose]
+  [compose=yes]
+
+\definefont
+  [MyComposedSerif]
+  [Serif*default-plus-compose]
+
+% we need to cheat a bit as we don't have the main character in mono
+
+\startlines \MyComposedSerif
+\type{fonts > combining > }\hbox to .5em{\hss Ѷ\hss}\type{ (U+00476) = }\hbox to .5em{\hss Ѵ\hss}\type{ (U+00474) + ̏ (U+0030F)}
+\type{fonts > combining > }\hbox to .5em{\hss ѷ\hss}\type{ (U+00477) = }\hbox to .5em{\hss ѵ\hss}\type{ (U+00475) + ̏ (U+0030F)}
+\stoplines
+
+This trace showed up after giving:
+
+\starttyping
+\enabletrackers
+  [fonts.composing.define]
+
+\definefontfeature
+  [default-plus-compose]
+  [compose=yes]
+
+\definefont
+  [MyFont]
+  [Serif*default-plus-compose]
+\stoptyping
+
+Fonts like Latin Modern have lots of glyphs but still lack some. Although the
+composer can add some of the missing, some of those new virtual glyphs probably
+will never look real good. For instance, putting additional accents on top of
+already accented uppercase characters will fail when that character has a rather
+tight (or even clipped) boundingbox in order not to spoil the lineheight. You can
+get some more insight in the process by turning on tracing:
+
+\starttyping
+\enabletrackers[fonts.composing.visualize]
+\stoptyping
+
+One reason why composing can be suboptimal is that it uses the boundingbox of the
+characters that are combined. If you really depend on a specific font and need
+some of the missing characters it makes sense to spend some time on optimizing
+the rendering. This can be done via the goodies mechanism. As an example we've
+added \type {lm-compose-test.lfg} to the distribution. First we show how it
+looks at the \TEX\ end:
+
+\startbuffer
+\enabletrackers[fonts.composing.visualize]
+
+\definefontfeature
+  [default-plus-compose]
+  [compose=yes]
+
+\loadfontgoodies
+  [lm-compose-test] % playground
+
+\definefont
+  [MyComposedSerif]
+  [file:lmroman10regular*default-plus-compose at 48pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\blank
+\backgroundline
+  [halfcolor]
+  {\MyComposedSerif B\quad\char"1E02\quad\char"1E04}
+\blank
+
+The positions of the dot accents on top and below the capital B is defined
+in a goodie file:
+
+\starttyping
+return {
+  name = "lm-compose-test",
+  version = "1.00",
+  comment = "Goodies that demonstrate composition.",
+  author = "Hans and Mojca",
+  copyright = "ConTeXt development team",
+  compositions = {
+    ["lmroman12-regular"] = compose,
+  }
+}
+\stoptyping
+
+As this is an experimental feature there are several ways to deal with
+this. For instance:
+
+\starttyping
+local defaultfraction = 10.0
+
+local compose = {
+  dy       = defaultfraction,
+  [0x1E02] = { -- B dot above
+      dy = 150
+  },
+  [0x1E04] = { -- B dot below
+      dy = 150
+  },
+}
+\stoptyping
+
+Here the fraction is relative to the difference between the height of the
+accentee and the accent. A better solution is the following:
+
+\starttyping
+local compose = {
+  [0x1E02] = { -- B dot above
+    anchored = "top",
+  },
+  [0x1E04] = { -- B dot below
+    anchored = "bottom",
+  },
+  [0x0042] = { -- B
+    anchors = {
+      top = {
+        x = 300, y = 700,
+      },
+      bottom = {
+        x = 300, y = -30,
+      },
+    },
+  },
+  [0x0307] = {
+    anchors = {
+      top = {
+        x = -250, y =  550,
+      },
+    },
+  },
+  [0x0323] = {
+    anchors = {
+      bottom = {
+        x = -250, y =  -80,
+      },
+    },
+  },
+}
+\stoptyping
+
+This approach is more or less the same as \OPENTYPE\ anchoring. It takes a bit
+more effort to define these tables but the result is better.
+
+\stopsection
+
+\startsection[title=Kerning]
+
+Inter|-|character kerning is not supported at the font level and with good
+reason. The fact that something is conceptually possible doesn't mean that we
+should use or support it. Normally proper kerning (or the lack of it) is part
+of a font design and for some scripts different kerning is not even an option.
+
+On the average \TEX\ does a proper job on justification but not all programs
+are that capable. As a consequence designers (at least we ran into it) tend to
+stick to flush left rendering because they don't trust their system to do a
+proper job otherwise. On the other hand they seem to have no problem with
+messing up the inter|-|character spacing and even combine that with excessive
+inter|-|word spacing {\em if} they want to achieve justification (without
+hyphenation). And it can become even worse when extreme glyph expansion (like
+hz) is applied.
+
+Anyhow, it will be clear that consider messing with properties like kerning that
+are part of the font design is to be done careful.
+
+\definecharacterkerning [extremekerning] [factor=.125]
+
+\start \setcharacterkerning[extremekerning]
+
+For running text additional kerning makes no sense. It not only looks
+bad, it also spoils the grayness of a text. When it is applied we need
+to deal with special cases. For instance ligatures make no sense so they
+should be disabled. Additional kerning should relate to already present
+kerning and interword spacing should be adapted accordingly. Embedded
+non|-|characters also need to be treated well.
+
+\par \stop
+
+This paragraph was typeset as follows:
+
+\starttyping
+\definecharacterkerning [extremekerning] [factor=.125]
+
+\setcharacterkerning[extremekerning] ... text ...
+\stoptyping
+
+Where additional kerning can make sense, is in titles. The previous
+command can do that job. In addition we have a mechanism that
+fills a given space. This mechanism uses the following definition:
+
+\starttyping
+\setupcharacterkerning
+  [stretched]
+  [factor=max,
+   width=\availablehsize]
+\stoptyping
+
+\startbuffer
+\stretched{\bfd to the limit}
+\stopbuffer
+
+\typebuffer
+
+\blank \start \color[maincolor]{\getbuffer} \stop \blank
+
+The following does not work:
+
+\startbuffer
+\ruledhbox to 5cm{\stretched{\bfd to the limit}}
+\stopbuffer
+
+\typebuffer
+
+\blank \start \color[maincolor]{\getbuffer} \stop \blank
+
+But this works ok:
+
+\startbuffer
+\setupcharacterkerning
+  [stretched]
+  [width=]
+
+\stretched{\bfd to the limit}
+\stopbuffer
+
+\typebuffer
+
+\blank \start \color[maincolor]{\getbuffer} \stop \blank
+
+You can also say this:
+
+\startbuffer
+\stretched[width=]{\bfd to the limit}
+\stopbuffer
+
+\typebuffer
+
+\blank \start \color[maincolor]{\getbuffer} \stop \blank
+
+or:
+
+\startbuffer
+\ruledhbox{\stretched[width=10cm]{\bfd to the limit}}
+\stopbuffer
+
+\typebuffer
+
+\blank \start \color[maincolor]{\getbuffer} \stop \blank
+
+You can get some insight in what kerning does to your font by the following
+command:
+
+\startbuffer
+\usemodule[typesetting-kerning]
+
+\starttext
+  \showcharacterkerningsteps
+    [style=Bold,
+     sample=how to violate a proper font design,
+     text=rubish,
+     first=0,
+     last=45,
+     step=5]
+\stoptext
+\stopbuffer
+
+\typebuffer
+
+\blank \getbuffer \blank
+
+\stopsection
+
+\startsection[title=Ligatures]
+
+For some Latin fonts ligature building is quite advanced, take Unifraktur. I have no
+problem admitting that I find fraktur hard to read, but this one actually is sort of
+an exception. It's also a good candidate for a screen presentation where you mainly
+made notes for yourself: no one has to read it, but it looks great, especially if
+you consider it to be drawn by a pen.
+
+Anyway, we will use the following code as example (based on some remarks on the
+fonts website).
+
+\startbuffer[sample]
+sitzen / ſitzen / effe fietsen / ch ck ſt tz ſi fi
+\stopbuffer
+
+\typebuffer[sample]
+
+Some ligatures are implemented in the usual way, using the \type {liga} and \type {dlig}
+features, others kick in thanks to \type {ccmp}. This fact alone is an illustration that
+the low level \OPENTYPE\ ligature feature is not related to ligatures at all but a more
+generic mechanism: you can basically combine multiple shapes into one in all features
+exposed to the user.
+
+We define a bunch of specific feature sets:
+
+\startbuffer
+\definefontfeature
+  [unifraktur-a]
+  [default]
+\definefontfeature
+  [unifraktur-b]
+  [default]
+  [goodies=unifraktur,keepligatures=yes]
+\definefontfeature
+  [unifraktur-c]
+  [default]
+  [ccmp=yes]
+\definefontfeature
+  [unifraktur-d]
+  [default]
+  [ccmp=yes,goodies=unifraktur,keepligatures=yes]
+\definefontfeature
+  [unifraktur-e]
+  [default]
+  [liga=no,rlig=no,clig=no,dlig=no,ccmp=yes,keepligatures=auto]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+and also some fonts:
+
+\startbuffer
+\definefont[TestA][UnifrakturCook*unifraktur-a sa 0.9]
+\definefont[TestB][UnifrakturCook*unifraktur-b sa 0.9]
+\definefont[TestC][UnifrakturCook*unifraktur-c sa 0.9]
+\definefont[TestD][UnifrakturCook*unifraktur-d sa 0.9]
+\definefont[TestE][UnifrakturCook*unifraktur-e sa 0.9]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+We show these five alternatives here:
+
+\starttabulate[|T||]
+\NC liga                        \NC \TestA\getbuffer[sample] \NC \NR
+\NC liga + keepligatures        \NC \TestB\getbuffer[sample] \NC \NR
+\NC liga + ccmp                 \NC \TestC\getbuffer[sample] \NC \NR
+\NC liga + ccmp + keepligatures \NC \TestD\getbuffer[sample] \NC \NR
+\NC ccmp + keepligatures        \NC \TestE\getbuffer[sample] \NC \NR
+\stoptabulate
+
+The real fun starts when we want to add extra spacing between characters. Some
+ligatures need to get broken and some kept.
+
+\startbuffer
+\setupcharacterkerning[kerncharacters][factor=0.5]
+\setupcharacterkerning[letterspacing] [factor=0.5]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\enabletrackers[typesetters.kerns.ligatures]
+
+Next we will see how ligatures behave depending on how the mechanisms are set
+up. The colors indicate what trickery is used:
+
+\starttabulate[|T||]
+\NC \color[darkred]  {red}   \NC kept by dynamic feature \NC \NR
+\NC \color[darkgreen]{green} \NC kept by static feature  \NC \NR
+\NC \color[darkblue] {blue}  \NC keep by goodie          \NC \NR
+\stoptabulate
+
+First we use \type {\kerncharacters}:
+
+\starttabulate[|T||]
+\NC liga                        \NC \kerncharacters {\TestA\getbuffer[sample]} \NC \NR
+\NC liga + keepligatures        \NC \kerncharacters {\TestB\getbuffer[sample]} \NC \NR
+\NC liga + ccmp                 \NC \kerncharacters {\TestC\getbuffer[sample]} \NC \NR
+\NC liga + ccmp + keepligatures \NC \kerncharacters {\TestD\getbuffer[sample]} \NC \NR
+\NC ccmp + keepligatures        \NC \kerncharacters {\TestE\getbuffer[sample]} \NC \NR
+\stoptabulate
+
+In the next example we use \type {\letterspacing}:
+
+\starttabulate[|T||]
+\NC liga                        \NC \letterspacing {\TestA\getbuffer[sample]} \NC \NR
+\NC liga + keepligatures        \NC \letterspacing {\TestB\getbuffer[sample]} \NC \NR
+\NC liga + ccmp                 \NC \letterspacing {\TestC\getbuffer[sample]} \NC \NR
+\NC liga + ccmp + keepligatures \NC \letterspacing {\TestD\getbuffer[sample]} \NC \NR
+\NC ccmp + keepligatures        \NC \letterspacing {\TestE\getbuffer[sample]} \NC \NR
+\stoptabulate
+
+\disabletrackers[typesetters.kerns.ligatures]
+
+The difference is that the letterspacing variant dynamically adds the predefined
+featureset \type {letterspacing} which is defined in a similar way as \type
+{unifraktur-e}. In the case of this font, this variant is the better one to use.
+In fact, this variant probably works okay with most fonts. However, by not hard
+coding this behaviour we keep control, as one never knows what the demands are.
+When no features are used, information from the (given) goodie file \type
+{unifraktur.lfg} is consulted:
+
+\starttyping
+letterspacing = {
+  -- watch it: zwnj's are used (in the tounicodes too)
+  keptligatures = {
+    ["c_afii301_k.ccmp"] = true, -- ck
+    ["c_afii301_h.ccmp"] = true, -- ch
+    ["t_afii301_z.ccmp"] = true, -- tz
+    ["uniFB05"]          = true, -- ſt
+  },
+}
+\stoptyping
+
+These kick in when we don't disable ligatures by setting features (case~e).
+
+There are two pseudo features that can help us out when a font doesn't provide
+the wanted ligatures but has the right glyphs for building them. The \UNICODE\
+database has some information about how characters can be (de)composed and we can
+use that information to create virtual glyphs:
+
+\starttyping
+\definefontfeature
+  [default] [default]
+  [char-ligatures=yes,mode=node]
+\stoptyping
+
+and:
+
+\starttyping
+\definefontfeature
+  [default] [default]
+  [compat-ligatures=yes,mode=node]
+\stoptyping
+
+This feature was added after some discussion on the \CONTEXT\ mailing list about
+the following use case.
+
+\startbuffer
+\definefontfeature
+  [default-l] [default]
+  [char-ligatures=yes,
+   compat-ligatures=yes,
+   mode=node]
+
+\definefont[LigCd][cambria*default]
+\definefont[LigPd][texgyrepagellaregular*default]
+\definefont[LigCl][cambria*default-l]
+\definefont[LigPl][texgyrepagellaregular*default-l]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+These definitions result in:
+
+\starttabulate[|l|l|l|l|l|]
+\NC                    \NC \type {\LigCd}     \NC \type {\LigPd}     \NC \type {\LigCl}     \NC \type {\LigPl}     \NC \NR
+\NC \type{PEL·LÍCULES} \NC \LigCd PEL·LÍCULES \NC \LigPd PEL·LÍCULES \NC \LigCl PEL·LÍCULES \NC \LigPl PEL·LÍCULES \NC \NR
+\NC \type{pel·lícules} \NC \LigCd pel·lícules \NC \LigPd pel·lícules \NC \LigCl pel·lícules \NC \LigPl pel·lícules \NC \NR
+\NC \type{PEĿLÍCULES}  \NC \LigCd PEĿLÍCULES  \NC \LigPd PEĿLÍCULES  \NC \LigCl PEĿLÍCULES  \NC \LigPl PEĿLÍCULES  \NC \NR
+\NC \type{peŀlícules}  \NC \LigCd peŀlícules  \NC \LigPd peŀlícules  \NC \LigCl peŀlícules  \NC \LigPl peŀlícules  \NC \NR
+\stoptabulate
+
+Of course one can wonder is this is the right approach and if it's not better to
+use a font that provides the needed characters in the first place.
+
+\stopsection
+
+\startsection[title=New features]
+
+\startsubsection[title=Substitution]
+
+It is possible to add new features via \LUA. Here is an example of a single
+substitution:
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "stest",
+        type = "substitution",
+        data = {
+            a = "X",
+            b = "P",
+        }
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We show an overview at the end of this section, but here is a simple example
+already. You need to define the feature before defining a font because otherwise
+the font will not know about it.
+
+\startbuffer
+\definefontfeature[stest][stest=yes]
+\definedfont[file:dejavu-serifbold.ttf*default]
+abracadabra: \addff{stest}abracadabra
+\stopbuffer
+
+\typebuffer \start \blank \maincolor \getbuffer \blank \stop
+
+Instead of (more readable) glyph names you can also give \UNICODE\ numbers:
+
+\starttyping
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "stest",
+        type = "substitution",
+        data = {
+            [0x61] = 0x58
+            [0x62] = 0x50
+        }
+    }
+\stopluacode
+\stoptyping
+
+The definition is quite simple: we just map glyph names (or unicodes) onto
+other ones. An alternate is also possible:
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "atest",
+        type = "alternate",
+        data = {
+            a = { "X", "Y" },
+            b = { "P", "Q" },
+        }
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Less useful is a multiple substitution. Normally this one is part of a chain of
+replacements.
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "mtest",
+        type = "multiple",
+        data = {
+            a = { "X", "Y" },
+            b = { "P", "Q" },
+        }
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+A ligature (or multiple to one) is also possible but normally only makes sense when
+there is indeed a ligature. We use a similar definition for mapping the \TEX\ input
+sequence \type {---} onto an \emdash.
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "ltest",
+        type = "ligature",
+        data = {
+            ['1'] = { "a", "b" },
+            ['2'] = { "d", "a" },
+        }
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsubsection
+
+\startsubsection[title=Positioning]
+
+You can define a kern feature too but when doing so you need to use measures in
+font units.
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "ktest",
+        type = "kern",
+        data = {
+            a = { b = -500 },
+        }
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Pairwise positioning is more complex and involves two (optional) arrays
+that specify \type {{dx dy wd ht}} for each of the two glyphs. In the next
+example we only displace the second glyph.
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "ptest",
+        type = "pair",
+        data = {
+            ["a"] = { ["b"] = { false,  { -1000, 1200, 0, 0 } } },
+        }
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Of course you need to know a bit about the metrics of the glyphs involved so in
+practice this boils down to trial and error.
+
+\stopsubsection
+
+\startsubsection[title=Examples]
+
+We didn't show usage yet. This is because we need to define a feature before we
+define a font. New features will be added to a font when it gets defined.
+
+\startbuffer
+\definefontfeature[stest][stest=yes]
+\definefontfeature[atest][atest=2]
+\definefontfeature[mtest][mtest=yes]
+\definefontfeature[ltest][ltest=yes]
+\definefontfeature[ktest][ktest=yes]
+\definefontfeature[ptest][ptest=yes]
+\definefontfeature[ctest][ctest=yes]
+
+\definedfont[file:dejavu-serif.ttf*default]
+
+\starttabulate[|l|l|l|]
+\NC operation    \NC feature       \NC              abracadabra \NC \NR
+\HL
+\NC substitution \NC \type {stest} \NC \addff{stest}abracadabra \NC \NR
+\NC alternate    \NC \type {atest} \NC \addff{atest}abracadabra \NC \NR
+\NC multiple     \NC \type {mtest} \NC \addff{mtest}abracadabra \NC \NR
+\NC ligature     \NC \type {ltest} \NC \addff{ltest}abracadabra \NC \NR
+\NC kern         \NC \type {ktest} \NC \addff{ktest}abracadabra \NC \NR
+\NC pair         \NC \type {ptest} \NC \addff{ptest}abracadabra \NC \NR
+\NC chain sub    \NC \type {ctest} \NC \addff{ctest}abracadabra \NC \NR
+\stoptabulate
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsubsection
+
+\startsubsection[title=Contexts]
+
+A more complex substitution is the following:
+
+\startbuffer
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name    = "ytest",
+        type    = "chainsubstitution",
+        lookups = {
+            {
+                type = "substitution",
+                data = {
+                    ["b"] = "B",
+                    ["c"] = "C",
+                },
+            },
+        },
+        data = {
+            rules = {
+                {
+                    before  = { { "a" } },
+                    current = { { "b", "c" } },
+                    lookups = { 1 },
+                },
+            },
+        },
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here the dataset is a sequence of rules. There can be a \type {before}, \type
+{current} and \type {after} match. The replacements are specified with the \type
+{lookups} entry and the numbers are indices in the provided \type {lookups}
+table.
+
+\stopsubsection
+
+\startsubsection[title={Language dependencies}]
+
+When \OPENTYPE\ was not around we only had to deal with ligatures, smallcaps and
+oldstyle and of course kerns. Their number was so small that the term \quote
+{features} was not even used. In practice one just loaded a font that had
+oldstyle or smallcaps or none of that and was done. There were different fonts and
+sold separately.
+
+In \OPENTYPE\ we have more variation and although these fonts can be much more
+advanced the lack of standardization (for instance what gets initialized, or what
+shapes are in the default slots) can lead to messy setups. Some fonts bind
+features to scripts, some don't, which means that:
+
+\starttyping
+\definefontfeature[smallcaps][smcp=yes,script=dflt]
+\definefontfeature[smallcaps][smcp=yes,script=latn]
+\definefontfeature[smallcaps][smcp=yes,script=cyrl]
+\stoptyping
+
+are in fact different and you don't know in advance if you need to specify \type
+{dflt} or \type {latn}. In practice for a feature like smallcaps there is no
+difference between languages, but for ligatures there can be.
+
+When we extend an existing feature we can think of:
+
+\starttyping
+\definefontfeature[smallcaps][default][smcp=yes,script=auto]
+\definefontfeature[smallcaps][default][smcp=yes,script=*]
+\stoptyping
+
+but that can have side effects too (for instance disabling language specific
+features). The easiest way to explore this language dependency is to make
+a feature of our own.
+
+\startbuffer
+\startluacode
+fonts.handlers.otf.addfeature {
+    name     = "simplify",
+    type     = "multiple",
+    prepend  = true,
+    features = {
+        ["*"] = {
+            ["deu"] = true
+        }
+    },
+    data     = {
+        [utf.byte("ä")] = { "a", "e" },
+        [utf.byte("Ä")] = { "A", "E" },
+        [utf.byte("ü")] = { "u", "e" },
+        [utf.byte("Ü")] = { "U", "E" },
+        [utf.byte("ö")] = { "o", "e" },
+        [utf.byte("Ö")] = { "O", "E" },
+        [utf.byte("ß")] = { "s", "z" },
+        [utf.byte("ẞ")] = { "S", "Z" },
+    },
+}
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here we implement a language specific feature that we use at the \TEX\ end:
+
+\startbuffer
+\definefontfeature
+  [simplify-de]
+  [simplify=yes,
+   language=deu]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+that we can use as:
+
+\startbuffer
+\definedfont[Serif*default,simplify-de]%
+äüöß
+{\de äüöß}
+{\nl äüöß}
+\stopbuffer
+
+\typebuffer
+
+and get: \start \maincolor \inlinebuffer \stop, but as you see, both German and
+Dutch get the same treatment, which might not be what you want, because in Dutch
+the diearesis has a different meaning.
+
+\startbuffer
+\definedfont[Serif*default]%
+                       äüöß
+{\de\addff{simplify-de}äüöß}
+{\nl                   äüöß}
+\stopbuffer
+
+\typebuffer
+
+The above is restricts the usage so now we get: \start \maincolor \inlinebuffer
+\stop, which is more language bound. You don't need much imagination for
+extending this:
+
+\startbuffer
+\definefontfeature
+  [simplify]
+  [simplify=yes,
+   language=deu]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\definedfont[Serif*default]%
+                    äüöß
+{\de\addff{simplify}äüöß}
+{\nl\addff{simplify}äüöß}
+\stopbuffer
+
+So what do we expect with the next?
+
+\typebuffer
+
+We get: \start \maincolor \inlinebuffer \stop, and we see that the language
+setting is not taken into account! This is because the font already has been set
+up with a script and language combination. The solution is to temporary set the
+font related language explicitly:
+
+\definefontfeature
+  [simplify]
+  [simplify=yes]
+
+\startbuffer
+\definedfont[Serif*default]%
+                                  äüöß
+{\de\addfflanguage\addff{simplify}äüöß}
+{\nl\addfflanguage\addff{simplify}äüöß}
+\stopbuffer
+
+\typebuffer
+
+So we can automatically switch to language specific features if we want to:
+\start \maincolor \inlinebuffer \stop.
+
+Let's now move to another level of complexity: support for more than one language
+as in fact this example was made for Dutch in the first place, but the German
+outcome is a bit more visible.
+
+\startbuffer
+\startluacode
+fonts.handlers.otf.addfeature {
+    name     = "simplify",
+    type     = "multiple",
+    prepend  = true,
+ -- prepend  = "smcp",
+    dataset  =
+    {
+        {
+            features = {
+                ["*"] = {
+                    ["nld"] = true
+                }
+            },
+            data     = {
+             -- [utf.byte("ä")] = { "a" },
+             -- [utf.byte("Ä")] = { "A" },
+             -- [utf.byte("ü")] = { "u" },
+             -- [utf.byte("Ü")] = { "U" },
+             -- [utf.byte("ö")] = { "o" },
+             -- [utf.byte("Ö")] = { "O" },
+                [utf.byte("ĳ")] = { "i", "j" },
+                [utf.byte("Ĳ")] = { "I", "J" },
+                [utf.byte("æ")] = { "a", "e" },
+                [utf.byte("Æ")] = { "A", "E" },
+            },
+        },
+        {
+         -- type     = "multiple", -- local values possible
+            features = {
+                ["*"] = {
+                    ["deu"] = true
+                }
+            },
+            data     = {
+                [utf.byte("ä")] = { "a", "e" },
+                [utf.byte("Ä")] = { "A", "E" },
+                [utf.byte("ü")] = { "u", "e" },
+                [utf.byte("Ü")] = { "U", "E" },
+                [utf.byte("ö")] = { "o", "e" },
+                [utf.byte("Ö")] = { "O", "E" },
+                [utf.byte("ß")] = { "s", "z" },
+                [utf.byte("ẞ")] = { "S", "Z" },
+            },
+        }
+    }
+}
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+For this we use the following example:
+
+\startbuffer
+\definedfont[Serif*default,simplify]%
+                   äüöß ĳæ
+{\de\addfflanguage äüöß ĳæ}
+{\nl\addfflanguage äüöß ĳæ}
+\stopbuffer
+
+\typebuffer
+
+Because the Dutch is hard to check we use an \type {æ} replacement too and
+commented the similarities with German: \start \maincolor \inlinebuffer \stop.
+But still we're not done, say that we want smallcaps too:
+
+\startbuffer
+\definefontfeature[alwayssmcp][smcp=always]%
+\definedfont[Serif*default,simplify,alwayssmcp]%
+                   äüöß ĳæ
+{\de\addfflanguage äüöß ĳæ}
+{\nl\addfflanguage äüöß ĳæ}
+\stopbuffer
+
+\typebuffer
+
+This comes out as: \start \maincolor \inlinebuffer \stop.
+
+The reason for specifying \type{smcp} as \type {always} is that otherwise we
+get language specific smallcaps while often they are not bound to a language
+but to the defaults. The good news is that we can do this automatically:
+
+\startbuffer
+\setupfonts[language=auto]%
+\definefontfeature[alwayssmcp][smcp=always]%
+\definedfont[Serif*default,simplify,alwayssmcp]%
+     äüöß ĳæ
+{\de äüöß ĳæ}
+{\nl äüöß ĳæ}
+\stopbuffer
+
+\typebuffer
+
+But be aware that this applies to all situations. Here we get: \start \maincolor
+\inlinebuffer \stop.
+
+\stopsubsection
+
+\startsubsection[title=Syntax summary]
+
+In the examples we have seen several ways to define features. One of the
+differences is that you either set a \type {data} field directly, or that you
+specify a dataset. The fields in a dataset entry overload the ones given at the
+top level or when not set the top level value will be taken. There is a bit
+of (downward compatibility) tolerance built in, but best not depend on that.
+
+\starttyping
+fonts.handlers.otf.addfeature {
+    name     = "demo",
+    features = {
+        [<script>] = {
+            [<language>] = true
+        }
+    },
+    prepend  = true | featurename | position,
+    dataset  = {
+        {
+            type = "substitution",
+            data = {
+                [<char|code>] = <char|code>,
+            }
+        },
+        {
+            type = "alternate",
+            data = {
+                [<char|code>] = { <char|code>, <char|code>, ... },
+            }
+        },
+        {
+            type = "multiple",
+            data = {
+                [<char|code>] = { <char|code>, <char|code>, ... },
+            }
+        },
+        {
+            type = "ligature",
+            data = {
+                [<char|code>] = { <char|code>, <char|code>, ... },
+            }
+        },
+        {
+            type = "kern",
+            data = {
+                [<char|code>] = { [<char|code>] = <value> },
+            }
+        },
+        {
+            type = "pair",
+            data = {
+                [<char|code>] = { [<char|code>] = {
+                    false | { <value>, <value>, <value>, <value> },
+                    false | { <value>, <value>, <value>, <value> }
+                }
+            }
+        },
+        {
+            type    = "chainsubstitution",
+            lookups = {
+                {
+                    type = <typename>,
+                    data = <mapping>,
+                },
+            },
+            data = {
+                rules = {
+                    {
+                        before  = { { [<char|code>], ... } },
+                        current = { { [<char|code>], ... } },
+                        after   = { { [<char|code>], ... } },
+                        lookups = { <index>, ... },
+                    },
+                },
+            },
+        },
+    },
+}
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=Extra characters]
+
+\startbuffer[hyphenchars]
+\startluacode
+
+    local privateslots = fonts.constructors.privateslots
+
+    local function addspecialhyphen(tfmdata)
+
+        local exheight = tfmdata.parameters.xheight
+        local emwidth  = tfmdata.parameters.quad
+        local width    = emwidth  /  4
+        local height   = exheight / 10
+        local depth    = exheight /  2
+        local offset   = emwidth  /  6
+
+        tfmdata.characters[privateslots.righthyphenchar] = {
+            -- no dimensions
+            commands = {
+
+                { "right", offset },
+
+                { "push" },
+                { "right", -width },
+                { "down", depth },
+                { "rule", height, width },
+                { "pop" },
+
+                { "right", -width/5 },
+                { "down", depth + height },
+                { "rule", 3*height, width/5 },
+
+
+            }
+        }
+
+        tfmdata.characters[privateslots.lefthyphenchar] = {
+            -- no dimensions
+            commands = {
+
+                { "right", -offset },
+
+                { "push" },
+                { "down", depth + height },
+                { "rule", 3*height, width/5 },
+                { "pop" },
+
+                { "down", depth },
+                { "rule", height, width },
+
+            }
+        }
+
+    end
+
+    fonts.constructors.features.otf.register {
+        name        = "specialhyphen",
+        description = "special hyphen",
+        manipulators = {
+            base = addspecialhyphen,
+            node = addspecialhyphen,
+        }
+    }
+
+\stopluacode
+\stopbuffer
+
+You can add virtual characters to fonts. Here we give an example that is derived
+from an example posted on the mailing list. By default, when we hyphenated a word,
+we get this:
+
+\definefont[DemoFont] [Serif*default]
+
+\blank \start \DemoFont \maincolor \hsize 1mm averylongword \par \stop \blank
+
+The default character that is appended at the end and beginning of a line
+can be specified as follows:
+
+\startbuffer
+\setuplanguage
+  [en]
+  [righthyphenchar=45,
+   lefthyphenchar=45]
+\stopbuffer
+
+\typebuffer
+
+So now we get:
+
+\blank \start \getbuffer \DemoFont \maincolor \hsize 1mm averylongword \par \stop \blank
+
+Say that we want a different signal, for instance some rule. Here is how that can
+be done:
+
+\typebuffer[hyphenchars]
+
+\getbuffer[hyphenchars]
+
+Watch the way we use private slots. You can best use a unique glyph name as these
+numbers are shared between fonts. With:
+
+\startbuffer
+\definefontfeature
+  [default]
+  [default]
+  [specialhyphen=yes]
+\definefont
+  [DemoFont]
+  [Serif*default at 24pt]
+\setuplanguage
+  [en]
+  [righthyphenchar=\getprivateglyphslot{righthyphenchar},
+   lefthyphenchar=\getprivateglyphslot{lefthyphenchar}]
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlinecorrection[blank]
+\getbuffer
+\framed
+  [foregroundstyle=\DemoFont \setupinterlinespace,
+   offset=none,
+   frame=no,
+   width=1mm,
+   align={flushleft}]
+  {\hsize 1mm \maincolor averylongword\par}
+\stoplinecorrection
+
+You need to keep in mind that some of these settings are global but in practice that is
+not a real problem. Here is how you reset:
+
+\startbuffer
+\definefontfeature
+  [default]
+  [default]
+  [specialhyphen=no]
+\setuplanguage
+  [en]
+  [righthyphenchar=45,
+   lefthyphenchar=0]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsubsection
+
+\startsubsection[title=Goodies]
+
+The examples above extend a font in the \TEX\ document (normally a style) but you
+can use a goodies file too, for instance \type {cambria.lfg}.
+
+\starttyping
+return {
+    name = "cambria",
+    version = "1.00",
+    comment = "Goodies that complement cambria.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    extensions = {
+        {
+            name = "kern", -- adds to kerns
+            type = "pair",
+            data = {
+                [0x0153] = { -- combining acute
+                    [0x0301] = { -- aeligature
+                        false,
+                        { -500, 0, 0, 0 }
+                    }
+                },
+            }
+        }
+    }
+}
+\stoptyping
+
+Here we use the feature name \type {kern} and therefore we don't have to define a
+specific (new) feature for it. Such a goodie is then used as follows:
+
+\starttyping
+\definefontsynonym
+  [Serif]
+  [cambria]
+  [features=default,
+   goodies=cambria]
+\stoptyping
+
+You can find such definitions in the \type {type-imp-*.mkiv} files.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Spacing]
+
+% By default the font loader deduces the spacing from the space character or
+% other font properties. You can influence this by the \type {space} feature.
+%
+% \starttyping
+% \definefontfeature
+%   [korean]
+%   [default]
+%   [script=hang,
+%    language=kor,
+%    space=local] % or locl
+% \stoptyping
+%
+% Instead of the usual \type {yes} (which means: use character 32), \type {local}
+% or \type {locl} (which means: use a replacement provided by the \type{locl}
+% feature), you can also pass a character, so
+%
+% \starttyping
+% \definefontfeature
+%   [spacy]
+%   [default]
+%   [space=A]
+% \stoptyping
+%
+% is valid.
+
+As you probably know, \TEX\ has no space character. When the input is read,
+characters tagged as space are intercepted and become glue. Compare this:
+
+\startlinecorrection[blank]
+    \startcombination
+        {\framed
+            [width=3cm,height=15mm,align={middle,lohi},foregroundcolor=maincolor]
+            {\dorecurse{5}{test }}}
+        {\type{text test...}}
+        {\framed
+            [width=3cm,height=15mm,align={middle,lohi},foregroundcolor=maincolor]
+            {\dorecurse{5}{test\char32\relax}}}
+        {\type{text\char32test...}}
+    \stopcombination
+\stoplinecorrection
+
+Most fonts have a space character and you can actually use it and indeed a space
+character will be injected but as it is not glue, the line break algorithm will
+not see it as space.
+
+Al the magic done with space characters other than the native space character
+(decimal 32) are at some point translated into glue.
+
+\starttabulate[||T|p|]
+\NC \bf command \NC \UNICODE \NC width \NC \NR
+
+\NC \type{\nobreakspace}
+    \type{\nbsp}                     \NC U+00A0 \NC space           \NC \NR
+\NC \type{\ideographicspace}         \NC U+2000 \NC quad/2          \NC \NR
+\NC \type{\ideographichalffillspace} \NC U+2001 \NC quad            \NC \NR
+\NC \type{\twoperemspace}
+    \type{\enspace}                  \NC U+2002 \NC quad/2          \NC \NR
+\NC \type{\emspace}
+    \type{\quad}                     \NC U+2003 \NC quad            \NC \NR
+\NC \type{\threeperemspace}          \NC U+2004 \NC quad/3          \NC \NR
+\NC \type{\fourperemspace}           \NC U+2005 \NC quad/4          \NC \NR
+\NC \type{\fiveperemspace}           \NC        \NC quad/5          \NC \NR
+\NC \type{\sixperemspace}            \NC U+2006 \NC quad/6          \NC \NR
+\NC \type{\figurespace}              \NC U+2007 \NC width of zero   \NC \NR
+\NC \type{\punctuationspace}         \NC U+2008 \NC width of period \NC \NR
+\NC \type{\breakablethinspace}       \NC U+2009 \NC quad/8          \NC \NR
+\NC \type{\hairspace}                \NC U+200A \NC quad/8          \NC \NR
+\NC \type{\zerowidthspace}           \NC U+200B \NC 0               \NC \NR
+\NC \type{\zerowidthnonjoiner}
+    \type{\zwnj}                     \NC U+200C \NC 0               \NC \NR
+\NC \type{\zerowidthjoiner}
+    \type{\zwj}                      \NC U+200D \NC 0               \NC \NR
+\NC \type{\narrownobreakspace}       \NC U+202F \NC quad/8          \NC \NR
+\NC \type{\zerowidthnobreakspace}    \NC U+FEFF \NC                 \NC \NR
+\NC \type{\optionalspace}            \NC        \NC space when not followed by punctuation \NC \NR
+\stoptabulate
+
+% "205F  % space/8 (math)
+
+The last one is not un \UNICODE\ and the fifths of an emspace is not in \UNICODE\
+either. This emspace (or quad in \TEX\ speak) is a font property. The width of
+the space used by \CONTEXT\ is dreived form this value. In case of a monospace
+fonts, the following logic is applied:
+
+\startitemize
+    \startitem
+        When there is a space character, the width of that character is used.
+    \stopitem
+    \startitem
+        Otherwise, when there is an emdash present, the width if that character
+        is used.
+    \stopitem
+    \startitem
+        Otherwise, when there is an \type {charwidth} property available (the
+        average width), that valua is used.
+    \stopitem
+\stopitemize
+
+When a proportional font is used, we do as follows:
+
+\startitemize
+    \startitem
+        When there is a space character, the width of that character is used.
+    \stopitem
+    \startitem
+        Otherwise, when there is an emdash present, the width of that character
+        divided by two is used.
+    \stopitem
+    \startitem
+        Otherwise, when there is an \type {charwidth} property available (the
+        average width), that value is used.
+    \stopitem
+\stopitemize
+
+In both cases, when no value is set we use the units of the font (often 1000 or
+2048). In \TEX\ a space glue also has stretch and shrink. Here we follow the
+traditional \TEX\ logic:
+
+\startitemize
+    \startitem
+        The stretch is set to half the width of a space but to zero with a mono
+        spaced font.
+    \stopitem
+    \startitem
+        The shrink is set to one third of the width of a space but to zero with a
+        mono spaced font.
+    \stopitem
+\stopitemize
+
+The xheight is set to the values specified by the font and when this is unset the
+height of the character \type {x} will be used but when this character is not in
+the font, we use two fifths of the font's units (normally the same as the
+emwidth). The italic angle is also taken from the font (and is of course zero for
+a not italic font). Most fonts have these properties set so we seldom have to
+fall back to a guess.
+
+\stopsection
+
+\startsection[title=Collections]
+
+    {\em Todo.}
+
+\stopsection
+
+\stopchapter

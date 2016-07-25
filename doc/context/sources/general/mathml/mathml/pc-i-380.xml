@@ -1,0 +1,73 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <eq/>
+    <apply> <int/>
+      <bvar> <ci> x </ci> </bvar>
+      <apply> <divide/>
+        <cn> 1 </cn>
+        <apply> <times/>
+          <apply> <cos/>
+            <apply> <times/>
+              <ci> a </ci>
+              <ci> x </ci>
+            </apply>
+          </apply>
+          <apply> <fn> <ci> &plusminus; </ci> </fn>
+            <cn> 1 </cn>
+            <apply> <sin/>
+              <apply> <times/>
+                <ci> a </ci>
+                <ci> x </ci>
+              </apply>
+            </apply>
+          </apply>
+        </apply>
+      </apply>
+    </apply>
+    <apply> <plus/>
+      <apply> <fn> <ci> &minusplus; </ci> </fn>
+        <apply> <divide/>
+          <cn> 1 </cn>
+          <apply> <times/>
+            <cn> 2 </cn>
+            <ci> a </ci>
+            <apply> <fn> <ci> &plusminus; </ci> </fn>
+              <cn> 1 </cn>
+              <apply> <sin/>
+                <apply> <times/>
+                  <ci> a </ci>
+                  <ci> x </ci>
+                </apply>
+              </apply>
+            </apply>
+          </apply>
+        </apply>
+      </apply>
+      <apply> <times/>
+        <apply> <divide/>
+          <cn> 1 </cn>
+          <apply> <times/>
+            <cn> 2 </cn>
+            <ci> a </ci>
+          </apply>
+        </apply>
+        <apply> <log/>
+          <apply> <tan/>
+            <apply> <plus/>
+              <apply> <divide/>
+                <ci> &pi; </ci>
+                <cn> 4 </cn>
+              </apply>
+              <apply> <divide/>
+                <apply> <times/>
+                  <ci> a </ci>
+                  <ci> x </ci>
+                </apply>
+                <cn> 2 </cn>
+              </apply>
+            </apply>
+          </apply>
+        </apply>
+      </apply>
+    </apply>
+  </apply>
+</math>

@@ -1,0 +1,35 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <eq/>
+    <apply> <minus/>
+      <apply> <cos/>
+        <ci> p </ci>
+      </apply>
+      <apply> <cos/>
+        <ci> q </ci>
+      </apply>
+    </apply>
+    <apply> <minus/>
+      <apply> <times/>
+        <cn> 2 </cn>
+        <apply> <sin/>
+          <apply> <divide/>
+             <apply> <plus/>
+              <ci> p </ci>
+              <ci> q </ci>
+            </apply>
+            <cn> 2 </cn>
+          </apply>
+        </apply>
+        <apply> <sin/>
+          <apply> <divide/>
+            <apply> <minus/>
+              <ci> p </ci>
+              <ci> q </ci>  
+            </apply>
+            <cn> 2 </cn>
+          </apply>
+        </apply>
+      </apply>
+    </apply>
+  </apply>
+</math>

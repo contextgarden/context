@@ -1,0 +1,28 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <eq/>
+    <apply> <sin/>
+      <apply> <minus/>
+        <ci> x </ci>
+        <ci> y </ci>
+      </apply>
+    </apply>
+    <apply> <minus/>
+      <apply> <times/>
+        <apply> <sin/>
+          <ci> x </ci>
+        </apply>
+        <apply> <cos/>
+          <ci> y </ci>
+        </apply>
+      </apply>
+      <apply> <times/>
+        <apply> <cos/>
+          <ci> x </ci>
+        </apply>
+        <apply> <sin/>
+          <ci> y </ci>
+        </apply>
+      </apply>
+    </apply>
+  </apply>
+</math>

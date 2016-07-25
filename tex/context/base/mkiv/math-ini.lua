@@ -25,7 +25,6 @@ local commands              = commands
 local implement             = interfaces.implement
 
 local ctx_sprint            = context.sprint
------ ctx_fprint            = context.fprint -- a bit inefficient
 local ctx_doifelsesomething = commands.doifelsesomething
 
 local trace_defining        = false  trackers.register("math.defining", function(v) trace_defining = v end)

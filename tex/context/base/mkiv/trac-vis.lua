@@ -565,21 +565,21 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous,trace_o
         setattr(info,a_layer,layer)
         if vertical then
             if shift == 0 then
-                info = linked_nodes(current,info)
+                info = linked_nodes(current,dp ~= 0 and new_kern(-dp) or nil,info)
             elseif trace_origin then
                 local size   = 2*size
                 local origin = o_cache[size]
                 origin = copy_list(origin)
                 if getid(parent) == vlist_code then
                     setfield(origin,"shift",-shift)
-                    info = linked_nodes(current,new_kern(-size),origin,new_kern(-size),info)
+                    info = linked_nodes(current,new_kern(-size),origin,new_kern(-size-dp),info)
                 else
                     -- todo .. i need an example
-                    info = linked_nodes(current,info)
+                    info = linked_nodes(current,dp ~= 0 and new_kern(-dp) or nil,info)
                 end
                 setfield(current,"shift",0)
             else
-                info = linked_nodes(current,info)
+                info = linked_nodes(current,new_dp ~= 0 and new_kern(-dp) or nil,info)
                 setfield(current,"shift",0)
             end
             info = new_vlist(info,wd,ht,dp,shift)

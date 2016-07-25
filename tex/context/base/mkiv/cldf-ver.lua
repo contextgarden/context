@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['cldf-ver'] = {
 -- better when used mixed with other code (synchronization issue).
 
 local concat, tohandle = table.concat, table.tohandle
-local find, splitlines = string.find, string.splitlines
+local splitlines, strip = string.splitlines, string.strip
 local tostring, type = tostring, type
 
 local context = context
@@ -28,11 +28,15 @@ local function t_tocontext(...)
     context.popcatcodes()
 end
 
-local function s_tocontext(...) -- we need to catch {\}
+local function s_tocontext(first,...) -- we need to catch {\}
     context.type()
     context("{")
     context.pushcatcodes("verbatim")
-    context(concat({...}," "))
+    if first then
+        context(first) -- no need to waste a { }
+    else
+        context(concat({first,...}," "))
+    end
     context.popcatcodes()
     context("}")
 end
@@ -44,34 +48,41 @@ end
 table  .tocontext = t_tocontext
 string .tocontext = s_tocontext
 boolean.tocontext = b_tocontext
+number .tocontext = s_tocontext
 
-function context.tocontext(first,...)
-    local t = type(first)
-    if t == "string" then
-        s_tocontext(first,...)
-    elseif t == "table" then
-        t_tocontext(first,...)
-    elseif t == "boolean" then
-        b_tocontext(first,...)
+local tocontext = {
+    ["string"]   = s_tocontext,
+    ["table"]    = t_tocontext,
+    ["boolean"]  = b_tocontext,
+    ["number"]   = s_tocontext,
+    ["function"] = function() s_tocontext("<function>") end,
+    ["nil"]      = function() s_tocontext("<nil>") end,
+ -- ------------ = -------- can be extended elsewhere
+}
+
+table.setmetatableindex(tocontext,function(t,k)
+    local v = function(s)
+        s_tocontext("<"..tostring(s)..">")
     end
-end
+    t[k] = v
+    return v
+end)
 
--- function context.tobuffer(name,str)
---     context.startbuffer { name }
---     context.pushcatcodes("verbatim")
---     local lines = (type(str) == "string" and find(str,"[\n\r]") and splitlines(str)) or str
---     for i=1,#lines do
---         context(lines[i] .. " ")
---     end
---     context.stopbuffer()
---     context.popcatcodes()
--- end
+table.setmetatablecall(tocontext,function(t,k,...)
+    tocontext[type(k)](k)
+end)
+
+context.tocontext = tocontext
 
 context.tobuffer = buffers.assign -- (name,str,catcodes)
 
-function context.tolines(str)
+function context.tolines(str,strip)
     local lines = type(str) == "string" and splitlines(str) or str
     for i=1,#lines do
-        context(lines[i] .. " ")
+        if strip then
+            context(strip(lines[i]) .. " ")
+        else
+            context(lines[i] .. " ")
+        end
     end
 end

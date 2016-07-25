@@ -11,35 +11,38 @@ if not modules then modules = { } end modules ['core-env'] = {
 --
 -- if tex.modes['xxxx'] then .... else .... end
 
-local P, C, S, Cc, lpegmatch, patterns = lpeg.P, lpeg.C, lpeg.S, lpeg.Cc, lpeg.match, lpeg.patterns
+local rawset = rawset
 
-local context           = context
+local P, C, S, lpegmatch, patterns = lpeg.P, lpeg.C, lpeg.S, lpeg.match, lpeg.patterns
 
-local texgetcount       = tex.getcount
+local context              = context
+local ctxcore              = context.core
 
-local allocate          = utilities.storage.allocate
-local setmetatableindex = table.setmetatableindex
-local setmetatablecall  = table.setmetatablecall
+local texgetcount          = tex.getcount
 
-local createtoken       = token.create
+local allocate             = utilities.storage.allocate
+local setmetatableindex    = table.setmetatableindex
+local setmetatablenewindex = table.setmetatablenewindex
+local setmetatablecall     = table.setmetatablecall
 
-tex.modes               = allocate { }
-tex.systemmodes         = allocate { }
-tex.constants           = allocate { }
-tex.conditionals        = allocate { }
-tex.ifs                 = allocate { }
-tex.isdefined           = allocate { }
+local createtoken          = token.create
 
-local modes             = { }
-local systemmodes       = { }
+texmodes                   = allocate { }  tex.modes        = texmodes
+texsystemmodes             = allocate { }  tex.systemmodes  = texsystemmodes
+texconstants               = allocate { }  tex.constants    = texconstants
+texconditionals            = allocate { }  tex.conditionals = texconditionals
+texifs                     = allocate { }  tex.ifs          = texifs
+texisdefined               = allocate { }  tex.isdefined    = texisdefined
+
+local modes                = { }
+local systemmodes          = { }
 
 -- we could use the built-in tex.is[count|dimen|skip|toks] here but caching
 -- at the lua en dis not that bad (and we need more anyway)
 
 -- undefined: mode == 0 or cmdname = "undefined_cs"
 
-
-local cache = table.setmetatableindex(function(t,k)
+local cache = setmetatableindex(function(t,k)
     local v = createtoken(k)
     t[k] = v
     return v
@@ -50,7 +53,7 @@ end)
 local iftrue    = cache["iftrue"].mode
 local undefined = cache["*undefined*crap*"].mode -- is this ok?
 
-setmetatableindex(tex.modes, function(t,k)
+setmetatableindex(texmodes, function(t,k)
     local m = modes[k]
     if m then
         return m()
@@ -59,13 +62,16 @@ setmetatableindex(tex.modes, function(t,k)
         if cache[n].mode == 0 then
             return false
         else
-            modes[k] = function() return texgetcount(n) == 1 end
+            rawset(modes,k, function() return texgetcount(n) == 1 end)
             return texgetcount(n) == 1 -- 2 is prevented
         end
     end
 end)
+setmetatablenewindex(texmodes, function(t,k)
+    report_mode("you cannot set the %s named %a this way","mode",k)
+end)
 
-setmetatableindex(tex.systemmodes, function(t,k)
+setmetatableindex(texsystemmodes, function(t,k)
     local m = systemmodes[k]
     if m then
         return m()
@@ -74,36 +80,44 @@ setmetatableindex(tex.systemmodes, function(t,k)
         if cache[n].mode == 0 then
             return false
         else
-            systemmodes[k] = function() return texgetcount(n) == 1 end
+            rawset(systemmodes,k,function() return texgetcount(n) == 1 end)
             return texgetcount(n) == 1 -- 2 is prevented
         end
     end
 end)
+setmetatablenewindex(texsystemmodes, function(t,k)
+    report_mode("you cannot set the %s named %a this way","systemmode",k)
+end)
 
-setmetatableindex(tex.constants, function(t,k)
+setmetatableindex(texconstants, function(t,k)
     return cache[k].mode ~= 0 and texgetcount(k) or 0
 end)
+setmetatablenewindex(texconstants, function(t,k)
+    report_mode("you cannot set the %s named %a this way","constant",k)
+end)
 
-setmetatableindex(tex.conditionals, function(t,k) -- 0 == true
+setmetatableindex(texconditionals, function(t,k) -- 0 == true
     return cache[k].mode ~= 0 and texgetcount(k) == 0
 end)
+setmetatablenewindex(texconditionals, function(t,k)
+    report_mode("you cannot set the %s named %a this way","conditional",k)
+end)
 
-table.setmetatableindex(tex.ifs, function(t,k)
- -- local mode = cache[k].mode
- -- if mode == 0 then
- --     return nil
- -- else
- --     return mode == iftrue
- -- end
+table.setmetatableindex(texifs, function(t,k)
     return cache[k].mode == iftrue
 end)
-
-setmetatableindex(tex.isdefined, function(t,k)
-    return k and cache[k].mode ~= 0
+setmetatablenewindex(texifs, function(t,k)
+    -- just ignore
 end)
 
-setmetatablecall(tex.isdefined, function(t,k)
+setmetatableindex(texisdefined, function(t,k)
     return k and cache[k].mode ~= 0
+end)
+setmetatablecall(texisdefined, function(t,k)
+    return k and cache[k].mode ~= 0
+end)
+setmetatablenewindex(texisdefined, function(t,k)
+    -- just ignore
 end)
 
 local dimencode     = cache["scratchdimen"]    .command
@@ -151,107 +165,35 @@ function tex.type(name)
     return types[cache[name].command] or "macro"
 end
 
---  -- old token code
---
---  local csname_id = token.csname_id
---  local create    = token.create
---
---  local undefined = csname_id("*undefined*crap*")
---  local iftrue    = create("iftrue")[2] -- inefficient hack
---
---  setmetatableindex(tex.modes, function(t,k)
---      local m = modes[k]
---      if m then
---          return m()
---      else
---          local n = "mode>" .. k
---          if csname_id(n) == undefined then
---              return false
---          else
---              modes[k] = function() return texgetcount(n) == 1 end
---              return texgetcount(n) == 1 -- 2 is prevented
---          end
---      end
---  end)
---
---  setmetatableindex(tex.systemmodes, function(t,k)
---      local m = systemmodes[k]
---      if m then
---          return m()
---      else
---          local n = "mode>*" .. k
---          if csname_id(n) == undefined then
---              return false
---          else
---              systemmodes[k] = function() return texgetcount(n) == 1 end
---              return texgetcount(n) == 1 -- 2 is prevented
---          end
---      end
---  end)
---
---  setmetatableindex(tex.constants, function(t,k)
---      return csname_id(k) ~= undefined and texgetcount(k) or 0
---  end)
---
---  setmetatableindex(tex.conditionals, function(t,k) -- 0 == true
---      return csname_id(k) ~= undefined and texgetcount(k) == 0
---  end)
---
---  setmetatableindex(tex.ifs, function(t,k)
---   -- k = "if" .. k -- better not
---      return csname_id(k) ~= undefined and create(k)[2] == iftrue -- inefficient, this create, we need a helper
---  end)
---
---  setmetatableindex(tex.isdefined, function(t,k)
---      return k and csname_id(k) ~= undefined
---  end)
---  setmetatablecall(tex.isdefined, function(t,k)
---      return k and csname_id(k) ~= undefined
---  end)
---
---  local lookuptoken = token.lookup
---
---  local dimencode   = lookuptoken("scratchdimen"  )[1]
---  local countcode   = lookuptoken("scratchcounter")[1]
---  local tokencode   = lookuptoken("scratchtoken"  )[1]
---  local skipcode    = lookuptoken("scratchskip"   )[1]
---
---  local types = {
---      [dimencode] = "dimen",
---      [countcode] = "count",
---      [tokencode] = "token",
---      [skipcode ] = "skip",
---  }
---
---  function tex.isdimen(name)
---      return lookuptoken(name)[1] == dimencode
---  end
---
---  function tex.iscount(name)
---      return lookuptoken(name)[1] == countcode
---  end
---
---  function tex.istoken(name)
---      return lookuptoken(name)[1] == tokencode
---  end
---
---  function tex.isskip(name)
---      return lookuptoken(name)[1] == skipcode
---  end
---
---  function tex.type(name)
---      return types[lookuptoken(name)[1]] or "macro"
---  end
-
 function context.setconditional(name,value)
     if value then
-        context.settruevalue(name)
+        ctxcore.settruevalue(name)
     else
-        context.setfalsevalue(name)
+        ctxcore.setfalsevalue(name)
     end
 end
 
-----  arg = P("{") * C(patterns.nested) * P("}") + Cc("")
+function context.setmode(name,value)
+    if value then
+        ctxcore.setmode(name)
+    else
+        ctxcore.resetmode(name)
+    end
+end
+
+function context.setsystemmode(name,value)
+    if value then
+        ctxcore.setsystemmode(name)
+    else
+        ctxcore.resetsystemmode(name)
+    end
+end
+
+context.modes        = texmodes
+context.systemmodes  = texsystemmodes
+context.conditionals = texconditionals
+-------.constants    = texconstants
+-------.ifs          = texifs
 
 local sep = S("), ")
 local str = C((1-sep)^1)
@@ -259,9 +201,9 @@ local tag = P("(") * C((1-S(")" ))^1) * P(")")
 local arg = P("(") * C((1-S("){"))^1) * P("{") * C((1-P("}"))^0) * P("}") * P(")")
 
 local pattern = (
-     P("lua") * tag        / context.luasetup
-  +  P("xml") * arg        / context.setupwithargument -- or xmlw as xmlsetup has swapped arguments
-  + (P("tex") * tag + str) / context.texsetup
+     P("lua") * tag        / ctxcore.luasetup
+  +  P("xml") * arg        / ctxcore.setupwithargument -- or xmlw as xmlsetup has swapped arguments
+  + (P("tex") * tag + str) / ctxcore.texsetup
   +             sep^1
 )^1
 
@@ -270,4 +212,3 @@ interfaces.implement {
     actions   = function(str) lpegmatch(pattern,str) end,
     arguments = "string"
 }
-

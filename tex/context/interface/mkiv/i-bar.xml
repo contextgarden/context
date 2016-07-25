@@ -202,4 +202,12 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="nobar" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetbar" file="node-rul.mkiv" />
+
 </cd:interface>

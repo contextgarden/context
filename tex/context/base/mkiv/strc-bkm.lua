@@ -112,11 +112,13 @@ end
 
 function bookmarks.place()
     if next(names) then
-        local levels    = { }
-        local noflevels = 0
-        local lastlevel = 1
-        local nofblocks = #lists.sectionblocks -- always >= 1
+        local levels         = { }
+        local noflevels      = 0
+        local lastlevel      = 1
+        local nofblocks      = #lists.sectionblocks -- always >= 1
         local showblocktitle = toboolean(numberspec.showblocktitle,true)
+--         local allsections    = sections.collected
+        local allblocks      = sections.sectionblockdata
         for i=1,nofblocks do
             local block     = lists.sectionblocks[i]
             local blockdone = nofblocks == 1
@@ -155,9 +157,9 @@ function bookmarks.place()
                         if not blockdone then
                             if showblocktitle then
                                 -- add block entry
-                                local blockdata = sections.sectionblockdata[block]
-                                noflevels = noflevels + 1
+                                local blockdata  = allblocks[block]
                                 local references = li.references
+                                noflevels = noflevels + 1
                                 levels[noflevels] = {
                                     level     = 1, -- toplevel
                                     title     = stripped(blockdata.bookmark ~= "" and blockdata.bookmark or block),
@@ -184,19 +186,29 @@ function bookmarks.place()
                                 title = titledata.title or "?"
                          -- end
                         end
-                        if numbered[name] then
-                            local sectiondata = sections.collected[li.references.section]
-                            local numberdata = li.numberdata
-                            if sectiondata and numberdata then
-                                if not numberdata.hidenumber then
-                                -- we could typeset the number and convert it
-                                    local number = sections.typesetnumber(sectiondata,"direct",numberspec,sectiondata)
-                                    if number and #number > 0 then
-                                        title = concat(number) .. " " .. title
-                                    end
-                                end
-                            end
-                        end
+--                         if numbered[name] then
+--                             local sectiondata = allsections[li.references.section]
+--                             if sectiondata then
+--                                 local numberdata = li.numberdata
+--                                 if numberdata and not numberdata.hidenumber then
+--                                  -- we could typeset the number and convert it
+--                                     local number = sections.typesetnumber(sectiondata,"direct",numberspec,sectiondata)
+--                                     if number and #number > 0 then
+--                                         title = concat(number) .. " " .. title
+--                                     end
+--                                 end
+--                             end
+--                         end
+if numbered[name] then
+    local numberdata = li.numberdata
+    if numberdata and not numberdata.hidenumber then
+     -- we could typeset the number and convert it
+        local number = sections.typesetnumber(numberdata,"direct",numberspec,numberdata)
+        if number and #number > 0 then
+            title = concat(number) .. " " .. title
+        end
+    end
+end
                         noflevels = noflevels + 1
                         local references = li.references
                         levels[noflevels] = {

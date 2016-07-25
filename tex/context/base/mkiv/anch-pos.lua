@@ -35,7 +35,7 @@ local scanners          = interfaces.scanners
 
 local commands          = commands
 local context           = context
-local ctxnode           = context.flushnode
+local ctxnode           = context.nodes.flush
 
 local tex               = tex
 local texgetcount       = tex.getcount

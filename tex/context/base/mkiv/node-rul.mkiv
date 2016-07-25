@@ -146,6 +146,12 @@
      +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_index\fi\endcsname
    \relax}
 
+\unexpanded\def\resetbar
+  {\attribute\ruledattribute\attributeunsetvalue}
+
+\unexpanded\def\nobar
+  {\groupedcommand\resetbar\relax}
+
 \unexpanded\def\startbar[#1]%
   {\begingroup
    \node_rules_set{#1}%

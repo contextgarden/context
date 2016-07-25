@@ -49,6 +49,7 @@ local disc_code     = nodecodes.disc
 local rule_code     = nodecodes.rule
 local boundary_code = nodecodes.boundary
 local dir_code      = nodecodes.dir
+local math_code     = nodecodes.math
 
 function nodes.striprange(first,last) -- todo: dir
     if first and last then -- just to be sure
@@ -154,8 +155,6 @@ local new_kern           = nodepool.kern
 --
 -- glyph rule unset whatsit glue margin_kern kern math disc
 
-local checkdir = true
-
 -- we assume {glyphruns} and no funny extra kerning, ok, maybe we need
 -- a dummy character as start and end; anyway we only collect glyphs
 --
@@ -221,6 +220,13 @@ local function processwords(attribute,data,flush,head,parent,skip) -- we have hl
                 if f then
                     l = n
                 end
+            elseif id == math_code then
+                -- otherwise not consistent: a $b$ c vs a $b+c$ d etc
+                -- we need a special (optional) go over math variant
+                if f then
+                    head, done = flush(head,f,l,d,level,parent,strip), true
+                    f, l, a = nil, nil, nil
+                end
             elseif id == hlist_code or id == vlist_code then
                 if f then
                     head, done = flush(head,f,l,d,level,parent,strip), true
@@ -230,10 +236,6 @@ local function processwords(attribute,data,flush,head,parent,skip) -- we have hl
                 if list then
                     setlist(n,(processwords(attribute,data,flush,list,n,skip))) -- watch ()
                 end
---             elseif checkdir and id == dir_code then -- only changes in dir, we assume proper boundaries
---                 if f and a then
---                     l = n
---                 end
             elseif id == dir_code then -- only changes in dir, we assume proper boundaries
                 if f then
                     l = n

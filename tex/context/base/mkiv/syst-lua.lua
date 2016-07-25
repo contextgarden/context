@@ -15,11 +15,11 @@ local commands  = commands
 local context   = context
 local implement = interfaces.implement
 
-local protectedcs              = context.protectedcs -- efficient
-local ctx_firstoftwoarguments  = protectedcs.firstoftwoarguments
-local ctx_secondoftwoarguments = protectedcs.secondoftwoarguments
-local ctx_firstofoneargument   = protectedcs.firstofoneargument
-local ctx_gobbleoneargument    = protectedcs.gobbleoneargument
+local ctx_protected_cs         = context.protected.cs -- more efficient
+local ctx_firstoftwoarguments  = ctx_protected_cs.firstoftwoarguments
+local ctx_secondoftwoarguments = ctx_protected_cs.secondoftwoarguments
+local ctx_firstofoneargument   = ctx_protected_cs.firstofoneargument
+local ctx_gobbleoneargument    = ctx_protected_cs.gobbleoneargument
 
 local two_strings = interfaces.strings[2]
 
