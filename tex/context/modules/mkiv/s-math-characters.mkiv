@@ -56,8 +56,8 @@
 
     \directsetup{s-math-characters:reset}
 
-    \unexpanded\def\showmathcharactersstartentry {\blank\begingroup\raggedright}
-    \unexpanded\def\showmathcharactersstopentry  {\endgroup\blank}
+    \unexpanded\def\showmathcharactersstartentry {\blank\startpacked\raggedright}
+    \unexpanded\def\showmathcharactersstopentry  {\stoppacked\blank}
 
     \def\showmathcharactersentryhexdectit##1##2##3%
       {##1:\space{\char##2}\space\ruledhbox{\char##2}\space##3\par

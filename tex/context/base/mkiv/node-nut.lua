@@ -265,6 +265,7 @@ local d_slide              = direct.slide
 local d_traverse           = direct.traverse
 local d_setlink            = direct.setlink
 local d_setboth            = direct.setboth
+local d_getboth            = direct.getboth
 
 local function remove(head,current,free_too)
     local t = current
@@ -297,7 +298,7 @@ function nuts.replace(head,current,new) -- no head returned if false
         d_setlink(new,next)
     end
     if prev then
-        d_setlink(new,prev)
+        d_setlink(prev,new)
     end
     if head then
         if head == current then

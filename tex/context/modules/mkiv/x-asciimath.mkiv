@@ -299,7 +299,7 @@
 
 %D This will become an extra.
 
-\showframe
+\starttext
 
 \setups[asciimath:layout]
 
@@ -312,10 +312,12 @@
 %   % \ShowAsciiMathSave[e:/temporary/asciimath/asciimath.lua]
 % \stoptext
 
-\starttext
-\unexpanded\def\MyAsciiMath#1{\startformula\asciimath{#1}\stopformula}
-\startlines
-\MyAsciiMath{x^2 / 10 // z_12^34 / 20}
+\subject{Some tests}
+
+% \unexpanded\def\MyAsciiMath#1{\startformula\asciimath{#1}\stopformula}
+%
+% \startlines
+% \MyAsciiMath{x^2 / 10 // z_12^34 / 20}
 % \MyAsciiMath{{:{:x^2:} / 10:} // {:{:z_12^34 :} / 20:}}
 % \MyAsciiMath{x^2+y_1+z_12^34}
 % \MyAsciiMath{sin^-1(x)}
@@ -399,38 +401,82 @@
 % \MyAsciiMath{x^ (-1 1/2) =1/x^ (1 1/2)=1/ (x^1*x^ (1/2)) =1/ (xsqrt(x))}
 % \MyAsciiMath{x^2(10 -x)&gt;2 x^2}
 % \MyAsciiMath{x^4&gt;x}
-\stoplines
+% \stoplines
 
-\setupasciimath[splitmethod=3,symbol={{,}}]
+% \setupasciimath[splitmethod=3,symbol={{,}}]
+%
+% \startlines
+% \asciimath{sqrt 1}
+% \asciimath{sqrt 1.2}
+% \asciimath{sqrt 1.2}
+% \asciimath{1}
+% \asciimath{12}
+% \asciimath{123}
+% \asciimath{1234}
+% \asciimath{12345}
+% \asciimath{123456}
+% \asciimath{1234567}
+% \asciimath{12345678}
+% \asciimath{123456789}
+% \asciimath{1.1}
+% \asciimath{12.12}
+% \asciimath{1234.123}
+% \asciimath{1234.1234}
+% \asciimath{12345.1234}
+% \asciimath{1234.12345}
+% \asciimath{12345.12345}
+% \asciimath{123456.123456}
+% \asciimath{1234567.1234567}
+% \asciimath{12345678.12345678}
+% \asciimath{123456789.123456789}
+% \asciimath{0.1234}
+% \asciimath{1234.0}
+% \asciimath{1234.00}
+% \asciimath{0.123456789}
+% \stoplines
 
-\startlines
-\asciimath{sqrt 1}
-\asciimath{sqrt 1.2}
-\asciimath{sqrt 1.2}
-\asciimath{1}
-\asciimath{12}
-\asciimath{123}
-\asciimath{1234}
-\asciimath{12345}
-\asciimath{123456}
-\asciimath{1234567}
-\asciimath{12345678}
-\asciimath{123456789}
-\asciimath{1.1}
-\asciimath{12.12}
-\asciimath{1234.123}
-\asciimath{1234.1234}
-\asciimath{12345.1234}
-\asciimath{1234.12345}
-\asciimath{12345.12345}
-\asciimath{123456.123456}
-\asciimath{1234567.1234567}
-\asciimath{12345678.12345678}
-\asciimath{123456789.123456789}
-\asciimath{0.1234}
-\asciimath{1234.0}
-\asciimath{1234.00}
-\asciimath{0.123456789}
-\stoplines
+% \definemixedcolumns[asciimath][n=3,balance=yes]
+%
+% \startluacode
+%     local asciimath = moduledata.asciimath
+%     local variables = { "w", "x", "y", "z", "p", "q", "r" }
+%     local constants = { "a", "b", "c" }
+%     local functions = { "g", "h", "i" }
+%     local iterators = { "i", "j", "k" }
+%     local vectors   = { "A", "B", "C", "D", "E", "P", "Q", "R" }
+%     local reserved  = { }
+%     local reserved  = {
+%      -- "vdots","ddots","oint",
+%         "grad", "prod", "prop", "sube", "supe", "sum",
+%         "vvv", "nnn", "uuu", "sub", "sup",
+%         "iff", "int", "del",
+%         "sinh", "cosh", "tanh", "sin", "cos", "tan", "csc", "sec", "cot",
+%         "atan", "asin", "acos", "arctan", "arcsin", "arccos",
+%         "log", "ln", "det", "lim", "mod", "gcd", -- "lcm",
+%         "min", "max",
+%         "xx", "in", "ox", "vv", "nn", "uu", "oo",  "bb",
+%         "not", "and", "or", "if",
+%         "AA", "EE", "TT",
+%         "sqrt", "root", "frac", "stackrel",
+%         "hat", "overbar", "underline", "vec",
+%         "dx", "dy", "dz",
+%     }
+%     for c=1,#constants do
+%         for r=1,#reserved do
+%             context.startmixedcolumns { "asciimath" }
+%             for v1=1,#variables do
+%                 for v2=1,#variables do
+%                     local str = constants[c] .. variables[v1] .. reserved[r] .. variables[v2]
+%                     context.type(str)
+%                     context.quad()
+%                     commands.asciimath(str)
+%                     context.par()
+%                 end
+%             end
+%             context.stopmixedcolumns()
+%             context.blank()
+%         end
+%     end
+% \stopluacode
 
 \stoptext

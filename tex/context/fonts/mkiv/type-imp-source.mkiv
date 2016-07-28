@@ -1,0 +1,62 @@
+%D \module
+%D   [       file=type-imp-source,
+%D        version=2010.06.21,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Adobe Source Fonts (https://fonts.google.com/),
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\starttypescriptcollection[source]
+
+    \starttypescript [\s!serif] [source] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]     [\s!file:SourceSerifPro-Regular.ttf]  [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold] [\s!file:SourceSerifPro-Bold.ttf]     [\s!features=\s!default]
+      % \definefontsynonym [\s!SerifBold] [\s!file:SourceSerifPro-Semibold.ttf] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [source] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+      % \definefontsynonym [\s!Sans]           [\s!file:SourceSansPro-ExtraLight.ttf]       [\s!features=\s!default]
+      % \definefontsynonym [\s!Sans]           [\s!file:SourceSansPro-Light.ttf]            [\s!features=\s!default]
+        \definefontsynonym [\s!Sans]           [\s!file:SourceSansPro-Regular.ttf]          [\s!features=\s!default]
+      % \definefontsynonym [\s!SansBold]       [\s!file:SourceSansPro-Semibold.ttf]         [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]       [\s!file:SourceSansPro-Bold.ttf]             [\s!features=\s!default]
+      % \definefontsynonym [\s!SansBold]       [\s!file:SourceSansPro-Black.ttf]            [\s!features=\s!default]
+      % \definefontsynonym [\s!SansItalic]     [\s!file:SourceSansPro-ExtraLightItalic.ttf] [\s!features=\s!default]
+      % \definefontsynonym [\s!SansItalic]     [\s!file:SourceSansPro-LightItalic.ttf]      [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]     [\s!file:SourceSansPro-Italic.ttf]           [\s!features=\s!default]
+      % \definefontsynonym [\s!SansBoldItalic] [\s!file:SourceSansPro-SemiboldItalic.ttf]   [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic] [\s!file:SourceSansPro-BoldItalic.ttf]       [\s!features=\s!default]
+      % \definefontsynonym [\s!SansBoldItalic] [\s!file:SourceSansPro-BlackItalic.ttf]      [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [source] [\s!name]
+        \setups[\s!font:\s!fallback:\s!mono]
+      % \definefontsynonym [\s!Mono]     [\s!file:SourceCodePro-ExtraLight.ttf] [\s!features=\s!none]
+      % \definefontsynonym [\s!Mono]     [\s!file:SourceCodePro-Light.ttf]      [\s!features=\s!none]
+        \definefontsynonym [\s!Mono]     [\s!file:SourceCodePro-Regular.ttf]    [\s!features=\s!none]
+      % \definefontsynonym [\s!MonoBold] [\s!file:SourceCodePro-Medium.ttf]     [\s!features=\s!none]
+      % \definefontsynonym [\s!MonoBold] [\s!file:SourceCodePro-Semibold.ttf]   [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBold] [\s!file:SourceCodePro-Bold.ttf]       [\s!features=\s!none]
+      % \definefontsynonym [\s!MonoBold] [\s!file:SourceCodePro-Black.ttf]      [\s!features=\s!none]
+    \stoptypescript
+
+    \starttypescript [\s!math][source][\s!name]
+      % \loadfontgoodies[texgyre]
+        \definefontsynonym[\s!MathRoman][file:texgyredejavu-math][\s!features=\s!math\mathsizesuffix,\s!goodies=dejavu-math]
+    \stoptypescript
+
+    \starttypescript[source]
+        \definetypeface [source] [\s!rm] [\s!serif] [source] [\s!default]
+        \definetypeface [source] [\s!ss] [\s!sans]  [source] [\s!default]
+        \definetypeface [source] [\s!tt] [\s!mono]  [source] [\s!default]
+        \definetypeface [source] [\s!mm] [\s!math]  [source] [\s!default] % [\s!rscale=1.2]
+    \stoptypescript
+
+\stoptypescriptcollection

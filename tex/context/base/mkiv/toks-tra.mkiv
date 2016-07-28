@@ -22,10 +22,13 @@
 
 \unexpanded\def\starttokens  [#1]{\ctxcommand{collecttokens("#1","stoptokens")}}
            \let\stoptokens        \relax
-           \def\flushtokens  [#1]{\ctxcommand{flushtokens("#1")}}
-           \def\showtokens   [#1]{\ctxcommand{showtokens("#1")}}
-           \def\testtokens   [#1]{\ctxcommand{testtokens("#1")}}
-           \def\registertoken  #1{\ctxcommand{registertoken("#1")}}
+\unexpanded\def\flushtokens  [#1]{\ctxcommand{flushtokens("#1")}}
+\unexpanded\def\showtokens   [#1]{\ctxcommand{showtokens("#1")}}
+\unexpanded\def\testtokens   [#1]{\ctxcommand{testtokens("#1")}}
+\unexpanded\def\registertoken  #1{\ctxcommand{registertoken("#1")}}
 
+\let\toks_show\showtokens % we also support the primitive
+
+\unexpanded\def\showtokens{\doifelsenextoptional\toks_show\normalshowtokens}
 
 \protect \endinput

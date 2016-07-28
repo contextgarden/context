@@ -148,6 +148,7 @@ local function registername(name,message)
         documentdata = documentdata,
         -- always there fast
         context      = context,
+        --
         tostring     = tostring,
         tonumber     = tonumber,
         -- standard lua modules

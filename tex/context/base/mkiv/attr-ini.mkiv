@@ -38,7 +38,8 @@
      \expandafter\newcount\csname\??attributestack\string#1\endcsname
    \fi}
 
-\newtoks \attributesresetlist
+\newtoks \t_attr_list_global
+\newtoks \t_attr_list_local
 
 \ifdefined \s!global    \else \def\s!global   {global}    \fi % for metatex % or hard check later
 \ifdefined \s!public    \else \def\s!public   {public}    \fi % for metatex % or hard check later
@@ -59,9 +60,12 @@
      \expandafter\newconstant \csname\??attributeid#2\endcsname
      \csname\??attributeid#2\endcsname\scratchcounter
      % some attributes are always global
-     \doifnotinset\s!global{#3}{\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\attributesresetlist}%
+     \doifelseinset\s!global{#3}%
+       {\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\t_attr_list_global}%
+       {\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\t_attr_list_local }%
      % here public means 'visible' so it's not to be confused with 'public' at the lua end
-     \doifinset   \s!public{#3}{\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
+     \doifinset\s!public{#3}%
+       {\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
    \fi}
 
 \unexpanded\def\newattribute#1%
@@ -77,7 +81,10 @@
 
 \let\dompattribute\gobbletwoarguments
 
-\unexpanded\def\resetallattributes{\the\attributesresetlist}
+\unexpanded\def\resetglobalattributes{\the\t_attr_list_global}
+\unexpanded\def\resetlocalattributes {\the\t_attr_list_local }
+
+\let\resetallattributes\resetlocalattributes
 
 %D Rather special.
 

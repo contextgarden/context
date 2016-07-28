@@ -135,7 +135,7 @@ if not modules then modules = { } end modules ['node-par'] = {
 
 local utfchar = utf.char
 local write, write_nl = texio.write, texio.write_nl
-local sub, format = string.sub, string.format
+local sub, formatters = string.sub, string.formatters
 local round, floor = math.round, math.floor
 local insert, remove = table.insert, table.remove
 
@@ -205,6 +205,7 @@ local getchar              = nuts.getchar
 local getdisc              = nuts.getdisc
 local getattr              = nuts.getattr
 local getdisc              = nuts.getdisc
+local getglue              = nuts.getglue
 
 local isglyph              = nuts.isglyph
 
@@ -216,10 +217,10 @@ local setnext              = nuts.setnext
 local setprev              = nuts.setprev
 local setdisc              = nuts.setdisc
 local setsubtype           = nuts.setsubtype
+local setglue              = nuts.setglue
 
 local slide_node_list      = nuts.slide -- get rid of this, probably ok > 78.2
 local find_tail            = nuts.tail
-local new_node             = nuts.new
 local copy_node            = nuts.copy
 local flush_node           = nuts.flush
 local flush_node_list      = nuts.flush_list
@@ -228,6 +229,7 @@ local xpack_nodes          = nuts.hpack
 local replace_node         = nuts.replace
 local insert_node_after    = nuts.insert_after
 local insert_node_before   = nuts.insert_before
+local is_zero_glue         = nuts.is_zero_glue
 
 local setnodecolor         = nodes.tracers.colors.set
 
@@ -315,6 +317,7 @@ local new_lineskip         = nodepool.lineskip
 local new_baselineskip     = nodepool.baselineskip
 local new_temp             = nodepool.temp
 local new_rule             = nodepool.rule
+local new_hlist            = nodepool.hlist
 
 local is_rotated           = nodes.is_rotated
 local is_parallel          = nodes.textdir_is_parallel
@@ -339,7 +342,7 @@ local function new_dir_stack(dir) -- also use elsewhere
 end
 
 -- The next function checks a dir node and returns the new dir state. By
--- using s static table we are quite efficient. This function is used
+-- using a static table we are quite efficient. This function is used
 -- in the parbuilder.
 
 local function checked_line_dir(stack,current)
@@ -838,28 +841,36 @@ end
 
 local function append_to_vlist(par, b)
     local prev_depth = par.prev_depth
+    local head_field = par.head_field
+    local tail_field = head_field and slide_node_list(head_field) -- todo: find_tail
+    local is_hlist   = getid(b) == hlist_code
  -- if prev_depth > par.ignored_dimen then
     if prev_depth > ignore_depth then
-        if getid(b) == hlist_code then
-            local d = getfield(par.baseline_skip,"width") - prev_depth - getfield(b,"height") -- deficiency of space between baselines
-            local s = d < par.line_skip_limit and new_lineskip(par.lineskip) or new_baselineskip(d)
-            local head_field = par.head_field
-            if head_field then
-                local n = slide_node_list(head_field) -- todo: find_tail
-                setlink(n,s)
+        if is_hlist then
+            local width, stretch, shrink, stretch_order, shrink_order = getglue(par.baseline_skip)
+            local delta = width - prev_depth - getfield(b,"height") -- deficiency of space between baselines
+            local skip = nil
+            if delta < par.line_skip_limit then
+                width, stretch, shrink, stretch_order, shrink_order = getglue(par.lineskip)
+                skip = new_lineskip(width, stretch, shrink, stretch_order, shrink_order)
             else
-                par.head_field = s
+                skip = new_baselineskip(delta, stretch, shrink, stretch_order, shrink_order)
             end
+            if head_field then
+                setlink(tail_field,skip)
+            else
+                par.head_field = skip
+                head_field = skip
+            end
+            tail_field = skip
         end
     end
-    local head_field = par.head_field
     if head_field then
-        local n = slide_node_list(head_field) -- todo: find_tail
-        setlink(n,b)
+        setlink(tail_field,b)
     else
         par.head_field = b
     end
-    if getid(b) == hlist_code then
+    if is_hlist then
         local pd = getfield(b,"depth")
         par.prev_depth = pd
         texnest[texnest.ptr].prevdepth = pd
@@ -883,7 +894,7 @@ local hztolerance = 2500
 local hzwarned    = false
 
 local function used_skip(s)
-    return s and (getfield(s,"width") ~= 0 or getfield(s,"stretch") ~= 0 or getfield(s,"shrink") ~= 0) and s or nil
+    return s and not is_zero_glue(s) and s
 end
 
 local function initialize_line_break(head,display)
@@ -1144,9 +1155,9 @@ local function initialize_line_break(head,display)
     end
 
     if last_line_fit > 0 then
-        local spec          = par.final_par_glue.spec
-        local stretch       = spec.stretch
-        local stretch_order = spec.stretch_order
+        local final_par_glue = par.final_par_glue
+        local stretch        = getfield(final_par_glue,"stretch")
+        local stretch_order  = getfield(final_par_glue,"stretch_order")
         if stretch > 0 and stretch_order > 0 and background.fi == 0 and background.fil == 0 and background.fill == 0 and background.filll == 0 then
             par.do_last_line_fit = true
             local si = stretch_orders[stretch_order]
@@ -1222,7 +1233,7 @@ local function post_line_break(par)
                 lastnode   = replace_node(lastnode,new_rightskip(rightskip))
                 glue_break = true
                 lineend    = lastnode
-                lastnode   = getprev(r)
+                lastnode   = getprev(lastnode)
             elseif id == disc_code then
                 local prevlast = getprev(lastnode)
                 local nextlast = getnext(lastnode)
@@ -1432,12 +1443,13 @@ local function post_line_break(par)
             local next    = nil
             while true do
                 next = getnext(current)
-                if next == current_break.cur_break or getid(next) == glyph_code then
+                if next == current_break.cur_break then
                     break
                 end
-                local id      = getid(next)
-                local subtype = getsubtype(next)
-                if id == localpar_code then
+                local id = getid(next)
+                if id == glyph_code then
+                    break
+                elseif id == localpar_code then
                     -- nothing
                 elseif id < math_code then
                     -- messy criterium
@@ -1446,9 +1458,12 @@ local function post_line_break(par)
                     -- keep the math node
                     setfield(next,"surround",0)
                     break
-                elseif id == kern_code and (subtype ~= userkern_code and subtype ~= italickern_code and not getattr(next,a_fontkern)) then
-                    -- fontkerns and accent kerns as well as otf injections
-                    break
+                elseif id == kern_code then
+                    local subtype = getsubtype(next)
+                    if subtype ~= userkern_code and subtype ~= italickern_code and not getattr(next,a_fontkern) then
+                        -- fontkerns and accent kerns as well as otf injections
+                        break
+                    end
                 end
                 current = next
             end
@@ -1920,8 +1935,8 @@ local function try_break(pi, break_type, par, first_p, current, checked_expansio
                 local id = getid(l)
                 if id == glyph_code then
                     -- ok ?
-                elseif id == disc_code and l.post then
-                    l = l.post -- TODO: first char could be a disc
+                elseif id == disc_code and getfield(l,"post") then
+                    l = getfield(l,"post") -- TODO: first char could be a disc
                 else
                     l = find_protchar_left(l)
                 end
@@ -2470,10 +2485,10 @@ function diagnostics.stop()
 end
 
 function diagnostics.current_pass(par,what)
-    write_nl("log",format("@%s",what))
+    write_nl("log",formatters["@%s"](what))
 end
 
-local verbose    = false -- true
+local verbose = false -- true
 
 local function short_display(target,a,font_in_short_display)
     while a do
@@ -2494,7 +2509,7 @@ local function short_display(target,a,font_in_short_display)
             font_in_short_display = short_display(target,pre,font_in_short_display)
             font_in_short_display = short_display(target,post,font_in_short_display)
         elseif verbose then
-            write(target,format("[%s]",nodecodes[id]))
+            write(target,formatters["[%s]"](nodecodes[id]))
         elseif id == rule_code then
             write(target,"|")
         elseif id == glue_code then
@@ -2529,20 +2544,20 @@ function diagnostics.break_node(par, q, fit_class, break_type, current) -- %d ?
         local s = number.toscaled(q.active_short)
         local g = number.toscaled(q.active_glue)
         if current then
-            write_nl("log",format("@@%d: line %d.%d%s t=%s s=%s g=%s",
+            write_nl("log",formatters["@@%d: line %d.%d%s t=%s s=%s g=%s"](
                 passive.serial or 0,q.line_number-1,fit_class,typ_ind,q.total_demerits,s,g))
         else
-            write_nl("log",format("@@%d: line %d.%d%s t=%s s=%s a=%s",
+            write_nl("log",formatters["@@%d: line %d.%d%s t=%s s=%s a=%s"](
                 passive.serial or 0,q.line_number-1,fit_class,typ_ind,q.total_demerits,s,g))
         end
     else
-        write_nl("log",format("@@%d: line %d.%d%s t=%s",
+        write_nl("log",formatters["@@%d: line %d.%d%s t=%s"](
             passive.serial or 0,q.line_number-1,fit_class,typ_ind,q.total_demerits))
     end
     if not passive.prev_break then
         write("log"," -> @0")
     else
-        write("log",format(" -> @%d", passive.prev_break.serial or 0))
+        write("log",formatters[" -> @%d"](passive.prev_break.serial or 0))
     end
 end
 
@@ -2585,19 +2600,19 @@ function diagnostics.feasible_break(par, current, r, b, pi, d, artificial_demeri
         via = r.break_node.serial or 0
     end
     if b <= infinite_badness then
-        badness = tonumber(d) -- format("%d", b)
+        badness = tonumber(d)
     end
     if not artificial_demerits then
-        demerits = tonumber(d) -- format("%d", d)
+        demerits = tonumber(d)
     end
-    write("log",format(" via @%d b=%s p=%s d=%s", via, badness, pi, demerits))
+    write("log",formatters[" via @%d b=%s p=%s d=%s"](via,badness,pi,demerits))
 end
 
 -- reporting --
 
 statistics.register("alternative parbuilders", function()
     if nofpars > 0 then
-        return format("%s paragraphs, %s lines (%s protruded, %s adjusted)", nofpars, noflines, nofprotrudedlines, nofadjustedlines)
+        return formatters["%s paragraphs, %s lines (%s protruded, %s adjusted)"](nofpars,noflines,nofprotrudedlines,nofadjustedlines)
     end
 end)
 
@@ -2677,7 +2692,7 @@ end
 --     local font_expand_ratio = 0
 --     local delta             = width - natural
 --
---     local hlist             = new_node("hlist")
+--     local hlist             = new_hlist()
 --
 --     setlist(hlist,head)
 --     setfield(hlist,"dir",direction or tex.textdir)
@@ -2793,7 +2808,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
     -- we can pass the adjust_width and adjust_height so that we don't need to recalculate them but
     -- with the glue mess it's less trivial as we lack detail .. challenge
 
-    local hlist = new_node("hlist")
+    local hlist = new_hlist()
 
     setfield(hlist,"dir",direction)
 
@@ -3126,7 +3141,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                 local overfullrule = tex.overfullrule
                 if fuzz > hfuzz and overfullrule > 0 then
                     -- weird, is always called and no rules shows up
-                    setfield(slide_node_list(list),"next",new_rule(overfullrule,nil,nil,hlist.dir)) -- todo: find_tail
+                    setfield(slide_node_list(list),"next",new_rule(overfullrule,nil,nil,getfield(hlist,"dir"))) -- todo: find_tail
                 end
                 diagnostics.overfull_hbox(hlist,line,-delta)
             end
@@ -3145,35 +3160,37 @@ local function common_message(hlist,line,str)
     write_nl("")
     if status.output_active then -- unset
         write(str," has occurred while \\output is active")
+    else
+        write(str)
     end
     local fileline = status.linenumber
     if line > 0 then
-        write(str," in paragraph at lines ",fileline,"--",fileline+line-1)
+        write(formatters[" in paragraph at lines %s--%s"](fileline,"--",fileline+line-1))
     elseif line < 0 then
-        write(str," in alignment at lines ",fileline,"--",fileline-line-1)
+        write(formatters[" in alignment at lines "](fileline,"--",fileline-line-1))
     else
-        write(str," detected at line ",fileline)
+        write(formatters[" detected at line %s"](fileline))
     end
     write_nl("")
-    diagnostics.short_display(hlist.list,false)
+    diagnostics.short_display(getlist(hlist),false)
     write_nl("")
  -- diagnostics.start()
- -- show_box(hlist.list)
+ -- show_box(getlist(hlist))
  -- diagnostics.stop()
 end
 
 function diagnostics.overfull_hbox(hlist,line,d)
-    common_message(hlist,line,format("Overfull \\hbox (%spt too wide)",number.toscaled(d)))
+    common_message(hlist,line,formatters["Overfull \\hbox (%spt too wide)"](number.toscaled(d)))
 end
 
 function diagnostics.bad_hbox(hlist,line,b)
-    common_message(hlist,line,format("Tight \\hbox (badness %i)",b))
+    common_message(hlist,line,formatters["Tight \\hbox (badness %i)"](b))
 end
 
 function diagnostics.underfull_hbox(hlist,line,b)
-    common_message(hlist,line,format("Underfull \\hbox (badness %i)",b))
+    common_message(hlist,line,formatters["Underfull \\hbox (badness %i)"](b))
 end
 
 function diagnostics.loose_hbox(hlist,line,b)
-    common_message(hlist,line,format("Loose \\hbox (badness %i)",b))
+    common_message(hlist,line,formatters["Loose \\hbox (badness %i)"](b))
 end

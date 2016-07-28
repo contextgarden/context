@@ -978,10 +978,14 @@
   {\hbox to \displaywidth \bgroup
    \hsize\displaywidth
    \hss
-   \Ustartmath}
+  %\Ustartmath
+   \dostarttagged\t!formulacontent\empty
+   \csname\e!start\formulaparameter\c!alternative\v!formula\endcsname}
 
 \unexpanded\def\strc_formulas_nested_formula_stop
-  {\Ustopmath
+  {\csname\e!stop\formulaparameter\c!alternative\v!formula\endcsname
+   \dostoptagged
+  %\Ustopmath
    \hss
    \egroup
    \hss}

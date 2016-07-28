@@ -471,10 +471,14 @@
   {\math_stackers_triplet\zerocount\currentmathstackers\scratchcounter{#toptext}{#bottomtext}%
    \endgroup}
 
-%D A few direct accessors:
+%D A few direct accessors (in the meantime we redefined \mathextensible so we renamed the
+%D following):
 
-\unexpanded\def\mathextensible{\begingroup\dosingleempty\math_stackers_handle_math}
-\unexpanded\def\textextensible{\begingroup\dosingleempty\math_stackers_handle_text}
+\unexpanded\def\directmathextensible{\begingroup\dosingleempty\math_stackers_handle_math}
+\unexpanded\def\directtextextensible{\begingroup\dosingleempty\math_stackers_handle_text}
+
+\let\mathstacker\directmathextensible
+\let\textstacker\directtextextensible
 
 \unexpanded\def\math_stackers_handle_math[#category]%
   {\math_stackers_handle_extensible{\iffirstargument#category\else\v!mathematics\fi}} % will be defined later on

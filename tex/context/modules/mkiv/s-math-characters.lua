@@ -53,8 +53,14 @@ function moduledata.math.characters.showlist(specification)
     local sorted       = { }
     if type(list) == "string" then
         sorted = utilities.parsers.settings_to_array(list)
+        for i=1,#sorted do
+            sorted[i] = tonumber(sorted[i])
+        end
     elseif type(list) == "table" then
         sorted = list
+        for i=1,#sorted do
+            sorted[i] = tonumber(sorted[i])
+        end
     elseif fillinthegaps then
         sorted = table.keys(characters)
         for k, v in next, gaps do

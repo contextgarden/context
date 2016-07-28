@@ -97,13 +97,13 @@
 
 \appendtoks
     \ifcsname\??barindex\currentbar\endcsname
-        \lastnamedcs
+        \lastnamedcs\zerocount
     \else
         \expandafter\newcount\csname\??barindex\currentbar\endcsname
     \fi
-%     \normalexpanded{\t_node_rules_checklist{\node_rules_redefine{\currentbar}\the\t_node_rules_checklist}}%
-    \normalexpanded{\t_node_rules_checklist{\the\t_node_rules_checklist\node_rules_redefine{\currentbar}}}%
-%     \etoksapp\t_node_rules_checklist{\node_rules_redefine{\currentbar}}%
+  % \normalexpanded{\t_node_rules_checklist{\node_rules_redefine{\currentbar}\the\t_node_rules_checklist}}%
+    \normalexpanded{\t_node_rules_checklist{\the\t_node_rules_checklist\relax\node_rules_redefine{\currentbar}}}%
+  % \etoksapp\t_node_rules_checklist{\node_rules_redefine{\currentbar}}%
     \node_rules_define
     \setuevalue\currentbar{\node_rules_direct{\currentbar}}%
 \to \everydefinebar
@@ -341,7 +341,7 @@
     \else
         \expandafter\newcount\csname\??shiftindex\currentshift\endcsname
     \fi
-    \normalexpanded{\t_node_shifts_checklist{\node_shifts_redefine{\currentshift}\the\t_node_shifts_checklist}}%
+    \normalexpanded{\t_node_shifts_checklist{\the\t_node_shifts_checklist\node_shifts_redefine{\currentshift}}}% order ?
     \node_shifts_define
     \setuevalue\currentshift{\node_shifts_direct{\currentshift}}%
 \to \everydefineshift

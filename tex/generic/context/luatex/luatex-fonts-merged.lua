@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/25/16 21:49:08
+-- merge date  : 07/29/16 00:45:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -18165,6 +18165,12 @@ local getthreshold=injections.getthreshold
 local checkstep=(nodes and nodes.tracers and nodes.tracers.steppers.check)  or function() end
 local registerstep=(nodes and nodes.tracers and nodes.tracers.steppers.register) or function() end
 local registermessage=(nodes and nodes.tracers and nodes.tracers.steppers.message) or function() end
+local function checkdisccontent(d)
+  local pre,post,replace=getdisc(d)
+  if pre   then for n in traverse_id(glue_code,pre)   do print("pre",nodes.idstostring(pre))   break end end
+  if post  then for n in traverse_id(glue_code,post)  do print("pos",nodes.idstostring(post))  break end end
+  if replace then for n in traverse_id(glue_code,replace) do print("rep",nodes.idstostring(replace)) break end end
+end
 local function logprocess(...)
   if trace_steps then
     registermessage(...)
@@ -18225,7 +18231,7 @@ end
 local function copy_glyph(g) 
   local components=getfield(g,"components")
   if components then
-    setfield(g,"components",nil)
+    setfield(g,"components")
     local n=copy_node(g)
     copyinjection(n,g) 
     setfield(g,"components",components)
@@ -18237,11 +18243,18 @@ local function copy_glyph(g)
   end
 end
 local function flattendisk(head,disc)
-  local _,_,replace,_,_,replacetail=getdisc(disc,true)
-  setfield(disc,"replace",nil)
+  local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
+  local prev,next=getboth(disc)
+  local ishead=head==disc
+  setdisc(disc)
   flush_node(disc)
-  if head==disc then
-    local next=getnext(disc)
+  if pre then
+    flush_node_list(pre)
+  end
+  if post then
+    flush_node_list(post)
+  end
+  if ishead then
     if replace then
       if next then
         setlink(replacetail,next)
@@ -18253,7 +18266,6 @@ local function flattendisk(head,disc)
       return 
     end
   else
-    local prev,next=getboth(disc)
     if replace then
       if next then
         setlink(replacetail,next)
@@ -18288,8 +18300,8 @@ local function markstoligature(head,start,stop,char)
   else
     local prev=getprev(start)
     local next=getnext(stop)
-    setprev(start,nil)
-    setnext(stop,nil)
+    setprev(start)
+    setnext(stop)
     local base=copy_glyph(start)
     if head==start then
       head=base
@@ -18336,8 +18348,8 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
   local prev=getprev(start)
   local next=getnext(stop)
   local comp=start
-  setprev(start,nil)
-  setnext(stop,nil)
+  setprev(start)
+  setnext(stop)
   local base=copy_glyph(start)
   if start==head then
     head=base
@@ -18401,36 +18413,36 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
       local pre,post,replace,pretail,posttail,replacetail=getdisc(discfound,true)
       if not replace then 
         local prev=getprev(base)
-local current=comp
-local previous=nil
-local copied=nil
-while current do
-  if getid(current)==glyph_code then
-    local n=copy_node(current)
-    if copied then
-      setlink(previous,n)
-    else
-      copied=n
-    end
-    previous=n
-  end
-  current=getnext(current)
-end
-        setprev(discnext,nil) 
-        setnext(discprev,nil) 
+        local current=comp
+        local previous=nil
+        local copied=nil
+        while current do
+          if getid(current)==glyph_code then
+            local n=copy_node(current)
+            if copied then
+              setlink(previous,n)
+            else
+              copied=n
+            end
+            previous=n
+          end
+          current=getnext(current)
+        end
+        setprev(discnext) 
+        setnext(discprev) 
         if pre then
           setlink(discprev,pre)
         end
         pre=comp
         if post then
           setlink(posttail,discnext)
-          setprev(post,nil)
+          setprev(post)
         else
           post=discnext
         end
         setlink(prev,discfound)
         setlink(discfound,next)
-        setboth(base,nil,nil)
+        setboth(base)
         setfield(base,"components",copied)
         setdisc(discfound,pre,post,base,discretionary_code)
         base=prev 
@@ -19434,6 +19446,39 @@ end
 local function show_skip(dataset,sequence,char,ck,class)
   logwarning("%s: skipping char %s, class %a, rule %a, lookuptype %a",cref(dataset,sequence),gref(char),class,ck[1],ck[8] or ck[2])
 end
+local new_kern=nuts.pool.kern
+local function checked(head)
+  local current=head
+  while current do
+    if getid(current)==glue_code then
+      local kern=new_kern(getfield(current,"width"))
+      if head==current then
+        local next=getnext(current)
+        if next then
+          setlink(kern,next)
+        end
+        flush_node(current)
+        head=kern
+        current=next
+      else
+        local prev,next=getboth(current)
+        setlink(prev,kern)
+        setlink(kern,next)
+        flush_node(current)
+        current=next
+      end
+    else
+      current=getnext(current)
+    end
+  end
+  return head
+end
+local function setdiscchecked(d,pre,post,replace)
+  if pre   then pre=checked(pre)   end
+  if post  then post=checked(post)  end
+  if replace then replace=checked(replace) end
+  setdisc(d,pre,post,replace)
+end
 local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,ck,chainproc)
   if not start then
     return head,start,false
@@ -19454,6 +19499,7 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
   local current=start
   local last=start
   local prev=getprev(start)
+  local hasglue=false
   local i=f
   while i<=l do
     local id=getid(current)
@@ -19461,6 +19507,11 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
       i=i+1
       last=current
       current=getnext(current)
+    elseif id==glue_code then
+      i=i+1
+      last=current
+      current=getnext(current)
+      hasglue=true
     elseif id==disc_code then
       if keepdisc then
         keepdisc=false
@@ -19510,8 +19561,8 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
         tail=find_node_tail(head)
       end
       setnext(sweepnode,current)
-      setprev(head,nil)
-      setnext(tail,nil)
+      setprev(head)
+      setnext(tail)
       appenddisc(sweepnode,head)
     end
   end
@@ -19523,6 +19574,10 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
       if id==glyph_code then
         i=i+1
         current=getnext(current)
+      elseif id==glue_code then
+        i=i+1
+        current=getnext(current)
+        hasglue=true
       elseif id==disc_code then
         if keepdisc then
           keepdisc=false
@@ -19564,6 +19619,9 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
       local id=getid(current)
       if id==glyph_code then
         i=i-1
+      elseif id==glue_code then
+        i=i-1
+        hasglue=true
       elseif id==disc_code then
         if keepdisc then
           keepdisc=false
@@ -19608,8 +19666,8 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
     if cprev then
       setnext(cprev,lookaheaddisc)
     end
-    setprev(cf,nil)
-    setnext(cl,nil)
+    setprev(cf)
+    setnext(cl)
     if startishead then
       head=lookaheaddisc
     end
@@ -19636,7 +19694,11 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
       local tail=find_node_tail(new)
       setlink(tail,replace)
     end
-    setdisc(lookaheaddisc,cf,post,new)
+    if hasglue then
+      setdiscchecked(lookaheaddisc,cf,post,new)
+    else
+      setdisc(lookaheaddisc,cf,post,new)
+    end
     start=getprev(lookaheaddisc)
     sweephead[cf]=getnext(clast)
     sweephead[new]=getnext(last)
@@ -19659,8 +19721,8 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
       setprev(cnext,backtrackdisc)
     end
     setnext(backtrackdisc,cnext)
-    setprev(cf,nil)
-    setnext(cl,nil)
+    setprev(cf)
+    setnext(cl)
     local pre,post,replace,pretail,posttail,replacetail=getdisc(backtrackdisc,true)
     local new=copy_node_list(cf)
     local cnew=find_node_tail(new)
@@ -19687,7 +19749,11 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
     else
       replace=new
     end
-    setdisc(backtrackdisc,pre,post,replace)
+    if hasglue then
+      setdiscchecked(backtrackdisc,pre,post,replace)
+    else
+      setdisc(backtrackdisc,pre,post,replace)
+    end
     start=getprev(backtrackdisc)
     sweephead[post]=getnext(clast)
     sweephead[replace]=getnext(last)
@@ -20341,7 +20407,7 @@ local function kernrun(disc,k_run,font,attr,...)
       if k_run(posttail,"postinjections",next,font,attr,...) then
         done=true
       end
-      setnext(posttail,nil)
+      setnext(posttail)
       setprev(next,disc)
     end
   end
@@ -20363,7 +20429,7 @@ local function kernrun(disc,k_run,font,attr,...)
       if k_run(replacetail,"replaceinjections",next,font,attr,...) then
         done=true
       end
-      setnext(replacetail,nil)
+      setnext(replacetail)
       setprev(next,disc)
     end
   elseif prev and next then
@@ -20430,7 +20496,7 @@ local function testrun(disc,t_run,c_run,...)
     setlink(replacetail,next)
     local ok,overflow=t_run(replace,next,...)
     if ok and overflow then
-      setfield(disc,"replace",nil)
+      setfield(disc,"replace")
       setlink(prev,replace)
       setboth(disc)
       flush_node_list(disc)

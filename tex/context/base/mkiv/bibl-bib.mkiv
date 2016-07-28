@@ -140,7 +140,7 @@
 
 \def\doregisterbibtexfile  [#1][#2]{\ctxcommand{registerbibtexfile("#1","#2")}}
 \def\doregisterbibtexentry [#1][#2]{\ctxcommand{registerbibtexentry("#1","#2")}}
-\def\doapplytobibtexsession[#1][#2]{\xmlprocessregistered{bibtex:#1}{#2}{#2}}
+\def\doapplytobibtexsession[#1][#2]{\xmlprocess{bibtex:#1}{#2}{#2}}
 
 \unexpanded\def\bibtexcommand#1%
   {\ifcsname\??pb:c:#1\endcsname \else

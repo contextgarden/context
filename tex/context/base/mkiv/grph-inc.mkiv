@@ -866,11 +866,40 @@
   [\jobname.buffer]
   [\c!object=\v!no]
 
-% Another one:
+% Another two:
 
 \defineexternalfigure
   [\v!inline]
   [\c!height=\lineheight]
+
+\defineexternalfigure
+  [\v!combination]
+  [\c!width=\dimexpr(\textwidth-\numexpr\combinationparameter\c!nx-\plusone\relax\dimexpr\combinationparameter\c!distance\relax)/\combinationparameter\c!nx\relax]
+
+% \startcombination[nx=2,ny=1]
+%     {\externalfigure[dummy][combination]} {}
+%     {\externalfigure[dummy][combination]} {}
+% \stopcombination
+
+% \startcombination[nx=2,ny=2]
+%     {\externalfigure[dummy][combination]} {}
+%     {\externalfigure[dummy][combination]} {}
+%     {\externalfigure[dummy][combination]} {}
+%     {\externalfigure[dummy][combination]} {}
+% \stopcombination
+
+% \startcombination[nx=3,ny=1]
+%     {\externalfigure[dummy][combination]} {}
+%     {\externalfigure[dummy][combination]} {}
+%     {\externalfigure[dummy][combination]} {}
+% \stopcombination
+
+% \startcombination[nx=4,ny=1]
+%     {\externalfigure[dummy][combination]} {}
+%     {\externalfigure[dummy][combination]} {}
+%     {\externalfigure[dummy][combination]} {}
+%     {\externalfigure[dummy][combination]} {}
+% \stopcombination
 
 \unexpanded\def\inlinefigure[#1]{\dontleavehmode\sbox{\externalfigure[#1][\v!inline]}}
 

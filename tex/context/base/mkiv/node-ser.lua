@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['node-ser'] = {
 -- of luatex; this is pretty old code that needs an overhaul
 
 local type = type
-local concat, tohash, sortedkeys, printtable = table.concat, table.tohash, table.sortedkeys, table.print
+local concat, tohash, sortedkeys, printtable, serialize = table.concat, table.tohash, table.sortedkeys, table.print, table.serialize
 local formatters, format, rep = string.formatters, string.format, string.rep
 
 local allocate = utilities.storage.allocate
@@ -38,14 +38,16 @@ local f_char      = formatters["%U"]
 
 ----- f_char      = utilities.strings.chkuni -- formatters["%!chkuni!"]
 
+-- this needs checking with the latest state of affairs:
+
 local expand = allocate ( tohash {
     -- text:
     "list",         -- list_ptr & ins_ptr & adjust_ptr
     "pre",          --
     "post",         --
+    "replace",      -- nobreak
     "top_skip",     --
     "attr",         --
-    "replace",      -- nobreak
     "components",   -- lig_ptr
     "box_left",     --
     "box_right",    --
@@ -85,15 +87,15 @@ local ignore = allocate ( tohash {
 local dimension = allocate ( tohash {
     "width", "height", "depth", "shift",
     "stretch", "shrink",
-    "xoffset", "yoffset",
+    "xoffset", "yoffset", "xadvance",
     "surround",
     "kern",
     "box_left_width", "box_right_width"
 } )
 
--- flat: don't use next, but indexes
--- verbose: also add type
--- can be sped up
+-- flat    : don't use next, but indexes
+-- verbose : also add type
+-- todo    : speed up
 
 nodes.dimensionfields = dimension
 nodes.listablefields  = expand
@@ -111,7 +113,7 @@ local function astable(n,sparse) -- not yet ok, might get obsolete anyway
             if ignore[v] or v == "id" then
                 -- skip
             elseif expand[v] then -- or: type(n[v]) ~= "string" or type(n[v]) ~= "number" or type(n[v]) ~= "table"
-                t[v] = "pointer to list"
+                t[v] = "<list>"
             elseif sparse then
                 if (type(d) == "number" and d ~= 0) or (type(d) == "string" and d ~= "") then
                     t[v] = d
@@ -133,7 +135,7 @@ setinspector("node",function(v) if is_node(v) then printtable(astable(v),tostrin
 
 local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
     local function to_table(n,flat,verbose,noattributes) -- no need to pass
-        local f = getfields(n)
+        local f  = getfields(n)
         local tt = { }
         for k=1,#f do
             local v = f[k]
@@ -143,6 +145,8 @@ local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
                     -- skip
                 elseif noattributes and v == "attr" then
                     -- skip
+                elseif v == "prev" then
+                    tt[v] = "<node>"
                 elseif expand[v] then
                     if type(nv) == "number" or type(nv) == "string" then
                         tt[v] = nv
@@ -213,102 +217,16 @@ local function key(k)
     return ((type(k) == "number") and "["..k.."]") or k
 end
 
--- not ok yet; this will become a module
-
--- todo: adapt to nodecodes etc .. use formatters
-
-local function serialize(root,name,handle,depth,m,noattributes)
-    handle = handle or print
-    if depth then
-        depth = depth .. " "
-        handle(format("%s%s={",depth,key(name)))
-    else
-        depth = ""
-        local tname = type(name)
-        if tname == "string" then
-            if name == "return" then
-                handle("return {")
-            else
-                handle(name .. "={")
-            end
-        elseif tname == "number" then
-            handle("[" .. name .. "]={")
-        else
-            handle("t={")
-        end
-    end
-    if root then
-        local fld
-        if root.id then
-            fld = getfields(root) -- we can cache these (todo)
-        else
-            fld = sortedkeys(root)
-        end
-        if type(root) == 'table' and root['type'] then -- userdata or table
-            handle(format("%s type=%q,",depth,root['type']))
-        end
-        for f=1,#fld do
-            local k = fld[f]
-            if k == "ref_count" then
-                -- skip
-            elseif noattributes and k == "attr" then
-                -- skip
-            elseif k == "id" then
-                local v = root[k]
-                handle(format("%s id=%s,",depth,nodecodes[v] or noadcodes[v] or v))
-            elseif k then
-                local v = root[k]
-                local t = type(v)
-                if t == "number" then
-                    if v == 0 then
-                        -- skip
-                    else
-                        handle(format("%s %s=%s,",depth,key(k),v))
-                    end
-                elseif t == "string" then
-                    if v == "" then
-                        -- skip
-                    else
-                        handle(format("%s %s=%q,",depth,key(k),v))
-                    end
-                elseif t == "boolean" then
-                    handle(format("%s %s=%q,",depth,key(k),tostring(v)))
-                elseif v then -- userdata or table
-                    serialize(v,k,handle,depth,m+1,noattributes)
-                end
-            end
-        end
-        if root['next'] then -- userdata or table
-            serialize(root['next'],'next',handle,depth,m+1,noattributes)
-        end
-    end
-    if m and m > 0 then
-        handle(format("%s},",depth))
-    else
-        handle(format("%s}",depth))
-    end
+function nodes.serialize(root,flat,verbose,noattributes,name)
+    return serialize(totable(tonode(root),flat,verbose,noattributes),name)
 end
 
-function nodes.serialize(root,name,noattributes)
-    local t, n = { }, 0
-    local function flush(s)
-        n = n + 1
-        t[n] = s
-    end
-    serialize(tonode(root),name,flush,nil,0,noattributes)
-    return concat(t,"\n")
+function nodes.serializebox(n,flat,verbose,noattributes,name)
+    return serialize(totable(tex.box[n],flat,verbose,noattributes),name)
 end
 
-function nodes.serializebox(n,flat,verbose,name)
-    return nodes.serialize(nodes.totable(tex.box[n],flat,verbose),name)
-end
-
-function nodes.visualizebox(...) -- to be checked .. will move to module anyway
-    context.starttyping()
-    context.pushcatcodes("verbatim")
-    context(nodes.serializebox(...))
-    context.stoptyping()
-    context.popcatcodes()
+function nodes.visualizebox(n,flat,verbose,noattributes,name)
+    context.tocontext(totable(tex.box[n],flat,verbose,noattributes),name)
 end
 
 function nodes.list(head,n) -- name might change to nodes.type -- to be checked .. will move to module anyway

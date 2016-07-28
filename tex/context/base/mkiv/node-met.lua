@@ -625,7 +625,7 @@ local messyhack    = table.tohash { -- temporary solution
 }
 
 table.setmetatableindex(keys,function(t,k)
-    local v = getfields(k)
+    v = (k == "attributelist" or k == nodecodes.attributelist) and { } or getfields(k)
     if messyhack[k] then
         for i=1,#v do
             if v[i] == "subtype" then

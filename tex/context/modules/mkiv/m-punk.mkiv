@@ -11,11 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifx\luaversion\undefined \endinput \fi
-
-% At some point the font generation code will move into the
-% ConTeXt MkIV kernel.
-
 \startluacode
 local concat   = table.concat
 local chardata = characters.data
@@ -242,7 +237,7 @@ end)
     \definetypeface [punk] [rm] [serif] [punk] [default]
 \stoptypescript
 
-\endinput
+\continueifinputfile{m-punk.mkiv}
 
 \usetypescript[punk]
 

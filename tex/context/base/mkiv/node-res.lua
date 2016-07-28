@@ -251,6 +251,7 @@ function nutpool.italickern(k)
 end
 
 function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
+    -- maybe setglue
     local s = copy_nut(glue_spec)
     if width and width ~= 0 then
         setfield(s,"width",width)
@@ -271,6 +272,7 @@ function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
 end
 
 local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)
+    -- maybe setglue
     local n = copy_nut(skip)
     if width and width ~= 0 then
         setfield(n,"width",width)
