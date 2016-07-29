@@ -29,81 +29,79 @@ local fastcopy, tohash, derivetable, copy = table.fastcopy, table.tohash, table.
 local formatters = string.formatters
 local P, R, S, C, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.match
 
-local setmetatableindex  = table.setmetatableindex
-local allocate           = utilities.storage.allocate
-local registertracker    = trackers.register
-local registerdirective  = directives.register
-local starttiming        = statistics.starttiming
-local stoptiming         = statistics.stoptiming
-local elapsedtime        = statistics.elapsedtime
-local findbinfile        = resolvers.findbinfile
+local setmetatableindex   = table.setmetatableindex
+local allocate            = utilities.storage.allocate
+local registertracker     = trackers.register
+local registerdirective   = directives.register
+local starttiming         = statistics.starttiming
+local stoptiming          = statistics.stoptiming
+local elapsedtime         = statistics.elapsedtime
+local findbinfile         = resolvers.findbinfile
 
-local trace_private      = false  registertracker("otf.private",        function(v) trace_private   = v end)
-local trace_subfonts     = false  registertracker("otf.subfonts",       function(v) trace_subfonts  = v end)
-local trace_loading      = false  registertracker("otf.loading",        function(v) trace_loading   = v end)
-local trace_features     = false  registertracker("otf.features",       function(v) trace_features  = v end)
-local trace_dynamics     = false  registertracker("otf.dynamics",       function(v) trace_dynamics  = v end)
-local trace_sequences    = false  registertracker("otf.sequences",      function(v) trace_sequences = v end)
-local trace_markwidth    = false  registertracker("otf.markwidth",      function(v) trace_markwidth = v end)
-local trace_defining     = false  registertracker("fonts.defining",     function(v) trace_defining  = v end)
+local trace_private       = false  registertracker("otf.private",        function(v) trace_private   = v end)
+local trace_subfonts      = false  registertracker("otf.subfonts",       function(v) trace_subfonts  = v end)
+local trace_loading       = false  registertracker("otf.loading",        function(v) trace_loading   = v end)
+local trace_features      = false  registertracker("otf.features",       function(v) trace_features  = v end)
+local trace_dynamics      = false  registertracker("otf.dynamics",       function(v) trace_dynamics  = v end)
+local trace_sequences     = false  registertracker("otf.sequences",      function(v) trace_sequences = v end)
+local trace_markwidth     = false  registertracker("otf.markwidth",      function(v) trace_markwidth = v end)
+local trace_defining      = false  registertracker("fonts.defining",     function(v) trace_defining  = v end)
 
-local compact_lookups    = true   registertracker("otf.compactlookups", function(v) compact_lookups = v end)
-local purge_names        = true   registertracker("otf.purgenames",     function(v) purge_names     = v end)
+local compact_lookups     = true   registertracker("otf.compactlookups", function(v) compact_lookups = v end)
+local purge_names         = true   registertracker("otf.purgenames",     function(v) purge_names     = v end)
 
-local report_otf         = logs.reporter("fonts","otf loading")
+local report_otf          = logs.reporter("fonts","otf loading")
 
-local fonts              = fonts
-local otf                = fonts.handlers.otf
+local fonts               = fonts
+local otf                 = fonts.handlers.otf
 
-otf.glists               = { "gsub", "gpos" }
+otf.glists                = { "gsub", "gpos" }
 
-otf.version              = 2.826 -- beware: also sync font-mis.lua and in mtx-fonts
-otf.cache                = containers.define("fonts", "otf", otf.version, true)
+otf.version               = 2.826 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.cache                 = containers.define("fonts", "otf", otf.version, true)
 
-local hashes             = fonts.hashes
-local definers           = fonts.definers
-local readers            = fonts.readers
-local constructors       = fonts.constructors
+local hashes              = fonts.hashes
+local definers            = fonts.definers
+local readers             = fonts.readers
+local constructors        = fonts.constructors
 
-local fontdata           = hashes     and hashes.identifiers
-local chardata           = characters and characters.data -- not used
+local fontdata            = hashes     and hashes.identifiers
+local chardata            = characters and characters.data -- not used
 
-local otffeatures        = constructors.features.otf
-local registerotffeature = otffeatures.register
+local otffeatures         = constructors.features.otf
+local registerotffeature  = otffeatures.register
 
-local enhancers          = allocate()
-otf.enhancers            = enhancers
-local patches            = { }
-enhancers.patches        = patches
+local otfenhancers        = constructors.enhancers.otf
+local registerotfenhancer = otfenhancers.register
 
-local forceload          = false
-local cleanup            = 0     -- mk: 0=885M 1=765M 2=735M (regular run 730M)
-local packdata           = true
-local syncspace          = true
-local forcenotdef        = false
-local includesubfonts    = false
-local overloadkerns      = false -- experiment
+local forceload           = false
+local cleanup             = 0     -- mk: 0=885M 1=765M 2=735M (regular run 730M)
+local packdata            = true
+local syncspace           = true
+local forcenotdef         = false
+local includesubfonts     = false
+local overloadkerns       = false -- experiment
 
-local applyruntimefixes  = fonts.treatments and fonts.treatments.applyfixes
+local applyruntimefixes   = fonts.treatments and fonts.treatments.applyfixes
 
-local wildcard           = "*"
-local default            = "dflt"
+local wildcard            = "*"
+local default             = "dflt"
 
-local fontloader         = fontloader
-local open_font          = fontloader.open
-local close_font         = fontloader.close
-local font_fields        = fontloader.fields
-local apply_featurefile  = fontloader.apply_featurefile
+local fontloader          = fontloader
+local open_font           = fontloader.open
+local close_font          = fontloader.close
+local font_fields         = fontloader.fields
+local apply_featurefile   = fontloader.apply_featurefile
 
-local mainfields         = nil
-local glyphfields        = nil -- not used yet
+local mainfields          = nil
+local glyphfields         = nil -- not used yet
 
-local formats            = fonts.formats
+local formats             = fonts.formats
 
-formats.otf              = "opentype"
-formats.ttf              = "truetype"
-formats.ttc              = "truetype"
-formats.dfont            = "truetype"
+formats.otf               = "opentype"
+formats.ttf               = "truetype"
+formats.ttc               = "truetype"
+formats.dfont             = "truetype"
 
 registerdirective("fonts.otf.loader.cleanup",       function(v) cleanup       = tonumber(v) or (v and 1) or 0 end)
 registerdirective("fonts.otf.loader.force",         function(v) forceload     = v end)
@@ -262,127 +260,50 @@ local valid_fields = table.tohash {
  -- "truetype", -- maybe as check
 }
 
-local ordered_enhancers = {
-    "prepare tables",
-
-    "prepare glyphs",
-    "prepare lookups",
-
-    "analyze glyphs",
-    "analyze math",
-
- -- "prepare tounicode",
-
-    "reorganize lookups",
-    "reorganize mark classes",
-    "reorganize anchor classes",
-
-    "reorganize glyph kerns",
-    "reorganize glyph lookups",
-    "reorganize glyph anchors",
-
-    "merge kern classes",
-
-    "reorganize features",
-    "reorganize subtables",
-
-    "check glyphs",
-    "check metadata",
-
-    "prepare tounicode",
-
-    "check encoding", -- moved
-    "add duplicates",
-
-    "expand lookups", -- a temp hack awaiting the lua loader
-
-    "check extra features", -- after metadata and duplicates
-
-    "cleanup tables",
-
-    "compact lookups",
-    "purge names",
-}
-
---[[ldx--
-<p>Here we go.</p>
---ldx]]--
-
-local actions  = allocate()
-local before   = allocate()
-local after    = allocate()
-
-patches.before = before
-patches.after  = after
-
-local function enhance(name,data,filename,raw)
-    local enhancer = actions[name]
-    if enhancer then
-        if trace_loading then
-            report_otf("apply enhancement %a to file %a",name,filename)
-            ioflush()
-        end
-        enhancer(data,filename,raw)
-    else
-        -- no message as we can have private ones
-    end
-end
-
-function enhancers.apply(data,filename,raw)
-    local basename = file.basename(lower(filename))
-    if trace_loading then
-        report_otf("%s enhancing file %a","start",filename)
-    end
-    ioflush() -- we want instant messages
-    for e=1,#ordered_enhancers do
-        local enhancer = ordered_enhancers[e]
-        local b = before[enhancer]
-        if b then
-            for pattern, action in next, b do
-                if find(basename,pattern) then
-                    action(data,filename,raw)
-                end
+local function adddimensions(data,filename)
+    -- todo: forget about the width if it's the defaultwidth (saves mem)
+    -- we could also build the marks hash here (instead of storing it)
+    if data then
+        local descriptions  = data.descriptions
+        local resources     = data.resources
+        local defaultwidth  = resources.defaultwidth  or 0
+        local defaultheight = resources.defaultheight or 0
+        local defaultdepth  = resources.defaultdepth  or 0
+        local basename      = trace_markwidth and file.basename(filename)
+        for _, d in next, descriptions do
+            local bb, wd = d.boundingbox, d.width
+            if not wd then
+                -- or bb?
+                d.width = defaultwidth
+            elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
+                report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
+             -- d.width  = -wd
+            end
+            if bb then
+                local ht =  bb[4]
+                local dp = -bb[2]
+             -- if alldimensions then
+             --     if ht ~= 0 then
+             --         d.height = ht
+             --     end
+             --     if dp ~= 0 then
+             --         d.depth  = dp
+             --     end
+             -- else
+                    if ht == 0 or ht < 0 then
+                        -- not set
+                    else
+                        d.height = ht
+                    end
+                    if dp == 0 or dp < 0 then
+                        -- not set
+                    else
+                        d.depth  = dp
+                    end
+             -- end
             end
         end
-        enhance(enhancer,data,filename,raw)
-        local a = after[enhancer]
-        if a then
-            for pattern, action in next, a do
-                if find(basename,pattern) then
-                    action(data,filename,raw)
-                end
-            end
-        end
-        ioflush() -- we want instant messages
     end
-    if trace_loading then
-        report_otf("%s enhancing file %a","stop",filename)
-    end
-    ioflush() -- we want instant messages
-end
-
--- patches.register("before","migrate metadata","cambria",function() end)
-
-function patches.register(what,where,pattern,action)
-    local pw = patches[what]
-    if pw then
-        local ww = pw[where]
-        if ww then
-            ww[pattern] = action
-        else
-            pw[where] = { [pattern] = action}
-        end
-    end
-end
-
-function patches.report(fmt,...)
-    if trace_loading then
-        report_otf("patching: %s",formatters[fmt](...))
-    end
-end
-
-function enhancers.register(what,action) -- only already registered can be overloaded
-    actions[what] = action
 end
 
 function otf.load(filename,sub,featurefile) -- second argument (format) is gone !
@@ -524,14 +445,14 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
                 },
             }
             report_otf("file size: %s", size)
-            enhancers.apply(data,filename,fontdata)
+            otfenhancers.apply(data,filename,fontdata)
             local packtime = { }
             if packdata then
                 if cleanup > 0 then
                     collectgarbage("collect")
                 end
                 starttiming(packtime)
-                enhance("pack",data,filename,nil)
+                otf.packdata(data,filename,nil) -- implemented elsewhere
                 stoptiming(packtime)
             end
             report_otf("saving %a in cache",filename)
@@ -562,7 +483,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         if trace_defining then
             report_otf("loading from cache using hash %a",hash)
         end
-        enhance("unpack",data,filename,nil,false)
+        otf.unpackdata(data,filename,nil,false) -- implemented elsewhere
         --
         local resources  = data.resources
         local lookuptags = resources.lookuptags
@@ -599,7 +520,7 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         if applyruntimefixes then
             applyruntimefixes(filename,data)
         end
-        enhance("add dimensions",data,filename,nil,false)
+        adddimensions(data,filename,nil,false)
         if trace_sequences then
             showfeatureorder(data,filename)
         end
@@ -623,54 +544,8 @@ local mt = {
     end
 }
 
-actions["prepare tables"] = function(data,filename,raw)
+local function enhance_prepare_tables(data,filename,raw)
     data.properties.hasitalics = false
-end
-
-actions["add dimensions"] = function(data,filename)
-    -- todo: forget about the width if it's the defaultwidth (saves mem)
-    -- we could also build the marks hash here (instead of storing it)
-    if data then
-        local descriptions  = data.descriptions
-        local resources     = data.resources
-        local defaultwidth  = resources.defaultwidth  or 0
-        local defaultheight = resources.defaultheight or 0
-        local defaultdepth  = resources.defaultdepth  or 0
-        local basename      = trace_markwidth and file.basename(filename)
-        for _, d in next, descriptions do
-            local bb, wd = d.boundingbox, d.width
-            if not wd then
-                -- or bb?
-                d.width = defaultwidth
-            elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
-                report_otf("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
-             -- d.width  = -wd
-            end
-            if bb then
-                local ht =  bb[4]
-                local dp = -bb[2]
-             -- if alldimensions then
-             --     if ht ~= 0 then
-             --         d.height = ht
-             --     end
-             --     if dp ~= 0 then
-             --         d.depth  = dp
-             --     end
-             -- else
-                    if ht == 0 or ht < 0 then
-                        -- not set
-                    else
-                        d.height = ht
-                    end
-                    if dp == 0 or dp < 0 then
-                        -- not set
-                    else
-                        d.depth  = dp
-                    end
-             -- end
-            end
-        end
-    end
 end
 
 local function somecopy(old) -- fast one
@@ -707,7 +582,7 @@ end
 
 -- not setting hasitalics and class (when nil) during table construction can save some mem
 
-actions["prepare glyphs"] = function(data,filename,raw)
+local function enhance_prepare_glyphs(data,filename,raw)
     local rawglyphs    = raw.glyphs
     local rawsubfonts  = raw.subfonts
     local rawcidinfo   = raw.cidinfo
@@ -985,7 +860,7 @@ end
 --
 -- PsuedoEncodeUnencoded(EncMap *map,struct ttfinfo *info)
 
-actions["check encoding"] = function(data,filename,raw)
+local function enhance_check_encoding(data,filename,raw)
     local descriptions = data.descriptions
     local resources    = data.resources
     local properties   = data.properties
@@ -1064,7 +939,7 @@ end
 -- do an indirect lookup uni_to_uni . but then we need that in
 -- all lookups
 
-actions["add duplicates"] = function(data,filename,raw)
+local function enhance_add_duplicates(data,filename,raw)
     local descriptions = data.descriptions
     local resources    = data.resources
     local properties   = data.properties
@@ -1117,7 +992,7 @@ end
 -- class      : nil base mark ligature component (maybe we don't need it in description)
 -- boundingbox: split into ht/dp takes more memory (larger tables and less sharing)
 
-actions["analyze glyphs"] = function(data,filename,raw) -- maybe integrate this in the previous
+local function enhance_analyze_glyphs(data,filename,raw) -- maybe integrate this in the previous
     local descriptions = data.descriptions
     local resources    = data.resources
     local metadata     = data.metadata
@@ -1176,7 +1051,7 @@ actions["analyze glyphs"] = function(data,filename,raw) -- maybe integrate this 
     end
 end
 
-actions["reorganize mark classes"] = function(data,filename,raw)
+local function enhance_reorganize_mark_classes(data,filename,raw)
     local mark_classes = raw.mark_classes
     if mark_classes then
         local resources       = data.resources
@@ -1193,7 +1068,7 @@ actions["reorganize mark classes"] = function(data,filename,raw)
     end
 end
 
-actions["reorganize features"] = function(data,filename,raw) -- combine with other
+local function enhance_reorganize_features(data,filename,raw) -- combine with other
     local features = { }
     data.resources.features = features
     for k=1,#otf.glists do
@@ -1231,7 +1106,7 @@ actions["reorganize features"] = function(data,filename,raw) -- combine with oth
     end
 end
 
-actions["reorganize anchor classes"] = function(data,filename,raw)
+local function enhance_reorganize_anchor_classes(data,filename,raw)
     local resources            = data.resources
     local anchor_to_lookup     = { }
     local lookup_to_anchor     = { }
@@ -1400,7 +1275,7 @@ end
 --     end
 -- end
 
-actions["prepare tounicode"] = function(data,filename,raw)
+local function enhance_prepare_tounicode(data,filename,raw)
     fonts.mappings.addtounicode(data,filename)
 end
 
@@ -1428,7 +1303,7 @@ local g_directions = {
 --     return true
 -- end
 
-actions["reorganize subtables"] = function(data,filename,raw)
+local function enhance_reorganize_subtables(data,filename,raw)
     local resources       = data.resources
     local sequences       = { }
     local lookups         = { }
@@ -1522,7 +1397,7 @@ actions["reorganize subtables"] = function(data,filename,raw)
     end
 end
 
-actions["prepare lookups"] = function(data,filename,raw)
+local function enhance_prepare_lookups(data,filename,raw)
     local lookups = raw.lookups
     if lookups then
         data.lookups = lookups
@@ -1632,7 +1507,7 @@ local function r_uncover(splitter,cache,cover,replacements)
     end
 end
 
-actions["reorganize lookups"] = function(data,filename,raw) -- we could check for "" and n == 0
+local function enhance_reorganize_lookups(data,filename,raw) -- we could check for "" and n == 0
     -- we prefer the before lookups in a normal order
     if data.lookups then
         local helpers      = data.helpers
@@ -1798,7 +1673,7 @@ actions["reorganize lookups"] = function(data,filename,raw) -- we could check fo
     end
 end
 
-actions["expand lookups"] = function(data,filename,raw) -- we could check for "" and n == 0
+local function enhance_expand_lookups(data,filename,raw) -- we could check for "" and n == 0
     if data.lookups then
         local cache = data.helpers.matchcache
         if cache then
@@ -1889,7 +1764,7 @@ local function check_variants(unicode,the_variants,splitter,unicodes)
     return variants, parts, italic
 end
 
-actions["analyze math"] = function(data,filename,raw)
+local function enhance_analyze_math(data,filename,raw)
     if raw.math then
         data.metadata.math = raw.math
         local unicodes = data.resources.unicodes
@@ -1933,7 +1808,7 @@ actions["analyze math"] = function(data,filename,raw)
     end
 end
 
-actions["reorganize glyph kerns"] = function(data,filename,raw)
+local function enhance_reorganize_glyph_kerns(data,filename,raw)
     local descriptions = data.descriptions
     local resources    = data.resources
     local unicodes     = resources.unicodes
@@ -1976,7 +1851,7 @@ actions["reorganize glyph kerns"] = function(data,filename,raw)
     end
 end
 
-actions["merge kern classes"] = function(data,filename,raw)
+local function enhance_merge_kern_classes(data,filename,raw)
     local gposlist = raw.gpos
     if gposlist then
         local descriptions = data.descriptions
@@ -2098,7 +1973,7 @@ actions["merge kern classes"] = function(data,filename,raw)
     end
 end
 
-actions["check glyphs"] = function(data,filename,raw)
+local function enhance_check_glyphs(data,filename,raw)
     for unicode, description in next, data.descriptions do
         description.glyph = nil
     end
@@ -2112,7 +1987,7 @@ local function valid_ps_name(str)
     return str and str ~= "" and #str < 64 and lpegmatch(valid,str) and true or false
 end
 
-actions["check metadata"] = function(data,filename,raw)
+local function enhance_check_metadata(data,filename,raw)
     local metadata = data.metadata
     for _, k in next, mainfields do
         if valid_fields[k] then
@@ -2201,7 +2076,7 @@ actions["check metadata"] = function(data,filename,raw)
     end
 end
 
-actions["cleanup tables"] = function(data,filename,raw)
+local function enhance_cleanup_tables(data,filename,raw)
     local duplicates = data.resources.duplicates
     if duplicates then
         for k, v in next, duplicates do
@@ -2228,7 +2103,7 @@ end
 
 -- mlookups only with pairs and ligatures
 
-actions["reorganize glyph lookups"] = function(data,filename,raw)
+local function enhance_reorganize_glyph_lookups(data,filename,raw)
     local resources    = data.resources
     local unicodes     = resources.unicodes
     local descriptions = data.descriptions
@@ -2314,7 +2189,7 @@ end
 
 local zero = { 0, 0 }
 
-actions["reorganize glyph anchors"] = function(data,filename,raw)
+local function enhance_reorganize_glyph_anchors(data,filename,raw)
     local descriptions = data.descriptions
     for unicode, description in next, descriptions do
         local anchors = description.glyph.anchors
@@ -2365,7 +2240,7 @@ local bogusname   = (P("uni") + P("u")) * R("AF","09")^4
                   + (P("index") + P("glyph") + S("Ii") * P("dentity") * P(".")^0) * R("09")^1
 local uselessname = (1-bogusname)^0 * bogusname
 
-actions["purge names"] = function(data,filename,raw) -- not used yet
+local function enhance_purge_names(data,filename,raw) -- not used yet
     if purge_names then
         local n = 0
         for u, d in next, data.descriptions do
@@ -2381,7 +2256,7 @@ actions["purge names"] = function(data,filename,raw) -- not used yet
     end
 end
 
-actions["compact lookups"] = function(data,filename,raw)
+local function enhance_compact_lookups(data,filename,raw)
     if not compact_lookups then
         report_otf("not compacting")
         return
@@ -3053,3 +2928,42 @@ function otf.getkern(tfmdata,left,right,kind)
     end
     return 0
 end
+
+
+registerotfenhancer("prepare tables",            enhance_prepare_tables)
+
+registerotfenhancer("prepare glyphs",            enhance_prepare_glyphs)
+registerotfenhancer("prepare lookups",           enhance_prepare_lookups)
+
+registerotfenhancer("analyze glyphs",            enhance_analyze_glyphs)
+registerotfenhancer("analyze math",              enhance_analyze_math)
+
+registerotfenhancer("reorganize lookups",        enhance_reorganize_lookups)
+registerotfenhancer("reorganize mark classes",   enhance_reorganize_mark_classes)
+registerotfenhancer("reorganize anchor classes", enhance_reorganize_anchor_classes)
+
+registerotfenhancer("reorganize glyph kerns",    enhance_reorganize_glyph_kerns)
+registerotfenhancer("reorganize glyph lookups",  enhance_reorganize_glyph_lookups)
+registerotfenhancer("reorganize glyph anchors",  enhance_reorganize_glyph_anchors)
+
+registerotfenhancer("merge kern classes",        enhance_merge_kern_classes)
+
+registerotfenhancer("reorganize features",       enhance_reorganize_features)
+registerotfenhancer("reorganize subtables",      enhance_reorganize_subtables)
+
+registerotfenhancer("check glyphs",              enhance_check_glyphs)
+registerotfenhancer("check metadata",            enhance_check_metadata)
+
+registerotfenhancer("prepare tounicode",         enhance_prepare_tounicode)
+
+registerotfenhancer("check encoding",            enhance_check_encoding)
+registerotfenhancer("add duplicates",            enhance_add_duplicates)
+
+registerotfenhancer("expand lookups",            enhance_expand_lookups)
+
+registerotfenhancer("check extra features",      function() end) --placeholder, will be overloaded
+
+registerotfenhancer("cleanup tables",            enhance_cleanup_tables)
+
+registerotfenhancer("compact lookups",           enhance_compact_lookups)
+registerotfenhancer("purge names",               enhance_purge_names)

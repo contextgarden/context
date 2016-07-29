@@ -42,6 +42,7 @@ local report_cummulative  = logs.reporter("fonts","cummulative")
 local report_defining     = logs.reporter("fonts","defining")
 local report_status       = logs.reporter("fonts","status")
 local report_mapfiles     = logs.reporter("fonts","mapfiles")
+local report_newline      = logs.newline
 
 local setmetatableindex   = table.setmetatableindex
 
@@ -1713,15 +1714,16 @@ function loggers.reportdefinedfonts()
                 properties.fullname   or "",
                 properties.sharedwith or "",
             }
-            report_status("%s: % t",properties.name,sortedkeys(data))
         end
         formatcolumns(t,"  ")
-        report_status()
+        logs.pushtarget("logfile")
+        report_newline()
         report_status("defined fonts:")
-        report_status()
+        report_newline()
         for k=1,tn do
             report_status(t[k])
         end
+        logs.poptarget()
     end
 end
 
@@ -1740,12 +1742,14 @@ function loggers.reportusedfeatures()
             setup.number = n -- restore it (normally not needed as we're done anyway)
         end
         formatcolumns(t,"  ")
-        report_status()
+        logs.pushtarget("logfile")
+        report_newline()
         report_status("defined featuresets:")
-        report_status()
+        report_newline()
         for k=1,n do
             report_status(t[k])
         end
+        logs.poptarget()
     end
 end
 
@@ -2522,35 +2526,38 @@ end
 
 -- for the font manual
 
-local trace_files = false
-
-trackers.register("fonts.files",function(v) trace_files = v end)
-
 statistics.register("used fonts",function()
-    if trace_files then
-        local files = { }
-        local list  = { }
-        for id, tfmdata in sortedhash(fontdata) do
-            local filename = tfmdata.properties.filename
-            local filedata = files[filename]
-            if filedata then
-                filedata.instances = filedata.instances + 1
-            else
-                local rawdata  = tfmdata.shared and tfmdata.shared.rawdata
-                local metadata = rawdata and rawdata.metadata
-                files[filename] = {
-                    instances = 1,
-                    filename  = filename,
-                    version   = metadata and metadata.version,
-                    size      = rawdata and rawdata.size,
-                }
+    if trace_usage then
+        local filename = file.nameonly(environment.jobname) .. "-fonts-usage.lua"
+        if next(fontdata) then
+            local files = { }
+            local list  = { }
+            for id, tfmdata in sortedhash(fontdata) do
+                local filename = tfmdata.properties.filename
+                if filename then
+                    local filedata = files[filename]
+                    if filedata then
+                        filedata.instances = filedata.instances + 1
+                    else
+                        local rawdata  = tfmdata.shared and tfmdata.shared.rawdata
+                        local metadata = rawdata and rawdata.metadata
+                        files[filename] = {
+                            instances = 1,
+                            filename  = filename,
+                            version   = metadata and metadata.version,
+                            size      = rawdata and rawdata.size,
+                        }
+                    end
+                else
+                    -- what to do
+                end
             end
+            for k, v in sortedhash(files) do
+                list[#list+1] = v
+            end
+            table.save(filename,list)
+        else
+            os.remove(filename)
         end
-        for k, v in sortedhash(files) do
-            list[#list+1] = v
-        end
-        local filename = file.nameonly(environment.jobname) .. "-usedfonts.lua"
-        table.save(filename,list)
-        return format("log saved in '%s'",filename)
     end
 end)

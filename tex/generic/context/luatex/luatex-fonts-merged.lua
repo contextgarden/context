@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/29/16 00:45:49
+-- merge date  : 07/30/16 00:26:47
 
 do -- begin closure to overcome local limits and interference
 
@@ -5722,6 +5722,7 @@ local next,tostring,rawget=next,tostring,rawget
 local format,match,lower,gsub,find=string.format,string.match,string.lower,string.gsub,string.find
 local sort,insert,concat,sortedkeys,serialize,fastcopy=table.sort,table.insert,table.concat,table.sortedkeys,table.serialize,table.fastcopy
 local derivetable=table.derive
+local ioflush=io.flush
 local trace_defining=false trackers.register("fonts.defining",function(v) trace_defining=v end)
 local trace_scaling=false trackers.register("fonts.scaling",function(v) trace_scaling=v end)
 local report_defining=logs.reporter("fonts","defining")
@@ -6547,134 +6548,233 @@ setmetatableindex(formats,function(t,k)
   end
   return rawget(t,file.suffix(l))
 end)
-local locations={}
-local function setindeed(mode,target,group,name,action,position)
-  local t=target[mode]
-  if not t then
-    report_defining("fatal error in setting feature %a, group %a, mode %a",name,group,mode)
-    os.exit()
-  elseif position then
-    insert(t,position,{ name=name,action=action })
-  else
-    for i=1,#t do
-      local ti=t[i]
-      if ti.name==name then
-        ti.action=action
-        return
+do
+  local function setindeed(mode,target,group,name,action,position)
+    local t=target[mode]
+    if not t then
+      report_defining("fatal error in setting feature %a, group %a, mode %a",name,group,mode)
+      os.exit()
+    elseif position then
+      insert(t,position,{ name=name,action=action })
+    else
+      for i=1,#t do
+        local ti=t[i]
+        if ti.name==name then
+          ti.action=action
+          return
+        end
+      end
+      insert(t,{ name=name,action=action })
+    end
+  end
+  local function set(group,name,target,source)
+    target=target[group]
+    if not target then
+      report_defining("fatal target error in setting feature %a, group %a",name,group)
+      os.exit()
+    end
+    local source=source[group]
+    if not source then
+      report_defining("fatal source error in setting feature %a, group %a",name,group)
+      os.exit()
+    end
+    local node=source.node
+    local base=source.base
+    local position=source.position
+    if node then
+      setindeed("node",target,group,name,node,position)
+    end
+    if base then
+      setindeed("base",target,group,name,base,position)
+    end
+  end
+  local function register(where,specification)
+    local name=specification.name
+    if name and name~="" then
+      local default=specification.default
+      local description=specification.description
+      local initializers=specification.initializers
+      local processors=specification.processors
+      local manipulators=specification.manipulators
+      local modechecker=specification.modechecker
+      if default then
+        where.defaults[name]=default
+      end
+      if description and description~="" then
+        where.descriptions[name]=description
+      end
+      if initializers then
+        set('initializers',name,where,specification)
+      end
+      if processors then
+        set('processors',name,where,specification)
+      end
+      if manipulators then
+        set('manipulators',name,where,specification)
+      end
+      if modechecker then
+        where.modechecker=modechecker
       end
     end
-    insert(t,{ name=name,action=action })
   end
-end
-local function set(group,name,target,source)
-  target=target[group]
-  if not target then
-    report_defining("fatal target error in setting feature %a, group %a",name,group)
-    os.exit()
-  end
-  local source=source[group]
-  if not source then
-    report_defining("fatal source error in setting feature %a, group %a",name,group)
-    os.exit()
-  end
-  local node=source.node
-  local base=source.base
-  local position=source.position
-  if node then
-    setindeed("node",target,group,name,node,position)
-  end
-  if base then
-    setindeed("base",target,group,name,base,position)
-  end
-end
-local function register(where,specification)
-  local name=specification.name
-  if name and name~="" then
-    local default=specification.default
-    local description=specification.description
-    local initializers=specification.initializers
-    local processors=specification.processors
-    local manipulators=specification.manipulators
-    local modechecker=specification.modechecker
-    if default then
-      where.defaults[name]=default
-    end
-    if description and description~="" then
-      where.descriptions[name]=description
-    end
-    if initializers then
-      set('initializers',name,where,specification)
-    end
-    if processors then
-      set('processors',name,where,specification)
-    end
-    if manipulators then
-      set('manipulators',name,where,specification)
-    end
-    if modechecker then
-      where.modechecker=modechecker
-    end
-  end
-end
-constructors.registerfeature=register
-function constructors.getfeatureaction(what,where,mode,name)
-  what=handlers[what].features
-  if what then
-    where=what[where]
-    if where then
-      mode=where[mode]
-      if mode then
-        for i=1,#mode do
-          local m=mode[i]
-          if m.name==name then
-            return m.action
+  constructors.registerfeature=register
+  function constructors.getfeatureaction(what,where,mode,name)
+    what=handlers[what].features
+    if what then
+      where=what[where]
+      if where then
+        mode=where[mode]
+        if mode then
+          for i=1,#mode do
+            local m=mode[i]
+            if m.name==name then
+              return m.action
+            end
           end
         end
       end
     end
   end
-end
-local newhandler={}
-constructors.handlers=newhandler 
-constructors.newhandler=newhandler
-local function setnewhandler(what) 
-  local handler=handlers[what]
-  if not handler then
-    handler={}
-    handlers[what]=handler
+  local newfeatures={}
+  constructors.newfeatures=newfeatures 
+  constructors.features=newfeatures
+  local function setnewfeatures(what)
+    local handler=handlers[what]
+    local features=handler.features
+    if not features then
+      local tables=handler.tables   
+      local statistics=handler.statistics 
+      features=allocate {
+        defaults={},
+        descriptions=tables and tables.features or {},
+        used=statistics and statistics.usedfeatures or {},
+        initializers={ base={},node={} },
+        processors={ base={},node={} },
+        manipulators={ base={},node={} },
+      }
+      features.register=function(specification) return register(features,specification) end
+      handler.features=features 
+    end
+    return features
   end
-  return handler
+  setmetatable(newfeatures,{
+    __call=function(t,k) local v=t[k] return v end,
+    __index=function(t,k) local v=setnewfeatures(k) t[k]=v return v end,
+  })
 end
-setmetatable(newhandler,{
-  __call=function(t,k) local v=t[k] return v end,
-  __index=function(t,k) local v=setnewhandler(k) t[k]=v return v end,
-})
-local newfeatures={}
-constructors.newfeatures=newfeatures 
-constructors.features=newfeatures
-local function setnewfeatures(what)
-  local handler=handlers[what]
-  local features=handler.features
-  if not features then
-    local tables=handler.tables   
-    local statistics=handler.statistics 
-    features=allocate {
-      defaults={},
-      descriptions=tables and tables.features or {},
-      used=statistics and statistics.usedfeatures or {},
-      initializers={ base={},node={} },
-      processors={ base={},node={} },
-      manipulators={ base={},node={} },
-    }
-    features.register=function(specification) return register(features,specification) end
-    handler.features=features 
+do
+  local newhandler={}
+  constructors.handlers=newhandler 
+  constructors.newhandler=newhandler
+  local function setnewhandler(what) 
+    local handler=handlers[what]
+    if not handler then
+      handler={}
+      handlers[what]=handler
+    end
+    return handler
   end
-  return features
+  setmetatable(newhandler,{
+    __call=function(t,k) local v=t[k] return v end,
+    __index=function(t,k) local v=setnewhandler(k) t[k]=v return v end,
+  })
 end
-setmetatable(newfeatures,{
-  __call=function(t,k) local v=t[k] return v end,
-  __index=function(t,k) local v=setnewfeatures(k) t[k]=v return v end,
-})
+do
+  local newenhancer={}
+  constructors.enhancers=newenhancer
+  constructors.newenhancer=newenhancer
+  local function setnewenhancer(format)
+    local handler=handlers[format]
+    local enhancers=handler.enhancers
+    if not enhancers then
+      local actions=allocate()
+      local before=allocate()
+      local after=allocate()
+      local order=allocate()
+      local patches={ before=before,after=after }
+      local trace=false
+      local report=logs.reporter("fonts",format.." enhancing")
+      trackers.register(format..".loading",function(v) trace=v end)
+      local function enhance(name,data,filename,raw)
+        local enhancer=actions[name]
+        if enhancer then
+          if trace then
+            report("apply enhancement %a to file %a",name,filename)
+            ioflush()
+          end
+          enhancer(data,filename,raw)
+        else
+        end
+      end
+      local function apply(data,filename,raw)
+        local basename=file.basename(lower(filename))
+        if trace then
+          report("%s enhancing file %a","start",filename)
+        end
+        ioflush() 
+        for e=1,#order do
+          local enhancer=order[e]
+          local b=before[enhancer]
+          if b then
+            for pattern,action in next,b do
+              if find(basename,pattern) then
+                action(data,filename,raw)
+              end
+            end
+          end
+          enhance(enhancer,data,filename,raw)
+          local a=after[enhancer]
+          if a then
+            for pattern,action in next,a do
+              if find(basename,pattern) then
+                action(data,filename,raw)
+              end
+            end
+          end
+          ioflush() 
+        end
+        if trace then
+          report("%s enhancing file %a","stop",filename)
+        end
+        ioflush() 
+      end
+      local function register(what,action)
+        if action then
+          if actions[what] then
+          else
+            order[#order+1]=what
+          end
+          actions[what]=action
+        else
+          report("bad enhancer %a",what)
+        end
+      end
+      local function patch(what,where,pattern,action)
+        local pw=patches[what]
+        if pw then
+          local ww=pw[where]
+          if ww then
+            ww[pattern]=action
+          else
+            pw[where]={ [pattern]=action}
+          end
+        end
+      end
+      enhancers={
+        register=register,
+        apply=apply,
+        patch=patch,
+        patches={ register=patch },
+      }
+      handler.enhancers=enhancers
+    end
+    return enhancers
+  end
+  setmetatable(newenhancer,{
+    __call=function(t,k) local v=t[k] return v end,
+    __index=function(t,k) local v=setnewenhancer(k) t[k]=v return v end,
+  })
+end
 function constructors.checkedfeatures(what,features)
   local defaults=handlers[what].features.defaults
   if features and next(features) then
@@ -15228,7 +15328,6 @@ if not modules then modules={} end modules ['font-otl']={
 local gmatch,find,match,lower,strip=string.gmatch,string.find,string.match,string.lower,string.strip
 local type,next,tonumber,tostring,unpack=type,next,tonumber,tostring,unpack
 local abs=math.abs
-local ioflush=io.flush
 local derivetable=table.derive
 local formatters=string.formatters
 local setmetatableindex=table.setmetatableindex
@@ -15257,10 +15356,8 @@ local readers=fonts.readers
 local constructors=fonts.constructors
 local otffeatures=constructors.features.otf
 local registerotffeature=otffeatures.register
-local enhancers=allocate()
-otf.enhancers=enhancers
-local patches={}
-enhancers.patches=patches
+local otfenhancers=constructors.enhancers.otf
+local registerotfenhancer=otfenhancers.register
 local forceload=false
 local cleanup=0   
 local syncspace=true
@@ -15276,76 +15373,7 @@ registerdirective("fonts.otf.loader.cleanup",function(v) cleanup=tonumber(v) or 
 registerdirective("fonts.otf.loader.force",function(v) forceload=v end)
 registerdirective("fonts.otf.loader.syncspace",function(v) syncspace=v end)
 registerdirective("fonts.otf.loader.forcenotdef",function(v) forcenotdef=v end)
-local ordered_enhancers={
-  "check extra features",
-}
-local actions=allocate()
-local before=allocate()
-local after=allocate()
-patches.before=before
-patches.after=after
-local function enhance(name,data,filename,raw)
-  local enhancer=actions[name]
-  if enhancer then
-    if trace_loading then
-      report_otf("apply enhancement %a to file %a",name,filename)
-      ioflush()
-    end
-    enhancer(data,filename,raw)
-  else
-  end
-end
-function enhancers.apply(data,filename,raw)
-  local basename=file.basename(lower(filename))
-  if trace_loading then
-    report_otf("%s enhancing file %a","start",filename)
-  end
-  ioflush() 
-  for e=1,#ordered_enhancers do
-    local enhancer=ordered_enhancers[e]
-    local b=before[enhancer]
-    if b then
-      for pattern,action in next,b do
-        if find(basename,pattern) then
-          action(data,filename,raw)
-        end
-      end
-    end
-    enhance(enhancer,data,filename,raw)
-    local a=after[enhancer]
-    if a then
-      for pattern,action in next,a do
-        if find(basename,pattern) then
-          action(data,filename,raw)
-        end
-      end
-    end
-    ioflush() 
-  end
-  if trace_loading then
-    report_otf("%s enhancing file %a","stop",filename)
-  end
-  ioflush() 
-end
-function patches.register(what,where,pattern,action)
-  local pw=patches[what]
-  if pw then
-    local ww=pw[where]
-    if ww then
-      ww[pattern]=action
-    else
-      pw[where]={ [pattern]=action}
-    end
-  end
-end
-function patches.report(fmt,...)
-  if trace_loading then
-    report_otf("patching: %s",formatters[fmt](...))
-  end
-end
-function enhancers.register(what,action) 
-  actions[what]=action
-end
+registerotfenhancer("check extra features",function() end) 
 function otf.load(filename,sub,featurefile)
   local featurefile=nil
   local base=file.basename(file.removesuffix(filename))
@@ -15445,7 +15473,7 @@ function otf.load(filename,sub,featurefile)
     otfreaders.unpack(data)
     otfreaders.expand(data) 
     otfreaders.addunicodetable(data)
-    enhancers.apply(data,filename,data)
+    otfenhancers.apply(data,filename,data)
     if applyruntimefixes then
       applyruntimefixes(filename,data)
     end
@@ -23719,37 +23747,15 @@ local otfreaders=otf.readers
 local otfenhancers=otf.enhancers
 local afmfeatures=constructors.features.afm
 local registerafmfeature=afmfeatures.register
+local afmenhancers=constructors.enhancers.afm
+local registerafmenhancer=afmenhancers.register
 afm.version=1.512 
-afm.cache=containers.define("fonts","afm",afm.version,true)
+afm.cache=containers.define("fonts","one",afm.version,true)
 afm.autoprefixed=true 
 afm.helpdata={} 
 afm.syncspace=true 
 local overloads=fonts.mappings.overloads
 local applyruntimefixes=fonts.treatments and fonts.treatments.applyfixes
-local enhancers={
-}
-local steps={
-  "unify names",
-  "add ligatures",
-  "add extra kerns",
-  "normalize features",
-  "check extra features",
-  "fix names",
-}
-local function applyenhancers(data,filename)
-  for i=1,#steps do
-    local step=steps[i]
-    local enhancer=enhancers[step]
-    if enhancer then
-      if trace_loading then
-        report_afm("applying enhancer %a",step)
-      end
-      enhancer(data,filename)
-    else
-      report_afm("invalid enhancer %a",step)
-    end
-  end
-end
 function afm.load(filename)
   filename=resolvers.findfile(filename,'afm') or ""
   if filename~="" and not fonts.names.ignoredfile(filename) then
@@ -23772,7 +23778,7 @@ function afm.load(filename)
       report_afm("reading %a",filename)
       data=afm.readers.loadfont(filename,pfbname)
       if data then
-        applyenhancers(data,filename)
+        afmenhancers.apply(data,filename)
         fonts.mappings.addtounicode(data,filename)
         otfreaders.pack(data)
         data.size=size
@@ -23797,7 +23803,7 @@ function afm.load(filename)
   end
 end
 local uparser=fonts.mappings.makenameparser() 
-enhancers["unify names"]=function(data,filename)
+local function enhance_unify_names(data,filename)
   local unicodevector=fonts.encodings.agl.unicodes 
   local unicodes={}
   local names={}
@@ -23849,7 +23855,7 @@ enhancers["unify names"]=function(data,filename)
 end
 local everywhere={ ["*"]={ ["*"]=true } } 
 local noflags={ false,false,false,false }
-enhancers["normalize features"]=function(data)
+local function enhance_normalize_features(data)
   local ligatures=setmetatableindex("table")
   local kerns=setmetatableindex("table")
   local extrakerns=setmetatableindex("table")
@@ -23947,8 +23953,7 @@ enhancers["normalize features"]=function(data)
   data.resources.features=features
   data.resources.sequences=sequences
 end
-enhancers["check extra features"]=otf.enhancers.enhance
-enhancers["fix names"]=function(data)
+local function enhance_fix_names(data)
   for k,v in next,data.descriptions do
     local n=v.name
     local r=overloads[n]
@@ -23987,10 +23992,10 @@ local addthem=function(rawdata,ligatures)
     end
   end
 end
-enhancers["add ligatures"]=function(rawdata)
+local function enhance_add_ligatures(rawdata)
   addthem(rawdata,afm.helpdata.ligatures)
 end
-enhancers["add extra kerns"]=function(rawdata) 
+local function enhance_add_extra_kerns(rawdata) 
   local descriptions=rawdata.descriptions
   local resources=rawdata.resources
   local unicodes=resources.unicodes
@@ -24398,6 +24403,12 @@ function readers.pfb(specification,method)
   swap("specification")
   return readers.afm(specification,method)
 end
+registerafmenhancer("unify names",enhance_unify_names)
+registerafmenhancer("add ligatures",enhance_add_ligatures)
+registerafmenhancer("add extra kerns",enhance_add_extra_kerns)
+registerafmenhancer("normalize features",enhance_normalize_features)
+registerafmenhancer("check extra features",otfenhancers.enhance)
+registerafmenhancer("fix names",enhance_fix_names)
 
 end -- closure
 
@@ -24598,8 +24609,11 @@ tfm.version=1.000
 tfm.maxnestingdepth=5
 tfm.maxnestingsize=65536*1024
 local otf=fonts.handlers.otf
+local otfenhancers=otf.enhancers
 local tfmfeatures=constructors.features.tfm
 local registertfmfeature=tfmfeatures.register
+local tfmenhancers=constructors.enhancers.tfm
+local registertfmenhancer=tfmenhancers.register
 constructors.resolvevirtualtoo=false 
 fonts.formats.tfm="type1" 
 fonts.formats.ofm="type1"
@@ -24611,27 +24625,7 @@ function tfm.setfeatures(tfmdata,features)
     return {} 
   end
 end
-local depth={} 
-local enhancers={}
-local steps={
-  "normalize features",
-  "check extra features"
-}
-enhancers["check extra features"]=otf.enhancers.enhance
-local function applyenhancers(data,filename)
-  for i=1,#steps do
-    local step=steps[i]
-    local enhancer=enhancers[step]
-    if enhancer then
-      if trace_loading then
-        report_tfm("applying enhancer %a",step)
-      end
-      enhancer(data,filename)
-    else
-      report_tfm("invalid enhancer %a",step)
-    end
-  end
-end
+local depth={}
 local function read_from_tfm(specification)
   local filename=specification.filename
   local size=specification.size
@@ -24686,7 +24680,7 @@ local function read_from_tfm(specification)
         tfmdata.descriptions=tfmdata.characters
       end
       otf.readers.addunicodetable(tfmdata)
-      applyenhancers(tfmdata,filename)
+      tfmenhancers.apply(tfmdata,filename)
       constructors.applymanipulators("tfm",tfmdata,features,trace_features,report_tfm)
       otf.readers.unifymissing(tfmdata)
       fonts.mappings.addtounicode(tfmdata,filename)
@@ -24987,7 +24981,7 @@ end
 do
   local everywhere={ ["*"]={ ["*"]=true } } 
   local noflags={ false,false,false,false }
-  enhancers["normalize features"]=function(data)
+  local function enhance_normalize_features(data)
     local ligatures=setmetatableindex("table")
     local kerns=setmetatableindex("table")
     local characters=data.characters
@@ -25069,6 +25063,8 @@ do
     data.resources.sequences=sequences
     data.shared.resources=data.shared.resources or resources
   end
+  registertfmenhancer("normalize features",enhance_normalize_features)
+  registertfmenhancer("check extra features",otfenhancers.enhance)
 end
 registertfmfeature {
   name="mode",

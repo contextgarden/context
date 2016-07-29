@@ -2098,6 +2098,14 @@
 
 \let\v_tabl_tabulate_align\!!zerocount
 
+\def\tabl_tabulate_check_side_float % new per 29-07-2016
+  {\ifdefined\page_sides_check_floats_indeed
+     \page_sides_check_floats_indeed
+     \ifdim\hangindent>\zeropoint
+       \advance\d_tabl_tabulate_indent\hangindent
+     \fi
+   \fi}
+
 \def\tabl_tabulate_set_local_hsize
   {\setlocalhsize
    \hsize\localhsize}
@@ -2185,6 +2193,7 @@
    \ifinsidefloat
      \d_tabl_tabulate_indent\zeropoint
    \else
+     \tabl_tabulate_check_side_float
      \tabl_tabulate_set_local_hsize
    \fi
    \dontcomplain

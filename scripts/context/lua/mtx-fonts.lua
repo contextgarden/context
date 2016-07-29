@@ -452,7 +452,7 @@ function scripts.fonts.unpack()
             if data.creator == "context mkiv" then
                 fonts.handlers.otf.readers.unpack(data)
             else
-                fonts.handlers.otf.enhancers.unpack(data)
+                fonts.handlers.otf.unpackdata(data)
             end
             io.savedata(savename,table.serialize(data,true))
         else

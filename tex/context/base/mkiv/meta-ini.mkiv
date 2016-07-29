@@ -521,10 +521,7 @@
 
 \installcorenamespace{graphicvariable}
 
-\def \meta_prepare_variable_default   {\MPcolor{black}} % just to be sure we use a color but ...
-\edef\meta_unknown_variable_template  {\??graphicvariable:\s!unknown}
-
-\letvalue{\??graphicvariable:\s!unknown}\empty
+\def\meta_prepare_variable_default{\MPcolor{black}} % just to be sure we use a color but ...
 
 \unexpanded\def\setupMPvariables
   {\dodoubleempty\meta_setup_variables}
@@ -564,9 +561,9 @@
   {\edef\m_meta_current_variable_template
      {\??graphicvariable\currentmpvariableclass:#1}%
    \edef\m_meta_current_variable
-     {\csname\ifcsname\m_meta_current_variable_template\endcsname
-        \m_meta_current_variable_template\else\meta_unknown_variable_template
-      \fi\endcsname}%
+     {\ifcsname\m_meta_current_variable_template\endcsname
+        \lastnamedcs
+      \fi}%
    \ifx\m_meta_current_variable\empty
      \expandafter\meta_prepare_variable_nop
    \else
@@ -580,15 +577,11 @@
   {\edef\m_meta_current_variable_template
      {\??graphicvariable\currentmpvariableclass:#1}%
    \edef\m_meta_current_variable
-     {\csname
-        \ifcsname\m_meta_current_variable_template\endcsname
-          \m_meta_current_variable_template
-        \else\ifcsname\??graphicvariable\currentMPgraphicname:#1\endcsname
-          \??graphicvariable\currentMPgraphicname:#1%
-        \else
-          \meta_unknown_variable_template
-        \fi\fi
-      \endcsname}%
+     {\ifcsname\m_meta_current_variable_template\endcsname
+         \lastnamedcs
+      \else\ifcsname\??graphicvariable\currentMPgraphicname:#1\endcsname
+         \lastnamedcs
+      \fi\fi}%
    \ifx\m_meta_current_variable\empty
      \expandafter\meta_prepare_variable_nop
    \else
@@ -618,6 +611,10 @@
       \else
         \endgroup\meta_prepare_variable_dimension
       \fi}}
+
+% \def\meta_prepare_variable_yes
+%   {\expandafter\edef\csname\m_meta_current_variable_template\endcsname
+%      {\clf_prepareMPvariable {\m_meta_current_variable}}}
 
 \let\MPvar         \MPvariable
 \let\setMPvariables\setupMPvariables
@@ -708,16 +705,18 @@
   {\setunreferencedobject{MP}}
 
 \def\meta_handle_unique_graphic#1#2#3% when there are too many, we can store data at the lua end, although,
-  {\begingroup                  % when there are that many they're probably not that unique anyway
+  {\begingroup                       % when there are that many they're probably not that unique anyway
    \edef\currentmpvariableclass{#1}%
    \extendMPoverlaystamp{#2}% incl prepare
-   \ifcsname\??mpgraphic\overlaystamp:#1\endcsname\else
+   \ifcsname\??mpgraphic\overlaystamp:#1\endcsname
+     \lastnamedcs
+   \else
      \meta_enable_include % redundant
      \global\advance\c_meta_object_counter\plusone
      \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
      \setxvalue{\??mpgraphic\overlaystamp:#1}{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
+     \csname\??mpgraphic\overlaystamp:#1\endcsname\empty
    \fi
-   \csname\??mpgraphic\overlaystamp:#1\endcsname\empty
    \endgroup}
 
 \unexpanded\def\startuniqueMPgraphic

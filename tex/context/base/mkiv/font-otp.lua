@@ -30,9 +30,6 @@ fonts.handlers      = handlers
 local otf           = handlers.otf or { }
 handlers.otf        = otf
 
-local enhancers     = otf.enhancers or { }
-otf.enhancers       = enhancers
-
 local glists        = otf.glists or { "gsub", "gpos" }
 otf.glists          = glists
 
@@ -146,7 +143,7 @@ end
 -- and repack in such cases (never needed anyway) .. a tricky aspect is that
 -- we then need to sort more thanks to random hashing
 
-local function packdata(data)
+function otf.packdata(data)
 
     if data then
      -- stripdata(data)
@@ -536,7 +533,7 @@ local unpacked_mt = {
         end
 }
 
-local function unpackdata(data)
+function otf.unpackdata(data)
 
     if data then
         local tables = data.tables
@@ -895,15 +892,3 @@ local function unpackdata(data)
         end
     end
 end
-
-if otf.enhancers.register then
-
-    otf.enhancers.register(  "pack",  packdata)
-    otf.enhancers.register("unpack",unpackdata)
-
--- todo: directive
-
-end
-
-otf.enhancers.unpack = unpackdata -- used elsewhere
-otf.enhancers.pack   = packdata   -- used elsewhere

@@ -75,45 +75,53 @@ local dimenorname  =
   + (C(lpegpatterns.float) + Cc(1)) * lpegpatterns.space^0 * P("\\") * C(lpegpatterns.letter^1) / function(f,s)
         local t = textype(s)
         if t == "dimen" then
-            context("\\the\\dimexpr %s\\%s",f,s)
+            context("\\the\\dimexpr %s\\%s\\relax",f,s)
         elseif t == "count" then
             context("\\the\\numexpr \\%s * %s\\relax",s,f) -- <n>\scratchcounter is not permitted
         end
     end
 
-local splitter = lpeg.splitat(":",true)
+local splitter = lpeg.splitat("::",true)
 
-function commands.prepareMPvariable(v) -- slow but ok
-    if v == "" then
-        MPcolor("black")
-    else
-        local typ, var = lpegmatch(splitter,v)
-        if not var then
-            -- parse
-            if colorhash[v] then
-                MPcolor(v)
-            elseif tonumber(v) then
-                context(v)
-            elseif not lpegmatch(dimenorname,v) then
-                context("\\number %s",v) -- 0.4 ...
-            end
-        elseif typ == "d" then -- to be documented
-            -- dimension
-            context("\\the\\dimexpr %s",var)
-        elseif typ == "n" then -- to be documented
-            -- number
-            context("\\the\\numexpr %s",var)
-        elseif typ == "s" then -- to be documented
-            -- string
-            context(var)
-        elseif typ == "c" then -- to be documented
-            -- color
-            MPcolor(var)
+interfaces.implement {
+    name      = "prepareMPvariable",
+    arguments = "string",
+    actions   = function(v)
+        if v == "" then
+         -- MPcolor("black")
+            context("black")
         else
-            context(var)
+            local typ, var = lpegmatch(splitter,v)
+            if not var then
+                -- parse
+                if colorhash[v] then
+                 -- MPcolor(v)
+                    context("%q",var)
+                elseif tonumber(v) then
+                    context(v)
+                elseif not lpegmatch(dimenorname,v) then
+                    context("\\number %s",v) -- 0.4 ...
+                end
+            elseif typ == "d" then -- to be documented
+                -- dimension
+                context("\\the\\dimexpr %s\\relax",var)
+            elseif typ == "n" then -- to be documented
+                -- number
+                context("\\the\\numexpr %s\\relax",var)
+            elseif typ == "s" then -- to be documented
+                -- string
+             -- context(var)
+                context("%q",var)
+            elseif typ == "c" then -- to be documented
+                -- color
+             -- MPcolor(var)
+                context("%q",var)
+            else
+                context(var)
+            end
         end
     end
-end
+}
 
 -- function metapost.formatnumber(f,n) -- just lua format
 --     f = gsub(f,"@(%d)","%%.%1")

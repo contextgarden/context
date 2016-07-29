@@ -13,11 +13,15 @@
 
 \starttypescriptcollection[source]
 
+    \definefontfeature[source-serif-slanted][slant=0.2]
+
     \starttypescript [\s!serif] [source] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym [\s!Serif]     [\s!file:SourceSerifPro-Regular.ttf]  [\s!features=\s!default]
-        \definefontsynonym [\s!SerifBold] [\s!file:SourceSerifPro-Bold.ttf]     [\s!features=\s!default]
-      % \definefontsynonym [\s!SerifBold] [\s!file:SourceSerifPro-Semibold.ttf] [\s!features=\s!default]
+        \definefontsynonym [\s!Serif]           [\s!file:SourceSerifPro-Regular.ttf]  [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:SourceSerifPro-Bold.ttf]     [\s!features=\s!default]
+      % \definefontsynonym [\s!SerifBold]       [\s!file:SourceSerifPro-Semibold.ttf] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:SourceSerifPro-Regular.ttf]  [\s!features={\s!default,source-serif-slanted}]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:SourceSerifPro-Bold.ttf]     [\s!features={\s!default,source-serif-slanted}]
     \stoptypescript
 
     \starttypescript [\s!sans] [source] [\s!name]

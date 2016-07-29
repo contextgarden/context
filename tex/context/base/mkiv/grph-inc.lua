@@ -48,6 +48,7 @@ local todimen = string.todimen
 local collapsepath = file.collapsepath
 local formatters = string.formatters
 local expandfilename = dir.expandname
+local formatcolumns = utilities.formatters.formatcolumns
 
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
@@ -84,12 +85,15 @@ local trace_bases       = false  trackers.register  ("graphics.bases",      func
 local trace_programs    = false  trackers.register  ("graphics.programs",   function(v) trace_programs   = v end)
 local trace_conversion  = false  trackers.register  ("graphics.conversion", function(v) trace_conversion = v end)
 local trace_inclusion   = false  trackers.register  ("graphics.inclusion",  function(v) trace_inclusion  = v end)
+local trace_usage       = false  trackers.register  ("graphics.usage",      function(v) trace_usage      = v end)
 
 local extra_check       = false  directives.register("graphics.extracheck", function(v) extra_check      = v end)
 
 local report_inclusion  = logs.reporter("graphics","inclusion")
 local report_figures    = logs.reporter("system","graphics")
 local report_figure     = logs.reporter("used graphic")
+local report_status     = logs.reporter("graphics","status")
+local report_newline    = logs.newline
 
 local f_hash_part       = formatters["%s->%s->%s->%s"]
 local f_hash_full       = formatters["%s->%s->%s->%s->%s->%s->%s->%s"]
@@ -301,39 +305,31 @@ function figures.badname(name)
     end
 end
 
-local trace_names = false
-
-trackers.register("graphics.lognames", function(v)
-    if v and not trace_names then
-        luatex.registerstopactions(function()
-            if figures.nofprocessed > 0 then
-                local report_newline = logs.newline
-                logs.pushtarget("logfile")
-                report_newline()
-                report_figures("start names")
-                for _, data in table.sortedhash(figures_found) do
-                    report_newline()
-                    report_figure("asked   : %s",data.askedname)
-                    if data.found then
-                        report_figure("format  : %s",data.format)
-                        report_figure("found   : %s",data.foundname)
-                        report_figure("used    : %s",data.fullname)
-                        if data.badname then
-                            report_figure("comment : %s","bad name")
-                        elseif data.comment then
-                            report_figure("comment : %s",data.comment)
-                        end
-                    else
-                        report_figure("comment : %s","not found")
-                    end
+luatex.registerstopactions(function()
+    if trace_usage and figures.nofprocessed > 0 then
+        logs.pushtarget("logfile")
+        report_newline()
+        report_figures("start names")
+        for _, data in table.sortedhash(figures_found) do
+            report_newline()
+            report_figure("asked   : %s",data.askedname)
+            if data.found then
+                report_figure("format  : %s",data.format)
+                report_figure("found   : %s",data.foundname)
+                report_figure("used    : %s",data.fullname)
+                if data.badname then
+                    report_figure("comment : %s","bad name")
+                elseif data.comment then
+                    report_figure("comment : %s",data.comment)
                 end
-                report_newline()
-                report_figures("stop names")
-                report_newline()
-                logs.poptarget()
+            else
+                report_figure("comment : %s","not found")
             end
-        end)
-        trace_names = true
+        end
+        report_newline()
+        report_figures("stop names")
+        report_newline()
+        logs.poptarget()
     end
 end)
 
@@ -1182,18 +1178,18 @@ function figures.check(data)
     return (checkers[data.status.format] or checkers.generic)(data)
 end
 
-local trace_usage = false
 local used_images = { }
 
-trackers.register("graphics.usage", function(v)
-    if v and not trace_usage then
-        luatex.registerstopactions(function()
+statistics.register("used graphics",function()
+    if trace_usage then
+        local filename = file.nameonly(environment.jobname) .. "-figures-usage.lua"
+        if next(figures_found) then
             local found = { }
-            for _, t in table.sortedhash(figures_found) do
-                found[#found+1] = t
-                for k, v in next, t do
+            for _, data in table.sortedhash(figures_found) do
+                found[#found+1] = data
+                for k, v in next, data do
                     if v == false or v == "" then
-                        t[k] = nil
+                        data[k] = nil
                     end
                 end
             end
@@ -1208,18 +1204,20 @@ trackers.register("graphics.usage", function(v)
                 end
                 for _, t in next, u do
                     for k, v in next, t do
-                        if v == false or v == "" then
+                        if v == false or v == "" or k == "private" then
                             t[k] = nil
                         end
                     end
                 end
             end
-            table.save(file.nameonly(environment.jobname) .. "-figures-usage.lua",{
+            table.save(filename,{
                 found = found,
                 used  = used_images,
             } )
-        end)
-        trace_usage = true
+            return format("log saved in '%s'",filename)
+        else
+            os.remove(filename)
+        end
     end
 end)
 
