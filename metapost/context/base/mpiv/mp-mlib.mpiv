@@ -909,6 +909,10 @@ vardef mfun_do_outline_text_flush (expr kind, n, x, y) (text t) =
     fi ;
 enddef ;
 
+vardef mfun_do_outline_rule_flush (expr kind, x, y, w, h) =
+    mfun_do_outline_text_flush (kind, 1, x, y) (fullsquare xyscaled(w,h))
+enddef ;
+
 numeric mfun_do_outline_n ; mfun_do_outline_n := 0 ;
 
 vardef mfun_do_outline_text_f (expr n, x, y) (text t) =
@@ -1009,6 +1013,9 @@ def mfun_do_outline_options_r = enddef ;
 vardef outlinetext@# (expr t) text rest =
     save kind ; string kind ; kind := str @# ;
     currentoutlinetext := currentoutlinetext + 1 ;
+    def mfun_do_outline_options_d = enddef ;
+    def mfun_do_outline_options_f = enddef ;
+    def mfun_do_outline_options_r = enddef ;
     image ( normaldraw image (
         if mfun_trial_run :
           % lua.mp.report("set outline text",currentoutlinetext);

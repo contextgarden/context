@@ -18,8 +18,8 @@ local formatters  = string.formatters
 local validstring = string.valid
 
 local f_setbounds = formatters["setbounds currentpicture to (%s) enlarged %.4G;"]
-local f_index     = formatters['draw anchored.bot(textext("\\tttf\\setstrut\\strut index %i") ysized 2bp ,.5[llcorner currentpicture,lrcorner currentpicture] shifted (0,%.4G));']
-local f_unicode   = formatters['draw anchored.bot(textext("\\tttf\\setstrut\\strut unicode %05X") ysized 2bp ,.5[llcorner currentpicture,lrcorner currentpicture] shifted (0,%.4G));']
+local f_index     = formatters['draw anchored.bot(textext("\\tttf\\setstrut\\strut index %i") ysized 10bp ,.5[llcorner currentpicture,lrcorner currentpicture] shifted (0,%.4G));']
+local f_unicode   = formatters['draw anchored.bot(textext("\\tttf\\setstrut\\strut unicode %05X") ysized 10bp ,.5[llcorner currentpicture,lrcorner currentpicture] shifted (0,%.4G));']
 
 local f_in_red    = formatters["draw %s withpen pencircle scaled .15 withcolor .5red;"]
 local f_in_green  = formatters["draw %s withpen pencircle scaled .15 withcolor .5green;"]
@@ -43,6 +43,12 @@ local v_all     = variables.all
 local v_page    = variables.page
 local v_text    = variables.text
 local v_command = variables.command
+local v_box     = variables.box
+local v_width   = variables.width
+local v_min     = variables.min
+local v_max     = variables.max
+local v_comment = variables.comment
+local v_simple  = variables.simple
 
 function metapost.showglyph(specification)
     local fontid      = font.current()
@@ -53,7 +59,8 @@ function metapost.showglyph(specification)
     local index       = validstring(specification.index)
     local alternative = validstring(specification.alternative)
     local command     = validstring(specification.command)
-
+    local options     = utilities.parsers.settings_to_set(specification.option)
+    local all         = not next(options) and not options[v_simple] or options[v_all]
     local function shape(index,what,f_comment)
         if not index then
             return
@@ -63,15 +70,15 @@ function metapost.showglyph(specification)
             local units  = data.fontheader and data.fontheader.emsize or 1000
             local factor = 100/units
             local paths  = metapost.paths(glyph,factor)
-            if #paths > 0 then
+            if #paths > 0 and glyph.boundingbox and glyph.width then
                 local graphic = f_glyph(concat{
-                    f_in_gray(metapost.fill(paths)),
-                    metapost.draw(paths,true), -- true triggers trace
-                    f_in_red(metapost.boundingbox(glyph,factor)),
-                    f_in_green(metapost.widthline(glyph,factor)),
-                    f_in_blue(metapost.zeroline(glyph,factor)),
-                    f_setbounds(metapost.maxbounds(data,index,factor),offset or 1),
-                    f_comment(what,1)
+                                                    f_in_gray  (metapost.fill(paths)),
+                                                                metapost.draw(paths,true), -- true triggers trace
+                    (all or options[v_box])     and f_in_red   (metapost.boundingbox(glyph,factor)) or "",
+                    (all or options[v_width])   and f_in_green (metapost.widthline(glyph,factor)) or "",
+                    (all or options[v_min])     and f_in_blue  (metapost.zeroline(glyph,factor)) or "",
+                    (all or options[v_max])     and f_setbounds(metapost.maxbounds(data,index,factor),offset or 1) or "",
+                    (all or options[v_comment]) and f_comment  (what,1) or "",
                 })
                 if alternative == v_page then
                     context.startMPpage()
@@ -110,7 +117,7 @@ function metapost.showglyph(specification)
     end
     local first, last
     if type(index) == "string" then
-        first, last = string.match(index,"^(.-):(.*)$")
+        first, last = string.split(index,":")
         if first and last then
             first = tonumber(first)
             last  = tonumber(last)
@@ -137,17 +144,25 @@ end
 
 \unprotect
 
+% option: box|width|min|max|comment
+
 \unexpanded\def\showshape
   {\dosingleargument\meta_shapes_show}
 
 \def\meta_shapes_show[#1]%
   {\begingroup
-   \getdummyparameters[\c!alternative=\v!text,#1]%
+   \letdummyparameter\c!index\empty
+   \letdummyparameter\c!character\empty
+   \letdummyparameter\c!alternative\v!text
+   \letdummyparameter\c!command\empty
+   \letdummyparameter\c!option\v!all
+   \getdummyparameters[#1]%
    \ctxlua{fonts.metapost.showglyph{
         character   = "\dummyparameter\c!character",
         index       = "\dummyparameter\c!index",
         alternative = "\dummyparameter\c!alternative",
         command     = "\dummyparameter\c!command",
+        option      = "\dummyparameter\c!option",
    }}%
    \endgroup}
 
@@ -164,8 +179,19 @@ end
 % \setupbodyfont[pagella]
 % \showshape[character=all,alternative=page]
 
-\setupbodyfont[dejavu]
-\showshape[character=P,alternative=text]
+\usemodule[art-01]
+
+\startcombination[3*1]
+    {\ruledhbox{\startMPcode draw textext("\showshape[character=a]") ; \stopMPcode}} {}
+    {\ruledhbox{\startMPcode draw textext("\showshape[character=x]") ; \stopMPcode}} {}
+    {\ruledhbox{\showshape[character=P,alternative=text]}} {}
+\stopcombination
+
+\startcombination[3*1]
+    {\ruledhbox{\startMPcode draw textext("\showshape[character=a,option={simple}]") ; \stopMPcode}} {}
+    {\ruledhbox{\startMPcode draw textext("\showshape[character=x,option={simple}]") ; \stopMPcode}} {}
+    {\ruledhbox{\showshape[character=P,alternative=text,option=simple]}} {}
+\stopcombination
 
 % \definedfont[almfixed]
 % \showshape[character=all,alternative=page]

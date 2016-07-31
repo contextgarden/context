@@ -1943,7 +1943,7 @@ def reprocess suffix p = p := repathed (22,p) enddef ; % no attributes
 vardef repathed (expr mode, p) text t =
     begingroup ;
     if mode = 0 :
-        save withcolor ;
+        save normalwithcolor ;
         remapcolors ;
     fi ;
     save _p_, _pp_, _ppp_, _f_, _b_, _t_ ;
