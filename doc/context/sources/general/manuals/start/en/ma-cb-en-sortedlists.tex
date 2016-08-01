@@ -1,0 +1,71 @@
+\startcomponent ma-cb-en-sortedlists
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[reference=synonyms,title=Sorted lists]
+
+\index{sorted lists}
+
+\Command{\tex{definesorting}}
+\Command{\tex{setupsorting}}
+\Command{\tex{sort}}
+\Command{\tex{placelistofsorts}}
+\Command{\tex{completelistofsorts}}
+
+If you want to create a sorted list you can use:
+
+\shortsetup{definesorting}
+
+For example:
+
+\startbuffer
+\define[1]\street{#1\Street{#1}}
+\definesorting[Street][Streets]
+\setupsorting[Street][criterium=all]
+
+When you walk in the \street{Eikenlaan} you will cross the
+\street{Vechtlaan} and \street{Gasthuisstraat}. Go left into the
+\street{Gasthuisstraat} and take another left on the
+\street{Heerengracht}. You walk along the canal to the
+\street{Ridderstraat}, there you turn right. Cross the canal and
+turn left to the \street{Julianakade}. There you can enjoy the
+view over the Zwartewater.
+
+So the streets you visited are:
+
+\placelistofStreets
+\stopbuffer
+
+\typebuffer
+
+This will become:
+
+\getbuffer
+
+Note that the Gasthuisstraat appears only once in the list.
+
+The predefined \type{\logo} command is used for the consistent use of text logos.
+
+When you define:
+\startbuffer
+\logo [HSTEX]    {Hassel\TeX}
+\stopbuffer
+
+\getbuffer\typebuffer
+
+You can use that logo througout your text.
+
+\startbuffer
+How would you call a \TEX\ based macropackage when you work
+in Hasselt? \HSTEX?
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopchapter
+
+\stopcomponent

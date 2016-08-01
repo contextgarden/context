@@ -1,0 +1,77 @@
+% language=uk
+
+\environment mk-environment
+
+\startcomponent mk-nicetoknow
+
+\chapter{Nice to know}
+
+\section{Tricky ligatures}
+
+Getting the 1.06 release of Latin Modern out in the wild took some discussion and
+testing. Not only were the names (internal names as well as file names) changed in
+such a way that multiple paplications could deal with it, but also some more
+advanced ligature trickery was added.
+
+\startbuffer
+\definefontfeature
+  [ijtest]
+  [mode=node,
+   script=latn,language=nld,strategy=3,
+   liga=yes,kern=yes]
+
+\definefont
+  [ijfont]
+  [name:lmroman10regular*ijtest at 36pt]
+
+\start \ijfont \setstrut fijn ijsje fiets flink effe\stop
+\stopbuffer
+
+\typebuffer
+
+This bit of Dutch shows up as:
+
+\getbuffer
+
+Do you see the trick? There are both an ij and an fi ligature, but we need to prevent
+the ij ligature in fijn. Of course not all fonts have this feature, which indicated
+that you can never depend on it.
+
+\section {Herds}
+
+A while ago, Duane, Taco and I published the Cow Font. It's non||trivial to
+cook up a font made of cows, but of course Mojca Miklavec (who else) wants
+to typeset something Slovenian in this font. Now, the problem is that in
+\MKIV\ we don't have fallback characters, or more precisely, we don't make
+\UTF\ characters active and accent composing commands are mapped onto \UTF.
+
+This means that nothing will show up when we have no characters in the
+defined fonts. For the moment we stick to simple virtual fonts but
+because we can use node lists in virtual fonts, in the near future we will
+cook up a way to create arbitrary fallback characters.
+
+The following example demonstrates how to \quote {complete} a font that misses
+glyphs.
+
+\startbuffer
+\definefontfeature[coward] [kern=yes,ligatures=yes]
+\definefontfeature[cowgirl][kern=yes,ligatures=yes,compose=yes]
+
+\definefontsynonym [cows] [koeieletters.afm*coward]
+\definefontsynonym [herd] [koeieletters.afm*cowgirl]
+
+\blank[3*medium]
+\dontleavehmode\hbox{\definedfont[cows sa 5](č)(š)(ž)}
+\blank[3*medium]
+\dontleavehmode\hbox{\definedfont[herd sa 5](č)(š)(ž)}
+\blank[3*medium]
+\dontleavehmode\hbox{\definedfont[herd sa 5](\v{c})(\v{s})(\v{z})}
+\stopbuffer
+
+\typebuffer
+
+As expected (at least by me) the first line has no compose characters.
+
+\getbuffer
+
+\stopcomponent

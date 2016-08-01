@@ -1,0 +1,292 @@
+% language=uk
+
+\startcomponent about-properties
+
+\environment about-environment
+
+\startchapter[title=Functions]
+
+\startsection[title=Introduction]
+
+As part of the crited project Luigi and I also tried to identity weak spots in
+the engine and although we found some issues not all were dealt with because
+complicating the machinery makes no sense. However just like the new \type
+{properties} mechanism provides a real simple way to associate extra \LUA\ data
+to a node without bothering about freeing it when a node is flushed, the next
+\type {luafunctions} mechanism provides an additional and fast way to cross the
+\TEX||\LUA\ boundary.
+
+\stopsection
+
+\startsection[title=Callbacks]
+
+In \LUATEX\ we can create more functionality by using \LUA\ which means that we
+end up (at least in \CONTEXT) with a constant switching between \TEX\ macro
+expansion and \LUA\ code interpretation. The magic word in this process is \type
+{callback} and there are two variants:
+
+\startitemize
+
+\startitem At well defined moments in processing its input and node lists, \TEX\
+will check if a specific callback is defined and if so, it will run that code.
+\stopitem
+
+\startitem As part of the input you can have a \type {\directlua} command and
+that one gets expanded and processed. It can print back content into the current
+input buffer. \footnote {Currently this process is somewhat more complex than
+needed, which is a side effect of supporting multiple \LUA\ states in the first
+versions of \LUATEX. We will clean up this mechanism at some point.} \stopitem
+
+\stopitemize
+
+The first type is call a \quote {direct} callback because \TEX\ calls it
+directly, and the second one is an \quote {indirect} one (even if the command is
+\type {\directlua}). It has a deferred cousin \type {\latelua} that results in a
+node being inserted that will become a \LUA\ call during shipout, when the page
+is turned into a \PDF\ stream.
+
+A callback of the first category is pretty fast because the code is already
+translated in \LUA\ bytecode. Checking if a callback has been assigned at all is
+fast too. The second variant is slower because each time the input has to be
+interpreted and checked on validity. Then there is of course some overhead in
+making the call itself.
+
+There is a subtle aspect there. If you have a document that needs say ten calls
+like:
+
+\starttyping
+\directlua{tex.print("[x]")}
+\stoptyping
+
+and you have these calls inlined, you end up with ten times conversion into
+tokens (\TEX's internal view) and ten times conversion back to a string that gets
+fed into \LUA. On the other hand,
+
+\starttyping
+\def\MyCall{\directlua{tex.print("[x]")}}
+\stoptyping
+
+where we call \type {\MyCall} ten times is more efficient because we have already
+tokenized the \type {\directlua}. If we have
+
+\starttyping
+foo foo foo \directlua{tex.print("[1]")} ...
+bar bar bar \directlua{tex.print("[2]")} ...
+\stoptyping
+
+It makes sense to wrap this into a definition:
+
+\starttyping
+\def\MyCall#1{\directlua{tex.print("[#1]")}}
+\stoptyping
+
+and use:
+
+\starttyping
+foo foo foo \MyCall{1} bar bar bar \MyCall{1} ...
+\stoptyping
+
+Of course this is not unique for \type {\directlua} and to be honest, apart from
+convenience (read: less input) the gain often can be neglected. Because a macro
+package wraps functionality in (indeed) macros we already save us the tokenization
+step. We can save some time by wrapping more in a function at the \LUA\ end:
+
+\starttyping
+\startluacode
+function MyFloat(f)
+    tex.print(string.format("%0.5f",f))
+end
+\stopluacode
+
+\def\MyFloat#1%
+  {\directlua{MyFloat(#1)}}
+\stoptyping
+
+This is somewhat more efficient than:
+
+\starttyping
+\def\MyFloat#1%
+  {\directlua{tex.print(string.format("\letterpercent0.5f",#1))}}
+\stoptyping
+
+\stopsection
+
+Of course this is only true when we call this macro a lot of times.
+
+\startsection[title=Shortcuts]
+
+When we talk of \quote {often} or \quote {a lot} we mean many thousands of calls.
+There are some places in \CONTEXT\ where this is indeed the case, for instance
+when we process large registers in critical editions: a few hundred pages of
+references generated in \LUA\ is no exception there. Think of the following:
+
+\starttyping
+\startluacode
+function GetTitle(n)
+    tex.print(Entries[n].title)
+end
+\stopluacode
+
+\def\GetTitle#1%
+  {\directlua{GetTitle(#1)}}
+\stoptyping
+
+If we call \type {\GetTitle} ourselves it's the same as the \type {\MyFloat}
+example, but how about this:
+
+\starttyping
+\def\GetTitle#1%
+  {{\bf \directlua{GetTitle(#1)}}}
+
+\startluacode
+function GetTitle(n)
+    tex.print(Entries[n].title)
+end
+
+function GetEntry(n)
+    if Entries[n] then
+        tex.print("\\directlua{GetTitle(",n,")}")
+        -- some more action
+    end
+end
+\stopluacode
+\stoptyping
+
+Here we have two calls where one is delayed till a later time. This delay results
+in a tokenization and transation to \LUA\ so it will cost time. A way out is this:
+
+\starttyping
+\def\GetTitle#1%
+  {{\bf \luafunction#1}}
+
+\startluacode
+local functions = tex.get_functions_table()
+
+function GetTitle(n)
+    tex.print(Entries[n].title)
+end
+
+function GetEntry(n)
+    if Entries[n] then
+        local m = #functions+1
+        functions[m] = function() GetTitle(n) end
+        tex.print("\\GetTitle{",m,"}")
+        -- some more action
+    end
+end
+\stopluacode
+\stoptyping
+
+We define a function at the \LUA\ end and just print a macro call. That call itself
+calls the defined function using \type {\luafunction}. For a large number
+of calls this is more efficient but it will be clear that you need to make sure that
+used functions are cleaned up. A simple way is to start again at slot one after (say)
+100.000 functions, another method is to reset used functions and keep counting.
+
+\starttyping
+\startluacode
+local functions = tex.get_functions_table()
+
+function GetTitle(n)
+    tex.print(Entries[n].title)
+end
+
+function GetEntry(n)
+    if Entries[n] then
+        local m = #functions+1
+        functions[m] = function(slot) -- the slot number is always
+            GetTitle(n)               -- passed as argument so that
+            functions[slot] = nil     -- we can reset easily
+        end
+        tex.print("\\GetTitle{",m,"}")
+        -- some more action
+    end
+end
+\stopluacode
+\stoptyping
+
+As you can expect, in \CONTEXT\ users are not expect to deal directly with
+functions at all. Already for years you can so this:
+
+\starttyping
+\def\GetTitle#1%
+  {{\bf#1}}
+
+\startluacode
+function GetEntry(n)
+    if Entries[n] then
+        context(function() context.GetTitle(Entries[n].title) end)
+        -- some more action
+    end
+end
+\stopluacode
+\stoptyping
+
+Upto \LUATEX\ 0.78 we had a \CONTEXT\ specific implementation of functions and
+from 0.79 onwards we use this new mechanism but users won't see that in practice.
+In the \type {cld-mkiv.pdf} manual you can find more about accessing \CONTEXT\
+from the \LUA\ end.
+
+Keep in mind that \type {\luafunction} is not that clever: it doesn't pick up
+arguments. That will be part of future more extensive token handling but of
+course that will then also be a real slow downer because a mix of \TEX\
+tokenization and serialization is subtoptimal (we already did extensive tests
+with that).
+
+\stopsection
+
+\startsection[title=Helpers]
+
+The above mechanism demands some orchestration in the macro package. For instance
+freeing slots should be consistent and therefore user should not mess directly
+with the functions table. If you really want to use this feature you can best do this:
+
+\starttyping
+\startctxfunction MyFunctionA
+    context(" A1 ")
+\stopctxfunction
+
+\startctxfunctiondefinition MyFunctionB
+    context(" B2 ")
+\stopctxfunctiondefinition
+
+\starttext
+    \dorecurse{10000}{\ctxfunction{MyFunctionA}}   \page
+    \dorecurse{10000}{\MyFunctionB}                \page
+    \dorecurse{10000}{\ctxlua{context(" C3 ")}}    \page
+    \dorecurse{10000}{\ctxlua{tex.sprint(" D4 ")}} \page
+\stoptext
+\stoptyping
+
+In case you're curious about performance, here are timing. Given that we have
+10.000 calls the gain is rather neglectable especially because the whole run
+takes 2.328 seconds for 52 processed pages resulting in 22.4 pages per second.
+The real gain is in more complex calls with more tokens involved and in \CONTEXT\
+we have some placed where we run into the hundreds of thousands. A similar
+situation occurs when your input comes from databases and is fetched stepwise.
+
+\starttabulate[|c|c|c|c|]
+\NC \bf A \NC \bf B \NC \bf C \NC \bf D \NC \NR
+\NC 0.053 \NC 0.044 \NC 0.081 \NC 0.081 \NC \NR
+\stoptabulate
+
+So, we can save 50\% runtime but on a simple document like this a few percent is
+not that much. Of course many such few percentages can add up, and it's one of
+the reasons why \CONTEXT\ \MKIV\ is pretty fast in spite of all the switching
+between \TEX\ and \LUA. One objective is that an average complex document should
+be processed with a rate of at least 20 pages per second and in most cases we
+succeed. This fast function accessing can of course trigger new features in
+\CONTEXT, ones we didn't consider useful because of overhead.
+
+Keep in mind that in most cases, especially when programming in \LUA\ directly
+the \type {context} command already does all kind of housekeeping for you. For
+instance it also keeps track of so called trial typesetting runs and can inject
+nodes in the current stream as well. So, be warned: there is no real need to
+complicate your code with this kind of hackery if some high level subsystem
+provides the functionality already.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

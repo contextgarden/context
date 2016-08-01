@@ -1,0 +1,55 @@
+\startcomponent ma-cb-en-composedcharacters
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Composite characters]
+
+\index{accents}
+\index{foreign characters}
+
+In \in{chapter}[special chars] you have already seen that you have to type more
+than one token to obtain special characters like \# \$ \% \& \_ $\{$ and $\}$.
+
+Characters with accents for example can be composed or coded with specific
+\CONTEXT\ commands in order to display them on paper. In case you have a text
+editor that can display utf8 you can type the composed characters directly.
+
+It is not within the scope of this manual to go into accented characters in math
+mode. See the {\TEX Book} by Donald E. Knuth on that subject.
+
+\in{Table}[tab:composed-characters] shows a few examples and the way you can code
+composed characters.
+
+\placetable
+  [here,force]
+  [tab:composed-characters]
+  {Composed characters.}
+  {\starttable[|c|l|l|c|]
+   \HL
+   \NC \bf Character \NC \bf Composed \NC \bf \CONTEXT\ command \NC \bf UTF8 \NC\SR
+   \HL
+   \NC ü            \NC \type{\"u}	     \NC \type{\uacute}        \NC \type{ü} \NC\FR
+   \NC é            \NC \type{\'e}	     \NC \type{\egrave}        \NC \type{é} \NC\MR
+   \NC â            \NC \type{\^a}       \NC \type{\acircumflex}   \NC \type{â} \NC\MR
+   \NC ä            \NC \type{\"a}       \NC \type{\aacute}        \NC \type{ä} \NC\MR
+   \NC à            \NC \type{\`a}	     \NC \type{\agrave}        \NC \type{à} \NC\MR
+   \NC å            \NC \type{\aa}       \NC \type{\aring}         \NC \type{å} \NC\MR
+   \NC ç            \NC \type{\c{c}}     \NC \type{\ccedilla}      \NC \type{ç} \NC\MR
+   \NC ï            \NC \type{\"{\i}}    \NC \type{\idiaeresis}    \NC \type{ï} \NC\MR
+   \NC î            \NC \type{\^{\i}}    \NC \type{\icircumflex}   \NC \type{î} \NC\MR
+   \NC Ä            \NC \type{\"A}       \NC \type{\Adiaeresis}    \NC \type{Ä} \NC\MR
+   \NC Å            \NC \type{\AA}       \NC \type{\Aring}         \NC \type{Å} \NC\MR
+   \NC É            \NC \type{\'E}       \NC \type{\Egrave}        \NC \type{É} \NC\MR
+   \NC æ            \NC \type{\ae}       \NC \type{\aeligature}    \NC \type{æ} \NC\MR
+   \NC Æ            \NC \type{\AE}       \NC \type{\AEligature}    \NC \type{Æ} \NC\MR
+   \NC ÿ            \NC \type{\"y}	     \NC \type{\ydiaeresis}    \NC \type{ÿ} \NC\LR
+   \HL
+   \stoptable}
+
+The character you want to display should be in the font.
+
+\stopchapter
+
+\stopcomponent

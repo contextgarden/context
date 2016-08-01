@@ -1,0 +1,24 @@
+<?xml version='1.0 standalone='yes' ?>
+
+<one>
+    <two>
+        <a>alpha</a>
+        <b/>
+        <c>gamma</c>
+        <d/>
+        <e>epsilon</e>
+    </two>
+    <three>
+        <some>pdftex</some>
+        <some>luatex</some>
+        <some>xetex</some>
+    </three>
+    <four>
+        <more:some name="hans"/>
+        <more:some name="taco"/>
+        <more:some name="hartmut"/>
+    </four>
+    <five>
+        <some>metapost</some>
+    </five>
+</one>

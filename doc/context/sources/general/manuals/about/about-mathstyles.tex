@@ -1,0 +1,457 @@
+% language=uk
+
+\startcomponent about-speed
+
+\environment about-environment
+
+\startchapter[title=Math Styles]
+
+\startsection[title=Introduction]
+
+Because \CONTEXT\ is often considered somewhat less math savvy than for instance
+\LATEX\ we have more freedom to experiment with new insights and move forward. Of
+course \CONTEXT\ always could deal with math, and even provides rather advanced
+support when it comes to combining fonts, which at some point was needed for a
+magazine that used two completely different sets of fonts in one issue. Also,
+many of the mechanisms had ways to influence the rendering, but often by means of
+constants and flags.
+
+Already in an early stage of \LUATEX\ we went \UNICODE\ and after that the low
+level code has been cleaned up stepwise. In fact, we probably have less code now
+than before because we need less hacks. Well, this might not be that true, if we
+consider that we also introduced code at the \LUA\ end which wasn't there before,
+but which makes makes support easier.
+
+Because we don't need to support all kind of third party math extensions that
+themselves might depend on overloading low level implementations, we can
+rigourously replace mechanisms. In the process we also make things easier to
+configure, easier to define and we promote some previously low level tuning
+options at the user level.
+
+Or course, by introducing new features and more options, there is a price to pay
+in terms of speed, but in practice users will seldom use the more complex
+constructs thousands of times in one document. Elsewhere arrows and alike were
+discussed, here I will spend some words on math styles and will use fences and
+fractions as an example as these mechanisms were used to experiment.
+
+\stopsection
+
+\startsection[title=Math styles]
+
+In \TEX\ a formula can used three different sizes of a font: text, script and
+scriptscript. In addition a formula can be typeset using rules for display math
+or rules for inline math. This means that we have the following so called math
+styles:
+
+\starttabulate[||||]
+% \FL
+\NC \bf keyword         \NC \bf meaning               \NC \bf command                \NC \NR
+% \FL
+\NC \type{display}      \NC used for display math     \NC \type {\displaystyle}      \NC \NR
+\NC \type{text}         \NC used for inline math      \NC \type {\textstyle}         \NC \NR
+\NC \type{script}       \NC smaller than text style   \NC \type {\scriptstyle}       \NC \NR
+\NC \type{scriptscript} \NC smaller than script style \NC \type {\scriptscriptstyle} \NC \NR
+% \LL
+\stoptabulate
+
+Each of these commands will force a style but in practice you seldom need to do
+that because \TEX\ does it automatically. In addition there is are cramped styles
+with corresponding commands.
+
+\starttabulate
+  \NC \ruledhbox{$\displaystyle             x^2 + \sqrt{x^2+2x} + \sqrt{\displaystyle             x^2+2x}$} \NC \type{\displaystyle            } \NC \NR
+  \NC \ruledhbox{$\crampeddisplaystyle      x^2 + \sqrt{x^2+2x} + \sqrt{\crampeddisplaystyle      x^2+2x}$} \NC \type{\crampeddisplaystyle     } \NC \NR
+  \NC \ruledhbox{$\textstyle                x^2 + \sqrt{x^2+2x} + \sqrt{\textstyle                x^2+2x}$} \NC \type{\textstyle               } \NC \NR
+  \NC \ruledhbox{$\crampedtextstyle         x^2 + \sqrt{x^2+2x} + \sqrt{\crampedtextstyle         x^2+2x}$} \NC \type{\crampedtextstyle        } \NC \NR
+  \NC \ruledhbox{$\scriptstyle              x^2 + \sqrt{x^2+2x} + \sqrt{\scriptstyle              x^2+2x}$} \NC \type{\scriptstyle             } \NC \NR
+  \NC \ruledhbox{$\crampedscriptstyle       x^2 + \sqrt{x^2+2x} + \sqrt{\crampedscriptstyle       x^2+2x}$} \NC \type{\crampedscriptstyle      } \NC \NR
+  \NC \ruledhbox{$\scriptscriptstyle        x^2 + \sqrt{x^2+2x} + \sqrt{\scriptscriptstyle        x^2+2x}$} \NC \type{\scriptscriptstyle       } \NC \NR
+  \NC \ruledhbox{$\crampedscriptscriptstyle x^2 + \sqrt{x^2+2x} + \sqrt{\crampedscriptscriptstyle x^2+2x}$} \NC \type{\crampedscriptscriptstyle} \NC \NR
+\stoptabulate
+
+Here we applied the styles as follows:
+
+\startbuffer
+$\textstyle x^2 + \sqrt{x^2+2x} + \sqrt{\textstyle x^2+2x}$
+\stopbuffer
+
+\typebuffer
+
+The differences are subtle: the superscripts in the square root are positioned a
+bit lower than normal: the radical forces them to be cramped.
+
+\startlinecorrection
+\scale[width=\hsize]{\maincolor \getbuffer}
+\stoplinecorrection
+
+Although the average user will not bother about styles, a math power user might
+get excited about the possibility to control the size of fonts being used, of
+course wit the danger of creating a visually inconsistent document. And, as in
+\CONTEXT\ we try to avoid such low level commands \footnote {Although \unknown\
+it's pretty hard to convince users to stay away from \type {\vskip} and friends.}
+it will be no surprise that we have ways to set them beforehand.
+
+\startbuffer
+\definemathstyle[mystyle][scriptscript]
+
+$ 2x + \startmathstyle [mystyle] 4y^2 \stopmathstyle = 10 $
+\stopbuffer
+
+\typebuffer
+
+So, if you want it this ugly, you can get it:
+
+\blank \start \getbuffer \stop \blank
+
+A style can be a combination of keywords. Of course we have \type {display},
+\type {text}, \type {script} and \type {scriptscript}. Then there are \type
+{uncramped} and \type {cramped} along with their synonyms \type {normal} and
+\type {packed}. In some cases you can also use \type {small} and \type {big}
+which will promote the size up or down, relative to what we have currently.
+
+A style definition can be combination of such keywords:
+
+\starttyping
+\definemathstyle[mystyle][scriptscript,cramped]
+\stoptyping
+
+Gradually we will introduce the \type {mathstyle} keyword in math related
+setups commands.
+
+In most cases a user will limit the scope of some setting by using braces, like
+this:
+
+\startbuffer
+$x{\setupmathstyle[script]x}x$
+\stopbuffer
+
+This gives {\maincolor \ignorespaces \getbuffer \removeunwantedspaces}: a smaller
+symbol between two with text size. Equally valid is this:
+
+\startbuffer
+$x\startmathstyle[script]x\stopmathstyle x$
+\stopbuffer
+
+\typebuffer
+
+Again we get {\maincolor \ignorespaces \getbuffer \removeunwantedspaces}, but at
+the cost of more verbose coding.
+
+The use of \type {{}} (either or not hidden in commands) has a few side effects.
+In text mode, when we use this at the start of a paragraph, the paragraph will
+start inside the group and when we end the group, specific settings that were
+done at that time get lost. So, in practice you will force a paragraph outside
+the group using \type {\dontleavehmode}, \type {\strut}, or one of the
+indentation commands. \stopitem
+
+In math mode a new math group is created which limits local style settings to
+this group. But as such groups also can trigger special kinds of spacing you
+sometimes don't want that. One pitfall is then to do this:
+
+\startbuffer
+$x\begingroup\setupmathstyle[script]x\endgroup x$
+\stopbuffer
+
+\typebuffer
+
+Alas, now we get {\maincolor \ignorespaces \getbuffer \removeunwantedspaces}. A
+\type {\begingroup} limits the scope of many things but it will not create a math
+group! This kind of subtle issues is the reason why we have pre|-|built solutions
+that take care of style switching, grouping, spacing and positioning.
+
+\stopsection
+
+\startsection[title=Fences]
+
+Fences are symbols at the left and right of an expression: braces, brackets,
+curly braces, and bars are the most well known. Often they are supposed to adapt
+their size to the content that they wrap. Here you see some in action:
+
+\starttabulate[||c||]
+\NC \type {$|x|$}                            \NC $|x|$                             \NC okay  \NC \NR
+\NC \type {$||x||$}                          \NC $||x||$                           \NC okay  \NC \NR
+\NC \type {$a\left | \frac{1}{b}\right | c$} \NC $a\left |  \frac{1}{b}\right | c$ \NC okay  \NC \NR
+\NC \type {$a\left ||\frac{1}{b}\right ||c$} \NC $a\left || \frac{1}{b}\right ||c$ \NC wrong \NC \NR
+\NC \type {$a\left ‖ \frac{1}{b}\right ‖ c$} \NC $a\left ‖  \frac{1}{b}\right ‖ c$ \NC okay  \NC \NR
+\stoptabulate
+
+Often authors like to code their math with minimal structure and if you use
+\UNICODE\ characters that is actually quite doable. Just look at the double bar
+in the example above: if we input \type {||} we don't get what we want, but with
+\type {‖} the result is okay. This is because the \type {\left} and \type
+{\right} commands expect one character. But, even then, coding a bit more
+verbose sometimes makes sense.
+
+In stock \CONTEXT\ we have a couple of predefined fences:
+
+\starttyping
+\definemathfence [parenthesis] [left=0x0028,right=0x0029]
+\definemathfence [bracket]     [left=0x005B,right=0x005D]
+\definemathfence [braces]      [left=0x007B,right=0x007D]
+\definemathfence [bar]         [left=0x007C,right=0x007C]
+\definemathfence [doublebar]   [left=0x2016,right=0x2016]
+\definemathfence [angle]       [left=0x003C,right=0x003E]
+\stoptyping
+
+\startbuffer
+test $a \fenced[bar]      {\frac{1}{b}} c$ test
+test $a \fenced[doublebar]{\frac{1}{b}} c$ test
+test $a \fenced[bracket]  {\frac{1}{b}} c$ test
+\stopbuffer
+
+You use these by name:
+
+\typebuffer
+
+and get
+
+\startlines \getbuffer \stoplines
+
+\startbuffer
+\definemathfence [nooffence] [left=0x005B]
+\stopbuffer
+
+You can stick to only one fence:
+
+\typebuffer \getbuffer
+
+\startbuffer
+on $a \fenced[nooffence]{\frac{1}{b}} c$ off
+\stopbuffer
+
+Here \CONTEXT\ will take care of the dummy fence that \TEX\ expects instead.
+
+\startlines \getbuffer \stoplines
+
+You can define new fences and clone existing ones. You can also assign some
+properties:
+
+\startbuffer
+\definemathfence
+  [fancybracket]
+  [bracket]
+  [command=yes,
+   color=blue]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+test $a\fancybracket{\frac{1}{b}}c$ test
+test \color[red]{$a\fancybracket{\frac{1}{b}}c$} test
+\stopbuffer
+
+\typebuffer
+
+The color is only applied to the fence. This makes sense as the formula can
+follow the main color but influencing the fences is technically somewhat more
+complex.
+
+\getbuffer
+
+Here are some more examples:
+
+\startbuffer
+\definemathfence
+  [normalbracket]
+  [bracket]
+  [command=yes,
+   color=blue]
+
+\definemathfence
+  [scriptbracket]
+  [normalbracket]
+  [mathstyle=script]
+
+\definemathfence
+  [smallbracket]
+  [normalbracket]
+  [mathstyle=small]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\starttabulate
+\NC \type{$a                \frac{1}{b} c$}  \NC $a                \frac{1}{b}  c$ \NC \NR
+\TB
+\NC \type{$a \normalbracket{\frac{1}{b} c$}} \NC $a \normalbracket{\frac{1}{b}} c$ \NC \NR
+\TB
+\NC \type{$a \scriptbracket{\frac{1}{b} c$}} \NC $a \scriptbracket{\frac{1}{b}} c$ \NC \NR
+\TB
+\NC \type{$a \smallbracket {\frac{1}{b} c$}} \NC $a \smallbracket {\frac{1}{b}} c$ \NC \NR
+\stoptabulate
+
+As with most commands, the fences inherit from the parents so we can say:
+
+\starttyping
+\setupmathfences [color=red]
+\stoptyping
+
+and get all our fences colored red. The \type {command} option results in a
+command being defined, which saves you some keying.
+
+\stopsection
+
+\startsection[title=Fractions]
+
+In \TEX\ the mechanism to put something on top of something else, separated by a
+horizontal rule, is driven by the \type {\over} primitive. That one has a
+(compared to other commands) somewhat different specification, in the sense that
+one of its arguments sits in front:
+
+\starttyping
+$ {{2x}\over{x^1}} $
+\stoptyping
+
+Although to some extend this is considered to be more readable, macro packages
+often provide a \type {\frac} commands that goes like this:
+
+\starttyping
+$ \frac{2x}{x^1} $
+\stoptyping
+
+There we have less braces and the arguments come after the command. As with the
+fences in the previous section, you can define your own fractions:
+
+\startbuffer
+\definemathfraction
+  [innerfrac]
+  [frac]
+  [alternative=inner,
+   mathstyle=script,
+   color=red]
+
+\definemathfraction
+  [outerfrac]
+  [frac]
+  [alternative=outer,
+   mathstyle=script,
+   color=blue]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The mathstyle and color are already discussed but the \type {alternative} is
+specific for these fractions. It determines if the style is applied to the whole
+fraction or to its components.
+
+\startbuffer
+\startformula
+\outerfrac{2a}{3b} = \innerfrac{2a}{3b} = \frac{2a}{3b}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+As with fences, the color is only applied to the horizontal bar as there is no
+other easy way to color that otherwise.
+
+\getbuffer
+
+As \TEX\ has a couple of low level stackers, we provide an interface to that as
+well, but we hide the dirty details. For instance you can define left and right
+fences and influence the rule
+
+\startbuffer
+\definemathfraction[fraca][rule=no,left=0x005B,right=0x007C]
+\definemathfraction[fracb][rule=yes,left=0x007B,right=0x007D]
+\definemathfraction[fracc][rule=auto,left=0x007C]
+\definemathfraction[fracd][rule=yes,rulethickness=2pt,left=0x007C]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+When \type {rule} is set to \type {auto}, we use \TEX's values (derived from font
+metrics) for the thickness of rules, while \type {yes} triggers usage of the
+specified \type {rulethickness}.
+
+\startbuffer
+\startformula
+\fraca{a}{b} + \fracb{a}{b} + \fracc{a}{b} + \fracd{a}{b}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+Gives:
+
+\getbuffer
+
+\startbuffer
+\definemathfraction
+  [frace]
+  [rule=yes,
+   color=blue,
+   rulethickness=1pt,
+   left=0x005B,
+   right=0x007C]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This fraction looks as follows (scaled up):
+
+\startlinecorrection
+\midaligned{\scale[height=5ex]{$\displaystyle\frace{a}{b}$}}
+\stoplinecorrection
+
+So, the color is applied to the (optional) fences as well as to the (optional)
+rule. And when you color the whole formula as part of the context, you get
+
+\startlinecorrection
+\midaligned{\scale[height=5ex]{\color[maincolor]{$\displaystyle\frace{a}{b}$}}}
+\stoplinecorrection
+
+There is a (maybe not so) subtle difference between fences that come with
+fractions and regular fences, Take these definitions:
+
+\startbuffer
+\definemathfence    [parenta] [left=0x28,right=0x29,command=yes]
+\definemathfraction [parentb] [left=0x28,right=0x29,rule=auto]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Of course the \type {b} variant takes less code:
+
+\startbuffer
+\startformula
+\parenta{\frac{a}{b}} + \parentb{a}{b}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+But watch how the parentheses are also larger. At some point \CONTEXT\ will
+provide a bit more control over this,
+
+\getbuffer
+
+You can also influence the width of the rule, but that is not related to the
+style.
+
+\startbuffer
+\definemathfraction
+  [wfrac]
+  [margin=.25em]
+
+\definemathfraction
+  [wwfrac]
+  [margin=.50em]
+
+\startformula
+  \frac   {  a } { \frac {  b } {  c } } +
+  \wfrac  {  a } { \frac {  b } {  c } } =
+  \wwfrac { 2a } { \frac { 2b } { 2c } }
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+Both the nominator and denominator are widened by the margin:
+
+\getbuffer
+
+\stopsection
+
+\stopcomponent

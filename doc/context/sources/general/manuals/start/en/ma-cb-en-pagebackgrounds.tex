@@ -1,0 +1,93 @@
+\startcomponent ma-cb-en-pagebackgrounds
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Backgrounds in page areas]
+
+\index{page areas}
+\index{background+page areas}
+
+\Command{\tex{setupbackgrounds}}
+
+The page background can be set, with:
+
+\shortsetup{setupbackgrounds}
+
+The first two bracket pairs are used to define the page areas. The last bracket
+pair is used for set up.
+
+\startbuffer
+\hbox
+  {\framed[width=1.5cm,frame=off]                   {}
+   \framed[width=2cm,frame=off]                     {left}
+   \framed[width=2.5cm,frame=off]                   {left}
+   \framed[width=3cm,frame=off]                     {text}
+   \framed[width=2.5cm,frame=off]                   {right}
+   \framed[width=2cm,frame=off]                     {right}}
+\hbox
+  {\framed[width=1.5cm,frame=off]                   {}
+   \framed[width=2cm,frame=off]                     {edge}
+   \framed[width=2.5cm,frame=off]                   {margin}
+   \framed[width=3cm,frame=off]                     {}
+   \framed[width=2.5cm,frame=off]                   {margin}
+   \framed[width=2cm,frame=off]                     {edge}}
+\hbox
+  {\framed[width=1.5cm,frame=off]                   {top}
+   \framed[width=2cm]                               {}
+   \framed[width=2.5cm]                             {}
+   \framed[width=3cm]                               {}
+   \framed[width=2.5cm]                             {}
+   \framed[width=2cm]                               {}}
+\hbox
+  {\framed[width=1.5cm,frame=off]                   {header}
+   \framed[width=2cm]                               {}
+   \framed[width=2.5cm,background=screen]           {}
+   \framed[width=3cm,background=screen]             {}
+   \framed[width=2.5cm,background=screen]           {}
+   \framed[width=2cm]                               {}}
+\hbox
+  {\framed[width=1.5cm,frame=off,height=3cm]        {text}
+   \framed[width=2cm,height=3cm]                    {}
+   \framed[width=2.5cm,height=3cm,background=screen]{}
+   \framed[width=3cm,height=3cm,background=screen]  {}
+   \framed[width=2.5cm,height=3cm,background=screen]{}
+   \framed[width=2cm,height=3cm]                    {}}
+\hbox
+  {\framed[width=1.5cm,frame=off]                   {footer}
+   \framed[width=2cm]                               {}
+   \framed[width=2.5cm,background=screen]           {}
+   \framed[width=3cm,background=screen]             {}
+   \framed[width=2.5cm,background=screen]           {}
+   \framed[width=2cm]                               {}}
+\hbox
+  {\framed[width=1.5cm,frame=off]                   {bottom}
+   \framed[width=2cm]                               {}
+   \framed[width=2.5cm]                             {}
+   \framed[width=3cm]                               {}
+   \framed[width=2.5cm]                             {}
+   \framed[width=2cm]                               {}}
+\stopbuffer
+
+\placefigure
+  [here]
+  [fig:pageareas]
+  {The page areas defined in \type{\setupbackgrounds}.}
+  {\tt\getbuffer}
+
+If you want to have backgrounds in the gray areas of the page layout of
+\in{figure}[fig:pageareas] you type:
+
+\startbuffer
+\setupbackgrounds
+  [header,text,footer]
+  [leftmargin,text,rightmargin]
+  [background=screen]
+\stopbuffer
+
+\typebuffer
+
+\stopchapter
+
+\stopcomponent

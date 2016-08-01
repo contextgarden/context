@@ -1,0 +1,265 @@
+% language=uk
+
+\startcomponent mk-arabic
+
+\environment mk-environment
+
+\chapter{Optimization}
+
+\subject{quality of code}
+
+How good is the \MKIV\ code? Well, as good as I can make it. When you browse
+the code you will probably notice differences in coding style and this is a
+related to the learning curve. For instance the \type {luat-inp} module needs
+some cleanup, for instance hiding local function from users.
+
+Since benchmarking has been done right from the start there is probably not
+that much to gain, but who knows. When coding in \LUA\ you should be careful
+with defining global variables, since they may override something. In \MKIV\
+we don't guarantee that the name you use for variable will not be used at
+some point. Therefore, best operate in a dedicated \LUA\ instance, or operate
+in userspace.
+
+\starttyping
+do
+    -- your code
+end
+\stoptyping
+
+If you want to use your data later on, think of working this way (the example
+is somewhat silly):
+
+\starttyping
+userdata['your.name'] = userdata['your.name'] or { }
+
+do
+    local mydata = userdata['your.name']
+
+    mydata.data = {}
+
+    local function foo() return 'bar' end
+
+    function mydata.dothis()
+        mydata[foo] = foo()
+    end
+
+
+end
+\stoptyping
+
+In this case you can always access your user data while temporary
+variables are hidden. The \type {userdata} table is predefined. As is
+\type {thirddata} for modules that you may write. Of course this
+assumes that you create a namespace within these global tables.
+
+A nice test for checking global cluttering is the following:
+
+\starttyping
+for k, v in pairs(_G) do
+    print(k, v)
+end
+\stoptyping
+
+When you incidentally define global variables like \type {n} or \type {str}
+they will show up here.
+
+\subject{clean or dirty}
+
+Processing the first 120 pages of this document (16 chapters) takes some 23.5
+seconds on a dell M90 (2.3GHZ, 4GB mem, Windows Vista Ultimate). A rough estimate
+of where \LUA\ spends its time is:
+
+\starttabulate[|l|c|]
+\NC \bf acticvity             \NC \bf sec \NC \NR
+\NC input load time           \NC 0.114   \NC \NR
+\NC fonts load time           \NC 6.692   \NC \NR
+\NC mps conversion time       \NC 0.004   \NC \NR
+\NC node processing time      \NC 0.832   \NC \NR
+\NC attribute processing time \NC 3.376   \NC \NR
+\stoptabulate
+
+Font loading takes some time, which is nu surprise because we load huge Zapfino, Arabic
+and \CJK\ fonts and define many instances of them. Some tracing learns that there
+are some 14.254.041 function calls, of which 13.339.226 concern functions that are
+called more than 5.000 times. A total of 62.434 function is counted, which is
+a result of locally defined ones.
+
+A rough indication of this overhead is given by the following test code:
+
+\starttyping
+local a,b,c,d,e,f = 1,2,3,4,5,6
+
+function one  (a)           local n = 1 end
+function three(a,b,c)       local n = 1 end
+function six  (a,b,c,d,e,f) local n = 1 end
+
+for i=1,14254041 do one  (a)           end
+for i=1,14254041 do three(a,b,c)       end
+for i=1,14254041 do six  (a,b,c,d,e,f) end
+\stoptyping
+
+The runtime for these tests (excluding startup) is:
+
+\starttabulate[|l|l|]
+\NC one argument    \NC 1.8 seconds \NC \NR
+\NC three arguments \NC 2.0 seconds \NC \NR
+\NC six arguments   \NC 2.3 seconds \NC \NR
+\stoptabulate
+
+So, the of the total runtime for this document we easily spend a couple
+of seconds on function calls, especially in node processing and attribute
+resolving. Does this mean that we need to change the code and follow a more
+inline approach? Eventually we may optimize some code, but for the moment
+we keep things as readable as possible, and even then much code is still
+quite complex. Font loading is often constant for a document anyway, and
+independent of the number of pages. Time spent on node processing depends on
+the script, and often processing intense scripts are typeset in a larger font and
+since they are less verbose than latin, this does not really influence
+the average time spent on typesetting a page. Attribute handling is probably
+the most time consuming activity, and for large documents the time spent on this
+is large compared to font loading and node processing. But then, after a few
+\MKIV\ development cycles the picture may be different.
+
+When we turned on tracing of function calls, if becomes clear where currently
+the time is spent in a document like this which demands complex Zapfino
+contextual analysis as well as Arabic analysis and feature application (both
+fonts demand node insertion and deletion). Of course using color also has a
+price. Handling weighted and conditional spacing (new in \MKIV) involves
+just over 10.000 calls to the main handler for 120 pages of this document.
+Glyph related processing of node lists needs 42.000 calls, and contextual
+analysis of \OPENTYPE\ fonts is good for 11.000 calls. Timing \LUA\ related
+tasks involves 2 times 37.000 calls to the stopwatch. Collapsing \UTF\ in
+the input lines equals the number of lines: 7700.
+
+However, at the the top of the charts we find calls to attribute related
+functions. 97.000 calls for handling special effects, overprint, transparency
+and alike, and another 24.000 calls for combined color and colorspace handling.
+These calls result in over 6.000 insertions of \PDF\ literals (this number is
+large because we show Arabic samples with color based tracing enabled). In
+case you wonder if the attribute handler can be made more efficient (we're
+talking seconds here), the answer is \quotation {possibly not}. This action
+is needed for each shipped out object and each shipped out page. If we divide
+the 24.000 (calls) by 120 (pages) we get 200 calls per page for color processing
+which is okay if you keep in mind that we need to recurse in nested horizontal
+and vertical lists of the completely made op page.
+
+\subject{serialization}
+
+When serializing tables, we can end up with very large tables, especially
+when dealing with big fonts like \quote{arabtype} or \quote {zapfino}. When
+serializing tables one has to find a compromise between speed of writing,
+effeciency of loading and readability. First we had (sub)tables like:
+
+\starttyping
+boundingbox = {
+    [1] = 0,
+    [2] = 0,
+    [3] = 100,
+    [4] = 200
+}
+\stoptyping
+
+I mistakingly assumed that this would generate an indexed table, but at \TUG\ 2007
+Roberto Ierusalimschy explained to me that this was not that efficient, since this
+variant boils down to the following byte code:
+
+\starttyping
+1       [1]     NEWTABLE        0 0 4
+2       [2]     SETTABLE        0 -2 -3 ; 1 0
+3       [3]     SETTABLE        0 -4 -3 ; 2 0
+4       [4]     SETTABLE        0 -5 -6 ; 3 100
+5       [5]     SETTABLE        0 -7 -8 ; 4 200
+6       [6]     SETGLOBAL       0 -1    ; boundingbox
+7       [6]     RETURN          0 1
+\stoptyping
+
+This creates a hashed table. The following variant is better:
+
+\starttyping
+boundingbox = { 0, 0, 100, 200 }
+\stoptyping
+
+This results in:
+
+\starttyping
+1       [1]     NEWTABLE        0 4 0
+2       [2]     LOADK           1 -2    ; 0
+3       [3]     LOADK           2 -2    ; 0
+4       [4]     LOADK           3 -3    ; 100
+5       [6]     LOADK           4 -4    ; 200
+6       [6]     SETLIST         0 4 1   ; 1
+7       [6]     SETGLOBAL       0 -1    ; boundingbox
+8       [6]     RETURN          0 1
+\stoptyping
+
+The resulting tables are not only smaller in terms of bytes, but also
+are less memory hungry when loaded. For readability we write tables with
+only numbers, strings or boolean values in an inline||format:
+
+\starttyping
+boundingbox = { 0, 0, 100, 200 }
+\stoptyping
+
+The serialized tables are somewhat smaller, depending on how
+many subtables are indexed (boundary boxes, lookup sequences, etc.)
+
+\starttabulate[|r|r|l|]
+\NC \bf normal \NC \bf compact \NC \bf filename \NC \NR
+\NC 34.055.092 \NC 32.403.326 \NC arabtype.tma                \NC \NR
+\NC  1.620.614 \NC  1.513.863 \NC lmroman10-italic.tma        \NC \NR
+\NC  1.325.585 \NC  1.233.044 \NC lmroman10-regular.tma       \NC \NR
+\NC  1.248.157 \NC  1.158.903 \NC lmsans10-regular.tma        \NC \NR
+\NC    194.646 \NC    153.120 \NC lmtypewriter10-regular.tma  \NC \NR
+\NC  1.771.678 \NC  1.658.461 \NC palatinosanscom-bold.tma    \NC \NR
+\NC  1.695.251 \NC  1.584.491 \NC palatinosanscom-regular.tma \NC \NR
+\NC 13.736.534 \NC 13.409.446 \NC zapfinoextraltpro.tma       \NC \NR
+\stoptabulate
+
+Since we compile the tables to bytecode, the effects are more
+spectacular there.
+
+\starttabulate[|r|r|l|]
+\NC \bf normal \NC \bf compact \NC \bf filename \NC \NR
+\NC 13.679.038 \NC 11.774.106 \NC arabtype.tmc                \NC \NR
+\NC    886.248 \NC    754.944 \NC lmroman10-italic.tmc        \NC \NR
+\NC    729.828 \NC    466.864 \NC lmroman10-regular.tmc       \NC \NR
+\NC    688.482 \NC    441.962 \NC lmsans10-regular.tmc        \NC \NR
+\NC    128.685 \NC     95.853 \NC lmtypewriter10-regular.tmc  \NC \NR
+\NC    715.929 \NC    582.985 \NC palatinosanscom-bold.tmc    \NC \NR
+\NC    669.942 \NC    540.126 \NC palatinosanscom-regular.tmc \NC \NR
+\NC  1.560.588 \NC  1.317.000 \NC zapfinoextraltpro.tmc       \NC \NR
+\stoptabulate
+
+Especially when a table is partially indexed and hashed, readability is a bit
+less than normal but in practice one will seldom consult such tables in its verbose
+form.
+
+After going beta, users reported problems with scaling of the the Latin Modern and
+\TeX-Gyre fonts. The troubles originate in the fact that the \OPENTYPE\ versions of
+these fonts lack a design size specification and it happens that the Latin Modern
+fonts do have design sizes other than 10 points. Here the power of a flexible
+\TEX\ engine shows \unknown\ we can repair this when we load the font. In \MKIV\
+we can now define patches:
+
+\starttyping
+do
+    local function patch(data,filename)
+        if data.design_size == 0 then
+            local ds = (file.basename(filename)):match("(%d+)")
+            if ds then
+                logs.report("load otf",string.format("patching design size (%s)",ds))
+                data.design_size = tonumber(ds) * 10
+            end
+        end
+    end
+
+    fonts.otf.enhance.patches["^lmroman"] = patch
+    fonts.otf.enhance.patches["^lmsans"]  = patch
+    fonts.otf.enhance.patches["^lmmono"]  = patch
+end
+\stoptyping
+
+Eventually such code will move to typescripts instead of in the kernel code.
+
+
+\stopcomponent

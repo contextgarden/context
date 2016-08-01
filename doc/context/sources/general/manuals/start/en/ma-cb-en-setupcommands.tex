@@ -1,0 +1,54 @@
+\startcomponent ma-cb-en-setupcommands
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Setup commands]
+
+\index{set up}
+\index{layout}
+
+Global commands are placed in the setup area of your input file, before
+\type{\starttext}. In \in{appendix}[commandsetups] there is a complete overview of the
+available commands and their parameters.
+
+The set up commands all have the same structure. They look something like:
+
+\shortsetup{setupparagraphs}
+
+A set up command consists of a more or less logical name and a number of bracket
+pairs. Bracket pairs may be optional and in that case the \type{[]} are typeset
+slanted {\tt \sl []}. In the definition the bracket pairs may contain:
+
+\starttyping
+\setupacommand[.1.][.2.][..,..=..,..]
+\stoptyping
+
+The commas indicate that a list of parameters can be enclosed. In the options
+list following the definition, the \type{.1.} and \type{.2.} show the possible
+options that can be set in the first and second bracket pair respectively. The
+parameters and their possible values are placed in the third bracket pair.
+
+The default options and parameter values are underlined.
+
+Furthermore you will notice that some values are typeset in a slanted way: {\sl
+section}, {\sl name}, {\sl dimension}, {\sl number}, {\sl command} and {\sl
+text}. This indicates that you can set the value yourself.
+
+\starttabulate[|S||]
+\NC section   \NC a section name like chapter, section, subsection etc. \NC\NR
+\NC name      \NC an identifier (logical name)                          \NC\NR
+\NC dimension \NC a dimension with a unit in \type{cm}, \type{pt},
+                  \type{em}, \type{ex}, \type{sp} or \type{in}          \NC\NR
+\NC number    \NC an integer                                            \NC\NR
+\NC command   \NC a command                                             \NC\NR
+\NC text      \NC text                                                  \NC\NR
+\stoptabulate
+
+In the \goto {Quick Reference} [ url (manual:qr-en) ]
+manual you can find a complete overview of the commands and their parameters.
+
+\stopchapter
+
+\stopcomponent

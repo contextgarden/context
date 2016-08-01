@@ -1,0 +1,501 @@
+% language=uk
+
+\startcomponent hybrid-optimize
+
+\environment hybrid-environment
+
+\startchapter[title={Optimizations again}]
+
+\startsection [title={Introduction}]
+
+Occasionally we do some timing on new functionality in either
+\LUATEX\ or \MKIV, so here's another wrapup.
+
+\stopsection
+
+\startsection [title={Font loading}]
+
+In \CONTEXT\ we cache font data in a certain way. Loading a font from the cache
+takes hardly any time. However, preparation takes more time as well memory as we
+need to go from the fontforge ordering to one we can use. In \MKIV\ we have
+several font tables:
+
+\startitemize[packed]
+\startitem
+    The original fontforge table: this one is only loaded once and converted to
+    another representation that is cached.
+\stopitem
+\startitem
+    The cached font representation that is the basis for further manipulations.
+\stopitem
+\startitem
+    In base mode this table is converted to a (optionally cached) scaled \TFM\
+    table that is passed to \TEX.
+\stopitem
+\startitem
+    In node mode a limited scaled version is passed to \TEX. As with base mode,
+    this table is kept in memory so that we can access the data.
+\stopitem
+\startitem
+    When processing features in node mode additional (shared) subtables are
+    created that extend the memorized catched table.
+\stopitem
+\stopitemize
+
+This model is already quite old and dates from the beginning of \MKIV. Future
+versions might use different derived tables but for the moment we need all this
+data if only because it helps us with the development.
+
+The regular method to construct a font suitable for \TEX, either or not using
+base mode or node mode in \MKIV, is to load the font as table using \type
+{to_table}, a \type {fontloader} method. This means that all information is
+available (and can be manipulated). In \MKIV\ this table is converted to another
+one and in the process new entries are added and existing ones are freed. Quite
+some garbage collection and table resizing takes place in the process. In the
+cached instance we share identical tables so there we can gain a lot of memory
+and avoid garbage collection.
+
+The difference in usage is as follows:
+
+\starttyping
+do
+  local f = fontloader.open("somefont.otf") -- allocates font object
+  local t = fontloader.to_table(f)          -- allocates table
+  fontloader.close(f)                       -- frees font object
+  for index, glyph in pairs(t) do
+    local width = glyph.width               -- accesses table value
+  end
+end                                         -- frees table
+\stoptyping
+
+Here \type {t} is a complete \LUA\ table and it can get quite large: script fonts
+like Zapfino (for latin) or Husayni (for arabic) have lots of alternate shapes
+and much features related information, fonts meant for \CJK\ usage have tens of
+thousands of glyphs, and math fonts like Cambria have many glyphs and math
+specific information.
+
+\starttyping
+do
+  local f = fontloader.open("somefont.otf") -- allocates font object
+  for index=0, t.glyphmax-1 do
+    local glyph = f.glyphs[index]           -- assigns user data object
+    if glyph then
+      local width = glyph.width             -- calls virtual table value
+    end
+  end
+  fontloader.close(f)                       -- frees font object
+end
+\stoptyping
+
+In this case there is no big table, and \type {glyph} is a so called userdata
+object. Its entries are created when asked for. So, where in the first example
+the \type {width} of a glyph is a number, in the second case it is a function
+disguised as virtual key that will return a number. In the first case you can
+change the width, in the second case you can't.
+
+This means that if you want to keep the data around you need to copy it into
+another table but you can do that stepwise and selectively. Alternatively you can
+keep the font object in memory. As some glyphs can have much data you can imagine
+that when you only need to access the width, the userdata method is more
+efficient. On the other hand, if you need access to all information, the first
+method is more interesting as less overhead is involved.
+
+In the userdata variant only the parent table and its glyph subtable are
+virtualized, as are entries in an optional subfonts table. So, if you ask for the
+kerns table of a glyph you will get a real table as it makes no sense to
+virtualize it. A way in between would have been to request tabls per glyph but as
+we will see there is no real benefit in that while it would further complicate
+the code.
+
+When in \LUATEX\ 0.63 the loaded font object became partially virtual it was time
+to revision the loading code to see if we could benefit from this.
+
+In the following tables we distinguish three cases: the original but adapted
+loading code \footnote {For practical reasons we share as much odd as possible
+between the methods so some reorganization was needed.}, already a few years old,
+the new sparse loading code, using the userdata approach and no longer a raw
+table, and a mixed approach where we still use the raw table but instead of
+manipulating that one, construct a new one from it. It must be noticed that in
+the process of integrating the new method the traditional method suffered.
+
+First we tested Oriental \TEX's Husayni font. This one has lots of features, many
+of lookups, and quite some glyphs. Keep in mind that the times concern the
+preparation and not the reload from the cache, which is more of less neglectable.
+The memory consumption is a snapshot of the current run just after the font has
+been loaded. Peak memory is what bothers most users. Later we will explain what
+the values between parenthesis refer to.
+
+\starttabulate[|l|c|c|c|]
+\FL
+\NC              \NC \bf used memory \NC \bf peak memory \NC \bf font loading time \NC \NR
+\TL
+\NC \bf table    \NC 113 MB (102)    \NC 118 MB (117)    \NC 1.8 sec (1.9)         \NC \NR
+\NC \bf mixed    \NC 114 MB (103)    \NC 119 MB (117)    \NC 1.9 sec (1.9)         \NC \NR
+\NC \bf sparse   \NC 117 MB (104)    \NC 121 MB (120)    \NC 1.9 sec (2.0)         \NC \NR
+\NC \bf cached   \NC ~75 MB          \NC ~80 MB          \NC 0.4 sec               \NC \NR
+\NC \bf baseline \NC ~67 MB          \NC ~71 MB          \NC 0.3 sec               \NC \NR
+\LL
+\stoptabulate
+
+So, here the new method is not offering any advantages. As this is a font we use
+quite a lot during development, any loading variant will do the job with similar
+efficiency.
+
+Next comes Cambria, a font that carries lots of glyphs and has extensive support
+for math. In order to provide a complete bodyfont setup some six instances are
+loaded. Interesting is that the original module needs 3.9 seconds instead if 6.4
+which is probably due to a different ordering of code which might influence the
+garbage collector and it looks like in the reorganized code the garbage collector
+kicks in a few times during the font loading. Already long ago we found out that
+this is also somewhat platform dependent.
+
+\starttabulate[|l|c|c|c|]
+\FL
+\NC              \NC \bf used memory \NC \bf peak memory \NC \bf font loading time \NC \NR
+\TL
+\NC \bf table    \NC 155 MB (126)    \NC 210 MB (160)    \NC 6.4 sec (6.8)         \NC \NR
+\NC \bf mixed    \NC 154 MB (130)    \NC 210 MB (160)    \NC 6.3 sec (6.7)         \NC \NR
+\NC \bf sparse   \NC 140 MB (123)    \NC 199 MB (144)    \NC 6.4 sec (6.8)         \NC \NR
+\NC \bf cached   \NC ~90 MB          \NC ~94 MB          \NC 0.6 sec               \NC \NR
+\NC \bf baseline \NC ~67 MB          \NC ~71 MB          \NC 0.3 sec               \NC \NR
+\LL
+\stoptabulate
+
+Here the sparse method reports less memory usage. There is no other gain as there
+is a lot of access to glyph data due to the fact that this font is rather
+advanced. More virtualization would probably work against us here.
+
+Being a \CJK\ font, the somewhat feature|-|dumb but large AdobeSongStd-Light has
+lots of glyphs. In previous tables we already saw values between parenthesis:
+these are values measured with implicit calls to the garbage collector before
+writing the font to the cache. For this font much more memory is used but garbage
+collection has a positive impact on memory consumption but drastic consequences
+for runtime. Eventually it's the cached timing that matters and that is a
+constant factor but even then it can disturb users if a first run after an update
+takes so much time.
+
+\starttabulate[|l|c|c|c|]
+\FL
+\NC              \NC \bf used memory \NC \bf peak memory \NC \bf font loading time \NC \NR
+\TL
+\NC \bf table    \NC 180 MB (125)    \NC 185 MB (172)    \NC 4.4 sec (4.5)         \NC \NR
+\NC \bf mixed    \NC 190 MB (144)    \NC 194 MB (181)    \NC 4.4 sec (4.7)         \NC \NR
+\NC \bf sparse   \NC 153 MB (119)    \NC 232 MB (232)    \NC 8.7 sec (8.9)         \NC \NR
+\NC \bf cached   \NC ~96 MB          \NC 100 MB          \NC 0.7 sec               \NC \NR
+\NC \bf baseline \NC ~67 MB          \NC ~71 MB          \NC 0.3 sec               \NC \NR
+\LL
+\stoptabulate
+
+Peak memory is quite high for the sparse method which is due to the fact that we
+have only glyphs (but many) so we have lots of access and small tables being
+created and collected. I suspect that in a regular run the loading time is much
+lower for the sparse case because this is just too much of a difference.
+
+The last test loaded 40 variants of Latin Modern. Each font has reasonable number
+of glyphs (covering the latin script takes some 400--600 glyphs), the normal
+amount of kerning, but hardly any features. Reloading these 40 fonts takes about
+a second.
+
+\starttabulate[|l|c|c|c|]
+\FL
+\NC              \NC \bf used memory \NC \bf peak memory \NC \bf font loading time \NC \NR
+\TL
+\NC \bf table    \NC 204 MB (175)    \NC 213 MB (181)    \NC 13.1 sec (16.4)       \NC \NR
+\NC \bf mixed    \NC 195 MB (168)    \NC 205 MB (174)    \NC 13.4 sec (16.5)       \NC \NR
+\NC \bf sparse   \NC 198 MB (165)    \NC 202 MB (170)    \NC 13.4 sec (16.6)       \NC \NR
+\NC \bf cached   \NC 147 MB          \NC 151 MB          \NC ~1.7 sec              \NC \NR
+\NC \bf baseline \NC ~67 MB          \NC ~71 MB          \NC ~0.3 sec              \NC \NR
+\LL
+\stoptabulate
+
+The old method wins in runtime and this makes it hard to decide which strategy to
+follow. Again the numbers between parenthesis show what happens when we do an
+extra garbage collection sweep after packaging the font instance. A few more
+sweeps in other spots will bring down memory a few megabytes but at the cost of
+quite some runtime. The original module that uses the table approach is 3~seconds
+faster that the current one. As the code is essentially the same but organized
+differently again we suspect the garbage collector to be the culprit.
+
+So when we came this far, Taco and I did some further tests and on his machine
+Taco ran a profiler on some of the tests. He posted the following conclusion to
+the \LUATEX\ mailing list:
+
+\startnarrower
+It seems that the userdata access is useful if {\em but only if} you are very low
+on memory. In other cases, it just adds extra objects to be garbage collected,
+which makes the collector slower. That is on top of extra time spent on the
+actual calls, and even worse: those extra gc objects tend to be scattered around
+in memory, resulting in extra minor page faults (cpu cache misses) and all that
+has a noticeable effect on run speed: the metatable based access is 20--30\%
+slower than the old massive \type {to_table}.
+
+Therefore, there seems little point in expanding the metadata functionality any
+further. What is there will stay, but adding more metadata objects appears to be
+a waste of time on all sides.
+\stopnarrower
+
+This leaves us with a question: should we replace the old module by the
+experimental one? It makes sense to do this as in practice users will not be
+harmed much. Fonts are cached and loading a cached font is not influenced. The
+new module leaves the choice to the user. He or she can decide to limit memory
+usage (for cache building) by using directives:
+
+\starttyping
+\enabledirectives[fonts.otf.loader.method=table]
+\enabledirectives[fonts.otf.loader.method=mixed]
+\enabledirectives[fonts.otf.loader.method=sparse]
+
+\enabledirectives[fonts.otf.loader.cleanup]
+\enabledirectives[fonts.otf.loader.cleanup=1]
+\enabledirectives[fonts.otf.loader.cleanup=2]
+\enabledirectives[fonts.otf.loader.cleanup=3]
+\stoptyping
+
+The cleanup has three levels and each level adds a garbage collection sweep (in a
+different spot). Of course three sweeps per font that is prepared for caching has
+quite some impact on performance. If your computer has enough memory it makes no
+sense to use any of these directives. For the record: these directives are not
+available in the generic (plain \TEX) variant, at least not in the short term. As
+Taco mentions, cache misses can have drastic consequences and we've ran into that
+years ago already when support for \OPENTYPE\ math was added to \LUATEX: out of a
+sudden and without no reason passing a font table to \TEX\ became twice as slow
+on my machine. This is comparable with the new, reorganized table loader being
+slower than the old one. Eventually I'll get back that time, which is unlikely to
+happen with the unserdata variant where there is no way to bring down the number
+of function calls and intermediate table creation.
+
+The previously shown values that concern all fonts including creating, caching,
+reloading, creating a scaled instance and passing the data to \TEX. In that
+process quite some garbage collection can happen and that obscures the real
+values. However, in \MKIV\ we report the conversion time when a font gets cached
+so that the user at least sees something happening. These timings are on a per
+font base. Watch the following values:
+
+\starttabulate[|l|l|l|]
+\FL
+\NC             \NC \bf table                     \NC \bf sparse                    \NC \NR
+\TL
+\NC \bf song    \NC 3.2                           \NC 3.6                           \NC \NR
+\NC \bf cambria \NC 4.9 (0.9 1.0 0.9 1.1 0.5 0.5) \NC 5.6 (1.1 1.1 1.0 1.2 0.6 0.6) \NC \NR
+\NC \bf husayni \NC 1.2                           \NC 1.3                           \NC \NR
+\LL
+\stoptabulate
+
+In the case of Cambria several fonts are loaded including subfonts from
+\TRUETYPE\ containers. This shows that the table variant is definitely faster. It
+might be that later this is compensated by additional garbage collection but that
+would even worsen the sparse case were more extensive userdata be used. These
+values more reflect what Taco measured in the profiler. Improvements to the
+garbage collector are more likely to happen than a drastic speed up in function
+calls so the table variant is still a safe bet.
+
+There are a few places where the renewed code can be optimized so these numbers
+are not definitive. Also, the loader code was not the only code adapted. As we
+cannot manipulate the main table in the userdata variant, the code related to
+patches and extra features like \type {tlig}, \type {trep} and \type {anum} had
+to be rewritten as well: more code and a bit more close to the final table
+format.
+
+\starttabulate[|l|c|c|]
+\FL
+\NC            \NC \bf table         \NC \bf sparse        \NC \NR
+\TL
+\NC \bf hybrid \NC 310 MB / 10.3 sec \NC 285 MB / 10.5 sec \NC \NR
+\NC \bf mk     \NC 884 MB / 47.5 sec \NC 878 MB / 48.7 sec \NC \NR
+\LL
+\stoptabulate
+
+The timings in the previous table concern runs of a few documents where the \type
+{mk} loads quite some large and complex fonts. The runs are times with an empty
+cache so all fonts are preprocessed. The memory consumption is the peak load as
+reported by the task manager and we need to keep in mind that \LUA\ allocates
+more than it needs. Keep in mind that these values are so high because fonts are
+created. A regular run takes less memory. Interesting is that for \type {mk} the
+original implementation performs better but the difference is about a second
+which again indicates that the garbage collector is a major factor. Timing only
+the total runtime gives:
+
+\starttabulate[|l|c|c|c|c|]
+\FL
+\NC        \NC \bf cached \NC \bf original \NC \bf table \NC \bf sparse \NC \NR
+\TL
+\NC \bf mk \NC 38.1 sec   \NC 75.5 sec     \NC 77.2 sec  \NC 80.8 sec   \NC \NR
+\LL
+\stoptabulate
+
+Here we used the system timer while in previous tables we used the values as
+reported by the timers built in \MKIV\ (and only reported the font loading
+times).
+
+The timings above are taken on my laptop running Windows 7 and this is not that
+good a platform for precise timings. Tacos measurements were done with
+specialized tools and should be trusted more. It looks indeed that the current
+level of userdata support is about the best compromise one can get.
+
+{\em In the process I also experimented with virtualizing the final \TFM\ table,
+thereby simulating the upcoming virtualization of that table in \LUATEX.
+Interesting is that for (for instance) \type {mk.pdf} memory consumption went
+down with 20\% but that document is non|-|typical and loades many fonts,
+including vitual punk fonts. However, as access to that tables happens
+infrequently virtualization makes muich sense there, again only at the toplevel
+of the characters subtable.}
+
+\stopsection
+
+\startsection [title={Hyperlinks}]
+
+At \PRAGMA\ we have a long tradition of creating highly interactive documents. I
+still remember the days that processing a 20.000 page document with numerous
+menus and buttons on each page took a while to get finished, especially if each
+page has a \METAPOST\ graphic as well.
+
+On a regular computer a document with so many links is no real problem. After
+all, the \PDF\ format is designed in such a way that only the partial content has
+to be loaded. However, half a million hyperlinks do demand some memory.
+
+Recently I had to make a document that targets at one of these tablets and it is
+no secret that tablets (and e-readers) don't have that much memory. As in
+\CONTEXT\ \MKIV\ we have a bit more control over the backend, it will be no
+surprise that we are able to deal with such issues more comfortable than in
+\MKII.
+
+That specific document (part of a series) contained 1100 pages and each page has
+a navigation menu as well as an alphabetic index into the register. There is a
+table of contents refering to about 200 chapters and these are backlinked to the
+table of contents. There are some also 200 images and tables that end up
+elsewhere and again are crosslinked. Of course there is the usual bunch of inline
+hyperlinks. So, in total this document has some 32.000 hyperlinks. The input is a
+3.03 MB \XML\ file.
+
+\starttabulate[|l|c|c|]
+\FL
+\NC                                                 \NC \bf size \NC \bf one run \NC \NR
+\TL
+\NC \bf don't optimize                              \NC 5.76 MB  \NC 59.4 sec    \NC \NR
+\NC \bf prefer page references over named ones      \NC 5.66 MB  \NC 56.2 sec    \NC \NR
+\NC \bf agressively share similar references        \NC 5.19 MB  \NC 60.2 sec    \NC \NR
+\NC \bf optimize page as well as similar references \NC 5.11 MB  \NC 56.5 sec    \NC \NR
+\NC \bf disable all interactive features            \NC 4.19 MB  \NC 42.7 sec    \NC \NR
+\LL
+\stoptabulate
+
+So, by aggressively sharing hyperlinks and turning all internal named
+destinations into page destinations we bring down the size noticeably and even
+have a faster run. It is for this reason that aggressive sharing is enabled by
+default. I you don't want it, you can disable it with:
+
+\starttyping
+\disabledirectives[refences.sharelinks]
+\stoptyping
+
+Currently we use names for internal (automatically generated) links. We can force
+page links for them but still use names for explicit references so that we can
+reach them from external documents; this is called mixed mode. When no references
+from outside are needed, you can force pagelinks. At some point mixed mode can
+become the default.
+
+\starttyping
+\enabledirectives[references.linkmethod=page]
+\stoptyping
+
+With values: \type {page}, \type {mixed}, \type {names} and \type {yes} being
+equivalent to \type {page}. The \MKII\ way of setting this is still supported:
+
+\starttyping
+\setupinteraction[page=yes]
+\stoptyping
+
+We could probably gain quite some more bytes by turning all repetitive elements
+into shared graphical objects but it only makes sense to spend time on that when
+a project really needs it (and pays for it). There is upto one megabyte of
+(compressed) data related to menus and other screen real estate that qualifies
+for this but it might not be worth the trouble.
+
+The reason for trying to minimize the amount of hyperlink related metadata (in
+\PDF\ terminology annotations) is that on tablets with not that much memory (and
+no virtual memory) we don't want to keep too much of that (redundant) data in
+memory. And indeed, the optimized document feels more responsive than the dirty
+version, but that could as well be related to the viewing applications.
+
+\stopsection
+
+\startsection[title=Constants]
+
+Not every optimization saves memory of runtime. They are more optimizations due
+to changes in circumstances. When \TEX\ had only 256 registers one had to find
+ways to get round this. For instance counters are quite handy and you could
+quickly run out of them. In \CONTEXT\ there are two ways to deal with this.
+Instead of a real count register you can use a macro:
+
+\starttyping
+\newcounter \somecounter
+\increment  \somecounter
+\decrement (\somecounter,4)
+\stoptyping
+
+In \MKIV\ many such pseudo counters have been replaced by real ones which is
+somewhat faster in usage.
+
+Often one needs a constant and a convenient way to define such a frozen counter
+is:
+
+\starttyping
+\chardef \myconstant 10
+\ifnum \myvariable = \myconstant ....
+\ifcase \myconstant ...
+\stoptyping
+
+This is both efficient and fast and works out well because \TEX\ treats them as
+numbers in comparisons. However, it is somewhat clumsy, as constants have nothing
+to do with characters. This is why all such definitions have been replaced by:
+
+\starttyping
+\newconstant \myconstant 10
+\setconstant \myconstant 12
+\ifnum \myvariable = \myconstant ....
+\ifcase \myconstant ...
+\stoptyping
+
+We use count registers which means that when you set a constant, you can just
+assign the new value directly or use the \type {\setcounter} macro.
+
+We already had an alternative for conditionals:
+
+\starttyping
+\newconditional \mycondition
+\settrue \mycondition
+\setfalse \mycondition
+\ifconditional \mycondition
+\stoptyping
+
+These will also be adapted to counts but first we need a new primitive.
+
+The advantage of these changes is that at the \LUA\ end we can consult as well as
+change these values. This means that in the end much more code will be adapted.
+Especially changing the constants resulted in quite some cosmetic changes in the
+core code.
+
+\stopsection
+
+\startsection[title=Definitions]
+
+Another recent optimization was possible when at the \LUA end settings lccodes
+cum suis and some math definitions became possible. As all these initializations
+take place at the \LUA\ end till then we were just writing \TEX\ code back to
+\TEX, but now we stay at the \LUA end. This not only looks nicer, but also
+results in a slightly less memory usage during format generation (a few percent).
+Making a format also takes a few tenths of a second less (again a few percent).
+The reason why less memory is needed is that instead of writing tens of thousands
+\type {\lccode} related commands to \TEX\ we now set the value directly. As
+writes to \TEX\ are collected, quite an amount of tokens get cached.
+
+All such small improvements makes that \CONTEXT\ \MKIV\ runs smoother with each
+advance of \LUATEX. We do have a wishlist for further improvements but so far we
+managed to improve stepwise instead of putting too much pressure on \LUATEX\
+development.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

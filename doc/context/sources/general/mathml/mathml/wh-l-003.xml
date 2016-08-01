@@ -1,0 +1,32 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <forall/>
+    <condition>
+      <apply> <and/>
+        <apply> <in/>
+          <ci> b </ci>
+          <ci> &reals; </ci>
+        </apply>
+        <apply> <gt/>
+          <ci> a </ci>
+          <cn> 0 </cn>
+        </apply>
+      </apply>
+    </condition>
+    <apply> <eq/> 
+      <apply> <log/> 
+        <logbase> <ci> g </ci> </logbase>
+        <apply> <power/>
+          <ci> a </ci>
+          <ci> b </ci>
+        </apply>
+      </apply>   
+      <apply> <times/>
+        <ci> b </ci> 
+        <apply> <log/> 
+          <logbase> <ci> g </ci> </logbase>
+          <ci> a </ci>
+        </apply>
+      </apply>   
+    </apply>
+  </apply>
+</math>

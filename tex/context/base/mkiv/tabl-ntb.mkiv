@@ -107,22 +107,42 @@
   {% \inhibitblank
    \dotagTABLEcell
   %\tabl_ntb_next_level
+   \font_styles_math_reset
    \usenaturaltablelocalstyleandcolor\c!style\c!color
-   \everypar\t_tabl_ntb_cell_start}
+   \everypar\t_tabl_ntb_cell_start
+   \font_styles_math_start}
 
 \unexpanded\def\tabl_ntb_cell_stop
-  {\ifhmode
+  {\font_styles_math_stop
+   \ifhmode
      \the\t_tabl_ntb_cell_stop
      \par % added 13/4/2006
    \else
      % not sure yet:\naturaltablelocalparameter\c!right
-     \par
      \ifdim\prevdepth<\zeropoint % =-1000pt ?
        \vskip-\strutdp
      \else
        \removebottomthings
      \fi
    \fi}
+
+% maybe:
+%
+% \unexpanded\def\tabl_ntb_cell_stop
+%   {\ifhmode
+%      \the\t_tabl_ntb_cell_stop
+%      \par % added 13/4/2006
+%    \else
+%      % not sure yet:\naturaltablelocalparameter\c!right
+%      \par
+%      \ifhmode
+%         % \removeunwantedspaces
+%      \else\ifdim\prevdepth<\zeropoint % =-1000pt ?
+%        \vskip-\strutdp
+%      \else
+%        \removebottomthings
+%      \fi\fi
+%    \fi}
 
 \newcount\c_tabl_ntb_row
 \newcount\c_tabl_ntb_col

@@ -1,0 +1,163 @@
+\startcomponent ma-cb-en-tabulations
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[reference=tabulation,title=Tabulation / Paragraph formatting]
+
+\index{tabulation}
+\index{tables+running text}
+\index{columns}
+\Command{\tex{starttabulate}}
+\Command{\tex{definetabulate}}
+\Command{\tex{setuptabulate}}
+\Command{\tex{NR}}
+\Command{\tex{NC}}
+
+Sometimes you want to typeset paragraphs in a specific formatted way. This is
+done with:
+
+\shortsetup{starttabulate}
+
+The tabulation mechanism is closely related to the table mechanism. You can use
+the tabulation mechanism in cases you want to typeset complete paragraphs within
+a cell. The tabulation mechanism also works fine at a page break.
+
+\startbuffer
+\starttabulate[|w(1.5cm)B|p(6.0cm)|p|]
+\NC 1252
+    \NC Hasselt obtains its city charter from bishop Hendrik
+        van Vianden.
+    \NC Hendrik van Vianden was pressed by other towns not
+        to agree with the charter. It took Hasselt a long
+        period of time to convince the Bishop. After
+        supporting the Bishop in a small war against the
+        Drents, the charter was released. \NC\NR
+\NC 1350
+    \NC Hasselt joins the Hanzepact to protect their
+        international trade.
+    \NC The Hanzepact was of great importance for merchants
+        in Hasselt. In those days trading goods were taxed
+        at every city, highway or rivercrossing. After
+        joining the Hanzepact duty free routes all over
+        Europe became available to Hasselt. However
+        important the Hanzepact was, Hasselt always stayed a
+        minor member of the pact. \NC\NR
+\stoptabulate
+\stopbuffer
+
+A tabulate definition could look like this:
+
+\typebuffer
+
+In this case the first column is \unit{1.5 centi meter} wide and is typeset bold
+(\type{B}). The second column has a width of \unit{6 centi meter} and is typeset
+like a paragraph. The remaining horizontal space is used up by the last
+paragraph.
+
+The example is typeset like this:
+
+\getbuffer
+
+The tabulation entries are placed between the \type{\start ... \stoptabulate}
+pair. Between the bracket pair your can specify the tabulate format with the
+column separators \type{|} and the format keys (see \in {table}
+[tab:tabularformattingkeys]).
+
+\placetable[][tab:tabularformattingkeys]
+  {Formatting keys for tabulate.}
+  {\starttable[|lT|l|lT|l|]
+  \HL
+  \NC \rm \bf Key                 \NC \rm \bf Meaning
+  \NC \rm \bf Key                 \NC \rm \bf Meaning
+  \NC \SR
+  \HL
+  \NC l                 \NC left align
+  \NC I                 \NC \it italic
+  \NC \FR
+  \NC c                 \NC center
+  \NC R                 \NC \sl roman
+  \NC \MR
+  \NC r                 \NC right align
+  \NC S                 \NC \sl slanted
+  \NC \MR
+  \NC i\sl n            \NC spacing left
+  \NC T                 \NC \tt teletype
+  \NC \MR
+  \NC j\sl n            \NC spacing right
+  \NC m                 \NC in||line math
+  \NC \MR
+  \NC k\sl n            \NC spacing around
+  \NC M                 \NC display  math
+  \NC \MR
+  \NC w({\sl d})        \NC 1 line,   fixed width
+  \NC f\tex{command}    \NC font specification
+  \NC \MR
+  \NC p({\sl d})        \NC paragraph, fixed width
+  \NC b\arg{..}         \NC place \type{..} before the entry
+  \NC \MR
+  \NC p                 \NC paragraph, maximum width
+  \NC a\arg{..}         \NC place \type{..} after the entry
+  \NC \MR
+  \NC B                 \NC \bf boldface
+  \NC h\tex{command}    \NC apply \tex{command} on the entry
+  \NC \LR
+  \HL
+  \stoptable}
+
+In \in {table} [tab:tabulatestructurecommands] you find an overview
+of the tabulate structuring commands.
+
+\placetable
+  []
+  [tab:tabulatestructurecommands]
+  {Commands to define tabulate.}
+  {\starttable[|l|l|l|]
+  \HL
+  \NC \bf Command                     \NC                 \NC \bf Meaning         \NC\SR
+  \HL
+  \NC \type{\start ... \stoptabulate} \NC                 \NC begin end tabulate  \NC\FR
+  \NC \type{\NC}                      \NC next column     \NC next column         \NC\MR
+  \NC \type{\NR}                      \NC next row        \NC next row            \NC\MR
+  \NC \type{\HL}                      \NC horizontal line \NC horizontal line     \NC\MR
+  \NC \type{\TB}                      \NC table blank     \NC empty line          \NC\MR
+  \NC \type{\definetabulate}          \NC                 \NC define own tabulate \NC\MR
+  \NC \type{\setuptabulate}           \NC                 \NC tabulate setup      \NC\LR
+  \HL
+  \stoptable}
+
+Another example of paragraph formatting could look like this.
+
+\startbuffer
+\definetabulate[ChemPar][|l|p|l|]
+
+\startChemPar
+\NC Limekilns
+    \NC Hasselt has its own limekilns. These were build in 1504
+        and produced quick lime up to 1956. Nowadays they are a
+        tourist attraction.
+    \NC \inlinechemical{CaCO_3,GIVES,CaO,+,CO_2} \NC\NR
+\stopChemPar
+\stopbuffer
+
+\typebuffer
+
+And it would come out like this:
+
+\getbuffer
+
+In \in{chapter}[chemical] your can find some more information on chemistry
+and \CONTEXT.
+
+Here we also introduced the command to define our own paragraph layout.
+
+\shortsetup{definetabulate}
+
+and we also have:
+
+\shortsetup{setuptabulate}
+
+\stopchapter
+
+\stopcomponent

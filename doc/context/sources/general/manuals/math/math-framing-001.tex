@@ -1,0 +1,113 @@
+\setuplayout[topspace=5mm,bottomspace=5mm,height=middle,header=1cm,footer=0cm]
+
+\starttext
+
+\startbuffer[sample]
+    \enabletrackers[formulas.framed] \showboxes
+    \startformula
+        e = mc^2
+    \stopformula
+    \par
+    \startformula
+        e = mc^2
+    \stopformula
+    \startformula
+        e = mc^2
+    \stopformula
+    \startformula
+        e \dorecurse{12} { = mc^2 }
+    \stopformula
+    \startplaceformula
+        \startformula
+            e = mc^2
+        \stopformula
+    \stopplaceformula
+    \startplaceformula
+        \startformula
+            e \dorecurse{12} { = mc^2 }
+        \stopformula
+    \stopplaceformula
+\stopbuffer
+
+\startbuffer[setup-b]
+\setupformula
+  [option=frame]
+\stopbuffer
+
+\startbuffer[setup-d]
+\setupformulaframed
+  [frame=on,
+  %toffset=10pt,
+  %boffset=10pt,
+   foregroundcolor=white,
+   background=color,
+   backgroundcolor=gray]
+\stopbuffer
+
+\startbuffer[setup-c]
+\setupformula
+  [frame=number]
+\stopbuffer
+
+\startbuffer[all]
+\start
+    \typebuffer[setup-a]
+    \getbuffer[setup-a]
+    \getbuffer[sample]
+    \typebuffer[setup-b]
+    \typebuffer[setup-d]
+    \getbuffer[setup-b]
+    \getbuffer[setup-d]
+    \getbuffer[sample]
+    \typebuffer[setup-c]
+    \getbuffer[setup-c]
+    \getbuffer[sample]
+    \page
+\stop
+\stopbuffer
+
+\startbuffer
+    \startbuffer[setup-a]
+    \setupformula
+      [align=flushleft]
+    \stopbuffer
+    \getbuffer[all]
+    \startbuffer[setup-a]
+    \setupformula
+      [align=flushleft,location=left]
+    \stopbuffer
+    \getbuffer[all]
+
+    \startbuffer[setup-a]
+    \setupformula
+      [align=middle]
+    \stopbuffer
+    \getbuffer[all]
+    \startbuffer[setup-a]
+    \setupformula
+      [align=middle,location=left]
+    \stopbuffer
+    \getbuffer[all]
+
+    \startbuffer[setup-a]
+    \setupformula
+      [align=flushright]
+    \stopbuffer
+    \getbuffer[all]
+    \startbuffer[setup-a]
+    \setupformula
+      [align=flushright,location=left]
+    \stopbuffer
+    \getbuffer[all]
+\stopbuffer
+
+\getbuffer
+
+\startbuffer[setup-b]
+\setupformula
+  [option={tight,frame}]
+\stopbuffer
+
+\getbuffer
+
+\stoptext

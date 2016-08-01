@@ -1,0 +1,782 @@
+% language=uk
+
+\startcomponent mk-reflection
+
+\environment mk-environment
+
+\chapter {The luafication of \TEX\ and \CONTEXT}
+
+% (Previously published in \TUGBOAT, ask Karl for reference.)
+
+\subject {introduction}
+
+Here I will present the current stage of \LUATEX\ around beta
+stage 2, and discuss the impact so far on \CONTEXT\ \MKIV\
+that we use as our testbed. I'm writing this at the end of February
+2008 as part of the series of regular updates on \LUATEX. As such,
+this report is part of our more or less standard test document
+(\type{mk.tex}). More technical details can be found in the reference
+manual that comes with \LUATEX. More information on \MKIV\ is
+available in the \CONTEXT\ mailing lists, \WIKI, and
+\type{mk.pdf}.
+
+For those who never heard of \LUATEX: this is a new variant of
+\TEX\ where several long pending wishes are fulfilled:
+
+\startitemize[packed]
+\item combine the best of all \TEX\ engines
+\item add scripting capabilities
+\item open up the internals to the scripting engine
+\item enhance font support to \OPENTYPE
+\item move on to \UNICODE
+\item integrate \METAPOST
+\stopitemize
+
+There are a few more wishes, like converting the code base to
+\CCODE\ but these are long term goals.
+
+The project started a few years ago and is conducted by Taco
+Hoekwater (\PASCAL\ and \CCODE\ coding, code base management,
+reference manual), Hartmut Henkel (\PDF\ backend, experimental
+features) and Hans Hagen (general overview, \LUA\ and \TEX\
+coding, website). The code development got a boost by a grant of
+the Oriental \TEX\ project (project lead: Idris Samawi Hamid) and
+funding via the \TUG. The related \MPLIB\ project by the same team
+is also sponsored by several user groups. The very much needed
+\OPENTYPE\ fonts are also a user group funded effort: the Latin
+Modern and \TEX\ Gyre projects (project leads: Jerzy Ludwichowski,
+Volker RW\ Schaa and Hans Hagen), with development (the real
+work) by: Bogus\l{}aw Jackowski and Janusz Nowacki.
+
+One of our leading principles is that we focus on opening up. This
+means that we don't implement solutions (which also saves us many
+unpleasant and everlasting discussions). Implementing solutions is
+up to the user, or more precisely: the macro package writer, and
+since there are many solutions possible, each can do it his or her
+way. In that sense we follow the footsteps of Don Knuth: we make
+an extensible tool, you are free to like it or not, you can take
+it and extend it where needed, and there is no need to bother us
+(unless of course you find bugs or weird side effects). So far
+this has worked out quite well and we're confident that we can keep
+our schedule.
+
+We do our tests of a variant of \CONTEXT\ tagged \MKIV, especially
+meant for \LUATEX, but \LUATEX\ itself is in no way limited to or
+tuned for \CONTEXT. Large chunks of the code written for \MKIV\
+are rather generic and may eventually be packaged as a base system
+(especially font handling) so that one can use \LUATEX\ in rather
+plain mode. To a large extent \MKIV\ will be functionally compatible
+with \MKII, the version meant for traditional \TEX, although it
+knows how to profit from \XETEX. Of course the expectation is that
+certain things can be done better in \MKIV\ than in \MKII.
+
+\subject{status}
+
+By the end of 2007 the second major beta release of \LUATEX\ was
+published. In the first quarter of 2008 Taco would concentrate on
+\MPLIB, Hartmut would come up with the first version of the image
+library while I could continue working on \MKIV\ and start using
+\LUATEX\ in real projects. Of course there is some risk involved
+in that, but since we have a rather close loop for critical bug
+fixes, and because I know how to avoid some dark corners, the
+risk was worth taking.
+
+What did we accomplish so far? I can best describe this in relation
+to how \CONTEXT\ \MKIV\ evolved and will evolve. Before we do this,
+it makes sense to spend some words on why we started working on \MKIV\
+in the first place.
+
+When the \LUATEX\ project started, \CONTEXT\ was about 10 years in
+the field. I can safely say that we were still surprised by the
+fact that what at first sight seems unsolvable in \TEX\ somehow
+could always be dealt with. However, some of the solutions were
+rather tricky. The code evolved towards a more or less stable
+state, but sometimes depended on controlled processing. Take for
+instance backgrounds that can span pages and columns, can be
+nested and can have arbitrary shapes. This feature has been
+present in \CONTEXT\ for quite a while, but it involves an
+interplay between \TEX\ and \METAPOST. It depends on information
+collected in a previous run as well as (at runtime or not)
+processing of graphics.
+
+This means that by now \CONTEXT\ is not just a bunch of \TEX\ macros,
+but also closely related to \METAPOST. It also means that
+processing itself is by now rather controlled by a wrapper, in the
+case of \MKII\ called \TEXEXEC. It may sound complicated, but the
+fact that we have implemented workflows that run unattended for
+many years and involve pretty complex layouts and graphic
+manipulations demonstrates that in practice it's not as bad as it
+may sound.
+
+With the arrival of \LUATEX\ we not only have a rigourously
+updated \TEX\ engine, but also get \METAPOST\ integrated. Even
+better, the scripting language \LUA\ is not only used for opening
+up \TEX, but is also used for all kind of management tasks. As
+a result, the development of \MKIV\ not only concerns rewriting
+whole chunks of \CONTEXT, but also results in a set of new
+utilities and a rewrite of existing ones. Since dealing with
+\MKIV\ will demand some changes in the way users deal with
+\CONTEXT\ I will discuss some of them first. It also demonstrates
+that \LUATEX\ is more than just \TEX.
+
+\subject{utilities}
+
+There are two main scripts: \LUATOOLS\ and \MTXRUN. The first one
+started as a replacement for \KPSEWHICH\ but evolved into a base
+tool for generating (\TDS) file databases and generating formats.
+In \MKIV\ we replace the regular file searching, and therefore we
+use a different database model. That's the easy part. More
+tricky is that we need to bootstrap \MKIV\ into this alternative
+mode and when doing so we don't want to use the \type {kpse} library
+because that would trigger loading of its databases. To discuss
+the gory details here might cause users to refrain from using \LUATEX\ so
+we stick to a general description.
+
+\startitemize
+\item When generating a format, we also generate a bootstrap \LUA\
+      file. This file is compiled to bytecode and is put alongside
+      the format file. The libraries of this bootstrap file are
+      also embedded in the format.
+\item When we process a document, we instruct \LUATEX\ to load
+      this bootstrap file before loading the format. After the
+      format is loaded, we re-initialize the embedded libraries.
+      This is needed because at that point more information may be
+      available than at loading time. For instance, some
+      functionality is available only after the format is loaded
+      and \LUATEX\ enters the \TEX\ state.
+\item File databases, formats, bootstrap files, and
+      runtime|-|generated cached data is kept in a \TDS\ tree specific cache
+      directory. For instance, \OPENTYPE\ font tables are stored
+      on disk so that next time loading them is faster.
+\stopitemize
+
+Starting \LUATEX\ and \MKIV\ is done by \LUATOOLS. This tool
+is generic enough to handle other formats as well, like \MPTOPDF\
+or \PLAIN. When you run this script without argument, you will
+see:
+
+\starttyping
+version 1.1.1 - 2006+ - PRAGMA ADE / CONTEXT
+
+--generate        generate file database
+--variables       show configuration variables
+--expansions      show expanded variables
+--configurations  show configuration order
+--expand-braces   expand complex variable
+--expand-path     expand variable (resolve paths)
+--expand-var      expand variable (resolve references)
+--show-path       show path expansion of ...
+--var-value       report value of variable
+--find-file       report file location
+--find-path       report path of file
+--make or --ini   make luatex format
+--run or --fmt=   run luatex format
+--luafile=str     lua inifile (default is <progname>.lua)
+--lualibs=list    libraries to assemble (optional)
+--compile         assemble and compile lua inifile
+--verbose         give a bit more info
+--minimize        optimize lists for format
+--all             show all found files
+--sort            sort cached data
+--engine=str      target engine
+--progname=str    format or backend
+--pattern=str     filter variables
+--lsr             use lsr and cnf directly
+\stoptyping
+
+For the \LUA\ based file searching, \LUATOOLS\ can be seen as a
+replacement for \MKTEXLSR\ and \KPSEWHICH\ and as such it also
+recognizes some of the \KPSEWHICH\ flags. The script is self
+contained in the sense that all needed libraries are embedded. As
+a result no library paths need to be set and packaged. Of course
+the script has to be run using \LUATEX\ itself. The following
+commands generate the file databases, generate a \CONTEXT\ \MKIV\
+format, and process a file:
+
+\starttyping
+luatools --generate
+luatools --make --compile cont-en
+luatools --fmt=cont-en somefile.tex
+\stoptyping
+
+There is no need to install \LUA in order to run this script. This
+is because \LUATEX\ can act as such with the advantage that the
+built-in libraries are available too, for instance the \LUA\ file
+system \type {lfs}, the \ZIP\ file manager \type {zip}, the
+\UNICODE\ libary \type {unicode}, \type {md5}, and of course some of
+our own.
+
+\starttabulate
+\NC luatex  \NC a \LUA||enhanced \TEX\ engine \NC \NR
+\NC texlua  \NC a \LUA\ engine enhanced with some libraries \NC \NR
+\NC texluac \NC a \LUA\ bytecode compiler enhanced with some libraries \NC \NR\NC \NR
+\stoptabulate
+
+In principle \type {luatex} can perform all tasks but because we
+need to be downward compatible with respect to the command line
+and because we want \LUA\ compatible variants, you can copy or
+symlink the two extra variants to the main binary.
+
+The second script, \MTXRUN, can be seen as a replacement for the
+\RUBY\ script \TEXMFSTART, a utility whose main task is to launch
+scripts (or documents or whatever) in a \TDS\ tree. The \MTXRUN\
+script makes it possible to get away from installing \RUBY\ and as
+a result a regular \TEX\ installation can be made independent of
+scripting tools.
+
+\starttyping
+version 1.0.2 - 2007+ - PRAGMA ADE / CONTEXT
+
+--script              run an mtx script
+--execute             run a script or program
+--resolve             resolve prefixed arguments
+--ctxlua              run internally (using preloaded libs)
+--locate              locate given filename
+
+--autotree            use texmf tree cf.\ environment settings
+--tree=pathtotree     use given texmf tree (def: 'setuptex.tmf')
+--environment=name    use given (tmf) environment file
+--path=runpath        go to given path before execution
+--ifchanged=filename  only execute when given file has changed
+--iftouched=old,new   only execute when given file has changed
+
+--make                create stubs for (context related) scripts
+--remove              remove stubs (context related) scripts
+--stubpath=binpath    paths where stubs wil be written
+--windows             create windows (mswin) stubs
+--unix                create unix (linux) stubs
+
+--verbose             give a bit more info
+--engine=str          target engine
+--progname=str        format or backend
+
+--edit                launch editor with found file
+--launch (--all)      launch files (assume os support)
+
+--intern              run script using built-in libraries
+\stoptyping
+
+This help information gives an impression of what the script does:
+running other scripts, either within a certain \TDS\ tree or not,
+and either conditionally or not. Users of \CONTEXT\ will probably
+recognize most of the flags. As with \TEXMFSTART, arguments with
+prefixes like \type{file:} will be resolved before being
+passed to the child process.
+
+The first option, \type {--script} is the most important one and
+is used like:
+
+\starttyping
+mtxrun --script fonts --reload
+mtxrun --script fonts --pattern=lm
+\stoptyping
+
+In \MKIV\ you can access fonts by filename or by font name, and
+because we provide several names per font you can use this command
+to see what is possible. Patterns can be \LUA\ expressions, as
+demonstrated here:
+
+\starttyping
+mtxrun --script font  --list --pattern=lmtype.*regular
+
+lmtypewriter10-capsregular   LMTypewriter10-CapsRegular   lmtypewriter10-capsregular.otf
+lmtypewriter10-regular       LMTypewriter10-Regular       lmtypewriter10-regular.otf
+lmtypewriter12-regular       LMTypewriter12-Regular       lmtypewriter12-regular.otf
+lmtypewriter8-regular        LMTypewriter8-Regular        lmtypewriter8-regular.otf
+lmtypewriter9-regular        LMTypewriter9-Regular        lmtypewriter9-regular.otf
+lmtypewritervarwd10-regular  LMTypewriterVarWd10-Regular  lmtypewritervarwd10-regular.otf
+\stoptyping
+
+A simple
+
+\starttyping
+mtxrun --script fonts
+\stoptyping
+
+gives:
+
+\starttyping
+version 1.0.2 - 2007+ - PRAGMA ADE / CONTEXT | font tools
+
+--reload              generate new font database
+--list                list installed fonts
+--save                save open type font in raw table
+
+--pattern=str         filter files
+--all                 provide alternatives
+\stoptyping
+
+In \MKIV\ font names can be prefixed by \type {file:} or \type
+{name:} and when they are resolved, several attempts are made, for
+instance non|-|characters are ignored. The \type {--all} flag shows
+more variants.
+
+Another example is:
+
+\starttyping
+mtxrun --script context --ctx=somesetup somefile.tex
+\stoptyping
+
+Again, users of \TEXEXEC\ may recognize part of this and indeed this is
+its replacement. Instead of \TEXEXEC\ we use a script named \type
+{mtx-context.lua}. Currently we have the following scripts and
+more will follow:
+
+The \type {babel} script is made in cooperation with Thomas
+Schmitz and can be used to convert babelized Greek files into
+proper \UTF. More of such conversions may follow. With \type
+{cache} you can inspect the content of the \MKIV\ cache and do
+some cleanup. The \type {chars} script is used to construct some
+tables that we need in the process of development. As its name
+says, \type {check} is a script that does some checks, and in
+particular it tries to figure out if \TEX\ files are correct. The
+already mentioned \type {context} script is the \MKIV\ replacement
+of \TEXEXEC, and takes care of multiple runs, preloading project
+specific files, etc. The \type {convert} script will replace the
+\RUBY\ script \type {pstopdf}.
+
+A rather important script is the already mentioned \type {fonts}.
+Use this one for generating font name databases (which then
+permits a more liberal access to fonts) or identifying installed
+fonts. The \type {unzip} script indeed unzips archives. The \type
+{update} script is still somewhat experimental and is one of the
+building blocks of the \CONTEXT\ minimal installer system by
+Mojca Miklavec and Arthur Reutenauer. This update script
+synchronizes a local tree with a repository and keeps an
+installation as small as possible, which for instance means: no
+\OPENTYPE\ fonts for \PDFTEX, and no redundant \TYPEONE\ fonts for
+\LUATEX\ and \XETEX.
+
+The (for the moment) last two scripts are \type {watch} and \type
+{web}. We use them in (either automated or not) remote publishing
+workflows. They evolved out of the \EXAMPLE\ framework which is
+currently being reimplemented in \LUA.
+
+As you can see, the \LUATEX\ project and its \CONTEXT\ companion
+\MKIV\ project not only deal with \TEX\ itself but also
+facilitates managing the workflows. And the next list is
+just a start.
+
+\starttabulate
+\NC context \NC controls processing of files by \MKIV \NC \NR
+\NC babel   \NC conversion tools for \LATEX\ files \NC \NR
+\NC cache   \NC utilities for managing the cache \NC \NR
+\NC chars   \NC utilities used for \MKIV\ development \NC \NR
+\NC check   \NC \TEX\ syntax checker \NC \NR
+\NC convert \NC helper for some basic graphic conversion \NC \NR
+\NC fonts   \NC utilities for managing font databases \NC \NR
+\NC update  \NC tool for installing minimal \CONTEXT\ trees \NC \NR
+\NC watch   \NC hot folder processing tool \NC \NR
+\NC web     \NC utilities related to automate workflows \NC \NR
+\stoptabulate
+
+There will be more scripts. These scripts are normally rather small
+because they hook into \MTXRUN\ which provides the libraries. Of course
+existing tools remain part of the toolkit. Take for instance \CTXTOOLS,
+a \RUBY\ script that converts font encoded pattern files to generic
+\UTF\ encoded files.
+
+Those who have followed the development of \CONTEXT\ will notice that we moved
+from utilities written in \MODULA\ to tools written in \PERL. These were later
+replaced by \RUBY\ scripts and eventually most of them will be rewritten in
+\LUA.
+
+\subject{macros}
+
+I will not repeat what is said already in the \MKIV\ related
+documents, but stick to a summary of what the impact on \CONTEXT\
+is and will be. From this you can deduce what the possible influence
+on other macro packages can be.
+
+Opening up \TEX\ started with rewriting all \IO\ related activities.
+Because we wanted to be able to read from \ZIP\ files, the web and
+more, we moved away from the traditional \KPSE\ based file
+handling. Instead \MKIV\ uses an extensible variant written in
+\LUA. Because we need to be downward compatible, the code is
+somewhat messy, but it does the job, and pretty quickly and efficiently
+too. Some alternative input media are implemented and many more
+can be added. In the beginning I permitted several ways to specify
+a resource but recently a more restrictive \URL\ syntax was
+imposed. Of course the file locating mechanisms provide the same
+control as provided by the file readers in \MKII.
+
+An example of reading from a \ZIP\ file is:
+
+\starttyping
+\input zip:///archive.zip?name=blabla.tex
+\input zip:///archive.zip?name=/somepath/blabla.tex
+\stoptyping
+
+In addition one can register files, like:
+
+\starttyping
+\usezipfile[archive.zip]
+\usezipfile[tex.zip][texmf-local]
+\usezipfile[tex.zip?tree=texmf-local]
+\stoptyping
+
+The last two variants register a zip file in the \TDS\ structure
+where more specific lookup rules apply. The files in a
+registered file are known to the file searching mechanism so one
+can give specifications like the following:
+
+\starttyping
+\input */blabla.tex
+\input */somepath/blabla.tex
+\stoptyping
+
+In a similar fashion one can use the \type {http}, \type {ftp} and
+other protocols. For this we use independent fetchers that cache
+data in the \MKIV\ cache. Of course, in more structured projects,
+one will seldom use the \type {\input} command but use a project
+structure instead.
+
+Handling of files rather quickly reached a stable state, and we seldom need
+to visit the code for fixes. Already after a few years of developing the first
+code for \LUATEX\ we reached a state of \quote {Hm, when did I write
+this?}. When we have reached a stable state I foresee that much of the
+older code will need a cleanup.
+
+Related to reading files is the sometimes messy area of input
+regimes (file encoding) and font encoding, which itself relates to
+dealing with languages. Since \LUATEX\ is \UTF-8 based, we need to
+deal with file encoding issues in the frontend, and this is what
+\LUA\ based file handling does. In practice users of \LUATEX\ will
+swiftly switch to \UTF\ anyway but we provide regime control for
+historic reasons. This time the recoding tables are \LUA\ based
+and as a result \MKIV\ has no regime files. In a similar fashion
+font encoding is gone: there is still some old code that deals
+with default fallback characters, but most of the files are gone.
+The same will be true for math encoding. All information is now
+stored in a character table which is the central point in many
+subsystems now.
+
+It is interesting to notice that until now users have never asked
+for support with regards to input encoding. We can safely assume
+that they just switched to \UTF\ and recoded older documents. It
+is good to know that \LUATEX\ is mostly \PDFTEX\ but also
+incorporates some features of \OMEGA. The main reason for this is
+that the Oriental \TEX\ project needed bidirectional typesetting
+and there was a preference for this implementation over the one provided by
+\ETEX. As a side effect input translation is also present, but
+since no one seems to use it, that may as well go away. In \MKIV\
+we refrain from input processing as much as possible and focus on
+processing the node lists. That way there is no interference
+between user data, macro expansion and whatever may lead to the
+final data that ends up in the to|-|be|-|typeset stream. As said, users
+seem to be happy to use \UTF\ as input, and so there is hardly any need
+for manipulations.
+
+Related to processing input is verbatim: a feature that is always
+somewhat complicated by the fact that one wants to typeset a
+manual about \TEX\ in \TEX\ and therefore needs flexible escapes
+from illustrative as well as real \TEX\ code. In \MKIV\ verbatim
+as well as all buffering of data is dealt with in \LUA. It took a
+while to figure out how \LUATEX\ should deal with the concept of a
+line ending, but we got there. Right from the start we made sure
+that \LUATEX\ could deal with collections of catcode settings
+(those magic states that characters can have). This means that one
+has complete control at both the \TEX\ and \LUA\ end over the way
+characters are dealt with.
+
+In \MKIV\ we also have some pretty printing features, but many
+languages are still missing. Cleaning up the premature verbatim code
+and extending pretty printing is on the agenda for the end of 2008.
+
+Languages also are handled differently. A major change is that
+pattern files are no longer preloaded but read in at runtime.
+There is still some relation between fonts and languages, no
+longer in the encoding but in dealing with \OPENTYPE\ features.
+Later we will do a more drastic overhaul (with multiple name
+schemes and such). There are a few experimental features, like
+spell checking.
+
+Because we have been using \UTF\ encoded hyphenation patterns for
+quite some time now, and because \CONTEXT\ ships with its own files,
+this transition probably went unnoticed, apart maybe from a faster
+format generation and less startup time.
+
+Most of these features started out as an experiment and provided a
+convenient way to test the \LUATEX\ extensions. In \MKIV\ we go
+quite far in replacing \TEX\ code by \LUA, and how far one goes is
+a matter of taste and ambition. An example of a recent replacement
+is graphic inclusion. This is one of the oldest mechanisms in
+\CONTEXT\ and it has been extended many times, for instance by
+plugins that deal with figure databases (selective filtering from
+\PDF\ files made for this purpose), efficient runtime conversion,
+color conversion, downsampling and product dependent alternatives.
+
+One can question if a properly working mechanism should be
+replaced. Not only is there hardly any speed to gain (after all,
+not that many graphics are included in documents), a \LUA--\TEX\
+mix may even look more complex. However, when an opened-up \TEX\
+keeps evolving at the current pace, this last argument becomes
+invalid because we can no longer give that \TeX ie code to \LUA. Also,
+because most of the graphic inclusion code deals with locating
+files and figuring out the best quality variant, we can benefit
+much from \LUA: file handling is more robust, the code looks
+cleaner, complex searches are faster, and eventually we can
+provide way more clever lookup schemes. So, after all, switching
+to \LUA\ here makes sense. A nice side effect is that some of the
+mentioned plugins now take a few lines of extra code instead of
+many lines of \TEX. At the time of writing this, the beta version
+of \MKIV\ has \LUA\ based graphic inclusion.
+
+A disputable area for Luafication is multipass data. Most of that has
+already been moved to \LUA\ files instead of \TEX\ files, and the
+rest will follow: only tables of contents still use a \TEX\
+auxiliary file. Because at some point we will reimplement the
+whole section numbering and cross referencing, we postponed that
+till later. The move is disputable because in the end, most data
+ends up in \TEX\ again, which involves some conversion. However, in
+\LUA\ we can store and manipulate information much more easily and so
+we decided to follow that route. As a start, index information is
+now kept in \LUA\ tables, sorted on demand, depending on language
+needs and such. Positional information used to take up much hash
+space which could deplete the memory pool, but now we can have
+millions of tracking points at hardly any cost.
+
+Because it is a quite independent task, we could rewrite the
+\METAPOST\ conversion code in \LUA\ quite early in the
+development. We got smaller and cleaner code, more flexibility, and
+also gained some speed. The code involved in this may change as
+soon as we start experimenting with \MPLIB. Our expectations
+are high because in a bit more modern designs a graphic engine
+cannot be missed. For instance, in educational material,
+backgrounds and special shapes are all over the place, and we're
+talking about many \METAPOST\ runs then. We expect to bring down the
+processing time of such documents considerably, if only because
+the \METAPOST\ runtime will be close to zero (as experiments have
+shown us).
+
+While writing the code involved in the \METAPOST\ conversion a new
+feature showed up in \LUA: \type {lpeg}, a parsing library. From
+that moment on \type {lpeg} was being used all over the place,
+most noticeably in the code that deals with processing \XML. Right
+from the start I had the feeling that \LUA\ could provide a more
+convenient way to deal with this input format. Some experiments
+with rewriting the \MKII\ mechanisms did not show the expected
+speedup and were abandoned quickly.
+
+Challenged by \type {lpeg} I then wrote a parser and started
+playing with a mixture of a tree based and stream approach to
+\XML\ (\MKII\ is mostly stream based). Not only is loading \XML\
+code extremely fast (we used 40~megaByte files for testing),
+dealing with the tree is also convenient. The additional \MKIV\
+methods are currently being tested in real projects and so far
+they result in an acceptable and pleasant mix of \TEX\ and \XML. For
+instance, we can now selectively process parts of the tree using
+path expressions, hook in code, manipulate data, etc.
+
+The biggest impact of \LUATEX\ on the \CONTEXT\ code base is not
+the previously mentioned mechanisms but one not yet mentioned:
+fonts. Contrary to \XETEX, which uses third party libraries,
+\LUATEX\ does not implement dealing with font specific issues at
+all. It can load several font formats and accepts font data in a
+well|-|defined table format. It only processes character nodes into
+glyph nodes and it's up to the user to provide more by
+manipulating the node lists. Of course there is still basic
+ligature building and kerning available but one can bypass that with
+other code.
+
+In \MKIV, when we deal with \TYPEONE\ fonts, we try to get away
+from traditional \TFM\ files and use \AFM\ files instead (indeed,
+we parse them using \type {lpeg}). The fonts are mapped onto
+\UNICODE. Awaiting extensions of math we only use \TFM\ files for
+math fonts. Of course \OPENTYPE\ fonts are dealt with and this is
+where we find most \LUA\ code in \MKIV: implementing features.
+Much of that is a grey area but as part of the Oriental \TEX\
+project we're forced to deal with complex feature support, so that
+provides a good test bed as well as some pressure for getting it
+done. Of course there is always the question to what extent we
+should follow the (maybe faulty) other programs that deal with
+font features. We're lucky that the Latin Modern and \TEX\ Gyre
+projects provide real fonts as well as room for discussion and
+exploring these grey areas.
+
+In parallel to writing this, I made a tracing feature for Oriental
+\TEX er Idris so that he could trace what happened with the Arabic
+fonts that he is making. This was relatively easy because already
+in an early stage of \MKIV\ some debugging mechanisms were built.
+One of its nice features is that on an error, or when one
+traces something, the results will be shown in a web browser.
+Unfortunately I have not enough time to explore such aspects in
+more detail, but at least it demonstrates that we can change some
+aspects of the traditional interaction with \TEX\ in more radical
+ways.
+
+Many users may be aware of the existence of so|-|called virtual
+fonts, if only because it can be a cause of problems (related to
+map files and such). Virtual fonts have a lot of potential but
+because they were related to \TEX's own font data format they never got
+very popular. In \LUATEX\ we can make virtual fonts at runtime. In
+\MKIV\ for instance we have a feature (we provide features beyond
+what \OPENTYPE\ does) that completes a font by composing missing
+glyphs on the fly. More of this trickery can be expected as soon
+as we have time and reason to implement it.
+
+In \PDFTEX\ we have a couple of font related goodies, like
+character expansion (inspired by Hermann Zapf) and character
+protruding. There are a few more but these had limitations and
+were suboptimal and therefore have been removed from \LUATEX.
+After all, they can be implemented more robustly in \LUA. The two
+mentioned extensions have been (of course) kept and have been partially
+reimplemented so that they are now uniquely bound to fonts
+(instead of being common to fonts that traditional \TEX\ shares in
+memory). The character related tables can be filled with \LUA\ and
+this is what \MKIV\ now does. As a result much \TEX\ code could go
+away. We still use shape related vectors to set up the values, but
+we also use information stored in our main character database.
+
+A likely area of change is math and not only as a result of the
+\TEX\ gyre math project which will result in a bunch of \UNICODE\
+compliant math fonts. Currently in \MKIV\ the initialization
+already partly takes place using the character database, and so
+again we will end up with less \TEX\ code. A side effect of
+removing encoding constraints (i.e.\ moving to \UNICODE) is that
+things get faster. Later this year math will be opened up.
+
+One of the biggest impacts of opening up is the arrival of
+attributes. In traditional \TEX\ only glyph nodes have an
+attribute, namely the font id. Now all nodes can have attributes,
+many of them. We use them to implement a variety of features that
+already were present in \MKII, but used marks instead: color (of
+course including color spaces and transparency), inter|-|character
+spacing, character case manipulation, language dependent pre and
+post character spacing (for instance after colons in French),
+special font rendering such as outlines, and much more. An
+experimental application is a more advanced glue|/|penalty model
+with look|-|back and look|-|ahead as well as relative weights. This
+is inspired by the one good thing that \XML\ formatting objects
+provide: a spacing and pagebreak model.
+
+It does not take much imagination to see that features demanding
+processing of node lists come with a price: many of the
+callbacks that \LUATEX\ provides are indeed used and as a result
+quite some time is spent in \LUA. You can add to that the time
+needed for handling font features, which also boils down to
+processing node lists. The second half of 2007 Taco and I spent
+much time on benchmarking and by now the interface between \TEX\
+and \LUA\ (passing information and manipulating nodes) has been
+optimized quite well. Of course there's always a price for
+flexibility and \LUATEX\ will never be as fast as \PDFTEX, but
+then, \PDFTEX\ does not deal with \OPENTYPE\ and such.
+
+We can safely conclude that the impact of \LUATEX\ on \CONTEXT\ is
+huge and that fundamental changes take place in all key
+components: files, fonts, languages, graphics, \METAPOST\, \XML,
+verbatim and color to start with, but more will follow. Of course
+there are also less prominent areas where we use \LUA\ based
+approaches: handling \URL's, conversions, alternative math
+input to mention a few. Sometime in 2009 we expect to start
+working on more fundamental typesetting related issues.
+
+\subject{roadmap}
+
+On the \LUATEX\ website \type {www.luatex.org} you can find a
+roadmap. This roadmap is just an indication of what happened and
+will happen and it will be updated when we feel the need. Here is
+a summary.
+
+\startitemize
+
+\head merging engines
+
+Merge some of the \ALEPH\ codebase into \PDFTEX\ (which already has
+\ETEX) so that \LUATEX\ in \DVI\ mode behaves like \ALEPH, and in
+\PDF\ mode like \PDFTEX. There will be \LUA\ callbacks for file
+searching. This stage is mostly finished.
+
+\head \OPENTYPE\ fonts
+
+Provide \PDF\ output for \ALEPH\ bidirectional functionality and add
+support for \OPENTYPE\ fonts. Allow \LUA\ scripts to control all
+aspects of font loading, font definition and manipulation. Most of
+this is finished.
+
+\head tokenizing and node lists
+
+Use \LUA\ callbacks for various internals, complete access to
+tokenizer and provide access to node lists at moments that make
+sense. This stage is completed.
+
+\head paragraph building
+
+Provide control over various aspects of paragraph building
+(hyphenation, kerning, ligature building), dynamic loading loading
+of hyphenation patterns. Apart from some small details these
+objectives are met.
+
+\head \METAPOST\ (\MPLIB)
+
+Incorporate a \METAPOST\ library and investigate options for runtime
+font generation and manipulation. This activity is on schedule and
+integration will take place before summer 2008.
+
+\head image handling
+
+Image identification and loading in \LUA\ including scaling and
+object management. This is nicely on schedule, the first version of the
+image library showed up in the 0.22 beta and some more features
+are planned.
+
+\head special features
+
+Cleaning up of \HZ\ optimization and protruding and getting rid of
+remaining global font properties. This includes some cleanup of
+the backend. Most of this stage is finished.
+
+\head page building
+
+Control over page building and access to internals that matter.
+Access to inserts. This is on the agenda for late 2008.
+
+\head \TEX\ primitives
+
+Access to and control over most \TEX\ primitives (and related
+mechanisms) as well as all registers. Especially box handling
+has to be reinvented. This is an ongoing effort.
+
+\head \PDF\ backend
+
+Open up most backend related features, like annotations and
+object management. The first code will show up at the end of 2008.
+
+\head math
+
+Open up the math engine parallel to the development of
+the \TEX\ Gyre math fonts. Work on this will start during 2008 and
+we hope that it will be finished by early 2009.
+
+\head \CWEB
+
+Convert the \TEX\ Pascal source into \CWEB\ and start using \LUA\
+as glue language for components. This will be tested on \MPLIB\
+first. This is on the long term agenda, so maybe around 2010 you
+will see the first signs.
+
+\stopitemize
+
+In addition to the mentioned functionality we have a couple of
+ideas that we will implement along the road. The first formal beta
+was released at \TUG\ 2007 in San Diego (\USA). The first
+formal release will be at \TUG\ 2008 in Cork (Ireland). The
+production version will be released at Euro\TEX\ in the
+Netherlands (2009).
+
+
+Eventually \LUATEX\ will be the successor to \PDFTEX\ (informally
+we talk of \PDFTEX\ version~2). It can already be used as a
+drop|-|in for \ALEPH\ (the stable variant of \OMEGA). It provides a
+scripting engine without the need to install a specific scripting
+environment. These factors are among the reasons why distributors
+have added the binaries to the collections. Norbert Preining
+maintains the \LINUX\ packages, Akira Kakuto provides \WINDOWS\
+binaries as part of his distribution, Arthur Reutenauer takes care
+of \MACOSX\ and Christian Schenk recently added \LUATEX\ to \MIKTEX.
+The \LUATEX\ and \MPLIB\ projects are hosted at Supelec by Fabrice
+Popineau (one of our technical consultants). And with Karl Berry
+being one of our motivating supporters, you can be sure that the
+binaries will end up someplace in \TEXLIVE\ this year.
+
+\stopcomponent

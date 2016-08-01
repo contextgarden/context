@@ -1,0 +1,378 @@
+% language=uk
+
+% \enabletrackers[typesetters.italics]
+
+% We need to make sure that this works ok, also in future versions
+% so we add some more (re)settings than needed.
+
+\startcomponent hybrid-italics
+
+\environment hybrid-environment
+
+\ctxcommand{pushitaliccorrection()}
+
+\startchapter[title={Italic correction}]
+
+\component hybrid-note
+
+\startsection [title={Introduction}]
+
+During the 2011 \CONTEXT\ conference there were presentations by Thomas Schmitz
+and Jano Kula where they demonstrated advanced rendering of document source
+encoded in \XML. When looking at the examples on screen using many fonts I
+realized that (also given my own workflows) it was about time to look into
+automated italic correction in the perspective of \MKIV.
+
+In the Lucida Math project it already became clear that italics in \OPENTYPE\
+math fonts are to be ignored. And, as in regular \OPENTYPE\ fonts italic
+correction is basically non|-|existent some alternative approach is needed there
+as well. In \CONTEXT\ you can already for quite a while enable the \type {itlc}
+feature which adds italic correction to shapes using some heuristics. However, in
+\TEX\ this kind of correction is never applied automatically but is triggered by
+the \type {\/} command. Commands like \type {\em} deal with italic correction
+automatically but otherwise you need to take care of it yourself. In a time when
+you not always have control over the source code or when you are coding in a
+format that has no provisions for it (for instance \XML) some further automatism
+makes sense. You might even wonder if explicit corrections still make sense.
+
+In this chapter we discuss an alternative approach in \MKIV. This is a typical
+example of an experimental feature that might need further discussion (probably
+at a next conference). One of our mottos is that the document source should be as
+clean as possible and this is one way to go.
+
+\stopsection
+
+\startsection [title={Some preparations}]
+
+Adding italic correction to a font is easy: you just add the right feature
+directive. You can do this for all italic (or oblique) fonts in one go:
+
+\starttyping
+\definefontfeature[default][default][itlc=yes]
+\stoptyping
+
+At some point this might become the default in \CONTEXT. After that the \type
+{\/} command can do the job, but as mentioned, we don't really want to do this
+each time it's needed. If you never plan to use that command you can disable
+\TEX's built|-|in mechanism completely by setting the \type {textitalics}
+parameter.
+
+\starttyping
+\definefontfeature[default][default][itlc=yes,textitalics=yes]
+\stoptyping
+
+It even makes sense then to redefine the the \type {\/} command:
+
+\starttyping
+\let\/=/
+\stoptyping
+
+so that we have a nice escape in tune with the other escapes.
+
+\stopsection
+
+\startsection [title={Controlling correction}]
+
+In the following examples we will use Cambria as an example as it shows the
+effect rather prominently.
+
+\startbuffer[setups]
+\definefontfeature[itclyes][default][itlc=yes,textitalics=no]
+
+\definefont[itlcregular]   [name:cambria*itclyes sa 4]
+\definefont[itlcbold]      [name:cambriabold*itclyes sa 4]
+\definefont[itlcitalic]    [name:cambriaitalic*itclyes sa 4]
+\definefont[itlcbolditalic][name:cambriabolditalic*itclyes sa 4]
+\stopbuffer
+
+\getbuffer[setups]
+
+\let\/=\italiccorrection % to be sure
+
+\defineframed[ITLCexampleA][frame=off,foregroundcolor=white,background=color,backgroundcolor=red]
+\defineframed[ITLCexampleB][frame=off,foregroundcolor=white,background=color,backgroundcolor=blue]
+\defineframed[ITLCexampleC][frame=off,foregroundcolor=white,background=color,backgroundcolor=green]
+\defineframed[ITLCexampleD][frame=off,foregroundcolor=white,background=color,backgroundcolor=yellow]
+\defineframed[ITLCexampleE][frame=off,foregroundcolor=white,background=color,backgroundcolor=gray]
+
+We start with a simple case: just an emphasized word in a small
+line:
+
+\starttyping
+\setupitaliccorrection[none]\tf test {\it test} test
+\setupitaliccorrection[none]\tf test {\it test\/} test}
+\setupitaliccorrection[text]\tf test {\it test} test}
+\stoptyping
+
+Decorated for the purpose of this demonstration this comes out as follows:
+
+\startlinecorrection[blank] \vbox \bgroup \offinterlineskip
+    \ITLCexampleA{\setupitaliccorrection[none]\itlcregular test {\itlcitalic test} test}   \par
+    \ITLCexampleB{\setupitaliccorrection[none]\itlcregular test {\itlcitalic test\/} test} \par
+    \ITLCexampleC{\setupitaliccorrection[text]\itlcregular test {\itlcitalic test} test}   \par
+\egroup \stoplinecorrection
+
+In the first line no correction is applied. The second line shows \TEX\ in action
+and the third line demonstrates the automatically applied correction. The
+explicit directive in the second lines of course gives most control but is also a
+no|-|go when you have lots of them.
+
+Actually, \TEX\ is clever enough to ignore multiple corrections: it will only
+apply one after a glyph.
+
+\starttyping
+\setupitaliccorrection[none]\tf test {\it test} test}
+\setupitaliccorrection[none]\tf test {\it test\/} test}
+\setupitaliccorrection[none]\tf test {\it test\/\/\/\/} test}
+\stoptyping
+
+So we get this:
+
+\startlinecorrection[blank] \vbox \bgroup \offinterlineskip
+    \ITLCexampleA{\setupitaliccorrection[none]\itlcregular test {\itlcitalic test} test} \par
+    \ITLCexampleB{\setupitaliccorrection[none]\itlcregular test {\itlcitalic test\/} test} \par
+    \ITLCexampleC{\setupitaliccorrection[none]\itlcregular test {\itlcitalic test\/\/\/\/} test} \par
+\egroup \stoplinecorrection
+
+It can be argued that in a decent usage of \CONTEXT\ you will never switch to
+another font this way. Instead you will do this:
+
+\starttyping
+\definehighlight[important][style=\it]
+
+test \important{test} test
+\stoptyping
+
+However, this will not correct at all, so in fact you have to use an environment
+that takes care of automatically adding the \type {\/} at the end. Quite from the
+start the \type {\em} command does this, with the added benefit of dealing with
+bold and nested emphasizing.
+
+Which brings us to cases where you don't want to apply correction, like:
+
+\starttyping
+\setupitaliccorrection[none]\tf test {\it test}{\bi test}
+\setupitaliccorrection[none]\tf test {\it test\/}{\bi test}
+\setupitaliccorrection[text]\tf test {\it test}{\bi test}
+\stoptyping
+
+Now we get:
+
+\startlinecorrection[blank] \vbox \bgroup \offinterlineskip
+    \ITLCexampleA{\setupitaliccorrection[none]\itlcregular test {\itlcitalic test}{\itlcbolditalic test}}   \par
+    \ITLCexampleB{\setupitaliccorrection[none]\itlcregular test {\itlcitalic test\/}{\itlcbolditalic test}} \par
+    \ITLCexampleC{\setupitaliccorrection[text]\itlcregular test {\itlcitalic test}{\itlcbolditalic test}}   \par
+\egroup \stoplinecorrection
+
+A variant on this is:
+
+\starttyping
+\setupitaliccorrection[none]\tf test {\it test   \bi test}
+\setupitaliccorrection[none]\tf test {\it test\/ \bi test}
+\setupitaliccorrection[text]\tf test {\it test   \bi test}
+\stoptyping
+
+which gives:
+
+\startlinecorrection[blank] \vbox \bgroup \offinterlineskip
+    \ITLCexampleA{\setupitaliccorrection[none]\itlcregular test {\itlcitalic test   \itlcbolditalic test}} \par
+    \ITLCexampleB{\setupitaliccorrection[none]\itlcregular test {\itlcitalic test\/ \itlcbolditalic test}} \par
+    \ITLCexampleC{\setupitaliccorrection[text]\itlcregular test {\itlcitalic test   \itlcbolditalic test}} \par
+\egroup \stoplinecorrection
+
+So, no italic correction is added between italic shapes of different fonts.
+Ideally we should have some inter|-|character kerning, but that is currently
+beyond this mechanism.
+
+What does the \type {text} mean in the setup command? The following table tells
+what keywords can be passed:
+
+\starttabulate
+\NC \type {text}   \NC only apply correction to running text \NC \NR
+\NC \type {always} \NC also apply correction to end end of a list \NC \NR
+\NC \type {global} \NC enable this mechanism globally (more efficient) \NC \NR
+\NC \type {none}   \NC disable this mechanism \NC \NR
+\stoptabulate
+
+The difference between \type {text} and \type {always} is best demonstrated with
+an example:
+
+\starttyping
+\setupitaliccorrection[none]\tf   test {\it test}}
+\setupitaliccorrection[always]\tf test {\it test}}
+\setupitaliccorrection[text]\tf   test {\it test}}
+\stoptyping
+
+This gives:
+
+\startlinecorrection[blank] \vbox \bgroup \offinterlineskip
+    \ITLCexampleA{\setupitaliccorrection[none]\itlcregular   test {\itlcitalic test}} \par
+    \ITLCexampleD{\setupitaliccorrection[always]\itlcregular test {\itlcitalic test}} \par
+    \ITLCexampleC{\setupitaliccorrection[text]\itlcregular   test {\itlcitalic test}} \par
+\egroup \stoplinecorrection
+
+The \type {always} option will flush pending corrections at a boundary, like the
+edge of a box (or line). Contrary to \TEX's italic corrections, the \MKIV\
+variants are glue and they will disappear whenever \TEX\ likes to get rid of
+glue, for instance at line breaks. \footnote {There is some room for improvement
+here, for instance we can take penalties into account.}
+
+While writing this, we're still talking of an experimental setup so there might
+be extensions or changes to this mechanism. \footnote {For instance, I'm
+considering extending this mechanism to provide kerning between fonts, something
+for a rainy afternoon.}
+
+As it's just a guess you can influence the amount of automatic correction by
+specifying a factor. We show an exmaple of this.
+
+\startbuffer
+\definefontfeature[itclyes]       [default][itlc=yes,textitalics=delay]
+\definefontfeature[itclyesten]    [default][itlc=10, textitalics=delay]
+\definefontfeature[itclyeshundred][default][itlc=100,textitalics=delay]
+
+\definefont[itlcitalicyes]      [name:cambriaitalic*itclyes        sa 4]
+\definefont[itlcitalicten]      [name:cambriaitalic*itclyesten     sa 4]
+\definefont[itlcitalichundred]  [name:cambriaitalic*itclyeshundred sa 4]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We show all three variants:
+
+\starttyping
+\setupitaliccorrection[text]\itlcregular test {\itlcitalicyes     test} test\par
+\setupitaliccorrection[text]\itlcregular test {\itlcitalicten     test} test\par
+\setupitaliccorrection[text]\itlcregular test {\itlcitalichundred test} test\par
+\stoptyping
+
+This becomes:
+
+\startlinecorrection[blank] \vbox \bgroup \offinterlineskip
+    \ITLCexampleA{\setupitaliccorrection[text]\itlcregular test {\itlcitalicyes     test} test}\par
+    \ITLCexampleB{\setupitaliccorrection[text]\itlcregular test {\itlcitalicten     test} test}\par
+    \ITLCexampleC{\setupitaliccorrection[text]\itlcregular test {\itlcitalichundred test} test}\par
+\egroup \stoplinecorrection
+
+\stopsection
+
+\startsection [title={Saving resources}]
+
+You can keep track of what gets done by enabling a tracker:
+
+\starttyping
+\enabletrackers[typesetters.italics]
+\stoptyping
+
+You will notice that there are occasional reports about correction being
+inserted, ignored and removed. As node lists are parsed there is some extra
+overhead, but not that much. The \TEX\ solution (using \type {\/}) is quit
+efficient because that command directly injects a kern without too much analysis.
+You can gain some efficiency for the automated variant by using the \type
+{global} option:
+
+\starttyping
+\setupitaliccorrection[always,global]
+\stoptyping
+
+Also, you can disable \TEX's mechanism effectively by not passing the italic
+information to the font machinery at all:
+
+\starttyping
+\definefontfeature[italics][default][itlc=yes,textitalics=yes]
+\stoptyping
+
+The \type {itlc} feature will tag the font for italic corrections but the \type
+{textitalics} option will make sure that this information is not passed to the
+\TEX\ font handler but kept private.
+
+As adding the italic corrections to a font takes memory and a little bit of extra
+load time, we can delay this process till it is really needed.
+
+\starttyping
+\definefontfeature[italics][default][itlc=yes,textitalics=delay]
+\stoptyping
+
+In this case the correction will be calculated when needed and cached for later
+usage. At some point this might become the default \CONTEXT\ behaviour.
+
+\stopsection
+
+\startsection [title={Math}]
+
+Italic correction in math plays a role when dealing with traditional \TEX\ fonts,
+where glyph dimensions can have a special meaning. However, in \OPENTYPE\ math
+the correction is mostly ignored. You can disable it altogether and let an
+alternative mechanism deal with it. This mechanism is still somewhat experimental
+but is controlled as follows:
+
+\starttyping
+\switchtobodyfont[xits]
+\setupmathematics[italics=no] test $a;b;a; b; f;$ test}
+\setupmathematics[italics=1]  test $a;b;a; b; f;$ test}
+\setupmathematics[italics=2]  test $a;b;a; b; f;$ test}
+\setupmathematics[italics=3]  test $a;b;a; b; f;$ test}
+\setupmathematics[italics=4]  test $a;b;a; b; f;$ test}
+\stoptyping
+
+This gives:
+
+\start \switchtobodyfont[xits,42pt] \stop
+
+\startlinecorrection[blank] \vbox \bgroup \offinterlineskip \enabletrackers[math.italics]
+    \ITLCexampleE{\switchtobodyfont[xits,42pt]\setupmathematics[italics=no] test $a;b;a; b; f;$ test}\par
+    \ITLCexampleA{\switchtobodyfont[xits,42pt]\setupmathematics[italics=1]  test $a;b;a; b; f;$ test}\par
+    \ITLCexampleB{\switchtobodyfont[xits,42pt]\setupmathematics[italics=2]  test $a;b;a; b; f;$ test}\par
+    \ITLCexampleC{\switchtobodyfont[xits,42pt]\setupmathematics[italics=3]  test $a;b;a; b; f;$ test}\par
+    \ITLCexampleD{\switchtobodyfont[xits,42pt]\setupmathematics[italics=4]  test $a;b;a; b; f;$ test}\par
+\egroup \stoplinecorrection \disabletrackers[math.italics]
+
+The actual rendering can depend on the settings in the goodies file, for
+instance:
+
+\starttyping
+local italics = {
+    defaultfactor = 0.025,
+    disableengine = true, % feature: mathitalics=yes
+    corrections   = {
+     -- [0x1D44E] = 0.99,    -- a (fraction of quad)
+     -- [0x1D44F] = 100,     -- b (font points)
+        [0x1D453] = -0.0375, -- f
+    }
+}
+
+return {
+    name = "xits-math",
+    version = "1.00",
+    comment = "Goodies that complement xits (by Khaled Hosny).",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        italics = {
+            ["xits-math"] = italics,
+        },
+    }
+}
+\stoptyping
+
+Corrections can be specified in the font's units or as a fraction (smaller than
+1) in which case it will be multiplied by \type {1em}. You can set the font
+feature \type {mathitalics} to \type {yes} to inhibit the engine's built|-|in
+mechanism completely and rely on the alternative approach but as users will
+seldom define math feature sets themselves, there is also the possibility to
+disable the engine in the goodies file.
+
+The process can be watched by setting a tracker:
+
+\starttyping
+\enabletrackers[math.italics]
+\stoptyping
+
+\stopsection
+
+\stopchapter
+
+\ctxcommand{popitaliccorrection()}
+
+\disabletrackers[typesetters.italics]
+
+\stopcomponent

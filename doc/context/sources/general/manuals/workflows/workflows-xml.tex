@@ -1,0 +1,96 @@
+% language=uk
+
+\environment workflows-style
+
+\startcomponent workflows-xml
+
+\startluacode
+  for i=1,10 do
+    local filename = string.formatters["temp-%02i.xml"](i)
+    local filedata = string.formatters["<?xml version='1.0'?><p>snippet %i</p>"](i)
+    io.savedata(filename,filedata)
+  end
+\stopluacode
+
+\startchapter[title={XML}]
+
+When you have an \XML\ project with many files involved, finding the right spot
+of something that went wrong can be a pain. In one of our project the production of
+some 50 books involves 60.000 \XML\ files and 20.000 images. Say that we have the
+following file:
+
+\startbuffer[demo]
+<?xml version='1.0'?>
+<document>
+  <include name="temp-01.xml"/> <include name="temp-02.xml"/>
+  <include name="temp-03.xml"/> <include name="temp-04.xml"/>
+  <include name="temp-05.xml"/> <include name="temp-06.xml"/>
+  <include name="temp-07.xml"/> <include name="temp-08.xml"/>
+  <include name="temp-09.xml"/> <include name="temp-10.xml"/>
+</document>
+\stopbuffer
+
+\typebuffer[demo]
+
+Before we process this file we will merge the content of the files defined
+as includes into it. When this happens the filename is automatically
+registered so it can be accessed later.
+
+\startbuffer
+\startxmlsetups xml:initialize
+    \xmlincludeoptions{#1}{include}{filename|name}{recurse,basename}
+    \xmlsetsetup{#1}{p|document}{xml:*}
+\stopxmlsetups
+
+\startxmlsetups xml:document
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:p
+    \inleftmargin{\infofont\xmlinclusion{#1}}
+    \xmlflush{#1}
+    \par
+\stopxmlsetups
+
+\xmlregistersetup{xml:initialize}
+
+\xmlprocessbuffer{main}{demo}{}
+\stopbuffer
+
+\typebuffer
+
+In this case we put the name of the file in the margin. Depending on when and how
+elements are flushed other solutions, like overlays, can be used.
+
+\startpacked
+\getbuffer
+\stoppacked
+
+At any moment you can see what the current node contains. The whole (merged)
+document is also available:
+
+\startbuffer
+\xmlshow{main}
+\stopbuffer
+
+\typebuffer
+
+A small font is used to typeset the (sub)tree:
+
+\blank \getbuffer \blank
+
+You can also save the tree:
+
+\startbuffer
+\xmlsave{main}{temp.xml}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This file looks like:
+
+\typefile{temp.xml}
+
+\stopchapter
+
+\stopcomponent

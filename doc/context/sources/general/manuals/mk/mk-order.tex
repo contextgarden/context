@@ -1,0 +1,375 @@
+% language=uk
+
+\environment mk-environment
+
+\startcomponent mk-order
+
+\chapter{The order of things}
+
+Normally the text that makes up a paragraph comes directly from
+the input stream or macro expansions (think of labels). When \TEX\
+has collected enough content to make a paragraph, for instance
+because a \type {\par} token signals it \TEX\ will try to create
+one. The raw material available for making such a paragraph is
+linked in a list nodes: references to glyphs in a font, kerns
+(fixed spacing), glue (flexible spacing), penalties (consider them
+to be directives), whatsits (can be anything, e.g.\ \PDF\ literals
+or hyperlinks). The result is a list of horizontal boxes (wrappers with
+lists that represent \quote {lines}) and this is either wrapped in
+vertical box of added to the main vertical list that keeps the
+page stream.
+
+The treatment consists of four activities:
+
+\startitemize[packed]
+\item construction of ligatures (an f plus an i can become fi)
+\item hyphenation of words that cross a line boundary
+\item kerning of characters based on information in the font
+\item breaking the list in lines in the most optimal way
+\stopitemize
+
+The process of breaking into lines is also influenced by
+protrusion (like hanging punctuation) and expansion
+(hz-optimization) but here we will not take these processes
+into account. There are numerous variables that control
+the process and the quality.
+
+These activities are rather interwoven and optimized. For
+instance, in order to hyphenate, ligatures are to be decomposed
+and|/|or constructed. Hyphenation happens when needed. Decisions
+about optimal breakpoints in lines can be influenced by penalties
+(like: not to many hyphenated words in a row) and permitting extra
+stretch between words. Because a paragraph can be boxed and
+unboxed, decomposed and fed into the machinery again, information
+is kept around. Just imagine the following: you want to measure
+the width of a word and therefore you box it. In order to get the
+right dimensions, \TEX\ has to construct the ligatures and add
+kerns. However, when we unbox that word and feed it into the
+paragraph builder, potential hyphenation points have to be
+consulted and at such a point might lay between the characters
+that resulted in the ligature. You can imagine that adding (and
+removing) inter|-|character kerns complicates the process even
+more.
+
+At the cost of some extra runtime and memory usage, in \LUATEX\
+these steps are more isolated. There is a function that builts
+ligatures, one that kerns characters, and another one that
+hyphenates all words in a list, not just the ones that are
+candidate for breaking. The potential breakpoints (called
+discretionaries) can contain ligature information as well. The
+linebreak process is also a separate function.
+
+The order in which this happens now is:
+
+\startitemize[packed,intro]
+\item hyphenation of words
+\item building of ligatures from sequences of glyphs
+\item kerning of glyphs
+\item breaking all this into lines
+\stopitemize
+
+One can discuss endless about the terminology here: are we dealing
+with characters or with glyphs. When a glyph node is made, it
+contains a reference to a slot in a font. Because in traditional
+\TEX\ the number of slots is limited to 256 the relationship
+between characters in the input and the shape in the font, called
+glyph, is kind of indirect (the input encoding versus font
+encoding issue) while in \LUATEX\ we can keep the font in
+\UNICODE\ encoding if we want. In traditional \TEX, hyphenation is
+based on the font encoding and therefore glyphs, and although in
+\LUATEX\ this is still the case, there we can more safely talk of
+characters till we start mapping then to shapes that have no
+\UNICODE\ point. This is of course macro package dependent but in
+\CONTEXT\ \MKIV\ we normalize all input to \UNICODE\ exclusively.
+
+The last step is now really isolated and for that reason we can
+best talk in terms of preparation of the to-be paragraph when
+we refer to the first three activities. In \LUATEX\ these three
+are available as functions that operate on a node list. They each
+have their own callback so we can disable them by replacing the
+default functions by dummies. Then we can hook in a new function
+in the two places that matter: \type {hpack_filter} and \type
+{pre_linebreak_filter} and move the preparation to there.
+
+A simple overload is shown below. Because the first node is always
+a whatsit that holds directional information (and at some point in
+the future maybe even more paragraph related state info), we can
+safely assume that \type {head} does not change. Of course this
+situation might change when you start adding your own
+functionality.
+
+\starttyping
+local function my_preparation(head)
+    local tail = node.slide(head) -- also add prev pointers
+    tail = lang.hyphenate(head,tail)
+    tail = node.ligaturing(head,tail)
+    tail = node.kerning(head,tail)
+    return head
+end
+
+callback.register("pre_linebreak_filter", my_preparation)
+callback.register("hpack_filter",         my_preparation)
+
+local dummy = function(head,tail) return tail end
+
+callback.register("hyphenate",  dummy)
+callback.register("ligaturing", dummy)
+callback.register("kerning",    dummy)
+\stoptyping
+
+It might be clear that the order of actions matter. It might also
+be clear that you are responsible for that order yourself. There
+is no pre||cooked mechanism for guarding your actions and there are
+several reasons for this:
+
+\startitemize
+
+\item Each macro package does things its own way so any hard-coded
+mechanism would be replaced and overloaded anyway. Compare this to
+the usage of catcodes, font systems, auxiliary files, user
+interfaces, handling of inserts etc. The combination of callbacks,
+the three mentioned functions and the availability of \LUA\ makes
+it possible to implement any system you like.
+
+\item Macro packages might want to provide hooks for specialized
+node list processing, and since there are many places where code
+can be hooked in, some kind of oversight is needed (real people
+who keep track of interference of user supplied features, no
+program can do that).
+
+\item User functions can mess up the node list and successive
+actions then might make the wrong assumptions. In order to guard
+this, macro packages might add tracing options and again there are
+too many ways to communicate with users. Debugging and tracing has
+to be embedded in the bigger system in a natural way.
+
+\stopitemize
+
+In \CONTEXT\ \MKIV\ there are already a few places where users can
+hook code into the task list, but so far we haven't really
+encouraged that. The interfaces are simply not stable enough yet.
+On the other hand, there are already quite some node list
+manipulators at work. The most prominent one is the \OPENTYPE\
+feature handler. That one replaces the ligature and kerning
+functions (at least for some fonts). It also means that we need to
+keep an eye on possible interferences between \CONTEXT\ \MKIV\
+mechanisms and those provided by \LUATEX.
+
+For fonts, that is actually quite simple: the \LUATEX\ functions
+use ligature and kerning information stored in the \TFM\ table,
+and for \OPENTYPE\ fonts we simply don't provide that information
+when we define a font, so in that case \LUATEX\ will not ligature
+and kern. Users can influence this process to some extend by
+setting the \type {mode} for a specific instance of a font to
+\type {base} or \type {node}. Because \TYPEONE\ fonts have no
+features like \OPENTYPE\ such fonts are (at least currently)
+always are processed in base mode.
+
+Deep down in \CONTEXT\ we call a sequence of actions a \quote
+{task}. One such task is \quote {processors} and the actions
+discussed so far are in this category. Within this category we
+have subcategories:
+
+\starttabulate[|l|p|]
+\NC \bf subcategory \NC \bf intended usage \NC \NR
+\HL
+\NC before      \NC experimental (or module) plugins \NC \NR
+\NC normalizers \NC cleanup and preparation handlers \NC \NR
+\NC characters  \NC operations on individual characters \NC \NR
+\NC words       \NC operations on words \NC \NR
+\NC fonts       \NC font related manipulations \NC \NR
+\NC lists       \NC manipulations on the list as a whole \NC \NR
+\NC after       \NC experimental (or module) plugins \NC \NR
+\stoptabulate
+
+Here \quote {plugins} are experimental handlers or specialized
+ones provided in modules that are not part of the kernel. The categories
+are not that distinctive and only provide a convenient way to group
+actions.
+
+Examples of normalizers are: checking for missing characters and
+replacing character references by fallbacks. Character processors
+are for instance directional analysers (for right to left
+typesetting), case swapping, and specialized character triggered
+hyphenation (like compound words). Word processors deal with
+hyphenation (here we use the default function provided by \LUATEX)
+and spell checking. The font processors deal with \OPENTYPE\ as
+well as the ligature building and kerning of other font types.
+Finally, the list processors are responsible for tasks like special
+spacing (french punctuation) and kerning (additional
+inter||character kerning). Of course, this all is rather \CONTEXT\
+specific and we expect to add quite some more less trivial handlers
+the upcoming years.
+
+Many of these handlers are triggered by attributes. Nodes can have
+many attributes and each can have many values. Traditionally \TEX\
+had only a few attributes: language and font, where the first is
+not even a real attribute and the second is only bound to glyph
+nodes. In \LUATEX\ language is also a glyph property. The nice
+thing about attributes is that they can be set at the \TEX\ end
+and obey grouping. This makes them for instance perfect for
+implementing color mechanims. Because attributes are part of the
+nodes, and not nodes themselves, they don't influence or interfere
+processing unless one explicitly tests for them and acts
+accordingly.
+
+In addition to the mentioned task \quote {processors} we also have
+a task \quote {shipouts} and there will be more tasks in future
+versions of \CONTEXT. Again we have subcategories, currently:
+
+\starttabulate[|l|p|]
+\NC \bf subcategory \NC \bf intended usage \NC \NR
+\HL
+\NC before      \NC experimental (or module) plugins \NC \NR
+\NC normalizers \NC cleanup and preparation handlers \NC \NR
+\NC finishers   \NC manipulations on the list as a whole \NC \NR
+\NC after       \NC experimental (or module) plugins \NC \NR
+\stoptabulate
+
+An example of a normalizer is cleanup of the \quote {to be shipped
+out} list. Finishers deal with color, transparency, overprint,
+negated content (sometimes used in page imposition), special
+effects effect (like outline fonts) and viewer layers (something
+\PDF). Quite possible hyperlink support will also be handled there
+but not before the backend code is rewritten.
+
+The previous description is far from complete. For instance, not
+all handlers use the same interface: some work \type {head}
+onwards, some need a \type {tail} pointer too. Some report back
+success or failure. So the task handler needs to normalize their
+usage. Also, some effort goes into optimizing the task in such a
+way that processing the document is still reasonable fast. Keep in
+mind that each construction of a box invokes a callback, and there
+are many boxes used for constructing a page. Even a nilled
+callback is one, so for a simple one word paragraph four callbacks
+are triggered: the (nilled) hyphenate, ligature and kern callbacks
+as well as the one called \type {pre_linebreak_filter}. The task
+handler that we plug in the filter callbacks calls many functions
+and each of them does one of more passes over the node list, and
+in turn might do many call to functions. You can imagine that
+we're quite happy that \TEX\ as well as \LUA\ is so efficient.
+
+As I already mentioned, implementing a task handler as well as
+deciding what actions within tasks to perform in what order is
+specific for the way a macro package is set up. The following code
+can serve as a starting point
+
+\starttyping
+filters = { } -- global namespace
+
+local list = { }
+
+function filters.add(fnc,n)
+    if not n or n > #list + 1 then
+        table.insert(list,#list+1)
+    elseif n < 0 then
+        table.insert(list,1)
+    else
+        table.insert(list,n)
+    end
+end
+
+function filters.remove(fnc,n)
+    if n and n > 0 and n <= #list then
+        table.remove(list,n)
+    end
+end
+
+local function run_filters(head,...)
+    local tail = node.slide(head)
+    for _, fnc in ipairs(list) do
+        head, tail = fnc(head,tail,...)
+    end
+    return head
+end
+
+local function hyphenation(head,tail)
+    return head, tail, lang.hyphenate(head,tail) -- returns done
+end
+local function ligaturing(head,tail)
+    return node.ligaturing(head,tail) -- returns head,tail,done
+end
+local function kerning(head,tail)
+    return node.kerning(head,tail) -- returns head,tail,done
+end
+
+filters.add(hyphenation)
+filters.add(ligaturing)
+filters.add(kerning)
+
+callback.register("pre_linebreak_filter", run_filters)
+callback.register("hpack_filter",         run_filters)
+\stoptyping
+
+Although one can inject extra filters by using the \type {add}
+function it may be clear that this can be dangerous due to
+interference. Therefore a slightly more secure variant is the
+following, where \type {main} is reserved for macro package
+actions and the others can be used by add||ons.
+
+\starttyping
+filters = { } -- global namespace
+
+local list = {
+    pre = { }, main = { }, post = { },
+}
+
+local order = {
+    "pre", "main", "post"
+}
+
+local function somewhere(where)
+    if not where then
+        texio.write_nl("error: invalid filter category")
+    elseif not list[where] then
+        texio.write_nl(string.format("error: invalid filter category '%s'",where))
+    else
+        return list[where]
+    end
+    return false
+end
+
+function filters.add(where,fnc,n)
+    local list = somewhere(where)
+    if not list then
+        -- error
+    elseif not n or n > #list + 1 then
+        table.insert(list,#list+1)
+    elseif n < 0 then
+        table.insert(list,1)
+    else
+        table.insert(list,n)
+    end
+end
+
+function filters.remove(where,fnc,n)
+    local list = somewhere(where)
+    if list and n and n > 0 and n <= #list then
+        table.remove(list,n)
+    end
+end
+
+local function run_filters(head,...)
+    local tail = node.slide(head)
+    for _, lst in pairs(order) do
+        for _, fnc in ipairs(list[lst]) do
+            head, tail = fnc(head,tail,...)
+        end
+    end
+    return head
+end
+
+filters.add("main",hyphenation)
+filters.add("main",ligaturing)
+filters.add("main",kerning)
+
+callback.register("pre_linebreak_filter", run_filters)
+callback.register("hpack_filter",         run_filters)
+\stoptyping
+
+Of course, \CONTEXT\ users who try to use this code will
+be punished by loosing much of the functionality already
+present, simply because we use yet another variant of the
+above code.
+
+\stopcomponent

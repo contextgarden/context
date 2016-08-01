@@ -1,0 +1,603 @@
+% language=uk
+
+\usemodule[nodechart]
+
+\startcomponent about-nodes
+
+\environment about-environment
+
+\startchapter[title={Juggling nodes}]
+
+\startsection[title=Introduction]
+
+When you use \TEX, join the community, follow mailing lists, read manuals,
+and|/|or attend meetings, there will come a moment when you run into the word
+\quote {node}. But, as a regular user, even if you write macros, you can happily
+ignore them because in practice you will never really see them. They are hidden
+deep down in \TEX.
+
+Some expert \TEX ies love to talk about \TEX's mouth, stomach, gut and other
+presumed bodily elements. Maybe it is seen as proof of the deeper understanding
+of this program as Don Knuth uses these analogies in his books about \TEX\ when
+he discusses how \TEX\ reads the input, translates it and digests it into a
+something that can be printed or viewed. No matter how your input gets digested,
+at some point we get nodes. However, as users have no real access to the
+internals, nodes never show themselves to the user. They have no bodily analogy
+either.
+
+A character that is read from the input can become a character node. Multiple
+characters can become a linked list of nodes. Such a list can contain other kind
+of nodes as well, for instance spaced become glue. There can also be penalties
+that steer the machinery. And kerns too: fixed displacements. Such a list can be
+wrapped in a box. In the process hyphenation is applied, characters become glyphs
+and intermediate math nodes becomes a combination of regular glyphs, kerns and
+glue, wrapped into boxes. So, an hbox that contains the three glyphs \type {tex}
+can be represented as follows:
+
+\startlinecorrection
+    \setupFLOWchart
+      [dx=2em,
+       dy=1em,
+       width=4em,
+       height=2em]
+    \setupFLOWshapes
+      [framecolor=maincolor]
+    \startFLOWchart[nodes]
+      \startFLOWcell
+        \name       {box}
+        \location   {1,1}
+        \shape      {action}
+        \text       {hbox}
+        \connection [rl] {t}
+      \stopFLOWcell
+      \startFLOWcell
+        \name       {t}
+        \location   {2,1}
+        \shape      {action}
+        \text       {t}
+        \connection [+t-t] {e}
+      \stopFLOWcell
+      \startFLOWcell
+        \name       {e}
+        \location   {3,1}
+        \shape      {action}
+        \text       {e}
+        \connection [+t-t] {x}
+        \connection [-b+b] {t}
+      \stopFLOWcell
+      \startFLOWcell
+        \name       {x}
+        \location   {4,1}
+        \shape      {action}
+        \text       {x}
+        \connection [-b+b] {e}
+      \stopFLOWcell
+    \stopFLOWchart
+    \FLOWchart[nodes]
+\stoplinecorrection
+
+Eventually a long sequence of nodes can become a paragraph of lines and each line
+is a box. The lines together make a page which is also a box. There are many kind
+of nodes but some are rather special and don't translate directly to some visible
+result. When dealing with \TEX\ as user we can forget about nodes: we never really
+see them.
+
+In this example we see an hlist (hbox) node. Such a node has properties like
+width, height, depth, shift etc. The characters become glyph nodes that have
+(among other properties) a reference to a font, character, language.
+
+Because \TEX\ is also about math, and because math is somewhat special, we have
+noads, some intermediate kind of node that makes up a math list, that eventually
+gets transformed into a list of nodes. And, as proof of extensibility, Knuth came
+up with a special node that is more or less ignored by the machinery but travels
+with the list and can be dealt with in special backend code. Their name indicates
+what it's about: they are called whatsits (which sounds better that whatevers).
+In \LUATEX\ some whatsits are used in the frontend, for instance directional
+information is stored in whatsits.
+
+The \LUATEX\ engine not only opens up the \UNICODE\ and \OPENTYPE\ universes, but
+also the traditional \TEX\ engine. It gives us access to nodes. And this permits
+us to go beyond what was possible before and therefore on mailing lists like the
+\CONTEXT\ list, the word node will pop up more frequently. If you look into the
+\LUA\ files that ship with \CONTEXT\ you cannot avoid seeing them. And, when you
+use the \CLD\ interface you might even want to manipulate them. A nice side
+effect is that you can sound like an expert without having to refer to bodily
+aspects of \TEX: you just see them as some kind of \LUA\ userdata variable. And
+you access them like tables: they are abstracts units with properties.
+
+\stopsection
+
+\startsection[title=Basics]
+
+Nodes are kind of special in the sense that you need to keep an eye on creation
+and destruction. In \TEX\ itself this is mostly hidden:
+
+\startbuffer
+\setbox0\hbox{some text}
+\stopbuffer
+
+\typebuffer
+
+If we look {\em into} this box we get a list of glyphs (see \in {figure}
+[fig:dummy:1]).
+
+\startplacefigure[reference=fig:dummy:1]
+    \getbuffer
+    \boxtoFLOWchart[dummy]{0}
+    \small
+    \FLOWchart[dummy][width=14em,height=3em,dx=1em,dy=.75em] % ,hcompact=yes]
+\stopplacefigure
+
+In \TEX\ you can flush such a box using \type {\box0} or copy it using \type
+{\copy0}. You can also flush the contents i.e.\ omit the wrapper using \type
+{\unhbox0} and \type {\unhcopy0}. The possibilities for disassembling the
+content of a box (or any list for that matter) are limited. In practice you
+can consider disassembling to be absent.
+
+This is different at the \LUA\ end: there we can really start at the beginning of
+a list, loop over it and see what's in there as well as change, add and remove
+nodes. The magic starts with:
+
+\starttyping
+local box = tex.box[0]
+\stoptyping
+
+Now we have a variable that has a so called \type {hlist} node. This node has not
+only properties like \type {width}, \type {height}, \type {depth} and \type
+{shift}, but also a pointer to the content: \type {list}.
+
+\starttyping
+local list = box.list
+\stoptyping
+
+Now, when we start messing with this list, we need to keep into account that the
+nodes are in fact userdata objects, that is: they are efficient \TEX\ data
+structures that have a \LUA\ interface. At the \TEX\ end the repertoire of
+commands that we can use to flush boxes is rather limited and as we cannot mess
+with the content we have no memory management issues. However, at the \LUA\ end
+this is different. Nodes can have pointers to other nodes and they can even have
+special properties that relate to other resources in the program.
+
+Take this example:
+
+\starttyping
+\setbox0\hbox{some text}
+\directlua{node.write(tex.box[0])}
+\stoptyping
+
+At the \TEX\ end we wrap something in a box. Then we can at the \LUA\ end access
+that box and print it back into the input. However, as \TEX\ is no longer in
+control it cannot know that we already flushed the list. Keep in mind that this
+is a simple example, but imagine more complex content, that contains hyperlinks
+or so. Now take this:
+
+\starttyping
+\setbox0\hbox{some text 1}
+\setbox0\hbox{some text 2}
+\stoptyping
+
+Here \TEX\ knows that the box has content and it will free the memory beforehand
+and forget the first text. Or this:
+
+\starttyping
+\setbox0\hbox{some text}
+\box0 \box0
+\stoptyping
+
+The box will be used and after that it's empty so the second flush is basically a
+harmless null operation: nothing gets inserted. But this:
+
+\starttyping
+\setbox0\hbox{some text}
+\directlua{node.write(tex.box[0])}
+\directlua{node.write(tex.box[0])}
+\stoptyping
+
+will definitely fail. The first call flushes the box and the second one sees
+no box content and will bark. The best solution is to use a copy:
+
+\starttyping
+\setbox0\hbox{some text}
+\directlua{node.write(node.copy_list(tex.box[0]))}
+\stoptyping
+
+That way \TEX\ doesn't see a change in the box and will free it when needed: when
+it gets flushed, reassigned, at the end of a group, wherever.
+
+In \CONTEXT\ a somewhat shorter way of printing back to \TEX\ is the following
+and we will use that:
+
+\starttyping
+\setbox0\hbox{some text}
+\ctxlua{context(node.copy_list(tex.box[0])}
+\stoptyping
+
+or shortcut into \CONTEXT:
+
+\starttyping
+\setbox0\hbox{some text}
+\cldcontext{node.copy_list(tex.box[0])}
+\stoptyping
+
+As we've now arrived at the \LUA\ end, we have more possibilities with nodes. In
+the next sections we will explore some of these.
+
+\stopsection
+
+\startsection[title=Management]
+
+The most important thing to keep in mind is that each node is unique in the sense
+that it can be used only once. If you don't need it and don't flush it, you
+should free it. If you need it more than once, you need to make a copy. But let's
+first start with creating a node.
+
+\starttyping
+local g = node.new("glyph")
+\stoptyping
+
+This node has some properties that need to be set. The most important are the font
+and the character. You can find more in the \LUATEX\ manual.
+
+\starttyping
+g.font = font.current()
+g.char = utf.byte("a")
+\stoptyping
+
+After this we can write it to the \TEX\ input:
+
+\starttyping
+context(g)
+\stoptyping
+
+This node is automatically freed afterwards. As we're talking \LUA\ you can use
+all kind of commands that are defined in \CONTEXT. Take fonts:
+
+\startbuffer
+\startluacode
+local g1 = node.new("glyph")
+local g2 = node.new("glyph")
+
+g1.font = fonts.definers.internal {
+    name = "dejavuserif",
+    size = "60pt",
+}
+
+g2.font = fonts.definers.internal {
+    name = "dejavusansmono",
+    size = "60pt",
+}
+
+g1.char = utf.byte("a")
+g2.char = utf.byte("a")
+
+context(g1)
+context(g2)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+We get: \getbuffer, but there is one pitfall: the nodes have to be flushed in
+horizontal mode, so either put \type {\dontleavehmode} in front or add \type
+{context.dontleavehmode()}. If you get error messages like \typ {this can't
+happen} you probably forgot to enter horizontal mode.
+
+In \CONTEXT\ you have some helpers, for instance:
+
+\starttyping
+\startluacode
+local id = fonts.definers.internal { name = "dejavuserif" }
+
+context(nodes.pool.glyph(id,utf.byte("a")))
+context(nodes.pool.glyph(id,utf.byte("b")))
+context(nodes.pool.glyph(id,utf.byte("c")))
+\stopluacode
+\stoptyping
+
+or, when we need these functions a lot and want to save some typing:
+
+\startbuffer
+\startluacode
+local getfont  = fonts.definers.internal
+local newglyph = nodes.pool.glyph
+local utfbyte  = utf.byte
+
+local id = getfont { name = "dejavuserif" }
+
+context(newglyph(id,utfbyte("a")))
+context(newglyph(id,utfbyte("b")))
+context(newglyph(id,utfbyte("c")))
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This renders as: \getbuffer. We can make copies of nodes too:
+
+\startbuffer
+\startluacode
+local id = fonts.definers.internal { name = "dejavuserif" }
+local a  = nodes.pool.glyph(id,utf.byte("a"))
+
+for i=1,10 do
+    context(node.copy(a))
+end
+
+node.free(a)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This gives: \getbuffer. Watch how afterwards we free the node. If we have not one
+node but a list (for instance because we use box content) you need to use the
+alternatives \type {node.copy_list} and \type {node.free_list} instead.
+
+In \CONTEXT\ there is a convenient helper to create a list of text nodes:
+
+\startbuffer
+\startluacode
+context(nodes.typesetters.tonodes("this works okay"))
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+And indeed, \getbuffer, even when we use spaces. Of course it makes
+more sense (and it is also more efficient) to do this:
+
+\startbuffer
+\startluacode
+context("this works okay")
+\stopluacode
+\stopbuffer
+
+In this case the list is constructed at the \TEX\ end. We have now learned enough
+to start using some convenient operations, so these are introduced next. Instead
+of the longer \type {tonodes} call we will use the shorter one:
+
+\starttyping
+local head, tail = string.tonodes("this also works"))
+\stoptyping
+
+As you see, this constructor returns the head as well as the tail of the
+constructed list.
+
+\stopsection
+
+\startsection[title=Operations]
+
+If you are familiar with \LUA\ you will recognize this kind of code:
+
+\starttyping
+local str = "time: " .. os.time()
+\stoptyping
+
+Here a string \type {str} is created that is built out if two concatinated
+snippets. And, \LUA\ is clever enough to see that it has to convert the number to
+a string.
+
+In \CONTEXT\ we can do the same with nodes:
+
+\startbuffer
+\startluacode
+local foo = string.tonodes("foo")
+local bar = string.tonodes("bar")
+local amp = string.tonodes(" & ")
+
+context(foo .. amp .. bar)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This will append the two node lists: \getbuffer.
+
+\startbuffer
+\startluacode
+local l = string.tonodes("l")
+local m = string.tonodes(" ")
+local r = string.tonodes("r")
+
+context(5 * l .. m .. r * 5)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+You can have the multiplier on either side of the node: \getbuffer.
+Addition and subtraction is also supported but it comes in flavors:
+
+\startbuffer
+\startluacode
+local l1 = string.tonodes("aaaaaa")
+local r1 = string.tonodes("bbbbbb")
+local l2 = string.tonodes("cccccc")
+local r2 = string.tonodes("dddddd")
+local m  = string.tonodes(" + ")
+
+context((l1 - r1) .. m .. (l2 + r2))
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+In this case, as we have two node (lists) involved in the addition and
+subtraction, we get one of them injected into the other: after the first, or
+before the last node. This might sound weird but it happens.
+
+\dontleavehmode \start \maincolor \getbuffer \stop
+
+We can use these operators to take a slice of the given node list.
+
+\startbuffer
+\startluacode
+local l = string.tonodes("123456")
+local r = string.tonodes("123456")
+local m = string.tonodes("+ & +")
+
+context((l - 3) .. (1 + m - 1).. (3 + r))
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+So we get snippets that get appended: \getbuffer. The unary operator
+reverses the list:
+
+\startbuffer
+\startluacode
+local l = string.tonodes("123456")
+local r = string.tonodes("123456")
+local m = string.tonodes(" & ")
+
+context(l .. m .. - r)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This is probably not that useful, but it works as expected: \getbuffer.
+
+We saw that \type {*} makes copies but sometimes that is not enough. Consider the
+following:
+
+\startbuffer
+\startluacode
+local n = string.tonodes("123456")
+
+context((n - 2) .. (2 + n))
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+Because the slicer frees the unused nodes, the value of \type {n} in the second
+case is undefined. It still points to a node but that one already has been freed.
+So you get an error message. But of course (as already demonstrated) this is
+valid:
+
+\startbuffer
+\startluacode
+local n = string.tonodes("123456")
+
+context(2 + n - 2)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+We get the two middle characters: \getbuffer. So, how can we use a
+node (list) several times in an expression? Here is an example
+
+\startbuffer
+\startluacode
+local l = string.tonodes("123")
+local m = string.tonodes(" & ")
+local r = string.tonodes("456")
+
+context((l^1 .. r^1)^2 .. m^1 .. r .. m .. l)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+Using \type {^} we create copies, so we can still use the original later on. You
+can best make sure that one reference to a node is not copied because otherwise
+we get a memory leak. When you write the above without copying \LUATEX\ most
+likely end up in a loop. The result of the above is:
+
+\blank \start \dontleavehmode \maincolor \getbuffer \stop \blank
+
+Let's repeat it once more time: keep in mind that we need to do the memory
+management ourselves. In practice we will seldom need more than the
+concatination, but if you make complex expressions be prepared to loose some
+memory when you copy and don't free them. As \TEX\ runs are normally limited in
+time this is hardly an issue.
+
+So what about the division. We needed some kind of escape and as with \type
+{lpeg} we use the \type {/} to apply additional operations.
+
+\startbuffer
+\startluacode
+local l = string.tonodes("123")
+local m = string.tonodes(" & ")
+local r = string.tonodes("456")
+
+local function action(n)
+    for g in node.traverse_id(node.id("glyph"),n) do
+        g.char = string.byte("!")
+    end
+    return n
+end
+
+context(l .. m / action .. r)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+And indeed we the middle glyph gets replaced: \getbuffer.
+
+\startbuffer
+\startluacode
+local l = string.tonodes("123")
+local r = string.tonodes("456")
+
+context(l .. nil .. r)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+When you construct lists programmatically it can happen that one of the
+components is nil and to some extend this is supported: so the above
+gives: \getbuffer.
+
+Here is a summary of the operators that are currently supported. Keep in mind that
+these are not built in \LUATEX\ but extensions in \MKIV. After all, there are many
+ways to map operators on actions and this is just one.
+
+\starttabulate[|l|l|]
+\NC \type{n1 .. n2} \NC append nodes (lists) \type {n1} and \type {n2}, no copies \NC \NR
+\NC \type{n * 5}    \NC append 4 copies of node (list) \type {n} to \type {n} \NC \NR
+\NC \type{5 + n}    \NC discard the first 5 nodes from list \type {n} \NC \NR
+\NC \type{n - 5}    \NC discard the last 5 nodes from list \type {n} \NC \NR
+\NC \type{n1 + n2}  \NC inject (list) \type {n2} after first of list \type {n1} \NC \NR
+\NC \type{n1 - n2}  \NC inject (list) \type {n2} before last of list \type {n1} \NC \NR
+\NC \type{n^2}      \NC make two copies of node (list) \type {n} and keep the orginal \NC \NR
+\NC \type{- n}      \NC reverse node (list) \type {n} \NC \NR
+\NC \type{n / f}    \NC apply function \type {f} to node (list) \type {n} \NC \NR
+\stoptabulate
+
+As mentioned, you can only use a node or list once, so when you need it more times, you need
+to make copies. For example:
+
+\startbuffer
+\startluacode
+local l = string.tonodes(     -- maybe: nodes.maketext
+    " 1 2 3 "
+)
+local r = nodes.tracers.rule( -- not really a user helper (spec might change)
+    string.todimen("1%"),     -- or maybe: nodes.makerule("1%",...)
+    string.todimen("2ex"),
+    string.todimen(".5ex"),
+    "maincolor"
+)
+
+context(30 * (r^1 .. l) .. r)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This gives a mix of glyphs, glue and rules: \getbuffer. Of course you can wonder
+how often this kind of juggling happens in use cases but at least in some core
+code the concatination (\type {..}) gives a bit more readable code and the
+overhead is quite acceptable.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

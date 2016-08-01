@@ -1,0 +1,39 @@
+\setupbodyfont[dejavu]
+
+\starttext
+
+\dontcomplain
+
+\startluacode
+    if jit then
+        jit.on()
+        jit.off()
+    end
+\stopluacode
+
+\startluacode
+    statistics.starttiming()
+\stopluacode
+
+\dorecurse {10} {
+    \dorecurse{1000} {
+        \dontleavehmode
+        \startMPcode
+            for i=1,100 :
+                draw
+                    fullcircle scaled 10pt
+                    withpen pencircle xscaled 2 yscaled 4 rotated 20 ;
+            endfor ;
+        \stopMPcode
+        \enspace
+    }
+    \page
+}
+
+\startluacode
+    statistics.stoptiming()
+    context(statistics.elapsedtime())
+\stopluacode
+
+\stoptext
+

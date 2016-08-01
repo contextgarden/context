@@ -1,0 +1,347 @@
+% language=uk
+
+\startcomponent fonts-lookups
+
+\environment fonts-environment
+
+\startchapter[title=Lookups][color=darkblue]
+
+\startsection[title=Introduction]
+
+In traditional \TEX\ a font is defined by referring to its filename. A
+definition looks like this:
+
+\starttyping
+\font \MyFontA = lmr10
+\font \MyFontB = lmr10 at 20pt
+\font \MyFontC = lmr10 scaled 1500
+\stoptyping
+
+The first definition defines the command \type {MyFontA} as a reference to the
+font stored in the file \type {lmx10}. No scaling takes place so the natural size
+is taken. This so called designsize is in no way standardized. Just look at these
+three specimen:
+
+\startlines
+{\definedfont[file:dejavuserif*default]Design Size (Dejavu)}
+{\definedfont[file:cambria*default]Design Size (Cambria)}
+{\definedfont[file:lmroman10-regular*default]Design Size (Latin Modern)}
+\stoplines
+
+The designsize is normally 10 point, but as there is no real reference for this a
+designer decides how to translate this into a visual representation. As a
+consequence the \type {20pt} in the second line of the example definitions only
+means that the font is scaled to (normally) twice the designsize. The third line
+scaled by a factor \type {1.5} and the reason for using a value thousand times
+larger is that \TEX's numbers are integers.
+
+The next three lines are typical for Latin Modern (derived from Computer Modern)
+because this family comes in different design sizes.
+
+\starttyping
+\font \MyFontD = lmr12
+\font \MyFontE = lmr12 at 20pt
+\font \MyFontF = lmr12 scaled 1500
+\stoptyping
+
+Because the designsize is part of the font metrics the second line (\type
+{\MyFontE}) is of similar size as \type {\MyFontB} although the 12~point variant
+is visually better suited for scaling up.
+
+These definitions refer to files, but what file? What gets loaded is the file
+with name \type {name.tfm}. Eventually for embedding in the (let's assume \PDF)
+file the outlines are taken from \type {name.pfb}. At that stage, when present, a
+\type {name.vf} is consulted in order to resolve characters that are combinations
+of others (potentially from other \type {pfb} files). The mapping from \type
+{name.tfm} to \type {name.pfb} filename happens in the so called map file. This
+means that one can also refer to another file, for instance \type {name.ttf}.
+
+All this logic is hard coded in the engine and because the virtual font mechanism
+was introduced later without extending the \type {tfm} format, it can be hard at
+times to figure out issues when a (maybe obsolete) virtual file is present (this
+can be the case if you have generated the \type {tfm} file from an \type {afm}
+file that comes with the \type {pfb} file when you buy one.
+
+But, in \LUATEX\ we no longer use traditional fonts and as a consequence we have
+more options open. Before we move on to them, we mention yet another definition:
+
+\starttyping
+\font \MyFontG = lmr12 sa 1.2
+\stoptyping
+
+This method is not part of \TEX\ but is provided by \CONTEXT, \MKII\ as well as
+\MKIV. It means as much as \quotation {scale this font to 1.2 times the
+bodyfontsize}. As this involves parsing the specification, it does not work
+as advertised here, but the next definition works okay:
+
+\starttyping
+\definefont[MyFontG][lmr12 sa 1.2]
+\stoptyping
+
+This indicates that we already had a parser for font specifications on board
+which in turn made it relatively easy to do even more parsing, for instance for
+font features as introduced in \XETEX\ and \LUATEX.
+
+\stopsection
+
+\startsection[title=Specifications]
+
+In \LUATEX\ we intercept the font loader. We do so for several reasons.
+
+\startitemize[packed]
+
+\startitem We want to make decisions on what file to load, this is needed when
+for instance there are files with the same name but different properties. \stopitem
+
+\startitem We want to be able to lookup by file, by name, and by more abstract specification.
+In doing so, we want to be as tolerant as possible. \stopitem
+
+\startitem We want to support several scaling methods, as discussed in the previous section. \stopitem
+
+\startitem We want to implement several strategies for passing features and defining non
+standard approaches. \stopitem
+
+\stopitemize
+
+The formal specification of a font is as follows:
+
+\starttyping
+\definefont[PublicReference][filename]
+\definefont[PublicReference][filename at dimension]
+\definefont[PublicReference][filename scaled number]
+\stoptyping
+
+We already had that extended to:
+
+\starttyping
+\definefont[PublicReference][filename]
+\definefont[PublicReference][filename at dimension]
+\definefont[PublicReference][filename scaled number]
+\definefont[PublicReference][filename sa number]
+\stoptyping
+
+So let's generalize that to:
+
+\starttyping
+\definefont[PublicReference][filename scaling]
+\stoptyping
+
+And in \MKIV\ we now have:
+
+\starttyping
+\definefont[PublicReference][filename*featurenames scaling]
+\definefont[PublicReference][filename:featurespecication scaling]
+\definefont[PublicReference][filename@virtualconstructor scaling]
+\stoptyping
+
+The second variant is seldom used and is only provided because some users
+have fonts defined in the \XETEX\ way. Users are advised not to use this
+method. The last method is special in the sense that it's used to define
+fonts that are constructed using the built in virtual font constructors. This
+method is for instance used for defining virtual math fonts.
+
+The first method is what we use most. It is really important not to forget the
+feature specification. A rather safe bet is \type {*default}. In a next chapter
+we will discuss the difference between these two; here we focus on the name part.
+
+The \type {filename} is in fact a symbolic name. In \CONTEXT\ we have always used
+an indirect reference to fonts. Look at this:
+
+\starttyping
+\definefont[TitleFont][SerifBold*default sa 2]
+\stoptyping
+
+A reference like \type {SerifBold} makes it possible to define styles independent
+of the chosen font family. This reference eventually gets resolved to a real
+name and there can be a chain of references.
+
+Font definitions can be grouped into a larger setup using typescripts. In that
+case, we can set the features for a regular, italic, bold and bolditalic for the
+whole set but when a fontname has a specific feature associated (as in the
+previous examples) that one takes precedence.
+
+so far we talked about fonts being files, but in practice a lookup happens by
+file as well as by name as known to the system. In the next section this will be
+explained in more detail.
+
+\stopsection
+
+\startsection[title=File]
+
+You can force a file lookup with:
+
+\starttyping
+\definefont[TitleFont][file:somefilename*default sa 2]
+\stoptyping
+
+If you use more symbolic names you can use the \type {file:} prefix in the
+mapping:
+
+\starttyping
+\definefontsynonym[SerifBold][file:somefile]
+\definefont[TitleFont][SerifBold*default sa 2]
+\stoptyping
+
+In projects that are supposed to run for a long time I always use the file based
+lookup, because filenames tend to be rather stable. Also, as the lookup happens
+in the \TEX\ directory structure, file lookups will rely on the general file
+search routines. This has the benefit that case is ignored. When no match is found
+the lookup will also use the font name database. Spaces and special characters are
+ignored.
+
+The name alone is not enough as there can be similar filenames with different
+suffixes. Therefore the lookup will happen in the order \ctxcommand {
+concatcommalist { list = fonts.readers.sequence, separator = ", ", last = " and
+", command = "type" } }. You can force a lookup by being more explicit, like:
+
+\starttyping
+\definefont[TitleFont][file:somefilename.ttf*default sa 1]
+\stoptyping
+
+\stopsection
+
+\startsection[title=Name]
+
+Say that we want to use a Dejavu font and that instead of filenames we want to
+use its given name. The best way to find out what is available is to call for a
+list:
+
+\starttyping
+mtxrun --script font --list --all dejavu
+\stoptyping
+
+This produces the following list:
+
+\startnarrowtyping
+dejavusans                     dejavusans                     dejavusans.ttf
+dejavusansbold                 dejavusansbold                 dejavusans-bold.ttf
+dejavusansboldoblique          dejavusansboldoblique          dejavusans-boldoblique.ttf
+dejavusanscondensed            dejavusanscondensed            dejavusanscondensed.ttf
+dejavusanscondensedbold        dejavusanscondensedbold        dejavusanscondensed-bold.ttf
+dejavusanscondensedboldoblique dejavusanscondensedboldoblique dejavusanscondensed-boldoblique.ttf
+dejavusanscondensednormal      dejavusanscondensed            dejavusanscondensed.ttf
+dejavusanscondensedoblique     dejavusanscondensedoblique     dejavusanscondensed-oblique.ttf
+dejavusansextralight           dejavusansextralight           dejavusans-extralight.ttf
+dejavusanslight                dejavusansextralight           dejavusans-extralight.ttf
+dejavusansmono                 dejavusansmono                 dejavusansmono.ttf
+dejavusansmonobold             dejavusansmonobold             dejavusansmono-bold.ttf
+dejavusansmonoboldoblique      dejavusansmonoboldoblique      dejavusansmono-boldoblique.ttf
+dejavusansmononormal           dejavusansmonooblique          dejavusansmono-oblique.ttf
+dejavusansmonooblique          dejavusansmonooblique          dejavusansmono-oblique.ttf
+dejavusansnormal               dejavusans                     dejavusans.ttf
+dejavusansoblique              dejavusansoblique              dejavusans-oblique.ttf
+dejavuserif                    dejavuserif                    dejavuserif.ttf
+dejavuserifbold                dejavuserifbold                dejavuserif-bold.ttf
+dejavuserifbolditalic          dejavuserifbolditalic          dejavuserif-bolditalic.ttf
+dejavuserifcondensed           dejavuserifcondensed           dejavuserifcondensed.ttf
+dejavuserifcondensedbold       dejavuserifcondensedbold       dejavuserifcondensed-bold.ttf
+dejavuserifcondensedbolditalic dejavuserifcondensedbolditalic dejavuserifcondensed-bolditalic.ttf
+dejavuserifcondenseditalic     dejavuserifcondenseditalic     dejavuserifcondensed-italic.ttf
+dejavuserifcondensednormal     dejavuserifcondensed           dejavuserifcondensed.ttf
+dejavuserifitalic              dejavuserifitalic              dejavuserif-italic.ttf
+dejavuserifnormal              dejavuserif                    dejavuserif.ttf
+\stopnarrowtyping
+
+The first two columns mention the names that we can use to access a font. These
+are normalized names in the sense that we only kept letters and numbers. The next three
+definitions are equivalent:
+
+\starttyping
+\definefont[TitleFont][name:dejavuserif*default sa 1]
+\definefont[TitleFont][name:dejavuserifnormal*default sa 1]
+\definefont[TitleFont][name:dejavuserif.ttf*default sa 1]
+\stoptyping
+
+In the list you see two names that all point to \type {dejavusans-extralight.ttf}:
+
+\starttyping
+dejavusansextralight
+dejavusanslight
+\stoptyping
+
+There are some heuristics built into \CONTEXT\ and we do some cleanup as well.
+For instance we interpret \type {ital} as \type {italic}. In a font there is
+sometimes information about the weight and we look at those properties as well.
+Unfortunately font names (even within a collection) are often rather inconsistent
+so you still need to know what you're looking for. The more explicit you are, the
+less change of problems.
+
+\stopsection
+
+\startsection[title=Spec]
+
+There is often some logic in naming fonts but it's not robust and really depends on
+how consistent a font designer or typefoundry has been. In \CONTEXT\ we can
+access names by using a normalized scheme.
+
+\starttyping
+name-weight-style-width-variant
+\stoptyping
+
+The following values are valid:
+
+\starttabulate[|Bl|Tp|]
+\NC weight  \NC \ctxcommand { concatcommalist { list = fonts.names.knownweights  } } \NC \NR
+\NC style   \NC \ctxcommand { concatcommalist { list = fonts.names.knownstyles   } } \NC \NR
+\NC width   \NC \ctxcommand { concatcommalist { list = fonts.names.knownwidths   } } \NC \NR
+\NC variant \NC \ctxcommand { concatcommalist { list = fonts.names.knownvariants } } \NC \NR
+\stoptabulate
+
+The four specifiers are optional but the more you provide, the better the match. Let's
+give an example:
+
+\starttyping
+mtxrun --script fonts --list --spec dejavu
+\stoptyping
+
+This reports:
+
+\startnarrowtyping
+dejavuserifcondensed normal normal normal normal dejavuserifcondensed dejavuserifcondensed.ttf
+dejavuserif          normal normal normal normal dejavuserif          dejavuserif.ttf
+dejavusansmono       normal normal normal normal dejavusansmono       dejavusansmono.ttf
+dejavusanscondensed  normal normal normal normal dejavusanscondensed  dejavusanscondensed.ttf
+dejavusans           normal normal normal normal dejavusans           dejavusans.ttf
+\stopnarrowtyping
+
+We can be more specific, for instance:
+
+\starttyping
+mtxrun --script fonts --list --spec dejavu-bold
+\stoptyping
+
+\startnarrowtyping
+dejavuserif    bold normal normal normal dejavuserifbold    dejavuserif-bold.ttf
+dejavusansmono bold normal normal normal dejavusansmonobold dejavusansmono-bold.ttf
+dejavusans     bold normal normal normal dejavusansbold     dejavusans-bold.ttf
+\stopnarrowtyping
+
+We add another specifier:
+
+\starttyping
+mtxrun --script fonts --list --spec dejavu-bold-italic
+\stoptyping
+
+\startnarrowtyping
+dejavuserif    bold italic normal normal dejavuserifbolditalic     dejavuserif-bolditalic.ttf
+dejavusansmono bold italic normal normal dejavusansmonoboldoblique dejavusansmono-boldoblique.ttf
+dejavusans     bold italic normal normal dejavusansboldoblique     dejavusans-boldoblique.ttf
+\stopnarrowtyping
+
+As the first hit is used we need to be more specific with respect to the
+name, so lets do that in an example definition:
+
+\starttyping
+\definefont[TitleFont][spec:dejavuserif-bold-italic*default sa 1]
+\stoptyping
+
+Watch the prefix \type {spec}. Wolfgang Schusters \type {simplefonts} module
+nowadays uses this method to define sets of fonts based on a name only
+specification. Of course that works best if a fontset has well defined
+properties.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,732 @@
+% language=uk
+
+\startcomponent about-speed
+
+\environment about-environment
+
+\startchapter[title=Speed]
+
+\startsection[title=Introduction]
+
+In the \quote {mk} and \type {hybrid} progress reports I have spend some words
+on speed. Why is speed this important?
+
+In the early days of \CONTEXT\ I often had to process documents with thousands of
+pages and hundreds of thousands of hyperlinks. You can imagine that this took a
+while, especially when all kind of ornaments had to be added to the page:
+backgrounds, buttons with their own backgrounds and offsets, hyperlink colors
+dependent on their state, etc. Given that multiple runs were needed, this could
+mean that you'd leave the machine running all night in order to get the final
+document.
+
+It was the time when computers got twice the speed with each iteration of
+hardware, so I suppose that it would run substantially faster on my current
+laptop, an old Dell M90 workhorse. Of course a recently added SSD drive adds a
+boost as well. But still, processing such documents on a machine with a 8Mhz 286
+processor and 640 megabytes of memory was close to impossible. But, when I
+compare the speed of core duo M90 with for instance an M4600 with a i5 \CPU\
+running the same clock speed as the M90, I see a factor 2 improvement at most. Of
+course going for a extremely clocked desktop will be much faster, but we're no
+longer seeing a tenfold speedup every few years. On the contrary: we see a shift
+multiple cores, often running at a lower clock speed, with the assumption that
+threaded applications are used. This scales perfectly for web services and
+graphic manipulations but not so much for \TEX. If we want go faster, we need to
+see where we can be more efficient within more or less frozen clock speeds.
+
+Of course there are some developments that help us. First of all, for programs
+like \TEX\ clever caching of files by the operating system helps a lot. Memory
+still becomes faster and \CPU\ cached become larger too. For large documents with
+lots of resources an SSD works out great. As \LUA\ uses floating point, speedup
+in that area also help with \LUATEX. We use virtual machines for \TEX\ related
+services and for some reason that works out quite well, as the underlying
+operating system does lots of housekeeping in parallel. But, with all maxing out,
+we finally end up at the software itself, and in \TEX\ this boils down to a core
+of compiled code along with lots of macro expansions and interpret \LUA\ code.
+
+In the end, the question remains what causes excessive runtimes. Is it the nature
+of the \TEX\ expansion engine? Is it bad macro writing? Is there too much
+overhead? If you notice how fast processing the \TEX\ book goes on modern
+hardware it is clear that the core engine is not the problem. It's no big deal to
+get 100 pages per second on documents that use relative a simple page builder and
+have macros that lack a flexible user interface.
+
+Take the following example:
+
+\starttyping
+\starttext
+\dorecurse{1000}{test\page}
+\stoptext
+\stoptyping
+
+We do nothing special here. We use the default Latin Modern fonts and process
+single words. No burden is put on the pagebuilder either. This way we get on a
+2.33 Ghz T7600 \CPU\ a performance of 185 pages per second. \footnote {In this
+case the mingw version was used. A version using the native \WINDOWS\ compiler
+runs somewhat faster, although this depends on the compiler options. \footnote
+{We've noticed that sometimes the mingw binaries are faster than native binaries,
+but sometimes they're slower.} With \LUAJITTEX\ the 185 pages per second become
+becomes 195 on a 1000 page document.} The estimated \LUA\ overhead in this 1000
+page document is some 1.5 to 2 seconds. The following table shows the performance
+on such a test document with different page numbers in pps (reported pages per
+second).
+
+\starttabulate[|r|r|]
+\HL
+\NC \bf \# pages \NC \bf pps \NC \NR
+\HL
+\NC     1 \NC   2  \NC \NR
+\NC    10 \NC  15 \NC \NR
+\NC   100 \NC  90 \NC \NR
+\NC  1000 \NC 185 \NC \NR
+\NC 10000 \NC 215 \NC \NR
+\HL
+\stoptabulate
+
+The startup time, measured on a zero page document, is 0.5 seconds. This includes
+loading the format, loading the embedded \LUA\ scripts and initializing them,
+initializing and loading the file database, locating and loading some runtime
+files and loading the absolute minumum number of fonts: a regular and math Latin
+Modern. A few years before this writing that was more than a second, and the gain
+is due to a slightly faster \LUA\ interpreter as well as improvements in
+\CONTEXT.
+
+So why does this matter at all, if on a larger document the startup time can be
+neglected? It does because when I have to implement a style for a project or are
+developing some functionality a fast edit||run||preview cycle is a must, if only
+because even a few second wait feels uncomfortable. On the other hand, when I
+process a manual of say 150 pages, which uses some tricks to explain matters, I
+don't care if the processing rate is between 5 and 15 pages per second, simply
+because you get (done) what you asked for. It mostly has to do with feeling
+comfortable.
+
+There is one thing to keep in mind: such measurements can vary over time, as they
+depend on several factors. Even in the trivial case we need to:
+
+\startitemize[packed]
+\startitem
+    load macros and \LUA\ code
+\stopitem
+\startitem
+    load additional files
+\stopitem
+\startitem
+    initialize the system, think of fonts and languages
+\stopitem
+\startitem
+    package the pages, which includes reverting to global document states
+\stopitem
+\startitem
+    create the final output stream (\PDF)
+\stopitem
+\stopitemize
+
+The simple one word per page test is not that slow, and normally for 1000 pages we
+measure around 200 pps. However, due to some small speedups (that somehow add up)
+in three months time I could gain a lot:
+
+\starttabulate[|r|r|r|r|]
+\HL
+\NC \bf \# pages \NC \bf Januari \NC \bf April \NC \bf May\rlap{\quad(2013)} \NR
+\HL
+\NC     1 \NC   2 \NC   2 \NC   2 \NC \NR
+\NC    10 \NC  15 \NC  17 \NC  17 \NC \NR
+\NC   100 \NC  90 \NC 109 \NC 110 \NC \NR
+\NC  1000 \NC 185 \NC 234 \NC 259 \NC \NR
+\NC 10000 \NC 215 \NC 258 \NC 289 \NC \NR
+\HL
+\stoptabulate
+
+Among the improvements in April were a faster output to the console (first
+prototyped in \LUA, later done in the \LUATEX\ engine itself), and a couple of
+low level \LUA\ optimizations. In May a dirty (maybe too tricky) global document
+state restore trick has beeing introduced. Although these changes give nice speed
+bump, they will mostly go unnoticed in more realistic documents. There we are
+happy if we end up in the 20 pps range. So, in practice a more than 10 percent
+speedup between Januari and April is just a dream. \footnote {If you wonder why I
+still bother with such things: sometimes speedups are just a side effect of
+trying to accomplish something else, like less verbose output in full tracing
+mode.}
+
+There are many cases where it does matter to squeeze out every second possible.
+We run workflows where some six documents are generated from one source. If we
+forget about the initial overhead of fetching the source from a remote server
+\footnote {In the user interface we report the time it takes to fetch the source
+so that the typesetter can't be blamed for delays.} gaining half a second per
+document (if we start frech each needs two runs at least) means that the user
+will see the first result one second faster and have them all in six less than
+before. In that case it makes sense to identify bottlenecks in the more high
+level mechanisms.
+
+And this is why during the development of \CONTEXT\ and the transition from
+\MKII\ to \MKIV\ quite some time has been spent on avoiding bottlenecks. And, at
+this point we can safely conclude that, in spite of more advanced functionality,
+the current version of \MKIV\ runs faster than the \MKII\ versions in most cases,
+especially if you take the additional functionality into account (like \UNICODE\
+input and fonts).
+
+\stopsection
+
+\startsection[title=The \TEX\ engine]
+
+Writing inefficient macros is not that hard. If they are used only a few times,
+for instance in setting up properties it plays no role. But if they're expanded
+many times it may make a difference. Because use and development of \CONTEXT\
+went hand in hand we always made sure that the overhead was kept at a minimum.
+
+\startsubject[title=The parbuilder]
+
+There are a couple of places where document processing in a traditional \TEX\
+engine gets a performance hit. Let's start with the parbuilder. Although the
+paragraph builder is quite fast it can responsible for a decent amount of runtime.
+It is also a fact that the parbuilder of the engines derived from original \TEX\
+are more complex. For instance, \OMEGA\ adds bidirectionality to the picture
+which involves some extra checking as well as more nodes in the list. The \PDFTEX\
+engine provides protrusion and expansions, and as that feature was primarily a
+topic of research it was never optimized.
+
+In \LUATEX\ the parbuilder is a mixture of the \PDFTEX\ and \OMEGA\ builders and
+adapted to the fact that we have split the hyphenation, ligature building,
+kerning and breaking a paragraph into lines. The protrusion and expansion code is
+still there but already for a few years I have alternative code for \LUATEX\ that
+simplifies the implementation and could in principle give a speed boost as well
+but till now we never found time to adapt the engine. Take the following test code:
+
+\ifdefined\tufte \else \let\tufte\relax \fi
+
+\starttyping
+\testfeatureonce{100}{\setbox0\hbox{\tufte \par}} \tufte \par
+\stoptyping
+
+In \MKIV\ we use \LUA\ for doing fonts so when we measure this bit we get the
+used time for typesetting our \type {\tufte} quote without breaking it into
+lines. A normal \LUATEX\ run needs 0.80 seconds and a \LUAJITTEX\ run takes 0.47
+seconds. \footnote {All measurements are on a Dell M90 laptop running Windows 8.
+I keep using this machine because it has a decent high res 4:3 screen. It's the
+same machine Luigi Scarso and I used when experimenting with \LUAJITTEX.}
+
+\starttyping
+\testfeatureonce{100}{\setbox0\vbox{\tufte \par}} \tufte \par
+\stoptyping
+
+In this case \LUATEX\ needs 0.80 seconds and \LUAJITTEX\ needs 0.50 seconds and
+as we break the list into lines, we can deduct that close to zero seconds are
+needed to break 100 samples. This (often used) sample text has the interesting
+property that it has many hyphenation points and always gives multiple hyphenated
+lines. So, the parbuilder, if no protrusion and expansion are used, is real fast!
+
+\starttyping
+\startparbuilder[basic]
+  \testfeatureonce{100}{\setbox0\vbox{\tufte \par}} \tufte \par
+\stopparbuilder
+\stoptyping
+
+Here we kick in our \LUA\ version of the par builder. This takes 1.50 seconds for
+\LUATEX\ and 0.90 seconds for \LUAJITTEX. So, \LUATEX\ needs 0.70 seconds to
+break the quote into lines while \LUAJITTEX\ needs 0.43. If we stick to stock
+\LUATEX, this means that a medium complex paragraph needs 0.007 seconds of \LUA\
+time and this is not that is not a time to be worried about. Of course these
+numbers are not that accurate but the measurements are consistent over multiple
+runs for a specific combination of \LUATEX\ and \MKIV. On a more modern machine
+it's probably also close to zero.
+
+These measurements demonstrate that we should add some nuance to the assumption
+that parbuilding takes time. For this we need to distinguish between traditional
+\TEX\ and \LUATEX. In traditional \TEX\ you build an horizontal box or vertical
+box. In \TEX\ speak these are called horizontal and vertical lists. The main text
+flow is a special case and called the main vertical list, but in this perspective
+you can consider it to be like a vertical box.
+
+Each vertical box is split into lines. These lines are packed into horizontal
+boxes. In traditional \TEX\ constructing a list starts with turning references to
+characters into glyphs and ligatures. Kerns get inserted between characters if
+the font requests that. When a vertical box is split into lines, discretionary
+nodes get inserted (hyphenation) and when font expansion or protrusion is enabled
+extra fonts with expanded dimensions get added.
+
+So, in the case of vertical box, building the paragraph is not really
+distinguished from ligaturing, kerning and hyphenation which means that the
+timing of this process is somewhat fuzzy. Also, because after the lines are
+identified some final packing of lines happens and the result gets added to a
+vertical list.
+
+In \LUATEX\ all these stages are split into hyphenation, ligature building,
+kerning, line breaking and finalizing. When the callbacks are not enabled the
+normal machinery kicks in but still the stages are clearly separated. In the case
+of \CONTEXT\ the font ligaturing and kerning get preceded by so called node mode
+font handling. This means that we have extra steps and there can be even more
+steps before and afterwards. And, hyphenation always happens on the whole list,
+contrary to traditional \TEX\ that interweaves this. Keep in mind that because we
+can box and unbox and in that process add extra text the whole process can get
+repeated several times for the same list. Of course already treated glyphs and
+kerns are normally kept as they are.
+
+So, because in  \LUATEX\ the process of splitting into lines is separated we can
+safely conclude that it is real fast. Definitely compared to al the font related
+steps. So, let's go back to the tests and let's do the following:
+
+\starttyping
+\testfeatureonce{1000}{\setbox0\hbox{\tufte}}
+
+\testfeatureonce{1000}{\setbox0\vbox{\tufte}}
+
+\startparbuilder[basic]
+    \testfeatureonce{1000}{\setbox0\vbox{\tufte}}
+\stopparbuilder
+\stoptyping
+
+We've put the text into a macro so that we don't have interference from reading
+files. The test wrapper does the timing. The following measurements are somewhat
+rough but repetition gives similar results. \footnote {Before and between runs
+we do a garbage collection.}
+
+\starttabulate[|c|c|c|c|c|]
+\HL
+\NC   \NC \bf engine \NC \bf method \NC \bf normal \NC \bf hz \NC \NR % comment
+\HL
+\NC 1 \NC luatex     \NC tex hbox   \NC ~9.64      \NC ~9.64  \NC \NR % baseline font feature processing, hyphenation etc: 9.74
+\NC 2 \NC            \NC tex vbox   \NC ~9.84      \NC 10.16  \NC \NR % 0.20 linebreak / 0.52 with hz -> 0.32 hz overhead (150pct more)
+\NC 3 \NC            \NC lua vbox   \NC 17.28      \NC 18.43  \NC \NR % 7.64 linebreak / 8.79 with hz -> 1.33 hz overhead ( 20pct more)
+\HL
+\NC 4 \NC luajittex  \NC tex hbox   \NC ~6.33      \NC ~6.33  \NC \NR % baseline font feature processing, hyphenation etc: 6.33
+\NC 5 \NC            \NC tex vbox   \NC ~6.53      \NC ~6.81  \NC \NR % 0.20 linebreak / 0.48 with hz -> 0.28 hz overhead (expected 0.32)
+\NC 6 \NC            \NC lua vbox   \NC 11.06      \NC 11.81  \NC \NR % 4.53 linebreak / 5.28 with hz -> 0.75 hz overhead
+\HL
+\stoptabulate
+
+In line~1 we see the basline: hyphenation, processing fonts and hpacking takes
+9.74 seconds. In the second line we see that breaking the 1000 paragraphs costs
+some 0.20 seconds and when expansion is enabled an extra 12 seconds is needed.
+This means that expansion takes 150\% more runtime. If we delegate the task to
+\LUA\ we need 7.64 seconds for breaking into lines which can not be neglected
+but is still ok given the fact that we break 1000 paragraphs. But, interesting
+is to see that our alternative expansion routine only adds 1.33 seconds which is
+less than 20\%. It must be said that the built|-|in method is not that efficient
+by design if only because it started out differently as part of research.
+
+When measured three months later, the numbers for regular \LUATEX\ (at that time
+version 0.77) with the latest \CONTEXT\ were: 8.52, 8.72 and 15.40 seconds for
+the normal run, which demonstrates that we should not draw too many conclusions
+from such measurements. It's the overal picture that matters.
+
+As with earlier timings, if we use \LUAJITTEX\ we see that the runtime of \LUA\
+is much lower (due to the virtual machine). Of course we're still 20 times slower
+than the built|-| in method but only 10 times slower when we use expansion. To put
+these numbers in perspective: 5 seconds for 1000 paragraphs.
+
+\starttyping
+\setupbodyfont[dejavu]
+
+\starttext
+  \dontcomplain \dorecurse{1000}{\tufte\par}
+\stoptext
+\stoptyping
+
+This results in 295 pages in the default layout and takes 17.8 seconds or 16.6
+pages per second. Expansion is not enabled.
+
+\starttext
+\startparbuilder[basic]
+    \dontcomplain \dorecurse{1000}{\tufte\par}
+\stopparbuilder
+\stoptext
+
+That one takes 24.7 seconds and runs at 11.9 pages per second. This is indeed
+slower but on a bit more modern machine I expect better results. We should also
+realize that with Dejavu being a relative large font a difficult paragraph like
+the tufte example gives overfull boxes which in turn is an indication that quite
+some alternative breaks are tried.
+
+When typeset with Latin Modern we don't get overfull boxes and interesting is
+that the native method needs less time (15.9 seconds or 14.1 pages per second)
+while the \LUA\ variant also runs a bit faster: 23.4 or 9.5 pages per second. The
+number of pages is 223 because this font is smaller by design.
+
+When we disable hyphenation the the Dejavu variant takes 16.5 (instead of 17.8)
+seconds and 23.1 (instead of 24.7) seconds for \LUA, so this process is not that
+demanding.
+
+For typesetting so many paragraphs without anything special it makes no sense to
+bother with using a \LUA\ based parbuilder. I must admit that I never had to typeset
+novels so all my 300 page runs are much longer anyway. Anyway, when at some point
+we introduce alternative parbuilding to \CONTEXT, the speed penalty is probably
+acceptable.
+
+Just to indicate that predictions are fuzzy: when we put a \type {\blank} between
+the paragraphs we end up with 313 pages and the traditional method takes 18.3
+while \LUA\ needs 23.6 seconds. One reason for this is that the whitespace is
+also handled by \LUA\ and in the pagebuilder we do some finalizing, so we
+suddenly get interference of other processes (as well as the garbage collector).
+Again an indication that we should not bother too much about speed. I try to make
+sure that the \LUA\ (as well as \TEX) code is reasonably efficient, so in
+practice it's the document style that is a more important factor than the
+parbuilder, it being the traditional one or the \LUA\ variant.
+
+\stopsubject
+
+\startsubject[title=Copying boxes]
+
+As soon as in \CONTEXT\ you start enhancing the page with headers and footers and
+backgrounds you will see that the pps rate drops. This is partly due to the fact
+that suddenly quite some macro expansion takes place in order to check what needs
+to happen (like font and color switches, offsets, overlays etc). But what has
+more impact is that we might end up with copying boxes and that takes time. Also,
+by wrapping and repackaging boxes, we add additional levels of recursion in
+postprocessing code.
+
+\stopsubject
+
+\startsubject[title=Macro expansion]
+
+Taco and I once calculated that \MKII\ spends some 4\% of the time in accessing
+the hash table. This is a clear indication that quite some macro expansions goes
+on. Due to the fact that when I rewrote \MKII\ into \MKIV\ I no longer had to
+take memory and other limitations into account, the codebase looks quite
+different. There we do have more expansion in the mechanism that deals with
+settings but the body of macros is much smaller and less parameters are passed.
+So, the overall performance is better.
+
+\stopsubject
+
+\startsubject[title=Fonts]
+
+Using a font has several aspects. First you have to define an instance. Then, when
+you use it for the first time, the font gets loaded from storage, initialized and
+is passed to \TEX. All these steps are quite optimized. If we process the following
+file:
+
+\starttyping
+\setupbodyfont[dejavu]
+
+\starttext
+    regular, {\it italic}, {\bf bold ({\bi italic})} and $m^a_th$
+\stoptext
+\stoptyping
+
+we get reported:
+
+\starttabulate[||T|]
+\NC \type{loaded fonts}    \NC xits-math.otf xits-mathbold.otf \NC \NR
+\NC                        \NC dejavuserif-bold.ttf dejavuserif-bolditalic.ttf \NC \NR
+\NC                        \NC dejavuserif-italic.ttf dejavuserif.ttf \NC \NR
+\NC \type{fonts load time} \NC 0.374 seconds \NR
+\NC \type{runtime}         \NC 1.014 seconds, 0.986 pages/second \NC \NR
+\stoptabulate
+
+So, six fonts are loaded and because XITS is used we also preload the math bold
+variant. Loading of text fonts is delayed but in order initialize math we need to
+preload the math fonts.
+
+If we don't define a bodyfont, a default set gets loaded: Latin Modern. In that
+case we get:
+
+\starttabulate[||T|]
+\NC \type{loaded fonts}    \NC latinmodern-math.otf \NC \NR
+\NC                        \NC lmroman10-bolditalic.otf lmroman12-bold.otf \NC \NR
+\NC                        \NC lmroman12-italic.otf lmroman12-regular.otf \NC \NR
+\NC \type{fonts load time} \NC 0.265 seconds \NR
+\NC \type{runtime}         \NC 0.874 seconds, 1.144 pages/second \NC \NR
+\stoptabulate
+
+Before we had native \OPENTYPE\ Latin Modern math fonts, it took slightly longer
+because we had to load many small \TYPEONE\ fonts and assemble a virtual math font.
+
+As soon as you start mixing more fonts and/or load additional weights and styles
+you will see these times increase. But if you use an already loaded font with
+a different featureset or scaled differently, the burden is rather low. It is
+safe to say that at this moment loading fonts is not a bottleneck.
+
+Applying fonts can be more demanding. For instance if you typeset Arabic or
+Devanagari the amount of node and font juggling definitely influences the total
+runtime. As the code is rather optimized there is not much we can do about it.
+It's the price that comes with flexibility. As far as I can tell getting the same
+results with \PDFTEX\ (if possible at all) or \XETEX\ is not taking less time. If
+you've split up your document in separate files you will seldom run more than a
+dozen pages which is then still bearable.
+
+If you are for instance typesetting a dictionary like document, it does not make
+sense to do all font switches by switching body fonts. Just defining a couple of
+font instances makes more sense and comes at no cost. Being already quite
+efficient given the complexity you should not expect impressive speedups in this
+area.
+
+\stopsubject
+
+\startsubject[title=Manipulations]
+
+The main manipulation that I have to do is to process \XML\ into something
+readable. Using the built||in parser and mapper already has some advantages
+and if applied in the right way it's also rather efficient. The more you restrict
+your queries, the better.
+
+Text manipulations using \LUA\ are often quite fast and seldom the reason for
+seeing slow processing. You can do lots of things at the \LUA\ end and still have
+all the \CONTEXT\ magic by using the \type {context} namespace and function.
+
+\stopsubject
+
+\startsubject[title=Multipass]
+
+You can try to save 1 second on a 20 second run but that is not that impressive
+if you need to process the document three times in order to get your cross
+references right. Okay you'd save 3 seconds but still to get result you needs
+some 60 seconds (unless you already have run the document before). If you have a
+predictable workflow you might know in advance that you only need two runs in
+case you can enforce that with \type {--runs=2}. Furthermore you can try to
+optimize the style by getting rid of redundant settings and inefficient font
+switches. But no matter what we optimize, unless we have a document with no cross
+references, sectioning and positioning, you often end up with the extra run,
+although \CONTEXT\ tries to minimize the number of needed runs needed.
+
+\stopsubject
+
+\startsubject[title=Trial runs]
+
+Some mechanisms, like extreme tables, need multiple passes and all but the last
+one are tagged as trial runs. Because in many cases only dimensions matter, we
+can disable some time consuming code in such case. For instance, at some point
+Alan Braslau and I found out that the new chemical manual ran real slow, mainly
+due to the tens of thousands of \METAPOST\ graphics. Adding support for trial
+runs to the chemical structure macros gave a fourfold improvement. The manual is
+still a slow|-|runner, but that is simply because it has so many runtime
+generated graphics.
+
+\stopsubject
+
+\stopsection
+
+\startsection[title=The \METAPOST\ library]
+
+When the \METAPOST\ library got included we saw a drastic speedup in processing
+document with lots of graphics. However, when \METAPOST\ got a different number
+system (native, double and decimal) the changed memory model immediately lead to
+a slow down. On one 150 page manual which a graphic on each page I saw the
+\METAPOST\ runtime go up from about half a second upto more than 5 seconds. In
+this case I was able to rewrite some core \METAFUN\ macro to better suit the new
+model, but you might not be so lucky. So more careful coding is needed. Of course
+if you only have a few graphics, you can just ignore the change.
+
+\stopsection
+
+\startsection[title=The \LUA\ interpreter]
+
+Where the \TEX\ part of \LUATEX\ is compiled, the \LUA\ code gets interpreted,
+converted into bytecode, and ran by the virtual machine. \LUA\ is by design quite
+portable, which means that the virtual machine is not optimized for a specific
+target. The \LUAJIT\ interpreter on the other hand is written in assembler and
+available for only some platforms, but the virtual machine is about twice as
+fast. The just||in||time part of \LUAJIT\ is not if much help and even can slow
+down processing.
+
+When we moved from \LUA~5.1 to 5.2 we found out that there was some speedup but
+it's hard to say why. There has been changes in the way strings are dealt with
+(\LUA\ hashes strings) and we use lots of strings, really lots. There has been
+changes in the garbage collection and during a run lots of garbage needs to be
+collected. There are some fundamental changes in so called environments and who
+knows what impact that has.
+
+If you ever tried to measure the performance of \LUA, you probably have noticed
+that it is quite fast. This means that it makes no sense to optimize code that
+gets visited only occasionally. But some of the \CONTEXT\ code gets exercised a
+lot, for instance all code that deals with fonts. We use attributes a lot and
+checking them is for good reason not the fastest code. But given the often
+advanced functionality that it makes possible we're willing to pay the price.
+It's also functionality that you seldom need all at the same time and for
+straightforward text only documents all that code is never executed.
+
+When writing \TEX\ or \LUA\ code I spent a lot of time making it as efficient as
+possible in terms of performance and memory usage. The sole reason for that is
+that we happen to process documents where a lot of functionality is combined, so
+if many small speed||ups accumulate to a noticeable performance gain it's worth
+the effort.
+
+So, where does \LUA\ influence runtime? First of all we use \LUA\ do deal with all
+in- and output as well as locating files in the \TEX\ directory structure. Because
+that code is partly shared with the script manager (\type {mtxrun}) it is optimized
+but some more is possible if needed. It is already not the most easy to read code,
+so I don't want to introduce even more obscurity.
+
+Quite some code deals with loading, preparing and caching fonts. That code is
+mostly optimized for memory usage although speed is also okay. This code is only
+called when a font is loaded for the first time (after an update). After that
+loading is at matter of milliseconds. When a text gets typeset and when fonts are
+processed in so called node mode, depending on the script and|/|or enabled
+features, a substantial amount of time is spent in \LUA. There is still a bit
+complex dealing with inserting kerns but future \LUATEX\ will carry kerning
+in the glyph node so there we can gain some runtime.
+
+If a page has 4000 characters and if font features as well as other manipulations
+demand 10 runs over the text, we have 40.000 checks of nodes and potential
+actions. Each involves an id check, maybe a subtype check, maybe some attribute
+checking and possibly some action. So, if we have 200.000 (or more) function
+calls to the per page \TEX\ end it might add up to a lot. Around the time that we
+went to \LUA~5.2 and played with \LUAJITTEX, the node accessors have been sped
+up. This gave indeed a measurable speedup but not on an average document, only on
+the more extreme documents or features. Because the \MKIV\ \LUA\ code goes from
+experimental to production to final, some improvements are made in the process
+but there is not much to gain there. We just have to wait till computers get
+faster, \CPU\ cache get bigger, branch prediction improves, floating point
+calculations take less time, memory is speedy, and flash storage is the standard.
+
+The \LUA\ code is plugged into the \TEX\ machinery via callbacks. For
+instance each time a box is build several callbacks are triggered, even if it's
+an empty box or just an extra wrapper. Take for instance this:
+
+\starttyping
+\hbox \bgroup
+    \hskip \zeropoint
+    \hbox \bgroup
+        test
+    \egroup
+    \hskip \zeropoint
+\egroup
+\stoptyping
+
+Of course you won't come up with this code as it doesn't do much good but macros
+that you use can definitely produce this. For instance, the zero skip can be a
+left and right margin that happen to be. For 10.000 iterations I measured 0.78
+seconds while the text one takes 0.62 seconds:
+
+\starttyping
+\hbox \bgroup
+    \hbox \bgroup
+        test
+    \egroup
+\egroup
+\stoptyping
+
+Why is this? One reason is that a zero skip results in a node and the more nodes
+we have the more memory (de)allocation takes place and the more nodes in the list
+need to be checked. Of course the relative difference is less when we have more
+text. So how can we improve this? The following variant, at the cost of some
+testing takes just as much time.
+
+\starttyping
+\hbox \bgroup
+    \hbox \bgroup
+        \scratchdimen\zeropoint
+        \ifdim\scratchdimen=\zeropoint\else\hskip\scratchdimen\fi
+        test
+        \ifdim\scratchdimen=\zeropoint\else\hskip\scratchdimen\fi
+    \egroup
+\egroup
+\stoptyping
+
+As does this one, but the longer the text, the slower it gets as one of the two
+copies needs to be skipped.
+
+\starttyping
+\hbox \bgroup
+    \hbox \bgroup
+        \scratchdimen\zeropoint
+        \ifdim\scratchdimen=\zeropoint
+            test%
+        \else
+            \hskip\scratchdimen
+            test%
+            \hskip\scratchdimen
+        \fi
+    \egroup
+\egroup
+\stoptyping
+
+Of course most speedup is gained when we don't package at all, so if we test
+before we package but such an optimization is seldom realistic because much more
+goes on and we cannot check for everything. Also, 10.000 is a lot while 0.10
+seconds is something we can live with. By the way, compare the following
+
+\starttyping
+\hbox \bgroup
+    \hskip\zeropoint
+    test%
+    \hskip\zeropoint
+\egroup
+
+\hbox \bgroup
+    \kern\zeropoint
+    test%
+    \kern\zeropoint
+\egroup
+\stoptyping
+
+The first variant is less efficient that the second one, because a skip
+effectively is a glue node pointing to a specification node while a kern is just
+a simple node with the width stored in it. \footnote {On the \LUATEX\ agenda is
+moving the glue spec into the glue node.} I must admit that I seldom keep in mind
+to use kerns instead of skips when possible if only because one needs to be sure
+to be in the right mode, horizontal or vertical, so additional commands might be
+needed.
+
+\stopsection
+
+\startsection[title=Macros]
+
+Are macros a bottleneck? In practice not really. Of course we have optimized the
+core \CONTEXT\ macros pretty well, but one reason for that is that we have a
+rather extensive set of configuration and definition mechanisms that rely heavily
+on inheritance. Where possible all that code is written in a way that macro
+expansion won't hurt too much. because of this users themselves can be more
+liberal in coding. There is a lot going on deep down and if you turn on tracing
+macros you can get horrified. But, not all shown code paths are entered. During the
+move (and rewrite) from \MKII\ to \MKIV\ quite some bottlenecks that result from
+limitations of machines and memory have been removed and as a result the macro
+expansion part is somewhat faster, which nicely compensates the fact that we
+have a more advanced but slower inheritance subsystem. Readability of code and
+speed are probably nicely balanced by now.
+
+Once a macro is read in, its internal representation is pretty efficient. For
+instance references to macro names are just pointers into a hash table. Of
+course, when a macro is seen in your source, that name has to be looked up, but
+that's a fast action. Using short names in the running text for instance really
+doesn't speed up processing much. Switching font sets on the other hand does, as
+then quite some checking happens and the related macros are pretty extensive.
+However, once a font is loaded references to it a pretty fast. Just keep in mind
+that if you define something inside a group, in most cases it got forgotten. So,
+if you need something more often, just define it at the outer level.
+
+\stopsection
+
+\startsection[title=Optimizing code]
+
+Optimizing only makes sense if used very often and called frequently or when the
+problem to solve is demanding. An example of code that gets done often is page
+building, where we pack together many layout elements. Font switches can also be
+time consuming, if defined wrong. These can happen for instance for formulas,
+marked words, cross references, margin notes, footnotes (often a complete
+bodyfont switch), table cells, etc. Yet another is clever vertical spacing that
+happens between structural elements. All these mechanisms are reasonably
+optimized.
+
+I can safely say that deep down \CONTEXT\ is no that inefficient, given what it
+has to do. But when a style for instance does redundant or unnecessary massive
+font switches you are wasting runtime. I dare to say that instead of trying to
+speed up code (for instance by redefining macros) you can better spend the time
+in making styles efficient. For instance having 10 \type {\blank}'s in a row
+will work out rather well but takes time. If you know that a section head has no
+raised or lowered text and no math, you can consider using \type {\definefont} to
+define the right size (especially if it is a special size) instead of defining
+an extra bodyfont size and switch to that as it includes setting up related sizes
+and math.
+
+It might sound like using \LUA\ for some tasks makes \CONTEXT\ slower, but this
+is not true. Of course it's hard to prove because by now we also have more
+advanced font support, cleaner math mechanisms, additional features especially in
+especially structure related mechanisms, etc. There are also mechanisms that are
+faster, for instance extreme tables (a follow up on natural tables) and mixed
+column modes. Of course on the previously mentioned 300 page simple paragraphs
+with simple Latin text the \PDFTEX\ engine is much faster than \LUATEX, also
+because simple fonts are used. But for many of todays document this engine is no
+longer an options. For instance in our \XML\ processing in multiple languages,
+\LUATEX\ beats \PDFTEX. There is not that much to optimize left, so most speed up
+has to come from faster machines. And this is not much different from the past:
+processing 300 page document on a 4.7Mhz 8086 architecture was not much fun and
+we're not even talking of advanced macros here. Faster machines made more clever
+and user friendly systems possible but at the cost of runtime, to even if
+machines have become many times faster, processing still takes time. On the other
+hand, \CONTEXT\ will not become more complex than it is now, so from now on we
+can benefit from faster \CPU's, memory and storage.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

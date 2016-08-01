@@ -1,0 +1,95 @@
+% language=uk
+
+\startcomponent fonts-introduction
+
+\environment fonts-environment
+
+\startchapter[title=Introduction][color=darkgray]
+
+You sit in a cave and wonder how to keep track of your winter stock. While
+playing with some burned wood you end up with vertical strokes on the wall
+representing how much you have in store.
+
+You walk through the woods and wonder how to find your way back. Suddenly it
+strikes you that you can put markers on trees. Years from that moment the whole
+forest is marked with routes. Different symbols carry different meanings.
+
+The next thing you want to do is to carry around information and pass it onto
+following generations. So, you turn those symbols into shapes that make up the
+scripts that can be used to express your languages in.
+
+For ages scripts have evolved and the rendering of them on stone or wood and
+later paper has resulted in a multitude of coherent collections of so called
+glyphs. Manual labour turned into (semi) automated mass production and once that
+took off, developments went fast. But the quality was still somewhat dubious,
+especially when for instance specialized scripts like math had to be dealt with.
+
+Some 30 years ago Don Knuth wrote a book, and in the process invented the \TEX\
+typesetting system, the graphical language \METAFONT\ and a bunch of fonts. He
+made it open and free of charge. He was well aware that the new ideas were built
+on older ones that had evolved from common sense: how to keep track of things on
+paper.
+
+It is no surprise that an active community formed around these goodies. First of
+all the system has no strings attached: the licence is generous and there are no
+patents involved. There is also a network of user groups that takes care of
+coordinated updates to the whole machinery. Of course it helps that it all
+relates to Don Knuth.
+
+Since \TEX\ showed up several open and closed source typesetting systems have
+surfaced and only some of them survived. Also regular word processing has become
+more clever and still become better. The \TEX\ typesetting system also moved on.
+Some of its ideas have been used in other programs and some of the ideas of other
+programs made their way into \TEX. However, its main property is still there: you
+can tweak and tune it to your needs and are not hampered by too many limitations.
+
+Don Knuth had this chicken or egg problem: once you can typeset a source you need
+fonts but you can only make fonts if you can use them in a typesetting program.
+As a result \TEX\ came with its own fonts and it has special ways to deal with
+them. Given the limitations of that time \TEX\ puts some limitations on fonts and
+also expects them to have certain properties, something that is most noticeable
+in math fonts.
+
+Rather soon from the start it has been possible to use third party fonts in \TEX,
+for instance \TYPEONE. As \TEX\ only needs some information about the shapes, it
+was the backend that integrated the font resources in the final document. One of
+its descendants, \PDFTEX, had this backend built in and could do some more clever
+things with fonts in the typesetting process, like protrusion and expansion. The
+integration of front- and backend made live much easier. Another descendant,
+\XETEX\ made it possible to move on to the often large \OPENTYPE\ fonts. On the
+one hand this made live even more easy but at the other end it introduced users
+to the characteristics of such fonts and making the right choices, i.e.\ not fall
+in the trap of too fancy font usage.
+
+In this manual we will look at fonts from the perspective of yet another
+descendant, \LUATEX. It inherits the font technology from traditional \TEX, but
+also extends it so that we can deal with modern font technologies. Of course it
+offers much more, but in practice much relates to fonts one way or the other.
+
+Of course this exploration will be from the perspective of the \CONTEXT\ macro
+package but this is not a manual about how to use fonts in \CONTEXT\ as we have
+another manual for that. Much of what we say here applies to the generic font
+code as well, although some more advanced control is \CONTEXT\ specific. There is
+nothing real new here, and it all evolved from common sense and dealing with
+\TEX\ for many years. The perspective is mostly that of being a user myself so
+don't complain too loudly if things look complicated and unclear.
+
+There is some overlap between the chapters. This is because each chapter is
+written from another perspective and this document quite certainly will not be
+read as a whole but more by looking at examples.
+
+\startnotabene
+    This document will probably have an \quote {still under construction} state
+    for a long time. The functionality discussed here will stay and more might
+    show up. Of course there are errors, and they're all mine.
+\stopnotabene
+
+\startlines
+Hans Hagen
+PRAGMA ADE, Hasselt NL
+Summer 2011 \endash\ Spring 2016
+\stoplines
+
+\stopchapter
+
+\stopcomponent

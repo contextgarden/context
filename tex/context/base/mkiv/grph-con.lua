@@ -173,14 +173,15 @@ do -- svg
     local svgconverter = converters.svg
     converters.svgz    = svgconverter
 
-    -- inkscape on windows only works with complete paths .. did the command line arguments change again?
+    -- inkscape on windows only works with complete paths .. did the command line
+    -- arguments change again? Ok, it's weirder, with -A then it's a name only when
+    -- not . (current)
 
     programs.inkscape = {
         command  = "inkscape",
         pdfargument = longtostring [[
             "%oldname%"
             --export-dpi=600
-            -A
             --export-pdf="%newname%"
         ]],
         pngargument = longtostring [[

@@ -1,0 +1,141 @@
+% language=uk
+
+\startcomponent languages-labels
+
+\environment languages-environment
+
+\startchapter[title=Labels][color=darkcyan]
+
+\startsection[title=Introduction]
+
+When we started using \TEX, I naturally started with plain \TEX. But it didn't
+take long before we tried \LATEX. Because our documents were in Dutch one of the
+first fights with this package was to get rid of the english labels. Because
+rather soon we decided to cook up an alternative package, a decent label
+mechanism was one of the first things to show up. And as soon as multiple
+language typesetting gets into view, such a mechanism becomes one of those
+language dependent features. In this chapter the basics will be covered.
+
+\stopsection
+
+\startsection[title=Defining labels]
+
+Before we define a label we need to define a label class. You probably seldom
+need that but this is how it's done:
+
+\startbuffer
+\definelabelclass [mylabel]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+There are some classes predefined:
+
+\starttabulate[|lB|l|]
+    \NC head      \NC (complete) titles like \headtext {chapter} and \headtext {figure} \NC \NR
+    \NC label     \NC in||text labels like \labeltext {chapter} and \labeltext {figure} \NC \NR
+    \NC mathlabel \NC function names like \mathlabeltext{sin} and \mathlabeltext{cos} \NC \NR
+    \NC taglabel  \NC labels used for tagging purposed in the backend \NC \NR
+    \NC btxlabel  \NC labels used in typesetting bibliographic items \NC \NR
+\stoptabulate
+
+The physical units mechanism also uses labels: unit, operator, prefix and suffix.
+All these labels are defined per language with a fall back on english.
+
+Given that we have defined class \type {mylabel}, a label itself is set like
+this:
+
+\startbuffer
+\setupmylabeltext
+  [en]
+  [first={<after first},
+   second={{before second>},{<after second}}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The first argument (the language) is optional. In the next section we will see
+how these labels are used. A lot of labels are predefined, in \MKIV\ this happens
+in the file \type {lang-txt.lua}. There is no need to adapt this file as you can
+always add labels run time.
+
+\stopsection
+
+\startsection[title=Using labels]
+
+How a label is called depends on the way it needs to be used. In any case the
+main language set determines the language of the label. So, when in an Dutch text
+we temporary switch to German, the Dutch labels are used.
+
+\startbuffer
+\starttabulate[||||]
+    \NC  \bf command                         \NC \ttbf first                    \NC \ttbf {second}                  \NC \NR
+    \HL
+    \NC \type {\leftmylabeltext {tag}}       \NC \leftmylabeltext {first}       \NC \leftmylabeltext {second}       \NC \NR
+    \NC \type {\rightmylabeltext{tag}}       \NC \rightmylabeltext{first}       \NC \rightmylabeltext{second}       \NC \NR
+    \NC \type {\mylabeltext     {tag}}       \NC \mylabeltext     {first}       \NC \mylabeltext     {second}       \NC \NR
+    \NC \type {\mylabeltexts    {tag}{text}} \NC \mylabeltexts    {first}{text} \NC \mylabeltexts    {second}{text} \NC \NR
+\stoptabulate
+\stopbuffer
+
+\getbuffer
+
+\stopsection
+
+\startsection[title=Hooks]
+
+Some mechanisms have label support built in, most noticeably sections
+heads and numbered items, like figure captions.
+
+\startbuffer
+\definehead
+  [myhead]
+  [subsection]
+
+\setuphead
+  [myhead]
+  [bodypartlabel=bodypartmyhead]
+
+\setuplabeltext
+  [en]
+  [bodypartmyhead=My Head: ]
+
+\myhead{Welcome}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The head text label class can be used as follows:
+
+\startbuffer
+\setupheadtext
+  [SomeHead=Just A Title]
+
+\subsection
+  [title=\headtext{SomeHead}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+A label will obey the style settings, as in:
+
+\startbuffer
+\definehead
+  [MyFancyHead]
+  [subsection]
+  [style={\bs\setcharactercasing[Words]}]
+
+\setupheadtext
+  [SomeHead=just another title]
+
+\MyFancyHead
+  [title=\headtext{SomeHead}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,739 @@
+% language=uk
+
+\startcomponent about-calls
+
+\environment about-environment
+
+\startchapter[title={Calling Lua}]
+
+\startsection[title=Introduction]
+
+One evening, on Skype, Luigi and I were pondering about the somewhat
+disappointing impact of jit in \LUAJITTEX\ and one of the reasons we could come
+up with is that when you invoke \LUA\ from inside \TEX\ each \type {\directlua}
+gets an extensive treatment. Take the following:
+
+\starttyping
+\def\SomeValue#1%
+  {\directlua{tex.print(math.sin(#1)/math.cos(2*#1))}}
+\stoptyping
+
+Each time \type {\SomeValue} is expanded, the \TEX\ parser will do the following:
+
+\startitemize[packed]
+\startitem
+    It sees \type {\directlua} and will jump to the related scanner.
+\stopitem
+\startitem
+    There it will see a \type +{+ and enter a special mode in which it starts
+    collecting tokens.
+\stopitem
+\startitem
+    In the process, it will expand control sequences that are expandable.
+\stopitem
+\startitem
+    The scanning ends when a matching \type +}+ is seen.
+\stopitem
+\startitem
+    The collected tokens are converted into a regular (C) string.
+\stopitem
+\startitem
+    This string is passed to the \type {lua_load} function that compiles it into
+    bytecode.
+\stopitem
+\startitem
+    The bytecode is executed and characters that are printed to \TEX\ are
+    injected into the input buffer.
+\stopitem
+\stopitemize
+
+In the process, some state information is set and reset and errors are dealt
+with. Although it looks like a lot of actions, this all happens very fast, so
+fast actually that for regular usage you don't need to bother about it.
+
+There are however applications where you might want to see a performance boost,
+for instance when you're crunching numbers that end up in tables or graphics
+while processing the document. Again, this is not that typical for jobs, but with
+the availability of \LUA\ more of that kind of usage will show up. And, as we now
+also have \LUAJITTEX\ its jitting capabilities could be an advantage.
+
+Back to the example: there are two calls to functions there and apart from the
+fact that they need to be resolved in the \type {math} table, they also are
+executed C functions. As \LUAJIT\ optimizes known functions like this, there can
+be a potential speed gain but as \type {\directlua} is parsed and loaded each
+time, the jit machinery will not do that, unless the same code gets exercised
+lots of time. In fact, the jit related overhead would be a waste in this one time
+usage.
+
+In the next sections we will show two variants that follow a different approach
+and as a consequence can speed up a bit. But, be warned: the impact is not as
+large as you might expect, and as the code might look less intuitive, the good
+old \type {\directlua} command is still the advised method.
+
+Before we move on it's important to realize that a \type {\directlua} call is
+in fact a function call. Say that we have this:
+
+\starttyping
+\def\SomeValue{1.23}
+\stoptyping
+
+This becomes:
+
+\starttyping
+\directlua{tex.print(math.sin(1.23)/math.cos(2*1.23))}
+\stoptyping
+
+Which in \LUA\ is wrapped up as:
+
+\starttyping
+function()
+    tex.print(math.sin(1.23)/math.cos(2*1.23))
+end
+\stoptyping
+
+that gets executed. So, the code is always wrapped in a function. Being a
+function it is also a closure and therefore local variables are local to this
+function and are invisible at the outer level.
+
+\stopsection
+
+\startsection[title=Indirect \LUA]
+
+The first variant is tagged as indirect \LUA. With indirect we mean that instead
+of directly parsing, compiling and executing the code, it is done in steps. This
+method is not as generic a the one discussed in the next section, but for cases
+where relatively constant calls are used it is fine. Consider the next call:
+
+\starttyping
+\def\NextValue
+  {\indirectlua{myfunctions.nextvalue()}}
+\stoptyping
+
+This macro does not pass values and always looks the same. Of course there can be
+much more code, for instance the following is equally valid:
+
+\starttyping
+\def\MoreValues {\indirectlua{
+    for i=1,100 do
+        myfunctions.nextvalue(i)
+    end
+}}
+\stoptyping
+
+Again, there is no variable information passed from \TEX. Even the next variant
+is relative constant:
+
+\starttyping
+\def\SomeValues#1{\indirectlua{
+    for i=1,#1 do
+        myfunctions.nextvalue(i)
+    end
+}}
+\stoptyping
+
+especially when this macro is called many times with the same value. So how does
+\type {\indirectlua} work? Well, it's behaviour is in fact undefined! It does,
+like \type {\directlua}, parse the argument and makes the string, but instead of
+calling \LUA\ directly, it will pass the string to a \LUA\ function \type
+{lua_call}.
+
+\starttyping
+lua.call = function(s) load(s)() end
+\stoptyping
+
+The previous definition is quite okay and in fact makes \type {\indirectlua}
+behave like \type {\directlua}. This definition makes
+
+% \ctxlua{lua.savedcall = lua.call lua.call = function(s) load(s)() end}
+% \testfeatureonce{10000}{\directlua  {math.sin(1.23)}}
+% \testfeatureonce{10000}{\indirectlua{math.sin(1.23)}}
+% \ctxlua{lua.call = lua.savedcall}
+
+\starttyping
+\directlua  {tex.print(math.sin(1.23))}
+\indirectlua{tex.print(math.sin(1.23))}
+\stoptyping
+
+equivalent calls but the second one is slightly slower, which is to be expected
+due to the wrapping and indirect loading. But look at this:
+
+\starttyping
+local indirectcalls = { }
+
+function lua.call(code)
+    local fun = indirectcalls[code]
+    if not fun then
+        fun = load(code)
+        if type(fun) ~= "function" then
+            fun = function() end
+        end
+        indirectcalls[code] = fun
+    end
+    fun()
+end
+\stoptyping
+
+This time the code needs about one third of the runtime. How much we gain depends
+on the size of the code and its complexity, but on the average its's much faster.
+Of course, during a \TEX\ job only a small part of the time is spent on this, so
+the overall impact is much smaller, but it makes runtime number crunching more
+feasible.
+
+If we bring jit into the picture, the situation becomes somewhat more diffuse.
+When we use \LUAJITTEX\ the whole job processed faster, also this part, but
+because loading and interpreting is more optimized the impact might be less. If
+you enable jit, in most cases a run is slower than normal. But as soon as you
+have millions of calls to e.g.\ type {math.sin} it might make a difference.
+
+This variant of calling \LUA\ is quite intuitive and also permits us to implement
+specific solutions because the \type {lua.call} function can be defined as you
+with. Of course macro package writers can decide to use this feature too, so you
+need to beware of unpleasant side effects if you redefine this function.
+
+% \testfeatureonce{100000}{\directlua  {math.sin(1.23)}}
+% \testfeatureonce{100000}{\indirectlua{math.sin(1.23)}}
+
+\stopsection
+
+\startsection[title=Calling \LUA]
+
+In the process we did some tests with indirect calls in \CONTEXT\ core code and
+indeed some gain in speed could be noticed. However, many calls get variable
+input and therefore don't qualify. Also, as a mixture of \type {\directlua} and
+\type {\indirectlua} calls in the source can be confusing it only makes sense to
+use this feature in real time|-|critical cases, because even in moderately
+complex documents there are not that many calls anyway.
+
+The next method uses a slightly different approach. Here we stay at the \TEX\
+end, parse some basic type arguments, push them on the \LUA\ stack, and call a
+predefined function. The amount of parsing \TEX\ code is not less, but especially
+when we pass numbers stored in registers, no tokenization (serialization of a
+number value into the input stream) and stringification (converting the tokens
+back to a \LUA\ number) takes place.
+
+\starttyping
+\indirectluacall 123
+    {some string}
+    \scratchcounter
+    {another string}
+    true
+    \dimexpr 10pt\relax
+\relax
+\stoptyping
+
+Actually, an extension like this had been on the agenda for a while, but never
+really got much priority. The first number is a reference to a function to be
+called.
+
+\starttyping
+lua.calls = lua.calls or { }
+lua.calls[123] = function(s1,n1,s2,b,n2)
+    -- do something with
+    --
+    -- string  s1
+    -- number  n1
+    -- string  s2
+    -- boolean b
+    -- number  n2
+end
+\stoptyping
+
+The first number to \type {indirectluacall} is mandate. It can best also be a
+number that has a function associated in the \type {lua.calls} table. Following
+that number and before the also mandate \type {\relax}, there can be any number
+of arguments: strings, numbers and booleans.
+
+Anything surrounded by \type {{}} becomes a string. The keywords \type {true} and
+\type {false} become boolean values. Spaces are skipped and everything else is
+assumed to be a number. This means that if you omit the final \type {\relax}, you
+get a error message mentioning a \quote {missing number}. The normal number
+parser applies, so when a dimension register is passed, it is turned into a
+number. The example shows that wrapping a more verbose dimension into a \type
+{\dimexpr} also works.
+
+Performance wise, each string goes from list of tokens to temporary C string to
+\LUA\ string, so that adds some overhead. A number is more efficient, especially
+when you pass it using a register. The booleans are simple sequences of character
+tokens so they are relatively efficient too. Because \LUA\ functions accept an
+arbitrary number of arguments, you can provide as many as you like, or even less
+than the function expects: it is all driven by the final \type {\relax}.
+
+An important characteristic of this kind of call is that there is no \type {load}
+involved, which means that the functions in \type {lua.calls} can be subjected to
+jitting.
+
+\stopsection
+
+\startsection[title=Name spaces]
+
+As with \type {\indirectlua} there is a potential clash when users mess with the
+\type {lua.calls} table without taking the macro package usage into account. It not
+that complex to define a variant that provides namespaces:
+
+\starttyping
+\newcount\indirectmain \indirectmain=1
+\newcount\indirectuser \indirectuser=2
+
+\indirectluacall \indirectmain
+    {function 1}
+    {some string}
+\relax
+
+\indirectluacall \indirectuser
+    {function 1}
+    {some string}
+\relax
+\stoptyping
+
+A matching implementation is this:
+
+\starttyping
+lua.calls = lua.calls or { }
+
+local main = { }
+
+lua.calls[1] = function(name,...)
+    main[name](...)
+end
+
+main["function 1"] = function(a,b,c)
+    -- do something with a,b,c
+end
+
+local user = { }
+
+lua.calls[2] = function(name,...)
+    user[name](...)
+end
+
+user["function 1"] = function(a,b,c)
+    -- do something with a,b,c
+end
+\stoptyping
+
+Of course this is also ok:
+
+\starttyping
+\indirectluacall \indirectmain 1
+    {some string}
+\relax
+
+\indirectluacall \indirectuser 1
+    {some string}
+\relax
+\stoptyping
+
+with:
+
+\starttyping
+main[1] = function(a,b,c)
+    -- do something with a,b,c
+end
+
+user[1] = function(a,b,c)
+    -- do something with a,b,c
+end
+\stoptyping
+
+Normally a macro package, if it wants to expose this mechanism, will provide a
+more abstract interface that hides the implementation details. In that case the
+user is not supposed to touch \type {lua.calls} but this is not much different
+from the limitations in redefining primitives, so users can learn to live with
+this.
+
+\stopsection
+
+\startsection[title=Practice]
+
+There are some limitations. For instance in \CONTEXT\ we often pass tables and
+this is not implemented. Providing a special interface for that is possible but
+does not really help. Often the data passed that way is far from constant, so it
+can as well be parsed by \LUA\ itself, which is quite efficient. We did some
+experiments with the more simple calls and the outcome is somewhat disputable. If
+we replace some of the \quote {critital} calls we can gain some 3\% on a run of
+for instance the \type {fonts-mkiv.pdf} manual and a bit more on the command
+reference \type {cont-en.pdf}. The first manual uses lots of position tracking
+(an unfortunate side effect of using a specific feature that triggers continuous
+tracking) and low level font switches and many of these can benefit from the
+indirect call variant. The command reference manual uses \XML\ processing and
+that involves many calls to the \XML\ mapper and also does quite some string
+manipulations so again there is something to gain there.
+
+The following numbers are just an indication, as only a subset of \type
+{\directlua} calls has been replaced. The 166 page font manual processes in about
+9~seconds which is not bad given its complexity. The timings are on a Dell
+Precision M6700 with Core i7 3840QM, 16 GB memory, a fast SSD and 64 bit Windows
+8. The binaries were cross compiled mingw 32 bit by Luigi. \footnote {While
+testing with several function definitions we noticed that \type {math.random} in
+our binaries made jit twice as slow as normal, while for instance \type
+{math.sin} was 100 times faster. As the font manual uses the random function for
+rendering random punk examples it might have some negative impact. Our experience
+is that binaries compiled with the ms compiler are somewhat faster but as long as
+the engines that we test are compiled similarly the numbers can be compared.}
+
+% old: 8.870 8.907 9.089        / jit: 6.948 6.966 7.009         / jiton: 7.449 7.586 7.609
+% new: 8.710 8.764 8.682 | 8.64 / jit: 6.935 6.969 6.967  | 6.82 / jiton: 7.412 7.223 7.481
+%
+% 3% on total, 6% on lua
+
+\starttabulate[|lT|cT|cT|cT|]
+\HL
+\NC          \NC \LUATEX \NC \LUAJITTEX \NC \LUAJITTEX\ + jit \NC \NR
+\HL
+\NC direct   \NC 8.90     \NC 6.95      \NC 7.50              \NC \NR
+\NC indirect \NC 8.65     \NC 6.80      \NC 7.30              \NC \NR
+\HL
+\stoptabulate
+
+So, we can gain some 3\% on such a document and given that we spend probably half
+the time in \LUA, this means that these new features can make \LUA\ run more than
+5\% faster which is not that bad for a couple of lines of extra code. For regular
+documents we can forget about jit which confirms earlier experiments. The
+commands reference has these timings:
+
+\starttabulate[|lT|cT|cT|cT|]
+\HL
+\NC          \NC \LUATEX \NC \LUAJITTEX \NC \NR
+\HL
+\NC direct   \NC 2.55    \NC 1.90       \NC \NR
+\NC indirect \NC 2.40    \NC 1.80       \NC \NR
+\HL
+\stoptabulate
+
+Here the differences are larger which is due to the fact that we can indirect
+most of the calls used in this processing. The document is rather simple but as
+mentioned is encoded in \XML\ and the \TEX||\XML\ interface qualifies for this
+kind of speedups.
+
+As Luigi is still trying to figure out why jitting doesn't work out so well, we
+also did some tests with (in itself useless) calculations. After all we need
+proof. The first test was a loop with 100.000 step doing a regular \type
+{\directlua}:
+
+\starttyping
+\directlua {
+    local t = { }
+    for i=1,10000
+        do t[i] = math.sin(i/10000)
+    end
+}
+\stoptyping
+
+The second test is a bit optimized. When we use jit this kind of optimizations
+happens automatically for known (!) functions so there is not much won.
+
+\starttyping
+\directlua {
+    local sin = math.sin
+    local t = { }
+    for i=1,10000
+        do t[i] = sin(i/10000)
+    end
+}
+\stoptyping
+
+We also tested this with \type {\indirectlua} and therefore defined some
+functions to test the call variant:
+
+\starttyping
+lua.calls[1] = function()
+    -- overhead
+end
+
+lua.calls[2] = function()
+    local t = { }
+    for i=1,10000 do
+        t[i] = math.sin(i/10000) -- naive
+    end
+end
+
+lua.calls[3] = function()
+    local sin = math.sin
+    local t = { }
+    for i=1,10000 do
+        t[i] = sin(i/10000) -- normal
+    end
+end
+\stoptyping
+
+These are called with:
+
+\starttyping
+\indirectluacall0\relax
+\indirectluacall1\relax
+\indirectluacall2\relax
+\stoptyping
+
+The overhead variant demonstrated that there was hardly any: less than 0.1 second.
+
+\starttabulate[|lT|lT|cT|cT|cT|]
+\HL
+\NC                 \NC        \NC \LUATEX \NC \LUAJITTEX \NC \LUAJITTEX\ + jit \NC \NR
+\HL
+\NC directlua       \NC normal \NC 167     \NC 64         \NC 46                \NC \NR
+\NC                 \NC local  \NC 122     \NC 57         \NC 46                \NC \NR
+\NC indirectlua     \NC normal \NC 166     \NC 63         \NC 45                \NC \NR
+\NC                 \NC local  \NC 121     \NC 56         \NC 45                \NC \NR
+\NC indirectluacall \NC normal \NC 165     \NC 66         \NC 48                \NC \NR
+\NC                 \NC local  \NC 120     \NC 60         \NC 47                \NC \NR
+\HL
+\stoptabulate
+
+The results are somewhat disappoint but not that unexpected. We do see a speedup
+with \LUAJITTEX\ and in this case even jitting makes sense. However in a regular
+typesetting run jitting will never catch up with the costs it carries for the
+overall process. The indirect call is somewhat faster than the direct call.
+Possible reasons are that hashing at the \LUA\ end also costs time and the
+100.000 calls from \TEX\ to \LUA\ is not that big a burden. The indirect call is
+therefore also not much faster because it has some additional parsing overhead at
+the \TEX\ end. That one only speeds up when we pass arguments and even then not
+always the same amount. It is therefore mostly a convenience feature.
+
+We left one aspect out and that is garbage collection. It might be that in large
+runs less loading has a positive impact on collecting garbage. We also need to
+keep in mind that careful application can have some real impact. Take the
+following example of \CONTEXT\ code:
+
+\startntyping
+\dorecurse {1000} {
+
+    \startsection[title=section #1]
+
+        \startitemize[n,columns]
+            \startitem test \stopitem
+            \startitem test \stopitem
+            \startitem test \stopitem
+            \startitem test \stopitem
+        \stopitemize
+
+        \starttabulate[|l|p|]
+            \NC test \NC test \NC \NR
+            \NC test \NC test \NC \NR
+            \NC test \NC test \NC \NR
+        \stoptabulate
+
+        test {\setfontfeature{smallcaps} abc} test
+        test {\setfontfeature{smallcaps} abc} test
+        test {\setfontfeature{smallcaps} abc} test
+        test {\setfontfeature{smallcaps} abc} test
+        test {\setfontfeature{smallcaps} abc} test
+        test {\setfontfeature{smallcaps} abc} test
+
+        \framed[align={lohi,middle}]{test}
+
+        \startembeddedxtable
+            \startxrow \startxcell x \stopxcell \startxcell x \stopxcell \stopxrow
+            \startxrow \startxcell x \stopxcell \startxcell x \stopxcell \stopxrow
+            \startxrow \startxcell x \stopxcell \startxcell x \stopxcell \stopxrow
+            \startxrow \startxcell x \stopxcell \startxcell x \stopxcell \stopxrow
+            \startxrow \startxcell x \stopxcell \startxcell x \stopxcell \stopxrow
+        \stopembeddedxtable
+
+    \stopsection
+
+    \page
+
+}
+\stopntyping
+
+These macros happen to use mechanism that are candidates for indirectness.
+However, it doesn't happen often you you process thousands of pages with mostly
+tables and smallcaps (although tabular digits are a rather valid font feature in
+tables). For instance, in web services squeezing out a few tens of seconds might
+make sense if there is a large queue of documents.
+
+\starttabulate[|lT|cT|cT|cT|]
+\HL
+\NC          \NC \LUATEX \NC \LUAJITTEX \NC \LUAJITTEX\ + jit \NC \NR
+\HL
+\NC direct   \NC 19.1    \NC 15.9       \NC 15.8              \NC \NR
+\NC indirect \NC 18.0    \NC 15.2       \NC 15.0              \NC \NR
+\HL
+\stoptabulate
+
+Surprisingly, even jitting helps a bit here. Maybe it relates the the number of
+pages and the amount of calls but we didn't investigate this. By default jitting
+is off anyway. The impact of indirectness is more than in previous examples.
+
+For this test a file was loaded that redefines some core \CONTEXT\ code. This
+also has some overhead which means that numbers for the indirect case will be
+somewhat better if we decide to use these mechanisms in the core code. It is
+tempting to do that but it involves some work and it's always the question if a
+week of experimenting and coding will ever be compensated by less. After all, in
+this last test, a speed of 50 pages per second is not that bad a performance.
+
+When looking at these numbers, keep in mind that it is still not clear if we end
+up using this functionality, and when \CONTEXT\ will use it, it might be in a way
+that gives better or worse timings than mentioned above. For instance, storing \LUA\
+code in the format is possible, but these implementations force us to serialize
+the \type {lua.calls} mechanism and initialize them after format loading. For that
+reason alone, a more native solution is better.
+
+\stopsection
+
+\startsection[title=Exploration]
+
+In the early days of \LUATEX\ Taco and I discussed an approach similar do
+registers which means that there is some \type {\...def} command available. The
+biggest challenge there is to come up with a decent way to define the arguments.
+On the one hand, using a hash syntax is natural to \TEX, but using names is more
+natural to \LUA. So, when we picked up that thread, solutions like this came up
+in a Skype session with Taco:
+
+\starttyping
+\luadef\myfunction#1#2{ tex.print(arg[1]+arg[2]) }
+\stoptyping
+
+The \LUA\ snippet becomes a function with this body:
+
+\starttyping
+local arg = { #1, #2 } -- can be preallocated and reused
+-- the body as defined at the tex end
+tex.print(arg[1]+arg[2])
+\stoptyping
+
+Where \type {arg} is set each time. As we wrapped it in a function we can
+also put the arguments on the stack and use:
+
+\starttyping
+\luadef\myfunction#1#2{ tex.print((select(1,...))+(select(2,...)) }
+\stoptyping
+
+Given that we can make select work this way (either or not by additional
+wrapping). Anyway, both these solutions are ugly and so we need to look further.
+Also, the \type {arg} variant mandates building a table. So, a natural next
+iteration is:
+
+\starttyping
+\luadef\myfunction a b { tex.print(a+b) }
+\stoptyping
+
+Here it becomes already more natural:
+
+\starttyping
+local a = #1
+local b = #2
+-- the body as defined at the tex end
+tex.print(a+b)
+\stoptyping
+
+But, as we don't want to reload the body we need to push \type {#1} into the
+closure. This is a more static definition equivalent:
+
+\starttyping
+local a = select(1,...)
+local b = select(2,...)
+tex.print(a+b)
+\stoptyping
+
+Keep in mind that we are not talking of some template that gets filled in and
+loaded, but about precompiled functions! So, a \type {#1} is not really put there
+but somehow pushed into the closure (we know the stack offsets).
+
+Yet another issue is more direct alias. Say that we define a function at the
+\LUA\ end and want to access it using this kind of interface.
+
+\starttyping
+function foo(a,b)
+    tex.print(a+b)
+end
+\stoptyping
+
+Given that we have something:
+
+\starttyping
+\luadef \myfunctiona a b { tex.print(a+b) }
+\stoptyping
+
+We can consider:
+
+\starttyping
+\luaref \myfunctionb 2 {foo}
+\stoptyping
+
+The explicit number is debatable as it can be interesting to permit
+an arbitrary number of arguments here.
+
+\starttyping
+\myfunctiona{1}{2}
+\myfunctionb{1}{2}
+\stoptyping
+
+So, if we go for:
+
+\starttyping
+\luaref \myfunctionb {foo}
+\stoptyping
+
+we can use \type {\relax} as terminator:
+
+\starttyping
+\myfunctiona{1}{2}
+\myfunctionb{1}{2}\relax
+\stoptyping
+
+In fact, the call method discussed in a previous section can be used here as well
+as it permits less arguments as well as mixed types. Think of this:
+
+\starttyping
+\luadef \myfunctiona a b c { tex.print(a or 0 + b or 0 + c or 0) }
+\luaref \myfunctionb {foo}
+\stoptyping
+
+with
+
+\starttyping
+function foo(a,b,c)
+    tex.print(a or 0 + b or 0 + c or 0)
+end
+\stoptyping
+
+This could be all be valid:
+
+\starttyping
+\myfunctiona{1}{2}{3]\relax
+\myfunctiona{1}\relax
+\myfunctionb{1}{2}\relax
+\stoptyping
+
+or (as in practice we want numbers):
+
+\starttyping
+\myfunctiona 1 \scratchcounter 3\relax
+\myfunctiona 1 \relax
+\myfunctionb 1 2 \relax
+\stoptyping
+
+We basicaly get optional arguments for free, as long as we deal with it properly
+at the \LUA\ end. The only condition with the \type {\luadef} case is that there
+can be no more than the given number of arguments, because that's how the function
+body gets initialized set up. In practice this is quite okay.
+
+% After this exploration we can move on to the final implementation and see what we
+% ended up with.
+
+\stopsection
+
+% \startsection[title=The final implementation]
+%     {\em todo}
+% \stopsection
+
+\startsection[title=The follow up]
+
+We don't know what eventually will happen with \LUATEX. We might even (at least
+in \CONTEXT) stick to the current approach because there not much to gain in
+terms of speed, convenience and (most of all) beauty.
+
+{\em Note:} In \LUATEX\ 0.79 onward \type {\indirectlua} has been implemented as
+\type {\luafunction} and the \type {lua.calls} table is available as \type
+{lua.get_functions_table()}. A decent token parser has been discussed at the
+\CONTEXT\ 2013 conference and will show up in due time. In addition, so called
+\type {latelua} nodes support function assignments and \type {user} nodes support
+a field for \LUA\ values. Additional information can be associated with any nodes
+using the properties subsystem.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

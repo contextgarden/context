@@ -1,0 +1,648 @@
+% language=uk
+
+\usetypescriptfile[type-husayni]
+
+\startcomponent hybrid-goodies
+
+\environment hybrid-environment
+
+% this will change
+
+\definefontfeature
+  [husayni-none]
+  [analyze=yes,mode=node,
+   language=dflt,script=arab,
+   ccmp=yes]
+
+\definefontfeature
+  [husayni-default]
+  [analyze=yes,mode=node,
+   language=dflt,script=arab,
+   ccmp=yes,init=yes,medi=yes,fina=yes,
+   rlig=yes,calt=yes,salt=yes,anum=yes,
+   kern=yes,curs=yes,mark=yes,mkmk=yes,
+   ss01=yes,ss03=yes,ss10=yes,ss12=yes,ss15=yes,ss16=yes,
+   ss19=yes,ss24=yes,ss25=yes,ss26=yes,ss27=yes,ss31=yes,
+   ss34=yes,ss35=yes,ss36=yes,ss37=yes,ss38=yes,ss41=yes,
+   ss43=yes]
+
+\definefontfeature
+  [husayni-first-order]
+  [script=arab,ss01=yes,ss03=yes,ss05=yes,
+   ss10=yes,ss12=yes,ss15=yes,ss16=yes,ss19=yes,ss24=yes,
+   ss25=yes,ss26=yes,ss27=yes,ss31=yes,ss34=yes,ss35=yes,
+   ss36=yes,ss37=yes,ss38=yes,ss41=yes,ss42=yes,ss43=yes]
+
+\definefontfeature
+  [husayni-stack-jiim-multi-level]
+  [script=arab,ss05=yes]
+
+\definefontfeature
+  [husayni-minimal-stretching]
+  [script=arab,
+   ss05=yes,ss09=yes,ss06=yes,ss13=yes,ss17=yes,ss40=yes,
+   js11=yes,js14=yes,js16=yes]
+
+\definefontfeature
+  [husayni-maximal-stretching]
+  [script=arab,
+   ss05=yes,ss09=yes,ss06=yes,ss13=yes,ss17=yes,ss40=yes,
+   js13=yes,js14=yes,js16=yes]
+
+\definefontfeature
+  [husayni-chop-haa]
+  [script=arab,
+   ss05=yes,ss09=yes,ss06=yes,ss13=yes,ss17=yes,ss54=yes]
+
+\definefontfeature
+  [husayni-normal]
+  [goodies=husayni,
+   featureset=default]
+
+\definefont[ArabicFontNone][husayni*husayni-none    at 40pt]
+\definefont[ArabicFontFull][husayni*husayni-default at 40pt] % husayni-normal
+
+\startchapter[title={Font Goodies}]
+
+\startsection[title={Introduction}]
+
+The Oriental \TEX\ project is one of the first and more ambitious users of
+\LUATEX. A major undertaking in this project is the making of a rather full
+features and complex font for typesetting Arabic. As the following text will show
+some Arabic, you might get the impression that I'm an expert but be warned that
+I'm far from that. But as Idris compensates this quite well the team has a lot of
+fun in figuring out how to achieve our goals using \OPENTYPE\ technology in
+combination with \LUATEX\ and \MKIV. A nice side effect of this is that we end up
+with some neat tricks in the \CONTEXT\ core.
+
+Before we come to some of these goodies, an example of Arabic is given that
+relates quite well to the project. It was first used at the euro\TEX\ 2009
+meeting. Take the following 6 shapes:
+
+\starttabulate[|c|c|c|c|c|c|]
+\NC \ArabicFontFull ل \NC \ArabicFontFull و \NC \ArabicFontFull ا \NC \ArabicFontFull ت \NC \ArabicFontFull ي \NC \ArabicFontFull خ \NC \NR
+\NC \type{l} \NC \type{w} \NC \type{ā} \NC \type{t} \NC \type{ī} \NC \type{kh} \NC \NR
+\stoptabulate
+
+With these we can make the name \LUATEX\ and as we use a nice script we can
+forget about the lowered~E. Putting these characters in sequence is not enough as
+Arabic typesetting has to mimick the subtle aspects of scribes.
+
+In Latin scripts we have mostly one|-|to|-|one and many|-|to|-|one substitutions.
+These can happen in sequence which in in practice boils down to multiple passes
+over the stream of characters. In this process sometimes surrounding characters
+(or shapes) play a role, for instance ligatures are not always wanted and their
+coming into existence might depend on neighbouring characters. In some cases
+glyphs have to be (re)positioned relative to each other. While in Latin scripts
+the number of substitutions and positioning is not that large but in advanced
+Arabic fonts it can be pretty extensive.
+
+With \OPENTYPE\ we have some machinery available, so we try to put as much logic
+in the font as possible. However, in addition we have some dedicated optimizing
+routines. The whole process is split into a couple if stages.
+
+The so called First|-|Order Analysis puts a given character into isolated,
+initial, middle, or final state. Next, the Second|-|Order Analysis looks at the
+characters and relates this state to what characters precede or succeed it. Based
+on that state we do character substitutions. There can be multiple analysis and
+replacements in sequence. We can do some simple aesthetic stretching and
+additional related replacements. We need to attach identity marks and vowels in
+proper but nice looking places. In most cases we're then done. Contrary to other
+fonts we don't use many ligatures but compose characters.
+
+The previous steps already give reasonable results and implementing it also
+nicely went along with the development of \LUATEX\ and \CONTEXT\ \MKIV. Currently
+we're working on extending and perfecting the font to support what we call
+Third|-|Order Contextual Analysis. This boils down to an interplay between the
+paragraph builder and additional font features. In order to get pleasing spacing
+we apply further substitutions, this time with wider or narrower shapes. When
+this is done we need to reattach identity marks and vowels. Optionally we can
+apply \HZ\ like stretching as a finishing touch but so far we didn't follow that
+route yet.
+
+So, let's see how we can typeset the word \LUATEX\ in Arabic using some of these
+techniques.
+
+\startlines
+no order (kh ī t ā w [u] l)\hfilll {\righttoleft\ArabicFontNone لُواتيخ}
+first order \hfilll {\subff{husayni-first-order}\righttoleft\ArabicFontFull لُواتيخ}
+second order \hfilll {\righttoleft\ArabicFontFull لُواتيخ}
+second order (Jiim-stacking) \hfilll {\addff{husayni-stack-jiim-multi-level}\righttoleft\ArabicFontFull لُواتيخ}
+minimal stretching \hfilll {\addff{husayni-minimal-stretching}\righttoleft\ArabicFontFull لُواتيخ}
+maximal stretching (level 3) \hfilll {\addff{husayni-maximal-stretching}\righttoleft\ArabicFontFull لُواتيخ}
+chopped letter khaa (for e.g.\ underlining) \hfilll {\addff{husayni-chop-haa}\righttoleft\ArabicFontFull لُواتيخ}
+\stoplines
+
+As said, this font is quite complex in the sense that it has many features and
+associated lookups. In addition to the usual features we have stylistic and
+justification variants. As these are not standardized (after all, each font can
+have its own look and feel and associated treatments) we store some information
+in the goodies files that ship with this font.
+
+\startbuffer[stylistics]
+\startluacode
+  local goodies = fonts.goodies.load("husayni")
+  local stylistics = goodies and goodies.stylistics
+  if stylistics then
+    local col, row, type = context.NC, context.NR, context.type
+    context.starttabulate { "|l|pl|" }
+    col() context("feature") col() context("meaning") col() row()
+    for feature, meaning in table.sortedpairs(stylistics) do
+      col() type(feature) col() type(meaning) col() row()
+    end
+    context.stoptabulate()
+  end
+\stopluacode
+\stopbuffer
+
+\getbuffer[stylistics]
+
+It is highly unlikely that a user will remember all these features, which is why
+there will be a bunch of predefined combinations. These are internalized as
+follows:
+
+\startbuffer[featuresets]
+\startluacode
+  local goodies = fonts.goodies.load("husayni")
+  local featuresets = goodies and goodies.featuresets
+  if featuresets then
+    local col, row, type = context.NC, context.NR, context.type
+    context.starttabulate { "|l|pl|" }
+    col() context("featureset") col() context("definitions") col() row()
+    for featureset, definitions in table.sortedpairs(featuresets) do
+      col() type(featureset) col()
+      for k, v in table.sortedpairs(definitions) do
+        type(string.format("%s=%s",k,tostring(v)))
+        context.quad()
+      end
+      col() row()
+    end
+    context.stoptabulate()
+  end
+\stopluacode
+\stopbuffer
+
+\getbuffer[featuresets]
+
+\stopsection
+
+\startsection[title={Color}]
+
+One of the objectives of the oriental \TEX\ project is to bring color to typeset
+Arabic. When Idris started making samples with much manual intervention it was
+about time to figure out if it could be supported by a bit of \LUA\ code.
+
+As the colorization concerns classes of glyphs (like vowels) this is something
+that can best be done after all esthetics have been sorted out. Because things
+like coloring are not part of font technology and because we don't want to misuse
+the \OPENTYPE\ feature mechanisms for that, the solution lays in an extra file
+that describes these goodies.
+
+\startbuffer[goodies-1]
+\definefontfeature
+  [husayni-colored]
+  [goodies=husayni,
+   colorscheme=default,
+   featureset=default]
+\stopbuffer
+
+\startbuffer[goodies-2]
+\start
+  \definedfont[husayni*husayni-colored at 72pt]
+  \righttoleft
+  \resetfontcolorscheme   لُواتيخ ألف ليلة وليلة \par
+  \setfontcolorscheme  [1]لُواتيخ ألف ليلة وليلة \crlf
+  \setfontcolorscheme  [2]لُواتيخ ألف ليلة وليلة \crlf
+\stop
+\stopbuffer
+
+\getbuffer[goodies-1,goodies-2]
+
+The second and third of these three lines have colored vowels and identity marks.
+So how did we get the colors? There are actually two mechanisms involved in this:
+
+\startitemize[packed]
+\startitem we need to associate colorschemes with classed of glyphs \stopitem
+\startitem we need to be able to turn on and off coloring \stopitem
+\stopitemize
+
+The first is done by loading goodies and selecting a colorscheme:
+
+\typebuffer[goodies-1]
+
+Turning on and off coloring is done with two commands (we might provide a proper
+environment for this) as shown in:
+
+\typebuffer[goodies-2]
+
+If you look closely at the feature definition you'll notice that we also choose a
+default featureset. For most (latin) fonts the regular feature definitions are
+convenient, but for fonts that are used for Arabic there are preferred
+combinations of features as there can be many.
+
+Currently the font we use here has the following colorschemes:
+
+\startbuffer[colorschemes]
+\startluacode
+  local goodies = fonts.goodies.load("husayni")
+  local colorschemes = goodies and goodies.colorschemes
+  if colorschemes then
+    local col, row, type = context.NC, context.NR, context.type
+    context.starttabulate { "|l|pl|" }
+    col() context("colorscheme") col() context("numbers") col() row()
+    for colorscheme, numbers in table.sortedpairs(colorschemes) do
+      col() type(colorscheme) col()
+      for i=1,#numbers do
+        type(i)
+        context.quad()
+      end
+      col() row()
+    end
+    context.stoptabulate()
+  end
+\stopluacode
+\stopbuffer
+
+\getbuffer[colorschemes]
+
+\stopsection
+
+\startsection[title={The goodies file}]
+
+In principle a goodies files can contain anuy data that makes sense but in order
+to be useable some entries have a prescribed structure. A goodies file looks as
+follows:
+
+\starttyping
+return {
+  name = "husayni",
+  version = "1.00",
+  comment = "Goodies that complement the Husayni font by Idris Samawi Hamid.",
+  author = "Idris Samawi Hamid and Hans Hagen",
+  featuresets = {
+    default = {
+      key = value, <table>, ...
+    },
+    ...
+  },
+  stylistics = {
+    key = value, ...
+  },
+  colorschemes = {
+    default = {
+      [1] = {
+        "glyph_a.one", "glyph_b.one", ...
+      },
+      ...
+    }
+  }
+}
+\stoptyping
+
+We already saw the list of special features and these are defined in the \type
+{stylistics} stable. In this document, that list was typeset using the following
+(hybrid) code:
+
+\typebuffer[stylistics]
+
+The table with colorscheme that we showed is generated with:
+
+\getbuffer[colorschemes]
+
+In a similar fashion we typeset the featuresets:
+
+\typebuffer[featuresets]
+
+The unprocessed \type {featuresets} table can contain one or more
+named sets and each set can be a mixture of tables and key value
+pairs. Say that we have:
+
+\starttyping
+  default = {
+    kern = "yes", { ss01 = "yes" }, { ss02 = "yes" }, "mark"
+  }
+\stoptyping
+
+Given the previous definition, the order of processing is as follows.
+
+\startitemize[packed,n]
+\startitem \type {{ ss01 = "yes" }} \stopitem
+\startitem \type {{ ss02 = "yes" }} \stopitem
+\startitem \type {mark} (set to \type {"yes"}) \stopitem
+\startitem \type {kern = "yes"} \stopitem
+\stopitemize
+
+So, first we process the indexed part if the list, and next the hash. Already set
+values are not set again. The advantage of using a \LUA\ table is that you can
+simplify definitions. Before we return the table we can define local variables,
+like:
+
+\starttyping
+local one = { ss01 = "yes" }
+local two = { ss02 = "yes" }
+local pos = { kern = "yes", mark = "yes" }
+\stoptyping
+
+and use them in:
+
+\starttyping
+default = {
+  one, two, pos
+}
+\stoptyping
+
+That way we we can conveniently define all kind of interesting combinations
+without the need for many repetitive entries.
+
+The \type {colorsets} table has named subtables that are (currently) indexed by
+number. Each number is associated with a color (at the \TEX\ end) and is coupled
+to a list of glyphs. As you can see here, we use the name of the glyph. We prefer
+this over an index (that can change during development of the font). We cannot
+use \UNICODE\ points as many such glyphs are just variants and have no unique
+code.
+
+\stopsection
+
+\startsection[title={Optimizing Arabic}]
+
+\usemodule[abr-01,narrowtt]
+
+\enabletrackers[fonts.goodies,nodes.optimizer]
+
+The ultimate goal of the Oriental \TEX\ project is to improve the look and feel
+of a paragraph. Because \TEX\ does a pretty good job on breaking the paragraph
+into lines, and because complicating the paragraph builder is not a good idea, we
+finally settled on improving the lines that result from the par builder. This
+approach is rather close to what scribes do and the advanced Husayni font
+provides features that support this.
+
+In principle the current optimizer can replace character expansion but that would
+slow down considerably. Also, for that we first have to clean up the experimental
+\LUA\ based par builder.
+
+After several iterations the following approach was chosen.
+
+\startitemize
+
+\startitem
+    We typeset the paragraph with an optimal feature set. In our case this is
+    \type {husayni-default}.
+\stopitem
+
+\startitem
+    Next we define two sets of additional features: one that we can apply to
+    shrink words, and one that does the opposite.
+\stopitem
+
+\startitem
+    When the line has a badness we don't like, we either stepwise shrink words or
+    stretch them, depending on how bad things are.
+\stopitem
+
+\stopitemize
+
+The set that takes care of shrinking is defined as:
+
+\starttyping
+\definefontfeature
+  [shrink]
+  [husayni-default]
+  [flts=yes,js17=yes,ss05=yes,ss11=yes,ss06=yes,ss09=yes]
+\stoptyping
+
+Stretch has a few more variants:
+
+\starttyping
+\definefontfeature
+  [minimal_stretching]
+  [husayni-default]
+  [js11=yes,js03=yes]
+\definefontfeature
+  [medium_stretching]
+  [husayni-default]
+  [js12=yes,js05=yes]
+\definefontfeature
+  [maximal_stretching]
+  [husayni-default]
+  [js13=yes,js05=yes,js09=yes]
+\definefontfeature
+  [wide_all]
+  [husayni-default]
+  [js11=yes,js12=yes,js13=yes,js05=yes,js09=yes]
+\stoptyping
+
+Next we define a font solution:
+
+\starttyping
+\definefontsolution
+  [FancyHusayni]
+  [goodies=husayni,
+   less=shrink,
+   more={minimal_stretching,medium_stretching,maximal_stretching,wide_all}]
+\stoptyping
+
+Because these featuresets relate quite closely to the font design we don't use
+this way if defining but put the definitions in the goodies file:
+
+\startntyping
+    .....
+    featuresets = { -- here we don't have references to featuresets
+        default = {
+            default,
+        },
+        minimal_stretching = {
+            default, js11 = yes, js03 = yes,
+        },
+        medium_stretching = {
+            default, js12=yes, js05=yes,
+        },
+        maximal_stretching= {
+            default, js13 = yes, js05 = yes, js09 = yes,
+        },
+        wide_all = {
+            default, js11 = yes, js12 = yes, js13 = yes, js05 = yes, js09 = yes,
+        },
+        shrink = {
+            default, flts = yes, js17 = yes, ss05 = yes, ss11 = yes, ss06 = yes, ss09 = yes,
+        },
+    },
+    solutions = { -- here we have references to featuresets, so we use strings!
+        experimental = {
+            less = { "shrink" },
+            more = { "minimal_stretching", "medium_stretching", "maximal_stretching", "wide_all" },
+        },
+    },
+    .....
+\stopntyping
+
+Now the definition looks much simpler:
+
+\startbuffer
+\definefontsolution
+  [FancyHusayni]
+  [goodies=husayni,
+   solution=experimental]
+\stopbuffer
+
+% unhbox to show stretch - shrink
+
+\typebuffer \getbuffer
+
+{\em I want some funny text (complete with translation). Actually I want all
+examples translated.}
+
+\startbuffer[sample]
+قد صعدنا
+ذرى الحقائق بأقدام النبوة و الولاية و نورنا
+سبع طبقات أعلام الفتوى بالهداية فنحن ليوث
+الوغى و غيوث الندى و طعان العدى و فينا السيف و
+القلم في العاجل و لواء الحمد
+و الحوض في الآجل و أسباطنا حلفاء
+الدين و خلفاء النبيين و مصابيح الأمم و مفاتيح
+الكرم فالكليم ألبس حلة الاصطفاء لما عهدنا
+منه الوفاء و روح القدس في جنان الصاقورة ذاق من
+حدائقنا الباكورة و شيعتنا الفئة الناجية و
+الفرقة الزاكية و صاروا لنا ردءا و صونا و على
+الظلمة ألبا و عونا و سينفجر لهم ينابيع
+الحيوان بعد لظى النيران لتمام آل حم و طه و
+الطواسين من السنين و هذا الكتاب درة من درر
+الرحمة و قطرة من بحر الحكمة و كتب الحسن بن
+علي العسكري في سنة أربع و خمسين و مائتين
+\stopbuffer
+
+\startbuffer
+\definedfont[husayni*husayni-default at 24pt]
+% todo: factor ivm grid, so the next line looks hackery:
+\expanded{\setuplocalinterlinespace[line=\the\dimexpr2\lineheight]}
+\setfontsolution[FancyHusayni]% command will change
+\enabletrackers[builders.paragraphs.solutions.splitters.colors]
+\righttoleft \getbuffer[sample] \par
+\disabletrackers[builders.paragraphs.solutions.splitters.colors]
+\resetfontsolution
+\stopbuffer
+
+In the following example the yellow words are stretched and the green ones are
+shrunken.\footnote {Make sure that the paragraph is finished (for instance using
+\type {\par} before resetting it.)}
+
+\typebuffer
+
+\start \getbuffer \stop
+
+% \setfontsolution[FancyHusayni]x\par\resetfontsolution
+% \setfontsolution[FancyHusayni]x\par\resetfontsolution
+% \setfontsolution[FancyHusayni]x\par\resetfontsolution
+% \setfontsolution[FancyHusayni]x\par\resetfontsolution
+% \setfontsolution[FancyHusayni]x\par\resetfontsolution
+% \setfontsolution[FancyHusayni]x\par\resetfontsolution
+% \setfontsolution[FancyHusayni]x\par\resetfontsolution
+% \setfontsolution[FancyHusayni]x\par\resetfontsolution
+
+% \startbuffer[sample]
+% \dorecurse{50}{الحمد \recurselevel\space}
+% \stopbuffer
+
+This mechanism is somewhat experimental as is the (user) interface. It is also
+rather slow compared to normal processing. There is room for improvement but I
+will do that when other components are more stable so that simple variants (that
+we can use here) can be derived.
+
+When criterium~0 used above is changed into for instance~5 processing is faster.
+When you enable a preroll processing is more time consuming. Examples of settings
+are:
+
+\starttyping
+\setupfontsolutions[method={preroll,normal},criterium=2]
+\setupfontsolutions[method={preroll,random},criterium=5]
+\setupfontsolutions[method=reverse,criterium=8]
+\setupfontsolutions[method=random,criterium=2]
+\stoptyping
+
+Using a preroll is slower because it first tries all variants and then settles
+for the best; otherwise we process the first till the last solution till the
+criterium is satisfied.
+
+% {\em Todo: show normal, reverse and random.}
+% {\em Todo: bind setting to paragraph.}
+
+\stopsection
+
+\startsection[title={Protrusion and expansion}]
+
+There are two entries in the goodies file that relate to advanced parbuilding:
+\type {protrusions} and \type {expansions}.
+
+\starttyping
+protrusions = {
+  vectors = {
+    pure = {
+      [0x002C] = { 0, 1 }, -- comma
+      [0x002E] = { 0, 1 }, -- period
+      .....
+    }
+  }
+}
+\stoptyping
+
+These vectors are similar to the ones defined globally but the vectors defined in
+a goodie file are taken instead when present.
+
+\stopsection
+
+\startsection[title={Filenames and properties}]
+
+As filenames and properties of fonts are somewhat of an inconsistent mess, we can
+use the goodies to provide more information:
+
+\starttyping
+files = {
+  name = "antykwapoltawskiego", -- shared
+  list = {
+      ["AntPoltLtCond-Regular.otf"] = {
+       -- name   = "antykwapoltawskiego",
+          style  = "regular",
+          weight = "light",
+          width  = "condensed",
+      },
+      .....
+    }
+  }
+}
+\stoptyping
+
+Internally this will become a lookup tree so that we can have a predictable
+specifier:
+
+\starttyping
+\definefont[MyFontA][antykwapoltawskiego-bold-italic]
+\definefont[MyFontB][antykwapoltawskiego-normal-italic-condensed]
+\definefont[MyFontC][antykwapoltawskiego-light-regular-semicondensed]
+\stoptyping
+
+Of course one needs to load the goodies. One way to force that is:
+
+\starttyping
+\loadfontgoodies[antykwapoltawskiego]
+\stoptyping
+
+The Antykwa Poltawskiego family is rather large and provides all kind of
+combinations.
+
+\startbuffer
+\usemodule[fonts-goodies]
+\showfontgoodiesfiles[name=antykwapoltawskiego]
+\stopbuffer
+
+\startpacked
+\getbuffer
+\stoppacked
+
+This list is generated with:
+
+\typebuffer
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

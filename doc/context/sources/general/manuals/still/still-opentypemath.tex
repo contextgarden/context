@@ -1,0 +1,919 @@
+% language=uk
+
+\environment still-environment
+
+\starttext
+
+\startchapter[title=Opentype math]
+
+\startsection[title=Introduction]
+
+When \TEX\ typesets mathematics it makes some assumptions about the properties of
+fonts and dimensions of glyphs. Due to practical limitations in the traditional
+eight|-|bit fonts, such as the number of available characters in a font and a
+limited number of heights and depths, some juggling takes place. For instance,
+\TEX\ sometimes uses dimensions as a signal to treat some characters as special.
+This is not a problem as long as one knows how to make a font and in practice
+that was done by looking at the properties of Computer Modern to implement
+similar shapes. After all, there are not that many math fonts around and
+basically there is only one engine that can deal with them properly.
+
+However, when Microsoft set the standard for \OPENTYPE\ math fonts it also
+steered the direction of their use in rendering mathematics. This means that the
+\LUATEX\ engine, which handles \OPENTYPE\ fonts, has to implement some
+alternative code paths. At the start, this involved a bit of gambling because
+there was no real specification; since then we now have a better picture. One of
+the more complex changes that took place is in the way italic correction is
+applied. A dirty way out of this dilemma would be to turn the math fonts into
+virtual ones that match traditional \TEX\ properties, but this would not be a
+nice solution.
+
+It must be noted that in the process of implementing support for the new fonts,
+Taco turned some noad types (see below) into a generic noad with a subtype. This
+simplified the transition. At the same time, a lot of detailed control was added
+in the way successive characters are spaced.
+
+In \LUATEX\ pre 0.85, the italic correction was always added when a character got
+boxed (a frequently used preparation in the math builder). Now this is only done
+for the traditional fonts because, concerning italic correction, the \OPENTYPE\
+standard states: \footnote {Recently version 1.7 was published on the Microsoft
+website.}
+
+\startitemize[n]
+    \startitem
+        When a run of slanted characters is followed by a straight character
+        (such as an operator or a delimiter), the italics correction of the last
+        glyph is added to its advance width.
+    \stopitem
+    \startitem
+        When positioning limits on an N-ary operator (e.g., integral sign), the
+        horizontal position of the upper limit is moved to the right by ½ of the
+        italics correction, while the position of the lower limit is moved to the
+        left by the same distance.
+    \stopitem
+    \startitem
+        When positioning superscripts and subscripts, their default horizontal
+        positions are also different by the amount of the italics correction of
+        the preceding glyph.
+    \stopitem
+\stopitemize
+
+And, with respect to kerning:
+
+\startitemize[continue]
+    \startitem
+        Set the default horizontal position for the superscript as shifted
+        relative to the position of the subscript by the italics correction of
+        the base glyph.
+    \stopitem
+\stopitemize
+
+I must admit that when the first implementation showed up, my natural reaction to
+unexpected behaviour was just to compensate it. One such solution was simply not
+to pass the italic correction to the engine and deal with it in \LUA. In
+practice, that didn't work out well for all cases; one reason was that the engine
+saw the combination of old fonts as a new one and followed a mixed code path.
+\footnote {\CONTEXT\ employed \UNICODE\ math right from the start of \LUATEX.}
+Another approach I tried was a mix of manipulated italic values and \LUA, but
+finally as specifications settled I decided to leave it to the engine completely,
+if only because successive versions of \LUATEX\ behaved much better.
+
+So, as we are closing in on the first release of \LUATEX, I decided to fix the
+pending issues and sat down to look at the math related code. I must admit that I
+had never looked in depth into that part of the machinery. In the next sections I
+will discuss some of the outcome of this exercise.
+
+I will also discuss some extensions that have been on the agenda for years. They
+are rather generic and handy, but I must also admit that the \MKIV\ code related
+to math has so many options to control rendering that I'm not sure if they will
+ever be used in \CONTEXT. Nevertheless, these generic extensions fit will into
+the set of basic features of \LUATEX.
+
+\stopsection
+
+\startsection[title=Italic correction]
+
+As stated above, the normal code path included italic correction in all the math
+boxes that are made. This meant that, in some places, this correction had to be
+removed and/or moved to another place in the chain. This is a natural side effect
+of the fact that \TEX\ runs over the intermediate list of math nodes (noads) and
+turns them into regular nodes, mostly glyphs, kerns, glue and boxes.
+
+The complication is not so much these italic corrections themselves, because we
+could just continue to do the same, but the fact that these corrections are to be
+interpreted differently in case of integrals. There, the problem is that we have
+to (kind of) look back at what is done in order to determine what italic
+corrections are to be applied.
+
+The original solution was to keep track of the applied correction via variables
+but that still made some analysis necessary. In the new implementation, more
+information is stored in the processed noads. This is a logical choice given that
+we have already added other information. It also makes it possible to fix cases
+that will (for sure) show up in the future.
+
+\startbuffer[ic-1]
+\ruledhbox\bgroup
+    \showglyphs\showboxes
+    \hbox{$\int ^2  $}\quad
+    \hbox{$\int   _2$}\quad
+    \hbox{$\int ^2_2$}\quad
+    \hbox{$f    ^2  $}\quad
+    \hbox{$f      _2$}\quad
+    \hbox{$f    ^2_2$}%
+\egroup
+\stopbuffer
+
+\startbuffer[ic-2]
+\ruledhbox\bgroup
+    \showglyphs\showboxes
+    \hbox{$\normalint ^2  $}\quad
+    \hbox{$\normalint   _2$}\quad
+    \hbox{$\normalint ^2_2$}\quad
+    \hbox{$\int       ^2  $}\quad
+    \hbox{$\int         _2$}\quad
+    \hbox{$\int       ^2_2$}%
+\egroup
+\stopbuffer
+
+\placefigure
+  [here]
+  [fig:italic-correction-1]
+  {Some examples of italic correction (1).}
+  {\scale[width=\textwidth]{\getbuffer[ic-1]}}
+
+In \in {figure} [fig:italic-correction-1] we show two examples of inline italic
+correction. The superscripts are shifted to the right and the subscripts to the
+left. In the case of an integral sign, we need to move half the correction. This
+is triggered by the \type {\nolimits} primitive. In \in {figure}
+[fig:italic-correction-2] we show the difference between just an integral
+character and one tagged as having limits. \footnote {We show some boxes so that
+you get an idea what \TEX\ is doing. Basically \TEX\ puts superscripts and
+subscripts on top of each other with some kern in between and then corrects the
+dimensions.}
+
+\placefigure
+  [here]
+  [fig:italic-correction-2]
+  {Some examples of italic correction (2).}
+  {\scale[width=\textwidth]{\getbuffer[ic-2]}}
+
+The amount of correction, if present at all, depends on the font, and in this
+document we use Dejavu math. \in {Figure} [fig:italic-correction-3] shows a few
+variants. As you can see, the amount of correction is very font dependent.
+
+\placefigure
+  [here]
+  [fig:italic-correction-3]
+  {Some examples of italic correction (3).}
+  {\startcombination[1*4]
+     {\switchtobodyfont [pagella]\scale[width=\textwidth]{\getbuffer[ic-1]}} {cambria}
+     {\switchtobodyfont [cambria]\scale[width=\textwidth]{\getbuffer[ic-1]}} {pagella}
+     {\switchtobodyfont  [modern]\scale[width=\textwidth]{\getbuffer[ic-1]}} {latin modern}
+     {\switchtobodyfont[lucidaot]\scale[width=\textwidth]{\getbuffer[ic-1]}} {lucida ot}
+   \stopcombination}
+
+\startsection[title=Vertical delimiters]
+
+When we go into display math, there is a good chance that an integral has to be
+enlarged. The integral sign in \UNICODE\ has slot \type {0x222B}, so we can
+define a bigger one as follows:
+
+\startbuffer[nocontext]
+\let\int\normalint
+\stopbuffer
+
+\startbuffer[cambria]
+\switchtobodyfont[cambria]%
+\stopbuffer
+
+\startbuffer[pagella]
+\switchtobodyfont[pagella]%
+\stopbuffer
+
+\startbuffer[modern]
+\switchtobodyfont[modern]%
+\stopbuffer
+
+\startbuffer[lucidaot]
+\switchtobodyfont[lucidaot]%
+\stopbuffer
+
+\startbuffer[xits]
+\switchtobodyfont[xits]%
+\stopbuffer
+
+\startbuffer[largerint]
+\def\standardint{
+    \Umathchar "1 "0 "222B
+}
+\def\wrappedint{\mathop{
+    \Umathchar "1 "0 "222B
+}}
+\def\biggerint{\mathop{
+    \Uleft  height 3ex depth 3ex axis \Udelimiter "0 "0 "222B
+    \Uright .
+}}
+\def\evenbiggerint{\mathop{
+    \Uleft  height 6ex depth 6ex axis \Udelimiter "0 "0 "222B
+    \Uright .
+}}
+\stopbuffer
+
+\typebuffer[largerint]
+
+\startbuffer[demoint]
+$
+\displaystyle\standardint  ^a_b\enspace
+\displaystyle\wrappedint   ^a_b\enspace
+\displaystyle\biggerint    ^a_b\enspace
+\displaystyle\evenbiggerint^a_b\enspace
+$
+\stopbuffer
+
+The \type {axis} keyword will apply a shift up over the size of the current
+styles math axis. We use this in some examples as:
+
+\typebuffer[demoint]
+
+In \in {figure} [fig:demoint] you can see some subtle differences. The wrapped
+version doesn't shift the superscript and subscript. The reason is that the
+operator is hidden in its own wrapper and the scripts attach at an outer level.
+So, unless we start analyzing the innermost noad and apply that to the outer, we
+cannot know the shift. Such analyzing is asking for problems: where do we stop
+and what slight variations do we take into account? It's better to be
+predictable.
+
+\startbuffer
+    \ruledhbox \bgroup
+        \showglyphs \showboxes
+        \getbuffer[nocontext,pagella, largerint,demoint]
+        \getbuffer[nocontext,cambria, largerint,demoint]
+        \getbuffer[nocontext,modern,  largerint,demoint]
+        \getbuffer[nocontext,lucidaot,largerint,demoint]
+    \egroup
+\stopbuffer
+
+\placefigure
+  [here]
+  [fig:demoint]
+  {pagella, cambria, latin modern and lucida}
+  {\scale[width=\textwidth]{\getbuffer}}
+
+Another observation is that Latin Modern does not provide (at least not yet)
+large integrals at all.
+
+The following four cases are equivalent:
+
+\starttyping
+\Uleft   height 3ex depth 3ex axis \Udelimiter "0 "0 "222B
+\Uright .
+
+\Uleft  .
+\Uright  height 3ex depth 3ex axis \Udelimiter "0 "0 "222B
+
+\Uleft   .
+\Umiddle height 3ex depth 3ex axis \Udelimiter "0 "0 "222B
+\Uright  .
+
+\Uleft   .
+\Umiddle height 3ex depth 3ex axis \Udelimiter "0 "0 "222B
+\Uright  .
+\stoptyping
+
+However, because this all looks a bit clumsy, we now provide a new
+primitive:
+
+\starttyping
+\Uvextensible
+    height <dimension>
+    depth <dimension>
+    axis
+    exact
+    <delimiter>
+\stoptyping
+
+The symbol to be constructed will have size \type {height} plus \type {depth}.
+When an \type {axis} is specified, the symbol will be shifted up, which is
+normally the case for such symbols. The keyword \type {exact} will correct the
+dimensions when no exact match is made, and this can be the case as long as we
+use the stepwise larger glyphs and before we end up using the composed shapes.
+When no dimensions are specified, the normal construction takes place and the
+only keyword that can be used then is \type {noaxis} which keeps the axis out of
+the calculations. After about a week of experimenting and exploring options, this
+combination made most sense, read: no fuzzy heuristics but predictable behaviour;
+after all, one might need different solutions for different fonts or
+circumstances and the applied logic (and expectations) can (and will, for sure)
+differ per macro package.
+
+\def\SampleRule#1#2%
+  {\blackrule[height=#1,depth=#2,width=1mm,color=maincolor]}
+
+% \def\SampleDelimiterSpec#1#2%
+%   {\ruledhbox \bgroup
+%       \SampleRule{20mm}{20mm}\enspace
+%       \ruledhbox{$\maincolor\char"#1$}\enspace
+%       \ruledhbox{$\Uleft height  1mm depth  1mm #2 \Udelimiter 0 0 "#1\Uright .$}\enspace
+%       \ruledhbox{$\Uleft height  2mm depth  2mm #2 \Udelimiter 0 0 "#1\Uright .$}\enspace
+%       \ruledhbox{$\Uleft height  5mm depth  5mm #2 \Udelimiter 0 0 "#1\Uright .$}\enspace
+%       \ruledhbox{$\Uleft height 20mm depth 20mm #2 \Udelimiter 0 0 "#1\Uright .$}\enspace
+%       \ruledhbox{$\Uleft height 20mm depth 10mm #2 \Udelimiter 0 0 "#1\Uright .$}%
+%    \egroup}
+
+\def\SampleDelimiterSpec#1#2%
+  {\ruledhbox \bgroup
+      \SampleRule{20mm}{20mm}\enspace
+      \ruledhbox{$\maincolor\char"#1$}\enspace
+      \ruledhbox{$\Uvextensible height  1mm depth  1mm #2 \Udelimiter 0 0 "#1$}\enspace
+      \ruledhbox{$\Uvextensible height  2mm depth  2mm #2 \Udelimiter 0 0 "#1$}\enspace
+      \ruledhbox{$\Uvextensible height  5mm depth  5mm #2 \Udelimiter 0 0 "#1$}\enspace
+      \ruledhbox{$\Uvextensible height 20mm depth 20mm #2 \Udelimiter 0 0 "#1$}\enspace
+      \ruledhbox{$\Uvextensible height 20mm depth 10mm #2 \Udelimiter 0 0 "#1$}%
+   \egroup}
+
+\startbuffer[delimiter-integral-spec]
+\startcombination[4*1]
+    {\SampleDelimiterSpec{222B}{}}           {}
+    {\SampleDelimiterSpec{222B}{axis}}       {axis}
+    {\SampleDelimiterSpec{222B}{exact}}      {exact}
+    {\SampleDelimiterSpec{222B}{axis exact}} {axis exact}
+\stopcombination
+\stopbuffer
+
+\startbuffer[delimiter-leftparent-spec]
+\startcombination[4*1]
+    {\SampleDelimiterSpec{0028}{}}           {}
+    {\SampleDelimiterSpec{0028}{axis}}       {axis}
+    {\SampleDelimiterSpec{0028}{exact}}      {exact}
+    {\SampleDelimiterSpec{0028}{axis exact}} {axis exact}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here]
+  [fig:integral-spec]
+  {cambria integrals with dimensions}
+  {\getbuffer[nocontext,cambria,delimiter-integral-spec]}
+
+\placefigure
+  [here]
+  [fig:leftparent-spec]
+  {cambria left parenthesis with dimensions}
+  {\getbuffer[nocontext,cambria,delimiter-leftparent-spec]}
+
+\def\SampleDelimiterAuto#1#2%
+  {\ruledhbox \bgroup
+      \ruledhbox{$\maincolor\char"#1$}\enspace
+      \ruledhbox{$\Uleft #2 \Udelimiter 0 0 "#1\SampleRule{ 1mm}{ 1mm}\Uright .$}\enspace
+      \ruledhbox{$\Uleft #2 \Udelimiter 0 0 "#1\SampleRule{ 2mm}{ 2mm}\Uright .$}\enspace
+      \ruledhbox{$\Uleft #2 \Udelimiter 0 0 "#1\SampleRule{ 5mm}{ 5mm}\Uright .$}\enspace
+      \ruledhbox{$\Uleft #2 \Udelimiter 0 0 "#1\SampleRule{10mm}{10mm}\Uright .$}\enspace
+      \ruledhbox{$\Uleft #2 \Udelimiter 0 0 "#1\SampleRule{15mm}{15mm}\Uright .$}\enspace
+      \ruledhbox{$\Uleft #2 \Udelimiter 0 0 "#1\SampleRule{20mm}{20mm}\Uright .$}\enspace
+      \ruledhbox{$\Uleft #2 \Udelimiter 0 0 "#1\SampleRule{20mm}{10mm}\Uright .$}%
+   \egroup}
+
+\startbuffer[delimiter-integral-auto]
+\startcombination[2*1]
+    {\SampleDelimiterAuto{222B}{}}       {}
+    {\SampleDelimiterAuto{222B}{noaxis}} {noaxis}
+\stopcombination
+\stopbuffer
+
+\startbuffer[delimiter-leftparent-auto]
+\startcombination[4*1]
+    {\SampleDelimiterAuto{0028}{}}       {}
+    {\SampleDelimiterAuto{0028}{noaxis}} {noaxis}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here]
+  [fig:integral]
+  {cambria integrals adaptive}
+  {\getbuffer[nocontext,cambria,delimiter-integral-auto]}
+
+\placefigure
+  [here]
+  [fig:leftparent]
+  {cambria left parenthesis adaptive}
+  {\getbuffer[nocontext,cambria,delimiter-leftparent-auto]}
+
+\stopsection
+
+\startsection[title=Horizontal delimiters]
+
+Horizontal extenders also got some new options. Although one can achieve similar
+results with macros, the following might look a bit more natural. Also, some
+properties are lost once the delimiter is constructed, so macros can become
+complex when trying to determine the original dimensions involved.
+
+We start with the new \type {\Uhextensible} primitive that accepts a dimension.
+It's just a variant of the over and under delimiters with no content part.
+
+\starttyping
+\Uhextensible
+    height <dimension>
+    depth <dimension>
+    left | middle | right
+    <family>
+    <slot>
+\stoptyping
+
+So for example you can say:
+
+\starttyping
+$\Uhextensible width 30pt 0 "2194$
+\stoptyping
+
+The \type {left}, \type {middle} and \type {right} keywords are only interpreted
+when the requested size can't be met due to stepwise larger glyph selection
+(i.e., before we start using arbitrary sizes made of snippets). \in {Figure}
+[fig:hextensible] shows what we get when we step from 2 up to 20 points with
+increments of 2 points in cambria.
+
+\unexpanded\def\ExtensibleFunA#1%
+  {\switchtobodyfont[cambria,17.3pt]%
+   \hbox\bgroup
+     \dostepwiserecurse{2}{20}{2}
+       {\backgroundline
+          [maincolor]
+          {\white$\Uhextensible width \recurselevel pt #1 0 "2194$}%
+        \quad}%
+     \unskip
+   \egroup}
+
+\unexpanded\def\ExtensibleFunB#1%
+  {\switchtobodyfont[cambria,17.3pt]%
+   \hbox\bgroup
+     \dostepwiserecurse{2}{20}{2}
+       {\ruledhbox
+          {$\Uhextensible width \recurselevel pt #1 0 "2194$}%
+        \quad}%
+     \unskip
+   \egroup}
+
+\startbuffer
+\starttabulate[|l|p|]
+    \NC (default)     \NC \ExtensibleFunA{}       \par \ExtensibleFunB{}       \NC \NR
+    \NC \type{left}   \NC \ExtensibleFunA{left}   \par \ExtensibleFunB{left}   \NC \NR
+    \NC \type{middle} \NC \ExtensibleFunA{middle} \par \ExtensibleFunB{middle} \NC \NR
+    \NC \type{right}  \NC \ExtensibleFunA{right}  \par \ExtensibleFunB{right}  \NC \NR
+\stoptabulate
+\stopbuffer
+
+\placefigure
+    [here]
+    [fig:hextensible]
+    {Stepwise wider \type {\Uhextensible} with options (cambria).}
+    {\getbuffer}
+
+The dimensions and options can also be given to the \type {\Uoverdelimiter},
+\type {\Uunderdelimiter}, \type {\Udelimiterover} and \type {\Udelimiterunder}
+primitives. \in {Figure} [fig:delimiterunder] shows what happens when the
+delimiter is smaller than requested. The samples look like this:
+
+\starttyping
+$\Udelimiterunder width 1pt 0 "2194 {\hbox{\strut !}}
+\stoptyping
+
+When no dimension is given the keywords are ignored as it makes no sense to
+mess with the extensible then.
+
+\unexpanded\def\DelimiterFunA#1%
+  {\switchtobodyfont[cambria,20.7pt]%
+   \hbox\bgroup
+     \dostepwiserecurse{1}{10}{1}
+        {\backgroundline
+           [maincolor]
+           {\white$\Udelimiterunder width ##1pt #1 0 "2194 {\hbox{\strut !}}$}%
+         \quad}%
+     \unskip
+   \egroup}
+
+\unexpanded\def\DelimiterFunB#1%
+  {\switchtobodyfont[cambria,20.7pt]%
+   \hbox\bgroup
+     \dostepwiserecurse{1}{10}{1}
+        {\ruledhbox
+           {$\Udelimiterunder width ##1pt #1 0 "2194 {\hbox{\strut !}}$}%
+          \quad}%
+     \unskip
+   \egroup}
+
+\startbuffer
+\starttabulate[|l|p|]
+    \NC (default)     \NC \DelimiterFunA{}       \par \DelimiterFunB{}       \NC \NR
+    \NC \type{left}   \NC \DelimiterFunA{left}   \par \DelimiterFunB{left}   \NC \NR
+    \NC \type{middle} \NC \DelimiterFunA{middle} \par \DelimiterFunB{middle} \NC \NR
+    \NC \type{right}  \NC \DelimiterFunA{right}  \par \DelimiterFunB{right}  \NC \NR
+    \NC \NR
+\stoptabulate
+\stopbuffer
+
+\placefigure
+    [here]
+    [fig:delimiterunder]
+    {Stepwise wider \type {\Udelimiterunder} with options (cambria).}
+    {\getbuffer}
+
+\stopsection
+
+\startsection[title=Accents]
+
+Already many years ago, I observed that overlaying characters (which happens when
+we negate an operator that has no composed glyph) didn't always give nice results
+and, therefore, a tracker item was created. When going over the todo list, I ran
+across a suggested patch by Khaled Hosny that added an overlay accent type. As
+the suggested solution fits in with the other extensions, a variant has been
+implemented.
+
+The results really depend on the quality and completeness of the font, so here we
+will show xits. The placement of an \type {overlay} also depends on the top
+accent shift as specified in the font for the used glyph. Instead of a fixed
+criterion for trying to find the best match, an additional \type {fraction}
+(numerator) parameter can be specified. A value of $800$ means that the target
+width is $800/1000$.
+
+The \type {\Umathaccent} command now has the following syntax:
+
+\starttyping
+\Umathaccent
+    [top|bottom|overlay]
+    [fixed]
+    [fraction <number>]
+    <delimiter>
+    {content}
+\stoptyping
+
+When we have an overlay, the fraction concerns the height; otherwise it concerns
+the width of the nucleus. In both cases, it is only applied when searching for
+stepwise larger glyphs, as extensibles are not influenced. An example of a
+specification is:
+
+\starttyping
+\Umathaccent
+    overlay "0 "0 "0338
+    fraction 950
+    {\Umathchar"1"0"2211}
+\stoptyping
+
+\in {Figure} [fig:accent-1] shows what we get when we use different fractions
+(from 800 upto 1500 with a step of 100). We see that \type {\overlay} is not
+always useful.
+
+\startbuffer[accents-1]
+\dostepwiserecurse{800}{1500}{100}{%
+$\Umathaccent
+    overlay "0 "0 "0338
+    fraction #1
+    {\Umathchar"1"0"2211} #1
+$\quad
+}\unskip
+\stopbuffer
+
+\startbuffer
+\startcombination[1*3]
+    {\getbuffer[xits,accents-1]}    {xits    \endash\ has   variants}
+    {\getbuffer[cambria,accents-1]} {cambria \endash\ lacks variants}
+    {\getbuffer[pagella,accents-1]} {pagella \endash\ lacks variants}
+\stopcombination
+\stopbuffer
+
+\placefigure
+    [here]
+    [fig:accent-1]
+    {Using \type {overlay} in \type {\Umathaccent}.}
+    {\getbuffer}
+
+\startbuffer[accents-2]
+$\Umathaccent overlay "0 "0 "0338 {x}$
+$\Umathaccent overlay "0 "0 "0338 {\tf x}$
+$\Umathaccent overlay "0 "0 "0338 {\tf xxx}$
+\stopbuffer
+
+Normally you can forget about the factor because overlays make most sense for
+inline math, which uses relative small glyphs, so we can get \getbuffer
+[accents-2] with the following code:
+
+\typebuffer[accents-2]
+
+A normal accent can also be influenced by \type {fraction}:
+
+\startbuffer[accents-4]
+\dostepwiserecurse{500}{1500}{250}{%
+$
+    \Umathaccent
+        top "0 "0 "23DE
+        fraction #1
+        {a\times b}
+$\quad
+}\unskip
+\stopbuffer
+
+\blank \start \getbuffer[accents-4] \stop \blank
+
+\stopsection
+
+\startsection[title=Fractions]
+
+A normal fraction has a reasonable thick rule but as soon as you make it bigger you
+will notice a peculiar effect:
+
+\startlinecorrection
+\startcombination[5*1]
+   {$\displaystyle x + {{a} \abovewithdelims() 1pt {b}}$} {1pt}
+   {$\displaystyle x + {{a} \abovewithdelims() 2pt {b}}$} {2pt}
+   {$\displaystyle x + {{a} \abovewithdelims() 3pt {b}}$} {3pt}
+   {$\displaystyle x + {{a} \abovewithdelims() 4pt {b}}$} {4pt}
+   {$\displaystyle x + {{a} \abovewithdelims() 5pt {b}}$} {5pt}
+\stopcombination
+\stoplinecorrection
+
+Such a fraction is specified as:
+
+\starttyping
+x + { {a} \abovewithdelims () 5pt {b} }
+\stoptyping
+
+A new keyword \type {exact} will nil the excessive spacing:
+
+\starttyping
+x + { {a} \abovewithdelims () exact 5pt {b} }
+\stoptyping
+
+Now we get:
+
+\startlinecorrection
+\startcombination[5*1]
+   {$\displaystyle x + {{a} \abovewithdelims() exact 1pt {b}}$} {1pt}
+   {$\displaystyle x + {{a} \abovewithdelims() exact 2pt {b}}$} {2pt}
+   {$\displaystyle x + {{a} \abovewithdelims() exact 3pt {b}}$} {3pt}
+   {$\displaystyle x + {{a} \abovewithdelims() exact 4pt {b}}$} {4pt}
+   {$\displaystyle x + {{a} \abovewithdelims() exact 5pt {b}}$} {5pt}
+\stopcombination
+\stoplinecorrection
+
+One way to get consistent spacing in such fractions is to use struts:
+
+\starttyping
+x + { {\strut a} \abovewithdelims () exact 5pt {\strut b} }
+\stoptyping
+
+Now we get:
+
+\startlinecorrection
+\startcombination[5*1]
+   {$\displaystyle x + {{\strut a} \abovewithdelims() exact 1pt {\strut b}}$} {1pt}
+   {$\displaystyle x + {{\strut a} \abovewithdelims() exact 2pt {\strut b}}$} {2pt}
+   {$\displaystyle x + {{\strut a} \abovewithdelims() exact 3pt {\strut b}}$} {3pt}
+   {$\displaystyle x + {{\strut a} \abovewithdelims() exact 4pt {\strut b}}$} {4pt}
+   {$\displaystyle x + {{\strut a} \abovewithdelims() exact 5pt {\strut b}}$} {5pt}
+\stopcombination
+\stoplinecorrection
+
+Yet another way to increase the distance between the rule and text a bit is:
+
+\starttyping
+\Umathfractionnumvgap  \displaystyle4pt
+\Umathfractiondenomvgap\displaystyle4pt
+\stoptyping
+
+This looks quite consistent:
+
+\startlinecorrection
+\Umathfractionnumvgap  \displaystyle4pt
+\Umathfractiondenomvgap\displaystyle4pt
+\startcombination[5*1]
+   {$\displaystyle x + {{a} \abovewithdelims() exact 1pt {b}}$} {1pt}
+   {$\displaystyle x + {{a} \abovewithdelims() exact 2pt {b}}$} {2pt}
+   {$\displaystyle x + {{a} \abovewithdelims() exact 3pt {b}}$} {3pt}
+   {$\displaystyle x + {{a} \abovewithdelims() exact 4pt {b}}$} {4pt}
+   {$\displaystyle x + {{a} \abovewithdelims() exact 5pt {b}}$} {5pt}
+\stopcombination
+\stoplinecorrection
+
+Here we use code like:
+
+\starttyping
+$\displaystyle x + {{a} \abovewithdelims() exact 2pt {b}}$
+\stoptyping
+
+Using struts, it is best to zero the gap:
+
+\startlinecorrection
+\Umathfractionnumvgap  \displaystyle0pt
+\Umathfractiondenomvgap\displaystyle0pt
+\startcombination[5*1]
+   {$\displaystyle x + {{\strut a} \abovewithdelims() exact 1pt {\strut b}}$} {1pt}
+   {$\displaystyle x + {{\strut a} \abovewithdelims() exact 2pt {\strut b}}$} {2pt}
+   {$\displaystyle x + {{\strut a} \abovewithdelims() exact 3pt {\strut b}}$} {3pt}
+   {$\displaystyle x + {{\strut a} \abovewithdelims() exact 4pt {\strut b}}$} {4pt}
+   {$\displaystyle x + {{\strut a} \abovewithdelims() exact 5pt {\strut b}}$} {5pt}
+\stopcombination
+\stoplinecorrection
+
+Here we use code like:
+
+\starttyping
+$\displaystyle x + {{\strut a} \abovewithdelims() exact 2pt {\strut b}}$
+\stoptyping
+
+\stopsection
+
+\startsection[title=Skewed fractions]
+
+The math parameter table contains some parameters that specify a horizontal and a
+vertical gap for skewed fractions. Some guessing is needed in order to implement
+something that uses them, so we now provide a primitive similar to the other
+fraction related ones but with a few options that one can use to influence the
+rendering. Of course, a user can mess around a bit with the parameters \type
+{\Umathskewedfractionhgap} and \type {\Umathskewedfractionvgap}.
+
+The syntax used here is:
+
+\starttyping
+{ {1} \Uskewed / <options> {2} }
+{ {1} \Uskewedwithdelims / () <options> {2} }
+\stoptyping
+
+The options can be \type {noaxis} and \type {exact}, a combination of them or
+just nothing. By default we add half the axis to the shifts and also by default
+we zero the width of the middle character. For Latin Modern the result looks as
+follows:
+
+\def\ShowA#1#2#3{$x + { {#1} \Uskewed           /    #3 {#2} } + x$}
+\def\ShowB#1#2#3{$x + { {#1} \Uskewedwithdelims / () #3 {#2} } + x$}
+
+\start
+    \switchtobodyfont[modern]
+    \starttabulate[||||||]
+        \NC \NC
+            \ShowA{a}{b}{} \NC
+            \ShowA{1}{2}{} \NC
+            \ShowB{a}{b}{} \NC
+            \ShowB{1}{2}{} \NC
+        \NR
+        \NC \type{exact} \NC
+            \ShowA{a}{b}{exact} \NC
+            \ShowA{1}{2}{exact} \NC
+            \ShowB{a}{b}{exact} \NC
+            \ShowB{1}{2}{exact} \NC
+        \NR
+        \NC \type{noaxis} \NC
+            \ShowA{a}{b}{noaxis} \NC
+            \ShowA{1}{2}{noaxis} \NC
+            \ShowB{a}{b}{noaxis} \NC
+            \ShowB{1}{2}{noaxis} \NC
+        \NR
+        \NC \type{exact noaxis} \NC
+            \ShowA{a}{b}{exact noaxis} \NC
+            \ShowA{1}{2}{exact noaxis} \NC
+            \ShowB{a}{b}{exact noaxis} \NC
+            \ShowB{1}{2}{exact noaxis} \NC
+        \NR
+    \stoptabulate
+\stop
+
+\stopsection
+
+\startsection[title=Side effects]
+
+Not all bugs reported as such are really bugs. Here is one that came from a
+misunderstanding: In Eijkhout's \quotation {\TEX\ by Topic}, the rules for
+handling styles in scripts are described as follows:
+
+\startitemize
+\startitem
+    In any style superscripts and subscripts are taken from the next smaller
+    style. Exception: in display style they are taken in script style.
+\stopitem
+\startitem
+    Subscripts are always in the cramped variant of the style; superscripts are
+    only cramped if the original style was cramped.
+\stopitem
+\startitem
+    In an \type {..\over..} formula in any style the numerator and denominator
+    are taken from the next smaller style.
+\stopitem
+\startitem
+    The denominator is always in cramped style; the numerator is only in cramped
+    style if the original style was cramped.
+\stopitem
+\startitem
+    Formulas under a \type {\sqrt} or \type {\overline} are in cramped style.
+\stopitem
+\stopitemize
+
+In \LUATEX, one can set the styles in more detail, which means that you sometimes
+have to set both normal and cramped styles to get the effect you want. If we
+force styles in the script using \type {\scriptstyle} and \type
+{\crampedscriptstyle} we get the following (all render the same):
+
+\startbuffer[demo]
+\starttabulate
+\NC default       \NC $b_{x=xx}^{x=xx}$ \NC \NR
+\NC script        \NC $b_{\scriptstyle x=xx}^{\scriptstyle x=xx}$ \NC \NR
+\NC crampedscript \NC $b_{\crampedscriptstyle x=xx}^{\crampedscriptstyle x=xx}$ \NC \NR
+\stoptabulate
+\stopbuffer
+
+\getbuffer[demo]
+
+This is coded like:
+
+\starttyping
+$b_{x=xx}^{x=xx}$
+$b_{\scriptstyle x=xx}^{\scriptstyle x=xx}$
+$b_{\crampedscriptstyle x=xx}^{\crampedscriptstyle x=xx}$
+\stoptyping
+
+Now we set the following parameters
+
+\startbuffer[setup]
+\Umathordrelspacing\scriptstyle=30mu
+\Umathordordspacing\scriptstyle=30mu
+\stopbuffer
+
+\typebuffer[setup]
+
+This gives:
+
+\start\getbuffer[setup,demo]\stop
+
+Since the result is not what is expected (visually), we should say:
+
+\startbuffer[setup]
+\Umathordrelspacing\scriptstyle=30mu
+\Umathordordspacing\scriptstyle=30mu
+\Umathordrelspacing\crampedscriptstyle=30mu
+\Umathordordspacing\crampedscriptstyle=30mu
+\stopbuffer
+
+\typebuffer[setup]
+
+Now we get:
+
+\start\getbuffer[setup,demo]\stop
+
+\stopsection
+
+\startsection[title=Fixed scripts]
+
+We have three parameters that are used for anchoring superscripts and subscripts,
+alone or in combinations.
+
+\starttabulate[|l|l|]
+\NC $d$ \NC \type {\Umathsubshiftdown}    \NC \NR
+\NC $u$ \NC \type {\Umathsupshiftup}      \NC \NR
+\NC $s$ \NC \type {\Umathsubsupshiftdown} \NC \NR
+\stoptabulate
+
+When we set \type {\mathscriptsmode} to a value other than zero, these are used
+for calculating fixed positions. This is something that is needed in, for
+instance, chemical equations. You can manipulate the mentioned variables to
+achieve different effects, and the logic is shown in the following table. In
+order to see the differences in more detail, they are enlarged in \in {figure}
+[fig:mathscriptsmode].
+
+\def\SampleMath#1%
+  {\ruledhbox{$\mathscriptsmode#1\mathupright CH_2 + CH^+_2 + CH^2_2$}}
+
+\starttabulate[|c|c|c|l|]
+    \NC \bf mode \NC \bf down      \NC \bf up        \NC                \NC \NR
+    \NC 0        \NC dynamic       \NC dynamic       \NC \SampleMath{0} \NC \NR
+    \NC 1        \NC $d$           \NC $u$           \NC \SampleMath{1} \NC \NR
+    \NC 2        \NC $s$           \NC $u$           \NC \SampleMath{2} \NC \NR
+    \NC 3        \NC $s$           \NC $u + s - d$   \NC \SampleMath{3} \NC \NR
+    \NC 4        \NC $d + (s-d)/2$ \NC $u + (s-d)/2$ \NC \SampleMath{4} \NC \NR
+    \NC 5        \NC $d$           \NC $u + s - d$   \NC \SampleMath{5} \NC \NR
+\stoptabulate
+
+\placefigure
+  [here]
+  [fig:mathscriptsmode]
+  {The effect of setting \type {\mathscriptsmode}.}
+  {\startcombination[nx=3,ny=2,distance=1em]
+     {\scale[width=\dimexpr(\textwidth-2em)/3\relax]{\SampleMath{0}}} {0}
+     {\scale[width=\dimexpr(\textwidth-2em)/3\relax]{\SampleMath{1}}} {1}
+     {\scale[width=\dimexpr(\textwidth-2em)/3\relax]{\SampleMath{2}}} {2}
+     {\scale[width=\dimexpr(\textwidth-2em)/3\relax]{\SampleMath{3}}} {3}
+     {\scale[width=\dimexpr(\textwidth-2em)/3\relax]{\SampleMath{4}}} {4}
+     {\scale[width=\dimexpr(\textwidth-2em)/3\relax]{\SampleMath{5}}} {5}
+   \stopcombination}
+
+\stopsection
+
+\startsection[title=Remark]
+
+The changes that we have made are hopefully not too intrusive. Instead of
+extending existing commands, new ones were introduced so that compatibility
+should not really be a problem. To some extend, these extensions violate the
+principle that extensions should be done in \LUA, but \TEX\ being a math renderer
+and \OPENTYPE\ replacing old font technology, we felt that we should make an
+exception here. Hopefully, not too many bugs were introduced.
+
+\stopsection
+
+\stopchapter
+
+\stoptext

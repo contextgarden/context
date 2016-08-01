@@ -1,0 +1,275 @@
+% language=uk
+
+\startcomponent hybrid-mkvi
+
+\environment hybrid-environment
+
+\startchapter[title={Upto \ConTeXt\ MkVI}]
+
+\startsection [title={Introduction}]
+
+No, this is not a typo: \MKVI\ is the name of upcoming functionality but with an
+experimental character. It is also a playground. Therefore this is not the final
+story.
+
+\stopsection
+
+\startsection [title={Defining macros}]
+
+When you define macros in \TEX, you use the \type {#} to indicate variables. So,
+you code can end up with the following:
+
+\startbuffer
+\def\MyTest#1#2#3#4%
+  {\dontleavehmode
+   \dostepwiserecurse{#1}{#2}{#3}
+     {\ifnum\recurselevel>#1 \space,\fi
+      \recurselevel: #4\space}%
+   .\par}
+\stopbuffer
+
+\typebuffer
+
+This macro is called with 4 arguments:
+
+\starttyping
+\MyTest{3}{8}{1}{Hi}
+\stoptyping
+
+However, using numbers as variable identifiers might not have your preference. It
+makes perfect sense if you keep in mind that \TEX\ supports delimited arguments
+using arbitrary characters. But in practice, and especially in \CONTEXT\ we use
+only a few well defined variants. \ This is why you can also imagine:
+
+\startbuffer
+\def\MyTest#first#last#step#text%
+  {\dontleavehmode
+   \dostepwiserecurse{#first}{#last}{#step}
+     {\ifnum\recurselevel>#first \space,\fi
+      \recurselevel: #text}%
+   .\par}
+\stopbuffer
+
+\typebuffer
+
+In order for this to work, you need to give your file the suffix \type {mkvi} or
+you need to put a directive on the first line:
+
+\starttyping
+% macros=mkvi
+\stoptyping
+
+You can of course use delimited arguments as well, given that
+the delimiters are not letters.
+
+\startbuffer
+\def\TestOne[#1]%
+  {this is: #1}
+
+\def\TestTwo#some%
+  {this is: #some}
+
+\def\TestThree[#whatever][#more]%
+  {this is: #more and #whatever}
+
+\def\TestFour[#one]#two%
+  {\def\TestFive[#alpha][#one]%
+     {#one, #two, #alpha}}
+\stopbuffer
+
+\typebuffer \mkvibuffer
+
+You can also use the following variant which is already present for a while but
+not that much advertised. This method ignores all spaces in definitions so if you
+need one, you have to use \type {\space}.
+
+\startbuffer
+\starttexdefinition TestSix #oeps
+
+  here: #oeps
+
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer \mkvibuffer
+
+These commands work as expected:
+
+\startbuffer
+\startlines
+  \TestOne  [one]
+  \TestTwo  {one}
+  \TestThree[one][two]
+  \TestFour [one]{two}
+  \TestFive [one][two]
+  \TestSix  {one}
+\stoplines
+\stopbuffer
+
+\typebuffer
+
+% We need to obey catcode changes (we can use \getbuffer
+% instead).
+
+\getbuffer
+
+You can use buffers to collect definitions. In that case you can force
+preprocessing of the buffer with \type {\mkvibuffer[name]}.
+
+\stopsection
+
+\startsection[title={Implementation}]
+
+This functionality is not hard codes in the \LUATEX\ engine as this is not needed
+at all. We just preprocess the file before it gets loaded and this is something
+that is relatively easy to implement. Already early in the development of
+\LUATEX\ we have decided that instead of hard coding solutions, opening up makes
+more sense.
+
+One of the first mechanisms that were opened up was file IO. This means that when
+a file is opened, you can decide to intercept lines and process them before
+passing them to the traditional built in input parser. The user can be completely
+unaware of this. In fact, as \LUATEX\ only accepts \UTF-8 preprocessing will
+likely happen already when other input encodings are used.
+
+The following helper functions are available:
+
+\starttyping
+local result = resolvers.macros.preprocessed(str)
+\stoptyping
+
+This function returns a string with all named parameters
+replaced.
+
+\starttyping
+resolvers.macros.convertfile(oldname,newname)
+\stoptyping
+
+This function converts a file into a new one.
+
+\starttyping
+local result = resolvers.macros.processmkvi(str,filename)
+\stoptyping
+
+This function converts the string but only if the suffix of the filename is \type
+{mkvi} or when the first line of the string is a comment line containing \type
+{macros=mkvi}. Otherwise the original string is returned. The filename is
+optional.
+
+\stopsection
+
+\startsection[title=A few details]
+
+Imagine that you want to do this:
+
+\starttyping
+\def\test#1{before#1after}
+\stoptyping
+
+When we use names this could look like:
+
+\starttyping
+\def\test#inbetween{before#inbetweenafter}
+\stoptyping
+
+and that is not going to work out well. We could be more liberal with spaces,
+like
+
+\starttyping
+\def\test #inbetween {before #inbetween after}
+\stoptyping
+
+but then getting spaces in the output before or after variables would get more
+complex. However, there is a way out:
+
+\starttyping
+\def\test#inbetween{before#{inbetween}after}
+\stoptyping
+
+As the sequence \type +#{+ has a rather low probablility of showing up in a \TEX\
+source file, this kind of escaping is part of the game. So, all the following
+cases are valid:
+
+\starttyping
+\def\test#oeps{... #oeps ...}
+\def\test#oeps{... #{oeps} ...}
+\def\test#{main:oeps}{... #{main:oeps} ...}
+\def\test#{oeps:1}{... #{oeps:1} ...}
+\def\test#{oeps}{... #oeps ...}
+\stoptyping
+
+When you use the braced variant, all characters except braces are acceptable as
+name, optherwise only lowercase and uppercase characters are permitted.
+
+Normally \TEX\ uses a couple of special tokens like \type {^} and \type {_}. In a
+macro definition file you can avoid these by using primitives:
+
+\starttabulate[|cT|lT|]
+\NC \letterampersand           \NC \tex{aligntab}          \NC \NR
+\NC \letterhash                \NC \tex{alignmark}         \NC \NR
+\NC \letterhat                 \NC \tex{Usuperscript}      \NC \NR
+\NC \letterunderscore          \NC \tex{Usubscript}        \NC \NR
+\NC \letterdollar              \NC \tex{Ustartmath}        \NC \NR
+\NC \letterdollar              \NC \tex{Ustopmath}         \NC \NR
+\NC \letterdollar\letterdollar \NC \tex{Ustartdisplaymath} \NC \NR
+\NC \letterdollar\letterdollar \NC \tex{Ustopdisplaymath}  \NC \NR
+\stoptabulate
+
+Especially the \type {aligntab} is worth noticing: using that one directly in a
+macro definition can result in unwanted replacements, depending whether a match
+can be found. In practice the following works out well
+
+\starttyping
+\def\test#oeps{test:#oeps \halign{##\cr #oeps\cr}}
+\stoptyping
+
+You can use \UTF-8\ characters as well. For practical reasons this is only
+possible with the braced variant.
+
+\starttyping
+\def\blä#{blá}{blà:#{blá}}
+\stoptyping
+
+There will probably be more features in future versions but each of them needs
+careful consideration in order to prevent interferences.
+
+\stopsection
+
+\startsection[title=Utilities]
+
+There is currently one utility (or in fact an option to an existing utility):
+
+\starttyping
+mtxrun --script interface --preprocess whatever.mkvi
+\stoptyping
+
+This will convert the given file(s) to new ones, with the default suffix
+\type{tex}. Existing files will not be overwritten unless \type {---force} is
+given. You can also force another suffix:
+
+\starttyping
+mtxrun --script interface --preprocess whatever.mkvi --suffix=mkiv
+\stoptyping
+
+A rather plain module \type {luatex-preprocessor.lua} is provided for other
+usage. That variant provides a somewhat simplified version.
+
+Given that you have a \type {luatex-plain} format you can run:
+
+\starttyping
+luatex --fmt=luatex-plain luatex-preprocessor-test.tex
+\stoptyping
+
+Such a plain format can be made with:
+
+\starttyping
+luatex --ini luatex-plain
+\stoptyping
+
+You probably need to move the format to a proper location in your \TEX\ tree.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,630 @@
+% language=uk
+
+\startcomponent hybrid-characters
+
+\environment hybrid-environment
+
+\startchapter[title={Characters with special meanings}]
+
+\startsection[title={Introduction}]
+
+When \TEX\ was designed \UNICODE\ was not yet available and characters were
+encoded in a seven or eight bit encoding, like \ASCII\ or \EBCDIC. Also, the
+layout of keyboards was dependent of the vendor. A lot has happened since then:
+more and more \UNICODE\ has become the standard (with \UTF\ as widely used way of
+efficiently coding it).
+
+Also at that time, fonts on computers were limited to 256 characters at most.
+This resulted in \TEX\ macro packages dealing with some form of input encoding on
+the one hand and a font encoding on the other. As a side effect of character
+nodes storing a reference to a glyph in a font hyphenation was related to font
+encodings. All this was quite okay for documents written in English but when
+\TEX\ became pupular in more countries more input as well as font encodings were
+used.
+
+Of course, with \LUATEX\ being a \UNICODE\ engine this has changed, and even more
+because wide fonts (either \TYPEONE\ or \OPENTYPE) are supported. However, as
+\TEX\ is already widely used, we cannot simply change the way characters are
+treated, certainly not special ones. Let's go back in time and see how plain
+\TEX\ set some standards, see how \CONTEXT\ does it currently, and look ahead how
+future versions will deal with it.
+
+\stopsection
+
+\startsection[title={Catcodes}]
+
+Traditional \TEX\ is an eight bit engine while \LUATEX\ extends this to \UTF\
+input and internally works with large numbers.
+
+In addition to its natural number (at most 0xFF for traditional \TEX\ and upto
+0x10FFFF for \LUATEX), each character can have a so called category code, or
+catcode. This code determines how \TEX\ will treat the character when it is seen
+in the input. The category code is stored with the character so when we change
+such a code, already read characters retain theirs. Once typeset a character can
+have turned into a glyph and its catcode properties are lost.
+
+There are 16 possible catcodes that have the following meaning:
+
+\starttabulate[|l|l|p|]
+\NC 0 \NC escape \NC This starts an control sequence. The scanner
+reads the whole sequence and stores a reference to it in an
+efficient way. For instance the character sequence \type {\relax}
+starts with a backslash that has category code zero and \TEX\
+reads on till it meets non letters. In macro definitions a
+reference to the so called hash table is stored. \NC \NR
+\NC 1 \NC begin group \NC This marks the begin of a group. A group
+an be used to indicate a scope, the content of a token list, box
+or macro body, etc. \NC \NR
+\NC 2 \NC end group \NC This marks the end of a group. \NC \NR
+\NC 3 \NC math shift \NC Math starts and ends with characters
+tagged like this. Two in a row indicate display math. \NC \NR
+\NC 4 \NC alignment tab \NC Characters with this property indicate
+a next entry in an alignment. \NC \NR
+\NC 5 \NC end line \NC This one is somewhat special. As line
+endings are operating system dependent, they are normalized to
+character 13 and by default that one has this category code. \NC
+\NR
+\NC 6 \NC parameter \NC Macro parameters start with a character
+with this category code. Such characters are also used in
+alignment specifications. In nested definitions, multiple of them
+in a row are used. \NC \NR
+\NC 7 \NC superscript \NC Tagged like this, a character signals
+that the next token (or group) is to be superscripted. Two such
+characters in a row will make the parser treat the following
+character or lowercase hexadecimal number as specification for
+a replacement character. \NC \NR
+\NC 8 \NC subscript \NC Codes as such, a character signals that
+the next token (or group) is to be subscripted. \NC \NR
+\NC 9 \NC ignored \NC When a character has this category code it
+is simply ignored. \NC \NR
+\NC 10 \NC space \NC This one is also special. Any character tagged
+as such is converted to the \ASCII\ space character with code 32.
+\NC \NR
+\NC 11 \NC letter \NC Normally this are the characters that make op
+sequences with a meaning like words. Letters are special in the sense that
+macro names can only be made of letters. The hyphenation machinery will
+normally only deal with letters. \NC \NR
+\NC 12 \NC other \NC Examples of other characters are punctuation and
+special symbols. \NC \NR
+\NC 13 \NC active \NC This makes a character into a macro. Of course
+it needs to get a meaning in order not to trigger an error. \NC \NR
+\NC 14 \NC comment \NC All characters on the same line after comment
+characters are ignored. \NC \NR
+\NC 15 \NC invalid \NC An error message is issued when an invalid
+character is seen. This catcode is probably not assigned very
+often. \NC \NR
+\stoptabulate
+
+So, there is a lot to tell about these codes. We will not discuss the input
+parser here, but it is good to know that the following happens.
+
+\startitemize[packed]
+\startitem
+    The engine reads lines, and normalizes cariage return
+    and linefeed sequences.
+\stopitem
+\startitem
+    Each line gets a character with number \type {\endlinechar} appended.
+    Normally this is a character with code 13. In \LUATEX\ a value of $-1$ will
+    disable this automatism.
+\stopitem
+\startitem
+    Normally spaces (characters with the space property) at the end of a line are
+    discarded.
+\stopitem
+\startitem
+    Sequences like \type {^^A} are converted to characters with numbers depending
+    on the position in \ASCII\ vector: \type {^^@} is zero, \type {^^A} is one,
+    etc.
+\stopitem
+\startitem
+    Sequences like \type {^^1f} are converted to characters with a number similar
+    to the (lowercase) hexadecimal part.
+\stopitem
+\stopitemize
+
+Hopefully this is enough background information to get through the following
+sections so let's stick to a simple example:
+
+\starttyping
+\def\test#1{$x_{#1}$}
+\stoptyping
+
+Here there are two control sequences, starting with a backslash with category
+code zero. Then comes an category~6 character that indicates a parameter that is
+referenced later on. The outer curly braces encapsulate the definition and the
+inner two braces mark the argument to a subscript, which itself is indicated by
+an underscore with category code~8. The start and end of mathmode is indicated
+with a dollar sign that is tagged as math shift (category code~3). The character
+\type {x} is just a letter.
+
+Given the above description, how do we deal with catcodes and newlines at the
+\LUA\ end? Catcodes are easy: we can print back to \TEX\ using a specific catcode
+regime (later we will see a few of those regimes). As character~13 is used as
+default at the \TEX\ end, we should also use it at the \LUA\ end, i.e.\ we should
+use \type {\r} as line terminator (\type {\endlinechar}). On the other hand, we
+have to use \type {\n} (character 10, \type {\newlinechar}) for printing to the
+terminal, log file, of \TEX\ output handles, although in \CONTEXT\ all that
+happens via \LUA\ anyway, so we don't bother too much about it here.
+
+There is a pitfall. As \TEX\ reads lines, it depends on the file system to
+provide them: it fetches lines or whatever represents the same on block devices.
+In \LUATEX\ the implementation is similar: if you plug in a reader callback, it
+has to provide a function that returns a line. Passing two lines does not work
+out as expected as \TEX\ discards anything following the line separator (cr, lf
+or crlf) and then appends a normalized endline character (in our case
+character~13). At least, this is what \TEX\ does naturally. So, in callbacks you
+can best feed line by line without any of those characters.
+
+When you print something from \LUA\ to \TEX\ the situation is slightly different:
+
+\startbuffer
+\startluacode
+tex.print("line 1\r line 2")
+tex.print("line 3\n line 4")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This is what we get:
+
+\startpacked\getbuffer\stoppacked
+
+The explicit \type {\endlinechar} (\type {\r}) terminates the line and the rest
+gets discarded. However, a \type {\n} by default has category code~12 (other) and
+is turned into a space and successive spaces are (normally) ignored, which is why
+we get the third and fourth line separated by a space.
+
+Things get real hairy when we do the following:
+
+\startbuffer
+\startluacode
+tex.print("\\bgroup")
+tex.print("\\obeylines")
+tex.print("line 1\r line 2")
+tex.print("line 3\n line 4")
+tex.print("\\egroup")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+Now we get this (the \type {tex.print} function appends an endline character
+itself):
+
+\startpacked\getbuffer\stoppacked
+
+By making the endline character active and equivalent to \type {\par} \TEX\
+nicely scans on and we get the second line as well. Now, if you're still with us,
+you're ready for the next section.
+
+\stopsection
+
+\startsection[title={Plain \TEX}]
+
+In the \TEX\ engine, some characters already have a special meaning. This is
+needed because otherwise we cannot use the macro language to set up the format.
+This is hard|-|coded so the next code is not really used.
+
+\starttyping
+\catcode `\^^@ =  9  % ascii null is ignored
+\catcode `\^^M =  5  % ascii return is end-line
+\catcode `\\   =  0  % backslash is TeX escape character
+\catcode `\%   = 14  % percent sign is comment character
+\catcode `\    = 10  % ascii space is blank space
+\catcode `\^^? = 15  % ascii delete is invalid
+\stoptyping
+
+There is no real reason for setting up the null and delete character but maybe in
+those days the input could contain them. The regular upper- and lowercase
+characters are initialized to be letters with catcode~11. All other characters
+get category code~12 (other).
+
+The plain \TEX\ format starts with setting up some characters that get a special
+meaning.
+
+\starttyping
+\catcode `\{   =  1 % left brace is begin-group character
+\catcode `\}   =  2 % right brace is end-group character
+\catcode `\$   =  3 % dollar sign is math shift
+\catcode `\&   =  4 % ampersand is alignment tab
+\catcode `\#   =  6 % hash mark is macro parameter character
+\catcode `\^   =  7 \catcode`\^^K=7 % circumflex and uparrow
+                                    % are for superscripts
+\catcode `\_   =  8 \catcode`\^^A=8 % underline and downarrow
+                                    % are for subscripts
+\catcode `\^^I = 10 % ascii tab is a blank space
+\catcode `\~   = 13 % tilde is active
+\stoptyping
+
+The fact that this happens in the format file indicates that it is not by design
+that for instance curly braces are used for grouping, or the hash for indicating
+arguments. Even math could have been set up differently. Nevertheless, all macro
+packages have adopted these conventions so they could as well have been
+hard|-|coded presets.
+
+Keep in mind that nothing prevents us to define more characters this way, so we
+could make square brackets into group characters as well. I wonder how many
+people have used the two additional special characters that can be used for
+super- and subscripts. The comment indicates that it is meant for a special
+keyboard.
+
+One way to make sure that a macro will not be overloaded is to use characters in
+it's name that are letters when defining the macro but make sure that they are
+others when the user inputs text.
+
+\starttyping
+\catcode `@ = 11
+\stoptyping
+
+Again, the fact that plain \TEX\ uses the commercial at sign has set a standard.
+After all, at that time this symbol was not as popular as it is nowadays.
+
+Further on in the format some more catcode magic happens. For instance this:
+
+\starttyping
+\catcode `\^^L = 13 \outer\def^^L{\par} % ascii form-feed is "\outer\par"
+\stoptyping
+
+So, in your input a formfeed is equivalent to an empty line which makes sense,
+although later we will see that in \CONTEXT\ we do it differently. As the tilde
+was already active it also gets defined:
+
+\starttyping \def~{\penalty10000\ } % tie \stoptyping
+
+Again, this convention is adopted and therefore a sort of standard. Nowadays we
+have special \UNICODE\ characters for this, but as they don't have a
+visualization editing is somewhat cumbersome.
+
+The change in catcode of the newline character \type {^^M} is done locally, for
+instance in \type {\obeylines}. Keep in mind that this is the character that
+\TEX\ appends to the end of an input line. The space is made active when spaces
+are to be obeyed.
+
+A few very special cases are the following.
+
+\starttyping
+\mathcode `\^^Z = "8000 % \ne
+\mathcode `\    = "8000 % \space
+\mathcode `\'   = "8000 % ^\prime
+\mathcode `\_   = "8000 % \_
+\stoptyping
+
+This flags those characters as being special in mathmode. Normally when you do
+something like this:
+
+\starttyping
+\def\test#1{$#1$} \test{x_2} \test{x''}
+\stoptyping
+
+The catcodes that are set when passing the argument to \type {\test} are frozen
+when they end up in the body of the macro. This means that when \type {'} is
+other it will be other when the math list is built. However, in math mode, plain
+\TEX\ wants to turn that character into a prime and even in a double one when
+there are two in a row. The special value \type {"8000} tells the math machinery
+that when it has an active meaning, that one will be triggered. And indeed, the
+plain format defined these active characters, but in a special way, sort of:
+
+\starttyping
+{ \catcode`\' = 13 \gdef'{....} }
+\stoptyping
+
+So, when active it has a meaning, and it happens to be only treated as active
+when in math mode.
+
+Quite some other math codes are set as well, like:
+
+\starttyping
+\mathcode`\^^@ = "2201 % \cdot
+\mathcode`\^^A = "3223 % \downarrow
+\mathcode`\^^B = "010B % \alpha
+\mathcode`\^^C = "010C % \beta
+\stoptyping
+
+In Appendix~C of The \TeX book Don Knuth explains the rationale behind this
+choice: he had a keyboard that has these shortcuts. As a consequence, one of the
+math font encodings also has that layout. It must have been a pretty classified
+keyboard as I could not find a picture on the internet. One can probably assemble
+such a keyboard from one of those keyboard that come with no imprint. Anyhow, Don
+explicitly says \quotation {Of course, designers of \TEX\ macro packages that are
+intended to be widely used should stick to the standard \ASCII\ characters.} so
+that is what we do in the next sections.
+
+\stopsection
+
+\startsection[title={How about \CONTEXT}]
+
+In \CONTEXT\ we've always used several catcode regimes and switching between them
+was a massive operation. Think of a different regime when defining macros,
+inputting text, typesetting verbatim, processing \XML, etc. When \LUATEX\
+introduced catcode tables, the existing mechanisms were rewritten to take
+advantage of this. This is the standard table for input as of December 2010.
+
+\starttyping
+\startcatcodetable \ctxcatcodes
+  \catcode \tabasciicode        \spacecatcode
+  \catcode \endoflineasciicode  \endoflinecatcode
+  \catcode \formfeedasciicode   \endoflinecatcode
+  \catcode \spaceasciicode      \spacecatcode
+  \catcode \endoffileasciicode  \ignorecatcode
+  \catcode \circumflexasciicode \superscriptcatcode
+  \catcode \underscoreasciicode \subscriptcatcode
+  \catcode \ampersandasciicode  \alignmentcatcode
+  \catcode \backslashasciicode  \escapecatcode
+  \catcode \leftbraceasciicode  \begingroupcatcode
+  \catcode \rightbraceasciicode \endgroupcatcode
+  \catcode \dollarasciicode     \mathshiftcatcode
+  \catcode \hashasciicode       \parametercatcode
+  \catcode \commentasciicode    \commentcatcode
+  \catcode \tildeasciicode      \activecatcode
+  \catcode \barasciicode        \activecatcode
+\stopcatcodetable
+\stoptyping
+
+Because the meaning of active characters can differ per table there is a related
+mechanism for switching those meanings. A careful reader might notice that the
+formfeed character is just a newline. If present at all, it often sits on its own
+line, so effectively it then behaves as in plain \TEX: triggering a new
+paragraph. Otherwise it becomes just a space in the running text.
+
+In addition to the active tilde we also have an active bar. This is actually one
+of the oldest features: we use bars for signaling special breakpoints, something
+that is really needed in Dutch (education), where we have many compound words.
+Just to show a few applications:
+
+\starttyping
+firstpart||secondpart  this|(|orthat)  one|+|two|+|three
+\stoptyping
+
+In \MKIV\ we have another way of dealing with this. There you can enable a
+special parser that deals with it at another level, the node list.
+
+\starttyping
+\setbreakpoints[compound]
+\stoptyping
+
+When \TEX ies discuss catcodes some can get quite upset, probably because they
+spend some time fighting their side effects. Personally I like the concept. They
+can be a pain to deal with but also can be fun. For instance, support of \XML\ in
+\CONTEXT\ \MKII\ was made possible by using active \type {<} and \type {&}.
+
+When dealing with all kind of inputs the fact that characters have special
+meanings can get in the way. One can argue that once a few have a special
+meaning, it does not matter that some others have. Most complaints from users
+concern \type {$}, \type {&} and \type {_}. When for symmetry we add \type {^} it
+is clear that these characters relate to math.
+
+Getting away from the \type {$} can only happen when users are willing to use for
+instance \type {\m{x}} instead of \type {$x$}. The \type {&} is an easy one
+because in \CONTEXT\ we have always discouraged its use in tables and math
+alignments. Using (short) commands is a bit more keying but also provides more
+control. That leaves the \type {_} and \type {^} and there is a nice solution for
+this: the special math tagging discussed in the previous section.
+
+For quite a while \CONTEXT\ provides two commands that makes it possible to use
+\type {&}, \type {_} and \type {^} as characters with only a special meaning
+inside math mode. The command
+
+\starttyping
+\nonknuthmode
+\stoptyping
+
+turns on this feature. The counterpart of this command is
+
+\starttyping
+\donknuthmode
+\stoptyping
+
+One step further goes the command:
+
+\starttyping
+\asciimode
+\stoptyping
+
+This only leave the backslash and curly braces a special meaning.
+
+\starttyping
+\startcatcodetable \txtcatcodes
+  \catcode \tabasciicode       \spacecatcode
+  \catcode \endoflineasciicode \endoflinecatcode
+  \catcode \formfeedasciicode  \endoflinecatcode
+  \catcode \spaceasciicode     \spacecatcode
+  \catcode \endoffileasciicode \ignorecatcode
+  \catcode \backslashasciicode \escapecatcode
+  \catcode \leftbraceasciicode \begingroupcatcode
+  \catcode \rightbraceasciicode\endgroupcatcode
+\stopcatcodetable
+\stoptyping
+
+So, even the percentage character being a comment starter is no longer there. At
+this time it's still being discussed where we draw the line. For instance, using
+the following setup renders puts \TEX\ out of action, and we happily use it deep
+down in \CONTEXT\ to deal with verbatim.
+
+\starttyping
+\startcatcodetable \vrbcatcodes
+  \catcode \tabasciicode       \othercatcode
+  \catcode \endoflineasciicode \othercatcode
+  \catcode \formfeedasciicode  \othercatcode
+  \catcode \spaceasciicode     \othercatcode
+  \catcode \endoffileasciicode \othercatcode
+\stopcatcodetable
+\stoptyping
+
+\stopsection
+
+\startsection[title={Where are we heading?}]
+
+When defining macros, in \CONTEXT\ we not only use the \type {@} to provide some
+protection against overloading, but also the \type {?} and \type {!}. There is of
+course some freedom in how to use them but there are a few rules, like:
+
+\starttyping
+\c!width         % interface neutral key
+\v!yes           % interface neutral value
+\s!default       % system constant
+\e!start         % interface specific command name snippet
+\!!depth         % width as keyword to primitive
+\!!stringa       % scratch macro
+\??ab            % namespace
+\@@abwidth       % namespace-key combination
+\stoptyping
+
+There are some more but this demonstrates the principle. When defining macros
+that use these, you need to push and pop the current catcode regime
+
+\starttyping
+\pushcatcodes
+\catcodetable \prtcatcodes
+....
+\popcatcodes
+\stoptyping
+
+or more convenient:
+
+\starttyping
+\unprotect
+....
+\protect
+\stoptyping
+
+Recently we introduced named parameters in \CONTEXT\ and files that are coded
+that way are tagged as \MKVI. Because we nowadays are less concerned about
+performance, some of the commands that define the user interface have been
+rewritten. At the cost of a bit more runtime we move towards a somewhat cleaner
+inheritance model that uses less memory. As a side effect module writers can
+define the interface to functionality with a few commands; think of defining
+instances with inheritance, setting up instances, accessing parameters etc. It
+sounds more impressive than it is in practice but the reason for mentioning it
+here is that this opportunity is also used to provide module writers an
+additional protected character: \type {_}.
+
+\starttyping
+\def\do_this_or_that#variable#index%
+  {$#variable_{#index}$}
+
+\def\thisorthat#variable#index%
+  {(\do_this_or_that{#variable}{#index})}
+\stoptyping
+
+Of course in the user macros we don't use the \type {_} if only because we want
+that character to show up as it is meant.
+
+\starttyping
+\startcatcodetable \prtcatcodes
+  \catcode \tabasciicode        \spacecatcode
+  \catcode \endoflineasciicode  \endoflinecatcode
+  \catcode \formfeedasciicode   \endoflinecatcode
+  \catcode \spaceasciicode      \spacecatcode
+  \catcode \endoffileasciicode  \ignorecatcode
+  \catcode \circumflexasciicode \superscriptcatcode
+  \catcode \underscoreasciicode \lettercatcode
+  \catcode \ampersandasciicode  \alignmentcatcode
+  \catcode \backslashasciicode  \escapecatcode
+  \catcode \leftbraceasciicode  \begingroupcatcode
+  \catcode \rightbraceasciicode \endgroupcatcode
+  \catcode \dollarasciicode     \mathshiftcatcode
+  \catcode \hashasciicode       \parametercatcode
+  \catcode \commentasciicode    \commentcatcode
+  \catcode `\@                  \lettercatcode
+  \catcode `\!                  \lettercatcode
+  \catcode `\?                  \lettercatcode
+  \catcode \tildeasciicode      \activecatcode
+  \catcode \barasciicode        \activecatcode
+\stopcatcodetable
+\stoptyping
+
+This table is currently used when defining core macros and modules. A rather
+special case is the circumflex. It still has a superscript related catcode, and
+this is only because the circumflex has an additional special meaning
+
+Instead of the symbolic names in the previous blob of code we could have
+indicated characters numbers as follows:
+
+\starttyping
+\catcode `\^^I \spacecatcode
+\stoptyping
+
+However, if at some point we decide to treat the circumflex similar as the
+underscore, i.e.\ give it a letter catcode, then we should not use this double
+circumflex method. In fact, the code base does not do that any longer, so we can
+decide on that any moment. If for some reason the double circumflex method is
+needed, for instance when defining macros like \type {\obeylines}, one can do
+this:
+
+\starttyping
+\bgroup
+  \permitcircumflexescape
+  \catcode \endoflineasciicode \activecatcode
+  \gdef\obeylines%
+    {\catcode\endoflineasciicode\activecatcode%
+     \def^^M{\par}}
+\egroup
+\stoptyping
+
+However, in the case of a newline one can also do this:
+
+\starttyping
+\bgroup
+  \catcode \endoflineasciicode \activecatcode
+  \gdef\obeylines%
+    {\catcode\endoflineasciicode\activecatcode%
+     \def
+       {\par}}
+\egroup
+\stoptyping
+
+Or just:
+
+\starttyping
+\def\obeylines{\defineactivecharacter 13 {\par}}
+\stoptyping
+
+In \CONTEXT\ we have the following variant, which is faster
+than the previous one.
+
+\starttyping
+\def\obeylines
+  {\catcode\endoflineasciicode\activecatcode
+   \expandafter\def\activeendoflinecode{\obeyedline}}
+\stoptyping
+
+So there are not circumflexes used at all. Also, we only need to change the
+meaning of \type {\obeyedline} to give this macro another effect.
+
+All this means that we are upgrading catcode tables, we also consider making
+\type {\nonknuthmode} the default, i.e.\ move the initialization to the catcode
+vectors. Interesting is that we could have done that long ago, as the mentioned
+\type {"8000} trickery has proven to be quite robust. In fact, in math mode we're
+still pretty much in knuth mode anyway.
+
+There is one pitfall. Take this:
+
+\starttyping
+\def\test{$\something_2$} % \something_
+\def\test{$\something_x$} % \something_x
+\stoptyping
+
+When we are in unprotected mode, the underscore is part of the macro name, and
+will not trigger a subscript. The solution is simple:
+
+\starttyping
+\def\test{$\something _2$}
+\def\test{$\something _x$}
+\stoptyping
+
+In the rather large \CONTEXT\ code base there were only a few spots where we had
+to add a space. When moving on to \MKIV\ we have the freedom to introduce such
+changes, although we don't want to break compatibility too much and only for the
+good. We expect this all to settle down in 2011. No matter what we decide upon,
+some characters will always have a special meaning. So in fact we always stay in
+some sort of donknuthmode, which is what \TEX\ is all about.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% ligatures

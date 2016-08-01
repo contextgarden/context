@@ -1,0 +1,26 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][n=4,page=left]
+
+\setupbackgrounds[text][text][background=contrast]
+
+\definecolor[fakerulecolor][white]
+
+\setupcolumnset[example:2][distance=36pt]
+\setupcolumnset[example:3][distance=72pt]
+\setupcolumnset[example:4][distance=24pt]
+\setupcolumnset[example:5][distance=48pt]
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{25}{\fakewords{100}{150}\par}
+
+\stopcolumnset
+
+\stoptext

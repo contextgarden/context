@@ -1,0 +1,343 @@
+% language=uk
+
+\startcomponent mk-goingbeta
+
+\environment mk-environment
+
+\doifmodeelse {tug} {
+
+    \title {Lua\TeX\ going beta}
+
+    \subject{by Hans Hagen \& Taco Hoekwater}
+
+    This is Chapter~XI from \notabene {\CONTEXT, from \MKII\ to \MKIV}, a document
+    that describes our explorations, experiments and decisions made while
+    we develop \LUATEX.
+
+    \blank[3*big]
+
+} {
+
+    \chapter {Going beta}
+
+}
+
+\subject{introduction}
+
+We're closing in on the day that we will go beta with \LUATEX\ (end of July
+2007). By now we have a rather good picture of its potential and to what
+extend \LUATEX\ will solve some of our persistent problems. Let's first
+summarize our reasons for and objectives with \LUATEX.
+
+\startitemize
+
+\item The world has moved from 8~bits to 32~bits and more, and this is
+quite noticeable in the arena of fonts. Although \TYPEONE\ fonts could host
+more than 256 glyphs, the associated technology was limited to 256. The advent
+of \OPENTYPE\ fonts will make it easier to support multiple languages at the
+same time without the need to switch fonts at awkward times.
+
+\item At the same time \UNICODE\ is replacing 8~bit based encoding vectors and
+code pages (input regimes). The most popular and rather efficient \UTF8 encoding
+has become a de factor standard in document encoding and interchange.
+
+\item Although we can do real neat tricks with \TEX, given some nasty programming,
+we are touching the limits of its possibilities. In order for it to survive we
+need to extend the engine but not at the cost of base compatibility.
+
+\item Coding solutions in a macro language is fine, but sometimes you long to a more
+procedural approach. Manipulating text, handling \IO, interfacing \unknown\ the
+technology moves on and we need to move along too.
+
+\stopitemize
+
+Hence \LUATEX: a merge of the mainstream traditional \TEX\ engines, stripped from
+broken or incomplete features and opened up to an embedded \LUA\ scripting engine.
+
+We will describe the impact of this new engine by starting from its core components
+reflected in the specific \LUA\ interface libraries. Missing here is embedded support
+for \METAPOST, because it's not yet there (apart from the fact that we use \LUA\ to
+convert \METAPOST\ graphics into \TEX). Also missing is the interfacing to the \PDF\
+backend, which is also on the agenda for later. Special extensions, for instance those
+dealing with runtime statistics are also not discussed. Since we use \CONTEXT\ as
+testbed, we will refer to the \LUATEX\ aware version of this macro package, \MKIV, but
+most conclusions are rather generic.
+
+\subject{tex internals}
+
+In order to manipulate \TEX's data structures, we need access to all those registers.
+Already early in the development, dimension and counters were accessible and when
+token and node interfaces were implemented, those registers also were interfaced.
+
+Those who read the previous chapters will have noticed that we hardly discussed this
+option. The reason is that we didn't yet needed that access much in order to implement
+font support and list processing. After all, most of the data that we need to access and
+manipulate is not in the registers at all. Information meant for \LUA\ can be stored
+in \LUA\ data structures. In fact, the basic call
+
+\starttyping
+\directlua 0 {some lua code}
+\stoptyping
+
+has shown to be a pretty good starting point and the fact that one can print back to
+the \TEX\ engine overcomes the need to store results in shared variables.
+
+\starttyping
+\def\valueofpi{\directlua0{tex.sprint(math.pi()}}
+\stoptyping
+
+The number of such direct calls is not that large anyway. More often a call to \LUA\
+will be initiated by a callback, i.e.\ a hook into the \TEX\ machinery.
+
+What will be the impact of access on \CONTEXT\ \MKIV ? This is yet hard to tell. In a
+later stage of the development, when parts of the \TEX\ machinery will be rewritten in
+order to get rid of the current global nature of many variables, we will gain more
+control and access to \TEX's internals. Core functionality will be isolated, can be
+extended and|/|or overloaded and at that moment access to internals is much more
+needed. But certainly that will be beyond the current registers and variables.
+
+\subject{callbacks}
+
+These are the spine of \LUATEX: here both worlds communicate with each other. A callback
+is a place in the \TEX\ kernel where some information is passed to \LUA\ and some result
+is returned that is then used along the road. The reference manual mentions them all and
+we will not repeat them here. Interesting is that in \MKIV\ most of them are used and for
+tasks that are rather natural to their place and function.
+
+\starttyping
+callback.register("tex_wants_to_do_this",
+    function but_use_lua_to_do_it_instead(a,b,c)
+        -- do whatever you like with a, b and c
+        return a, b, c
+    end
+)
+\stoptyping
+
+The impact of callbacks on \MKIV\ is big. It provides us a way to solve persistent
+problems or reimplement existing solutions in more convenient ways. Because we tested
+realistic functionality on real (moderately complex) documents using a pretty large
+macro package, we can safely conclude that callbacks are quite efficient. Stepwise
+\LUA\ kicks in in order to:
+
+\startitemize[packed]
+\item influence the input medium so that it provides a sequence of \UTF\ characters
+\item manipulate the stream of characters that will be turned into a list of tokens
+\item convert the list of tokens into another list of tokens
+\item enhance the list of nodes that will be turned into a typeset paragraph
+\item tweak the mechanisms that come into play when lines are constructed
+\item finalize the result that will end up in the output medium
+\stopitemize
+
+Interesting is that manipulating tokens is less useful than it may look at first
+sight. This has to do with the fact that it's (mostly) an expanded stream and at that
+time we've lost some information or need to do quite some coding in order to analyze
+the information and act upon it.
+
+Will \CONTEXT\ users see any of this? Chances are small that they will, although we
+will provide hooks so that they can add special code themselves. Users activating
+a callback has some danger, since it may overload already existing functionality.
+Chaining functionality in a callback also has drawbacks, if only that one may be
+confronted with already processed results and|/|or may destroy this result in
+unpredictable ways. So, as with most low level \TEX\ features, \CONTEXT\ users will
+work with more abstract interfaces.
+
+\subject{in- and output}
+
+In \MKIV\ we will no longer use the \KPSE\ library directly. Instead we use a
+reimplementation in \LUA\ that not only is more efficient, but also more powerful:
+it can read from \ZIP\ files, use protocols, be more clever in searching, reencodes
+the input streams when needed, etc. The impact on \MKIV\ is large. Most \TEX\ code
+that deals with input reencoding has gone away and is replaced by \LUA\ code.
+
+Although it is not directly related with reading from the input medium, in that stage
+we also replaced verbatim handling code. Such (often messy) catcode related situations
+are now handled more flexible, thanks to fast catcode table switching (a new
+\LUATEX\ feature) and features like syntax highlighting can be made more neat.
+
+Buffers, a quite old but frequently used feature of \CONTEXT, are now kept in
+memory instead of files. This speeds up runs. Auxiliary data, aka multi||pass
+information, will no longer be stored in \TEX\ files but in \LUA\ files. In
+\CONTEXT\ we have one such auxiliary file and in \MKII\ this file is selectively
+filtered, but in \MKIV\ we will be less careful with memory and load all that
+data once. Such speed improvements compensate the fact that \LUATEX\ is somewhat
+slower than it's ancestor \PDFTEX. (Actually, the fact that \LUATEX\ is a bit
+slower that \PDFTEX\ is mostly due to the fact that it has \ALEPH\ code on
+board.)
+
+Users often wonder why there  are so many temporary files, but these mostly relate
+to \METAPOST\ support. These will go away once we have \METAPOST\ as a library.
+
+In a similar way support for \XML\ will be enriched. We already have experimental
+loaders, filters and other code, and integration is on the agenda. Since \CONTEXT\ uses
+\XML\ for some sub systems, this may have some impact.
+
+Other \IO\ related improvements involve debugging, error handling and logging. We can pop
+up helpers and debug screens (\MKIV\ can produce \XHTML\ output and then launch a
+browser). Users can choose more verbose logging of \IO\ and ask for log data to be
+formatted in \XML. These parts need some additional work, because in the end we will
+also reimplement and extend \TEX's error handling.
+
+Another consequence of this will be that we will be able to package \TEX\ more
+conveniently. We can put all the files that are needed into a \ZIP\ file so that we only
+need to ship that \ZIP\ file and a binary.
+
+
+\subject{font readers}
+
+Handling \OPENTYPE\ involves more that just loading yet another font format. Of course
+loading an \OPENTYPE\ file is a necessity but we need to do more. Such fonts come with
+features. Features can involve replacing one representation of a character by another
+one of combining sequences into other sequences and finaly resolving them to one or more
+glyphs.
+
+Given the numerous options we will have to spend quite some time on extending \CONTEXT\
+with new features. Instead of defining more and more font instances (the traditional \TEX\ way
+of doing things) we will will provides feature switching. In the end this will make
+the often confusing font mechanisms less complex for the user to understand. Instead of
+for instance loading an extra font (set) that provides old style numerals, we will
+decouple this completely from fonts and provide it as yet another property of a piece
+of text. The good news is that much of the most important machinery is alresady in
+place (ligature building and such). Here we also have to decide what we let \TEX\ do
+and what we do by processing node lists. For instance kerning and ligature building
+can either be done by \TEX\ or by \LUA. Given the fact that \TEX\ does some juggling
+with character kerning while determining hyphenation points, we can as well disable
+\TEX's kerning and let \LUA\ handle it. Thereby \TEX\ only has to deal with paragraph
+building. (After all, we need to leave \TEX\ some core functionality to deal with.)
+
+Another everlasting burden on macro writers and users is dealing with character
+representations missing from a font. Of course, since we use named glyphs in
+\CONTEXT\ \MKII\ already much of this can be hidden, but in \MKIV\ we can
+create virtual fonts on the fly and keep thinking in terms of characters and
+glyphs instead of dealing with boxes and other structures that don't go well with
+for instance hyphenating words.
+
+This brings us to hyphenation, historically bound to fonts in traditional \TEX. This
+dependency will go away. In \MKII\ we already ship \UTF8\ based patterns fore some time
+and these can be conveniently used in \MKIV\ too. We experimented with using hyphenated
+word lists and this looks promising. You may expect more advanced ways of dealing with
+words, hyphenation and paragraph building in the near future. When we presented the
+first version of \LUATEX\ a few years ago, we only had the basic \type {\directlua} call
+available and could do a bit of string manipulation on the input. A fancy demo was to
+color wrongly spelled words. Now we can do that more robustly on the node lists.
+
+Loading and preparing fonts for usage in \LUATEX\ or actually \MKIV\ because this depends
+on the macro package takes some runtime.  For this reason we introduces caching
+into \MKIV: data that is used frequently is written to a cache and converted to \LUA\
+bytecode. Loading the converted files is incredibly fast. Of course there is aprice to
+pay: disk space, but that comes cheap these days. Also, it may as well be compensated
+by the fact that we can kick out many redundant files from the core \TEX\ distributions
+(metric files for instance).
+
+\subject{tokens handlers}
+
+Do we need to handle tokens? So far in experimental \MKIV\ code we only used these hooks
+to demonstrate what \TEX\ does with your characters. For a while we also constructed
+token lists when we wanted to inject \type {\pdfliteral} code in node lists, but that
+became obsolete when automatic string to token conversion was introduced in the node
+conversion code. Now we inject literal whatsit nodes. It may be worth noticing that
+playing with token lists gave us some good insight in bottlenecks because quite some
+small table allocation and garbage collections goes on.
+
+\subject{nodes and attributes}
+
+These are the most promissing new features. In itself, nodes are not new, nor are
+attributes. In some sense when we use primitives like \type {\hbox}, \type {\vskip},
+\type {\lastpenalty} the result is a node, but we can only control and inspect their
+properties within hard coded bounds. We cannot really look into boxes, and the last
+penalty may be obscured by a whatsit (a mark, a special, a write, etc.). Attributes
+could be fakes with marks and macro bases stacks of states. Native attributes
+are more powerful and each node can cary a truckload of them.
+
+With \LUATEX, out of a sudden we can look into \TEX's internals and manipulate
+them. Although I don't claim to be a real expert on these internals, even after
+over a decade of \TEX\ programming, I'm sometimes surprised what I found there.
+When we are playing with these interfaces, we often run into situations
+where we need to add much print statements to the \LUA\ code in order to find
+out what \TEX\ is returning. It all has to do with the way \TEX\ collects
+information and when it decides to act. In regular \TEX\ much goes unnoticed, but
+when one has for instance a callback that deals with page building there are many
+places where this gets called and some of these places need special treatment.
+
+Undoubtely this will have a huge impact on \CONTEXT\ \MKIV. Instead of parsing
+an input stream, we can now manipulate node lists in order to achieve (slight)
+inter||character spacing which is often needed in sectioning titles. The nice
+thing about this new approach is that we no longer have interference from
+characters that need multiple tokens (input characters) in order to be
+constructed, which complicates parsing (needed to split glyphs in \MKII).
+
+Signaling where to letterspace is done with the mentioned attributes. There can be
+many of them and they behave like fonts: they obey grouping, travel with the nodes
+and are therefore insensitive for box and page splitting. They can be set at the
+\TEX\ end but needs to be handled at the \LUA\ side. One may wonder what kind
+of macro packages would be around when \TEX\ has attributes right from its start.
+
+In \MKII\ letterspacing is handled by parsing the input and injecting skips.
+Another approach would be to use a font where each character has more kerns or space
+around it (a virtual font can do that). But that would not only demand knowledge of
+what fonts need that that treatment, but also many more fonts and generating them is
+no fun for users. In \PDFTEX\ there is a letterspace feature, where virtual fonts
+are generated on the fly, and with such an approach one has to compensate for the
+first and last character in a line, in order to get rid of the left- and
+rightmost added space (being part of the glyph). The solution where nodes are
+manipulated does put that burden upon the user.
+
+Another example of node processing is adding specific kerns around some punctuation
+symbols, as is custom in French. You don't want to know what it takes to do that
+in traditional \TEX, but if I mention the fact that colons become active characters
+you can imagine the nightmare. Hours of hacking and maybe even days of dealing with
+mechanisms that make these active colons workable in places where colons are used
+for non text are now even more wasted time if you consider that it takes a few lines
+of code in \MKIV. Currently we let \CONTEXT\ support both good old \TEX\
+(represented by \PDFTEX), \XETEX\ (a \UNICODE\ and \OPENTYPE\ aware variant) and
+\LUATEX\ by shared and dedicated \MKII\ and \MKIV\ code.
+
+Vertical spacing can be a pain. Okay, currently \MKII\ has a rather sophisticated way to
+deal with vertical spacing in ways that give documents a consistent look and feel, but
+every now and then we run into border cases that cannot be dealt with simply because
+we cannot look back in time. This is needed because \TEX\ adds content to the main
+vertical list and then it's gone from our view. Take for instance section titles. We don't
+want them dangling at the bottom of a page. But at the same time we want itemized lists
+to look well, i.e.\ keep items together in some situations. Graphics that follow a section
+title pose similar problems. Adding penalties helps but these may come too late, or
+even worse, they may obscure previous skips which then cannot be dealt with by successive
+skips. To simplify the problem: take a skip of 12pt, followed by a penalty, followed by
+another skip of 24pt. In \CONTEXT\ this has to become a penalty followed by one skip
+of 24pt.
+
+Dealing with this in the page builder is rather easy. Ok, due to the way \TEX\ adds
+content to the page stream, we need to collect, treat and flush, but currently this
+works all right. In \CONTEXT\ \MKIV\ we will have skips with three additional properties:
+priority over other skips, penalties, and a category (think of: ignore, force,
+replace, add).
+
+When we experimented with this kind of things we quickly decided that additional
+experiments with grid snapping also made sense. These mechanisms are among the more
+complex ones on \CONTEXT. A simple snap feature took a few lines of \LUA\ code and
+hooking it into \MKIV\ was not that complex either. Eventually we will reimplement
+all vertical spacing and grid snapping code of \MKII\ in \LUA. Because one of
+\CONTEXT\ column mechanism is grid aware, we may as well adath that and|/|or implement
+an additional mechanism.
+
+A side effect of being able to do this in \LUATEX\ is that the code taken from \PDFTEX\
+is cleaned up: all (recently added) static kerning code is removed (inter||character
+spacing, pre- and post character kerning, experimental code that can fix the heights
+and depths of lines, etc.). The core engine will only deal with dynamic features,
+like \HZ\ and protruding.
+
+So, the impact on \MKIV\ of nodes and attributes is pretty big! Horizontal spacing isues,
+vertical spacing, grid snapping are just a few of the things we will reimplement. Other
+things are line numbering, multiple content streams with synchronization, both are
+already present in \MKII\ but we can do a better job in \MKIV.
+
+\subject{generic code}
+
+In the previous text \MKIV\ was mentioned often, but some of the features are rather
+generic in nature. So, how generic can interfaces be implemented? When the \MKIV\ code
+has matured, much of the \LUA\ and glue||to||\TEX\ code will be generic in nature.
+Eventually \CONTEXT\ will become a top layer on what we internally call \METATEX, a
+collection of kernel modules that one can use to build specialized macro packages.
+To some extent \METATEX\ can be for \LUATEX\ what plain is for \TEX. But if and how
+fast this will be reality depends on the amount of time that we (and other members of
+the \CONTEXT\ development team) can allocate to this.
+
+\stopcomponent

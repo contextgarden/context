@@ -1,0 +1,678 @@
+% macros=mkvi
+
+\startenvironment ma-cb-style
+
+\usemodule[chart]
+
+\usemodule[s][abr-03]
+\usemodule[x][set-11]
+
+\unprotect
+
+% Setups are kind of special.
+
+\loadsetups[cont-\currentmainlanguage.xml]
+
+\setupsetup
+  [\c!criterium=\v!used]
+
+\setupframedtexts
+  [setuptext]
+  [\c!before={\blank[\v!big]},
+   \c!after={\blank[\v!big]},
+   \c!background=setup-shape,
+   \c!backgroundoffset=10pt,
+   \c!rulethickness=5pt,
+   \c!offset=15pt,
+   \c!frame=\v!off]
+
+\setupexternalfigures
+  [\c!directory={../graphics}]
+
+% The layout dimensions are based on the A4 paper dimensions because that way users
+% can print this manual themselves. Let's be economical with paper. We also assume a
+% decent doublesided A4 printer. We use equal margins so that a single sided run or
+% print also comes out all right.
+
+\setuplayout
+  [\c!backspace=22.5mm,
+   \c!width=\v!fit,
+   \c!cutspace=22.5mm,
+   \c!margin=20mm,
+   \c!margindistance=5mm,
+   \c!topspace=15mm,
+   \c!header=10mm,
+   \c!headerdistance=5mm,
+   \c!height=\v!fit,
+   \c!footerdistance=5mm,
+   \c!footer=15mm,
+   \c!bottomspace=15mm]
+
+\setuppagenumbering
+  [\c!alternative=\v!doublesided]
+
+% The lucida fonts look a bit more informal.
+
+\doifmodeelse {atpragma} {
+    \setupbodyfont[lucidaot,10pt]
+} {
+    \setupbodyfont[palatino,10pt]
+}
+
+% All colors will go here.
+
+% todo
+
+% Let's keep the text compact.
+
+\setupwhitespace
+  [\v!medium]
+
+\setupblank
+  [\v!medium]
+
+% We indent verbatim with the default indenting value.
+
+\setuptyping
+  [\c!margin=\v!standard,
+   \c!blank=\v!medium]
+
+% Manuals as usual need a bit more tolerance, because a lot of in||line verbatim is
+% used.
+
+\setuptolerance
+  [\v!verytolerant,\v!stretch]
+
+% This manual makes heavy use of backgrounds. During a run about many metaclips are
+% generated.
+
+\defineoverlay [chapter-state]     [\uniqueMPpagegraphic{chapter-state}]
+\defineoverlay [pagenumber-state]  [\uniqueMPgraphic{pagenumber-state}]
+
+\defineoverlay [basic-shape-light] [\useMPgraphic{basic-shape-light}]
+\defineoverlay [basic-shape-dark]  [\useMPgraphic{basic-shape-dark}]
+
+\defineoverlay [setup-shape]       [\useMPgraphic{setup-shape}]
+\defineoverlay [note-rule]         [\uniqueMPgraphic{note-rule}]
+\defineoverlay [column-rule]       [\uniqueMPgraphic{column-rule}]
+
+% \defineoverlay
+%   [MenuAchtergrond]
+%   [\MPclipTwoA{\overlaywidth}{\overlayheight}{3pt}{3pt}{red}{white}]
+
+\starttexdefinition unexpanded FootnoteRule
+    \blank[2*\v!big]
+    \framed
+        [\c!background=note-rule,
+         \c!width=.4\makeupwidth,
+         \c!height=2pt,
+         \c!offset=\v!overlay,
+         \c!rulethickness=2pt,
+         \c!frame=\v!off]
+        {}
+    \blank[\v!small]
+\stoptexdefinition
+
+\setupfootnotes
+  [\c!rule=off,
+   \c!before=\FootnoteRule]
+
+% Chapter titles have a fancy shape around them. Because we have a lot of small
+% chapters, we don't go to a new page. Titles look the same, but there we go to
+% a new page.
+
+\setuphead
+  [\v!chapter]
+  [\c!command=\HeadCommand,
+   \c!page=,
+   \c!before={\blank[3*\v!big]},
+   \c!after={\blank[2*\v!big,\v!samepage]}]
+
+\setuphead
+  [\v!title]
+  [\c!page=\v!right]
+
+\starttexdefinition unexpanded HeadCommand #number #title
+    \alignedline {\v!outer} {\v!left} {
+        \framed [
+            \c!background=basic-shape-dark,
+            \c!rulethickness=10pt,
+            \c!frame=\v!off,
+            \c!strut=\v!no,
+            \c!offset=24pt,
+            \c!align=\v!middle
+        ] {
+            \doifmode {*\v!sectionnumber} {
+                #number
+                \kern.5em
+                \blackrule [
+                    color=green,
+                    width=1pt,
+                    height=1.5\ht\strutbox,
+                    depth=1.25\dp\strutbox
+                ]
+                \kern.5em
+            }
+            #title
+        }
+    }
+\stoptexdefinition
+
+% The current chapter number is typeset in the (outer) margin and slowly moves
+% down. We could have directly put it in the margin but using the footermargin as
+% starting point works better. This is an old command and there is no reason to
+% change the definition to more fabce MkIV version.
+
+\setupfootertexts
+  [\v!margin]
+  [][\fastsetup{chapterindicator}]
+
+\startsetups chapterindicator
+    \determineheadnumber[\v!chapter]
+    \ifcase\currentheadnumber\else
+        \vbox to \makeupheight {
+            \scratchcounter=\numexpr\lastpage-\realpageno\relax
+            \vskip2cm
+            \vskip0pt plus \realpageno cm
+            \framed [
+                \c!background=chapter-state,
+                \c!width=36pt,
+                \c!height=72pt,
+                \c!backgroundoffset=5pt,
+               %\c!align={\v!lohi,\v!middle},
+                \c!frame=\v!off
+            ] {
+                \lower.5\dp\strutbox\hbox {
+                    \bfb
+                    \getmarking[\v!chapter\v!number]
+                }
+            }
+            \vskip0pt plus \scratchcounter cm
+            \vskip2cm
+        }
+   \fi
+\stopsetups
+
+% The index is put on a double collumned grid. The numbers is surrounded by a
+% shape.
+
+\setupregister
+  [\v!index]
+  [\c!command=\IndexCommand,
+   \c!before={\blank[\v!line]},
+   \c!after=]
+
+\starttexdefinition unexpanded IndexCommand #text
+    \framed [
+        \c!background=basic-shape-dark,
+        \c!width=36pt,
+        \c!frame=\v!off,
+        \c!offset=4pt,
+        \c!align=\v!middle,
+        \c!rulethickness=4pt
+    ] {
+        #text
+    }
+\stoptexdefinition
+
+% When bound, we use a double sided layout and put the pagenumber in the margin,
+% enhanced by a fancy background.
+
+\setuppagenumbering
+  [\c!location={\v!footer,\v!middle},
+   \c!command=\PageNumberCommand]
+
+\starttexdefinition unexpanded PageNumberCommand #pagenumber
+    \framed [
+        \c!background=pagenumber-state,
+        \c!backgroundoffset=5pt,
+        \c!frame=\v!off,
+        \c!offset=6pt
+    ] {
+        \lower.5\dp\strutbox\hbox spread 60pt {
+            \hss
+            #pagenumber
+            \hss
+        }
+    }
+\stoptexdefinition
+
+% We put the chapter title in the head. If we wouldn't have to center, the more
+% simple setting would be:
+
+\setupheadertexts
+  [{\getmarking[\v!chapter]}]
+
+% Guess what the next one does.
+
+\setupitemgroup
+  [\v!itemize]
+  [1]
+  [\v!autointro]
+
+% The coverpage looks more complex than it is. We can reuse it.
+
+\newbox\CoverBackgroundBox % reuse saves .8 sec, could be an object!
+
+\starttexdefinition unexpanded ShowSetupOnCover #n #tag #xmlroot
+    \dontleavehmode
+    \framed [
+        \c!background=basic-shape-light,
+        \c!backgroundoffset=5pt,
+        \c!rulethickness=2pt,
+        \c!frame=\v!off
+    ] {
+        \xmlsetup{#xmlroot}{xml:setups:assemblename}
+        \tttf
+        \texescape\currentSETUPfullname
+    }
+   \hskip1.25em plus 1em minus 1em\relax
+\stoptexdefinition
+
+% \startsetups coverbackground
+%
+%     \ifvoid\CoverBackgroundBox
+%
+%         \global\setbox\CoverBackgroundBox=\vbox to \paperheight \bgroup
+%             \hsize\paperwidth
+%             \emergencystretch3em
+%             \parfillskip0pt
+%             \switchtobodyfont
+%               [6pt]
+%             \baselineskip 0pt plus 1pt minus 1pt
+%             \setupsorting
+%               [texcommand]
+%               [\c!command=\ShowSetupOnCover,
+%                \c!criterium=\v!all]
+%             \beginofshapebox
+%                 \leftskip3pt
+%                 \rightskip3pt
+%                 \placelistofsorts
+%                     [texcommand]
+%             \endofshapebox
+%             \doreshapebox
+%                 {\box\shapebox}
+%                 {\penalty\shapepenalty}
+%                 {\kern\shapekern}
+%                 {\vfil}
+%             \kern3pt
+%             \vfilneg
+%             \flushshapebox
+%             \vfilneg
+%             \kern3pt
+%         \egroup
+%
+%    \fi
+%
+%    \copy\CoverBackgroundBox
+%
+% \stopsetups
+
+\startsetups coverbackground
+
+    \ifvoid\CoverBackgroundBox
+
+        \global\setbox\CoverBackgroundBox
+            \startnicelyfilledbox
+                [\c!width=\paperwidth,
+                 \c!height=\paperheight,
+                 \c!offset=\exheight,
+                 \c!strut=\v!no]
+                \switchtobodyfont
+                    [6pt]
+                \placelistofsorts
+                    [texcommand]
+                    [\c!command=\ShowSetupOnCover,
+                     \c!criterium=\v!all]
+            \stopnicelyfilledbox
+
+   \fi
+
+   \copy\CoverBackgroundBox
+
+\stopsetups
+
+\defineoverlay[coverbackground][\setups{coverbackground}]
+
+\setupdocument
+  [author={Ton Otten\crlf PRAGMA ADE},
+   translator=,
+   contributer=,
+   before=\setups{coverpage},
+   after=\setups{backpage}]
+
+\defineoverlay[gotocontents][\overlaybutton{contents}]
+
+\startsetups coverpage
+
+    \setupbackgrounds
+        [\v!rightpage]
+        [\c!background=coverbackground]
+
+    \setupbackgrounds
+        [\v!text]
+        [\v!text]
+        [\c!background=gotocontents]
+
+    \startmakeup
+        [\v!standard]
+        [\c!doublesided=\v!empty,
+         \c!headerstate=\v!none,
+         \c!footerstate=\v!none]
+
+        \hbox to \hsize \bgroup
+            \hss
+            \definedfont[SansBold*default at 40pt]
+            \framed
+                [\c!background=basic-shape-dark,
+                 \c!frame=\v!off,
+                 \c!rulethickness=15pt,
+                 \c!align=\v!middle,
+                 \c!offset=40pt]
+                {\documentvariable{title}}
+        \egroup
+
+        \vfill
+
+        \doifsomething {\documentvariable{subtitle}} {
+
+            \hbox to \hsize \bgroup
+                \definedfont[SansBold*default at 14pt]
+                \framed
+                    [\c!background=basic-shape-dark,
+                     \c!frame=\v!off,
+                     \c!rulethickness=10pt,
+                     \c!align=\v!middle,
+                     \c!offset=20pt]
+                    {\documentvariable{subtitle}}
+                \hss
+            \egroup
+
+        }
+
+        \hbox to \hsize \bgroup
+            \hss
+            \definedfont[SansBold*default at 20pt]
+            \framed
+                [\c!background=basic-shape-dark,
+                 \c!frame=\v!off,
+                 \c!rulethickness=12.5pt,
+                 \c!align=\v!middle,
+                 \c!offset=35pt]
+                {\documentvariable{author}}
+        \egroup
+
+    \stopmakeup
+
+    \setupbackgrounds
+        [\v!text]
+        [\v!text]
+        [\c!background=]
+
+    \setupbackgrounds
+        [\v!rightpage]
+        [\c!background=]
+
+    \doifmode {screen} {
+
+        \setupbackgrounds
+            [\v!page]
+            [\c!background=\v!screen,
+             \c!backgroundscreen=.95]
+
+        \setupbackgrounds
+            [\v!text]
+            [\v!text]
+            [\c!backgroundoffset=.25cm,
+             \c!depth=.125cm,
+             \c!background=\v!color,
+             \c!backgroundcolor=white]
+
+    }
+
+    \component[ma-cb-copyright]
+
+\stopsetups
+
+% The backpage uses the same background and overlays a piece of text.
+
+\startsetups backpage
+
+    \page
+      [\v!yes,\v!blank,\v!right]
+
+    \component[ma-cb-colofon]
+
+    \page
+        [\v!yes,\v!blank,\v!left]
+
+    \setupbackgrounds
+        [\v!leftpage]
+        [\c!background=coverbackground]
+
+    \startmakeup
+        [\v!standard]
+        [\c!page=,
+         \c!doublesided=\v!no,
+         \c!headerstate=\v!none,
+         \c!footerstate=\v!none]
+
+        \setuptolerance
+            [\v!verytolerant]
+
+        \vfill
+
+        \hbox to \hsize \bgroup
+
+            \framed
+                [\c!background=\v!color,
+                 \c!backgroundcolor=white,
+                 \c!frame=\v!off,
+                 \c!offset=10pt,
+                 \c!corner=\v!round,
+                 \c!width=.4\makeupwidth,
+                 \c!height=\textheight,
+                 \c!align=\v!middle,
+                 \c!strut=\v!no]
+            {
+                \vfil
+                \component[ma-cb-en-backpage]
+                \vfil
+            }
+
+            \hss
+
+        \egroup
+
+        \vfill
+
+    \stopmakeup
+
+\stopsetups
+
+% To save space we don't start chapters on a new page, except in appendices and the
+% introduction. These settings happen in dedicated setups sections (see later). We
+% also add some white space between table of content entries.
+
+\setupsectionblock [\v!frontpart] [\c!page=\v!right,\c!before=\setups{frontpart}]
+\setupsectionblock [\v!bodypart]  [\c!page=\v!right,\c!before=\setups{bodypart}]
+\setupsectionblock [\v!appendix]  [\c!page=\v!right,\c!before=\setups{appendix}]
+\setupsectionblock [\v!backpart]  [\c!page=\v!right,\c!before=\setups{backpart}]
+
+\setuplist
+  [\v!chapter]
+  [\c!criterium=\v!all,
+   \c!before=,
+   \c!after=]
+
+\startsetups frontpart
+
+    \setuphead[\v!chapter][\c!page=\v!right]
+
+    \writebetweenlist[\v!chapter]{\blank}
+
+    \startnamedsection[\v!chapter][\c!title=\labeltext{document:contents}]
+
+        \startmixedcolumns[documentcolumns]
+            \placelist[\v!chapter]
+        \stopmixedcolumns
+
+    \stopnamedsection
+
+    \page[\v!right]
+
+\stopsetups
+
+\startsetups bodypart
+
+    \setuphead[\v!chapter][\c!page=]
+
+    \writebetweenlist[\v!chapter]{\blank}
+
+\stopsetups
+
+\startsetups appendix
+
+    \setuphead[\v!chapter][\c!page=\v!right]
+
+    \writebetweenlist[\v!chapter]{\blank}
+
+    \startnamedsection[\v!chapter][\c!title=\labeltext{document:commanddefinitions},\c!reference=commandsetups]
+
+        \component[ma-cb-\currentmainlanguage-commandlist]
+
+        \blank[2*\v!big]
+
+        \start
+
+            \switchtobodyfont[8pt]
+
+            \startmixedcolumns[documentcolumns]
+                \placelistofsorts[texcommand]
+            \stopmixedcolumns
+
+        \stop
+
+    \stopnamedsection
+
+    \startnamedsection[\v!chapter][\c!title=\labeltext{document:commandindex}]
+
+        \startmixedcolumns[documentcolumns]
+            \placeregister[Command]
+        \stopmixedcolumns
+
+    \stopnamedsection
+
+    \startnamedsection[\v!chapter][\c!title=\labeltext{document:subjectindex}]
+
+        \startmixedcolumns[documentcolumns]
+            \placeregister[\v!index]
+        \stopmixedcolumns
+
+    \stopnamedsection
+
+    \startnamedsection[\v!chapter][\c!title=\labeltext{document:supportandreading}]
+
+        \index{support}
+
+        \startnamedsection[\v!section][\c!title=\labeltext{document:support}]
+
+            \component[ma-cb-\currentmainlanguage-support]
+
+        \stopnamedsection
+
+        \startnamedsection[\v!section][\c!title=\labeltext{document:manuals}]
+
+            % this will be done from a bib file
+
+            \startlines
+               \goto {Chemical Formulas in \CONTEXT} [ url (manual:chemic-ex)   ]
+               \goto {Color Separation}              [ url (manual:color)       ]
+               \goto {Columns}                       [ url (manual:columns)     ]
+               \goto {\CONTEXT, the manual}          [ url (manual:context)     ]
+               \goto {Dealing with \XML}             [ url (manual:xml)         ]
+               \goto {Extreme Tables}                [ url (manual:extab)       ]
+               \goto {Figures}                       [ url (manual:figures)     ]
+               \goto {Fonts in \CONTEXT}             [ url (manual:fonts)       ]
+               \goto {luatools, mtxrun, context}     [ url (manual:tools)       ]
+               \goto {\METAFUN\ manual}              [ url (manual:metafun)     ]
+               \goto {Natural Tables}                [ url (manual:nattab)      ]
+               \goto {\PPCHTEX\ Manual}              [ url (manual:chemic)      ]
+               \goto {Quick Reference (dutch)}       [ url (manual:qr-nl)       ]
+               \goto {Quick Reference (english)}     [ url (manual:qr-en)       ]
+               \goto {\SCITE\ in \CONTEXT}           [ url (manual:scite)       ]
+               \goto {Units}                         [ url (manual:units)       ]
+               \goto {Widgets}                       [ url (manual:widgets)     ]
+            \stoplines
+
+        \stopnamedsection
+
+        \startnamedsection[\v!section][\c!title=\labeltext{document:magazines}]
+
+            % this will be done from a bib file
+
+            \startlines
+                \goto {\CONTEXT\ Magazine 1103}      [ url (thisway:crossrefs)  ]
+                \goto {Project structure}            [ url (thisway:proj-struc) ]
+            \stoplines
+
+        \stopnamedsection
+
+    \stopnamedsection
+
+\stopsetups
+
+\startsetups backpart
+
+    \setuphead[\v!chapter][\c!page=\v!right]
+
+    \writebetweenlist[\v!chapter]{\blank}
+
+\stopsetups
+
+% In normal documents one will never find awful things like below. Because we want
+% an international setup, we just call the chapters in an indirect way.
+
+% We draw a nice line between columns. The next command does the job. Of course a
+% normal line can be set more easily, but here we hook in a command.
+
+\installmixedcolumnseparator{ColumnRule}%
+  {\framed
+     [\c!background=column-rule,
+      \c!height=\mixedcolumnseparatorheight,
+      \c!depth=\mixedcolumnseparatordepth,
+      \c!width=\mixedcolumnseparatorwidth,
+      \c!offset=\v!overlay,
+      \c!rulethickness=2pt,
+      \c!frame=\v!off]
+     {}}
+
+% alternative implemenation
+%
+% \installmixedcolumnseparator{ColumnRule}%
+%   {\lower\mixedcolumnseparatordepth\hbox{\uniqueMPgraphic
+%      {column-rule}%
+%      {height=\the\dimexpr\mixedcolumnseparatorheight+\mixedcolumnseparatordepth,linewidth=2pt}}}
+
+\setupmixedcolumns
+  [\c!n=2,
+   \c!distance=36pt,
+   \c!separator=ColumnRule]
+
+\definemixedcolumns
+  [documentcolumns]
+  [\c!n=2,
+   \c!distance=36pt,
+   \c!separator=ColumnRule]
+
+\defineregister
+  [Command]
+
+\setupregister
+  [Command]
+  [\c!indicator=\v!off,
+   c!before={\blank[\v!line]}]
+
+\protect
+
+\stopenvironment

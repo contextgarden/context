@@ -1,0 +1,31 @@
+\startcomponent about-titlepage
+
+\environment about-environment
+
+\setvariables
+  [document]
+  [title=about,
+   subtitle=luatex and context,
+   author=hans hagen]
+
+\startpagemakeup
+
+    \startMPcode
+
+        StartPage ;
+
+            fill Page enlarged 5mm withcolor \MPcolor{maincolor} ;
+
+            draw anchored.lrt(image(draw textext("\getvariable{document}{title}")    xsized(.750PaperWidth)            withcolor white),(lrcorner Page) shifted (-PaperWidth/20, PaperWidth/ 5)) ;
+            draw anchored.lrt(image(draw textext("\getvariable{document}{subtitle}") xsized(.750PaperWidth)            withcolor white),(lrcorner Page) shifted (-PaperWidth/20, PaperWidth/10)) ;
+            draw anchored.urt(image(draw textext("\getvariable{document}{author}")   xsized(.375PaperWidth) rotated 90 withcolor white),(urcorner Page) shifted (-PaperWidth/20,-PaperWidth/20)) ;
+
+            setbounds currentpicture to Page ;
+
+        StopPage ;
+
+    \stopMPcode
+
+\stoppagemakeup
+
+\stopcomponent

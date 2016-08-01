@@ -1,0 +1,129 @@
+% language=uk
+
+\startcomponent hybrid-backends
+
+\environment hybrid-environment
+
+\startchapter[title={Weird examples}]
+
+\startsection[title={Introduction}]
+
+In this chapter I will collect a couple of weird examples.
+
+\stopsection
+
+\startsection[title=Inter-character spacing]
+
+There was a discussion on the \LUATEX\ (dev) list about inter character spacing
+and ligatures. The discussion involved a mechanism inherited from \PDFTEX\ but in
+\CONTEXT\ we don't use that at all. Actually, support for inter character spacing
+was added in an early stage of \MKIV\ development as an alternative for the
+\MKII\ variant, which used parsing at the \TEX\ end. Personally I never use this
+spacing, unless a design in a project demands it.
+
+In the \MKIV\ method we split ligatures when its components are known. This works
+quite well. It's anyway a good idea to disable ligatures, so it's more a
+fallback. Actually we should create components for hard coded characters like
+\ae\ but as no one ever complained I leave that for a later moment.
+
+As we already had the mechanisms in place, support for selective spacing of
+ligatures was a rather trivial extension. If there is ever a real need for it, I
+will provide control via the normal user interface, but for now using a few hooks
+will do. The following code shows an example of an implementation. \footnote {The
+examples have been adapted to the latest \CONTEXT\ where we use \type
+{\getchar(n)} instead of \type {n.char}.}
+
+\startbuffer
+local utfbyte = utf.byte
+local getchar = nodes.nuts.getchar
+
+local keep = {
+    [0x0132] = true, [0x0133] = true, -- IJ ij
+    [0x00C6] = true, [0x00E6] = true, -- AE ae
+    [0x0152] = true, [0x0153] = true, -- OE oe
+}
+
+function typesetters.kerns.keepligature(n)
+    return keep[getchar(n)]
+end
+
+local together = {
+    [utfbyte("c")] = { [utfbyte("k")] = true },
+    [utfbyte("i")] = { [utfbyte("j")] = true },
+    [utfbyte("I")] = { [utfbyte("J")] = true },
+}
+
+function typesetters.kerns.keeptogether(n1,n2)
+    local k = together[getchar(n1)]
+    return k and k[getchar(n2)]
+end
+\stopbuffer
+
+\ctxluabuffer
+
+\typebuffer
+
+The following also works:
+
+\starttyping
+local lpegmatch = lpeg.match
+local fontdata  = fonts.identifiers
+local getchar   = nodes.nuts.getchar
+local getfont   = nodes.nuts.getfont
+
+local keep = -- start of name
+        lpeg.P("i_j")
+      + lpeg.P("I_J")
+      + lpeg.P("aeligature")
+      + lpeg.P("AEligature")
+      + lpeg.P("oeligature")
+      + lpeg.P("OEligature")
+
+function typesetters.kerns.keepligature(n)
+    local d = fontdata[getfont(n)].descriptions
+    local c = d and d[getchar(n)]
+    local n = c and c.name
+    return n and lpegmatch(keep,n)
+end
+\stoptyping
+
+A more generic solution would be to use the \type {tounicode} information, but it
+would be overkill as we're dealing with a rather predictable set of characters
+that have gotten \UNICODE\ slots assigned. When using basemode most fonts will
+work anyway.
+
+So, is this really worth the effort? Take a look at the following example.
+
+\startbuffer
+\definecharacterkerning [KernMe] [factor=0.25]
+
+\start
+  \setcharacterkerning[KernMe]
+  \definedfont[Serif*default]
+  Ach kijk effe, \ae sop draagt een knickerbocker! \par
+  \definedfont[Serif*smallcaps]
+  Ach kijk effe, \ae sop draagt een knickerbocker! \par
+\stop
+\stopbuffer
+
+\typebuffer
+
+Typeset this (Dutch text) looks like:
+
+\getbuffer
+
+You might wonder why I decided to look into it. Right at the moment when it was
+discussed, I was implementing a style that needed the Calibri font that comes
+with \MSWINDOWS, and I visited the FontShop website to have a look at the font.
+To my surprise it had quite some ligatures, way more than one would expect.
+
+\placefigure
+  {Some of the ligatures in Calibri Regular. Just wonder what
+   intercharacter spacing will do here.}
+  {\externalfigure[calibri-fontshop.png]}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,219 @@
+% language=uk
+
+\startcomponent mk-code
+
+\environment mk-environment
+
+\chapter{User code}
+
+Previous versions of \LUATEX\ had multiple \LUA\ instances but in
+practice this was not that useful and therefore we decided to
+remove that feature and stick to one instance. One reason is that
+all activities take place in the zero instance anyway and other
+instance could not access variables defined there. Another reason
+was that every \type {\directlua} call is in fact a function call
+(and as such a closure) and \LUATEX\ catches errors nicely.
+
+The formal \type {\directlua} primitive originally can be called
+in two ways:
+
+\starttyping
+\directlua <instance> {lua code}
+\directlua name {some text} <instance> {lua code}
+\stoptyping
+
+The optional text is then part of the error message when one is
+issued. The new approach is that the number is used for the error
+message in case no \type {name} is specified. The exact string is
+set in \LUA. This means that in principle the command is backward
+compatible. Old usage will basically ignore the number and use
+the one and only instance, while new usage will use the number for
+an eventual message:
+
+\starttyping
+\directlua <message id> {lua code}
+\directlua name {some text} <message id> {lua code}
+\stoptyping
+
+In the second case the id is ignored. The advantage of the first
+call is that it saves tokens at the \TEX\ end and can be
+configured at the \LUA\ end. In \CONTEXT\ \MKIV\ we have adapted
+the code that invokes multiple instances by compatible code that
+provides a modest form of isolation. We don't want to enforce too
+many constraints, first of all because users will often use high
+level interfaces anyway, and also because we assume that users have
+no bad intentions.
+
+The main \LUA\ instance in \CONTEXT\ is accessible by: \footnote {Note
+2016: you can of course also use \type {context("lua")} here.}
+
+\startbuffer
+\startluacode
+global.tex.print("lua")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This gives: \quote {\getbuffer}.
+
+However, sometimes you don't want user code to interfere too much
+with the main code but still provide access to useful data. This
+is why we also provide:
+
+\startbuffer
+\startusercode
+global.tex.print("user 1")
+global.tex.print("user 2")
+if characters then
+    global.tex.print("access")
+else
+    global.tex.print("no access")
+end
+global.tex.print(global.characters.data[0xA9].contextname)
+\stopusercode
+\stopbuffer
+
+\typebuffer
+
+This gives: \quote {\getbuffer}.
+
+If you're writing a module, you might want to reserve a private
+namespace. This is done with:
+
+\startbuffer
+\definenamedlua[mymodule][my interesting module]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Now we can say:
+
+\startbuffer
+\startmymodulecode
+help = { "help" }
+global.tex.print(help[1])
+\stopmymodulecode
+\stopbuffer
+
+\typebuffer
+
+This gives: \quote {\getbuffer}. The information is remembered:
+
+\startbuffer
+\startmymodulecode
+global.tex.print(help[1])
+\stopmymodulecode
+\stopbuffer
+
+\typebuffer
+
+Indeed we get: \quote {\getbuffer}.
+
+Just to check the isolation we try:
+
+\startbuffer
+\startusercode
+global.tex.print(help and help[1] or "no help")
+\stopusercode
+\stopbuffer
+
+\typebuffer
+
+As expected this gives: \quote {\getbuffer} but when we do the
+following we will get an error message:
+
+\startbuffer
+\startusercode
+global.tex.print(help[1])
+\stopusercode
+\stopbuffer
+
+\typebuffer
+
+% {\batchmode \getbuffer} % somehow quits in context but not in texexec
+
+\starttyping
+! LuaTeX error <private user instance>:2: attempt to index global
+'help' (a nil value)
+stack traceback:
+	<private user instance>:2: in main chunk.
+<inserted text> ...userdata")
+global.tex.print(help[1])
+}
+\stoptyping
+
+An even more isolated variant is:
+
+\startbuffer
+\startisolatedcode
+help = { "help" }
+global.tex.print(help and help[1] or "no help")
+\stopisolatedcode
+\stopbuffer
+
+\typebuffer
+
+We get: \quote {\getbuffer}, while
+
+
+\startbuffer
+\startisolatedcode
+global.tex.print(help and help[1] or "no help")
+\stopisolatedcode
+\stopbuffer
+
+\typebuffer
+
+gives: \quote {\getbuffer}.
+
+You can get access to the global data of other named code blocks
+by using the \type {global} prefix. At that level you have also
+access to the instances, but this time we append \type {data}, so
+\type {user} has a table \type {userdata}:
+
+\startbuffer
+\startmymodulecode
+global.userdata.whatever = "be careful!"
+\stopmymodulecode
+\stopbuffer
+
+For convenience we have made \type {tex} as well as some \LUA\ tables
+directly accessible within an instance. However, we recommend not to
+extend these yourself (even if we do it in the core of \MKIV).
+
+% not yet ok:
+%
+% The next example is inspired by a question of Wolfgang Schuster who
+% wanted to write a module. Say that we have a file \type {demo.lua}:
+%
+% \starttyping
+% local demo = { }
+%
+% function demo.whow(str)
+%     global.tex.print("[" .. string.reverse(str) .. "]")
+% end
+%
+% return demo
+% \stoptyping
+%
+% The module can be \type {demo.tex}:
+%
+% \starttyping
+% \definenamedlua[demo][demo module example]
+%
+% \startdemocode
+% demo = global.require("demo.lua")
+% \stopdemocode
+%
+% \def\whow#1{\democode{demo.whow("#1"}}
+% \stoptyping
+%
+% We can now use this module:
+%
+% \starttyping
+% \usemodule[demo]
+% \whow{123}
+% \stoptyping
+
+\stopcomponent

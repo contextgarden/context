@@ -1,0 +1,99 @@
+\startcomponent ma-cb-en-footnotes
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Footnotes]
+
+\index{footnote}
+
+\Command{\tex{footnote}}
+\Command{\tex{setupfootnotes}}
+
+If you want to annotate your text you can use \type{\footnote}. The command looks
+like this:
+
+\shortsetup{footnote}
+
+The bracket pair is optional and contains a logical name. The curly braces
+contain the text you want to display at the foot of the page.
+
+The same footnote number can be called with its logical name.
+
+\shortsetup{note}
+
+If you have typed this text:
+
+\startbuffer
+The Hanse was a late medieval commercial alliance of towns in the
+regions of the North and the Baltic Sea. The association was formed
+for the furtherance and protection of the commerce of its
+members.\footnote[war]{This was the source of jealousy and fear among
+other towns that caused a number of wars.} In the Hanse period there
+was a lively trade in all sorts of articles such as wood, wool,
+metal, cloth, salt, wine and beer.\note[war] The prosperous trade
+caused an enormous growth of welfare in the Hanseatic
+towns.\footnote{Hasselt is one of these towns.}
+\stopbuffer
+
+\typebuffer
+
+It would look like this:
+
+\getbuffer
+
+The footnote numbering is done automatically. The command \type{\setupfootnotes}
+enables you to influence the display of footnotes:
+
+\shortsetup{setupfootnotes}
+
+Footnotes can be set at the bottom of a page but also at other locations, like
+the end of a chapter. This is done with the command:
+
+\shortsetup{placefootnotes}
+
+The footnotes will be placed at the end of your document with
+\type{\setupfootnotes[location=text]} in combination with \type{\placefootnotes}
+at the desired location.
+
+You can also couple footnotes to a table. In that case we speak of local
+footnotes. The commands are:
+
+\shortsetup{startlocalfootnotes}
+
+\shortsetup{placelocalfootnotes}
+
+An example illustrates the use of local footnotes:
+
+\startbuffer
+
+\placetable[][productivity]
+  {Decline of Hasselt's productivity.\footnote{Source: {\em Uit
+   de geschiedenis van Hasselt.}}}
+  {\startlocalfootnotes
+   \starttable[|l|c|c|c|c|]
+   \HL
+   \NC
+   \NC Ovens
+   \NC Blacksmiths
+   \NC Breweries
+   \NC Tile works\footnote{The factories that produced roof tiles.} \NC\SR
+   \HL
+   \NC 1682 \NC 15 \NC 9 \NC 3 \NC 2 \NC\FR
+   \NC 1752 \NC ~6 \NC 4 \NC 0 \NC 0 \NC\LR
+   \HL
+   \NC \use5 \JustLeft{\placelocalfootnotes} \NC\FR
+   \stoptable
+   \stoplocalfootnotes}
+\stopbuffer
+
+\typebuffer
+
+This will result in \in{table}[productivity] with a local footnote. The footnote
+in the caption will appear at the bottom of the page.
+\getbuffer
+
+\stopchapter
+
+\stopcomponent

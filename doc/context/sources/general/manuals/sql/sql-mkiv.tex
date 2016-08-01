@@ -1,0 +1,492 @@
+% language=uk
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+
+\usemodule[art-01,abr-02]
+
+\definecolor
+  [maincolor]
+  [r=.4]
+
+\setupbodyfont
+  [10pt]
+
+\setuptype
+  [color=maincolor]
+
+\setuptyping
+  [color=maincolor]
+
+\definefont
+  [TitlePageFont]
+  [file:lmmonolt10-bold.otf]
+
+\setuphead
+  [color=maincolor]
+
+\usesymbols
+  [cc]
+
+\setupinteraction
+  [hidden]
+
+\startdocument
+  [metadata:author=Hans Hagen,
+   metadata:title=SQL in ConTeXt,
+   author=Hans Hagen,
+   affiliation=PRAGMA ADE,
+   location=Hasselt NL,
+   title=SQL in \CONTEXT,
+   support=www.contextgarden.net,
+   website=www.pragma-ade.nl]
+
+\startMPpage
+
+    StartPage ;
+
+    numeric w ; w := bbwidth(Page) ;
+    numeric h ; h := bbheight(Page) ;
+
+    fill Page withcolor \MPcolor{maincolor} ;
+
+    draw textext.urt("\TitlePageFont Q")       xysized (1.1   w,0.9 h) shifted (-.05w,.05h) withcolor .20white ;
+    draw textext.top("\TitlePageFont SQL")     xysized (0.4725w,0.13h) shifted (.675w,.24w) withcolor .60white ;
+    draw textext.top("\TitlePageFont CONTEXT") xsized  (0.6   w)       shifted (.675w,.10w) withcolor .60white ;
+
+    StopPage ;
+
+\stopMPpage
+
+\startsubject[title=Contents]
+
+\placelist[section][alternative=a]
+
+\stopsubject
+
+\startsection[title=Introduction]
+
+Although \CONTEXT\ is a likely candidate for typesetting content that comes from
+databases it was only in 2011 that I ran into a project where a connection was
+needed. After all, much document related typesetting happens on files or
+dedicated storage systems.
+
+Because we run most projects in an infrastructure suitable for \TEX, it made
+sense to add some helper scripts to the \CONTEXT\ core distribution that deal
+with getting data from (in our case) \MYSQL\ databases. That way we can use the
+already stable infrastructure for installing and updating files that comes with
+\CONTEXT.
+
+As \LUA\ support is nicely integrated in \CONTEXT, and as dealing with
+information from databases involves some kind of programming anyway, there is (at
+least currently) no \TEX\ interface. The examples shown here work in \CONTEXT,
+but you need to keep in mind that \LUA\ scripts can also use this interface.
+
+{\em Although this code is under construction the interfaces are unlikely to
+change, if only because we use it on production.}
+
+\stopsection
+
+\startsection[title=Presets]
+
+In order to consult a database you need to provide credentials. You also need
+to reach the database server, either by using some client program or via a
+library. More about that later.
+
+Because we don't want to key in all that information again and again, we will
+collect it in a table. This also permits us to store it in a file and load it
+on demand. For instance:
+
+\starttyping
+local presets = {
+    database = "test",
+    username = "root",
+    password = "none",
+    host     = "localhost",
+    port     = 3306,
+}
+\stoptyping
+
+You can put a table in a file \type {presets.lua} like this:
+
+\starttyping
+return {
+    database = "test",
+    username = "root",
+    password = "none",
+    host     = "localhost",
+    port     = 3306,
+}
+\stoptyping
+
+and then load it as follows:
+
+\starttyping
+local presets = table.load("presets.lua")
+\stoptyping
+
+If you really want, you can use some library to open a connection, execute a
+query, collect results and close the connection, but here we use just one
+function that does it all. The presets are used to access the database and the
+same presets will be used more often it makes sense to keep a connection open as
+long as possible. That way you can execute much more queries per second,
+something that makes sense when there are many small ones, as in web related
+services. A connection is made persistent when the presets have an \type {id}
+key, like
+
+\starttyping
+presets.id = "myproject"
+\stoptyping
+
+\stopsection
+
+\startsection[title=Templates]
+
+A query often looks like this:
+
+\starttyping
+SELECT
+    `artist`, `title`
+FROM
+    `cd`
+WHERE
+    `artist` = 'archive' ;
+\stoptyping
+
+However, often you want to use the same query for multiple lookups, in which case
+you can do this:
+
+\starttyping
+SELECT
+    `artist`, `title`
+FROM
+    `cd`
+WHERE
+    `artist` = '%artist%' ;
+\stoptyping
+
+In the next section we will see how \type {%artist%} can be replaced by a more
+meaningful value. You can a percent sign by entering two in a row: \type {%%}.
+
+As with any programming language that deals with strings natively, you need a
+way to escape the characters that fence the string. In \SQL\ a field name is
+fenced by \type {``} and a string by \type {''}. Field names can often be
+used without \type {``} but you can better play safe.
+
+\starttyping
+`artist` = 'Chilly Gonzales'
+\stoptyping
+
+Escaping of the \type {'} is simple:
+
+\starttyping
+`artist` = 'Jasper van''t Hof'
+\stoptyping
+
+When you use templates you often pass a string as variable and you don't want to
+be bothered with escaping them. In the previous example we used:
+
+\starttyping
+`artist` = '%artist%'
+\stoptyping
+
+When you expect embedded quotes you can use this:
+
+\starttyping
+`artist` = '%[artist]%'
+\stoptyping
+
+In this case the variable {artist} will be escaped. When we reuse a template we
+store it in a variable:
+
+\starttyping
+local template = [[
+    SELECT
+        `artist`, `title`
+    FROM
+        `cd`
+    WHERE
+        `artist` = '%artist%' ;
+]]
+\stoptyping
+
+\stopsection
+
+\startsection[title=Queries]
+
+In order to execute a query you need to pass the previously discussed presets
+as well as the query itself.
+
+\starttyping
+local data, keys = utilities.sql.execute {
+    presets   = presets,
+    template  = template,
+    variables = {
+        artist = "Dream Theater",
+    },
+}
+\stoptyping
+
+The variables in the presets table can also be passed at the outer
+level. In fact there are three levels of inheritance: settings, presets
+and module defaults.
+
+\starttabulate
+\NC presets        \NC a table with values \NC \NR
+\NC template       \NC a query string \NC \NR
+\NC templatefile   \NC a file containing a template \NC \NR
+\NC \em resultfile \NC a (temporary) file to store the result \NC \NR
+\NC \em queryfile  \NC a (temporary) file to store a query \NC \NR
+\NC variables      \NC variables that are subsituted in the template \NC \NR
+\NC username       \NC used to connect to the database \NC \NR
+\NC password       \NC used to connect to the database \NC \NR
+\NC host           \NC the \quote {machine} where the database server runs on \NC \NR
+\NC port           \NC the port where the database server listens to \NC \NR
+\NC database       \NC the name of the database \NC \NR
+\stoptabulate
+
+The \type {resultfile} and \type {queryfile} parameters are used when a client
+approach is used. When a library is used all happens in memory.
+
+When the query succeeds two tables are returned: \type {data} and \type {keys}. The
+first is an indexed table where each entry is a hash. So, if we have only one
+match and that match has only one field, you get something like this:
+
+\starttyping
+data = {
+    {
+        key = "value"
+    }
+}
+
+keys = {
+    "key"
+}
+\stoptyping
+
+\stopsection
+
+\startsection[title=Converters]
+
+All values in the result are strings. Of course we could have provided some
+automatic type conversion but there are more basetypes in \MYSQL\ and some are
+not even standard \SQL. Instead the module provides a converter mechanism
+
+\starttyping
+local converter = utilities.sql.makeconverter {
+    { name = "id",      type = "number" },
+    { name = "name",    type = "string" },
+    { name = "enabled", type = "boolean" },
+}
+\stoptyping
+
+You can pass the converter to the execute function:
+
+\starttyping
+local data, keys = utilities.sql.execute {
+    presets   = presets,
+    template  = template,
+    converter = converter,
+    variables = {
+        name = "Hans Hagen",
+    },
+}
+\stoptyping
+
+In addition to numbers, strings and booleans you can also use a function
+or table:
+
+\starttyping
+local remap = {
+    ["1"] = "info"
+    ["2"] = "warning"
+    ["3"] = "debug"
+    ["4"] = "error"
+}
+
+local converter = utilities.sql.makeconverter {
+    { name = "id",     type = "number" },
+    { name = "status", type = remap },
+}
+\stoptyping
+
+I use this module for managing \CONTEXT\ jobs in web services. In that case we
+need to store jobtickets and they have some common properties. The definition of
+the table looks as follows: \footnote {The tickets manager is part of the
+\CONTEXT\ distribution.}
+
+\starttyping
+CREATE TABLE IF NOT EXISTS %basename% (
+    `id`        int(11)     NOT NULL AUTO_INCREMENT,
+    `token`     varchar(50) NOT NULL,
+    `subtoken`  INT(11)     NOT NULL,
+    `created`   int(11)     NOT NULL,
+    `accessed`  int(11)     NOT NULL,
+    `category`  int(11)     NOT NULL,
+    `status`    int(11)     NOT NULL,
+    `usertoken` varchar(50) NOT NULL,
+    `data`      longtext    NOT NULL,
+    `comment`   longtext    NOT NULL,
+
+    PRIMARY KEY                     (`id`),
+    UNIQUE INDEX `id_unique_index`  (`id` ASC),
+    KEY          `token_unique_key` (`token`)
+)
+DEFAULT CHARSET = utf8 ;
+\stoptyping
+
+We can register a ticket from (for instance) a web service and use an independent
+watchdog to consult the database for tickets that need to be processed. When the
+job is finished we register this in the database and the web service can poll for
+the status.
+
+It's easy to imagine more fields, for instance the way \CONTEXT\ is called, what
+files to use, what results to expect, what extra data to pass, like style
+directives, etc. Instead of putting that kind of information in fields we store
+them in a \LUA\ table, serialize that table, and put that in the data field.
+
+The other way around is that we take this data field and convert it back to \LUA.
+For this you can use a helper:
+
+\starttyping
+local results = utilities.sql.execute { ... }
+
+for i=1,#results do
+    local result = results[i]
+    result.data = utilities.sql.deserialize(result.data)
+end
+\stoptyping
+
+Much more efficient is to use a converter:
+
+\starttyping
+local converter = utilities.sql.makeconverter {
+    ...
+    { name = "data", type = "deserialize" },
+    ...
+}
+\stoptyping
+
+This way you don't need to loop over the result and deserialize each data
+field which not only takes less runtime (often neglectable) but also takes
+less (intermediate) memory. Of course in some cases it can make sense to
+postpone the deserialization.
+
+A variant is not to store a serialized data table, but to store a key|-|value
+list, like:
+
+\starttyping
+data = [[key_1="value_1" key_2="value_2"]]
+\stoptyping
+
+Such data fields can be converted with:
+
+\starttyping
+local converter = utilities.sql.makeconverter {
+    ...
+    { name = "data", type = utilities.parsers.keq_to_hash },
+    ...
+}
+\stoptyping
+
+You can imagine more converters like this, and if needed you can use them to
+preprocess data as well.
+
+\starttabulate[|Tl|p|]
+\NC "boolean"     \NC This converts a string into the value \type {true} or \type {false}.
+                      Valid values for \type {true} are: \type {1}, \type {true}, \type
+                      {yes}, \type {on} and \type {t} \NC \NR
+\NC "number"      \NC This one does a straightforward \type {tonumber} on the value. \NC \NR
+\NC function      \NC The given function is applied to value. \NC \NR
+\NC table         \NC The value is resolved via the given table. \NC \NR
+\NC "deserialize" \NC The value is deserialized into \LUA\ code. \NC \NR
+\NC "key"         \NC The value is used as key which makes the result table is now hashed
+                      instead of indexed. \NC \NR
+\NC "entry"       \NC An entry is added with the given name and optionally with a default
+                      value. \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Typesetting]
+
+For good reason a \CONTEXT\ job often involves multiple passes. Although the
+database related code is quite efficient it can be considered a waste of time
+and bandwidth to fetch the data several times. For this reason there is
+another function:
+
+\starttyping
+local data, keys = utilities.sql.prepare {
+    tag = "table-1",
+    ...
+}
+
+-- do something useful with the result
+
+local data, keys = utilities.sql.prepare {
+    tag = "table-2",
+    ...
+}
+
+-- do something useful with the result
+\stoptyping
+
+The \type {prepare} alternative stores the result in a file and reuses
+it in successive runs.
+
+\stopsection
+
+\startsection[title=Methods]
+
+Currently we have several methods for accessing a database:
+
+\starttabulate
+\NC client  \NC use the command line tool, pass arguments and use files \NC \NR
+\NC library \NC use the standard library (somewhat tricky in \LUATEX\ as we need to work around bugs) \NC \NR
+\NC lmxsql  \NC use the library with a \LUA\ based pseudo client (stay in the \LUA\ domain) \NC \NR
+\NC swiglib \NC use the (still experimental) library that comes with \LUATEX \NC \NR
+\stoptabulate
+
+All methods use the same interface (\type {execute}) and hide the dirty details
+for the user. All return the data and keys tables and all take care of the proper
+escaping and parsing.
+
+\stopsection
+
+\startsection[title=Helpers]
+
+There are some helper functions and extra modules that will be described when
+they are stable.
+
+There is an \quote {extra} option to the \type {context} command that can be used
+to produce an overview of a database. You can get more information about this
+with the command:
+
+\starttyping
+context --extra=sql-tables --help
+\stoptyping
+
+\stopsection
+
+\startsection[title=Colofon]
+
+\starttabulate[|B|p|]
+\NC author    \NC \getvariable{document}{author}, \getvariable{document}{affiliation}, \getvariable{document}{location} \NC \NR
+\NC version   \NC \currentdate \NC \NR
+\NC website   \NC \getvariable{document}{website} \endash\ \getvariable{document}{support} \NC \NR
+\NC copyright \NC \symbol[cc][cc-by-sa-nc] \NC \NR
+\stoptabulate
+
+\stopsection
+
+\stopdocument

@@ -1,0 +1,330 @@
+% language=uk
+
+\environment still-environment
+
+\startcomponent still-simple
+
+\startchapter[title=Removing something (typeset)]
+
+\startsection[title=Introduction]
+
+The primitive \type {\unskip} often comes in handy when you want to remove a
+space (or more precisely: a glue item) but sometimes you want to remove more.
+Consider for instance the case where a sentence is built up stepwise from data.
+At some point you need to insert some punctuation but as you cannot look ahead it
+needs to be delayed. Keeping track of accumulated content is no fun, and a quick
+and dirty solution is to just inject it and remove it when needed. One way to
+achieve this is to wrap this optional content in a box with special dimensions.
+Just before the next snippet is injected we can look back for that box (that can
+then be recognized by those special dimensions) and either remove it or unbox it
+back into the stream.
+
+To be honest, one seldom needs this feature. In fact I never needed it until
+Alan Braslau and I were messing around with (indeed messy) bibliographic
+rendering and we thought it would be handy to have a helper that could remove
+punctuation. Think of situations like this:
+
+\starttyping
+John Foo, Mary Bar and others.
+John Foo, Mary Bar, and others.
+\stoptyping
+
+One can imagine this list to be constructed programmatically, in which case the
+comma before the \type {and} can be superfluous. So, the \type {and others} can
+be done like this:
+
+\startbuffer
+\def\InjectOthers
+  {\removeunwantedspaces
+   \removepunctuation
+   \space and others}
+
+John Foo, Mary Bar, \InjectOthers.
+\stopbuffer
+
+\typebuffer
+
+Notice that we first remove spaces. This will give:
+
+\blank {\bf \getbuffer} \blank
+
+where the commas after the names are coming from some not|-|too|-|clever automatism
+or are the side effect of lazy programming. In the sections below I will describe
+a bit more generic mechanism and also present a solution for non|-|\CONTEXT\ users.
+
+\stopsection
+
+\startsection[title=Marked content]
+
+The example above can be rewritten in a more general way. We define a
+couple macros (using \CONTEXT\ functionality):
+
+\startbuffer
+\def\InjectComma
+  {\markcontent
+     [punctuation]
+     {\removeunwantedspaces,\space}}
+
+\def\InjectOthers
+  {\removemarkedcontent[punctuation]%
+   \space and others}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+These can be used as:
+
+\startbuffer
+John Foo\InjectComma Mary Bar\InjectComma \InjectOthers.
+\stopbuffer
+
+\typebuffer
+
+Which gives us:
+
+\blank {\bf \getbuffer} \blank
+
+Normally one doesn't need this kind of magic for lists because the length of the
+list is known and injection can be done using the index in the list. Here is a more 
+practical example:
+
+\startbuffer
+\def\SomeTitle {Just a title}
+\def\SomeAuthor{Just an author}
+\def\SomeYear  {2015}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We paste the three snippets together:
+
+\startbuffer
+\SomeTitle,\space \SomeAuthor\space (\SomeYear).
+\stopbuffer
+
+\typebuffer \blank {\bf \getbuffer} \blank
+
+But to get even more abstract, we can do this:
+
+\startbuffer
+\def\PlaceTitle
+  {\SomeTitle
+   \markcontent[punctuation]{.}}
+
+\def\PlaceAuthor
+  {\removemarkedcontent[punctuation]%
+   \markcontent[punctuation]{,\space}%
+   \SomeAuthor
+   \markcontent[punctuation]{,\space}}
+
+\def\PlaceYear
+  {\removemarkedcontent[punctuation]%
+   \space(\SomeYear)%
+   \markcontent[punctuation]{.}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Used as:
+
+\startbuffer
+\PlaceTitle\PlaceAuthor\PlaceYear
+\stopbuffer
+
+\typebuffer
+
+we get the output:
+
+\blank {\bf \getbuffer} \blank
+
+but when we have no author,
+
+\startbuffer
+\def\SomeAuthor{}
+
+\PlaceTitle\PlaceAuthor\PlaceYear
+\stopbuffer
+
+\typebuffer
+
+Now we get:
+
+\blank {\bf \getbuffer} \blank
+
+Even more clever is this:
+
+\def\PlaceYear
+  {\removemarkedcontent[punctuation]%
+   \markcontent[punctuation]{\space(\SomeYear).}}
+
+\startbuffer
+\def\SomeAuthor{}
+\def\SomeYear{}
+\def\SomePeriod{\removemarkedcontent[punctuation].}
+
+\PlaceTitle\PlaceAuthor\PlaceYear\SomePeriod
+\stopbuffer
+
+\typebuffer
+
+The output is:
+
+\blank {\bf \getbuffer} \blank
+
+Of course we can just test for a variable like \type {\SomeAuthor} being empty
+before we place punctuation, but there are cases where a period becomes a comma
+or a comma becomes a semicolon. Especially with bibliographies your worst
+typographical nightmares come true, so it is handy to have such a mechanism
+available when it's needed.
+
+\stopsection
+
+\startsection[title=A plain solution]
+
+For users of \LUATEX\ who don't want to use \CONTEXT\ I will now present an
+alternative implementation. Of course more clever variants are possible but the
+principle remains. The trick is simple enough to show here as an example of \LUA\
+coding as it doesn't need much help from the infrastructure that the macro
+package provides. The only pitfall is the used signal (attribute number) but you
+can set another one if needed. We use the \type {gadgets} namespace to isolate
+the code.
+
+\startbuffer
+\directlua {
+  gadgets         = gadgets or { }
+  local marking   = { }
+  gadgets.marking = marking
+
+  local marksignal   = 5001
+  local lastmarked   = 0
+  local marked       = { }
+  local local_par    = 6
+  local whatsit_node = 8
+
+  function marking.setsignal(n)
+    marksignal = tonumber(n) or marksignal
+  end
+
+  function marking.mark(str)
+    local currentmarked = marked[str]
+    if not currentmarked then
+      lastmarked    = lastmarked + 1
+      currentmarked = lastmarked
+      marked[str]   = currentmarked
+    end
+    tex.setattribute(marksignal,currentmarked)
+  end
+
+  function marking.remove(str)
+    local attr = marked[str]
+    if not attr then
+      return
+    end
+    local list = tex.nest[tex.nest.ptr]
+    if list then
+      local head = list.head
+      local tail = list.tail
+      local last = tail
+      if last[marksignal] == attr then
+        local first = last
+        while true do
+          local prev = first.prev
+          if not prev or prev[marksignal] ~= attr or
+               (prev.id == whatsit_node and
+                  prev.subtype == local_par) then
+             break
+          else
+            first = prev
+          end
+        end
+        if first == head then
+          list.head = nil
+          list.tail = nil
+        else
+          local prev = first.prev
+          list.tail  = prev
+          prev.next  = nil
+        end
+        node.flush_list(first)
+      end
+    end
+  end
+}
+\stopbuffer
+\stopluacode
+
+\typebuffer \getbuffer
+
+These functions are called from macros. We use symbolic names for the marked
+snippets. We could have used numbers but meaningful tags can be supported with
+negligible overhead. The remover starts at the end of the current list and
+goes backwards till no matching attribute value is seen. When a valid range is
+found it gets removed.
+
+\startbuffer
+\def\setmarksignal#1%
+  {\directlua{gadgets.marking.setsignal(\number#1)}}
+
+\def\marksomething#1#2%
+  {{\directlua{gadgets.marking.mark("#1")}{#2}}}
+
+\def\unsomething#1%
+  {\directlua{gadgets.marking.remove("#1")}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The working of these macros can best be shown from a few examples:
+
+\startbuffer
+before\marksomething{gone}{\em HERE}\unsomething{gone}after
+before\marksomething{kept}{\em HERE}\unsomething{gone}after
+\marksomething{gone}{\em HERE}\unsomething{gone}last
+\marksomething{kept}{\em HERE}\unsomething{gone}last
+\stopbuffer
+
+\typebuffer
+
+This renders as: \blank \startlines\bf\getbuffer\stoplines
+
+The remover needs to look at the beginning of a paragraph marked by a local par
+whatsit. If we removed that, \LUATEX\ would crash because the list head
+(currently) cannot be set to nil. This is no big deal because this macro is not
+meant to clean up across paragraphs.
+
+A close look at the definition of \type {\marksomething} will reveal
+an extra grouping in the definition. This is needed to make content that uses
+\type {\aftergroup} trickery work correctly. Here is another example:
+
+\startbuffer
+\def\SnippetOne  {first\marksomething{punctuation}{, }}
+\def\SnippetTwo  {second\marksomething{punctuation}{, }}
+\def\SnippetThree{\unsomething{punctuation} and third.}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can paste these snippets together and make the last one use \type {and}
+instead of a comma.
+
+\startbuffer
+\SnippetOne \SnippetTwo  \SnippetThree\par
+\SnippetOne \SnippetThree\par
+\stopbuffer
+
+\typebuffer
+
+We get: \blank {\bf \getbuffer} \blank
+
+Of course in practice one probably knows how many snippets there are and using a
+counter to keep track of the state is more efficient than first typesetting
+something and removing it afterwards. But still it looks like a cool feature and
+it can come in handy at some point, as with the title|-|author|-|year example given
+before.
+
+The plain code shown here is in the distribution in the file \type
+{luatex-gadgets} and gets preloaded in the \type {luatex-plain} format.
+
+\stopsection
+
+\stopchapter

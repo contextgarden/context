@@ -1,0 +1,313 @@
+% language=uk
+
+% green  -> more
+% yellow -> less
+
+\environment hybrid-environment
+
+\definecombination
+  [whatever]
+  [location=top]
+
+\startcomponent hybrid-partests
+
+\startchapter[title={Optical optimization}]
+
+One of the objectives of the oriental \TEX\ project has always been to play with
+paragraph optimization. The original assumption was that we needed an advanced
+non|-|standard paragraph builder to Arabic done right but in the end we found out
+that a more straightforward approach is to use a sophisticated \OPENTYPE\ font in
+combination with a paragraph postprocessor that uses the advanced font
+capabilities. This solution is somewhat easier to imagine that a complex
+paragraph builder but still involves quite some juggling.
+
+At the June 2012 meeting of the \NTG\ there was a talk about typesetting
+Devanagari and as fonts are always a nice topic (if only because there is
+something to show) it made sense to tell a bit more about optimizing Arabic at
+the same time. In fact, that presentation was already a few years too late
+because a couple of years back, when the oriental \TEX\ project was presented at
+TUG and Dante meetings, the optimizer was already part of the \CONTEXT\ core
+code. The main reason for not advocating is was the simple fact that no font
+other than the (not yet finished) Husayni font provided the relevant feature set.
+
+The lack of advanced fonts does not prevent us from showing what we're dealing
+with. This is because the \CONTEXT\ mechanisms are generic in the sense that they
+can also be used with regular Latin fonts, although it does not make that much
+sense. Of course only \MKIV\ is supported. In this chapter we will stick to
+Latin. A more extensive article is published by Idris Samawi Hamid and myself in
+the proceedings of the combined euro\TEX and \CONTEXT\ conference.
+
+When discussing optical optimization of a paragraph, a few alternatives come to
+mind:
+
+\startitemize
+
+\startitem One can get rid of extensive spaces by adding additional kerns between
+glyphs. This is often used by poor mans typesetting programns (or routines) and
+can be applied to non|-|connecting scripts. It just looks bad. \stopitem
+
+\startitem Glyphs can be widened a few percent and this is an option that
+\LUATEX\ inherits from its predecessor \PDFTEX. Normally this goes unnoticed
+although excessive scaling makes things worse, and yes, one can run into such
+examples. This strategy goes under the name hz|-|optimization (the hz refers to
+Hermann Zaph, who first came with this solution). \stopitem
+
+\startitem A real nice solution is to replace glyphs by narrower or wider
+variants. This is in fact the ideal hz solution but for it to happen one not only
+needs needs fonts with alternative shapes, but also a machinery that can deal
+with them. \stopitem
+
+\startitem An already old variant is the one first used by Gutenberg, who used
+alternative cuts for certain combinations of characters. This is comparable with
+ligatures. However, to make the look and feel optimal, one needs to analyze the
+text and make decisions on what to replace without loosing consistency. \stopitem
+
+\stopitemize
+
+The solution described here does a bit of everything. As it is mostly meant for a
+connective script, the starting point is how a scribe works when filling up a
+line nicely. Depending on how well he or she can see it coming, the writing can
+be adapted to widen or narrow following words. And it happens that in Arabic
+scripts there are quite some ways to squeeze more characters in a small area
+and|/|or expand some to the extreme to fill up the available space. Shapes can be
+wider or narrower, they can be stacked and they can get replaced by ligatures. Of
+course there is some interference with the optional marks on top and below but
+even there we have some freedom. The only condition is that the characters in a
+word stay connected.
+
+So, given enough alternative glyphs, one can imagine that excessive interword
+spacing can be avoided. However, it is non|-|trivial to check all possible
+combinations. Actually, it is not needed either, as esthetic rules put some
+bounds on what can be done. One should more think in terms of alternative
+strategies or solutions and this is the terminology that we will therefore use.
+
+Easiest is to demonstrate this with Latin, if only because it's more intuitive to
+see what happens. This is not the place to discuss all the gory details so you
+have to take some of the configuration options on face value. Once this mechanism
+is stable and used, the options can be described. For now we stick to presenting
+the idea.
+
+Let's assume that you know what font features are. The idea is to work with
+combinations of such features and figure out what combination suits best. In
+order not to clutter a document style, these sets are defined in so called goodie
+files. Here is an except of \type {demo.lfg}:
+
+\starttyping
+return {
+  name = "demo",
+  version = "1.01",
+  comment = "An example of goodies.",
+  author = "Hans Hagen",
+  featuresets = {
+    simple = {
+      mode   = "node",
+      script = "latn"
+    },
+    default = {
+      mode   = "node",
+      script = "latn",
+      kern   = "yes",
+    },
+    ligatures = {
+      mode   = "node",
+      script = "latn",
+      kern   = "yes",
+      liga   = "yes",
+    },
+    smallcaps = {
+      mode   = "node",
+      script = "latn",
+      kern   = "yes",
+      smcp   = "yes",
+    },
+  },
+  solutions = {
+    experimental = {
+      less = {
+        "ligatures", "simple",
+      },
+      more = {
+        "smallcaps",
+      },
+    },
+  },
+}
+\stoptyping
+
+We see four sets of features here. You can use these sets in a \CONTEXT\
+feature definition, like:
+
+\startbuffer
+\definefontfeature
+  [solution-demo]
+  [goodies=demo,
+   featureset=default]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+You can use a set as follows:
+
+\startbuffer
+\definefont
+  [SomeTestFont]
+  [texgyrepagellaregular*solution-demo at 10pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+So far, there is nothing special and new, but we can go a step further.
+
+\startbuffer[solution-a-b]
+\definefontsolution
+  [solution-a]
+  [goodies=demo,
+   solution=experimental,
+   method={normal,preroll},
+   criterium=1]
+
+\definefontsolution
+  [solution-b]
+  [goodies=demo,
+   solution=experimental,
+   method={normal,preroll,split},
+   criterium=1]
+\stopbuffer
+
+\typebuffer[solution-a-b] \getbuffer[solution-a-b]
+
+Here we have defined two solutions. They refer to the \type {experimental}
+solution in the goodie file \type {demo.lfg}. A solution has a \type {less}
+and a \type {more} entry. The featuresets mentioned there reflect ways to
+make a word narrower of wider. There can be more than one way to do that,
+although it comes at a performance price. Before we see how this works out
+we turn on a tracing option:
+
+\startbuffer
+\enabletrackers
+  [builders.paragraphs.solutions.splitters.colors]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This will color the words in the result according to what has happened. When a
+featureset out of the \type {more} category has been applied, the words turn
+green, when \type {less} is applied, the word becomes yellow. The \type
+{preroll} option in the \type {method} list makes sure that we do a more
+extensive test beforehand.
+
+% \enabletrackers[builders.paragraphs.solutions.splitters.optimizer]
+% \enabletrackers[builders.paragraphs.solutions.splitters.splitter]
+
+\startbuffer[normal]
+\SomeTestFont
+\input zapf \par
+\stopbuffer
+
+\startbuffer[solution-a]
+\SomeTestFont \startfontsolution[solution-a]
+\input zapf \par
+\stopfontsolution
+\stopbuffer
+
+\typebuffer[solution-a]
+
+In \in {figure} [solution-a] we see what happens. In each already split line
+words get wider or narrower until we're satisfied. A criterium of~1 is pretty
+strict \footnote {This number reflects the maximum badness and future versions
+might have a different measure with more granularity.}. Keep in mind that we use
+some arbitrary features here. We try removing kerns to get narrower although
+there is nothing that guarantees that kerns are positive. On the other hand,
+using ligatures might help. In order to get wider we use smallcaps. Okay, the
+result will look somewhat strange but so does much typesetting nowadays.
+
+There is one pitfall here. This mechanism is made for a connective script where
+hyphenation is not used. As a result a word here is actually split up when it has
+discretionaries and of course this text fragment has. It goes unnoticed in the
+rendering but is of course far from optimal.
+
+\startbuffer[solution-b]
+\SomeTestFont \startfontsolution[solution-b]
+\input zapf \par
+\stopfontsolution
+\stopbuffer
+
+\typebuffer[solution-b]
+
+In this example (\in {figure} [solution-b]) we keep words as a whole but as a
+side effect we skip words that are broken across a line. This is mostly because
+it makes not much sense to implement it as Latin is not our target. Future
+versions of \CONTEXT\ might get more sophisticated font machinery so then things
+might look better.
+
+We show two more methods:
+
+\startbuffer[solution-c-d]
+\definefontsolution
+  [solution-c]
+  [goodies=demo,
+   solution=experimental,
+   method={reverse,preroll},
+   criterium=1]
+
+\definefontsolution
+  [solution-d]
+  [goodies=demo,
+   solution=experimental,
+   method={random,preroll,split},
+   criterium=1]
+\stopbuffer
+
+\typebuffer[solution-c-d] \getbuffer[solution-c-d]
+
+In \in {figure} [solution-c] we start at the other end of a line. As we sort of
+mimick a scribe, we can be one who plays safe at the start of corrects at the
+end.
+
+\startbuffer[solution-c]
+\SomeTestFont \startfontsolution[solution-c]
+\input zapf \par
+\stopfontsolution
+\stopbuffer
+
+In \in {figure} [solution-d] we add some randomness but to what extent this works
+well depends on how many words we need to retypeset before we get the badness of
+the line within the constraints.
+
+\startbuffer[solution-d]
+\SomeTestFont \startfontsolution[solution-d]
+\input zapf \par
+\stopfontsolution
+\stopbuffer
+
+\startplacefigure[title={Solution a.},reference=solution-a]
+  \startcombination[whatever]
+    {\framed[strut=no,align={normal,verytolerant},width=.45\textwidth]{\showfontkerns\getbuffer[normal]}}     {normal}
+    {\framed[strut=no,align={normal,verytolerant},width=.45\textwidth]{\showfontkerns\getbuffer[solution-a]}} {solution}
+  \stopcombination
+\stopplacefigure
+
+\startplacefigure[title={Solution b.},reference=solution-b]
+  \startcombination[whatever]
+    {\framed[strut=no,align={normal,verytolerant},width=.45\textwidth]{\showfontkerns\getbuffer[normal]}}     {normal}
+    {\framed[strut=no,align={normal,verytolerant},width=.45\textwidth]{\showfontkerns\getbuffer[solution-b]}} {solution}
+  \stopcombination
+\stopplacefigure
+
+\startplacefigure[title={Solution c.},reference=solution-c]
+  \startcombination[whatever]
+    {\framed[strut=no,align={normal,verytolerant},width=.45\textwidth]{\showfontkerns\getbuffer[normal]}}     {normal}
+    {\framed[strut=no,align={normal,verytolerant},width=.45\textwidth]{\showfontkerns\getbuffer[solution-c]}} {solution}
+  \stopcombination
+\stopplacefigure
+
+\startplacefigure[title={Solution d.},reference=solution-d]
+  \startcombination[whatever]
+    {\framed[strut=no,align={normal,verytolerant},width=.45\textwidth]{\showfontkerns\getbuffer[normal]}}     {normal}
+    {\framed[strut=no,align={normal,verytolerant},width=.45\textwidth]{\showfontkerns\getbuffer[solution-d]}} {solution}
+  \stopcombination
+\stopplacefigure
+
+\stopchapter
+
+\stopcomponent

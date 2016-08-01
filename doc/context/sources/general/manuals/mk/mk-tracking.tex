@@ -1,0 +1,341 @@
+% language=uk
+
+% \enabletrackers[otf.loading]
+% \enabletrackers[otf.lookups]
+
+\startcomponent mk-track
+
+\environment mk-environment
+
+\startbuffer[latin-default-features]
+\definefontfeature
+  [latin-default]
+  [mode=node,language=dflt,script=latn,
+   liga=yes,calt=yes,clig=yes,
+   kern=yes]
+\stopbuffer
+
+\startbuffer[arabtype-default-features]
+\definefontfeature
+  [arabtype-default]
+  [mode=node,language=dflt,script=arab,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   ccmp=yes,locl=yes,calt=yes,
+   liga=yes,clig=yes,dlig=yes,rlig=yes,
+   mark=yes,mkmk=yes,kern=yes,curs=yes]
+\stopbuffer
+
+\startbuffer[zapfino-default-features]
+\definefontfeature
+   [zapfino-default]
+   [mode=node,language=dflt,script=latn,
+    calt=yes,clig=yes,rlig=yes,tlig=yes,
+    kern=yes,curs=yes]
+\stopbuffer
+
+\getbuffer[latin-default-features]
+\getbuffer[arabtype-default-features]
+\getbuffer[zapfino-default-features]
+
+\chapter{Tracking}
+
+We entered 2009 with a partial reimplementation of the \OPENTYPE\
+feature handler. One of the reasons was an upgrade of the
+\FONTFORGE\ libraries that \LUATEX\ uses.
+
+The specification of \OPENTYPE\ is kind of vague. Apart from a
+lack of a proper free specifications there's also the problem that
+Microsoft and Adobe may have their own interpretation of how and
+in what order to apply features. In general the Microsoft website
+has more detailed specifications and is a better reference. There
+is also some information in the \FONTFORGE\ help files.
+
+Because there is so much possible, fonts might contain bugs and/or
+be made to work with certain renderers. These may evolve over time
+which may have the side effect that suddenly fonts behave
+differently.
+
+After a lot of experiments (mostly by Taco, me and Idris) we're
+now at yet another implementation. Of course all errors are mine
+and of course the code can be improved. There are quite some
+optimization going on here and processing speed is currently
+acceptable. Not all functions are implemented yet, often because I
+lack the fonts for testing. Many scripts are not yet supported
+either, but I will look into them as soon as \CONTEXT\ users ask
+for it.
+
+The data provided by the \FONTFORGE\ library has organized lookups
+(which relate to features) in a certain way. A first
+implementation of this code was organized featurewise: information
+related to features was collected and processing boiled down to a
+run over the features. The current implementation honours the order
+in the main feature table. Since we can reorder this table as we
+want, we can eventually support several models of processing. We
+kept the static as well as dynamic feature processing, because it
+had proved to be rather useful. The formerly three loop variants
+have been discarded but might reappear at some time.
+
+One reason for this change is that the interactive version of
+\FONTFORGE\ now provides a more detailed overview of the way
+lookups are supposed to be handled. When you consult the
+information of a font and in particular a glyph in a font, you now
+get quite some information about what features can be applied and
+in what order this takes place.
+
+In \CONTEXT\ \MKIV\ we deal with this as follows. Keep in mind
+that we start with characters but stepwise these can become more
+abstract representation, named glyphs. For instance a letter~a can
+be represented by a shape (glyph) that is similar to an uppercase~A.
+
+\startitemize
+
+\item We loop over all lookups. Normally there are only a few
+lookups but fonts that deal with scripts that resemble
+handwriting, like arabic of Zapfino, might have hundreds of them.
+Each lookup has a detailed specification of what language and/or
+scripts it applies to.
+
+\item For each lookup we do a run over the list of glyphs. So, if
+we have 50 lookups, and a paragraph has 500 glyphs, we do some
+25000 loops. Keep in mind that for arab we start with a sequence
+of characters and vowels, and during a run, these might be
+replaced by for instance ligatures and combined vowels, so the 500
+stepwise becomes less.
+
+\item We only process the features that are enabled. Normally the
+lookups are organized in such a way that features take place in a
+similar way: (de)composition, replacement of initial, medial,
+final and isolated forms, specific replacements by one or more
+variant, composition of ligatures, mark positioning, cursive
+corrections and kerning. The font itself does not contain
+information about what features are to be enabled by default. Some
+applications have built in presets, others might extend their
+repertoire over time.
+
+\item A lookup can be a contextual lookup, which means that
+treatment takes place on a match of a sequence of characters
+(glyphs), either of not preceded or followed by specific other
+characters (glyphs). We we loop over all contexts till we have a
+match. Some fonts have lots of contextual lookups, which in turn
+might increase the number of loops over the list of characters
+(glyphs). If we have a match, we process the associated list of
+sublookups. Technically it is possible to replace (say) five
+characters by first a ligature (that replaces the first two by
+one), then a multiple substitution (resulting in an extra three
+glyphs replacing one) and then discarding the other rest (being
+two characters). Because by that time characters (say, unicode
+points) might have been replaced by glyphs (an index in the font)
+a contextual lookup can involve quite some match points.
+
+\stopitemize
+
+In \CONTEXT\ we do this for each font that is used in a list, so
+in practice we have quite some nested loops. Each font can have
+its own set of features enables of features might be applied
+dynamically, independent of font related settings. So, around the
+mentioned loops there is another one: a loop over the fonts used
+in a list (paragraph).
+
+We process the whole list and then consult the glyph nodes. An
+alternative approach is to collect strings of characters using the
+same font including spaces (because some lookups involve spaces).
+However, we then need to reconstruct the list which is no fun.
+Also, we need to carry quite some information, like attributes, so
+eventually we don't gain much (if we gain something at all).
+
+Another consideration has been to operate on sublists of font
+usage (using a subhead and subtail) but again this would
+complicate matters as we then neext to keep track of a changing
+subhead and subtail. On the other hand, this might save some
+runtime. The number of changes in the code needed to do this is
+not that large but it only makes sense when we have many fonts
+in a list and don't change fonts to frequently.
+
+This whole treatment is rather extensively optimized and so the
+process is reasonable fast (you really don't want to know how much
+time was spent on figuring out fast methods, testing and
+reimplementing this). While I was implementing the \LUA\ code,
+Taco made sure that access to the information in nodes was as fast
+as possible and in our usual chat sessions we compared the output
+with the one produced by the \FONTFORGE\ preview.
+
+It was for this reason that more and more debugging code was added
+but even that made tracking of what really happened cumbersome.
+Therefore a more visual method was written, which will be shown
+laster on.
+
+You can enable tracing using the designated commands:
+
+\starttyping
+\enabletracker[otf.ligatures,otf.singles]
+\stoptyping
+
+and disable them for instance with:
+
+\starttyping
+\disabletracker[otf.*]
+\stoptyping
+
+Or you can pass directives to the command line:
+
+\starttyping
+context --track=otf.ligatures myfile.tex
+\stoptyping
+
+With regards to \OPENTYPE\ handling we have the following tracker
+keys available:
+
+\starttabulate
+\NC \type{otf.actions}       \NC show all replacements and positioning \NC \NR
+\NC \type{otf.alternatives}  \NC show what glyph is replaced by what alternative \NC \NR
+\NC \type{otf.analyzing}     \NC color glyphs according to script specific analysis \NC \NR
+\NC \type{otf.applied}       \NC applied features per font instance \NC \NR
+\NC \type{otf.bugs}          \NC show diagnostic information \NC \NR
+\NC \type{otf.contexts}      \NC show what contextual lookups take place \NC \NR
+\NC \type{otf.cursive}       \NC show cursive anchoring when applied \NC \NR
+\NC \type{otf.details}       \NC show more details about lookup handling \NC \NR
+\NC \type{otf.dynamics}      \NC show dynamic feature definitions \NC \NR
+\NC \type{otf.features}      \NC show what features are a applied \NC \NR
+\NC \type{otf.kerns}         \NC show kerning between glyphs when applied \NC \NR
+\NC \type{otf.ligatures}     \NC show what glyphs are replaced by one other \NC \NR
+\NC \type{otf.loading}       \NC show more information when loading (caching) a font \NC \NR
+\NC \type{otf.lookups}       \NC keep track of what lookups are consulted \NC \NR
+\NC \type{otf.marks}         \NC show mark anchoring when applied \NC \NR
+\NC \type{otf.multiples}     \NC show what glyph is replaced by multiple others \NC \NR
+%NC \type{otf.normal_chain}  \NC \NC \NR
+\NC \type{otf.positions}     \NC show what glyphs are positioned (combines other trackers) \NC \NR
+\NC \type{otf.preparing}     \NC show what information is collected for later usage in lookups \NC \NR
+\NC \type{otf.replacements}  \NC show what glyphs are replaced (combines other trackers) \NC \NR
+\NC \type{otf.sequences}     \NC \NC \NR
+\NC \type{otf.singles}       \NC show what glyph is replaced by one other \NC \NR
+%NC \type{otf.steps}         \NC \NC \NR
+%NC \type{otf.verbose_chain} \NC \NC \NR
+\stoptabulate
+
+Some other trackers might also come in handy:
+
+\starttabulate
+%NC \type{fonts.collecting} \NC  \NC \NR
+\NC \type{fonts.combining}  \NC show what extra characters are added when forcing combined shapes \NC \NR
+\NC \type{fonts.defining}   \NC show what fonts are defined \NC \NR
+\NC \type{fonts.loading}    \NC show more details when a font is loaded (and cached) for the first time \NC \NR
+%NC \type{fonts.names}      \NC \NC \NR
+%NC \type{fonts.scaling}    \NC \NC \NR
+\stoptabulate
+
+We now show another way to track what happens with your text.
+Because this is rather verbose, you should only apply it to words.
+The second argument can be \type {-1} (right to left), \type {0}
+(default) or \type {1} (left to right). The third argument can
+be invisible in the code because the font used for verbatim might
+lack the shapes. A font has a different ordering than \UNICODE\
+because after all one character can have multiple
+representations, one shape can be used for multiple characters,
+or shapes might not have a \UNICODE\ point at all. In \MKIV\ we
+push all shapes that have no direct relationship with \UNICODE\ to
+the private area so that \TEX\ still sees them (hence the large
+numbers in the following examples).
+
+The next example uses Latin Modern. Here we apply the following
+features:
+
+\typebuffer[latin-default-features]
+
+\startbuffer
+\showotfcomposition
+  {name:lmroman12regular*latin-default at 24pt}
+  {0}
+  {flinke fietser}
+\stopbuffer
+
+\typebuffer \start \veryraggedright \getbuffer \stop
+
+The next example uses Arabtype. Here we apply the following features:
+
+\typebuffer[arabtype-default-features]
+
+\startbuffer
+\showotfcomposition
+  {arabtype*arabtype-default at 48pt}
+  {-1}
+  {الضَّرَّ}
+\stopbuffer
+
+\typebuffer \start \veryraggedright \getbuffer \stop
+
+\startbuffer
+\showotfcomposition
+  {arabtype*arabtype-default at 48pt}
+  {-1}
+  {لِلّٰهِ}
+\stopbuffer
+
+\typebuffer \start \veryraggedright \getbuffer \stop
+
+Another arabic example (after all, fonts that support arabic have
+lots of nice features) is the following. First we define a bunch
+of feature collections
+
+\startbuffer
+\definefontfeature
+  [salt-n]
+  [analyze=yes,mode=node,
+   language=dflt,script=arab,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   liga=yes,calt=yes,ccmp=yes,
+   kern=yes,curs=yes,mark=yes,mkmk=yes]
+
+\definefontfeature[salt-y][salt-n][salt=yes]
+\definefontfeature[salt-1][salt-n][salt=1]
+\definefontfeature[salt-2][salt-n][salt=2]
+\definefontfeature[salt-3][salt-n][salt=3]
+\definefontfeature[salt-r][salt-n][salt=random]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Next we show a few traced examples. Watch the reported alternatives.
+
+\startbuffer
+\showotfcomposition{scheherazaderegot*salt-n at 36pt}{-1}{\char"6DD}
+\showotfcomposition{scheherazaderegot*salt-y at 36pt}{-1}{\char"6DD}
+\showotfcomposition{scheherazaderegot*salt-1 at 36pt}{-1}{\char"6DD}
+\showotfcomposition{scheherazaderegot*salt-2 at 36pt}{-1}{\char"6DD}
+\showotfcomposition{scheherazaderegot*salt-3 at 36pt}{-1}{\char"6DD}
+\showotfcomposition{scheherazaderegot*salt-r at 36pt}{-1}{\char"6DD}
+\showotfcomposition{scheherazaderegot*salt-r at 36pt}{-1}{\char"6DD}
+\showotfcomposition{scheherazaderegot*salt-r at 36pt}{-1}{\char"6DD}
+\stopbuffer
+
+\typebuffer \start \veryraggedright \getbuffer \stop
+
+The font that we use here can be downloaded from the website of
+Sil International.
+
+For a Zapfino example we use the following feature set:
+
+\typebuffer[zapfino-default-features]
+
+\startbuffer
+\showotfcomposition
+  {zapfinoextraltpro*zapfino-default at 48pt}
+  {0}
+  {Prof. Dr. Donald E. Knuth}
+\stopbuffer
+
+\typebuffer \start \veryraggedright \getbuffer \stop
+
+When dealing with features, we may run into problems due to
+characters that are in the input stream but have no associated
+glyph in the font. Although we test for this a user might want to
+intercept side effect.
+
+\starttyping
+\checkcharactersinfont
+\removemissingcharacters
+\stoptyping
+
+The first command only checks and reports missing characters,
+while the second one also removes them.
+
+\stopcomponent

@@ -1,0 +1,142 @@
+% language=uk
+
+\environment mk-environment
+
+\startcomponent mk-itworks
+
+\chapter{It works!}
+
+One of the more powerful commands in \CONTEXT\ is \type {\framed}.
+You can pass quite some parameters that control the spacing,
+alignment, backgrounds and more. This command is used all over the
+place (although often hidden for the user) which means that it also has
+to be quite stable. However, there is one nasty bit of code that
+is hard to get right. Calculating the height of a box is not that
+complex: the height that \TEX\ reports is indeed the height.
+However, the width of box is determined by the value of \type
+{\hsize} at the time of typesetting. The actual content can be
+smaller. In the \type {\framed} macro by default the width is
+calculated automatically.
+
+\startbuffer
+\framed
+  [align=middle,width=fit]
+  {Out beyond the ethernet the spectrum spreads \unknown}
+\stopbuffer
+
+\typebuffer
+
+this shows up as:\footnote{Taken from \quote {Casino Nation} by Jackson Browne.}
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Or take this quote:\footnote{Taken from \quote {A World Without Us} by Alan Weisman.}
+
+\startbuffer
+\hsize=.6\hsize \framed [align=middle,width=fit] {\input weisman }
+\stopbuffer
+
+\typebuffer
+
+This gives a multi|-|line paragraph:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Here the outer \type {\hsize} was made a bit smaller. As you can
+see the frame is determined by the widest line. Because it was one
+of the first features we needed, the code in \CONTEXT\ that is
+involved in determining the maximum natural width is pretty old.
+It boils down to unboxing a \type {\vbox} and stepwise grabbing
+the last box, penalty, kern and skip. You unwind the box
+backwards. However, you cannot grab everything or in \TEX\ speak:
+there is only a limited number of \type {\lastsomething} commands.
+Special nodes, like whatsits cannot be grabbed and they make the
+analyzer abort its analysis. There is no way that we can solve
+this in traditional \TEX\ and in \CONTEXT\ \MKII.
+
+So how about \LUATEX\ and \CONTEXT\ \MKIV ? The macro used in the
+\type {\framed} commands is:
+
+\starttyping
+\doreshapeframedbox{do something with \box\framebox}
+\stoptyping
+
+In \LUATEX\ we can manipulate box content at the \LUA\ level. Instead
+of providing a truckload of extra primitives (which would also introduce
+new data types at the \TEX\ end) we just delegate the job to \LUA.
+
+\starttyping
+\def\doreshapeframedbox
+  {\ctxlua{commands.doreshapeframedbox(\number\framebox)}}
+\stoptyping
+
+Here \type {\ctxlua} is our reserved instance and \type {commands}
+provides the namespace for commands that we delegate to \LUA\ (so,
+there are more of them). The amount of \LUA\ code is way less than
+the \TEX\ code which we will not show here; it's in \type
+{supp-box.tex} if you really want to see it.
+
+\starttyping
+function commands.doreshapeframedbox(n)
+    local box_n = tex.box[n]
+    if box_n.width ~= 0 then
+        local hpack = node.hpack
+        local free = node.free
+        local copy = node.copy_list
+        local noflines, lastlinelength, width = 0, 0, 0
+        local list = box_n.list
+        local done = false
+        for h in node.traverse_id('hlist',list) do
+            done = true
+            local p = hpack(copy(h.list))
+            lastlinelength = p.width
+            if lastlinelength > width then
+                width = lastlinelength
+            end
+            free(p)
+        end
+        if done then
+            if width ~= 0 then
+                for h in node.traverse_id('hlist',list) do
+                    if h.width ~= width then
+                        h.list = hpack(h.list,width,'exactly')
+                        h.width = width
+                    end
+                end
+            end
+            box_n.width = width
+        end
+        -- we can also do something with lastlinelength
+    end
+end
+\stoptyping
+
+In the first loop we inspect all lines (nodes with type \type
+{hlist}) and repack them to their natural width with \type
+{node.hpack}. In the process we keep track of the maximum natural
+width. In the second loop we repack the content again, but this
+time permanently. Now we use the maximum encountered width which
+is forced by the keyword \type {exactly}. Because all glue is
+still present we automatically get the desired alignment. We
+create local shortcuts to some node functions which makes it run
+faster; keep in mind that this is a core function called many
+times in a regular \CONTEXT\ job.
+
+In \CONTEXT\ \MKIV\ you will find quite some \LUA\ code and often
+it looks rather complex, especially if you have no clue why it's
+needed. Think of \OPENTYPE\ font handling which involves locating
+fonts, loading and caching them, storing features and later on
+applying them to node lists, etc. However, once we are beyond the
+stage of developing all the code that is needed to support the
+basics, we will start doing the things that more relate to the
+typesetting process itself, like the previous code. One of the
+candidates for a similar \LUA\ based solution is for instance
+column balancing. From the previous example code you can deduce
+that manipulating the node lists from \LUA\ can make that easier.
+Of course we're a few more years down the road then.
+
+\stopcomponent

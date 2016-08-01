@@ -1,0 +1,130 @@
+% language=uk
+
+\startcomponent mk-calcmath
+
+\environment mk-environment
+
+\chapter{An example: CalcMath}
+
+\usemodule[calcmath]
+
+\subject{introduction}
+
+For a long time \TEX's way of coding math has dominated the
+typesetting world. However, this kind of coding is not that well
+suited for non academics, like schoolkids. Often kids do know how
+to key in math because they use advanced calculators. So, when a
+couple of years ago we were implementing a workflow where kids
+could fill in their math workbooks (with exercises) on||line, it
+made sense to support so called Texas Instruments math input.
+Because we had to parse the form data anyway, we could use a \type
+{[[} and \type {]]} as math delimiters instead of \type {$}. The
+conversion too place right after the form was received by the web
+server.
+
+\start
+
+\def\test#1%
+  {\NC \vrule height 2ex depth 2ex width 0pt\type{#1}
+   \NC \calcmath{#1}
+   \NC \NR}
+
+\setupinterlinespace[1.5]
+
+\starttabulate
+\test{sin(x) + x^2 + x^(1+x) + 1/x^2}
+\test{mean(x+mean(y))}
+\test{int(a,b,c)}
+\test{(1+x)/(1+x) + (1+x)/(1+(1+x)/(1+x))}
+\test{10E-2}
+\test{(1+x)/x}
+\test{(1+x)/12}
+\test{(1+x)/-12}
+\test{1/-12}
+\test{12x/(1+x)}
+\test{exp(x+exp(x+1))}
+\test{abs(x+abs(x+1)) + pi + inf}
+\test{Dx Dy}
+\test{D(x+D(y))}
+\test{Df(x)}
+\test{g(x)}
+\test{sqrt(sin^2(x)+cos^2(x))}
+\stoptabulate
+
+\stop
+
+By combining \LUA\ with \TEX, we can do the conversion from
+calculator math to \TEX\ immediately, without auxiliary programs
+or complex parsing using \TEX\ macros.
+
+\subject{tex}
+
+In a \CONTEXT\ source one can use the \type {\calcmath} command, as
+in:
+
+\starttyping
+The strange formula \calcmath {sqrt(sin^2(x)+cos^2(x))} boils
+down to ...
+\stoptyping
+
+One needs to load the module first, using:
+
+\starttyping
+\usemodule[calcmath]
+\stoptyping
+
+Because the amount of code involved is rather small, eventually we
+may decide to add this support to the \MKIV\ kernel.
+
+\subject{xml}
+
+Coding math in \TEX\ is rather efficient. In \XML\ one needs way
+more code. Presentation \MATHML\ provides a few basic constructs
+and boils down to combining those building blocks. Content \MATHML\
+is better, especially from the perspective of applications that
+need to do interpret the formulas. It permits for instance the
+\CONTEXT\ content \MATHML\ handler to adapt the rendering to
+cultural driven needs. The \OPENMATH\ way of coding is like
+content \MATHML, but more verbose with less tags. Calculator math
+is more restrictive than \TEX\ math and less verbose than any of
+the \XML\ variants. It looks like:
+
+\starttyping
+<icm>sqrt(sin^2(x)+cos^2(x))</icm> test
+\stoptyping
+
+And in display mode:
+
+\starttyping
+<dcm>sqrt(sin^2(x)+cos^2(x))</dcm> test
+\stoptyping
+
+\subject{speed}
+
+This script (which you can find in the \CONTEXT\ distribution as
+soon as the \MKIV\ code variants are added) is the first real
+\TEX\ related \LUA\ code that I wrote; so far I had only written
+some wrapping and spell checking code for the \SCITE\ editor. It
+also made a nice demo for a couple of talks that I held at
+usergroup meetings. The script has a lot of expressions. These
+convert one string into another. They are less powerful than
+regular expressions, but pretty fast and adequate. The feature I
+miss most is alternation like \type {(l|st)uck} but it's a small
+price to pay. As the \LUA\ manual explains: adding a \POSIX\
+compliant regexp parser would take more lines of code than \LUA\
+currently does.
+
+On my machine, running this first version took 3.5 seconds for 2500
+times typesetting the previously shown square root of sine and
+cosine. Of this, 2.1 seconds were spent on typesetting and 1.4 seconds
+on converting. After optimizing the code, 0.8 seconds were used for
+conversion. A stand alone \LUA\ takes .65 seconds, which includes loading
+the interpreter. On a test of 25.000 sample conversions, we could gain
+some 20\% conversion time using the \LUAJIT\ just in time compiler.
+
+% \usemodule[narrowtt] \typefile[ntyping]{m-calcmath.lua} % narrow, no color
+
+% \def\inlinecalcmath    #1{\mathematics{\ctxlua{calcmath.tex("#1",1)}}}
+% \def\displaycalcmath   #1{\startformula\ctxlua{calcmath.tex("#1",2)}\stopformula}
+
+\stopcomponent

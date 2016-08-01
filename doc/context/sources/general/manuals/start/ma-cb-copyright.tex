@@ -1,0 +1,41 @@
+\startcomponent ma-cb-copyright
+
+% The copyright page. English it is and english it will be.
+
+\unprotect
+
+\page
+  [\v!right]
+
+\startmakeup[\v!standard]
+
+    \switchtobodyfont
+      [\v!small]
+
+    \setupframed
+      [\c!frame=\v!off,
+       \c!width=.8\textwidth,
+       \c!align=\v!normal,
+       \c!background=basic-shape-dark,
+       \c!rulethickness=10pt,
+       \c!offset=30pt]
+
+    \vfill
+
+    \hfill \startframed
+        This document is produced with \CONTEXT\ \MKIV\ and \LUATEX. The source is edited
+        with \SCITE\ and previewed with \SUMATRAPDF.
+    \stopframed
+
+    \blank[3*\v!big]
+
+    \hfill \startframed
+        \copyright\ 1991\endash\currentdate[\v!year]\ PRAGMA ADE, Ridderstraat 27, 8061GH
+        Hasselt, The Netherlands, www.pragma-ade.com
+    \stopframed
+
+\stopmakeup
+
+\protect
+
+\stopcomponent

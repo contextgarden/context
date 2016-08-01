@@ -1,0 +1,35 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <forall/>
+    <condition>
+      <apply> <and/>
+        <apply> <gt/>
+          <ci> a </ci>
+          <cn> 0 </cn>
+        </apply>
+        <apply> <gt/>
+          <ci> b </ci>
+          <cn> 0 </cn>
+        </apply>
+      </apply>
+    </condition>
+    <apply> <eq/> 
+      <apply> <log/> 
+        <logbase> <ci> g </ci> </logbase>
+        <apply> <times/>
+          <ci> a </ci>
+          <ci> b </ci>
+        </apply>
+      </apply>   
+      <apply> <plus/>
+        <apply> <log/> 
+          <logbase> <ci> g </ci> </logbase>
+          <ci> a </ci>
+        </apply>
+        <apply> <log/> 
+          <logbase> <ci> g </ci> </logbase>
+          <ci> b </ci>
+        </apply>
+      </apply>
+    </apply>
+  </apply>
+</math>

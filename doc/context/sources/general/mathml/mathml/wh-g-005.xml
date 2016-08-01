@@ -1,0 +1,31 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <eq/>
+    <apply> <tan/>
+      <apply> <plus/>
+        <ci> x </ci>
+        <ci> y </ci>
+      </apply>
+    </apply>
+    <apply> <divide/>
+      <apply> <plus/>
+        <apply> <tan/>
+          <ci> x </ci>
+        </apply>
+        <apply> <tan/>
+          <ci> y </ci>
+        </apply>
+      </apply>
+      <apply> <minus/>
+        <cn> 1 </cn>
+        <apply> <times/>
+          <apply> <tan/>
+            <ci> x </ci>
+          </apply>
+          <apply> <tan/>
+            <ci> y </ci>
+          </apply>
+        </apply>
+      </apply>
+    </apply>
+  </apply>
+</math>

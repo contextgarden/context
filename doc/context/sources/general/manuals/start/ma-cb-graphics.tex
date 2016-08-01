@@ -1,0 +1,266 @@
+\startenvironment ma-cb-graphics
+
+% These graphics were made when I had little experience in MetaPost so
+% they are not that efficient or nicely codes. Sorry about that.
+
+\definecolor[ShapeDarkLine]  [s=.4]
+\definecolor[ShapeDarkDots]  [r=1]
+\definecolor[ShapeDarkEnd]   [g=1]
+\definecolor[ShapeLightLine] [s=.95]
+\definecolor[ShapeLightDots] [r=.9,g=,5,b=.5]
+\definecolor[ShapeLightFill] [s=.95]
+\definecolor[ShapeLightFrame][r=.5,g=.50,b=.9]
+
+\startuseMPgraphic{basic-shape-dark}
+    color shapedotscolor ; shapedotscolor := \MPcolor{ShapeDarkDots} ;
+    color shapelinecolor ; shapelinecolor := \MPcolor{ShapeDarkLine} ;
+    \includeMPgraphic{basic-shape}
+\stopuseMPgraphic
+
+\startuseMPgraphic{basic-shape-light}
+    color shapedotscolor ; shapedotscolor := \MPcolor{ShapeLightDots} ;
+    color shapelinecolor ; shapelinecolor := \MPcolor{ShapeLightLine} ;
+    \includeMPgraphic{basic-shape}
+\stopuseMPgraphic
+
+\startuseMPgraphic{basic-shape}
+    w := OverlayWidth  ; width  := 100 ; wfactor := w/width ;
+    h := OverlayHeight ; height := 100 ; hfactor := h/height ;
+    d := OverlayOffset ;
+    %
+    def random_delta (expr d) =
+        d - (uniformdeviate 2d)
+    enddef;
+    %
+    z1 = (0,height) ;
+    z2 = (0,0) ;
+    z3 = (width,0) ;
+    z4 = (width,height) ;
+    %
+    z5 = (  width+random_delta(.2width),height+random_delta(.2height)) ;
+    z6 = (.5width+random_delta(.1width),height+random_delta(.1height)) ;
+    %
+    pickup pencircle
+        xscaled (OverlayLineWidth/   wfactor)
+        yscaled (OverlayLineWidth/(2*hfactor))
+        rotated 30 ;
+    %
+    draw z5 .. z1 .. z2 .. z3 .. z4 .. z6 withcolor shapelinecolor ;
+    %
+    pickup pencircle
+        xscaled (OverlayLineWidth/wfactor)
+        yscaled (OverlayLineWidth/hfactor) ;
+    %
+    draw z1 withcolor shapedotscolor ;
+    draw z2 withcolor shapedotscolor ;
+    draw z3 withcolor shapedotscolor ;
+    draw z4 withcolor shapedotscolor ;
+    draw z5 withcolor shapedotscolor ;
+    draw z6 withcolor shapedotscolor ;
+    %
+    currentpicture := currentpicture xysized (w,h) ;
+\stopuseMPgraphic
+
+\startuniqueMPpagegraphic{chapter-state}
+    color shapelinecolor ; shapelinecolor := \MPcolor{ShapeDarkLine} ;
+    %
+    delta  := OverlayOffset ;
+    width  := OverlayWidth - 2*delta ;
+    height := (OverlayHeight - 2*delta) / 3 ;
+    %
+    z1 = (0,3height) ;
+    z2 = (0,2height) ;
+    z3 = (if not odd RealPageNumber : - fi width,1.5height) ;
+    z4 = (0,height) ;
+    z5 = (0,0) ;
+    %
+    pickup pencircle
+        xscaled delta
+        yscaled .5delta
+        rotated 30 ;
+    %
+    draw z1 -- z2{up} .. z3 .. {up} z4 -- z5 withcolor shapelinecolor ;
+    %
+    pickup pencircle
+        scaled delta ;
+    %
+    draw z1 withcolor red ;
+    draw z2 withcolor red ;
+    draw z3 withcolor red ;
+    draw z4 withcolor red ;
+    draw z5 withcolor red ;
+    %
+\stopuniqueMPpagegraphic
+
+\startreusableMPgraphic{pagenumber-state}
+    color shapelinecolor ; shapelinecolor := \MPcolor{ShapeDarkLine} ;
+    %
+    delta  := OverlayOffset ;
+    width  := OverlayWidth - 2delta ;
+    height := OverlayHeight - 2delta ;
+    lines  := 5*OverlayOffset ;
+    %
+    z1 = (0,0) ;
+    z2 = (lines,0) ;
+    z3 = (.5width,height) ;
+    z4 = (width-lines,0) ;
+    z5 = (width,0) ;
+    %
+    pickup pencircle
+        xscaled delta
+        yscaled .5delta
+        rotated 30;
+    %
+    draw z1 -- z2 {dir 135} ... z3 ... {dir -135} z4 -- z5 withcolor shapelinecolor ;
+    %
+    pickup pencircle
+        scaled delta ;
+    %
+    draw z1 withcolor red ;
+    draw z2 withcolor red ;
+    draw z3 withcolor red ;
+    draw z4 withcolor red ;
+    draw z5 withcolor red ;
+    %
+\stopreusableMPgraphic
+
+\startreusableMPgraphic{manualsymbol}
+    logo_type := 401 ;
+    input "mp-prag" ;
+    currentpicture := currentpicture scaled 0.25 ;
+\stopreusableMPgraphic
+
+\startuseMPgraphic{frame-shape}
+    delta  := OverlayOffset ;
+    width  := OverlayWidth - 2delta ;
+    height := OverlayHeight - 2delta ;
+    %
+    vardef gamma =
+        g := OverlayOffset ; ((g/3) + (uniformdeviate (2g/3)))
+    enddef;
+    %
+    z1 = (0,0) ;
+    z2 = (width,0) ;
+    z3 = (width,height) ;
+    z4 = (0,height) ;
+    %
+    x12= .5[x1,x2] ; y12=y1 + gamma ;
+    y23= .5[y2,y3] ; x23=x2 - gamma ;
+    x34= .5[x3,x4] ; y34=y3 - gamma ;
+    y41= .5[y4,y1] ; x41=x4 + gamma ;
+    %
+    pickup pencircle
+        xscaled OverlayLineWidth
+        yscaled .5OverlayLineWidth
+        rotated 30;
+    %
+    path p;
+    p :=
+        z1..z12..z2 &
+        z2..z23..z3 &
+        z3..z34..z4 &
+        z4..z41..z1 &
+        cycle ;
+    %
+    fill p withcolor shapefillcolor ;
+    draw p withcolor shapelinecolor ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{setup-shape}
+    color shapelinecolor ; shapelinecolor := \MPcolor{ShapeLightFrame} ;
+    color shapefillcolor ; shapefillcolor := \MPcolor{ShapeLightFill} ;
+    \includeMPgraphic{frame-shape}
+\stopuseMPgraphic
+
+% \startuseMPgraphic{setup-shape-x}
+%     color shapelinecolor ; shapelinecolor := \MPcolor{ShapeLightFrame} ;
+%     color shapelinecolor ; shapelinecolor := \MPcolor{ShapeLightFill} ;
+%     \includeMPgraphic{frame-shape}
+% \stopuseMPgraphic
+
+\startuniqueMPgraphic{note-rule}
+    color shapelinecolor ; shapelinecolor := \MPcolor{ShapeDarkLine} ;
+    color shapeendcolor  ; shapeendcolor  := \MPcolor{ShapeDarkEnd} ;
+    %
+    draw bottomboundary OverlayBox withcolor shapelinecolor withpen pencircle scaled  OverlayLineWidth ;
+    draw llcorner       OverlayBox withcolor shapeendcolor  withpen pencircle scaled 3OverlayLineWidth ;
+    draw lrcorner       OverlayBox withcolor shapeendcolor  withpen pencircle scaled 3OverlayLineWidth ;
+    %
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{column-rule}
+    color shapelinecolor ; shapelinecolor := \MPcolor{ShapeDarkLine} ;
+    color shapeendcolor  ; shapeendcolor  := \MPcolor{ShapeDarkEnd} ;
+    %
+    draw leftboundary OverlayBox withcolor shapelinecolor withpen pencircle scaled  OverlayLineWidth ;
+    draw ulcorner     OverlayBox withcolor shapeendcolor  withpen pencircle scaled 3OverlayLineWidth ;
+    draw llcorner     OverlayBox withcolor shapeendcolor  withpen pencircle scaled 3OverlayLineWidth ;
+    %
+\stopuniqueMPgraphic
+
+% alternative implemenation
+%
+% \startuniqueMPgraphic{column-rule}{height,linewidth}
+%     color   shapelinecolor ; shapelinecolor := \MPcolor{ShapeDarkLine} ;
+%     color   shapeendcolor  ; shapeendcolor  := \MPcolor{ShapeDarkEnd} ;
+%     numeric shapelinewidth ; shapelinewidth := \MPvar{linewidth} ;
+%     pair    shapeboundary  ; shapeboundary  := (0,\MPvar{height}) ;
+%     %
+%     draw origin -- shapeboundary withcolor shapelinecolor withpen pencircle scaled  shapelinewidth ;
+%     draw origin                  withcolor shapeendcolor  withpen pencircle scaled 3shapelinewidth ;
+%     draw           shapeboundary withcolor shapeendcolor  withpen pencircle scaled 3shapelinewidth ;
+%     %
+% \stopuniqueMPgraphic
+
+% todo
+
+% \startreusableMPgraphic{clip:six}
+%     %
+%     delta  := OverlayOffset ;
+%     height := OverlayWidth - delta ;
+%     %
+%     color green; green := (.1,.8,.1) ;
+%     %
+%     z1 = (0,0) ;
+%     z2 = (0,height) ;
+%     %
+%     pickup pencircle
+%         scaled OverlayLineWidth ;
+%     %
+%     draw z1 -- z2 withcolor .5white ;
+%     %
+%     pickup pencircle
+%         scaled 3OverlayLineWidth ;
+%     %
+%     draw z1 withcolor green ;
+%     draw z2 withcolor green ;
+%     %
+% \stopreusableMPgraphic
+
+% \startreusableMPgraphic{clip:seven}
+%     %
+%     width  := OverlayWidth ;
+%     height := OverlayHeight  ;
+%     delta  := OverlayOffset ;
+%     %
+%     color green ; green := (.1,.8,.1) ;
+%     %
+%     x1 = x4 = 0 ; x2 = x3 = width ;
+%     y1 = y2 = 0 ; y3 = y4 = height ;
+%     %
+%     pickup pencircle
+%         scaled OverlayLineWidth ;
+%     %
+%     draw z1 -- z2 -- z3 -- z4 -- cycle withcolor .white ;
+%     %
+%     pickup pencircle
+%         scaled 3OverlayLineWidth ;
+%     %
+%     draw z1 withcolor green ;
+%     draw z2 withcolor green ;
+%     draw z3 withcolor green ;
+%     draw z4 withcolor green ;
+%     %
+% \stopreusableMPgraphic
+
+\stopenvironment

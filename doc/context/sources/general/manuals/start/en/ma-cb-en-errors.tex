@@ -1,0 +1,79 @@
+\startcomponent ma-cb-en-errors
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[reference=trouble,title=Problems during processing]
+
+\index{errors}
+\index{problems}
+
+If processing is not succesful ---for example because you typed \type{\stptext}
+instead of \type{\stoptext}--- \CONTEXT\ produces a \type{ ? } on your screen
+and tells you it has just processed an error. It will give you some basic
+information on the type of error and the line number where the error becomes
+effective.
+
+At the instant of \type{ ? } you can type:
+
+\starttabulate[|||]
+\NC \type{H} \NC for help information on your error \NC\NR
+\NC \type{I} \NC for inserting the correct \CONTEXT\ command \NC\NR
+\NC \type{Q} \NC for quiting and entering batch mode \NC\NR
+\NC \type{X} \NC for exiting the running mode \NC\NR
+\NC \Enter   \NC for ignoring the error \NC\NR
+\stoptabulate
+
+Most of the time you will type \Enter\ and processing will continue. Then you can
+edit the input file and fix the error.
+
+Some errors will produce a~\type{ * } on your screen and processing will stop.
+This error is due to a fatal error in your input file. You can't ignore this
+error and the only option you have is to type \type{\stop} or {\sc Ctrl}~Z. The
+program will be halted and you can fix the error in your text editor.
+
+\startframedtext[width=\hsize]
+A well known error is:
+
+\starttyping
+! I can't write on file 'myfile.pdf'.
+Please type another filename for output:
+\stoptyping
+
+This error is due to the fact that the file \type{myfile.pdf} is stil open
+in \READER.
+
+\blank
+
+The best way to proceed is:
+
+\startitemize[packed]
+\item close the file in \READER
+\item type \Enter\ at the console
+\stopitemize
+\stopframedtext
+
+Sometimes the error messages are very obscure. Finding the location of the error
+in an extensive document can then be a tedious job. You could try to isolate
+the error:
+
+\startitemize[packed]
+\item open the file in your text editor
+\item save a copy of your file (to be on the safe side)
+\item isolate the error
+      \startitemize[n,packed]
+      \item place a \type{\stoptext} command higher up in your text
+      \item process the file
+      \item repeat step 1 and 2 until the file processes correctly
+      \stopitemize
+\item study the content that produces the error
+\item fix the error
+\item place the \type{\stoptext} command after the corrected error
+\item process your file
+\item etc.
+\stopitemize
+
+\stopchapter
+
+\stopcomponent

@@ -409,4 +409,25 @@
 
 \let\dostopattributes\endgroup
 
+%D New but it needs to be supported explicitly (as in natural tables).
+
+\newconditional\c_font_styles_math
+
+\unexpanded\def\font_styles_math_reset
+  {\setfalse\c_font_styles_math}
+
+\unexpanded\def\font_styles_math_start
+  {\ifconditional\c_font_styles_math
+     \startimath
+   \fi
+   \relax}
+
+\unexpanded\def\font_styles_math_stop
+  {\relax
+   \ifconditional\c_font_styles_math
+     \stopimath
+   \fi}
+
+\definealternativestyle[\v!math][\settrue\c_font_styles_math]
+
 \protect \endinput

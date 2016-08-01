@@ -1,0 +1,276 @@
+% language=uk
+
+\startcomponent mk-open
+
+\environment mk-environment
+
+\chapter {\OPENTYPE: too open?}
+
+In this chapter I will reflect on \OPENTYPE\ from within my
+limited scope and experience. What I'm writing next is my personal
+opinion and I may be wrong in many ways.
+
+Until recently installing fonts in a \TEX\ system was not
+something that a novice user could do easily. First of all, the
+number of files involved is large:
+
+\startitemize
+
+\item If it is a bitmap font, then for each size used there is a
+\PK\ file, and this is reflected in the suffix, for instance \type
+{pk300}.
+
+\item If it is an outline font, then there is a \TYPEONE\ file
+with suffix \type {pfb} or sometimes glyphs are taken from
+\OPENTYPE\ fonts (with \type {ttf} or \type {otf} as suffix). In
+the worst case such wide fonts have to be split into smaller ones.
+
+\item Because \TEX\ needs information about the dimensions of the
+glyphs, a metric file is needed; it has the suffix \type {tfm}. There
+is limit of 256 characters per font.
+
+\item If the font lacks glyphs it can be turned into a virtual
+font and borrow glyphs from other fonts; this time the suffix is
+\type {vf}.
+
+\item If no such metric file is present, one can make one from a
+file that ships with the fonts; it has the suffix \type {afm}.
+
+\item In order to include the font in the final file, the backend
+to \TEX\ has to match glyph references to the glyph slots in the
+font file, and for that it needs an encoding vector, for
+historical reasons this is a \POSTSCRIPT\ blob in a file with
+suffix \type {enc}.
+
+\item This whole lot is associated in a map file, with suffix
+\type {map}, which couples metric files to encodings and
+to font files.
+
+\stopitemize
+
+Of course the user also needs \TEX\ code that defines the font,
+but this differs per macro package. If the user is lucky the
+distributions ships with files and definitions of his/her
+favourite fonts, but otherwise work is needed. Font support in
+\TEX\ systems has been complicated by the facts that the first
+\TEX\ fonts were not \ASCII\ complete, that a 256 limit does not
+go well with multilingual typesetting and that most fonts lacked
+glyphs and demanded drop|-|ins. Users of \CONTEXT\ could use
+the \type {texfont} program to generate metrics and map file
+for traditional \TEX\ but this didn't limit the number of files.
+
+In modern \TEX\ engines, like \XETEX\ and \LUATEX, less files are
+needed, but even then some expertise is needed to use \TYPEONE\
+fonts. However, when \OPENTYPE\ fonts are used in combination with
+\UNICODE, things become easy. The (one) fontfile needs to be
+put in a location that the \TEX\ engine knows and things
+should work.
+
+In \LUATEX\ with \CONTEXT\ \MKIV\ support for traditional
+\TYPEONE\ fonts is also simplified: only the \type {pfb} and \type
+{afm} files are needed. Currently we only need \type {tfm} files
+for math fonts but that will change too. Virtual fonts can be
+built at runtime and we are experimenting with real time font
+generation. Of course filenames are still just as messy and
+inconsistent as ever, so other tools are still needed to figure
+out the real names of fonts.
+
+So, what is this \OPENTYPE\ and will it really make \TEX ies life
+easier? The qualification \quote {open} in \OPENTYPE\ carries
+several suggestions:
+
+\startitemize
+
+\item  the format is defined in an open way, everybody can read the
+specification and what is said there is clear
+
+\item the format is open in the sense that one can add additional
+features, so there are no limits and/or limits can be shifted
+
+\item there is an open community responsible for the advance of this
+specification and commercial objectives don't interfere and/or lead
+to conflicts
+
+\stopitemize
+
+Is this true or not? Indeed the format is defined in the open
+although the formal specification is an expensive document. A free
+variant is available at the Microsoft website but it takes some
+effort to turn that into a nicely printable document. What is said
+there is quite certainly clear for the developers, but it takes quite
+some efforts to get the picture. The format is binary so one
+cannot look into the file and see what happens.
+
+The key concept is \quote {features}, which boils down to a
+collection of manipulations of the text stream based on rules laid
+down in the font. These can be simple rules, like \quote {replace
+this character by its smallcaps variant} or more complex, like
+\quote {if this character is followed by that character, replace
+both by yet another}. There are currently two classes of features:
+substitutions and (relative) positioning. One can indeed add
+features so there seem to be no limits.
+
+The specification is a hybrid of technologies developed by
+Microsoft and Adobe with some influence by Apple. These
+companies may have conflicting interests and therefore this may
+influence the openness.
+
+So, in practice we're dealing with a semi-open format, crippled by
+a lack of documentation and mostly controlled by some large
+companies. These characteristics make that developing support for
+\OPENTYPE\ is not that trivial. Maybe we should keep in mind that
+this font format is used for word processors (no focus on
+typography), desk top publishing (which permits in-situ tweaking)
+and rendering text in graphical user interfaces (where script and
+language specific rendering is more important than glyph
+variants). Depending on the use features can be ignored, or
+applied selectively, of even compensated.
+
+Anyhow, a font specification is only part of the picture. In
+order to render it useful we need support in programs that display
+and typeset text and of course we need fonts. And in order to make
+fonts, we need programs dedicated to that task too.
+
+Let's go back for a moment to traditional \TEX. A letter can be
+represented by its standard glyph or by a smallcaps variant. A
+digit can be represented by a shape that sits on the baseline, or
+one that may go below: an oldstyle numeral. Digits can have the
+same width, or be spaced proportionally. There can be special small
+shapes for super- and subscripts. In traditional \TEX\ each such
+variant demanded a font. So, say that one wants normal shapes,
+smallcaps and oldstyle, three fonts were needed and this for each
+of the styles normal, bold, italic, etc. Also a font switch is
+needed in order to get the desired shapes.
+
+In an \OPENTYPE\ universe normal, smallcaps and oldstyle shapes
+can be included in one font and they are organized in features. It
+will be clear that this will make things easier for users: if one
+buys a font, there is no longer a need to sort out what file has
+what shapes, there is no longer a reason for reencodings because
+there is no 256 limit, map files are therefore obsolete, etc.
+Only the \TEX\ definition part remains, and even that is easier
+because one file can be used in different combinations of
+features.
+
+One of the side effects of the already mentioned semi|-|open
+character of the standard is that we cannot be completely sure
+about how features are implemented. Of course one can argue that
+the specification defines what a feature is and how a font should
+obey it, but in practice it does not work out that way.
+
+\startitemize
+
+\item Nobody forces a font designer (or foundry) to implement
+features. And if a designer provides variants, they may be
+incomplete. In the transition from \TYPEONE\ to \OPENTYPE\ fonts
+may even have no features at all.
+
+\item Some advanced features, like fractions, demand extensive
+substitution rules in the font. The completeness may depend on the
+core application the font was made for, or the ambition of the
+programmer who assists the designer, or on the program that is
+used to produce the font.
+
+\item Many of the features are kind of generic, in the sense that
+they don't depend on heuristics in the typesetting program: it's
+just rules that need to be applied. However, the typesetting
+program may be written in such a way that it only recognized
+certain features.
+
+\item Some features make assumptions, for instance in the sense
+that they expect the program to figure out what the first character
+of a word is. Other features only work well if the program implements
+the dedicated machinery for it.
+
+\item Features can originate from different vendors and as a
+result programs may interpret them differently. Developers of
+programs may decide only to support certain features, even if
+similar features can be supported out of the box. In the worst
+case a symbiosis between bugs in programs and bugs in fonts
+from the same vendor can lead to pseudo standards.
+
+\item Designers (or programmers) may assume that features are
+applied selectively on a range of input, but in automated
+workflows this may not be applicable. Style designers may come up with
+specifications that cannot be matched due to fonts that have only
+quick and dirty rules.
+
+\item Features can be specific for languages and scripts. There are
+many languages and many scripts and only a few are supported. Some
+features cover similar aspects (for instance ligatures) and where
+a specific rendering ends up in the language, script, feature
+matrix is not beforehand clear.
+
+\stopitemize
+
+In some sense \OPENTYPE\ fonts are intelligent, but they are not
+programs. Take for instance the frac feature. When enabled, and
+when supported in the font, it {\em may} result in 1/2 being
+typeset with small symbols. But what about a/b? or this/that? In
+principle one can have rules that limit this feature to numerals
+only or to a simple cases with a few characters. But I have seen
+fonts that produce garbage when such a feature is applied to the
+whole text. Okay, so one should apply it selectively. But, if
+that's the way to go, we could as well have let the typesetting
+program deal with it and select superior and inferior glyphs from
+the font. In that case the program can deal with fuzzy situations
+and we're not dependent on the completeness of rules. In practice,
+at least for the kind of applications that I have for \TEX, I
+cannot rely on features being implemented correctly.
+
+For ages \TEX ies have been claiming that their documents can be
+reprocessed for years and years. Of course there are dependencies
+on fonts and hyphenation patterns, but these are relatively
+stable. However, in the case of \OPENTYPE\ we have not only
+shapes, but also rules built in. And rules can have bugs.
+Because fonts vendors don't provide automated updating as with
+programs, your own system can be quite stable. However, chances
+are that different machines have variants with better or worse
+rules, or maybe even with variants with features deleted.
+
+I'm sure that at some time Idris Samawi Hamid of the Oriental
+\TEX\ project (related to \LUATEX) will report on his experiences
+with font editors, feature editors, and typesetting engines in the
+process of making an Arabic font that performs the same way in all
+systems. Trial and error, rereading the specifications again and
+again, participating in discussions on forums, making special
+test fonts \unknown\ it's a pretty complex process. If you want to
+make a font that works okay in many applications you need to test
+your font with each of them, as the Latin Modern and \TEX\ Gyre
+font developers can tell you.
+
+This brings me to the main message of this chapter. On the one
+hand we're better of with \OPENTYPE\ fonts: installation is
+trivial, definitions are easy, and multi|-|lingual documents are
+no problem due to the fact that fonts are relatively complete.
+However, in traditional \TEX\ the user just used what came with
+the system and most decisions were already made by package
+writers. Now, with \OPENTYPE, users can choose features and this
+demands some knowledge about what they are, when they are supposed
+to be used (!), and what limitations they carry. In traditional
+\TEX\ the options were limited, but now there are many under user
+control. This demands some discipline. So, what we see is a shift
+from technology (installing, defining) to application (typography,
+quality). In \CONTEXT\ this has resulted in additional
+interfaces, like for instance dynamic feature switching, which
+decouples features from font definitions.
+
+It is already clear that \OPENTYPE\ fonts combined with \UNICODE\
+input will simplify \TEX\ usage considerably. Also, for macro
+writers things become easier, but they should be prepared to deal
+with the shortcomings on both \UNICODE\ and \OPENTYPE. For instance
+characters that belong together are not always organized
+logically in \UNICODE, which results for instance in math characters
+being (sort of) all over the place, which in turn means that in \TEX\
+characters can be either math or text, which in turn relates to the fonts
+being used, formatting etc. Als, macro package writers now need to take
+more languages and related interferences into account, but that's mostly
+a good thing, because it improves the quality of the output.
+
+It will be interesting to see how ten years from now \TEX\ macro
+packages deal with all the subtleties, exceptions, errors, and
+user demands. Maybe we will end up with as complex font support as
+for \TYPEONE\ with its many encodings. On the other hand, as with all
+technology, \OPENTYPE\ is not the last word on fonts.
+
+\stopcomponent

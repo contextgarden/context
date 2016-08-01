@@ -1,0 +1,64 @@
+\startcomponent ma-cb-en-citations
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Citations and quotations, reference=quotations]
+
+\index{citation}
+\index{quote}
+
+\Command{\tex{quote}}
+
+The consistent use of quote and quotation marks in the running text is invoked by
+the use of \type{\quote} or \type{\quotation}. For longer text fragments you can use:
+
+\shortsetup{startquotation}
+
+\startbuffer
+In the book \quote{Hasselt, beelden van een middeleeuwse stad} it says:
+\startquotation
+Het stadhuis wordt voor het eerst vermeld in 1431. Oorspronkelijk
+is het een houten huis, dat wordt afgebroken om plaats te maken voor
+een nieuw stadhuis van steen. Dit wordt echter halverwege de 16e eeuw
+ook afgebroken en vervangen door een nog groter pand. Het nieuwe
+stadhuis wordt weer in dezelfde fraaie stijl opgebouwd. De bestuurders
+laten daarmee zien dat het is gebouwd in een tijd van grote welvaart.
+\stopquotation
+\stopbuffer
+
+\typebuffer
+
+In the example below you can see that quotation is language sensitive:
+
+\startbuffer
+\nl Hij zei tegen me: \quotation{In Hasselt noemen ze dat
+    \quote{noaberschop} of zoiets.}
+
+\en He told me: \quotation{In Hasselt they call this
+    \quote{noaberschop} or something like that.}
+
+\de Er sagte zu mir: \quotation{In Hasselt nennt man das
+    \quote{noaberschop} oder so etwas.}
+
+\fr Il a dit: \quotation{À Hasselt on c'appelle \quote{noaberschop}
+    ou quelque chose comme ça.}
+\stopbuffer
+
+\typebuffer
+
+Note the automatic change of the quotation marks in case of a quote within a
+quote.
+
+\startpacked
+\getbuffer
+\stoppacked
+
+You can alter the default settings with:
+
+\shortsetup{setuplanguage}
+
+\stopchapter
+
+\stopcomponent

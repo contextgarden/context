@@ -1,0 +1,456 @@
+% language=uk
+
+\environment mk-environment
+
+\startcomponent mk-punk
+
+\page[right] \start
+
+% the opentype one:
+%
+% \setupbodyfont[punknova]
+
+% the mp based runtime one:
+
+
+\usemodule[m][punk]
+\usetypescript[punk]
+\switchtobodyfont[punk,12pt]
+
+\StartRandomPunk
+
+\definesymbol[1][--]
+\setupsorting[logo][style=]
+\setupcapitals[title=no]
+\setuptype[style=\tf]
+\setuptyping[style=\tf]
+\logo[METAPOST] {MetaPost}
+\logo[METAFONT] {MetaFont}
+
+\chapter{How to convince Don and Hermann to use \LUATEX}
+
+{\em The code shown here should look a bit different in versions
+of \MKIV\ after March 2011. This is because the font system was
+cleaned up and upgraded. The prinicples remain the same. You can
+have a look at \type {m-punk.mkiv} in the \CONTEXT\ distribution.}
+
+Odds are pretty low that Don Knuth will use \LUATEX\ for
+typesetting the next update of his opus magnum, and odds are even
+lower that Hermann Zapf will use \MPLIB\ for Melior Nova. However,
+the next example of combining \METAFONT\ and \TEX\ may draw their
+interest in this new variant: \METATEX.
+
+The font used here is called \quote {punk} and is designed by
+Donald Knuth. There is a note in the file that says: \quotation
+{Font inspired by Gerard and Marjan Unger's lectures, February
+1985}. If you didn't notice it yet: punk is a random font.
+
+You may wonder why we started looking into this masterpiece of
+font design. Well, there are a few reasons:
+
+\startitemize
+
+\item  We always liked this font, but after the rise of outline
+       fonts it was not a natural candidate for using in
+       documents. Fun is always a good motive.
+
+\item  For many years we have been suggesting that special glyphs
+       and/or aspects of typesetting could be realized by runtime
+       generation of graphics, and we need this testbed for the
+       Oriental \TEX\ project: Idris needs stretchable inter|-|glyph
+       connections.
+
+\item  Taco likes using tricky \METAPOST\ backgrounds for his
+       presentations that demonstrate this programming language.
+
+\item  Hartmut loves to tweak the backend and runtime font generation
+       will demand some extensions to the font inclusion and literal
+       handlers.
+
+\item  Because Hans attends many \TEX\ conferences together with Volker
+       Schaa, he has promised him to avoid repeating talk and
+       presentation layouts, and so a new presentation style was needed.
+
+\stopitemize
+
+To this we can add an already mentioned motivation: convince Don and
+Hermann to use \LUATEX\ \unknown\ who knows. And, if that fails, maybe
+they can team up for an extensions to this font: more style variants,
+proper math and the full range of \UNICODE\ glyphs.
+
+The punk font is written in \METAFONT\ and there are multiple
+sources. These are merged into one file which is to be processed
+using the \type {mfplain} format. Definitions of characters in
+this font look like:
+
+\starttyping
+beginpunkchar ("A",13,1,2) ;
+    z1 = pp(1.5u,0) ; z2 = (.5w,1.1h) ; z3 = pp(w-1.5u,0) ;
+    pd z1 ; pd z3 ; draw z1 -- z2 -- z3 ;
+    z4 = pp .3[z1,z2] ; z5 = pp .3[z3,z2] ;
+    pd z4 ; pd z5 ; draw z4 -- z5;
+endchar ;
+\stoptyping
+
+When \TEX\ needs a font, i.e.\ when we have something like this:
+
+\starttyping
+\font\somefont=whatever at 12pt
+\stoptyping
+
+in \CONTEXT\ control is delegated to a font loader written in
+\LUA\ that is hooked into \TEX. This loader interprets the name
+and if needed filters the specification from it. Think of this:
+
+\starttyping
+\font\somefont=whatever*smallcaps at 16pt
+\stoptyping
+
+This means: load font \type {whatever} and enable the smallcaps features.
+However this mechanism is mostly geared towards \TYPEONE\ and \OPENTYPE\
+fonts. But punk is neither: it's a \METAFONT, and we need to treat it as
+such. We will use \LUATEX's powerful virtual font technology
+because that way we can smuggle the proper shapes in the final
+file. And \unknown\ no bitmaps and no funny encoding.
+
+In \CONTEXT\ \MKIV\ there is a preliminary virtual font definition
+mechanism. There is no advanced \TEX\ interface yet so we need to do it in
+\LUA. Fortunately we do have access to this from the font mechanism:
+
+\starttyping
+\font\somefont=mypunk@punk at 20pt
+\stoptyping
+
+This is a rather valid directive to create a font that internally
+will be called \type {mypunk}. For this the virtual font creation
+command \type {punk} will be used, and in a moment we will see what
+this triggers.
+
+Of course, users will never see such low level definitions. They will
+use proper typescript, which set up a whole font system. For instance,
+in this document we use:
+
+\typebuffer[fontdefinition]
+
+Now, using punk in inself is not that much of a challenge, but how about
+using multiple instances of this font and then typeset the text chosing
+variants of a glyph at random. Of course this will have some trade-off in
+terms of runtime. In this document we use punk as the bodyfont and
+therefore it comes in several sizes. On Hans's laptop generating the
+glyphs takes a while:
+
+\starttyping
+7500 glyphs, 12.887 seconds runtime, 581 glyphs/second
+\stoptyping
+
+Fortunately \MKIV\ provides a caching mechanism so once the fonts
+are generated, a next run will be more comfortable. This time we
+get reported:
+
+\starttyping
+0.187 seconds, 60 instances, 320.856 instances/second
+\stoptyping
+
+which is not that bad for loading 60 files of 5 megabytes \PDF\
+literals each. The reason why the files are large is that although
+these glyphs look simple, in fact they are rather complex: each
+glyph at least one paths and several knots, and since a special
+pen is used, conversion results in a larger than normal description
+of a shape.
+
+Since we use the standard converter from \METAPOST\ to \PDF, we
+can gain some generation time by using a dedicated converter for
+glyphs. Eventually the \MPLIB\ library may even provide a proper
+charstring generator so that we can construct real fonts at
+runtime.
+
+So, how does this work behind the screens? Because we can use some
+of the mechanisms already present in \CONTEXT\ it is not even that complex.
+
+\startitemize
+
+\item The \type {punk} directive tells \CONTEXT\ to create a virtual
+      font. Such a font can be made out of real fonts; we use this
+      for instance in the font feature \type {combine}, where we
+      add virtually composed characters that are missing by combining
+      characters present. However, here we have no real font.
+
+\item And so this virtual font is not build on top of an existing font, but
+      spawns a \MPLIB\ process that will build the font, unless it is
+      present in the cache on disk. The shapes are converted to \PDF\ literals
+      and for each character a proper definition table is made.
+
+\item In total 10 such fonts are made, but only one is returned to the
+      font callback that asked us to provide the font. The list of
+      the alternatives is stored in the \LUA\ table that represents
+      the font and kept at the \LUA\ end. So, for each size used,
+      a unique set of 10 variants is generated.
+
+\item The randomizer operates on the node list. Instead of using a
+      dedicated mechanism for this, we hijack one of the attribute values
+      of the case swapper already present in \MKIV. After that we can selectively
+      turn on and off the randomizer.
+
+\item At some point \TEX\ will hand over the node lists to \CONTEXT. At
+      that moment a lot of things can happen to the list, and one of
+      them is a sequence of character handlers, of which the mentioned case
+      handler is one. The handler sweeps over the nodelist
+      and for each glyph node triggers a function that is bound to the
+      attribute value.
+
+\item This function is rather trivial: it looks at the font id of the
+      glyph, and resolves it to the font table. If that table has a
+      list of alternatives, it will randomly choose one and assign it to
+      the font attribute of the glyph. That's all.
+
+\item Eventually the backend routines will inject the \PDF\ literals that
+      were collected in the commands table of the virtual glyph.
+
+\stopitemize
+
+It will not come as a surprise that our resulting file is larger
+than what we get when using traditional outline fonts or just one
+instance of punk. However, this is just an experiment, and
+eventually a proper font constructor will be provided, so that the
+glyph drawing is delegated to the font renderer. An intermediate
+optimization can be to use so called \PDF\ xforms, but a properly
+runtime generated font is best because then we can search in the
+file too.
+
+Because by now reading the punk font should go fluently we can now
+move on to the code. We already have a \type {fonts} namespace,
+which we now extend with an \METAPOST\ sub namespace:
+
+\starttyping
+fonts.mp = fonts.mp or { }
+\stoptyping
+
+We set a version number and define a cache on disk. When the number changes
+fonts stored in the cache will be regenerated when needed. The
+\type {containers} module provides the relevant function.
+
+\starttyping
+fonts.mp.version = 1.01
+fonts.mp.cache = containers.define("fonts", "mp", fonts.mp.version, true)
+\stoptyping
+
+We already have a \type {metapost} namespace, and within it we define a
+sub namespace:
+
+\starttyping
+metapost.characters = metapost.characters or { }
+\stoptyping
+
+Now we're ready for the real action: we define a dedicated flusher
+that will be passed to the \METAPOST\ converter. A next version of
+\MPLIB\ will provide the \TFM\ font information which gives better
+glyph dimensions, plus additional kerning information. All this code
+is defined in a closure (\type {do ... end}) which
+nicely hides the local variables.
+
+\starttyping
+local characters, descriptions = { }, { }
+local factor, total, variants = 100, 0, 0
+local l, n, w, h, d  = { }, 0, 0, 0, 0
+
+local flusher = {
+    startfigure = function(chrnum,llx,lly,urx,ury)
+        l, n = { }, chrnum
+        w, h, d = urx - llx, ury, -lly
+        total = total + 1
+    end,
+    flushfigure = function(t)
+        for i=1, #t do
+            l[#l+1] = t[i]
+        end
+    end,
+    stopfigure = function()
+        local cd = characters.data[n]
+        descriptions[n] = {
+            unicode = n,
+            name = cd and cd.adobename,
+            width = w*100,
+            height = h*100,
+            depth = d*100,
+        }
+        characters[i] = {
+            commands = {
+                { "special", "pdf: " .. table.concat(l," ") },
+            }
+        }
+    end
+}
+\stoptyping
+
+In the normal converter, the start and stop function do the
+packaging in a box. The flush function is called when literals
+need to be flushed. This threesome does as much as collecting
+glyph information in the \type {list} table. Intermediate literals
+are stored in the \type {l} table. Each glyph has a description and
+(in this case) one command that defines the virtual shape. The name
+is picked up from the character data table that is present in \MKIV.
+
+As told before we generate multiple instances per requested font
+and here is how it happens. We initialize the \type {mfplain}
+format and reset it afterwards. The punk definition file is
+adapted for multiple runs. Scaling happens here because later on
+the scaler has no knowledge about what is present in the commands.
+We use a few helpers for processing the \METAPOST\ code and format
+the final font table in a way \CONTEXT\ \MKIV\ likes. Currently
+the parameters (font dimensions) are rather hard coded, but this
+will change when \MPLIB\ can provide them.
+
+\starttyping
+function metapost.characters.process(mpxformat, name, instances, scalefactor)
+    statistics.starttiming(metapost.characters)
+    scalefactor = scalefactor or 1
+    instances = instances or 10
+    local fontname = file.removesuffix(file.basename(name))
+    local hash = file.robustname(string.format(
+        "%s %04i %04i", fontname, scalefactor*1000, instances))
+    local lists = containers.read(fonts.mp.cache, hash)
+    if not lists then
+        statistics.starttiming(flusher)
+        local data = io.loaddata(resolvers.findfile(name))
+        metapost.reset(mpxformat)
+        lists = { }
+        for i=1,instances do
+            characters, descriptions = { }
+            metapost.process(
+                mpxformat,
+                {
+                    "randomseed := " .. i*10 .. ";",
+                    "scale_factor := " .. scalefactor .. " ;",
+                    data
+                },
+                false,
+                flusher
+            )
+            lists[#lists+1] = {
+                designsize = 655360,
+                name = string.format("%s-%03i",hash,i),
+                parameters = {
+                    slant         =    0,
+                    space         =  333   * scalefactor,
+                    space_stretch =  166.5 * scalefactor,
+                    space_shrink  =  111   * scalefactor,
+                    x_height      =  431   * scalefactor,
+                    quad          = 1000   * scalefactor,
+                    extra_space   =    0
+                },
+                ["type"] = "virtual",
+                characters = characters,
+                descriptions = descriptions,
+            }
+        end
+        metapost.reset(mpxformat) -- saves memory
+        lists = containers.write(fonts.mp.cache, hash, lists)
+        statistics.stoptiming(flusher)
+    end
+    variants = variants + #lists
+    statistics.stoptiming(metapost.characters)
+    return lists
+end
+\stoptyping
+
+We're not yet there. This was just a font generator that returns
+a list of fonts defined in a format liked by \MKIV\ and not that
+far from what \TEX\ wants back from us. Next we define the
+main definition function, the one that is called when the font
+is defined as virtual font. The special number \type {-1000}
+tells the scaler to honour the designsize, which boils down to
+no scaling, but just copying to the final  table that is passed
+to \TEX. The \type {define} function returns an id which we will
+use later.
+
+The scaler uses the \type {descriptions} to add dimensions (and other data
+needed) in the \type {characters} table. This is something \MKIV\ specific.
+
+\starttyping
+function fonts.handlers.vf.combiner.commands.metafont(g,v)
+    local size = g.specification.size
+    local data = metapost.characters.process(v[2],v[3],v[4],size/655360)
+    local list, t = { }, { }
+    for d=1,#data do
+        t = data[d]
+        t = fonts.constructors.scale(t, -1000)
+        t.id = font.define(t)
+        list[#list+1] = t.id
+    end
+    for k, v in pairs(t) do
+        g[k] = v -- kind of replace, when not present, make nil
+    end
+    g.variants = list
+end
+\stoptyping
+
+We hook this into the \CONTEXT\ font handler and from now on
+the \type {@punk} is recognized:
+
+\starttyping
+fonts.definers.methods.install( "punk", { { "metafont", "mfplain", "punkfont.mp", 10 } } )
+\stoptyping
+
+Now that we can define the font, we need to deal with
+the randomizer. This is optional fun. The mentioned case swappers
+are implemented in the \type {cases} namespace:
+
+\starttyping
+local fontdata = fonts.hashes.identifiers
+
+cases.actions[99] = function(current)
+    local c = current.char
+    local used = fontdata[current.font].variants
+    if used then
+        local f = math.random(1,#used)
+        current.font = used[f]
+        return current, true
+    else
+        return current, false
+    end
+end
+\stoptyping
+
+This function is called in one of the passes over the node
+list. Thanks to this framework we don't need that much code.
+We didn't show two statistics functions. They are the reason why
+we keep track of the total number of glyphs defined.
+
+This leaves us defining the interface, so here we go:
+
+\starttyping
+\def\StartRandomPunk{\begingroup\setcharactercasing[99]}
+\def\StopRandomPunk {\endgroup}
+\stoptyping
+
+The set command just sets the attribute that we associated
+with casing (one of the many attributes). The number 99 is
+rather arbitrary.
+
+If you follow the development of \LUATEX\ and \MKIV\ (we do talks at
+conferences, keep track of the development history in \type {mk.pdf},
+and report on the \CONTEXT\ mailing list) you will have noticed  that
+we often use somewhat extreme examples to explore and test the
+functionality and this is no exception. As usual it helped us to improve
+the code and extend our todo list. Can the previous code convince
+the grand wizards to start using \LUATEX ? Probably not. Let's
+anyway hope that they will put the addition of punk math to their todo
+list. In the meantime we've already started adding missing characters:
+
+\startlinecorrection[blank]
+    \hbox to \hsize \bgroup \hss % { ' \ " }
+        \dorecurse{6}{\hbox{\char123\enspace\char39\enspace\char92\enspace\char34\enspace\char125}\quad}\unskip
+    \hss \egroup
+\stoplinecorrection
+
+Also, because we can be sure that Mojca Miklavec's first test will
+be if her favourite characters \color [mkcolor] {\ccaron}, \color
+[mkcolor] {\scaron} and \color [mkcolor] {\zcaron} are supported,
+we made sure that we composed those accented characters as well.
+\footnote {This is accomplished by adding \type
+{composecharacters(t)} at an undisclosed location in
+the previous code.}
+
+\StopRandomPunk \page[right] \stop
+
+\stopcomponent

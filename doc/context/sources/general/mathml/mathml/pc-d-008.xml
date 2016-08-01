@@ -1,0 +1,25 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <eq/>
+    <apply> <diff/> 
+      <bvar> <ci> x </ci> </bvar> 
+      <apply> <power/> 
+        <ci> u </ci> 
+        <ci> n </ci> 
+      </apply>
+    </apply>
+    <apply> <times/>
+      <ci> n </ci>
+      <apply> <power/> 
+        <ci> u </ci> 
+        <apply> <minus/> 
+          <ci> n </ci> 
+          <cn> 1 </cn> 
+        </apply>
+      </apply>
+      <apply> <diff/> 
+        <bvar> <ci> x </ci> </bvar> 
+        <ci> u </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>

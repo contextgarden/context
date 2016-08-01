@@ -1,0 +1,324 @@
+% language=uk
+
+\startcomponent mk-arabic
+
+\environment mk-environment
+
+\disablemode[dynamic-arabic] % to be checked, we loose colors
+
+\definefontfeature
+  [arab-none]
+  [mode=node,language=dflt,script=arab]
+
+\definefontfeature
+  [arab-compose]
+  [mode=node,language=dflt,script=arab,
+   ccmp=yes]
+
+\definefontfeature
+  [arab-replace]
+  [mode=node,language=dflt,script=arab,
+   ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes]
+
+\definefontfeature
+  [arab-mark]
+  [mode=node,language=dflt,script=arab,
+   ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   mark=yes]
+
+\definefontfeature
+  [arab-mkmk]
+  [mode=node,language=dflt,script=arab,
+   ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   mark=yes,mkmk=yes]
+
+\definefontfeature
+  [arab-kern]
+  [mode=node,language=dflt,script=arab,
+   ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   mark=yes,mkmk=yes,
+   kern=yes]
+
+\definefontfeature[arab-context]
+  [mode=node,language=dflt,script=arab,
+   ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   mark=yes,mkmk=yes,
+   kern=yes,
+   calt=yes]
+
+\definefontfeature
+  [arab-ligs]
+  [mode=node,language=dflt,script=arab,
+   ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   liga=yes,dlig=yes,rlig=yes,clig=yes,
+   mkmk=yes,mark=yes,
+   kern=yes]
+
+\definefontfeature
+  [arab-curs]
+  [mode=node,language=dflt,script=arab,
+   ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   liga=yes,dlig=yes,rlig=yes,clig=yes,
+   mark=yes,mkmk=yes,
+   kern=yes,curs=yes]
+
+\definefontfeature
+  [arab-urdu]
+  [mode=node,language=urd,script=arab,
+   ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   liga=yes,dlig=yes,rlig=yes,clig=yes,
+   mark=yes,mkmk=yes,
+   kern=yes,curs=yes]
+
+\definefontfeature
+  [arab-default]
+  [mode=node,language=dflt,script=arab,
+   ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   liga=yes,dlig=yes,rlig=yes,clig=yes,
+   mark=yes,mkmk=yes,kern=yes,curs=yes]
+
+% \font \ArabNone    = arabtype*arab-none    at 48pt
+% \font \ArabCompose = arabtype*arab-compose at 48pt
+% \font \ArabReplace = arabtype*arab-replace at 48pt
+% \font \ArabMark    = arabtype*arab-mark    at 48pt
+% \font \ArabMkmk    = arabtype*arab-mkmk    at 48pt
+% \font \ArabKern    = arabtype*arab-kern    at 48pt
+% \font \ArabContext = arabtype*arab-context at 48pt
+% \font \ArabLigs    = arabtype*arab-ligs    at 48pt
+% \font \ArabCurs    = arabtype*arab-curs    at 48pt
+% \font \ArabUrdu    = arabtype*arab-urdu    at 48pt
+
+% \startbuffer[word]
+%     \char1604\char1616\char1604\char1617\char1648\char1607\char1616 % لِلّٰهِ
+% \stopbuffer
+
+\startbuffer[split-word]
+    \def\somechar #1{ \char#1\relax}%
+    \def\somevowel#1{ \char#1\relax}%
+    \dontleavehmode\ignorespaces\getbuffer[word]\removeunwantedspaces
+\stopbuffer
+
+\startbuffer[normal-word]
+    \def\somechar #1{\char#1\relax}%
+    \def\somevowel#1{\char#1\relax}%
+    \ignorespaces\getbuffer[word]\removeunwantedspaces
+\stopbuffer
+
+\startbuffer[word]
+    \somechar {1604}%
+    \somevowel{1616}%
+    \somechar {1604}%
+    \somevowel{1617}%
+    \somevowel{1648}%
+    \somechar {1607}%
+    \somevowel{1616}%
+    % لِلّٰهِ
+\stopbuffer
+
+\startbuffer[word]
+    \somechar {"644}%
+    \somevowel{"650}%
+    \somechar {"644}%
+    \somevowel{"651}%
+    \somevowel{"670}%
+    \somechar {"647}%
+    \somevowel{"650}%
+    % لِلّٰهِ
+\stopbuffer
+
+\startbuffer[paragraph]
+اَلْحَمْدُ لِلّٰهِ حَمْدَ مُعْتَرِفٍ بِحَمْدِهٖ، مُغْتَرِفٌ مِنْ بِحَارِ مَجْدِهٖ، بِلِسَانِ
+الثَّنَاۤءِ شَاكِرًا، وَلِحُسْنِ اٰلاۤئِهٖ نَاشِرًا؛ اَلَّذِيْ خَلَقَ الْمَوْتَ وَالْحَيٰوةَ، وَالْخَيْرَ
+وَالشَّرَّ، وَالنَّفْعَ وَالضَّرَّ، وَالسُّكُوْنَ وَالْحَرَكَةَ، وَالْأَرْوَاحَ
+وَالْأَجْسَامَ، وَالذِّكْرَ وَالنِّسْيَانَ.
+\stopbuffer
+
+\def\ArabSampleFont{arabtype}
+
+\def\ShowArabSample#1%
+  {\begingroup
+   \blank
+   \enabletrackers[otf.analyzing]
+   \doifmodeelse{dynamic-arabic}{
+        \font\ArabFont = \ArabSampleFont\space at 48pt
+   }{
+        \font\ArabFont = \ArabSampleFont*#1 at 48pt
+   }
+   \font\ArabFontX = \ArabSampleFont\space at 24pt
+   \startlinecorrection
+   \bTABLE[framecolor=red,rulethickness=1pt,offset=1ex]
+     \bTR
+       \bTD[width=.8\textwidth] % [ny=2]
+         \tttf\fontfeatureslist[#1][, ]%
+       \eTD
+       \bTD[width=.2\textwidth,align={lohi,middle},offset=0pt]%
+         \ArabFont\doifmode{dynamic-arabic}{\setfontfeature{#1}}\textdir TRT\relax
+         \getbuffer[normal-word]%
+       \eTD
+     \eTR
+%      \bTR
+%        \bTD[width=9em,align={lohi,middle},offset=0pt]%
+%          \ArabFontX\textdir TRT\relax
+%          \getbuffer[split-word]%
+%        \eTD
+%      \eTR
+   \eTABLE
+   \stoplinecorrection
+   \blank
+   \doifmodeelse{dynamic-arabic}{
+        \font\ArabFont = \ArabSampleFont\space at 24pt
+        \setfontfeature{#1}%
+   }{
+        \font\ArabFont = \ArabSampleFont*#1 at 24pt
+   }
+   \ArabFont
+   \pardir TRT\relax\textdir TRT\relax\getbuffer[paragraph]\endgraf
+   \disabletrackers[otf.analyzing]
+   \pardir TRT\relax\textdir TRT\relax\getbuffer[paragraph]\endgraf
+   \endgroup}
+
+\chapter{Arabic}
+
+Let's start with admitting that I don't speak or read Arabic, and the sample
+texts used here are part of what we use in the Oriental \TEX\ project for
+exploring advanced Arabic typesetting. This chapter will not discuss arab
+typesetting in much detail, but should be seen as complementing the \quote
+{Onthology on Arabic Typesetting} written by Idris. Here I will only show what
+the consequences are of applying features. Because we see glyphs but often still
+deal with characters when analyzing what to do, we will use these terms mixed.
+
+The font that we use here is the \quote {arabtype} font by MicroSoft. This font
+covers Latin scripts and Arabic and has a rich set of features. It's also a rather
+big font, so it is a nice torture test for \LUATEX.
+
+First we show what \MKIV\ does with a sequence of characters when no features
+are enabled by the user. We have turn on color tracing. This gives us some
+feedback about the how the analyze worked out. Analyzing for Arabic boils down
+to marking the initial, mid, final and isolated forms. We don't need to
+explicitly enable analyzing, it's on by default. The \type {mode} flag is set
+to \type {node} because we cannot use \TEX's default mechanism. When \LUATEX\
+and \MKIV\ are beyond beta stage, we will use that mode by default.
+
+\ShowArabSample {arab-none}
+
+Once these forms are identified, the \type {init}, \type {medi}, \type {fina}
+and \type {isol} features can be applied since they need this information. As
+you can see, different shapes show up. The vowels (marks in \OPENTYPE\ speak)
+are not affected. It may not be entirely clear here, but these vowels don't have
+width.
+
+\ShowArabSample {arab-compose}
+
+We start with some preparations with regards to combinations of marks. This
+is really needed in order to get the right output.
+
+\ShowArabSample {arab-replace}
+
+The order in which features are applied is dictated by the font and users don't
+need to bother about it. In the next example we enable the \type {mark} and
+\type {mkmk} features. As with other positioning related features, these are
+normally applied late in the feature chain.
+
+\ShowArabSample {arab-mark}
+
+The \type {mark} feature positions marks (vowels) relative to characters, also
+known as mark to base. The \type {mkmk} feature positions marks to basemarks.
+
+\ShowArabSample {arab-mkmk}
+
+Kerning depends on the font. Some fonts don't need kerning, others may need
+extensive relative positioning of characters (by now glyphs).
+
+\ShowArabSample {arab-kern}
+
+So far we only had rather straightforward replacements. More sophisticated
+replacements are those driven by the context. In principle all replacements
+can be context driven, but the \type {calt} and \type {clig} features are
+normally dedicated to the real complex ones that take preceding and following
+characters into account.
+
+\ShowArabSample {arab-context}
+
+Ligatures are often used to beautify Arabic typeset documents. Here we enable the
+whole lot.
+
+\ShowArabSample {arab-ligs}
+
+Kerning deals with horizontal displacements, but \type {curs} (cursive) goes one
+step further. As with marks, positioning is based on anchor points and resolving
+them involves a bit of trickery because one needs to take into account that
+characters may have vowels attached to them.
+
+\ShowArabSample {arab-curs}
+
+One script can serve multiple languages so let's see what happens when we switch to
+Urdu.
+
+\ShowArabSample {arab-urdu}
+
+In practice one will enable most of the features. In \MKIV\ one can define feature
+sets as follows:
+
+\starttyping
+\definefontfeature
+  [arab-default]
+  [mode=node,language=dflt,script=arab,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   liga=yes,dlig=yes,rlig=yes,clig=yes,
+   mark=yes,mkmk=yes,kern=yes,curs=yes]
+\stoptyping
+
+Applying these features to fonts can be done in several ways, with as most basic
+one:
+
+\starttyping
+\font\ArabFont=arabtype*arab-default at 18pt
+\stoptyping
+
+Normally one will do something like
+
+\starttyping
+\definefont[ArabFont][arabtype*arab-default at 18pt]
+\stoptyping
+
+or use typescripts to set up ap proper font collection, in which case we end
+up with definitions that look like:
+
+\starttyping
+\definefontsynonym[ArabType][name:arabtype][features=arab-default]
+\definefontsynonym[Serif][ArabType]
+\stoptyping
+
+More information about typescripts can be found in manuals and on the
+\CONTEXT\ wiki.
+
+We end this chapter with showing two arabic fonts so that you can get a taste
+if the differences: arabtype by MicroSoft and Palatino which is designed by
+Herman Zapf for Linotype.
+
+\def\ArabSampleFont{arabtype} \ShowArabSample {arab-default}
+
+\def\ArabSampleFont{name:palatinoltarabic} \ShowArabSample {arab-default}
+
+These fonts are quite different in designsize:
+
+\def\Test{test} %  (\the\dimexpr1em\relax)}
+
+\starttabulate[|r|c|c|c|]
+\NC          \NC \bf arabtype                        \NC \bf palatino                                     \NC \NR
+\NC \bf 10pt \NC \definedfont[arabtype at 10pt]\Test \NC \definedfont[name:palatinoltarabic at 10pt]\Test \NC \NR
+\NC \bf 12pt \NC \definedfont[arabtype at 12pt]\Test \NC \definedfont[name:palatinoltarabic at 12pt]\Test \NC \NR
+\NC \bf 18pt \NC \definedfont[arabtype at 18pt]\Test \NC \definedfont[name:palatinoltarabic at 18pt]\Test \NC \NR
+\NC \bf 24pt \NC \definedfont[arabtype at 24pt]\Test \NC \definedfont[name:palatinoltarabic at 24pt]\Test \NC \NR
+\stoptabulate
+
+\stopcomponent

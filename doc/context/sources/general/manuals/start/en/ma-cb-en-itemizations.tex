@@ -1,0 +1,297 @@
+\startcomponent ma-cb-en-itemizations
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[reference=itemize,title=Itemize]
+
+\index{itemize}
+\index{columns in itemize}
+
+\Command{\tex{startitemize}}
+\Command{\tex{setupitemize}}
+\Command{\tex{definesymbol}}
+\Command{\tex{item}}
+\Command{\tex{head}}
+
+One way of structuring your information is by way of enumeration or summing up
+items. The itemize command looks like this:
+
+\shortsetup{startitemize}
+
+For example:
+
+\startbuffer
+\startitemize[R,packed,broad]
+\item Hasselt was founded in the 14th century.
+\item Hasselt is known as a so called Hanze town.
+\item Hasselt's name stems from a tree.
+\stopitemize
+\stopbuffer
+
+\typebuffer
+
+Within the \type{\start ... \stopitemize} pair you start a new item with
+\type{\item}. The space after \type{\item} is required. In the example above
+\type{R} specifies Roman numbering and \type{packed} keeps line spacing to a
+minimum. The parameter \type{broad} takes care of the spacing between item
+separator and item. The example would produce:
+
+\getbuffer
+
+Items can be defined in a more structured way:
+
+\startbuffer
+\startitemize[R,packed,broad]
+\startitem Hasselt was founded in the 14th century. \stopitem
+\startitem Hasselt is known as a so called Hanze town. \stopitem
+\startitem Hasselt's name stems from a tree. \stopitem
+\stopitemize
+\stopbuffer
+
+\typebuffer
+
+The bracket pair contains information on item separators and local set up
+variables.
+
+\placetable
+  [here]
+  [tab:itemsetup]
+  {Item separators in itemize.}
+  {\starttable[|l|l|]
+  \HL
+  \NC \bf Argument \NC \bf Item separator symbol  \NC\SR
+  \HL
+  \NC 1            \NC $\bullet$            \NC\FR
+  \NC 2            \NC $-$                  \NC\MR
+  \NC 3            \NC $\star$              \NC\MR
+  \NC $\vdots$     \NC $\vdots$             \NC\MR
+  \NC n            \NC 1 2 3 4 $\cdots$     \NC\MR
+  \NC a            \NC a b c d $\cdots$     \NC\MR
+  \NC A            \NC A B C D $\cdots$     \NC\MR
+  \NC r            \NC i ii iii iv $\cdots$ \NC\MR
+  \NC R            \NC I II III IV $\cdots$ \NC\LR
+  \HL
+  \stoptable}
+
+You can also define your own item separator by means of \type{\definesymbol}. For
+example if you try this:
+
+\startbuffer
+\definesymbol[5][$\clubsuit$]
+
+\startitemize[5,packed]
+\item Hasselt was built on a riverdune.
+\item Hasselt lies at the crossing of two rivers.
+\stopitemize
+\stopbuffer
+
+\typebuffer
+
+You will get:
+
+\getbuffer
+
+If you want to have a sort of head within an enumeration you should use
+\type{\head} instead of \type{\item}.
+
+\startbuffer
+Hasselt lies in the province of Overijssel and there are a number
+of customs that are typical of this province.
+
+\startitemize
+
+\head kraamschudden \hfill (child welcoming)
+
+      When a child is born the neighbours come to visit the new
+      parents. The women come to admire the baby and the men come to
+      judge the baby (if it is a boy) on other aspects.
+      The neighbours will bring a {\em krentenwegge} along. A
+      krentenwegge is a loaf of currant bread of about 1 \unit{Meter}
+      long. Of course the birth is celebrated with {\em jenever}.
+
+\head nabuurschap (naberschop) \hfill (neighbourship)
+
+      Smaller communities used to be very dependent on the
+      cooperation among the members for their well being. Members of
+      the {\em nabuurschap} helped each other in difficult times
+      during harvest times, funerals or any hardship that fell upon
+      the community.
+
+\head Abraham \& Sarah  \hfill (identical)
+
+      When people turn 50 in Hasselt it is said that they see Abraham
+      or Sarah. The custom is to give these people a {\em speculaas}
+      Abraham or a Sarah. Speculaas is a kind of hard spiced biscuit.
+
+\stopitemize
+\stopbuffer
+
+\typebuffer
+
+The \type{\head} can be set up with \type{\setupitemize}. In case of a page
+breaking a \type{\head} will appear on a new page. (The \type {\unit{Meter}}
+command is explained in \in {chapter} [units].)
+
+The example of old customs will look like this:
+
+\getbuffer
+
+The set up parameters of itemize are described in \in {table} [tab:itemizesetup].
+
+\placetable
+  [here,force]
+  [tab:itemizesetup]
+  {Set up parameters in itemize.}
+  {\starttable[|l|l|]
+  \HL
+  \NC \bf Set up \NC \bf Meaning                                      \NC\SR
+  \HL
+  \NC standard   \NC standard (global) set up                         \NC\FR
+  \NC packed     \NC no vertical spacing between items                \NC\MR
+  \NC serried    \NC no horizontal spacing between separator and text \NC\MR
+  \NC joinedup   \NC no vertical spacing before and after itemize     \NC\MR
+  \NC broad      \NC horizontal spacing between separator and text    \NC\MR
+  \NC inmargin   \NC place separator in margin                        \NC\MR
+  \NC atmargin   \NC place separator on margin                        \NC\MR
+  \NC stopper    \NC place full stop after separator                  \NC\MR
+  \NC columns    \NC put items in columns                             \NC\MR
+  \NC intro      \NC prevent page breaking after introduction line    \NC\MR
+  \NC continue   \NC continue numbering or lettering                  \NC\LR
+  \HL
+  \stoptable}
+
+You can use the set up parameters in \type{\startitemize}, but for reasons of
+consistency you can make them valid for the complete document with
+\type{\setupitemize}.
+
+The parameter \type{columns} is used in conjunction with
+a (written) number. If you type this:
+
+\startbuffer
+\startitemize[n,columns,four]
+\item Achter 't Werk
+.
+.
+.
+\item Justitiebastion
+\stopitemize
+\stopbuffer
+
+\typebuffer
+
+\page[bigpreference]
+
+You will get:
+
+\startbuffer
+\startitemize[n,packed,columns,four,broad]
+\item Achter 't Werk
+\item Baangracht
+\item Brouwersgracht
+\item Eikenlaan
+\item Eiland
+\item Gasthuisstraat
+\item Heerengracht
+\item Hofstraat
+\item Hoogstraat
+\item Julianakade
+\item Justitiebastion
+\item Kaai
+\item Kalverstraat
+\item Kastanjelaan
+\item Keppelstraat
+\stopitemize
+\stopbuffer
+
+\bgroup
+\getbuffer
+\egroup
+
+Sometimes you want to continue the enumeration after a short intermezzo. Then you
+type for example \type{\startitemize[continue]} and numbering
+will continue and all other preferences are kept.
+
+\startbuffer
+\startitemize[continue]
+\item Markt
+\item Meestersteeg
+\item Prinsengracht
+\item Raamstraat
+\item Ridderstraat
+\item Rosmolenstraat
+\item Royenplein
+\item Van Nahuijsweg
+\item Vicariehof
+\item Vissteeg
+\item Watersteeg
+\item Wilhelminalaan
+\item Ziekenhuisstraat
+\stopitemize
+\stopbuffer
+
+\getbuffer
+
+The parameter \type{broad} enlarges the horizontal space between item separator
+and itemtext.
+
+\shortsetup{setupitemize}
+
+An itemize within an itemize is automatically typeset in a correct way. For
+example if you type:
+
+\startbuffer
+In the Netherlands the cities can determine the height of a number of
+taxes. So the cost of living can differ from town to town. There are
+differences of up to 50\% in taxes such as:
+
+\setupitemize[2][width=5em]
+\startitemize[n]
+
+\item[estate tax] real estate tax
+
+      The real estate tax is divided into two components:
+
+      \startitemize[a,packed]
+      \item the ownership tax
+      \item the tenant tax
+      \stopitemize
+
+      If the real estate has no tenant the owner pays both components.
+
+\item dog licence fee
+
+      The owner of one or more dogs pays a fee. When a dog has died
+      or been sold the owner has to inform city hall.
+
+\stopitemize
+\stopbuffer
+
+\typebuffer
+
+then the horizontal space between item separator and text at the second level of
+itemizing is set with \type{\setupitemize[2][width=5em]}.
+
+The example will look like this:
+
+\start
+\getbuffer
+\stop
+
+You can refer to an item if you give it a label (see \type{\item[estate tax]}).
+If you then type:
+
+\startbuffer
+\in{In item}[estate tax] we discussed one of the income sources of Hasselt.
+\stopbuffer
+
+\typebuffer
+
+You'll get a reference to that item:
+
+\getbuffer
+
+\stopchapter
+
+\stopcomponent

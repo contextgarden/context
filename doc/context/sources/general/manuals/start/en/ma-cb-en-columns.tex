@@ -1,0 +1,154 @@
+\startcomponent ma-cb-en-columns
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Columns]
+
+\index{columns}
+
+\Command{\tex{startcolums}}
+\Command{\tex{setupcolumns}}
+\Command{\tex{column}}
+
+Simple sections of text can be typeset in columns. If you preceed a text fragment
+by \type{\startcolumns} and close the text fragment by \type{\stopcolumns}
+everything in between will be set in columns.
+
+\shortsetup{startcolumns}
+
+Let's give an example:
+
+\startbuffer
+\startcolumns[n=3,tolerance=verytolerant]
+  Hasselt is an old Hanseatic City, situated 12~km north of Zwolle
+  at the river Zwartewater.
+
+  ...
+
+  Furthermore some events of special interest should be
+  mentioned. Every year at the end of August Hasselt celebrates
+  the \quote{Eui Festival} (hay festival).
+\stopcolumns
+\stopbuffer
+
+\typebuffer
+
+\startbuffer
+\hyphenation{Ste-pha-nus}
+\startcolumns[n=3,tolerance=verytolerant]
+Hasselt is an old Hanseatic City, situated 12~km north of Zwolle at
+the river Zwartewater.
+
+The city has a long history since obtaining the city charter around
+1252. Part and parcel of this history can be traced back to a large
+number of monuments to be admired in the city center.
+
+There you will find the St. Stephanus church, a late gothic church
+dating back to 1479 with a magnificent organ. The former Municipal
+Building is situated on The Market Place. Constituted between 1500
+and 1550 it houses a large collection of weapons, amongst which one
+of the largest collection of black powder guns (haakhussen) in the
+whole world should be mentioned.
+
+Furthermore there is a corn windmill \quote{The Swallow}, dating back to
+1748 as well as the \quote{Stenendijk}, a unique embankment and the last
+shell limekiln in Europe still in full operation.
+
+The city center with the townmoat adorned by lime-trees, the Van
+Stolkspark and the hustle and bustle at the docks are ideally suited
+for a stroll.
+
+The area around Hasselt is also worth mentioning. In wintertime
+polder Mastenbroek harbours large numbers of geese. In summertime the
+hamlets Gen\-ne, Streukel and Celle\-mui\-den form, together with the very
+rare lapwing flowers (Lat. Fritillaria meleagris) found on the banks
+of the river Zwatewater, the ideal surroundings for walking or
+cycling trips.
+
+Hasselt also is a very important center for watersports. The lakes of
+northwest Overijssel, the river IJssel, the Overijsselse Vecht and
+the Randmeren are within easy reach from the yacht harbour `De
+Molenwaard'. Sailing, fishing, swimming and ca\-noe\-ing can be fully
+enjoyed in Hasselt.
+
+Furthermore some events of special interest should be
+mentioned. Every year at the end of August Hasselt celebrates the
+\quote{Eui Festival} (hay festival).
+\stopcolumns
+\stopbuffer
+
+The result will be a three column text.
+
+\start
+\switchtobodyfont[9pt]
+\getbuffer
+\stop
+
+If possible a new column can be enforced with \type{\column}. You can set up
+columns with:
+
+\shortsetup{setupcolumns}
+
+In most cases you will obtain a better result by type setting the text on
+\quote{grid}. This is done by typing \type{grid=yes} in the command \type
+{\setuplayout}.
+
+If you want to use columns within a framed text \type{\start ... \stopframedtext}
+there is the simple column mechanism.
+
+\startbuffer
+\startframedtext[background=color,backgroundcolor=gray]
+\startsimplecolumns
+  In Hasselt's local newspaper there was a column on the
+  local customs during New Years Eve.
+  ...
+  \midaligned{\inlinechemical{CaC_2,+,2H_2O,GIVES,C_2H_2(g),+,Ca(OH)_2}}
+  ...
+  Nowadays the heavy metal lid of the milk can is replaced by
+  a football. This does not reduce the sound but it is much
+  saver.
+\stopsimplecolumns
+\stopbuffer
+
+\typebuffer
+
+\startbuffer
+\startframedtext[background=color,backgroundcolor=gray,width=\textwidth]
+\startsimplecolumns
+  In Hasselt's local newspaper there was a column on the
+  local customs during new years Eve. Next to the more
+  general custom of eating Dutch doughnuts (oliebollen)
+  and lighting fireworks there is the carbide shooting.
+  What you need is an oldfashioned metal milk can, carbide,
+  a little water and a lighter.
+
+  The carbide and water is mixed in the closed milk can and
+  will produce \inlinechemical{C_2H_2} gas (acetylene), via:
+
+  \midaligned{\inlinechemical{CaC_2,+,2H_2O,GIVES,C_2H_2 (g),+,Ca(OH)_2}}
+
+  The volatile acetylene gas in the milk can is ignited via a small
+  opening in the can. The result is a very loud detonation and the lid
+  flies off.
+
+  It will not surprise you that Hasselts youth has a designated
+  shooting ground for carbide shooting. Nowadays the heavy
+  metal lid of the milk can is replaced by a football. This
+  does not reduce the sound but it is much saver!
+\stopsimplecolumns
+\stopframedtext
+\stopbuffer
+
+This will result in:
+
+\getbuffer
+
+There is an advanced column mechanism available that is described in the
+\goto {\em Columns} [ url (manual:columns)
+] manual.
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,176 @@
+% language=uk
+
+\startcomponent mk-fallback
+
+\environment mk-environment
+
+\chapter {Virtual Reality}
+
+When a font lacks glyphs we can add new ones by making the font
+virtual. A virtual font has virtual glyphs: instead of a reference
+to a slot in the current font, such a glyph refers to a slot in
+another font, or it combines several glyphs into one, or it just
+contains code that ends up in the result (for instance a sequence
+of \PDF\ commands that describes the shape). For \TEX\ a character
+and its dimensions are what matters and what ends up in the result
+is mostly a matter for the backend. In \LUATEX\ the backend is
+integrated but even then during the typesetting process only the
+characteristics of a glyph are used and not the shape.
+
+In \CONTEXT\ we have a feature called \quote {compose} which
+extends the font with extra characters and constructs its
+representation from those of other characters.
+
+\starttyping
+\definefontfeature
+  [composes]
+  [kern=yes,ligatures=yes,compose=yes]
+\stoptyping
+
+When this feature is applied, \CONTEXT\ will try to fill in the
+gaps in the \UNICODE\ vector of the font based on for instance
+(de)composition information. Of course this has some limitations.
+For instance \OPENTYPE\ fonts can ships with features, like
+smallcaps. Currently we ignore this property when we add composed
+characters. Technically it is no big deal to add variants but we
+simply didn't do it yet at the time of this writing. After all,
+such fallbacks can best be avoided by using proper fonts.
+
+Our \CONTEXT\ \MKIV\ wishlist mentions a mechanism for combining
+fonts into one font. For this we can use virtual fonts and the
+machinery for that is in available in \LUA\ code. However such a
+mechanism will be used for more drastic completion of a font than
+the compose feature. For instance, often Chinese fonts lack proper
+Latin glyphs and vise versa. But when we combine such fonts we
+really do want to keep \OPENTYPE\ features working and so we
+cannot use virtual fonts (unless we start merging features which
+can become really messy and runtime consuming).
+
+There is a relative simple solution using real fonts that kind of
+behave like virtual ones: virtual real fonts. The trick is in the
+fact that \TEX\ permits access to characters not present in the
+font. Say that we have
+
+\starttyping
+<char 123><char 124><char 125>
+\stoptyping
+
+and that slot~124 has no glyph. In that case \TEX\ just inserts a
+glyph node with a reference to the current font and this
+character. Of course, when we let \TEX\ carry on, at some point it
+will need glyph properties like the width, height and/or depth.
+And in the backend, when writing the result to file, \TEX\ wants
+to insert the glyph data in the file. In both cases we end up with
+a message in the log file and a result file with missing data.
+
+In \CONTEXT\ \MKIV\ we intercept the node lists at several points
+and one of those is directly after the construction. So let's
+consider the previous example again.
+
+\starttyping
+<font 32 char 123><font 32 char 124><font 32 char 125>
+\stoptyping
+
+Because the font has no character 124 we need a way to substitute
+it with another character. All we have to do is to change the font
+identifier~32 into one that makes sense. Such a replacement loop
+is kind of trivial.
+
+\starttyping
+for n in traverse_id(glyph,head) do
+    local v = vectors[n.font]
+    if v then
+        local id = v[n.char]
+        if id then
+            n.font = id
+        end
+    end
+end
+\stoptyping
+
+We have a table (\type{vectors}) that can have a subtable (\type
+{v}) for font with id (\type {n.font}) in which there can be a
+reference from the current character (\type {n.char}) to another
+font (\type {id}) that we use to replace the font reference (\type
+{n.font}).
+
+Filling the table is relatively easy but an explanation is beyond
+this chapter. We only show the high level interface, one that
+certainly will evolve.
+
+\starttyping
+\definefontfallback
+  [SerifFallback]
+  [Mono]
+  [0x000-0x3FF]
+  [check=yes,force=no]
+\stoptyping
+
+This command registers an entry in the \type {SerifFallback}
+namespace. There can be multiple replacement in row (by just using
+more of these commands), but here we have only one. The range
+0x000--0x3FF will be checked and if the main font lacks a glyph in
+that range, it will be taken from the font with the symbolic name
+\type {Mono}. That name will be resolved when the fallback is
+associated with a font. The \type {check} option tells the
+machinery that we need to check for existence and because we don't
+\type {force}, we will only replace missing glyphs. There is also
+an \type {rscale} option, that permits relative scaling of the
+fallback font to the main font, something that may be needed when
+fonts come from different sources.
+
+\starttyping
+\definefontsynonym
+  [SerifPlus]
+  [Serif]
+  [fallbacks=SerifFallback]
+\stoptyping
+
+This command associates a fallback with a font. There is always a
+parent font and that is the font that triggers the checking of the
+node list.
+
+\starttyping
+\definefont [MySerif] [SerifPlus at 10pt]
+\stoptyping
+
+Here we defines a font called \type {\MySerif} that refers to a
+symbolic name \type {SerifPlus} which in turn refers to the
+current \type {Serif} font (these symbolic names are resolved in
+typescripts, one of the building blocks of \CONTEXT s font
+system). The mentioned fallbacks will be initialized when the font
+is defined. This examples demonstrates that there is a clean
+separation between font definitions and fallbacks. This makes it
+possible to share fallback definitions.
+
+So, let's summarize what happens:
+
+\startitemize[packed]
+\item a font is defined in the normal way but has falbacks
+\item the associated fallback fonts are defined too
+\item the main font gets a table with fallback id's
+\item the main font is used in the document stream
+\item the node list is intercepted and parsed for this font
+\item references to fallback fonts take care of missing glyphs
+\stopitemize
+
+We end with an example.
+
+\startbuffer
+\definefontfallback [Demo] [Mono] [0x30-0x39] [force=yes]
+\definefontsynonym  [DemoSerif] [Serif] [fallbacks=Demo]
+
+\definefont [MyDemoSerif] [DemoSerif at 20pt]
+
+\MyDemoSerif Here the digits, like 13579, are replaced.
+\stopbuffer
+
+\typebuffer
+
+\start \blank[3*medium] \getbuffer \blank[3*medium] \stop
+
+Beware: the fallback definitions are global, but this is hardly a
+problem because normal such trickery is taking place at the document
+level.
+
+\stopcomponent

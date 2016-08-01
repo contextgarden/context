@@ -1,0 +1,561 @@
+% language=uk
+
+\startcomponent mk-zapfino
+
+\environment mk-environment
+
+\nonknuthmode
+
+\definefontfeature
+   [SampleFont]
+   [language=dflt,
+    script=latn,
+    calt=yes,
+    clig=yes,
+    rlig=yes,
+    tlig=yes,
+    mode=node]
+
+\font\Sample=ZapfinoExtraLTPro*SampleFont at 24pt
+
+\def\SampleChar#1{\dontleavehmode\struttedbox{\Sample\fontchar{#1}}}
+\def\SampleText#1{\dontleavehmode\struttedbox{\Sample#1}}
+
+\doifmodeelse {tug} {
+
+    \title{Zapfing fonts}
+
+    \subject{by Hans Hagen \& Taco Hoekwater}
+
+    This is Chapter~XII from \notabene {\CONTEXT, from \MKII\ to \MKIV}, a document
+    that describes our explorations, experiments and decisions made while
+    we develop \LUATEX. This text has not been copy-edited.
+
+    \blank[3*big]
+
+} {
+
+    \chapter{Zapfing fonts}
+
+}
+
+\subject {remark}
+
+{\it The actual form of the tables shown here might have changed
+in the meantime. However, since this document describes the
+stepwise development of \LUATEX\ and \CONTEXT\ \MKIV\ we don't
+update the following information. The rendering might differ from
+earlier rendering simply because the code used to process this
+chapter evolves.}
+
+\subject {features}
+
+In previous chapters we've seen support for \OPENTYPE\ features creep into \LUATEX\ and
+\CONTEXT\ \MKIV. However, it may not have been clear that so far we were just feeding
+the traditional \TEX\ machinery with the right data: ligatures and kerns. Here we will
+show what so called features can do for you. Not much \LUA\ code will be shown, if
+only because relatively complex code is needed to handle this kind of trickery with
+acceptable performance.
+
+In order to support features in their full glory more is needed than \TEX's ligature
+and kern mechanisms: we need to manipulate the node list. As a result, we have now a
+second mechanism built into \MKIV\ and users can choose what method they like most. The
+first method, called \type {base}, is less powerful and less complete
+than the one named \type {node}. Eventually \CONTEXT\ will use the node method by
+default.
+
+There are two variants of features: substitutions and positioning. Here we
+concentrate on substitutions of which there are several. Positioning is for instance
+used for specialized kerning as needed in for instance typesetting Arab.
+
+One character representation can be replaced by one or more fixed alternatives or alternatives
+chosen from a list of alternatives (substitutions or alternates). Multiple characters
+can be replaces by one character (substitutions, alternates or a ligature). The
+replacements can depend on preceding and|/|or following glyphs in which case we say that
+the replacement is driven by rules. Rules can deal with single glyphs, combinations of
+glyphs, classes (defined in the font) of glyphs and|/|or ranges of  glyphs.
+
+Because the available documentation of \OPENTYPE\ is rather minimalistic and because
+most fonts are relatively simple, you can imagine that figuring out how to
+implement support for fonts with advanced features is not entirely trivial
+and involves some trial and error. What also complicate things is that features can
+interfere. Yet another complicating factor is that in the order of applying a rule may
+obscure a later rule. Such fonts don't ship with manuals and examples of correct output
+are not part of the buy.
+
+We like testing \LUATEX's open type support with Palatino Regular and Palatino Sans and
+good old \TYPEONE\ support with Optima Nova. So it makes sense to test advanced
+features with Zapfino Pro. This font has many features, which happen to be
+implemented by Adam Twardoch, a well known font expert and familiar with the \TEX\
+community. We had the feeling that when \LUATEX\ can support Zapfino Pro, designed by
+Hermann Zapf and enhanced by Adam, we have reached a crucial point in the development.
+
+The first thing that you will observe when using this font is that the files are larger
+than normal, especially the cached versions in \MKIV. This made me extend some of the
+serialization code that we use for caching font data so that it could handle huge
+tables better but at the cost of some speed. Once we could handle the data conveniently
+and as a side effect look into the font data with an editor, it became clear that
+implementing for the \type {calt} and \type {clig} features would take a bit
+of coding.
+
+\subject{example}
+
+Before some details will be discussed, we will show two of the test texts that \CONTEXT\
+users normally use when testing layouts or new features, a quote from E.R.\ Tufte and
+one from Hermann Zapf. The \TEX\ code shows how features are set in \CONTEXT.
+
+\startbuffer
+\definefontfeature
+   [zapfino]
+   [language=nld,script=latn,mode=node,
+    calt=yes,clig=yes,liga=yes,rlig=yes,tlig=yes]
+
+\definefont
+    [Zapfino]
+    [ZapfinoExtraLTPro*zapfino at 24pt]
+    [line=40pt]
+\Zapfino
+\input tufte \par
+\stopbuffer
+
+\typebuffer  \blank[disable] \start \getbuffer \stop
+
+You don't even have to look too closely in order to notice that characters are
+represented by different glyphs, depending on the context in which they appear.
+
+\startbuffer
+\definefontsynonym
+  [Zapfino]
+  [ZapfinoExtraLTPro]
+  [features=zapfino]
+\definedfont
+  [Zapfino at 24pt]
+\setupinterlinespace
+  [line=40pt]
+\input zapf \par
+\stopbuffer
+
+\typebuffer \blank[disable] \start \getbuffer \stop
+
+\subject{obeying rules}
+
+When we were testing node based feature support, the only way to check this was to
+identify the rules that lead to certain glyphs. The more unique glyphs are good
+candidates for this. For instance
+
+\startitemize[packed]
+\item there is s special glyph representing \SampleChar{c_slash_o}
+\item in the input stream this is the character sequence \type{c/o}
+\item so there most be a rule that tells us that this sequence becomes that ligature
+\stopitemize
+
+As said, in this case, the replacement glyph is supposed to be a ligature and indeed
+there is such a ligature: \type {c_slash_o}. Of course, this replacement will only
+take place when the sequence is surrounded by spaces.
+
+However, when testing this, we were not looking at this rule but at the (randomly
+chosen) rule that was meant to intercept the alternative \type {h.2} followed
+by \type {z.4}. Interesting was that this resolved to a ligature indeed, but
+the shape associated with this ligature was an~\type {h}, which is not right.
+Actually, a few more of such rules turned out to be wrong. It took a bit of
+an effort to reach this conclusion because of the mentioned interferences
+of features and rules. At that time, the rule entry (in raw \LUATEX\ table
+format) looks as follows:
+
+\starttyping
+[44] = {
+    ["format"] = "coverage",
+    ["rules"] = {
+        [1] = {
+            ["coverage"] = {
+                ["ncovers"] = {
+                    [1] = "h.2",
+                    [2] = "z.4",
+                }
+            },
+            ["lookups"] = {
+                [1] = {
+                    ["lookup_tag"] = "L084",
+                    ["seq"] = 0,
+                }
+            }
+        }
+    }
+    ["script_lang_index"] = 1,
+    ["tag"] = "calt",
+    ["type"] = "chainsub"
+}
+\stoptyping
+
+Instead of reinventing the wheel, we used the \FONTFORGE\ libraries for reading the
+\OPENTYPE\ font files. Therefore the \LUATEX\ table is resembling the internal \FONTFORGE\
+data structures. Currently we show the version~1 format.
+
+Here \type {ncovers} means that when the current character has shape \SampleChar
+{h.2} (\type{h.2}) and the next one is \SampleChar{z.4} (\type{z.4}) (a sequence)
+then we need to apply the lookup internally tagged \type {L084}. Such a rule
+can be more extensive, for instance instead of \type {h.2} one can have a list of
+characters, and there can be \type {bcovers} and \type {fcovers} as well, which means
+that preceding or following character need to be taken into account.
+
+When this rule matches, it resolves to a specification like:
+
+\starttyping
+[6] = {
+    ["flags"] = 0,
+    ["lig"] = {
+        ["char"] = "h",
+        ["components"] = "h.2 z.4",
+    },
+    ["script_lang_index"] = 65535,
+    ["tag"] = "L084",
+    ["type"] = "ligature",
+}
+\stoptyping
+
+Here \type {tag} and \type {script_lang_index} are kind of special and
+are part of an private feature system, i.e.\ they make up the cross reference
+between rules and glyphs. Watch how the components don't match the character,
+which is even more peculiar when we realize that these are the initials of the
+author of the font. It took a couple of Skype sessions and mails before
+we came to the conclusion that this was probably a glitch in the font. So,
+what to do when a font has bugs like this? Should one disable the feature?
+That would be a pitty because a font like Zapfino depends on it. On the other
+hand, given the number of rules and given the fact that there are different
+rule sets for some languages, you can imagine that making up the rules and
+checking them is not trivial.
+
+We should realize that Zapfino is an extraordinary case, because it used
+the \OPENTYPE\ features extensively. We can also be sure that the problems will
+be fixed once they are known, if only because Adam Twardoch (who did the job)
+has exceptionally high standards but it may take a while before the fix reached
+the user (who then has to update his or her font). As said, it also takes some
+effort to run into the situation described here so the likelihood of running
+into this rule is small. This also brings to our attention the fact that fonts
+can now contain bugs and updating them makes sense but can break existing
+documents. Since such fonts are copyrighted and not available on line, font
+vendors need to find ways to communicate these fixes to their customers.
+
+Can we add some additional checks for problems like this? For a while I
+thought that it was possible by assuming that ligatures have names like
+\type {h.2_z.4} but alas, sequences of glyphs are mapped onto ligatures
+using mappings like the following:
+
+\starttabulate[||||]
+\NC \type{three fraction four.2} \NC \type{threequarters} \NC \SampleChar{threequarters} \NC\NR
+\NC \type{three fraction four}   \NC \type{threequarters} \NC \SampleChar{threequarters} \NC\NR
+\NC \type{d r}                   \NC \type{d_r}           \NC \SampleChar{d_r}           \NC\NR
+\NC \type{e period}              \NC \type{e_period}      \NC \SampleChar{e_period}      \NC\NR
+\NC \type{f i}                   \NC \type{fi}            \NC \SampleChar{fi}            \NC\NR
+\NC \type{f l}                   \NC \type{fl}            \NC \SampleChar{fl}            \NC\NR
+\NC \type{f f i}                 \NC \type{f_f_i}         \NC \SampleChar{f_f_i}         \NC\NR
+\NC \type{f t}                   \NC \type{f_t}           \NC \SampleChar{f_t}           \NC\NR
+\stoptabulate
+
+Some ligature have no \type {_} in their names and there are also some
+inconsistencies, compare the \type {fl} and \type {f_f_i}. Here font
+history is painfully reflected in inconsistency and no solution can be
+found here.
+
+So, in order to get rid of this problem, \MKIV\ implements a method to ignore
+certain rules but then, this only makes sense if one knows how the rules
+are tagged internally. So, in practice this is no solution. However, you can
+imagine that at some point \CONTEXT\ ships with a database of fixes that
+are applied to known fonts with certain version numbers.
+
+We also found out that the font table that we used was not good enough for our
+purpose because the exact order in what rules have to be applies was not
+available. Then we noticed that in the meantime \FONTFORGE\ had moved on
+to version~2 and after consulting the author we quickly came to the conclusion
+that it made sense to use the updated representation.
+
+In version~2 the snippet with the previously mentioned rule looks as follows:
+
+\starttyping
+["ks_latn_l_66_c_19"]={
+ ["format"]="coverage",
+ ["rules"]={
+  [1]={
+   ["coverage"]={
+    ["current"]={
+     [1]="h.2",
+     [2]="z.4",
+    }
+   },
+   ["lookups"]={
+    [1]={
+     ["lookup"]="ls_l_84",
+     ["seq"]=0,
+    }
+   }
+  }
+ },
+ ["type"]="chainsub",
+},
+\stoptyping
+
+The main rule table is now indexed by name which is possible because the order
+of rules is specified somewhere else. The key \type {ncovers} has been replaced
+by \type {current}. As long as \LUATEX\ is in beta stage, we have the freedom to
+change such labels as some of them are rather \FONTFORGE\ specific.
+
+This rule is mentioned in a feature specification table. Here specific features are
+associated with languages and scripts. This is just one of the entries concerning
+\type {calt}. You can imagine that it took a while to figure out how best to
+deal with this, but eventually the \MKIV\ code could do the trick. The cryptic
+names are replacements for pointers in the \FONTFORGE\ datastructure. In order to be
+able to use \FONTFORGE\ for font development and analysis, the decision was made to
+stick closely to its idiom.
+
+\starttyping
+ ["gsub"]={
+  ...
+  [67]={
+   ["features"]={
+    [1]={
+     ["scripts"]={
+      [1]={
+       ["langs"]={
+        [1]="AFK ",
+        [2]="DEU ",
+        [3]="NLD ",
+        [4]="ROM ",
+        [5]="TRK ",
+        [6]="dflt",
+       },
+       ["script"]="latn",
+      }
+     },
+     ["tag"]="calt",
+    }
+   },
+   ["name"]="ks_latn_l_66",
+   ["subtables"]={
+    [1]={
+     ["name"]="ks_latn_l_66_c_0",
+    },
+    ...
+    [20]={
+     ["name"]="ks_latn_l_66_c_19",
+    },
+    ...
+   },
+   ["type"]="gsub_context_chain",
+  },
+\stoptyping
+
+\subject{practice}
+
+The few snapshots of the font table probably don't make much sense if you
+haven't seen the whole table. Well, it certainly helps to see the whole picture,
+but we're talking of a 14 MB file (1.5 MB bytecode). When resolving ligatures,
+we can follow a straightforward approach:
+
+\startitemize[packed]
+\item walk over the nodelist and at each character (glyph node) call a function
+\item this function inspects the character and takes a look at the following ones
+\item when a ligature is identified, the sequence of nodes is replaced
+\stopitemize
+
+Substitutions are not much different but there we look at just one character.
+However, contextual substitutions (and ligatures) are more complex. Here we need
+to loop over a list of rules (dependent on script and language) and this involves
+a sequence as well as preceding and following characters. When we have a hit, the
+sequence will be replaced by another one, determined by a lookup in the character
+table. Since this is a rather time consuming operation, especially because many
+surrounding characters need to be taken into account, you can imagine that we need
+a bit of trickery to get an acceptable performance. Fortunately \LUA\ is pretty fast
+when it comes down to manipulating strings and tables, so we can prepare some handy
+datastructures in advance.
+
+When testing the implementation of features one need to be aware of the fact that
+some appearance are also implemented using the regular ligature mechanisms. Take the
+following definitions:
+
+\startbuffer[a]
+\definefontfeature
+   [none]
+   [language=dflt,script=latn,mode=node,liga=no]
+\definefontfeature
+   [calt]
+   [language=dflt,script=latn,mode=node,liga=no,calt=yes]
+\definefontfeature
+   [clig]
+   [language=dflt,script=latn,mode=node,liga=no,clig=yes]
+\definefontfeature
+   [dlig]
+   [language=dflt,script=latn,mode=node,liga=no,dlig=yes]
+\definefontfeature
+   [liga]
+   [language=dflt,script=latn,mode=node]
+\stopbuffer
+
+\startbuffer[b]
+\starttabulate[||||]
+\NC \type{none } \NC \definedfont[ZapfinoExtraLTPro*none at 24pt]\hbox{on the synthesis}\NC\definedfont[ZapfinoExtraLTPro*none at 24pt]\hbox{winnow the wheat}\NC \NR
+\NC \type{calt } \NC \definedfont[ZapfinoExtraLTPro*calt at 24pt]\hbox{on the synthesis}\NC\definedfont[ZapfinoExtraLTPro*calt at 24pt]\hbox{winnow the wheat}\NC \NR
+\NC \type{clig } \NC \definedfont[ZapfinoExtraLTPro*clig at 24pt]\hbox{on the synthesis}\NC\definedfont[ZapfinoExtraLTPro*clig at 24pt]\hbox{winnow the wheat}\NC \NR
+\NC \type{dlig } \NC \definedfont[ZapfinoExtraLTPro*dlig at 24pt]\hbox{on the synthesis}\NC\definedfont[ZapfinoExtraLTPro*dlig at 24pt]\hbox{winnow the wheat}\NC \NR
+\NC \type{liga } \NC \definedfont[ZapfinoExtraLTPro*liga at 24pt]\hbox{on the synthesis}\NC\definedfont[ZapfinoExtraLTPro*liga at 24pt]\hbox{winnow the wheat}\NC \NR
+\stoptabulate
+\stopbuffer
+
+\typebuffer[a]
+
+This gives:
+
+\start \getbuffer[a] \getbuffer[b] \stop
+
+Here are Adam's recommendations with regards to the \type {dlig} feature:
+\quotation {The \type{dlig} feature is supposed to by use only upon user's
+discretion, usually on single runs, words or even pairs. It makes little
+sense to enable \type {dlig} for an entire sentence or paragraph. That's
+how the \OPENTYPE\ specification envisions it.}
+
+When testing features it helps to use words that look similar so next we will
+show some examples that used. When we look at these examples, we need to
+understand that when a specific character representation is analyzed, the
+rules can take preceding and following characters into account. The rules
+take characters as well as their shapes, or more precisely: one of their
+shapes since Zapfino has many variants, into account. Since different rules
+are used for languages (okay, this is limited to only a subset of languages
+that use the latin script) not only shapes but also the way words are
+constructed are taken into account. Designing te rules is definitely non trivial.
+
+When testing the implementation we ran into cases where the initial \type
+{t} showed up wrong, for instance in the the Dutch word \type {troef}.
+Because space can be part of the rules, we need to handle the
+cases where words end and start and boxes are then kind of special.
+
+\definefontfeature
+   [zapfing]
+   [language=dflt,
+    script=latn,
+    calt=yes,
+    clig=yes,
+    rlig=yes,
+    tlig=yes,
+    mode=node]
+
+\font\Zapfing=ZapfinoExtraLTPro*zapfing at 24pt
+
+\startbuffer
+troef troef troef troeftroef troef  \par
+\ruledhbox{troef troef troef troeftroef troef} \par
+\ruledhbox{troef 123} \par
+\ruledhbox{troef} \ruledhbox{troef } \ruledhbox{ troef} \ruledhbox { troef } \par
+\stopbuffer
+
+\typebuffer \start \Zapfing \getbuffer \stop
+
+Unfortunately, this does not work well with punctuation, which is less
+prominent in the rules than space. In our favourite test quote of Tufte, we have
+lots of commas and there it shows up:
+
+\startbuffer
+review review review, review \par
+itemize, review \par
+itemize, review, \par
+\stopbuffer
+
+\typebuffer \start \Zapfing \getbuffer \stop
+
+Of course we can decide to extend the rule base at runtime and this may
+well happen when we experiment more with this font.
+
+The next one was one of our first test lines, Watch the initial and the
+Zapfino ligature.
+
+\startbuffer
+Welcome to Zapfino
+\stopbuffer
+
+\typebuffer \start \Zapfing \getbuffer \stop
+
+For a while there was a bug in the rule handler that resulted in the variant of
+the \type {y} that has a very large descender. Incidentally the word \type
+{synthesize} is also a good test case for the \type {the} pattern which gets
+special treatment because there is a ligature available.
+
+\startbuffer
+synopsize versus synthesize versus
+synthase versus sympathy versus synonym
+\stopbuffer
+
+\typebuffer \start \Zapfing \getbuffer \stop
+
+Here are some examples that use the \type {g}, \type {d} and \type {f} in
+several places.
+
+\startbuffer
+eggen groet ogen hagen \par
+dieren druiven onder aard  donder modder \par
+fiets effe flater triest troef \par
+\stopbuffer
+
+\typebuffer \start \Zapfing \getbuffer \stop
+
+Let's see how well Hermann has taken care of the \type {h}'s
+representations. There are quite some variants of the lowercase one:
+
+\starttabulate
+\NC \type {h}      \NC \SampleChar{h}      \NC \NR
+\NC \type {h.2}    \NC \SampleChar{h.2}    \NC \NR
+\NC \type {h.3}    \NC \SampleChar{h.3}    \NC \NR
+\NC \type {h.4}    \NC \SampleChar{h.4}    \NC \NR
+\NC \type {h.5}    \NC \SampleChar{h.5}    \NC \NR
+\NC \type {h.init} \NC \SampleChar{h.init} \NC \NR
+\NC \type {h.sups} \NC \SampleChar{h.sups} \NC \NR
+\NC \type {h.sc}   \NC \SampleChar{h.sc}   \NC \NR
+\NC \type {orn.73} \NC \SampleChar{orn.73} \NC \NR
+\stoptabulate
+
+How about the uppercase variant, as used in his name:
+
+\startbuffer
+M Mr Mr. H He Her Herm Herma Herman Hermann Z Za Zap Zapf \par
+Mr. Hermann Zapf
+\stopbuffer
+
+\typebuffer \start \Zapfing \getbuffer \stop
+
+Of course we have to test another famous name:
+
+\startbuffer
+D Do Don Dona Donal Donald K Kn Knu Knut Knuth \par
+Don Knuth Donald Knuth Donald E. Knuth DEK \par
+Prof. Dr. Donald E. Knuth \par
+\stopbuffer
+
+\typebuffer \start \Zapfing \getbuffer \stop
+
+Unfortunately the \LUA\ and \TEX\ logos don't come out that well:
+
+\startbuffer
+L Lu Lua l lu lua t te tex TeX luatex luaTeX LuaTeX
+\stopbuffer
+
+\typebuffer \start \Zapfing \getbuffer \stop
+
+This font has quite some ornaments and there is an \type {ornm} feature
+that can be applied. We're still not sure about its usage, but when one
+keys in text in lowercase, \type {hermann} comes out as follows:
+
+\definefontfeature
+  [gebarentaal]
+  [language=dflt,
+   script=latn,
+   mode=node,
+   ornm=yes,
+   liga=no]
+
+{\font\Sample=ZapfinoExtraLTPro*gebarentaal at 24pt \Sample hermann}
+
+As said in the beginning, dirty implementation details will be kept away from
+the reader. Also, you should not be surprised if the current code had some
+bugs or does some things wrong. Also, if spacing looks a bit weird to you,
+keep in mind that we're still in the middle of sorting things out.
+
+\start \Zapfing Taco Hoekwater \& Hans Hagen \stop
+
+\stopcomponent

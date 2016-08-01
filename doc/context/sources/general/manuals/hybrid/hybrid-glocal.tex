@@ -1,0 +1,269 @@
+% language=uk
+
+\startcomponent hybrid-glocal
+
+\environment hybrid-environment
+
+\startchapter[title={Glocal assignments}]
+
+Here is a nice puzzle. Say that you do this:
+
+\starttyping
+\def\test{local} \test
+\stoptyping
+
+What will get typeset? Right, you'll get \type {local}. Now take this:
+
+\startbuffer
+\bgroup
+  \def \test {local}[\test]
+  \xdef\test{global}[\test]
+  \def \test {local}[\test]
+\egroup
+                    [\test]
+\stopbuffer
+
+\typebuffer
+
+Will you get:
+
+\starttyping
+[local] [local] [local] [global]
+\stoptyping
+
+or will it be:
+
+\starttyping
+[local] [global] [local] [global]
+\stoptyping
+
+Without knowing \TEX, there are good reasons for getting either of them: is a
+global assignment global only i.e.\ does it reach over the group(s) or is it
+global and local at the same time? The answer is that the global definitions also
+happens to be a local one, so the second line is what we get.
+
+Something similar happens with registers, like counters:
+
+\startbuffer
+\newcount\democount
+\bgroup
+         \democount 1[\the\democount]
+  \global\democount 2[\the\democount]
+         \democount 1[\the\democount]
+\egroup
+                     [\the\democount]
+\stopbuffer
+
+\typebuffer
+
+We get: {\tttf\getbuffer\removeunwantedspaces}, so this is
+consistent with macros. But how about boxes?
+
+\startbuffer
+\bgroup
+         \setbox0\hbox {local}[\copy0:\the\wd0]
+  \global\setbox0\hbox{global}[\copy0:\the\wd0]
+         \setbox0\hbox {local}[\copy0:\the\wd0]
+\egroup
+                              [\copy0:\the\wd0]
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlines \tttf
+\getbuffer
+\stoplines
+
+Again, this is consistent, so let's do some manipulation:
+
+\startbuffer
+\bgroup
+         \setbox0\hbox{local}         \wd0=6em [\copy0:\the\wd0]
+  \global\setbox0\hbox{global} \global\wd0=5em [\copy0:\the\wd0]
+         \setbox0\hbox{local}         \wd0=6em [\copy0:\the\wd0]
+\egroup
+                                               [\copy0:\the\wd0]
+\stopbuffer
+
+\typebuffer
+
+\startlines \tttf
+\getbuffer
+\stoplines
+
+Right, no surprise here, but \unknown
+
+\startbuffer
+\bgroup
+         \setbox0\hbox{local}  \wd0=6em [\copy0:\the\wd0]
+  \global\setbox0\hbox{global} \wd0=5em [\copy0:\the\wd0]
+         \setbox0\hbox{local}  \wd0=6em [\copy0:\the\wd0]
+\egroup
+                                        [\copy0:\the\wd0]
+\stopbuffer
+
+\typebuffer
+
+See the difference? There is none. The second width assignment is applied to the
+global box.
+
+\startlines \tttf
+\getbuffer
+\stoplines
+
+So how about this then:
+
+\startbuffer
+\bgroup
+         \setbox0\hbox{local}  \wd0=6em [\copy0:\the\wd0]
+  \global\setbox0\hbox{global}          [\copy0:\the\wd0]
+         \setbox0\hbox{local}  \wd0=6em [\copy0:\the\wd0]
+\egroup
+                                        [\copy0:\the\wd0]
+\stopbuffer
+
+\typebuffer
+
+Is this what you expect?
+
+\startlines \tttf
+\getbuffer
+\stoplines
+
+So, in the case of boxes, an assignment to a box dimension is applied to the last
+instance of the register, and the global nature is kind of remembered. Inside a
+group, registers that are accessed are pushed on a stack and the assignments are
+applied to the one on the stack and when no local box is assigned, the one at the
+outer level gets the treatment. You can also say that a global box is unreachable
+once a local instance is used. \footnote {The code that implements \type
+{\global\setbox} actually removes all intermediate boxes.}
+
+\startbuffer
+\setbox0\hbox{outer} [\copy0:\the\wd0]
+\bgroup
+            \wd0=6em [\copy0:\the\wd0]
+\egroup
+                     [\copy0:\the\wd0]
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlines \tttf
+\getbuffer
+\stoplines
+
+It works as expected when we use local boxes after such an assignment:
+
+\startbuffer
+\setbox0\hbox{outer}           [\copy0:\the\wd0]
+\bgroup
+                      \wd0=6em [\copy0:\the\wd0]
+  \setbox0\hbox{inner (local)} [\copy0:\the\wd0]
+\egroup
+                               [\copy0:\the\wd0]
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlines \tttf
+\getbuffer
+\stoplines
+
+Interestingly in practice this is natural enough not to get noticed. Also, as the
+\TEX book explicitly mentions that one should not mix local and global usage, not
+many users will do that. For instance the scratch registers 0, 2, 4, 6 and 8 are
+often used locally while 1, 3, 5, 7 and 9 are supposedly used global. The
+argument for doing this is that it does not lead to unwanted stack build-up, but
+the last examples given here provide another good reason. Actually, global
+assignments happen seldom in macro packages, at least compared to local ones.
+
+In \LUATEX\ we can also access boxes at the \LUA\ end. We can for instance change
+the width as follows:
+
+\startbuffer
+\bgroup
+         \setbox0\hbox{local}
+         \ctxlua{tex.box[0].width = tex.sp("6em")} [\copy0:\the\wd0]
+  \global\setbox0\hbox{global}
+         \ctxlua{tex.box[0].width = tex.sp("5em")} [\copy0:\the\wd0]
+         \setbox0\hbox{local}
+         \ctxlua{tex.box[0].width = tex.sp("6em")} [\copy0:\the\wd0]
+\egroup
+                                                   [\copy0:\the\wd0]
+\stopbuffer
+
+\typebuffer
+
+This is consistent with the \TEX\ end:
+
+\startlines \tttf
+\getbuffer
+\stoplines
+
+This is also true for:
+
+\startbuffer
+\bgroup
+         \setbox0\hbox{local}
+         \ctxlua{tex.box[0].width = tex.sp("6em")} [\copy0:\the\wd0]
+  \global\setbox0\hbox{global}                     [\copy0:\the\wd0]
+         \setbox0\hbox{local}
+         \ctxlua{tex.box[0].width = tex.sp("6em")} [\copy0:\the\wd0]
+\egroup
+                                                   [\copy0:\the\wd0]
+\stopbuffer
+
+\typebuffer
+
+Which gives:
+
+\startlines \tttf
+\getbuffer
+\stoplines
+
+The fact that a \type {\global} prefix is not needed for a global assignment at
+the \TEX\ end means that we don't need a special function at the \LUA\ end for
+assigning the width of a box. You won't miss it.
+
+There is one catch when coding at the \TEX\ end. Imagine this:
+
+\startbuffer
+\setbox0\hbox{local} [\copy0:\the\wd0]
+\bgroup
+  \wd0=6em           [\copy0:\the\wd0]
+\egroup
+                     [\copy0:\the\wd0]
+\stopbuffer
+
+\typebuffer
+
+In sync with what we told you will get:
+
+\startlines \tttf
+\getbuffer
+\stoplines
+
+However, this does not look that intuitive as the following:
+
+\startbuffer
+\setbox0\hbox{local} [\copy0:\the\wd0]
+\bgroup
+  \global\wd0=6em    [\copy0:\the\wd0]
+\egroup
+                     [\copy0:\the\wd0]
+\stopbuffer
+
+Here the global is redundant but it looks quite okay to put it there if only to
+avoid confusion. \footnote {I finally decided to remove some of the \type
+{\global} prefixes in my older code, but I must admit that I sometimes felt
+reluctant when doing it, so I kept a few.}
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,95 @@
+\startcomponent ma-cb-colophon
+
+\unprotect
+
+\startmakeup[\v!standard]
+
+    % This reference is needed for the interactive version.
+
+    \pagereference[colofon]
+
+    % We align the text in the middle.
+
+    \setupalign
+        [\v!middle]
+
+    % We use the default \framed macro but add a background. For most
+    % texts an offset of 20pt is adequate.
+
+    \defineframed
+        [colofon]
+        [\c!frame=\v!off,
+         \c!background=basic-shape-dark,
+         \c!rulethickness=10pt,
+         \c!align=\v!middle,
+         \c!offset=15pt]
+
+    \bfa \setupinterlinespace
+
+    \doifsomething {\documentvariable{author}} {
+
+        \dontleavehmode \startframed[colofon]
+            \labeltext{document:author}:\space
+            \documentvariable{author}
+        \stopframed
+
+        \vfill
+
+    }
+
+    \doifsomething {\documentvariable{translator}} {
+
+        \dontleavehmode \startframed[colofon]
+            \labeltext{document:translations}:\space
+            \documentvariable{translator}
+        \stopframed
+
+        \vfill
+
+    }
+
+    \doifsomething {\documentvariable{contributer}} {
+
+        \dontleavehmode \startframed[colofon]
+            \labeltext{document:contributions}:\space
+            \documentvariable{contributer}
+        \stopframed
+
+        \vfill
+
+    }
+
+    \dontleavehmode \startframed[colofon]
+        \labeltext{document:design}:\space
+        Hans Hagen
+    \stopframed
+
+    \vfill
+
+    \dontleavehmode \startframed[colofon]
+        \labeltext{document:illustrations}:\space
+        Johan Jonker
+    \stopframed
+
+    \vfill
+
+    \dontleavehmode \startframed[colofon][offset=25pt]
+        PRAGMA ADE\\
+        Ridderstraat 27\\
+        8061GH Hasselt NL\\
+        www.pragma-ade.com
+    \stopframed
+
+    \vfill
+
+    \dontleavehmode \startframed[colofon]
+        \currentdate
+    \stopframed
+
+    \vfill
+
+\stopmakeup
+
+\protect
+
+\stopcomponent

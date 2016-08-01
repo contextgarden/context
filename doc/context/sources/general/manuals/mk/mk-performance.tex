@@ -1,0 +1,410 @@
+% language=uk
+
+\startcomponent mk-performance
+
+\environment mk-environment
+
+\chapter{How about performance}
+
+\subject{remark}
+
+The previous chapters already spent some words on performance
+and memory usage. By the time that Taco and I were implementing,
+discussing and testing the callbacks related to node lists, we were
+already convinced that in all areas covered so far (file management,
+handling input characters, dealing with fonts, conversion to tokens,
+string and table manipulation, enz.) the \TEX||\LUA\ pair was up to
+the task  And so we were quite confident that processing nodes was
+not only an important aspect of \LUATEX\ but also quite feasable
+in terms of performance (after all we needed it in order to deal
+with advanced typesetting of Arab). When Taco was dealing with the
+\TEX\ side of the story, I was experimenting with possible
+mechanisms at the \LUA\ end.
+
+At the same time I got the opportunity to speed up the \METAPOST\
+to \PDF\ converter and both activities involved some timing. Here
+I report some of the observations that we made in this process.
+
+\subject{parsing}
+
+Expressions in \LUA\ are powerful and definitely faster than regular
+expressions found in other languages, but they have some limits. Most
+noticeably is the lack of alternation. In \RUBY\ one can say:
+
+\starttyping
+str = "there is no gamma in here, just an beta"
+
+if str =~ /(alph|bet|delt)a/ then
+    print($1)
+end
+\stoptyping
+
+but in \LUA\ you need a few more lines:
+
+\starttyping
+str = "there is no gamma in here, just an beta"
+
+for _, v in pairs({'alpha','beta','delta'}) do
+    local s = str:match(v)
+    if s then
+        print(s)
+        break
+    end
+end
+\stoptyping
+
+Interesting is that upto now I didn't really miss alternation but
+it may as well be that the lack of it drove me to come up with
+different solutions. For \CONTEXT\ \MKIV\ the \METAPOST\ to \PDF\
+converter has been rewritten in \LUA. This is a prelude to direct
+\LUA\ output from \METAPOST\ but I needed the exercise. It was
+among the first \LUA\ code in \MKIV.
+
+Progressive (sequential) parsing of the data is an option, and is
+done in \MKII\ using pure \TEX. We collect words and compare them
+to \POSTSCRIPT\ directives and act accordingly. The messy parts
+are scanning the preamble, which has specials to be dealt with as
+well as lots of unpredictable code to skip, and the \type
+{fshow} command which adds text to a graphic. But real dirty are
+the code fragments that deal with setting the line width and
+penshapes so the cleanup of this takes some time.
+
+In \LUA\ a different approach is taken. There is an \type {mp} table
+which collects a lot of functions that more or less reflect the
+output of \METAPOST. The functions take care of generating the right
+\PDF\ code and also handle the transformations needed because of
+the differences between \POSTSCRIPT\ and \PDF.
+
+The sequential \POSTSCRIPT\ that comes from \METAPOST\ is
+collected in one string and converted using \type {gsub} into a
+sequence of \LUA\ function calls. Before this can be done, some
+cleanup takes place. The resulting string is then executed as
+\LUA\ code.
+
+As an example:
+
+\starttyping
+1 0 0 2 0 0 curveto
+\stoptyping
+
+becomes
+
+\starttyping
+mp.curveto(1,0,0,2,0,0)
+\stoptyping
+
+which results in:
+
+\starttyping
+\pdfliteral{1 0 0 2 0 0 c}
+\stoptyping
+
+In between, the path is stored and transformed which is needed in
+the case of penshapes, where some \POSTSCRIPT\ feature is used that
+is not available in \PDF.
+
+During the development of \LUATEX\ a new feature was added to
+\LUA: \type {lpeg}. With \type {lpeg} you can define text scanners. In
+fact, you can build parsers for languages quite conveniently so
+without doubt we will see it show up all over \MKIV.
+
+Since I needed an exercise to get accustomed with \type {lpeg}, I
+rewrote the mentioned converter. I'm sure that a better implementation
+is possible than I did (after all, \POSTSCRIPT\ is a language) but
+I went for a speedy solution. The following table shows some timings.
+
+\starttabulate[|c|c|l|]
+\HL
+\NC \tt gsub \NC \tt lpeg \NC \NC \NR
+\HL
+\NC  2.5     \NC 0.5      \NC 100 times test graphic \NC \NR
+\NC  9.2     \NC 1.9      \NC 100 times big graphic  \NC \NR
+\HL
+\stoptabulate
+
+The test graphic has about everything that \METAPOST\ can output,
+including special tricks that deal with transparency and shading. The
+big one is just four copies of the test graphic.
+
+So, the \type {lpeg} based variant is about 5~times faster than the
+original variant. I'm not saying that the original implementation is
+that brilliant, but a 5~time improvement is rather nice especially
+when you consider that \type {lpeg} is still experimental and each
+version performs better. The tests were done with \type {lpeg}
+version 0.5 which performs slightly faster than its predecessor.
+
+It's worth mentioning that the original \type {gsub} based variant
+was already a bit improved compared to its first implementation.
+There we collected the \TEX\ (\PDF) code in a table and passed it
+in its concatenated form to \TEX. Because the \LUA\ to \TEX\
+interface is by now quite efficient we can just pass the
+intermediate results directly to \TEX.
+
+\subject{file io}
+
+The repertore of functions that deal with individual characters
+in \LUA\ is small. This does not bother us too much because the
+individual character is not what \TEX\ is mostly dealing with. A
+character or sequence of characters becomes a token (internally
+represented by a table) and tokens result in nodes (again
+tables, but larger). There are many more tokens involved than
+nodes: in \CONTEXT\ a ratio of 200~tokens on 1~node are not
+uncommon. A letter like \type {x} become a token, but the control
+sequence \type {\command} also ends up as one token. Later on,
+this \type {x} may become a character node, possibly surrounded
+by some kerning. The input characters \type {width} result in
+5~tokens, but may not end up as nodes at all, for instance when
+they are part of a key|/|value pair in the argument to a command.
+
+Just as there is no guaranteed one||to||one relationship between
+input characters and tokens, there is no straight relation between
+tokens and nodes. When dealing with input it is good to keep in mind
+that because of these interpretation stages one can never say that
+1~megabyte of input characters ends up as 1~million something in
+memory. Just think of how many megabytes of macros get stored in a
+format file much smaller than the sum of bytes.
+
+We only deal with characters or sequences of bytes when reading
+from an input medium. There are many ways to deal with the input.
+For instance one can process the input lines as \TEX\ sees them,
+in which case \TEX\ takes care of the \UTF\ input. When we're
+dealing with other input encodings we can hook code into the file
+openers and readers and convert the raw data ourselves. We can for
+instance read in a file as a whole, convert it using the normal
+expression handlers or the byte(pair) iterators that \LUATEX\
+provides, or we can go real low level using native \LUA\ code,
+as in:
+
+\starttyping
+do
+    local function nextbyte(f)
+        return f:read(1)
+    end
+
+    function io.bytes(f)
+        return nextbyte, f
+    end
+end
+
+f = io.open("somefile.dat")
+for b in io.bytes(f) do
+    do_something(b)
+end
+f:close()
+\stoptyping
+
+Of course in practice one will need to integrate this into one of the
+reader callback, but the principle stays the same. In case you wonder
+if calling functions for each byte is fast enough \unknown\ it's more than
+fast enough for normal purposes, especially if we keep in mind that other
+tasks like reading of, preparing of and dealing with fonts of processing
+token lists take way more time. You can be sore that when half a second
+runtime is spent on reading a file, processing may take minutes. If one
+wants to sqeeze more performance out of this part, it's always an option
+to write special libraries for that, but this is beyond standard \LUATEX.
+We found out that the speed of loading data from files in \LUA\ is
+mostly related to the small size of \LUA's file buffer. Reading data stored
+in tables is extremely fast, and even faster when precompiled into bytecode.
+
+\subject{tables}
+
+When Taco and I were experimenting with the callbacks that intercept
+tokens and nodes, we wondered what the impact would be on performance.
+Although in \MKIV\ we allocate quite some memory due to font handling,
+we were pretty sure that handling \TEX's internal lists also could
+have their impact. Data related to fonts is not always subjected to
+garbage collection, simply because it's to be available permanently.
+List processing on the other hand involves a lot of temporary allocated
+tables. During a run a real huge amount of tokens passes the machinery.
+When digested, they become nodes. For testing we normally use this
+document (with the name \type {mk.tex}) and at the time of writing
+this, it has some 48 pages.
+
+This document is of moderately complexity, but not as complex as
+the documents that I normally process; they have with lots of graphics,
+layers, structural elements, maybe a bit of \XML\ parsing, etc.
+Nevertheless, we're talking of some 24~million tokens entering the engine
+for 50 pages of text. Contrary to this the number of nodes is small:
+only 120~thousand but the tables making up the nodes are more complex than
+token tables (with three numbers per token). When all tokens are intercepted
+and returned unchanged, on my machine the run is progressively slow and
+memory usage grows from 75M to 112M. There is room for improvement there,
+especially in the garbage collector.
+
+Side note: quite some of these tokens result from macro expansion. Also,
+when in the input a \type {\command} is used, the callback passes it as one
+token. A command stores in a format is already tokenized, but a command read
+from the input is tokenized when read, so behind each token reported there
+can be a few more input characters, but their number can be neglected compared
+to tokens originating from the macro package.
+
+The token callback is rather slow when used for a whole document. However,
+this is typically a callback that will only be used in very special
+situations and for a controlled number of tokens. The node callback on the
+other hand can be set permanently. Fortunately the number of nodes is
+relatively small. The overhead of a simple token handler that just counts
+nodes is around 5\% but most common manipulations with token lists don't
+take much more time. For instance, experiments with adding kerns around
+punctuation (a French speciality) hardly takes time, resolving ligatures is
+not really noticeable and applying inter||character spacing to a whole document
+is not that slow either. Actually, the last example is kind of special
+because it more than doubles the size of the node lists. Inserting or removing
+table elements in relatively slow when tables are large but there are some
+ways around this.
+
+One of the reasons of whole||document token handling being slow is that
+each token is a three||element table and so the garbage collector has to work
+rather hard. The efficiency of this process is also platform dependent (or
+maybe compiler specific). Manipulating the garbage collector parameters
+does not improve performance, unless this forces the collector to be inefficient
+at the cost of a lot of memory.
+
+However, when we started dealing with nodes, I gave tuning the collector
+another try and on the mentioned test document the following observations
+were made when manipulating the step multiplier:
+
+\starttabulate[|c|c|c|]
+\HL
+\NC \bf step \NC \bf runtime \NC \bf memory \NC \NR
+\HL
+\NC 200 \NC 24.0 \NC 80.5M \NC \NR
+\NC 175 \NC 21.0 \NC 78.2M \NC \NR
+\NC 150 \NC 22.0 \NC 74.6M \NC \NR
+\NC 160 \NC 22.0 \NC 74.6M \NC \NR
+\NC 165 \NC 21.0 \NC 77.6M \NC \NR
+\NC 125 \NC 21.5 \NC 89.2M \NC \NR
+\NC 100 \NC 21.5 \NC 88.4M \NC \NR
+\HL
+\stoptabulate
+
+As a result, I decided to set the \type {stepmul} variable to~165.
+
+\starttyping
+\ctxlua{collectgarbage("setstepmul", 165)}
+\stoptyping
+
+However,  when we were testing thenew \type {lpeg} based \METAPOST\ converter, we ran
+into problems. For table intensive operations, temporary disabling the
+garbage collector gave a significant boost in speed. While testing
+performance we used the following loop:
+
+\starttyping
+\dorecurse {2000} {
+    \setbox \scratchbox \hbox \bgroup
+        \convertMPtoPDF{test-mps-procset.mps}{1}{1}
+    \egroup
+}
+\stoptyping
+
+In such a loop, turning the garbage collector on and off is disasterous. Because
+no other \LUA\ calls happen between these calls, the garbage collector is never
+invoked at all. As a result, memory growed from the baseline of 45M to 120MB and
+processing became incrementally slow. I found out that restarting the collector
+before each conversion kept memory usage low and the speed also remained okay.
+
+\starttyping
+\ctxlua{collectgarbage("restart")}
+\stoptyping
+
+Further experiments learned that it makes sense to restart the collector at
+each shipout and before table intense operations. On \type {mk.tex} this
+results in a memory usage of 74M (at the end of the run) and a runtime of
+21~seconds.
+
+Concerning nodes and speed|/|allocation issues, we need to be aware of
+the fact that this was still somewhat experimental and in the final version
+of \LUATEX\ callbacks may occur at different places and lists may be subjected
+to parsing multiple times at different moments and locations (for instance when
+we start dealing with attributes, an upcoming new feature).
+
+Back to tokens. The reason why applying the callback to every token takes a
+while has to do with the fact that each token goes through the associated
+function. If you want to have an idea of what this means for 24~million
+tokens, just run the following \LUA\ code:
+
+\starttyping
+for i=1,24 do
+    print(i)
+    for j=1,1000*1000 do
+        local t = { 1, 2, 3 }
+    end
+end
+print(os.clock())
+\stoptyping
+
+This takes some 60 seconds on my machine. The following code
+runs about three times faster because the table has not to
+be allocated each time.
+
+\starttyping
+t = { 1, 2, 3 }
+for i=1,24 do
+    print(i)
+    for j=1,1000*1000 do
+        t[1]=4 t[2]=5 t[3]=6
+    end
+end
+print(os.clock())
+\stoptyping
+
+Imagine this code to be interwoven with other code and \TEX\ doing
+things with the tokens it gets back. The memory pool will be
+scattered and garbage collecting will become more difficult.
+
+However, in practice one will only apply token handling
+to a marked piece of the input data. It is for this reason
+that the callback is not:
+
+\starttyping
+callback.register('token_filter', function(t)
+    return t
+end )
+\stoptyping
+
+but instead
+
+\starttyping
+callback.register('token_filter', function()
+    return token.get_next()
+end )
+\stoptyping
+
+This gives the opportunity to fetch more than one token and
+keep fetching till a criterium is met (for instance a sentinel).
+
+Because \type {token.get_next} is not bound to the callback you
+can fetch tokens anytime you want and only use the callback to
+feed back tokens into \TEX. In \CONTEXT\ \MKIV\ there is some
+collect and flush tokens present. Here is a trivial example:
+
+\starttyping
+\def\SwapChars{\directlua 0 {
+    do
+        local t = { token.get_next(), token.get_next() }
+        callback.register('token_filter', function()
+            callback.register('token_filter', nil)
+            return { t[2], t[1] }
+        end )
+    end
+}}
+
+\SwapChars HH \SwapChars TH
+\stoptyping
+
+Collecting tokens can take place inside the callback but also
+outside. This also gives you the opportunity to collect them
+in efficient ways and keep an eye on the memory demands.
+
+Of course using \TEX\ directly takes less code:
+
+\starttyping
+\def\SwapChars#1#2{#2#1}
+\stoptyping
+
+The example shown here involves so little tokens that running
+it takes no noticeable time. Here we show this definition in
+tokenized form:
+
+\starttokens[demo]\def\SwapChars#1#2{#2#1}\stoptokens \setups{ShowCollect}
+
+\stopcomponent

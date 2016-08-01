@@ -1,0 +1,802 @@
+% language=uk
+
+\environment still-environment
+
+\enabledirectives[visualizers.fraction=2.5]
+
+\startcomponent still-profiling
+
+\startchapter[title=Profiling lines]
+
+\startsection[title=Introduction]
+
+Although \TEX\ is pretty good at typesetting simple texts like novels, in
+practice it's often used for getting more complex stuff on paper (or screen).
+Math is of course the first thing that comes to mind. If for instance you look at
+the books typeset by Don Knuth you will see a rendering that is rather consistent
+in spacing. This is no surprise as the author pays a lot of attention to detail
+and uses inline versus display math properly. No publisher will complain about
+the result.
+
+In the documents that I have to write styles for, the content is rather mixed,
+and in particular inline math can have display math properties. In a one-column
+layout this is not a real problem especially because lots of short sentences and
+white space is used: we're talking of secondary|-|school educational math where
+arguments for formatting something this or that way is not always rational and
+consistent but more based on \quotation {this is what the student expects},
+\quotation {the competitor also does it that way} or just \quotation {we like
+this more}. For instance in a recent project, the books with answers to questions
+had to be typeset in a multicolumn layout and because math was involved, we end
+up with lines with more height and depth than normal. That can not only result in
+more pages but also can make the result look a bit messy.
+
+\blank \dontleavehmode \start \showboxes This paragraph demonstrates how lines
+are handled: when a paragraph is broken into lines each line becomes a horizontal
+box with a height and depth determined by the size of the characters that make up
+the line. There is a minimal distance between baselines (\type {baselineskip})
+and when lines touch there can optionally be a \type {\lineskip}. In the end we
+get a vertical list of boxes and glue (either of not flexible) mixed with
+penalties that determine optimal paragraph breaks. This paragraph shows that
+there is normally enough space available to do the job. \par \stop \blank
+
+We already have some ways to control this. For instance the dimensions of math
+can be limited a bit and lines can be made to snap on a grid (which is what
+publishers often want anyway). However, another alternative is to look at the
+line and decide if successive lines can be moved closer, of course within the
+constraints of the height and and depth of the lines. There is no real way to see
+if some ugly clash can happen simply because when we run into boxed material
+there can be anything inside and the dimensions can be set on purpose. This means
+that we have to honour all dimensions and only can mess around with dimensions
+when we're reasonably confident. In \CONTEXT\ this messing is called profiling
+and that is what we will discuss next.
+
+\stopsection
+
+\startsection[title=Line heights and depths]
+
+\startbuffer[example-1]
+Regelmatig kom je procenten tegen. ‘Pro centum’ is Latijn en betekent per
+honderd, dus één van elke honderd, dus \math {\frac {1} {100}} deel. Met
+procenten rekenen is daarom rekenen met honderdsten: \math {45 \procent = \frac
+{45} {100} = 0,45}. Dus \math {45 \procent} van een geheel is het \math {\frac
+{45} {100}} deel ervan en dat kun je berekenen door te vermenigvuldigen met \math
+{0,45}.
+\stopbuffer
+
+\startbuffer[example-2]
+Je gaat uit van de bekende eigenschappen van machten. Bijvoorbeeld: \math {g^r *
+g^s = g^{(r+s)}}. Neem je hierin \math {r = ^{g}\log(a)} en \math {s = ^{g}\log
+b}, dan vind je: \math {g^{^{g}\log(a) + ^{g}\log(b)} = g^{^{g}\log a} \times
+g^{^{g}\log b} = a \times b}. Hierbij gebruik je de definitieformules.
+\stopbuffer
+
+\startbuffer[example-3]
+Omdat volgens de eigenschappen van machten en exponenten geldt \math {\frac {1}
+{x^4} = x^{-4} } is ook hier sprake van een machtsfunctie, namelijk \math {f(x) =
+\frac {6} {x^4} = 6 \times \frac {1} {x^4} = 6x^{-4}}.
+\stopbuffer
+
+In this section we will use some (Dutch) examples from documents that we've
+processed. We show unprofiled versions, with two different paragraph widths, in
+\in {figure} [fig:profiling:unprofiled-examples-widths]. All three examples shown
+demonstrate that as soon as we use something more complex than a number or
+variable in a subscript we exceed the normal line height, and thus the line
+spacing becomes somewhat irregular.
+
+\starttexdefinition ExampleRunUnprofiled #1
+    \vbox \bgroup
+        \switchtobodyfont[dejavu,10pt]
+        \raggedright
+        \hsize12cm
+        \inleft[scope=local]{\ttx hsize 12cm\\unprofiled}
+        \nl \vbox{\getbuffer[example-#1]}
+        \blank
+        \hsize10cm
+        \inleft[scope=local]{\ttx hsize 10cm\\unprofiled}
+        \nl \vbox{\getbuffer[example-#1]}
+    \egroup
+\stoptexdefinition
+
+\startplacefigure[reference=fig:profiling:unprofiled-examples-widths,title={Unprofiled examples.}]
+    \enabletrackers[profiling.show]
+    \startcombination[nx=1,ny=3]
+        \startcontent
+            \ExampleRunUnprofiled{1}
+        \stopcontent
+        \startcaption
+            example 1
+        \stopcaption
+        \startcontent
+            \ExampleRunUnprofiled{2}
+        \stopcontent
+        \startcaption
+            example 2
+        \stopcaption
+        \startcontent
+            \ExampleRunUnprofiled{3}
+        \stopcontent
+        \startcaption
+            example 3
+        \stopcaption
+    \stopcombination
+    \disabletrackers[profiling.show]
+\stopplacefigure
+
+The profiled rendering of the same examples are shown in \in {figure}
+[fig:profiling:profiled-examples-widths]. Here we use the minimal heights and
+depths plus a minimum distance of 1pt. This default method is called \type
+{strict}.
+
+\starttexdefinition ExampleRunProfiled #1
+    \vbox \bgroup
+        \switchtobodyfont[dejavu,10pt]
+        \raggedright
+        \hsize12cm
+        \inleft[scope=local]{\ttx hsize 12cm\\profiled}
+        \nl \profiledbox{\getbuffer[example-#1]}
+        \blank
+        \hsize10cm
+        \inleft[scope=local]{\ttx hsize 10cm\\profiled}
+        \nl \profiledbox{\getbuffer[example-#1]}
+    \egroup
+\stoptexdefinition
+
+\startplacefigure[reference=fig:profiling:profiled-examples-widths,title={Profiled examples.}]
+    \enabletrackers[profiling.show]
+    \startcombination[nx=1,ny=3]
+        \startcontent
+            \ExampleRunProfiled{1}
+        \stopcontent
+        \startcaption
+            example 1
+        \stopcaption
+        \startcontent
+            \ExampleRunProfiled{2}
+        \stopcontent
+        \startcaption
+            example 2
+        \stopcaption
+        \startcontent
+            \ExampleRunProfiled{3}
+        \stopcontent
+        \startcaption
+            example 3
+        \stopcaption
+    \stopcombination
+    \disabletrackers[profiling.show]
+\stopplacefigure
+
+In the first and last example there are some lines where the depth of one line
+combined with the height of the following exceeds the standard line height. This
+forces \TEX\ to insert \type {\lineskip} (mentioned in the demonstration
+paragraph above), a dimension that is normally set to a fraction of the line
+spacing (for instance 1pt for a 10pt body font and 12pt line spacing). When we
+are profiling, \type{\lineskip} is ignored and we use a settable distance
+instead. The second example (with superscripts) normally comes out fine as the
+math stays within limits and we make sure that smaller fractions and scripts stay
+within the natural limits of the line, but nested scripts can be an issue.
+
+% \unexpanded\def\fakeinmargin#1%
+%   {\dontleavehmode{\resetvisualizers\smash{\llap{#1}}}}
+
+% \unexpanded\def\fakestrut#1%
+%   {\fakeinmargin{\showstruts\strut\kern\dimexpr.5em+#1em/2\relax}}
+
+In \in {figure} [fig:profiling:zapf] we see the profile of a regular text with no
+math. The average text stays well within the limits of height and depth. If this
+doesn't happen for prose then you need to adapt the height|/|depth ratio to the
+ascender|/|descender ratio of the bodyfont. For regular text it makes no sense to
+use the profiler, it only slows down typesetting.
+
+\startplacefigure[reference=fig:profiling:zapf,title={Normal lines profiled (quote by Hermann Zapf)}]
+    \enabletrackers[profiling.show]
+    \switchtobodyfont[dejavu,10pt]
+    \profiledbox{\input{zapf}}
+    \disabletrackers[profiling.show]
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=When lines exceed boundaries]
+
+Let's now take a more detailed look at what happens when lines get too high or
+low. First we'll zoom in on a simple example: in \in {figure}
+[fig:profiling:simple-text], we compare a sample text rendered using the variants
+of profiling currently implemented. (This is still experimental code so there
+might be more in the future). Seeing profiles helps to get a picture of the
+complications we have to deal with. In addition to the normal \type {vbox}
+variant (used in the previous examples), we show \type {none} which only
+analyzes, \type {strict} that uses the natural dimensions of lines and \type
+{fixed} that is supposed to cooperate with grid snapping.
+
+% \startbuffer[fake-1]
+% \hsize 2cm
+% \fakestrut2 first  x \par \fakestrut1 first  y \blank
+% \fakestrut2 second x \par \fakestrut1 second y \blank[2*big]
+% \fakestrut2 third  x \par \fakestrut1 third  y \par
+% \stopbuffer
+
+% \startbuffer[fake-2]
+% \hsize 2cm
+% \fakestrut2 line 1 \lower2ex\hbox{xxx}\par
+% \fakestrut1 line 2 \raise2ex\hbox{xxx}\par
+% \fakestrut2 line 3 \par
+% \stopbuffer
+
+% \startplacefigure[reference=fig:profiling:simple-text,title={Just a simple two line text.}]
+%     \switchtobodyfont[10pt]
+%     \enabletrackers[profiling.show]
+%     \startcombination[nx=1,ny=3]
+%         \startcontent
+%             \startcombination[nx=4,ny=1,distance=10mm,style=\tt]
+%                 {\kern1.5em\showboxes\vbox               {\getbuffer[fake-1]}} {vbox}
+%                 {\kern1.5em\showboxes\profiledbox[none]  {\getbuffer[fake-1]}} {none}
+%                 {\kern1.5em\showboxes\profiledbox[strict]{\getbuffer[fake-1]}} {strict}
+%                 {\kern1.5em\showboxes\profiledbox[fixed] {\getbuffer[fake-1]}} {fixed}
+%             \stopcombination
+%         \stopcontent
+%         \startcaption
+%             no excessive height and depth
+%         \stopcaption
+%         \startcontent
+%             \startcombination[nx=4,ny=1,distance=10mm,style=\tt]
+%                 {\kern1.5em\showboxes\vbox                             {\getbuffer[fake-2]}} {vbox}
+%                 {\kern1.5em\showboxes\profiledbox[none]  [distance=0pt]{\getbuffer[fake-2]}} {none}
+%                 {\kern1.5em\showboxes\profiledbox[strict][distance=0pt]{\getbuffer[fake-2]}} {strict}
+%                 {\kern1.5em\showboxes\profiledbox[fixed] [distance=0pt]{\getbuffer[fake-2]}} {fixed}
+%             \stopcombination
+%         \stopcontent
+%         \startcaption
+%             some excessive height and depth (distance=0pt)
+%         \stopcaption
+%         \startcontent
+%             \startcombination[nx=4,ny=1,distance=10mm,style=\tt]
+%                 {\kern1.5em\showboxes\vbox                             {\getbuffer[fake-2]}} {vbox}
+%                 {\kern1.5em\showboxes\profiledbox[none]  [distance=2pt]{\getbuffer[fake-2]}} {none}
+%                 {\kern1.5em\showboxes\profiledbox[strict][distance=2pt]{\getbuffer[fake-2]}} {strict}
+%                 {\kern1.5em\showboxes\profiledbox[fixed] [distance=2pt]{\getbuffer[fake-2]}} {fixed}
+%             \stopcombination
+%         \stopcontent
+%         \startcaption
+%             some excessive height and depth (distance=2pt)
+%         \stopcaption
+%     \stopcombination
+%     \disabletrackers[profiling.show]
+% \stopplacefigure
+
+\startbuffer[fake-1]
+\hsize 2cm \dontleavehmode
+line 1 \par
+line 2 \par
+line 3 \par
+\stopbuffer
+
+\startbuffer[fake-2]
+\hsize 2cm \dontleavehmode
+line 1 x\lower2ex\hbox{xxx}\par
+line 2 x\raise2ex\hbox{xxx}\par
+line 3 \par
+\stopbuffer
+
+\startbuffer[fake-3]
+\hsize 2cm \dontleavehmode
+x\lower2ex\hbox{xxx} line 1 \par
+line 2 x\raise2ex\hbox{xxx}\par
+line 3 \par
+\stopbuffer
+
+\startplacefigure[reference=fig:profiling:simple-text,title={Variants of profiling, using a constructed two-line text.}]
+    \switchtobodyfont[10pt]
+    \enabletrackers[profiling.show]
+    \startcombination[nx=1,ny=3]
+        \startcontent
+            \startcombination[nx=5,ny=1,distance=10mm,style=\tt]
+                {\showboxes\profiledbox[none]  [distance=0pt]{\getbuffer[fake-1]}} {none}
+                {\showboxes\profiledbox[strict][distance=0pt]{\getbuffer[fake-1]}} {strict/0pt}
+                {\showboxes\profiledbox[strict][distance=1pt]{\getbuffer[fake-1]}} {strict/1pt}
+                {\showboxes\profiledbox[fixed] [distance=0pt]{\getbuffer[fake-1]}} {fixed/0pt}
+                {\showboxes\profiledbox[fixed] [distance=1pt]{\getbuffer[fake-1]}} {fixed/1pt}
+            \stopcombination
+        \stopcontent
+        \startcaption
+            no excessive height and depth
+        \stopcaption
+        \startcontent
+            \startcombination[nx=5,ny=1,distance=10mm,style=\tt]
+                {\showboxes\profiledbox[none]  [distance=0pt]{\getbuffer[fake-2]}} {none}
+                {\showboxes\profiledbox[strict][distance=0pt]{\getbuffer[fake-2]}} {strict/0pt}
+                {\showboxes\profiledbox[strict][distance=1pt]{\getbuffer[fake-2]}} {strict/1pt}
+                {\showboxes\profiledbox[fixed] [distance=0pt]{\getbuffer[fake-2]}} {fixed/0pt}
+                {\showboxes\profiledbox[fixed] [distance=1pt]{\getbuffer[fake-2]}} {fixed/1pt}
+            \stopcombination
+        \stopcontent
+        \startcaption
+            some excessive height and depth (overlapping)
+        \stopcaption
+        \startcontent
+            \startcombination[nx=5,ny=1,distance=10mm,style=\tt]
+                {\showboxes\profiledbox[none]  [distance=0pt]{\getbuffer[fake-3]}} {none}
+                {\showboxes\profiledbox[strict][distance=0pt]{\getbuffer[fake-3]}} {strict/0pt}
+                {\showboxes\profiledbox[strict][distance=1pt]{\getbuffer[fake-3]}} {strict/1pt}
+                {\showboxes\profiledbox[fixed] [distance=0pt]{\getbuffer[fake-3]}} {fixed/0pt}
+                {\showboxes\profiledbox[fixed] [distance=1pt]{\getbuffer[fake-3]}} {fixed/1pt}
+            \stopcombination
+        \stopcontent
+        \startcaption
+            some excessive height and depth (out of touch)
+        \stopcaption
+    \stopcombination
+    \disabletrackers[profiling.show]
+\stopplacefigure
+
+\in {Figure} [fig:profiling:simple-text] we show what happens when we add some
+more excessive height and depth to lines. The samples are:
+
+\starttyping
+line 1 x\lower2ex\hbox{xxx}\par
+line 2 x\raise2ex\hbox{xxx}\par
+line 3 \par
+\stoptyping
+
+and:
+
+\starttyping
+x\lower2ex\hbox{xxx} line 1 \par
+line 2 x\raise2ex\hbox{xxx}\par
+line 3 \par
+\stoptyping
+
+Here the \type {strict} variant has some effect while \type {fixed} only has some
+influence on the height and depth of lines. Later we will see that \type {fixed}
+operates in steps and the default step is large so here we never meet the
+criteria for closing up. \footnote {In \CONTEXT\ we normally use \type {\high}
+and \type {\low} and both ensure that we don't exceed the natural height and
+depth.}
+
+A profiled box is typeset with \type {\profiledbox}. There is some control
+possible but the options are not yet set in stone so we won't use them all here.
+Profiling can be turned on for the whole document with \type {\setprofile} but
+I'm sure that will seldom happen, and these examples show why: one cannot
+beforehand say if the result looks good. Let's now apply profiling to a real
+text. If you play with this yourself you can show profiles in gray with a
+tracker:
+
+\starttyping
+\enabletrackers[profiling.show]
+\stoptyping
+
+\newbox\myprofiledbox
+
+\startbuffer[raw-1]
+\profiledbox
+  [strict]
+  [distance=0pt]
+  {\nl\getbuffer[example-1]}
+\stopbuffer
+
+\startbuffer[raw-2]
+\profiledbox
+  [strict]
+  [distance=1pt]
+  {\nl\getbuffer[example-1]}
+\stopbuffer
+
+\startbuffer[raw-3]
+\profiledbox
+  [strict]
+  [height=2\strutht,
+   depth=2\strutdp,
+   distance=1pt]
+  {\nl\getbuffer[example-1]}
+\stopbuffer
+
+\startplacefigure[reference=fig:profiling:distances,title={Examples width different dimensions.}]
+    \enabletrackers[profiling.show]
+    \startcombination[nx=1,ny=3]
+        \startcontent
+            \setbox\myprofiledbox\rawbuffer{raw-1}
+            \xdef\LastProfiledHeight{\the\htdp\myprofiledbox}
+            \box\myprofiledbox
+        \stopcontent
+        \startcaption
+            zero distance, resulting height \LastProfiledHeight
+        \stopcaption
+        \startcontent
+            \setbox\myprofiledbox\rawbuffer{raw-2}
+            \xdef\LastProfiledHeight{\the\htdp\myprofiledbox}
+            \box\myprofiledbox
+        \stopcontent
+        \startcaption
+            distance, resulting height \LastProfiledHeight
+        \stopcaption
+        \startcontent
+            \setbox\myprofiledbox\rawbuffer{raw-3}
+            \xdef\LastProfiledHeight{\the\htdp\myprofiledbox}
+            \box\myprofiledbox
+        \stopcontent
+        \startcaption
+            distance, double height and depth, resulting height \LastProfiledHeight
+        \stopcaption
+    \stopcombination
+    \disabletrackers[profiling.show]
+\stopplacefigure
+
+We show the effects of setting distances in \in {figure}
+[fig:profiling:distances]. We start with a zero distance:
+
+\typebuffer[raw-1]
+
+Because we don't want lines to touch we then set the minimum distance to a
+reasonable value (1pt).
+
+\typebuffer[raw-2]
+
+Finally we also double the height and depth of lines, something that normally will
+not be done. The defaults are the standard height and depth (the ones you get
+when you inject a so-called \type{\strut}).
+
+\typebuffer[raw-3]
+
+The problem with this kind of analysis is that deciding when and how to use this
+information to improve spacing is non|-|trivial. One of the characteristics of
+user demand is that it nearly always concerns rather specific situations and that
+suggested solutions could work only in those cases. But as soon as we have one
+exceptional situation, intervention is needed which in turn means that a
+mechanism has to be under complete user control. That itself assumes that the
+user still has control, which is not the case in automated workflows. In fact, as
+soon as one is in control over the source and rendering, there are often easier
+ways to deal with the few cases that need treatment. Possible interference can
+come from, for instance:
+
+\startitemize[packed]
+\startitem whitespace between paragraphs \stopitem
+\startitem section titles (using different fonts and spacing) \stopitem
+\startitem descriptions and other intermezzos \stopitem
+\startitem images that interrupt the flow, or end up next to text \stopitem
+\startitem ornaments like margin words (we catch some) \stopitem
+\startitem text backgrounds making spacing assumptions \stopitem
+\stopitemize
+
+After a few decades of using \TEX\ and writing solutions, it has become pretty
+clear that fully automated typesetting is a dream, if only because the input can
+be pretty weird and inconsistent and demands (from those who are accustomed to
+tweaking manually in a desktop publishing application) can be pretty weird and
+inconsistent too. So, the only real solution is to use some kind of artificial
+intelligence that one can feed with demands and constraints and that hopefully is
+clever enough to deal with the inconsistencies. As this kind of computing is
+unlikely to happen in my lifetime, poor man explicit solutions have to do the job
+for now. One can add all kinds of heuristics to the profiler but this can
+backfire when control is needed. Alternatively one can end up with many options
+like we have in grid snapping.
+
+\stopsection
+
+\startsection[title=Where to use profiling]
+
+In \CONTEXT\ there are four places (maybe a few more eventually) where this kind
+of control over spacing makes sense:
+
+\startitemize[packed]
+\startitem the main text flow in single column mode \stopitem
+\startitem multi|-|column mode, especially mixed columns \stopitem
+\startitem framed texts, used for all kinds of content \stopitem
+\startitem explicitly (balanced) split boxes \stopitem
+\stopitemize
+
+Because framed texts are used all over, for instance in tables, it means that if
+we provide control over spacing using profiles, many \CONTEXT\ mechanisms can use
+it. However, enabling this for all packaging has a significant overhead so it has
+to be used with care so that there is no performance hit when it is not used.
+Here is an easy example using \type {\framed}:
+
+\starttyping
+\framed
+  [align=normal,
+   profile=fixed,
+   frame=off]
+  {some text ...}
+\stoptyping
+
+For the following examples we define this helper:
+
+\startbuffer
+\starttexdefinition demo-profile-1 #1
+  \framed
+    [align=normal,profile=#1]
+    {xxx$\frac{1}{\frac{1}{\frac{1}{2}}}$
+     \par
+     $\frac{\frac{1}{\frac{1}{2}}}{2}$xxx}
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We apply this to predefined profiles. The macro is called like this:
+
+\starttyping
+\texdefinition{demo-profile-1}{fixed}
+\stoptyping
+
+\starttexdefinition unexpanded ProfileSteps #1
+    \startcombination[nx=5,ny=1]
+        {#1\hbox to 6em{\hss\texdefinition{demo-profile-1}            {}\hss}} {\small vbox}
+        {#1\hbox to 6em{\hss\texdefinition{demo-profile-1}       {fixed}\hss}} {\small\type{fixed}}
+        {#1\hbox to 6em{\hss\texdefinition{demo-profile-1}   {halffixed}\hss}} {\small\type{halffixed}}
+        {#1\hbox to 6em{\hss\texdefinition{demo-profile-1}{quarterfixed}\hss}} {\small\type{quarterfixed}}
+        {#1\hbox to 6em{\hss\texdefinition{demo-profile-1} {eightsfixed}\hss}} {\small\type{eightsfixed}}
+    \stopcombination
+\stoptexdefinition
+
+The outcome can depend on the font used: in \in {figure}
+[fig:profiling:profiles-fonts] we show Latin Modern, \TEX\ Gyre Pagella and
+Dejavu. Because in \CONTEXT\ the line height depends on the bodyfont; each case
+is different.
+
+\startplacefigure[reference=fig:profiling:profiles-fonts,title=A few fonts compared.]
+    \enabletrackers[profiling.show]
+    \startcombination[nx=1,ny=3]
+        \startcontent
+            \ProfileSteps{\switchtobodyfont[modern]}
+        \stopcontent
+        \startcaption
+            Latin Modern
+        \stopcaption
+        \startcontent
+            \ProfileSteps{\switchtobodyfont[pagella]}
+        \stopcontent
+        \startcaption
+            Pagella
+        \stopcaption
+        \startcontent
+            \ProfileSteps{\switchtobodyfont[dejavu]}
+        \stopcontent
+        \startcaption
+            Dejavu
+        \stopcaption
+    \stopcombination
+    \disabletrackers[profiling.show]
+\stopplacefigure
+
+\startplacefigure[reference=fig:profiling:profiles-boxedcolumns,title={Boxed columns without profile.}]
+    \enabletrackers[profiling.show]
+    \startcombination[nx=1,ny=3]
+        \startcontent
+            \startboxedcolumns[distance=2.2em,grid=yes,profile=none,frame=on]
+                \nl\getbuffer[example-1]
+            \stopboxedcolumns
+        \stopcontent
+        \startcaption
+            none on grid
+        \stopcaption
+        \startcontent
+            \startboxedcolumns[distance=2.2em,grid=yes,profile=strict,frame=on]
+                \nl\getbuffer[example-1]
+            \stopboxedcolumns
+        \stopcontent
+        \startcaption
+            strict on grid
+        \stopcaption
+        \startcontent
+            \startboxedcolumns[distance=2.2em,grid=yes,profile=fixed,frame=on]
+                \nl\getbuffer[example-1]
+            \stopboxedcolumns
+        \stopcontent
+        \startcaption
+            fixed on grid
+        \stopcaption
+    \stopcombination
+    \disabletrackers[profiling.show]
+\stopplacefigure
+
+As mentioned, we need this kind of profiling in multi|-|column typesetting, so
+let us have a look at that now. Columns are processed in grid mode but this is
+taken into account. We can simulate this by using boxed columns; see \in {figure}
+[fig:profiling:profiles-boxedcolumns]. One of the biggest problems is what to do
+with the bottom and top of a page or column. This will probably take a bit more
+to get right, and likely we will end up with different strategies. We can also
+think of special handlers but that will come with a high speed penalty. In the
+\type {strict} variant we don't mess with the dimension of a line too much, but
+the \type {fixed} alternative will get some more control.
+
+Although using this feature looks promising it is also dangerous. For instance a
+side effect can be that interline spacing becomes inconsistent and even ugly. It
+really depends on the content. Also, as soon as some grid snapping is used, the
+gain becomes less, simply because the solution space is smaller. Then of course
+there is the matter of overall look and feel: most documents that need this kind
+of magic look bad anyway, so why bother. In this respect it is comparable to
+applying protrusion and expansion. There are hardly any combinations of design
+and content where micro|-|typography makes sense to use: in prose perhaps, but
+not in mixed content. On the other hand, profiling makes more sense in mixed
+content than in prose.
+
+Not everything that is possible should be used. In \in {figure}
+[fig:profiling:fake-examples-1] we show some fake paragraphs with profiles
+applied, the first series (random range~2) has a few excessive snippets, the last
+one (random range~5) has many. In \in {figure} [fig:profiling:fake-examples-2] we
+show them in a different arrangement. Although there are differences it is hard
+to say if the results look better. We scaled down the results and used gray fake
+blurs instead of real text in order to get a better impression of the so-called
+(overall) grayness of a text.
+
+% \starttexdefinition profile-sample-set #1#2#3
+%     \startuseMPgraphic{random-thing}
+%         if round(uniformdeviate(10)) = 5 :
+%             fill unitsquare enlarged ((1mm,#2mm) randomized(1mm,#1mm)) withcolor \MPcolor{#3} ;
+%         else :
+%             fill unitsquare enlarged ((1mm,1mm) randomized(1mm,1mm)) withcolor \MPcolor{darkgray} ;
+%         fi ;
+%         draw origin withpen pencircle scaled 1mm ;
+%     \stopuseMPgraphic
+%     \setbox#1\hbox\bgroup
+%         \dorecurse {500} {%
+%             \dontleavehmode
+%             \bgroup
+%             \obeyMPboxdepth
+%             \useMPgraphic{random-thing}%
+%             \egroup
+%             \hskip 3mm plus 3mm minus 1mm\relax
+%         }%
+%     \egroup
+% \stoptexdefinition
+
+% \starttexdefinition profile-sample-get #1#2
+%     \scale
+%       [width=\dimexpr(\textwidth-2em)/4\relax]
+%       {\framed
+%         [offset=overlay,align=normal,profile=#2]
+%         {\unhcopy#1}}
+% \stoptexdefinition
+
+% \texdefinition{profile-sample-set}{0}{2}{darkred}
+% \texdefinition{profile-sample-set}{2}{3}{darkgreen}
+% \texdefinition{profile-sample-set}{4}{4}{darkblue}
+% \texdefinition{profile-sample-set}{6}{5}{darkyellow}
+
+\startMPdefinitions
+    color FakeRed    ; FakeRed    := \MPcolor{darkred} ;
+    color FakeGreen  ; FakeGreen  := \MPcolor{darkgreen} ;
+    color FakeBlue   ; FakeBlue   := \MPcolor{darkblue} ;
+    color FakeYellow ; FakeYellow := \MPcolor{darkyellow} ;
+    color FakeGray   ; FakeGray   := \MPcolor{darkgray} ;
+    def FakeInColor(expr h,c) =
+        if round(uniformdeviate(10)) = 5 :
+            fill unitsquare enlarged ((1mm,h*mm) randomized(1mm,h*mm)) withcolor c ;
+        else :
+            fill unitsquare enlarged ((1mm,1 mm) randomized(1mm,1 mm)) withcolor FakeGray ;
+        fi ;
+        draw origin withpen pencircle scaled 1mm ;
+    enddef ;
+\stopMPdefinitions
+
+\starttexdefinition profile-sample-set #1#2#3
+    \setbox#1\hbox\bgroup
+        \dorecurse {500} {%
+            \dontleavehmode
+            \bgroup
+            \obeyMPboxdepth
+            \startMPcode FakeInColor(#2,#3)\stopMPcode
+            \egroup
+            \hskip 3mm plus 3mm minus 1mm\relax
+        }%
+    \egroup
+\stoptexdefinition
+
+\starttexdefinition profile-sample-get #1#2
+    \scale
+      [width=\dimexpr(\textwidth-2em)/4\relax]
+      {\framed
+        [offset=overlay,align=normal,profile=#2]
+        {\unhcopy#1}}
+\stoptexdefinition
+
+\texdefinition{profile-sample-set}{0}{2}{FakeRed}
+\texdefinition{profile-sample-set}{2}{3}{FakeGreen}
+\texdefinition{profile-sample-set}{4}{4}{FakeBlue}
+\texdefinition{profile-sample-set}{6}{5}{FakeYellow}
+
+\startplacefigure
+  [reference=fig:profiling:fake-examples-1,
+  title={Some examples, each row has progressively more excessive snippets.}]
+    \startcombination[location=top,nx=4,ny=4]
+        {\texdefinition{profile-sample-get}{0}{none}}      {\tttf none      / 2}
+        {\texdefinition{profile-sample-get}{0}{strict}}    {\tttf strict    / 2}
+        {\texdefinition{profile-sample-get}{0}{fixed}}     {\tttf fixed     / 2}
+        {\texdefinition{profile-sample-get}{0}{halffixed}} {\tttf halffixed / 2}
+        {\texdefinition{profile-sample-get}{2}{none}}      {\tttf none      / 3}
+        {\texdefinition{profile-sample-get}{2}{strict}}    {\tttf strict    / 3}
+        {\texdefinition{profile-sample-get}{2}{fixed}}     {\tttf fixed     / 3}
+        {\texdefinition{profile-sample-get}{2}{halffixed}} {\tttf halffixed / 3}
+        {\texdefinition{profile-sample-get}{4}{none}}      {\tttf none      / 4}
+        {\texdefinition{profile-sample-get}{4}{strict}}    {\tttf strict    / 4}
+        {\texdefinition{profile-sample-get}{4}{fixed}}     {\tttf fixed     / 4}
+        {\texdefinition{profile-sample-get}{4}{halffixed}} {\tttf halffixed / 4}
+        {\texdefinition{profile-sample-get}{6}{none}}      {\tttf none      / 5}
+        {\texdefinition{profile-sample-get}{6}{strict}}    {\tttf strict    / 5}
+        {\texdefinition{profile-sample-get}{6}{fixed}}     {\tttf fixed     / 5}
+        {\texdefinition{profile-sample-get}{6}{halffixed}} {\tttf halffixed / 5}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure
+  [reference=fig:profiling:fake-examples-2,
+   title={The same examples, rearranged such that each row has  a different profiling variant.}]
+    \startcombination[location=top,nx=4,ny=4]
+        {\texdefinition{profile-sample-get}{0}{none}}      {\tttf none      / 2}
+        {\texdefinition{profile-sample-get}{2}{none}}      {\tttf none      / 3}
+        {\texdefinition{profile-sample-get}{4}{none}}      {\tttf none      / 4}
+        {\texdefinition{profile-sample-get}{6}{none}}      {\tttf none      / 5}
+        {\texdefinition{profile-sample-get}{0}{strict}}    {\tttf strict    / 2}
+        {\texdefinition{profile-sample-get}{2}{strict}}    {\tttf strict    / 3}
+        {\texdefinition{profile-sample-get}{4}{strict}}    {\tttf strict    / 4}
+        {\texdefinition{profile-sample-get}{6}{strict}}    {\tttf strict    / 5}
+        {\texdefinition{profile-sample-get}{0}{fixed}}     {\tttf fixed     / 2}
+        {\texdefinition{profile-sample-get}{2}{fixed}}     {\tttf fixed     / 3}
+        {\texdefinition{profile-sample-get}{4}{fixed}}     {\tttf fixed     / 4}
+        {\texdefinition{profile-sample-get}{6}{fixed}}     {\tttf fixed     / 5}
+        {\texdefinition{profile-sample-get}{0}{halffixed}} {\tttf halffixed / 2}
+        {\texdefinition{profile-sample-get}{2}{halffixed}} {\tttf halffixed / 3}
+        {\texdefinition{profile-sample-get}{4}{halffixed}} {\tttf halffixed / 4}
+        {\texdefinition{profile-sample-get}{6}{halffixed}} {\tttf halffixed / 5}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+Although profiling seems interesting, in practice it does not have much value in
+an automated flow. Ultimately, in the project for which I investigated this
+trickery, only in the final stage was some last minute optimization of the
+rendering done. We did that by injecting directives. Think of page breaks that
+make the result look more balanced. Optimizing image placement happens in an
+earlier stage because the text can refer to images like \quotation {in the
+picture on the left, we see \unknown}. Controlling profiles is much harder. In
+fact, the more clever we are, the harder it gets to beat it when we want an
+exception. All these mechanisms: spacing, snapping, profiling, breaking pages,
+image placement, to mention a few, have to work together. For projects that
+depend on such placement, it might be better to write dedicated mechanisms than
+to try to fight with clever built|-|in features.
+
+In practice, probably only the \type {fixed} alternative makes sense and as that
+one has a boundary condition similar to (or equal, depending on other settings)
+snapping on gridsteps, the end result might not be that different from doing
+nothing. In \in {figure} [fig:profiling:fake-examples-3] you see that the vbox
+variant is not that bad. And extremely difficult content is unlikely to ever look
+perfect unless some manual intervention happens. Therefore, from the perspective
+of \quotation {fine points of text typesetting} some local (manual) control might
+be more interesting and relevant.
+
+\texdefinition{profile-sample-set}{0}{3}{FakeGreen}
+\texdefinition{profile-sample-set}{2}{3}{FakeGreen}
+\texdefinition{profile-sample-set}{4}{3}{FakeGreen}
+
+In the end, I didn't need this profiling feature at all: because there are
+expectations with respect to how many pages a book should have, typesetting in
+columns was not needed. It didn't save that many pages, and the result would
+never look that much better, simply because of the type of content. Large images
+were also spoiling the game. Nevertheless we will keep profiles in the core and
+it might even get extended. One question remains: at what point do we stop adding
+such features? The answer would be easier if \TEX\ wasn't so flexible.
+
+\startplacefigure[location=top,reference=fig:profiling:fake-examples-3,title=Three similar random cases.]
+    \startcombination[location=top,nx=3,ny=3]
+        {\texdefinition{profile-sample-get}{0}{}}       {\tttf vbox   1}
+        {\texdefinition{profile-sample-get}{0}{strict}} {\tttf strict 1}
+        {\texdefinition{profile-sample-get}{0}{fixed}}  {\tttf fixed  1}
+        {\texdefinition{profile-sample-get}{2}{}}       {\tttf vbox   2}
+        {\texdefinition{profile-sample-get}{2}{strict}} {\tttf strict 2}
+        {\texdefinition{profile-sample-get}{2}{fixed}}  {\tttf fixed  2}
+        {\texdefinition{profile-sample-get}{4}{}}       {\tttf vbox   3}
+        {\texdefinition{profile-sample-get}{4}{strict}} {\tttf strict 3}
+        {\texdefinition{profile-sample-get}{4}{fixed}}  {\tttf fixed  3}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\stopchapter
+
+\page \enabledirectives[visualizers.fraction=default]
+
+\stopcomponent
+

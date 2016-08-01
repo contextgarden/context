@@ -1,0 +1,53 @@
+\startcomponent ma-cb-en-headers
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Page headers and footers]
+
+\index{page header}
+\index{page footer}
+
+\Command{\tex{setupfootertexts}}
+\Command{\tex{setupheadertexts}}
+\Command{\tex{setupheader}}
+\Command{\tex{setupfooter}}
+\Command{\tex{noheaderandfooterlines}}
+
+In some cases you want to give your document a page header and footer. The
+commands to do this are:
+
+\shortsetup{setupfootertexts}
+\shortsetup{setupheadertexts}
+
+The first bracket pair is used for the location of the footer or header
+(\type{text}, \type{edge} etc). Footer and header are placed within the second
+and third bracket pairs. In a double sided document a fourth and fifth bracket
+pair is used for footer and header on the left-hand side page and the right-hand
+side page. In most cases you can omit these last two bracket pairs.
+
+\startbuffer
+\setupfootertexts[Manual][section]
+\stopbuffer
+
+\typebuffer
+
+In this case the text {\em Manual} will appear in the left-hand side corner and
+the title of the actual section on the right-hand side of the page. This footer
+will change with the beginning of a new section.
+
+You can set up the layout of the header and footer with:
+
+\shortsetup{setupheader}
+\shortsetup{setupfooter}
+
+If you want to leave out the page header and footer you can type:
+
+\starttyping
+\noheaderandfooterlines
+\stoptyping
+
+\stopchapter
+
+\stopcomponent

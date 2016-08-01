@@ -1,0 +1,34 @@
+\definerenderingwindow
+  [example]
+  [width=0pt,height=0pt,frame=off]
+
+\setupinteraction[state=start]
+
+\useexternalrendering
+  [mysound]
+  [audio/mpeg] % audio/x-mp3
+  [akkerman.mp3]
+  []
+
+\definereference [StartSoundTrack] [StartRendering{mysound}]
+\definereference [StopSoundTrack]  [StopRendering{mysound}]
+
+\definelayer[resources][width=\paperwidth,height=\paperheight]
+
+\setupbackgrounds[page][background=resources]
+
+\starttext
+
+    \setlayer[resources]{\placerenderingwindow[example][mysound]} % once
+
+    \startTEXpage
+        \button{start}[StartSoundTrack]
+        \button{stop}[StopSoundTrack]
+    \stopTEXpage
+
+    \startTEXpage
+        \button{start}[StartSoundTrack]
+        \button{stop}[StopSoundTrack]
+    \stopTEXpage
+
+\stoptext

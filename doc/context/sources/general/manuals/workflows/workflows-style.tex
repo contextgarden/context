@@ -1,0 +1,49 @@
+\startenvironment workflows-style
+
+\usemodule
+  [abr-03]
+
+\setupbodyfont
+  [bookman,11pt]
+
+\definecolor
+  [maincolor]
+  [s=.35]
+
+\setuplayout
+  [height=middle,
+   width=middle,
+   footer=0pt]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+   color=maincolor,
+   header=high]
+
+\setuphead
+  [section]
+  [style=\bfb,
+   color=maincolor]
+
+\setuptyping
+  [color=maincolor]
+
+\setuptype
+  [color=maincolor]
+
+\setupdocument
+  [metadata:author=<author>,
+   metadata:title=<title>,
+   author=<author>,
+   affiliation=<affiliation>,
+   location=<location>,
+   title=<title>,
+   extra=<extra>,
+   support=<support>,
+   website=<website>]
+
+\stopenvironment

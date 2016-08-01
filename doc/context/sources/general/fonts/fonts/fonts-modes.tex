@@ -1,0 +1,817 @@
+% language=uk
+
+\definefontfeature
+  [otftracker-husayni]
+  [analyze=yes,mode=node,language=dflt,script=arab,
+   ccmp=yes,init=yes,medi=yes,fina=yes,
+   rlig=yes,tlig=yes,anum=yes,calt=yes,salt=yes,
+   ss01=yes,ss03=yes,ss10=yes,ss12=yes,ss15=yes,
+   ss16=yes,ss19=yes,ss24=yes,ss25=yes,ss26=yes,
+   ss27=yes,ss31=yes,ss34=yes,ss35=yes,ss36=yes,
+   ss37=yes,ss38=yes,ss41=yes,ss42=yes,ss43=yes,
+   ss60=yes,js16=yes,
+   kern=yes,curs=yes,mark=yes,mkmk=yes]
+
+\startbuffer[nodechart:1a]
+
+    \switchtobodyfont[6pt]
+
+    \definecolor[nodechart:glyph][maincolor]
+
+    \hboxtoFLOWchart[dummy]{\definedfont[Normal*none]\language0 test BLAtest}
+
+    \FLOWchart[dummy][width=14em,height=3em,dx=.5em,dy=.75em,offset=1em,hcompact=yes]
+
+\stopbuffer
+
+\startbuffer[nodechart:1b]
+
+    \switchtobodyfont[6pt]
+
+    \definecolor[nodechart:glyph][maincolor]
+
+    \hboxtoFLOWchart[dummy]{test BLAtest}
+
+    \FLOWchart[dummy][width=14em,height=3em,dx=.5em,dy=.75em,offset=1em,hcompact=yes]
+
+\stopbuffer
+
+\startbuffer[nodechart:2a]
+
+    \switchtobodyfont[6pt]
+
+    \definecolor[nodechart:glyph][maincolor]
+
+    \hboxtoFLOWchart[dummy]{affiliation}
+
+    \FLOWchart[dummy][width=14em,height=3em,dx=.5em,dy=.75em,offset=1em,hcompact=yes]
+
+\stopbuffer
+
+\startbuffer[nodechart:2b]
+
+    \switchtobodyfont[6pt]
+
+    \definecolor[nodechart:glyph][maincolor]
+
+    \hboxtoFLOWchart[dummy]{abc\discretionary{d}{e}{f}ghi}
+
+    \FLOWchart[dummy][width=14em,height=3em,dx=.5em,dy=.75em,offset=1em,hcompact=yes]
+
+\stopbuffer
+
+\startbuffer[nodechart:2c]
+
+    \switchtobodyfont[6pt]
+
+    \definecolor[nodechart:glyph][maincolor]
+
+    \hboxtoFLOWchart[dummy]{\nl effe fijn fietsen}
+
+    \FLOWchart[dummy][width=12em,height=3em,dx=.5em,dy=.75em,offset=1em,hcompact=yes]
+
+\stopbuffer
+
+\startbuffer[nodechart:3a]
+
+    \switchtobodyfont[6pt]
+
+    \definecolor[nodechart:glyph][maincolor]
+
+    \hboxtoFLOWchart[dummy]{\tttf\righttoleft فَخَا}
+
+    \FLOWchart[dummy][width=12em,height=3em,dx=.5em,dy=.75em,offset=1em,hcompact=yes]
+
+\stopbuffer
+
+\startbuffer[nodechart:3b]
+
+    \switchtobodyfont[6pt]
+
+    \definecolor[nodechart:glyph][maincolor]
+
+    \hboxtoFLOWchart[dummy]{{\definedfont[name:husayni*otftracker-husayni at 6pt]\righttoleft فَخَا}}
+
+    \FLOWchart[dummy][width=12em,height=3em,dx=.5em,dy=.75em,offset=1em,hcompact=yes]
+
+\stopbuffer
+
+\startcomponent fonts-modes
+
+\environment fonts-environment
+
+\startchapter[title=Modes][color=darkgreen]
+
+\startsection[title=Introduction]
+
+We use the term modes for classifying the several ways characters are turned into
+glyphs. When a font is defined, a set of features can be associated and one of
+them is the mode.
+
+\starttabulate[|l|p|]
+\NC none \NC Characters are just mapped onto glyphs and no substitution or
+             positioning takes place. \NC \NR
+\NC base \NC The routines built into the engine are used. For many Latin fonts
+             this is a rather useable and efficient method. \NC \NR
+\NC node \NC Here alternative routines written in \LUA\ are used. This mode is
+             needed for more complex scripts as well as more advanced features
+             that demand some analysis. \NC \NR
+\NC auto \NC This mode will determine the most suitable mode for the given
+             feature set. \NC \NR
+\stoptabulate
+
+When we talk about features, we refer to more than only features provided by
+fonts as \CONTEXT\ adds some of its own. In the following section each of these
+modes is discussed. Before we do so a short introduction to font tables that we
+use is given.
+
+\stopsection
+
+\startsection[title=The font table]
+
+The internal representation of a font in \CONTEXT\ is such that we can
+conveniently access data that is needed in the mentioned modes. When a font is
+used for the first time, or when it has changed, it is read in its most raw form.
+After some cleanup and normalization the font gets cached when it is a \TYPEONE\
+or \OPENTYPE\ font. This is done in a rather efficient way. A next time the
+cached copy is used.
+
+The normalized table is shared among instances of a font. This means that when a
+font is used at a different scale, or when a different feature set is used, the
+font gets loaded only once and its data is shared when possible. In \in {figure}
+[fig:tfm-loading] we have visualized the process. Say that you ask for font \type
+{whatever} at \type {12pt} using featureset \type {smallcaps}. In low level code
+this boils down to:
+
+\starttyping
+\font\MySmallCaps=whatever*smallcaps at 12pt
+\stoptyping
+
+In \CONTEXT\ we have overloaded the font loader so \LUA\ code takes care of the
+loading. Basically there is a function hooked into \LUATEX's font definer (the
+\type {\font} primitive) that returns a table and from that on \LUATEX\ will
+create its internal representation that is identified by a number, the so called
+font id. So, in fact the \type {\Whatever} command is a reference to a font id, a
+positive number. When this font is already loaded, \CONTEXT\ will reuse the id
+and pas that one.
+
+\startFLOWchart[loading]
+    \startFLOWcell \name {tfm  1} \location {2,1} \text {raw        tfm} \connection [bt]{tfm 2}  \stopFLOWcell
+    \startFLOWcell \name {tfm  2} \location {2,2} \text {normalized tfm} \connection [rl]{tfm 3}  \stopFLOWcell
+    \startFLOWcell \name {tfm  3} \location {4,2} \text {featured   tfm} \connection[+rl]{tfm 5a}
+                                                                         \connection [rl]{tfm 5b}
+                                                                         \connection[-rl]{tfm 5c} \stopFLOWcell
+
+    \startFLOWcell \name {tfm 5a} \location {5,1} \text {scaled     tfm} \connection[r+t]{tfm}    \stopFLOWcell
+    \startFLOWcell \name {tfm 5b} \location {5,2} \text {scaled     tfm} \connection [rt]{tfm}    \stopFLOWcell
+    \startFLOWcell \name {tfm 5c} \location {5,3} \text {scaled     tfm} \connection[r-t]{tfm}    \stopFLOWcell
+
+    \startFLOWcell \name {afm  1} \location {2,4} \text {raw        afm} \connection [bt]{afm 2}  \stopFLOWcell
+    \startFLOWcell \name {afm  2} \location {2,5} \text {normalized afm} \connection [rl]{afm 3}  \stopFLOWcell
+    \startFLOWcell \name {afm  3} \location {3,5} \text {cached     afm} \connection[+rl]{afm 4a}
+                                                                         \connection [rl]{afm 4b} \stopFLOWcell
+    \startFLOWcell \name {afm 4a} \location {4,4} \text {featured   afm} \connection [rl]{afm 5a} \stopFLOWcell
+    \startFLOWcell \name {afm 4b} \location {4,5} \text {featured   afm} \connection [rl]{afm 5b}
+                                                                         \connection[-rl]{afm 5c} \stopFLOWcell
+    \startFLOWcell \name {afm 5a} \location {5,4} \text {scaled     afm} \connection[r+l]{tfm}    \stopFLOWcell
+    \startFLOWcell \name {afm 5b} \location {5,5} \text {scaled     afm} \connection [rl]{tfm}    \stopFLOWcell
+    \startFLOWcell \name {afm 5c} \location {5,6} \text {scaled     afm} \connection[r-l]{tfm}    \stopFLOWcell
+
+    \startFLOWcell \name {otf  1} \location {2,7} \text {raw        otf} \connection [bt]{otf 2}  \stopFLOWcell
+    \startFLOWcell \name {otf  2} \location {2,8} \text {normalized otf} \connection [rl]{otf 3}  \stopFLOWcell
+    \startFLOWcell \name {otf  3} \location {3,8} \text {cached     otf} \connection[+rl]{otf 4a}
+                                                                         \connection [rl]{otf 4b} \stopFLOWcell
+    \startFLOWcell \name {otf 4a} \location {4,7} \text {featured   otf} \connection [rl]{otf 5a} \stopFLOWcell
+    \startFLOWcell \name {otf 4b} \location {4,8} \text {featured   otf} \connection [rl]{otf 5b}
+                                                                         \connection[-rl]{otf 5c} \stopFLOWcell
+    \startFLOWcell \name {otf 5a} \location {5,7} \text {scaled     otf} \connection[r-b]{tfm}    \stopFLOWcell
+    \startFLOWcell \name {otf 5b} \location {5,8} \text {scaled     otf} \connection [rb]{tfm}    \stopFLOWcell
+    \startFLOWcell \name {otf 5c} \location {5,9} \text {scaled     otf} \connection[r+b]{tfm}    \stopFLOWcell
+
+    \startFLOWcell \name {tfm}    \location {6,5} \text {engine tfm} \stopFLOWcell
+\stopFLOWchart
+
+\startplacefigure [location=here,reference=fig:tfm-loading,title={Defining a font.}]
+    \FLOWchart[loading][dx=.75\bodyfontsize,dy=.5\bodyfontsize,width=6\bodyfontsize,offset=0pt,x=2]
+\stopplacefigure
+
+The first step is loading the font (or using the cached copy). From that a copy
+is made that has some additional data concerning the features set and from that a
+scaled copy is constructed. These copies share as much data as possible to keep
+the memory footprint as small as possible. The table that is passed to \LUATEX\
+gets cleaned up afterwards. In practice the \TFM\ loader only kicks in for
+creating virtual math fonts. The \AFM\ reader is used for \TYPEONE\ fonts and as
+there is no free upgrade path from \TYPEONE\ to \OPENTYPE\ for commercial fonts,
+that one will get used for older fonts. Of course most loading is done by the
+\OTF\ reader(s).
+
+\appendixdata{\in[fonts:trackers:tables]}
+
+The data in the final \TFM\ table is organized in subtables. The biggest ones are
+the \type {characters} and \type {descriptions} tables that have information
+about each glyph. Later we will see more of that. There are a few additional
+tables of which we show two: \type {properties} and \type {parameters}. For the
+current font the first one has the following entries:
+
+\showfontproperties
+
+The \type {parameters} table has variables that have been (re)assigned in the
+process. A period in the key indicates that we are dealing with a subtable, for
+instance \type {expansion}.
+
+\showfontparameters
+
+To give you an impression of what we are dealing with, the positional features
+are shown next:
+
+\showfontpositionings
+
+The substitution features of the current font are as follows:
+
+\showfontsubstitutions
+
+This is clearly an \OPENTYPE\ font. Normally there are a default
+script and default language supported. If this is not the case you
+need to provide them as part of the featureset, otherwise there
+will be no features applied.
+
+\stopsection
+
+\startsection[title=Base mode]
+
+We talk of base mode processing when the font machinery is used that is built in
+\LUATEX. So what does this traditional mechanism provide?
+
+Before we discuss this, a somewhat simplified model of how \TEX\ works has to be
+given. Say that we have the following input:
+
+\starttyping
+\def\bla{BLA}
+test \bla test
+\stoptyping
+
+This input gets translated into tokens and those tokens are either processed
+later or they become something else directly. Take the first line. Characters in
+the input have a so called catcode property that determines how the parser
+tokenized them. Effectively we therefore get something like this:
+
+\starttyping
+<command def>
+<command bla>
+<begingroup>
+<character B>
+<character L>
+<character A>
+<endgroup>
+\stoptyping
+
+and finally in the hash table there will be an entry for \type {bla} that has the
+meaning \type {BLA} expressed in three characters.
+
+The second line refers to \type {\bla} and in the process this macro gets
+expanded, so we get:
+
+\starttyping
+<character t>
+<character e>
+<character s>
+<character t>
+<space>
+<character B>
+<character L>
+<character A>
+<character t>
+<character e>
+<character s>
+<character t>
+\stoptyping
+
+Because the parser gobbles spaces after a macro name, there is no space before
+the second \type {test}. In practice there will be no intermediate list like
+this, because as soon as possible \TEX\ will add something to a so called node
+list. When the moment is there, this list will be passed to the typesetting
+routine that constructs a horizontal list. Later this list can be converted into
+a horizontal box or broken into lines when it concerns a paragraph.
+
+In traditional \TEX\ characters are stored into char nodes and the builder turns
+them into glyph nodes. In \LUATEX\ they start out as glyph nodes and the subtype
+number will flag them as glyphs. Any value larger than 255 is a signal that the
+list has been processed. The previous example leads to the list shown in \in
+{figure} [nodechart:1a].
+
+\startplacefigure[title={The text \quote {\typ {test BLAtest}} converted to nodes.},reference=nodechart:1a]
+    \getbuffer[nodechart:1a]
+\stopplacefigure
+
+Here we have turned off inter|-|character kerning and hyphenation. When we turn
+that on, we get a slightly more complex list, as shown in \in {figure}
+[nodechart:1b]. Hyphenation points are represented by discretionary nodes and
+these have pointers to a pre break, post break and replacement text.
+
+\startplacefigure[title={The text \quote {\typ {test BLAtest}} converted to nodes, hyphenated and kerned.},reference=nodechart:1b]
+    \getbuffer[nodechart:1b]
+\stopplacefigure
+
+In addition to hyphenation and kerning we can have ligatures. The list in \in
+{figure} [nodechart:2a] shows that we get a reference to a ligature in the glyph
+node but that the components are still known. This figure also demonstrates that
+the ligature is build in steps.
+
+\startplacefigure[title={The rendering of the word \quote {\typ {affiliation}}.},reference=nodechart:2a]
+    \getbuffer[nodechart:2a]
+\stopplacefigure
+
+% \appendixdata{\in[nodes:discretionaries]}
+
+If we insert an explicit \type {\discretionary} command, we see in
+\in {figure} [nodechart:2b] that we get three variants. In \in
+{figure} [nodechart:2c] we render some Dutch words and these have
+quite some ligatures.
+
+\startplacefigure[title={The rendering of the bogus word \quote {\typ {abcghi}} with an
+        explicit discretionary added.},reference=nodechart:2b]
+    \getbuffer[nodechart:2b]
+\stopplacefigure
+
+\startplacefigure[title={The rendering of the Dutch words \quote { \typ{effe fijn fietsen}}.},reference=nodechart:2c]
+    \getbuffer[nodechart:2c]
+\stopplacefigure
+
+So, we have hyphenation, ligature building and kerning and to some extent these
+mechanisms hook into each other. This process is driven by information stored in
+the font and rules related to the language. The hyphenation happens first, so the
+builder just sees discretionary nodes and needs to act properly on them. Although
+languages play an important role in formatting the text, for the moment we can
+forget about that. This leaves the font.
+
+As we already mentioned in a previous chapter, in \CONTEXT\ we use \UNICODE\
+internally. This also means that fonts are organized this way. By default the
+glyph representation of a \UNICODE\ character sits in the same slot in the glyph
+table. All additional glyphs, like ligatures or alternates are pushed in the
+private unicode space. This is why in the lists shown in the figures the
+ligatures have a private \UNICODE\ number.
+
+The basic mode of operation in the builder in \LUATEX\ is as follows:
+
+\startitemize[packed]
+\startitem hyphenate the node list \stopitem
+\startitem build ligatures \stopitem
+\startitem inject kerns \stopitem
+\startitem optionally break into lines \stopitem
+\stopitemize
+
+In traditional \TEX\ the first step is not that independent. There hyphenation
+takes place when the text is broken into lines, and only in places that are
+candidate for such a break. In \LUATEX\ the whole text is hyphenated. This has
+the advantage that the steps are clearly separated and that no complex
+reconstruction and re|-|hyphenation has to take place. The speed penalty can be
+neglected and the extra memory overhead is small compared to what is needed
+anyway.
+
+In base mode the raw font data is read in and from that only basic information is
+used to construct the \TFM\ table: dimensions, ligatures and kerns. In a node
+list, all glyph ranges that refer to such a font get the standard ligature and
+kern routines applied, but only if the subtype is still less than 256. This check
+on subtype prevents duplicate processing that might happen as a side effect of
+for instance unboxing some material in a yet to be typeset text.
+
+Given that the majority of what \TEX\ has to deal with is relatively simple latin
+script, base mode processing is rather convenient and efficient. It is also the
+reference point of other kinds of processing. The most simple way to force base
+mode is the following:
+
+\starttyping
+\definefontfeature[basemode][mode=base,kern=yes,liga=yes]
+
+\definefont[MyTitleFont][SerifBold*basemode at 12pt]
+\stoptyping
+
+Here \type {\MyTitleFont} will be a bold serif with ligatures and kerns applied.
+However, as an \OPENTYPE\ font can have many features, the following definitions
+are also valid:
+
+\starttyping
+\definefontfeature[basemode-o][mode=base,kern=yes,onum=yes,liga=yes]
+\definefontfeature[basemode-s][mode=base,kern=yes,smcp=yes]
+\stoptyping
+
+The \TFM\ constructor will filter the right information from the font data and
+construct a proper table based on these specifications. But you need to keep in
+mind that when for instance old style numerals or small caps are activated, that
+their rendering (the glyph) will always be used. So, for instance \type {3} and
+\type {A} keep their \UNICODE\ points but as part of their specification they
+will get an index pointing to the oldstyle or small caps variant and the
+dimensions of that shape will be used.
+
+\stopsection
+
+\startsection[title=Node mode]
+
+Node mode is by far the most interesting of the modes. When enabled we only pass
+a few properties of glyphs to the engine: the width, height and depth and
+optionally protrusion, expansion factors as well as some extra \CONTEXT\ specific
+quantities. So there is no kerning and no ligature building done by the engine.
+Instead we do this in \LUA\ by walking over the node list and checking if some
+action is needed.
+
+\appendixdata{\in[fonts:trackers:features]}
+
+The default feature set enables kerning and ligature building for default and/or
+Latin scripts and the default language. Being a relative simple feature,
+ligatures don't take much action. Next we show a trace of a ligature replacement.
+
+\blank
+\showotfcomposition{name:dejavuserif*default at 24pt}{1}{affiliation}
+\blank
+
+Be warned that this \type {f f i} sequence not always becomes a ligature.
+Actually this is one area where tradition is quite visible: for some reason most
+fonts do have these f|-|related ligatures but lack others. These ligatures even
+have code points in \UNICODE\ which is quite debatable. Just as there are fonts
+with hardly any kerns (like Lucida) there are fonts that follow a different route
+to improve the look and feel of neighbouring glyphs, like Cambria:
+
+\blank
+\showotfcomposition{name:cambria*default at 24pt}{1}{affiliation}
+\blank
+
+Instead of representing multiple characters by one glyph the designer has decided
+to replace the \type {f} by a slightly narrower one so that the dot of the \type
+{i} stays loose.
+
+An example where much more is involved is the following. The Husayni font that is
+used for typesetting Arabic is built upon a solid but complex \OPENTYPE\
+foundation and can only be dealt with in node mode. When the \LUATEX\ project
+started we assumed that more power in the engine was needed to accomplish this,
+but so far the results with standard \OPENTYPE\ functionality are quite good.
+\CONTEXT\ has an additional paragraph optimizer that can apply additional
+features to get even better results but discussing this falls beyond this
+chapter. A trace of just one Arabic word is much longer than the previously shown
+traces.
+
+\blank
+\showotfcomposition{name:husayni*otftracker-husayni at 48pt}{-1}{فَخَا}
+\blank
+
+What we see here is a stepwise substitution process, sometimes based on a
+contextual analysis, followed by positioning. The coloring concerns the outcome
+of the analysis which in this case flags initial, final, medial and isolated
+characters.
+
+The starting point of this Arabic word is visualized in \in {figure}
+[nodechart:3a] and as expected we see no discretionary nodes here. The result as
+seen in \in {figure} [nodechart:3b] has (interestingly) no kerns as all
+replacements happen via offsets in the glyph node.
+
+\startplacefigure[title={The Arabic input \quote {\tttf\righttoleft فَخَا} before rendering.},reference=nodechart:3a]
+    \getbuffer[nodechart:3a]
+\stopplacefigure
+
+\startplacefigure[title={The Arabic input \quote {\tttf\righttoleft فَخَا} after rendering.},reference=nodechart:3b]
+    \getbuffer[nodechart:3b]
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Auto mode]
+
+Base mode is lean and mean and relatively fast while node mode is more powerful
+and slower. So how do you know what to choose? The safest bet is to use node mode
+for everything. In \CONTEXT\ however, we also have the so called auto mode. In that
+case there is some analysis going on that chooses between base mode and node mode
+depending on the boundary conditions of script and language and there are specific
+demands in terms of feature processing. So, auto mode will resolve to base or
+node mode.
+
+\stopsection
+
+\startsection[title=None mode]
+
+Sometimes no features have to be applied at all. A good example is verbatim.
+There you don't want ligatures, kerning or fancy substitutions. Contrary to what
+you might expect, monospaced fonts can have such features. Some might actually
+make sense, like rendering zeros. However, you cannot assume such a feature to be
+present so this is an example of where some more knowledge about a particular
+font is needed. This is what Latin Modern provides.
+
+\starttabulate[|l|l|l|]
+\NC \type{none} \NC typewriter \NC \ruledhbox{\maincolor\DemoNoneLT1234567890} \NC \NR
+\NC \type{zero} \NC typewriter \NC \ruledhbox{\maincolor\DemoZeroLT1234567890} \NC \NR
+\NC \type{none} \NC regular    \NC \ruledhbox{\maincolor\DemoNoneLM1234567890} \NC \NR
+\NC \type{zero} \NC regular    \NC \ruledhbox{\maincolor\DemoZeroLM1234567890} \NC \NR
+\stoptabulate
+
+Normally using mode none for situations that need to be predictable is quite
+okay.
+
+\stopsection
+
+\startsection[title=Dynamics]
+
+Sometimes you want to enable or disable a specific feature only for a specific
+span of text. Defining a font for only this occasion is overkill, especially when
+for instance features are used to fine|-|tune the typography as happens in the
+Oriental \TEX\ project, which is related to \LUATEX. Instead of defining yet
+another font instance we can therefore enable and disable specific features. For
+this it is not needed to know the current font and its size. \footnote {Dynamics
+are a \CONTEXT\ specific feature and is not available in the generic version of
+the font code. There are several reasons for this: it complicates the code, it
+assumes the \CONTEXT\ feature definition mechanism to be used, and it is somewhat
+slower as some extra analysis has to be done.}
+
+Dynamics are a special case of node mode and you don't need to set it up when
+defining a font. In fact, a font defined in base mode can also be dynamic. We
+show some simple examples of applying dynamic features.
+
+% First we define two feature sets, one for ligatures and one for oldstyle. As in
+% our example we want to start fresh we also define a simple set with only kerning
+% enabled. In a next chapter we will see more of how featuresets are defined.
+%
+% \startbuffer
+% \definefontfeature[l][script=latn,liga=yes]
+% \definefontfeature[o][script=latn,onum=yes]
+% \definefontfeature[k][script=latn,kern=yes]
+%
+% \definefont[LOKfont][file:lmroman10-regular*k]
+% \stopbuffer
+%
+% \typebuffer \getbuffer
+
+% \startbuffer[demo]
+% {\LOKfont fiets 123          fiets 123          fiets 123}\par
+% {\LOKfont fiets 123 \addff{l}fiets 123 \addff{o}fiets 123}\par
+% {\LOKfont fiets 123 \addff{o}fiets 123 \addff{l}fiets 123}\par
+% {\LOKfont fiets 123 \addfs{l}fiets 123 \addfs{o}fiets 123}\par
+% {\LOKfont fiets 123 \addfs{o}fiets 123 \addfs{l}fiets 123}\par
+% {\LOKfont fiets 123 \addfs{l}fiets 123 \subfs{l}fiets 123}\par
+% {\LOKfont fiets 123 \addfs{o}fiets 123 \subfs{o}fiets 123}\par
+% \stopbuffer
+%
+% We use the following test line:
+%
+% \typebuffer
+%
+% In the first line we do nothing but in the following lines we add features to the
+% font (replacing existing ones), we add features to the current set (nothing gets
+% replaced) and finally we remove some from the set. The typeset result is shown in
+% \in {figure} [fig:modes:dynamics].
+%
+% \placefigure
+%   [here]
+%   [fig:modes:dynamics]
+%   {Selectively applying ligatures and oldstyle numerals using dynamic features in
+%    Latin Modern Roman.}
+%   {\color[maincolor]{\externalfigure[demo.buffer][width=.75\textwidth]}}
+%
+% Although for reasons of symmetry we have a few more commands, in practice only
+% the following make sense, and even the first one is mostly of interest or
+% testing.
+%
+% \starttabulate[|l|l|]
+% \NC \type {\addff} \NC set a feature to be the one applied   \NC \NR
+% \NC \type {\addfs} \NC add a feature to current set          \NC \NR
+% \NC \type {\subfs} \NC remove a feature from the current set \NC \NR
+% \stoptabulate
+%
+% Keep in mind that the given feature set can set a combination of
+% features. Also be aware of the fact that these commands don't
+% accumulate: the last one is applied.
+
+% A more sophisticated dynamic feature mechanism is the following. This
+% time we do stack up features. We can add, subtract or even replace
+% feature sets.
+
+Let's first define some feature sets:
+
+\startbuffer
+\definefontfeature[f:smallcaps][smcp=yes]
+\definefontfeature[f:nocaps]   [smcp=no]
+\definefontfeature[f:oldstyle] [onum=yes]
+\definefontfeature[f:newstyle] [onum=no]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can add and subtract these features from the current feature set
+that is bound to the current font.
+
+\startbuffer
+\switchtobodyfont[pagella]    123 normal
+\addfeature     {f:oldstyle}  123 oldstyle
+\addfeature     {f:smallcaps} 123 olstyle smallcaps
+\subtractfeature{f:oldstyle}  123 smallcaps
+\subtractfeature{f:smallcaps} 123 normal
+\stopbuffer
+
+\typebuffer
+
+Here we choose a font that has oldstyle numerals as well as small caps: pagella.
+
+\blank \start \getbuffer \stop \blank
+
+The following does the same, but only uses addition:
+
+\startbuffer
+\switchtobodyfont[pagella] 123 normal
+\addfeature{f:oldstyle}    123 oldstyle
+\addfeature{f:smallcaps}   123 olstyle smallcaps
+\addfeature{f:newstyle}    123 smallcaps
+\addfeature{f:nocaps}      123 normal
+\stopbuffer
+
+\typebuffer
+
+You can also completely replace a feature set. Of course the set is only
+forgotten inside the current group.
+
+\startbuffer
+\switchtobodyfont[pagella]   123 normal
+\addfeature    {f:oldstyle}  123 oldstyle
+\addfeature    {f:smallcaps} 123 olstyle smallcaps
+\replacefeature{f:oldstyle}  123 oldstyle
+\replacefeature{f:smallcaps} 123 smallcaps
+\stopbuffer
+
+\typebuffer
+
+and now we get:
+
+\blank \start \getbuffer \stop \blank
+
+You can exercise some control with \type {\resetfeature}:
+
+\startbuffer
+\switchtobodyfont[pagella]   123 normal
+\addfeature    [f:oldstyle]  123 oldstyle
+\addfeature    [f:smallcaps] 123 olstyle smallcaps
+\resetfeature                123 reset
+\addfeature    [f:oldstyle]  123 oldstyle
+\addfeature    [f:smallcaps] 123 olstyle smallcaps
+\stopbuffer
+
+\typebuffer
+
+Watch how we use the \type {[]} variant of the commands. The braced and
+bracketed variants behave the same.
+
+\blank \start \getbuffer \stop \blank
+
+There is also a generic command \type {\feature} that takes two arguments. Below
+we show all calls, with long and short variants:
+
+\starttyping
+\addfeature        [f:mine] \feature [more][f:mine] \feature[+][f:mine]
+\subtractfeature   [f:mine] \feature [less][f:mine] \feature[-][f:mine]
+\replacefeature    [f:mine] \feature  [new][f:mine] \feature[=][f:mine]
+\resetandaddfeature[f:mine] \feature[local][f:mine] \feature[!][f:mine]
+\revivefeature     [f:mine] \feature  [old][f:mine] \feature[>][f:mine]
+\resetfeature               \feature[reset]         \feature[<]
+\stoptyping
+
+Each variant also accepts \type {{}} instead of \type {[]} so that they can
+conveniently be used in square bracket arguments. As a bonus, the following also
+works:
+
+\startbuffer
+\switchtobodyfont[pagella]
+123 normal
+\feature[+][f:smallcaps,f:oldstyle]
+123 SmallCaps and OldStyle
+\stopbuffer
+
+\typebuffer
+
+Here is the proof:
+
+\blank \start \getbuffer \stop \blank
+
+\stopsection
+
+\startsection[title=Discretionaries]
+
+One of the complications in supporting more complex features is that we can have
+discretionary nodes. These are either inserted by the hyphenation engine, or
+explicitly by the user (directly or via macros). In most cases we don't need to
+bother about this. For instance, more demanding scripts like Arabic don't
+hyphenate, languages using the Latin script seldom want ligatures at hyphenation
+points (as they can be compound words) and|/|or avoid confusing hyphenation
+points, so what is left are specific user inserted discretionaries. Add to that,
+that a proper font has not much kerning between lowercase characters and it will
+be clear that we can ignore most of this. Anyway, as we explicitly deal with user
+discretionaries, the next works out okay. Watch how we normally only have
+something special in the replacements text that shows up when no hyphenation is
+needed.
+
+\startbuffer
+\language[nl]
+\definedfont[file:texgyrepagella-regular.otf*default]
+\hsize  1mm vereffenen \par
+\hsize  1mm effe \par
+\hsize  1mm e\discretionary{f-}{f}{ff}e \par
+\hsize 20mm e\discretionary{f-}{f}{ff}e \par
+\smallcaps
+\hsize  1mm vereffenen \par
+\hsize  1mm effe \par
+\hsize  1mm e\discretionary{f-}{f}{ff}e \par
+\hsize 20mm e\discretionary{f-}{f}{ff}e \par
+\stopbuffer
+
+\typebuffer
+
+\blank
+\startcolumns[n=6]
+    \indenting[no]
+    \maincolor
+    \getbuffer
+\stopcolumns
+\blank
+
+In base mode such things are handled by the \TEX\ engine itself and it can deal
+with pretty complex cases. In node mode we use a simplification which in practice
+suffices. We will come back to this in \in {section} [ligatures:hyphenation].
+
+\stopsection
+
+\startsection[title=Efficiency]
+
+The efficiency of the mechanisms described here depends on several factors. It
+will be clear that the larger the font, the more time it will take to load it.
+But what is large? Most \CJK\ fonts are pretty large but also rather simple. A
+font like Zapfino on the other hand covers only latin but comes with many
+alternative shapes and a large set of rules. The Husayni font focusses on Arabic,
+which in itself has not that large an alphabet, but being an advanced script
+font, it has a lot of features and definitely a lot of rules.
+
+In terms of processing it's safe to say that Latin is of average complexity. At
+most you will get some substitutions, like regular numerals being replaced by
+oldstyles, or ligature building, which involves a bit of analysis, and some
+kerning at the end. In base mode the substitutions have no overhead, simply
+because the character table already has references to the substituents and the
+replacement already takes place when defining the font. There ligature building
+and kerning are also fast because of the limited amount of lookups that also are
+already kept with the characters. In node mode however, the lists have to be
+parsed and tables have to be consulted so even Latin processing has some
+overhead: each glyph node is consulted and analyzed (either or not in its
+context), often multiple times. However, the code is rather optimized and we use
+caching of already analyzed data when possible.
+
+A \CJK\ script is somewhat more complex on the one hand, but pretty simple on the
+other. Instead of font based kerning, we need to prevent or encourage breaks
+between certain characters. This information is not in the font and is processed
+otherwise but it does cost some time. The font part however is largely idle as
+there are no features to be applied. Even better, because the glyphs are large
+and the information density is high, the processing time per page is not much
+different from Latin. Base mode is good enough for most \CJK.
+
+The Arabic script is another matter. There we definitely go beyond what base mode
+offers so we always end up in node mode. Also, because there is some analysis
+involved, quite some substitutions and in the end also positioning, these are the
+least efficient fonts in terms of processing time. Of course the fact that we mix
+directions also plays a role. If in the Husayni font you enable 30 features with
+an average of 5 rules per feature, a 300 character paragraph will take 45.000
+actions. \footnote {For a modern machine this amount is no real issue, but as
+each action involves function calls and possibly some garbage collection there
+is some price to pay.} When multiple fonts are combined in a paragraph there will
+be more sweeps over the list and of course the replacements also have to happen.
+
+In a time when the average photo camera produces megabyte pictures it makes no
+sense to whine about the size of a font file. On the other hand as each font
+eventually ends up in memory as a \LUA\ table, it makes sense to optimize that
+bit. This is why fonts are converted into a more efficient intermediate table
+that is cached on disk. This makes loading a font quite fast and due to shared
+tables memory usage rather efficient. Of course a scaled instance has to be
+generated too, but that is acceptable. To some extent loading and defining a font
+also depends on the way the macro package is set up.
+
+When comparing \LUATEX\ with for instance \PDFTEX\ or \XETEX\ you need to take
+into account that in \CONTEXT\ \MKIV\ we tend to use \OPENTYPE\ fonts only so
+there are less fonts loaded than in a more traditional setup. In \CONTEXT\
+startup time of \MKIV\ is less than \MKII\ although overall processing time is
+slower, which is due to \UNICODE\ being used and more functionality being
+provided. On the other hand, immediate \METAPOST\ processing and more clever
+multipass handling wins back time. The impact of fonts on processing time in a
+regular document is therefore not that impressive. In practice a \MKIV\ run can
+be faster than a \MKII\ run, especially when \METAPOST\ is used.
+
+In \CONTEXT\ processing of node lists with respect to fonts is only one of the
+many manipulations of such lists and by now fonts are not really the bottleneck.
+The more not font related features users demand and enable, the less the relative
+impact of font processing becomes.
+
+Also, there are some advanced typographic extras that \LUATEX\ offers, like
+protrusion (think of hanging punctuation) and hz optimization (glyph scaling) and
+these slow down processing quite a lot, and they are not taking place at the
+\LUA\ end at all, but this might change in \MKIV. And, of course, typesetting
+involves more than fonts and other aspects can be way more demanding.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% oldstyle not in math (old school tex)
+% funny tex ligatures
+% features=yes
+% analysis
+% mode=none (tt)

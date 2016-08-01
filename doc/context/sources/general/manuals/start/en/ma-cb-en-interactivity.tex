@@ -1,0 +1,310 @@
+\startcomponent ma-cb-en-interactivity
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Interactive mode in electronic documents,reference=interactivity]
+
+\startsection[title=Introduction]
+
+\index[reader]{\READER}
+
+Documents that are electronically available for consulting and displaying on a
+computer screen are called interactive documents.
+
+Interaction means that you can click on active areas and jump to the indicated
+locations. For example if you consult a register you can click on a (active) page
+number and you will jump to the corresponding page.
+
+Interaction relates to:
+
+\startitemize[packed]
+\item active chapter numbers in the table of content
+\item active page numbers in registers
+\item active page numbers, chapter numbers and figure numbers in internal
+      references to pages, chapters, figures etc. in the running text
+\item active titles, page numbers, and chapter numbers in external references to
+      other interactive documents
+\item active menus as navigation tools
+\item references to webpages and programs
+\stopitemize
+
+Interactivity depends on the program you use to view the interactive document. We
+assume here that you will use \READER\ for viewing.
+
+\CONTEXT\ is a very powerful system for producing electronic or interactive \PDF\
+documents. However, only a few standard features are described in this chapter. As
+the authors of this manual are planning to make all \CONTEXT\ related manuals
+electronically (sources included) available, reverse engineering is one of the
+options to become more acquainted with the possibilities of \CONTEXT.
+
+Good examples of interactive documents are \CONTEXT\ presentations (see \in{chapter}[presentations]).
+For more complex interactive \PDF\ documents with forms you should read the
+\goto {Widgets} [ url (manual:widget) ]
+manual.
+
+\stopsection
+
+\startsection[title=Interactive mode]
+
+\index{interactive mode}
+
+\Command{\tex{setupinteraction}}
+
+The interactive mode is activated by:
+
+\shortsetup{setupinteraction}
+
+For example:
+
+\startbuffer
+\setupinteraction
+  [state=start,
+   color=green,
+   style=bold]
+\stopbuffer
+
+\typebuffer
+
+The hyper links are now generated automatically and the active words are
+displayed in bold green.
+
+The interactive document is considerably bigger (in MB's) than its paper cousin
+because hyperlinks consume space. You will also notice that processing time
+becomes longer. Therefore it is advisable to de-activate the interactive mode as
+long as your document is under construction.
+
+\stopsection
+
+\startsection[title=Interaction within a document]
+
+\index{interaction+internal}
+
+\Command{\tex{in}}
+\Command{\tex{at}}
+\Command{\tex{goto}}
+
+Earlier you have seen how to make a reference with \type{\in} and \type{\at}. You
+may have wondered why you had to type \type{\in{chapter}[chap:introduction]}. In
+the first place {\em chapter} and its corresponding chapter number will not be
+separated at line breaking. In the second place the word {\em chapter} and its
+number are typeset differently in the interactive mode. This gives the user a
+larger clickable area.
+
+\stopsection
+
+\startsection[title=Interaction between documents]
+
+\index{interaction+external}
+
+\Command{\tex{from}}
+\Command{\tex{useexternaldocument}}
+
+It is possible to link one document to another. First you have to state that you
+want to refer to another document. This is done by:
+
+\shortsetup{useexternaldocument}
+
+The first bracket pair must contain a logical name of the document, the second
+pair the file name of the other document and the third pair is used for the title
+of the document.
+
+For refering to these other documents you can use:
+
+\shortsetup{from}
+
+The curly braces contain text and the brackets contain the reference.
+
+Look at the example below.
+
+\startbuffer
+\useexternaldocument
+   [hia][hasseltbook][Festivities in Hasselt]
+
+Most tourist attractions are described in \from[hia].\crlf
+A description of the \about[hia::euifeest] is found in \from[hia].\crlf
+The eui||feest is described on \at{page}[hia::euifeest] in \from[hia].\crlf
+See for more information \in{chapter}[hia::euifeest] in \from[hia].
+\stopbuffer
+
+\typebuffer
+
+The \type{\useexternaldocument} is usually typed in the set up area of your input
+file.
+
+After processing your input file and the file \type{hasseltbook.tex},
+you will have two \PDF\ documents. The references come out like this:
+
+\start
+\setupinteraction[state=start]
+\getbuffer
+\stop
+
+For more information on cross referencing look at
+\goto {\CONTEXT\ Magazine 1103} [ url (thisway:crossrefs)].
+
+\stopsection
+
+\startsection[title=Interaction with the world wide web]
+
+In interactive mode there is one other command that has little meaning in the
+paper version.
+
+\shortsetup{goto}
+
+The curly braces contain text, the brackets contain a reference (logical name or a
+location).
+
+\startbuffer
+In \goto {Hasselt} [ url(http://www.stadindex.nl/plattegrond/hasselt) ]
+all streets are build in a circular way.
+\stopbuffer
+
+\typebuffer
+
+In the interactive document \goto{Hasselt}[ url(http://www.stadindex.nl/plattegrond/hasselt) ]
+will be green and active. When you click the text you will jump to a map of Hasselt.
+
+For a consistent definition of the urls there is the command:
+
+\shortsetup{useURL}
+
+The adress is defined with:
+
+\startbuffer
+\useURL
+  [loc:cityplan]                                % id
+  [http://www.stadindex.nl/plattegrond/hasselt] % adress
+  []                                            % document
+  []                                            % text
+\stopbuffer
+
+\typebuffer
+
+The webadress is recalled by its logical name:
+\type{\goto {Hasselt} [ url(loc:cityplan) ]}.
+
+It is of good practice to define and maintain the urls in a separate
+file.
+
+\stopsection
+
+\startsection[title=Buttons]
+
+The command to define a button is:
+
+\shortsetup{button}
+
+The first bracket pair contains the setup keys, the curly brackets contain the
+button text and the last bracket pair the destination.
+
+\startbuffer
+\useexternalsoundtrack
+  [stranger][wayfaring_stranger.mp3]
+
+\button{Website Hasselt} [ url(http://www.hasselt.nl) ]
+\button{MSWord Document} [ program(hasselt.doc) ]
+\button{Sound Clip}      [ StartSound{stranger} ]
+\stopbuffer
+
+\typebuffer
+
+The first example results in a jump to a webpage, the second opens the file
+\type{hasselt.doc} in \MSWORD\ and the third plays a tune. Note the use of the
+\type{\useexternalsoundtrack} command.
+
+\stopsection
+
+\startsection[title=Menus]
+
+You can define a menu with:
+
+\shortsetup{startinteractionmenu}
+
+And set it up with:
+
+\shortsetup{setupinteractionmenu}
+
+The first bracket pair is used for its name and the second pair for setting up
+the menu.
+
+A menu can be used in an interactive document. Below you can find a simple
+example that you can copy to do some experimenting:
+
+\startbuffer
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [header=0cm,          topspace=.5cm, backspace=2cm,
+   margindistance=.5cm, margin=1cm,    rightmargin=0cm,
+   edgedistance=.5cm,   rightedge=2cm, width=fit,
+   height=13.8cm,       footer=1cm,    bottom=1cm]
+
+\setupinteraction
+  [state=start,         menu=on]
+
+\setupinteractionmenu
+  [bottom]
+  [background=color,    backgroundcolor=gray, frame=off]
+
+\startinteractionmenu[bottom]
+\hfill
+\startbut [content]       contents      \stopbut \quad
+\startbut [index]         index         \stopbut \quad
+\startbut [PreviousJump]  last location \stopbut \quad
+\startbut [NextPage]      next page     \stopbut \quad
+\startbut [CloseDocument] exit          \stopbut \quad
+\stopinteractionmenu
+
+\starttext
+
+\startstandardmakeup
+  \midaligned{\tfd Festivities in Hasselt}
+\stopstandardmakeup
+
+\completecontent
+
+\startchapter[title=Introduction]
+  An introduction.
+\stopchapter
+
+\startchapter[title=Kingsday]
+  Something about Kingsday in Hasselt.\index{Kingsday}
+\stopchapter
+
+\startchapter[title=Hassailt]
+  Something about Hassailt.\index{Hassailt}
+\stopchapter
+
+\startchapter[title=Euifeest,reference=euifeest]
+  Something about the Euifeest.\index{Euifeest}
+\stopchapter
+
+\completeindex
+
+\stoptext
+\stopbuffer
+
+\typebuffer
+
+The definition of the \type{\startinteractionmenu} will produce a menu at the
+bottom of every screen. The menu buttons contain the text {\em contents}, {\em
+index}, {\em last location}, {\em next page} and {\em exit} with respectively the
+following functions: jump to the table of contents, jump to the index, goto the
+last location in the document, goto next page and close the document. The labels
+to obvious destinations like \type{content} and \type{index} are predefined.
+Other predefined destinations are \type{FirstPage}, \type{LastPage},
+\type{NextPage} and \type{PreviousPage}.
+
+An action like \type{CloseDocument} is necessary to make an electronic document
+self containing. Other predefined actions you can use are \type{PrintDocument},
+\type{SearchDocument} and \type{PreviousJump}. The meaning of these actions is
+obvious.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

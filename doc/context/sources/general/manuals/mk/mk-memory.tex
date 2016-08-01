@@ -1,0 +1,142 @@
+% language=uk
+
+\environment mk-environment
+
+\usemodule[timing]
+
+\startcomponent mk-memory
+
+\chapter{Collecting garbage}
+
+We use the \type {mk.tex} document for testing and because it keeps track of
+how \LUATEX\ evolves. As a result it has some uncommon characteristics. For
+instance, you can see increments in memory usage at points where we
+load fonts: the chapters on Zapfino, Arabic and CJK (unfinished). This memory
+is not freed because the font memory is used permanently. In the following
+graphic, the red line is the memory consumption of \LUATEX\ for the current
+version of \type {mk.tex}. The blue line is the runtime per page.
+
+\ShowNamedUsage{mk-luatex-progress}{luastate_bytes}{elapsed_time}
+
+At the moment of writing this Taco has optimized the \LUATEX\ code base and
+I have added dynamic feature support to the \MKIV\ and optimized much of the
+critical \LUA\ code. At the time of writing this (December 23, 2007),
+\type {mk.tex} counted 142 pages. Our rather aggressive optimizations brought
+down runtime from about 29 seconds to under 16 seconds. By sharing as much font
+data as possible at the \LUA\ end (at the cost of a more complex implementation)
+the memory consumption of huge fonts was brought down to a level where
+a somewhat \quote {older} computer with 512 MB memory could also cope with
+\MKIV. Keep in mind that some fonts are just real big. Eventually we may decide
+to use a more compact table model for passing \OPENTYPE\ fonts to \LUA, but this
+will not happen in 2007.
+
+The following tests show when \LUA's garbage collector becomes active. The blue
+spike shows that some extra time is spent on this initially. After that garbage
+more garbage is collected, which makes the time spent per page slightly higher.
+
+\starttyping
+\usemodule[timing] \starttext \dorecurse{2000}{
+    \input tufte \par \input tufte \par \input tufte \page
+} \stoptext
+\stoptyping
+
+\ShowNamedUsage{mk-timing-1-luatex-progress}{luastate_bytes}{elapsed_time}
+
+The maximum memory footprint is somewhat misleading because \LUA\ reserves more
+than needed. As discussed in an earlier chapter, it is possible to tweak to control
+memory management somewhat, but eventually we decided that it does not make much sense
+to divert from the default settings.
+
+\starttyping
+\usemodule[timing] \starttext \dorecurse{2000}{
+    \input tufte \par \input tufte \par \input tufte \par
+} \stoptext
+\stoptyping
+
+\ShowNamedUsage{mk-timing-2-luatex-progress}{luastate_bytes}{elapsed_time}
+
+The last example of this set does not load files, but stores the text in
+a macro. This is faster, although not that mich because the operating system
+caches the file and there is not \UTF\ collapsing needed for this file.
+
+\starttyping
+\usemodule[timing] \starttext \dorecurse{2000}{
+    \tufte \par \tufte \par \tufte \par
+} \stoptext
+\stoptyping
+
+\ShowNamedUsage{mk-timing-3-luatex-progress}{luastate_bytes}{elapsed_time}
+
+There are subtle differences in memory usage between the examples and eventually
+test like these will permit us to optimize the code even further. For the record:
+the first test runs in 39.5 seconds, the second on in 36.5 seconds and the last one
+only takes 31.5 seconds (all in batch mode).
+
+Keep in mind that these quotes in \type {tufte.tex} are just test samples, and
+not that realistic in everyday documents. On the other hand, these tests involve
+the usual font loading, node processing, attribute handling etc. They provide a
+decent baseline.
+
+Another document that we use for testing functionality and performance is the
+reference manual. The preliminary beta~2 version gives the following statistics.
+
+\ShowNamedUsage{luatexref-t-luatex-progress-runtime}{luastate_bytes}{elapsed_time}
+
+The previous graphic shows the statistics of a run with runtime \METAPOST\ graphics
+enabled. This means that, because each pagenumber comes with a graphic, for each
+page \METAPOST\ is called. The speed of this call is heavily influenced by the
+\METAPOST\ startup time, which in turn (in a windows platform) is influences by the
+initialization time of the \KPSE\ library. Technically the call time can near zero
+but this demands sharing libraries and databases. Anyhow, we're moving towards an
+embedded \METAPOST\ library anyway, and the next graphic shows what will happen then.
+Here we run \CONTEXT\ in delayed \METAPOST\ mode: graphics are collected and processed
+between runs. Where the runtime variant takes some 45 seconds processing time, the
+intermediate versions takes 15.
+
+\ShowNamedUsage{luatexref-t-luatex-progress-intermediate}{luastate_bytes}{elapsed_time}
+
+In the \type {mk.tex} document we use \TYPEONE\ fonts for the main body of the text and
+load some (huge) \OPENTYPE\ fonts later on. Here we use \OPENTYPE\ fonts exclusively and
+since \CONTEXT\ loads fonts only when needed, you see several spikes in the time per page
+bars and memory consumption quickly becomes stable. Interesting is that contrary to the
+\type {tufte.tex} samples, memory usage is quite stable. Here we don't have a memory
+sawtooth and no garbage collection spikes.
+
+The previous graphics combine \LUA\ memory consumption with time spent per page. The
+following graphics show variants of this. The graphics concern this document
+(\type{mk.tex}). Again, the blue lines represent the runtime per page.
+
+\ShowMemoryUsage{mk-luatex-progress}
+
+In \LUATEX\ node memory management is rewritten. Contrary to what you may expect, node memory
+consumption is not that large. Pages seldom contain more than 5000 nodes, although
+extensive use of attributes can easily duplicate this. Node usage in this documents is
+as follows.
+
+\ShowNodeUsage{mk-luatex-progress}
+
+If node memory usage stays high, i.e.\ is not reclaimed, this can be an indication of
+a memory leak. In the December 2007 beta version there is such a leak in math subformulas,
+something that will be resolved when math node processing is opened up. The current \MKIV\
+code cleans up most of its temporary data. We do so, because it permits us to keep an eye
+on unwanted memory leaks. When writing this chapter, some of the peaks in the graphics
+coincided with peaks in the runtime per page, which is no surprise.
+
+If you want to run such tests yourself, you need to load a module at startup:
+
+\starttyping
+\usemodule[timing]
+\stoptyping
+
+The graphics can be generated with:
+
+\starttyping
+\def\ShowUsage      {optional filename}
+\def\ShowNamedUsage {optional filename}{red graphic}{blue graphic}
+\def\ShowMemoryUsage{optional filename}
+\def\ShowNodeUsage  {optional filename}
+\stoptyping
+
+(This interface may change.)
+
+\stopcomponent

@@ -1,0 +1,138 @@
+% language=uk
+
+\startcomponent languages-goodies
+
+\environment languages-environment
+
+\startchapter[title=Goodies][color=darkorange]
+
+\startsection[title=Introduction]
+
+There are some features that will only be used in rare cases. They were often
+implemented as experiment but found useful enough to keep around.
+
+\stopsection
+
+\startsection[title=Spell checking]
+
+There are some means to check the spelling of words in your document but get it
+right: \CONTEXT\ is not a spell|-|checker. These features were added in order to
+be able to do some quick checking of documents written by multiple authors. There
+are currently three options and we only show a simple examples.
+
+First you need to load word lists. These are either text files with just words
+separated by spacing.
+
+\starttyping[color=maincolor]
+foobar  foo-bar  foo=bar  foo{}{}{}bar  foo{}{}{bar}
+\stoptyping
+
+All these words become \type {foobar} which means that one can use words with
+discretionary specifications. A text list is loaded with:
+
+\startbuffer
+\loadspellchecklist[en][t:/manuals/lua/words-en.txt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Instead you can load a \LUA\ file with words. Here we use the same structure that
+we use for the spell checker provided for \SCITE:
+
+\starttyping[color=maincolor]
+return {
+    max   = 9,
+    min   = 6,
+    n     = 2,
+    words = {
+        ["barfoo"]    = "Barfoo"
+        ["foobarred"] = "foobarred",
+    }
+}
+\stoptyping
+
+We use the same load command (you can also load bytecode files with suffix \type
+{luc} this way):
+
+\startbuffer
+\loadspellchecklist[nl][t:/scite/data/context/lexers/data/spell-nl.lua]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Usage boils down to enabling the checker. If needed we can add more methods. The
+first method colors the known and unknown colors. Words shorter then the
+threshold of 4 will be skipped.
+
+\startbuffer
+\setupspellchecking[state=start,method=1]
+\en Is this written right or is this wromg?\par % m -> n error
+\nl Is dit goed geschreven of niet?\par
+\setupspellchecking[state=stop]
+\stopbuffer
+
+\typebuffer \startpacked \getbuffer \stoppacked
+
+You can change the colors:
+
+\starttyping
+\definecolor[word:yes]    [g=.75]
+\definecolor[word:no]     [r=.75]
+\stoptyping
+
+The second method doesn't show anything but produces a file \type
+{jobname.words}) with used words. The \type {found} value of \type {list} is used
+as key in the produced table.
+
+\startbuffer
+\setupspellchecking[state=start,method=2,list=found]
+\en Is this written right or is this wrong?\par
+\nl Is dit goed geschreven of niet?\par
+\setupspellchecking[state=stop]
+\stopbuffer
+
+\typebuffer \startpacked \getbuffer \stoppacked
+
+The produced table is:
+
+\typefile{\jobname.words}
+
+The result can be traced with a module:
+
+\startbuffer
+\usemodule[s-languages-words]
+
+\showwords
+\stopbuffer
+
+\typebuffer
+
+This shows up as:
+
+\getbuffer
+
+The third mechanism colors languages differently. We only defined a few colors:
+
+\starttyping
+\definecolor[word:en]     [b=.75]
+\definecolor[word:de]     [r=.75]
+\definecolor[word:nl]     [g=.75]
+\definecolor[word:unknown][r=.75,g=.75]
+\stoptyping
+
+but you can of course define a color for your favourite language in a similar way.
+
+\startbuffer
+\setupspellchecking[state=start,method=3]
+\en Is this written right or is this wrong?\par
+\nl Is dit goed geschreven of niet?\par
+\setupspellchecking[state=stop]
+\stopbuffer
+
+\typebuffer \startpacked \getbuffer \stoppacked
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

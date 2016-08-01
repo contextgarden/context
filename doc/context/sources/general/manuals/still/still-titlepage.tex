@@ -1,0 +1,38 @@
+\startcomponent still-titlepage
+
+\startMPpage
+
+    picture p ; p := image (
+        numeric i ; i := 1cm ;
+        numeric j ; j := 1cm ;
+        forever :
+            j := 1.1 * j ;
+            i := 1cm ;
+            forever :
+                i := 1.1 * i ;
+                draw (i,j) withpen pencircle xscaled (i/10) yscaled (j/10) withcolor .5white ; % withtransparency (1,.5) ;
+                if i > 21cm : break fi ;
+            endfor ;
+            if j > 30cm : break fi ;
+        endfor ;
+    ) ;
+
+    p := p xysized(PaperWidth,PaperHeight) ;
+
+    fill boundingbox p withcolor "maincolor" ;
+
+    draw p ;
+
+    currentpicture := currentpicture shifted - llcorner currentpicture ;
+
+    draw textext.llft("Still")      xsized .75PaperWidth shifted (.95PaperWidth,.950PaperHeight) withcolor white ;
+    draw textext.llft("going on")   xsized .50PaperWidth shifted (.95PaperWidth,.725PaperHeight) withcolor white ;
+    draw textext.llft("Hans Hagen") xsized .50PaperWidth shifted (.95PaperWidth,.125PaperHeight) withcolor white ;
+
+    setbounds currentpicture to Page ;
+
+\stopMPpage
+
+\page[empty] \setupcounter[userpage][start=1]
+
+\stopcomponent

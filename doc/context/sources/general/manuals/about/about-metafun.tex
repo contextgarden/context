@@ -1,0 +1,834 @@
+% language=uk
+
+\startcomponent about-metafun
+
+\environment about-environment
+
+\startchapter[title={\LUA\ in \METAPOST}]
+
+% Hans Hagen, PRAGMA ADE, April 2014
+
+\startsection[title=Introduction]
+
+Already for some years I have been wondering how it would be if we could escape
+to \LUA\ inside \METAPOST, or in practice, in \MPLIB\ in \LUATEX. The idea is
+simple: embed \LUA\ code in a \METAPOST\ file that gets run as soon as it's seen.
+In case you wonder why \LUA\ code makes sense, imagine generating graphics using
+external data. The capabilities of \LUA\ to deal with that is more flexible and
+advanced than in \METAPOST. Of course we could generate a \METAPOST\ definition
+of a graphic from data but it often makes more sense to do the reverse. I finally
+found time and reason to look into this and in the following sections I will
+describe how it's done.
+
+\stopsection
+
+\startsection[title=The basics]
+
+The approach is comparable to \LUATEX's \type {\directlua}. That primitive can be
+used to execute \LUA\ code and in combination with \type {tex.print} we can pipe
+strings back into the \TEX\ input stream. A complication is that we have to be
+able to operate under different so called catcode regimes: the meaning of
+characters can differ per regime. We also have to deal with line endings in
+special ways as they relate to paragraphs and such. In \METAPOST\ we don't have
+that complication so getting back input into the \METAPOST\ input, we can do so
+with simple strings. For that a mechanism similar to \type {scantokens} can be
+used. That way we can return anything (including nothing) as long as \METAPOST\
+can interpret it and as long as it fulfils the expectations.
+
+\starttyping
+numeric n ; n := scantokens("123.456") ;
+\stoptyping
+
+A script is run as follows:
+
+\starttyping
+numeric n ; n := runscript("return '123.456'") ;
+\stoptyping
+
+This primitive doesn't have the word \type {lua} in its name so in principle any
+wrapper around the library can use it as a hook. In the case of \LUATEX\ the
+script language is of course \LUA. At the \METAPOST\ end we only expect a string.
+How that string is constructed is completely up to the \LUA\ script. In fact, the
+user is completely free to implement the runner any way she or he wants, like:
+
+\starttyping
+local function scriptrunner(code)
+    local f = loadstring(code)
+    if f then
+        return tostring(f())
+    else
+        return ""
+    end
+end
+\stoptyping
+
+This is hooked into an instance as follows:
+
+\starttyping
+local m = mplib.new {
+    ...
+    run_script = scriptrunner,
+    ...
+}
+\stoptyping
+
+Now, beware, this is not the \CONTEXT\ way. We provide print functions and other
+helpers, which we will explain in the next section.
+
+\stopsection
+
+\startsection[title=Helpers]
+
+After I got this feature up and running I played a bit with possible interfaces
+at the \CONTEXT\ (read: \METAFUN) end and ended up with a bit more advanced runner
+where no return value is used. The runner is wrapped in the \type {lua} macro.
+
+\startbuffer
+numeric n ; n := lua("mp.print(12.34567)") ;
+draw textext(n) xsized 4cm withcolor maincolor ;
+\stopbuffer
+
+\typebuffer
+
+This renders as:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+In case you wonder how efficient calling \LUA\ is, don't worry: it's fast enough,
+especially if you consider suboptimal \LUA\ code and the fact that we switch
+between machineries.
+
+\startbuffer
+draw image (
+    lua("statistics.starttiming()") ;
+    for i=1 upto 10000 : draw
+        lua("mp.pair(math.random(-200,200),math.random(-50,50))") ;
+    endfor ;
+    setbounds currentpicture to fullsquare xyscaled (400,100) ;
+    lua("statistics.stoptiming()") ;
+    draw textext(lua("mp.print(statistics.elapsedtime())"))
+        ysized 50 ;
+) withcolor maincolor withpen pencircle scaled 1 ;
+\stopbuffer
+
+\typebuffer
+
+Here the line:
+
+\starttyping
+draw lua("mp.pair(math.random(-200,200),math.random(-50,50))") ;
+\stoptyping
+
+effectively becomes (for instance):
+
+\starttyping
+draw scantokens "(25,40)" ;
+\stoptyping
+
+which in turn becomes:
+
+\starttyping
+draw scantokens (25,40) ;
+\stoptyping
+
+The same happens with this:
+
+\starttyping
+draw textext(lua("mp.print(statistics.elapsedtime())")) ...
+\stoptyping
+
+This becomes for instance:
+
+\starttyping
+draw textext(scantokens "1.23") ...
+\stoptyping
+
+and therefore:
+
+\starttyping
+draw textext(1.23) ...
+\stoptyping
+
+We can use \type {mp.print} here because the \type {textext} macro can deal with
+numbers. The following also works:
+
+\starttyping
+draw textext(lua("mp.quoted(statistics.elapsedtime())")) ...
+\stoptyping
+
+Now we get (in \METAPOST\ speak):
+
+\starttyping
+draw textext(scantokens (ditto & "1.23" & ditto) ...
+\stoptyping
+
+Here \type {ditto} represents the double quotes that mark a string. Of course,
+because we pass the strings directly to \type {scantokens}, there are no outer
+quotes at all, but this is how it can be simulated. In the end we have:
+
+\starttyping
+draw textext("1.23") ...
+\stoptyping
+
+What print variant you use, \type {mp.print} or \type {mp.quoted}, depends on
+what the expected code is: an assignment to a numeric can best be a number or an
+expression resulting in a number.
+
+This graphic becomes:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+The runtime on my current machine is some 0.25 seconds without and 0.12 seconds
+with caching. But to be honest, speed is not really a concern here as the amount
+of complex \METAPOST\ graphics can be neglected compared to extensive node list
+manipulation. Generating the graphic with \LUAJITTEX\ takes 15\% less time.
+\footnote {Processing a small 8 page document like this takes about one second,
+which includes loading a bunch of fonts.}
+
+\startbuffer
+numeric n ; n := lua("mp.print(1) mp.print('+') mp.print(2)") ;
+draw textext(n) xsized 1cm withcolor maincolor ;
+\stopbuffer
+
+The three print command accumulate their arguments:
+
+\typebuffer
+
+As expected we get:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\startbuffer
+numeric n ; n := lua("mp.print(1,'+',2)") ;
+draw textext(n) xsized 1cm withcolor maincolor ;
+\stopbuffer
+
+Equally valid is:
+
+\typebuffer
+
+This gives the same result:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Of course all kind of action can happen between the prints. It is also legal to
+have nothing returned as could be seen in the 10.000 dot example: there the timer
+related code returns nothing, so effectively we have \type {scantokens("")}.
+Another helper is \type {mp.quoted}, as in:
+
+\startbuffer
+draw
+    textext(lua("mp.quoted('@0.3f'," & decimal n & ")"))
+    withcolor maincolor ;
+\stopbuffer
+
+\typebuffer
+
+This typesets \processMPbuffer. Note the \type {@}. When no percent character is
+found in the format specifier, we assume that an \type {@} is used instead.
+
+\startbuffer
+\startluacode
+table.save("demo-data.lua",
+    {
+        { 1, 2 }, { 2, 4 }, { 3, 3 }, { 4, 2 },
+        { 5, 2 }, { 6, 3 }, { 7, 4 }, { 8, 1 },
+    }
+)
+\stopluacode
+\stopbuffer
+
+But, the real benefit of embedded \LUA\ is when we deal with data that is stored
+at the \LUA\ end. First we define a small dataset:
+
+\typebuffer
+
+\getbuffer
+
+There are several ways to deal with this table. I will show clumsy as well as
+better looking ways.
+
+\startbuffer
+lua("MP = { } MP.data = table.load('demo-data.lua')") ;
+numeric n ;
+lua("mp.print('n := ',\#MP.data)") ;
+for i=1 upto n :
+    drawdot
+        lua("mp.pair(MP.data[" & decimal i & "])") scaled cm
+        withpen pencircle scaled 2mm
+        withcolor maincolor ;
+endfor ;
+\stopbuffer
+
+\typebuffer
+
+Here we load a \LUA\ table and assign the size to a \METAPOST\ numeric. Next we
+loop over the table entries and draw the coordinates.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+We will stepwise improve this code. In the previous examples we omitted wrapper
+code but here we show it:
+
+\startbuffer
+\startluacode
+    MP.data = table.load('demo-data.lua')
+    function MP.n()
+        mp.print(#MP.data)
+    end
+    function MP.dot(i)
+        mp.pair(MP.data[i])
+    end
+\stopluacode
+
+\startMPcode
+    numeric n ; n := lua("MP.n()") ;
+    for i=1 upto n :
+        drawdot
+            lua("MP.dot(" & decimal i & ")") scaled cm
+            withpen pencircle scaled 2mm
+            withcolor maincolor ;
+    endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+So, we create a few helpers in the \type {MP} table. This table is predefined so
+normally you don't need to define it. You may however decide to wipe it clean.
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
+
+You can decide to hide the data:
+
+\startbuffer
+\startluacode
+    local data = { }
+    function MP.load(name)
+        data = table.load(name)
+    end
+    function MP.n()
+        mp.print(#data)
+    end
+    function MP.dot(i)
+        mp.pair(data[i])
+    end
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+It is possible to use less \LUA, for instance in:
+
+\startbuffer
+\startluacode
+    local data = { }
+    function MP.loaded(name)
+        data = table.load(name)
+        mp.print(#data)
+    end
+    function MP.dot(i)
+        mp.pair(data[i])
+    end
+\stopluacode
+
+\startMPcode
+    for i=1 upto lua("MP.loaded('demo-data.lua')") :
+        drawdot
+            lua("MP.dot(",i,")") scaled cm
+            withpen pencircle scaled 4mm
+            withcolor maincolor ;
+    endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+Here we also omit the \type {decimal} because the \type {lua} macro is clever
+enough to recognize it as a number.
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
+
+By using some \METAPOST\ magic we can even go a step further in readability:
+
+\startbuffer
+\startMPcode{doublefun}
+    lua.MP.load("demo-data.lua") ;
+
+    for i=1 upto lua.MP.n() :
+        drawdot
+            lua.MP.dot(i) scaled cm
+            withpen pencircle scaled 4mm
+            withcolor maincolor ;
+    endfor ;
+
+    for i=1 upto MP.n() :
+        drawdot
+            MP.dot(i) scaled cm
+            withpen pencircle scaled 2mm
+            withcolor white ;
+    endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+Here we demonstrate that it also works well in \type {double} mode, which makes
+much sense when processing data from other sources. Note how we omit the
+type {lua.} prefix: the \type {MP} macro will deal with that.
+
+\startlinecorrection[blank]
+\getbuffer
+\stoplinecorrection
+
+So in the end we can simplify the code that we started with to:
+
+\starttyping
+\startMPcode{doublefun}
+    for i=1 upto MP.loaded("demo-data.lua") :
+        drawdot
+            MP.dot(i) scaled cm
+            withpen pencircle scaled 2mm
+            withcolor maincolor ;
+    endfor ;
+\stopMPcode
+\stoptyping
+
+\stopsection
+
+\startsection[title=Access to variables]
+
+The question with such mechanisms is always: how far should we go. Although
+\METAPOST\ is a macro language, it has properties of procedural languages. It also
+has more introspective features at the user end. For instance, one can loop over
+the resulting picture and manipulate it. This means that we don't need full
+access to \METAPOST\ internals. However, it makes sense to provide access to
+basic variables: \type {numeric}, \type {string}, and \type {boolean}.
+
+\startbuffer
+draw textext(lua("mp.quoted('@0.15f',mp.get.numeric('pi')-math.pi)"))
+    ysized 1cm
+    withcolor maincolor ;
+\stopbuffer
+
+\typebuffer
+
+In double mode you will get zero printed but in scaled mode we definitely get a
+different results:
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\startbuffer
+boolean b ; b := true ;
+draw textext(lua("mp.quoted(mp.get.boolean('b') and 'yes' or 'no')"))
+    ysized 1cm
+    withcolor maincolor ;
+\stopbuffer
+
+In the next example we use \type {mp.quoted} to make sure that indeed we pass a
+string. The \type {textext} macro can deal with numbers, but an unquoted \type
+{yes} or \type {no} is asking for problems.
+
+\typebuffer
+
+Especially when more text is involved it makes sense to predefine a helper in
+the \type {MP} namespace, if only because \METAPOST\ (currently) doesn't like
+newlines in the middle of a string, so a \type {lua} call has to be on one line.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+Here is an example where \LUA\ does something that would be close to impossible,
+especially if more complex text is involved.
+
+% \enabletrackers[metapost.lua]
+
+\startbuffer
+string s ; s := "ΤΕΧ" ; % "τεχ"
+draw textext(lua("mp.quoted(characters.lower(mp.get.string('s')))"))
+    ysized 1cm
+    withcolor maincolor ;
+\stopbuffer
+
+\typebuffer
+
+As you can see here, the whole repertoire of helper functions can be used in
+a \METAFUN\ definition.
+
+\startlinecorrection[blank]
+\processMPbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=The library]
+
+In \CONTEXT\ we have a dedicated runner, but for the record we mention the
+low level constructor:
+
+\starttyping
+local m = mplib.new {
+    ...
+    script_runner = function(s) return loadstring(s)() end,
+    script_error  = function(s) print(s) end,
+    ...,
+}
+\stoptyping
+
+An instance (in this case \type {m}) has a few extra methods. Instead you can use
+the helpers in the library.
+
+\starttabulate[|l|l|]
+\HL
+\NC \type {m:get_numeric(name)}       \NC returns a numeric (double) \NC \NR
+\NC \type {m:get_boolean(name)}       \NC returns a boolean (\type {true} or \type {false}) \NC \NR
+\NC \type {m:get_string (name)}       \NC returns a string \NC \NR
+\HL
+\NC \type {mplib.get_numeric(m,name)} \NC returns a numeric (double) \NC \NR
+\NC \type {mplib.get_boolean(m,name)} \NC returns a boolean (\type {true} or \type {false}) \NC \NR
+\NC \type {mplib.get_string (m,name)} \NC returns a string \NC \NR
+\HL
+\stoptabulate
+
+In \CONTEXT\ the instances are hidden and wrapped in high level macros, so there
+you cannot use these commands.
+
+\stopsection
+
+\startsection[title=\CONTEXT\ helpers]
+
+The \type {mp} namespace provides the following helpers:
+
+\starttabulate[|l|l|]
+\HL
+\NC \type {print(...)}                \NC returns one or more values \NC \NR
+\NC \type {pair(x,y)}
+    \type {pair(t)}                   \NC returns a proper pair \NC \NR
+\NC \type {triplet(x,y,z)}
+    \type {triplet(t)}                \NC returns an \RGB\ color \NC \NR
+\NC \type {quadruple(w,x,y,z)}
+    \type {quadruple(t)}              \NC returns an \CMYK\ color \NC \NR
+\NC \type {format(fmt,...)}           \NC returns a formatted string \NC \NR
+\NC \type {quoted(fmt,...)}
+    \type {quoted(s)}                 \NC returns a (formatted) quoted string  \NC \NR
+\NC \type {path(t[,connect][,close])} \NC returns a connected (closed) path \NC \NR
+\HL
+\stoptabulate
+
+The \type {mp.get} namespace provides the following helpers:
+
+\starttabulate[|l|l|]
+\NC \type {numeric(name)}      \NC gets a numeric from \METAPOST \NC \NR
+\NC \type {boolean(name)}      \NC gets a boolean from \METAPOST \NC \NR
+\NC \type {string(name)}       \NC gets a string from \METAPOST \NC \NR
+\HL
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Paths]
+
+% {\em This section will move to the metafun manual.} \blank
+
+In the meantime we got several questions on the \CONTEXT\ mailing list about turning
+coordinates into paths. Now imagine that we have this dataset:
+
+\startbuffer[dataset]
+10 20 20 20 -- sample 1
+30 40 40 60
+50 10
+
+10 10 20 30 % sample 2
+30 50 40 50
+50 20
+
+10 20 20 10 # sample 3
+30 40 40 20
+50 10
+\stopbuffer
+
+\typebuffer[dataset]
+
+In this case I have put the data in a buffer, so that it can be shown
+here, as well as used in a demo. Look how we can add comments. The
+following code converts this into a table with three subtables.
+
+\startbuffer
+\startluacode
+  MP.myset = mp.dataset(buffers.getcontent("dataset"))
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We use the \type {MP} (user) namespace to store the table. Next we turn
+these subtables into paths:
+
+\startbuffer
+\startMPcode
+  for i=1 upto lua("mp.print(mp.n(MP.myset))") :
+    draw
+      lua("mp.path(MP.myset[" & decimal i & "])")
+      xysized (HSize,10ExHeight)
+      withpen pencircle scaled .25ExHeight
+      withcolor basiccolors[i]/2 ;
+  endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+Instead we can fill the path, in which case we will also need to close it. The
+\type {true} argument deals with that:
+
+\startbuffer
+\startMPcode
+  for i=1 upto lua("mp.print(mp.n(MP.myset))") :
+    path p ; p :=
+      lua("mp.path(MP.myset[" & decimal i & "],true)")
+      xysized (HSize,10ExHeight) ;
+    fill p
+      withcolor basiccolors[i]/2
+      withtransparency (1,.5) ;
+  endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+  for i=1 upto lua("mp.print(mp.n(MP.myset))") :
+    path p ; p :=
+      lua("mp.path(MP.myset[" & decimal i & "])")
+      xysized (HSize,10ExHeight) ;
+    p :=
+      (xpart llcorner boundingbox p,0) --
+      p --
+      (xpart lrcorner boundingbox p,0) --
+      cycle ;
+    fill p
+      withcolor basiccolors[i]/2
+      withtransparency (1,.25) ;
+  endfor ;
+\stopMPcode
+\stopbuffer
+
+The following makes more sense:
+
+\typebuffer
+
+So this gives:
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+This (area) fill is so common, that we have a helper for it:
+
+\startbuffer
+\startMPcode
+  for i=1 upto lua("mp.size(MP.myset)") :
+    fill area
+      lua("mp.path(MP.myset[" & decimal i & "])")
+      xysized (HSize,5ExHeight)
+      withcolor basiccolors[i]/2
+      withtransparency (2,.25) ;
+  endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+So this gives:
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+This snippet of \METAPOST\ code still looks kind of horrible, so how can we make
+it look better? Here is an attempt. First we define a bit more \LUA:
+
+\startbuffer
+\startluacode
+local data = mp.dataset(buffers.getcontent("dataset"))
+
+MP.dataset = {
+  Line = function(n) mp.path(data[n]) end,
+  Size = function()  mp.size(data)    end,
+}
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startMPcode
+  for i=1 upto lua.MP.dataset.Size() :
+    path p ; p :=
+      lua.MP.dataset.Line(i)
+      xysized (HSize,20ExHeight) ;
+    draw
+      p
+      withpen pencircle scaled .25ExHeight
+      withcolor basiccolors[i]/2 ;
+    drawpoints
+      p
+      withpen pencircle scaled ExHeight
+      withcolor .5white ;
+  endfor ;
+\stopMPcode
+\stopbuffer
+
+We can now make the \METAPOST\ look more natural. Of course, this is possible
+because in \METAFUN\ the \type {lua} macro does some extra work.
+
+\typebuffer
+
+As expected, we get the desired result:
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+Once we start making things look nicer and more convenient, we quickly end up
+with helpers like those in the next example. First we save some demo data in
+files:
+
+\startbuffer
+\startluacode
+  io.savedata("foo.tmp","10 20 20 20 30 40 40 60 50 10")
+  io.savedata("bar.tmp","10 10 20 30 30 50 40 50 50 20")
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We load the data in datasets:
+
+\startbuffer
+\startMPcode
+  lua.mp.datasets.load("foo","foo.tmp") ;
+  lua.mp.datasets.load("bar","bar.tmp") ;
+  fill area
+    lua.mp.datasets.foo.Line()
+    xysized (HSize/2-EmWidth,10ExHeight)
+    withpen pencircle scaled .25ExHeight
+    withcolor green/2 ;
+  fill area
+    lua.mp.datasets.bar.Line()
+    xysized (HSize/2-EmWidth,10ExHeight)
+    shifted (HSize/2+EmWidth,0)
+    withpen pencircle scaled .25ExHeight
+    withcolor red/2 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+Because the datasets are stored by name, we can use them without worrying about
+them being forgotten:
+
+\startlinecorrection[blank] \getbuffer \stoplinecorrection
+
+If no tag is given, the filename (without suffix) is used as a tag, so the
+following is valid:
+
+\starttyping
+\startMPcode
+  lua.mp.datasets.load("foo.tmp") ;
+  lua.mp.datasets.load("bar.tmp") ;
+\stopMPcode
+\stoptyping
+
+The following methods are defined for a dataset:
+
+\starttabulate[|l|pl|]
+\HL
+\NC \type {method} \NC usage \NC \NR
+\HL
+\NC \type {Size}   \NC the number of subsets in a dataset \NC \NR
+\NC \type {Line}   \NC the joined pairs in a dataset making a non|-|closed path \NC \NR
+\NC \type {Data}   \NC the table containing the data (in subsets, so there is always at least one subset) \NC \NR
+\HL
+\stoptabulate
+
+{\em Due to limitations in \METAPOST\ suffix handling the methods start with an
+uppercase character.}
+
+\stopsection
+
+\startsection[title=Remark]
+
+The features described here are currently still experimental but the interface
+will not change. There might be a few more accessors and for sure more \LUA\
+helpers will be provided. As usual I need some time to play with it before I make
+up my mind. It is also possible to optimize the \METAPOST||\LUA\ script call a
+bit, but I might do that later.
+
+When we played with this interface we ran into problems with loop variables
+and macro arguments. These are internally kind of anonymous. Take this:
+
+\starttyping
+for i=1 upto 100 : draw(i,i) endfor ;
+\stoptyping
+
+The \type {i} is not really a variable with name \type {i} but becomes an object
+(capsule) when the condition is scanned, and a reference to that object when the
+body is scanned. The body of the for loop gets expanded for each step, but at that
+time there is no longer a variable \type {i}. The same is true for variables in:
+
+\starttyping
+def foo(expr x, y, delta) = draw (x+delta,y+delta) enddef ;
+\stoptyping
+
+We are still trying to get this right with the \LUA\ interface. Interesting is
+that when we were exploring this, we ran into quite some cases where we could
+make \METAPOST\ abort due some memory or stack overflow. Some are just bugs in
+the new code (due to the new number model) while others come with the design of
+the system: border cases that never seem to happen in interactive use while the
+library use assumes no interaction in case of errors.
+
+In \CONTEXT\ there are more features and helpers than shown here but these are
+discussed in the \METAFUN\ manual.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% \startMPcode{doublefun}
+%     numeric n ; n := 123.456 ;
+%     lua("print('>>>>>>>>>>>> number',mp.get.number('n'))") ;
+%     lua("print('>>>>>>>>>>>> number',mp.get.boolean('n'))") ;
+%     lua("print('>>>>>>>>>>>> number',mp.get.string('n'))") ;
+%     boolean b ; b := true ;
+%     lua("print('>>>>>>>>>>>> boolean',mp.get.number('b'))") ;
+%     lua("print('>>>>>>>>>>>> boolean',mp.get.boolean('b'))") ;
+%     lua("print('>>>>>>>>>>>> boolean',mp.get.string('b'))") ;
+%     string s ; s := "TEST" ;
+%     lua("print('>>>>>>>>>>>> string',mp.get.number('s'))") ;
+%     lua("print('>>>>>>>>>>>> string',mp.get.boolean('s'))") ;
+%     lua("print('>>>>>>>>>>>> string',mp.get.string('s'))") ;
+% \stopMPcode
+

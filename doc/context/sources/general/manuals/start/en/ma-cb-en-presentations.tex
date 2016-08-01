@@ -1,0 +1,38 @@
+\startcomponent ma-cb-en-presentations
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Presentations,reference=presentations]
+
+\index{presentation}
+
+You can use \CONTEXT\ for making your own presentations. A \CONTEXT\ presentation
+is an interactive PDF document with a screen layout. Often presentations are good
+examples of the cooperation between \CONTEXT\ and \METAPOST.
+
+\CONTEXT\ comes with a number ready-to-use presentations. A presentation is a
+module with the prefix \type{s-} and that you can load with the \type{\usemodule}
+command.
+
+If you want to use an already existing presentation the best way to proceed is:
+
+\startitemize[packed]
+\item goto \type{../your-contextdir/tex/texmf-context/tex/context/base} in your text editor
+\item open a presentation: for example \type{s-pre-05.tex}
+\item goto the end of the file and study the commands between
+      the \type{\start...\stoptext} pair
+\item copy the commands into your own presentation file
+\item invoke the presentation with \type{\usemodule[s][pre-05]} in de setup
+      area of your presentation file
+\item process the file to view the result
+\item edit the content of your presentation
+\stopitemize
+
+A stepwise setup of a presentation is given at the
+\goto{\CONTEXTWIKI}[ url (http://wiki.contextgarden.net/Presentations) ].
+
+\stopchapter
+
+\stopcomponent

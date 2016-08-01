@@ -1,0 +1,63 @@
+% language=uk
+
+\startcomponent hybrid-titlepage
+
+\environment hybrid-environment
+
+% \start \setuptype [color=gray] \startMPpage
+%     StartPage ;
+%         numeric o, w, h, d ; o := 4mm ;
+%         picture p[], q, t ;
+%         t := textext("\white\definedfont[LMTypewriterVarWd10-Dark*default]MkIV Hybrid Technology") ;
+%         t := ((t rotated 90) ysized (PaperHeight - 2o)) ;
+%         p[1] := textext("\type{{ }}") ;
+%         p[2] := textext("\type{( )}") ;
+%         p[3] := textext("\type{< >}") ;
+%         d := bbwidth(t) + 2o ;
+%         q := image ( for i=1 upto 200 :
+%             for j=1 upto 3 :
+%                 q := p[j] scaled (1 + uniformdeviate 4) ;
+%                 w := uniformdeviate (PaperWidth - d) ;
+%                 h := uniformdeviate (PaperHeight) ;
+%                 draw q shifted (w,h) ;
+%             endfor ;
+%         endfor ; ) ;
+%         q := (q shifted -llcorner q) xysized (PaperWidth - d - 2o, PaperHeight - 2o) shifted (o,o) ;
+%         fill Page enlarged (o/2) withcolor \MPcolor{yellow} ;
+%         draw thelabel.ulft(t,lrcorner Page shifted (-o,o)) ;
+%         draw q ;
+%     StopPage ;
+% \stopMPpage \stop
+
+\definefont[TitlePageFontA][file:lmmonoproplt10-bold*default]
+\definefont[TitlePageFontB][file:lmmonolt10-bold*none]
+
+\start \startMPpage
+    StartPage ;
+        numeric o, w, h, d ; o := 4mm ;
+        picture p[], q, t ;
+        t := textext("\white\TitlePageFontA MkIV Hybrid Technology") ;
+        t := ((t rotated 90) ysized (PaperHeight - 2o)) ;
+        p[1] := textext("\gray\TitlePageFontB\char123\char125") ;
+        p[2] := textext("\gray\TitlePageFontB()") ;
+        p[3] := textext("\gray\TitlePageFontB<>") ;
+        d := bbwidth(t) + 2o ;
+        q := image ( for i=1 upto 8 :
+            for j=1 upto 20 :
+                q := p[1+floor(uniformdeviate 3)] xysized (PaperWidth/20 + uniformdeviate PaperWidth/40, PaperHeight/15 + uniformdeviate PaperHeight/30) ;
+                w := i * (PaperWidth - d)/10 ;
+                h := j * PaperHeight/10 ;
+                q := q shifted (w,h) ;
+                draw q;
+            endfor ;
+        endfor ; ) ;
+        q := (q shifted -llcorner q) xysized (PaperWidth - d - 2o, PaperHeight - 2o) shifted (o,o) ;
+        fill Page enlarged (o/2) withcolor \MPcolor{yellow} ;
+        draw thelabel.ulft(t,lrcorner Page shifted (-o,o)) ;
+        draw q ;
+    StopPage ;
+\stopMPpage \stop
+
+\setuppagenumber[state=stop] \page[empty] \setuppagenumber[state=start]
+
+\stopcomponent

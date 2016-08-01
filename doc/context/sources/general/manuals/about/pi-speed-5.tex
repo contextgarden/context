@@ -1,0 +1,16 @@
+\setupbodyfont[pagella]
+
+\starttext
+
+\dorecurse {100} {
+  \input ward \par
+  \dorecurse{100} {
+    \dontleavehmode
+    {\green this is green}
+    {\red \smallcaps this is red}
+    {\blue \bf this is blue}
+  }
+  \par
+}
+
+\stoptext

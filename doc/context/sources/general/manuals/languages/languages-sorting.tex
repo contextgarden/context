@@ -1,0 +1,235 @@
+% language=uk
+
+\startcomponent languages-sorting
+
+\environment languages-environment
+
+\startchapter[title=Sorting][color=darkblue]
+
+\startsection[title=Introduction]
+
+Sorting is complex, not so much for English, Dutch, German, etc. only texts but
+there are languages and scripts that are more demanding. There are several
+complications:
+
+\startitemize
+
+    \startitem
+        There can be characters that have accents, like à, á, â, ã, ä
+        \unknown\ that have a base shape a and in an index these often end up
+        close to each other. The order can differ per language.
+    \stopitem
+
+    \startitem
+        There are upper and lowercase words and there can be different
+        expectations to them being mixed or separated.
+    \stopitem
+    \startitem
+        Some scripts have characters that are combinations, like Æ, and
+        one might want to see them as one character or two, in which the
+        second one obeys the sorting order. The shape can dominate here.
+    \stopitem
+    \startitem
+        Some scripts, like Japanese, are a combination of several scripts
+        and sorting then depends on normalization.
+    \stopitem
+    \startitem
+        When there are many glyphs, like in Chinese, the order can depend
+        on the complexity of the glyph and when we're lucky that order is
+        reflected in the numeric character order.
+    \stopitem
+\stopitemize
+
+Often the rules are somewhat strict and one can doubt of the same rules would
+have been imposed if computers had been developed earlier. Given discussions one
+can doubt if the rules are really consistent or just there because someone (or a
+group) with influence set the standard (not so much different from grammar). So,
+if we deal with sorting, we do that in such a way that users can (to some extend)
+influence the outcome. After all, one important aspect of typesetting and
+organizing content is that the users gets the feeling of control and a diversion
+from a standard can be part of that. The reader will often not notice these
+details. In the next sections we will explore the way sorting is done in
+\CONTEXT. The method evolved over a few decades. In \MKII\ sorting happened
+between runs and it was just part of the processing of a document that users
+never really saw in action. Sorting just happened and few users will have noticed
+that we moved from a \MODULA\ program to a \PERL\ script and ended up with a
+\RUBY\ script. In fact, there is a \LUA\ replacement but it never got tested well
+because we moved in to \MKIV. There all happens inside the engine using \LUA.
+Some principles stayed the same but we are more flexible now.
+
+\stopsection
+
+\startsection[title=How it works]
+
+How does sorting work out? Take these words:
+
+\startlines
+abracadabra
+abräcàdábra
+àbracádabrä
+ábracadàbra
+äbrácadabrà
+\stoplines
+
+As long as they end up in an order where the reader can find it, we're okay.
+After all we're pretty good in pattern recognition.
+
+There are probably many ways to implement a sorter but the one we uses is more or
+less a follow up on the one we had for over a decade and was the result of an
+evolution based on user demand. It boils down to cleaning up the string in such a
+way that it can be split into meaningful characters. One can argue that we should
+use some kd of standardized sorting method but the problem is that we always have
+to deal with for instance embedded tex commands and mixed content, for instance
+numbers. And users using the same language can have different opinions about the
+rules too.
+
+A word (or sequence of words) is split into characters. Because there can be
+\TEX\ commands in there some cleanup happens beforehand. After that we create
+several lists with numbers that will be compared when sorting two entries.
+
+\startluacode
+
+-- local ignoredoffset     = sorters.constants.ignoredoffset
+-- local replacementoffset = sorters.constants.replacementoffset
+-- local digitsoffset      = sorters.constants.digitsoffset
+-- local digitsmaximum     = sorters.constants.digitsmaximum
+
+local context = context
+
+local utfchar    = utf.char
+local utfyte     = utf.byte
+local concat     = table.concat
+local gsub       = string.gsub
+local formatters = string.formatters
+
+local f_char = formatters["%s"]
+local f_byte = formatters["x%02X"]
+
+local meaning = {
+    ch = "raw character",
+    mm = "minus mapping",
+    zm = "zero  mapping",
+    pm = "plus  mapping",
+    mc = "lowercase - 1",
+    zc = "lowercase",
+    pc = "lowercase + 1",
+    uc = "unicode",
+}
+
+local function show(s,key,bodyfont)
+    local c = s[key]
+    local t = { }
+    for i=1,#c do
+        local ci = c[i]
+        if type(ci) == "string" then
+            t[i] = f_char(ci)
+        else
+            t[i] = f_byte(ci)
+        end
+    end
+    t = concat(t,"~")
+    context.NC() context.maincolor() context(key)
+    context.NC() context.maincolor() context(meaning[key])
+    context.NC() if bodyfont then context.switchtobodyfont{bodyfont} end context(t)
+    context.NC() context.NR()
+end
+
+function document.ShowSortSplit(str,language,bodyfont)
+    sorters.setlanguage(language or "en")
+    local s = sorters.splitters.utf(str)
+    context.starttabulate{ "|Tl|Tlj2|Tp|" }
+        context.FL()
+        context.NC()
+        context.NC() context.maincolor() context(language)
+        context.NC() if bodyfont then context.switchtobodyfont{bodyfont} end context.maincolor() context(str)
+        context.NC() context.NR()
+        context.ML()
+        show(s,"ch",bodyfont)
+        show(s,"uc")
+        show(s,"zc")
+        show(s,"mc")
+        show(s,"pc")
+        show(s,"zm")
+        show(s,"mm")
+        show(s,"pm")
+        context.LL()
+    context.stoptabulate()
+end
+
+\stopluacode
+
+We can best demonstrate this with a few examples. As usual an English language
+example is trivial.
+
+\ctxlua{document.ShowSortSplit("abracadabra","en")}
+
+When we add an uppercase character we get a slightly different outcome:
+
+\ctxlua{document.ShowSortSplit("Abracadabra","en")}
+
+Some characters will be split, like \type {æ}:
+
+\ctxlua{document.ShowSortSplit("æsop","en")}
+
+It gets more complex when langiage specific demands kick in. Compare an English, German
+and Austrian split:
+
+\ctxlua{document.ShowSortSplit("Abräcàdábra","en")}
+\ctxlua{document.ShowSortSplit("Abräcàdábra","de")}
+\ctxlua{document.ShowSortSplit("Abräcàdábra","de-at")}
+
+The way a character gets replaced, like \type {ä} into \type {ae}, is defined in
+\type {sort-lan.lua} using \LUA\ tables. We will not explain all the obscure
+details here; most of the work is already done, so users are not bothered by
+these definitions. And new ones can often be made by copying and adapting an
+existing one.
+
+The sorting itself is specified by a sequence:
+
+\starttabulate[|TlCT{maincolor}|Tl|]
+\NC default \NC zc,pc,zm,pm,uc \NC \NR
+\NC before  \NC mm,mc,uc       \NC \NR
+\NC after   \NC pm,mc,uc       \NC \NR
+\NC first   \NC pc,mm,uc       \NC \NR
+\NC last    \NC mc,mm,uc       \NC \NR
+\stoptabulate
+
+The raw character is what we get after the (language specific) replacement has
+been applied and the unicodes are used when comparing. Lowercasing is done using
+the \UNICODE\ lowercase code, but one can define language specific ones too. The
+plus and minus variants can be used to force lowercase before or after uppercase.
+The mapping is based on an alphabet specification so this can differ per language
+and again we also provide plus and minus values that depend on case. When a
+character has no case we use shapes instead. For instance, the shape of \type
+{à} is \type {a}. Digits are treated special and currently get an offset so that
+they end up last in the sort order.
+
+\defineregister[jindex]
+
+\startbuffer
+ぱあ \jindex{ぱあ}
+ぱー \jindex{ぱー}
+ぱぁ \jindex{ぱぁ}
+\stopbuffer
+
+{\switchtobodyfont[ipaex]\startlines\typebuffer\stoplines}
+
+This three entry index\jindex{ぱあ}\jindex{ぱー}\jindex{ぱぁ} should be sorted in the order:
+{\switchtobodyfont[ipaex]\ruledhbox{ぱー}\enspace\ruledhbox{ぱぁ}\enspace\ruledhbox{ぱあ}}.
+
+{\mainlanguage[jp]\switchtobodyfont[ipaex]\placeregister[jindex][language=jp,n=1,method=default]}
+{\mainlanguage[jp]\switchtobodyfont[ipaex]\placeregister[jindex][language=jp,n=1,method=zm]}
+
+\ctxlua{document.ShowSortSplit("ぱあ","jp","ipaex")}
+\ctxlua{document.ShowSortSplit("ぱー","jp","ipaex")}
+\ctxlua{document.ShowSortSplit("ぱぁ","jp","ipaex")}
+
+{\em To be continued!}
+
+\stopsection
+
+% ぱー $\prec$ ぱぁ $\prec$ ぱあ
+
+\stopchapter
+
+\stopcomponent

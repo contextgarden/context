@@ -1,0 +1,616 @@
+% language=uk
+
+\startcomponent about-hashing
+
+\environment about-environment
+
+\usemodule[lua-hashing]
+
+\startchapter[title={Lua strings}]
+
+\startsection[title=Introduction]
+
+In the crited project \footnote {This is a project by Thomas Schmitz, Alan
+Braslau, Luigi Scarso and Hans Hagen funded by the Institut für Klassische und
+Romanische Philologie Universität Bonn.} we have to deal with large amounts of
+data. The sources are in \TEI\ \XML\ and processed directly in \CONTEXT\ \MKIV,
+and we have to filter content from different places in the \XML\ tree. Processing
+relies on \LUA\ a lot because we use \LUA\ for dealing with the \XML. We're
+talking about Latin and Greek texts so there is no demand for extensive font
+processing in \LUA\ is moderate. But as critical editions have lots of line
+specific referencing and notes there are some more complex layout elements
+involved, and again these use \LUA. There is also extensive use of bibliographies
+and it will be no surprise that \LUA\ comes to help too. \footnote {One of the
+objectives of the project is to update and enhance the bibliographic subsystem.}
+
+One secondary objective is to be able to process the complex documents at a speed
+of at least 20 pages per second on a modern 2014 workstation laptop. One way of
+achieving this is to use \LUAJITTEX\ which has a faster virtual \LUA\ machine.
+However, we ran into several issues with the \LUAJIT\ interpreter, which is fully
+\LUA\ language 5.1 and partly 5.2 compatible but definitely has a different low
+level implementation. In the next sections I will discuss two issues that Luigi
+and I ran into and for which we could come up with reasonable workarounds.
+
+\stopsection
+
+\startsection[title=The stacks]
+
+A \TEX\ job is normally a multi|-|pass experience. One run can produce information
+that is used in a successive one. The reason is that something can happen on page
+15 that influences the typesetting of page~9. There can even be a partial chain
+reaction: you typeset a document the first time the table of contents (and the
+pages it refers to) is not known yet but information is saved that makes it
+possible next time. That next run it gets included and it takes for instance 4
+pages. This means that all page numbers shift up. This in turn will trigger a new
+run because all cross references might change too: two digit page numbers can
+become three digits, so paragraphs can run wider, and that again can trigger more
+pages. Normally an initial three runs is enough, and with minor updates of the
+source one or two runs are enough after that.
+
+The multi|-|pass information is saved in tables in the so called utility file and
+loaded a next run. Common subtables are shared in the process. In order to
+determine if there has been crucial changes that demand an extra run, we have to
+make sure that random order in these tables is eliminated. Normally we already
+sort keys in tables when writing them to file but some tables come out in the
+order the traversing \type {next} function delivers them. In the more recent 5.2
+versions \LUA\ has added some randomness to the order in which hashed tables are
+organized, so while in previous versions we could assume that for a specific
+binary the order was the same each time, we cannot rely on that any longer. This is
+not that important for normal cases, but we compare previous and current versions
+of the utility file and pack shared tables in them as well, which means that we
+are sensitive for a change in order. But, this could be dealt with at the cost of
+some extra sorting. \footnote {In \CONTEXT\ we also pack font tables which saves
+lots of memory and also some load time).}
+
+Anyway, this kind of changes in the \LUA\ machinery is harmless apart from taking
+some time to adapt to it. It is also the reason why we cannot simply push a new
+update of \LUA\ into \LUATEX\ because low level changes can have an (yet unknown)
+impact. Of course performance is the biggest issue here: we don't want a slower
+\LUATEX.
+
+In the past we already reported on the benefits of \LUAJITTEX, especially its
+faster virtual machine. We don't benefit from jitting; on the contrary it slows
+us down. One reason is that we cross the \LUA||\CCODE\ boundary often and hardly
+use any of the optimized functions. Part of the speed is achieved by a different
+implementation deep down and one of them is a different virtual machine
+instruction set. While \LUA\ can go real big in terms of memory and table
+construction, \LUAJIT\ limits us to at most 2G memory and poses some 64K
+limitations in functions and table constructors. The memory is not so much the
+issue in the crited project but the (nested) table constructor is. When we have a
+few tens of thousands of cross references, index entries and|/|or list entries we
+simply cannot load the multi|-|pass data. A few days of playing with splitting up
+nested tables didn't help much: it made the code look horrible and eventually we
+again ran into a maximum of 64K someplace as a \type {dofile} effectively makes a
+function that gets run and \LUAJIT\ doesn't like that size. For the record: we
+don't have such issues with large font tables probably because they are just one
+big table. The reason why we cannot use that approach is that serializing the
+potentially very large tables in the utility file also has limitations.
+
+Eventually this could be solved by assuming only forward referencing for certain
+registers. That way we only used the index entries collected in memory during the
+run and as long as we don't put a register before it's entries are defined we're
+okay. So here we have a typical case where one can set an option to circumvent
+an engine limitation. \footnote {A decade ago similar tricks had to be used to
+support hundreds of thousands of hyperlinks in \TEX\ engines with at that time
+limited memory capabilities.} Explaining this in a user manual is a challenge,
+because an error message like the following is not that helpful:
+
+\starttyping
+main function has more than 65536 constants
+\stoptyping
+
+But, once we could generate these indices again by posing some limitations,
+\LUAJITTEX\ had other issues. This time we got excessive runtime and we spent
+quite some time sorting that one out. More on that in the next section.
+
+\stopsection
+
+\startsection[title=Hashing]
+
+One of the reasons why (text processing with) \LUA\ is rather fast is that it
+hashes its strings so that a test for equality is real fast. This means that for
+each string that enters \LUA\ a hash value is calculated and that hash is used in
+comparisons. Of course hashing takes time, but especially when you work with lots
+of tables the advantage of a simple hash compare outweighs this one||time
+hashing. On the other hand, if you work with files and process lines, and maybe
+split these in words, you might end up with a lot of unneeded hashing. But, in
+\LUATEX\ and therefore \MKIV\ we benefit from hashing a lot. In \LUA\ 5.2 the
+hash function was adapted so that only strings upto than (default) 40 characters
+get hashed. In practice we're not affected much by this, as most keywords we use
+are shorter than this boundary. And in \CONTEXT\ we do quite some keyword checking.
+
+So, when we were conducting tests with these large registers, we were surprised
+that \LUAJITTEX\ performed significantly slower (ten times or more) that stock
+\LUATEX, while until then we had observed that a \LUAJITTEX\ run was normally
+some 20 to 40\% faster.
+
+The first impression was that it related to the large amount of strings that are
+written from \LUA\ to \TEX. After index entries are collected, they are sorted
+and the index is flushed to \TEX. This happens in one go, and \TEX\ code ends up
+in the \TEX\ input stack. Some actions are delayed and create callbacks to \LUA,
+so some wrapping in functions happens too. That means that some (\LUA) strings
+are only freed later on, but that proved not to be the main problem.
+
+When the entries are typeset, an interactive cross reference is kept track of and
+these exist till the document is closed and the referencing information is
+written to the \PDF\ file. Of course we could tweak this but once you start along
+that path there is no end to writing ugly hacks.
+
+Eventually we found that the slowdown relates to hashing, especially because that is
+not the first area where you look. Why is this? The specific register concerned lots
+of small greek words, pointing to locations in a text, where locations looked like
+\type {1.2.3}. In case you wonder why greek is mentioned: in multi|-|byte \UTF\
+sequences there is a lot of repetition:
+
+\startluacode
+local byte = string.byte
+function sample(s)
+    context.NC() context(s)
+    context.NC() context.ttx(false)
+    for b in string.utfvalues(s) do
+        context("%02X ",b)
+    end
+    context.NC() context.ttx(false)
+    for b in string.gmatch(s,".") do
+        context("%02X ",byte(b))
+    end
+    context.NC() context.NR()
+end
+
+context.starttabulate { "||||" }
+context.FL()
+context.NC() context.bold("word")
+context.NC() context.bold("unicode")
+context.NC() context.bold("bytes")
+context.NC() context.NR()
+context.FL()
+sample("βίον")
+sample("βίου")
+sample("βιοὺς")
+sample("βουλὴν")
+sample("βουλῆς")
+context.LL()
+context.stoptabulate()
+\stopluacode
+
+When cross referencing these index entries with their origin, you end up with
+reference identifiers like \type {foo:1.2.3} or, because \CONTEXT\ has automated
+internal references (which are rather efficient in the resulting \PDF), we get
+\type {aut:1}, \type {aut:2} upto in this case some 30.000 of them.
+
+The problem with hashing is as follows. When we write commands to \TEX\ or use
+data with a repetitive property, the similarity of these strings can be hard on
+the hasher as it can produce similar hash keys in which case collisions need to
+be dealt with. I'm no expert on hashing but looking at the code shows that in
+\LUAJIT\ (at least in the version we're talking about) the string is seen as
+chunks of 4 bytes. The first, last, middle and halfway middle chunks are
+consulted and after some bit juggling we get a hash value. In the case of strings
+like the following it is clear that the beginning and end look quite the same:
+
+\starttyping
+foo:000001  foo:010001  foo:100001
+\stoptyping
+
+or:
+
+\starttyping
+foo:1.2.12  foo:1.3.12  foo:1.4.12  foo:1.5.12
+\stoptyping
+
+It seems that the used method of hashing is somewhat arbitrary and maybe tuned
+for specific applications. In order to see what the impact is of hashing quite
+similar strings, some experiments were conducted: with \LUATEX\ 0.73 using \LUA\
+5.2 hashing, with \LUAJITTEX\ 0.73, and with the same \LUAJITTEX\ but using the
+hash variant of native \LUA\ 5.1. For each variant we ran tests where strings of
+increasing length were combined with a number (running from one to one million).
+
+\starttabulate[|||]
+\NC none   \NC <string>                   \NC \NR
+\NC right  \NC <string> <number>          \NC \NR
+\NC left   \NC <number> <string>          \NC \NR
+\NC center \NC <string> <number> <string> \NC \NR
+\NC edges  \NC <number> <string> <number> \NC \NR
+\stoptabulate
+
+The differences between engines can be seen in tables in the next page. In the
+fourth table we summarize which engine performs best. Keep in mind that
+\LUAJITTEX\ has the advantage of the faster virtual machine so it has an
+additional speed advantage.
+
+We show three tables with measurements. The \type {none} column shows the
+baseline of the test:
+
+\starttyping
+
+local t = { }
+for i=1,1000000 do
+    t[i] = i
+end
+\stoptyping
+
+The column tagged \quote {right} does this:
+
+\starttyping
+local t = { }
+for i=1,1000000 do
+    t[i] = text .. i
+end
+\stoptyping
+
+And \quote {left} does:
+
+\starttyping
+local t = { }
+for i=1,1000000 do
+    t[i] = i .. text
+end
+\stoptyping
+
+That leaves \quote {center}:
+
+\starttyping
+local t = { }
+for i=1,1000000 do
+    t[i] = text .. i .. text
+end
+\stoptyping
+
+and \quote {edges}:
+
+\starttyping
+local t = { }
+for i=1,1000000 do
+    t[i] = i .. text .. i
+end
+\stoptyping
+
+Of course there is also the loop and the concatenation involved so the last two
+variants have some more overhead. We show some measurements in \in {tables}
+[tab:torture-1], \in [tab:torture-2] \in {and} [tab:torture-3]. So, there we have
+strings like:
+
+\starttyping
+2abc
+222abc
+22222abc
+abc222222
+222222abc222222
+222222abc222222
+abc2222abc
+\stoptyping
+
+and so on. Of course a million such strings makes not much sense in practice but
+it serves our purpose of testing.
+
+\startplacetable[reference=tab:torture-1,location=page,title=\type{context test.tex}]
+    \scale
+      [height=\the\dimexpr\textheight-3\lineheight\relax]
+    % [width=\the\dimexpr\textwidth+.5\backspace\relax]
+      {\vbox{\ctxlua{moduledata.luatests.showhashing { filename = "luatest-hash-luatex-073-LUA52.lua" }}}}
+\stopplacetable
+
+\startplacetable[reference=tab:torture-2,location=page,title=\type{context --jit --jithash=luajit20 test.tex}]
+    \scale
+      [height=\the\dimexpr\textheight-3\lineheight\relax]
+    % [width=\the\dimexpr\textwidth+.5\backspace\relax]
+      {\vbox{\ctxlua{moduledata.luatests.showhashing { filename = "luatest-hash-luajittex-073-JIT20.lua" }}}}
+\stopplacetable
+
+\startplacetable[reference=tab:torture-3,location=page,title=\type{context --jit --jithash=lua51 test.tex}]
+    \scale
+      [height=\the\dimexpr\textheight-3\lineheight\relax]
+    % [width=\the\dimexpr\textwidth+.5\backspace\relax]
+      {\vbox{\ctxlua{moduledata.luatests.showhashing { filename = "luatest-hash-luajittex-073-LUA51.lua" }}}}
+\stopplacetable
+
+In these tables you can see some extremes. On the average \LUA\ 5.2 performs
+quite okay as does standard \LUAJIT. However, when we bring the 5.1 hash variant
+into \LUAJITTEX\ we get a more predictable average performance as it deals better
+with some of the extreme cases that make \LUAJITTEX\ crawl compared to \LUATEX.
+We have done more tests and interesting is to see that in the 5.1 (and derived
+5,2) method there are sometimes cases where odd lengths perform much worse than
+even lengths. Red values are larger than two times the average, blue values
+larger than average while green values indicate a less than half average value.
+
+In \in {table} [tab:compare-1] we show which method performs best relative to each
+other. Of course in many applications there will be no such extreme cases, but
+we happen to ran into them. But, even if \type {JIT20} is a winner in most cases,
+the fact that it has extreme slow exceptions makes it a bit of a gamble.
+
+\startplacetable[location=page,reference=tab:compare-1,title=The best performances per engine and hasher.]
+    \startcombination
+        \startcontent
+            \scale
+              [height=\the\dimexpr\textheight-4\lineheight\relax]
+              {\vbox{\ctxlua{moduledata.luatests.showhashing {
+                  fileset = {
+                      { tag = "JIT20", filename = "luatest-hash-luajittex-073-JIT20.lua" },
+                      { tag = "JIT51", filename = "luatest-hash-luajittex-073-LUA51.lua" },
+              } } }}}
+        \stopcontent
+        \startcaption
+            \LUAJITTEX\ only
+        \stopcaption
+        \startcontent
+            \scale
+              [height=\the\dimexpr\textheight-4\lineheight\relax]
+              {\vbox{\ctxlua{moduledata.luatests.showhashing {
+                  fileset = {
+                      { tag = "LUA52", filename = "luatest-hash-luatex-073-LUA52.lua" },
+                      { tag = "JIT20", filename = "luatest-hash-luajittex-073-JIT20.lua" },
+                      { tag = "JIT51", filename = "luatest-hash-luajittex-073-LUA51.lua" },
+              } } }}}
+        \stopcontent
+        \startcaption
+            Both engines.
+        \stopcaption
+    \stopcombination
+\stopplacetable
+
+The 5.1 hasher runs over the string with a step that depends on the length of the
+string. We've seen that in 5.2 it doesn't hash strings larger than 40 characters.
+The step is calculated by shifting the length (by default) over 5 bits. This
+means that for strings of size 32 and more the step becomes 2 which is why we see
+this odd|/|even timing issue in the tables. Basically we hash at most 32
+characters of the 40. The next table shows that the less characters we take
+into account (first column) the less unique keys we get (second column).
+
+\starttabulate[|c|r|l|]
+\FL
+\NC \bf n \NC \bf unique \NC \bf text \NC \NR
+\FL
+\NC 3 \NC 22    \NC \tt\tx /Border [ 0 0 0 ] /F 4 /Subtype /Link /A * 0 R \NC \NR
+\NC 3 \NC 31    \NC \tt\tx << /D [ * 0 R /Fit ] /S /GoTo >> \NC \NR
+\NC 4 \NC 43    \NC \tt\tx /Border [ 0 0 0 ] /F 4 /Subtype /Link /A * 0 R \NC \NR
+\NC 4 \NC 51    \NC \tt\tx << /D [ * 0 R /Fit ] /S /GoTo >> \NC \NR
+\NC 5 \NC 410   \NC \tt\tx /Border [ 0 0 0 ] /F 4 /Subtype /Link /A * 0 R \NC \NR
+\NC 5 \NC 210   \NC \tt\tx << /D [ * 0 R /Fit ] /S /GoTo >> \NC \NR
+\NC 6 \NC 29947 \NC \tt\tx /Border [ 0 0 0 ] /F 4 /Subtype /Link /A * 0 R \NC \NR
+\NC 6 \NC 29823 \NC \tt\tx << /D [ * 0 R /Fit ] /S /GoTo >> \NC \NR
+\LL
+\stoptabulate
+
+In the next table we show a few cases. The characters that are taken into account
+are colored red. \footnote {Again the first column indicates the shift applied to
+the length in order to determine the step.}
+
+\starttabulate[|c|l|l|]
+\FL
+\NC \bf n \NC \bf text \NC \bf consulted \NC \NR
+\FL
+\NC 3\NC \tt\tx << /D [ 8 0 R /Fit ] /S /GoTo >>  \NC \tt\tx <{\darkred <} /{\darkred D} [{\darkred \space }8 {\darkred 0} R{\darkred \space }/F{\darkred i}t {\darkred ]} /{\darkred S} /{\darkred G}oT{\darkred o} >{\darkred >} \NC \NR
+\NC 3\NC \tt\tx << /D [ 9 0 R /Fit ] /S /GoTo >>  \NC \tt\tx <{\darkred <} /{\darkred D} [{\darkred \space }9 {\darkred 0} R{\darkred \space }/F{\darkred i}t {\darkred ]} /{\darkred S} /{\darkred G}oT{\darkred o} >{\darkred >} \NC \NR
+\NC 3\NC \tt\tx << /D [ 10 0 R /Fit ] /S /GoTo >> \NC \tt\tx <<{\darkred \space }/D{\darkred \space}[ {\darkred 1}0 {\darkred 0} R{\darkred \space }/F{\darkred i}t {\darkred ]} /{\darkred S} /{\darkred G}oT{\darkred o} >{\darkred >} \NC \NR
+\NC 3\NC \tt\tx << /D [ 11 0 R /Fit ] /S /GoTo >> \NC \tt\tx <<{\darkred \space }/D{\darkred \space}[ {\darkred 1}1 {\darkred 0} R{\darkred \space }/F{\darkred i}t {\darkred ]} /{\darkred S} /{\darkred G}oT{\darkred o} >{\darkred >} \NC \NR
+\NC 3\NC \tt\tx << /D [ 12 0 R /Fit ] /S /GoTo >> \NC \tt\tx <<{\darkred \space }/D{\darkred \space}[ {\darkred 1}2 {\darkred 0} R{\darkred \space }/F{\darkred i}t {\darkred ]} /{\darkred S} /{\darkred G}oT{\darkred o} >{\darkred >} \NC \NR
+\ML
+\NC 4\NC \tt\tx << /D [ 8 0 R /Fit ] /S /GoTo >>  \NC \tt\tx <{\darkred <} {\darkred /}D{\darkred \space }[{\darkred \space }8{\darkred \space }0{\darkred \space }R{\darkred \space }/{\darkred F}i{\darkred t} {\darkred ]} {\darkred /}S{\darkred \space }/{\darkred G}o{\darkred T}o{\darkred \space }>{\darkred >} \NC \NR
+\NC 4\NC \tt\tx << /D [ 9 0 R /Fit ] /S /GoTo >>  \NC \tt\tx <{\darkred <} {\darkred /}D{\darkred \space }[{\darkred \space }9{\darkred \space }0{\darkred \space }R{\darkred \space }/{\darkred F}i{\darkred t} {\darkred ]} {\darkred /}S{\darkred \space }/{\darkred G}o{\darkred T}o{\darkred \space }>{\darkred >} \NC \NR
+\NC 4\NC \tt\tx << /D [ 10 0 R /Fit ] /S /GoTo >> \NC \tt\tx {\darkred <}<{\darkred \space}/{\darkred D} {\darkred [} {\darkred 1}0{\darkred \space }0{\darkred \space }R{\darkred \space }/{\darkred F}i{\darkred t} {\darkred ]} {\darkred /}S{\darkred \space }/{\darkred G}o{\darkred T}o{\darkred \space }>{\darkred >} \NC \NR
+\NC 4\NC \tt\tx << /D [ 11 0 R /Fit ] /S /GoTo >> \NC \tt\tx {\darkred <}<{\darkred \space}/{\darkred D} {\darkred [} {\darkred 1}1{\darkred \space }0{\darkred \space }R{\darkred \space }/{\darkred F}i{\darkred t} {\darkred ]} {\darkred /}S{\darkred \space }/{\darkred G}o{\darkred T}o{\darkred \space }>{\darkred >} \NC \NR
+\NC 4\NC \tt\tx << /D [ 12 0 R /Fit ] /S /GoTo >> \NC \tt\tx {\darkred <}<{\darkred \space}/{\darkred D} {\darkred [} {\darkred 1}2{\darkred \space }0{\darkred \space }R{\darkred \space }/{\darkred F}i{\darkred t} {\darkred ]} {\darkred /}S{\darkred \space }/{\darkred G}o{\darkred T}o{\darkred \space }>{\darkred >} \NC \NR
+\LL
+\stoptabulate
+
+Of course, in practice, in \LUA\ 5.2 the longer string exceeds 40 characters so
+is never hashed anyway. Apart from this maximum, the \LUA\ hash code looks like this:
+
+\starttyping
+/* Lua will use at most ~(2^LUAI_HASHLIMIT) bytes from
+a string to compute its hash */
+...
+h = cast(unsigned int,len) ;
+step = (len>>LUAI_HASHLIMIT) + 1 ;
+for (l1=len; l1>=step; l1-=step) {
+   h = h ^ ((h<<5) + (h>>2) + cast(unsigned char,str[l1-1])) ;
+}
+...
+\stoptyping
+
+This translates in verbose \LUA\ function as follows:
+
+\starttyping
+function string.luahash(str,shift)
+    local len  = #str
+    local hash = len
+    local step = bit32.rshift(len,shift or 5) + 1
+    for i=len,1,-step do
+        hash = bit32.bxor(hash, (
+            bit32.lshift(hash,5) +
+            bit32.rshift(hash,2) +
+            string.byte(string.sub(str,i,i))
+        ) )
+    end
+    return hash
+end
+\stoptyping
+
+The reader can argue that the following string would perform better:
+
+\starttyping
+/Subtype/Link/Border[0 0 0]/F 4/A 12 0 R
+\stoptyping
+
+but this is not the case. Also, here we use \PDF\ code, but similar cases can
+happen if we flush \TEX\ commands:
+
+\starttyping
+\dothisorthat{1}
+\dothisorthat{101}
+\dothisorthat{10101}
+\stoptyping
+
+And in the case of \UTF\ strings, it remains a fact that when characters need two
+bytes a sequence can end up with each odd or even byte being the same. This is
+one more reason to support upto 64 byte (or 40 in practice) hashing.
+
+Because of this we decided to experiment with a value of 64 instead. \footnote {Of
+course, in \LUATEX, the length limit kicks in before we get to 64.} We can do the
+same when we use the \LUA\ 5.1 method in \LUAJIT. In \in {table} [tab:torture-4]
+\in {and} [tab:torture-5] we show the timings. Interesting is that we lost the
+extremes now. The performance of the default settings are compared with the higher
+values in \in {table} [tab:compare-2]. Of course the numbers are just indications
+and there might be small differences between test runs. Therefore we use a threshold
+of 5\% when we compare two methods.
+
+\startplacetable[reference=tab:torture-4,location=page,title={\type{context test.tex} with len<=40 and hash<=64}]
+    \scale
+      [height=\the\dimexpr\textheight-3\lineheight\relax]
+    % [width=\the\dimexpr\textwidth+.5\backspace\relax]
+      {\vbox{\ctxlua{moduledata.luatests.showhashing { filename = "luatest-hash-luatex-073-LUA52-40-6.lua" }}}}
+\stopplacetable
+
+\startplacetable[reference=tab:torture-5,location=page,title={\type{context --jit test.tex} with hash<=64}]
+    \scale
+      [height=\the\dimexpr\textheight-3\lineheight\relax]
+    % [width=\the\dimexpr\textwidth+.5\backspace\relax]
+      {\vbox{\ctxlua{moduledata.luatests.showhashing { filename = "luatest-hash-luajittex-073-LUA51-40-6.lua" }}}}
+\stopplacetable
+
+\startplacetable[location=page,reference=tab:compare-2,title=More than 5\% difference between 32 byte or 64 byte hashing.]
+    \startcombination
+        \startcontent
+           \scale
+              [height=\the\dimexpr\textheight-4\lineheight\relax]
+              {\vbox{\ctxlua{moduledata.luatests.showhashing {
+                  fileset = {
+                      { tag = "40 / 32", filename = "luatest-hash-luatex-073-LUA52.lua" },
+                      { tag = "40 / 64", filename = "luatest-hash-luatex-073-LUA52-40-6.lua" },
+              } } }}}
+
+        \stopcontent
+        \startcaption
+            \LUATEX\ (size limit 40)
+        \stopcaption
+        \startcontent
+           \scale
+              [height=\the\dimexpr\textheight-4\lineheight\relax]
+              {\vbox{\ctxlua{moduledata.luatests.showhashing {
+                  fileset = {
+                      { tag = "40 / 32", filename = "luatest-hash-luajittex-073-LUA51.lua" },
+                      { tag = "40 / 64", filename = "luatest-hash-luajittex-073-LUA51-40-6.lua" },
+              } } }}}
+
+        \stopcontent
+        \startcaption
+            \LUAJITTEX\ (no size limit)
+        \stopcaption
+    \stopcombination
+\stopplacetable
+
+So how does this affect us in document production? It is not that hard to get a
+processing rate of a few dozen pages per second on a modern machine, even with
+somewhat complex documents, where \XML\ turns into \PDF. However, interactivity
+comes somehow with a price when we use \LUAJITTEX. In \CONTEXT\ \MKIV\ we do all
+\PDF\ annotations in \LUA\ and that involves assembling dictionaries. Here are
+two examples, a destination:
+
+\starttyping
+<< /D [ 15 0 R /Fit ] /S /GoTo >>
+\stoptyping
+
+and a reference:
+
+\starttyping
+/Subtype /Link /Border [ 0 0 0 ] /F 4 /A 16 0 R
+\stoptyping
+
+These strings are build with small variations and at some point end up in the \PDF\
+file. The same string can end up in the file several times, although sometimes we
+can create a reusable object. In the last case we keep them at the \LUA\ end as
+reference to such a shareable object, a key in an object reference hash.  Now imagine
+that we have some 30K of such references and/or destinations, which indeed happens in
+crited documents. In the next two lines we use a \type {*} to show where the
+differences are:
+
+\starttyping
+<< /D [ * 0 R /Fit ] /S /GoTo >>
+/Subtype /Link /Border [ 0 0 0 ] /F 4 /A * 0 R
+\stoptyping
+
+If we replace these \type {*} by a number, there are big differences between the
+engines with respect to the time needed. This is summarized in the next table.
+\footnote {The numbers concern 30K hash creations. The time shown is the average
+over 30 runs.}
+
+\starttabulate[|c|c|c|l|]
+\FL
+\NC \bf \LUA\ 5.2 \NC \bf \LUAJIT\ 2.0 \NC \bf \LUAJIT\ 2.0+5.1 \NC \NR
+\FL
+\NC 0.096 \NC 0.046 \NC 0.047 \NC \ttx << /D [ * 0 R /Fit ] /S /GoTo >> \NC \NR
+\NC 0.054 \NC 6.017 \NC 0.055 \NC \ttx /Subtype /Link /Border [ 0 0 0 ] /F 4 /A * 0 R \NC \NR
+\LL
+\stoptabulate
+
+Especially the second case behaves bad in \LUAJIT. Say that a result comes out
+as:
+
+\starttyping
+/Subtype /Link /Border [ 0 0 0 ] /F 4 /A 12 0 R
+/Subtype /Link /Border [ 0 0 0 ] /F 4 /A 123 0 R
+/Subtype /Link /Border [ 0 0 0 ] /F 4 /A 1234 0 R
+\stoptyping
+
+The \LUAJIT\ hasher (more or less) looks at the first~4, last~4, middle~4 and
+somewhere a quarter along the string, and uses these sequences for the
+calculation, so you can imagine that there are clashes. The \LUA\ 5.1 hasher runs
+over part of the string and sees more of the difference. The 5.2 hasher has a
+threshold and doesn't hash at all when the length exceeds (by default) 40
+characters, which is the case with the second string. Looking at only specific
+parts of a string is somewhat arbitrary and what works for one kind of
+application is not always good for another.
+
+After these tests we decided that it makes sense to replace the \LUAJIT\ hash
+calculation by the traditional \LUA\  one (or at least give users a choice at
+startup. The choice of hash is a runtime option:
+
+\starttyping
+mtxrunjit --script context --jithash=lua51    ......
+mtxrunjit --script context --jithash=luajit20 ......
+\stoptyping
+
+For the moment we default to the traditional \LUA\ 5.1 hashing method. Although
+it can behave real bad on some large strings we think that chances are low that
+this will happen in practice. An overall good performance on strings like the
+hyperlink examples is more important. Using the \LUA\ 5.2 method would be even
+better but it required a change in the virtual machine and that is not something
+we have in mind.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% Luatex manual:
+%
+% In \LUA\ strings are hashed which makes a test for equality fast and in \LUATEX\
+% we benefit from that fact. Starting with \LUA\ 5.2 the hash function is no longer
+% hashing strings larger than (by default) 40 characters. Of these at most 32
+% characters are hashed in stock \LUA\ but for a string rich environment as \TEX\
+% this can lead to many collisions. Therefore we have now set that constant limit
+% to 64 characters (so in practice it's now 40 too).
+%
+% In \LUAJIT\ the hash function is not the same as in \LUA\ and can in some cases
+% lead to a significant slowdown. We ran into cases where a \LUAJITTEX\ run was 20
+% times slower than a normal \LUATEX\ run while normally such run is 30\% faster.
+% For this reason we have replaced the hash code with the \LUA\ 5.1 hash code. This
+% change is minimal and gives less collisions. The impact on speed can be neglected.
+%
+% For \LUAJITTEX\ you can control the hash method:
+%
+% \starttyping
+% --jithash=luajit
+% --jithash=lua51
+% \stoptyping
+%
+% The current status of the hash function is available in:
+%
+% \starttyping
+% status.list().luatex_hashtype
+% status.list().luatex_hashchars
+% \stoptyping
+%
+% The first one returns \type {lua}, \type{luajit} or \type {lua51} depending on
+% the engine. The second one should always return 6. If it returns 5 then you have
+% a non|-|optimized binary. Other values are suspicious.

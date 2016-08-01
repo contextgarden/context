@@ -1,0 +1,291 @@
+\startenvironment envexamp
+
+% this is an old style. only slightly updated to mkiv
+
+\usemodule[abr-02,mathml]
+
+\setupdocument % defaults
+  [color=darkred,
+   columns=2,
+   title=MathML in \ConTeXt]
+
+\startmode[atpragma]
+    \setupbodyfont[lucidanova]
+\stopmode
+
+\startnotmode[atpragma]
+    \setupbodyfont[palatino]
+\stopnotmode
+
+\setupbodyfont
+  [10pt]
+
+\definepapersize
+  [mml]
+  [width=20cm,
+   height=20cm]
+
+\setuppapersize
+  [mml]
+  [mml]
+
+\definecolor[lightgray] [s=.85]
+\definecolor[pagegray]  [s=.8]
+\definecolor[mediumgray][s=.5]
+\definecolor[darkgray]  [s=.4]
+\definecolor[darkred]   [r=.65]
+\definecolor[darkgreen] [g=.65]
+\definecolor[darkblue]  [b=.65]
+\definecolor[darkyellow][r=.65,g=.65]
+
+\definepalet
+  [XMLcolorpretty]
+  [  prettyone=darkred,
+     prettytwo=darkgreen,
+   prettythree=darkblue,
+    prettyfour=darkgray]
+
+\definecolor
+  [maincolor]
+  [\documentvariable{color}]
+
+\setuptyping
+  [option=XML]
+
+\setupwhitespace
+  [big]
+
+\setupinteraction
+  [state=start,
+   menu=on,
+   color=maincolor,
+   contrastcolor=maincolor]
+
+\setuplayout
+  [backspace=1cm,
+   topspace=1cm,
+   bottomspace=7.5mm,
+   header=0pt,
+   footer=0pt,
+   bottomdistance=.5cm,
+   bottom=1cm,
+   height=17cm,
+   width=middle]
+
+\defineoverlay [mmlpage]  [\uniqueMPgraphic{mmlpage}]
+\defineoverlay [mmltitle] [\uniqueMPgraphic{mmltitle}]
+\defineoverlay [formula]  [\uniqueMPgraphic{formula}]
+
+\startuseMPgraphic{mml}
+    z1 = llcorner Page ;
+    z2 = .5[lrcorner Page,urcorner Page] ;
+    z3 = ulcorner Page ;
+    fill
+        Page
+        withcolor \MPcolor{lightgray} ;
+    fill
+        z1 shifted (1cm,0) --
+        z2 shifted (0,-.5cm) --
+        lrcorner Page -- cycle
+        withcolor \MPcolor{pagegray} ;
+    fill
+        z3 shifted (1cm,0) --
+        z2 shifted (0,+.5cm) --
+        urcorner Page -- cycle
+        withcolor \MPcolor{pagegray} ;
+\stopuseMPgraphic
+
+\startuniqueMPgraphic{mmlpage}
+    StartPage ;
+        \includeMPgraphic{mml}
+        fill
+            llcorner Page --
+            .5[lrcorner Page,urcorner Page] --
+            ulcorner Page -- cycle
+            withcolor \MPcolor{pagegray} ;
+        Page := Page enlarged -.5cm ;
+    StopPage ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{mmltitle}
+    StartPage ;
+        \includeMPgraphic{mml}
+        fill z1--z2--z3--cycle withcolor \MPcolor{maincolor} ;
+        picture p ;
+        p := textext("\documentvariable{title}") ;
+        p := p xsized (.75length(z2-z1)) ;
+        p := p rotatedaround(center p, angle z2) ;
+        p := p shifted -center p shifted .5[z1,z2] ;
+        p := p shifted ((unitvector(.5[z1,z2]) rotated 90)*1cm) ;
+        draw p withcolor \MPcolor{lightgray} ;
+        Page := Page enlarged -.5cm ;
+    StopPage ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{formula}
+    draw
+        OverlayBox
+        withpen pensquare scaled 2mm
+        withcolor \MPcolor{lightgray} ;
+    fill
+        OverlayBox
+        withcolor \MPcolor{mediumgray} ;
+\stopuniqueMPgraphic
+
+\setupbottom
+  [style=bold,
+   color=darkgray]
+
+\setuplist
+  [section]
+  [alternative=a,
+   interaction=all,
+   pagenumber=no,
+   width=0pt,
+   style=\bfb,
+   color=darkgray,
+   contrastcolor=darkgray,
+   before={\blank[2*big]},
+   after={\blank\startcolumns[n=5]\placelist[subsection]\stopcolumns}]
+
+\setuplist
+  [subsection]
+  [alternative=f,
+   interaction=all]
+
+\setuphead
+  [section]
+  [page=yes,
+   style=\bfd,
+   color=darkgray,
+   number=no,
+   after={\blank[2*big]\startcolumns[n=5]\placelist[subsection]\stopcolumns\page}]
+
+\setuphead
+  [subsection]
+  [after=,
+   placehead=empty]
+
+\setuphead
+  [subject]
+  [style=\bfb,
+   color=darkgray,
+   after={\blank[2*big]}]
+
+\setupinteractionmenu
+  [bottom]
+  [state=start,
+   frame=off,
+   left=\hskip3cm,
+   middle=\quad]
+
+\startinteractionmenu[bottom]
+    \startbut [content]      content \stopbut
+    \startbut [colofon]      colofon \stopbut
+    \startbut [index]        index   \stopbut
+    \startbut [PreviousJump] go back \stopbut
+    \startbut [previouspage] \bfa--  \stopbut
+    \startbut [nextpage]     \bfa+   \stopbut
+    \hfill
+    \starttxt
+        \color[darkgray]{\markcontent{\getmarking[section]: }\getmarking[subsection]\removemarkedcontent}
+    \stoptxt
+\stopinteractionmenu
+
+\starttexdefinition unexpanded ShowFormula #1#2#3
+    \showXMLformula{\rawstructurelistuservariable{filename}.xml}
+\stoptexdefinition
+
+\starttexdefinition unexpanded showXMLformula #1
+    \framed [
+        strut=no,
+        background=formula,
+        foregroundcolor=white,
+        frame=off,align=normal,
+        width=\hsize
+    ] {
+        \vbox {
+            \processXMLfile{#1}\endgraf
+        }
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded showXMLsample #1
+    \page
+    \bgroup
+    \startbaselinecorrection
+        \showXMLformula{#1.xml}
+    \stopbaselinecorrection
+    \startsubsection[reference=#1,title=#1,marking=#1][filename=#1]
+        \switchtobodyfont
+            [8pt]
+        \startcolumns[balance=no,n=\getvariable{document}{columns}]
+            \typefile{#1.xml}
+        \stopcolumns
+        \vfill
+        \page
+    \stopsubsection
+    \egroup
+\stoptexdefinition
+
+\startsetups[document:start]
+
+    \setupbackgrounds
+      [page]
+      [background=mmltitle]
+
+    \startstandardmakeup
+        \setupalign[left]
+        \bgroup
+            \darkgray \bfd \setupinterlinespace
+            Examples  \vfill
+            Hans Hagen\par
+            PRAGMA ADE\par
+            \vskip-\dp\strutbox
+            \vskip-1cm
+        \egroup
+        \vskip\dp\strutbox
+        \vskip1pt
+    \stopstandardmakeup
+
+    \setupbackgrounds
+      [page]
+      [background=mmlpage]
+
+    \startsubject[reference=content,title={Content}]
+        \placelist[section]
+    \stopsubject
+
+    \startsubject[reference=colofon,titlr={Colofon}]
+        \getbuffer[colofon]
+    \stopsubject
+
+\stopsetups
+
+\startsetups[document:stop]
+
+    \page
+
+    \pagereference[index]
+
+    \setuplist
+      [section]
+      [alternative=a,
+       before={\testpage[5]},
+       after={\blank[medium]\placelist[subsection]}]
+
+    \setuplist
+      [subsection]
+      [alternative=vertical,
+       before=\startbaselinecorrection,
+       after=\stopbaselinecorrection\blank,
+       color=,
+       contrastcolor=,
+       command=\ShowFormula,
+       interaction=all]
+
+    \placelist[section][criterium=text]
+
+\stopsetups
+
+\stopenvironment

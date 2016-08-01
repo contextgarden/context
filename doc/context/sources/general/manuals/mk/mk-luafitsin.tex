@@ -1,0 +1,556 @@
+% language=uk
+
+\startcomponent mk-luafitsin
+
+\environment mk-environment
+
+\chapter{How \LUA\ fits in}
+
+\subject{introduction}
+
+Here I will discuss a few of the experiments that drove the
+development of \LUATEX. It describes the state of affairs around
+the time that we were preparing for \TUG\ 2006. This development
+was pretty demanding for Taco and me but also much fun. We were in
+a kind of permanent Skype chat session, with binaries flowing in
+one direction and \TEX\ and \LUA\ code the other way. By gradually
+replacing (even critical) components of \CONTEXT\ we had a real
+test bed and torture tests helped us to explore and debug at the
+same time. Because Taco uses \LINUX\ as platform and I mostly use
+\MSWINDOWS, we could investigate platform dependent issues
+conveniently. While reading this text, keep in mind that this is
+just the beginning of the game.
+
+I will not provide sample code here. When possible, the \MKIV\
+code transparantly replaces \MKII\ code and users will seldom
+notices that something happens in different way. Of course the
+potential is there and future extensions may be unique to \MKIV.
+
+\subject{compatibility}
+
+The first experiments, already conducted with the experimental
+versions involved runtime conversion of one type of input into
+another. An example of this is the (TI) calculator math input
+handler that converts a rather natural math sequence into \TEX\
+and feeds that back into \TEX. This mechanism eventually will
+evolve into a configurable math input handler. Such applications
+are unique to \MKIV\ code and will not be backported to \MKII. The
+question is where downward compatibility will become a problem. We
+don't expect many problems, apart from occasional bugs that result
+from splitting the code base, mostly because new features will not
+affect older functionality. Because we have to reorganize the code
+base a bit, we also use this opportunity to start making a variant
+of \CONTEXT\ which consists of building blocks: \METATEX. This is
+less interesting for the average user, but may be of interest for
+those using \CONTEXT\ in workflows where only part of the
+functionality is needed.
+
+\subject{metapost}
+
+Of course, when I experiment with such new things, I cannot let
+\METAPOST\ leave untouched. And so, in the early stage of \LUATEX\
+development I decided to play with two \METAPOST\ related
+features: conversion and runtime processing.
+
+Conversion from \METAPOST\ output to \PDF\ is currently done in
+pure \TEX\ code. Apart from convenience, this has the advantage
+that we can let \TEX\ take care of font inclusions. The tricky
+part of this conversion is that \METAPOST\ output has some weird
+aspects, like \DVIPS\ specific linewidth snapping. Another nasty
+element in the conversion is that we need to transform paths when
+pens are used. Anyhow, the converter has reached a rather stable
+state by now.
+
+One of the ideas with \METAPOST\ version 1\high{+} is that we will
+have an alternative output mode. In the perspective of \LUATEX\ it
+makes sense to have a \LUA\ output mode. Whatever converter we
+use, it needs to deal with \METAFUN\ specials. These are
+responsible for special features like transparency, graphic
+inclusion, shading, and more. Currently we misuse colors to signal
+such features, but the new pre|/|post path hooks permit more
+advanced implementations. Experimenting with such new features is
+easier in \LUA\ than in \TEX.
+
+The \MKIV\ converter is a multi||pass converter. First we clean up the
+\METAPOST\ output, next we convert the \POSTSCRIPT\ code into \LUA\
+calls. We assume that this \LUA\ code eventually can be output directly
+from \METAPOST. We then evaluate this converted \LUA\ blob, which results
+in \TEX\ commands. Think of:
+
+\starttyping
+1.2 setlinejoin
+\stoptyping
+
+turned into:
+
+\starttyping
+mp.setlinejoin(1.2)
+\stoptyping
+
+becoming:
+
+\starttyping
+\PDFcode{1.2 j}
+\stoptyping
+
+which is, when the \PDFTEX\ driver is active, equivalent to:
+
+\starttyping
+\pdfliteral{1.2 j}
+\stoptyping
+
+Of course, when paths are involved, more things happen behind the
+scenes, but in the end an \type {mp.path} enters the \LUA\
+machinery.
+
+When the \MKIV\ converter reached a stable state, tests
+demonstrated then the code was upto 20\% slower that the pure
+\TEX\ alternative on average graphics, and but faster when many
+complex path transformations (due to penshapes) need to be done.
+This slowdown was due to the cleanup (using expressions) and
+intermediate conversion. Because Taco develops \LUATEX\ as well as
+maintains and extends \METAPOST, we conducted experiments that
+combine features of these programs. As a result of this, shortcuts
+found their way into the \METAPOST\ output.
+
+\useMPlibrary[mis]
+
+\placefigure
+  []
+  [fig:mptopdf]
+  {converter test figure}
+  {\scale[width=\hsize]{\useMPgraphic{mptopdf-test}}}
+
+Cleaning up the \METAPOST\ output using \LUA\ expressions takes
+relatively much time. However, starting with version 0.970
+\METAPOST\ uses a preamble, which permits not only short commands,
+but also gets rid of the weird linewidth and filldraw related
+\POSTSCRIPT\ constructs. The moderately complex graphic that we
+use for testing (\in {figure} [fig:mptopdf]) takes over 16 seconds
+when converted 250 times. When we enable shortcuts we can avoid
+part of the cleanup and runtime goes down to under 7.5 seconds.
+This is significantly faster than the \MKII\ code. We did experiments
+with simulated \LUA\ output from \METAPOST\ and then the \MKIV\
+converter really flies. The values on Taco's system are given
+between parenthesis.
+
+\starttabulate[|||||]
+\HL
+\NC \bf prologues/mpprocset \NC \bf 1/0 \NC \bf 1/1 \NC \bf 2/0 \NC \bf 2/1 \NC \NR
+\HL
+\NC \MKII \NC ~8.5 (~5.7) \NC ~8.0 (5.5) \NC ~8.8 \NC ~8.5 \NC \NR
+\NC \MKIV \NC 16.1 (10.6) \NC ~7.2 (4.5) \NC 16.3 \NC ~7.4 \NC \NR
+\HL
+\stoptabulate
+
+The main reason for the huge difference in the \MKIV\ times is
+that we do a rigourous cleanup of the older \METAPOST\ output
+in order avoid messy the messy (but fast) code that we use in
+the \MKII\ converter. Think of:
+
+\starttyping
+0 0.5 dtransform truncate idtransform setlinewidth pop
+closepath gsave fill grestore stroke
+\stoptyping
+
+In the \MKII\ converter, we push every number or keyword on a
+stack and use keywords as trigger points. In the \MKIV\ code
+we convert the stack based \POSTSCRIPT\ calls to \LUA\
+function calls. Lines as shown are converted to single calls
+first. When \type {prologues} is set to~2, such line no longer
+show up and are replaced by simple calls accompanied by
+definitions in the preamble. Not only that, instead of verbose
+keywords, one or two character shortcuts are used. This means
+that the \MKII\ code can be faster when procsets are used
+because shorter strings end up in the stack and comparison
+happens faster. On the other hand, when no procsets are used,
+the runtime is longer because of the larger preamble.
+
+Because the converter is used outside \CONTEXT\ as well, we
+support all combinations in order not to get error messages, but
+the converter is supposed to work with the following settings:
+
+\starttyping
+prologues := 1 ;
+mpprocset := 1 ;
+\stoptyping
+
+We don't need to set \type {prologues} to~2 (font encodings
+in file) or~3 (also font resources in file). So, in the end, the
+comparison in speed comes down to 8.0 seconds for \MKII\ code and
+7.2 seconds for the \MKIV\ code when using the latest greatest
+\METAPOST. When we simulate \LUA\ output from \METAPOST, we end
+up with 4.2 seconds runtime and when \METAPOST\ could produce the
+converter's \TEX\ commands, we need only 0.3 seconds for embedding
+the 250 instances. This includes \TEX\ taking care of handling the
+specials, some of which demand building moderately complex \PDF\
+data structures.
+
+But, conversion is not the only factor in convenient \METAPOST\
+usage. First of all, runtime \METAPOST\ processing takes time. The
+actual time spent on handling embedded \METAPOST\ graphics is also
+dependent on the speed of starting up \METAPOST, which in turn
+depends on the size of the \TEX\ trees used: the bigger these are,
+the more time \KPSE\ spends on loading the \type {ls-R} databases.
+Eventually this bottleneck may go away when we have \METAPOST\ as
+a library. (In \CONTEXT\ one can also run \METAPOST\ between runs.
+Which method is faster, depends on the amount and complexity of
+the graphics.)
+
+Another factor in dealing with \METAPOST, is the usage of text in
+a graphic (\type {btex}, \type {textext}, etc.). Taco Hoekwater,
+Fabrice Popineau and I did some experiments with a persistent
+\METAPOST\ session in the background in order to simulate a
+library. The results look very promising: the overhead of embedded
+\METAPOST\ graphics goes to nearly zero, especially when we also
+let the parent \TEX\ job handle the typesetting of texts. A side
+effect of these experiments was a new mechanism in \CONTEXT\ (and
+\METAFUN) where \TEX\ did all typesetting of labels, and
+\METAPOST\ only worked with an abstract representation of the
+result. This way we can completely avoid nested \TEX\ runs (the
+ones triggered by \METAPOST). This also works ok in \MKII\ mode.
+
+Using a persistent \METAPOST\ run and piping data into it is not
+the final solution if only because the terminal log becomes messed
+up too much, and also because intercepting errors is real messy.
+In the end we need a proper library approach, but the experiments
+demonstrated that we needed to go this way: handling hundreds of
+complex graphics that hold typeset paragraphs (being slanted and
+rotated and more by \METAPOST), tooks mere seconds compared to
+minutes when using independent \METAPOST\ runs for each job.
+
+\subject{characters}
+
+Because \LUATEX\ is \UTF\ based, we need a different way to deal with
+input encoding. For this purpose there are callbacks that intercept
+the input and convert it as needed. For context this means that the
+regime related modules get a \LUA\ based counterparts. As a prelude to
+advanced character manipulations, we already load extensive unicode
+and conversion tables, with the benefit of being able to handle case
+handling with \LUA.
+
+The character tables are derived from unicode tables and \MKII\
+\CONTEXT\ data files and generated using \MTXTOOLS. The main
+character table is pretty large, and this made us experiment a bit
+with efficiency. It was in this stage that we realized that it
+made sense to use precompiled \LUA\ code (using \type {luac}).
+During format generation we let \CONTEXT\ keep track of used \LUA\
+files and compiled them on the fly. For a production run, the
+compiled files were loaded instead.
+
+Because at that stage \LUATEX\ was already a merge between
+\PDFTEX\ and \ALEPH, we had to deal with pretty large format
+files. About that moment the \CONTEXT\ format with the english
+user interface amounted to:
+
+\starttabulate[|c|c|c|c|c|]
+\NC \bf date   \NC \bf luatex \NC \bf pdftex \NC \bf xetex \NC \bf aleph \NC \NR
+\NC 2006-09-18 \NC 9 552 042  \NC 7 068 643  \NC 8 374 996 \NC 7 942 044 \NC \NR
+\stoptabulate
+
+One reason for the large size of the format file is that the
+memory footprint of a 32 bit \TEX\ is larger than that of good old
+\TEX, even with some of the clever memory allocation techniques as
+used in \LUATEX. After some experiments where size and speed were
+measured Taco decided to compress the format using a level~3 \ZIP\
+compression. This brilliant move lead to the following size:
+
+\starttabulate[|c|c|c|c|c|]
+\NC \bf date   \NC \bf luatex \NC \bf pdftex \NC \bf xetex \NC \bf aleph \NC \NR
+\NC 2006-10-23 \NC 3 135 568  \NC 7 095 775  \NC 8 405 764 \NC 7 973 940 \NC \NR
+\stoptabulate
+
+The first zipped versions were smaller (around 2.3 meg), but in
+the meantime we moved the \LUA\ code into the format and the
+character related tables take some space.
+
+\start \it How stable are the mentioned numbers? Ten months after writing the
+previous text we get the following numbers: \stop
+
+\starttabulate[|c|c|c|c|c|]
+\NC \bf date   \NC \bf luatex \NC \bf pdftex \NC \bf xetex \NC \bf aleph \NC \NR
+\NC 2007-08-16 \NC 5 603 676  \NC 7 505 925  \NC 8 838 538 \NC 8 369 206 \NC \NR
+\stoptabulate
+
+They are all some 400K larger, which is probably the result of changes in
+hyphenation patterns (we now load them all, some several times depending on the
+font encodings used). Also, some extra math support has been brought in the kernel
+and we predefine a few more things. However, \LUATEX's format has become much
+larger! Partly this is the result of more \LUA\ code, especially \OPENTYPE\ font
+handling and attributes related code. The extra \TEX\ code is probably compensated
+by the removal of obsolete (at least for \MKIV) code. However, the significantly
+larger number is mostly there because a different compression algorithm is used:
+speed is now favoured over efficiency.
+
+\subject{debugging}
+
+In the process of experimenting with callbacks I played a bit with
+handling \TEX\ error information. An option is to generate an
+\HTML\ page instead of spitting out the usual blob of into on the
+terminal. In \in {figure} [fig:error] and \in {figure} [fig:debug]
+you can see an example of this.
+
+\placefigure[][fig:error]{An example error screen.}{\externalfigure[mk-error.png][width=\textwidth]}
+\placefigure[][fig:debug]{An example debug screen.}{\externalfigure[mk-debug.png][width=\textwidth]}
+
+Playing with such features gives us an impression of what kind of
+access we need to \TEX's internals. It also formed a starting
+point for conversion routines and a mechanism for embedding \LUA\
+code in \HTML\ pages generated by \CONTEXT.
+
+\subject{file io}
+
+Replacing \TEX's in- and output handling is non||trival. Not only
+is the code quite interwoven in the \WEBC\ source, but there is also
+the \KPSE\ library to deal with. This means that quite some callbacks
+are needed to handle the different types of files. Also, there is output
+to the log and terminal to take care of.
+
+Getting this done took us quite some time and testing and
+debugging was good for some headaches. The mechanisms changed a
+few times, and \TEX\ and \LUA\ code was thrown away as soon as
+better solutions came around. Because we were testing on real
+documents, using a fully loaded \CONTEXT\ we could converge to a
+stable version after a while.
+
+Getting this \IO\ stuff done is tightly related to generating the
+format and starting up \LUATEX. If you want to overload the file
+searching and \IO\ handling, you need overload as soon as possible.
+Because \LUATEX\ is also supposed to work with the existing \KPSE\
+library, we still have that as fallback, but in principle one
+could think of a \KPSE\ free version, in which case the default
+file searching is limited to the local path and memory
+initialization also reverts to the hard coded defaults. A
+complication is that the soure code has \KPSE\ calls and
+references to \KPSE\ variables all over the place, so occasionally
+we run into interesting bugs.
+
+Anyhow, while Taco hacked his way around the code, I converted my
+existing \RUBY\ based \KPSE\ variant into \LUA\ and started working
+from that point. The advantage of having our own \IO\ handler is
+that we can go beyond \KPSE. For instance, since \LUATEX\ has,
+among a few others, the \ZIP\ libraries linked in, we can read from
+\ZIP\ files, and keep all \TEX\ related files in \TDS\ compliant \ZIP\
+files as well. This means that one can say:
+
+\starttyping
+\input zip:///somezipfile.zip?name=/somepath/somefile.tex
+\stoptyping
+
+and use similar references to access files. Of course we had to make
+sure that \KPSE\ like searching in the \TDS\ (standardized \TEX\ trees)
+works smoothly. There are plans to link the curl library into \LUATEX,
+so that we can go beyong this and access repositories.
+
+Of course, in order to be more or less \KPSE\ and \WEBC\
+compliant, we also need to support this paranoid file handling, so
+we provide mechanisms for that as well. In addition, we provide
+ways to create sandboxes for system calls.
+
+Getting to intercept all log output (well, most log output) was
+a problem in itself. For this I used a (preliminary) \XML\ based
+log format, which will make log parsing easier. Because we have
+full control over file searching, opening and closing, we can
+also provide more information about what files are loaded. For
+instance we can now easily trace what \TFM\ files \TEX\ reads.
+
+Implementing additional methods for locating and opening files is
+not that complex because the library that ships with \CONTEXT\
+is already prepared for this. For instance, implementing support
+for:
+
+\starttyping
+\input http://www.someplace.org/somepath/somefile.tex
+\stoptyping
+
+involved a few lines of code, most of which deals with caching the
+files. Because we overload the whole \IO\ handling, this means that
+the following works ok:
+
+% \bgroup \loggingall
+
+\startbuffer
+\placefigure
+  [][]
+  {http handling}
+  {\externalfigure
+     [http://www.pragma-ade.com/show-gra.pdf]
+     [page=1,width=\textwidth]}
+\stopbuffer
+
+\typebuffer \ifx\ctxlua \undefined \else \getbuffer \fi
+
+% \egroup
+
+Other protocols, like \FTP\ are also supported, so one can say:
+
+\starttyping
+\typefile {ftp://anonymous:@ctan.org/tex-archive/systems\
+    /knuth/lib/plain.tex}
+\stoptyping
+
+On the agenda is playing with database, but by the time that we enter
+that stage linking the \type {curl} libraries into \LUATEX\ should
+have taken place.
+
+\subject{verbatim}
+
+The advance of \LUATEX\ also permitted us to play with a long
+standing wish of catcode tables, a mechanism to quickly switch
+between different ways of treating input characters. An example of
+a place where such changes take place is verbatim (and in \CONTEXT\
+also when dealing with \XML\ input).
+
+We already had encountered the phenomena that when piping back
+results from \LUA\ to \TEX, we needed to take care of catcodes so
+that \TEX\ would see the input as we wished. Earlier experiments
+with applying \type {\scantokens} to a result and thereby
+interpreting the result conforming the current catcode regime was
+not sufficient or at least not handy enough, especially in the
+perspective of fully expandable \LUA\ results. To be honest, the \type
+{\scantokens} command was rather useless for this purposes due to its
+pseudo file nature and its end||of||file handling but in \LUATEX\
+we now have a convenient \type {\scantextokens} which has no side
+effects.
+
+Once catcode tables were in place, and the relevant \CONTEXT\ code
+adapted, I could start playing with one of the trickier parts of
+\TEX\ programming: typesetting \TEX\ using \TEX, or verbatim.
+Because in \CONTEXT\ verbatim is also related to buffering and
+pretty printing, all these mechanism were handled at once. It
+proved to be a pretty good testcase for writing \LUA\ results back
+to \TEX, because anything you can imagine can and will interfere
+(line endings, catcode changes, looking ahead for arguments, etc).
+This is one of the areas where \MKIV\ code will make things look
+more clean and understandable, especially because we could move
+all kind of postprocessing (needed for pretty printing, i.e.\
+syntax highlighting) to \LUA. Interesting is that the resulting
+code is not beforehand faster.
+
+Pretty printing 1000 small (one line) buffers and 5000 simple
+\type {\type} commands perform as follows:
+
+\starttabulate[|l|c|c|c|c|]
+\NC        \NC \TEX\ normal \NC \TEX\ pretty \NC \LUA\ normal \NC \LUA\ pretty \NC \NR
+\NC buffer \NC 2.5 (2.35)   \NC ~4.5 (3.05)  \NC 2.2 (1.8)    \NC ~2.5 (2.0)   \NC \NR
+\NC inline \NC 7.7 (4.90)   \NC 11.5 (7.25)  \NC 9.1 (6.3)    \NC 10.9 (7.5)   \NC \NR
+\stoptabulate
+
+Between braces the runtime on Taco's more modern machine is shown.
+It's not that easy to draw conclusions from this because \TEX\
+uses files for buffers and with \LUA\ we store buffers in memory.
+For inline verbatim, \LUA\ call's bring some overhead, but with
+more complex content, this becomes less noticable. Also, the \LUA\
+code is probably less optimized than the \TEX\ code, and we don't
+know yet what benefits a Just In Time \LUA\ compiler will bring.
+
+\subject{xml}
+
+Interesting is that the first experiments with \XML\ processing
+don't show the expected gain in speed. This is due to the fact
+that the \CONTEXT\ \XML\ parser is highly optimized. However, if
+we want to load a whole \XML\ file, for instance the formal
+\CONTEXT\ interface specification \type {cont-en.xml}, then we can
+bring down loading time (as well as \TEX\ memory usage) down from
+multiple seconds to a blink of the eyes. Experiments with internal
+mappings and manipulations demonstrated that we may not so much
+need an alternative for the current parser, but can add additional,
+special purpose ones.
+
+We may consider linking \XSLTPROC\ into \LUATEX, but this is yet
+undecided. After all, the problem of typesetting does not really
+change, so we may as well keep the process of manipulating and
+typesetting separated.
+
+\subject{multipass data}
+
+Those who know \CONTEXT\ a bit will know that it may need multiple
+passes to typeset a document. \CONTEXT\ not only keeps track of
+index entries, list entries, cross references, but also optimizes
+some of the output based on information gathered in previous
+passes. Especially so called two||pass data and positional
+information puts some demands on memory and runtime. Two||pass
+data is collapsed in lists because otherwise we would run out of
+memory (at least this was true years ago when these mechanisms
+were introduced). Positional information is stored in hashes and
+has always put a bit of a burden on the size of a so called
+utility file (\CONTEXT\ stores all information in one auxiliary
+file).
+
+These two datatypes were the first we moved to a \LUA\ auxiliary
+file and eventually all information will move there. The advantage
+is that we can use efficient hashes (without limitations) and only
+need to run over the file once. And \LUA\ is incredibly fast in
+loading the tables where we keep track of these things. For
+instance, a test file storing and reading 10.000 complex positions
+takes 3.2 seconds runtime with \LUATEX\ but 8.7 seconds with
+traditional \PDFTEX. Imagine what this will save when dealing with
+huge files (400 page 300 Meg files) that need three or more passes
+to be typeset. And, now we can without problems bump position
+tracking to milions of positions.
+
+\subject{resources}
+
+Finding files is somewhat tricky and has a history in the \TEX\
+community and its distributions. For reasons of packaging and
+searching files are organized in a tree and there are rules for
+locating files of given types in this tree. When we say
+
+\starttyping
+\input blabla.tex
+\stoptyping
+
+\TEX\ will look for this file by consulting the path specification
+associated with the filetype. When we say
+
+\starttyping
+\input blabla
+\stoptyping
+
+\TEX\ will add the \type {.tex} suffix itself. Most other filetypes
+are not seen by users but are dealt with in a similar way internally.
+
+As mentioned before, we support reading from other resources than
+the standard file system, for instance we can input files from
+websites or read from \ZIP\ archives. Although this works quite well,
+we need to keep in mind that there are some conflicting interests:
+structured search based on type related specifications versus more
+or less explicit requests.
+
+\starttyping
+\input zip:///archive.zip?name=blabla.tex
+\input zip:///archive.zip?name=/somepath/blabla.tex
+\stoptyping
+
+Here we need to be rather precise in defining the file location. We can
+of course build rather complex mechanisms for locating files here, but
+at some point that may backfire and result in unwanted matches.
+
+If you want to treat a \ZIP\ archive as a \TEX\ tree, then you need
+to register the file:
+
+\starttyping
+\usezipfile[archive.zip]
+\usezipfile[tex.zip][texmf-local]
+\usezipfile[tex.zip?tree=texmf-local]
+\stoptyping
+
+The first variant registers all files in the archive, but the
+next two are equivalent and only register a subtree. The registered
+tree is prepended to the \type {TEXMF} specification and thereby
+may overload existing trees.
+
+If an acrhive is not a real \TEX\ tree, you can access files anywhere
+in the tree by using wildcards
+
+\starttyping
+\input */blabla.tex
+\input */somepath/blabla.tex
+\stoptyping
+
+These mechanisms evolve over time and it may take a while before they
+stabelize. For instance, the syntax for the \ZIP\ inclusion has been
+adapted more than a year after this chapter was written (which is
+why this section is added).
+
+\stopcomponent

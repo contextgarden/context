@@ -1,0 +1,214 @@
+% language=uk
+
+\startcomponent mk-initialization
+
+\environment mk-environment
+
+\chapter{Initialization revised}
+
+Initializing \LUATEX\ in such a way that it does what you want it
+to do your way can be tricky. This has to do with the fact that
+if we want to overload certain features (using callbacks) we need
+to do that before the orginals start doing their work. For
+instance, if we want to install our own file handling, we must
+make sure that the built||in file searching does not get
+initialized. This is particularly important when the built in
+search engine is based on the \KPSE\ library. In that case the
+first serious file access will result in loading the \type {ls-R}
+filename databases, which will take an amount of time more or less
+linear with the size of the \TEX\ trees. Among the reasons why we
+want to replace \KPSE\ are the facts that we want to access \ZIP\
+files, do more specific file searches, use \HTTP, \FTP\ and whatever
+comes around, integrate \CONTEXT\ specific methods, etc.
+
+Although modern operating systems will cache files in memory,
+creating the internal data structures (hashes) from the rather
+dumb files take some time. On the machine where I was developing
+the first experimental \LUATEX\ code, we're talking about 0.3
+seconds for \PDFTEX. One would expect a \LUA\ based alternative to
+be slower, but it is not. This may be due to the different
+implementation, but for sure the more efficient file cache plays a
+role as well. So, by completely disabling \KPSE, we can have more
+advanced \IO\ related features (like reading from \ZIP\ files) at
+about the same speed (or even faster). In due time we will also
+support progname (and format) specific caches, which speeds up
+loading. In case one wonders why we bother about a mere few
+hundreds of milliseconds: imagine frequent runs from an editor or
+sub||runs during a job. In such situation every speed up matters.
+
+So, back to initialization: how do we initialize \LUATEX. The
+method described here is developed for \CONTEXT\ but is not
+limited to this macro package; when one tells \TEXEXEC\ to
+generate formats using the \type {--luatex} directive, it will
+generate the \CONTEXT\ formats as well as \MPTOPDF\ using this
+engine.
+
+For practical reasons, the Lua based \IO\ handler is \KPSE\
+compliant. This means that the normal \type {texmf.cnf} and \type
+{ls-R} files can be used. However, their content is converted in a
+more \LUA\ friendly way. Although this can be done at runtime, it
+makes more sense to to this in advance using \LUATOOLS.  The files
+involved are:
+
+\starttabulate[|l|l|l|l|]
+\NC \bold{input}     \NC \bold{raw input} \NC \bold{runtime input}     \NC \bold{runtime fallback}  \NC \NR
+\NC                  \NC \type{ls-R}      \NC \type{files.luc}         \NC \type{files.lua}         \NC \NR
+\NC \type{texmf.lua} \NC \type{temxf.cnf} \NC \type{configuration.luc} \NC \type{configuration.lua} \NC \NR
+\stoptabulate
+
+In due time \LUATOOLS\ will generate the directory listing itself
+(for this some extra libraries need to be linked in). The
+configuration file(s) eventually will move to a \LUA\ table
+format, and when a \type {texmf.lua} file is present, that one
+will be used.
+
+\starttyping
+luatools --generate
+\stoptyping
+
+This command will generate the relevant databases. Optionally you can
+provide \type {--minimize} which will generate a leaner database, which
+in turn will bring down loading time to (on my machine) about 0.1 sec
+instead of 0.2 seconds. The \type {--sort} option will give nicer
+intermediate (\type {.lua}) files that are more handy for debugging.
+
+When done, you can use \LUATOOLS\ roughly in the same manner as
+\KPSEWHICH, for instance to locate files:
+
+\starttyping
+luatools texnansi-lmr10.tfm
+luatools --all tufte.tex
+\stoptyping
+
+You can also inspect its internal state, for instance with:
+
+\starttyping
+luatools --variables  --pattern=TEXMF
+luatools --expansions --pattern=context
+\stoptyping
+
+This will show you the (expanded) variables from the configuration
+files. Normally you don't need to go that deep into the belly.
+
+The \LUATOOLS\ script can also generate a format and run \LUATEX.
+For \CONTEXT\ this is normally done with the \TEXEXEC\ wrapper,
+for instance:
+
+\starttyping
+texexec --make --all --luatex
+\stoptyping
+
+When dealing with this process we need to keep several things in
+mind:
+
+\startitemize[packed]
+\item \LUATEX\ needs a \LUA\ startup file in both ini and runtime mode
+\item these files may be the same but may also be different
+\item here we use the same files but a compiled one in runtime mode
+\item we cannot yet use a file location mechanism
+\stopitemize
+
+A \type {.luc} file is a precompiled \LUA\ chunk. In order to
+guard consistency between \LUA\ code and tex code, \CONTEXT\ will
+preload all \LUA\ code and store them in the bytecode table
+provided by \LUATEX. How this is done, is another story. Contrary
+to these tables, the initialization code can not be put into the
+format, if only because at that stage we still need to set up
+memory and other parameters.
+
+In our case, especially because we want to overload the \IO\
+handler, we want to store the startup file in the same path as the
+format file. This means that scripts that deal with format
+generation also need to take care of (relocating) the startup
+file. Normally we will use \TEXEXEC\ but we can also use \LUATOOLS.
+
+Say that we want to make a plain format. We can call \LUATOOLS\
+as follows:
+
+\starttyping
+luatools --ini plain
+\stoptyping
+
+This will give us (in the current path):
+
+\starttyping
+120,808 plain.fmt
+  2,650 plain.log
+ 80,767 plain.lua
+ 64,807 plain.luc
+\stoptyping
+
+From now on, only the \type {plain.fmt} and \type {plain.luc} file
+are important. Processing a file
+
+\starttyping
+test \end
+\stoptyping
+
+can be done with:
+
+\starttyping
+luatools --fmt=./plain.fmt test
+\stoptyping
+
+This returns:
+
+\starttyping
+This is luaTeX, Version 3.141592-0.1-alpha-20061018 (Web2C 7.5.5)
+(./test.tex [1] )
+Output written on test.dvi (1 page, 260 bytes).
+Transcript written on test.log.
+\stoptyping
+
+which looks rather familiar. Keep in mind that at this stage we
+still run good old Plain \TEX. In due time we will provide a few
+files that will making work with \LUA\ more convenient in Plain
+\TEX, but at this moment you can already use for instance \type
+{\directlua}.
+
+In case you wonder how this is related to \CONTEXT, well only to
+the extend that it uses a couple of rather generic \CONTEXT\
+related \LUA\ files.
+
+\CONTEXT\ users can best use \TEXEXEC\ which will relocate the
+format related files to the regular engine path. In \LUATOOLS\
+terms we have two choices:
+
+\starttyping
+luatools --ini cont-en
+luatools --ini --compile cont-en
+\stoptyping
+
+The difference is that in the first case \type {context.lua} is
+used as startup file. This \LUA\ file creates the \type
+{cont-en.luc} runtime file. In the second call \LUATOOLS\ will
+create a \type {cont-en.lua} file and compile that one. An even
+more specific call would be:
+
+\starttyping
+luatools --ini --compile --luafile=blabla.lua          cont-en
+luatools --ini --compile --lualibs=bla-1.lua,bla-2.lua cont-en
+\stoptyping
+
+This call does not make much sense for \CONTEXT. Keep in mind
+that \LUATOOLS\ does not set up user specific configurations, for
+instance the \type {--all} switch in \TEXEXEC\ will set up all
+patterns.
+
+I know that it sounds a bit messy, but till we have a more clear
+picture of where \LUATEX\ is heading this is the way to proceed.
+The average \CONTEXT\ user won't notice those details, because
+\TEXEXEC\ will take care of things.
+
+Currently we follow the \TDS\ and \WEBC\ conventions, but in the
+future we may follow different or additional approaches. This may
+as well be driven by more complex \IO\ models. For the moment
+extensions still fit in. For instance, in order to support access
+to remote resources and related caching, we have added to the
+configuration file the variable:
+
+\starttyping
+TEXMFCACHE = $TMP;$TEMP;$TMPDIR;$HOME;$TEXMFVAR;$VARTEXMF;.
+\stoptyping
+
+\stopcomponent

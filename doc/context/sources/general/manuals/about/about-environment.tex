@@ -1,0 +1,71 @@
+\startenvironment about-environment
+
+\setupbodyfont
+  [pagella]
+
+\usemodule
+  [abr-02,narrowtt]
+
+\definecolor [maincolor] [.6(orange)]
+
+\setupwhitespace
+  [big]
+
+\setuptyping
+  [color=maincolor]
+
+\setuptype
+  [color=maincolor]
+
+\setupitemgroup
+  [itemize]
+  [each]
+  [color=maincolor,
+   symcolor=maincolor]
+
+\setupcaptions
+  [color=maincolor]
+
+\setuphead
+  [chapter]
+  [before=,
+   after={\blank[2*big]},
+   style=\bfc,
+   color=maincolor]
+
+\setuphead
+  [section]
+  [before={\blank[2*big]},
+   after=\blank,
+   style=\bfb,
+   color=maincolor]
+
+\setuphead
+  [subsection]
+  [before=\blank,
+   after=\blank,
+   style=\bfa,
+   color=maincolor]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   header=0cm,
+   topspace=2cm,
+   bottomspace=1cm,
+   footer=1cm,
+   footerdistance=.5cm]
+
+\setupfootertexts
+  [][{\getmarking[chapter]\hbox to 2em{\hss\pagenumber}}]
+  [{\hbox to 2em{\pagenumber\hss}\getmarking[chapter]}][]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\startMPextensions
+  % color maincolor ; maincolor := \MPcolor{maincolor} ;
+    string maincolor ; maincolor := "maincolor" ;
+\stopMPextensions
+
+\stopenvironment

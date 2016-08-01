@@ -1,0 +1,209 @@
+% language=uk
+
+\startcomponent about-properties
+
+\environment about-environment
+
+\startchapter[title=Properties]
+
+\startsection[title=Introduction]
+
+Attributes are a nice extension to \TEX\ as they permits us to let information
+travel with nodes. Internally they are represented as a linked list that
+travels with a node. Because often a sequence of nodes has the same attributes,
+this mechanism is quite efficient. Access is relatively fast too. Attributes
+have a number and a value (also a number) which is fine. Of course one could
+wish for them to be anything, but imagine the amount of management needed
+in the engine if that were the case. Not only does saving and restoring (due to
+grouping) at the \TEX\ end has no \LUA\ equivalent, an overload of the \LUA\
+registry (the most natural interface for this) is not what we want. Of course
+it is also not acceptable that (future) extensions slow down a run. In fact,
+leaner and meaner should be the main objective.
+
+At some point I thought that packing crucial information in a node using a bitset
+would help to speed up some critical mechanisms (mostly fonts) but although
+managing some 32 or 64 on||off states is possible in a more closed macro package,
+in practice it would lead to conflicts in use. Also, an experimental
+implementation of this idea was not faster than using attributes due to the fact
+that manipulating bits also involves function calls that deal with setting,
+resetting, masking and more. It also makes nodes larger and increases the memory
+footprint.
+
+So, when I discarded that idea, I moved to another one, which is associating a
+\LUA\ table with each node (that makes sense). Again, an implementation where
+some way a reference to a table is carried with a node, is non||trivial because
+it has to go via the \LUA\ registry and will not be too efficient in terms of
+speed. Also, when dealing with such information one wants to stay at the \LUA\
+end and not cross the C||boundary too often.
+
+Therefore a different approach was taken which involves a \LUA\ table. The main
+issue with carrying information with a node is not to associate that information,
+but to make sure that it gets cleaned up when a node is freed and copied when a
+node is copied. All nodes that have attributes, also get properties.
+
+\stopsection
+
+\startsection[title=The implementation]
+
+The implementation is rather minimalistic. This is because hard codes solutions
+don't fit in the \LUATEX\ design philosophy. Also, there are many ways to use
+such a mechanism so too much hard coded behaviour only complicates usage.
+
+When a node is copied, we also copy the associated property entry. Normally its
+type is \type {nil} or \type {table}. Depending on how you enabled this
+mechanism, the table copy is shallow (just a reference to the same table), or we
+assign en empty table with the original as metatable index. The second approach
+as some more overhead.
+
+When a new node is assigned, nothing extra is done with the properties. The
+overhead is zero. This means that when you want to assign properties at the \LUA\
+end, you also have to check if a node property already has a table and if not,
+create one. The same is true for querying properties: you have to test if there
+are properties at all.
+
+When you use the \quote {direct} node model, you can directly access the property
+table. But, with direct as well as wrapped nodes, you can also use setters and
+getters. The property table has no metatable so you can add your own one for
+alternative access if needed. In \CONTEXT\ you can best stay away from such hacks
+and use the provided mechanisms because otherwise you get a performance hit.
+
+\stopsection
+
+\startsection[title=The \LUA\ interface]
+
+The interface (in regular nodes as well as direct ones) is quite simple and
+provides five functions:
+
+\starttyping
+set_properties_mode(boolean,boolean)
+flush_properties_table()
+get_properties_table()
+getproperty(node_id)
+setproperty(node_id,value)
+\stoptyping
+
+By default this mechanism is disabled so that when it's not used, there is no
+overhead involved. With \type {set_properties_mode} the first argument determines
+if you enable or disable this mechanism. The properties themselves are untouched.
+When the second argument is \type {true} copied properties create a new table
+with a metatable pointing to the original. You can flush all properties with
+\type {flush_properties_table}.
+
+You can access and set properties with \type {getproperty} and \type
+{setproperty}. Instead you can also use the table approach, where you can reach
+the table with \type {get_properties_table}. Keep in mind that the normal and
+direct calls to this function return a different table.
+
+\stopsection
+
+\startsection[title=A few examples]
+
+The following examples use \CONTEXT\ but apart from the calls to the \type
+{context} namespace, they are rather generic. We have enabled the property
+mechanism with:
+
+\starttyping
+set_properties_mode(true)
+\stoptyping
+
+We fill a box:
+
+\startbuffer
+\newbox\MyPropertyBox
+
+\setbox\MyPropertyBox=\hbox{test}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer[common]
+local list = tex.getbox("MyPropertyBox").list
+
+local function start()
+    context.starttabulate { "||||" }
+    context.HL()
+end
+
+local function stop()
+    context.HL()
+    context.stoptabulate()
+end
+
+local function row(n,p)
+    context.NC() context(tostring(n==p))
+    context.NC() context(tostring(n))
+    context.NC() context(tostring(p))
+    context.NC() context.NR()
+end
+\stopbuffer
+
+\typebuffer[common]
+
+We will demonstrate the four access models. First regular properties
+using functions:
+
+\startbuffer[example]
+for n in node.traverse(list) do
+    node.setproperty(n,{ vif = n })
+end
+start()
+for n in node.traverse(list) do
+    row(n,node.getproperty(n).vif)
+end
+stop()
+\stopbuffer
+
+\typebuffer[example] {\ttxx\ctxluabuffer[common,example]}
+
+We can use a table instead (in fact, we can use both approaches
+mixed:
+
+\startbuffer[example]
+local n_properties = node.get_properties_table()
+
+for n in node.traverse(list) do
+    n_properties[n] = { vit = n }
+    node.direct.setproperty(n,{ vdf = n })
+end
+start()
+for n in node.traverse(list) do
+    row(n,n_properties[n].vit)
+end
+stop()
+\stopbuffer
+
+\typebuffer[example] {\ttxx\ctxluabuffer[common,example]}
+
+The direct method looks the same, apart from a cast to direct:
+
+\startbuffer[example]
+for n in node.direct.traverse(node.direct.todirect(list)) do
+    node.direct.setproperty(n,{ vdf = n })
+end
+start()
+for n in node.direct.traverse(node.direct.todirect(list)) do
+    row(n,node.direct.getproperty(n).vdf)
+end
+stop()
+\stopbuffer
+
+\typebuffer[example] {\tt\ctxluabuffer[common,example]}
+
+Again, we can use the table approach:
+
+\startbuffer[example]
+local d_properties = node.direct.get_properties_table()
+
+for n in node.direct.traverse(node.direct.todirect(list)) do
+    d_properties[n] = { vdt = n }
+end
+start()
+for n in node.direct.traverse(node.direct.todirect(list)) do
+    row(n,d_properties[n].vdt)
+end
+stop()
+\stopbuffer
+
+\typebuffer[example] {\tt\ctxluabuffer[common,example]}
+
+\stoptext

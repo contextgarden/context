@@ -1,0 +1,37 @@
+% language=uk
+
+\environment workflows-style
+
+\startcomponent workflows-titlepage
+
+\definefontfeature[LatinModernMonoVariable][default][liga=no]
+\definefont[LatinModernMonoVariable][LMTypewriterVarWd-Regular*LatinModernMonoVariable sa 1]
+
+\startMPpage
+
+    fill fullsquare xysized(PaperWidth,PaperHeight) withcolor .4white ;
+
+    draw image (
+        fill arrowhead fullcircle scaled .5 rotated   0 scaled 10 withcolor white ;
+        fill arrowhead fullcircle scaled .5 rotated 120 scaled 10 withcolor white ;
+        fill arrowhead fullcircle scaled .5 rotated 240 scaled 10 withcolor white ;
+        fill arrowhead fullcircle scaled .5 rotated  60 scaled 10 withcolor white ;
+        fill arrowhead fullcircle scaled .5 rotated 180 scaled 10 withcolor white ;
+        fill arrowhead fullcircle scaled .5 rotated 300 scaled 10 withcolor white ;
+    ) xsized (.9PaperWidth) shifted (0,.2PaperWidth) ;
+
+    draw image (
+        fill arrowhead fullcircle scaled .5 rotated   0 scaled 10 withcolor .4red     withtransparency (1,.5) ;
+        fill arrowhead fullcircle scaled .5 rotated 120 scaled 10 withcolor .4green   withtransparency (1,.5) ;
+        fill arrowhead fullcircle scaled .5 rotated 240 scaled 10 withcolor .4blue    withtransparency (1,.5) ;
+        fill arrowhead fullcircle scaled .5 rotated  60 scaled 10 withcolor .4cyan    withtransparency (1,.5) ;
+        fill arrowhead fullcircle scaled .5 rotated 180 scaled 10 withcolor .4magenta withtransparency (1,.5) ;
+        fill arrowhead fullcircle scaled .5 rotated 300 scaled 10 withcolor .4yellow  withtransparency (1,.5) ;
+    ) xsized (.9PaperWidth) shifted (0,.2PaperWidth) ;
+
+    draw textext ("\LatinModernMonoVariable \documentvariable{title}") xsized (.9PaperWidth) shifted (0,-.425PaperWidth) withcolor white ;
+    draw textext ("\LatinModernMonoVariable \documentvariable{extra}") xsized (.9PaperWidth) shifted (0,-.575PaperWidth) withcolor white ;
+
+\stopMPpage
+
+\stopcomponent

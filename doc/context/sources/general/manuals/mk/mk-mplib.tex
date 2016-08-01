@@ -1,0 +1,924 @@
+% language=uk
+
+\useMPlibrary[dum]
+
+\startcomponent mk-mplib
+
+\environment mk-environment
+
+\definetextbackground
+    [sideline]
+    [mp=mpos:par:sideline,
+     framecolor=mkcolor,
+     frameoffset=5mm]
+
+\startuseMPgraphic{mpos:par:sideline}{linecolor,lineoffset}
+    for i=1 upto nofmultipars :
+        fill leftboundary multipars[i]
+            shifted (-\MPvar{lineoffset},0)
+            rightenlarged 1mm withcolor \MPvar{linecolor} ;
+    endfor ;
+\stopuseMPgraphic
+
+\chapter{The MetaPost Library}
+
+% \subject{Hans Hagen \& Taco Hoekwater} \blank[3*big]
+
+This chapter is written by Taco and Hans around the time
+that \MPLIB\ was integrated into \LUATEX.
+It is part of our torture test.
+
+\subject{introduction}
+
+If \METAPOST\ support had not been as tightly integrated into
+\CONTEXT\ as it is, at least half of the projects \PRAGMA\ has
+been doing in the last decade could not have been done at all.
+\starttextbackground[sideline]Take for instance
+backgrounds behind text or graphic markers alongside text. These are
+probably the most complex mechanisms in \CONTEXT: positions are
+stored, and positional information is passed on to
+\METAPOST, where intersections between the text areas and the running
+text are converted into graphics that are then positioned in the
+background of the text.\stoptextbackground{} Underlining of text
+(sometimes used in the educational documents that we typeset) and
+change bars (in the margins) are implemented using the same
+mechanism because those are basically a background with only one of the
+frame sides drawn.
+
+You can probably imagine that a 300 page document with several such
+graphics per page takes a while to process. A nice example of such
+integrated graphics is the \LUATEX\ reference manual, that has an
+unique graphic at each page: a stylized image of a revolving moon.
+
+\startuseMPgraphic{lualogo-x}{angle}
+color   luaplanetcolor ; luaplanetcolor := .5blue  ;
+color   luaholecolor   ; luaholecolor   :=   white ;
+numeric luaextraangle  ; luaextraangle  := \MPvar{angle} ;
+
+vardef lualogo = image (
+    % Graphic design by A. Nakonechnyj. Copyright (c) 1998, All rights reserved.
+    save luaorbitcolor, d, r, p ; color luaorbitcolor ; numeric d, r, p ;
+    luaorbitcolor := .5luaholecolor ; d := sqrt(2)/4 ; r := 1/4 ; p := r/8 ;
+    fill fullcircle scaled 1 withcolor luaplanetcolor ;
+    draw fullcircle rotated 40.5 scaled (1+r) dashed evenly scaled p withpen pencircle scaled (p/2) withcolor luaorbitcolor ;
+    fill fullcircle scaled r shifted (d+1/8,d+1/8) rotated luaextraangle withcolor luaplanetcolor ;
+    fill fullcircle scaled r shifted (d-1/8,d-1/8) withcolor luaholecolor   ;
+    setbounds currentpicture to fullsquare scaled 1.3;
+)  enddef ;
+
+draw lualogo scaled 1cm ;
+\stopuseMPgraphic
+
+\startlinecorrection[blank]
+\hbox to \hsize
+  {\hss\dostepwiserecurse{0}{360}{60}{\useMPgraphic{lualogo-x}{angle=\recurselevel}\hss}}
+\stoplinecorrection
+
+Most of the running time integrating such graphics seemed to be
+caused by the mechanics of the process: starting the separate
+\METAPOST\ interpreter and having to deal with a number of
+temporary files. Therefore our expectations were high with regards
+to integrating \METAPOST\ more tightly into \LUATEX. Besides the
+speed gain, it also true that the simpler the process of using
+such use of graphics becomes, the more modern a \TEX\ runs looks
+and the less problems new users will have with understanding how
+all the processes cooperate.
+
+This article will not discuss the application interface of the
+\MPLIB\ library in detail, for that there is the \LUATEX\ manual. In short,
+using the embedded \METAPOST\ interpreter in \LUATEX\ boils
+down to the following:
+
+\startitemize[packed]
+\item Open an instance using \type {mplib.new}, either to process
+      images with a format to be loaded, or to create such a format.
+      This function returns a library object.
+\item Execute sequences of \METAPOST\ commands, using the object's
+      \type{execute} method. This returns a result.
+\item Check if the result is valid and (if it is okay) request the list
+      of objects. Do whatever you want with them, most probably
+      convert them to some output format. You can also request a
+      string representation of a graphic in \POSTSCRIPT\ format.
+\stopitemize
+
+There is no need to close the library object. As long as you didn't make
+any fatal errors, the library recovers well and can stay alive during
+the entire \LUATEX\ run.
+
+Support for \MPLIB\ depends on a few components: integration,
+conversion and extensions. This article shows some of the code
+involved in supporting the library. Let's start with the conversion.
+
+\subject{conversion}
+
+The result of a \METAPOST\ run traditionally is a \POSTSCRIPT\
+language description of the generated graphic(s). When
+\PDF\ is needed, that \POSTSCRIPT\ code has to be converted to the target
+format. This includes embedded text as well as penshapes used for
+drawing. To demonstrate, here is a simple example graphic:
+
+\startluacode
+document.sample_mp_graphic = [[
+    draw fullcircle
+        scaled 2cm
+        withpen pencircle xscaled 1mm yscaled .5mm rotated 30
+        withcolor .75red ;
+]]
+\stopluacode
+
+\startbuffer[mpexample]
+draw fullcircle
+  scaled 2cm
+  withpen pencircle xscaled 1mm yscaled .5mm rotated 30
+  withcolor .75red ;
+\stopbuffer
+
+\placefigure
+  [left]
+  {}
+  {\startMPcode \ctxlua{tex.sprint(document.sample_mp_graphic)}\stopMPcode}
+
+\typebuffer[mpexample]
+
+Notice how the pen is not a circle but a rotated ellipse. Later on it
+will become clear what the consequences of that are for the conversion.
+
+How does this output look in \POSTSCRIPT ? If the preamble is left out
+it looks like this:
+
+\startbuffer
+\startluacode
+do
+  local mpx = metapost.format("metafun")
+  local result = mpx:execute(string.format("beginfig(0);%s;endfig;",document.sample_mp_graphic))
+  local str = result.fig[1]:postscript()
+  str = str:gsub("%%BeginProlog.-%%EndProlog","%% <<stripped preamble was here>>")
+  tex.sprint(tex.ctxcatcodes,"\\starttyping\n")
+  tex.sprint((str:gsub("[\n\r]$","")))
+  tex.sprint("\\stoptyping")
+end
+\stopluacode
+\stopbuffer
+
+\getbuffer
+
+The most prominent code here concerns the path. The numbers in brackets define
+the transformation matrix for the pen we used. The \PDF\ variant looks as follows:
+
+\startbuffer
+\startluacode
+do
+  local mpx = metapost.format("metafun")
+  local result = mpx:execute(string.format("beginfig(0);%s;endfig;",document.sample_mp_graphic))
+  local list = metapost.pdfliterals(result)
+  tex.sprint(tex.ctxcatcodes,"\\starttyping")
+  tex.sprint(table.concat(list,"\n"))
+  tex.sprint("\\stoptyping")
+end
+\stopluacode
+\stopbuffer
+
+\getbuffer
+
+The operators don't look much different from the \POSTSCRIPT, which is
+mostly due to the fact that in the \POSTSCRIPT\ code, the preamble
+defines shortcuts like \type {c} for \type {curveto}.  Again, most code
+involves the path. However, this time the numbers are different and
+the transformation comes before the path.
+
+In the case of \PDF\ output, we could use \TEX\ itself to do the
+conversion: a generic converter is implemented in \type
+{supp-pdf.tex}, while a converter optimized for \CONTEXT\ \MKII\ is
+defined in the files whose names start with \type {meta-pdf}.  But in
+\CONTEXT\ \MKIV\ we use \LUA\ code for the conversion instead. Thanks to
+\LUA's powerful \LPEG\ parsing library, this gives cleaner code and is
+also faster. This converter currently lives in \type {mlib-pdf.lua}.
+
+Now, with the embedded \METAPOST\ library, conversion goes different
+still because now it is possible to request the drawn result and
+associated information in the form of \LUA\ tables.
+
+\startbuffer
+\startluacode
+do
+  local mpx = metapost.format("metafun")
+  local result = mpx:execute(string.format("beginfig(0);%s;endfig;",document.sample_mp_graphic))
+  local str = table.serialize(metapost.totable(result), "figure")
+  tex.sprint(tex.ctxcatcodes,"\\starttyping")
+  tex.sprint((str:gsub("[\n\r]$","")))
+  tex.sprint("\\stoptyping")
+end
+\stopluacode
+\stopbuffer % $<-emacs font-lock
+
+% \startsimplecolumns[n=3,width=18.5cm]
+% \getbuffer
+% \stopsimplecolumns
+
+\getbuffer
+
+This means that instead of parsing \POSTSCRIPT\ output, we now can operate on
+a proper datastructure and get code like the following:
+
+\starttyping
+function convertgraphic(result)
+  if result then
+    local figures = result.fig
+    if figures then
+      for fig in ipairs(figures) do
+        local llx, lly, urx, ury = unpack(fig:boundingbox())
+        if urx > llx then
+          startgraphic(llx, lly, urx, ury)
+          for object in ipairs(fig:objects()) do
+            if object.type == "..." then
+              ...
+              flushgraphic(...)
+              ...
+            else
+              ...
+            end
+          end
+          finishgraphic()
+        end
+      end
+    end
+  end
+end
+\stoptyping
+
+Here \type {result} is what the library returns when one or more
+graphics are processed. As you can deduce from this snippet, a
+result can contain multiple figures. Each figure corresponds with a
+\type {beginfig} \type {...} \type {endfig}. The graphic operators that
+the converter generates (so called \PDF\ literals) have to be
+encapsulated in a proper box so this is why we have:
+
+\startitemize[packed]
+\item \type {startgraphic}: start packaging the graphic
+\item \type {flushgraphic}: pipe literals to \TEX
+\item \type {finishgraphic}: finish packaging the graphic
+\stopitemize
+
+It does not matter what number you passed to \type {beginfig}, the
+graphics come out in the natural order.
+
+Little over half a dozen different object types are possible. The example
+\METAPOST\ \type{draw} command from above results in an \type {outline} object.
+This object contains not only path information but also carries
+rendering data, like the color and the pen. So, in the end we will
+flush code like \type {1 M} which sets the \type {miterlimit} to one
+or \type {.5 g} which sets the color to 50\% gray, in addition to a
+path.
+
+Because objects are returned in a way that closely resembles a
+\METAPOST's internals, some extra work needs to be done in order to
+calculate paths with elliptical pens. An example of a helper function
+in somewhat simplified form is shown next:
+
+\starttyping
+function pen_characteristics(object)
+  local p = object.pen[1]
+  local wx, wy, width
+  if p.right_x == p.x_coord and p.left_y == p.y_coord then
+    wx = abs(p.left_x  - p.x_coord)
+    wy = abs(p.right_y - p.y_coord)
+  else -- pyth: sqrt(a^2 +b^2)
+    wx = pyth(p.left_x - p.x_coord, p.right_x - p.x_coord)
+    wy = pyth(p.left_y - p.y_coord, p.right_y - p.y_coord)
+  end
+  if wy/coord_range_x(object.path, wx) >=
+                    wx/coord_range_y(object.path, wy) then
+    width = wy
+  else
+    width = wx
+  end
+  local sx, sy = p.left_x, p.right_y
+  local rx, ry = p.left_y, p.right_x
+  local tx, ty = p.x_coord, p.y_coord
+  if width ~= 1 then
+    if width == 0 then
+      sx, sy = 1, 1
+    else
+      rx, ry, sx, sy = rx/width, ry/width, sx/width, sy/width
+    end
+  end
+  if abs(sx) < eps then sx = eps end
+  if abs(sy) < eps then sy = eps end
+  return sx, rx, ry, sy, tx, ty, width
+end
+\stoptyping
+
+If \type {sx} and \type {sy} are 1, there is no need to transform
+the path, otherwise a suitable transformation matrix is calculated
+and returned. The function itself uses a few helpers that make the
+calculations even more obscure. This kind of code does not fall in
+the category trivial and as already mentioned, these basic
+algorithms were derived from the \METAPOST\ sources. Even so,
+these snippets demonstrate that interfacing using \LUA\ does not
+look that bad.
+
+In the actual \MKIV\ code things look a bit different because it does
+a bit more and uses optimized code. There you will also find the code
+dealing with the actual transformation, of which these helpers are
+just a portion.
+
+If you compare the \POSTSCRIPT\ and the \PDF\ code you will notice
+that the paths looks different. This is because the use and
+application of a transformation matrix in \PDF\ is different from how
+it is handled in \POSTSCRIPT. In \PDF\ more work is assumed to be
+done by the \PDF\ generating application. This is why in both the
+\TEX\ and the \LUA\ based converters you will find transformation code
+and the library follows the same pattern. In that respect \PDF\
+differs fundamentally from \POSTSCRIPT.
+
+Within the \TEX\ based converter there was the problem of keeping the
+needed calculations within \TEX's accuracy, which fortunately permits
+larger values that \METAPOST\ can produce. This plus the parsing code
+resulted in a not-that-easy to follow bunch of \TEX\ code.  The \LUA\
+based parser is more readable, but since it also operates on
+\POSTSCRIPT\ code it is kind of unnatural too, but at least there are
+less problems with keeping the calculations sane. The \MPLIB\ based
+converter is definitely the cleanest and least sensitive to future
+changes in the \POSTSCRIPT\ output. Does this mean that there is no
+ugly code left? Alas, as we will see in the next section, dealing with
+extensions is still somewhat messy. In practice users will not be
+bothered with such issues, because writing a converter is a one time
+job by macro package writers.
+
+\subject{extensions}
+
+In \METAFUN, which is the \METAPOST\ format used with \CONTEXT,
+a few extensions are provided, like:
+
+\startitemize[packed]
+\item cmyk, spot and multitone colors
+\item including external graphics
+\item lineair and circulair shades
+\item texts converted to outlines
+\item inserting arbitrary texts
+\stopitemize
+
+Until now, most of these extensions have been implemented by using
+specially coded colors and by injecting so called specials (think of
+them as comments) into the output. On one of our trips to a \TEX\
+conference, we discussed ways to pass information along with
+paths and eventually we arrived at associating text strings with paths
+as a simple and efficient solution.  As a result, recently \METAPOST\
+was extended by \type {withprescript} and \type {withpostscript}
+directives. For those who are unfamiliar with these new scripts,
+they are used as follows:
+
+\starttyping
+draw fullcircle withprescript "hello" withpostscript "world" ;
+\stoptyping
+
+In the \POSTSCRIPT\ output these scripts end up before and after the
+path, but in the \PDF\ converter they can be overloaded to implement
+extensions, and that works reasonably well.  However, at the moment
+there cannot be multiple pre- and postscripts associated with a single
+path inside the \METAPOST\ internals. This means that for the moment,
+the scripts mechanism is only used for a few of the extensions.
+Future versions of \MPLIB\ may provide more sophisticated methods
+for carrying information around.
+
+The \MKIV\ conversion mechanism uses scripts for graphic inclusion,
+shading and text processing but unfortunately cannot use them for
+more advanced color support.
+
+A nasty complication is that the color spaces in \METAPOST\ don't
+cast, which means that one cannot assign any color to a color
+variables: each colorspace has it's own type of variable.
+
+\starttyping
+color     one ; one := (1,1,0)   ; % correct
+cmykcolor two ; two := (1,0,0,1) ; % correct
+one := two ; % error
+fill fullcircle scaled 1cm withcolor .5[one,two] ; % error
+\stoptyping
+
+In \CONTEXT\ we use constructs like this:
+
+\starttyping
+\startreusableMPgraphic{test}
+  fill fullcircle scaled 1cm withcolor \MPcolor{mycolor} ;
+\stopreusableMPgraphic
+
+\reuseMPgraphic{test}
+\stoptyping
+
+Because \type {withcolor} is clever enough to understand what color
+type it receives, this is ok, but how about:
+
+\starttyping
+\startreusableMPgraphic{test}
+  color c ; c := \MPcolor{mycolor} ;
+  fill fullcircle scaled 1cm withcolor c ;
+\stopreusableMPgraphic
+\stoptyping
+
+Here the color variable only accepts an \RGB\ color and because in
+\CONTEXT\ there is mixed color space support combined with
+automatic colorspace conversions, it doesn't know in advance what type
+it is going to get. By implementing color spaces other than \RGB\
+using special colors (as before) such type mismatches can be avoided.
+
+The two techniques (coding specials in colors and pre|/|postscripts)
+cannot be combined because a script is associated with a path and
+cannot be bound to a variable like \type{c}. So this again is an argument
+for using special colors that remap onto \CMYK\, spot or
+multi|-|tone colors.
+
+Another area of extensions is text. In previous versions of
+\CONTEXT\ the text processing was already isolated: text ended
+up in a separate file and was processed in an separate run. More
+recent versions of \CONTEXT\ use a more abstract model of boxes that
+are preprocessed before a run, which avoids the external run(s). In
+the new approach everything can be kept internal. The conversion
+even permits constructs like:
+
+\starttyping
+for i=1 upto 100 :
+  draw btex oeps etex rotated i ;
+endfor ;
+\stoptyping
+
+but since this construct is kind of obsolete (at least in the library
+version of \METAPOST) it is better to use:
+
+\starttyping
+for i=1 upto 100 :
+  draw textext("cycle " & decimal i) rotated i ;
+endfor ;
+\stoptyping
+
+Internally a trial pass is done so that indeed 100 different texts will
+be drawn. The throughput of texts is so high that in practice one will
+not even notice that this happens.
+
+Dealing with text is yet another example of using \LPEG. The following
+snippet of code sheds some light on how text in graphics is dealt with.
+Actually this is a variation on a previous implementation. That one
+was slightly faster but looked more complex. It was also not robust for
+complex texts defined in macros in a format.
+
+\starttyping
+local P, S, V, Cs = lpeg.P, lpeg.S, lpeg.V, lpeg.Cs
+
+local btex    = P("btex")
+local etex    = P(" etex")
+local vtex    = P("verbatimtex")
+local ttex    = P("textext")
+local gtex    = P("graphictext")
+local spacing = S(" \n\r\t\v")^0
+local dquote  = P('"')
+
+local found = false
+
+local function convert(str)
+  found = true
+  return "textext(\"" .. str .. "\")"
+end
+local function ditto(str)
+  return "\" & ditto & \""
+end
+local function register()
+  found = true
+end
+
+local parser = P {
+    [1] = Cs((V(2)/register + V(3)/convert + 1)^0),
+    [2] = ttex + gtex,
+    [3] = (btex + vtex) * spacing *
+                Cs((dquote/ditto + (1-etex))^0) * etex,
+}
+
+function metapost.check_texts(str)
+  found = false
+  return parser:match(str), found
+end
+\stoptyping
+
+If you are unfamiliar with \LPEG\ it may take a while to see what
+happens here: we replace the text between \type {btex} and \type {etex}
+by a call to \type {textext}, a macro. Special care is given to
+embedded double quotes.
+
+When text is found, the graphic is processed two times. The definition
+of \type {textext} is different for each run. The first run we have:
+
+\starttyping
+vardef textext(expr str) =
+    image (
+        draw unitsquare
+            withprescript "tf"
+            withpostscript str ;
+    )
+enddef ;
+\stoptyping
+
+After the first run the result is not really converted, but just
+the outlines with the \type {tf} prescript are filtered. In the
+loop over the object there is code like:
+
+\starttyping
+local prescript = object.prescript
+if prescript then
+  local special = metapost.specials[prescript]
+  if special then
+    special(object.postscript,object)
+  end
+end
+\stoptyping
+
+Here, \type {metapost} is just the namespace used by the
+converter. The prescript tag \type {tf} triggers a function:
+
+\starttyping
+function metapost.specials.tf(specification,object)
+  tex.sprint(tex.ctxcatcodes,format("\\MPLIBsettext{%s}{%s}",
+    metapost.textext_current,specification))
+  if metapost.textext_current < metapost.textext_last then
+    metapost.textext_current = metapost.textext_current + 1
+  end
+  ...
+end
+\stoptyping
+
+Again, you can forget about the details of this function. Important is
+that there is a call out to \TEX\ that will process the text. Each snippet
+gets the number of the box that holds the content. The macro that is
+called just puts stuff in a box:
+
+\starttyping
+\def\MPLIBsettext#1#2%
+  {\global\setbox#1\hbox{#2}}
+\stoptyping
+
+In the next processing cycle of the \METAPOST\ code, the \type {textext}
+macro does something different :
+
+\starttyping
+vardef textext(expr str) =
+    image (
+        _tt_n_ := _tt_n_ + 1 ;
+        draw unitsquare
+            xscaled _tt_w_[_tt_n_]
+            yscaled (_tt_h_[_tt_n_] + _tt_d_[_tt_n_])
+            withprescript "ts"
+            withpostscript decimal _tt_n_ ;
+    )
+enddef ;
+\stoptyping
+
+This time the by then known dimensions of the box that is used to
+store the snippet are used. These are stored in the \type {_tt_w_},
+\type {_tt_h_} and \type {_tt_d_} arrays. The arrays are defined by
+\LUA\ using information about the boxes, and passed to the library
+before the second run. The result from the second \METAPOST\ run
+is converted, and again the prescript is used as trigger:
+
+\starttyping
+function metapost.specials.ts(specification,object,result)
+    local op = object.path
+    local first, second, fourth  = op[1], op[2], op[4]
+    local tx, ty = first.x_coord      , first.y_coord
+    local sx, sy = second.x_coord - tx, fourth.y_coord - ty
+    local rx, ry = second.y_coord - ty, fourth.x_coord - tx
+    if sx == 0 then sx = 0.00001 end
+    if sy == 0 then sy = 0.00001 end
+    metapost.flushfigure(result)
+    tex.sprint(tex.ctxcatcodes,format(
+        "\\MPLIBgettext{%f}{%f}{%f}{%f}{%f}{%f}{%s}",
+        sx,rx,ry,sy,tx,ty,metapost.textext_current))
+    ...
+end
+\stoptyping
+
+At this point the converter is actually converting the graphic and
+passing \PDF\ literals to \TEX. As soon as it encounters a text,
+it flushes the \PDF\ code collected so far and injects some \TEX\
+code. The \TEX\ macro looks like:
+
+\starttyping
+\def\MPLIBgettext#1#2#3#4#5#6#7%
+  {\ctxlua{metapost.sxsy(\number\wd#7,\number\ht#7,\number\dp#7)}%
+   \pdfliteral{q #1 #2 #3 #4 #5 #6 cm}%
+   \vbox to \zeropoint{\vss\hbox to \zeropoint
+     {\scale[sx=\sx,sy=\sy]{\raise\dp#7\box#7}\hss}}%
+   \pdfliteral{Q}}
+\stoptyping
+
+Because text can be transformed, it needs to be scale back to the right
+dimensions, using both the original box dimensions and the transformation
+of the unitquare associated with the text.
+
+\starttyping
+local factor = 65536*(7200/7227)
+
+function metapost.sxsy(wd,ht,dp) -- helper for text
+  commands.edef("sx",(wd ~= 0 and 1/( wd    /(factor))) or 0)
+  commands.edef("sy",(wd ~= 0 and 1/((ht+dp)/(factor))) or 0)
+end
+\stoptyping
+
+So, in fact there are the following two processing alternatives:
+
+\startitemize[packed]
+\item tex: calls a \LUA\ function that processed the graphic
+\item lua: parse the \METAPOST\ code for texts and decide if two
+      runs are needed
+\stopitemize
+
+Now, if there was no text to be found, the continuation is:
+
+\startitemize[packed]
+\item lua: process the code using the library
+\item lua: convert the resulting graphic (if needed) and check
+      if texts are used
+\stopitemize
+
+Otherwise, the next steps are:
+
+\startitemize[packed]
+\item lua: process the code using the library
+\item lua: parse the resulting graphic for texts (in the postscripts)
+      and signal \TEX\ to process these texts afterwards
+\item tex: process the collected text and put the result in boxes
+\item lua: process the code again using the library but this time let
+      the unitsquare be transformed using the text dimensions
+\item lua: convert the resulting graphic and replace the transformed
+      unitsquare by the boxes with text
+\stopitemize
+
+The processor itself is used in the \MKIV\ graphic function that takes
+care of the multiple passes mentioned before. To give you an idea of
+how it works, here is how the main graphic processing function roughly
+looks.
+
+\starttyping
+local current_format, current_graphic
+
+function metapost.graphic_base_pass(mpsformat,str,preamble)
+    local prepared, done = metapost.check_texts(str)
+    metapost.textext_current = metapost.first_box
+    if done then
+        current_format, current_graphic = mpsformat, prepared
+        metapost.process(mpsformat, {
+            preamble or "",
+            "beginfig(1); ",
+            "_trial_run_ := true ;",
+            prepared,
+            "endfig ;"
+        }, true ) -- true means: trialrun
+        tex.sprint(tex.ctxcatcodes,
+            "\\ctxlua{metapost.graphic_extra_pass()}")
+    else
+        metapost.process(mpsformat, {
+            preamble or "",
+            "beginfig(1); ",
+            "_trial_run_ := false ;",
+            str,
+            "endfig ;"
+        } )
+    end
+end
+
+function metapost.graphic_extra_pass()
+    metapost.textext_current = metapost.first_box
+    metapost.process(current_format, {
+        "beginfig(0); ",
+        "_trial_run_ := false ;",
+        table.concat(metapost.texttextsdata()," ;\n"),
+        current_graphic,
+        "endfig ;"
+    })
+end
+\stoptyping
+
+The box information is generated as follows:
+
+\starttyping
+function metapost.texttextsdata()
+    local t, n = { }, 0
+    for i = metapost.first_box, metapost.last_box do
+        n = n + 1
+        local box_i = tex.box[i]
+        if box_i then
+            t[#t+1] = format(
+                "_tt_w_[%i]:=%f;_tt_h_[%i]:=%f;_tt_d_[%i]:=%f;",
+                n, box_i.width /factor,
+                n, box_i.height/factor,
+                n, box_i.depth /factor
+            )
+        else
+            break
+        end
+    end
+    return t
+end
+\stoptyping
+
+This is a typical example of accessing information available inside
+\TEX\ from \LUA, in this case information about boxes.
+
+The \type {trial_run} flag is used at the \METAPOST\ end, in fact the
+\type {textext} macro looks as follows:
+
+\starttyping
+vardef textext(expr str) =
+    if _trial_run_ :
+        % see first variant above
+    else :
+        % see second variant above
+    fi
+enddef ;
+\stoptyping
+
+This trickery is not new. We used it already in \CONTEXT\ for some
+time, but until now the multiple runs took way more time and from
+the perspective of the user this all looked much more complex.
+
+It may not be that obvious, but: in the case of a trial run (for
+instance when texts are found), after the first processing stage,
+and during the parsing of the result, the commands that typeset the
+content will be printed to \TEX. After processing, the command to do
+an extra pass is printed to \TEX\ also. So, once control is passed
+back to \TEX, at some point \TEX\ itself will pass control back to
+\LUA\ and do the extra pass.
+
+The base function is called in:
+
+\starttyping
+function metapost.graphic(mpsformat,str,preamble)
+    local mpx = metapost.format(mpsformat or "metafun")
+    metapost.graphic_base_pass(mpx,str,preamble)
+end
+\stoptyping
+
+The \type {metapost.format} function is part of \type {mlib-run}.
+It loads the \type{metafun} format, possibly after (re|)|generating it.
+
+Now, admittedly all this looks a bit messy, but in pure \TEX\ macros
+it would be even more so. Sometime in the future, the postponed calls to
+\tex{ctxlua} and the explicit \tex{pdfliteral}s can and will be
+replaced by using direct node generation, but that requires a rewrite
+of the internal \LUATEX\ support for \PDF\ literals.
+
+The snippets are part of the \type {mlib-*} files of \MKIV. These files are
+tagged as experimental and will stay that way for a while yet. This is
+proved by the fact that by now we use a slightly different approach.
+
+Summarizing the impact of \MPLIB\ on extensions, we can conclude that
+some are done better and some more or less the same. There are some
+conceptual problems that prohibit using pre- and postscripts for
+everything (at least currently).
+
+\subject{integrating}
+
+The largest impact of \MPLIB\ is processing graphics at runtime.
+In \MKII\ there are two methods: real runtime processing (each
+graphic triggered a call to \METAPOST) and collective processing
+(between \TEX\ runs). The first method slows down the \TEX\ run,
+the second method generates a whole lot of intermediate \POSTSCRIPT\
+files. In both cases there is a lot of file \IO\ involved.
+
+In \MKIV, the integrated library is capable of processing
+thousands of graphics per second, including conversion. The
+preliminary tests (which involved no extensions) involved graphics
+with 10 random circles drawn with penshapes in random colors, and
+the thoughput was around 2000 such graphics per second on a
+2.3 MHz Core Duo:
+
+\startlinecorrection[blank]
+\hbox to \textwidth{\strut\dorecurse{5}{\startMPcode
+numeric w ; w := \the\textwidth/6 ;
+for k:=1 upto 10 :
+    draw fullcircle
+        scaled uniformdeviate(w)
+        withpen pencircle xscaled (w/20) yscaled (w/40) rotated 30
+        withcolor (red/(k/4)) ;
+endfor ;
+setbounds currentpicture to fullsquare scaled w ;
+\stopMPcode\hss}\unskip}
+\stoplinecorrection
+
+In practice there will be some more overhead involved than in the
+tests. For instance, in \CONTEXT\ information about the current state
+of \TEX\ has to be passed on also: page dimensions, font information,
+typesetting related parameters, preamble code, etc.
+
+The whole \TEX\ interface is written around one process function:
+
+\starttyping
+metapost.graphic(metapost.format("metafun"),"mp code")
+\stoptyping
+
+optionally a preamble can be passed as the third argument.
+This one function is used in several other macros, like:
+
+\starttyping
+\startMPcode                  ... \stopMPcode
+\startMPpage                  ... \stopMPpage
+\startuseMPgraphic     {name} ... \stopuseMPgraphic
+\startreusableMPgraphic{name} ... \stopreusableMPgraphic
+\startuniqueMPgraphic  {name} ... \stopuniqueMPgraphic
+
+\useMPgraphic{name}
+\reuseMPgraphic{name}
+\uniqueMPgraphic{name}
+\stoptyping
+
+The user interface is downward compatible: in \MKIV\ the same
+top-level commands are provided as in \MKII. However, the
+(previously required) configuration macros and flags are obsolete.
+
+This time, the conclusion is that the impact on \CONTEXT\ is immense:
+The code for embedding graphics is very clean, and the running time
+for graphics inclusion is now negligible. Support for text in graphics is
+more natural now, and takes no runtime either (in \MKII\ some
+parsing in \TEX\ takes place, and if needed long lines are split;
+all this takes time).
+
+In the styles that \PRAGMA\ uses internally, there is support for the
+generation of placeholders for missing graphics. These placeholders
+are \METAPOST\ graphics that have some 60 randomly scaled circles with randomized
+colors. The time involved in generating 50 such graphics is (on Hans'
+machine) some 14 seconds, while in \LUATEX\ only half a second is needed.
+
+\startlinecorrection[blank]
+\hbox to \textwidth \bgroup
+\hss\dorecurse{4}{\externalfigure[dummy][width=.2\textwidth]\hss}%
+\egroup
+\stoplinecorrection
+
+Because \LUATEX\ needs more startup time and deals with larger fonts
+resources, \PDFTEX\ is generally faster, but now that we have \MPLIB,
+\LUATEX\ suddenly is the winner.
+
+% We end this article by showing a few graphics. \CONTEXT\ ships with a module
+% that permits tracking of resource usage. Users can add the following line
+% to their document:
+
+% \starttyping
+% \usemodule[timing]
+% \stoptyping
+
+% After that one can use commands like
+
+% \starttyping
+% \ShowNamedUsage{\jobname-luatex-progress}{luastate_bytes}{elapsed_time}
+% \ShowNamedUsage{\jobname-luatex-progress}{dyn_used}{elapsed_time}
+% \ShowNamedUsage{\jobname-luatex-progress}{str_ptr}{elapsed_time}
+% \ShowNamedUsage{\jobname-luatex-progress}{pdf_literal}{elapsed_time}
+% \ShowNamedUsage{\jobname-luatex-progress}{glyph}{elapsed_time}
+% \stoptyping
+
+% In this document, \LUA\ memory usage is as follows. The blue lines
+% represent runtime, on Hans' machine some 3.5 seconds, including
+% startuptime, which clearly shows in the graphic. Keep in mind that
+% garbage collection only happens at certain moment, so \LUA\ memory
+% usage is normally a sawtooth graphic. The horizontal axis reflects the
+% number of pages.
+
+% \startlinecorrection[blank]
+% \ShowNamedUsage{\jobname-luatex-progress}{luastate_bytes}{elapsed_time}
+% \stoplinecorrection
+
+% Dynamic memory usage of \TEX\ grows a bit because at the \TEX\ end we need
+% to store data as well.
+
+% \startlinecorrection[blank]
+% \ShowNamedUsage{\jobname-luatex-progress}{dyn_used}{elapsed_time}
+% \stoplinecorrection
+
+% Currently we use \type {\pdfliteral}, which means that all
+% literals go through \TEX's tokenizer and string pool. With large
+% graphics this can be a real memory hog.
+
+% Unfortunately not all this memory is freed, so eventually Hartmut
+% Henkel (the third member of the \LUATEX\ team) will reimplement
+% this part of the backend.
+
+% \startlinecorrection[blank]
+% \ShowNamedUsage{\jobname-luatex-progress}{str_ptr}{elapsed_time}
+% \stoplinecorrection
+
+% Just to complete this picture, we show the usage of literals next. Although
+% the converter collects as much data as possible before flushing, we see
+% some peaks.
+
+% \startlinecorrection[blank]
+% \ShowNamedUsage{\jobname-luatex-progress}{pdf_literal}{elapsed_time}
+% \stoplinecorrection
+
+% Compare this to the glyph usage. Indeed: the more graphics we use, the
+% less glyphs we encounter.
+
+% \startlinecorrection[blank]
+% \ShowNamedUsage{\jobname-luatex-progress}{glyph}{elapsed_time}
+% \stoplinecorrection
+
+% Of course these graphics were integrated, generated and converted
+% using \MPLIB.
+
+\stopcomponent

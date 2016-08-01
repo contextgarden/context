@@ -1,0 +1,64 @@
+% language=uk
+
+\startcomponent mk-titlepage
+
+\environment mk-environment
+
+\setupbackgrounds[page][background=page]
+
+\startstandardmakeup
+
+\definefont[MyFont][Normal*default]
+
+\setlayerframed
+  [page]
+  [preset=lefttop]
+  [frame=off,
+   width=\paperwidth,
+   height=\paperheight,
+   backgroundoffset=5mm,
+   background=color,
+   backgroundcolor=mkcolor]
+  {}
+
+\setlayerframed
+  [page]
+  [preset=lefttop,offset=7.5mm]
+  [offset=overlay,frame=off,foregroundcolor=white]
+  {\scale[height=.15\paperwidth]{\MyFont MKII}}
+
+\setlayerframed
+  [page]
+  [preset=rightbottom,offset=7.5mm]
+  [offset=overlay,frame=off,foregroundcolor=white]
+  {\scale[height=.15\paperwidth]{\MyFont MKIV}}
+
+\setlayerframed
+  [page]
+  [preset=righttop,offset=7.5mm,rotation=90]
+  [offset=overlay,frame=off,foregroundcolor=white]
+  {\scale[height=.10\paperwidth]{\MyFont CONTEXT}}
+
+\setlayerframed
+  [page]
+  [preset=leftbottom,offset=7.5mm,rotation=90]
+  [offset=overlay,frame=off,foregroundcolor=white]
+  {\scale[height=.10\paperwidth]{\MyFont CONTEXT}}
+
+\setlayerframed
+  [page]
+  [preset=rightbottom,offset=7.5mm,y=4cm]
+  [offset=overlay,frame=off]
+  {\scale[height=.10\paperwidth]{\MyFont
+     \framed
+       [align=normal,offset=0pt,frame=off,foregroundcolor=white]
+       {The history of lua\TeX\par
+        2006--2009 / v 0.50}}}
+
+% \tightlayer[page]
+
+\stopstandardmakeup
+
+\setupbackgrounds[page][background=]
+
+\stopcomponent

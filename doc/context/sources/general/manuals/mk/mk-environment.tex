@@ -1,0 +1,209 @@
+% language=uk
+
+\startenvironment mk-environment
+
+\enablemode[dynamic-arabic] % to be checked, we loose colors
+
+\usemodule[abr-02]
+
+\usemodule[timing]
+
+\useMPlibrary[dum]
+
+\dontcomplain
+
+\logo [METAPOST] {MetaPost}
+
+\setupsorting[logo][style=\sc]
+
+\startsetups ShowCollect
+    \blank
+    \flushtokens[demo]
+    \blank
+    \showtokens[demo]
+    \blank
+\stopsetups
+
+\startsetups CollapseCollectA
+    \blank
+    \testtokens[demo]
+    \flushtokens[demo]
+    \blank
+    \showtokens[demo]
+    \blank
+\stopsetups
+
+\startsetups CollapseCollectB
+    \blank
+    \flushtokens[demo]
+    \blank
+    \testtokens[demo]
+    \showtokens[demo]
+    \blank
+\stopsetups
+
+% \startmode[atpragma]
+%     \usetypescriptfile[type-ghz]
+%     \usetypescript[optima-nova-os][texnansi]
+%     \setupbodyfont[optima-os,sans,12pt]
+% \stopmode
+
+% \startnotmode[atpragma]
+%     \usetypescript[palatino][ec]
+%     \setupbodyfont[12pt,palatino]
+% \stopnotmode
+
+% \starttypescript [sans] [optima,optima-nova] [afm]
+%     \definefontsynonym [OptimaLT]                  [lte50019] [encoding=\typescriptthree,features=complete]
+%     \definefontsynonym [OptimaLT-Italic]           [lte52401] [encoding=\typescriptthree,features=complete]
+%     \definefontsynonym [OptimaLT-Bold]             [lte50021] [encoding=\typescriptthree,features=complete]
+%     \definefontsynonym [OptimaLT-BoldItalic]       [lte54379] [encoding=\typescriptthree,features=complete]
+%     \definefontsynonym [OptimaLT-Medium]           [lte53505] [encoding=\typescriptthree,features=complete]
+%     \definefontsynonym [OptimaLT-MediumItalic]     [lte53506] [encoding=\typescriptthree,features=complete]
+%     \definefontsynonym [OptimaLT-DemiBold]         [lte53507] [encoding=\typescriptthree,features=complete]
+%     \definefontsynonym [OptimaLT-DemiBoldItalic]   [lte53508] [encoding=\typescriptthree,features=complete]
+%     \definefontsynonym [OptimaLT-Black]            [lte53509] [encoding=\typescriptthree,features=complete]
+%     \definefontsynonym [OptimaLT-BlackItalic]      [lte53510] [encoding=\typescriptthree,features=complete]
+%     \definefontsynonym [OptimaLT-ExtraBlack]       [lte53511] [encoding=\typescriptthree,features=complete]
+%     \definefontsynonym [OptimaLT-ExtraBlackItalic] [lte53512] [encoding=\typescriptthree,features=complete]
+% \stoptypescript
+
+% \starttypescript [sans] [optima-nova-os] [name]
+%     \definefontsynonym [Sans]            [OptimaNova-RegularOsF]    [features=complete]
+%     \definefontsynonym [SansItalic]      [OptimaNova-ItalicOsF]     [features=complete]
+%     \definefontsynonym [SansBold]        [OptimaNova-BoldOsF]       [features=complete]
+%     \definefontsynonym [SansBoldItalic]  [OptimaNova-BoldItalicOsF] [features=complete]
+%     \definefontsynonym [SansSlanted]     [OptimaNova-ItalicOsF]     [features=complete]
+%     \definefontsynonym [SansBoldSlanted] [OptimaNova-BoldItalicOsF] [features=complete]
+%     \definefontsynonym [SansCaps]        [OptimaNova-RegularSC]     [features=complete]
+% \stoptypescript
+
+\starttypescript[optima-nova-os]
+    \definetypeface[optima-os][ss][sans][optima-nova-os] [default][features=complete]
+    \definetypeface[optima-os][rm][sans][optima-nova-os] [default][features=complete]
+    \definetypeface[optima-os][tt][mono][latin-modern]   [default][features=default,rscale=1.1]
+    \definetypeface[optima-os][mm][math][latin-modern]   [default][features=default,rscale=1.1]
+    \quittypescriptscanning
+\stoptypescript
+
+% \startmode[atpragma]
+%     \usetypescriptfile[type-ghz]
+%     \usetypescript[optima-nova-os][afm]
+%     \setupbodyfont[optima-os,sans,12pt]
+% \stopmode
+
+\startmode[atpragma]
+    \usetypescriptfile[type-hgz]
+    \usetypescript[optima-nova-os] % [afm]
+    \setupbodyfont[optima-os,sans,12pt]
+\stopmode
+
+\startnotmode[atpragma]
+    \startsetups normalbodyfont
+        \setupbodyfont[12pt,palatino]
+    \stopsetups
+\stopnotmode
+
+\setups[normalbodyfont]
+
+\definelayer
+  [page]
+  [width=\paperwidth,
+   height=\paperheight]
+
+\setuplayout
+  [location=middle,
+   marking=on,
+   width=middle,
+   height=middle,
+   footer=1.5cm,
+   header=1.5cm,
+   topspace=1.5cm]
+
+\startmode[book]
+
+%     \definepapersize
+%       [mine]
+%       [width=21cm,
+%        height=24cm]
+
+%     \setuppapersize
+%       [mine]
+%       [mine] % [oversized]
+
+%     \setuplayout % width = 15cm
+%       [topspace=1.25cm,
+%        backspace=2.5cm,
+%        cutspace=3.5cm]
+
+%     \setuplayout
+%         [scale=.80]
+
+    \setuplayout
+      [marking=on,
+       scale=\luaexpr{24/28}]
+
+\stopmode
+
+\stopmode
+
+\setupcolors
+  [state=start]
+
+\setupwhitespace
+  [big]
+
+\setuplist[chapter,section][width=5em]
+
+\definecolor[mktransparentred]   [r=.8,a=1,t=.5]
+\definecolor[mktransparentgreen] [g=.8,a=1,t=.5]
+\definecolor[mktransparentblue]  [b=.8,a=1,t=.5]
+\definecolor[mktransparentyellow][r=.8,g=.8,a=1,t=.5]
+\definecolor[mktransparentgray]  [s=.8,a=1,t=.5]
+
+\definecolor[mkcolor]            [r=.8]
+\definecolor[mkred]              [r=.8]
+\definecolor[mkgreen]            [g=.8]
+\definecolor[mkblue]             [b=.8]
+\definecolor[mktransparent]      [mktransparentred]
+
+\setuptype
+  [color=mkcolor]
+
+\setuptyping
+  [color=mkcolor]
+
+\definestartstop
+  [notabene]
+  [color=mkcolor]
+
+\setupitemgroup
+  [itemize]
+  [each]
+  [color=mkcolor,headcolor=mkcolor]
+
+\setuppagenumbering
+  [alternative=doublesided,
+   location=]
+
+\setupsection
+  [chapter]
+  [conversion=R]
+
+\setupsection
+  [section]
+  [conversion=R]
+
+\setupcaptions
+  [conversion=R]
+
+\setupfootertexts
+  []
+  [{\getmarking[chapter]\quad\pagenumber}]
+  [{\pagenumber\quad\getmarking[chapter]}]
+  []
+
+\setuphead[chapter][style=\bfc,color=mkcolor]
+\setuphead[section][style=\bfa,color=mkcolor]
+
+\stopenvironment

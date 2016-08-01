@@ -1,0 +1,30 @@
+\setupbodyfont[dejavu]
+
+\starttext
+
+\dontcomplain
+
+\startluacode
+    if jit then
+        jit.on()
+        jit.off()
+    end
+\stopluacode
+
+\startluacode
+    statistics.starttiming()
+\stopluacode
+
+\dorecurse {1000} {
+    {\bf \red   \input tufte } \blank
+    {\it \green \input tufte } \blank
+    {\tf \blue  \input tufte } \page
+}
+
+\startluacode
+    statistics.stoptiming()
+    context(statistics.elapsedtime())
+\stopluacode
+
+\stoptext
+

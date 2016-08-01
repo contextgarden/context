@@ -1,0 +1,58 @@
+\startcomponent ma-cb-en-framedtexts
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Outlined paragraphs]
+
+\index{outline+paragraph}
+
+\Command{\tex{startframedtext}}
+\Command{\tex{setupframedtext}}
+
+Complete paragraphs can be outlined with:
+
+\shortsetup{startframedtext}
+
+\startbuffer
+\definefloat[intermezzo]
+\setupframedtexts
+    [width=.8\makeupwidth,
+     background=color,
+     backgroundcolor=gray,
+     corner=round,
+     framecolor=blue,
+     rulethickness=2pt]
+
+\placeintermezzo[here][block:bridge]{An intermezzo.}
+\startframedtext
+  It was essential for Hasselt to have a bridge across the Zwarte
+  Water river. The bishop of Utrecht gave Hasselt his consent in
+  1486.
+  \blank
+  Other cities in the neighbourhood of Hasselt were afraid of the
+  toll money to be paid when crossing this bridge so they
+  prevented the construction for many years.
+\stopframedtext
+\stopbuffer
+
+Let's give an example:
+
+\typebuffer
+
+This example also illustrates the command \type{\definefloat}. You can find more
+information on this command in \in{paragraph}[floatingblocks]. The \type{\blank}
+is necessary to enforce a blank line.
+
+\start
+\getbuffer
+\stop
+
+The outlining can be set up with:
+
+\shortsetup{setupframedtexts}
+
+\stopchapter
+
+\stopcomponent

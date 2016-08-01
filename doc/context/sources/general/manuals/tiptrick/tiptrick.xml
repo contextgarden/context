@@ -1,0 +1,53 @@
+<?xml version='1.0'?>
+
+<!-- author: Hans Hagen - Pragma ADE - www.pragma-ade.com -->
+
+<!-- feel free to submit more tips -->
+
+<tips xmlns="www.pragma-ade.com/schemas/tip.rng">
+
+    <tip>
+        <title>Generating Formats</title>
+        <remark>for all languages:</remark>
+        <command>context --make --all</command>
+        <remark>only english interface:</remark>
+        <command>context --make en</command>
+        <remark>for plain tex:</remark>
+        <command>mtxrun --script plain --make</command>
+        <!-- reference>mtexexec.pdf</reference -->
+    </tip>
+
+    <tip>
+        <title>Updating</title>
+        <remark>when installed from the wiki:</remark>
+        <command>..../first-setup(.cmd)</command>
+        <remark>when downloaded from the website:</remark>
+        <command>cd ..../tex/texmf-context</command>
+        <command>wget http://www.pragma-ade.com/context/current/cont-tmf.zip</command>
+        <command>unzip cont-tmf.zip</command>
+        <command>mtxrun --generate</command>
+        <!-- reference>minstall.pdf</reference -->
+    </tip>
+
+    <tip>
+        <title>Generating Command Lists</title>
+        <remark>quick reference document of english and dutch commands:</remark>
+        <command>context --interface=nl --global --result=setup-nl x-set-12.mkiv</command>
+        <command>context --interface=en --global --result=setup-en x-set-12.mkiv</command>
+    </tip>
+
+    <tip>
+        <title>Module Documentation</title>
+        <remark>pretty printed, annotated module documentation:</remark>
+        <command>mtxrun --script modules syst-aux.mkiv</command>
+    </tip>
+
+    <tip>
+        <title>Listings</title>
+        <remark>verbatim listings of (ascii) files:</remark>
+        <command>context --extra=listing --bodyfont=8pt --scite somefile.tex</command>
+        <command>context --extra=listing --bodyfont=8pt --scite somefile.lua</command>
+        <command>context --extra=listing --bodyfont=8pt --scite somefile.xml</command>
+    </tip>
+
+</tips>

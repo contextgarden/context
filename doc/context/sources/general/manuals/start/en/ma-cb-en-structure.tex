@@ -1,0 +1,133 @@
+\startcomponent ma-cb-en-structure
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Defining a document]
+
+Every document is started with \type{\starttext} and closed with
+\type{\stoptext}. All textual input is placed between these two commands and
+\CONTEXT\ will only process that information.
+
+Setup information is placed in the set up area just before \type{\starttext}.
+
+\setuptyping
+    [escape=yes]
+
+\definestartstop
+    [comment][style={\rm}]
+
+\starttyping
+
+\setupbodyfont[12pt]              /BTEX \comment{setuparea of document} /ETEX
+
+\starttext
+This is a one line document.      /BTEX \comment{your text} /ETEX
+\stoptext
+\stoptyping
+
+The definition of a (very simple) book could look something like this:
+
+\startbuffer
+\starttext
+
+\startstandardmakeup
+  \midaligned{From Hasselt to America}
+  \midaligned{by}
+  \midaligned{J. Jonker and C. van Marle}
+\stopstandardmakeup
+
+\title{Foreword}
+
+\chapter{Introduction}
+
+\chapter{The Rensselaer family}
+
+\chapter{The Lansing family}
+
+\chapter{The Cuyler family}
+
+\chapter{Appendix: Photos}
+
+\stoptext
+\stopbuffer
+
+\typebuffer
+
+\CONTEXT\ comes with a predefined overall structure in which the document is
+divided into four main document divisions:\footnote{Here we try to avoid the
+word {\em section}.}
+
+\startitemize[n,packed]
+\item front matter
+\item body matter
+\item appendices
+\item back matter
+\stopitemize
+
+The document divisions are defined with:
+
+\starttyping
+\startfrontmatter ... \stopfrontmatter
+\startbodymatter  ... \stopbodymatter
+\startappendices  ... \stopappendices
+\startbackmatter  ... \stopbackmatter
+\stoptyping
+
+The chapters in your book can be divided over these divisions.
+
+\startbuffer
+\starttext
+
+\startstandardmakeup
+  \midaligned{From Hasselt to America}
+  \midaligned{by}
+  \midaligned{J. Jonker and C. van Marle}
+\stopstandardmakeup
+
+\startfrontmatter
+
+    \title{Preface}
+
+    \chapter{Introduction}
+
+\stopfrontmatter
+
+\startbodymatter
+
+    \chapter{The Rensselaer family}
+
+    \chapter{The Lansing family}
+
+    \chapter{The Cuyler family}
+
+\stopbodymatter
+
+\startappendices
+
+    \chapter{Photos}
+
+\stopappendices
+
+\stoptext
+\stopbuffer
+
+\typebuffer
+
+In the front matter as well as back matter the command \type{\chapter}
+produces an un-numbered header in the table of contents. The front matter is mostly
+used for the table of contents, the list of figures and tables, the preface, the
+acknowledgements etc. It often comes with a roman page numbering.
+
+The appendices division is used for (indeed) appendices. Headers may be typeset in
+a different way; for example, \type{\chapter} may be numbered alphabetically.
+
+The style of each document division can be set up with:
+
+\shortsetup{setupsectionblock}
+
+\stopchapter
+
+\stopcomponent
+

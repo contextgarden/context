@@ -1,0 +1,361 @@
+% language=uk
+
+\startcomponent hybrid-tags
+
+\environment hybrid-environment
+
+\startchapter[title={Tagged PDF}]
+
+\startsection [title={Introduction}]
+
+Occasionally users asked me if \CONTEXT\ can produce tagged \PDF\ and the answer
+to that has been: I'll implement it when I need it. However, users tell me that
+publishers more and more demand tagged \PDF\ files, although one might wonder
+what for, except maybe for accessibility. Another reason for not having spent too
+much time on it before is that the specification was not that inviting.
+
+At any rate, when I saw Ross Moore\footnote {He is often exploring the boundaries
+of \PDF, \UNICODE\ and evolving techniques related to math publishing so you'd
+best not miss his presentations when you are around.} presenting tagged math at
+TUG 2010, I decided to look up the spec once more and see if I could get into the
+mood to implement tagging. Before I started it was already clear that there were
+a couple of boundary conditions:
+
+\startitemize[packed]
+\startitem Tagging should not put a burden on the user but users
+           should be able to tag themselves. \stopitem
+\startitem Tagging should not slow down a run too much; this is
+           no big deal as one can postpone tagging till the last
+           run. \stopitem
+\startitem Tagging should in no way interfere with typesetting, so
+           no funny nodes should be injected. \stopitem
+\startitem Tagging should not make the code
+           look worse, neither the document source, nor the low
+           level \CONTEXT\ code. \stopitem
+\stopitemize
+
+And of course implementing it should not take more than a few days' work,
+certainly not in an exceptionally hot summer.
+
+You can \quote {google} for one of Ross's documents (like \type
+{DML_002-2009-1_12.pdf}) to see how a document source looks at his end using a
+special version of \PDFTEX. However, the version on my machine didn't support the
+shown primitives, so I could not see what was happening under the hood.
+Unfortunately it is quite hard to find a properly tagged document so we have only
+the reference manual as starting point. As the \PDFTEX\ approach didn't look that
+pleasing anyway, I just started from scratch.
+
+Tags can help Acrobat Reader when reading out the text aloud. But you cannot
+browse the structure in the no|-|cost version of Acrobat and as not all users
+have the professional version of Acrobat, the fact that a document has structure
+can go unnoticed. Add to that the fact that the overhead in terms of bytes is
+quite large as many more objects are generated, and you will understand why this
+feature is not enabled by default.
+
+\stopsection
+
+\startsection [title={Implementation}]
+
+So, what does tagging boil down to? We can best look at how tagged information is
+shown in Acrobat. \in {Figure} [fig:tagged-list] shows the content tree that has
+been added (automatically) to a document while \in {figure} [fig:tagged-order]
+shows a different view.
+
+\placefigure
+  [page]
+  [fig:tagged-list]
+  {A tag list in Acrobat.}
+  {\externalfigure[tagged-001.png][maxheight=\textheight]}
+
+\placefigure
+  [here]
+  [fig:tagged-order]
+  {Acrobat showing the tag order.}
+  {\externalfigure[tagged-004.png][maxwidth=\textwidth]}
+
+In order to get that far, we have to do the following:
+
+\startitemize[packed]
+\startitem Carry information with (typeset) text. \stopitem
+\startitem Analyse this information when shipping out pages. \stopitem
+\startitem Add a structure tree to the page. \stopitem
+\startitem Add relevant information to the document. \stopitem
+\stopitemize
+
+That first activity is rather independent of the other three and we can use that
+information for other purposes as well, like identifying where we are in the
+document. We carry the information around using attributes. The last three
+activities took a bit of experimenting mostly using the \quotation {Example of
+Logical Structure} from the \PDF\ standard 32000-1:2008.
+
+This resulted in a tagging framework that uses explicit tags, meaning the user is
+responsible for the tagging:
+
+\starttyping
+\setupstructure[state=start,method=none]
+
+\starttext
+
+\startelement[document]
+
+    \startelement[chapter]
+        \startelement[p] \input davis \stopelement \par
+    \stopelement
+
+    \startelement[chapter]
+        \startelement[p] \input zapf \stopelement \par
+        \startelement[whatever]
+            \startelement[p] \input tufte \stopelement \par
+            \startelement[p] \input knuth \stopelement \par
+        \stopelement
+    \stopelement
+
+    \startelement[chapter]
+        oeps
+        \startelement[p] \input ward \stopelement \par
+    \stopelement
+
+\stopelement
+
+\stoptext
+\stoptyping
+
+Since this is not much fun, we also provide an automated
+variant. In the previous example we explicitly turned off automated
+tagging by setting \type {method} to \type {none}. By default it has
+the value \type {auto}.
+
+\starttyping
+\setupstructure[state=start] % default is method=auto
+
+\definedescription[whatever]
+
+\starttext
+
+\startfrontmatter
+    \startchapter[title=One]
+        \startparagraph \input tufte \stopparagraph
+        \startitemize
+            \startitem first \stopitem
+            \startitem second \stopitem
+        \stopitemize
+        \startparagraph \input ward \stopparagraph
+        \startwhatever {Herman Zapf} \input zapf \stopwhatever
+    \stopchapter
+
+\stopfrontmatter
+
+\startbodymatter
+    ..................
+\stoptyping
+
+If you use commands like \type {\chapter} you will not get the desired results.
+Of course these can be supported but there is no real reason for it, as in \MKIV\
+we advise using the \type {start}|-|\type {stop} variant.
+
+It will be clear that this kind of automated tagging brings with it a couple of
+extra commands deep down in \CONTEXT\ and there (of course) we use symbolic names
+for tags, so that one can overload the built|-|in mapping.
+
+\starttyping
+\setuptaglabeltext[en][document=text]
+\stoptyping
+
+As with other features inspired by viewer functionality, the implementation of
+tagging is independent of the backend. For instance, we can tag a document and
+access the tagging information at the \TEX\ end. The backend driver code maps
+tags to relevant \PDF\ constructs. First of all, we just map the tags used at the
+\CONTEXT\ end onto themselves. But, as validators expect certain names, we use
+the \PDF\ rolemap feature to map them to (less interesting) names. The next list
+shows the currently used internal names, with the \PDF\ ones between parentheses.
+
+\blank \startalignment[flushleft,nothyphenated]
+\startluacode
+local done = false
+for k, v in table.sortedpairs(structures.tags.properties) do
+    if v.pdf then
+        if done then
+            context(", %s (%s)",k,v.pdf)
+        else
+            context("%s (%s)",k,v.pdf)
+            done = true
+        end
+    end
+end
+context(".")
+\stopluacode \par \stopalignment \blank
+
+So, the internal ones show up in the tag trees as shown in the examples but
+applications might use the rolemap which normally has less detail.
+
+Because we keep track of where we are, we can also use that information for
+making decisions.
+
+\starttyping
+\doifinelementelse{structure:section}            {yes} {no}
+\doifinelementelse{structure:chapter}            {yes} {no}
+\doifinelementelse{division:*-structure:chapter} {yes} {no}
+\doifinelementelse{division:*-structure:*}       {yes} {no}
+\stoptyping
+
+As shown, you can use \type {*} as a wildcard. The elements are separated by
+\type {-}. If you don't know what tags are used, you can always enable the tag
+related tracker:
+
+\starttyping
+\enabletrackers[structure.tags]
+\stoptyping
+
+This tracker reports the identified element chains to the console
+and log.
+
+\stopsection
+
+\startsection[title={Special care}]
+
+Of course there are a few complications. First of all the tagging model sort of
+contradicts the concept of a nicely typeset document where structure and outcome
+are not always related. Most \TEX\ users are aware of the fact that \TEX\ does
+not have space characters and does a great job on kerning and hyphenation. The
+tagging machinery on the other hand uses a rather dumb model of strings separated
+by spaces. \footnote {The search engine on the other hand is rather clever on
+recognizing words.} But we can trick \TEX\ into providing the right information
+to the backend so that words get nicely separated. The non|-|optimized function
+that does this looks as follows:
+
+\starttyping
+function injectspaces(head)
+    local p
+    for n in node.traverse(head) do
+        local id = n.id
+        if id == node.id("glue") then
+            if p and p.id == node.id("glyph") then
+                local g = node.copy(p)
+                local s = node.copy(n.spec)
+                g.char, n.spec = 32, s
+                p.next, g.prev = g, p
+                g.next, n.prev = n, g
+                s.width = s.width - g.width
+            end
+        elseif id == node.id("hlist") or id == node.id("vlist") then
+            injectspaces(n.list,attribute)
+        end
+        p = n
+    end
+end
+\stoptyping
+
+Here we squeeze in a space (given that it is in the font which it normally is
+when you use \CONTEXT) and make a compensation in the glue. Given that your page
+sits in box 255, you can do this just before shipping the page out:
+
+\starttyping
+injectspaces(tex.box[255].list)
+\stoptyping
+
+Then there are the so|-|called suspects: things on the page that are not related
+to structure at all. One is supposed to tag these specially so that the
+built|-|in reading equipment is not confused. So far we could get around them
+simply because they don't get tagged at all and therefore are not seen anyway.
+This might well be enough of a precaution.
+
+Of course we need to deal with mathematics. Fortunately the presentation \MATHML\
+model is rather close to \TEX\ and so we can map onto that. After all we don't
+need to care too much about back|-|mapping here. The currently present code is
+rather experimental and might get extended or thrown out in favour of inline
+\MATHML. \in {Figure} [fig:tagged-math] demonstrates that a first approach does
+not even look that bad. In future versions we might deal with table|-|like math
+constructs, like matrices.
+
+\placefigure
+  [here]
+  [fig:tagged-math]
+  {Experimental math tagging.}
+  {\externalfigure[tagged-005.png][maxwidth=\textwidth]}
+
+This is a typical case where more energy has to be spent on driving the voice of
+Acrobat but I will do that when we find a good reason.
+
+As mentioned, it will take a while before all relevant constructs in \CONTEXT\
+support tagging, but support is already quite complete. Some screen dumps are
+included as examples at the end.
+
+\stopsection
+
+\startsection[title={Conclusion}]
+
+Surprisingly, implementing all this didn't take that much work. Of course
+detailed automated structure support from the complete \CONTEXT\ kernel will take
+some time to get completed, but that will be done on demand and when we run into
+missing bits and pieces. It's still not decided to what extent alternate
+representations and alternate texts will be supported. Experiments with the
+reading|-|aloud machinery are not satisfying yet but maybe it just can't get any
+better. It would be nice if we could get some tags being announced without
+overloading the content, that is: without using ugly hacks.
+
+And of course, code like this is never really finished if only because \PDF\
+evolves. Also, it is yet another nice test case and torture test for \LUATEX\ and
+it helps us to find buglets and oversights.
+
+\stopsection
+
+\startsection [title=Some more examples]
+
+In \CONTEXT\ we have user definable verbatim environments. As with other user
+definable environments we show the specific instance as comment next to the
+structure component. See \in {figure} [fig:tagged-verbatim]. Some examples of
+tables are shown in \in {figure} [fig:tagged-tables]. Future versions will have a
+bit more structure. Tables of contents (see \in {figure} [fig:tagged-contents])
+and registers (see \in {figure} [fig:tagged-register]) are also tagged. (One
+might wonder what the use is of this.) In \in {figure} [fig:tagged-floats] we see
+some examples of floats. External images as well as \METAPOST\ graphics are
+tagged as such. This example also shows an example of a user environment, in this
+case:
+
+\starttyping
+\definestartstop[notabene][style=\bf]
+\stoptyping
+
+In a similar fashion, footnotes (\in {figure} [fig:tagged-footnotes]) end up in
+the structure tree, but in the typeset document they move around (normally
+forward when there is no room).
+
+\placefigure
+  [here]
+  [fig:tagged-verbatim]
+  {Verbatim, including dedicated instances.}
+  {\externalfigure[tagged-006.png][maxwidth=\textwidth]}
+
+\placefigure
+  [here]
+  [fig:tagged-tables]
+  {Natural tables as well as the tabulate mechanism is supported.}
+  {\externalfigure[tagged-008.png][maxwidth=\textwidth]}
+
+\placefigure
+  [here]
+  [fig:tagged-contents]
+  {Tables of content with specific entries tagged.}
+  {\externalfigure[tagged-007.png][maxwidth=\textwidth]}
+
+\placefigure
+  [here]
+  [fig:tagged-register]
+  {A detailed view of registered is provided.}
+  {\externalfigure[tagged-009.png][maxwidth=\textwidth]}
+
+\placefigure
+  [here]
+  [fig:tagged-floats]
+  {Floats tags end up in text stream. Watch the user defined construct.}
+  {\externalfigure[tagged-011.png][maxwidth=\textwidth]}
+
+\placefigure
+  [here]
+  [fig:tagged-footnotes]
+  {Footnotes are shown at the place in the input (flow).}
+  {\externalfigure[tagged-010.png][maxwidth=\textwidth]}
+
+\stopsection
+
+\stopcomponent

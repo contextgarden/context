@@ -1,0 +1,462 @@
+% language=uk
+
+\startcomponent mk-nodes
+
+\environment mk-environment
+
+\chapter {Nodes and attributes}
+
+\subject{introduction}
+
+Here we will tell a bit about the development of node access in \LUATEX. We
+will also introduce attributes, a feature closely related to nodes. We assume
+that you are somewhat familiar with \TEX's nodes: glyphs, kerns, glue, penalties,
+whatsits and friends.
+
+\subject{tables}
+
+Access to node lists has been implemented rather early in the development because
+we needed it to fulfil the objectives of the Oriental \TEX\ project.  The first
+implementation used nested tables, indexed by number. In that approach, the first
+entry in each node indicated the type in string format. At that time a horizontal
+list looked as follows:
+
+\starttyping
+list = {
+    [1] = "hlist",
+    [2] = 0,
+    ...
+    [8] = {
+        [1] = {
+            [1] = "glyph",
+            ...
+        },
+        [2] = {
+            ...
+        }
+}
+\stoptyping
+
+Processing such lists is rather convenient since we can use the normal table
+iterators. Because in practice only a few entries of a node are accessed, working
+with numbers is no real problem: in slot~1 we have the type, en in the
+case of a horizontal or vertical list, we know that slot~8 is either empty or
+a table. Looping over the list is done with:
+
+\starttyping
+for i, node in ipairs(list) do
+    if node[1] == "glyph" then
+        list[i][5] = string.byte(string.upper(string.char(node[5])))
+    end
+end
+\stoptyping
+
+Node processing code hooks into the box packagers and paragraph builder and
+a few more places. This means that when using the table approach a lot of
+callbacks take place where \TEX\ has to convert to and from \LUA. Apart from
+processing time, we also have to deal with garbage collection then and on an older
+machine with insufficient memory interesting bottlenecks show up. Therefore some
+following optimizations were implemented at the \TEX\ end of the game.
+
+Side note concerning speed: when memory of processing speed is low, runtime can
+increase five to tenfold compared to \PDFTEX\ when one does intensive node
+manipulations. This is due to garbage collection at the \LUA\ end and memory
+(de)allocation at the \TEX\ end. There is not much we can do about that. Interfacing
+has a price and hardware is more powerful than when \TEX\ was written. Processing
+the \TEX\ book using no callbacks is not that much slower than using a traditional
+\TEX\ engine. However, nowadays fonts are more extensive, demands for special
+features more pressing and that comes at a price.
+
+When the list is not changed, the callback function can return the value \type
+{true}. This signals \TEX\ that it can keep the original list. When the list is
+empty, the callback function can return the value \type {false}. This signals
+\TEX\ that the list can be discarded.
+
+In order to minimize conversions and redundant processing, nested lists were
+not passed as table but as a reference. One could expand such a list when
+needed. For instance, when one hooks the same function in the \type
+{hpack_filter} and \type {pre_linebreak_filter} callbacks, this way one can be
+pretty sure that each node is only processed once. Boxed material that is part
+of the paragraph stream first enters the box packers and then already is
+processed before it enters the paragraph callback. Of course one can decide the
+expand the referred sublist and process it again. Keep in mind that we're still
+talking of a table approach, but we're slowly moving away from big conversions.
+
+In principle one can insert and delete nodes in such a list but given that
+the average length of a list representing a page is around 4000, you can
+imagine that moving around a large amount of data is not that efficient. In order
+to cope with this, we experimented a lot and came to solutions which will be
+discussed later on.
+
+At the \LUA\ end some tricks were used to avoid the mentioned insertion and
+deletion penalty. When a node was deleted, we simply set its value to \type
+{false}. Deleting all glyphs then became:
+
+\starttyping
+for i, node in ipairs(list) do
+    if node[1] == "glyph" then
+        list[i] = false
+    end
+end
+\stoptyping
+
+When \TEX\ converted a \LUA\ table back into its internal representation, it
+ignored such false nodes.
+
+For insertion a dummy node was introduced at the \LUA\ end. The next code
+duplicates the glyphs.
+
+\starttyping
+for i, node in ipairs(list) do
+    if node[1] == "glyph" then
+        list[i] = { 'inline', 0, nil, { node, node } }
+    end
+end
+\stoptyping
+
+Just before we passed the resulting list back to \TEX\ we collapsed these
+inline pseudo nodes. This was a rather fast operation.
+
+So far so good. But then we introduced attributes and keeping track of them
+as well as processing them takes quite some processing power. Nodes with
+attributes then looked like:
+
+\starttyping
+someglyph = {
+    [1] = "glyph",               -- type
+    [2] = 0,                     -- subtype
+    [3] = { [1] = 5, [4] = 10 }, -- attributes
+    [4] = 88,                    -- slot
+    [5] = 32                     -- font
+}
+\stoptyping
+
+Constructing attribute tables for each node is costly in terms of memory usage
+and processing time and we found out that the garbage collector was becoming
+a bottleneck, especially when resources are thin. We will go into more detail
+about attributes elsewhere.
+
+\subject{lists}
+
+At the same time that we discussed these issues, new Dutch word lists (adapted
+spelling) were published and we started wondering if we could use such lists
+directly for hyphenation purposes instead of relying on traditional patterns. Here
+the first observation was that handling these really huge lists is no problem at
+all. Okay, it costs some memory but we only need to load one of maybe a few of
+these lists. Hyphenating a paragraph using tables with hyphenated words and
+processing the paragraph related node list is not only fast, it also gives us the
+opportunity to cross font boundaries. Of course there are kerns and ligatures to
+deal with but this is no big deal. At least it can be an alternative or addendum
+to the current hyphenator. Some languages have very small pattern files or a very
+systematic approach to hyphenation so there is no reason to abandon the traditional
+ways in all cases. Take your choice.
+
+When experimenting with the new implementation we tested the performance by letting
+\LUA\ take care of hyphenation, spell checking (marking words) and adding
+inter||character kerns. When playing with big lists of words we found out that the
+caching mechanism could not be used due to some limitations in the \LUA\ byte code
+interpreter, so eventually we ended up with a dedicated loader.
+
+However, again we ran into performance problems when lists became more complex. And so,
+instead of converting \TEX\ datastructures into \LUA\ tables userdata types came into
+view. Taco already had reimplemented the node memory management, so a logical next step
+was to reimplement the callbacks and box related code to deal with nodes as linked lists.
+Since this is now the fashion in \LUATEX, you may forget the previous examples, although
+it is not that hard to introduce table representations again once we need them.
+
+Of course this resulted in an adaption to the regular \TEX\ code but a nice side effect
+was that we could now use fields instead of indexes into the node data structure. There
+is a small price to pay in terms of performance, but this can be compensated by clever
+programming.
+
+\starttyping
+someglyph = {
+    type = 41,
+    subtype = 0,
+    attributes = <attributes>,
+    char = 88,
+    font = 32
+}
+\stoptyping
+
+Attributes themselves are userdata. The same is true for components that are present
+when we're for instance dealing with ligatures.
+
+As you can see, in the field variant, a type is a number. In practice, because \LUA\
+hashes strings, working with strings is as fast when comparing, but since we now have
+the more abstract type indicator, we stick with the numbers, which saves a few conversions.
+When dealing with tables we get code like:
+
+\starttyping
+function loop_over_nodes(list)
+    for i, n in ipairs(list)
+        local kind = n[1]
+        if kind == "hlist" or kind == "vlist" then
+            ...
+        end
+    end
+end
+\stoptyping
+
+But now that we have linked lists, we get the following. Node related methods
+are available in the \type {node} namespace.
+
+\starttyping
+function loop_over_nodes(head)
+    local hlist, vlist = node.id('hlist'), node.id('vlist')
+    while head do
+        local kind = head.type
+        if kind == hlist or kind == vlist then
+            ...
+        end
+        head = head.next
+    end
+end
+\stoptyping
+
+Using an abstraction (i.e.\ a constant representing \type {hlist} looks
+nice here, which is why numbers instead of strings are used. The indexed
+variant is still supported and there we have strings.
+
+Going from a node list (head node) to a table is not that complex. Sometimes
+this can be handy because manipulating tables is more convenient that messing
+around with userdata when it comes down to debugging or tracing.
+
+\starttyping
+function nodes.totable(n)
+    function totable(n)
+        local f, tt = node.fields(n.id,n.subtype), { }
+        for _,v in ipairs(f) do
+            local nv = n[v]
+            if nv then
+                local tnv = type(nv)
+                if tnv == "string" or tnv == "number" then
+                    tt[v] = nv
+                else -- userdata
+                    tt[v] = nodes.totable(nv)
+                end
+            end
+        end
+        return tt
+    end
+    local t = { }
+    while n do
+        t[#t+1] = totable(n)
+        n = n.next
+    end
+    return t
+end
+\stoptyping
+
+It will be clear that here we collect data in \LUA\ while treating nodes
+as userdata keeps most of it at the \TEX\ side and this is where the gain in
+speed comes from.
+
+\subject{side effects}
+
+While experimenting with node lists Taco and I ran into a peculiar side effect.
+One of the tests involved adding kerns between glyphs (inter character spacing
+as sometimes uses in titles in a large print). When applied to a whole document
+we noticed that at some places (words) the added kerning was gone. We used
+the subtype zero kern (which is most efficient) and in the process of hyphenating
+\TEX\ removes these kerns and inserts them later (but then based on the
+information stored in the font.
+
+The reason why \TEX\ removes the font related kerns, is the following. Consider
+the code:
+
+\starttyping
+\setbox0=\hbox{some text} the text \unhcopy0 has width \the\wd0
+\stoptyping
+
+While constructing the \type {\hbox}, \TEX\ will apply kerning as dictated
+by the font. Otherwise the width of the box would not be correct. This means
+that the node list entering the linebreak machinery contains such kerns.
+Because hyphenating works on words \TEX\ will remove these kerns in the
+process of identifying the words. It creates a string, removes the original
+sequence of nodes, determines hyphenation points, and add the result to
+the node list.  For efficiency reasons \TEX\ will only look at places
+where hyphenation makes  sense.
+
+Now, imagine that we add those kerns in the callback. This time, all characters
+are surrounded by kerns (which we gave subtype zero). When \TEX\ is determining
+feasable breakpoints (hyphenation), it will remove those kerns, but only at
+certain places. Because our kerns are way larger than the normal interglyph
+kerns, we suddenly end up with an intercharacter spaced paragraph that has
+some words without such spacing but the font dictated kerns.
+
+\blank
+m o s t\quad w o r d s\quad a r e\quad s p a c e d\quad b u t\quad
+some words\quad a r e\quad n o t
+\blank
+
+Of course a solution is to use a different kern, but at least this shows that
+the moment of processing nodes as well as the kind of manipulations need
+to be chosen with care.
+
+Kerning is a nasty business anyway. Imagine the following word:
+
+\starttyping
+effe
+\stoptyping
+
+When typeset this turns into three characters, one of them being a ligature.
+
+\starttyping
+[char e] [liga ff (components f f)] [char e]
+\stoptyping
+
+However, in Dutch, such a word hyphenates as:
+
+\starttyping
+ef-fe
+\stoptyping
+
+This means that in the node list we eventually find something:
+
+\starttyping
+[char e] [disc (f-) (f) (skip 1)] [liga ff (components f f)] [char e]
+\stoptyping
+
+So, eventually we need to kern between the character sequences [e,f-],
+[e,ff], [ff,e] and [f,e].
+
+\subject {attributes}
+
+We now arrive at attributes, a new property of nodes. Before we explain a
+bit more what can be done with them, we show how to define a new attribute
+and toggle it. In the following example the \type {\visualizenextnodes} macro
+is part of \CONTEXT\ \MKIV.
+
+\startbuffer
+\newattribute\aa
+\newattribute\ab
+\visualizenextnodes \hbox {\aa1 T{\ab3\aa2 E}X}
+\stopbuffer
+
+\typebuffer
+
+\placefigure
+  [page]
+  []
+  {\type{\hbox {\aa1 T{\ab3\aa2 E}X \ab 4}}}
+  {\switchtobodyfont[7pt]%
+   \scale[width=.9\textwidth]{\framed
+     [offset=2ex,foregroundcolor=red]
+     {\startsimplecolumns[n=2]
+        \resetglobalattributes
+        \resetlocalattributes
+        \getbuffer
+      \stopsimplecolumns}}}
+
+For the sake of this example, we start the allocation at 2000 because we don't
+want to interfere with attributes already defined in \CONTEXT. The node list
+resulting from the box is shown at the next page. As you can see here, internally
+attributes become a linked list assigned to the \type {attr} field. This means
+that one has to do some work in order to inspect attributes.
+
+\starttyping
+function has_attribute(n,a)
+    if n and n.attr then
+        n = n.attr.next
+        while n do
+            if n.number == a then
+                return n.value
+            end
+            n = n.next
+        end
+    else
+        return false
+    end
+end
+\stoptyping
+
+The previous function can be used in tests like:
+
+\starttyping
+local total = 0
+while n do
+    if has_attribute(n,2000) then
+        total = total + 1
+    end
+    n = n.next
+end
+texio.write_nl(string.format(
+    "attribute 2000 has been seen % times", total
+))
+\stoptyping
+
+When implementing nodes and attributes we did rather extensive tests and
+one of the test documents implemented some preliminary color mechanism
+based on attributes. When handling the colors the previous function was
+called some 300.000 times and the total node processing time (which also
+involved font handling) was some 2.9 seconds. Implementing this function
+as a helper brought down node processing time to 2.4 seconds. Of course
+the gain depends on the complexity of the list (nesting) and the number
+of attributes that are set (upto 5 per node in this test). A few more helper
+functions are available, some are for convenience, some gain us some speed.
+
+The nice thing about attributes is that they obey grouping. This means that
+in the following sequence:
+
+\starttyping
+x {\aa1 x \ab2 x} x
+\stoptyping
+
+the attributes are assigned like:
+
+\starttyping
+x x(201=1) x(201=1,202=2) x
+\stoptyping
+
+Internally \LUATEX\ does some optimizations with respect to assigning
+a sequence of similar attributes, but you should keep in mind that in practice
+the memory usage will be larger when using many attributes.
+
+We played with color and other properties, hyphenation based on word lists
+(and tracking languages with attributes) and or special algorithms (url
+hyphenation), spell checking (marking words as being spelled wrongly), and
+a few more things. This involved handling attributes in several callbacks
+resulting in the insertion or deletion of nodes.
+
+When using attributes for color support, we have to insert \type {pdfliteral} whatsit
+nodes at some point depending on the current color. This also means that the
+time spent with color support at the \TEX\ end will be compensated by
+time spent at the \LUA\ side. It also means that because housekeeping to do
+with colors spanning pages and columns is gone because from now on color
+information travels with the nodes. This saves quite some ugly code.
+
+Because most of the things that we want to do with attributes (and we have
+quite an agenda) are already nicely isolated in \CONTEXT, attributes will
+find their way rather soon in \CONTEXT\ \MKIV.
+
+Let's end with an observation. Attributes themselves are not something
+revolutionary. However, if you had to deal with them in \TEX, i.e.\
+associate them with for instance actions in during shipout, quite some
+time would have been spent on getting things right. Even worse: it would
+have lead to never ending discussions in the \TEX\ community and as
+such it's no surprise that something like this never showed up. The fact that
+we can use \LUA\ and manipulate node lists in many ways frees us from
+much discussion.
+
+We are even considering in future versions of \LUATEX\ to turn font, language
+and direction related information into attributes (in some private range) so this
+story is far from finished. As a teaser, consider the following line of thinking.
+
+Currently when a character enters the machinery, it becomes a glyph node. Among
+other characteristics, this node contains information about the font and the
+slot in that font which is used to represent that character. In a similar fashion,
+a space becomes glue with a measure probably related to the current font.
+
+However, with access to nodes and attributes, you can imagine the following
+scenario. Instead of a font (internally represented by a font id), you use an
+attribute referring to a font. At that time, the font field us just pointing to
+\TEX's null font. In a pass over the node list, you resolve the character and their
+attributes to a fonts and (maybe) other characters. Spacing can be postponed as well
+and instead of real glue values we can use multipliers and again attributes point
+the way to resolve them.
+
+Of course the question is if this is worth the trouble. After all typesetting is
+about fonts and there is no real reason not to give them a special place.
+
+\stopcomponent

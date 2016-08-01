@@ -1,0 +1,1014 @@
+% language=uk
+
+\startcomponent mk-mix
+
+\environment mk-environment
+
+\chapter{The \luaTeX\ Mix}
+
+\subject{introduction}
+
+The idea of embedding \LUA\ into \TEX\ originates in some
+experiments with \LUA\ embedded in the \SCITE\ editor. You can add
+functionality to this editor by loading \LUA\ scripts. This is
+accomplished by a library that gives access to the internals of
+the editing component.
+
+The first integration of \LUA\ in \PDFTEX\ was relatively simple:
+from \TEX\ one could call out to \LUA\ and from \LUA\ one could
+print to \TEX. My first application was converting math encoded a
+calculator syntax to \TEX. Following experiments dealt with
+\METAPOST. At this point integration meant as little as: having some
+scripting language as addition to the macro language. But, even in
+this early stage further possibilities were explored, for instance
+in manipulating the final output (i.e.\ the \PDF\ code). The first
+versions of what by then was already called \LUATEX\ provided
+access to some internals, like counter and dimension registers and
+the dimensions of boxes.
+
+Boosted by the oriental \TeX\ project, the team started exploring
+more fundamental possibilities: hooks in the input|/|output,
+tokenization, fonts and nodelists. This was followed by opening up
+hyphenation, breaking lines into paragraphs and building
+ligatures. At that point we not only had access to some internals
+but also could influence the way \TEX\ operates.
+
+After that, an excursion was made to \MPLIB, which fulfilled a
+long standing wish for a more natural integration of \METAPOST\
+into \TEX. At that point we ended up with mixtures of \TEX, \LUA\
+and \METAPOST\ code.
+
+Medio 2008 we still need to open up more of \TEX, like page
+building, math, alignments and the backend. Eventually \LUATEX\
+will be nicely split up in components, rewritten in \CCODE, and we may
+even end up with \LUA\ glueing together the components that make
+up the \TEX\ engine. At that point the interoperation between
+\TEX\ and \LUA\ may be more rich that it is now.
+
+In the next sections I will discuss some of the ideas behind
+\LUATEX\ and the relationship between \LUA\ and \TEX\ and how it
+presents itself to users. I will not discuss the interface itself,
+which consists of quite some functions (organized in pseudo
+libraries) and the mechanisms used to access and replace internals
+(we call them callbacks).
+
+\subject {tex vs. lua}
+
+\TEX\ is a macro language. Everything boils down to either allowing
+stepwise expansion or explicitly preventing it. There are no real
+control features, like loops; tail recursion is a key concept.
+There are few accessible data|-|structures like numbers, dimensions,
+glue, token lists and boxes. What happens inside \TEX\ is
+controlled by variables, mostly hidden from view, and optimized
+within the constraints of 30 years ago.
+
+The original idea behind \TEX\ was that an author would write a
+specific collection of macros for each publication, but increasing
+popularity among non-programmers quickly resulted in distributed
+collections of macros, called macro packages. They started small
+but grew and grew and by now have become pretty large. In these
+packages there are macros dealing with fonts, structure, page
+layout, graphic inclusion, etc. There is also code dealing with
+user interfaces, process control, conversion and much of that code
+looks out of place: the lack of control features and string
+manipulation is solved by mimicking other languages, the
+unavailability of a float datatype is compensated by misusing
+dimension registers, and you can find provisions to force or
+inhibit expansion all over the place.
+
+\TEX\ is a powerful typographical programming language but
+lacks some of the handy features of scripting languages. Handy in the
+sense that you will need them when you want to go beyond the
+original purpose of the system. \LUA\ is a powerful scripting
+language, but knows nothing of typesetting. To some extent it
+resembles the language that \TEX\ was written in: \PASCAL. And,
+since \LUA\ is meant for embedding and extending existing systems,
+it makes sense to bring \LUA\ into \TEX. How do they compare?
+Let's give some examples.
+
+About the simplest example of using \LUA\ in \TEX\ is the following:
+
+\starttyping
+\directlua { tex.print(math.sqrt(10)) }
+\stoptyping
+
+This kind of application is probably what most users will want and
+use, if they use \LUA\ at all. However, we can go further than that.
+
+In \TEX\ a loop can be implemented as in the plain format
+(copied with comment):
+
+\starttyping
+\def\loop#1\repeat{\def\body{#1}\iterate}
+\def\iterate{\body\let\next\iterate\else\let\next\relax\fi\next}
+\let\repeat=\fi % this makes \loop...\if...\repeat skippable
+\stoptyping
+
+This is then used as:
+
+\starttyping
+\newcount \mycounter \mycounter=1
+\loop
+    ...
+    \advance\mycounter 1
+    \ifnum\mycounter < 11
+\repeat
+\stoptyping
+
+The definition shows a bit how \TEX\ programming works. Of course
+such definitions can be wrapped in macros, like:
+
+\starttyping
+\forloop{1}{10}{1}{some action}
+\stoptyping
+
+and this is what often happens in more complex macro packages. In
+order to use such control loops without side effects, the macro
+writer needs to take measures that permit for instance nested
+usage and avoids clashes between local variables (counters or
+macros) and user defined ones. Here we use a counter in the
+condition, but in practice expressions will be more complex
+and this is not that trivial to implement.
+
+The original definition of the iterator can be written a bit
+more efficient:
+
+\starttyping
+\def\iterate{\body \expandafter\iterate \fi}
+\stoptyping
+
+And indeed, in macro packages you will find many such expansion
+control primitives being used, which does not make reading macros
+easier.
+
+Now, get me right, this does not make \TEX\ less powerful, it's
+just that the language is focused on typesetting and not on
+general purpose programming, and in principle users can do
+without: documents can be preprocessed using another language, and
+document specific styles can be used.
+
+We have to keep in mind that \TEX\ was written in a time when
+resources in terms of memory and \CPU\ cycles weres less abundant
+than they are now. The 255 registers per class and the about 3000
+hash slots in original \TEX\ were more than enough for typesetting
+a book, but in huge collections of macros they are not all that much. For
+that reason many macropackages use obscure names to hide their
+private registers from users and instead of allocating new ones
+with meaningful names, existing ones are shared. It is therefore
+not completely fair to compare \TEX\ code with \LUA\ code: in \LUA\
+we have plenty of memory and the only limitations are those
+imposed by modern computers.
+
+In \LUA, a loop looks like this:
+
+\starttyping
+for i=1,10 do
+    ...
+end
+\stoptyping
+
+But while in the \TEX\ example, the content directly ends up in
+the input stream, in \LUA\ we need to do that explicitly, so in
+fact we will have:
+
+\starttyping
+for i=1,10 do
+    tex.print("...")
+end
+\stoptyping
+
+And, in order to execute this code snippet, in \LUATEX\ we will do:
+
+\starttyping
+\directlua 0 {
+    for i=1,10 do
+        tex.print("...")
+    end
+}
+\stoptyping
+
+So, eventually we will end up with more code than just \LUA\ code,
+but still the loop itself looks quite readable and more complex loops
+are possible:
+
+\starttyping
+\directlua 0 {
+    local t, n = { }, 0
+    while true do
+        local r = math.random(1,10)
+        if not t[r] then
+            t[r], n = true, n+1
+            tex.print(r)
+            if n == 10 then break end
+        end
+    end
+}
+\stoptyping
+
+This will typeset the numbers 1 to 10 in randomized order.
+Implementing a random number generator in pure \TEX\ takes some bit of
+code and keeping track of already defined numbers in macros can be
+done with macros, but both are not very efficient.
+
+I already stressed that \TEX\ is a typographical programming
+language and as such some things in \TEX\ are easier than in \LUA,
+given some access to internals:
+
+\starttyping
+\setbox0=\hbox{x} \the\wd0
+\stoptyping
+
+In \LUA\ we can do this as follows:
+
+\starttyping
+\directlua 0 {
+    local n = node.new('glyph')
+    n.font = font.current()
+    n.char = string.byte('x')
+    tex.box[0] = node.hpack(n)
+    tex.print(tex.box[0].width/65536 .. "pt")
+}
+\stoptyping
+
+One pitfall here is that \TEX\ rounds the number differently than
+\LUA. Both implementations can be wrapped in a macro cq. function:
+
+\starttyping
+\def\measured#1{\setbox0=\hbox{#1}\the\wd0\relax}
+\stoptyping
+
+Now we get:
+
+\starttyping
+\measured{x}
+\stoptyping
+
+The same macro using \LUA\ looks as follows:
+
+\starttyping
+\directlua 0 {
+    function measure(chr)
+        local n = node.new('glyph')
+        n.font = font.current()
+        n.char = string.byte(chr)
+        tex.box[0] = node.hpack(n)
+        tex.print(tex.box[0].width/65536 .. "pt")
+    end
+}
+\def\measured#1{\directlua0{measure("#1")}}
+\stoptyping
+
+In both cases, special tricks are needed if you want to pass for
+instance a \type {#} to \TEX's variant, or a \type {"} to \LUA. In
+both cases we can use shortcuts like \type {\#} and in the second
+case we can pass strings as long strings using double square
+brackets to \LUA.
+
+This example is somewhat misleading. Imagine that we want to
+pass more than one character. The \TEX\ variant is already suited
+for that, but the function will now look like:
+
+\starttyping
+\directlua 0 {
+    function measure(str)
+        if str == "" then
+            tex.print("0pt")
+        else
+            local head, tail = nil, nil
+            for chr in str:gmatch(".") do
+                local n = node.new('glyph')
+                n.font = font.current()
+                n.char = string.byte(chr)
+                if not head then
+                    head = n
+                else
+                    tail.next = n
+                end
+                tail = n
+            end
+            tex.box[0] = node.hpack(head)
+            tex.print(tex.box[0].width/65536 .. "pt")
+        end
+    end
+}
+\stoptyping
+
+And still it's not okay, since \TEX\ inserts kerns between
+characters (depending on the font) and glue between words, and
+doing that all in \LUA\ takes more code. So, it will be clear that
+although we will use \LUA\ to implement advanced features, \TEX\
+itself still has quite some work to do.
+
+In the following example we show code, but this is not of
+production quality. It just demonstrates a new way of dealing
+with text in \TEX.
+
+Occasionally a design demands that at some place the first
+character of each word should be uppercase, or that the first word
+of a paragraph should be in small caps, or that each first line of a
+paragraph has to be in dark blue. When using traditional \TEX\ the user
+then has to fall back on parsing the data stream, and preferably
+you should then start such a sentence with a command that can pick
+up the text. For accentless languages like English this is quite
+doable but as soon as commands (for instance dealing with accents)
+enter the stream this process becomes quite hairy.
+
+The next code shows how \CONTEXT\ \MKII\ defines the \type {\Word}
+and \type {\Words} macros that capitalize the first characters of
+word(s). The spaces are really important here because they signal
+the end of a word.
+
+\starttyping
+\def\doWord#1%
+  {\bgroup\the\everyuppercase\uppercase{#1}\egroup}
+
+\def\Word#1%
+  {\doWord#1}
+
+\def\doprocesswords#1 #2\od
+  {\doifsomething{#1}{\processword{#1} \doprocesswords#2 \od}}
+
+\def\processwords#1%
+  {\doprocesswords#1 \od\unskip}
+
+\let\processword\relax
+
+\def\Words
+  {\let\processword\Word \processwords}
+\stoptyping
+
+Actually, the code is not that complex. We split of words and feed
+them to a macro that picks up the first token (hopefully a character)
+which is then fed into the \type {\uppercase} primitive. This assumes that
+for each character a corresponding uppercase variant is defined using the
+\type {\uccode} primitive. Exceptions can be dealt with by assigning relevant
+code to the token register \type {\everyuppercase}.
+However, such macros are far from robust. What happens if the text
+is generated and not input as-is? What happens with commands in
+the stream that do something with the following tokens?
+
+A \LUA\ based solution can look as follows:
+
+\starttyping
+\def\Words#1{\directlua 0
+    for s in unicode.utf8.gmatch("#1", "([^ ])") do
+        tex.sprint(string.upper(s:sub(1,1)) .. s:sub(2))
+    end
+}
+\stoptyping
+
+But there is no real advantage here, apart from the fact that less code
+is needed. We still operate on the input and therefore we need to look
+to a different kind of solution: operating on the node list.
+
+\starttyping
+function CapitalizeWords(head)
+    local done = false
+    local glyph = node.id("glyph")
+    for start in node.traverse_id(glyph,head) do
+        local prev, next = start.prev, start.next
+        if prev and prev.id == kern and prev.subtype == 0 then
+            prev = prev.prev
+        end
+        if next and next.id == kern and next.subtype == 0 then
+            next = next.next
+        end
+        if (not prev or prev.id ~= glyph) and
+                    next and next.id == glyph then
+            done = upper(start)
+        end
+    end
+    return head, done
+end
+\stoptyping
+
+A node list is a forward|-|linked list. With a helper
+function in the \type {node} library we can loop over such lists. Instead
+of traversing we can use a regular while loop, but it is probably less
+efficient in this case. But how to apply this function to the relevant
+part of the input? In \LUATEX\ there are several callbacks that operate
+on the horizontal lists and we can use one of them to plug in this
+function. However, in that case the function is applied to probably
+more text than we want.
+
+The solution for this is to assign attributes to the range of text
+that such a function has to take care of. These attributes (there
+can be many) travel with the nodes. This is also a reason why such
+code normally is not written by end users, but by macropackage
+writers: they need to provide the frameworks where you can plug in
+code. In \CONTEXT\ we have several such mechanisms and therefore
+in \MKIV\ this function looks (slightly stripped) as follows:
+
+\starttyping
+function cases.process(namespace,attribute,head)
+    local done, actions = false, cases.actions
+    for start in node.traverse_id(glyph,head) do
+        local attr = has_attribute(start,attribute)
+        if attr and attr > 0 then
+            unset_attribute(start,attribute)
+            local action = actions[attr]
+            if action then
+                local _, ok = action(start)
+                done = done and ok
+            end
+        end
+    end
+    return head, done
+end
+\stoptyping
+
+Here we check attributes (these are set at the \TEX\ end) and we have
+all kind of actions that can be applied, depending on the value of the
+attribute. Here the function that does the actual uppercasing
+is defined somewhere else. The \type {cases} table provides us a
+namespace; such namespaces needs to be coordinated by macro package
+writers.
+
+This approach means that the macro code looks completely different; in
+pseudo code we get:
+
+\starttyping
+\def\Words#1{{<setattribute><cases><somevalue>#1}}
+\stoptyping
+
+Or alternatively:
+
+\starttyping
+\def\StartWords{\begingroup<setattribute><cases><somevalue>}
+\def\StopWords {\endgroup}
+\stoptyping
+
+Because starting a paragraph with a group can have unwanted side
+effects (like \type {\everypar} being expanded inside a group) a
+variant is:
+
+\starttyping
+\def\StartWords{<setattribute><cases><somevalue>}
+\def\StopWords {<resetattribute><cases>}
+\stoptyping
+
+So, what happens here is that the users sets an attribute using some high
+level command, and at some point during the transformation of the input into
+node lists, some action takes place. At that point commands, expansion and
+whatever no longer can interfere.
+
+In addition to some infrastructure, macro packages need to carry some
+knowledge, just as with the \type {\uccode} used in \type {\uppercase}.
+The \type {upper} function in the first example looks as follows:
+
+\starttyping
+local function upper(start)
+    local data, char = characters.data, start.char
+    if data[char] then
+        local uc = data[char].uccode
+        if uc and fonts.ids[start.font].characters[uc] then
+            start.char = uc
+            return true
+        end
+    end
+    return false
+end
+\stoptyping
+
+Such code is really macro package dependent: \LUATEX\ only
+provides the means, not the solutions. In \CONTEXT\ we have
+collected information about characters in a \type {data} table
+in the \type {characters} namespace. There we have stored the
+uppercase codes (\type {uccode}). The, again \CONTEXT\ specific,
+\type {fonts} table keeps track of all defined fonts and before
+we change the case, we make sure that this character is present
+in the font. Here \type {id} is the number by which
+\LUATEX\ keeps track of the used fonts. Each glyph node carries
+such a reference.
+
+In this example, eventually we end up with more code than in \TEX,
+but the solution is much more robust. Just imagine what would happen
+when in the \TEX\ solution we would have:
+
+\starttyping
+\Words{\framed[offset=3pt]{hello world}}
+\stoptyping
+
+It simply does not work. On the other hand, the \LUA\ code never
+sees \TEX\ commands, it only sees the two words represented by
+glyphs nodes and separated by glue.
+
+Of course, there is a danger when we start opening \TEX's core
+features. Currently macro packages know what to expect, they know
+what \TEX\ can and cannot do. Of course macro writers have
+exploited every corner of \TEX, even the dark ones. Where dirty
+tricks in the \TEX book had an educational purpose, those of users
+sometimes have obscene traits. If we just stick to the trickery
+introduced for parsing input, converting this into that, doing
+some calculations, and alike, it will be clear that \LUA\ is more
+than welcome. It may hurt to throw away thousands of lines of
+impressive code and replace it by a few lines of \LUA\ but that's
+the price the user pays for abusing \TEX. Eventually \CONTEXT\ \MKIV\
+will be a decent mix of \LUA\ and \TEX\ code, and hopefully the
+solutions programmed in those languages are as clean as possible.
+
+Of course we can discuss until eternity whether \LUA\ is the best
+choice. Taco, Hartmut and I are pretty confident that it is, and
+in the couple of years that we are working on \LUATEX\ nothing has proved
+us wrong yet. We can fantasize about concepts, only to find out that
+they are impossible to implement or hard to agree on; we just go
+ahead using trial and error. We can talk over and over how opening up
+should be done, which is what the team does in a nicely
+closed and efficient loop, but at some points decisions have to be
+made. Nothing is perfect, neither is \LUATEX, but most users won't
+notice it as long as it extends \TEX's live and makes usage more
+convenient.
+
+Users of \TEX\ and \METAPOST\ will have noticed that both
+languages have their own grouping (scope) model. In \TEX\ grouping
+is focused on content: by grouping the macro writer (or author)
+can limit the scope to a specific part of the text or keep certain
+macros live within their own world.
+
+\starttyping
+.1. \bgroup .2. \egroup .1.
+\stoptyping
+
+Everything done at 2 is local unless explicitly told otherwise.
+This means that users can write (and share) macros with a small
+chance of clashes. In \METAPOST\ grouping is available too, but
+variables explicitly need to be saved.
+
+\starttyping
+.1. begingroup ; save p ; path p ; .2. endgroup .1.
+\stoptyping
+
+After using \METAPOST\ for a while this feels quite natural
+because an enforced local scope demands multiple return values
+which is not part of the macro language. Actually, this is another
+fundamental difference between the languages: \METAPOST\ has (a
+kind of) functions, which \TEX\ lacks. In \METAPOST\ you can write
+
+\starttyping
+draw origin for i=1 upto 10 : .. (i,sin(i)) endfor ;
+\stoptyping
+
+but also:
+
+\starttyping
+draw some(0) for i=1 upto 10 : .. some(i) endfor ;
+\stoptyping
+
+with
+
+\starttyping
+vardef some (expr i) =
+    if i > 4 : i = i - 4 fi ;
+    (i,sin(i))
+enddef ;
+\stoptyping
+
+The condition and assignment in no way interfere with the loop where
+this function is called, as long as some value is returned (a pair in
+this case).
+
+In \TEX\ things work differently. Take this:
+
+\starttyping
+\count0=1
+\message{\advance\count0 by 1 \the\count0}
+\the\count0
+\stoptyping
+
+The terminal wil show:
+
+\starttyping
+\advance \count 0 by 1 1
+\stoptyping
+
+At the end the counter still has the value~1. There are quite some
+situations like this, for instance when data like a table of
+contents has to be written to a file. You cannot write macros where
+such calculations are done and hidden and only the result is seen.
+
+The nice thing about the way \LUA\ is presented to the user is that it
+permits the following:
+
+\starttyping
+\count0=1
+\message{\directlua0{tex.count[0] = tex.count[0] + 1}\the\count0}
+\the\count0
+\stoptyping
+
+This will report~2 to the terminal and typeset a 2 in the
+document. Of course this does not solve everything, but it is a
+step forward. Also, compared to \TEX\ and \METAPOST, grouping is
+done differently: there is a \type {local} prefix that makes
+variables (and functions are variables too) local in modules,
+functions, conditions, loops etc. The \LUA\ code in this story
+contains such locals.
+
+In practice most users will use a macro package and so, if a user
+sees \TEX, he or she sees a user interface, not the code behind
+it. As such, they will also not encounter the code written in
+\LUA\ that deals with for instance fonts or node list
+manipulations. If a user sees \LUA, it will most probably be in
+processing actual data. Therefore, in the next section I will give an
+example of two ways to deal with \XML: one more suitable for
+traditional \TEX, and one inspired by \LUA. It demonstrates how
+the availability of \LUA\ can result in different solutions for
+the same problem.
+
+\subject {an example: xml}
+
+In \CONTEXT\ \MKII, the version that deals with \PDFTEX\ and \XETEX,
+we use a stream based \XML\ parser, written in \TEX. Each \type {<}
+and \type {&} triggers a macro that then parses the tag and/or entity.
+This method is quite efficient in terms of memory but the associated
+code is not simple because it has to deal with attributes, namespaces
+and nesting.
+
+The user interface is not that complex, but involves quite some
+commands. Take for instance the following \XML\ snippet:
+
+\starttyping
+<document>
+    <section>
+        <title>Whatever</title>
+        <p>some text</p>
+        <p>some more</p>
+    </section>
+</document>
+\stoptyping
+
+When using \CONTEXT\ commands, we can imagine the following definitions:
+
+\starttyping
+\defineXMLenvironment[document]{\starttext} {\stoptext}
+\defineXMLargument   [title]   {\section}
+\defineXMLenvironment[p]       {\ignorespaces}{\par}
+\stoptyping
+
+When attributes have to be dealt with, for instance a reference to
+this section, things quickly start looking more complex. Also,
+users need to know what definitions to use in situations like this:
+
+\starttyping
+<table>
+    <tr><td>first</td><td>...</td> <td>last</td></tr>
+    <tr><td>left</td><td>...</td> <td>right</td></tr>
+</table>
+\stoptyping
+
+Here we cannot be sure if a cell does not contain a nested table,
+which is why we need to define the mapping as follows:
+
+\starttyping
+\defineXMLnested[table]{\bTABLE} {\eTABLE}
+\defineXMLnested[tr]   {\bTR}    {\eTR}
+\defineXMLnested[td]   {\bTD}    {\eTD}
+\stoptyping
+
+The \type {\defineXMLnested} macro is rather messy because it has
+to collect snippets and keep track of the nesting level, but users
+don't see that code, they just need to know when to use what
+macro. Once it works, it keeps working.
+
+Unfortunately mappings from source to style are never that simple
+in real life. We usually need to collect, filter and relocate
+data. Of course this can be done before feeding the source to
+\TEX, but \MKII\ provides a few mechanisms for that too. If for
+instance you want to reverse the order you can do this:
+
+\starttyping
+<article>
+    <title>Whatever</title>
+    <author>Someone</author>
+    <p>some text</p>
+</article>
+\stoptyping
+
+\starttyping
+\defineXMLenvironment[article]
+    {\defineXMLsave[author]}
+    {\blank author: \XMLflush{author}}
+\stoptyping
+
+This will save the content of the \type {author} element and flush
+it when the end tag \type {article} is seen. So, given previous
+definitions, we will get the title, some text and then the author.
+You may argue that instead we should use for instance \XSLT\ but
+even then a mapping is needed from the \XML\ to \TEX, and it's a
+matter of taste where the burden is put.
+
+Because \CONTEXT\ also wants to support standards like
+\MATHML, there are some more mechanisms but these are hidden from
+the user. And although these do a good job in most cases, the code
+associated with the solutions has never been satisfying.
+
+Supporting \XML\ this way is doable, and \CONTEXT\ has used this method
+for many years in fairly complex situations. However, now that we
+have \LUA\ available, it is possible to see if some things can be done
+simpler (or differently).
+
+After some experimenting I decided to write a full blown \XML\
+parser in \LUA, but contrary to the stream based approach, this
+time the whole tree is loaded in memory. Although this uses more
+memory than a streaming solution, in practice the difference is
+not significant because often in \MKII\ we also needed to store
+whole chunks.
+
+Loading \XML\ files in memory is real fast and once it is done we
+can have access to the elements in a way similar to \XPATH. We can
+selectively pipe data to \TEX\ and manipulate content using \TEX\
+or \LUA. In most cases this is faster than the stream|-|based
+method. Interesting is that we can do this without linking to
+existing \XML\ libraries, and as a result we are pretty
+independent.
+
+So how does this look from the perspective of the user? Say that
+we have the simple article definition stored in \type {demo.xml}.
+
+\starttyping
+<?xml version ='1.0'?>
+<article>
+    <title>Whatever</title>
+    <author>Someone</author>
+    <p>some text</p>
+</article>
+\stoptyping
+
+This time we associate so called setups with the elements. Each
+element can have its own setup, and we can use expressions to
+assign them. Here we have just one such setup:
+
+\starttyping
+\startxmlsetups xml:document
+   \xmlsetsetup{main}{article}{xml:article}
+\stopxmlsetups
+\stoptyping
+
+When loading the document it will automatically be associated with the tag \type
+{main}. The previous rule associates setup \type {xml:article}
+with the \type {article} element in tree \type {main}. We need to
+register this setup so that it will be applied to the document
+after loading:
+
+\starttyping
+\xmlregistersetup{xml:document}
+\stoptyping
+
+and the document itself is processed with:
+
+\starttyping
+\xmlprocessfile{main}{demo.xml}{} % optional setup
+\stoptyping
+
+The setup \type {xml:article} can look as follows:
+
+\starttyping
+\startxmlsetups xml:article
+    \section{\xmltext{#1}{/title}}
+    \xmlall{#1}{!(title|author)}
+    \blank author: \xmltext{#1}{/author}
+\stopxmlsetups
+\stoptyping
+
+Here \type {#1} refers to the current node in the \XML\ tree, in
+this case the root element, \type {article}. The second argument
+of \type {\xmltext} and \type {\xmlall} is a path expression,
+comparable with \XPATH: \type {/title} means: the \type {title}
+element anchored to the current root (\type{#1}), and \type
+{!(title|author)} is the negation of (complement to) \type{title}
+or \type {author}. Such expressions can be more complex that the
+one above, like:
+
+\starttyping
+\xmlfirst{#1}{/one/(alpha|beta)/two/text()}
+\stoptyping
+
+which returns the content of the first element that satisfies one of
+the paths (nested tree):
+
+\starttyping
+/one/alpha/two
+/one/beta/two
+\stoptyping
+
+There is a whole bunch of commands like \type {\xmltext} that
+filter content and pipe it into \TEX. These are calling \LUA\
+functions. This is no manual, so we will not discuss them here.
+However, it is important to realize that we have to associate
+setups (consider them free formatted macros) to at least one
+element in order to get started. Also, \XML\ inclusions have to be
+dealt with before assigning the setups. These are simple
+one|-|line commands. You can also assign defaults to elements,
+which saves some work.
+
+Because we can use \LUA\ to access the tree and manipulate
+content, we can now implement parts of \XML\ handling in \LUA. An
+example of this is dealing with so|-|called Cals tables. This is
+done in approximately 150 lines of \LUA\ code, loaded at runtime in a
+module. This time the association uses functions instead of setups and those
+functions will pipe data back to \TEX. In the module you will find:
+
+\starttyping
+\startxmlsetups xml:cals:process
+    \xmlsetfunction {\xmldocument} {cals:table} {lxml.cals.table}
+\stopxmlsetups
+
+\xmlregistersetup{xml:cals:process}
+
+\xmlregisterns{cals}{cals}
+\stoptyping
+
+These commands tell \MKIV\ that elements with a namespace
+specification that contains \type {cals} will be remapped to the
+internal namespace \type {cals} and the setup associates a
+function with this internal namespace.
+
+By now it will be clear that from the perspective of the user
+hardly any \LUA\ is visible. Sure, he or she can deduce that deep
+down some magic takes place, especially when you run into more
+complex expressions like this (the \type {@} denotes an
+attribute):
+
+\starttyping
+\xmlsetsetup
+    {main} {item[@type='mpctext' or @type='mrtext']}
+    {questions:multiple:text}
+\stoptyping
+
+Such expressions resemble \XPATH, but can go much further than
+that, just by adding more functions to the library.
+
+\starttyping
+b[position() > 2 and position() < 5 and text() == 'ok']
+b[position() > 2 and position() < 5 and text() == upper('ok')]
+b[@n=='03' or @n=='08']
+b[number(@n)>2 and number(@n)<6]
+b[find(text(),'ALSO')]
+\stoptyping
+
+Just to give you an idea \unknown\ in the module that implements
+the parser you will find definitions that match the function calls
+in the above expressions.
+
+\starttyping
+xml.functions.find   = string.find
+xml.functions.upper  = string.upper
+xml.functions.number = tonumber
+\stoptyping
+
+So much for the different approaches. It's up to the user what
+method to use: stream based \MKII, tree based \MKIV, or a mixture.
+
+The main reason for taking \XML\ as an example of mixing \TEX\ and
+\LUA\ is in that it can be a bit mind boggling if you start
+thinking of what happens behind the screens. Say that we have
+
+\starttyping
+<?xml version ='1.0'?>
+<article>
+    <title>Whatever</title>
+    <author>Someone</author>
+    <p>some <b>bold</b> text</p>
+</article>
+\stoptyping
+
+and that we use the setup shown before with \type {article}.
+
+At some point, we are done with defining setups and load the
+document. The first thing that happens is that the list of
+manipulations is applied: file inclusions are processed first,
+setups and functions are assigned next, maybe some elements are
+deleted or added, etc. When that is done we serialize the tree to
+\TEX, starting with the root element. When piping data to \TEX\ we
+use the current catcode regime; linebreaks and spaces are honored
+as usual.
+
+Each element can have a function (command) associated and when
+this is the case, control is given to that function. In our case
+the root element has such a command, one that will trigger a
+setup. And so, instead of piping content to \TEX, a function is
+called that lets \TEX\ expand the macro that deals with this
+setup.
+
+However, that setup itself calls \LUA\ code that filters the title
+and feeds it into the \type {\section} command, next it flushes
+everything except the title and author, which again involves
+calling \LUA. Last it flushes the author. The nested sequence
+of events is as follows:
+
+\startitemize[2*broad]
+
+    \sym{lua:} Load the document and apply setups and alike.
+
+    \sym{lua:} Serialize the \type {article} element, but since
+    there is an associated setup, tell \TEX\ do expand that one
+    instead.
+
+    \startitemize[2*broad]
+
+        \sym{tex:} Execute the setup, first expand the \type {\section}
+        macro, but its argument is a call to \LUA.
+
+        \startitemize[2*broad]
+
+            \sym{lua:} Filter \type {title} from the subtree under
+            \type {article}, print the content to \TEX\ and return
+            control to \TEX.
+
+        \stopitemize
+
+        \sym{tex:} Tell \LUA\ to filter the paragraphs i.e.\ skip \type
+        {title} and \type {author}; since the \type {b} element has
+        no associated setup (or whatever) it is just serialized.
+
+        \startitemize[2*broad]
+
+            \sym{lua:} Filter the requested elements and return control
+            to \TEX.
+
+        \stopitemize
+
+        \sym{tex:} Ask \LUA\ to filter \type {author}.
+
+        \startitemize[2*broad]
+            \sym{lua:} Pipe \type {author}'s content to \TEX.
+        \stopitemize
+
+        \sym{tex:} We're done.
+
+    \stopitemize
+
+    \sym{lua:} We're done.
+
+\stopitemize
+
+This is a really simple case. In my daily work I am dealing
+with rather extensive and complex educational documents where in
+one source there is text, math, graphics, all kind of fancy stuff,
+questions and answers in several categories and of different kinds,
+either or not to be reshuffled, omitted or combined. So there
+we are talking about many more levels of \TEX\ calling \LUA\ and \LUA\
+piping to \TEX\ etc. To stay in \TEX\ speak: we're dealing with
+one big ongoing nested expansion (because \LUA calls expand), and
+you can imagine that this somewhat stresses \TEX's input stack, but
+so far I have not encountered any problems.
+
+\subject{some remarks}
+
+Here I discussed several possible applications of \LUA\ in \TEX. I
+didn't mention yet that because \LUATEX\ contains a scripting engine
+plus some extra libraries, it can also be used purely for that.
+This means that support programs can now be written in \LUA\ and
+that there are no longer dependencies of other scripting engines
+being present on the system. Consider this a bonus.
+
+Usage in \TEX\ can be organized in four categories:
+
+\startitemize[n]
+\item  Users can use \LUA\ for generating data, do all kind of
+       data manipulations, maybe read data from file, etc. The
+       only link with \TEX\ is the print function.
+\item  Users can use information provided by \TEX\ and use this
+       when making decisions. An example is collecting data in
+       boxes and use \LUA\ to do calculations with the dimensions.
+       Another example is a converter from \METAPOST\ output to
+       \PDF\ literals. No real knowledge of \TEX's internals is
+       needed. The \MKIV\ \XML\ functionality discussed before
+       demonstrates this: it's mostly data processing and piping
+       to \TEX. Other examples are dealing with buffers, defining
+       character mappings, and handling error messages, verbatim
+       \unknown\ the list is long.
+\item  Users can extend \TEX's core functionality. An example is
+       support for \OPENTYPE\ fonts: \LUATEX\ itself does not
+       support this format directly, but provides ways to feed
+       \TEX\ with the relevant information. Support for \OPENTYPE\
+       features demands manipulating node lists. Knowledge of
+       internals is a requirement. Advanced spacing and language
+       specific features are made possible by node list
+       manipulations and attributes. The alternative \type {\Words}
+       macro is an example of this.
+\item  Users can replace existing \TEX\ functionality. In \MKIV\
+       there are numerous example of this, for instance all file
+       \IO\ is written in \LUA, including reading from \ZIP\ files
+       and remote locations. Loading and defining fonts is also
+       under \LUA\ control. At some point \MKIV\ will provide
+       dedicated splitters for multicolumn typesetting and
+       probably also better display spacing and display
+       math splitting.
+\stopitemize
+
+The boundaries between these categories are not frozen. For
+instance, support for image inclusion and \MPLIB\ in \CONTEXT\
+\MKIV\ sits between category 3 and~4. Category 3 and~4, and
+probably also~2 are normally the domain of macro package writers
+and more advanced users who contribute to macro packages. Because
+a macropackage has to provide some stability it is not a good idea
+to let users mess around with all those internals, because of
+potential interference. On the other hand, normally users operate
+on top of a kernel using some kind of \API\ and history has
+proved that macro packages are stable enough for this.
+
+Sometime around 2010 the team expects \LUATEX\ to be feature
+complete and stable. By that time I can probably provide a more
+detailed categorization.
+
+\stopcomponent

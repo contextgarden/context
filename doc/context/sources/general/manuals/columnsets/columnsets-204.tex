@@ -1,0 +1,41 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\usemodule[oldfun]
+
+\environment columnsets-000
+
+\definecolumnset[example][n=4,page=left]
+
+\definecolumnsetarea
+  [title]
+  [x=1,y=1,nx=8,ny=8,
+   background=contrast,
+   color=white,
+   align={lohi,right},
+   state=start]
+
+\setupcolumnsetareatext
+  [title]
+  [\setups{the title}]
+
+\startsetups[the title]
+
+  \GapText
+    {\dimexpr\makeupwidth+\backspace\relax}
+    {6pt}
+    {RegularBold*default} {sa 4}
+    {A Title Spanni\+ng 2 Pages}
+
+\stopsetups
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{30}{\fakewords{50}{100}\par}
+
+\stopcolumnset
+
+\stoptext

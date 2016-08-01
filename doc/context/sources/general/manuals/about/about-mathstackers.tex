@@ -1,0 +1,765 @@
+% language=uk
+
+\startcomponent about-mathstackers
+
+\environment about-environment
+
+\startchapter[title=Math stackers]
+
+\startsection[title=Introduction]
+
+In the next sections I will discuss the way we deal with stacked content in
+\CONTEXT\ \MKIV\ and in particular extensible characters. The mechanism describe
+here is actually more generic and can also deal with regular text. The stacker
+code is an evolution of the mechanisms that combine math arrows with text. From
+the users perspective there is not that much difference with the old methods
+because in practice \quote {defined} commands are used and their name stayed.
+However, we use different definition and setup commands and provide much more
+control. The new implementation is leaner but not meaner and fits the way \MKIV\
+is set up.
+
+How does \LUA\ fits in? We use a helper in order to determine some
+characteristics of extensibles, but we could have done without. We also use some
+new \LUATEX\ math primitives and of course we depend on \OPENTYPE\ font
+technoloygy.
+
+\stopsection
+
+\startsection[title=Extensibles]
+
+The command \type {\leftarrowfill} was introduced in plain \TEX\ and gives, as
+the name indicates, a \leftarrowfill\ that stretches itself so that it takes the
+available space. Take the following example:
+
+\starttyping
+\hbox to 4cm{\leftarrowfill}
+\stoptyping
+
+This will make an arrow of length 4cm:
+
+\blank \mathstylehbox{\Umathaccent\fam\zerocount"2190{\hskip4cm}} \blank
+
+This arrow is made out of small snippets:
+
+\blank {\showglyphs\scale[width=\textwidth]{\mathstylehbox{\Umathaccent\fam\zerocount"2190{\hskip4cm}}}} \blank
+
+Here is another one:
+
+\starttyping
+\hbox to 4cm{\rightoverleftarrowfill}
+\stoptyping
+
+or:
+
+\blank {\mathstylehbox{\Umathaccent\fam\zerocount"21C4{\hskip4cm}}} \blank
+
+This time we have three different snippets:
+
+\blank {\showglyphs\scale[width=\textwidth]{\mathstylehbox{\Umathaccent\fam\zerocount"21C4{\hskip4cm}}}} \blank
+
+The \TEX\ engine has a concept of extensible characters. In fact there are two
+mechanisms: there is a list of larger glyphs and when that list is exhausted
+larger characters can be constructed out of snippets. Examples are left and right
+fences in math like braces and brackets, and, also in math, some top and bottom
+accents.
+
+For reasons unknown to me, some of these extensibles are handled by the engine
+directly, using properties of a font, while others are composed using macros.
+Given that \TEX\ is quite popular for typesetting scientific articles it is
+beyond my understanding why no one decided to provide some more fonts and|/|or
+extend the \TEX\ engine. After all, the whole idea of Donald Knuth with \TEX\ was
+that it could be adapted to future needs by its users. And so, more that 30 years
+after \TEX\ and macro packages showed up we're stuck with not only incomplete
+fonts, but also an engine that was never adapted to demands.
+
+\stopsection
+
+\startsection[title=The traditional way]
+
+In \CONTEXT\ we have support for extensibles built into the core but it uses the
+traditional approach: take some snippets and paste them together, making sure to
+achieve some overlap and get rid of side bearings. In terms of \TEX\ code this can
+best be illustrated with the plain \TEX\ definition of such a command:
+
+\starttyping
+\def\leftarrowfill
+  {$%
+   \mathsurround0pt%
+   \mathord\leftarrow\mkern-7mu%
+   \cleaders\hbox{$\mkern-2mu\smash-\mkern-2mu$}\hfill
+   \mkern-7mu\smash-%
+   $}
+\stoptyping
+
+Here we create a tight formula starting with a \type {leftarrow}, ending with a
+minus sign and glued together with the number of minus signs that are needed to
+fill the available space. This macro eventually expands to something like this (a
+bit spaced out):
+
+\starttyping
+\def\leftarrowfill { $
+  % \leftarrow = \mathchardef\leftarrow="3220 in plain but in
+  % unicode it's character 0x2190 so we use that one here
+  \mathsurround=0pt
+  \mathord{\mathchar"2190}
+  \mkern-7mu
+  \cleaders
+   \hbox { $
+     \mkern-2mu
+     \mathchoice
+      {\setbox0\hbox{$\displaystyle     -$}\ht0=0pt\dp0=0pt\box0}
+      {\setbox0\hbox{$\textstyle        -$}\ht0=0pt\dp0=0pt\box0}
+      {\setbox0\hbox{$\scriptstyle      -$}\ht0=0pt\dp0=0pt\box0}
+      {\setbox0\hbox{$\scriptscriptstyle-$}\ht0=0pt\dp0=0pt\box0}
+     \mkern-2mu
+    $ }
+   \hfill
+  \mkern-7mu
+  \mathchoice
+   {\setbox0\hbox{$\displaystyle     -$}\ht0=0pt\dp0=0pt\box0}
+   {\setbox0\hbox{$\textstyle        -$}\ht0=0pt\dp0=0pt\box0}
+   {\setbox0\hbox{$\scriptstyle      -$}\ht0=0pt\dp0=0pt\box0}
+   {\setbox0\hbox{$\scriptscriptstyle-$}\ht0=0pt\dp0=0pt\box0}
+$ }
+\stoptyping
+
+If you look at the code you see a few hacks. First of all we see that we need to
+add kerns in order to make the symbols overlap. For the middle shapes this is
+understandable as there we don't want rounding errors to lead to gaps. Also,
+because the minus in Computer Modern (and therefore Latin Modern) has rounded
+tips, we need to make sure that we end up beyond the tips. Next we see two blobs
+of \type {mathchoice}. This primitive chooses one of the four variants and
+switches to the right math style. It packages the minus and smashes it. In our
+case smashing makes not much sense as the arrowhead has height and depth anyway,
+but it's a side effect of using general purpose macros that there can be some
+unneeded overhead.
+
+\blank
+\hbox \bgroup \quad
+    \scale[sx=5,sy=5]{\hbox{\showglyphs$\mathsurround\zeropoint\char"2190$}}\quad
+    \scale[sx=5,sy=5]{\hbox{\showglyphs$\mathsurround\zeropoint\char"002D$}}\quad
+    \scale[sx=5,sy=5]{\hbox{\showglyphs$\mathsurround\zeropoint\char"27F8$}}\quad
+    \scale[sx=5,sy=5]{\hbox{\showglyphs$\mathsurround\zeropoint\char"003D$}}\quad
+\egroup
+\blank
+
+Above you see the two characters that traditionally are combined into a leftward
+pointing arrows. Watch the whitespace on the left and right of the actual glyph.
+
+\stopsection
+
+\startsection[title=The new way]
+
+These zero height and depth don't show up in our rendered examples. Why is this?
+The reason is that I cheated a bit. I used this to get the arrow: \footnote {In
+this example I misuse the accent placement mechanism. Upto \LUATEX\ 0.75 that was
+the way to go.}
+
+\starttyping
+\mathstylehbox{\Umathaccent\fam\zerocount"21C4{\hskip4cm}}
+\stoptyping
+
+The \CONTEXT\ support macro \type {\mathstylehbox} is an efficient variant of
+\type {\mathchoice}. More significant is that we don't assemble the arrow, but
+just put it as an accent on top of a skip. The \type {\Umathaccent} primitive
+will assemble the long arrow for us, using information in the font. If we look
+into the definition of the (Latin Modern) font in \MKIV\ we see this:
+
+\starttyping
+[8592]={
+ ["boundingbox"]={ 57, -10, 942, 510 },
+ ["class"]="base",
+ ["index"]=1852,
+ ["math"]={
+  ["horiz_parts"]={
+   {
+    ["advance"]=507,
+    ["end"]=169,
+    ["extender"]=0,
+    ["glyph"]=984274,
+    ["start"]=0,
+   },
+   {
+    ["advance"]=337,
+    ["end"]=337,
+    ["extender"]=1,
+    ["glyph"]=984275,
+    ["start"]=337,
+   },
+   {
+    ["advance"]=507,
+    ["end"]=0,
+    ["extender"]=0,
+    ["glyph"]=984276,
+    ["start"]=169,
+   },
+  },
+  ["horiz_variants"]={ 10229 },
+ },
+ ["name"]="arrowleft",
+ ["width"]=1000,
+}
+\stoptyping
+
+This arrow symbol comes in two sizes. The extra size is mentioned in \type
+{horiz_variants}. When no more variants are seen, it switches to the extensible
+definition, that uses \type {horiz_parts}. The dimensions are in basepoints, the
+references to glyphs are decimal. The \type {end} and \type {start} fields
+specify the overlap. When \type {extender} equals 1 it signals a repeatable
+snippet.
+
+In the \TEX\ engine the slot allocated for the left arrow symbol has a \type
+{next} pointer to a larger shape. Here there is only one such shape but when
+there are more they form a linked list. The the last one in such a list gets the
+specification of the extenders.
+
+We hard|-|coded the width to 4cm so how does it work when the arrow has to adapt
+itself? There are two cases there. When we are putting text on top of or below an
+arrow, we know what the width is because we can measure the text. But when we use
+the arrow as a filler, we have to leave it to the engine to arrange it. In recent
+\LUATEX\ the definition can be as simple as:
+
+\starttyping
+\def\leftarrowfill{\leaders "2190 \hfill}
+\stoptyping
+
+or:
+
+\starttyping
+\def\leftarrowfill{\mathstylehbox{\leaders"2190\hfill}}
+\stoptyping
+
+In fact, we can use this new \LUATEX\ extension to \type {\leaders} to
+replace the accent hacks as well.
+
+\stopsection
+
+\startsection[title=Wrapping it in macros]
+
+If this was all, we would be done in a few lines of definitions but as usual
+there is more involved: especially text. The prerequisites can be summarized as
+follows:
+
+\startitemize[packed]
+\startitem
+    The width of the extensible need to adapt itself automatically.
+\stopitem
+\startitem
+    We need to be able to control horizontal and vertical offsets.
+\stopitem
+\startitem
+    We best have a math as well as a text variant (which is handy for chemistry).
+\stopitem
+\startitem
+    For historic reasons we need to deal with optional arguments in a special
+    (reverse) way.
+\stopitem
+\startitem
+    We need alternatives for extensibles on top, in the middle and at the bottom.
+\stopitem
+\stopitemize
+
+Using a low level command we can do this:
+
+\startbuffer[math]
+$x \directmathextensible{"2192}{top}{bottom} x$
+\stopbuffer
+
+\typebuffer[math] \blank \getbuffer[math] \blank
+
+This is not that exiting too look at, but the next might be:
+
+\enabletrackers[math.stackers.texts]
+
+\blank \getbuffer[math] \blank
+
+Here we have turned on a tracker:
+
+\starttyping
+\enabletrackers[math.stackers.texts]
+\stoptyping
+
+The toppart is transparent blue, the middlepart transparent red and the bottom
+part becomes transparent green. When the areas overlap you see the mixed color.
+
+Before we explore some options, we show some variants. Often extensibles are used
+in math mode, if only because they originate in math and come from math fonts.
+
+\startbuffer[text]
+$x \textstacker{"2192}{top}{bottom} x$
+\stopbuffer
+
+\typebuffer[text] \blank \getbuffer[text] \blank
+
+These commands also work outside math mode:
+
+\startbuffer[none]
+x \textstacker{"2192}{top}{bottom} x
+\stopbuffer
+
+\typebuffer[none] \blank \getbuffer[none] \blank
+
+and to some extend can adapt themselves:
+
+\startbuffer[high]
+x\high{x \textstacker{"2192}{top}{bottom} x} x
+\stopbuffer
+
+\typebuffer[high] \blank[2*big] \getbuffer[high] \blank
+
+\stopsection
+
+\startsection[title=Influencing the spacing]
+
+We will use the text example to illustrate some options.
+
+\startbuffer[demo]
+\ruledhbox \bgroup \quad
+    \setupmathstackers[location=top]%
+    \textstacker{"21C4}{top}{bottom}\quad
+    \setupmathstackers[location=high]%
+    \textstacker{"21C4}{top}{bottom}\quad
+    \setupmathstackers[location=middle]%
+    \textstacker{"21C4}{top}{bottom}\quad
+    \setupmathstackers[location=low]%
+    \textstacker{"21C4}{top}{bottom}\quad
+    \setupmathstackers[location=bottom]%
+    \textstacker{"21C4}{top}{bottom}\quad
+\egroup
+\stopbuffer
+
+\typebuffer[demo]
+
+You can set up extensibles to be shifted up and down.
+
+\blank \getbuffer[demo] \blank
+
+The above rendering uses the default spacing. When we set all values to zero we
+get this:
+
+\startbuffer[setup]
+\setupmathstackers
+  [voffset=\zeropoint,
+   hoffset=\zeropoint,
+   minheight=\exheight,
+   mindepth=\zeropoint,
+   minwidth=\zeropoint]
+\stopbuffer
+
+\blank \start \getbuffer[setup,demo] \stop \blank
+
+The setup looks like this:
+
+\typebuffer[setup]
+
+and gives a pretty tight rendering. The default values are:
+
+\starttyping
+\setupmathstackers
+  [voffset=.25\exheight,
+   hoffset=.5\emwidth,
+   minheight=\exheight,
+   mindepth=\zeropoint,
+   minwidth=\emwidth]
+\stoptyping
+
+\startbuffer[setup]
+\setupmathstackers
+  [voffset=2\exheight,
+   hoffset=\emwidth,
+   minheight=\exheight,
+   mindepth=\zeropoint,
+   minwidth=\zeropoint]
+\stopbuffer
+
+When we set \type {voffset} to twice the ex|-|height and \type {hoffset} to
+the em|-|width we get:
+
+\blank \start \getbuffer[setup,demo] \stop \blank
+
+We can enforce a (consistent) height and depth of the extensible by setting the
+minimum values:
+
+\startbuffer[setup]
+\setupmathstackers
+  [voffset=\zeropoint,
+   hoffset=\zeropoint,
+   minheight=5\exheight,
+   mindepth=3\exheight,
+   minwidth=6\emwidth]
+\stopbuffer
+
+\typebuffer
+
+\blank \start \getbuffer[setup,demo] \stop \blank
+
+\stopsection
+
+\startsection[title=A neat feature]
+
+A more obscure feature relates to the visual appearance. When we put something
+on top of for instance an arrow, it sometimes looks better when we only consider
+the middle part. Watch the following:
+
+\startbuffer[setup]
+\setupmathstackers
+  [voffset=\zeropoint,
+   hoffset=\zeropoint,
+   minheight=\zeropoint,
+   mindepth=\zeropoint,
+   minwidth=\zeropoint]
+\stopbuffer
+
+\startbuffer[demo]
+\ruledhbox \bgroup \quad
+    \setupmathstackers[offset=normal]%
+    \textstacker{"21C4}{top}{bottom}\quad
+    \setupmathstackers[offset=min]%
+    \textstacker{"21C4}{top}{bottom}\quad
+    \setupmathstackers[offset=max]%
+    \textstacker{"21C4}{top}{bottom}\quad
+\egroup
+\stopbuffer
+
+\typebuffer[demo]
+
+The \type {min} and \type {max} values will add extra offsets that relate to the
+width of the edge snippets.
+
+\blank \start \getbuffer[setup,demo] \stop \blank
+
+In this case both have the same result but the difference becomes clear when we
+set the \type {hoffset} to the em|-|width. In the case of \type {min} we don't
+add some extra space if the \type {hoffset} is applied.
+
+\startbuffer[setup]
+\setupmathstackers
+  [voffset=\zeropoint,
+   hoffset=\emwidth,
+   minheight=\zeropoint,
+   mindepth=\zeropoint,
+   minwidth=\zeropoint]
+\stopbuffer
+
+\startbuffer[demo]
+\ruledhbox \bgroup \quad
+    \setupmathstackers[offset=normal]%
+    \textstacker{"21C4}{top}{bottom}\quad
+    \setupmathstackers[offset=min]%
+    \textstacker{"21C4}{top}{bottom}\quad
+    \setupmathstackers[offset=max]%
+    \textstacker{"21C4}{top}{bottom}\quad
+\egroup
+\stopbuffer
+
+\typebuffer[demo]
+
+Of course in this example we have a symmetrical correction.
+
+\blank \start \getbuffer[setup,demo] \stop \blank
+
+A one sided arrow behaves different:
+
+\startbuffer[demo]
+\ruledhbox \bgroup \quad
+    \setupmathstackers[offset=normal]%
+    \textstacker{"2192}{top}{bottom}\quad
+    \setupmathstackers[offset=min]%
+    \textstacker{"2192}{top}{bottom}\quad
+    \setupmathstackers[offset=max]%
+    \textstacker{"2192}{top}{bottom}\quad
+\egroup
+\stopbuffer
+
+\blank \start \getbuffer[setup,demo] \stop \blank
+
+\stopsection
+
+\startsection[title=The user interface]
+
+It all starts out with categories. We have a couple of predefined categories in
+the core. The \type {mathematics} category typesets the top and bottom texts in
+mathmode, while the \type {text} category doesn't. The \type {reverse} category
+swaps its arguments. There are \type {upper} and \type {under} categories too.
+
+As with most \CONTEXT\ mechanisms inheritance is part of the picture:
+
+\starttyping
+\definemathextensibles [mine] [big] [offset=min]
+\stoptyping
+
+You can change settings with:
+
+\starttyping
+\setupmathstackers [mine] [big] [voffset=\exheight]
+\stoptyping
+
+For downward compatibility we also provide these:
+
+\starttyping
+\definemathextensibles [normal] [hoffset=0.5\emwidth]
+\definemathextensibles [none]   [hoffset=\zeropoint]
+\definemathextensibles [small]  [hoffset=1\emwidth]
+\definemathextensibles [medium] [hoffset=1.5\emwidth]
+\definemathextensibles [big]    [hoffset=2\emwidth]
+\stoptyping
+
+They inherit from \type {mathematics} so choosing this also forces the top and
+bottomtexts to be typeset in math mode.
+
+These commands don't define extensibles, they only provide a way to categorize
+them. There are couple of definers and one reason for that is that we want to
+define downward compatible commands.
+
+\starttyping
+\definemathextensible [reverse] [xleftarrow]  ["2190]
+\definemathextensible [reverse] [xrightarrow] ["2192]
+\stoptyping
+
+The \type {x} in the name is sort of standard for an extensible symbol with
+optionally some text on top or below. The reverse forced compatible behaviour.
+
+\startbuffer
+\xrightarrow{stuff below} {stuff on top} \quad
+\xrightarrow{stuff on top}               \quad
+\xrightarrow{}            {stuff on top} \quad
+\xrightarrow{stuff below} {}             \quad
+\xrightarrow{}            {}             \quad
+\xrightarrow                             \quad
+\stopbuffer
+
+\typebuffer \getbuffer
+
+New in \MKIV\ is the \type {t} variant that typesets the text as (indeed) text.
+In addition we have a normal|-|order \type {m} variant:
+
+\starttyping
+\definemathextensible [text] [tleftarrow]  ["2190]
+\definemathextensible [text] [trightarrow] ["2192]
+
+\definemathextensible [mathematics] [mleftarrow]  ["2190]
+\definemathextensible [mathematics] [mrightarrow] ["2192]
+\stoptyping
+
+This time the order is always top first and bottom next:
+
+\startbuffer
+\trightarrow{stuff on top} {stuff below} \quad
+\trightarrow{stuff on top} {}            \quad
+\trightarrow{stuff on top}               \quad
+\trightarrow{}             {stuff below} \quad
+\trightarrow                             \quad
+\stopbuffer
+
+\typebuffer
+
+So we get:
+
+\getbuffer
+
+As you can see, there is an optional first argument that specifies the category
+that applies. This permits you to define extra commands that have their own
+(spacing) properties.
+
+Earlier on we saw that defined commands can be forced into a category:
+
+\startbuffer
+\trightarrow[big]   {stuff on top} {stuff below} \quad
+\trightarrow[medium]{stuff on top} {stuff below} \quad
+\trightarrow[small] {stuff on top} {stuff below}
+\stopbuffer
+
+\typebuffer
+
+Here we get:
+
+\getbuffer
+
+A variation on this kind of extensibles are over- and underarrows. This time the
+text is the nucleus.
+
+\starttyping
+\definemathoverextensible  [top]    [overleftarrow]   ["2190]
+\definemathoverextensible  [top]    [overrightarrow]  ["2192]
+
+\definemathunderextensible [bottom] [underleftarrow]  ["2190]
+\definemathunderextensible [bottom] [underrightarrow] ["2192]
+\stoptyping
+
+In action this looks like:
+
+\startbuffer
+\ruledhbox \bgroup $ \quad
+     \overleftarrow {a}  \quad    \overleftarrow {ABC}  $ \quad
+  x_{\overleftarrow {a}} \quad x_{\overleftarrow {ABC}} $ \quad
+     \underleftarrow{a}  \quad    \underleftarrow{ABC}  $ \quad
+  x_{\underleftarrow{a}} \quad x_{\underleftarrow{ABC}} $ \quad
+$ \egroup
+\stopbuffer
+
+\typebuffer
+
+Here we also have tracing enabled, and we also show the bounding box:
+
+\blank \getbuffer \blank
+
+This leaves us one command: the one that defines the basic filler:
+
+\starttyping
+\definemathextensiblefiller [leftarrowfill]  ["2190]
+\definemathextensiblefiller [rightarrowfill] ["2192]
+\stoptyping
+
+Commands defined like this will stretch themselves to fit the circumstances,
+and normally they will fill op the available space.
+
+\startbuffer
+\hbox to 4cm {from here \leftarrowfill\ to there}
+\hbox to 8cm {from there \rightarrowfill\ to here}
+\stopbuffer
+
+\typebuffer
+
+These commands (like the others) work in text mode as well as in math mode.
+
+\blank \getbuffer \blank
+
+\stopsection
+
+\startsection[title=Special cases]
+
+One of the reasons why the arrows mechanism has always been somewhat
+configureable is that we need arrows in the chemistry code.
+
+\starttyping
+\definemathextensibles
+  [chemistry]
+  [offset=max,
+   left=\enspace,
+   right=\enspace,
+   hoffset=.5\emwidth]
+
+\definemathextensible [chemistry] [cleftarrow]          ["2190]
+\definemathextensible [chemistry] [crightarrow]         ["2192]
+\definemathextensible [chemistry] [crightoverleftarrow] ["21C4]
+\stoptyping
+
+\startbuffer
+2H + O \crightarrow{explosive}\ H\low{2}O
+\stopbuffer
+
+\typebuffer
+
+Of course normally such code is wrapped into the chemistry enviroments and
+support macros.
+
+\blank \getbuffer \blank
+
+If you want something else than an extensible you can use definitions like the
+following:
+
+\startbuffer
+\definemathtriplet [tripleta]
+\definemathtriplet [text] [tripletb]
+\definemathtriplet [text] [tripletc] [\otimes]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\tripleta{\ominus}{top}{botom} and
+\tripletb{\oplus} {top}{botom} and
+\tripletc         {top}{botom}
+\stopbuffer
+
+\typebuffer
+
+\blank \hbox{\getbuffer} \blank
+
+As optional first argument you can pass a category.
+
+\startbuffer
+\tripleta[mathematics]{\ominus}{top}{botom} and
+\tripletb[mathematics]{\oplus}{top}{botom} and
+\tripletc[mathematics]{top}{botom}
+\stopbuffer
+
+\typebuffer
+
+Which gives:
+
+\blank \hbox{\getbuffer} \blank
+
+Instead of \type {mathematics} you could have given its synonym \type {math}.
+Keep in mind that categories are shared among stackers. There is also a direct
+command:
+
+\starttyping
+before \mathtriplet{\otimes}{top}{botom} after
+\stoptyping
+
+\stopsection
+
+\startsection[title=An overview]
+
+We end with showing a list of extensibles that come with the font used here, the
+\TEX Gyre Pagella. First we load a module:
+
+\startbuffer
+\usemodule[s][math-extensibles]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This module provides a couple of commands that typesets a table with the
+extensibles as known in \CONTEXT. Beware: not all fonts have all those
+characters.
+
+\startbuffer
+\showmathextensibles[alternative=a]
+\stopbuffer
+
+A second command is:
+
+\typebuffer
+
+This commands shows the base glyph, and the stretched variant with text on top
+and below. When no symbol is found in the font a rule is rendered.
+
+\getbuffer
+
+\startbuffer
+\showmathextensibles[alternative=b]
+\stopbuffer
+
+\typebuffer
+
+This command typesets a list with \UNICODE\ entries and defined commands. There
+are empty entries due to lack of glyphs in the used font. Not all characters have
+an associated command. Some have multiple commands with different math classes.
+
+\getbuffer
+
+\stopsection
+
+\startsection[title=Remark]
+
+The number of extensions to the \LUATEX\ core math engine is not that large and
+mostly involves more control over spacing and support for \UNICODE\ math as
+\OPENTYPE\ math extensibles. However, a few years after writing this chapter the
+machinery was cleaned up a bit and in the process some more control was added to
+constructors for radicals, fractions and delimiters. The spacing and composition
+can be controlled in a bit more detail using keywords (and dimensions). Because
+in \CONTEXT\ we already have mechanisms in place not much of that new
+functionality is used (yet). Also, in the meantime \CONTEXT\ evolved further.
+This chapter is just a snapshot and it might even render a bit different in more
+recent versions of \CONTEXT\ and|/|or \LUATEX. After all, it was written as part
+of the development story.
+
+\stopsection
+
+\stopchapter
+
+\disabletrackers[math.extensibles.texts]
+
+\stopcomponent

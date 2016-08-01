@@ -1,0 +1,77 @@
+\startcomponent ma-cb-en-chemical
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Chemical stuf,reference=chemical]
+
+\index{chemistry}
+\index{chemical equitation}
+
+\Command{\tex{}chemical}
+
+Chemical structures may look very impressive.
+
+\startbuffer
+\startchemical[scale=small,width=fit,top=3000,bottom=3000]
+  \chemical[SIX,SB2356,DB14,Z2346,SR3,RZ3,SR6,-RZ6,+RZ6]
+           [C,N,C,C,H,H]
+  \chemical[PB:Z1,ONE,Z0,MOV8,Z0,SB24,DB7,Z27,PE][C,C,CH_3,O]
+  \chemical[PB:Z5,ONE,Z0,MOV6,Z0,SB24,DB7,Z47,PE][C,C,H_3C,O]
+  \chemical[SR24,RZ24][CH_3,H_3C]
+  \bottext{Compound A}
+\stopchemical
+\stopbuffer
+
+\placeformula[-]
+\startformula
+  \getbuffer
+\stopformula
+
+\CONTEXT\ relies on \METAPOST\ to draw these kind of chemical structures.
+Although these chemical structures are defined with only two or three commands,
+it takes some practice to get the right results. This is how the input looks:
+
+\typebuffer
+
+Chemical reactions can be typeset within a paragraph or as a display formula with
+the \type{\inlinechemical} and \type{\startchemicalformula} commands:
+
+\startbuffer
+\definefloat
+  [chemicalformula]
+  [chemicalformulas]
+
+One of the steps in the Hasselt canal water treatment is the removal of
+phosphate by means of a chemical reaction with iron:
+
+\placechemicalformula[none][]{}
+  {\startchemicalformula
+    \chemical{Fe(OH)_3}{iron hydroxide}
+    \chemical{PLUS}
+    \chemical{H_3PO_4}{phosphoric acid}
+    \chemical{GIVES}{\hphantom{whatever}}
+    \chemical{FePO_4}{iron phosphate}
+    \chemical{PLUS}
+    \chemical{H_2O}{water}
+  \stopchemicalformula}
+
+The \inlinechemical{FePO_4} is a solid and precipitates in water. It
+is filtered and re-used as a furtilizer resource.
+\stopbuffer
+
+\getbuffer
+
+This is defined by:
+
+\typebuffer
+
+The use of the chemical commands is described in the \goto{PPCHTeX Manual}[ url(manual:chemic) ]
+and the example manual \goto{Chemical Formulas in \CONTEXT} [ url(manual:chemic-ex) ].
+
+\stopchapter
+
+\stopcomponent
+
+

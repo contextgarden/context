@@ -1,0 +1,188 @@
+% engine=luatex macros=mkvi language=uk
+
+\startcomponent about-exploring
+
+\environment about-environemnt
+
+\startchapter[title=Still Expanding]
+
+In the beginning of October 2013 Luigi figured out that \LUAJITTEX\ could
+actually deal with \UTF\ identifiers. After we played a bit with this, a patch
+was made for stock \LUATEX\ to provide the same. In the process I found out that
+I needed to adapt the \SCITE\ lexer a bit and that some more characters had to
+get catcode~11 (letter). In the following text screendumps from the editor will
+be used instead of verbatim code. This also demonstrates how \SCITE\ deals with
+syntax highlighting.
+
+\starttexdefinition ShowExample #1
+    \startbaselinecorrection
+        \externalfigure[still-expanding-#1][scale=500]
+    \stopbaselinecorrection
+    \getbuffer
+\stoptexdefinition
+
+First we define a proper font for to deal with \CJK\ characters and a helper
+macro that wraps an example using that font.
+
+\startbuffer
+\definefont
+  [GoodForJapanese]
+  [heiseiminstd-w3]
+  [script=kana,
+   language=jan]
+
+\definestartstop
+  [example]
+  [style=GoodForJapanese]
+\stopbuffer
+
+\ShowExample{1}
+
+According to the Google translator, \example {例題} means example and \example
+{数} means number. It doesn't matter much as we only use these characters as
+demo. Of course one can wonder if it makes sense to define functions, variables
+and keys in a script other than basic Latin, but at least it looks kind of
+modern.
+
+\startbuffer
+\startluacode
+    local function 例題(str)
+        context.formatted.example("例題 1.%s: 数 %s",str,str)
+        context.par()
+    end
+
+    for i=1,3 do
+        例題(i)
+    end
+\stopluacode
+\stopbuffer
+
+We only show the first three lines. Because using the formatter gives nicer
+source code we operate in that subnamespace.
+
+\ShowExample{2}
+
+As \CONTEXT\ is already \UTF\ aware for a while you can define macros with such
+characters. It was a sort of coincidence that this specific range of characters
+had not yet gotten the proper catcodes, but that is something users don't need to
+worry about. If your script doesn't work, we just need to initialize a few more
+characters.
+
+\startbuffer
+\def\例題#1{\example{例題 2: 数 #1}\par}
+
+\例題{2.1}
+\stopbuffer
+
+\ShowExample{3}
+
+Of course this command is now also present at the \LUA\ end:
+
+\startbuffer
+\startluacode
+    context.startexample()
+    context.例題(2.2)
+    context.stopexample()
+\stopluacode
+\stopbuffer
+
+\ShowExample{4}
+
+The \type {MKVI} parser has also been adapted to this phenomena as have the
+alternative ways of defining macros. We could already do this:
+
+\startbuffer
+\starttexdefinition test #1
+    \startexample
+        例題 3: 数 #1 \par
+    \stopexample
+\stoptexdefinition
+
+\test{3}
+\stopbuffer
+
+\ShowExample{5}
+
+But now we can also do this:
+
+\startbuffer
+\starttexdefinition 例題 #1
+    \startexample
+        例題 4: 数 #1 \par
+    \stopexample
+\stoptexdefinition
+
+\例題{4}
+\stopbuffer
+
+\ShowExample{6}
+
+Named parameters support a wider range of characters too:
+
+\startbuffer
+\def\例題#数{\example{例題 5: 数 #数}\par}
+
+\例題{5}
+\stopbuffer
+
+\ShowExample{7}
+
+So, in the end we can have definitions like this:
+
+\startbuffer
+\starttexdefinition 例題 #数
+    \startexample
+        例題 6: 数 #数 \par
+    \stopexample
+\stoptexdefinition
+
+\例題{6}
+\stopbuffer
+
+\ShowExample{8}
+
+Of course the optional (first) arguments still are supported but these stay
+Latin.
+
+\startbuffer
+\starttexdefinition unexpanded 例題 #数
+    \startexample
+        例題 7: 数 #数 \par
+    \stopexample
+\stoptexdefinition
+
+\例題{7}
+\stopbuffer
+
+\ShowExample{9}
+
+Finally Luigi wondered of we could use math symbols too and of course there is no
+reason why not:
+
+\startbuffer
+\startluacode
+    function commands.∑(...)
+        local t = { ... }
+        local s = 0
+        for i=1,#t do
+            s = s + t[i]
+        end
+        context("% + t = %s",t,s)
+    end
+\stopluacode
+
+\ctxcommand{∑(1,3,5,7,9)}
+\stopbuffer
+
+\ShowExample{10}
+
+The \CONTEXT\ source code will of course stay \ASCII, although some of the multi
+lingual user interfaces already use characters other than that, for instance
+accented characters or completely different scripts (like Persian). We just went
+a step further and supported it at the \LUA\ end which in turn introduced those
+characters into \MKVI.
+
+\stopchapter
+
+\stopcomponent
+

@@ -1,0 +1,17 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][nleft=3,nright=2,width=5cm]
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{15}{\fakewords{100}{200}\par}
+
+\stopcolumnset
+
+\stoptext

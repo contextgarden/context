@@ -1,0 +1,545 @@
+\startcomponent hybrid-grouping
+
+\startbuffer[MyAbstract]
+\StartAbstract
+    In this article I will discuss a few things that are hard to do in
+    traditional \TEX, but reasonable well in \LUATEX.
+\StopAbstract
+\stopbuffer
+
+\doifmodeelse {tugboat} {
+    \usemodule[tug-01,abr-01]
+    \setvariables
+      [tugboat]
+      [columns=yes]
+    \setvariables
+      [tugboat]
+      [year=2010,
+       volume=99,
+       number=9,
+       page=99]
+    \setvariables
+      [tugboat]
+      [title=Grouping,
+       subtitle=A few things you can do with LUATEX,
+       keywords=,
+       author=Hans Hagen,
+       address=PRAGMA ADE\\Ridderstraat 27\\8061GH Hasselt NL,
+       email=pragma@wxs.nl]
+    %
+    % we use a buffer as abstract themselves are buffers and
+    % inside macros we loose line endings and such
+    \getbuffer[MyAbstract]
+    %
+    \StartArticle
+} {
+    \environment hybrid-environment
+    \startchapter[title={Grouping}]
+}
+
+\setupbars[rulethickness=.15] % nicer
+
+\startsection [title={Variants}]
+
+After using \TEX\ for a while you get accustomed to one of its interesting
+concepts: grouping. Programming languages like \PASCAL\ and \MODULA\ have
+keywords \type {begin} and \type {end}. So, one can say:
+
+\starttyping
+if test then begin
+    print_bold("test 1")
+    print_bold("test 2")
+end
+\stoptyping
+
+Other languages provide a syntax like:
+
+\starttyping
+if test {
+    print_bold("test 1")
+    print_bold("test 2")
+}
+\stoptyping
+
+So, in those languages the \type {begin} and \type {end} and|/|or the curly
+braces define a \quote {group} of statements. In \TEX\ on the other hand we have:
+
+\starttyping
+test \begingroup \bf test \endgroup test
+\stoptyping
+
+Here the second \type {test} comes out in a bold font and the switch to bold
+(basically a different font is selected) is reverted after the group is closed.
+So, in \TEX\ grouping deals with scope and not with grouping things together.
+
+In other languages it depends on the language of locally defined variables are
+visible afterwards but in \TEX\ they're really local unless a \type {\global}
+prefix (or one of the shortcuts) is used.
+
+In languages like \LUA\ we have constructs like:
+
+\starttyping
+for i=1,100 do
+    local j = i + 20
+    ...
+end
+\stoptyping
+
+Here \type {j} is visible after the loop ends unless prefixed by \type {local}.
+Yet another example is \METAPOST:
+
+\starttyping
+begingroup ;
+    save n ; numeric n ; n := 10 ;
+    ...
+endgroup ;
+\stoptyping
+
+Here all variables are global unless they are explicitly saved inside a group.
+This makes perfect sense as the resulting graphic also has a global (accumulated)
+property. In practice one rarely needs grouping, contrary to \TEX\ where one
+really wants to keep changes local, if only because document content is so
+unpredictable that one never knows when some change in state happens.
+
+In principle it is possible to carry over information across a group boundary.
+Consider this somewhat unrealistic example:
+
+\starttyping
+\begingroup
+    \leftskip 10pt
+    \begingroup
+        ....
+        \advance\leftskip 10pt
+        ....
+    \endgroup
+\endgroup
+\stoptyping
+
+How do we carry the advanced leftskip over the group boundary without using a
+global assignment which could have more drastic side effects? Here is the trick:
+
+\starttyping
+\begingroup
+    \leftskip 10pt
+    \begingroup
+        ....
+        \advance\leftskip 10pt
+        ....
+        \expandafter
+    \endgroup
+    \expandafter \leftskip \the\leftskip
+\endgroup
+\stoptyping
+
+This is typical the kind of code that gives new users the creeps but normally
+they never have to do that kind of coding. Also, that kind of tricks assumes that
+one knows how many groups are involved.
+
+\stopsection
+
+\startsection [title={Implication}]
+
+What does this all have to do with \LUATEX\ and \MKIV ? The user interface of
+\CONTEXT\ provide lots of commands like:
+
+\starttyping
+\setupthis[style=bold]
+\setupthat[color=green]
+\stoptyping
+
+Most of them obey grouping. However, consider a situation where we use \LUA\ code
+to deal with some aspect of typesetting, for instance numbering lines or adding
+ornamental elements to the text. In \CONTEXT\ we flag such actions with
+attributes and often the real action takes place a bit later, for instance when a
+paragraph or page becomes available.
+
+A comparable pure \TEX\ example is the following:
+
+\starttyping
+{test test \bf test \leftskip10pt test}
+\stoptyping
+
+Here the switch to bold happens as expected but no leftskip of 10pt is applied.
+This is because the set value is already forgotten when the paragraph is actually
+typeset. So in fact we'd need:
+
+\starttyping
+{test test \bf test \leftskip10pt test \par}
+\stoptyping
+
+Now, say that we have:
+
+\starttyping
+{test test test \setupflag[option=1] \flagnexttext test}
+\stoptyping
+
+We flag some text (using an attribute) and expect it to get a treatment where
+option~1 is used. However, the real action might take place when \TEX\ deals with
+the paragraph or page and by that time the specific option is already forgotten
+or it might have gotten another value. So, the rather natural \TEX\ grouping does
+not work out that well in a hybrid situation.
+
+As the user interface assumes a consistent behaviour we cannot simply make these
+settings global even if this makes much sense in practice. One solution is to
+carry the information with the flagged text i.e.\ associate it somehow in the
+attribute's value. Of course, as we never know in advance when this information
+is used, this might result in quite some states being stored persistently.
+
+A side effect of this \quote {problem} is that new commands might get suboptimal
+user interfaces (especially inheritance or cloning of constructs) that are
+somewhat driven by these \quote {limitations}. Of course we may wonder if the end
+user will notice this.
+
+To summarize this far, we have three sorts of grouping to deal with:
+
+\startitemize[item]
+
+\startitem
+    \TEX's normal grouping model limits its scope to the local situation and
+    normally has only direct and local consequences. We cannot carry information
+    over groups.
+\stopitem
+
+\startitem
+    Some of \TEX's properties are applied later, for instance when a paragraph or
+    page is typeset and in order to make \quote {local} changes effective, the
+    user needs to add explicit paragraph ending commands (like \type {\par} or
+    \type {\page}).
+\stopitem
+
+\startitem
+    Features dealt with asynchronously by \LUA\ are at that time unaware of
+    grouping and variables set that were active at the time the feature was
+    triggered so there we need to make sure that our settings travel with the
+    feature. There is not much that a user can do about it as this kind of
+    management has to be done by the feature itself.
+\stopitem
+
+\stopitemize
+
+\stopsection
+
+It is the third case that we will give an example of in the next section. We
+leave it up to the user if it gets noticed on the user interface.
+
+\startsection [title={An example}]
+
+A group of commands that has been reimplemented using a hybrid solution is
+underlining or more generic: bars. Just take a look at the following examples and
+try to get an idea on how to deal with grouping. Keep in mind that:
+
+\startitemize[packed]
+\startitem
+    Colors are attributes and are resolved in the backend, so way after the
+    paragraph has been typeset.
+\stopitem
+\startitem
+    Overstrike is also handled by an attribute and gets applied in the backend as
+    well, before colors are applied.
+\stopitem
+\startitem
+    Nested overstrikes might have different settings.
+\stopitem
+\startitem
+    An overstrike rule either inherits from the text or has its own color
+    setting.
+\stopitem
+\stopitemize
+
+First an example where we inherit color from the text:
+
+\startbuffer
+\definecolor[myblue][b=.75]
+\definebar[myoverstrike][overstrike][color=]
+
+Test \myoverstrike{%
+    Test \myoverstrike{\myblue
+        Test \myoverstrike{Test}
+        Test}
+    Test}
+Test
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Because color is also implemented using attributes and processed later on we can
+access that information when we deal with the bar.
+
+The following example has its own color setting:
+
+\startbuffer
+\definecolor[myblue][b=.75]
+\definecolor[myred] [r=.75]
+\definebar[myoverstrike][overstrike][color=myred]
+
+Test \myoverstrike{%
+    Test \myoverstrike{\myblue
+        Test \myoverstrike{Test}
+        Test}
+    Test}
+Test
+\stopbuffer
+
+\typebuffer \getbuffer
+
+See how we can color the levels differently:
+
+\startbuffer
+\definecolor[myblue] [b=.75]
+\definecolor[myred]  [r=.75]
+\definecolor[mygreen][g=.75]
+
+\definebar[myoverstrike:1][overstrike][color=myblue]
+\definebar[myoverstrike:2][overstrike][color=myred]
+\definebar[myoverstrike:3][overstrike][color=mygreen]
+
+Test \myoverstrike{%
+    Test \myoverstrike{%
+        Test \myoverstrike{Test}
+        Test}
+    Test}
+Test
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Watch this:
+
+\startbuffer
+\definecolor[myblue] [b=.75]
+\definecolor[myred]  [r=.75]
+\definecolor[mygreen][g=.75]
+
+\definebar[myoverstrike][overstrike][max=1,dy=0,offset=.5]
+\definebar[myoverstrike:1][myoverstrike][color=myblue]
+\definebar[myoverstrike:2][myoverstrike][color=myred]
+\definebar[myoverstrike:3][myoverstrike][color=mygreen]
+
+Test \myoverstrike{%
+    Test \myoverstrike{%
+        Test \myoverstrike{Test}
+        Test}
+    Test}
+Test
+\stopbuffer
+
+\typebuffer \getbuffer
+
+It this the perfect user interface? Probably not, but at least it keeps the
+implementation quite simple.
+
+The behaviour of the \MKIV\ implementation is roughly the same as in \MKII,
+although now we specify the dimensions and placement in terms of the ratio of the
+x-height of the current font.
+
+\startbuffer
+Test \overstrike{Test \overstrike{Test \overstrike{Test} Test} Test} Test \blank
+Test \underbar  {Test \underbar  {Test \underbar  {Test} Test} Test} Test \blank
+Test \overbar   {Test \overbar   {Test \overbar   {Test} Test} Test} Test \blank
+Test \underbar  {Test \overbar   {Test \overstrike{Test} Test} Test} Test \blank
+\stopbuffer
+
+\typebuffer \getbuffer
+
+As an extra this mechanism can also provide simple backgrounds. The normal
+background mechanism uses \METAPOST\ and the advantage is that we can use
+arbitrary shapes but it also carries some limitations. When the development of
+\LUATEX\ is a bit further along the road I will add the possibility to use
+\METAPOST\ shapes in this mechanism.
+
+Before we come to backgrounds, first take a look at these examples:
+
+\startbuffer
+\startbar[underbar]  \input zapf \stopbar \blank
+\startbar[underbars] \input zapf \stopbar \blank
+\stopbuffer
+
+\typebuffer \getbuffer
+
+First notice that it is no problem to span multiple lines and that hyphenation is
+not influenced at all. Second you can see that continuous rules are also
+possible. From such a continuous rule to a background is a small step:
+
+\startbuffer
+\definebar
+  [backbar]
+  [offset=1.5,rulethickness=2.8,color=blue,
+   continue=yes,order=background]
+
+\definebar
+  [forebar]
+  [offset=1.5,rulethickness=2.8,color=blue,
+   continue=yes,order=foreground]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The following example code looks messy but this has to do with the fact that we
+want properly spaced sample injection.
+
+\startbuffer
+from here
+    \startcolor[white]%
+        \startbar[backbar]%
+            \input zapf
+            \removeunwantedspaces
+        \stopbar
+    \stopcolor
+\space till here
+\blank
+from here
+    \startbar[forebar]%
+        \input zapf
+        \removeunwantedspaces
+    \stopbar
+\space till here
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Watch how we can use the order to hide content. By default rules are drawn on top
+of the text.
+
+Nice effects can be accomplished with transparencies:
+
+\startbuffer
+\definecolor [tblue] [b=.5,t=.25,a=1]
+\setupbars [backbar] [color=tblue]
+\setupbars [forebar] [color=tblue]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We use as example:
+
+\startbuffer[sample]
+from here {\white \backbar{test test}
+    \backbar {nested nested} \backbar{also also}} till here
+from here {\white \backbar{test test
+    \backbar {nested nested}          also also}} till here
+from here {\white \backbar{test test
+    \backbar {nested nested}          also also}} till here
+\stopbuffer
+
+\typebuffer[sample] \getbuffer[sample]
+
+The darker nested variant is just the result of two transparent bars on top of
+each other. We can limit stacking, for instance:
+
+\startbuffer
+\setupbars[backbar][max=1]
+\setupbars[forebar][max=1]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This gives
+
+\getbuffer[sample]
+
+There are currently some limitations that are mostly due to the fact that we use
+only one attribute for this feature and a change in value triggers another
+handling. So, we have no real nesting here.
+
+The default commands are defined as follows:
+
+\starttyping
+\definebar[overstrike]  [method=0,dy= 0.4,offset= 0.5]
+\definebar[underbar]    [method=1,dy=-0.4,offset=-0.3]
+\definebar[overbar]     [method=1,dy= 0.4,offset= 1.8]
+
+\definebar[overstrikes] [overstrike] [continue=yes]
+\definebar[underbars]   [underbar]   [continue=yes]
+\definebar[overbars]    [overbar]    [continue=yes]
+\stoptyping
+
+As the implementation is rather non|-|intrusive you can use bars
+almost everywhere. You can underbar a whole document but equally
+well you can stick to fooling around with for instance formulas.
+
+\startbuffer
+\definecolor [tred]   [r=.5,t=.25,a=1]
+\definecolor [tgreen] [g=.5,t=.25,a=1]
+\definecolor [tblue]  [b=.5,t=.25,a=1]
+
+\definebar [mathred]   [backbar] [color=tred]
+\definebar [mathgreen] [backbar] [color=tgreen]
+\definebar [mathblue]  [backbar] [color=tblue]
+
+\startformula
+    \mathred{e} = \mathgreen{\white mc} ^ {\mathblue{\white e}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\getbuffer
+
+We started this chapter with some words on grouping. In the examples you see no
+difference between adding bars and for instance applying color. However you need
+to keep in mind that this is only because behind the screens we keep the current
+settings along with the attribute. In practice this is only noticeable when you
+do lots of (local) changes to the settings. Take:
+
+\starttyping
+{test test test \setupbars[color=red] \underbar{test} test}
+\stoptyping
+
+This results in a local change in settings, which in turn will associate a new
+attribute to \type {\underbar}. So, in fact the following underbar becomes a
+different one than previous underbars. When the page is prepared, the unique
+attribute value will relate to those settings. Of course there are more
+mechanisms where such associations take place.
+
+\stopsection
+
+\startsection [title={More to come}]
+
+Is this all there is? No, as usual the underlying mechanisms can be used for
+other purposes as well. Take for instance inline notes:
+
+\startbuffer
+According to the wikipedia this is the longest English word:
+pneumonoultramicroscopicsilicovolcanoconiosis~\shiftup {other long
+words are pseudopseudohypoparathyroidism and
+flocci­nauci­nihili­pili­fication}. Of course in languages like Dutch and
+German we can make arbitrary long words by pasting words together.
+\stopbuffer
+
+\typebuffer
+
+This will produce:
+
+\getbuffer
+
+I wonder when users really start using such features.
+
+\stopsection
+
+\startsection [title={Summary}]
+
+Although under the hood the \MKIV\ bar commands are quite different from their
+\MKII\ counterparts users probably won't notice much difference at first sight.
+However, the new implementation does not interfere with the par builder and other
+mechanisms. Plus, it is configurable and it offers more functionality. However,
+as it is processed rather delayed, side effects might occur that are not
+foreseen.
+
+So, if you ever notice such unexpected side effects, you know where it might
+result from: what you asked for is processed much later and by then the
+circumstances might have changed. If you suspect that it relates to grouping
+there is a simple remedy: define a new bar command in the document preamble
+instead of changing properties mid|-|document. After all, you are supposed to
+separate rendering and content in the first place.
+
+\stopsection
+
+\doifmodeelse {tugboat} {
+    \StopArticle
+} {
+    \stopchapter
+}
+
+\stopcomponent

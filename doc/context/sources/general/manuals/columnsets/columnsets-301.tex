@@ -1,0 +1,29 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][n=4]
+
+\starttext
+
+\startcolumnset[example]
+
+   1:         \fakewords{50}{75} \column
+   2: []      \fakewords{50}{75} \column[yes]
+   3: [yes]   \fakewords{50}{75} \column[page]
+                                 \column[page] % redundant
+   4: [page]  \fakewords{50}{75} \column[3]
+   5: [3]     \fakewords{50}{75} \column[4]
+   6: [4]     \fakewords{50}{75} \column[first]
+   7: [first] \fakewords{50}{75} \column[last]
+   8: [last]  \fakewords{50}{75} \page
+   9: (page)  \fakewords{50}{75} \page
+                                 \page % redundant
+  10: (page)  \fakewords{50}{75} \column[3*5]
+  11: [3*5]   \fakewords{50}{75}
+
+\stopcolumnset
+
+\stoptext

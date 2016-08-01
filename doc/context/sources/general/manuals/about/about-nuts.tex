@@ -1,0 +1,619 @@
+% language=uk
+
+\startcomponent about-calls
+
+\environment about-environment
+
+\startchapter[title={Going nuts}]
+
+\startsection[title=Introduction]
+
+This is not the first story about speed and it will probably not be the last one
+either. This time we discuss a substantial speedup: upto 50\% with \LUAJITTEX.
+So, if you don't want to read further at least know that this speedup came at the
+cost of lots of testing and adapting code. Of course you could be one of those
+users who doesn't care about that and it may also be that your documents don't
+qualify at all.
+
+Often when I see a kid playing a modern computer game, I wonder how it gets done:
+all that high speed rendering, complex environments, shading, lightning,
+inter||player communication, many frames per second, adapted story lines,
+\unknown. Apart from clever programming, quite some of the work gets done by
+multiple cores working together, but above all the graphics and physics
+processors take much of the workload. The market has driven the development of
+this hardware and with success. In this perspective it's not that much of a
+surprise that complex \TEX\ jobs still take some time to get finished: all the
+hard work has to be done by interpreted languages using rather traditional
+hardware. Of course all kind of clever tricks make processors perform better than
+years ago, but still: we don't get much help from specialized hardware. \footnote
+{Apart from proper rendering on screen and printing on paper.} We're sort of
+stuck: when I replaced my 6 year old laptop (when I buy one, I always buy the
+fastest one possible) for a new one (so again a fast one) the gain in speed of
+processing a document was less than twice. The many times faster graphic
+capabilities are not of much help there, not is twice the amount of cores.
+
+So, if we ever want to go much faster, we need to improve the software. The
+reason for trying to speed up \MKIV\ has been mentioned before, but let's
+summarize it here:
+
+\startitemize
+
+\startitem
+    There was a time when users complained about the speed of \CONTEXT,
+    especially compared to other macro packages. I'm not so sure if this is still
+    a valid complaint, but I do my best to avoid bottlenecks and much time goes
+    into testing efficiency.
+\stopitem
+
+\startitem
+    Computers don't get that much faster, at least we don't see an impressive
+    boost each year any more. We might even see a slowdown when battery live
+    dominates: more cores at a lower speed seems to be a trend and that doesn't
+    suit current \TEX\ engines well. Of course we assume that \TEX\ will be
+    around for some time.
+\stopitem
+
+\startitem
+    Especially in automated workflows where multiple products each demanding a
+    couple of runs are produced speed pays back in terms of resources and
+    response time. Of course the time invested in the speedup is never regained
+    by ourselves, but we hope that users appreciate it.
+\stopitem
+
+\startitem
+    The more we do in \LUA, read: the more demanding users get and the more
+    functionality is enabled, the more we need to squeeze out of the processor.
+    And we want to do more in \LUA\ in order to get better typeset results.
+\stopitem
+
+\startitem
+    Although \LUA\ is pretty fast, future versions might be slower. So, the more
+    efficient we are, the less we probably suffer from changes.
+\stopitem
+
+\startitem
+    Using more complex scripts and fonts is so demanding that the number of pages
+    per second drops dramatically. Personally I consider a rate of 15 pps with
+    \LUATEX\ or 20 pps with \LUAJITTEX\ reasonable minima on my laptop. \footnote
+    {A Dell 6700 laptop with Core i7 3840QM, 16 GB memory and SSD, running 64 bit
+    Windows 8.}
+\stopitem
+
+\startitem
+    Among the reasons why \LUAJIT\ jitting does not help us much is that (at
+    least in \CONTEXT) we don't use that many core functions that qualify for
+    jitting. Also, as runs are limited in time and much code kicks in only a few
+    times the analysis and compilation doesn't pay back in runtime. So we cannot
+    simply sit down and wait till matters improve.
+\stopitem
+
+\stopitemize
+
+Luigi Scarso and I have been exploring several options, with \LUATEX\ as well as
+\LUAJITTEX. We observed that the virtual machine in \LUAJITTEX\ is much faster so
+that engine already gives a boots. The advertised jit feature can best be
+disabled as it slows down a run noticeably. We played with \type {ffi} as well,
+but there is additional overhead involved (\type {cdata}) as well as limited
+support for userdata, so we can forget about that too. \footnote {As we've now
+introduced getters we can construct a metatable at the \LUA\ end as that is what
+\type {ffi} likes most. But even then, we don't expect much from it: the four
+times slow down that experiments showed will not magically become a large gain.}
+Nevertheless, the twice as fast virtual machine of \LUAJIT\ is a real blessing,
+especially if you take into account that \CONTEXT\ spends quite some time in
+\LUA. We're also looking forward to the announced improved garbage collector of
+\LUAJIT.
+
+In the end we started looking at \LUATEX\ itself. What can be gained there,
+within the constraints of not having to completely redesign existing
+(\CONTEXT) \LUA\ code? \footnote {In the end a substantial change was needed but
+only in accessing node properties. The nice thing about C is that there macros
+often provide a level of abstraction which means that a similar adaption of \TEX\
+source code would be more convenient.}
+
+\stopsection
+
+\startsection[title={Two access models}]
+
+Because the \CONTEXT\ code is reasonably well optimized already, the only option
+is to look into \LUATEX\ itself. We had played with the \TEX||\LUA\ interface
+already and came to the conclusion that some runtime could be gained there. On
+the long run it adds up but it's not too impressive; these extensions are
+awaiting integration. Tracing and bechmarking as well as some quick and dirty
+patches demonstrated that there were two bottlenecks in accessing fields in
+nodes: checking (comparing the metatables) and constructing results (userdata
+with metatable).
+
+In case you're infamiliar with the concept this is how nodes work. There is an
+abstract object called node that is in \LUA\ qualified as user data. This object
+contains a pointer to \TEX's node memory. \footnote {The traditional \TEX\ node
+memory manager is used, but at some point we might change to regular C
+(de)allocation. This might be slower but has some advantages too.} As it is real
+user data (not so called light) it also carries a metatable. In the metatble
+methods are defined and one of them is the indexer. So when you say this:
+
+\starttyping
+local nn = n.next
+\stoptyping
+
+given that \type {n} is a node (userdata) the \type {next} key is resolved up
+using the \type {__index} metatable value, in our case a function. So, in fact,
+there is no \type {next} field: it's kind of virtual. The index function that
+gets the relevant data from node memory is a fast operation: after determining
+the kind of node, the requested field is located. The return value can be a
+number, for instance when we ask for \type {width}, which is also fast to return.
+But it can also be a node, as is the case with \type {next}, an then we need to
+allocate a new userdata object (memory management overhead) and a metatable has
+to be associated. And that comes at a cost.
+
+In a previous update we had already optimized the main \type {__index} function
+but felt that some more was possible. For instance we can avoid the lookup of the
+metatable for the returned node(s). And, if we don't use indexed access but a
+instead a function for frequently accessed fields we can sometimes gain a bit too.
+
+A logical next step was to avoid some checking, which is okay given that one pays
+a bit attention to coding. So, we provided a special table with some accessors of
+frequently used fields. We actually implemented this as a so called \quote {fast}
+access model, and adapted part of the \CONTEXT\ code to this, as we wanted to see
+if it made sense. We were able to gain 5 to 10\% which is nice but still not
+impressive. In fact, we concluded that for the average run using fast was indeed
+faster but not enough to justify rewriting code to the (often) less nice looking
+faster access. A nice side effect of the recoding was that I can add more advanced
+profiling.
+
+But, in the process we ran into another possibility: use accessors exclusively
+and avoiding userdata by passing around references to \TEX\ node memory directly.
+As internally nodes can be represented by numbers, we ended up with numbers, but
+future versions might use light userdata instead to carry pointers around. Light
+userdata is cheap basic object with no garbage collection involved. We tagged
+this method \quote {direct} and one can best treat the values that gets passed
+around as abstract entities (in \MKIV\ we call this special view on nodes
+\quote {nuts}).
+
+So let's summarize this in code. Say that we want to know the next node of
+\type {n}:
+
+\starttyping
+local nn = n.next
+\stoptyping
+
+Here \type {__index} will be resolved and the associated function be called. We
+can avoid that lookup by applying the \type {__index} method directly (after all,
+that one assumes a userdata node):
+
+\starttyping
+local getfield = getmetatable(n).__index
+
+local nn = getfield(n,"next") -- userdata
+\stoptyping
+
+But this is not a recomended interface for regular users. A normal helper that
+does checking is as about fast as the indexed method:
+
+\starttyping
+local getfield = node.getfield
+
+local nn = getfield(n,"next") -- userdata
+\stoptyping
+
+So, we can use indexes as well as getters mixed and both perform more of less
+equal. A dedicated getter is somewhat more efficient:
+
+\starttyping
+local getnext = node.getnext
+
+local nn = getnext(n) -- userdata
+\stoptyping
+
+If we forget about checking, we can go fast, in fact the nicely interfaced \type
+{__index} is the fast one.
+
+\starttyping
+local getfield = node.fast.getfield
+
+local nn = getfield(n,"next") -- userdata
+\stoptyping
+
+Even more efficient is the following as that one knows already what to fetch:
+
+\starttyping
+local getnext = node.fast.getnext
+
+local nn = getnext(n) -- userdata
+\stoptyping
+
+The next step, away from userdata was:
+
+\starttyping
+local getfield = node.direct.getfield
+
+local nn = getfield(n,"next") -- abstraction
+\stoptyping
+
+and:
+
+\starttyping
+local getnext = node.direct.getnext
+
+local nn = getnext(n) -- abstraction
+\stoptyping
+
+Because we considered three variants a bit too much and because \type {fast} was
+only 5 to 10\% faster in extreme cases, we decided to drop that experimental code
+and stick to providing accessors in the node namespace as well as direct variants
+for critical cases.
+
+Before you start thinking: \quote {should I rewrite all my code?} think twice!
+First of all, \type {n.next} is quite fast and switching between the normal and
+direct model also has some cost. So, unless you also adapt all your personal
+helper code or provide two variants of each, it only makes sense to use direct
+mode in critical situations. Userdata mode is much more convenient when
+developing code and only when you have millions of access you can gain by direct
+mode. And even then, if the time spent in \LUA\ is small compared to the time
+spent in \TEX\ it might not even be noticeable. The main reason we made direct
+variants is that it does pay of in \OPENTYPE\ font processing where complex
+scripts can result in many millions of calls indeed. And that code will be set up
+in such a way that it will use userdata by default and only in well controlled
+case (like \MKIV) we will use direct mode. \footnote {When we are confident
+that \type {direct} node code is stable we can consider going direct in generic
+code as well, although we need to make sure that third party code keeps working.}
+
+Another thing to keep in mind is that when you provide hooks for users you should
+assume that they use the regular mode so you need to cast the plugins onto direct
+mode then. Because the idea is that one should be able to swap normal functions
+by direct ones (which of course is only possible when no indexes are used) all
+relevant function in the \type {node} namespace are available in \type {direct}
+as well. This means that the following code is rather neutral:
+
+\starttyping
+local x = node -- or: x = node.direct
+
+for n in x.traverse(head) do
+  if x.getid(n) == node.id("glyph") and x.getchar(n) == 0x123 then
+    x.setfield(n,"char",0x456)
+  end
+end
+\stoptyping
+
+Of course one needs to make sure that \type {head} fits the model. For this you
+can use the cast functions:
+
+\starttyping
+node.direct.todirect(node or direct)
+node.direct.tonode(direct or node)
+\stoptyping
+
+These helpers are flexible enough to deal with either model. Aliasing the
+functions to locals is of course more efficient when a large number of calls
+happens (when you use \LUAJITTEX\ it will do some of that for you automatically).
+Of course, normally we use a more natural variant, using an id traverser:
+
+\starttyping
+for n in node.traverse_id(head,node.id("glyph")) do
+  if n.char == 0x123 then
+    n.char = 0x456
+  end
+end
+\stoptyping
+
+This is not that much slower, especially when it's only ran once. Just count the
+number of characters on a page (or in your document) and you will see that it's
+hard to come up with that many calls. Of course, processing many pages of Arabic
+using a mature font with many features enabled and contextual lookups, you do run
+into quantities. Tens of features times tens of contextual lookup passes can add
+up considerably. In Latin scripts you never reach such numbers, unless you use
+fonts like Zapfino.
+
+\stopsection
+
+\startsection[title={The transition}]
+
+After weeks of testing, rewriting, skyping, compiling and making decisions, we
+reached a more or less stable situation. At that point we were faced with a
+speedup that gave us a good feeling, but transition to the faster variant has a
+few consequences.
+
+\startitemize
+
+\startitem We need to use an adapted code base: indexes are to be replaced by
+function calls. This is a tedious job that can endanger stability so it has to be
+done with care. \footnote {The reverse is easier, as converting getters and
+setters to indexed is a rather simple conversion, while for instance changing
+type {.next} into a \type {getnext} needs more checking because that key is not
+unique to nodes.} \stopitem
+
+\startitem When using an old engine with the new \MKIV\ code, this approach will
+result in a somewhat slower run. Most users will probably accept a temporary
+slowdown of 10\%, so we might take this intermediate step. \stopitem
+
+\startitem When the regular getters and setters become available we get back to
+normal. Keep in mind that these accessors do some checking on arguments so that
+slows down to the level of using indexes. On the other hand, the dedicated ones
+(like \type {getnext}) are more efficient so there we gain. \stopitem
+
+\startitem As soon as direct becomes available we suddenly see a boost in speed.
+In documents of average complexity this is 10-20\% and when we use more complex
+scripts and fonts it can go up to 40\%. Here we assume that the macro package
+spends at least 50\% of its time in \LUA. \stopitem
+
+\stopitemize
+
+If we take the extremes: traditional indexed on the one hand versus optimized
+direct in \LUAJITTEX, a 50\% gain compared to the old methods is feasible.
+Because we also retrofitted some fast code into the regular accessor, indexed
+mode should also be somewhat faster compared to the older engine.
+
+In addition to the already provide helpers in the \type {node} namespace, we
+added the following:
+
+\starttabulate[|Tl|p|]
+\HL
+\NC getnext    \NC this one is used a lot when analyzing and processing node lists \NC \NR
+\NC getprev    \NC this one is used less often but fits in well (companion to \type {getnext}) \NC \NR
+\NC getfield   \NC this is the general accessor, in userdata mode as fast as indexed \NC \NR
+\HL
+\NC getid      \NC one of the most frequent called getters when parsing node lists \NC \NR
+\NC getsubtype \NC especially in fonts handling this getter gets used \NC \NR
+\HL
+\NC getfont    \NC especially in complex font handling this is a favourite \NC \NR
+\NC getchar    \NC as is this one \NC \NR
+\HL
+\NC getlist    \NC we often want to recurse into hlists and vlists and this helps \NC \NR
+\NC getleader  \NC and also often need to check if glue has leader specification (like list) \NC \NR
+\HL
+\NC setfield   \NC we have just one setter as setting is less critical \NC \NR
+\HL
+\stoptabulate
+
+As \type {getfield} and \type {setfield} are just variants on indexed access, you
+can also use them to access attributes. Just pass a number as key. In the \type
+{direct} namespace, helpers like \type {insert_before} also deal with direct
+nodes.
+
+We currently only provide \type {setfield} because setting happens less than
+getting. Of course you can construct nodelists at the \LUA\ end but it doesn't
+add up that fast and indexed access is then probably as efficient. One reason why
+setters are less an issue is that they don't return nodes so no userdata overhead
+is involved. We could (and might) provide \type {setnext} and \type {setprev},
+although, when you construct lists at the \LUA\ end you will probably use the
+type {insert_after} helper anyway.
+
+\stopsection
+
+\startsection[title={Observations}]
+
+So how do these variants perform? As we no longer have \type {fast} in the engine
+that I use for this text, we can only check \type {getfield} where we can simulate
+fast mode with calling the \type{__index} metamethod. In practice the \type
+{getnext} helper will be somewhat faster because no key has to be checked,
+although the \type {getfield} functions have been optimized according to the
+frequencies of accessed keys already.
+
+\starttabulate
+\NC node[*]              \NC 0.516 \NC \NR
+\NC node.fast.getfield   \NC 0.616 \NC \NR
+\NC node.getfield        \NC 0.494 \NC \NR
+\NC node.direct.getfield \NC 0.172 \NC \NR
+\stoptabulate
+
+Here we simulate a dumb 20 times node count of 200 paragraphs \type {tufte.tex}
+with a little bit of overhead for wrapping in functions. \footnote {When
+typesetting Arabic or using complex fonts we quickly get a tenfold.} We encounter
+over three million nodes this way. We average a couple or runs.
+
+\starttyping
+local function check(current)
+  local n = 0
+  while current do
+    n = n + 1
+    current = getfield(current,"next") -- current = current.next
+  end
+  return n
+end
+\stoptyping
+
+What we see here is that indexed access is quite okay given the amount of nodes,
+but that direct is much faster. Of course we will never see that gain in practice
+because much more happens than counting and because we also spend time in \TEX.
+The 300\% speedup will eventually go down to one tenth of that.
+
+Because \CONTEXT\ avoids node list processing when possible the baseline
+performance is not influenced much.
+
+\starttyping
+\starttext \dorecurse{1000}{test\page} \stoptext
+\stoptyping
+
+With \LUATEX\ we get some 575 pages per second and with \LUAJITTEX\ more than 610
+pages per second.
+
+\starttyping
+\setupbodyfont[pagella]
+
+\edef\zapf{\cldcontext
+  {context(io.loaddata(resolvers.findfile("zapf.tex")))}}
+
+\starttext \dorecurse{1000}{\zapf\par} \stoptext
+\stoptyping
+
+For this test \LUATEX\ needs 3.9 seconds and runs at 54 pages per second, while
+\LUAJITTEX\ needs only 2.3 seconds and gives us 93 pages per second.
+
+Just for the record, if we run this:
+
+\starttyping
+\starttext
+\stoptext
+\stoptyping
+
+a \LUATEX\ runs takes 0.229 seconds and a \LUAJITTEX\ run 0.178 seconds. This includes
+initializing fonts. If we run just this:
+
+\starttyping
+\stoptext
+\stoptyping
+
+\LUATEX\ needs 0.199 seconds and \LUAJITTEX\ only 0.082 seconds. So, in the
+meantime, we hardly spend any time on startup. Launching the binary and managing
+the job with \type {mtxrun} calling \type {mtx-context} adds 0.160 seconds
+overhead. Of course this is only true when you have already ran \CONTEXT\ once as
+the operating system normally caches files (in our case format files and fonts).
+This means that by now an edit|-|preview cycle is quite convenient. \footnote {I
+use \SCITE\ with dedicated lexers as editor and currently \type {sumatrapdf} as
+previewer.}
+
+As a more practical test we used the current version of \type {fonts-mkiv} (166
+pages, using all kind of font tricks and tracing), \type {about} (60 pages, quite
+some traced math) and a torture test of Arabic text (61 pages dense text). The
+following measurements are from 2013-07-05 after adapting some 50 files to the
+new model. Keep in mind that the old binary can fake a fast getfield and setfield
+but that the other getters are wrapped functions. The more we have, the slower it
+gets. We used the mingw versions.
+
+\starttabulate[|l|r|r|r|]
+\HL
+\NC version                                 \NC fonts \NC about \NC arabic \NC \NR
+\HL
+\NC old mingw, indexed plus some functions  \NC  8.9  \NC  3.2  \NC  20.3  \NC \NR
+\NC old mingw, fake functions               \NC  9.9  \NC  3.5  \NC  27.4  \NC \NR
+\HL
+\NC new mingw, node functions               \NC  9.0  \NC  3.1  \NC  20.8  \NC \NR
+\NC new mingw, indexed plus some functions  \NC  8.6  \NC  3.1  \NC  19.6  \NC \NR
+\NC new mingw, direct functions             \NC  7.5  \NC  2.6  \NC  14.4  \NC \NR
+\HL
+\stoptabulate
+
+The second row shows what happens when we use the adapted \CONTEXT\ code with an
+older binary. We're slower. The last row is what we will have eventually. All
+documents show a nice gain in speed and future extensions to \CONTEXT\ will no
+longer have the same impact as before. This is because what we here see also
+includes \TEX\ activity. The 300\% increase of speed of node access makes node
+processing less influential. On the average we gain 25\% here and as on these
+documents \LUAJITTEX\ gives us some 40\% gain on indexed access, it gives more
+than 50\% on the direct function based variant.
+
+In the fonts manual some 25 million getter accesses happen while the setters
+don't exceed one million. I lost the tracing files but at some point the Arabic
+test showed more than 100 millions accesses. So it's save to conclude that
+setters are sort of neglectable. In the fonts manual the amount of accesses to
+the previous node were less that 5000 while the id and next fields were the clear
+winners and list and leader fields also scored high. Of course it all depends on
+the kind of document and features used, but we think that the current set of
+helpers is quite adequate. And because we decided to provide that for normal
+nodes as well, there is no need to go direct for more simple cases.
+
+Maybe in the future further tracing might show that adding getters for width,
+height, depth and other properties of glyph, glue, kern, penalty, rule, hlist and
+vlist nodes can be of help, but quite probably only in direct mode combined with
+extensive list manipulations. We will definitely explore other getters but only
+after the current set has proven to be useful.
+
+\stopsection
+
+\startsection[title={Nuts}]
+
+So why going nuts and what are nuts? In Dutch \quote {node} sounds a bit like
+\quote {noot} and translates back to \quote {nut}. And as in \CONTEXT\ I needed
+word for these direct nodes they became \quote {nuts}. It also suits this
+project: at some point we're going nuts because we could squeeze more out
+of \LUAJITTEX, so we start looking at other options. And we're sure some folks
+consider us being nuts anyway, because we spend time on speeding up. And adapting
+the \LUATEX\ and \CONTEXT\ \MKIV\ code mid||summer is also kind of nuts.
+
+At the \CONTEXT\ 2013 conference we will present this new magic and about that
+time we've done enough tests to see if it works our well. The \LUATEX\ engine
+will provide the new helpers but they will stay experimental for a while as one
+never knows where we messed up.
+
+I end with another measurement set. Every now and and then I play with a \LUA\
+variant of the \TEX\ par builder. At some point it will show up on \MKIV\ but
+first I want to abstract it a bit more and provide some hooks. In order to test
+the performance I use the following tests:
+
+% \testfeatureonce{1000}{\tufte \par}
+
+\starttyping
+\testfeatureonce{1000}{\setbox0\hbox{\tufte}}
+
+\testfeatureonce{1000}{\setbox0\vbox{\tufte}}
+
+\startparbuilder[basic]
+  \testfeatureonce{1000}{\setbox0\vbox{\tufte}}
+\stopparbuilder
+\stoptyping
+
+We use a \type {\hbox} to determine the baseline performance. Then we break lines
+using the built|-|in parbuilder. Next we do the same but now with the \LUA\
+variant. \footnote {If we also enable protrusion and hz the \LUA\ variant suffers
+less because it implements this more efficient.}
+
+\starttabulate[|l|l|l|l|l|]
+\HL
+\NC                \NC \bf \rlap{luatex} \NC \NC \bf \rlap{luajittex} \NC \NC \NR
+\HL
+\NC                \NC \bf total \NC \bf linebreak \NC \bf total \NC \bf linebreak \NC \NR
+\HL
+\NC 223 pp nodes   \NC 5.67      \NC 2.25 flushing \NC 3.64      \NC 1.58 flushing \NC \NR
+\HL
+\NC hbox nodes     \NC 3.42      \NC               \NC 2.06      \NC               \NC \NR
+\NC vbox nodes     \NC 3.63      \NC 0.21 baseline \NC 2.27      \NC 0.21 baseline \NC \NR
+\NC vbox lua nodes \NC 7.38      \NC 3.96          \NC 3.95      \NC 1.89          \NC \NR
+\HL
+\NC 223 pp nuts    \NC 4.07      \NC 1.62 flushing \NC 2.36      \NC 1.11 flushing \NC \NR
+\HL
+\NC hbox nuts      \NC 2.45      \NC               \NC 1.25      \NC               \NC \NR
+\NC vbox nuts      \NC 2.53      \NC 0.08 baseline \NC 1.30      \NC 0.05 baseline \NC \NR
+\NC vbox lua nodes \NC 6.16      \NC 3.71          \NC 3.03      \NC 1.78          \NC \NR
+\NC vbox lua nuts  \NC 5.45      \NC 3.00          \NC 2.47      \NC 1.22          \NC \NR
+\HL
+\stoptabulate
+
+We see that on this test nuts have an advantage over nodes. In this case we
+mostly measure simple font processing and there is no markup involved. Even a 223
+page document with only simple paragraphs needs to be broken across pages,
+wrapped in page ornaments and shipped out. The overhead tagged as \quote
+{flushed} indicates how much extra time would have been involved in that. These
+numbers demonstrate that with nuts the \LUA\ parbuilder is performing 10\% better
+so we gain some. In a regular document only part of the processing involves
+paragraph building so switching to a \LUA\ variant has no big impact anyway,
+unless we have simple documents (like novels). When we bring hz into the picture
+performance will drop (and users occasionally report this) but here we already
+found out that this is mostly an implementation issue: the \LUA\ variant suffers
+less so we will backport some of the improvements. \footnote {There are still
+some aspects that can be approved. For instance these tests still checks lists
+for \type {prev} fields, something that is not needed in future versions.}
+
+\stopsection
+
+\startsection[title={\LUA\ 5.3}]
+
+When we were working on this the first working version of \LUA\ 5.3 was
+announced. Apart from some minor changes that won't affect us, the most important
+change is the introduction of integers deep down. On the one hand we can benefit
+from this, given that we adapt the \TEX|-|\LUA\ interfaces a bit: the distinction
+between \type {to_number} and \type {to_integer} for instance. And, numbers are
+always somewhat special in \TEX\ as it relates to reproduction on different
+architectures, also over time. There are some changes in conversion to string
+(needs attention) and maybe at some time also in the automated casting from
+strings to numbers (the last is no big deal for us).
+
+On the one hand the integers might have a positive influence on performance
+especially as scaled points are integers and because fonts use them too (maybe
+there is some advantage in memory usage). But we also need a proper efficient
+round function (or operator) then. I'm wondering if mixed integer and float usage
+will be efficient, but on the the other hand we do not that many calculations so
+the benefits might outperform the drawbacks.
+
+We noticed that 5.2 was somewhat faster but that the experimental generational
+garbage collecter makes runs slower. Let's hope that the garbage collector
+performance doesn't degrade. But the relative gain of node versus direct will
+probably stay.
+
+Because we already have an experimental setup we will probably experiment a bit
+with this in the future. Of course the question then is how \LUAJITTEX\ will work
+out, because it is already not 5.2 compatible it has to be seen if it will
+support the next level. At least in \CONTEXT\ \MKIV\ we can prepare ourselves as
+we did with \LUA\ 5.2 so that we're ready when we follow up.
+
+\stopsection
+
+\stopchapter

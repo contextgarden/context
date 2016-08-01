@@ -1,0 +1,225 @@
+% language=uk
+
+\startcomponent hybrid-merge
+
+\environment hybrid-environment
+
+\startchapter[title={Including pages}]
+
+\startsection [title={Introduction}]
+
+It is tempting to add more and more features to the backend code
+of the engine but it is not really needed. Of course there are
+features that can best be supported natively, like including
+images. In order to include \PDF\ images in \LUATEX\ the backend
+uses a library (xpdf or poppler) that can load an page from a file
+and embed that page into the final \PDF, including all relevant
+(indirect) objects needed for rendering. In \LUATEX\ an
+experimental interface to this library is included, tagged as
+\type {epdf}. In this chapter I will spend a few words on my first
+attempt to use this new library.
+
+\stopsection
+
+\startsection [title={The library}]
+
+The interface is rather low level. I got the following example
+from Hartmut (who is responsible for the \LUATEX\ backend code and
+this library).
+
+\starttyping
+local doc = epdf.open("luatexref-t.pdf")
+local cat = doc:getCatalog()
+local pag = cat:getPage(3)
+local box = pag:getMediaBox()
+
+local w = pag:getMediaWidth()
+local h = pag:getMediaHeight()
+local n = cat:getNumPages()
+local m = cat:readMetadata()
+
+print("nofpages: ", n)
+print("metadata: ", m)
+print("pagesize: ", w .. " * " .. h)
+print("mediabox: ", box.x1, box.x2, box.y1, box.y2)
+\stoptyping
+
+As you see, there are accessors for each interesting property
+of the file. Of course such an interface needs to be extended
+when the \PDF\ standard evolves. However, once we have access to
+the so called catalog, we can use regular accessors to the
+dictionaries, arrays and other data structures. So, in fact we
+don't need a full interface and can draw the line somewhere.
+
+There are a couple of things that you normally do not want to
+deal with. A \PDF\ file is in fact just a collection of objects
+that form a tree and each object can be reached by an index using
+a table that links the index to a position in the file. You don't
+want to be bothered with that kind of housekeeping indeed. Some data
+in the file, like page objects and annotations are organized in a
+tree form that one does not want to access in that form, so again
+we have something that benefits from an interface. But the
+majority of the objects are simple dictionaries and arrays.
+Streams (these hold the document content, image data, etc.) are
+normally not of much interest, but the library provides an
+interface as you can bet on needing it someday. The library also
+provides ways to extend the loaded \PDF\ file. I will not discuss
+that here.
+
+Because in \CONTEXT\ we already have the \type {lpdf} library for
+creating \PDF\ structures, it makes sense to define a similar
+interface for accessing \PDF. For that I wrote a wrapper that will
+be extended in due time (read: depending on needs). The previous
+code now looks as follows:
+
+\starttyping
+local doc = epdf.open("luatexref-t.pdf")
+local cat = doc.Catalog
+local pag = cat.Pages[3]
+local box = pag.MediaBox
+
+local llx, lly, urx, ury = box[1], box[2] box[3], box[4]
+
+local w = urx - llx -- or: box.width
+local h = ury - lly -- or: box.height
+local n = cat.Pages.size
+local m = cat.Metadata.stream
+
+print("nofpages: ", n)
+print("metadata: ", m)
+print("pagesize: ", w .. " * " .. h)
+print("mediabox: ", llx, lly, urx, ury)
+\stoptyping
+
+If we write code this way we are less dependent on the exact \API,
+especially because the \type {epdf} library uses methods to access
+the data and we cannot easily overload method names in there. When
+you look at the \type {box}, you will see that the natural way to
+access entries is using a number. As a bonus we also provide the
+\type {width} and \type {height} entries.
+
+\stopsection
+
+\startsection [title={Merging links}]
+
+It has always been on my agenda to add the possibility to carry
+the (link) annotations with an included page from a document. This
+is not that much needed in a regular document, but it can be handy
+when you use \CONTEXT\ to assemble documents. In any case, such a
+merge has to happen in such a way that it does not interfere with
+other links in the parent document. Supporting this in the engine
+is no option as each macro package follows its own approach to
+referencing and interactivity. Also, demands might differ and one
+would end up with a lot of (error prone) configurability. Of course
+we want scaled pages to behave well too.
+
+Implementing the merge took about a day and most of that time was
+spent on experimenting with the \type {epdf} library and making
+the first version of the wrapper. I definitely had expected to
+waste more time on it. So, this is yet another example of
+extensions that are quite doable in the \LUA|-|\TEX\ mix. Of
+course it helps that the \CONTEXT\ graphic inclusion code provides
+enough information to integrate such a feature. The merge is
+controlled by the interaction key, as shown here:
+
+\starttyping
+\externalfigure[somefile.pdf][page=1,scale=700,interaction=yes]
+\externalfigure[somefile.pdf][page=2,scale=600,interaction=yes]
+\externalfigure[somefile.pdf][page=3,scale=500,interaction=yes]
+\stoptyping
+
+You can finetune the merge by providing a list of options to the
+interaction key but that's still somewhat experimental. As a start
+the following links are supported.
+
+\startitemize[packed]
+\startitem internal references by name (often structure related) \stopitem
+\startitem internal references by page (e.g.\ table of contents) \stopitem
+\startitem external references by file (optionally by name and page) \stopitem
+\startitem references to uri's (normally used for webpages) \stopitem
+\stopitemize
+
+When users like this functionality (or when I really need it
+myself) more types of annotations can be added although support
+for \JAVASCRIPT\ and widgets doesn't make much sense. On the other
+hand, support for destinations is currently somewhat simplified
+but at some point we will support the relevant zoom options.
+
+The implementation is not that complex:
+
+\startitemize[packed]
+\startitem check if the included page has annotations \stopitem
+\startitem loop over the list of annotations and determine if
+           an annotation is supported (currently links) \stopitem
+\startitem analyze the annotation and overlay a button using the
+           destination that belongs to the annotation \stopitem
+\stopitemize
+
+Now, the reason why we can keep the implementation so simple is that
+we just map onto existing \CONTEXT\ functionality. And, as we have
+a rather integrated support for interactive actions, only a few
+basic commands are involved. Although we could do that all in
+\LUA, we delegate this to \TEX. We create a layer which we put on top
+of the image. Links are put onto this layer using the equivalent of:
+
+\starttyping
+\setlayer
+  [epdflinks]
+  [x=...,y=...,preset=leftbottom]
+  {\button
+     [width=...,height=...,offset=overlay,frame=off]
+     {}% no content
+     [...]}}
+\stoptyping
+
+The \type {\button} command is one of those interaction related
+commands that accepts any action related directive. In this first
+implementation we see the following destinations show up:
+
+\starttyping
+somelocation
+url(http://www.pragma-ade.com)
+file(somefile)
+somefile::somelocation
+somefile::page(10)
+\stoptyping
+
+References to pages become named destinations and are later
+resolved to page destinations again, depending on the
+configuration of the main document. The links within an included
+file get their own namespace so (hopefully) they will not clash
+with other links.
+
+We could use lower level code which is faster but we're not
+talking of time critical code here. At some point I might optimize
+the code a bit but for the moment this variant gives us some
+tracing options for free. Now, the nice thing about using this
+approach is that the already existing cross referencing mechanisms
+deal with the details. Each included page gets a unique reference
+so references to not included pages are ignored simply because
+they cannot be resolved. We can even consider overloading certain
+types of links or ignoring named destinations that match a
+specific pattern. Nothing is hard coded in the engine so we have
+complete freedom of doing that.
+
+\stopsection
+
+\startsection [title={Merging layers}]
+
+When including graphics from other applications it might be that
+they have their content organized in layers (that then can be
+turned on or off). So it will be no surprise that on the agenda is
+merging layer information: first a straightforward inclusion of
+optional content dictionaries, but it might make sense to parse
+the content stream and replace references to layers by those that
+are relevant in the main document. Especially when graphics come
+from different sources and layer names are inconsistent some
+manipulation might be needed so maybe we need more detailed
+control. Implementing this is is no big deal and mostly a matter
+of figuring out a clean and simple user interface.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -996,6 +996,56 @@ primarydef p randomshifted s =
     endgroup
 enddef ;
 
+vardef mfun_randomized_path(expr p,s) =
+    for i=0 upto length(p)-1 :
+         (point       i    of p) .. controls
+        ((postcontrol i    of p) randomshifted s) and
+        ((precontrol (i+1) of p) randomshifted s) ..
+    endfor
+    if cycle p :
+        cycle
+    else :
+        (point length(p) of p)
+    fi
+enddef;
+
+vardef mfun_randomized_picture(expr p,s)(text rnd) =
+    save currentpicture ;
+    picture currentpicture ;
+    currentpicture := nullpicture ;
+    for i within p :
+        addto currentpicture
+            if stroked i :
+                doublepath pathpart i rnd s
+                dashed dashpart i
+                withpen penpart i
+                withcolor colorpart i
+                withprescript prescriptpart i
+                withpostscript postscriptpart i
+            elseif filled i :
+                contour pathpart i rnd s
+                withpen penpart i
+                withcolor colorpart i
+                withprescript prescriptpart i
+                withpostscript postscriptpart i
+            else :
+                also i
+            fi
+        ;
+    endfor ;
+    currentpicture
+enddef ;
+
+primarydef p randomizedcontrols s = (
+    if path p :
+        mfun_randomized_path(p,s)
+    elseif picture p :
+        mfun_randomized_picture(p,s)(randomizedcontrols)
+    else :
+        p randomized s
+    fi
+) enddef ;
+
 primarydef p randomized s = (
     if path p :
         for i=0 upto length(p)-1 :
@@ -1041,6 +1091,8 @@ primarydef p randomized s = (
         fi
     elseif string p :
         (resolvedcolor(p)) randomized s
+    elseif picture p :
+        mfun_randomized_picture(p,s)(randomized)
     else :
         p + uniformdeviate s
     fi

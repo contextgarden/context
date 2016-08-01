@@ -1,0 +1,72 @@
+% language=uk
+
+\environment workflows-style
+
+\startcomponent workflows-setups
+
+\startchapter[title={Setups}]
+
+Setups are a powerful way to organize styles. They are basically macros but live
+in their own namespace. One advantage is that spaces in a setup are ignored so
+you can code without bothering about spurious spaces. Here is a trick that you
+can use when one style contains directives for multiple products:
+
+\startbuffer
+\startsetups tex:whatever
+    \fastsetup{tex:whatever:\documentvariable{stylevariant}}
+\stopsetups
+
+\startsetups tex:whatever:foo
+    FOO
+\stopsetups
+
+\startsetups tex:whatever:bar
+    BAR
+\stopsetups
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here we define a main setup \type {tex:whatever} that gets expanded in one of two
+variants, controlled by a document variable.
+
+\startbuffer
+\setups{tex:whatever}
+
+\setupdocument
+  [stylevariant=foo]
+
+\setups{tex:whatever}
+
+\setupdocument
+  [stylevariant=bar]
+
+\setups{tex:whatever}
+\stopbuffer
+
+\typebuffer
+
+These lines result in:
+
+\getbuffer
+
+In a similar fashion you can define \XML\ setups that are used to render
+elements:
+
+\starttyping
+\startxmlsetups xml:whatever
+    \xmlsetup{#1}{xml:whatever:\documentvariable{stylevariant}}
+\stopxmlsetups
+
+\startxmlsetups xml:whatever:foo
+    FOO: \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:whatever:bar
+    BAR: \xmlflush{#1}
+\stopxmlsetups
+\stoptyping
+
+\stopchapter
+
+\stopcomponent

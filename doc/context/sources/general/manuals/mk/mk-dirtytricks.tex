@@ -1,0 +1,144 @@
+% language=uk
+
+\startcomponent mk-dirtytricks
+
+\environment mk-environment
+
+\chapter {Dirty tricks}
+
+If you ever laid your hands on the \TeX book, the words \quote {dirty tricks} will
+forever be associated with an appendix of that book. There is no doubt that you need
+to know a bit of the internals of \TEX\ in order to master this kind of trickyness.
+
+In this chaper I will show a few dirty \LUATEX\ tricks. It also gives an impression
+of what kind of discussions Taco and I had when discussing what kind of support should
+be build in the interface.
+
+\subject{afterlua}
+
+When we look at \LUA\ from the \TEX\ end, we can do things like:
+
+\startbuffer
+\def\test#1{%
+    \setbox0=\hbox{\directlua0{tex.sprint(math.pi*#1)}}%
+    pi: \the\wd0\space\the\ht0\space\the\dp0\par
+}
+\stopbuffer
+
+\typebuffer \blank \getbuffer \blank
+
+But what if we are at the \LUA\ end and want to let \TEX\ handle things?  Imagine
+the following call:
+
+\startbuffer
+\setbox0\hbox{} \dimen0=0pt \ctxlua {
+    tex.sprint("\string\\setbox0=\string\\hbox{123}")
+    tex.sprint("\string\\the\string\\wd0")
+}
+\stopbuffer
+
+\typebuffer
+
+This gives: \ignorespaces \getbuffer. This may give you the impression that \TEX\
+kicks in immediately, but the following example demonstrates otherwise:
+
+\startbuffer
+\setbox0\hbox{} \dimen0=0pt \ctxlua {
+    tex.sprint("\string\\setbox0=\string\\hbox{123}")
+    tex.dimen[0] = tex.box[0].width
+    tex.sprint("\string\\the\string\\dimen0")
+}
+\stopbuffer
+
+\typebuffer
+
+This gives: \getbuffer. When still in \LUA, we never get to see the width
+of the box.
+
+A way out of this is the following rather straightforward approach:
+
+\starttyping
+function test(n)
+    function follow_up()
+        tex.sprint(tex.box[0].width)
+    end
+    tex.sprint("\\setbox0=\\hbox{123}\\directlua 0 {follow_up()}")
+end
+\stoptyping
+
+We can provide a more convenient solution for this:
+
+\starttyping
+after_lua = { } -- could also be done with closures
+
+function the_afterlua(...)
+    for _, fun in ipairs(after_lua) do
+        fun(...)
+    end
+    after_lua = { }
+end
+
+function afterlua(f)
+    after_lua[#after_lua+1] = f
+end
+
+function theafterlua(...)
+    tex.sprint("\\directlua 0 {the_afterlua("
+        .. table.concat({...},',') .. ")}")
+end
+\stoptyping
+
+If you look closely, you will see that we can (optionally) pass arguments
+to the function \type {theafterlua}. Usage now becomes:
+
+\starttyping
+function test(n)
+    afterlua(function(...)
+        tex.sprint(string.format("pi: %s %s %s\\par",...     ))
+    end)
+    afterlua(function(wd,ht,dp)
+        tex.sprint(string.format("ip: %s %s %s\\par",dp,ht,wd))
+    end)
+    tex.sprint(string.format("\\setbox0=\\hbox{%s}",math.pi*n))
+    local box_0 = tex.box[0]
+    theafterlua(box_0.width,box_0.height,box_0.depth)
+end
+\stoptyping
+
+The last call may confuse you but since it does a print to \TEX, it is
+in fact a delayed action. A cleaner implementation is the following:
+
+\starttyping
+local delayed = { }
+
+local function flushdelayed(...)
+    delayed = { }
+    for i=1, #t do
+        t[i](...)
+    end
+end
+
+function lua.delay(f)
+    delayed[#delayed+1] = f
+end
+
+function lua.flush(...)
+    tex.sprint("\\directlua{flushdelayed(" ..
+        table.concat({...},',') .. ")}")
+end
+\stoptyping
+
+Usage is similar:
+
+\starttyping
+function test(n)
+    lua.delay(function(...)
+        tex.sprint(string.format("pi: %s %s %s\\par",...))
+    end)
+    tex.sprint(string.format("\\setbox0=\\hbox{%s}",math.pi*n))
+    local box_0 = tex.box[0]
+    lua.flush(box_0.width,box_0.height,box_0.depth)
+end
+\stoptyping
+
+\stopcomponent

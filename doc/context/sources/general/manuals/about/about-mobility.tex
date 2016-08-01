@@ -1,0 +1,205 @@
+% language=uk
+
+\startcomponent about-mobility
+
+\environment about-environment
+
+\startchapter[title=Flash forward]
+
+\startsection[title=Introduction]
+
+At the 2013 \CONTEXT\ meeting in Breslov, Harald König has taken some of his
+gadgets with him and this time the target was to get \CONTEXT\ running on small
+devices, most noticeably a mobile phone. You may wonder what purpose this serves,
+but with such devices becoming more powerful each year, and desktops and laptops
+getting less popular, we might see the small devices taking their place.
+Especially when we can dock them in a cradle and connect them to a proper monitor
+and keyboard we might end up with universal devices. Combine that with projection
+on our retinas and less tactile input and it will be clear that we should at
+least look into this from the perspective of \TEX\ usage.
+
+\stopsection
+
+\startsection[title=The tests]
+
+We used five tests for measuring basic performance. Of course we made sure that
+binaries and resources were cached.
+
+Test 1 measures some basics, like typesetting a paragraph, flushing pages and
+loading a file. Because we do lots of pages we can also see if garbage collection
+is a problem.
+
+\typefile{pi-speed-1.tex}
+
+A normal \CONTEXT\ run is triggered with:
+
+\starttyping
+context speed-1
+\stoptyping
+
+but with
+
+\starttyping
+context --timing speed-1
+\stoptyping
+
+memory consumption is measured and one can generate a visual representation of
+this afterwards.
+
+\starttyping
+context --extra=timing speed-1
+\stoptyping
+
+We don't show them here, simply because we saw nothing exciting in the ones
+for these tests.
+
+The second test is rather stupid but it gives an indication of how efficient the
+base pagebuilder is:
+
+\typefile{pi-speed-2.tex}
+
+The numbers are normally 10 to 20 times more impressive than those for regular runs.
+
+Test three is a variation on test one but this time we avoid the file being read
+in many times, so we inline \type{ward.tex}. We also add no page breaks so we get
+less pages but with more content.
+
+\typefile{pi-speed-3.tex}
+
+The fourth test draws a few \METAPOST\ graphics, which themselves use a bit of
+typeset text.
+
+\typefile{pi-speed-4.tex}
+
+The last test, number five, is more demanding. Here we use some colors (which
+stresses the backend) and a dynamic switch to smallcaps, which puts a bit of a
+burden on the \OPENTYPE\ handler.
+
+\typefile{pi-speed-5.tex}
+
+\stopsection
+
+\startsection[title=Regular laptops]
+
+We started measuring on Haralds laptop, a Lenovo X201i, and got the following
+timings (that matched our expectations). The second column shows the runtime, the
+last column the pages per second.
+
+\starttabulate[|l|r|r|]
+\BC speed-1 \NC  5.8 \NC  17.1 \NC \NR
+\BC speed-2 \NC  3.6 \NC 275.6 \NC \NR
+\BC speed-3 \NC  5.1 \NC  19.8 \NC \NR
+\BC speed-4 \NC  0.6 \NC   1.8 \NC \NR
+\BC speed-5 \NC 11.9 \NC  10.6 \NC \NR
+\stoptabulate
+
+Just for comparison, as I'm wrapping this up in 2016, on my current Dell 7600 I
+get these timings (the last two columns are with \LUAJITTEX):
+
+\starttabulate[|l|r|r|r|r|]
+\BC speed-1 \NC  4.6 \NC  21.9 \NC 3.0 \NC  33.5 \NC \NR
+\BC speed-2 \NC  3.6 \NC 278.2 \NC 2.8 \NC 357.7 \NC \NR
+\BC speed-3 \NC  4.2 \NC  23.6 \NC 2,7 \NC  37.0 \NC \NR
+\BC speed-4 \NC  0.8 \NC   1.3 \NC 0.6 \NC   1.7 \NC \NR
+\BC speed-5 \NC  6.2 \NC  20.3 \NC 4.0 \NC  31.9 \NC \NR
+\stoptabulate
+
+These tests were run with a \LUATEX\ 0.98 and the most recent \CONTEXT\
+\OPENTYPE\ font processor. As we do more in \LUA\ that a few years back, one
+can't expect a much faster run, even when the Dell has a faster processor than
+the Lenovo. However, what gets noticed is that the fifth speed test runs about
+twice as fast which is mostly due to improvements in the handling of \OPENTYPE\
+features.
+
+\startsection[title=The Nexus IV]
+
+This mobile phone has a quad-core arm processor running at 1.5 GHz. With 2 Gb
+memory this should be sufficient for running \TEX. The operating system is
+Android, which means that some effort is needed to put \TEX\ with its resources
+on the internal flash disk. Access was remote from a laptop.
+
+\starttabulate[|l|r|r|]
+\BC speed-1 \NC 41.9 \NC  2.4 \NC \NR
+\BC speed-2 \NC 27.5 \NC 36.4 \NC \NR
+\BC speed-3 \NC 38.7 \NC  2.6 \NC \NR
+\BC speed-4 \NC  3.4 \NC  3.0 \NC \NR
+\BC speed-5 \NC 87.9 \NC  1.4 \NC \NR
+\stoptabulate
+
+So it looks like the phone runs these tests about five times slower than the
+laptop. The fifth test is most stressful on the hardware but as noted, a more
+recent \CONTEXT\ will give better times there due to improvements in feature
+processing.
+
+\stopsection
+
+\startsection[title=The Raspbery Pi]
+
+The Pi (we're talking of the first model here) has an extension bus and can be
+used to control whatever device, it has more the properties (and build) of a
+media player and indeed there are dedicated installations for that. But as this
+popular small device can host any \LINUX\ distribution this is what was done. The
+distribution of choice was OpenSuse. The setup was really experimental with an
+unboxed Pi, an unframed \LCD\ panel, a keyboard and mouse, a power supply and
+some wires to connect this all. With an ethernet cable running directly to the
+router a distribution could be fetched and installed.
+
+This device has a single core arm processor running at 700 Mhz with half a
+gigabyte of memory. Persistent memory is a flash card, not that fast but
+acceptable. The maximum read speed was some 20 MB per second. It was no real
+surprise that the set of tests ran much slower than on the phone.
+
+It took a bit of experimenting but a 200 Mhz overclock of the \CPU\ combined with
+overclocked memory made performance jump up. In fact, we got a speed that we
+could somehow relate to the phone that has a more modern \CPU\ and runs at 1.5
+times that speed.
+
+Being a regular \LINUX\ setup, installation was more straightforward than on the
+phone but of course it took a while before all was in place. The default clock
+timings are:
+
+\starttabulate[|l|r|r|]
+\BC speed-1 \NC  95.841 \NC  1.043 \NC \NR
+\BC speed-2 \NC  76.817 \NC 13.018 \NC \NR
+\BC speed-3 \NC  84.890 \NC  1.178 \NC \NR
+\BC speed-4 \NC  13.241 \NC  0.076 \NC \NR
+\BC speed-5 \NC 192.288 \NC  0.660 \NC \NR
+\stoptabulate
+
+Again, the main conclusion here is that documents that need lots of \OPENTYPE\
+feature juggling, this is not the best platform.
+
+\stopsection
+
+\startsection[title=Summary]
+
+We see small devices gaining more performance each iteration than larger
+machines. Their screens and input method also evolve at a higher speed. The
+question is if arm will keep dominating this segment, but at least it is clear
+that they are useable for \TEX\ processing. Keep in mind that we used \LUATEX,
+which means that we also have \LUA\ with its garbage collector. Add \CONTEXT\ to
+that, which is not that small and preloads quite some resources, and it will be
+clear that these devices actually perform quite well, given slower memory, slower
+disks, small caches etc. With down|-|scaled intel chips showing up it can only
+get better. Keep in mind that we only need one core, so the speed of one core
+matters more than having multiple cores available, although the other cores can
+be wasted on keeping up with your social demands on such a device in parallel
+with the \TEX\ run.
+
+A runtime five to ten times slower than a decent laptop is not something that we
+look forward to in a production environment, but when you're on the road it is
+quite okay, especially if it can replace a somewhat heavy portable workstation
+like we do. Okay, how much \TEX\ processing do you need when mobile, but still.
+As vendors of server hardware are looking into high density servers with lots of
+small fast processors, we might at some point actually use \TEX\ on such
+hardware. By then performance might be en par with virtual machines running on
+average loaded machines.
+
+We are pretty sure that on following \CONTEXT\ meetings more such experiments
+will be done so we'll keep you posted.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

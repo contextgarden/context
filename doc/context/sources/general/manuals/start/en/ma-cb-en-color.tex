@@ -1,0 +1,71 @@
+\startcomponent ma-cb-en-color
+
+\project ma-cb
+
+\startchapter[title=Color]
+
+\index{color}
+
+\Command{\tex{setupcolors}}
+\Command{\tex{color}}
+\Command{\tex{definecolor}}
+
+Text, frames or backgrounds can be set in color with:
+
+\shortsetup{color}
+
+Default the basic colors are available. Basic colors are for example
+red, white and blue. A color like orange can be defined with:
+
+\shortsetup{definecolor}
+
+You can define orange like this:
+
+\startbuffer[a]
+\definecolor [darkorange]   [c=0.0,m=0.60,y=1.00,k=0.0]
+\definecolor [middleorange] [.5(darkorange)]
+\stopbuffer
+
+\typebuffer[a]
+
+\getbuffer[a]
+
+It is of good practice to check (combinations of) colors on a larger
+surface:
+
+\startbuffer
+\blackrule[width=\hsize,height=1cm,color=red,after=]
+\blackrule[width=\hsize,height=1cm,color=white,after=]
+\blackrule[width=\hsize,height=1cm,color=blue,after=]
+\blackrule[width=\hsize,height=1cm,color=darkorange]
+\stopbuffer
+
+\typebuffer
+
+so you can see if they fit together:
+
+\blank
+
+\getbuffer
+
+A color can be invoked in a number of ways:
+
+\startbuffer
+\startcolor[red]
+On {\darkorange Kingsday} {\blue Hasselt} turns into a
+\color[darkorange]{colorfull} city.
+\stopcolor
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+More information on the use of color models, transparency and palets can be found
+on the \goto {\CONTEXTWIKI} [ url (http://wiki.contextgarden.net/Color) ]
+and in the
+\goto {\em Color Separation} [ url (manual:color) ] manual.
+
+\stopchapter
+
+\stopcomponent

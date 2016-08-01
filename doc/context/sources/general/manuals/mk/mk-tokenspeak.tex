@@ -1,0 +1,266 @@
+% language=uk
+
+\startcomponent mk-tokenspeak
+
+\environment mk-environment
+
+\chapter {Token speak}
+
+\subject{tokenization}
+
+Most \TEX\ users only deal with (keyed in) characters and (produced) output. Some
+will play with boxes, skips and kerns or maybe even leaders (repeated sequences
+of the former). Others will be grateful that macro package writers take care of
+such things.
+
+Macro writers on the other hand deal properties of characters, like catcodes and
+a truckload of other codes, with lists made out of boxes, skips, kerns and
+penalties but even they cannot look much deeper into \TEX's internals. Their
+deeper understanding comes from reading the \TEX book or even looking at the
+source code.
+
+When someone enters the magic world of \TEX\ and starts asking around on a bit,
+he or she will at some point get confronted with the concept of \quote {tokens}.
+A token is what ends up in \TEX\ after characters have entered its machinery.
+Sometimes it even seems that one is only considered a qualified macro writer if
+one can talk the right token||speak. So what are those magic tokens and how can
+\LUATEX\ shed light on this.
+
+In a moment we will show examples of how \LUATEX\ turns characters into tokens,
+but when looking at those sequences, you need to keep a few things in mind:
+
+\startitemize[packed]
+\startitem
+    A sequence of characters that starts with an escape symbol (normally this is
+    the backslash) is looked up in the hash table (which relates those names to
+    meanings) and replaced by its reference. Such a reference is much faster than
+    looking up the sequence each time.
+\stopitem
+\startitem
+    Characters can have special meanings, for instance a dollar is often used to
+    enter and exit math mode, and a percent symbol starts a comment and hides
+    everything following it on the same line. These meanings are determined by
+    the character's catcode.
+\stopitem
+\startitem
+    All the characters that will end up actually typeset have catcode \quote
+    {letter} or \quote {other} assigned. A sequence of items with catcode
+    \quote{letter} is considered a word and can potentially become hyphenated.
+\stopitem
+\stopitemize
+
+\subject{examples}
+
+We will now provide a few examples of how \TEX\ sees your input.
+
+\starttyping
+Hi there!
+\stoptyping
+
+\starttokens[demo]Hi there!\stoptokens \setups{ShowCollect}
+
+Here we see three kind ot tokens. At this stage a space is still recognizable as
+such but later this will become a skip. In our current setup, the exclamation
+mark is not a letter.
+
+\starttyping
+Hans \& Taco use Lua\TeX \char 33\relax
+\stoptyping
+
+\starttokens[demo]Hans \& Taco use Lua\TeX \char 33\relax\stoptokens \setups{ShowCollect}
+
+Here we see a few new tokens, a \quote {char\_given} and a \quote {call}. The
+first represents a \type {\chardef} i.e.\ a reference to a character slot in a
+font, and the second one a macro that will expand to the \TEX\ logo. Watch how
+the space after a control sequence is eaten up. The exclamation mark is a direct
+reference to character slot~33.
+
+\starttyping
+\noindent {\bf Hans} \par \hbox{Taco} \endgraf
+\stoptyping
+
+\starttokens[demo]\noindent {\bf Hans} \par \hbox{Taco} \endgraf\stoptokens \setups{ShowCollect}
+
+As you can see, some primitives and macro's that are bound to them (like \type
+{\endgraf}) have an internal representation on top of their name.
+
+\starttyping
+before \dimen2=10pt after \the\dimen2
+\stoptyping
+
+\starttokens[demo]before \dimen2=10pt after \the\dimen2\stoptokens \setups{ShowCollect}
+
+As you can see, registers are not explicitly named, one needs the associated
+register code to determine it's character (a dimension in our case).
+
+\starttyping
+before \inframed[width=3cm]{whatever} after
+\stoptyping
+
+\starttokens[demo]before \inframed[width=3cm]{whatever} after\stoptokens \setups{ShowCollect}
+
+As you can see, even when control sequences are collapsed into a reference, we
+still end up with many tokens, and because each token has three properties (cmd,
+chr and id) in practice we end up with more memory used after tokenization.
+
+\starttyping
+compound|-|word
+\stoptyping
+
+\starttokens[demo]compound|-|word\stoptokens \setups{ShowCollect}
+
+This example uses an active character to handle compound words (a \CONTEXT\
+feature).
+
+\starttyping
+hm, \directlua 0 { tex.sprint("Hello World") }
+\stoptyping
+
+\starttokens[demo]hm, \directlua 0 { tex.sprint("Hello World!") }\stoptokens \setups{ShowCollect}
+
+The previous example shows what happens when we include a bit of \LUA\ code
+\unknown\ it is just seen as regular input, but when the string is passed to
+\LUA, only the chr property is passed, so we no longer can distinguish between
+letters and other characters.
+
+A macro definition converts to tokens as follows.
+
+\starttokens[demo]\def\Test#1#2{[#2][#1]} \Test{A}{B}\stoptokens \setups{ShowCollect}
+
+As we already mentioned, a token has three properties. More details can be found
+in the reference manual so we will not go into much detail here.
+
+{\bf The original interceptor for tokens but that one has been replaced by a more
+powerful scanning mechanism. The following text is no longer applicable but kept
+as historic reference. The new token scanner is discussed in later articles.}
+
+% keep text formatted as it is now:
+
+\starttyping[color=]
+
+A most simple callback is:
+
+\starttyping
+callback.register('token_filter', token.get_next)
+\stoptyping
+
+In principle you can call \type {token.get_next} anytime you want
+to intercept a token. In that case you can feed back tokens into
+\TEX\ by using a trick like:
+
+\starttyping
+function tex.printlist(data)
+   callback.register('token_filter', function ()
+       callback.register('token_filter', nil)
+       return data
+    end)
+end
+\stoptyping
+
+Another example of usage is:
+
+\starttyping
+callback.register('token_filter', function ()
+    local t = token.get_next
+    local cmd, chr, id = t[1], t[2], t[3]
+    -- do something with cmd, chr, id
+    return { cmd, chr, id }
+end)
+\stoptyping
+
+There is a whole repertoire of related functions, one is \type
+{token.create}, which can be used as:
+
+\starttyping
+tex.printlist{
+    token.create("hbox"),
+    token.create(utf.byte("{"),  1),
+    token.create(utf.byte("?"), 12),
+    token.create(utf.byte("}"),  2),
+}
+\stoptyping
+
+This results in: \ctxlua {
+    tex.printlist{
+        token.create("hbox"),
+        token.create(utf.byte("{"),  1),
+        token.create(utf.byte("?"), 12),
+        token.create(utf.byte("}"),  2),
+    }
+}
+
+While playing with this we made a few auxiliary functions that
+permit things like:
+
+\starttyping
+tex.printlist ( table.unnest ( {
+    tokens.hbox,
+    tokens.bgroup,
+    tokens.letters("12345"),
+    tokens.egroup,
+} ) )
+\stoptyping
+
+Unnesting is needed because the result of the \type {letters} call
+is a table, and the \type {printlist} function wants a flattened
+table.
+
+The result looks like: \ctxlua {
+    local t = table.unnest {
+        tokens.hbox,
+        tokens.bgroup,
+        tokens.letters("12345"),
+        tokens.egroup,
+    }
+    tex.printlist (t)
+    tokens.collectors.show(t)
+}
+
+In practice, manipulating tokens or constructing lists of tokens
+this way is rather cumbersome, but at least we now have some
+kind of access, if only for illustrative purposes.
+
+\starttyping
+\hbox{12345\hbox{54321}}
+\stoptyping
+
+can also be done by saying:
+
+\starttyping
+tex.sprint("\\hbox{12345\\hbox{54321}}")
+\stoptyping
+
+or under \CONTEXT's basic catcode regime:
+
+\starttyping
+tex.sprint(tex.ctxcatcodes, "\\hbox{12345\\hbox{54321}}")
+\stoptyping
+
+If you like it the hard way:
+
+\starttyping
+tex.printlist ( table.unnest ( {
+    tokens.hbox,
+        tokens.bgroup,
+            tokens.letters("12345"),
+            tokens.hbox,
+                tokens.bgroup,
+                    tokens.letters(string.reverse("12345")),
+                tokens.egroup,
+        tokens.egroup
+} ) )
+\stoptyping
+
+This method may attract those who dislike the traditional \TEX\
+syntax for doing the same thing. Okay, a careful reader will
+notice that reversing the string in \TEX\ takes a bit more
+trickery, so \unknown
+
+\stoptyping
+
+% end of verbose text
+
+{\bf The \type {tokens} etc.\ examples shows here make no sense anyway as we have
+a more extensive interface to the macro language: \type {context}.}
+
+\stopcomponent

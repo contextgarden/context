@@ -1,0 +1,2880 @@
+% language=uk
+
+\environment still-environment
+
+\starttext
+
+\startchapter[title=Math new style: are we better off?]
+
+\startsection[title=Introduction]
+
+In this article I will summarize the state of upgrading math support in \CONTEXT\
+per mid 2013 in the perspective of demand, usability, font development and
+\LUATEX. There will be some examples, but don't consider this a manual: there are
+enough articles in the \type {mkiv}, \type {hybrid} and \type {about} series
+about specific topics; after all, we started with this many years ago. Where
+possible I will draw some conclusions with respect to the engine. Some comments
+might sound like criticism, but you should keep in mind that I wouldn't spend so
+much time on \TEX\ if I would not like it that much. It's just that the
+environment wherein \TEX\ is and can be used is not always as perfect as one
+likes it to be, i.e.\ bad habits and decisions once made can be pretty persistent
+and haunt us forever. I'm not referring to \TEX\ the language and program here,
+but more to its use in scientific publishing: in an early stage standards were
+set and habits were nurtured which meant that to some extent the coding resembles
+the early days of computing and the look and feel got frozen in time, in spite of
+developments in coding and evolving typographic needs. I think that the community
+has missed some opportunities to influence and improve matters which means that
+we're stuck with suboptimal situations and, although they are an improvement,
+\UNICODE\ math and \OPENTYPE\ math have their flaws.
+
+This is not a manual. Some aspects will be explained with examples, others are
+just mentioned. I've written down enough details in the documents that describe
+the history of \LUATEX\ and \MKIV\ and dedicated manuals and repeating myself
+makes not much sense. Even if you think that I talk nonsense, some of the
+examples might set you thinking. This article was written for the \TUG\ 2013
+conference in Japan. Many thanks to Barbara Beeton for proofreading and providing
+feedback.
+
+\stopsection
+
+\startsection[title=Some basic questions]
+
+Is there still a need for a program like \TEX ? Those who typeset math will argue
+that there is. After all, one of the reasons why \TEX\ showed up is typesetting
+math. In this perspective we should ask ourselves a few questions:
+
+\startitemize[packed]
+\startitem Is \TEX\ still the most adequate tool? \stopitem
+\startitem Does it make sense to invest in better machinery? \stopitem
+\startitem Have we learned from the past and improved matters? \stopitem
+\startitem What drives development and choices to be made? \stopitem
+\stopitemize
+
+The first question is not that easy to answer, unless you see proof in the fact
+that \TEX\ is still popular for typesetting a wide range of complex content (with
+critical editions being among the most complex). Indeed the program still
+attracts new users and developers. But we need to be realistic. First of all,
+there is some bias involved: if you have used a tool for many years, it becomes
+the one and only and best tool. But that doesn't necessarily make it the best
+tool for everyone.
+
+In this internet world finding a few thousand fellow users gives the impression
+that there is a wide audience but there can be of course thousandfold more users
+of other systems that don't fall into your scope. This is fine: I always wonder
+why there is not more diversity; for instance, we have only a few operating
+systems to choose from, and in communities around computer languages there is a
+tendency to evangelize (sometimes quite extreme). We should also take into
+account that a small audience can have a large impact so size doesn't matter
+much.
+
+As \TEX\ is still popular among mathematicians, we can assume that it hasn't lost
+its charm yet and often it is their only option. We have a somewhat curious
+situation that scientific publishers still want to receive \TEX\ documents |<|a
+demand that is not much different from organizations demanding \MSWORD\
+documents|>| but at the same time don't care too much about \TEX\ at all. Their
+involvement in user groups has started degrading long ago, compared to their
+profits; they don't invest in development; they are mostly profit driven, i.e.\
+those who submit their articles don't even own their sources any more, etc.\
+
+On the other hand, we have users who make their own books (self|-|publishing) and
+who go, certainly in coding and style, beyond what publishers do: they want to
+use all kinds of fonts (and mixtures), color, nicely integrated graphics, more
+interesting layouts, experiment with alternative presentations. But especially
+for documents that contain math that also brings a price: you have to spend more
+time on thinking about presenting the content and coding of the source. This all
+means that if we look at the user side, alternative input is an option,
+especially if they want to publish on different media. I know that there are
+\CONTEXT\ users who make documents (or articles) with \CONTEXT, using whatever
+coding suits best, and do some conversion when it has to be submitted to a
+journal. Personally I think that the lack of interest of (commercial) publishers,
+and their rather minimal role in development, no longer qualifies them to come up
+with requirements for the input, if only because in the end all gets redone
+anyway (in Far Far Away).
+
+It means that, as long as \TEX\ is feasible, we are relatively free to move on
+and experiment with alternative input. Therefore the other two questions become
+relevant. The \TEX\ engines are adapted to new font technology and a couple of
+math fonts are being developed (funded by the user groups). Although the \TEX\
+community didn't take the lead in math font technology we are catching up. At the
+same time we're investing much time in new tools, but given the fact that much
+math is produced for publishers it doesn't get much exposure. Scientific
+publishing is quite traditional and like other publishing lags behind and
+eventually will disappear in its current form. It could happen that one morning
+we find out that all that \quote {publishers want it this or that way} gets
+replaced by ways of publishing where authors do all themselves. A publisher (or
+his supplier) can keep using a 20-year old \TEX\ ecosystem without problems and
+no one will notice, but users can go on and come up with more modern designs and
+output formats and in that perspective the availability of modern engines and
+fonts is good. I've said it before: for \CONTEXT\ user demand drives development.
+
+In the next sections I will focus on different aspects of math and how we went
+from \MKII\ to \MKIV. I will also discuss some (pending) issues. For each aspect
+I will try to answer the third question: did matters improve and if not, and how
+do we cope with it (in \CONTEXT).
+
+\stopsection
+
+\startsection[title=The math script]
+
+All math starts with symbols and|/|or characters that have some symbolic meaning
+and in \TEX\ speak this can be entered in a rather natural way:
+
+\startbuffer
+$ y = 2x + b $
+\stopbuffer
+
+\typebuffer
+
+In order to let \TEX\ know it's math (the equivalent of) two dollar signs are
+used as triggers. The output of this input is: \inlinebuffer. But not all is that
+simple, for instance if we want to square the x, we need to use a superscript
+signal:
+
+\startbuffer
+$ y = x^2 + ax + b $
+\stopbuffer
+
+\typebuffer
+
+The \type {^} symbol results in a smaller \type {2} raised after the \type {x} as
+in \inlinebuffer. Ok, this \type {^} and its cousin \type {_} are well known
+conventions so we stick to this kind of input.
+
+\startbuffer
+$ y = \sqrt { x^2 + ax + b } $
+\stopbuffer
+
+A next level of complexity introduces special commands, for instance a command
+that will wrap its argument in a square root symbol: \inlinebuffer.
+
+\typebuffer
+
+It is no big deal to avoid the backslash and use this kind of coding:
+
+\startbuffer
+\asciimath { y = sqrt ( x^2 + ax + b ) }
+\stopbuffer
+
+\typebuffer
+
+In fact, we have been supporting scientific calculator input for over a decade in
+projects where relatively simple math had to be typeset. In one of our
+longest|-|running math related projects the input went from \TEX, to content
+\MATHML\ to \OPENMATH\ and via presentation \MATHML\ ended up as a combination of
+some kind of encoding that web browsers can deal with. This brings us to reality:
+it's web technology that drives (and will drive math) coding. Unfortunately
+content driven coding (like content \MATHML) does not seem to be the winner here,
+even if it renders easier and is more robust.
+
+Later I will discuss fences, like parentheses. Take this dummy formula:
+
+\starttyping
+$ (x + 1) / a = (x - 1) / b $
+\stoptyping
+
+In a sequential (inline) rendering this will come out okay. A more display mode
+friendly variant can be:
+
+\starttyping
+$ \frac{x + 1}{a} = \frac{x - 1}{b} $
+\stoptyping
+
+which in pure \TEX\ would have been:
+
+\starttyping
+$ {x + 1} \over {a} = {x - 1} \over {b} $
+\stoptyping
+
+The main difference between these two ways of coding is that in the second
+(plain) variant the parser doesn't know in advance what it is dealing with. There
+are a few cases in \TEX\ where this kind of parsing is needed and it complicates
+not only the parser but also is not too handy at the macro level. This is why the
+\type {\frac} macro is often used instead. In \LUATEX\ we didn't dare to get rid
+of \type {\over} and friends, even if we're sure they are not used that often by
+users.
+
+In inline or in more complex display math, the use of fences is quite normal.
+
+\startbuffer
+$ ( \frac{x + 1}{a}  + 1 )^2  = \frac{x - 1}{b} $
+\stopbuffer
+
+\typebuffer
+
+Here we have a problem. The parentheses don't come out well.
+
+\blank \noindentation \getbuffer \blank
+
+We have to do this:
+
+\startbuffer
+$ \left( \frac{x + 1}{a}  + 1 \right)^2  = \frac{x - 1}{b} $
+\stopbuffer
+
+\typebuffer
+
+in order to get:
+
+\blank \noindentation \getbuffer \blank
+
+Doing that \type{\left}|-|\type{\right} trick automatically is hard, although in
+\MATHML, where we have to interpret operators anyway it is somewhat easier. The
+biggest issue here is that these two directives need to be paired. In \ETEX\ a
+\type {\middle} primitive was added to provide a way to have bars adapt their
+height to the surroundings. Interesting is that where at the character level a
+\type {(} has a math property \type {open} and \type {)} has \type {close}. The
+bar, as we will see later, can also act as separator but this property does not
+exist. Because properties (classes in \TEX\ speak) determine spacing we have a
+problem here. So far we didn't extend the repertoire of properties in \LUATEX\ to
+suit our needs (although in \CONTEXT\ we do have more properties).
+
+If you are a \TEX\ user typesetting math, you can without doubt come up with more
+cases of source coding that have the potential of introducing complexities. But
+you will also have noticed that in most cases \TEX\ does a pretty good job on
+rendering math out of the box. And macro packages can provide additional
+constructs that help to hide the details of fine tuning (because there is a lot
+that {\em can} be fine tuned).
+
+In \TEX\ there are a couple of special cases that we can reconsider in the
+perspective of (for instance) faster machines. Normally a macro cannot have a
+\type {\par} in one of its arguments. By defining them as \type {\long} this
+limitation goes away. This default limitation was handy in times when a run was
+relatively slow and grabbing a whole document source as argument due to a missing
+brace had a price. Nowadays this is no real issue which is why in \LUATEX\ we can
+disable \type {\long} which indeed we do in \CONTEXT. On the agenda is to also
+permit \type {\par} in a math formula, as currently \TEX\ complains loudly.
+Permitting a bit more spacy formula definitions (by using empty lines) would be a
+good thing.
+
+Another catch is that in traditional \TEX\ math characters cannot be used outside
+math. That restriction has been lifted. Of course users need to be aware of the
+fact that a mix of math and text symbols can be visually incompatible.
+
+In the examples we used \type {^} and \type {_} and in math mode these have
+special meanings. Traditionally in text mode they trigger an error message. In
+\CONTEXT\ \MKIV\ we have made these characters regular characters but in math
+mode they still behave as expected. \footnote {In an intermediate version \type
+{\nonknuthmode} and \type {\donknuthmode} controlled this.} In a similar fashion
+the \type {&} is an ampersand and when you enable \type {\asciimode} the dollar
+and percent signs also become regular. \footnote {Double percent signs act as
+comments then which is comparable to comments in some programming languages.} In
+\LUATEX\ we have introduced primitives for all characters (or more precisely:
+catcodes) that \TEX\ uses for special purposes like opening and closing math
+mode, scripts, table alignment, etc.
+
+In projects that involve \XML\ we use \MATHML. In \TEX\ many characters can be
+inserted using commands that are tuned for some purpose. The same character can
+be associated with several commands. In \MATHML\ entities and \UNICODE\
+characters are used instead of commands. Interesting is that whenever we get math
+coded that way, there is a good chance that the coding is inconsistent. Of course
+there are ways in \MATHML\ to make sure that a character gets interpreted in the
+right way. For instance, the \type {mfenced} element drives the process of
+(matching) parenthesis, brackets, etc.\ and a renderer can use this property to
+make sure these symbols stretch vertically when needed. However, using \type {mo}
+in an \type {mrow} for a fence is also an option, but that demands some more
+(fuzzy) analysis. I will not go into details here, but some of the more obscure
+options and flags in \CONTEXT\ relate to overcoming issues with such cases.
+
+I have no experience with how \MSWORD\ handles math input, apart from seeing some
+demos. But I know that there is some input parsing involved that is a mixture
+between \TEX\ and analysis. Just as word processing has driven math font
+technology it might be that at some point users expect more clever processing of
+input. To a large extent \TEX\ users already expect that. Where till now \TEX\
+could inspire the way word processers do math, word processors can inspire \TEX
+ies way of inputting text.
+
+So, we have \MATHML, which, in spite of being structured, is still providing
+users a lot of freedom. Then there are word processors, where mouse clicks and
+interpretation does the job. And of course we have \TEX, with its familiar
+backslashes. Let us consider math, when seen in print, as a script to express the
+math language. And indeed, in \OPENTYPE, math is one of the official scripts
+although one where a rather specific kind of machinery is needed in order to get
+output.
+
+I could show more complex math formulas but no matter what notation is used,
+coding will always be somewhat cumbersome and handywork. Math formula coding and
+typesetting remains a craft in itself and \TEX\ notation will keep its place for
+a while. So, with that aspect settled we can continue to discuss rendering.
+
+% So what drives development? I tend to forget about publishers, who, if \TEX\ is
+% known at all in the organization, outsource anyway, and focus on users. One of
+% these users is me, and we do some work for publishers, but they seldom know or
+% care what tools we use. Users also contribute to development: for instance user
+% groups spend considerable money on font development. Interesting is that given
+% the substantial profits of publishers who indirectly still benefit from this it
+% are the users who invest in the tools. In my opinion this also puts them in
+% charge. And of course, developments with respect to input, output and fonts are a
+% driving force behind engine development. There are some more factors: control, as
+% \TEX\ is a programming language, and joy, as manipulating look and feel can be
+% fun. In the future these two will probably dominate over the others, when
+% typesetting and print become more specialized.
+
+\stopsection
+
+\startsection[title=Alphabets]
+
+I have written about math alphabets before so let's keep it simple here. I think
+we can safely say that most math support mechanisms in macro packages are
+inspired by plain \TEX. In traditional \TEX\ we have fonts with a limited number
+of glyphs and an eight|-|bit engine, so in order to get the thousands of possible
+characters mapped onto glyphs the right one has to be picked from some font. In
+addition to characters that you find in \UNICODE, there are also variants,
+additional sizes and bits and pieces that are used in constructing large
+characters, so in practice a math font is quite large. But it is unlikely that we
+will ever run into a situation where fonts pose limits.
+
+The easiest way is of course a direct mapping: an \quote {a} entered in math mode
+becomes an \quote{$a$} simply because the current font at that time has an italic
+shape in the slot referenced by the character. If we want a bold shape instead,
+we can switch to another font and still input an \quote {a}. The 16 families
+available are normally enough for the alphabets that we need. Because symbols can
+be collected in any font, they are normally accessed by name, like \type {\oplus}
+or $\oplus$.
+
+In \UNICODE\ math the math italic \quote {$a$} has slot \type {U+1D44E} and
+directly entering this character in a \UNICODE\ aware \TEX\ engine also has to
+give that \quote {$a$}. In fact, it is the only official way to get that
+character and the fact that we can enter the traditional \ASCII\ characters and
+get an italic shape is a side effect of the macro package, for instance the way
+it defines math fonts and families. \footnote {Our experience is that even when
+for instance \MATHML\ permits coding of math in \XML, copy editors have no
+problem with abusing regular italic font switches to simulate math. This can
+result is a weird mix of math rendering.}
+
+\definefont[mathdemo][file:texgyrepagellamath*mathematics]
+
+Before we move on, let's stress a limitation in \UNICODE\ with respect to math
+alphabets. It has always been a principle of \UNICODE\ committees to never
+duplicate entries. So, thanks to the availability of some characters in
+traditional (font) encodings, we ended up with some symbols that are used for
+math in the older regions of \UNICODE. As a consequence some alphabets have gaps.
+The only real reason I can come up with for accepting these gaps is that old
+documents using these symbols would be not compatible with gapfull \UNICODE\ math
+but I could argue that a document that uses those old codepoints uses commands
+(and needs some special fonts) to get the other symbols anyway, so it's unlikely
+to be a real math document. On the other hand, once we start using \UNICODE\ math
+we could benefit from gapless alphabets simply because otherwise each application
+would have to deal with the exceptions. One can come up with arguments like
+\quotation {just use this or that library} but that assumes persistence, and also
+forces everyone to use the same approach. In fact, if we hide behind a library we
+could as well have hidden the vectors (alphabets) as well. But as they are
+exposed, the gaps stand out as an anomaly. \footnote {One good reason for not
+having the gaps is that when users cut and paste there is no way to know if \type
+{U+210E} is used as Planck constant or variable of some sort, i.e.\ the not
+existing \type {0x1D455}. There is no official way to tag it as something math,
+and even then, as it has no code point it so has lost it's meaning, contrary to a
+copied $i$.} Let's illustrate this with an example. Say that we load the \TEX
+Gyre Pagella math font and call up a few characters:
+
+\startbuffer
+\definefont[mathdemo][file:texgyrepagellamath*mathematics]
+\mathdemo \char"0211C \char"1D507 \char"1D515
+\stopbuffer
+
+\typebuffer
+
+The \UNICODE\ fraktur math alphabet is continuous but the \quote {MATHEMATICAL
+FRAKTUR CAPITAL R} is missing as we already have the \type {BLACK-LETTER CAPITAL
+R} instead. So, this is why we only see two characters show up. It means that in
+the input we cannot have a \type {U+1D515}.
+
+\blank \start \getbuffer \stop \blank
+
+Of course we can cheat and fill in the gap:
+
+\startbuffer
+\definefontfeature
+  [mymathematics]
+  [mathematics]
+  [mathgaps=yes]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This feature will help us cheat:
+
+\startbuffer
+\definefont[mathdemo][file:texgyrepagellamath*mymathematics]
+\mathdemo \char"0211C \char"1D507 \char"1D515
+\stopbuffer
+
+\typebuffer
+
+This time we can use the character. I wonder what would happen if the \TEX\
+community would simply state that slot \type {U+1D515} is valid. I bet that math
+related applications would support it, as they also support more obscure
+properties of \TEX\ input encoding.
+
+\blank \start \getbuffer \stop \blank
+
+If you still wonder why I bother about this, here is a practical example. The
+\SCITE\ editor that I use is rather flexible and permits me to implement advanced
+lexers for \CONTEXT\ (and especially hybrid usage). It also permits to hook in
+\LUA\ code and that way the editor can (within bounds) be extended. As an example
+I've added some button bars that permit entering math alphabets. Of course the
+appearance depends on the font used but operating systems tend to consult
+multiple fonts when the core font of the editor doesn't provide a glyph.
+
+\startlinecorrection
+    \externalfigure[math-stripe.png][width=\textwidth]
+\stoplinecorrection
+
+Here I show a small portion of the stripe with buttons that inject the shown
+characters. What happens in the rendering is that first the used font is
+consulted and that one has a couple of \quote {BLACK LETTER CAPITAL}s so they get
+used. The others are \quote {MATHEMATICAL FRAKTUR CAPITAL}s and since the font is
+not a math font the renderer takes them from (in this case) Cambria Math, which
+is why they look so different, especially in proportion. Of course we could start
+out with Cambria but it has no monospace (which I want for editing) and is a less
+complete text font, so we have a chicken||egg problem here. It is one reason why
+as part of the math font project we extend the Dejavu Sans Mono with proper
+(consistent) math symbols. Anyhow, it illustrates why gaps are kind of evil from
+the application point of view.
+
+\startluacode
+local data     = characters.data
+
+local bold     = context.bold
+local verbatim = context.formatted.type
+local small    = context.small
+local normal   = context
+
+local NC, NR, HL = context.NC, context.NR, context.HL
+
+context.start()
+
+context.definefont(
+    { "mathdemo"},
+    { "file:texgyrepagellamath*mymathematics" }
+)
+
+context.starttabulate { "||c||||" }
+    NC() bold("gap")
+    NC() bold("char")
+    NC() bold("meant")
+    NC() bold("unicode")
+    NC() bold("used")
+    NR() HL()
+    for k, v in table.sortedhash(mathematics.gaps) do
+        local description = data[v].description
+        local surrogate = string.match(description,".- (.)$")
+        if not surrogate then
+            surrogate = "H"
+        end
+        for i=k-1,1,-1 do
+            local d = data[i].description
+            if d ~= "PRIVATE SLOT" then
+                surrogate = string.gsub(d,"(.)$",surrogate)
+                break
+            end
+        end
+        NC() verbatim("%U",k)
+        NC() normal  ("\\mathdemo %c",k)
+        NC() small   (surrogate)
+        NC() verbatim("%U",v)
+        NC() small   (description)
+        NR()
+    end
+context.stoptabulate()
+
+context.stop()
+\stopluacode
+
+Barbara Beeton told me that, although it took some convincing arguments in the
+discussions about math in \UNICODE, we have at least one hole less than to be
+expected: slot \type {U+1D4C1} has not been seen as already covered by \type
+{U+02113}. So is there really this distinction between a \typ {MATHEMATICAL
+SCRIPT SMALL L} and \typ {SCRIPT SMALL L} (usually \type {\ell} in macro
+packages? Indeed there is, although at the time of this writing interestingly
+Latin Modern fonts lacked the mathematical one (which in \CONTEXT\ math mode
+normally results in an upright drop||in). Such details become important when math
+is edited by someone not familiar with the distinction between a variable (or
+whatever) represented by a script shape and the length operator. There seems not
+to be agreement by font designers about the shapes being upright or italic, so
+some confusion will remain, although this does not matter as long as within the
+font they differ.
+
+\definefont[SampleMathLatinModern][file:latinmodern-math]
+\definefont[SampleMathStixXits]   [file:xits-math]
+\definefont[SampleMathBonum]      [file:texgyrebonum-math]
+\definefont[SampleMathTermes]     [file:texgyretermes-math]
+\definefont[SampleMathPagella]    [file:texgyrepagella-math]
+\definefont[SampleMathLucida]     [file:lucidabrightmathot]
+
+\starttabulate[||||]
+    \NC \bf font     \NC \bf \type {U+1D4C1} \NC \bf \type {U+02113} \NC \NR
+    \HL
+    \NC latin modern \NC \SampleMathLatinModern \char"1D4C1 \NC \SampleMathLatinModern \char"02113 \NC \NR
+    \NC stix/xits    \NC \SampleMathStixXits    \char"1D4C1 \NC \SampleMathStixXits    \char"02113 \NC \NR
+    \NC bonum        \NC \SampleMathBonum       \char"1D4C1 \NC \SampleMathBonum       \char"02113 \NC \NR
+    \NC termes       \NC \SampleMathTermes      \char"1D4C1 \NC \SampleMathTermes      \char"02113 \NC \NR
+    \NC pagella      \NC \SampleMathPagella     \char"1D4C1 \NC \SampleMathPagella     \char"02113 \NC \NR
+    \NC lucida       \NC \SampleMathLucida      \char"1D4C1 \NC \SampleMathLucida      \char"02113 \NC \NR
+\stoptabulate
+
+As math uses greek and because greek was already present in \UNICODE\ when math
+was recognized as script and got its entries, you can imagine that there are some
+issues there too, but let us move on to using alphabets.
+
+In addition to a one||to||one mapping from a font slot onto a glyph, you can
+assign properties to characters that map them onto a slot in some family (which
+itself relates to a font). This means that in a traditional approach you can
+choose among two methods:
+
+\startitemize[packed]
+
+    \startitem
+        You define several fonts (or instances of the same font) where the
+        positions of regular characters point to the relevant shape. So, when an
+        italic family is active the related font maps character \type {U+61} as
+        well as \type {U+1D44E} to the same italic shape \quote {$ \utfchar
+        {0x1D44E} $}. A switch from italic to bold italic is then a switch in
+        family and in that family the \type {U+61} as well as \type {U+1D482}
+        become bold italic \quote {$ \utfchar {0x1D482} $}.
+    \stopitem
+
+    \startitem
+        You define just one font. The alphabet (uppercase, lowercase and sometimes
+        digits and a few symbols) gets codes that point to the right shape. When we
+        switch from italic to bold italic, these codes get reassigned.
+    \stopitem
+
+\stopitemize
+
+The first method has some additional overhead in defining fonts (you can use
+copies but need to make sure that the regular \ASCII\ slots are overloaded) but
+the switch from italic to bold italic is fast, while in the second variant there
+is less overhead in fonts but reassigning the codes with a style switch has some
+overhead (although in practice this overhead is can be neglected because not that
+many alphabet switches take place). In fact, many \TEX\ users will probably stick
+to traditional approaches where verbose names are used and these can directly
+point to the right shape.
+
+In \CONTEXT, when we started with \MKIV, we immediately decided to follow another
+approach. We only have one family and we assume \UNICODE\ math input. Ok, we do
+have a few more families, but these relate to a full bold math switch and
+right||to||left math. We cannot expect users to enter \UNICODE\ math, if only
+because support in editors is not that advanced, so we need to support the
+\ASCII\ input method as well.
+
+We have one family and don't redefine character codes, but set properties
+instead. We don't switch fonts, but properties. These properties (often a
+combination) translates into the remapping of a specific character in the input
+onto a \UNICODE\ math code point that then directly maps onto a shape. This
+approach is quite clean and efficient at the \TEX\ end but carries quite a lot of
+overhead at the \LUA\ end. So far users never complained about it, maybe because
+\CONTEXT\ math support is rather optimized. Also, dealing with characters is only
+part of math typesetting and we have subsystems that use far more processing
+power.
+
+Because math characters are organized in classes, we need to set them up. Because
+for several reasons we collect character properties in a database we also define
+these character properties in \LUA. This means that the \type {math-*} files are
+relatively small. So we have much less code at the \TEX\ end, but quite a lot at
+the \LUA\ end. This assumes a well managed \LUA\ subsystem because as soon as
+users start plugging in their code, we have to make sure that the core system
+still functions well. The amount of code involved in virtual math fonts is also
+relatively large but most of that is becoming sort of obsolete.
+
+Relatively new in \CONTEXT\ is the possibility in some mathematical constructs to
+configure the math style (text, script, etc.) and in some cases math classes can
+be influenced. Control over styles is somewhat more convenient in \LUATEX,
+because we can consult the current style in some cases. I expect more of this
+kind of control in \CONTEXT, although most users probably never need it. These
+kinds of features are meant for users like Aditya Mahajan, who likes to explore
+such features and also takes advantage of the freedom to experiment with the look
+and feel of math.
+
+The font code that relates to math is not the easiest to understand but this is
+because it has to deal with bold as well as bidirectional math in efficient ways.
+Because in \CONTEXT\ we have additional sizes (\type {x}, \type {xx}, \type {a},
+\type {b}, \type {c}, \type {d}, \unknown) we also have some delayed additional
+defining going on. This all might sound slower to set up but in the end we win
+some back by the fact that we have fewer fonts to load. The price that a
+\CONTEXT\ user pays in terms of runtime is more influenced by the by now large
+sequence of math list manipulators than by loading a font.
+
+An unfortunate shortcoming of \UNICODE\ math is that some alphabets have gaps.
+This is because characters can only end up once in the standard. Given the number
+of weird characters showing up in recent versions, I think this condition is
+somewhat over the top. It forces applications that deal with \UNICODE\ math to
+implement exceptions over and over again. In \CONTEXT\ we assume no gaps and
+compensate for that.
+
+There are several ways that characters can become glyphs. An \quote {a} can
+become an italic, bold, bold italic but also end up sans serif or monospace.
+Because there are several artistic interpretations possible, some fonts provide a
+so|-|called alternate. In the case of for instance greek we can also distinguish
+upright or slanted (italic). A less well known transformation is variants driven
+by \UNICODE\ modified directives. If we forget about bidirectional math and full
+bold (heavy) math we can (currently) identify 6 axes:
+
+\starttabulate[|c|l|l|]
+\HL
+\NC \bf axis \NC \bf use  \NC \bf choices \NC \NR
+\HL
+\NC 1        \NC type     \NC digits, lowercase \& uppercase latin \& greek, symbols \NC \NR
+\NC 2        \NC alphabet \NC regular, sans serif, monospace, blackboard, fraktur, script \NC \NR
+\NC 3        \NC style    \NC upright, italic, bold, bolditalic \NC \NR
+\NC 4        \NC variant  \NC alternative rendering provided by font \NC \NR
+\NC 5        \NC shape    \NC unchanged, upright, italic \NC \NR
+\NC 6        \NC \UNICODE \NC alternative rendering driven by \UNICODE\ modifier \NC \NR
+\HL
+\stoptabulate
+
+Apart from the last one, this is not new, but it is somewhat easier to support
+this consistently. It's one of the areas where \UNICODE\ shines, although the
+gaps in vectors are a bad thing. One thing that I decided early in the \MKIV\
+math development is that all should fit into the same model: it makes no sense to
+cripple a whole system because of a few exceptions.
+
+Users expect their digits to be rendered upright and letters to be rendered with
+italic shapes, but use regular \ASCII\ input. This means that we need to relocate
+the letters to the relevant alphabet in \UNICODE. In \CONTEXT\ this happens as
+part of several analysis steps that more or less are the same as the axis
+mentioned. In addition there is collapsing, remapping, italic correction,
+boldening, checking, intercepting of special input, and more going on. Currently
+there are (depending on what gets enabled) some 10 to 15 manipulation passes over
+the list and there will be more.
+
+So how does the situation compare to the old one? I think we can safely say that
+we're better off now and that \LUATEX\ behaves quite okay. There is not much that
+can be improved, apart from more complete fonts (especially bold). A nice bonus
+of \LUATEX\ is that math characters can be used in text mode as well (given that
+the current font provides them).
+
+It will be clear that by following this route we moved far away from the \MKII\
+approach and the dependency on \LUA\ has become rather large in this case. The
+benefit is that we have rather clean code with hardly any exceptions. It came at
+the price of lots of experiments and (re)coding but I think it pays off for
+users.
+
+\stopsection
+
+\startsection[title=Bold]
+
+Bold is sort of special. There are bold symbols and some bold alphabets and that
+{\em is} basically what bold math is: just a different rendering. In a proper
+\OPENTYPE\ math fonts these bold characters are covered.
+
+Section titles or captions are often typeset bolder and when they contain math
+all of it needs to be bolder too. So, a regular italic shape becomes a bold
+italic shape but a bold shape becomes heavy. This means that we need a full blown
+bold font for that purpose. And although some are on the agenda of the font team,
+often we need to fake it. This is seldom an issue as (at least in the documents
+that I deal with) section titles are not that loaded with math.
+
+A proper implementation of such a mechanism involves two aspects: first there
+needs to be a complete bold math font with heavy bold included, and second the
+macro package must switch to bold math in a bold context. When no real bold font
+is available, some automatic mapping can take place, but that might give
+interpretation issues if bold is used in a formula. For the average highschool
+math that we render this is not an issue. Currently there are no full bold math
+fonts that have enough coverage. (The \XITS\ font, derived from \STIX, has a bold
+companion that does provide for instance bold radicals but lacks many bolder
+alphabets and symbols.)
+
+\startbuffer
+\startimath
+       \sqrt{x^2\over 4x}  \qquad
+  {\bf \sqrt{x^2\over 4x}} \qquad
+  {\mb \sqrt{x^2\over 4x}} \qquad
+       \sqrt{x^2 + 4x}     \qquad
+  {\bf \sqrt{x^2 + 4x}}    \qquad
+  {\mb \sqrt{x^2 + 4x}}
+\stopimath
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\blank \getbuffer \blank
+
+Here it is always a bit of a guess if bold extensibles are (already) supported so
+it's dangerous to go wild with full bold/heavy combinations unless you check
+carefully what results you get. Another aspect you need to be aware of is that
+there is an extensive fallback mechanism present. When possible a proper alphabet
+will be used, but when one is not present there is a fallback on another. This
+ensures that we get at least something.
+
+There is not much that an engine can do about it, apart from providing enough
+families to implement it. In a \TYPEONE\ universe indeed we need lots of families
+already so the traditional 16-family pool is drained soon. In \LUATEX\ we can
+have 256 families which means that additional \TYPEONE\ bases family sets are no
+issue any longer. But as in \MKIV\ we no longer follow that route, bold math can
+be set up relatively easy, given that we have a bold font. If we don't have such
+a font, we have an intermediate mode where a bold font is simulated. Keep in mind
+that this always will need checking, at least as long as don't have complete
+enough bold fonts with heavy bold included.
+
+\stopsection
+
+\startsection[title=Radicals]
+
+In most cases a \TEX\ user is not that aware of what happens in order to get a
+nicely wrapped up root on paper. In traditional \TEX\ this is an interplay
+between rather special font properties and macros. In \LUATEX\ it has become a
+bit more simple because we introduced a primitive for it. Also, in \OPENTYPE\
+fonts, the radical is provided in a somewhat more convenient way. In an
+\OPENTYPE\ math font there are some variables that control the rendering:
+
+\starttyping
+RadicalExtraAscender
+RadicalRuleThickness
+RadicalVerticalGap
+RadicalDisplayStyleVerticalGap
+\stoptyping
+
+The engine will use these to construct the symbol. The root symbols can grow in two
+dimensions: the left bit grows vertically but due to the fact that there is a slope
+involved it happens in steps using different symbols.
+
+\blank
+$ \dorecurse{10}{\rootradical{}{\blackrule[height=#1ex,depth=0pt,width=0pt]}} $
+\blank
+
+Compare this to for instance how a bracket grows:
+
+\blank
+$ \dorecurse{10}{\left[\blackrule[height=#1ex,depth=0pt,width=0pt]\right.} $
+\blank
+
+The bracket is a so|-|called vertical extensible character. It grows in steps
+using different glyphs and when we run out of variants a last resort kicks in: a
+symbol gets constructed from three pieces, a top and bottom piece and in between
+a repeated middle segment. The root symbol is also vertically extensible but
+there the change to the stretched variant is visually rather distinct. This has a
+reason: the specification cannot deal with slopes. So, in order to stretch the
+last resort, as with the bracket, goes vertical and provides a middle segment.
+
+The root can also grow horizontally; just watch this:
+
+\blank
+$ \dorecurse{10}{\rootradical{}{\blackrule[height=#1ex,depth=0pt,width=#1ex,color=gray]}} $
+\blank
+
+The font specification can handle vertical as well as horizontal extensibles but
+surprise: it cannot handle a combination. Maybe the reason is that there is only
+one such symbol: the radical. So, instead of expecting a symmetrical engine, an
+exception is made that is controlled by the mentioned variables. So, while we go
+upwards with a proper middle glyph, we go horizontal using a rule.
+
+One can argue that the traditional \TEX\ machinery is complex because it uses
+special font properties and macros, but once you start looking into the modern
+variant it becomes clear that although we can have a somewhat cleaner
+implementation, it still is a kludge. And, because rendering on paper no longer
+drives development it is not to be expected that this will change. The \TEX\
+community didn't come up with a better approach and there is no reason to believe
+that it will in the future.
+
+One of the reasons for users to use \TEX\ is control over the output: instead of
+some quick and dirty job authors can spend time on making their documents look
+the way they want. Even in these internet times with dynamic rendering, there is
+still a place for a more frozen rendering, explicitly driven by the author. But,
+that only makes sense when the author can influence the rendering, maybe even
+without bounds.
+
+So, because in \CONTEXT\ I really want to provide control, as one of the last
+components, math radicals were made configurable too. In fact, the code involved
+is not that complex because most was already in place. What is interesting is
+that when I rewrapped radicals once again I realized that instead of delegating
+something to the engine and font one could as well forget about it and do all in
+dedicated code. After all, what is a root symbol more that a variation of a
+framed bit of text. Here are some examples.
+
+\startbuffer[demo]
+$
+  y = \sqrt   { x^2 + ax + b } \quad
+  y = \sqrt[2]{ x^2 + ax + b } \quad
+  y = \sqrt[3]{ \frac{x^2 + ax + b }{c} }
+$
+\stopbuffer
+
+\typebuffer[demo]
+
+By default this gets rendered as follows:
+
+\blank \start \getbuffer[demo] \stop \blank
+
+We can change the rendering alternative to one that permits some additional
+properties (like color):
+
+\startbuffer[setup]
+\setupmathradical[sqrt][alternative=normal,color=maincolor]
+\stopbuffer
+
+\typebuffer[setup]
+
+This looks more or less the same:
+
+\blank \start \getbuffer[setup,demo] \stop \blank
+
+\startbuffer[setup]
+\setupmathradical
+  [sqrt]
+  [alternative=mp,
+   color=darkgreen]
+\stopbuffer
+
+We can go a step further and instead of a font use a symbol that adapts itself:
+
+\typebuffer[setup]
+
+Now we get this:
+
+\blank \start \getbuffer[setup,demo] \stop \blank
+
+Such a variant can be more subtle, as we not only can adapt the slope
+dynamically, but also add a nice finishing touch to the end of the horizontal
+line. Take this variant:
+
+\startbuffer
+\startuniqueMPgraphic{math:radical:extra}
+  draw
+    math_radical_simple(OverlayWidth,OverlayHeight,OverlayDepth,OverlayOffset)
+    withpen pencircle
+      xscaled (2OverlayLineWidth)
+      yscaled (3OverlayLineWidth/4)
+      rotated 30
+    dashed evenly
+    withcolor OverlayLineColor ;
+\stopuniqueMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer[setup-extra]
+\setupmathradical
+  [sqrt]
+  [alternative=mp,
+   mp=math:radical:extra,
+   color=darkred]
+\stopbuffer
+
+We hook this graphic into the macro:
+
+\typebuffer[setup-extra]
+
+And this time we see a dashed line:
+
+\blank \start \getbuffer[setup-extra,demo] \stop \blank
+
+Of course one can argue about esthetics but let's face it: much ends up in print,
+also by publishers, that doesn't look pretty at all, so I tend to provide the
+author the freedom to make what he or she likes most. If someone is willing to
+spend time on typesetting (using \TEX), let's at least make it a pleasant
+experience.
+
+\blank
+$ \getbuffer[setup]\dostepwiserecurse{1}{13}{2}{\sqrt{\blackrule[height=#1ex,depth=0pt,width=#1ex,color=gray]}\quad} $
+\blank
+
+Here we see the symbol adapt. We can think of alternative symbols, for instance
+the first part becomes wider dependent on the height, but this can be made less
+prominent. Depending on user input I will provide some more variants as it's
+relatively easy to implement.
+
+Before I wrap up, let's see what exactly we have in stock deep down.
+Traditionally \TEX\ provides a \type {\surd} command which is just the root
+symbol. Then there is a macro \type {\root..\of..} that wraps the last argument
+in a root and typesets a degree as well (of given). In \CONTEXT\ we now provide
+this:
+
+\startbuffer
+$\surd x \quad \surdradical x  \quad \rootradical{3}{x} \quad \sqrt[3]{x}$
+\stopbuffer
+
+\typebuffer
+
+I don't remember ever having used the \type {\surd} command, but this is what
+it renders:
+
+\blank \noindentation \getbuffer \blank
+
+Only the last command, \type {\sqrt} is a macro defined in one of the math
+modules, the others are automatically defined from the database:
+
+\starttyping
+[0x221A] = { -- there are a few more properties set
+  unicodeslot = 0x221A,
+  description = "SQUARE ROOT",
+  adobename   = "radical",
+  category    = "sm",
+  mathspec    = {
+    { class = "root",     name = "rootradical" },
+    { class = "radical",  name = "surdradical" },
+    { class = "ordinary", name = "surd"        },
+  },
+}
+\stoptyping
+
+So we get the following definitions:
+
+\testpage[4]
+
+\starttabulate[||||]
+\FL
+\NC \bf command         \NC \bf meaning                \NC \bf usage \NC \SR
+\FL
+\NC \type{\surd}        \NC \tttf \meaning\surd        \NC \type{\surd} \NC \FR
+\NC \type{\surdradical} \NC \tttf \meaning\surdradical \NC \type{\surdradical {body}} \NC \MR
+\NC \type{\rootradical} \NC \tttf \meaning\rootradical \NC \type{\rootradical {degree} {body}} \NC \LR
+\LL
+\stoptabulate
+
+So, are we better off? Given that a font sticks to how Cambria does it, we only
+need a minimal amount of code to implement roots. This is definitely an
+improvement at the engine level. However, in the font there are no fundamental
+differences between the traditional and more modern approach, but we've lost the
+opportunity to make a proper two||dimensional extensible. Eventually the user
+won't care as long as the macro package wraps it all up in useable macros.
+
+\stopsection
+
+\startsection[title=Primes]
+
+Another rather disturbing issue is with primes. A prime is an accent|-|like
+symbol that as a kind of superscript is attached to a variable or function. In
+good old \TEX\ tradition this is entered as follows:
+
+\startbuffer
+$ f'(x) $ and $ f''(x) $
+\stopbuffer
+
+\typebuffer
+
+which produces: \inlinebuffer. The upright quote symbols are never used for
+anything else than primes and magically get remapped onto a prime symbol. This
+might look trivial, but there are several aspects to deal with, especially when
+using traditional fonts. In the eight|-|bit \type {lmsy10} math symbol font,
+which is derived from the original \type {cmsy10} the prime symbol looks like
+this:
+
+\startlinecorrection
+\ruledhbox{\definedfont[file:lmsy10.afm]\getnamedglyphdirect{file:lmsy10.afm}{prime}}
+\stoplinecorrection
+
+The bounding box is rather tight and the reason for this becomes clear when we put
+it alongside another character:
+
+\startlinecorrection
+$x\ruledhbox{\definedfont[file:lmsy10.afm]\getnamedglyphdirect{file:lmsy10.afm}{prime}}$
+\stoplinecorrection
+
+The prime is not only pretty large, it also sits on the baseline. It means that
+in order to make it a real prime (basically an operator pointing back to the
+preceding symbol), we need to raise it. Of course we can define a \type {\prime}
+command that takes care of this, and indeed that is what happens in plain \TEX\
+and derived formats. The more direct \type {'} input is supported by making that
+character an active character in math mode. Active characters behave like
+commands and in this case the \type {\prime} command.
+
+In the \OPENTYPE\ latin modern fonts the prime (\type{U+2032}) looks like this:
+
+\startlinecorrection
+$x\ruledhbox{\definedfont[file:latin-modernmath]\utfchar{0x2032}}$
+\stoplinecorrection
+
+So here we have an already raised and also smaller prime symbol. And, because we
+also have double (\type{U+2033}) and triple primes (\type{U+2034}) a few more
+characters are available
+
+\startlinecorrection
+$x\ruledhbox{\definedfont[file:latin-modernmath]\utfchar{0x2032}}$
+$x\ruledhbox{\definedfont[file:latin-modernmath]\utfchar{0x2033}}$
+$x\ruledhbox{\definedfont[file:latin-modernmath]\utfchar{0x2034}}$
+\stoplinecorrection
+
+In the traditional approach these second and third order primes are built from
+the first order primes. And this introduces, in addition to the raising, another
+complexity: the \type {\prime} command has to look ahead and intercept future
+primes. And as there can also be a following raised symbol (or number) it needs
+to take a superscript trigger into account as well. So, let's look at some
+possible input:
+
+\def\ShowPrime#1{\NC \type{$#1$} \NC $#1$ \NC \NR}
+
+\starttabulate[|||]
+\ShowPrime{f'(x)}
+\ShowPrime{f''(x)}
+\ShowPrime{f'''(x)}
+\ShowPrime{f\prime^2}
+\ShowPrime{f\prime\prime^2}
+\ShowPrime{f\prime\prime\prime^2}
+\ShowPrime{f'\prime'^2}
+\ShowPrime{f^'(x)}
+\ShowPrime{f'^2}
+\ShowPrime{f{\prime}^2}
+\stoptabulate
+
+Now imagine that you have this big prime character sitting on the baseline and
+you need to turn \type {'''} into a a triple prime, but don't want \type {^'} to
+be double raised, while on the other hand \type {^2} should be. This is of course
+doable with some macro juggling but how about supporting traditional fonts in
+combination with \OPENTYPE, where the primes are already raised.
+
+When we started with \LUATEX\ and \CONTEXT\ \MKIV, one of the first decisions I
+made was to go \UNICODE\ math and drop eight|-|bit. In order to compensate for
+the lack of fonts, a mechanism was provided to construct virtual \UNICODE\ math
+fonts, as a prelude to the lm/gyre \OPENTYPE\ math fonts. In the meantime we have
+these fonts and the virtual variants are only kept as historic reference and for
+further experiments.
+
+As a starter I wrote a variant of the traditional \CONTEXT\ \type {\prime}
+command that could recognize somehow if it was dealing with a \TYPEONE\ or
+\OPENTYPE\ font. As a consequence it also had the traditional raise and look
+ahead mess on board. However, there was also some delegation to the \LUA\
+enhanced math support code, so the macro was not that complex. When the real
+\OPENTYPE\ math fonts showed up the macro was dropped and the virtual fonts were
+adapted to the raised|-|by|-|default situation, which in itself was somewhat
+complicated by the fact that a smaller symbol had to be used, i.e.\ some more
+information about the current set of defined math sizes has to be passed around.
+\footnote {The actual solution for this qualifies as a dirty trick so we are not
+freed from tricks yet.}
+
+Anyhow, the current implementation is rather clean and supports collapsing of
+combinations rather well. There are four prime symbols but only three reverse
+prime symbols. If needed I can provide a virtual \typ {REVERSED TRIPLE PRIME} if
+needed, but I guess it's not needed.
+
+\def\Nsprime{\ruledmbox{\prime}}
+\def\Ndprime{\ruledmbox{\doubleprime}}
+\def\Ntprime{\ruledmbox{\tripleprime}}
+\def\Nqprime{\ruledmbox{\quadrupleprime}}
+
+\def\Rsprime{\ruledmbox{\reversedprime}}
+\def\Rdprime{\ruledmbox{\reverseddoubleprime}}
+\def\Rtprime{\ruledmbox{\reversedtripleprime}}
+
+\starttabulate[|lT|lT|lM|lM|]
+\NC U+2032 \NC \chardescription{"2032} \NC \prime               \NC \Nsprime \NC \NR
+\NC U+2033 \NC \chardescription{"2033} \NC \doubleprime         \NC \Nsprime \Nsprime \quad
+                                                                    \Ndprime \NC \NR
+\NC U+2034 \NC \chardescription{"2034} \NC \tripleprime         \NC \Nsprime \Nsprime \Nsprime \quad
+                                                                    \Nsprime \Ndprime \quad
+                                                                    \Ndprime \Nsprime \quad
+                                                                    \Ntprime \NC \NR
+\NC U+2057 \NC \chardescription{"2057} \NC \quadrupleprime      \NC \Nsprime \Nsprime \Nsprime \Nsprime \quad
+                                                                    \Nsprime \Nsprime \Ndprime \quad
+                                                                    \Nsprime \Ndprime \Nsprime \quad
+                                                                    \Ndprime \Nsprime \Nsprime \quad
+                                                                    \Ndprime \Ndprime \quad
+                                                                    \Ntprime \Nsprime \quad
+                                                                    \Nsprime \Ntprime \quad
+                                                                    \Nqprime \NC \NR
+\NC U+2035 \NC \chardescription{"2035} \NC \reversedprime       \NC \Rsprime \NC \NR
+\NC U+2036 \NC \chardescription{"2036} \NC \reverseddoubleprime \NC \Rsprime \Rsprime \quad
+                                                                    \Rdprime \NC \NR
+\NC U+2037 \NC \chardescription{"2037} \NC \reversedtripleprime \NC \Rsprime \Rsprime \Rsprime \quad
+                                                                    \Rsprime \Rdprime \quad
+                                                                    \Rdprime \Rsprime \quad
+                                                                    \Rtprime \NC \NR
+\stoptabulate
+
+Of course no one will use this ligature approach but I've learned to be prepared
+as it wouldn't be the first time when we encounter input that is cut and paste
+from someplace or clicked|-|till|-|it|-|looks|-|okay.
+
+There is one big complication and that is that where in \TEX\ there is only one
+big prime that gets raised and repeated in case of multiple primes, in \OPENTYPE\
+the primes are already raised. They are in fact not supposed to be superscripted,
+as they are already. In plain \TEX\ the prime is entered using an upright single
+quote and that one is made active: it is in fact a macro. That macro looks ahead
+and intercepts following primes as well as subscripts. In the end, a superscript
+(the prime) and optional subscripts are attached to the preceding symbol. If we
+want to benefit from the \UNICODE\ primes as well as support collapsing, such a
+macro quickly becomes messy. Therefore, in \MKIV\ the optional subscript is
+handled in the collapser. We cheat a bit by relocating super- and subscripts and
+at the same time remap the primes to virtual characters that are smashed to a
+smaller height, lowered to the baseline, and eventually superscripted. Indeed, it
+sounds somewhat complex and it is. In a next version I will also provide ways to
+influence the size as one might want larger of smaller primes to show up. This is
+one case where the traditional \TEX\ fonts have a benefit as the primes are
+superscriptable characters, but we have to admit that the \UNICODE\ and
+\OPENTYPE\ approach is conceptually more correct. The only way out of this is to
+have a primitive operation for primes just as we have for radicals but that also
+has some drawbacks. Eventually I might come up with a cleaner solution for this
+dilemma.
+
+Let us summarize the situation and solution used in \MKIV\ now:
+
+\startitemize[packed]
+    \startitem
+        When (still) using the virtual \UNICODE\ math fonts, we construct a
+        virtual glyph that has properties similar to proper \OPENTYPE\ math
+        fonts.
+    \stopitem
+    \startitem
+        We collapse a sequence of primes into proper double and triple
+        primes.
+    \stopitem
+    \startitem
+        We unraise primes so that users who (for some reason) superscript them
+        (maybe because they still assume big ones sitting on the baseline) get
+        the desired outcome.
+    \stopitem
+    \startitem
+        We accept mixtures of \type {'} and \type {\prime}.
+    \stopitem
+\stopitemize
+
+We can do this because in \CONTEXT\ \MKIV\ we don't care too much about exact
+visual compatibility as long as we can make users happy with clean mechanisms.
+So, this is one of the situations where the new situation is better, thanks to on
+the one hand the way primes are provided in fonts, and on the other hand the
+enhanced math machinery in \MKIV.
+
+\stopsection
+
+\startsection[title=Accents]
+
+There are a few special character types in math and accents are one of them.
+Personally I think that the term accent is somewhat debatable but as they are
+symbols drawn on top of or below something we can stick to that description for
+the moment. In addition to some regular fixed width variants, we have adaptive
+versions: \type {\hat} as well as \type {\widehat} and more.
+
+\startlinecorrection
+\dorecurse{6}{$\widehat{\blackrule[width=#1ex,color=gray]}$ }
+\stoplinecorrection
+
+I have no clue if wider variants are needed but such a partial coverage
+definitely looks weird. So, as an escape users can kick in their own code. After
+all, who says that a user cannot come up with a new kind of math. The following
+example demonstrates how this is done:
+
+\startbuffer
+\startMPextensions
+    vardef math_ornament_hat(expr w,h,d,o,l) text t =
+        image (
+            fill
+                (w/2,10l) -- (w + o/2,o/2) --
+                (w/2, 7l) -- (  - o/2,o/2) --
+                cycle shifted (0,h-o) t ;
+            setbounds
+                currentpicture
+            to
+                unitsquare xysized(w,h) enlarged (o/2,0)
+        )
+    enddef ;
+\stopMPextensions
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This defines a hat|-|like symbol. Once the sources of the math font project are
+published I can imagine that an ambitious user defines a whole set of proper
+shapes. Next we define an adaptive instance:
+
+\startbuffer
+\startuniqueMPgraphic{math:ornament:hat}
+    draw
+        math_ornament_hat(
+            OverlayWidth,
+            OverlayHeight,
+            OverlayDepth,
+            OverlayOffset,
+            OverlayLineWidth
+        )
+    withpen
+        pencircle
+            xscaled (2OverlayLineWidth)
+            yscaled (3OverlayLineWidth/4)
+            rotated 30
+    withcolor
+        OverlayLineColor ;
+\stopuniqueMPgraphic
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Last we define a symbol:
+
+\startbuffer
+\definemathornament [mathhat] [mp=math:ornament:hat,color=darkred]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+And use it as \type {\mathhat{...}}:
+
+\startlinecorrection
+\dorecurse{8}{$\mathhat{\blackrule[width=#1ex,color=gray]}$ }
+\stoplinecorrection
+
+Of course this completely bypasses the accent handler and in fact even writing
+the normal stepwise one is not that hard to do in macros. But, there is a
+built||in mechanism that helps us for those cases and it can even deal with font
+based stretched alternatives of which there are a few: curly braces, brackets and
+parentheses. The reason that these can stretch is that they don't have slopes and
+therefore can be constructed out of pieces: in the case of a curly brace we have
+4 snippets: begin, end, middle and repeated rules, and in the case of braces and
+brackets 3 snippets will do. But, if we really want we can use \METAPOST\ code
+similar to the code shown above to get a nicer outcome.
+
+There are in good \TEX\ tradition four accents that can also stretch
+horizontally: bar, brace, parenthesis and bracket. When using fonts such an
+accent looks like this:
+
+% \setupmathstackers[vfenced][color=darkyellow]
+
+\startbuffer
+$ \overbrace{a+b+c+d} \quad \underbrace{a+b+c+d} \quad \doublebrace{a+b+c+d} $
+\stopbuffer
+
+\blank \start \setupmathstackers[vfenced][color=darkyellow] \getbuffer \stop \blank
+
+this is coded like:
+
+\typebuffer
+
+As with radicals, for more fancy math you can plug in \METAPOST\ variants. Of
+course this kind of rendering should fit into the layout of the document but I
+can imagine that for schoolbooks this makes sense.
+
+\startbuffer[setup]
+\useMPlibrary[mat]
+
+\setupmathstackers
+  [vfenced]
+  [color=darkred,
+   alternative=mp]
+\stopbuffer
+
+\typebuffer[setup]
+
+Applied in an example we get:
+
+\startbuffer[demo]
+$\overbracket{a+b+c+d} \quad \underbracket{a+b+c+d} \quad \doublebracket{a+b+c+d}$ \blank
+$\overparent {a+b+c+d} \quad \underparent {a+b+c+d} \quad \doubleparent {a+b+c+d}$ \blank
+$\overbrace  {a+b+c+d} \quad \underbrace  {a+b+c+d} \quad \doublebrace  {a+b+c+d}$ \blank
+$\overbar    {a+b+c+d} \quad \underbar    {a+b+c+d} \quad \doublebar    {a+b+c+d}$ \blank
+\stopbuffer
+
+\start \getbuffer[setup] \startlines\getbuffer[demo]\stoplines \stop
+
+This kind of magic is partly possible because in \LUATEX\ (and therefore \MKIV)
+we can control matters a bit better. And of course the fact that we have
+\METAPOST\ embedded means that the impact of using graphics is not that large.
+
+We used the term \quote {stackers} in the setup command so although these are
+officially accents, in \CONTEXT\ we implement them as instances of a more generic
+mechanism: things stacked on top of each other. We will discuss these in the next
+section.
+
+\stopsection
+
+\startsection[title=Stackers]
+
+In plain \TEX\ and derived work you will find lots of arrow builders. In most
+cases we're talking of a combination of one or more single or double arrow heads
+combined with a rule. In any case it is something that is not so much font driven
+but macro magic. Optionally there can be text before and|/|or after as well as
+text above and|/|or below them. The later is for instance the case in chemistry.
+This text is either math or upright properly kerned and spaced non||mathematical
+text so we're talking of some mixed math and text usage. The size is normally
+somewhat smaller.
+
+Arrows can also go on top or below regular math so in the end we end up with
+several cases:
+
+\startitemize[packed]
+    \startitem
+        Something stretchable on top of or centered around the baseline, optionally
+        with text above or below.
+    \stopitem
+    \startitem
+        Something stretchable on top of a running (piece of) text or math.
+    \stopitem
+    \startitem
+        Something stretchable below a running (piece of) text or math.
+    \stopitem
+    \startitem
+        Something stretchable on top as well as below a running (piece of) text
+        or math.
+    \stopitem
+\stopitemize
+
+These have in common that the symbol gets stretched. In fact the last three cases
+are quite similar to accents but in traditional \TEX\ and its fonts arrows and
+alike never made it to accents. One reason is probably that because a macro
+language was available and because fonts were limited, it was rather easy to use
+rules to extend an arrowhead.
+
+In \CONTEXT\ this kind of vertically stacked stretchable material is implemented
+as stackers. In the chapter \type {mathstackers} of \type {about.pdf} you can
+read more about the details so here I stick to a short summary to illustrate what
+we're dealing with. Say that you want an arrow that stretches over a given width.
+
+\starttyping
+\hbox to 4cm{\leftarrowfill}
+\stoptyping
+
+In traditional \TEX\ with traditional fonts the definition of this arrow
+looks as follows:
+
+\starttyping
+\def\leftarrowfill {$
+  \mathsurround=0pt
+  \mathord{\mathchar"2190}
+  \mkern-7mu
+  \cleaders
+   \hbox {$
+     \mkern-2mu
+     \mathchoice
+      {\setbox0\hbox{$\displaystyle     -$}\ht0=0pt\dp0=0pt\box0}
+      {\setbox0\hbox{$\textstyle        -$}\ht0=0pt\dp0=0pt\box0}
+      {\setbox0\hbox{$\scriptstyle      -$}\ht0=0pt\dp0=0pt\box0}
+      {\setbox0\hbox{$\scriptscriptstyle-$}\ht0=0pt\dp0=0pt\box0}
+     \mkern-2mu
+    $}
+   \hfill
+  \mkern-7mu
+  \mathchoice
+   {\setbox0\hbox{$\displaystyle     -$}\ht0=0pt\dp0=0pt\box0}
+   {\setbox0\hbox{$\textstyle        -$}\ht0=0pt\dp0=0pt\box0}
+   {\setbox0\hbox{$\scriptstyle      -$}\ht0=0pt\dp0=0pt\box0}
+   {\setbox0\hbox{$\scriptscriptstyle-$}\ht0=0pt\dp0=0pt\box0}
+$}
+\stoptyping
+
+When using \TYPEONE\ fonts we don't use a \type {\mathchar} but
+more something like this:
+
+\starttyping
+\leftarrow = \mathchardef\leftarrow="3220
+\stoptyping
+
+What we see in this macro is a left arrow head at the start and as minus sign at
+the end. In between the \type {\cleaders} will take care of filling up the
+available hsize with more minus signs. The overlap is needed in order to avoid
+gaps due to rounding in the renderer and also obscures the rounded caps of the
+used minus sign.
+
+The minus sign is used because it magically connects well to the arrow head. This
+is of course a property of the design but even then you can consider it a dirty
+trick. We don't specify a width here as this macro adapts itself to the current
+width due to the leader. But if we do know the width an easier approach becomes
+possible. Take this combination of a left and right arrow on top of each other:
+
+\starttyping
+\mathstylehbox{\Umathaccent\fam\zerocount"21C4{\hskip4cm}}
+\stoptyping
+
+The \type {\mathstylehbox} macro is a \CONTEXT\ helper. When we take a closer
+look at the result (scaled up a bit) we see again snippets being used: \footnote
+{We cheat a bit here: as we use \XITS\ in this document, and that font doesn't
+yet provide this magic we switch temporarily to the Pagella font}.
+
+\startlinecorrection
+\showglyphs \switchtobodyfont[pagella]
+\scale[width=\textwidth]{\mathstylehbox{\Umathaccent\fam\zerocount"21C4{\hskip4cm}}}
+\stoplinecorrection
+
+But this time the engine itself deals with the filling. Unfortunately for the
+accent approach to work we need to specify the width. Given how these arrows are
+used, this is no problem: because we often put text on top and|/|or below, we
+need to do some packaging and therefore know the dimensions, but a generic
+alternative would be nice. This is why for \LUATEX\ we have on the low priority
+agenda:
+
+\starttyping
+\leaders"2190\hfill
+\stoptyping
+
+or a similar primitive. This way we can let the engine do some work and keep
+macros simple. Normally \type {\leaders} delegate part of repeating to the
+backend but in the case of math it has to be part of constructing the formula
+because the extensible constructor has to be used.
+
+If you've looked into the \LUATEX\ manual you might have noticed that there is a
+new primitive that permits this:
+
+\starttyping
+\mathstylehbox{\Uoverdelimiter\fam"21C4{\hskip4cm}}
+\stoptyping
+
+However, it is hardly useable for our purpose for several reasons. First of all,
+when the argument is narrower than the smallest possible delimiter both get left
+aligned, so the delimiter sticks out (this can be considered a bug). But also,
+the placement is influenced by a couple of parameters that we then need to force
+to zero values, which might interfere. Another property of this mechanism is that
+the style is influenced and so we need to mess more with that. These are enough
+reasons to ignore this extension for a while. Maybe at some point, when really
+needed, I will write a proper wrapper for this primitive.
+
+When we started with \MKIV\ we stuck with the leaders approach for a while if
+only because there was no real need to redefine the old macros. But after a while
+one starts wondering if this is still the way to go, especially when
+reimplementing the chemistry macros didn't lead to nicer looking code. Part of
+the problem was that putting two arrows on top of each other where each one goes
+into another direction gave issues due to the fact that we don't have the right
+snippets to do it nicely. A way out was to create virtual characters for
+combinations of begin and end snippets as well as middle pieces, construct a
+proper virtual extensible and use the \LUATEX\ extensible constructor. Although
+we still have a character that gets built out of snippets, at least the begin and
+end snippet indicate that we have to do with one codepoint, contrary to two
+independent stacked arrows.
+
+This was also the moment that I realized that it was somewhat weird that
+\OPENTYPE\ math fonts didn't have that kind of support. After discussing this
+with Bogus{\l}aw Jackowski of the math font project we decided that it made sense
+to add proper native extensibles to the upcoming math fonts. Of course I still
+had to support other math fonts but at least we had a conceptually clean example
+font now. So, from that moment on the implementation used extensibles when
+possible and falls back on the fake approach when needed.
+
+In \CONTEXT\ all these vertically stacked items are now handled by the math
+stacker subsystem, including a decent set of configuration options. As said, the
+symbols that need to stretch currently use the accent primitives which is okay
+but somewhat messy because that mechanism is hard to control (after all it wants
+to put stuff on top or below something). For (mostly) chemistry we can put text
+on top or below arrows and control offsets of the text as well as the axis of the
+arrows. We can use color and set the style. In addition there are constructs
+where there is text in the middle and arrows (or other symbols that need to
+adapt) on top or at the bottom.
+
+Many arrows come in sizes. For instance there are two sizes of right pointing
+arrows as well as stretched variants, and use as top and bottom accents.
+
+\starttabulate[|T||]
+\NC \detokenize {$\rightarrow     \quad \char"2192$} \NC $\rightarrow     \quad \char"2192$ \NC \NR
+\NC \detokenize {$\longrightarrow \quad \char"27F6$} \NC $\longrightarrow \quad \char"27F6$ \NC \NR
+\TB
+\NC \detokenize {\hbox to 2cm{$\rightarrowfill$}}    \NC \hbox to 2cm{$\rightarrowfill$}    \NC \NR
+\NC \detokenize {\hbox to 4cm{$\rightarrowfill$}}    \NC \hbox to 4cm{$\rightarrowfill$}    \NC \NR
+\TB
+\NC \detokenize {$\overrightarrow{a+b+c}$}           \NC $\overrightarrow{a+b+c}$           \NC \NR
+\NC \detokenize {$\underrightarrow{a+b+c}$}          \NC $\underrightarrow{a+b+c}$          \NC \NR
+\stoptabulate
+
+The first two arrows are just characters. The boxed ones are extensibles using
+leaders that build the arrow from snippets (a hack till we have proper character
+leaders) and the last two are implemented by abusing the accent mechanism and
+thereby use the native extensibles of the first character.
+
+The problem here is in names and standards. The first characters have a fixed
+size while the later are composed. The short ones have the extensibles and can
+therefore be used as accents (or when supported as character leader). However
+from the user's perspective, the distinction between the two \UNICODE\ characters
+might be less clear, not so much when they are used as character, but when used
+on top of or below something. As a coincidence, while writing this section, a
+colleague dropped a snippet of \MATHML\ on my desk:
+
+\starttyping
+<m:math>
+  <m:mrow>
+    <m:mover accent='true'>
+      <m:mrow>
+        <m:mi>A</m:mi>
+        <m:mi>S</m:mi>
+      </m:mrow>
+      <m:mo stretchy='true'>→</m:mo>
+    </m:mover>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+However, instead of {<m:mo>→</m:mo>} there was used \type
+{<m:mo>&xrarr;</m:mo>} and that entity is the long arrow. As is often the case in
+\MATHML\ the rendering is supposed to be quite tolerant and here both should
+stretch over the row. When a \TEX\ user renders his or her source and sees
+something wrong, the search for what character or command should be used instead
+starts. A \MATHML\ user probably just expects things to work. This means that in
+a system like \CONTEXT\ there will always be hacks and kludges to deal with such
+matters. It is again one of these areas where optimally the \TEX\ community could
+have influenced proper and systematic coding, but it didn't happen. So, no matter
+now good we make an engine or macro package, we always need to be prepared to
+adapt to what users expect. Let's face it: it's not that trivial to explain why
+one should favor one or the other arrow as accent: the more it has to cover, the
+longer it gets and the more we think of long arrows, but adding a whole bunch of
+\type {\longrightarrow...} commands to \CONTEXT\ makes no sense.
+
+Nevertheless, we might eventually provide more \MATHML\ compliant commands at the
+\TEX\ end. Just consider the following \MATHML\ snippets: \footnote {These
+examples are variations on what we run into in Dutch school math (age 14\endash
+16).}
+
+\startbuffer[mathml]
+<m:math xmlns:m="http://www.w3.org/1998/Math/MathML">
+    <m:mrow>
+        <m:mi>a</m:mi>
+        <m:mover>
+            <m:mo>&xrarr;</m:mo>
+            <m:ms>arrow + text</m:ms>
+        </m:mover>
+        <m:mi>b</m:mi>
+        <m:mover>
+            <m:ms>text + arrow</m:ms>
+            <m:mo>&xrarr;</m:mo>
+        </m:mover>
+        <m:mi>c</m:mi>
+    </m:mrow>
+</m:math>
+\stopbuffer
+
+\typebuffer[mathml]
+
+This renders as:
+
+\blank \xmlprocessbuffer{main}{mathml}{} \blank
+
+Here the same construct is being used for two purposes: put an arrow on top of
+content that sits on the math axis or put text on an arrow that sits on the math
+axis. In \TEX\ we have different commands for these:
+
+\startbuffer[tex]
+$ a \overrightarrow{b+c} d $ and $ a \mrightarrow{b+c} d $
+\stopbuffer
+
+\typebuffer[tex]
+
+or
+
+\blank \getbuffer[tex] \blank
+
+The same is the case for:
+
+\startbuffer[mathml]
+<m:math xmlns:m="http://www.w3.org/1998/Math/MathML">
+    <m:mrow>
+        <m:mi>a</m:mi>
+        <m:munder>
+            <m:mo>&xrarr;</m:mo>
+            <m:ms>arrow + text</m:ms>
+        </m:munder>
+        <m:mi>b</m:mi>
+        <m:munder>
+            <m:ms>text + arrow</m:ms>
+            <m:mo>&xrarr;</m:mo>
+        </m:munder>
+        <m:mi>c</m:mi>
+    </m:mrow>
+</m:math>
+\stopbuffer
+
+\typebuffer[mathml]
+
+or:
+
+\blank \xmlprocessbuffer{main}{mathml}{} \blank
+
+When no arrow (or other stretchable character) is used, we still need to put one
+on top of the other, but in any case we need to recognize the two cases that need
+the special stretch treatment. There is also a combination of over and under:
+
+\startbuffer[mathml]
+<m:math xmlns:m="http://www.w3.org/1998/Math/MathML">
+    <m:mrow>
+        <m:mi>a</m:mi>
+        <m:munderover>
+            <m:mo>&xrarr;</m:mo>
+            <m:ms>text 1</m:ms>
+            <m:ms>text 2</m:ms>
+        </m:munderover>
+        <m:mi>b</m:mi>
+    </m:mrow>
+</m:math>
+\stopbuffer
+
+\typebuffer[mathml]
+
+\blank \xmlprocessbuffer{main}{mathml}{} \blank
+
+And again we need to identify the special stretchable characters from anything
+otherwise.
+
+\startbuffer[mathml]
+<m:math xmlns:m="http://www.w3.org/1998/Math/MathML">
+    <m:mrow>
+        <m:mi>a</m:mi>
+        <m:munderover>
+            <m:ms>text 1</m:ms>
+            <m:ms>text 2</m:ms>
+            <m:ms>text 3</m:ms>
+        </m:munderover>
+        <m:mi>b</m:mi>
+    </m:mrow>
+</m:math>
+\stopbuffer
+
+\typebuffer[mathml]
+
+or:
+
+\blank \xmlprocessbuffer{main}{mathml}{} \blank
+
+And we even can have this:
+
+\startbuffer[mathml]
+<m:math xmlns:m="http://www.w3.org/1998/Math/MathML">
+    <m:mrow>
+        <m:mi>a</m:mi>
+        <m:munderover>
+            <m:ms>text 1</m:ms>
+            <m:mo>&xrarr;</m:mo>
+            <m:ms>text 2</m:ms>
+        </m:munderover>
+        <m:mi>b</m:mi>
+    </m:mrow>
+</m:math>
+\stopbuffer
+
+\typebuffer[mathml]
+
+\blank \xmlprocessbuffer{main}{mathml}{} \blank
+
+We have been supporting \MATHML\ in \CONTEXT\ for a long time and will continue
+doing it. I will probably reimplement the converter (given a good reason) using
+more recent subsystems. It doesn't change the fact that in order to support it,
+we need to have some robust analytical support macros (functions) to deal with
+situations as mentioned. The \TEX\ engine is not made for that but in the
+meantime it has become more easy thanks to a combination of \TEX, \LUA\ and data
+tables. Consistent availability of extensibles (either or not virtual) helps too.
+
+Among the conclusions we can draw is that quite a lot of development (font as
+well as engine) is driven by what we have had for many years. A generic
+multi||dimensional glyph handler could have covered all odd cases that used to be
+done with macros but for historic reasons we could still be stuck with several
+slightly different and overlapping mechanisms. Nevertheless we can help macro
+writers by providing for instance leaders that accept characters as well in which
+case in math mode extensibles can be used.
+
+\stopsection
+
+\startsection[title=Fences]
+
+Fences are symbols that are put left and|/|or right of a formula. They adapt
+their height and depth to the content they surround, so they are vertical
+extensibles. Users tend to minimize their coding but this is probably not a good
+idea with fences as there is some magic involved. For instance, \TEX\ always
+wants a matching left and right fence, even if one is a phantom. So you will
+normally have something like this:
+
+\starttyping
+\left\lparent x \right\rparent
+\stoptyping
+
+and when you don't want one of them you use a period:
+
+\starttyping
+\left\lparent x \right.
+\stoptyping
+
+The question is, can we make the users live easier by magically turning braces,
+brackets and parentheses etc.\ into growing ones. As with much in \MKIV, it could
+be that \LUA\ can be of help. However, look at the following cases:
+
+\startbuffer
+\startformula (x) \stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This internally becomes something like this:
+
+\starttyping
+open  noad : nucleus : mathchar : U+00028
+ord   noad : nucleus : mathchar : U+00078
+close noad : nucleus : mathchar : U+00029
+\stoptyping
+
+We get a linked list of three so|-|called noads where each nucleus is a math
+character. In addition to a nucleus there can be super- and subscripts.
+
+\startbuffer
+\startformula \mathinner { (x) } \stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\starttyping
+inner noad : nucleus : submlist :
+  open  noad : nucleus : mathchar : U+00028
+  ord   noad : nucleus : mathchar : U+00078
+  close noad : nucleus : mathchar : U+00029
+\stoptyping
+
+This is still simple, although the inner primitive results in three extra levels.
+
+\startbuffer
+\startformula \left( x \right) \stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Now it becomes more complex, although we can still quite well recognize the
+input. The question is: how easily can we translate the previous examples into
+this structure.
+
+\starttyping
+inner noad : nucleus : submlist :
+  left  fence : delim   : U+00028
+  ord   noad  : nucleus : mathchar U+00078
+  right fence : delim   : U+00029
+\stoptyping
+
+\startbuffer
+\startformula ||x|| \stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Again, we can recognize the sequence in the input:
+
+\starttyping
+ord noad : nucleus : mathchar : U+0007C
+ord noad : nucleus : mathchar : U+0007C
+ord noad : nucleus : mathchar : U+00078
+ord noad : nucleus : mathchar : U+0007C
+ord noad : nucleus : mathchar : U+0007C
+\stoptyping
+
+Here we would have to collapse the two bars into one. Now, say that we manage to
+do this, even if it will cost a lot of code to check all border cases, then how
+about this?
+
+\startbuffer
+\startformula \left|| x \right|| \stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\starttyping
+inner noad : nucleus : submlist noad :
+  left  fence : delim : U+00028
+  ord   noad  : nucleus : mathchar : U+0007C
+  ord   noad  : nucleus : mathchar : U+00078
+  right fence : delim : U+00029
+ord noad : nucleus : mathchar : U+0007C
+\stoptyping
+
+This time we have to look over the sublist and compare the last fence with the
+character following the sublist. If you keep in mind that there can be all kind
+of nodes in between, like glue, and that we can have multiple nested fences, it
+will be clear that this is a no|-|go. Maybe for simple cases it could work out
+but for a bit more complex math one ends up in constantly fighting asymmetrical
+input at the \LUA\ end and occasionally fighting the heuristics at the \TEX\ end.
+
+It is for this reason that we provide a mechanism that users can use to avoid the
+primitives \type {\left} and \type {\right}.
+
+\startbuffer
+\setupmathfences
+  [color=red]
+
+\definemathfence
+  [fancybracket]
+  [bracket]
+  [command=yes,
+   color=blue]
+
+\startformula
+  a \fenced[bar]      {\frac{1}{b}} c \qquad
+  a \fenced[doublebar]{\frac{1}{b}} c \qquad
+  a \fenced[triplebar]{\frac{1}{b}} c \qquad
+  a \fenced[bracket]  {\frac{1}{b}} c \qquad
+  a \fancybracket     {\frac{1}{b}} c
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+So, you can either use a generic instance of fences (\type {\fenced}) or you
+can define your own commands. There can be several classes of fences and they
+can inherit and be cloned.
+
+\getbuffer
+
+As a bonus \CONTEXT\ provides a few wrappers:
+
+\startbuffer
+\startformula
+\Lparent    \frac{1}{a} \Rparent    \quad
+\Lbracket   \frac{1}{b} \Rbracket   \quad
+\Lbrace     \frac{1}{c} \Rbrace     \quad
+\Langle     \frac{1}{d} \Rangle     \quad
+\Lbar       \frac{1}{e} \Rbar       \quad
+\Ldoublebar \frac{1}{f} \Rdoublebar \quad
+\Ltriplebar \frac{1}{f} \Rtriplebar \quad
+\Lbracket   \frac{1}{g} \Rparent    \quad
+\Langle     \frac{1}{h} \Rnothing
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+which gives:
+
+\getbuffer
+
+For bars, the same applies as for primes: we collapse them into proper \UNICODE\
+characters when applicable:
+
+\def\Nsbar{\ruledmbox{\singleverticalbar}}
+\def\Ndbar{\ruledmbox{\doubleverticalbar}}
+\def\Ntbar{\ruledmbox{\tripleverticalbar}}
+
+\starttabulate[|lT|lT|lM|lM|]
+\NC U+007C \NC \chardescription{"007C} \NC \singleverticalbar \NC \Nsbar \NC \NR
+\NC U+2016 \NC \chardescription{"2016} \NC \doubleverticalbar \NC \Nsbar \Nsbar \quad
+                                                                  \Ndbar \NC \NR
+\NC U+2980 \NC \chardescription{"2980} \NC \tripleverticalbar \NC \Nsbar \Nsbar \Nsbar \quad
+                                                                  \Nsbar \Ndbar \quad
+                                                                  \Ndbar \Nsbar \quad
+                                                                  \Ntbar \NC \NR
+\stoptabulate
+
+The question is always: to what extent do users want to structure their input.
+For instance, you can define this:
+
+\startbuffer
+\definemathfence [weirdrange] [left="0028,right="005D]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+and use it as:
+
+\startbuffer
+$ (a,b] = \fenced[weirdrange]{a,b}$
+\stopbuffer
+
+\typebuffer
+
+This gives \inlinebuffer\ and unless you want to apply color or use specific
+features there is nothing wrong with the direct way. Interesting is that the
+complications are seldom in regular \TEX\ input, but \MATHML\ is a different
+story. There is an \type {mfenced} element but as users can also use the more
+direct route, a bit more checking is needed in order to make sure that we have
+matching open and close symbols. For reasons mentioned before we cannot delegate
+this to \LUA\ but have to use special versions of the \type {\left} and \type
+{\right} commands.
+
+One complication of making a nice mechanism for this is that we cannot use the
+direct characters. For instance curly braces are also used for grouping and the
+less and equal signs serve different purposes. So, no matter what we come up
+with, these cases remain special. However, in \CONTEXT\ the following is valid:
+
+\startbuffer
+\setupmathfences[color=darkgreen]
+\setupmathfences[mirrored][color=darkred]
+
+\startformula
+\left { \frac{1}{a} \right } \quad
+\left [ \frac{1}{b} \right ] \quad
+\left ( \frac{1}{c} \right ) \quad
+\left < \frac{1}{d} \right > \quad
+\left ⟨ \frac{1}{d} \right ⟩ \quad
+\left | \frac{1}{e} \right | \quad
+\left ⟪ \frac{1}{e} \right ⟫ \quad
+\left ⟫ \frac{1}{e} \right ⟪ \quad
+\left [ \frac{1}{d} \right [ \quad
+\left ] \frac{1}{d} \right [ \quad
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+In the background mapping onto the mentioned left and right commands happens so
+we do get color support as well. And, it doesn't look that bad in your document
+source either. Of course other combinations are also possible.
+
+\start \getbuffer \stop
+
+As there are many ways to get fences and users can come from other macro packages
+(or use them mixed) we support them all as well as possible.
+
+\startbuffer
+\left (       \frac{1}{x} \right )       =
+      (       \frac{1}{x}        )       =
+\left\(       \frac{1}{x} \right\)       =
+     \(       \frac{1}{x}       \)       =
+\left\lparent \frac{1}{x} \right\rparent =
+     \lparent \frac{1}{x}       \rparent =
+     \Lparent \frac{1}{x}       \Rparent
+\stopbuffer
+
+\typebuffer
+
+\blank \noindentation $\getbuffer$ \blank
+
+Unfortunately \UNICODE\ math doesn't free us from some annoyances with respect to
+paired fences. On the one hand coding math is a symbolic, abstract matter: a left
+parenthesis opens something and a right one closes something. The same is true
+for brackets and braces. However, the bar is used for left and right fencing as
+well as separating pieces of a formula (e.g.\ in conditions). Because
+traditionally these left and right bars were purely vertical with no slope, or
+hooks, or other thingies attached, in \UNICODE\ there is only one slot for it.
+Where paired fences can play a role in analyzing content, bars are rather useless
+for that. It also means that when coding a formula one cannot rely on the bar
+symbol to determine a left or right property. Normally this is no problem as we
+can use symbolic names (that include the \type {\left} or \type {\right}
+directive) but for instance in rendering \MATHML\ it demands some fuzzy logic to
+be applied. It would have been nice to have code points for the three cases.
+
+\startbuffer
+\ruledhbox{$\left|x\right|$}
+\ruledhbox{$\left(x\middle|x\right)$}
+\ruledhbox{$\startcheckedfences\left(x\leftorright|x\right)\stopcheckedfences$}
+\ruledhbox{$\startcheckedfences\leftorright|x\leftorright|\stopcheckedfences$}
+\ruledhbox{$\startcheckedfences\leftorright|x\stopcheckedfences$}
+\ruledhbox{$\startcheckedfences\left(x\leftorright|\stopcheckedfences$}
+\stopbuffer
+
+\typebuffer
+
+Believe me: we run into any combination of these bars and parentheses. And we're
+no longer surprised to see code like this (generated from applications):
+
+\starttyping
+<math>
+  <mrow>
+    <mo>(</mo>
+    <mi>y</mi>
+    <mrow>
+      <mo>|</mo>
+    </mrow>
+    <mi>y</mi>
+    <mo>)</mo>
+  </mrow>
+</math>
+\stoptyping
+
+Here the bar sits in its own group, so what is it? A lone left, right or middle
+symbol, meant to stretch with the surroundings or not?
+
+To summarize: there is no real difference (or progress) with respect to fences in
+\LUATEX\ compared to traditional \TEX. We still need matching \type {\left} and
+\type {\right} usage and catching mismatches automatically is hard. By adding
+some hooks at the \TEX\ end we can easily check for a missing \type {\right} but
+a missing \type {\left} needs a two|-|pass approach. Maybe some day in \CONTEXT\
+we will end up with multipass math processing and then I'll look into this again.
+
+\stopsection
+
+\startsection[title=Directions]
+
+The first time I saw right|-|to|-|left math was at a Dante and later at a TUG
+meeting hosted in Morocco where Azzeddine Lazrek again demonstrated
+right|-|to|-|left math. It was only after Khaled Hosny added some support to the
+\XITS\ font that I came to supporting it in \CONTEXT. Apart from some
+housekeeping nothing special is needed: the engine is ready for it. Of course it
+would be nice to extend the lm and gyre fonts as well but currently it's not on
+the agenda. I expect to add some more control and features in the future, if only
+because it is a nice visual experience. And writing code for such features is
+kind of fun.
+
+As this is about as complex as it can gets, it makes a nice example of how we
+control math font definitions, so let's see how we can define a \XITS\ use case.
+Because we have a bold (heavy) font too, we define that as well. First we define
+the two fonts.
+
+\starttyping
+\starttypescript [math] [xits,xitsbidi] [name]
+  \loadfontgoodies [xits-math]
+  \definefontsynonym
+    [MathRoman]
+    [file:xits-math.otf]
+    [features=math\mathsizesuffix,goodies=xits-math]
+  \definefontsynonym
+    [MathRomanBold]
+    [file:xits-mathbold.otf]
+    [features=math\mathsizesuffix,goodies=xits-math]
+\stoptypescript
+\stoptyping
+
+Discussing font goodies is beyond this article so I stick to a simple
+explanation. We use so|-|called goodie files for setting special properties of
+fonts, but also for defining special treatment, for instance runtime patches. The
+current \type {xits-math} goodie file looks as follows:
+
+\starttyping
+return {
+  name = "xits-math",
+  version = "1.00",
+  comment = "Goodies that complement xits (by Khaled Hosny).",
+  author = "Hans Hagen",
+  copyright = "ConTeXt development team",
+  mathematics = {
+    italics = {
+      ["xits-math"] = {
+         defaultfactor = 0.025,
+         disableengine = true,
+         corrections   = {
+           [0x1D453] = -0.0375, -- f
+        },
+      },
+    },
+    alternates = {
+      cal       = { feature = 'ss01', value = 1,
+        comment = "Mathematical Calligraphic Alphabet" },
+      greekssup = { feature = 'ss02', value = 1,
+        comment = "Mathematical Greek Sans Serif Alphabet" },
+      greekssit = { feature = 'ss03', value = 1,
+        comment = "Mathematical Italic Sans Serif Digits" },
+      monobfnum = { feature = 'ss04', value = 1,
+        comment = "Mathematical Bold Monospace Digits" },
+      mathbbbf  = { feature = 'ss05', value = 1,
+        comment = "Mathematical Bold Double-Struck Alphabet" },
+      mathbbit  = { feature = 'ss06', value = 1,
+        comment = "Mathematical Italic Double-Struck Alphabet" },
+      mathbbbi  = { feature = 'ss07', value = 1,
+        comment = "Mathematical Bold Italic Double-Struck Alphabet" },
+      upint     = { feature = 'ss08', value = 1,
+        comment = "Upright Integrals" },
+      vertnot   = { feature = 'ss09', value = 1,
+        comment = "Negated Symbols With Vertical Stroke" },
+    },
+  }
+}
+\stoptyping
+
+There can be many more entries but here the most important one is the \type
+{alternates} table. It defines the additional styles available in the font.
+Alternaties are chosen using commands like
+
+\starttyping
+\mathalternate{cal}\cal
+\stoptyping
+
+and of course shortcuts for this can be defined.
+
+Of course there is more than math, so we define a serif collection too:
+
+\starttyping
+\starttypescript [serif] [xits] [name]
+  \setups[font:fallback:serif]
+  \definefontsynonym[Serif]          [xits-regular.otf]    [features=default]
+  \definefontsynonym[SerifBold]      [xits-bold.otf]       [features=default]
+  \definefontsynonym[SerifItalic]    [xits-italic.otf]     [features=default]
+  \definefontsynonym[SerifBoldItalic][xits-bolditalic.otf] [features=default]
+\stoptypescript
+\stoptyping
+
+If needed you can redefine the \type {default} feature before this typescript is
+used. Once we have the fonts defined we can start building a typeface:
+
+\starttyping
+\starttypescript[xits]
+  \definetypeface [xits] [rm] [serif] [xits]   [default]
+  \definetypeface [xits] [ss] [sans]  [heros]  [default] [rscale=0.9]
+  \definetypeface [xits] [tt] [mono]  [modern] [default] [rscale=1.05]
+  \definetypeface [xits] [mm] [math]  [xits]   [default]
+\stoptypescript
+\stoptyping
+
+We can now switch to this typeface with:
+
+\starttyping
+\setupbodyfont[xits]
+\stoptyping
+
+But, as we wanted bidirectional math, something more is needed. Instead of the
+two fonts we define six. We could have a more abstract reference to the \XITS\
+fonts but in cases like this we prefer file names because then at least we can be
+sure that we get what we ask for.
+
+\starttypescript [math] [xits,xitsbidi] [name]
+  \loadfontgoodies[xits-math]
+  \definefontsynonym[MathRoman]       [xits-math.otf]    [features=math\mathsizesuffix,goodies=xits-math]
+  \definefontsynonym[MathRomanL2R]    [xits-math.otf]    [features=math\mathsizesuffix-l2r,goodies=xits-math]
+  \definefontsynonym[MathRomanR2L]    [xits-math.otf]    [features=math\mathsizesuffix-r2l,goodies=xits-math]
+  \definefontsynonym[MathRomanBold]   [xits-mathbold.otf][features=math\mathsizesuffix,goodies=xits-math]
+  \definefontsynonym[MathRomanBoldL2R][xits-mathbold.otf][features=math\mathsizesuffix-l2r,goodies=xits-math]
+  \definefontsynonym[MathRomanBoldR2L][xits-mathbold.otf][features=math\mathsizesuffix-r2l,goodies=xits-math]
+\stoptypescript
+
+So, we use the same fonts several times but apply different features to them.
+This time the typeface definition explicitly turns on both directions. When we
+don't do that we get only left to right support, which is of course more
+efficient in terms of font usage.
+
+\starttypescript[xitsbidi]
+  \definetypeface [xitsbidi] [rm] [serif] [xits]     [default]
+  \definetypeface [xitsbidi] [ss] [sans]  [heros]    [default] [rscale=0.9]
+  \definetypeface [xitsbidi] [tt] [mono]  [modern]   [default] [rscale=1.05]
+  \definetypeface [xitsbidi] [mm] [math]  [xitsbidi] [default] [direction=both]
+\stoptypescript
+
+We can now switch to the bidirectional typeface with:
+
+\starttyping
+\setupbodyfont[xitsbidi]
+\stoptyping
+
+However, in order to get bidirectional math indeed, we need to turn it on.
+
+\starttyping
+\setupmathematics[align=r2l]
+\stoptyping
+
+You might have wondered what this special way of defining the features using
+\type {\mathsizesuffix} means? The value of this macro is set at font definition
+time, and can be one of three values: \type {text}, \type {script} and \type
+{scriptscript}. At this moment the features are defined as follows:
+
+\starttyping
+\definefontfeature
+  [mathematics]
+  [mode=base,
+   liga=yes,
+   kern=yes,
+   tlig=yes,
+   trep=yes,
+   mathalternates=yes,
+   mathitalics=yes,
+ % nomathitalics=yes, % don't pass to tex
+   language=dflt,
+   script=math]
+\stoptyping
+
+From this we clone:
+
+\starttyping
+\definefontfeature
+  [mathematics-l2r]
+  [mathematics]
+  []
+
+\definefontfeature
+  [mathematics-r2l]
+  [mathematics]
+  [language=ara,
+   rtlm=yes,
+   locl=yes]
+\stoptyping
+
+Watch how we enable two specific features, where \type {rtlm} is a \XITS|-|specific
+one. The eventually used features are defined as follows.
+
+\starttyping
+\definefontfeature[math-text]            [mathematics]    [ssty=no]
+\definefontfeature[math-script]          [mathematics]    [ssty=1,mathsize=yes]
+\definefontfeature[math-scriptscript]    [mathematics]    [ssty=2,mathsize=yes]
+
+\definefontfeature[math-text-l2r]        [mathematics-l2r][ssty=no]
+\definefontfeature[math-script-l2r]      [mathematics-l2r][ssty=1,mathsize=yes]
+\definefontfeature[math-scriptscript-l2r][mathematics-l2r][ssty=2,mathsize=yes]
+
+\definefontfeature[math-text-r2l]        [mathematics-r2l][ssty=no]
+\definefontfeature[math-script-r2l]      [mathematics-r2l][ssty=1,mathsize=yes]
+\definefontfeature[math-scriptscript-r2l][mathematics-r2l][ssty=2,mathsize=yes]
+\stoptyping
+
+Even if it is relatively simple to do, it makes no sense to build complex mixed
+mode system, so currently we have to decide before we typeset a formula:
+
+\startbuffer
+\setupmathematics[align=l2r]
+\startformula
+       \sqrt{x^2\over 4x}  \qquad
+  {\bf \sqrt{x^2\over 4x}} \qquad
+  {\mb \sqrt{x^2\over 4x}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+This gives a left to right formula:
+
+\getbuffer
+
+\startbuffer
+\setupmathematics[align=r2l]
+\startformula
+       \sqrt{ف^2\over 4ب}  \qquad
+  {\bf \sqrt{ف^2\over 4ب}} \qquad
+  {\mb \sqrt{ف^2\over 4ب}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+And here we get an Arabic formula, where the quality of course is determined
+by the completeness of the font.
+
+\start
+\switchtobodyfont[xitsbidi]
+\getbuffer
+\stop
+
+The bold font has a partial bold implementation so unless I implement a more
+complex pseudo|-|bold mechanism you should not expect results. Because we have no
+official Arabic math alphabets they are not seen by the \CONTEXT\ \MKIV\
+analyzers that normally take care of this. It's all a matter of demand and supply
+(combined with a dose of motivation). For instance while a base size might be
+covered, the extensibles might be missing.
+
+About the time of writing this another variation was requested at the mailing
+list. For Persian math we keep the direction from left to right but the digits
+have to be in an Arabic font. We cannot use the bidirectional handler for this so
+we need to swap regular and bold digits in another way. We can use the fallback
+mechanism for this and a definition roughly boils down to this:
+
+\starttyping
+\definefontfallback
+  [mathdigits]
+  [dejavusansmono]
+  [digitsarabicindic]
+  [check=yes,
+   force=yes,
+   offset=digitsnormal]
+\stoptyping
+
+This is used in:
+
+\starttyping
+\definefontsynonym
+  [MathRoman]
+  [file:xits-math.otf]
+  [features=math\mathsizesuffix,
+   goodies=xits-math,
+   fallbacks=mathdigits]
+\stoptyping
+
+The problem with this kind of feature is not so much in the implementation,
+because by now in \CONTEXT\ we have plenty of ways to deal with such issues in a
+convenient way. The biggest challenge is to come up with an interface that
+somehow fits in the model of typescripts and with a couple of predefined
+typescripts we now have:
+
+\starttyping
+\usetypescriptfile[mathdigits]
+\usetypescript [mathdigits] [xits-dejavu] [arabicindic]
+\setupbodyfont[dejavu]
+\stoptyping
+
+\startbuffer[pefama]
+\definefontfeature [persian-fake-math] [arabic] [anum=yes]
+
+\definefont[persianfakemath][dejavusans*persian-fake-math]
+\stopbuffer
+
+\getbuffer[pefama]
+
+\def\PeFaMa#1{\mathord{\hbox{\persianfakemath#1}}}
+
+After that a formula like \type {$2 + 3 = 5$} comes out as $ \PeFaMa2 + \PeFaMa3
+= \PeFaMa5 $. In fact, if you want that in text mode, you can just use the
+\CONTEXT\ \MKIV\ font feature \type {anum}:
+
+\typebuffer[pefama]
+
+But of course you won't have proper math then. But as right|-|to|-|left math is
+still under construction, in due time we might end up with more advanced
+rendering. Currently you can exercise a little control. For instance by using the
+\type {align} parameter in combination with the \type {bidi} parameter. Of course
+support for special symbols like square roots depends on the font as well. We
+probably need to mirror a few more characters.
+
+\startbuffer
+  \m{   (  1 =   1)   }\quad
+  \m{   (123 = 123)   }\quad
+  \m{ a (  1 =   1) b }\quad
+  \m{ a (123 = 123) b }\quad
+  \m{ x = 123 y + (1 / \sqrt {x}) }
+\stopbuffer
+
+\typebuffer
+
+As in math we can assume sane usage of fences, we don't need extensive tests on
+pairing.
+
+\starttabulate[|T|T||]
+\HL
+\NC \rm\bf align \NC \rm\bf bidi \NC                                   \NC \NR
+\HL
+\NC l2r   \NC no   \NC \setupmathematics          [bidi=no]\getbuffer  \NC \NR
+\NC l2r   \NC yes  \NC \setupmathematics          [bidi=yes]\getbuffer \NC \NR
+\NC r2l   \NC no   \NC \setupmathematics[align=r2l,bidi=no]\getbuffer  \NC \NR
+\NC r2l   \NC yes  \NC \setupmathematics[align=r2l,bidi=yes]\getbuffer \NC \NR
+\HL
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Structure]
+
+At some point publishers started asking for tagged \PDF\ and as a consequence a
+typeset math formula suddenly becomes more than a blob of ink. There are several
+arguments for tagging content. One is accessibility and another is reflow.
+Personally I think that both arguments are not that relevant. For instance, if
+you want to help a visually impaired reader, it's far better to start from a well
+structured original and ship that along with the typeset version. And, if you
+want reflow, you can better provide a (probably) simplified version in for
+instance \HTML\ format.
+
+We are surrounded by all kinds of visualizations, and text on paper or some
+medium is one. We don't make a painting accessible either. If accessibility is a
+demand, it should be done as best as can be, and the source is then the starting
+point. Of course publishers don't like that because when a source is available,
+it's one step closer to reuse by others. But that problem can simply be ignored
+as we consider publishers to be some kind of facilitating organization that
+deliver content from others. Alas publishers don't play that humble role so as
+long as they're around they can demand from their suppliers tagging of something
+visual.
+
+Of course when you use \TEX\ tagging is no real issue as you can make the input
+as verbose and structured as you like. But authors don't always want to be
+verbose, take this:
+
+\startbuffer
+$ f(x) = x^2 + 3x + 7 $
+\stopbuffer
+
+\typebuffer
+
+This enters \TEX\ as a sequence of characters: \enabletrackers [math.classes]
+\inlinebuffer \disabletrackers[math.classes]. These characters can have
+properties, for instance they can represent a relation or be an opening or
+closing symbol, but in most cases they are just classified as ordinary. These
+properties to some extent control spacing and interplay between math elements.
+They are not structure. If you have seen presentation \MATHML\ you have noticed
+that there are operators (\type {mo}), identifiers (\type {mi}) and numbers
+(\type {mn}), as well as some structural elements like fences (\type {mfenced}),
+superscripts (\type {msup}), subscripts (\type {msub}). Because it is a
+presentational encoding, there is no guarantee about the quality of the input as
+well as the rendering, but it somehow made it into a standard that is also used
+for tagging \PDF\ content.
+
+Going from mostly unstructured \TEX\ math input to more structured output is
+complicated by the fact that the intermediate somewhat structured math lists
+eventually become regular boxes, glyphs, kerns, glue etc. In \CONTEXT\ we carry
+some persistent information around so that we can still reverse engineer the
+output to structured input but this can be improved by more explicit tagging. We
+plan to add some more of that to future versions but here is an example:
+
+\starttyping
+$ \apply{f}{(x)} = x^2 + 3x + 7 $
+\stoptyping
+
+You can go over the top too:
+
+\starttyping
+$ \apply{f}{(x)} = \mi{x}^\mi{2} + \mi{3}\mi{x} + \mi{7} $
+\stoptyping
+
+The trick is to find an optimal mix of structure and readability. For instance,
+in \type {\sin} we already have the apply done by default, so often extra tagging
+is only needed in situations where there are several ways to interpret the text.
+Of course we're not enforcing this, but by providing some structure related
+features, at least we hope to make users aware of the issue. Directly inputting
+\MATHML\ is also an option but has never become popular.
+
+All this is mostly a macro package issue, and \CONTEXT\ has the basics on board.
+Because there is no need to adapt \LUATEX\ the most we will do is add a bit more
+consistency in building the lists (two way pointers) and carrying over properties
+(like attributes). We also have on the agenda a math table model that suits
+\MATHML, because some of those tables are somewhat hard to deal with.
+
+How the export and tagging evolves depends on demand. I must admit that I
+implemented it as an exercise mostly because these are features I don't need
+myself (and no one really asked for it anyway).
+
+\stopsection
+
+\startsection[title=Italic correction]
+
+Here we face a special situation. In regular \OPENTYPE\ italic correction is not
+part of the game, although one can cook up some positioning feature that does a
+similar job. In \OPENTYPE\ math there is italic correction, but also a more
+powerful sharpe|-|related kerning which is to be preferred. In traditional \TEX\
+the italic correction was present but since it is a font specific feature there
+is no way to make it work across fonts, and \TYPEONE\ based math has lots of
+them.
+
+At some point we have discussed throwing italic correction out of the engine, if
+only because it was unclear how and when to apply it. In the meantime there is
+some compromise reached. Because \CONTEXT\ is always in sync with the latest
+\LUATEX, we oscillated between solutions and this was complicated by the fact
+that we had to support a mix of \OPENTYPE\ math fonts and virtualized \TYPEONE\
+legacy fonts.
+
+The italic correction related code is still somewhat experimental, but we have
+several options. \footnote {In text mode we also have an advanced mechanism for
+italic correction but this operates independent from math.} In most cases we
+insert the italic correction ourselves and as the engine then sees a kern already
+it will not add another one. This has the advantage that we can be more
+consistent if only because not all fonts have these corrections and not all cases
+are considered by the engine.
+
+\startitemize[n]
+    \startitem
+        A math font can have italic correction per glyph. The engine gets
+        this passed but before it can apply them we already inject them into
+        the mathlist where needed.
+    \stopitem
+    \startitem
+        This is a variant of the first one, but is always applied, and not
+        controlled by the font. This makes it possible to add additional
+        corrections. This method is kind of obsolete as we no longer generate
+        missing corrections at font definition time. \footnote {Because the
+        font loader is also used for the generic code, we don't want to add
+        such features there.}
+    \stopitem
+    \startitem
+        This variant looks at the shape and if it is italic (or bolditalic) then
+        correction is applied. Here the correction is related to the emwidth
+        and controlled by a factor. We use this method by default.
+    \stopitem
+    \startitem
+        The fourth variant is a mixture of the first (font driven) and the third
+        (emwidth driven).
+    \stopitem
+\stopitemize
+
+Are we better off? I honestly don't know. It is a bit of a mess and will always
+be, simply because the reference font (cambria) and reference implementation
+(msword) is not clear about it and we follow them. In that respect I consider it
+a macro package issue mostly. In \CONTEXT\ at least we can offer some options.
+
+\startsection[title=Big]
+
+When migrating math to \MKIV\ I couldn't resist looking into some functionality
+that currently uses macro magic. An example is big delimiters.
+
+\startbuffer[bigs]
+$ ( \big( \Big( \bigg( \Bigg( x $
+\stopbuffer
+
+\typebuffer[bigs]
+
+\blank \getbuffer[bigs] \blank
+
+Personally I never use these, I just trust \type {\left} and \type {\right} to do
+the right job, but I'm no reference at all when it comes to math. The reason for
+looking into the bigs is that in plain \TEX\ there are some magic numbers
+involved. The macros, when translated to \CONTEXT\ boil down to this:
+
+\starttyping
+\left<delimiter>\vbox to 0.85\bodyfontsize{}\right.
+\left<delimiter>\vbox to 1.15\bodyfontsize{}\right.
+\left<delimiter>\vbox to 1.45\bodyfontsize{}\right.
+\left<delimiter>\vbox to 1.75\bodyfontsize{}\right.
+\stoptyping
+
+Knowing that we have a chain of sizes in the font, I was tempted to go for a
+solution where a specific size is chosen from the linked list of next sizes.
+There are several strategies possible when we delegate this to \LUA\ but we don't
+provide a high level interface yet. Personally I'd like to set the low level
+configuration options as:
+
+\starttyping
+\setconstant\bigmathdelimitermethod \plusone
+\setconstant\bigmathdelimitervariant\plusthree
+\stoptyping
+
+But as users might expect plain||like behaviour, \CONTEXT\ also provides the command
+
+\starttyping
+\plainbigdelimiters
+\stoptyping
+
+which sets the method to~2. Currently that is the default. When method~1 is
+chosen there are four variants and the reason for keeping them all is that they
+are part of experiments and explorations.
+
+\starttabulate[|||]
+\NC 1 \NC choose size $ \tf  n $ from the available sizes \NC \NR
+\NC 2 \NC choose size $ \tf 2n $ from the available sizes \NC \NR
+\NC 3 \NC choose the first variant that has $ \tf 1.33^n \times (ht + dp) > size $\NC \NR
+\NC 4 \NC choose the first variant that has $ \tf 1.33^n \times bodyfontsize > size $\NC \NR
+\stoptabulate
+
+The last three variants give similar results but they are not always the same as
+the plain method. This is because not all fonts provide the same range.
+
+\def\SetBig#1#2%
+  {\setnewconstant\bigmathdelimitermethod#1\relax
+   \setnewconstant\bigmathdelimitervariant#2\relax
+   \getbuffer[bigs]}
+
+\starttabulate[|l|l|l|l|]
+\HL
+\NC           \NC pagella       \NC \switchtobodyfont[modern] latin modern  \NC \switchtobodyfont[cambria] cambria       \NC \NR
+\HL
+\NC plain     \NC \SetBig{2}{0} \NC \switchtobodyfont[modern] \SetBig{2}{0} \NC \switchtobodyfont[cambria] \SetBig{2}{0} \NC \NR
+\NC variant 1 \NC \SetBig{1}{1} \NC \switchtobodyfont[modern] \SetBig{1}{1} \NC \switchtobodyfont[cambria] \SetBig{1}{1} \NC \NR
+\NC variant 2 \NC \SetBig{1}{2} \NC \switchtobodyfont[modern] \SetBig{1}{2} \NC \switchtobodyfont[cambria] \SetBig{1}{2} \NC \NR
+\NC variant 3 \NC \SetBig{1}{3} \NC \switchtobodyfont[modern] \SetBig{1}{3} \NC \switchtobodyfont[cambria] \SetBig{1}{3} \NC \NR
+\NC variant 4 \NC \SetBig{1}{4} \NC \switchtobodyfont[modern] \SetBig{1}{4} \NC \switchtobodyfont[cambria] \SetBig{1}{4} \NC \NR
+\HL
+\stoptabulate
+
+So, we are somewhat unpredictable but at least we have several ways to control
+the situation and better solutions might show up.
+
+% \dontleavehmode\dostepwiserecurse{0}{6}{1}{\ruledhbox{$\mathdelimiterstep{#1}($} }
+
+\stopsection
+
+\startsection[title=Macros]
+
+I already discussed roots and the traditional \type {\root} command is a nice
+example of one that can be simplified in \LUATEX\ thanks to a new primitive. A
+macro package often has quite a lot of macros related to math that deal with
+tables and \LUATEX\ doesn't change that. But there is a category of commands that
+became obsolete: the ones that are used to construct characters that are not in
+the fonts. Keep in mind that the number of fonts as well as their size was
+limited at the time \TEX\ was written, so by providing building blocks additional
+characters could be made. Think of for instance the negated symbols: a new symbol
+could be made by overlaying a slash. The same is true for arrows: by prepending
+or appending minus signs, arrows of arbitrary length could be constructed.
+
+Here I will stick to another example: dots. In plain \TEX\ we have this definition:
+
+\starttyping
+\def\vdots
+  {\vbox
+     {\baselineskip4pt
+      \lineskiplimit0pt
+      \kern6pt
+      \hbox{.}%
+      \hbox{.}%
+      \hbox{.}}}
+\stoptyping
+
+This will typeset vertical dots, while the next does them diagonally:
+
+\starttyping
+\def\ddots
+  {\mathinner
+     {\mkern1mu
+      \raise7pt\vbox{\kern7pt\hbox{.}}%
+      \mkern2mu
+      \raise4pt\hbox{.}%
+      \mkern2mu
+      \raise1pt\hbox{.}%
+      \mkern1mu}}
+\stoptyping
+
+Of course these dimensions relate to the font size of plain \TEX\ so in \CONTEXT\
+\MKII\ we have something like this:
+
+\startbuffer
+\def\vdots
+  {\vbox
+     {\baselineskip4\points
+      \lineskiplimit\zeropoint
+      \kern6\points
+      \hbox{$\mathsurround\zeropoint.$}%
+      \hbox{$\mathsurround\zeropoint.$}%
+      \hbox{$\mathsurround\zeropoint.$}}}
+
+\def\ddots
+  {\mathinner
+     {\mkern1mu
+      \raise7\points\vbox{\kern 7\points\hbox{$\mathsurround\zeropoint.$}}%
+      \mkern2mu
+      \raise4\points\hbox{$\mathsurround\zeropoint.$}%
+      \mkern2mu
+      \raise \points\hbox{$\mathsurround\zeropoint.$}%
+      \mkern1mu}}
+\stopbuffer
+
+\typebuffer
+
+These two symbols are rendered (in \MKII) as follows:
+
+\start \getbuffer
+
+\startlinecorrection[blank]
+\dontleavehmode \quad \ruledhbox{$\vdots$} \quad \ruledhbox{$\ddots$}
+\stoplinecorrection
+
+\stop
+
+I must admit that I only noticed the rather special height when I turned these
+macros into virtual characters for the initial virtual \UNICODE\ math that we
+needed in the first versions of \MKIV. This is a side effect of their use in
+matrices. However, in \MKIV\ we just use the characters in the font and get:
+
+\startlinecorrection[blank]
+\dontleavehmode \quad \ruledhbox{$\vdots$} \quad \ruledhbox{$\ddots$}
+\stoplinecorrection
+
+These characters look different because instead of three text periods a real
+symbol is used. The fact that we have more complete fonts and rely less on
+special font properties to achieve effects is a good thing, and in this respect
+it cannot be denied that \LUATEX\ triggered the development of more complete
+fonts. Of course from the user's perspective the outcome is often the same,
+although \unknown\ using a single character instead of three has the advantage of
+smaller files (neglectable), less runtime (really neglectable) and cleaner output
+files (undeniable) from where such characters can now be copied as one.
+
+\stopsection
+
+\startsection[title=Unscripting]
+
+If you ever looked into plain \TEX\ you might have noticed this following
+section. The symbols are more related to programming languages than to math.
+
+\starttyping
+% The following changes define internal codes as recommended
+% in Appendix C of The TeXbook:
+\mathcode`\^^@="2201 % \cdot
+\mathcode`\^^A="3223 % \downarrow
+\mathcode`\^^B="010B % \alpha
+\mathcode`\^^C="010C % \beta
+\mathcode`\^^D="225E % \land
+\mathcode`\^^E="023A % \lnot
+\mathcode`\^^F="3232 % \in
+\mathcode`\^^G="0119 % \pi
+\mathcode`\^^H="0115 % \lambda
+\mathcode`\^^I="010D % \gamma
+\mathcode`\^^J="010E % \delta
+\mathcode`\^^K="3222 % \uparrow
+\mathcode`\^^L="2206 % \pm
+\mathcode`\^^M="2208 % \oplus
+\mathcode`\^^N="0231 % \infty
+\mathcode`\^^O="0140 % \partial
+\mathcode`\^^P="321A % \subset
+\mathcode`\^^Q="321B % \supset
+\mathcode`\^^R="225C % \cap
+\mathcode`\^^S="225B % \cup
+\mathcode`\^^T="0238 % \forall
+\mathcode`\^^U="0239 % \exists
+\mathcode`\^^V="220A % \otimes
+\mathcode`\^^W="3224 % \leftrightarrow
+\mathcode`\^^X="3220 % \leftarrow
+\mathcode`\^^Y="3221 % \rightarrow
+\mathcode`\^^Z="8000 % \ne
+\mathcode`\^^[="2205 % \diamond
+\mathcode`\^^\="3214 % \le
+\mathcode`\^^]="3215 % \ge
+\mathcode`\^^^="3211 % \equiv
+\mathcode`\^^_="225F % \lor
+\stoptyping
+
+This means as much as: when I hit \type {Ctrl-Z} on my keyboard and my editor
+honors that by injecting character \type {U+1A} into the input then \TEX\ will
+turn that into $\ne$, given that you're in math mode. I'm not sure how many
+keyboards and editors there are around that still do that but it illustrates that
+inputting in some kind of \WYSIWYG\ is not alien to \TEX. \footnote {There are
+more such hidden features, for instance, in some fonts special ligatures can be
+implemented that no one ever uses.}
+
+One of the subprojects of the ongoing \TEX\ user group font project is to extend
+the already extensive Dejavu font with all relevant math characters so that we
+can edit a document in a more \UNICODE\ savvy way. So, after more than three
+decades we might arrive where Don Knuth started: you see what you input and a
+similar shape will end up on paper.
+
+Does this mean that all such input is good? Definitely not, because in \UNICODE\
+we find all kinds of characters that somehow ended up there as a result of
+merging existing encodings. At work we're accustomed to getting input that is a
+mix of everything a word processor can produce and often we run into characters
+that users find normal but are not that handy from a \TEX\ perspective. It's the
+main reason why in math mode we intercept some of them, for instance in:
+
+\startbuffer
+$ y = x² + x³ + x²³ + x²ᵃ $ % not all characters are in monospace
+\stopbuffer
+
+\typebuffer
+
+These superscripts are an inconsistent bunch so they will never be real
+substitutes for the \type {^} syntax, simply because a mix like above looks bad.
+But fortunately it comes out well: \inlinebuffer. This is because \CONTEXT\ will
+transform such super- and subscripts into real ones and in the process also
+collapse multiple scripts into a group. This is typically one of the features
+that already showed up early in \MKIV.
+
+Here we have a feature that doesn't relate to fonts, the math machinery or the
+engine, but is just a macro package goodie. It's a way to respond to the
+variation in input, although probably hardly any \TEX\ math user will need it.
+It's one of those features that comes in handy when you use \TEX\ as invisible
+backend where the input is never seen by humans.
+
+\stopsection
+
+\startsection[title=Combining fonts]
+
+I already mentioned that we started out with virtual math fonts. Defining them is
+not that hard and boils down to defining what fonts make up the desired math
+font. Normally one starts out with a decent complete \OPENTYPE\ math font
+followed by mapping \TYPEONE\ fonts onto specific alphabets and symbols. On top
+of this there are additional virtual characters constructed (including
+extensibles). However, this method will become kind of obsolete (read: not used)
+when all relevant \OPENTYPE\ math fonts are available.
+
+Does this mean that we have only simple font setups? In practice yes: you can set
+up a math font in a few lines in a regular typescript. There are of course a few
+more lines needed when defining bold and|/|or right|-|to|-|left math but users
+don't need to bother about it. All is predefined. There are signals that users
+want to combine fonts so the already present fallback mechanism for text fonts
+has been made to work with math fonts as well. This permits for instance to
+complement the not|-|yet|-|finished \OPENTYPE\ Euler math fonts with Pagella. Of
+course you always need to keep consistency into account, but in principle you can
+overload for instance specific alphabets, something that can make sense when
+simple math is mixed with a font that has no math companion. In that case using
+the text italic in math mode might look better. For the at the time of this
+writing incomplete Euler font we can add characters like this:
+
+\starttyping
+\loadtypescriptfile[texgyre]
+\loadtypescriptfile[dejavu]
+
+\resetfontfallback  [euler]
+
+\definefontfallback [euler] [texgyrepagella-math] [0x02100-0x02BFF]
+\definefontfallback [euler] [texgyrepagella-math] [0x1D400-0x1D7FF]
+
+\starttypescript [serif] [euler] [name]
+  \setups[font:fallback:serif]
+  \definefontsynonym [Serif] [euler] [features=default]
+\stoptypescript
+
+\starttypescript [math] [euler] [name]
+  \definefontsynonym [MathRoman] [euler] [features=math\mathsizesuffix,fallbacks=euler]
+\stoptypescript
+
+\starttypescript [euler]
+  \definetypeface [\typescriptone] [rm] [serif] [euler]  [default]
+  \definetypeface [\typescriptone] [tt] [mono]  [dejavu] [default] [rscale=0.9]
+  \definetypeface [\typescriptone] [mm] [math]  [euler]  [default]
+\stoptypescript
+\stoptyping
+
+If needed one can use names instead of code ranges (like \type {uppercasescript})
+as well as map one range onto another. This last option is handy for merging a
+regular text font into an alphabet (in which case the \UNICODE's don't match).
+
+We expect math fonts to be rather complete because after all, a font designer has
+a large repertoire of free alphabets to choose from. So, in practice combining
+math fonts will happen seldom. In text mode this is more common, especially when
+multiple scripts are mixed. There is a whole bunch of modules that can generate
+all kind of tables and overviews for testing.
+
+\stopsection
+
+\startsection[title=Experiments]
+
+I won't describe all experiments here. An example of an experiment is a better
+way of dealing with punctuation, especially the cultural determined
+period|/|comma treatment. I still have the code somewhere but the heuristics are
+too messy to keep around.
+
+There are also some planned experiments, like breaking and aligning display math,
+but they have a low priority. It's not that hard to do, but I need a good reason.
+The same is true for equation number placement where primitives are used that can
+sometimes interfere or not be used in all cases. Currently that placement in
+combination with alignments is implemented with quite a lot of fuzzy macro code.
+
+One of the areas where experimenting will continue is with fonts. Early in the
+development of \MKIV\ font goodies showed up. A font (or collection of fonts) can
+have a file (or more files) that control functionality and can have fixes. There
+are some in place for math fonts. It is a convenient way to use the latest
+greatest fonts as we have ways to circumvent issues, for instance with math
+parameters. The virtual math fonts are also defined as goodies.
+
+Some mechanisms will probably be made accessible from the \TEX\ end so that users
+can exercise more control. And because we're not done yet, additional features
+will show up for sure. There are some math related subsystems like physics and
+chemistry and these already demanded some extensions and might need more.
+Introducing math symbol (and property) dictionaries as in \OPENMATH\ is probably
+a next step.
+
+I already mentioned that typesetting and rendering related technology is driven
+by the web. This also reflects on \UNICODE\ and \OPENTYPE. For instance, we find
+not only emoticons like \type {U+1F632} (ASTONISHED FACE) in the standard but
+also \quote {MOUNT FUJI}, \type {TOKYO TOWER}, \type {STATUE OF LIBERTY}, \type
+{SILHOUETTE OF JAPAN}. On the other hand, in one of our older projects we still
+have to provide some tweak for the unary minus (as when discussing scientific
+calculators used in math lessons) a distinction has to be made with a regular
+minus sign. And there are no symbols to refer to use of media (simulation,
+applet, etc.) and there is as far as I know no emoticon for a student asking a
+question. Somehow it's hard to defend that the Planck constant is as different
+from a math italic~h as a \quote {GRINNING FACE} is from a \quote {GRINNING FACE
+WITH SMILING EYES}, but the last both got a code point. I wonder with an \type
+{UNAMUSED FACE}.
+
+Of course we can argue that this is all too visual to end up in \UNICODE, but the
+main point that I want to make is that as a \TEX\ community (which is also
+related to education) we are of not that much importance and influence. Maybe it
+is because we always had a programmable system at hand, and folks who could make
+fonts, and were already extending and exploring before the web became a factor.
+Anyhow, in \CONTEXT\ we solve these issues by making mechanisms extensible. For
+instance we can extend fonts with virtual glyphs and add features to existing
+fonts on the fly. Simple examples are adding some glyphs and properties to math
+fonts or adding color properties to whatever font. More complex examples are
+implementing paragraph optimizers using feature sets of fonts (most noticeably
+the upcoming Husayni font for advanced arabic typesetting). And, math typesetting
+is a speciality anyway.
+
+Upcoming extensions to \UNICODE\ and \OPENTYPE\ will demonstrate that the \TEX\
+community could have been a bit more demanding and innovative, given that it had
+known what to demand. Interesting is that some innovation already happened by
+providing special fonts and macros and engines, but I guess much gets unnoticed.
+On the other hand, I must admit that experimenting and providing solutions
+independent of evolving technology also has benefits: it made (and makes) some
+user group meetings interesting to go to and creates interesting niches of users.
+Without this experimental playground I for sure would not be around.
+
+\stopsection
+
+\startsection[title=Tracing]
+
+Tracing is available for nearly all mechanisms and math is no exception. Most
+tracing happens at the \LUA\ end and can be enabled with the tracker mechanism.
+Users will seldom use this, but for development the situation is definitely more
+comfortable in \MKIV. Of course it helps that the penalty of tracing and logging
+has become less in recent times because memory as well as runtime is hardly
+influenced.
+
+We provide several styles (modules) for generating lists and tables of characters
+and extensibles, visualizing features and comparing fonts. Here we benefit from
+\LUA\ because we can use the database embedded in \CONTEXT\ and looping and
+testing is more convenient in this language. Of course the rendering is done by
+\TEX, so this is a typical example of hybrid usage.
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+It is somewhat ironic that while \CONTEXT\ is sometimes tagged as \quote {not to
+be used when you need to do math typesetting} it is this macro package that
+drives the development of \LUATEX\ with its updated math engine, which in turn
+influences the updated math engine in \XETEX, that is used by other macro
+packages. In a similar fashion the possibility to process \OPENTYPE\ math fonts
+in \LUATEX\ triggered the development of such fonts as follow up on the Latin
+Modern and \TEX\ Gyre projects. So, the fact that in \CONTEXT\ we have a bit more
+freedom in experimenting with math (and engines) has some generic benefits as
+well.
+
+I think that overall we're better off. The implementation at the \TEX\ end is
+much cleaner because we no longer have to deal with different math encodings and
+multiple families. Because in \CONTEXT\ we're less bound to traditional
+approaches and don't need to be code compatible with other engines we can follow
+different routes than usual. After all, that was also one of the main motivations
+behind starting the \LUATEX\ project: clean (better understandable code), less
+mean (no more hacks at the \TEX\ end), even if that means to be less lean (quite
+a lot of \LUA\ code). Between the lines above you can read that I think that
+we've missed some opportunities but that's a side effect of the community not
+being that innovative which in turn is probably driven by more or less standard
+expectations of publishers, as they are more served by good old stability instead
+of progress. Therefore, we're probably stuck for a while, if not forever, with
+what we have now. And a decent \CONTEXT\ math implementation is not going to
+change that. What matters is that we can (still) keep up with developments
+outside our sphere of influence.
+
+I don't claim that the current implementation of math in \MKIV\ is flawless, but
+eventually we will get there.
+
+\stopsection
+
+% \blank[2*big,samepage]
+
+% \startlines
+% Hans Hagen
+% PRAGMA ADE
+% Hasselt NL
+% June-August 2013
+% \stoplines
+
+\stopchapter
+
+\stoptext

@@ -1,0 +1,613 @@
+% language=uk
+
+% \startluacode
+%     xml.trace_lpath = true
+% \stopluacode
+
+\startcomponent mk-xml
+
+\environment mk-environment
+
+\chapter{XML revisioned}
+
+{\em The code dealing with \XML\ is evolving and the following
+text might be outdated. So, in case of doubt, check the manual.}
+
+\subject{the parser}
+
+For quite a while \CONTEXT\ has built-in support for \XML\ processing and
+at \PRAGMA\ we use this extensively. One of the first things I tried to deal
+with in \LUA\ was \XML, and now that we have \LUATEX\ up and running it's
+time to investigate this a bit more. First we'll have a look at the basic
+functions, the \LUA\ side of the game.
+
+We load an \XML\ file as follows (the \type {document} namespace
+is predefined in \CONTEXT):
+
+\startbuffer
+\startluacode
+    document.xml = document.xml or { } -- define namespace
+    document.xml = xml.load("mk-xml.xml") -- load the file
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The loader constructs a table representing the document structure, including
+whitespace, so let's serialize the code and see what shows up:
+
+\startbuffer
+\startluacode
+    local prn = xml.newhandlers { handle = tex.sprint }
+    tex.sprint("\\starttyping")
+    xml.serialize(document.xml, prn)
+    tex.sprint("\\stoptyping")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+In the first version of the serializer, we could pass extra function
+arguments that controlled the way content was processed. This method
+has now been replaced by handlers. In this example we create a
+simple handler where the \type {handle} function is responsible
+for the final print.
+
+\getbuffer
+
+This already gives us a rather basic way to manipulate documents and
+this method is even not that slow because we bypass \TEX\ reading from
+file.
+
+\startbuffer
+\startluacode
+    local str = "<l> <w>hello</w> <w>world</w> </l>"
+    local prn = xml.newhandlers { handle = tex.sprint }
+    tex.sprint("\\starttyping")
+    xml.serialize(xml.convert(str),prn)
+    tex.sprint("\\stoptyping")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+Watch the extra print argument, we need this because otherwise the
+verbatim mode will not work out well.
+
+\getbuffer
+
+You need to keep in mind that in these examples we print to \TEX\ under
+the current catcode regime.
+
+You can save a \XML\ table with the command:
+
+\starttyping
+\startluacode
+    xml.save(document.xml,"newfile.xml")
+\stopluacode
+\stoptyping
+
+These examples show that you have access to \XML\ files from
+within your document. If you want to convert the table to just a
+string, you can use \type {xml.tostring}. Actually, this method is
+automatically used for occasions where \LUA\ wants to print an
+\XML\ table or wants to join string snippets. However, as we are
+inside \TEX, we need to print to \TEX\ instead of the console or
+file. For this we use specialized handlers.
+
+The reason why I wrote the \XML\ parser is that we need it in the
+utilities (so it has to provide access to the content of elements)
+as well as in the text processing (so it needs to provide some
+manipulation features). To serve both we have implemented a subset
+of what standard \XML\ tools qualify as path based searching.
+
+\startbuffer
+\startluacode
+    xml.sprint(xml.first(document.xml, "/one/three/some"))
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+The result of this snippet is the content of the first element
+that matches the specification: \quote{\getbuffer}. As you can
+see, this comes out rather verbose. The reason for this is that we
+need to enter \XML\ mode in order to get such a snippet
+interpreted.
+
+Below we give a few more variants, this time
+we use a generic filter:
+
+\startbuffer
+\startluacode
+    xml.sprint(xml.filter(document.xml, "/one/three/some"))
+\stopluacode
+\stopbuffer
+
+\typebuffer result: \astype{\getbuffer}
+
+\startbuffer
+\startluacode
+    xml.sprint(xml.filter(document.xml, "/one/three/some/first()"))
+\stopluacode
+\stopbuffer
+
+\typebuffer result: \astype{\getbuffer}
+
+\startbuffer
+\startluacode
+    xml.sprint(xml.filter(document.xml, "/one/three/some[1]"))
+\stopluacode
+\stopbuffer
+
+\typebuffer result: \astype{\getbuffer}
+
+\startbuffer
+\startluacode
+    xml.sprint(xml.filter(document.xml, "/one/three/some[-1]"))
+\stopluacode
+\stopbuffer
+
+\typebuffer result: \astype{\getbuffer}
+
+\startbuffer
+\startluacode
+    xml.sprint(xml.filter(document.xml, "/one/three/some/texts()"))
+\stopluacode
+\stopbuffer
+
+\typebuffer result: \astype{\getbuffer}
+
+\startbuffer
+\startluacode
+    xml.sprint(xml.filter(document.xml, "/one/three/some[2]/text()"))
+\stopluacode
+\stopbuffer
+
+\typebuffer result: \astype{\getbuffer}
+
+The next lines shows some more variants. There are more than these and
+we will extend the repertoire over time. If needed you can define
+additional handlers.
+
+\subject{performance}
+
+Before we continue with more examples, a few remarks about the
+performance. The first version of the parser was an enhanced
+version of the one presented in the \LUA\ book: support for
+namespaces, processing instructions, comments, cdata and doctype,
+remapping and a few more things. When playing with the parser I
+was quite satisfied about the performance. However, when I started
+experimenting with 40~megabyte files, the preprocessing (needed
+for the special elements) started to become more noticeable. For
+smaller files its 40\% overhead is not that disturbing, but for
+large files \unknown\
+
+The current version uses \LPEG. We follow the same approach as
+before, stack and top and such but this time parsing is about
+twice as fast which is mostly due to the fact that we don't have
+to prepare the stream for cdata, doctype etc. Loading the
+mentioned large file took 12.5 seconds (1.5 for file io and the
+rest for tree building) on my laptop (a 2.3 Ghz Core Duo running
+Windows Vista). With the \LPEG\ implementation we got that down to
+less 7.3 seconds. Loading the 14 interface definition files (2.6
+meg) went down from 1.05 seconds to 0.55 seconds. Namespace
+related issues take some 10\% of this.
+
+Of course these numbers might change over time. For instance, we
+now have the second implementation of the filter mechanism which
+is more advanced and maybe somewhat slower on some tasks.
+
+\subject{patterns}
+
+We will not implement complete \XPATH\ functionality, but only the
+features that make sense for documents that are well structured
+and needs to be typeset. In addition we (will) implement text
+manipulation functions. Of course speed is also a consideration
+when implementing such mechanisms.
+
+The following list is not complete (after all here we only give an
+impression of the development) but it gives a good impression.
+
+\nonknuthmode
+
+\starttabulate[|l|c|l|]
+\NC \bf pattern                        \NC \bf supported \NC \bf comment              \NC \NR
+\HL
+\NC \type{a}                           \NC \star         \NC not anchored             \NC \NR
+\NC \type{!a}                          \NC \star         \NC not anchored,negated     \NC \NR
+\NC \type{a/b}                         \NC \star         \NC anchored on preceding    \NC \NR
+\NC \type{/a/b}                        \NC \star         \NC anchored (current root)  \NC \NR
+\NC \type{^a/c}                        \NC \star         \NC anchored (current root)  \NC \NR
+\NC \type{^^/a/c}                      \NC todo          \NC anchored (document root) \NC \NR
+\NC \type{a/*/b}                       \NC \star         \NC one wildcard             \NC \NR
+\NC \type{a//b}                        \NC \star         \NC many wildcards           \NC \NR
+\NC \type{a/**/b}                      \NC \star         \NC many wildcards           \NC \NR
+\NC \type{.}                           \NC \star         \NC ignored self             \NC \NR
+\NC \type{..}                          \NC \star         \NC parent                   \NC \NR
+\NC \type{a[5]}                        \NC \star         \NC index upwards            \NC \NR
+\NC \type{a[-5]}                       \NC \star         \NC index downwards          \NC \NR
+\NC \type{a[position()=5]}             \NC maybe         \NC                          \NC \NR
+\NC \type{a[first()]}                  \NC maybe         \NC                          \NC \NR
+\NC \type{a[last()]}                   \NC maybe         \NC                          \NC \NR
+\NC \type{(b|c|d)}                     \NC \star         \NC alternates (one of)      \NC \NR
+\NC \type{b|c|d}                       \NC \star         \NC alternates (one of)      \NC \NR
+\NC \type{!(b|c|d)}                    \NC \star         \NC not one of               \NC \NR
+\NC \type{a/(b|c|d)/e/f}               \NC \star         \NC anchored alternates      \NC \NR
+\NC \type{(c/d|e)}                     \NC not likely    \NC nested subpaths          \NC \NR
+\NC \type{a/b[@bla]}                   \NC \star         \NC any value of             \NC \NR
+\NC \type{a/b/@bla}                    \NC \star         \NC any value of             \NC \NR
+\NC \type{a/b[@bla='oeps']}            \NC \star         \NC equals value             \NC \NR
+\NC \type{a/b[@bla=='oeps']}           \NC \star         \NC equals value             \NC \NR
+\NC \type{a/b[@bla<>'oeps']}           \NC \star         \NC different value          \NC \NR
+\NC \type{a/b[@bla!='oeps']}           \NC \star         \NC different value          \NC \NR
+\TB
+\NC \type{...../attribute(id)}         \NC \star         \NC                          \NC \NR
+\NC \type{...../attributes()}          \NC \star         \NC                          \NC \NR
+\NC \type{...../text()}                \NC \star         \NC                          \NC \NR
+\NC \type{...../texts()}               \NC \star         \NC                          \NC \NR
+\NC \type{...../first()}               \NC \star         \NC                          \NC \NR
+\NC \type{...../last()}                \NC \star         \NC                          \NC \NR
+\NC \type{...../index(n)}              \NC \star         \NC                          \NC \NR
+\NC \type{...../position(n)}           \NC \star         \NC                          \NC \NR
+\TB
+\NC \type{root::}                      \NC \star         \NC                          \NC \NR
+\NC \type{parent::}                    \NC \star         \NC                          \NC \NR
+\NC \type{child::}                     \NC \star         \NC                          \NC \NR
+\NC \type{ancestor::}                  \NC \star         \NC                          \NC \NR
+\NC \type{preceding-sibling::}         \NC not soon      \NC                          \NC \NR
+\NC \type{following-sibling::}         \NC not soon      \NC                          \NC \NR
+\NC \type{preceding-sibling-of-self::} \NC not soon      \NC                          \NC \NR
+\NC \type{following-sibling-or-self::} \NC not soon      \NC                          \NC \NR
+\NC \type{descendent::}                \NC \star         \NC                          \NC \NR
+\NC \type{descendent-or-self::}        \NC \star         \NC                          \NC \NR
+\NC \type{preceding::}                 \NC not soon      \NC                          \NC \NR
+\NC \type{following::}                 \NC not soon      \NC                          \NC \NR
+\NC \type{self::node()}                \NC not soon      \NC                          \NC \NR
+\NC \type{id("tag")}                   \NC not soon      \NC                          \NC \NR
+\NC \type{node()}                      \NC not soon      \NC                          \NC \NR
+\stoptabulate
+
+This list shows that it is also possible to ask for more matches at
+once. Namespaces are supported (including a wildcard) and there are
+mechanisms for namespace remapping.
+
+\startbuffer
+\startluacode
+    lxml.concat(document.xml,"/one/(three|five)/some",", "," and ")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+We get: \astype{\getbuffer} and if we say:
+
+\startbuffer
+\startluacode
+    lxml.concat(document.xml,"/one/(three|five)/some",", "," and ",
+        true)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+We get: \quote {\getbuffer}.
+
+Watch how we use the \type {lxml} namespace here! Here live the
+functions that pipe the result to \TEX.
+
+\startbuffer
+\startluacode
+    lxml.count(document.xml,"/one/(three|five)/some")
+\stopluacode
+\stopbuffer
+
+There a several helper functions, like \type {xml.count} which in this case
+returns~\getbuffer.
+
+\typebuffer
+
+Functions like this gives the opportunity to loop over lists of elements
+by index.
+
+\subject{manipulations}
+
+We can manipulate elements too. The next code will add some elements
+at specific locations.
+
+\startbuffer
+\startluacode
+    xml.before(document.xml,"xml:///one/three/some","<be>ok</be>")
+    xml.after (document.xml,"xml:///one/three/some","<af>ok</af>")
+    tex.sprint("\\starttyping")
+    xml.sprint(lxml.filter(document.xml,"/one/three"))
+    tex.sprint("\\stoptyping")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+And indeed, we suddenly have a couple of \quote {ok}'s there:
+
+\getbuffer
+
+Of course wel can also delete elements:
+
+\startbuffer
+\startluacode
+    xml.delete(document.xml,"/one/three/some")
+    xml.delete(document.xml,"/one/three/af")
+    tex.sprint("\\starttyping")
+    xml.sprint(lxml.filter(document.xml,"/one/three"))
+    tex.sprint("\\stoptyping")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+Now we have:
+
+\getbuffer
+
+Replacing an element is also possible. The replacement can be a
+table (representing elements) or a string which is then converted
+into a table first.
+
+\startbuffer
+\startluacode
+    xml.replace(document.xml,"/one/three/be","<mid>done</mid>")
+    tex.sprint("\\starttyping")
+    xml.sprint(lxml.filter(document.xml,"/one/three"))
+    tex.sprint("\\stoptyping")
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+And indeed we get:
+
+\getbuffer
+
+These are just a few features of the library. I will add some more (rather) generic
+manipulaters and extend the functionality of the existing ones. Also, there will
+be a few manipulation functions that come in handy when preparing texts for
+processing with \TEX\ (most of the \XML\ that I deal with is rather dirty and needs
+some cleanup).
+
+\subject{streaming trees}
+
+Eventually we will provies series of convenient macros that will provide an
+alternative for most of the \MKII\ code. In \MKII\ we have a streaming parser, which
+boils down to attaching macros to elements. This includes a mechanism for saving
+an restoring data, but this is not always convenient because one also has to
+intercept elements that needs to be hidden.
+
+In \MKIV\ we do things different. First we load the complete document in memory (a
+\LUA\ table). Then we flush the elements that we want to process. We can associate
+setups with elements using the filters mentioned before. We can either use \TEX\ or
+use \LUA\ to manipulate content. Instead if a streaming parser we now have a mixture
+of streaming and tree manipulation available. Interesting is that the \XML\ loader
+is pretty fast and piping data to \TEX\ is also efficient. Since we no longer need to
+manipulate the elements in \TEX\ we gain processing time too, so in practice we have
+now much faster \XML\ processing available.
+
+To give you an idea we show a few commands:
+
+\startbuffer
+\xmlload {main}{mk-xml.xml}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+So that we can do things like (there are and will be a few more):
+
+\starttabulate[|l|l|l|]
+\NC \bf command        \NC \bf arguments                        \NC \bf result                          \NC \NR
+\NC \type {\xmlfirst}  \NC \type {{main} {/one/three/some}}     \NC \xmlfirst{main}{/one/three/some}    \NC \NR
+\NC \type {\xmllast }  \NC \type {{main} {/one/three/some}}     \NC \xmllast {main}{/one/three/some}    \NC \NR
+\NC \type {\xmlindex}  \NC \type {{main} {/one/three/some} {2}} \NC \xmlindex{main}{/one/three/some}{2} \NC \NR
+\stoptabulate
+
+There is a set of about 30 commands that operates on the tree: loading, flushing,
+filtering, associating setups and code in modules to elements. For instance when
+one uses so called cals||tables, the processing is automatically activates when the
+namespace can be resolved. Processing is collected in setups and those registered
+are these are processed after loading the tree. In the following example we register
+a handler for content that needs to end up bold.
+
+\starttyping
+\startxmlsetups xml:mysetups
+    \xmlsetsetup{\xmldocument}{bold|bf}{xml:handlebold}
+\stopxmlsetups
+
+\xmlregistersetup{xml:mysetups}
+
+\startxmlsetups xml:handlebold
+    \dontleavehmode
+    \bgroup
+    \bf
+    \xmlflush{#1}
+    \egroup
+\stopxmlsetups
+\stoptyping
+
+In this example \type {#1} represents the root of the subtree. Say that we
+want to process an index entry which is coded as follows:
+
+\starttyping
+<index>
+    <entry>whatever</entry>
+    <key>whatever</key>
+</index>
+\stoptyping
+
+We register an additional handler (here the \type {*} is a shortcut for
+using the element's tag as setup name):
+
+\starttyping
+\startxmlsetups xml:mysetups
+    \xmlsetsetup{\xmldocument}{bold|bf}{xml:handlebold}
+    \xmlsetsetup{\xmldocument}{index}{*}
+\stopxmlsetups
+
+\xmlregistersetup{xml:mysetups}
+
+\startxmlsetups index
+    \index[\xmlfirst{#1}{key}]{\xmlfirst{#1}{entry}}
+\stopxmlsetups
+\stoptyping
+
+In practice \MKIV\ definitions are more compact than the comparable
+\MKII\ ones, especially for more complex constructs (tables and such).
+
+\starttyping
+\defineXMLenvironment
+  [index]
+  {\bgroup
+   \defineXMLsave[key]%
+   \defineXMLsave[entry]}
+  {\index[\XMLflush{key}]{\XMLflush{entry}}%
+   \egroup}
+\stoptyping
+
+This looks compact, but keep in mind that we also need to get rid of
+spurry spaces and when the code grows, we usually use setups to separate
+the definition from the code. In any case, the \MKII\ solution involves
+a few definitions as well as saving the content of elements. This is often
+much more costly than the \MKIV\ method where we only locate and flush
+content. Of course the document is stored in memory, but that happens
+pretty fast: storing the 14~files (2~per interface) that define the \CONTEXT\
+user interface takes .85 seconds on a 2.3 Ghz Core Duo (Windows Vista) which
+is not that bad if you take into account that we're talking of 2.7 megabytes
+of highly structured data (many elements and attributes, not that much text).
+Loading one of these files using \MKII\ code (for storing elements) takes
+many more seconds.
+
+I didn't do extensive speed tests yet but for normal streamed
+processing of simple documents the penalty of loading the tree can be
+neglected. When comparing traditional \MKII\ code like:
+
+\starttyping
+\defineXMLargument   [title][id=] {\subject[\XMLop{at}]}
+\defineXMLenvironment[p]          {} {\par}
+
+\starttext
+    \processXMLfilegrouped{testspeed.xml}
+\stoptext
+\stoptyping
+
+with its \MKIV\ counterpart:
+
+\starttyping
+\startxmlsetups document
+    \xmlsetsetup\xmldocument{title|p}{*}
+\stopxmlsetups
+
+\xmlregistersetup{document}
+
+\startxmlsetups title
+    \section[\xmlatt{#1}{id}]{\xmlcontent{#1}{/}}
+\stopxmlsetups
+
+\startxmlsetups p
+    \xmlflush{#1}\endgraf
+\stopxmlsetups
+
+\starttext
+    \processXMLfilegrouped{testspeed.xml}
+\stoptext
+
+I found that processing a one megabyte file with some 400 sections
+takes the same runtime for both approaches. However, as soon as more
+complex manipulations enter the game the \MKIV\ method starts taking
+less time. Think of the manipulations needed for \MATHML\ or converting
+tables into something that \CONTEXT\ can handle. Also, when we deal
+with documents where we need to ignore large portions of shuffle content
+around, the traditional method also has to store data in memory and in
+that case \MKII\ code always loses from \MKIV\ code. Of course any speed
+we gain in handling \XML\ is lost on processing complex fonts and
+attributes but there we gain in quality.
+
+\stoptyping
+
+Another advantage of the \MKIV\ mechanisms is that we suddenly have so called
+fully expandable \XML\ handling. All manipulations take place in \LUA\ and
+there is no interfering code at the \TEX\ end.
+
+\subject{examples}
+
+For the path freaks we now show what patterns lead to. For this we will
+use the following \XML\ data:
+
+\startbuffer[xml]
+<?xml version='1.0' ?>
+<a>
+    <?what is this?>
+    <b>
+        <c n='x'>c1</c><d>d1</d>
+    </b>
+    <b>
+        <c n='y'>c2</c><d>d2</d>
+    </b>
+    <?what is that?>
+    <c><d>d3</d></c>
+    <c n='y'><d>d4</d></c>
+    <c><d>d5</d></c>
+</a>
+\stopbuffer
+
+\typebuffer[xml]
+
+\xmlloadbuffer{xml}{xml}
+
+\startluacode
+    function document.ShowResultOfPattern(root,pattern)
+        local ok = false
+        for r,d,k in xml.elements(lxml.id(root),pattern) do
+            tex.print(xml.tostring(d[k]))
+            tex.sprint(tex.ctxcatcodes,"\\par")
+            ok = true
+        end
+        if not ok then
+            tex.sprint("no match")
+            tex.sprint(tex.ctxcatcodes,"\\par")
+        end
+    end
+\stopluacode
+
+Here come the examples:
+
+\definehead[example][subsubject]
+\setuphead[example][style=\tt,before=\blank,after=\nowhitespace]
+
+\def\ShowResultOfPattern#1#2%
+  {\example{#2}
+   \startpacked \tttf
+   \ctxlua{document.ShowResultOfPattern("#1","#2")}
+   \stoppacked}
+
+\ShowResultOfPattern{xml}{a/b/c}
+\ShowResultOfPattern{xml}{/a/b/c}
+\ShowResultOfPattern{xml}{b/c}
+\ShowResultOfPattern{xml}{c}
+\ShowResultOfPattern{xml}{a/*/c}
+\ShowResultOfPattern{xml}{a/**/c}
+\ShowResultOfPattern{xml}{a//c}
+\ShowResultOfPattern{xml}{a/*/*/c}
+\ShowResultOfPattern{xml}{*/c}
+\ShowResultOfPattern{xml}{**/c}
+\ShowResultOfPattern{xml}{a/../*/c}
+\ShowResultOfPattern{xml}{a/../c}
+\ShowResultOfPattern{xml}{c[@n='x']}
+\ShowResultOfPattern{xml}{c[@n]}
+\ShowResultOfPattern{xml}{c[@n='y']}
+\ShowResultOfPattern{xml}{c[1]}
+\ShowResultOfPattern{xml}{b/c[1]}
+\ShowResultOfPattern{xml}{a/c[1]}
+\ShowResultOfPattern{xml}{a/c[-1]}
+\ShowResultOfPattern{xml}{c[1]}
+\ShowResultOfPattern{xml}{c[-1]}
+\ShowResultOfPattern{xml}{pi::}
+\ShowResultOfPattern{xml}{pi::what}
+
+\stopcomponent

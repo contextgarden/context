@@ -1,0 +1,325 @@
+\startenvironment manuals-explaining-environment
+
+\usemodule[abr-01]
+\usemodule[visual]
+\usemodule[simulate]
+\usemodule[chart]
+\usemodule[nodechart]
+
+% done
+
+\dontcomplain
+
+\definepapersize
+  [book]
+  [width=18cm,
+   height=24cm]
+
+\setuppapersize
+  [book]
+
+\startmode[oversized]
+
+    \setuppapersize
+      [book]
+      [oversized]
+
+    \setuplayout
+      [marking=on]
+
+\stopmode
+
+\setuplayout
+  [location=middle,
+   topspace=1.5cm,
+   bottomspace=2cm,
+   backspace=2cm,
+   cutspace=2cm,
+   header=0cm,
+   footer=0cm,
+   margindistance=.25cm,
+   margin=1.25cm,
+   width=middle,
+   height=middle]
+
+\setuplayout
+  [style=\ss]
+
+\usetypescript
+  [dejavu-condensed]
+
+\setupbodyfont
+  [ipaex,9pt]
+
+\setupbodyfont
+  [dejavu,9pt]
+
+\definetyping
+  [narrowtyping]
+  [typing]
+  [bodyfont=dejavu-condensed]
+
+% This is way too ugly for a manual:
+%
+% \setuptyping
+%   [indentnext=no]
+%
+% \setupindenting
+%   [medium,yes]
+
+\setupwhitespace
+  [big]
+
+\defineoverlay
+  [page]
+  [\useMPgraphic{page}]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\setuphead
+  [chapter,section,subsection]
+  [color=\namedstructureuservariable{chapter}{color}]
+
+\setuphead
+  [chapter]
+  [style=\bfc]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\setuphead
+  [subsection]
+  [style=\bf,
+   before=\blank,
+   after=\blank]
+
+\startsetups document:chapter:inside
+    \definecolor[maincolor][1.0(\namedheadparameter{chapter}{color})] % this expands the color
+    \definecolor[halfcolor][0.5(maincolor,white)]
+\stopsetups
+
+\setuphead
+  [chapter]
+  [insidesection=\directsetup{document:chapter:inside}]
+
+\setuppagenumbering
+  [alternative=doublesided,
+   location=]
+
+\setuplist
+  [aligntitle=yes]
+
+\setuplist
+  [chapter]
+  [pagenumber=no,
+   style=bold,
+   before={\blank\startcolor[\structurelistuservariable{color}]},
+   after={\placelist[section]\stopcolor}]
+
+\setuplist
+  [chapter,section]
+  [width=3em]
+
+\startuseMPgraphic{page}
+
+    StartPage ;
+
+        linecap := butt ;
+
+        if OnRightPage :
+
+            path p ; p := (
+                urcorner Page shifted (-2cm,0) --
+                urcorner Page                  --
+                urcorner Page shifted (0,-2cm) -- cycle
+            ) shifted (-2.5mm,-2.5mm) ;
+
+        else :
+
+            path p ; p := (
+                ulcorner Page shifted (2cm,0)  --
+                ulcorner Page                  --
+                ulcorner Page shifted (0,-2cm) -- cycle
+            ) shifted (2.5mm,-2.5mm) ;
+
+        fi ;
+
+        fill p
+            withpen pencircle scaled 1mm
+            withcolor "maincolor" ;
+
+        draw thetextext("\bf\userpagenumber",
+            if OnRightPage : urcorner p shifted (-5mm,-5mm) else : ulcorner p shifted (5mm,-5mm) fi)
+            withcolor white ;
+
+        if OnRightPage :
+
+            path p ; p := (
+                lrcorner Page shifted (-5cm,0) --
+                lrcorner Page
+            ) shifted (-5mm,10mm)
+
+        else :
+
+            path p ; p := (
+                llcorner Page shifted (5cm,0) --
+                llcorner Page
+            ) shifted (5mm,10mm) ;
+
+        fi ;
+
+        draw p
+            withpen pencircle scaled 1mm
+            withcolor "maincolor" ;
+
+        draw if OnRightPage :
+            thetextext.lft("\bf\getspecificstructuretitle{chapter}",lrcorner Page shifted (-5mm,5mm))
+        else :
+            thetextext.rt ("\bf\getspecificstructuretitle{chapter}",llcorner Page shifted ( 5mm,5mm))
+        fi withcolor "\namedstructureuservariable{chapter}{color}" ;
+
+    StopPage ;
+\stopuseMPgraphic
+
+\definecolor[orange]     [r=1,g=.6,b=.1]
+
+\definecolor[middlegray] [s=.75]
+\definecolor[darkgray]   [s=.25]
+\definecolor[darkred]    [r=.5]
+\definecolor[darkgreen]  [g=.5]
+\definecolor[darkblue]   [b=.5]
+
+\definecolor[darkyellow] [.5(red,green)]
+\definecolor[darkmagenta][.5(red,blue)]
+\definecolor[darkcyan]   [.5(green,blue)]
+
+\definecolor[darkorange] [.5(orange)]
+
+\definecolor[maincolor]  [darkgray]
+
+\definecolor [mix-1] [r=1,g=.75,b=.25] \definecolor [darkmix-1][.5(mix-1)]
+\definecolor [mix-2] [r=1,g=.25,b=.75] \definecolor [darkmix-2][.5(mix-2)]
+\definecolor [mix-3] [r=.75,g=1,b=.25] \definecolor [darkmix-3][.5(mix-3)]
+\definecolor [mix-4] [r=.75,g=.25,b=1] \definecolor [darkmix-4][.5(mix-4)]
+\definecolor [mix-5] [r=.25,g=1,b=.75] \definecolor [darkmix-5][.5(mix-5)]
+\definecolor [mix-6] [r=.25,g=.75,b=1] \definecolor [darkmix-6][.5(mix-6)]
+
+% \blackrule[height=1cm,width=10cm,color=mix-1] \blackrule[height=1cm,width=10cm,color=darkmix-1]
+% \blackrule[height=1cm,width=10cm,color=mix-2] \blackrule[height=1cm,width=10cm,color=darkmix-2]
+% \blackrule[height=1cm,width=10cm,color=mix-3] \blackrule[height=1cm,width=10cm,color=darkmix-3]
+% \blackrule[height=1cm,width=10cm,color=mix-4] \blackrule[height=1cm,width=10cm,color=darkmix-4]
+% \blackrule[height=1cm,width=10cm,color=mix-5] \blackrule[height=1cm,width=10cm,color=darkmix-5]
+% \blackrule[height=1cm,width=10cm,color=mix-6] \blackrule[height=1cm,width=10cm,color=darkmix-6]
+
+% modules
+
+\setupsorting
+  [logo]
+  [style=]
+
+\setupFLOWchart
+  [width=6em,
+   height=3em,
+   offset=-2em, % maybe default : todo: hoffset and voffset
+   dx=2em,
+   dy=2em]
+
+\setupFLOWlines
+  [color=maincolor]
+
+\setupFLOWshapes
+  [rulecolor=maincolor]
+
+% tables
+
+\setuptabulate
+  [rulethickness=.5mm,
+   rulecolor=maincolor]
+
+% special commands
+
+\startuniqueMPgraphic{reference}{color}
+    fill
+        .5[llcorner OverlayBox,ulcorner OverlayBox] --
+        .5[ulcorner OverlayBox,urcorner OverlayBox] --
+        .5[urcorner OverlayBox,lrcorner OverlayBox] --
+        .5[lrcorner OverlayBox,llcorner OverlayBox] -- cycle
+        withcolor \MPvar{color} ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{reference}{color}
+    path p ; p := OverlayBox enlarged -1mm ;
+    filldraw
+        ulcorner p --
+        urcorner p --
+        lrcorner p --
+        .5[lrcorner p,llcorner p] shifted (0,-1ExHeight) --
+        llcorner p -- cycle
+        withpen pencircle scaled 1mm
+        withcolor \MPvar{color} ;
+    setbounds currentpicture to OverlayBox enlarged 1ExHeight ;
+\stopuniqueMPgraphic
+
+\defineoverlay
+  [reference]
+  [\uniqueMPgraphic{reference}{color=maincolor,}]
+
+\definecolor
+  [maincolor]
+  [red]
+
+\definemargindata
+  [appendixdata]
+ %[inner]
+  [outer]
+  [stack=yes]
+
+\definemarginframed
+  [appendixdata]
+  [width=3.5em,
+   height=\lineheight, % we know what goes in there
+   align=middle,
+   offset=overlay,
+   foregroundcolor=white,
+   background=reference]
+
+% todo:
+%
+% \appendixdata[reference=bla]{}
+%
+% whole data
+
+% interaction
+
+\setupinteraction
+  [state=start,
+   click=no,
+   color=,
+   contrastcolor=,
+   style=]
+
+% whatever
+
+\definestartstop
+  [notabene]
+  [before=\blank,
+   after=\blank,
+   style=\em]
+
+\setuphyphenation
+  [method=default]
+
+
+\startbuffer[underconstruction]
+\startnotabene
+    This document is still under construction. The functionality discussed here
+    will stay and more might show up. Of course there are errors, and they're all
+    mine. The text is not checked for spelling errors. Feel free to let me know
+    what should get added.
+\stopnotabene
+\stopbuffer
+
+\stopenvironment

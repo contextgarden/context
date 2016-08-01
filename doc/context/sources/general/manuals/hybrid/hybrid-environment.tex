@@ -1,0 +1,127 @@
+\startenvironment hybrid-environment
+
+% \showgrid[outer,lines]
+% \showgrid
+
+\usemodule[abr-02,chart,narrowtt]
+
+\starttypescript [hybrid]
+    \definetypeface [hybrid] [rm] [serif] [bookman] [default]
+    \definetypeface [hybrid] [ss] [sans]  [dejavu]  [default] [rscale=0.9]
+    \definetypeface [hybrid] [tt] [mono]  [dejavu]  [default] [rscale=0.9]
+    \definetypeface [hybrid] [mm] [math]  [xits]    [default] [rscale=1.00]
+\stoptypescript
+
+\setupbodyfont[hybrid]
+
+\setupFLOWcharts
+  [offset=\zeropoint,
+   dx=1.2\bodyfontsize,
+   dy=1.2\bodyfontsize,
+   height=2\bodyfontsize,
+   width=7\bodyfontsize]
+
+\setupFLOWshapes
+  [framecolor=blue]
+
+\setupFLOWlines
+  [color=red]
+
+\abbreviation[METAPOST]{MetaPost}{}
+\abbreviation[EPUB]    {Epub}    {}
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   header=0cm,
+   topspace=2cm,
+   bottomspace=1cm,
+   footer=1cm,
+   footerdistance=.5cm]
+
+\setupfootertexts
+  [][{\getmarking[chapter]\quad\pagenumber}]
+  [{\pagenumber\quad\getmarking[chapter]}][]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setupfooter
+  [color=blue,
+   style=\dontconvertfont\bf]
+
+\setuplayout
+  [grid=tolerant] % we need a test
+
+\setupformulas
+  [grid=min]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [chapter]
+  [before=,
+   after={\blank[2*big]},
+   style=\bfc,
+   color=blue]
+
+\setuphead
+  [section]
+  [before={\blank[2*big]},
+   after=\blank,
+   style=\bfb,
+   color=blue]
+
+\setuphead
+  [subsection]
+  [before=\blank,
+   after=\blank,
+   style=\bfa,
+   color=blue]
+
+% grid settings
+
+% none will effectively smash the box to one line (zero inner) but is the same as strut as outer will snap
+% however you can use {none,top:3} to move it down 3 lines then
+% {local,strut} will use the style related settings and move one line down because the font is larger
+
+\setuphead
+  [chapter]
+  [grid=none]
+
+\setuphead
+  [section]
+  [grid=none]
+
+\setuphead
+  [subsection]
+  [grid=none]
+
+% so far
+
+\setupitemgroup
+  [itemize]
+  [each]
+  [color=blue,
+   symcolor=blue]
+
+\setuptyping
+  [color=blue]
+
+\setuptype
+  [color=blue]
+
+\definecolor[red]    [r=.4]
+\definecolor[green]  [g=.4]
+\definecolor[blue]   [b=.4]
+\definecolor[yellow] [r=.4,g=.4]
+\definecolor[gray]   [s=.6]
+
+\setupcaptions
+  [color=blue]
+
+\setupexternalfigures
+  [location={local,default}]
+
+\stopenvironment

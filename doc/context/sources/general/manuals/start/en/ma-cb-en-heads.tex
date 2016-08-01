@@ -1,0 +1,135 @@
+\startcomponent ma-cb-en-heads
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[reference=heads,title=Heads]
+
+\index{headers}
+
+\Command{\tex{chapter}}
+\Command{\tex{paragraph}}
+\Command{\tex{subparagraph}}
+\Command{\tex{title}}
+\Command{\tex{subject}}
+\Command{\tex{subsubject}}
+\Command{\tex{setuphead}}
+\Command{\tex{setupheads}}
+
+The structure of a document is determined by its chapter and section titles.
+These titles are created with the commands shown in \in{table}[tab:headers]:
+
+\placetable[here][tab:headers]{Headers.}
+  {\starttable[|l|l|]
+  \HL
+  \NC \bf Numbered header   \NC \bf Unnumbered header   \NC\SR
+  \HL
+  \NC \type{\chapter}       \NC \type{\title}           \NC\FR
+  \NC \type{\section}       \NC \type{\subject}         \NC\MR
+  \NC \type{\subsection}    \NC \type{\subsubject}      \NC\MR
+  \NC \type{\subsubsection} \NC \type{\subsubsubject}   \NC\MR
+  \NC \unknown              \NC \unknown                \NC\LR
+  \HL
+  \stoptable}
+
+\shortsetup{chapter}
+\shortsetup{section}
+\shortsetup{subsection}
+\shortsetup{title}
+\shortsetup{subject}
+\shortsetup{subsubject}
+
+These commands will produce a numbered or unnumbered title in a predefined
+fontsize and fonttype with some vertical spacing before and after the header.
+
+The title commands can take several arguments, like in:
+
+\starttyping
+\title[hasselt by night]{Hasselt by night}
+\stoptyping
+
+and
+
+\starttyping
+\title{Hasselt by night}
+\stoptyping
+
+The bracket pair is optional and used for internal references. If you want to
+refer to this chapter you type for example \type{\at{page}[hasselt by night]}.
+
+For a more structured way to define chapters and sections you can use the more
+preferred \type{\start ... \stop} construction.
+
+\placetable[here][tab:headers]{Structured headers.}
+  {\starttable[|l|l|]
+  \HL
+  \NC \bf Numbered header                  \NC \bf Un-numbered header   \NC\SR
+  \HL
+  \NC \type{\start ... \stopchapter}       \NC \type{\start ... \stoptitle}           \NC\FR
+  \NC \type{\start ... \stopsection}       \NC \type{\start ... \stopsubject}         \NC\MR
+  \NC \type{\start ... \stopsubsection}    \NC \type{\start ... \stopsubsubject}      \NC\MR
+  \NC \type{\start ... \stopsubsubsection} \NC \type{\start ... \stopsubsubsubject}   \NC\MR
+  \NC \unknown                             \NC \unknown                               \NC\LR
+  \HL
+  \stoptable}
+
+In that case the definition looks like this:
+
+\starttyping
+\starttitle[reference="hasselt by night",title="Hasselt by night"}
+   ...
+\stoptitle
+\stoptyping
+
+Of course the chapter and section titles can be set to your own preferences and you can even
+define your own sections. This is done with the \type{\setuphead} and
+\type{\definehead} command.
+
+\shortsetup{definehead}
+
+\shortsetup{setuphead}
+
+\startbuffer
+\definehead
+  [myhead]
+  [section]
+
+\setuphead
+  [myhead]
+  [numberstyle=bold,
+   textstyle=bold,
+   before=\hairline\blank,
+   after=\nowhitespace\hairline]
+
+\myhead[headlines]{Hasselt makes headlines}
+\stopbuffer
+
+\typebuffer
+
+A new header \type{\myhead} is defined and it inherits the properties of
+\type{\section}. It would look something like this:
+
+\getbuffer
+
+There is one other command you should know now, and that is \type{\setupheads}.
+You can use this command to set up the numbering of the numbered chapters and
+sections. If you type:
+
+\startbuffer
+\setupheads
+  [alternative=inmargin,
+   separator=--]
+\stopbuffer
+
+\typebuffer
+
+all numbers will appear in the margin. Section 1.1 would look like 1--1.
+
+Commands like \type{\setupheads} are typed in the set up area of your input file.
+
+\shortsetup{setupheads}
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,94 @@
+\startcomponent ma-cb-en-descriptions
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Definitions]
+
+\index{definition}
+
+\Command{\tex{definedescription}}
+\Command{\tex{setupdescriptions}}
+
+If you want to display notions, concepts and ideas in a consistent manner you can
+use:
+
+\shortsetup{definedescription}
+
+For example:
+
+\startbuffer
+\definedescription
+  [concept]
+  [alternative=serried,headstyle=bold,width=broad]
+
+\concept{Hasselter juffer} A sort of biscuit made of puff pastry and
+covered with sugar. It tastes very sweet. \par
+\stopbuffer
+
+\typebuffer
+
+It would look like this:
+
+\getbuffer
+
+But you can also choose other layouts:
+
+\startbuffer
+\definedescription
+  [concept]
+  [alternative=top,
+   inbetween={\blank[none]},
+   headstyle=bold,
+   width=broad,
+   style=slanted]
+
+\concept{Hasselter bitter} A very strong alcoholic drink (up to 40\%)
+mixed with herbs to give it a special taste. It is sold in a stone
+flask and it should be served {\em ijskoud} (as cold as ice). \par
+
+\definedescription
+  [concept]
+  [alternative=inmargin,headstyle=bold,width=broad]
+
+\concept{Euifeest} A harvest home to celebrate the end of a period of
+hard work. The festivities take place in the last week of August. \par
+\stopbuffer
+
+\start
+\getbuffer
+\stop
+
+If you want to avoid the \type{\par} or when you have more than one paragraph in
+the definition you can use the \type{\start...\stop} construct.
+
+\startbuffer
+\definedescription
+  [concept]
+  [alternative=right,
+   headstyle=bold,
+   width=broad]
+
+\startconcept{Euifeest} A harvest home to celebrate the end of a
+period of hard work.
+This event takes place at the end of August and lasts one week. The
+city is completely illuminated and the streets are decorated. This
+feast week ends with a {\em Braderie}.
+\stopconcept
+\stopbuffer
+
+\typebuffer
+
+This would become:
+
+\getbuffer
+
+Layout is set up within the second bracket pair of
+\type{\definedescription[][]}. But you can also use:
+
+\shortsetup{setupdescriptions}
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,20 @@
+\setuppapersize[A10][A10]
+\setuplayout[cutspace=2mm,backspace=6mm,width=15mm]
+\setupbodyfont[6pt]
+\setuppagenumbering[state=stop]
+\setupbackgrounds[text][text][background=color,backgroundcolor=orange]
+\setupbackgrounds[header,text,footer][leftmargin][background=color,backgroundcolor=lightgreen]
+\setupbackgrounds[header,text,footer][leftmargin,text,rightmargin][frame=on]
+\setupfootertexts[margin][\midaligned{l}][\midaligned{r}][\midaligned{r}][\midaligned{l}]
+\starttext
+\midaligned{design page} \page
+\setuppagenumbering[alternative={singlesided}]
+\inmargin{\midaligned{m}}\midaligned{left page}  \page
+\inmargin{\midaligned{m}}\midaligned{right page} \page
+\setuppagenumbering[alternative={singlesided,doublesided}]
+\inmargin{\midaligned{m}}\midaligned{left page}  \page
+\inmargin{\midaligned{m}}\midaligned{right page} \page
+\setuppagenumbering[alternative={doublesided}]
+\inmargin{\midaligned{m}}\midaligned{left page}  \page
+\inmargin{\midaligned{m}}\midaligned{right page}
+\stoptext

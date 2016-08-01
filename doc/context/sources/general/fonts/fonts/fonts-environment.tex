@@ -1,0 +1,30 @@
+\startenvironment fonts-environment
+
+    \environment manuals-explaining-environment
+    \environment manuals-explaining-cover
+
+    \usemodule [s] [fonts-tables]
+    \usemodule [s] [fonts-missing]
+    \usemodule [s] [fonts-vectors]
+    \usemodule [s] [fonts-features]
+    \usemodule [s] [math-extensibles]
+
+    \definefontfeature[demo-onum][kern=yes,onum=yes]
+    %definefontfeature[demo-lnum][kern=yes,lnum=yes]
+    \definefontfeature[demo-tnum][kern=yes,tnum=yes]
+    \definefontfeature[demo-pnum][kern=yes,pnum=yes]
+    \definefontfeature[demo-zero][zero=yes]
+    \definefontfeature[demo-none][]
+
+    \definefont[DemoOnumLM][file:lmroman10-regular*demo-onum at 42pt]
+    %definefont[DemoLnumLM][file:lmroman10-regular*demo-lnum at 42pt]
+    \definefont[DemoTnumLM][file:lmroman10-regular*demo-tnum at 42pt]
+    \definefont[DemoPnumLM][file:lmroman10-regular*demo-pnum at 42pt]
+
+    \definefont[DemoZeroLM][file:lmroman10-regular*demo-zero at 42pt]
+    \definefont[DemoNoneLM][file:lmroman10-regular*demo-none at 42pt]
+
+    \definefont[DemoZeroLT][file:lmtypewriter10-regular*demo-zero at 42pt]
+    \definefont[DemoNoneLT][file:lmtypewriter10-regular*demo-none at 42pt]
+
+\stopenvironment

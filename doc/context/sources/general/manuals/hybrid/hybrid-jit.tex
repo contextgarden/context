@@ -1,0 +1,653 @@
+% language=uk engine=luatex
+
+\startcomponent hybrid-backends
+
+\environment hybrid-environment
+
+\logo[SWIGLIB]  {SwigLib}
+\logo[LUAJIT]   {LuaJIT}
+\logo[LUAJITTEX]{Luajit\TeX}
+\logo[JIT]      {jit}
+
+\startchapter[title={Just in time}]
+
+\startsection [title={Introduction}]
+
+Reading occasional announcements about \LUAJIT,\footnote {\LUAJIT\ is written by
+Mike Pall and more information about it and the technology it uses is at \type
+{http://luajit.org}, a site also worth visiting for its clean design.} one starts
+wondering if just||in||time compilation can speed up \LUATEX. As a side track of
+the \SWIGLIB\ project and after some discussion, Luigi Scarso decided to compile
+a version of \LUATEX\ that had the \JIT\ compiler as the \LUA\ engine. That's
+when our journey into \JIT\ began.
+
+We started with \LINUX\ 32-bit as this is what Luigi used at that time. Some
+quick first tests indicated that the \LUAJIT\ compiler made \CONTEXT\ \MKIV\ run
+faster but not that much. Because \LUAJIT\ claims to be much faster than stock
+\LUA, Luigi then played a bit with \type {ffi}, i.e.\ mixing \CCODE\ and \LUA,
+especially data structures. There is indeed quite some speed to gain here;
+unfortunately, we would have to mess up the \CONTEXT\ code base so much that one
+might wonder why \LUA\ was used in the first place. I could confirm these
+observations in a Xubuntu virtual machine in \VMWARE\ running under 32-bit
+Windows 8. So, we decided to conduct some more experiments.
+
+A next step was to create a 64-bit binary because the servers at \PRAGMA\ are
+\KVM\ virtual machines running a 64-bit OpenSuse 12.1 and 12.2. It took a bit of
+effort to get a \JIT\ version compiled because Luigi didn't want to mess up the
+regular codebase too much. This time we observed a speedup of about 40\% on some
+runs so we decided to move on to \WINDOWS\ to see if we could observe a similar
+effect there. And indeed, when we adapted Akira Kakuto's \WINDOWS\ setup a bit we
+could compile a version for \WINDOWS\ using the native \MICROSOFT\ compiler. On
+my laptop a similar speedup was observed, although by then we saw that in
+practice a 25\% speedup was about what we could expect. A bonus is that making
+formats and identifying fonts is also faster.
+
+So, in that stage, we could safely conclude that \LUATEX\ combined with \LUAJIT\
+made sense if you want a somewhat faster version. But where does the speedup come
+from? The easiest way to see if jitting has effect is to turn it on and off.
+
+\starttyping
+jit.on()
+jit.off()
+\stoptyping
+
+To our surprise \CONTEXT\ runs are not much influenced by turning the jitter on
+or off. \footnote {We also tweaked some of the fine|-|tuning parameters of
+\LUAJIT\ but didn't notice any differences. In due time more tests will
+be done.} This means that the improvement comes from other places:
+
+\startitemize[packed,n]
+\startitem The virtual machine is a different one, and targets the platforms that
+it runs on. This means that regular bytecode also runs faster. \stopitem
+\startitem The garbage collector is the one from \LUA\ 5.2, so that can make a
+difference. It looks like memory consumption is somewhat lower. \stopitem
+\startitem Some standard library functions are recognized and supported in a more
+efficient way. Think of \type {math.sin}. \stopitem
+\startitem Some built-in functions like \type {type} are probably dealt with in
+a more efficient way. \stopitem
+\stopitemize
+
+The third item is an important one. We don't use that many standard functions.
+For instance, if we need to go from characters to bytes and vice versa, we have
+to do that for \UTF\ so we use some dedicated functions or \LPEG. If in \CONTEXT\
+we parse strings, we often use \LPEG\ instead of string functions anyway. And if
+we still do use string functions, for instance when dealing with simple strings,
+it only happens a few times.
+
+The more demanding \CONTEXT\ code deals with node lists, which means frequent
+calls to core \LUATEX\ functions. Alas, jitting doesn't help much there unless we
+start messing with \type {ffi} which is not on the agenda. \footnote {If we want
+to improve these mechanisms it makes much more sense to make more helpers.
+However, profiling has shown us that the most demanding code is already quite
+optimized.}
+
+\stopsection
+
+\startsection[title=Benchmarks]
+
+Let's look at some of the benchmarks. The first one uses \METAPOST\ and because
+we want to see if calculations are faster, we draw a path with a special pen so
+that some transformations have to be done in the code that generates the \PDF\
+output. We only show the \MSWINDOWS\ and 64-bit \LINUX\ tests here. The 32-bit
+tests are consistent with those on \MSWINDOWS\ so we didn't add those timings
+here (also because in the meantime Luigi's machine broke down and he moved on
+to 64 bits).
+
+\typefile{benchmark-1.tex}
+
+The following times are measured in seconds. They are averages of 5~runs. There
+is a significant speedup but jitting doesn't do much.
+
+% mingw crosscompiled 5.2 / new mp : 25.5
+
+\starttabulate[|l|r|r|r|]
+\HL
+\NC               \NC traditional \NC \JIT\ on \NC \JIT\ off \NC \NR
+\HL
+\NC \bf Windows 8 \NC 26.0        \NC 20.6     \NC 20.8      \NC \NR
+\NC \bf Linux 64  \NC 34.2        \NC 14.9     \NC 14.1      \NC \NR
+\HL
+\stoptabulate
+
+Our second example uses multiple fonts in a paragraph and adds color as well.
+Although well optimized, font||related code involves node list parsing and a
+bit of calculation. Color again deals with node lists and the backend
+code involves calculations but not that many. The traditional run on \LINUX\ is
+somewhat odd, but might have to do with the fact that the \METAPOST\ library
+suffers from the 64 bits. It is at least an indication that optimizations make
+less sense if there is a different dominant weak spot. We have to look into this
+some time.
+
+\typefile{benchmark-2.tex}
+
+Again jitting has no real benefits here, but the overall gain in speed is quite
+nice. It could be that the garbage collector plays a role here.
+
+% mingw crosscompiled 5.2 / new mp : 64.3
+
+\starttabulate[|l|r|r|r|]
+\HL
+\NC               \NC traditional \NC \JIT\ on \NC \JIT\ off \NC \NR
+\HL
+\NC \bf Windows 8 \NC 54.6        \NC 36.0     \NC 35.9      \NC \NR
+\NC \bf Linux 64  \NC 46.5        \NC 32.0     \NC 31.7      \NC \NR
+\HL
+\stoptabulate
+
+This benchmark writes quite a lot of data to the console, which can have impact on
+performance as \TEX\ flushes on a per||character basis. When one runs \TEX\ as a
+service this has less impact because in that case the output goes into the void.
+There is a lot of file reading going on here, but normally the operating system
+will cache data, so after a first run this effect disappears. \footnote {On \MSWINDOWS\
+it makes sense to use \type {console2} because due to some clever buffering
+tricks it has a much better performance than the default console.}
+
+The third benchmark is one that we often use for testing regression in speed of
+the \CONTEXT\ core code. It measures the overhead in the page builder without
+special tricks being used, like backgrounds. The document has some 1000 pages.
+
+\typefile{benchmark-3.tex}
+
+These numbers are already quite okay for the normal version but the speedup of
+the \LUAJIT\ version is consistent with the expectations we have by now.
+
+% mingw crosscompiled 5.2 / new mp : 6.8
+
+\starttabulate[|l|r|r|r|]
+\HL
+\NC               \NC traditional \NC \JIT\ on \NC \JIT\ off \NC \NR
+\HL
+\NC \bf Windows 8 \NC 4.5         \NC 3.6      \NC 3.6       \NC \NR
+\NC \bf Linux 64  \NC 4.8         \NC 3.9      \NC 4.0       \NC \NR
+\HL
+\stoptabulate
+
+The fourth benchmark uses some structuring, which involved \LUA\ tables and
+housekeeping, an itemize, which involves numbering and conversions, and a table
+mechanism that uses more \LUA\ than \TEX.
+
+\typefile{benchmark-4.tex}
+
+Here it looks like \JIT\ slows down the process, but of course we shouldn't take the last
+digit too seriously.
+
+% mingw crosscompiled 5.2 / new mp : 27.4
+
+\starttabulate[|l|r|r|r|]
+\HL
+\NC               \NC traditional \NC \JIT\ on \NC \JIT\ off \NC \NR
+\HL
+\NC \bf Windows 8 \NC 20.9        \NC 16.8     \NC 16.5      \NC \NR
+\NC \bf Linux 64  \NC 20.4        \NC 16.0     \NC 16.1      \NC \NR
+\HL
+\stoptabulate
+
+Again, this example does a bit of logging, but not that much reading from file as
+buffers are kept in memory.
+
+We should start wondering when \JIT\ does kick in. This is what the fifth
+benchmark does.
+
+\typefile{benchmark-5.tex}
+
+Here we see \JIT\ having an effect! First of all the \LUAJIT\ versions are now 4~times
+faster. Making the \type {sin} a \type {local} function (the numbers after /) does not
+make much of a difference because the math functions are optimized anyway.. See how
+we're still faster when \JIT\ is disabled:
+
+% mingw crosscompiled 5.2 / new mp : 2.5/2.1
+
+\starttabulate[|l|r|r|r|]
+\HL
+\NC               \NC traditional \NC \JIT\ on    \NC \JIT\ off   \NC \NR
+\HL
+\NC \bf Windows 8 \NC 1.97 / 1.54 \NC 0.46 / 0.45 \NC 0.73 / 0.61 \NC \NR
+\NC \bf Linux 64  \NC 1.62 / 1.27 \NC 0.41 / 0.42 \NC 0.67 / 0.52 \NC \NR
+\HL
+\stoptabulate
+
+Unfortunately this kind of calculation (in these amounts) doesn't happen that
+often but maybe some users can benefit.
+
+\stopsection
+
+\startsection[title=Conclusions]
+
+So, does it make sense to complicate the \LUATEX\ build with \LUAJIT ? It does
+when speed matters, for instance when \CONTEXT\ is run as a service. Some 25\% gain
+in speed means less waiting time, better use of \CPU\ cycles, less energy
+consumption, etc. On the other hand, computers are still becoming faster and compared
+to those speed|-|ups the 25\% is not that much. Also, as \TEX\ deals with files,
+the advance of \SSD\ disks and larger and faster memory helps too. Faster and
+larger \CPU\ caches contributes too. On the other hand, multiple cores don't help that
+much on a system that only runs \TEX. Interesting is that multi|-|core
+architectures tend to run at slower speeds than single cores where more heat can
+be dissipated and in that respect servers mostly running \TEX\ are better off with
+fewer cores that can run at higher frequencies. But anyhow, 25\% is still better
+than nothing and it makes my old laptop feel faster. It prolongs the lifetime
+of machines!
+
+Now, say that we cannot speed up \TEX\ itself that much, but that there is still
+something to gain at the \LUA\ end \emdash\ what can we reasonably expect? First of all
+we need to take into account that only part of the runtime is due to \LUA. Say
+that this is 25\% for a document of average complexity.
+
+\startnarrower
+runtime\low{tex} + runtime\low{lua} = 100
+\stopnarrower
+
+We can consider the time needed by \TEX\ to be constant; so if that is
+75\% of the total time (say 100 seconds) to begin with, we have:
+
+\startnarrower
+75 + runtime\low{lua} = 100
+\stopnarrower
+
+It will be clear that if we bring down the runtime to 80\% (80 seconds) of the
+original we end up with:
+
+\startnarrower
+75 + runtime\low{lua} = 80
+\stopnarrower
+
+And the 25 seconds spent in \LUA\ went down to 5, meaning that \LUA\ processing
+got 5 times faster! It is also clear that getting much more out of \LUA\
+becomes hard. Of course we can squeeze more out of it, but \TEX\ still needs its
+time. It is hard to measure how much time is actually spent in \LUA. We do keep
+track of some times but it is not that accurate. These experiments and the gain
+in speed indicate that we probably spend more time in \LUA\ than we first
+guessed. If you look in the \CONTEXT\ source it's not that hard to imagine that
+indeed we might well spend 50\% or more of our time in \LUA\ and|/|or in
+transferring control between \TEX\ and \LUA. So, in the end there still might
+be something to gain.
+
+Let's take benchmark 4 as an example. At some point we measured for a regular
+\LUATEX\ 0.74 run 27.0 seconds and for a \LUAJITTEX\ run 23.3 seconds. If we
+assume that the \LUAJIT\ virtual machine is twice as fast as the normal one, some
+juggling with numbers makes us conclude that \TEX\ takes some 19.6 seconds of
+this. An interesting border case is \type {\directlua}: we sometimes pass quite
+a lot of data and that gets tokenized first (a \TEX\ activity) and the resulting
+token list is converted into a string (also a \TEX\ activity) and then converted
+to bytecode (a \LUA\ task) and when okay executed by \LUA. The time involved in
+conversion to byte code is probably the same for stock \LUA\ and \LUAJIT.
+
+In the \LUATEX\ case, 30\% of the runtime for benchmark 4 is on \LUA's tab, and
+in \LUAJITTEX\ it's 15\%. We can try to bring down the \LUA\ part even more, but
+it makes more sense to gain something at the \TEX\ end. There macro expansion
+can be improved (read: \CONTEXT\ core code) but that is already rather
+optimized.
+
+Just for the sake of completeness Luigi compiled a stock \LUATEX\ binary for 64-bit
+\LINUX\ with the \type {-o3} option (which forces more inlining of functions
+as well as a different switch mechanism). We did a few tests and this is the result:
+
+\starttabulate[|lTB|r|r|]
+\HL
+\NC              \NC \LUATEX\ 0.74 -o2 \NC \LUATEX\ 0.74 - o3 \NC \NR
+\HL
+\NC benchmark-1  \NC 15.5              \NC 15.0               \NC \NR
+\NC benchmark-2  \NC 35.8              \NC 34.0               \NC \NR
+\NC benchmark-3  \NC  4.0              \NC  3.9               \NC \NR
+\NC benchmark-4  \NC 16.0              \NC 15.8               \NC \NR
+\HL
+\stoptabulate
+
+This time we used \type {--batch} and \type {--silent} to eliminate terminal
+output. So, if you really want to squeeze out the maximum performance you need
+to compile with \type {-o3}, use \LUAJITTEX\ (with the faster virtual machine)
+but disable \JIT\ (disabled by default anyway).
+
+% tex + jit = 23.3
+% tex + lua = 27.0
+% lua = 2*jit       % cf roberto
+%
+% so:
+%
+% 2*tex + 2*jit = 46.6
+%   tex + 2*jit = 27.0
+% -------------------- -
+%   tex         = 19.6
+%
+% ratios:
+%
+% tex : lua = 70 : 30
+% tex : jit = 85 : 15
+
+We have no reason to abandon stock \LUA. Also, because during these experiments
+we were still using \LUA\ 5.1 we started wondering what the move to 5.2 would
+bring. Such a move forward also means that \CONTEXT\ \MKIV\ will not depend on
+specific \LUAJIT\ features, although it is aware of it (this is needed because we
+store bytecodes). But we will definitely explore the possibilities and see where
+we can benefit. In that respect there will be a way to enable and
+disable jitting. So, users have the choice to use either stock \LUATEX\ or the
+\JIT||aware version but we default to the regular binary.
+
+As we use stock \LUA\ as benchmark, we will use the \type {bit32} library, while
+\LUAJIT\ has its own bit library. Some functions can be aliased so that is no big
+deal. In \CONTEXT\ we use wrappers anyway. More problematic is that we want to
+move on to \LUA\ 5.2 and not all 5.2 features are supported (yet) in \LUAJIT. So,
+if \LUAJIT\ is mandatory in a workflow, then users had better make sure that the
+\LUA\ code is compatible. We don't expect too many problems in \CONTEXT\ \MKIV.
+
+\stopsection
+
+\startsection[title=About speed]
+
+It is worth mentioning that the \LUA\ version in \LUATEX\ has a patch for
+converting floats into strings. Instead of some \type {INF#} result we just
+return zero, simply because \TEX\ is integer||based and intercepting incredibly
+small numbers is too cumbersome. We had to apply the same patch in the \JIT\
+version.
+
+The benchmarks only indicate a trend. In a real document much more happens than
+in the above tests. So what are measurements worth? Say that we compile the \TEX
+book. This grandparent of all documents coded in \TEX\ is rather plainly coded
+(using of course plain \TEX) and compiles pretty fast. Processing does not suffer
+from complex expansions, there is no color, hardly any text manipulation, it's
+all 8 bit, the pagebuilder is straightforward as is all spacing. Although on my
+old machine I can get \CONTEXT\ to run at over 200 pages per second, this quickly
+drops to 10\% of that speed when we add some color, backgrounds, headers and
+footers, font switches, etc.
+
+So, running documents like the \TEX book for comparing the speed of, say,
+\PDFTEX, \XETEX, \LUATEX\ and now \LUAJITTEX\ makes no sense. The first one is
+still eight bit, the rest are \UNICODE. Also, the \TEX book uses traditional
+fonts with traditional features so effectively that it doesn't rely on anything
+that the new engines provide, not even \ETEX\ extensions. On the other hand, a
+recent document uses advanced fonts, properties like color and|/|or
+transparencies, hyperlinks, backgrounds, complex cover pages or chapter openings,
+embeds graphics, etc. Such a document might not even process in \PDFTEX\ or
+\XETEX, and if it does, it's still comparing different technologies: eight bit
+input and fast fonts in \PDFTEX, frozen \UNICODE\ and wide font support in
+\XETEX, instead of additional trickery and control, written in \LUA. So, when we
+investigate speed, we need to take into account what (font and input)
+technologies are used as well as what complicating layout and rendering features
+play a role. In practice speed only matters in an edit|-|view cycle and services
+where users wait for some result.
+
+It's rather hard to find a recent document that can be used to compare these
+engines. The best we could come up with was the rendering of the user interface
+documentation.
+
+\starttabulate[|T|T|T|T||]
+\NC texexec \NC --engine=pdftex    \NC --global \NC x-set-12.mkii \NC 5.9 seconds \NC \NR
+\NC texexec \NC --engine=xetex     \NC --global \NC x-set-12.mkii \NC 6.2 seconds \NC \NR
+\NC context \NC --engine=luatex    \NC --global \NC x-set-12.mkiv \NC 6.2 seconds \NC \NR
+\NC context \NC --engine=luajittex \NC --global \NC x-set-12.mkiv \NC 4.6 seconds \NC \NR
+\stoptabulate
+
+Keep in mind that \type{texexec} is a \RUBY\ script and uses \type {kpsewhich}
+while \type {context} uses \LUA\ and its own (\TDS||compatible) file manager. But
+still, it is interesting to see that there is not that much difference if we keep
+\JIT\ out of the picture. This is because in \MKIV\ we have somewhat more clever
+\XML\ processing, although earlier measurements have demonstrated that in this
+case not that much speedup can be assigned to that.
+
+And so recent versions of \MKIV\ already keep up rather well with the older eight
+bit world. We do way more in \MKIV\ and the interfacing macros are nicer but
+potentially somewhat slower. Some mechanisms might be more efficient because of
+using \LUA, but some actually have more overhead because we keep track of more
+data. Font feature processing is done in \LUA, but somehow can keep up with the
+libraries used in \XETEX, or at least is not that significant a difference,
+although I can think of more demanding tasks. Of course in \LUATEX\ we can go
+beyond what libraries provide.
+
+No matter what one takes into account, performance is not that much worse in
+\LUATEX, and if we enable \JIT\ and so remove some of the traditional \LUA\
+virtual machine overhead, we're even better off. Of course we need to add a
+disclaimer here: don't force us to prove that the relative speed ratios are the
+same for all cases. In fact, it being so hard to measure and compare, performance
+can be considered to be something taken for granted as there is not that much we
+can do about getting nicer numbers, apart from maybe parallelizing which brings
+other complexities into the picture. On our servers, a few other virtual machines
+running \TEX\ services kicking in at the same time, using \CPU\ cycles, network
+bandwidth (as all data lives someplace else) and asking for disk access have much
+more impact than the 25\% we gain. Of course if all processes run faster then
+we've gained something.
+
+For what it's worth: processing this text takes some 2.3 seconds on my laptop for
+regular \LUATEX\ and 1.8 seconds with \LUAJITTEX, including the extra overhead of
+restarting. As this is a rather average example it fits earlier measurements.
+
+Processing a font manual (work in progress) takes \LUAJITTEX\ 15 seconds for 112
+pages compared to 18.4 seconds for \LUATEX. The not yet finished manual loads 20
+different fonts (each with multiple instances), uses colors, has some \METAPOST\
+graphics and does some font juggling. The gain in speed sounds familiar.
+
+\stopsection
+
+\startsection[title=The future]
+
+At the 2012 \LUA\ conference Roberto Ierusalimschy mentioned that the virtual
+machine of \LUAJIT\ is about twice as fast due to it being partly done in
+assembler while the regular machinery is written in standard \CCODE\ and keeps
+portability in mind.
+
+He also presented some plans for future versions of \LUA. There will be some
+lightweight helpers for \UTF. Our experiences so far are that only a handful of
+functions are actually needed: byte to character conversions and vice versa,
+iterators for \UTF\ characters and \UTF\ values and maybe a simple substring
+function is probably enough. Currently \LUATEX\ has some extra string iterators
+and it will provide the converters as well.
+
+There is a good chance that \LPEG\ will become a standard library (which it
+already is in \LUATEX), which is also nice. It's interesting that, especially on
+longer sequences, \LPEG\ can beat the string matchers and replacers, although
+when in a substitution no match and therefore no replacements happen, the regular
+gsub wins. We're talking small numbers here, in daily usage \LPEG\ is about as
+efficient as you can wish. In \CONTEXT\ we have a \type {lpeg.UR} and \type
+{lpeg.US} and it would be nice to have these as native \UTF\ related methods, but
+I must admit that I seldom need them.
+
+This and other extensions coming to the language also have some impact on a \JIT\
+version: the current \LUAJIT\ is already not entirely compatible with \LUA\ 5.2
+so you need to keep that into account if you want to use this version of \LUATEX.
+So, unless \LUAJIT\ follows the mainstream development, as \CONTEXT\ \MKIV\ user
+you should not depend on it. But at the moment it's nice to have this choice.
+
+The yet experimental code will end up in the main \LUATEX\ repository in time
+before the \TEX\ Live 2013 code freeze. In order to make it easier to run both
+versions alongside, we have added the \LUA\ 5.2 built|-|in library \type {bit32}
+to \LUAJITTEX. We found out that it's too much trouble to add that library to
+\LUA~5.1 but \LUATEX\ has moved on to 5.2 anyway.
+
+\stopsection
+
+\startsection[title=Running]
+
+So, as we will definitely stick to stock \LUA, one might wonder if it makes sense
+to officially support jitting in \CONTEXT. First of all, \LUATEX\ is not
+influenced that much by the low level changes in the \API\ between 5.1 and 5.2.
+Also \LUAJIT\ does support the most important new 5.2 features, so at the moment
+we're mostly okay. We expect that eventually \LUAJIT\ will catch up but if not,
+we are not in big trouble: the performance of stock \LUA\ is quite okay and above
+all, it's portable! \footnote {Stability and portability are important properties
+of \TEX\ engines, which is yet another reason for using \LUA. For those doing
+number crunching in a document, \JIT\ can come in handy.} For the moment you can
+consider \LUAJITTEX\ to be an experiment and research tool, but we will do our
+best to keep it production ready.
+
+So how do we choose between the two engines? After some experimenting with
+alternative startup scenarios and dedicated caches, the following solution was
+reached:
+
+\starttyping
+context --engine=luajittex ...
+\stoptyping
+
+The usual preamble line also works:
+
+\starttyping
+% engine=luajittex
+\stoptyping
+
+As the main infrastructure uses the \type {luatex} and related binaries, this
+will result in a relaunch: the \type {context} script will be restarted using
+\type {luajittex}. This is a simple solution and the overhead is rather minimal,
+especially compared to the somewhat faster run. Alternatively you can copy \type
+{luajittex} over \type {luatex} but that is more drastic. Keep in mind that \type
+{luatex} is the benchmark for development of \CONTEXT, so the \JIT\ aware version
+might fall behind sometimes.
+
+Yet another approach is adapting the configuration file, or better, provide (or
+adapt) your own \type {texmfcnf.lua} in for instance \type {texmf-local/web2c}
+path:
+
+\starttyping
+return {
+  type    = "configuration",
+  version = "1.2.3",
+  date    = "2012-12-12",
+  time    = "12:12:12",
+  comment = "Local overloads",
+  author  = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  content = {
+    directives = {
+      ["system.engine"] = "luajittex",
+    },
+  },
+}
+\stoptyping
+
+This has the same effect as always providing \type {--engine=luajittex} but only
+makes sense in well controlled situations as you might easily forget that it's
+the default. Of course one could have that file and just comment out the
+directive unless in test mode.
+
+Because the bytecode of \LUAJIT\ differs from the one used by \LUA\ itself we
+have a dedicated format as well as dedicated bytecode compiled resources (for
+instance \type {tmb} instead of \type {tmc}). For most users this is not
+something they should bother about as it happens automatically.
+
+Based on experiments, by default we have disabled \JIT\, so we only benefit from
+the faster virtual machine. Future versions of \CONTEXT\ might provide some
+control over that but first we want to conduct more experiments.
+
+\stopsection
+
+\startsection[title=Addendum]
+
+These developments and experiments took place in November and December 2012. At
+the time of this writing we also made the move to \LUA\ 5.2 in stock \LUATEX; the
+first version to provide this was 0.74. Here are some measurements on Taco
+Hoekwater's 64-bit \LINUX\ machine:
+
+\starttabulate[|lTB|r|r|l|]
+\HL
+\NC              \NC \LUATEX\ 0.70 \NC \LUATEX\ 0.74 \NC        \NC \NR
+\HL
+\NC benchmark-1  \NC 23.67         \NC 19.57         \NC faster \NC \NR
+\NC benchmark-2  \NC 65.41         \NC 62.88         \NC faster \NC \NR
+\NC benchmark-3  \NC  4.88         \NC  4.67         \NC faster \NC \NR
+\NC benchmark-4  \NC 23.09         \NC 22.71         \NC faster \NC \NR
+\NC benchmark-5  \NC  2.56/2.06    \NC  2.66/2.29    \NC slower \NC \NR
+\HL
+\stoptabulate
+
+There is a good chance that this is due to improvements of the garbage collector,
+virtual machine and string handling. It also looks like memory consumption is a
+bit less. Some speed optimizations in reading files have been removed (at least
+for now) and some patches to the \type {format} function (in the \type {string}
+namespace) that dealt with (for \TEX) unfortunate number conversions have not
+been ported. The code base is somewhat cleaner and we expect to be able to split
+up the binary in a core program plus some libraries that are loaded on demand.
+\footnote {Of course this poses some constraints on stability as components get
+decoupled, but this is one of the issues that we hope to deal with properly in
+the library project.} In general, we don't expect too many issues in the
+transition to \LUA\ 5.2, and \CONTEXT\ is already adapted to support \LUATEX\
+with 5.2 as well as \LUAJITTEX\ with an older version.
+
+Running the same tests on a 32-bit \MSWINDOWS\ machine gives this:
+
+\starttabulate[|lTB|r|r|r|]
+\HL
+\NC              \NC \LUATEX\ 0.70 \NC \LUATEX\ 0.74 \NC        \NC \NR
+\HL
+\NC benchmark-1  \NC 26.4          \NC 25.5          \NC faster \NC \NR
+\NC benchmark-2  \NC 64.2          \NC 63.6          \NC faster \NC \NR
+\NC benchmark-3  \NC  7.1          \NC  6.9          \NC faster \NC \NR
+\NC benchmark-4  \NC 28.3          \NC 27.0          \NC faster \NC \NR
+\NC benchmark-5  \NC  1.95/1.50    \NC  1.84/1.48    \NC faster \NC \NR
+\HL
+\stoptabulate
+
+The gain is less impressive but the machine is rather old and we can benefit less
+from modern \CPU\ properties (cache, memory bandwidth, etc.). I tend to conclude
+that there is no significant improvement here but it also doesn't get worse.
+However we need to keep in mind that file \IO\ is less optimal in 0.74 so this
+might play a role. As usual, runtime is negatively influenced by the relatively
+slow speed of displaying messages on the console (even when we use \type
+{console2}).
+
+A few days before the end of 2012, Akira Kakuto compiled native \MSWINDOWS\
+binaries for both engines. This time I decided to run a comparison inside the
+\SCITE\ editor, that has very fast console output. \footnote {Most of my personal
+\TEX\ runs are from within \SCITE, while most runs on the servers are in batch
+mode, so normally the overhead of the console is acceptable or even neglectable.}
+
+\starttabulate[|lTB|r|r|r|]
+\HL
+\NC              \NC \LUATEX\ 0.74 (5.2) \NC \LUAJITTEX\ 0.72 (5.1) \NC         \NC \NR
+\HL
+\NC benchmark-1  \NC 25.4                \NC 25.4                   \NC similar \NC \NR
+\NC benchmark-2  \NC 54.7                \NC 36.3                   \NC faster  \NC \NR
+\NC benchmark-3  \NC  4.3                \NC  3.6                   \NC faster  \NC \NR
+\NC benchmark-4  \NC 20.0                \NC 16.3                   \NC faster  \NC \NR
+\NC benchmark-5  \NC  1.93/1.48          \NC  0.74/0.61             \NC faster  \NC \NR
+\HL
+\stoptabulate
+
+Only the \METAPOST\ library and conversion benchmark didn't show a speedup. The
+regular \TEX\ tests 1||3 gain some 15||35\%. Enabling \JIT\ (off by default)
+slowed down processing. For the sake of completeness I also timed \LUAJITTEX\
+on the console, so here you see the improvement of both engines.
+
+\starttabulate[|lTB|r|r|r|]
+\HL
+\NC              \NC \LUATEX\ 0.70 \NC \LUATEX\ 0.74 \NC \LUAJITTEX\ 0.72 \NC \NR
+\HL
+\NC benchmark-1  \NC 26.4          \NC 25.5          \NC  25.9      \NC \NR
+\NC benchmark-2  \NC 64.2          \NC 63.6          \NC  45.5      \NC \NR
+\NC benchmark-3  \NC 7.1           \NC  6.9          \NC   6.0      \NC \NR
+\NC benchmark-4  \NC 28.3          \NC 27.0          \NC  23.3      \NC \NR
+\NC benchmark-5  \NC 1.95/1.50     \NC 1.84/1.48     \NC  0.73/0.60 \NC \NR
+\HL
+\stoptabulate
+
+In this text, the term \JIT\ has come up a lot but you might rightfully wonder if
+the observations here relate to \JIT\ at all. For the moment I tend to conclude
+that the implementation of the virtual machine and garbage collection have more
+impact than the actual just||in||time compilation. More exploration of \JIT\ is
+needed to see if we can really benefit from that. Of course the fact that we use
+a bit less memory is also nice. In case you wonder why I bother about speed at
+all: we happen to run \LUATEX\ mostly as a (remote) service and generating a
+bunch of (related) documents takes a bit of time. Bringing the waiting down from
+15 to 10 seconds might not sound impressive but it makes a difference when it is
+someone's job to generate these sets.
+
+In summary: just before we entered 2013, we saw two rather fundamental updates of
+\LUATEX\ show up: an improved traditional one with \LUA\ 5.2 as well as the
+somewhat faster \LUAJITTEX\ with a mixture between 5.1 and 5.2. And in 2013 we
+will of course try to make them both even more attractive.
+
+\stopsection
+
+\stopchapter
+
+% benchmark-4:
+%
+% tex + jit = 23.3
+% tex + lua = 27.0
+% lua = 2*jit       % cf roberto
+%
+% so:
+%
+% 2*tex + 2*jit = 46.6
+%   tex + 2*jit = 27.0
+% -------------------- -
+%   tex         = 19.6
+%
+% ratios:
+%
+% tex : lua = 70 : 30
+% tex : jit = 85 : 15

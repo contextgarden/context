@@ -1,0 +1,903 @@
+% language=uk
+
+\environment still-environment
+
+\starttext
+
+\startchapter[title=Scanning input]
+
+\startsection[title=Introduction]
+
+Tokens are the building blocks of the input for \TEX\ and they drive the process
+of expansion which in turn results in typesetting. If you want to manipulate the
+input, intercepting tokens is one approach. Other solutions are preprocessing or
+writing macros that do something with their picked|-|up arguments. In \CONTEXT\
+\MKIV\ we often forget about manipulating the input but manipulate the
+intermediate typesetting results instead. The advantage is that only at that
+moment do you know what you're truly dealing with, but a disadvantage is that
+parsing the so-called node lists is not always efficient and it can even be
+rather complex, for instance in math. It remains a fact that until \LUATEX\
+version 0.80 \CONTEXT\ hardly used the token interface.
+
+In version 0.80 a new scanner interface was introduced, demonstrated by Taco
+Hoekwater at the \CONTEXT\ conference 2014. Luigi Scarso and I integrated that
+code and I added a few more functions. Eventually the team will kick out the old
+token library and overhaul the input|-|related code in \LUATEX, because no
+callback is needed any more (and also because the current code still has traces
+of multiple \LUA\ instances). This will happen stepwise to give users who use the
+old mechanism an opportunity to adapt.
+
+Here I will show a bit of the new token scanners and explain how they can be used
+in \CONTEXT. Some of the additional scanners written on top of the built|-|in ones
+will probably end up in the generic \LUATEX\ code that ships with \CONTEXT.
+
+\stopsection
+
+\startsection[title=The \TEX\ scanner]
+
+The new token scanner library of \LUATEX\ provides a way to hook \LUA\ into \TEX\
+in a rather natural way. I have to admit that I never had any real demand for
+such a feature but now that we have it, it is worth exploring.
+
+The \TEX\ scanner roughly provides the following sub-scanners that are used to
+implement primitives: keyword, token, token list, dimension, glue and integer.
+Deep down there are specific variants for scanning, for instance, font dimensions
+and special numbers.
+
+A token is a unit of input, and one or more characters are turned into a token.
+How a character is interpreted is determined by its current catcode. For instance
+a backslash is normally tagged as `escape character' which means that it starts a
+control sequence: a macro name or primitive. This means that once it is scanned a
+macro name travels as one token through the system. Take this:
+
+\starttyping
+\def\foo#1{\scratchcounter=123#1\relax}
+\stoptyping
+
+Here \TEX\ scans \type {\def} and turns it into a token. This particular token
+triggers a specific branch in the scanner. First a name is scanned with
+optionally an argument specification. Then the body is scanned and the macro is
+stored in memory. Because \type {\scratchcounter}, \type
+{\relax} and \type {#1} are
+turned into tokens, this body has 7~tokens.
+
+When the macro \type {\foo} is referenced the body gets expanded which here means
+that the scanner will scan for an argument first and uses that in the
+replacement. So, the scanner switches between different states. Sometimes tokens
+are just collected and stored, in other cases they get expanded immediately into
+some action.
+
+\stopsection
+
+\startsection[title=Scanning from \LUA]
+
+The basic building blocks of the scanner are available at the \LUA\ end, for
+instance:
+
+\starttyping
+\directlua{print(token.scan_int())} 123
+\stoptyping
+
+This will print \type {123} to the console. Or, you can store the number and
+use it later:
+
+\starttyping
+\directlua{SavedNumber = token.scan_int())} 123
+
+We saved: \directlua{tex.print(SavedNumber)}
+\stoptyping
+
+The number of scanner functions is (on purpose) limited but you can use them to
+write additional ones as you can just grab tokens, interpret them and act
+accordingly.
+
+The \type {scan_int} function picks up a number. This can also be a counter, a
+named (math) character or a numeric expression. In \TEX, numbers are integers;
+floating|-|point is not supported naturally. With \type {scan_dimen} a dimension
+is grabbed, where a dimen is either a number (float) followed by a unit, a dimen
+register or a dimen expression (internally, all become integers). Of course
+internal quantities are also okay. There are two optional arguments, the first
+indicating that we accept a filler as unit, while the second indicates that math
+units are expected. When an integer or dimension is scanned, tokens are expanded
+till the input is a valid number or dimension. The \type {scan_glue} function
+takes one optional argument: a boolean indicating if the units are math.
+
+The \type {scan_toks} function picks up a (normally) brace|-|delimited sequence of
+tokens and (\LUATEX\ 0.80) returns them as a table of tokens. The function \type
+{get_token} returns one (unexpanded) token while \type {scan_token} returns
+an expanded one.
+
+Because strings are natural to \LUA\ we also have \type {scan_string}. This one
+converts a following brace|-|delimited sequence of tokens into a proper string.
+
+The function \type {scan_keyword} looks for the given keyword and when found skips
+over it and returns \type {true}. Here is an example of usage: \footnote {In
+\LUATEX\ 0.80 you should use \type {newtoken} instead of \type {token}.}
+
+\starttyping
+function ScanPair()
+  local one = 0
+  local two = ""
+  while true do
+    if token.scan_keyword("one") then
+      one = token.scan_int()
+    elseif token.scan_keyword("two") then
+      two = token.scan_string()
+    else
+      break
+    end
+  end
+  tex.print("one: ",one,"\\par")
+  tex.print("two: ",two,"\\par")
+end
+\stoptyping
+
+This can be used as:
+
+\starttyping
+\directlua{ScanPair()}
+\stoptyping
+
+You can scan for an explicit character (class) with \type {scan_code}. This
+function takes a positive number as argument and returns a character or \type
+{nil}.
+
+\starttabulate[|r|r|l|]
+\NC \cldcontext{tokens.bits.escape     } \NC  0 \NC \type{escape}      \NC \NR
+\NC \cldcontext{tokens.bits.begingroup } \NC  1 \NC \type{begingroup}  \NC \NR
+\NC \cldcontext{tokens.bits.endgroup   } \NC  2 \NC \type{endgroup}    \NC \NR
+\NC \cldcontext{tokens.bits.mathshift  } \NC  3 \NC \type{mathshift}   \NC \NR
+\NC \cldcontext{tokens.bits.alignment  } \NC  4 \NC \type{alignment}   \NC \NR
+\NC \cldcontext{tokens.bits.endofline  } \NC  5 \NC \type{endofline}   \NC \NR
+\NC \cldcontext{tokens.bits.parameter  } \NC  6 \NC \type{parameter}   \NC \NR
+\NC \cldcontext{tokens.bits.superscript} \NC  7 \NC \type{superscript} \NC \NR
+\NC \cldcontext{tokens.bits.subscript  } \NC  8 \NC \type{subscript}   \NC \NR
+\NC \cldcontext{tokens.bits.ignore     } \NC  9 \NC \type{ignore}      \NC \NR
+\NC \cldcontext{tokens.bits.space      } \NC 10 \NC \type{space}       \NC \NR
+\NC \cldcontext{tokens.bits.letter     } \NC 11 \NC \type{letter}      \NC \NR
+\NC \cldcontext{tokens.bits.other      } \NC 12 \NC \type{other}       \NC \NR
+\NC \cldcontext{tokens.bits.active     } \NC 13 \NC \type{active}      \NC \NR
+\NC \cldcontext{tokens.bits.comment    } \NC 14 \NC \type{comment}     \NC \NR
+\NC \cldcontext{tokens.bits.invalid    } \NC 15 \NC \type{invalid}     \NC \NR
+\stoptabulate
+
+So, if you want to grab the character you can say:
+
+\starttyping
+local c = token.scan_code(2^10 + 2^11 + 2^12)
+\stoptyping
+
+In \CONTEXT\ you can say:
+
+\starttyping
+local c = tokens.scanners.code(
+  tokens.bits.space +
+  tokens.bits.letter +
+  tokens.bits.other
+)
+\stoptyping
+
+When no argument is given, the next character with catcode letter or other is
+returned (if found).
+
+In \CONTEXT\ we use the \type {tokens} namespace which has additional scanners
+available. That way we can remain compatible. I can add more scanners when
+needed, although it is not expected that users will use this mechanism directly.
+
+\starttabulate[||||]
+\NC \type {(new)token}   \NC \type {tokens}             \NC arguments \NC \NR
+\HL
+\NC                      \NC \type {scanners.boolean}   \NC \NC \NR
+\NC \type {scan_code}    \NC \type {scanners.code}      \NC \type {(bits)}      \NC \NR
+\NC \type {scan_dimen}   \NC \type {scanners.dimension} \NC \type {(fill,math)} \NC \NR
+\NC \type {scan_glue}    \NC \type {scanners.glue}      \NC \type {(math)}      \NC \NR
+\NC \type {scan_int}     \NC \type {scanners.integer}   \NC \NC \NR
+\NC \type {scan_keyword} \NC \type {scanners.keyword}   \NC \NC \NR
+\NC                      \NC \type {scanners.number}    \NC \NC \NR
+\NC \type {scan_token}   \NC \type {scanners.token}     \NC \NC \NR
+\NC \type {scan_tokens}  \NC \type {scanners.tokens}    \NC \NC \NR
+\NC \type {scan_string}  \NC \type {scanners.string}    \NC \NC \NR
+\NC \type {scan_word}    \NC \type {scanners.word}      \NC \NC \NR
+\NC \type {get_token}    \NC \type {getters.token}      \NC \NC \NR
+\NC \type {set_macro}    \NC \type {setters.macro}      \NC \type {(catcodes,cs,str,global)} \NC \NR
+\stoptabulate
+
+All except \type {get_token} (or its alias \type {getters.token}) expand tokens
+in order to satisfy the demands.
+
+Here are some examples of how we can use the scanners. When we would call
+\type {Foo} with regular arguments we do this:
+
+\starttyping
+\def\foo#1{%
+  \directlua {
+    Foo("whatever","#1",{n = 1})
+  }
+}
+\stoptyping
+
+but when \type {Foo} uses the scanners it becomes:
+
+\starttyping
+\def\foo#1{%
+  \directlua{Foo()} {whatever} {#1} n {1}\relax
+}
+\stoptyping
+
+In the first case we have a function \type {Foo} like this:
+
+\starttyping
+function Foo(what,str,n)
+  --
+  -- do something with these three parameters
+  --
+end
+\stoptyping
+
+and in the second variant we have (using the \type {tokens} namespace):
+
+\starttyping
+function Foo()
+  local what = tokens.scanners.string()
+  local str  = tokens.scanners.string()
+  local n    = tokens.scanners.keyword("n") and
+               tokens.scanners.integer() or 0
+  --
+  -- do something with these three parameters
+  --
+end
+\stoptyping
+
+The string scanned is kind of special as the result depends ok what is seen.
+Given the following definition:
+
+\startbuffer
+           \def\bar  {bar}
+\unexpanded\def\ubar {ubar} % \protected in plain etc
+           \def\foo  {foo-\bar-\ubar}
+           \def\wrap {{foo-\bar}}
+           \def\uwrap{{foo-\ubar}}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We get:
+
+\def\TokTest{\ctxlua{
+    local s = tokens.scanners.string()
+    context("\\bgroup\\red\\tt")
+    context.verbatim(s)
+    context("\\egroup")
+}}
+
+\starttabulate[|l|Tl|]
+\NC \type{{foo}}       \NC \TokTest {foo}       \NC \NR
+\NC \type{{foo-\bar}}  \NC \TokTest {foo-\bar}  \NC \NR
+\NC \type{{foo-\ubar}} \NC \TokTest {foo-\ubar} \NC \NR
+\NC \type{foo-\bar}    \NC \TokTest foo-\bar    \NC \NR
+\NC \type{foo-\ubar}   \NC \TokTest foo-\ubar   \NC \NR
+\NC \type{foo$bar$}    \NC \TokTest foo$bar$    \NC \NR
+\NC \type{\foo}        \NC \TokTest \foo        \NC \NR
+\NC \type{\wrap}       \NC \TokTest \wrap       \NC \NR
+\NC \type{\uwrap}      \NC \TokTest \uwrap      \NC \NR
+\stoptabulate
+
+Because scanners look ahead the following happens: when an open brace is seen (or
+any character marked as left brace) the scanner picks up tokens and expands them
+unless they are protected; so, effectively, it scans as if the body of an \type
+{\edef} is scanned. However, when the next token is a control sequence it will be
+expanded first to see if there is a left brace, so there we get the full
+expansion. In practice this is convenient behaviour because the braced variant
+permits us to pick up meanings honouring protection. Of course this is all a side
+effect of how \TEX\ scans.\footnote {This lookahead expansion can sometimes give
+unexpected side effects because often \TEX\ pushes back a token when a condition
+is not met. For instance when it scans a number, scanning stops when no digits
+are seen but the scanner has to look at the next (expanded) token in order to
+come to that conclusion. In the process it will, for instance, expand
+conditionals. This means that intermediate catcode changes will not be effective
+(or applied) to already-seen tokens that were pushed back into the input. This
+also happens with, for instance, \cs {futurelet}.}
+
+With the braced variant one can of course use primitives like \type {\detokenize}
+and \type {\unexpanded} (in \CONTEXT: \type {\normalunexpanded}, as we already
+had this mechanism before it was added to the engine).
+
+\stopsection
+
+\startsection[title=Considerations]
+
+Performance|-|wise there is not much difference between these methods. With some
+effort you can make the second approach faster than the first but in practice you
+will not notice much gain. So, the main motivation for using the scanner is that
+it provides a more \TEX|-|ified interface. When playing with the initial version
+of the scanners I did some tests with performance|-|sensitive \CONTEXT\ calls and
+the difference was measurable (positive) but deciding if and when to use the
+scanner approach was not easy. Sometimes embedded \LUA\ code looks better, and
+sometimes \TEX\ code. Eventually we will end up with a mix. Here are some
+considerations:
+
+\startitemize
+\startitem
+    In both cases there is the overhead of a \LUA\ call.
+\stopitem
+\startitem
+    In the pure \LUA\ case the whole argument is tokenized by \TEX\ and then
+    converted to a string that gets compiled by \LUA\ and executed.
+\stopitem
+\startitem
+    When the scan happens in \LUA\ there are extra calls to functions but
+    scanning still happens in \TEX; some token to string conversion is avoided
+    and compilation can be more efficient.
+\stopitem
+\startitem
+    When data comes from external files, parsing with \LUA\ is in most cases more
+    efficient than parsing by \TEX .
+\stopitem
+\startitem
+    A macro package like \CONTEXT\ wraps functionality in macros and is
+    controlled by key|/|value specifications. There is often no benefit in terms
+    of performance when delegating to the mentioned scanners.
+\stopitem
+\stopitemize
+
+Another consideration is that when using macros, parameters are often passed
+between \type {{}}:
+
+\starttyping
+\def\foo#1#2#3%
+  {...}
+\foo {a}{123}{b}
+\stoptyping
+
+and suddenly changing that to
+
+\starttyping
+\def\foo{\directlua{Foo()}}
+\stoptyping
+
+and using that as:
+
+\starttyping
+\foo {a} {b} n 123
+\stoptyping
+
+means that \type {{123}} will fail. So, eventually you will end up with something:
+
+\starttyping
+\def\myfakeprimitive{\directlua{Foo()}}
+\def\foo#1#2#3{\myfakeprimitive {#1} {#2} n #3 }
+\stoptyping
+
+and:
+
+\starttyping
+\foo {a} {b} {123}
+\stoptyping
+
+So in the end you don't gain much here apart from the fact that the fake
+primitive can be made more clever and accept optional arguments. But such new
+features are often hidden for the user who uses more high|-|level wrappers.
+
+When you code in pure \TEX\ and want to grab a number directly you need to test
+for the braced case; when you use the \LUA\ scanner method you still need to test
+for braces. The scanners are consistent with the way \TEX\ works. Of course you
+can write helpers that do some checking for braces in \LUA, so there are no real
+limitations, but it adds some overhead (and maybe also confusion).
+
+One way to speed up the call is to use the \type {\luafunction} primitive in
+combinations with predefined functions and although both mechanisms can benefit
+from this, the scanner approach gets more out of that as this method cannot be
+used with regular function calls that get arguments. In (rather low level) \LUA\
+it looks like this:
+
+\starttyping
+luafunctions[1] = function()
+  local a token.scan_string()
+  local n token.scan_int()
+  local b token.scan_string()
+  -- whatever --
+end
+\stoptyping
+
+And in \TEX:
+
+\starttyping
+\luafunction1 {a} 123 {b}
+\stoptyping
+
+This can of course be wrapped as:
+
+\starttyping
+\def\myprimitive{\luafunction1 }
+\stoptyping
+
+\stopsection
+
+\startsection[title=Applications]
+
+The question now pops up: where can this be used? Can you really make new
+primitives? The answer is yes. You can write code that exclusively stays on the
+\LUA\ side but you can also do some magic and then print back something to \TEX.
+Here we use the basic token interface, not \CONTEXT:
+
+\startbuffer
+\directlua {
+local token = newtoken or token
+function ColoredRule()
+  local w, h, d, c, t
+  while true do
+    if token.scan_keyword("width") then
+      w = token.scan_dimen()
+    elseif token.scan_keyword("height") then
+      h = token.scan_dimen()
+    elseif token.scan_keyword("depth") then
+      d = token.scan_dimen()
+    elseif token.scan_keyword("color") then
+      c = token.scan_string()
+    elseif token.scan_keyword("type") then
+      t = token.scan_string()
+    else
+      break
+    end
+  end
+  if c then
+    tex.sprint("\\color[",c,"]{")
+  end
+  if t == "vertical" then
+    tex.sprint("\\vrule")
+  else
+    tex.sprint("\\hrule")
+  end
+  if w then
+    tex.sprint("width ",w,"sp")
+  end
+  if h then
+    tex.sprint("height ",h,"sp")
+  end
+  if d then
+    tex.sprint("depth ",d,"sp")
+  end
+  if c then
+    tex.sprint("\\relax}")
+  end
+end
+}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This can be given a \TeX\ interface like:
+
+\startbuffer
+\def\myhrule{\directlua{ColoredRule()} type {horizontal} }
+\def\myvrule{\directlua{ColoredRule()} type {vertical} }
+\stopbuffer
+
+\typebuffer \getbuffer
+
+And used as:
+
+\startbuffer
+\myhrule width \hsize height 1cm color {darkred}
+\stopbuffer
+
+\typebuffer
+
+giving:
+
+% when no newtokens:
+%
+% \startbuffer
+% \blackrule[width=\hsize,height=1cm,color=darkred]
+% \stopbuffer
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Of course \CONTEXT\ users can use the following commands to color an
+otherwise-black rule (likewise):
+
+\startbuffer
+\blackrule[width=\hsize,height=1cm,color=darkgreen]
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+The official \CONTEXT\ way to define such a new command is the following. The
+conversion back to verbose dimensions is needed because we pass back to \TEX.
+
+\startbuffer
+\startluacode
+local myrule = tokens.compile {
+  {
+    { "width",  "dimension", "todimen" },
+    { "height", "dimension", "todimen" },
+    { "depth",  "dimension", "todimen" },
+    { "color",  "string" },
+    { "type",   "string" },
+  }
+}
+
+interfaces.scanners.ColoredRule = function()
+  local t = myrule()
+  context.blackrule {
+    color  = t.color,
+    width  = t.width,
+    height = t.height,
+    depth  = t.depth,
+  }
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+With:
+
+\startbuffer
+\unprotect \let\myrule\clf_ColoredRule \protect
+\stopbuffer
+
+\typebuffer \getbuffer
+
+and
+
+\startbuffer
+\myrule width \textwidth height 1cm color {maincolor} \relax
+\stopbuffer
+
+\typebuffer
+
+we get:
+
+% when no newtokens:
+%
+% \startbuffer
+% \blackrule[width=\hsize,height=1cm,color=maincolor]
+% \stopbuffer
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+There are many ways to use the scanners and each has its charm. We will look at
+some alternatives from the perspective of performance. The timings are more meant
+as relative measures than absolute ones. After all it depends on the hardware. We
+assume the following shortcuts:
+
+\starttyping
+local scannumber  = tokens.scanners.number
+local scankeyword = tokens.scanners.keyword
+local scanword    = tokens.scanners.word
+\stoptyping
+
+We will scan for four different keys and values. The number is scanned using a
+helper \type {scannumber} that scans for a number that is acceptable for \LUA.
+Thus, \type {1.23} is valid, as are \type {0x1234} and \type {12.12E4}.
+
+% interfaces.scanners.test_scaling_a
+
+\starttyping
+function getmatrix()
+  local sx, sy = 1, 1
+  local rx, ry = 0, 0
+  while true do
+    if scankeyword("sx") then
+      sx = scannumber()
+    elseif scankeyword("sy") then
+      sy = scannumber()
+    elseif scankeyword("rx") then
+      rx = scannumber()
+    elseif scankeyword("ry") then
+      ry = scannumber()
+    else
+      break
+    end
+  end
+  -- action --
+end
+\stoptyping
+
+Scanning the following specification  100000 times takes 1.00 seconds:
+
+\starttyping
+sx 1.23 sy 4.5 rx 1.23 ry 4.5
+\stoptyping
+
+The \quote {tight} case takes 0.94 seconds:
+
+\starttyping
+sx1.23 sy4.5 rx1.23 ry4.5
+\stoptyping
+
+% interfaces.scanners.test_scaling_b
+
+We can compare this to scanning without keywords. In that case there have to be
+exactly four arguments. These have to be given in the right order which is no big
+deal as often such helpers are encapsulated in a user|-|friendly macro.
+
+\starttyping
+function getmatrix()
+  local sx, sy = scannumber(), scannumber()
+  local rx, ry = scannumber(), scannumber()
+  -- action --
+end
+\stoptyping
+
+As expected, this is more efficient than the previous examples. It takes 0.80
+seconds to scan this 100000 times:
+
+\starttyping
+1.23 4.5 1.23 4.5
+\stoptyping
+
+A third alternative is the following:
+
+\starttyping
+function getmatrix()
+  local sx, sy = 1, 1
+  local rx, ry = 0, 0
+  while true do
+    local kw = scanword()
+    if kw == "sx" then
+      sx = scannumber()
+    elseif kw == "sy" then
+      sy = scannumber()
+    elseif kw == "rx" then
+      rx = scannumber()
+    elseif kw == "ry" then
+      ry = scannumber()
+    else
+      break
+    end
+  end
+  -- action --
+end
+\stoptyping
+
+Here we scan for a keyword and assign a number to the right variable. This one
+call happens to be less efficient than calling \type {scan_keyword} 10 times
+($4+3+2+1$) for the explicit scan. This run takes 1.11 seconds for the next line.
+The spaces are really needed as words can be anything that has no space.
+\footnote {Hard|-|coding the word scan in a \CCODE\ helper makes little sense, as
+different macro packages can have different assumptions about what a word is. And
+we don't extend \LUATEX\ for specific macro packages.}
+
+\starttyping
+sx 1.23 sy 4.5 rx 1.23 ry 4.5
+\stoptyping
+
+Of course these numbers need to be compared to a baseline of no scanning (i.e.\
+the overhead of a \LUA\ call which here amounts to 0.10 seconds. This brings
+us to the following table.
+
+\starttabulate[|l|l|]
+\NC keyword checks \NC 0.9 sec\NC \NR
+\NC no keywords    \NC 0.7 sec\NC \NR
+\NC word checks    \NC 1.0 sec\NC \NR
+\stoptabulate
+
+The differences are not that impressive given the number of calls. Even in a
+complex document the overhead of scanning can be negligible compared to the
+actions involved in typesetting the document. In fact, there will always be some
+kind of scanning for such macros so we're talking about even less impact. So you
+can just use the method you like most. In practice, the extra overhead of using
+keywords in combination with explicit checks (the first case) is rather
+convenient.
+
+If you don't want to have many tests you can do something like this:
+
+\starttyping
+local keys = {
+  sx = scannumber, sy = scannumber,
+  rx = scannumber, ry = scannumber,
+}
+
+function getmatrix()
+  local values = { }
+  while true do
+    for key, scan in next, keys do
+      if scankeyword(key) then
+        values[key] = scan()
+      else
+        break
+      end
+    end
+  end
+  -- action --
+end
+\stoptyping
+
+This is still quite fast although one now has to access the values in a table.
+Working with specifications like this is clean anyway so in \CONTEXT\ we have a
+way to abstract the previous definition.
+
+\starttyping
+local specification = tokens.compile {
+  {
+    { "sx", "number" }, { "sy", "number" },
+    { "rx", "number" }, { "ry", "number" },
+  },
+}
+
+function getmatrix()
+  local values = specification()
+  -- action using values.sx etc --
+end
+\stoptyping
+
+Although one can make complex definitions this way, the question remains if it
+is a better approach than passing \LUA\ tables. The standard \CONTEXT\ way for
+controlling features is:
+
+\starttyping
+\getmatrix[sx=1.2,sy=3.4]
+\stoptyping
+
+So it doesn't matter much if deep down we see:
+
+\starttyping
+\def\getmatrix[#1]%
+  {\getparameters[@@matrix][sx=1,sy=1,rx=1,ry=1,#1]%
+   \domatrix
+     \@@matrixsx
+     \@@matrixsy
+     \@@matrixrx
+     \@@matrixry
+   \relax}
+\stoptyping
+
+or:
+
+\starttyping
+\def\getmatrix[#1]%
+  {\getparameters[@@matrix][sx=1,sy=1,rx=1,ry=1,#1]%
+   \domatrix
+     sx \@@matrixsx
+     sy \@@matrixsy
+     rx \@@matrixrx
+     ry \@@matrixry
+   \relax}
+\stoptyping
+
+In the second variant (with keywords) can be a scanner like we defined before:
+
+\starttyping
+\def\domatrix#1#2#3#4%
+  {\directlua{getmatrix()}}
+\stoptyping
+
+but also:
+
+\starttyping
+\def\domatrix#1#2#3#4%
+  {\directlua{getmatrix(#1,#2,#3,#4)}}
+\stoptyping
+
+given:
+
+\starttyping
+function getmatrix(sx,sy,rx,ry)
+    -- action using sx etc --
+end
+\stoptyping
+
+or maybe nicer:
+
+\starttyping
+\def\domatrix#1#2#3#4%
+  {\directlua{domatrix{
+     sx = #1,
+     sy = #2,
+     rx = #3,
+     ry = #4
+   }}}
+\stoptyping
+
+assuming:
+
+\starttyping
+function getmatrix(values)
+    -- action using values.sx etc --
+end
+\stoptyping
+
+If you go for speed the scanner variant without keywords is the most efficient
+one. For readability the scanner variant with keywords or the last shown example
+where a table is passed is better. For flexibility the table variant is best as
+it makes no assumptions about the scanner \emdash\ the token scanner can quit on
+unknown keys, unless that is intercepted of course. But as mentioned before, even
+the advantage of the fast one should not be overestimated. When you trace usage
+it can be that the (in this case matrix) macro is called only a few thousand
+times and that doesn't really add up. Of course many different sped-up calls can
+make a difference but then one really needs to optimize consistently the whole
+code base and that can conflict with readability. The token library presents us
+with a nice chicken||egg problem but nevertheless is fun to play with.
+
+\stopsection
+
+\startsection[title=Assigning meanings]
+
+The token library also provides a way to create tokens and access properties but
+that interface can change with upcoming versions when the old library is replaced
+by the new one and the input handling is cleaned up. One experimental function is
+worth mentioning:
+
+\starttyping
+token.set_macro("foo","the meaning of bar")
+\stoptyping
+
+This will turn the given string into tokens that get assigned to \type {\foo}.
+Here are some alternative calls:
+
+\starttabulate
+\NC \type {set_macro("foo")}                    \NC \type { \def \foo {}}        \NC \NR
+\NC \type {set_macro("foo","meaning")}          \NC \type { \def \foo {meaning}} \NC \NR
+\NC \type {set_macro("foo","meaning","global")} \NC \type {\gdef \foo {meaning}} \NC \NR
+\stoptabulate
+
+The conversion to tokens happens under the current catcode regime. You can
+enforce a different regime by passing a number of an allocated catcode table as
+the first argument, as with \type {tex.print}. As we mentioned performance
+before: setting at the \LUA\ end like this:
+
+\starttyping
+token.set_macro("foo","meaning")
+\stoptyping
+
+is about two times as fast as:
+
+\starttyping
+tex.sprint("\\def\\foo{meaning}")
+\stoptyping
+
+or (with slightly more overhead) in \CONTEXT\ terms:
+
+\starttyping
+context("\\def\\foo{meaning}")
+\stoptyping
+
+The next variant is actually slower (even when we alias \type {setvalue}):
+
+\starttyping
+context.setvalue("foo","meaning")
+\stoptyping
+
+but although 0.4 versus 0.8 seconds looks like a lot on a \TEX\ run I need a
+million calls to see such a difference, and a million macro definitions during a
+run is a lot. The different assignments involved in, for instance, 3000 entries
+in a bibliography (with an average of 5 assignments per entry) can hardly be
+measured as we're talking about milliseconds. So again, it's mostly a matter of
+convenience when using this function, not a necessity.
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+For sure we will see usage of the new scanner code in \CONTEXT, but to what
+extent remains to be seen. The performance gain is not impressive enough to
+justify many changes to the code but as the low|-|level interfacing can sometimes
+become a bit cleaner it will be used in specific places, even if we sacrifice
+some speed (which then probably will be compensated for by a little gain
+elsewhere).
+
+The scanners will probably never be used by users directly simply because there
+are no such low level interfaces in \CONTEXT\ and because manipulating input is
+easier in \LUA. Even deep down in the internals of \CONTEXT\ we will use wrappers
+and additional helpers around the scanner code. Of course there is the fun-factor
+and playing with these scanners is fun indeed. The macro setters have as their
+main benefit that using them can be nicer in the \LUA\ source, and of course
+setting a macro this way is also conceptually cleaner (just like we can set
+registers).
+
+Of course there are some challenges left, like determining if we are scanning
+input of already converted tokens (for instance in a macro body or token\-list
+expansion). Once we can properly feed back tokens we can also look ahead like
+\type {\futurelet} does. But for that to happen we will first clean up the
+\LUATEX\ input scanner code and error handler.
+
+\stopsection
+
+\stopchapter
+
+\stoptext
+

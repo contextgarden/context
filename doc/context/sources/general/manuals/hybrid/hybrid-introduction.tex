@@ -1,0 +1,152 @@
+% language=uk
+
+\startcomponent hybrid-languages
+
+\environment hybrid-environment
+
+\startchapter[title={Introduction}]
+
+We're halfway the development of \LUATEX\ (mid 2009) and substantial parts of
+\CONTEXT\ have been rewritten using a mixture of \LUA\ and \TEX. In another
+document, \quotation {\CONTEXT\ \MKII--\MKIV, the history of \LUATEX\
+2006--2009}, we have kept track of how both systems evolved so far\footnote
+{Parts of this have been published in usergroup magazines like the \MAPS,
+\TUGBOAT, and conference proceedings of \EUROTEX\ and \TUG.}. Here we continue
+that story which eventually will end with both systems being stable and more of
+less complete in their basic features.
+
+The title of this document needs some explanation, although the symbols on the
+cover might give a clue already. In \CONTEXT\ \MKIV, as it is now, we mix several
+languages:
+
+\startitemize[packed]
+\startitem
+    good old \TEX: here you will see \type {{}} all over the place
+\stopitem
+\startitem
+    fancy \METAPOST: there we use quite some \type {()}
+\stopitem
+\startitem
+    lean and mean \LUA: both \type{{}} and \type {()} show up a lot there
+\stopitem
+\startitem
+    unreadable but handy \XML: immediately recognizable by the use of \type {<>}
+\stopitem
+\stopitemize
+
+As we use all of them mixed, you can consider \MKIV\ to be a hybrid system and
+just as with hybrid cars, efficiency is part of the concept.
+
+% copied from chrt-xml.tex
+
+\startFLOWchart[conversion 10]
+  \startFLOWcell
+    \name       {TEX}
+    \location   {2,1}
+    \shape      {action}
+    \text       {\TEX}
+    \connection [b+l] {CONTEXT}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {XML}
+    \location   {1,2}
+    \shape      {action}
+    \text       {XML}
+    \connection [rl] {CONTEXT}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {METAPOST}
+    \location   {2,3}
+    \shape      {action}
+    \text       {\METAPOST}
+    \connection [t-l] {CONTEXT}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {CONTEXT}
+    \location   {3,2}
+    \shape      {action}
+    \text       {\ConTeXt}
+    \connection [rl] {PDF}
+    \connection [-b-t] {UTILITIES}
+    \connection [-t-b] {LUA}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {PDF}
+    \location   {4,2}
+    \shape      {action}
+    \text       {PDF}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {UTILITIES}
+    \location   {3,3}
+    \shape      {action}
+    \text       {UTILITIES}
+    \connection [+t+b] {CONTEXT}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {LUA}
+    \location   {3,1}
+    \shape      {action}
+    \text       {LUA}
+    \connection [+b+t] {CONTEXT}
+  \stopFLOWcell
+\stopFLOWchart
+
+\startlinecorrection[big]
+\FLOWchart[conversion 10]
+\stoplinecorrection
+
+In this graphic we've given \LUA\ a somewhat different place than the other three
+languages. First of all we have \LUA\ inside \TEX, which is kind of hidden, but
+at the same time we can use \LUA\ to provide whatever extra features we need,
+especially when we've reached the state where we can load libraries. In a similar
+fashion we have utilities (now all written in \LUA) that can manage your workflow
+or aspects of a run (the \type {mtxrun} script plays a central role in this).
+
+The mentioned history document was (and still is) a rather good testcase for
+\LUATEX\ and \MKIV. We explore some new features and load a lot of fonts, some
+really large. This document will also serve that purpose. This is one of the
+reasons why we have turned on grid snapping (and occasionally some tracing).
+
+Keeping track of the history of \LUATEX\ and \MKIV\ in a document serves several
+purposes. Of course it shows what has been done. It also serves as a reminder of
+why it was done that way. As mentioned it serves as test, both in functionality
+and performance, and as such it's always one of the first documents we run after
+a change in the code. Most of all this document serves as an extension to my
+limited memory. When I look at my source code I often can remember when and why
+it was done that way at that time. However, writing it down more explicitly helps
+me to remember more and might help users to get some insight in the developments
+and decisions made. \footnote {I read a lot and regret that I forget most of what
+I read so fast. I might as well forget what I wrote so have some patience with me
+as I repeat myself occasionally.}
+
+A couple of new features were added to \LUATEX\ in 2010 but the years 2011 and
+2012 were mostly spent on fixing issues and reaching a stable state. In parallel
+parts of \CONTEXT\ were rewritten using \LUA\ and new possibilities have been
+explored. Indeed \LUATEX\ had become pretty stable, especially because we used it
+in production. There are still a lot of things on the agenda but with \LUATEX\
+0.75 we have reached yet another milestone: integration of \LUA\ 5.2, exploration
+of \LUAJIT, and the move forward to a version of \METAPOST\ that supports doubles
+as numeric type. Luigi Scarso and I also started the SwigLib project that will
+make the use of external libraries more easy.
+
+Of course, although I wrote most of the text, this document is as much a
+reflection of what Taco Hoekwater and Hartmut Henkel come up with, but all errors
+you find here are definitely mine. Some chapters have been published in \TUGBOAT,
+the \MAPS\ and other usergroup journals. Some chapters have become manuals, like
+the one on spreadsheets. I also owe thanks to the \CONTEXT\ community and those
+active on the mailing list: it's a real pleasure to see how fast new features are
+picked up and how willing to test users are when new betas show up.
+
+\blank
+
+Hans Hagen, Hasselt NL,\crlf September 2009 \emdash\ December 2012
+
+\blank
+
+\type {http://www.luatex.org}\crlf
+\type {http://www.pragma-ade.com}
+
+\stopchapter
+
+\stopcomponent

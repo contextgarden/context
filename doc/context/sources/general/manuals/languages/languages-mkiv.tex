@@ -1,0 +1,61 @@
+% language=uk
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+
+\enablemode[simple] % ,oversized
+
+\startbuffer[abstract]
+
+    This book explains how we support languages (and scripts) in \CONTEXT\ \MKIV\
+    and \LUATEX. Some of the mechanisms discussed are generic and not \CONTEXT\
+    specific. We discuss the way languages are dealt with in the engine,
+    hyphenation, standard features and additional goodies. Tracing and the
+    extensibility of code are also discussed.
+
+\stopbuffer
+
+\environment languages-environment
+
+\startdocument
+  [author=Hans Hagen,
+   title=Languages in \ConTeXt,
+   subtitle=explaining luatex and mkiv,
+   affiliation=PRAGMA ADE,
+   comment=work in progress,
+   cover:color:1=darkmagenta,
+   cover:color:2=darkorange,
+   cover:color:3=darkyellow,
+   cover:color:4=darkcyan,
+   cover:color:5=darkgray]
+
+    \startfrontmatter
+        \component manuals-explaining-contents
+        \component languages-introduction
+    \stopfrontmatter
+
+    \startbodymatter
+        \component languages-basics
+        \component languages-hyphenation
+        \component languages-labels
+        \component languages-numbering
+        \component languages-typesetting
+        \component languages-goodies
+        \component languages-sorting
+    \stopbodymatter
+
+    \startappendices
+        \component languages-appendix
+    \stopappendices
+
+\stopdocument

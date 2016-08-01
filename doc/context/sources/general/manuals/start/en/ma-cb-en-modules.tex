@@ -1,0 +1,45 @@
+\startcomponent ma-cb-en-modules
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Using modules]
+
+%% VZ: many new modules was added (see ma-cb-cz-modules.tex)
+
+\index{module}
+
+\Command{\tex{usemodule}}
+
+For reasons of efficiency \CONTEXT\ comes with a number of modules that contain
+specific functionality. Loading a module is done in the set up area of your input
+file by means of:
+
+\shortsetup{usemodule}
+
+When you load a module \CONTEXT\ looks for a file with the following (prefix-)name:
+
+\startitemize[packed]
+\item m-modulename (core module)
+\item p-modulename (private module)
+\item s-modulename (\CONTEXT\ style file)
+\item x-modulename (XML module)
+\item t-modulename (third party module)
+\item modulename
+\stopitemize
+
+A few example core modules are:
+
+\startitemize[packed]
+\item m-fields        (\type{m-fields.mkiv}): for PDF forms
+\item m-morse         (\type{m-morse.mkvi}): for morse
+\item m-spreadsheet   (\type{m-spreadsheet.mkiv}): for spreadsheets
+\item m-visual        (\type{m-visual.mkiv}): for visual debugging
+\item m-zint          (\type{m-zint.mkiv}): for generating bar codes
+\item s-pre-**        (\type{s-pre-**}): for presentations
+\stopitemize
+
+\stopchapter
+
+\stopcomponent

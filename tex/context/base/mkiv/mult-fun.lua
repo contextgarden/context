@@ -30,7 +30,7 @@ return {
         "tcircle", "bcircle", "lcircle", "rcircle",
         "lltriangle", "lrtriangle", "urtriangle", "ultriangle",
         "uptriangle", "downtriangle", "lefttriangle", "righttriangle", "triangle",
-        "smoothed", "cornered", "superellipsed", "randomized", "squeezed", "enlonged", "shortened",
+        "smoothed", "cornered", "superellipsed", "randomized", "randomizedcontrols", "squeezed", "enlonged", "shortened",
         "punked", "curved", "unspiked", "simplified", "blownup", "stretched",
         "enlarged", "leftenlarged", "topenlarged", "rightenlarged", "bottomenlarged",
         "crossed", "laddered", "randomshifted", "interpolated", "paralleled", "cutends", "peepholed",

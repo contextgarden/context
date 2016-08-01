@@ -1,0 +1,60 @@
+\setupbodyfont[dejavu]
+
+\starttext
+
+\dontcomplain
+
+\startluacode
+    if jit then
+        jit.on()
+        jit.off()
+    end
+\stopluacode
+
+\startluacode
+    statistics.starttiming()
+\stopluacode
+
+\startbuffer
+    \margintext{test} test test
+
+    \startitemize[a]
+        \startitem test \stopitem
+        \startitem test \stopitem
+        \startitem test \stopitem
+        \startitem test \stopitem
+    \stopitemize
+
+    \startxtable
+        \startxrow
+            \startxcell test \stopxcell
+            \startxcell test \stopxcell
+            \startxcell test \stopxcell
+        \stopxrow
+        \startxrow
+            \startxcell test \stopxcell
+            \startxcell test \stopxcell
+            \startxcell test \stopxcell
+        \stopxrow
+    \stopxtable
+\stopbuffer
+
+\dorecurse {25} {
+    \startchapter[title=Test #1]
+        \dorecurse {25} {
+            \startsection[title=Test #1]
+                \getbuffer
+            \stopsection
+        }
+    \stopchapter
+}
+
+\page
+
+\startluacode
+    statistics.stoptiming()
+    context(statistics.elapsedtime())
+\stopluacode
+
+\stoptext
+

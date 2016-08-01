@@ -1,0 +1,1024 @@
+% language=uk
+
+\usemodule[fnt-23]
+\usemodule[fnt-25]
+
+\startcomponent mk-math
+
+\environment mk-environment
+
+\chapter{Unicode math}
+
+{\em I assume that the reader is somewhat familiar with math in
+\TEX. Although in \CONTEXT\ we try to support the concepts and
+symbols used in the \TEX\ community we have our own way of
+implementing math. The fact that \CONTEXT\ is not used extensively
+for conventional math journals permits us to rigourously
+re|-|implement mechanisms. Of course the user interfaces mostly
+remain the same.}
+
+\subject{introduction}
+
+The \LUATEX\ project entered a new stage when end of 2008 and
+beginning of 2009 math got opened up. Although \TEX\ can handle
+math pretty good we had a few wishes that we hoped to fulfill in
+the process. That \TEX's math machinery is a rather independent
+subsystem is reflected in the fact that after parsing there is an
+intermediate list of so called noads (math elements), which then
+gets converted into a node list (glyphs, kerns, penalties, glue and
+more). This conversion can be intercepted by a callback and a
+macro package can do whatever it likes with the list of noads as
+long as it returns a proper list.
+
+Of course \CONTEXT\ does support math and that is visible in its
+code base:
+
+\startitemize
+
+\item Due to the fact that we need to be able to switch to
+alternative styles the font system is quite complex and in
+\CONTEXT\ \MKII\ math font definitions (and changes) are good for
+50\% of the time involved. In \MKIV\ we can use a more efficient
+model.
+
+\item Because some usage of \CONTEXT\ demands the mix of several
+completely different encoded math fonts there is a dedicated math
+encoding subsystem in \MKII. In \MKIV\ we will use \UNICODE\
+exclusively.
+
+\item Some constructs (and symbols) are implemented in a way that
+we find suboptimal. In the perspective of \UNICODE\ in \MKIV\ we
+aim at all symbols being real characters. This is possible because
+all important constructs (like roots, accents and delimiters) are
+supported by the engine.
+
+\item In order to fit vertical spacing around math (think for
+instance of typesetting on a grid) in \MKII\ we have ended up with
+rather messy and suboptimal code. \footnote {This is because
+spacing before and after formulas has to cooperate with spacing of
+structural components that surround it.} The expectation is that
+we can improve that.
+
+\stopitemize
+
+In the following sections I will discuss a few of the
+implementation details of the font related issues in \MKIV. Of
+course a few years from now the actual solutions we implemented
+might look different but the principles remain the same. Also, as
+with other components of \LUATEX\ Taco and I worked in parallel on
+the code and its usage, which made both our tasks easier.
+
+\subject{transition}
+
+In \TEX, math typesetting uses a special concept called families.
+Each math component (number, letter, symbol, etc) is member of a
+family. Because we have three sizes (text, script and
+scriptscript) this results in a family||size matrix of defined
+fonts. Because the number of glyphs in a font was limited to 256,
+in practice it meant that we had quite some font definitions. The
+minimum number of families was~4 (roman, italic, symbol, and
+extension) but in practice several more could be active (sans,
+bold, mono|-|spaced, more symbols, etc.) for specific alphabets or
+extra symbols (for instance \AMS\ set A and B). The total number
+of families in traditional \TEX\ is limited to 16, and one easily
+hits this maximum. In that case, some 16 times 3 fonts are defined
+for one size of which in practice only a few are really used in the
+typesetting.
+
+A potential source of confusion is bold math. Bold in math can
+either mean having some bold letters, or having the whole formula
+in bold. In practice this means that for a complete bold formula
+one has to define the whole lot using bold fonts. A complication
+is that the math symbols (etc) are kind of bound to families and
+so we end up with either redefining symbols, or reusing the
+families (which is easier and faster). In any case there is a
+performance issue involved due to the rather massive switch from
+normal to bold.
+
+In \UNICODE\ all alphabets that make sense as well as all math
+symbols are part of the definition although unfortunately some
+alphabets have their letters spread over the \UNICODE\ vector and
+not in a range (like blackboard). This forces all applications
+that want to support math to implement similar hacks to deal with
+it.
+
+In \MKIV\ we will assume that we have \UNICODE\ aware math fonts,
+like \OPENTYPE. The font that sets the standard is Microsoft
+Cambria. The upcoming (I'm writing this in January 2009) \TEX Gyre
+fonts will be compliant to this standard but they're not yet there
+and so we have a problem. The way out is to define virtual fonts
+and now that \LUATEX\ math is extended to cover all of \UNICODE\
+as well as provides access to the (intermediate) math lists this
+has become feasible. This also permits us to test \LUATEX\
+with both Cambria and Latin Modern Virtual Math.
+
+The advantage is that we can stick to just one family for all
+shapes which simplifies the underlying \TEX\ code enormously.
+First of all we need to define way less fonts (which is partially
+compensated by loading them as part of the virtual font) and all
+math aspects can now be dealt with using the character data
+tables.
+
+One tricky aspect of the new approach is that the Latin Modern
+fonts have design sizes, so we have to define several virtual
+fonts. On the other hand, fonts like Cambria have alternative
+script and scriptscript shapes which is controlled by the \type
+{ssty} feature, a gsub alternate that provides some alternative
+sizes for a couple of hundred characters that matter.
+
+\starttabulate[|l|l|l|]
+\NC text         \NC \type {lmmi12 at 12pt} \NC \type {cambria at 12pt with ssty=no} \NC \NR
+\NC script       \NC \type {lmmi8  at  8pt} \NC \type {cambria at  8pt with ssty=1}  \NC \NR
+\NC scriptscript \NC \type {lmmi6  at  6pt} \NC \type {cambria at  6pt with ssty=2}  \NC \NR
+\stoptabulate
+
+So Cambria not so much has design sizes but shapes optimized
+relative to the text variant: in the following example we see text
+in red, script in green and scriptscript in blue.
+
+\startbuffer
+\definefontfeature[math][analyze=false,script=math,language=dflt]
+
+\definefontfeature[text]        [math][ssty=no]
+\definefontfeature[script]      [math][ssty=1]
+\definefontfeature[scriptscript][math][ssty=2]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Let us first look at Cambria:
+
+\startbuffer
+\startoverlay
+    {\definedfont[name:cambriamath*scriptscript at 150pt]\mkblue  X}
+    {\definedfont[name:cambriamath*script       at 150pt]\mkgreen X}
+    {\definedfont[name:cambriamath*text         at 150pt]\mkred   X}
+\stopoverlay
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+When we compare them scaled down as happens in real script and
+scriptscript we get:
+
+\startbuffer
+\startoverlay
+    {\definedfont[name:cambriamath*scriptscript at 120pt]\mkblue  X}
+    {\definedfont[name:cambriamath*script       at  80pt]\mkgreen X}
+    {\definedfont[name:cambriamath*text         at  60pt]\mkred   X}
+\stopoverlay
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+Next we see (scaled) Latin Modern:
+
+\startbuffer
+\startoverlay
+    {\definedfont[LMRoman8-Regular  at 150pt]\mkblue  X}
+    {\definedfont[LMRoman10-Regular at 150pt]\mkgreen X}
+    {\definedfont[LMRoman12-Regular at 150pt]\mkred   X}
+\stopoverlay
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+In practice we will see:
+
+\startbuffer
+\startoverlay
+    {\definedfont[LMRoman8-Regular  at 120pt]\mkblue  X}
+    {\definedfont[LMRoman10-Regular at  80pt]\mkgreen X}
+    {\definedfont[LMRoman12-Regular at  60pt]\mkred   X}
+\stopoverlay
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \stoplinecorrection
+
+Both methods probably work out well although you need to keep in
+mind that the \OPENTYPE\ \type {ssty} feature is not so much a
+design size related feature.
+
+An \OPENTYPE\ font can have a specification for the script and
+scriptscript size. By default we listen to this specification instead
+of the one imposed by the bodyfont environment. When you turn on
+tracing
+
+\starttyping
+\enabletrackers[otf.math]
+\stoptyping
+
+you will get messages like:
+
+\starttyping
+asked scriptscript size: 458752, used: 471859.2 (102.86 %)
+asked script size: 589824, used: 574095.36 (97.33 %)
+\stoptyping
+
+The differences between the defaults and the font recommendations
+are not that large so by default we listen to the font specification.
+
+\usetypescript[cambria] \start \setupbodyfont[cambria] \stop
+
+\definefontfeature[math-script]      [math-script]      [mathsize=no]
+\definefontfeature[math-scriptscript][math-scriptscript][mathsize=no]
+
+\definetypeface [cambria-ns] [rm] [serif] [cambria] [default]
+\definetypeface [cambria-ns] [tt] [mono]  [modern]  [default]
+\definetypeface [cambria-ns] [mm] [math]  [cambria] [default]
+
+\usetypescript[cambria-ns] \start \setupbodyfont[cambria-ns] \stop
+
+\startlinecorrection
+\scale
+  [width=\textwidth]
+  {\backgroundline
+     [darkgray]
+     {\startoverlay
+       {\white\switchtobodyfont   [cambria]$\sum_{i=0}^n$}
+       {\mkred\switchtobodyfont[cambria-ns]$\sum_{i=0}^n$}
+     \stopoverlay
+     \startoverlay
+       {\white\switchtobodyfont   [cambria]$\int_{i=0}^n$}
+       {\mkred\switchtobodyfont[cambria-ns]$\int_{i=0}^n$}
+     \stopoverlay
+     \startoverlay
+       {\white\switchtobodyfont   [cambria]$\log_{i=0}^n$}
+       {\mkred\switchtobodyfont[cambria-ns]$\log_{i=0}^n$}
+     \stopoverlay
+     \startoverlay
+       {\white\switchtobodyfont   [cambria]$\cos_{i=0}^n$}
+       {\mkred\switchtobodyfont[cambria-ns]$\cos_{i=0}^n$}
+     \stopoverlay
+     \startoverlay
+       {\white\switchtobodyfont   [cambria]$\prod_{i=0}^n$}
+       {\mkred\switchtobodyfont[cambria-ns]$\prod_{i=0}^n$}
+     \stopoverlay}}
+\stoplinecorrection
+
+\definefontfeature[math-script]      [math-script]      [mathsize=yes]
+\definefontfeature[math-scriptscript][math-scriptscript][mathsize=yes]
+
+In this overlay the white text is scaled according to the
+specification in the font, while the red text is scaled according
+to the bodyfont environment (12/7/5 points).
+
+\subject{going virtual}
+
+The number of math fonts (used) in the \TEX\ community is
+relatively small and of those only Latin Modern (which builds upon
+Computer Modern) has design sizes. This means that the amount of
+\UNICODE\ compliant virtual math fonts that we have to make is not
+that large. We could have used an already present virtual
+composition mechanism but instead we made a handy helper function
+that does a more efficient job. This means that a definition looks
+(a bit simplified) as follows:
+
+\starttyping
+mathematics.make_font ( "lmroman10-math", {
+  { name="lmroman10-regular", features="virtualmath", main=true },
+  { name="lmmi10", vector="tex-mi", skewchar=0x7F },
+  { name="lmsy10", vector="tex-sy", skewchar=0x30, parameters=true } ,
+  { name="lmex10", vector="tex-ex", extension=true } ,
+  { name="msam10", vector="tex-ma" },
+  { name="msbm10", vector="tex-mb" },
+  { name="lmroman10-bold", "tex-bf" } ,
+  { name="lmmib10", vector="tex-bi", skewchar=0x7F } ,
+  { name="lmsans10-regular", vector="tex-ss", optional=true },
+  { name="lmmono10-regular", vector="tex-tt", optional=true },
+} )
+\stoptyping
+
+For the \TEX Gyre Pagella it looks this way:
+
+\starttyping
+mathematics.make_font ( "px-math", {
+  { name="texgyrepagella-regular", features="virtualmath", main=true },
+  { name="pxr", vector="tex-mr" } ,
+  { name="pxmi", vector="tex-mi", skewchar=0x7F },
+  { name="pxsy", vector="tex-sy", skewchar=0x30, parameters=true } ,
+  { name="pxex", vector="tex-ex", extension=true } ,
+  { name="pxsya", vector="tex-ma" },
+  { name="pxsyb", vector="tex-mb" },
+} )
+\stoptyping
+
+As you can see, it is possible to add alphabets, given that there is
+a suitable vector that maps glyph indices onto \UNICODE s. It is good
+to know that this function only defines the way such a font is
+constructed. The actual construction is delayed till the font is
+needed.
+
+Such a virtual font is used in typescripts (the building blocks of
+typeface definitions in \CONTEXT) as follows:
+
+\starttyping
+\starttypescript [math] [palatino] [name]
+  \definefontsynonym [MathRoman] [pxmath@px-math]
+  \loadmapfile[original-youngryu-px.map]
+\stoptypescript
+\stoptyping
+
+If you're familiar with the way fonts are defined in \CONTEXT, you will
+notice that we no longer need to define MathItalic, MathSymbol and
+additional symbol fonts. Of course users don't have to deal with
+these issues themselves. The \type {@} triggers the virtual
+font builder.
+
+You can imagine that in \MKII\ switching to another font style or size
+involves initializing (or at least checking) involves some 30 to 40
+font definitions when it comes to math (the number of used
+families times 3, the number o fmath sizes.). And even if we take
+into account that fonts are loaded only once, this checking and
+enabling takes time. Keep in mind that in \CONTEXT\ we can have
+several math font sets active in one document which comes at a
+price.
+
+In \MKIV\ we use one family (at three sizes). Of course we need to
+load the font (and more than one in the case of virtual variants)
+but when switching bodyfont sizes we only need to enable one
+(already defined) math font. And that really saves time. This is
+one of the areas where we gain back time that we loose elsewhere
+by extending core functionality using \LUA\ (like \OPENTYPE\
+support).
+
+\subject{dimensions}
+
+By setting font related dimensions you can control the way \TEX\
+positions math elements relative to each other. Math fonts have a
+few more dimensions than regular text fonts. But \OPENTYPE\ math
+fonts like Cambria have quite some more. There is a nice booklet
+published by Microsoft, \quote {Mathematical Typesetting}, where
+dealing with math is discussed in the perspective of their word
+processor and \TEX. In the booklet some of the parameters are
+discussed and since many of them are rather special it makes no
+sense (yet) to elaborate on them here. \footnote {Googling on
+\quote {Ulrich Vieth}, \quote {TeX} and \quote {conferences} might
+give you some hits on articles on these matters.} Figuring out
+their meaning was quite a challenge.
+
+I am the first to admit that the current code in \MKIV\ that deals
+with math parameters is somewhat messy. There are several reasons
+for this:
+
+\startitemize[packed]
+\item We can pass parameters as \type {MathConstants} table in the
+      \TFM\ table that we pass to the core engine.
+\item We can use some named parameters, like \type {x_height} and
+      pass those in the \type {parameters} table.
+\item We can use the traditional font dimension numbers in the
+      \type {parameters} table, but since they overlap for symbol and
+      extensible fonts, that is asking for troubles.
+\stopitemize
+
+Because in \MKIV\ we create virtual fonts at run|-|time and use just
+one family, we fill the \type {MathConstants} table for
+traditional fonts as well. Future versions may use the upcoming
+mechanisms of font parameter sets at the macro level. These can be
+defined for each of the sizes (display, text, script and
+scriptscript, and the last three in cramped form as well) but
+since a font only carries one set, we currently use a compromise.
+
+\subject{tracing}
+
+One of the nice aspects of the opened up math machinery is that it
+permits us to get a more detailed look at what happens. It also
+fits nicely in the way we always want to visualize things in
+\CONTEXT\ using color, although most users are probably unaware of
+many such features because they don't need them as I do.
+
+\startbuffer
+\enabletrackers[math.analyzing]
+\ruledhbox{$a = \sqrt{b^2 + \sin{c} - {1 \over \gamma}}$}
+\disabletrackers[math.analyzing]
+\stopbuffer
+
+\typebuffer \startbaselinecorrection \getbuffer \stopbaselinecorrection
+
+This tracker option colors characters depending on their nature and the
+fact that they are remapped. The tracker also was handy during development
+of \LUATEX\ especially for checking if attributes migrated right in
+constructed symbols.
+
+For over a year I had been using a partial \UNICODE\ math
+implementation in some projects but for serious math the vectors
+needed to be completed. In order to help the \quote {math
+department} of the \CONTEXT\ development team (Aditya Mahajan,
+Mojca Miklavec, Taco Hoekwater and myself) we have some extra
+tracing options, like
+
+\startbuffer
+\showmathfontcharacters[list=0x0007B]
+\stopbuffer
+
+\typebuffer
+
+\start \blank \getbuffer \blank \stop
+
+The simple variant with no arguments would have extended this
+document with many pages of such descriptions.
+
+Another handy command (defined in module \type{fnt-25}) is the following:
+
+\starttyping
+\ShowCompleteFont{name:cambria}{9pt}{1}
+\ShowCompleteFont{dummy@lmroman10-math}{10pt}{1}
+\stoptyping
+
+This will for instance for Cambria generate between 50 and 100
+pages of character tables.
+
+\startbuffer[mathtest]
+$abc \bf abc \bi abc$
+$\mathscript abcdefghijklmnopqrstuvwxyz %
+  1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ$
+$\mathfraktur abcdefghijklmnopqrstuvwxyz %
+  1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ$
+$\mathblackboard abcdefghijklmnopqrstuvwxyz %
+  1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ$
+$\mathscript abc IRZ \mathfraktur abc IRZ %
+  \mathblackboard abc IRZ \ss abc IRZ 123$
+\stopbuffer
+
+If you look at the following samples you can imagine how coloring
+the characters and replacements helped figuring out the alphabets
+We use the following input (stored in a buffer):
+
+\typebuffer [mathtest]
+
+For testing Cambria we say:
+
+\starttyping
+\usetypescript[cambria]
+\switchtobodyfont[cambria,11pt]
+\enabletrackers[math.analyzing]
+\getbuffer[mathtest] % the input shown before
+\disabletrackers[math.analyzing]
+\stoptyping
+
+And we get:
+
+\usetypescript[cambria] % global
+
+\startlines
+\switchtobodyfont[cambria,10pt]
+\enabletrackers[math.analyzing]
+\getbuffer[mathtest] % the input shown before
+\disabletrackers[math.analyzing]
+\stoplines
+
+For the virtualized Latin Modern we say:
+
+\starttyping
+\usetypescript[modern]
+\switchtobodyfont[modern,11pt]
+\enabletrackers[math.analyzing]
+\getbuffer[mathtest] % the input shown before
+\disabletrackers[math.analyzing]
+\stoptyping
+
+This gives:
+
+\usetypescript[modern] % global
+
+\startlines
+\switchtobodyfont[modern,11pt]
+\enabletrackers[math.analyzing]
+\getbuffer[mathtest]
+\disabletrackers[math.analyzing]
+\stoplines
+
+These two samples demonstrate that Cambria has a rather complete
+repertoire of shapes which is no surprise because it is a recent
+font that also serves as a showcase for \UNICODE\ and \OPENTYPE\
+driven math.
+
+Commands like \type {\mathscript} sets an attribute. When we post|-|process
+the noad list and encounter this attribute, we remap the characters to
+the desired variant. Of course this happens selectively. So, a capital~A
+(\type {0x0041}) becomes a capital script~A (\type {0x1D49C}). Of course
+this solution is rather \CONTEXT\ specific and there are other ways to
+achieve the same goal (like using more families and switching family).
+
+\subject{special cases}
+
+Because we now are operating in the \UNICODE\ domain, we run into
+problems if we keep defining some of the math symbols in the
+traditional \TEX\ way. Even with the \AMS\ fonts available we
+still end up with some characters that are represented by
+combining others. Take for instance $\neq$ which is composed of
+two characters. Because in \MKIV\ we want to have all
+characters in their pure form we use a virtual replacement for
+them. In \MKIV\ speak it looks like this:
+
+\starttyping
+local function negate(main,unicode,basecode)
+    local characters = main.characters
+    local basechar = characters[basecode]
+    local ht, wd = basechar.height, basechar.width
+    characters[unicode] = {
+        width    = wd,
+        height   = ht,
+        depth    = basechar.depth,
+        italic   = basechar.italic,
+        kerns    = basechar.kerns,
+        commands = {
+            { "slot", 1, basecode },
+            { "push" },
+            { "down",    ht/5},
+            { "right", - wd/2},
+            { "slot", 1, 0x2215 },
+            { "pop" },
+        }
+    }
+end
+\stoptyping
+
+In case you're curious, there are indeed kerns, in this case the
+kerns with the Greek Delta.
+
+Another thing we need to handle is positioning of accents on top
+of slanted (italic) shapes. For this \TEX\ uses a special
+character in its fonts (set with \type{\skewchar}). Any character
+can have in its kerning table a kern towards this special
+character. From this kern we
+can calculate the \type {top_accent} variable that we can pass for
+each character. This variable lives at the same level as \type
+{width}, \type {height}, \type {depth} and \type {italic} and is
+calculated as: $w/2 + k$, so it defines the horizontal anchor. A
+nice side effect is that (in the \CONTEXT\ font management
+subsystem) this saves us passing information associated with
+specific fonts such as the skew character.
+
+A couple of concepts are unique to \TEX, like having \type {\hat}
+and \type {\widehat} where the wide one has sizes. In \OPENTYPE\ and
+\UNICODE\ we don't have this distinction so we need special
+trickery to simulate this. We do so by adding extra code points in
+a private \UNICODE\ space which in return results in them being
+defined automatically and the relevant first size variant being
+used for \type {\hat}. For some users this might still be too wide
+but at least it's better than a wrongly positioned \ASCII\ variant.
+In the future we might use this private space for similar cases.
+
+Arrows, horizontal extenders and radicals also fall in the
+category \quote {troublesome} if only because they use special
+dimensions to get the desired effect. Fortunately \OPENTYPE\ math
+is modeled after \TEX, so in \LUATEX\ we introduce a couple
+of new constructs to deal with this. One such simplification at
+the macro level is in the definition of \type {\root}. Here we use
+the new \type {\Uroot} primitive. The placement related parameters
+are those used by traditional \TEX, but when they are available the
+\OPENTYPE\ parameters are applied. The simplified
+plain definitions are now:
+
+\starttyping
+\def\rootradical{\Uroot 0 "221A }
+
+\def\root#1\of{\rootradical{#1}}
+
+\def\sqrt{\rootradical{}}
+\stoptyping
+
+The successive sizes of the root will be taken from the font in the
+same way as traditional \TEX\ does it. In that sense \LUATEX\ is no
+doing anything differently, it only has more parameters to control
+the process. The definition of \type {\sqrt} in \CONTEXT\ permits
+an optional first argument that sets the degree.
+
+\startbuffer
+\showmathfontcharacters[list=0x221A]
+\stopbuffer
+
+\start \blank \getbuffer \blank \stop
+
+Note that we've collected all characters in family~0 (simply
+because that is what \TEX\ defaults characters to) and that we use
+the formal \UNICODE\ slots. When we use the Latin Modern fonts we
+just remap traditional slots to the right ones.
+
+Another neat trick is used when users choose among the bigger variants
+of some characters. The traditional approach is to create a box of a
+certain size and create a fake delimited variant which is then used.
+
+\starttyping
+\definemathcommand [big]  {\choosemathbig\plusone  }
+\definemathcommand [Big]  {\choosemathbig\plustwo  }
+\definemathcommand [bigg] {\choosemathbig\plusthree}
+\definemathcommand [Bigg] {\choosemathbig\plusfour }
+\stoptyping
+
+Of course this can become a primitive operation and we might decide
+to add such a primitive later on so we won't bother you with more
+details.
+
+Attributes are also used to make live easier for authors who have
+to enter lots of pairs. Compare:
+
+\startbuffer
+\setupmathematics[autopunctuation=no]
+
+$ (a,b) = (1.20,3.40) $
+\stopbuffer
+
+\typebuffer \begingroup \getbuffer \endgroup
+
+with:
+
+\startbuffer
+\setupmathematics[autopunctuation=yes]
+
+$ (a,b) = (1.20,3.40) $
+\stopbuffer
+
+\typebuffer \begingroup \getbuffer \endgroup
+
+So we don't need to use this any more:
+
+\starttyping
+$ (a{,}b) = (1{.}20{,}3{.}40) $
+\stoptyping
+
+Features like this are implemented on top of an experimental math
+manipulation framework that is part of \MKIV. When the math
+font system is stable we will rework the rest of math support
+and implement additional manipulating frameworks.
+
+\subject{control}
+
+As with all other character related issues, in \MKIV\ everything
+is driven by a character table (consider it a database).
+Quite some effort went into getting that one right and although by
+now math is represented well, more data will be added in due time.
+
+In \MKIV\ we no longer have huge lists of \TEX\ definitions for
+math related symbols. Everything is initialized using the mentioned
+table: normal symbols, delimiters, radicals, whether or not with name.
+Take for instance the square root:
+
+\start \blank \showmathfontcharacters[list=0x221A] \blank \stop
+
+
+Its entry is:
+
+\starttyping
+[0x221A] = {
+    adobename = "radical",
+    category = "sm",
+    cjkwd = "a",
+    description = "SQUARE ROOT",
+    direction = "on",
+    linebreak = "ai",
+    mathclass = "radical",
+    mathname = "surd",
+    unicodeslot = 0x221A,
+}
+\stoptyping
+
+The fraction symbol also comes in sizes. This symbol is not to be
+confused with the negation symbol \type {0x2215}, which in \TEX\ is
+known as \type {\not}).
+
+\start \blank \showmathfontcharacters[list=0x2044] \blank \stop
+
+\starttyping
+[0x2044] = {
+    adobename = "fraction",
+    category = "sm",
+    contextname = "textfraction",
+    description = "FRACTION SLASH",
+    direction = "cs",
+    linebreak = "is",
+    mathspec = {
+        { class = "binary", name = "slash" },
+        { class = "close", name = "solidus" },
+    },
+    unicodeslot = 0x2044,
+}
+\stoptyping
+
+However, since most users don't have this symbol visualized in
+their word processor, they expect the same behaviour from the
+regular slash. This is why we find a reference to the real symbol
+in its definition.
+
+\start \blank \showmathfontcharacters[list=0x002F] \blank \stop
+
+The definition is:
+
+\starttyping
+[0x002F] = {
+    adobename = "slash",
+    category = "po",
+    cjkwd = "na",
+    contextname = "textslash",
+    description = "SOLIDUS",
+    direction = "cs",
+    linebreak = "sy",
+    mathsymbol = 0x2044,
+    unicodeslot = 0x002F,
+}
+\stoptyping
+
+One problem left is that currently we have only one class per
+character (apart from the delimiter and radical usage which have
+their own definitions). Future releases of \CONTEXT\ will provide
+support for math dictionaries (as in \OPENMATH\ and \MATHML~3). At
+that point we will also have a \type {mathdict} entry.
+
+There is another issue with character mappings, one that will
+seldom reveal itself to the user, but might confuse macro writers
+when they see an error message.
+
+In traditional \TEX, and therefore also in the Latin Modern fonts,
+a chain from small to large character goes in two steps: the
+normal size is taken from one family and the larger variants from
+another. The larger variant then has a pointer to an even larger
+one and so on, until there is no larger variant or an extensible
+recipe is found. The default family is number~0. It is for this
+reason that some of the definition primitives expect a small and
+large family part.
+
+However, in order to support \OPENTYPE\ in \LUATEX\ the
+alternative method no longer assumes this split. After all, we no
+longer have a situation where the 256 limit forces us to take the
+smaller variant from one font and the larger sequence from another
+(so we need two family||slot pairs where each family eventually
+resolves to a font).
+
+It is for that reason that the new \type {\U...} primitives expect
+only one family specification: the small symbol, which then has a
+pointer to a larger variant when applicable. However deep down in
+the engine, there is still support for the multiple family
+solution (after all, we don't want to drop compatibility). As a
+result, in error messages you can still find references
+(defaulting to~0) to large specifications, even if you don't use
+them. In that case you can simply ignore the large symbol (0,0),
+since it is not used when the small symbol provides a link.
+
+\subject{extensibles}
+
+In \TEX\ fences can be told to become larger automatically. In
+traditional \TEX\ a character can have a linked list of next
+larger shapes ending in a description of how to compose even
+larger variants.
+
+A parenthesis in Cambria has the following list:
+
+\start
+    \switchtobodyfont[cambria,10pt]
+    \showmathfontcharacters[list=0x00028]
+\stop
+
+In Latin Modern we have:
+
+\start
+    \switchtobodyfont[modern,10pt]
+    \showmathfontcharacters[list=0x00028]
+\stop
+
+Of course \LUATEX\ is downward compatible with respect to this
+feature, but the internal representation is now closer to what
+\OPENTYPE\ math provides (which is not that far from how \TEX\
+works simply because it's inspired by \TEX). Because Cambria has
+different parameters we get slightly different results. In the
+following list of pairs, you see Cambria on the left and Latin
+Modern on the right.
+Both start with stepwise larger shapes, followed by a more gradual
+growth. The thresholds for a next step are driven by parameters
+set in the \OPENTYPE\ font or by \TEX's default.
+
+\start
+\lineskip1ex
+\dostepwiserecurse{5}{140}{5} {
+    \dontleavehmode \ruledhbox \bgroup
+        \setbox0=\vbox{\vss\hbox{\switchtobodyfont[cambria,10pt]$\left\{ \vcenter{\hbox{\darkgray\vrule height \recurselevel pt width 5pt}} \right\}$}\vss}%
+        \setbox2=\vbox{\vss\hbox{\switchtobodyfont[modern, 10pt]$\left\{ \vcenter{\hbox{\darkgray\vrule height \recurselevel pt width 5pt}} \right\}$}\vss}%
+        \ifdim\ht0>\ht2
+            \setbox2\vbox to \htdp0{\vss\box2\vss}%
+        \else
+            \setbox0\vbox to \htdp2{\vss\box0\vss}%
+        \fi
+        \box0\box2
+    \egroup \quad
+}
+\par \stop
+
+In traditional \TEX\ horizontal extensibles are not really present. Accents
+are chosen from a linked list of variants and don't have an extensible
+specification. This is because most such accents grow in two dimensions and
+the only extensible like accents are rules and braces. However, in \UNICODE\
+we have a few more and also because of symmetry we decided to add horizontal
+extensibles too. Take:
+
+\startbuffer
+$ \overbrace {a+1} \underbrace {b+2} \doublebrace {c+3} $ \par
+$ \overparent{a+1} \underparent{b+2} \doubleparent{c+3} $ \par
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\getbuffer
+
+Contrary to Cambria, Latin Modern Math, which is just like
+Computer Modern Math, has no ready overbrace glyphs. Keep in mind
+that in that we're dealing with fonts that have only 256 slots and
+that the traditional font mechanism has the same limitation. For
+this reason, the (extensible) braces are traditionally made from
+snippets as is demonstrated below.
+
+\startbuffer
+\hbox\bgroup
+  \ruledhbox{\getglyph{lmex10}{\char"7A}}
+  \ruledhbox{\getglyph{lmex10}{\char"7B}}
+  \ruledhbox{\getglyph{lmex10}{\char"7C}}
+  \ruledhbox{\getglyph{lmex10}{\char"7D}}
+  \ruledhbox{\getglyph{lmex10}{\char"7A\char"7D\char"7C\char"7B}}
+  \ruledhbox{\getglyph{name:cambriamath}{\char"23DE}}
+  \ruledhbox{\getglyph{lmex10}{\char"7C\char"7B\char"7A\char"7D}}
+  \ruledhbox{\getglyph{name:cambriamath}{\char"23DF}}
+\egroup
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The four snippets have the height and depth of the rule that will
+connect them. Since we want a single interface for all fonts we no
+longer will use macro based solutions. First of all fonts like
+Cambria don't have the snippets, and using active character
+trickery (so that we can adapt the meaning to the font) has no
+preference either. This leaves virtual glyphs.
+
+It took us a bit of experimenting to get the right virtual definition because
+it is a multi||step process:
+
+\startitemize[packed]
+\item The right \UNICODE\ character (\type {0x23DE}) points to a character that has
+      no glyph itself but only horizontal extensibles.
+\item The snippets that make up the extensible don't have the right dimensions
+      (as they define the size of the connecting rule), so we need to make them
+      virtual themselves and give them a size that matches \LUATEX's expectations.
+\item Each virtual snippet contains a reference to the physical snippet and moves
+      it up or down as well as fixes its size.
+\item The second and fifth snippet are actually not real glyphs but rules. The
+      dimensions are derived from the snippets and it is shifted up or down too.
+\stopitemize
+
+You might wonder if this is worth the trouble. Well, it is if you take into
+account that all upcoming math fonts will be organized like Cambria.
+
+\subject{math kerning}
+
+While reading Microsofts orange booklet, it became clear that
+\OPENTYPE\ provides advanced kerning possibilities and we decided
+to put it on the agenda for \LUATEX.
+
+It is possible to define a ladder||like boundary for each corner
+of a character where the ladder more or less follows the shape of
+a character. In theory this means that when we attach a
+superscript to a base character we can use two such ladders to
+determine the optimal spacing between them.
+
+Let's have a look at a few characters, the upright~f and its
+italic cousin.
+
+\startcombination[2*1]
+  {\ShowGlyphShape{name:cambria-math}{40bp}{0x66}}    {U+00066}
+  {\ShowGlyphShape{name:cambria-math}{40bp}{0x1D453}} {0x1D453}
+\stopcombination
+
+The ladders on the right can be used to position a super or
+subscript, that is, they are positioned in the normal way but the
+ladder, as well as the boundingbox and/or left ladders of the
+scripts can be used to fine tune the positioning.
+
+Should we use this information? I made this visualizer for
+checking some Arabic fonts anchoring and cursive features and then
+it made sense to add some of the information related to math as
+well. \footnote {Taco extended the visualizer for his presentation
+at Bachotek 2009 so you might run into variants.} The orange
+booklet shows quite advanced ladders, and when looking at the 3500
+shapes in Cambria, it quickly becomes clear that in practice there
+is not that much detail in the specification. Nevertheless,
+because without this feature the result is not acceptable \LUATEX\
+gracefully supports it.
+
+\usetypescript[cambria-y]
+
+\startbuffer
+$V^a_a V^a V_a V^1_2 V^1 V_2 f^a f_a f^a_a$\par
+$V^f_f V^f V_f V^1_2 V^1 V_2 f^f f_f f^f_f$\par
+$T^a_a T^a T_a T^1_2 T^1 T_2 f^a f_f f^a_f$\par
+$T^f_f T^f T_f T^1_2 T^1 T_2 f^f f_a f^f_a$\par
+\stopbuffer
+
+\startlinecorrection
+\startcombination[3*1]
+    {\framed[align=normal]{\switchtobodyfont[modern]\getbuffer}}    {latin modern}
+    {\framed[align=normal]{\switchtobodyfont[cambria-y]\getbuffer}} {cambria without kerning}
+    {\framed[align=normal]{\switchtobodyfont[cambria]\getbuffer}}   {cambria with kerning}
+\stopcombination
+\stoplinecorrection
+
+% \ShowGlyphShape{name:cambria-math} {40bp}{0x1D43F}
+% \ShowGlyphShape{name:cambria-math}{100bp}{0x1D444}
+% \ShowGlyphShape{name:cambria-math}{100bp}{0x1D447}
+% \ShowGlyphShape{name:cambria-math}{100bp}{0x2112}
+% \ShowGlyphShape{name:cambria-math}{100bp}{0x1D432}
+% \ShowGlyphShape{name:cambria-math}{100bp}{0x1D43D}
+% \ShowGlyphShape{name:cambria-math}{100bp}{0x1D44A}
+% \ShowGlyphShape{name:cambria-math}{100bp}{0x1D45D}
+
+\subject{faking glyphs}
+
+A previous section already discussed virtual shapes. In the
+process of replacing all shapes that lack in Latin Modern and are
+composed from snippets instead we ran into the dots. As they are a
+nice demonstration of something that, although somewhat of a hack,
+survived 30 years without problems we show the definition used in
+\CONTEXT\ \MKII:
+
+% ldots = 2026
+% vdots = 22EE
+% cdots = 22EF
+% ddots = 22F1
+% udots = 22F0
+
+\startbuffer
+\def\PLAINldots{\ldotp\ldotp\ldotp}
+\def\PLAINcdots{\cdotp\cdotp\cdotp}
+
+\def\PLAINvdots
+  {\vbox{\forgetall\baselineskip.4\bodyfontsize\lineskiplimit\zeropoint\kern.6\bodyfontsize\hbox{.}\hbox{.}\hbox{.}}}
+
+\def\PLAINddots
+  {\mkern1mu%
+   \raise.7\bodyfontsize\ruledvbox{\kern.7\bodyfontsize\hbox{.}}%
+   \mkern2mu%
+   \raise.4\bodyfontsize\relax\ruledhbox{.}%
+   \mkern2mu%
+   \raise.1\bodyfontsize\ruledhbox{.}%
+   \mkern1mu}
+\stopbuffer
+
+\getbuffer \typebuffer
+
+This permitted us to say:
+
+\starttyping
+\definemathcommand [ldots] [inner]   {\PLAINldots}
+\definemathcommand [cdots] [inner]   {\PLAINcdots}
+\definemathcommand [vdots] [nothing] {\PLAINvdots}
+\definemathcommand [ddots] [inner]   {\PLAINddots}
+\stoptyping
+
+However, in \MKIV\ we use virtual shapes instead.
+
+\definemathcommand [xldots] [inner]   {\PLAINldots}
+\definemathcommand [xcdots] [inner]   {\PLAINcdots}
+\definemathcommand [xvdots] [nothing] {\PLAINvdots}
+\definemathcommand [xddots] [inner]   {\PLAINddots}
+
+The following lines show the virtual shapes in red. In each
+triplet we see the original, the virtual and the overlaid
+character.
+
+\startlinecorrection
+\switchtobodyfont[modern,17.3pt]%
+\dontleavehmode
+\ruledhbox{$\xldots$}%
+\ruledhbox{$\ldots$}%
+\ruledhbox{\startoverlay{$\xldots$}{$\red\ldots$}\stopoverlay}%
+\quad
+\ruledhbox{$\xcdots$}%
+\ruledhbox{$\cdots$}%
+\ruledhbox{\startoverlay{$\xcdots$}{$\red\cdots$}\stopoverlay}%
+\quad
+\ruledhbox{$\xvdots$}%
+\ruledhbox{$\vdots$}%
+\ruledhbox{\startoverlay{$\xvdots$}{$\red\vdots$}\stopoverlay}%
+\quad
+\ruledhbox{$\xddots$}%
+\ruledhbox{$\ddots$}%
+\ruledhbox{\startoverlay{$\xddots$}{$\red\ddots$}\stopoverlay}%
+\quad
+\ruledhbox{$\xddots$}%
+\ruledhbox{$\udots$}%
+\ruledhbox{\startoverlay{$\xddots$}{$\red\udots$}\stopoverlay}%
+\stoplinecorrection
+
+As you can see here, the virtual variants are rather close to the
+originals. At 12pt there are no real differences but (somehow) at
+other sizes we get slightly different results but it is hardly
+visible. Watch the special spacing above the shapes. It is
+probably needed for getting the spacing right in matrices (where
+they are used).
+
+\stopcomponent

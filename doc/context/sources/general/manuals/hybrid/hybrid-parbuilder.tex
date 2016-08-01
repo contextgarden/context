@@ -1,0 +1,340 @@
+% language=uk
+
+\startcomponent hybrid-parbuilder
+
+\startbuffer[MyAbstract]
+\StartAbstract
+    In this article I will summarize some experiences with converting the \TEX\
+    par builder to \LUA. In due time there will be a plugin mechanism in
+    \CONTEXT, and this is a prelude to that.
+\StopAbstract
+\stopbuffer
+
+\doifmodeelse {tugboat} {
+    \usemodule[tug-01,abr-01]
+    \setvariables
+      [tugboat]
+      [columns=yes]
+    \setvariables
+      [tugboat]
+      [year=2010,
+       volume=99,
+       number=9,
+       page=99]
+    \setvariables
+      [tugboat]
+      [title=Building paragraphs,
+       subtitle=,
+       keywords=,
+       author=Hans Hagen,
+       address=PRAGMA ADE\\Ridderstraat 27\\8061GH Hasselt NL,
+       email=pragma@wxs.nl]
+    %
+    % we use a buffer as abstract themselves are buffers and
+    % inside macros we loose line endings and such
+    \getbuffer[MyAbstract]
+    %
+    \StartArticle
+} {
+    \environment hybrid-environment
+    \startchapter[title={Building paragraphs}]
+}
+
+\startsection [title={Introduction}]
+
+You enter the den of the Lion when you start messing around with the parbuilder.
+Actually, as \TEX\ does a pretty good job on breaking paragraphs into lines I
+never really looked into the code that does it all. However, the Oriental \TEX\
+project kind of forced it upon me. In the chapter about font goodies an optimizer
+is described that works per line. This method is somewhat similar to expansion
+level~one support (hz) in the sense that it acts independent of the par builder:
+the split off (best) lines are postprocessed. Where expansion involves horizontal
+scaling, the goodies approach does with (Arabic) words what the original HZ
+approach does with glyphs.
+
+It would be quite some challenge (at least for me) to come up with solutions that
+look at the whole paragraph and as the per-line approach works quite well, there
+is no real need for an alternative. However, in September 2008, when we were
+exploring solutions for Arabic par building, Taco converted the parbuilder into
+\LUA\ code and stripped away all code related to hyphenation, protrusion,
+expansion, last line fitting, and some more. As we had enough on our plate at
+that time, we never came to really testing it. There was even less reason to
+explore this route because in the Oriental \TEX\ project we decided to follow the
+\quotation {use advanced \OPENTYPE\ features} route which in turn lead to the
+\quote {replace words in lines by narrower of wider variants} approach.
+
+However, as the code was laying around and as we want to explore further I
+decided to pick up the parbuilder thread. In this chapter some experiences will
+be discussed. The following story is as much Taco's as mine.
+
+\stopsection
+
+\startsection [title={Cleaning up}]
+
+In retrospect, we should not have been too surprised that the first approximation
+was broken in many places, and for good reason. The first version of the code was
+a conversion of the \CCODE\ code that in turn was a conversion from the original
+interwoven \PASCAL\ code. That first conversion still looked quite \CCODE||ish
+and carried interesting bit and pieces of \CCODE||macros, \CCODE||like pointer
+tests, interesting magic constants and more.
+
+When I took the code and \LUA-fied it nearly every line was changed and it took
+Taco and me a bit of reverse engineering to sort out all problems (thank you
+Skype). Why was it not an easy task? There are good reasons for this.
+
+\startitemize
+
+\startitem The parbuilder (and related hpacking) code is derived from traditional
+\TEX\ and has bits of \PDFTEX, \ALEPH\ (\OMEGA), and of course \LUATEX. \stopitem
+
+\startitem The advocated approach to extending \TEX\ has been to use change files
+which means that a coder does not see the whole picture. \stopitem
+
+\startitem Originally the code is programmed in the literate way which means that
+the resulting functions are build stepwise. However, the final functions can (and
+have) become quite large. Because \LUATEX\ uses the woven (merged) code indeed we
+have large functions. Of course this relates to the fact that succesive \TEX\
+engines have added functionality. Eventually the source will be webbed again, but
+in a more sequential way. \stopitem
+
+\startitem This is normally no big deal, but the \ALEPH\ (\OMEGA) code has added
+a level of complexity due to directional processing and additional begin and end
+related boxes. \stopitem
+
+\startitem Also the \ETEX\ extension that deals with last line fitting is
+interwoven and uses goto's for the control flow. Fortunately the extensions are
+driven by parameters which make the related code sections easy to recognize.
+\stopitem
+
+\startitem The \PDFTEX\ protrusion extension adds code to glyph handling and
+discretionary handling. The expansion feature does that too and in addition also
+messes around with kerns. Extra parameters are introduced (and adapted) that
+influence the decisions for breaking lines. There is also code originating in
+\PDFTEX\ which deals with poor mans grid snapping although that is quite isolated
+and not interwoven. \stopitem
+
+\startitem Because it uses a slightly different way to deal with hyphenation,
+\LUATEX\ itself also adds some code. \stopitem
+
+\startitem Tracing is sort of interwoven in the code. As it uses goto's to share
+code instead of functions, one needs to keep a good eye on what gets skipped or
+not. \stopitem
+
+\stopitemize
+
+I'm pretty sure that the code that we started with looks quite different from the
+original \TEX\ code if it had been translated into \CCODE. Actually in modern
+\TEX\ compiling involves a translation into \CCODE\ first but the intermediate
+form is not meant for human eyes. As the \LUATEX\ project started from that
+merged code, Taco and Hartmut already spent quite some time on making it more
+readable. Of course the original comments are still there.
+
+Cleaning up such code takes a while. Because both languages are similar but also
+quite different it took some time to get compatible output. Because the \CCODE\
+code uses macros, careful checking was needed. Of course \LUA's table model and
+local variables brought some work as well. And still the code looks a bit
+\CCODE||ish. We could not divert too much from the original model simply because
+it's well documented.
+
+When moving around code redundant tests and orphan code has been removed. Future
+versions (or variants) might as well look much different as I want more hooks,
+clearly split stages, and convert some linked list based mechanism to \LUA\
+tables. On the other hand, as already much code has been written for \CONTEXT\
+\MKIV, making it all reasonable fast was no big deal.
+
+\stopsection
+
+\startsection [title={Expansion}]
+
+The original \CCODE||code related to protrusion and expansion is not that
+efficient as many (redundant) function calls take place in the linebreaker and
+packer. As most work related to fonts is done in the backend, we can simply stick
+to width calculations here. Also, it is no problem at all that we use floating
+point calculations (as \LUA\ has only floats). The final result will look okay as
+the original hpack routine will nicely compensate for rounding errors as it will
+normally distribute the content well enough. We are currently compatible with the
+regular par builder and protrusion code, but expansion gives different results
+(actually not worse).
+
+The \LUA\ hpacker follows a different approach. And let's admit it: most \TEX ies
+won't see the difference anyway. As long as we're cross platform compatible it's
+fine.
+
+It is a well known fact that character expansion slows down the parbuilder. There
+are good reasons for this in the \PDFTEX\ approach. Each glyph and intercharacter
+kern is checked a few times for stretch or shrink using a function call. Also
+each font reference is checked. This is a side effect of the way \PDFTEX\ backend
+works as there each variant has its own font. However, in \LUATEX, we scale
+inline and therefore don't really need the fonts. Even better, we can get rid of
+all that testing and only need to pass the eventual \type {expansion_ratio} so
+that the backend can do the right scaling. We will prototype this in the \LUA\
+version \footnote {For this Hartmuts has adapted the backend code has to honour
+this field in the glyph and kern nodes.} and we feel confident about this
+approach it will be backported into the \CCODE\ code base. So eventually the
+\CCODE\ might become a bit more readable and efficient.
+
+Intercharacter kerning is dealt with in a somewhat strange way. If a kern of
+subtype zero is seen, and if it's neighbours are glyphs from the same font, the
+kern gets replaced by a scaled one looked up in the font's kerning table. In the
+parbuilder no real replacement takes place but as each line ends up in the hpack
+routine (where all work is simply duplicated and done again) it really gets
+replaced there. When discussing the current aproach we decided, that manipulating
+intercharacter kerns while leaving regular spacing untouched, is not really a
+good idea so there will be an extra level of configuration added to \LUATEX:
+\footnote {As I more and more run into books typeset (not by \TEX) with a
+combination of character expansion and additional intercharacter kerning I've
+been seriously thinking of removing support for expansion from \CONTEXT\ \MKIV.
+Not all is progress especially if it can be abused.}
+
+\starttabulate
+\NC 0 \NC no character and kern expansion \NC \NR
+\NC 1 \NC character and kern expansion applied to complete lines \NC \NR
+\NC 2 \NC character and kern expansion as part of the par builder \NC \NR
+\NC 3 \NC only character expansion as part of the par builder (new) \NC \NR
+\stoptabulate
+
+You might wonder what happens when you unbox such a list: the original font
+references have been replaced as were the kerns. However, when repackaged again,
+the kerns are replaced again. In traditional \TEX, indeed rekerning might happen
+when a paragraph is repackaged (as different hyphenation points might be chosen
+and ligature rebuilding etc.\ has taken place) but in \LUATEX\ we have clearly
+separated stages. An interesting side effect of the conversion is that we really
+have to wonder what certain code does and if it's still needed.
+
+\stopsection
+
+\startsection [title={Performance}]
+
+% timeit context ...
+
+We had already noticed that the \LUA\ variant was not that slow. So after the
+first cleanup it was time to do some tests. We used our regular \type {tufte.tex}
+test file. This happens to be a worst case example because each broken line ends
+with a comma or hyphen and these will hang into the margin when protruding is
+enabled. So the solution space is rather large (an example will be shown later).
+
+Here are some timings of the March 26, 2010 version. The test is typeset in a box
+so no shipout takes place. We're talking of 1000 typeset paragraphs. The times
+are in seconds an between parentheses the speed relative to the regular
+parbuilder is mentioned.
+
+\startmode[mkiv]
+
+\startluacode
+    local times = {
+        { 1.6,  8.4,  9.8 }, --  6.7 reported in statistics
+        { 1.7, 14.2, 15.6 }, -- 13.4
+        { 2.3, 11.4, 13.3 }, --  9.5
+        { 2.9, 19.1, 21.5 }, -- 18.2
+    }
+
+    local NC, NR, b, format = context.NC, context.NR, context.bold, string.format
+
+    local function v(i,j)
+        if times[i][j]<10 then   -- This is a hack. The font that we use has no table
+            context.dummydigit() -- digits (tnum) so we need this hack. Not nice anyway.
+        end
+        context.equaldigits(format("%0.01f",times[i][j]))
+        if j > 1 then
+            context.enspace()
+            context.equaldigits(format("(%0.01f)",times[i][j]/times[i][1]))
+        end
+    end
+
+    context.starttabulate { "|l|c|c|c|" }
+        NC()                 NC() b("native") NC() b("lua") NC() b("lua + hpack") NC() NR()
+        NC() b("normal")     NC() v(1,1)      NC() v(1,2)   NC() v(1,3)           NC() NR()
+        NC() b("protruding") NC() v(2,1)      NC() v(2,2)   NC() v(2,3)           NC() NR()
+        NC() b("expansion")  NC() v(3,1)      NC() v(3,2)   NC() v(3,3)           NC() NR()
+        NC() b("both")       NC() v(4,1)      NC() v(4,2)   NC() v(4,3)           NC() NR()
+    context.stoptabulate()
+\stopluacode
+
+\stopmode
+
+\startnotmode[mkiv]
+
+% for the tugboat article
+
+\starttabulate[|l|c|c|c|]
+\NC                \NC \bf native \NC \bf lua    \NC \bf lua + hpack \NC \NR
+\NC \bf normal     \NC 1.6        \NC  8.4 (5.3) \NC  9.8 (6.1)      \NC \NR
+\NC \bf protruding \NC 1.7        \NC 14.2 (8.4) \NC 15.6 (9.2)      \NC \NR
+\NC \bf expansion  \NC 2.3        \NC 11.4 (5.0) \NC 13.3 (5.8)      \NC \NR
+\NC \bf both       \NC 2.9        \NC 19.1 (6.6) \NC 21.5 (7.4)      \NC \NR
+\stoptabulate
+
+\stopnotmode
+
+For a regular paragraph the \LUA\ variant (currently) is 5~times slower and about
+6~times when we use the \LUA\ hpacker, which is not that bad given that it's
+interpreted code and that each access to a field in a node involves a function
+call. Actually, we can make a dedicated hpacker as some code can be omitted, The
+reason why the protruding is relatively slow is, that we have quite some
+protruding characters in the test text (many commas and potential hyphens) and
+therefore we have quite some lookups and calculations. In the \CCODE\ variant
+much of that is inlined by macros.
+
+Will things get faster? I'm sure that I can boost the protrusion code and
+probably the rest as well but it will always be slower than the built in
+function. This is no problem as we will only use the \LUA\ variant for
+experiments and special purposes. For that reason more \MKIV\ like tracing will
+be added (some is already present) and more hooks will be provided once the
+builder is more compartimized. Also, future versions of \LUATEX\ will pass around
+paragrapgh related parameters differently so that will have impact on the code as
+well.
+
+\stopsection
+
+\startsection[title=Usage]
+
+The basic parbuilder is enabled and disabled as follows:\footnote {I'm not
+sure yet if the parbuilder has to do automatic grouping.}
+
+\startbuffer[example]
+\definefontfeature[example][default][protrusion=pure]
+\definedfont[Serif*example]
+\setupalign[hanging]
+
+\startparbuilder[basic]
+    \startcolor[blue]
+        \input tufte
+    \stopcolor
+\stopparbuilder
+
+\stopbuffer
+
+\typebuffer[example]
+
+\startmode[mkiv]
+    This results in: \par \getbuffer[example]
+\stopmode
+
+There are a few tracing options in the \type {parbuilders} namespace but these
+are not stable yet.
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+The module started working quite well around the time that Peter Gabriels
+\quotation {Scratch My Back} ended up in my Squeezecenter: modern classical
+interpretations of some of his favourite songs. I must admit that I scratched the
+back of my head a couple of times when looking at the code below. It made me
+realize that a new implementation of a known problem indeed can come out quite
+different but at the same time has much in common. As with music it's a matter of
+taste which variant a user likes most.
+
+At the time of this writing there is still work to be done. For instance the
+large functions need to be broken into smaller steps. And of course more testing
+is needed.
+
+\stopsection
+
+\doifmodeelse {tugboat} {
+    \StopArticle
+} {
+    \stopchapter
+}
+
+\stopcomponent

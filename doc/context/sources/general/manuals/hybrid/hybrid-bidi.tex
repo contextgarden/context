@@ -1,0 +1,194 @@
+% language=uk
+
+\startcomponent hybrid-inserts
+
+\environment hybrid-environment
+
+\startchapter[title={The Bidi Dilemma}]
+
+Here I will introduce a few concepts of bidirectional typesetting. While \LUATEX\
+does a lot automatically, this does not mean that you get a proper bidirectional
+layout for free. We distinguish a few cases:
+
+\startitemize [packed]
+\startitem verbatim as used in manuals \stopitem
+\startitem simulating a text editor \stopitem
+\startitem typesetting of text \stopitem
+\stopitemize
+
+In addition to this we distinguish two document layouts:
+
+\startitemize [packed]
+\startitem predominantly left||to||right with some right||to||left snippets \stopitem
+\startitem predominantly right||to||left with some left||to||right snippets \stopitem
+\stopitemize
+
+In both cases explicit choices have to be made when defining the layout,
+programming the style, and coding the content. In this chapter I will stick to
+verbatim.
+
+In verbatim mode we normally use a monospaced font and no interference with
+features is to be expected. You get what you've keyed in. Because verbatim is
+used for illustrative purposes, we need to have predictable output. This is why
+we have to control the position of the linenumbers as well as the alignment
+explicitly.
+
+\startbuffer[basics]
+\definetyping [XXtyping] [numbering=line]
+\definetyping [RLtyping] [align=r2l,numbering=line]
+\definetyping [LRtyping] [align=l2r,numbering=line]
+\stopbuffer
+
+\typebuffer[basics] \getbuffer[basics]
+
+We use these definitions in the following example:
+
+\startbuffer[sample]
+\startLRtyping
+At the left!
+At the left!
+\stopLRtyping
+
+\startRLtyping
+At the right!
+At the right!
+\stopRLtyping
+
+\startalignment[l2r]
+\startXXtyping
+At the left!
+At the left!
+\stopXXtyping
+\stopalignment
+
+\startalignment[r2l]
+\startXXtyping
+At the right!
+At the right!
+\stopXXtyping
+\stopalignment
+\stopbuffer
+
+\typebuffer[sample]
+
+However, we can have a bit more control over the position of the line numbers. As
+linenumbers are added in a later stage we need to define additional line number
+classes for this. We show four relevant positions of linenumbers. What setting
+you use depends on the predominant direction of your document as well as what you
+want to demonstrate.
+
+\startbuffer
+\definetyping [RLtypingLEFT] [align=r2l,numbering=line]
+\definetyping [LRtypingLEFT] [align=l2r,numbering=line]
+
+\setuplinenumbering [RLtypingLEFT] [location=left]
+\setuplinenumbering [LRtypingLEFT] [location=left]
+
+\startLRtypingLEFT
+At the left!
+At the left!
+\stopLRtypingLEFT
+
+\startRLtypingLEFT
+At the right!
+At the right!
+\stopRLtypingLEFT
+\stopbuffer
+
+\typebuffer
+
+When \type {location} is set to \type {left}, the line numbers will always be in
+the left margin, no matter what the text direction is.
+
+\getbuffer
+
+\startbuffer
+\definetyping [RLtypingRIGHT] [align=r2l,numbering=line]
+\definetyping [LRtypingRIGHT] [align=l2r,numbering=line]
+
+\setuplinenumbering [RLtypingRIGHT] [location=right]
+\setuplinenumbering [LRtypingRIGHT] [location=right]
+
+\startLRtypingRIGHT
+At the left!
+At the left!
+\stopLRtypingRIGHT
+
+\startRLtypingRIGHT
+At the right!
+At the right!
+\stopRLtypingRIGHT
+\stopbuffer
+
+From this it follows that when \type {location} is set to \type {right}, the line
+numbers will always be in the right margin.
+
+\typebuffer
+
+Again, the text direction is not influencing the placement.
+
+\getbuffer
+
+\startbuffer
+\definetyping [RLtypingBEGIN] [align=r2l,numbering=line]
+\definetyping [LRtypingBEGIN] [align=l2r,numbering=line]
+
+\setuplinenumbering [RLtypingBEGIN] [location=begin]
+\setuplinenumbering [LRtypingBEGIN] [location=begin]
+
+\startLRtypingBEGIN
+At the left!
+At the left!
+\stopLRtypingBEGIN
+
+\startRLtypingBEGIN
+At the right!
+At the right!
+\stopRLtypingBEGIN
+\stopbuffer
+
+The next two cases {\em do} obey to the text direction. When set to \type
+{begin}, the location will be at the beginning of the line.
+
+\typebuffer
+
+When typesetting a paragraph from right to left, the beginning of the line is at
+the right margin.
+
+\getbuffer
+
+\startbuffer
+\definetyping [RLtypingEND] [align=r2l,numbering=line]
+\definetyping [LRtypingEND] [align=l2r,numbering=line]
+
+\setuplinenumbering [RLtypingEND] [location=end]
+\setuplinenumbering [LRtypingEND] [location=end]
+
+\startLRtypingEND
+At the left!
+At the left!
+\stopLRtypingEND
+
+\startRLtypingEND
+At the right!
+At the right!
+\stopRLtypingEND
+\stopbuffer
+
+Consequently we get the opposite result when we set \type {location} to
+\type {end}.
+
+\typebuffer
+
+This time we get complementary results:
+
+\getbuffer
+
+It will be clear that when we are writing a manual where we mix example code with
+real right to left text some care goes into setting up the verbatim environments.
+And this is just one of the aspects you have to deal with in a bidirectional
+document layout.
+
+\stopchapter
+
+\stopcomponent

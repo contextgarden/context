@@ -1,0 +1,320 @@
+% language=uk
+
+\usemodule[fnt-24]
+
+\startcomponent mk-cjk
+
+\environment mk-environment
+
+\definefontfallback [FullTyping] [adobemyungjostd-medium] [0x3000-0xFFFF] [check=yes,force=no]
+\definefontfallback [FullTyping] [adobesongstd-light]     [0x3000-0xFFFF] [check=yes,force=no]
+
+\definefontsynonym  [MyTyping]  [lmmono10-regular] [fallbacks=FullTyping]
+\definefont[MyTypingFont][MyTyping sa 1]
+
+\nonknuthmode
+
+\chapter{Chinese, Japanese and Korean, aka CJK}
+
+\start \setuptyping[style=\MyTypingFont] % begin of typing hackery
+
+{\em This aspect of \MKIV\ is under construction. We use non-realistic examples.
+We need to reimplement chinese numbering in \LUA, etc.\ etc.}
+
+{\em todo: There is no need for checkinf the width if the halfwidth feature is turned on.}
+
+\subject{introduction}
+
+In \CONTEXT\ \MKII\ we support \CJK\ languages. Intercharacter spacing as
+well as linebreaks are taken care of. Chinese numbering is dealt with and
+labels and other language specific aspects are supported too. The implementation
+uses active characters and some special encoding subsystem. Although it works
+quite okay, in \MKIV\ we follow a different route.
+
+The current implementation is an intermediate one and is used to explore the
+possibilities and identify needs. One handicap in implementing \CJK\ support is
+that the wishlist of features and behaviour is somewhat dependent on who you talk
+to. This means that the implementation will have some default behaviour but can be
+tuned to specific needs. The current implementation uses the script related
+analyser and is triggered by fonts but at some point I may decide to provide
+analysing independent of fonts.
+
+As will all things \TEX, we need to find a proper font to get our document typeset
+and because \CJK\ fonts are normally quite large they are not always available on
+your system by default.
+
+\subject{scripts and languages}
+
+I'm no expert on \CJK\ and will never be one so don't expect much insight in the
+scripts and languages here. Here we only look at the way a sequence of characters
+in the input turns into a typeset paragraph. For that it is important to keep in
+mind that in a Korean or Japanese text we might find Chinese characters and that
+the spacing rules become somewhat fuzzed by that. For instance Korean has spaces
+between words and words can be broken at any point, while Chinese has no spaces.
+
+Officially Chinese runs from top to bottom but here we focus on the horizontal
+variant. When turned into glyphs the characters normally are of equal width
+and in principle we could expect them all to be vertically aligned. However, a
+font can have characters that take half that space: so called halfwidth
+characters. And, of course, in practice a font might have shapes that fall into
+this categrory but happen to have their own width which deviates from this.
+
+This means that a mechanism that deals with \CJK\ has to take care of a few
+things:
+
+\startitemize[packed]
+\item Spaces at the end of the line (or actually anywhere in the input stream)
+      need to be removed but only for Chinese.
+\item Opening and closing symbols as well as punctuation needs special treatment
+      especially when they are halfwidth.
+\item Korean uses proportially spaces punctuation and mixes with other latin fonts,
+      while Chinese often uses built in latin shapes.
+\item We may break anywhere but not after an opening symbol like~( or and not
+      before a closing symbol like~).
+\item We need to deal with mixed Chinese and Korean spacing rules.
+\stopitemize
+
+Let's start with showing some Korean. We use one of the fonts shipped
+by Adobe as part of Acrobat but first we define a Korean featureset and
+a font.
+
+\startbuffer
+\definefontfeature
+  [korean]
+  [script=hang,language=kor,mode=node,analyze=yes]
+
+\definefont[KoreanSample][adobemyungjostd-medium*korean]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Korean looks like this:
+
+\startbuffer
+\KoreanSample \setscript[hangul]
+
+모든 인간은 태어날 때부터 자유로우며 그 존엄과 권리에 있어 동등하다.
+인간은 천부적으로 이성과 양심을 부여받았으며 서로 형제애의 정신으로
+행동하여야 한다.
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+The Korean script reflect syllabes and is very structured.
+Although modern fonts contain prebuilt syllabes one can also use
+the jamo alphabet to build them from components. The following
+example is provided by Dohyun Kim:
+
+\startbuffer
+\definefontfeature [medievalkorean] [mode=node,script=hang,lang=kor,ccmp=yes,ljmo=yes,vjmo=yes,tjmo=yes]
+\definefontfeature [modernkorean]   [mode=node,script=hang,lang=kor]
+
+\enabletrackers[scripts.analyzing]
+\setscript[hangul]
+\definedfont [UnBatang*medievalkorean at 20pt] ᄒᆞᆫ글 \ruledhbox{ᄒᆞᆫ글} \ruledhbox{ᄒᆞᆫ} \ruledhbox{글}\blank
+\definedfont [UnBatang*modernkorean   at 20pt] ᄒᆞᆫ글 \ruledhbox{ᄒᆞᆫ글} \ruledhbox{ᄒᆞᆫ} \ruledhbox{글}\blank
+\disabletrackers[scripts.analyzing]
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+There are subtle differences between the medieval and modern
+shapes. It was this example that lead to more advanced \type
+{tounicode} support in \MKIV\ so that copy and paste works out
+well now for such input.
+
+For Chinese we define a couple of features
+
+\startbuffer
+\definefontfeature
+  [chinese-traditional]
+  [mode=node,script=hang,lang=zht]
+\definefontfeature
+  [chinese-simple]
+  [mode=node,script=hang,lang=zhs]
+\definefontfeature
+  [chinese-traditional-hw]
+  [mode=node,script=hang,lang=zht,hwid=yes]
+\definefontfeature
+  [chinese-simple-hw]
+  [mode=node,script=hang,lang=zhs,hwid=yes]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\definefont[ChineseSampleFW][adobesongstd-light*chinese-traditional]
+\definefont[ChineseSampleHW][adobesongstd-light*chinese-traditional-hw]
+\setscript[hanzi]
+
+\ChineseSampleFW
+兡也包因沘氓侷柵苗孫孫財崧淫設弼琶跑愍窟榜蒸奭稽
+霄瓢館縲擻鼕〈孃魔釁〉佉沎岠狋垚柛胅娭涘罞偟惈牻荺
+傒焱菏酡廅滘絺赩塴榗箂踃嬁澕蓴醊獧螗餟燱螬駸礑鎞
+瀧鄿瀯騬醹躕鱕。
+
+\ChineseSampleHW
+兡也包因沘氓侷柵苗孫孫財崧淫設弼琶跑愍窟榜蒸奭稽
+霄瓢館縲擻鼕〈孃魔釁〉佉沎岠狋垚柛胅娭涘罞偟惈牻荺
+傒焱菏酡廅滘絺赩塴榗箂踃嬁澕蓴醊獧螗餟燱螬駸礑鎞
+瀧鄿瀯騬醹躕鱕。
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+A few more samples:
+
+\startbuffer
+\definefont[ChFntAT][name:adobesongstd-light*chinese-traditional-hw at 16pt]
+\definefont[ChFntBT][name:songti*chinese-traditional                at 16pt]
+\definefont[ChFntCT][name:fangsong*chinese-traditional              at 16pt]
+
+\definefont[ChFntAS][name:adobesongstd-light*chinese-simple-hw      at 16pt]
+\definefont[ChFntBS][name:songti*chinese-simple                     at 16pt]
+\definefont[ChFntCS][name:fangsong*chinese-simple                   at 16pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In these fonts traditional comes out as follows:
+
+\start \setscript[hanzi]
+\startlines
+\ChFntAT 我〈能吞下玻璃而不傷身〉體。
+\ChFntBT 我〈能吞下玻璃而不傷身〉體。
+\ChFntCT 我〈能吞下玻璃而不傷身〉體。
+\stoplines
+\stop
+
+And simple as:
+
+\start \setscript[hanzi]
+\startlines
+\ChFntAS 我〈能吞下玻璃而不伤身〉体。
+\ChFntBS 我〈能吞下玻璃而不伤身〉体。
+\ChFntCS 我〈能吞下玻璃而不伤身〉体。
+\stoplines
+\stop
+
+\subject {tracing}
+
+As usual in \CONTEXT, we have some tracing built in. When you say
+
+\startbuffer
+\enabletrackers[scripts.analyzing]
+\stopbuffer
+
+You will get the output colored according to the category that the
+analyser put them in. When you say
+
+\startbuffer
+\enabletrackers[scripts.injections]
+\stopbuffer
+
+some rudimentary information will be written to the log about whet gets
+inserted in the nodelist.
+
+Analyzed input looks like:
+
+\startbuffer
+아아, 나는 이제야 도(道)를 알았도다. 마음이 어두운 자는 이목이
+누(累)가 되지 않는다. 이목만을 믿는 자는 보고 듣는 것이
+더욱 밝혀져서 병이 되는 것이다. 이제 내 마부가 발을 말굽에
+밟혀서 뒷차에 실리었으므로, 나는 드디어 혼자 고삐를 늦추어
+강에 띄우고, 무릎을 구부려 발을 모으고 안장 위에 앉았다.
+한번 떨어지면 강이나 물로 땅을 삼고, 물로 옷을 삼으며,
+물로 몸을 삼고, 물로 성정을 삼을 것이다. 이제야 내 마음은
+한번 떨어질 것을 판단한 터이므로, 내 귓속에 강물 소리가 없어졌다.
+무릇 아홉 번 건너는데도 걱정이 없어 의자 위에서 좌와(坐臥)하고
+기거(起居)하는 것 같았다.
+\stopbuffer
+
+\typebuffer \start \enabletrackers[scripts.analyzing] \KoreanSample \setscript[hangul] \getbuffer \disabletrackers[scripts.analyzing] \stop
+
+For developers (and those who provide them with input) we have another tracing
+
+\startbuffer
+\definedfont[arialuni*korean at 10pt] \setscript[hangul] \ShowCombinationsKorean
+\stopbuffer
+
+\typebuffer
+
+We need to use a font that supports Chinese as well as Korean. This gives quite some output.
+
+\start \getbuffer \stop
+
+% 안녕하세요? (Hello)
+% 감사합니다. (Thank you)
+
+\page \stop % end of typing hackery
+
+\stopcomponent
+
+% \font\JapaneseFontA=name:kozminprovi-regular
+%
+% \startlines
+% Hankaku          : {\JapaneseFontA ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ}
+% Romanj digits    : {\JapaneseFontA ０１２３４５６７８９}
+% Romanj lowercase : {\JapaneseFontA ａｂｃｄｅｆｇｈｉ}
+% Romanj uppercase : {\JapaneseFontA ＡＢＣＤＥＦＧＨＩ}
+% \stoplines
+%
+% \enabletrackers[scripts.analyzing]
+%
+% \start \raggedright \dontleavehmode
+%     \ruledhbox\bgroup \ChFntBS ，\egroup  \quad
+%     \ruledhbox\bgroup \ChFntBS 〉\egroup \quad
+%     \ruledhbox\bgroup \ChFntBS 〈\egroup \par
+% \stop
+%
+% \def\DoChineseSample#1#2#3%
+%   {\ruledvtop{#1\hsize#2\relax#3}}
+%
+% \def\ChineseSampleA#1#2{%
+%     \blank
+%     \subsubject{hsize #2, fullwidth}
+%     \dontleavehmode
+%         \DoChineseSample{#1}{#2}{吞吞吞，吞吞吞吞。}\quad
+%         \DoChineseSample{#1}{#2}{吞吞吞，，吞吞吞吞。}\quad
+%         \DoChineseSample{#1}{#2}{吞吞吞〉吞吞吞吞。}\quad
+%         \DoChineseSample{#1}{#2}{吞吞吞〉，吞吞吞吞。}
+%     \blank[small]
+%     \dontleavehmode
+%         \DoChineseSample{#1}{#2}{吞吞吞〉〉吞吞吞吞。}\quad
+%         \DoChineseSample{#1}{#2}{吞吞吞〉〉吞吞吞吞。}\quad
+%         \DoChineseSample{#1}{#2}{〈吞吞吞吞吞吞吞。}\quad
+%         \DoChineseSample{#1}{#2}{〈〈吞吞吞吞吞吞吞。}
+%     \blank[small]
+%     \dontleavehmode
+%         \DoChineseSample{#1}{#2}{吞吞吞…吞吞吞吞。}\quad
+%         \DoChineseSample{#1}{#2}{吞吞吞……吞吞吞吞。}
+%     \dontleavehmode
+%     \blank
+% }
+%
+% \ChineseSampleA\ChFntBS{4.25em}
+% \ChineseSampleA\ChFntBS{4.00em}
+% \ChineseSampleA\ChFntBS{3.75em}
+% \ChineseSampleA\ChFntBS{3.50em}
+% \ChineseSampleA\ChFntBS{3.25em}
+% \ChineseSampleA\ChFntBS{3.00em}
+%
+% \def\ChineseSampleB#1#2{%
+%     \blank
+%     \subsubject{hsize #2, halfwidth}
+%     \dontleavehmode
+%         \DoChineseSample{#1}{#2}{吞吞吞,吞吞吞吞。}\quad
+%         \DoChineseSample{#1}{#2}{吞吞吞‘吞吞吞吞。}\quad
+%         \DoChineseSample{#1}{#2}{吞吞吞’吞吞吞吞。}\quad
+%     \blank
+% }
+%
+% \ChineseSampleB\ChFntBS{4.25em}
+% \ChineseSampleB\ChFntBS{4.00em}
+% \ChineseSampleB\ChFntBS{3.75em}
+% \ChineseSampleB\ChFntBS{3.50em}
+% \ChineseSampleB\ChFntBS{3.25em}
+% \ChineseSampleB\ChFntBS{3.00em}
+%
+% \disabletrackers[scripts.analyzing]
+

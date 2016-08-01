@@ -1,0 +1,287 @@
+% language=uk
+
+\startcomponent mk-breakingapart
+
+\environment mk-environment
+
+\chapter{Breaking apart}
+
+[todo: mention changes to hyphenchar etc]
+
+Because the long term objective is to have control over all aspects of the
+typesetting, quite some effort went into opening up one of the cornerstones
+of \TEX: breaking paragraphs into lines. And because this is closely related
+to hyphenating words, this effort also meant that we had to deal with ligature
+building and kerning.
+
+This is best explained with an example. Imagine that we have the following
+sentence  \footnote {The World Without Us, Alan Weisman; a quote from Richard
+Thomson in  chapter: Polymers are Forever.}
+
+\startnarrower \setupalign[nothyphenated]
+We imagined it was being ground down smaller and smaller, into a kind of
+powder. And we realized that smaller and smaller could lead to bigger and
+bigger problems.
+\stopnarrower
+
+With the current language settings for US English this can be hyphenated
+as follows:
+
+\startnarrower
+{\forgetall \hyphenatedpar{We imagined it was being ground down smaller and
+smaller, into a kind of powder. And we realized that smaller and smaller
+could lead to bigger and bigger problems.}}
+\stopnarrower
+
+So, when breaking a paragraph into lines, \TEX\ has a few options, but here
+actually not that many. If we permits two character snippets, we can get:
+
+\startnarrower \lefthyphenmin=2 \righthyphenmin=2
+{\forgetall \hyphenatedpar{We imagined it was being ground down smaller and
+smaller, into a kind of powder. And we realized that smaller and smaller
+could lead to bigger and bigger problems.}}
+\stopnarrower
+
+If we revert to UK English, we get:
+
+\startnarrower
+{\forgetall \uk \hyphenatedpar{We imagined it was being ground down smaller and
+smaller, into a kind of powder. And we realized that smaller and smaller
+could lead to bigger and bigger problems.}}
+\stopnarrower
+
+or, more tolerant,
+
+\startnarrower \lefthyphenmin=2 \righthyphenmin=2
+{\forgetall \uk \hyphenatedpar{We imagined it was being ground down smaller and
+smaller, into a kind of powder. And we realized that smaller and smaller
+could lead to bigger and bigger problems.}}
+\stopnarrower
+
+or with Dutch patterns:
+
+\startnarrower
+{\forgetall \nl \hyphenatedpar{We imagined it was being ground down smaller and
+smaller, into a kind of powder. And we realized that smaller and smaller
+could lead to bigger and bigger problems.}}
+\stopnarrower
+
+The code in traditional \TEX\ that deals with hyphenation and linebreaks is rather
+interwoven. There is a relationship between the font encoding and the way patterns
+are encodes. A few years after \TEX\ was written, support for multiple languages was
+added, which resulted in a mix of (kind of global) language settings (no nodes) and
+language nodes in the node lists. Traditionally it roughly works as follows:
+
+\startitemize
+
+\item The input \type {We imagined it} is tokenized and turned into glyph nodes. If
+non \ASCII\ characters are used (like pre composed accented characters) there may be
+a translation step: macros or active characters can insert \type {\char} commands or
+map onto other characters, for instance input byte 123 can become byte 198 which in
+turn ends up as a reference in a glyph node to a font slot. Whatever method is used to
+go from input to glyph node, eventually we have a reference to a position in a font.
+Unfortunately we had only 256 such slots per font.
+
+\item When it's time to break a paragraph into lines, traditional \TEX\ walks over
+the list, reconstruct words and inserts hyphenation points. In the process,
+inter|-|character kerns that are already injected need to be removed and reinserted,
+and ligatures have to be decomposed and recomposed. The magic of hyphenation is
+controlled by discretionary nodes. These specify what to do when a word is hyphenated.
+Take for instance the Dutch word \type {effe} which hyphenated becomes \type {ef-fe}
+so the \type {ff} either stays, or is split into \type {f-} and \type {f}.
+
+\item Because a glyph node is bound to a font, there is a relationship with the
+font encoding. Because there is no one 8-bit encoding that suits all languages, we
+may end up with several instances of a font in one document (used for different
+languages) and each when we switch language and|/|or font, we also have to enable
+a suitable set of patterns (in a matching encoding).
+
+\stopitemize
+
+You can imagine that this may lead to moderately complex mechanisms in macro packages.
+For instance, in \CONTEXT, to each language multiple font encodings can be bound and
+a switch of fonts (with related encoding) also results in a switch to a suitable set
+of patterns. But in \MKIV\ things are done different.
+
+First of all, we got rid of font encodings by exclusively using \UNICODE. We already
+were using \UTF\ encoded patterns (so that we could load them under different font
+encodings) so less patterns had to be loaded per language. That happened even before
+the \LUATEX\ development arrived at hyphenation.
+
+Before that effort started, Taco and I already played a bit with alternative
+hyphenation methods. For instance, we took large word lists with hyphenation points
+inserted. Taco wrote a loader (\LUA\ could not handle the large tables as function
+return value) and I made some hyphenation code in \LUA. Surprisingly we found out that
+it was pretty efficient, although we didn't  have the weighted hyphenation points
+that patterns may provide. Basically we simulated the \type {\hyphenation} command.
+
+While we went back to fonts, Taco's college Nanning wrote the first version of a new
+hyphenation storage mechanism, so when about half a year later we were ready to deal with the
+linebreak mechanisms, one of the key components was more or less ready. Where fonts forced me to
+write quite some \LUA\ code (still not finished), the new hyphenation
+mechanisms could be supported rather easy, if only because the framework was already
+kind of present (written during the experiments). Even better, when splitting the old
+code into \MKII\ and new \MKIV\ code, I could do most housekeeping in \LUA, and only
+needed a minimal amount of \TEX\ interfacing (partly redundant because of the shared
+interface). The new mechanism also was no longer bound to the format, which means
+that we could postpone loading of the patterns to runtime. Instead of the still
+supported traditional loading of patterns and exceptions, we load them under \LUA\
+control. This gave me yet another nice excercise in using \type {lpeg} (\LUA's string
+parser).
+
+With a new pattern loader in place, Taco started separating the hyphenation, ligature
+building and kerning. Each stage now has its own callback and each stage has an
+associated \LUA\ function, so that one can create a different order of execution or
+integrate it in other node parsing activities, most noticeably the handling of
+\OPENTYPE\ features.
+
+When I was trying to integrate this into the already existing node processing sequences,
+some nasty tricks were needed in order to feed the hyphenation function. At that
+moment it was still partly modelled after the traditional \TEX\ way, which boiled down
+to the following. As soon as the hyphenation function is invoked, it needs to know what
+the current language is. This information is not stored in the node list, only mid
+paragraph language switched are stored. Due to the fact that much information in \TEX\
+is global (well, in \LUATEX\ less and less) this complicates matters. Because in \MKIV\
+hyphenation, ligature building and kerning are done differently (dus to \OPENTYPE) we
+used the hyphenation callback to collect the language parameters so that we could use
+them when we called the hyphenation function later. This can definetely be qualified as
+an ugly hack.
+
+Before we discuss how this was solved, we summarize the state of affairs. In \LUATEX\
+we now have a sequence of callbacks related to paragraph building and in between not
+much happens any more.
+
+\startitemize[packed]
+\item hyphenation
+\item ligaturing
+\item kerning
+\item preparing linebreaking
+\item linebreaking
+\item finishing linebreaking
+\stopitemize
+
+Before we only had:
+
+\startitemize[packed]
+\item preparing linebreaking
+\stopitemize
+
+and this is where \MKIV\ hooks in ist code. The first three are disabled by
+associating them with dummy functions. I'm still not sure how the last two will
+fit it, especially because there is some interplay between \OPENTYPE\ features
+and linebreaking, like alternative glyphs at the end of the line. Because the
+\HZ\ and protruding mechanisms also will be supported we may as well end up with
+a mechanism for alternative glyphs built into the linebreak algorithm.
+
+Back to the current situation. What made matters even more complicated was the
+fact that we need to manipulate node lists while building horizontal material
+(hpacking) as well as for paragraphs (pre|-|linebreaking). Compare the following
+two situations. In the first case the hbox is packaged and hyphenation is not
+needed.
+
+\starttyping
+text \hbox {text} text
+\stoptyping
+
+However, when we unbox the content, hyphenation needs to be applied.
+
+\starttyping
+\setbox0=\hbox{text} text \unhbox0\ text
+\stoptyping
+
+[I need to check the next]
+
+Traditional \TEX\ does not look at all potential hyphenation points, but only around
+places that have a high probability as line|-|end. \LUATEX\ just hyphenates the whole
+list, although the function can be used selectively over a range, in \MKIV\ we see no
+reason for this and hyphenate whole lists.
+
+The new hyphenation routine not only operates on the whole list, but also can be made
+transparent for uppercase characters. Because we assume \UNICODE\ lowercase codes are
+no longer stored with the patterns (an \ETEX\ extension). The usual left- and
+righthyphenmin control is still there. The first word of a paragraph is no longer
+ignored in the process.
+
+Because the stages are separated now, the opportunity was there to separate between
+characters and glyphs. As with traditional \TEX, only characters are taken into
+account when hyphenating, so how do we distinguish between the two? The subtype (a
+property of each node) already registered if we were dealing with a ligature or not.
+Taco and Nanning had decided to treat the subtype as a bitset and after a bit of
+testing ans skyping we came to the conclusion that we needed an easy way to tag a
+glyph node as being \quote {already processed}. Keep in mind that as in the unhboxed
+example, the unhboxed content is already treated (hpack callback). If you wonder why
+we have these two moments of treatment think of this: if you put something in a box
+and want to know its dimensions, all font related features need to be applied. If the
+box is inserted as is, it can be recognized (a hlist or vlist node) and safely skipped
+in the prelinebreak handling. However, when it is unhboxed, we want to avoid
+reprocessing. Normally reprocessing will be prevented because the glyph nodes are
+mixed with kerns and ligatures are already built, but we can best play safe.
+Once we're done with processing a list (which can involve many passes, depending on
+what treatment is needed) we can tag the glyphs nodes as \quote {done} by adding 256
+to the subtype. We can then test on this property in callbacks while at the same time
+built-in functions like those responsible for hyphenation ignore this high bit.
+
+The transition from character to glyph is also done by changing bits in the subtype.
+At some point we need to set the subtype so that it reflects the node being a glyph,
+ligature or other special type (there are a few more types inherited from omega). I
+know that this all sounds complicated, but in \MKIV\ we now roughly do the following
+(of course this may and probably will change):
+
+\startitemize[packed]
+\item attribute driven manipulations (for instance case change)
+\item language driven manipulations (spell checking, hyphenation)
+\item font driven treatments, mostly features (ligature building, kerning)
+\item turn characters into glyphs (so that they will not be hyphenated again)
+\item normal ligaturing routine (currently still needed for not open type fonts, may
+      become obsolete)
+\item normal kerning routine (currently still needed for not open type fonts, may
+      become obsolete)
+\item attribute driven manipulations (special spacing and kerning)
+\stopitemize
+
+When no callbacks are used, turning characters into glyphs happens automatically behind
+the screens. When using callbacks (as in \MKIV) this needs to be done explicitly
+(but there is a helper function for this).
+
+So, by now \LUATEX\ can determine which glyph nodes play a role in hyphenation but still
+we have this \quote {what language are we in} problem. As usual in the development of
+\LUATEX, these fundamental changes took place in a setting where Taco and I are in a
+persistent state of Skyping, and it did not take much time to decide that in order to
+make the callbacks usable, it made much sense to moving the language related information
+to the glyph node as well, i.e.\ the number of the language object (patterns and
+exceptions), the left and right min values, and the boolean that tells how to treat
+uppercase characters. Each is now accessible in the usual way (by key). The penalty in
+additional memory is zero because it's stored along with the subtype bitset. By going this
+route, the ugly hack mentioned before could be removed as well.
+
+In the process of finalizing the code, discretionary nodes got a slightly different
+implementation. Originally they were organized as follows (ff is a ligature):
+
+\starttyping
+con-text == [c][o](pre=n-,post=,replace=1)[n][t][e][x][t]
+effe     == [e](pre=f-,post=f,replace=1)[ff][e]
+\stoptyping
+
+So, a discretionaty node contained information about what to put at the end of the broken
+line and what to put in front of the next line, as well as the number of following nodes
+in the list to skip when such a linebreak occured. Because this leads to rather messy code
+especially when ligatures are involved, so the decision was made to change the replacement
+counter into a node list holding those (optionally) to be replaced nodes.
+
+\starttyping
+con-text == [c][o](pre=n-,post=,replace=n)[t][e][x][t]
+effe     == [e](pre=f-,post=f,replace=ff)[e]
+\stoptyping
+
+This is much cleaner, but a consequence of this change was that all \MKIV\ node manipulation
+code written so far had to be reviewed.
+
+Of course we need to spend a few words on performance. We keep doing performance tests
+but currently we only remove bottlenecks that bother us. Later in the development
+optimization will tke place in the code. One reason is that the code changes, another
+reason is that large portions of \PASCAL\ code is turned  into \CCODE. Because
+integrating these changes (apart from preparations) took place within  a few weeks, we
+could reasonably well compare the old and the new hyphenation mechanisms using our
+(evolving) manuals and surprisingly the performance was certainly not worse than before.
+
+\stopcomponent

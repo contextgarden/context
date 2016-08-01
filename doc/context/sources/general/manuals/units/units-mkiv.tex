@@ -1,0 +1,538 @@
+% language=uk
+
+\usemodule[art-01,abr-02,physics-units]
+
+\definecolor[red]    [darkred]
+\definecolor[green]  [darkgreen]
+\definecolor[blue]   [darkblue]
+\definecolor[yellow] [darkyellow]
+\definecolor[magenta][darkmagenta]
+\definecolor[cyan]   [darkcyan]
+
+\definecolor[maincolor] [darkcyan]
+\definecolor[extracolor][darkmagenta]
+
+\setupbodyfont
+  [10pt]
+
+\setuptyping
+  [color=extracolor]
+
+\setuptype
+  [color=extracolor] % darkyellow
+
+% \setupnumbering
+%   [alternative=doublesided]
+
+\setupinteraction
+  [hidden]
+
+\setuphead
+  [section]
+  [color=maincolor]
+
+\usesymbols[cc]
+
+\startdocument
+  [metadata:author=Hans Hagen,
+   metadata:title=Units,
+   author=Hans Hagen,
+   affiliation=PRAGMA ADE,
+   location=Hasselt NL,
+   title=Units,
+   extra=ConTeXt MkIV,
+   support=www.contextgarden.net,
+   website=www.pragma-ade.nl]
+
+\unexpanded\def\UnitsHack#1#2%
+  {\setbox\scratchbox\hbox{\bf\strut#1#2/}% kerning and such
+   \hbox to \wd\scratchbox{\bf\strut#1\hss/\hss#2}}
+
+\startMPpage
+
+    StartPage ;
+        fill Page enlarged 2mm withcolor \MPcolor{darkcyan} ;
+        pickup pencircle scaled 2mm ;
+        picture p, q, r ;
+        p := textext("\ssbf\WORD{\documentvariable{title}}")  xsized (bbheight Page - 2cm) rotated 90 ;
+        q := textext("\ssbf\WORD{\documentvariable{author}}") ysized 1cm ;
+        r := textext("\ssbf\WORD{\documentvariable{extra}}")  xsized bbwidth q ;
+        draw anchored.rt (p, center rightboundary Page shifted (-1cm,   0mm)) withcolor white ;
+        draw anchored.lft(q, ulcorner             Page shifted ( 1cm, -84mm)) withcolor white ; % \MPcolor{darkred} ;
+        draw anchored.lft(r, ulcorner             Page shifted ( 1cm,-108mm)) withcolor white ; % \MPcolor{darkred} ;
+    StopPage ;
+
+\stopMPpage
+
+% \page[empty] \setuppagenumber[start=1]
+
+\startsubject[title={Contents}]
+
+\placelist[section][criterium=all,interaction=all]
+
+\stopsubject
+
+\startsection[title={Introduction}]
+
+In \CONTEXT\ \MKII\ there is a module that implements consistent
+typesetting of units (quantities and dimensions). In \MKIV\ this
+functionality is now part of the physics core modules. This is
+also one of the mechanisms that got a new user interface: instead
+of using commands we now parse text. Thanks to those users who
+provided input we're more complete now that in \MKII. You can browse
+the mailing list archive to get some sense of history.
+
+\stopsection
+
+\startsection[title={The main command}]
+
+The core command is \type {\unit}. The argument to this command gets
+parsed and converted into a properly typeset dimension. Normally there
+will be a quantity in front.
+
+\starttabulate
+\NC \type{10 meter}                   \NC \unit{10 meter}                   \NC \NR
+\NC \type{10 meter per second}        \NC \unit{10 meter per second}        \NC \NR
+\NC \type{10 square meter per second} \NC \unit{10 square meter per second} \NC \NR
+\stoptabulate
+
+The parser knows about special cases, like synonyms:
+
+\starttabulate
+\NC \type{10 degree celsius}  \NC \unit{10 degree celsius}  \NC \NR
+\NC \type{10 degrees celsius} \NC \unit{10 degrees celsius} \NC \NR
+\NC \type{10 celsius}         \NC \unit{10 celsius}         \NC \NR
+\stoptabulate
+
+The units can be rather complex, for example:
+
+\startbuffer
+\unit{30 kilo pascal square meter / second kelvin}
+\stopbuffer
+
+\typebuffer
+
+This comes out as: \ignorespaces\getbuffer\removeunwantedspaces. Depending
+on the unit at had, recognition is quite flexible. The following variants
+all work out ok.
+
+\starttabulate
+\NC \type{10 kilogram}  \NC \unit{10 kilogram}  \NC \NR
+\NC \type{10 kilo gram} \NC \unit{10 kilo gram} \NC \NR
+\NC \type{10 k gram}    \NC \unit{10 k gram}    \NC \NR
+\NC \type{10 kilo g}    \NC \unit{10 kilo g}    \NC \NR
+\NC \type{10 k g}       \NC \unit{10 k g}       \NC \NR
+\NC \type{10 kg}        \NC \unit{10 kg}        \NC \NR
+\NC \type{10 kilog}     \NC \unit{10 kilog}     \NC \NR
+\NC \type{10 kgram}     \NC \unit{10 kgram}     \NC \NR
+\stoptabulate
+
+Of course being consistent makes sense, so normally you will use
+a consistent mix of short or long keywords.
+
+You can provide a qualifier that gets lowered and appended to
+the preceding unit.
+
+\startbuffer
+\unit{112 decibel (A)}
+\stopbuffer
+
+\typebuffer
+
+This gives: \ignorespaces\getbuffer\removeunwantedspaces. Combinations
+are also possible:
+
+\starttabulate
+\NC \type{5 watt per meter celsius}         \NC \unit{5 watt per meter celsius}         \NC \NR
+\NC \type{5 watt per meter degrees celsius} \NC \unit{5 watt per meter degrees celsius} \NC \NR
+\NC \type{5 watt per meter kelvin}          \NC \unit{5 watt per meter kelvin}          \NC \NR
+\NC \type{5 watt per meter per kelvin}      \NC \unit{5 watt per meter per kelvin}      \NC \NR
+\NC \type{10 arcminute}                     \NC \unit{10 arcminute}                     \NC \NR
+\NC \type{10 arcminute 20 arcsecond}        \NC \unit{10 arcminute 20 arcsecond}        \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title={Extra units}]
+
+To some extent units can be tuned. You can for instance
+influence the spacing between a number and a unit:
+
+\startbuffer
+                         \unit{35 kilogram per cubic meter}
+\setupunit[space=normal] \unit{35 kilogram per cubic meter}
+\setupunit[space=big]    \unit{35 kilogram per cubic meter}
+\setupunit[space=medium] \unit{35 kilogram per cubic meter}
+\setupunit[space=small]  \unit{35 kilogram per cubic meter}
+\setupunit[space=none]   \unit{35 kilogram per cubic meter}
+\stopbuffer
+
+\typebuffer
+
+Of course no spacing looks rather bad:
+
+\startlines
+\getbuffer
+\stoplines
+
+Another parameter is \type {separator}. In order to demonstrate
+this we define an extra unit command:
+
+\startbuffer
+\defineunit[sunit][separator=small]
+\defineunit[nunit][separator=none]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We now have two more commands:
+
+\startbuffer
+\unit {35 kilogram cubic meter}
+\sunit{35 kilogram cubic meter}
+\nunit{35 kilogram cubic meter}
+\stopbuffer
+
+\typebuffer
+
+These three commands give different results:
+
+\startlines
+\getbuffer
+\stoplines
+
+Valid separators are \type {normal}, \type {big}, \type {medium},
+\type {small}, \type {none}. You can let units stand out by
+applying color or a specific style.
+
+\startbuffer
+\setupunit[style=\bi,color=maincolor]
+\unit{10 square meter per second}
+\stopbuffer
+
+\typebuffer
+
+Keep in mind that all defined units inherit from their parent
+definition unless they are set up themselves.
+
+\start \blank \getbuffer \blank \stop
+
+To some extent you can control rendering in text and math mode. As
+an example we define an extra instance.
+
+\startbuffer
+\defineunit[textunit][alternative=text]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+test  \unit    {10 cubic meter per second}  test
+test  \textunit{10 cubic meter per second}  test
+test $\unit    {10 cubic meter per second}$ test
+test $\textunit{10 cubic meter per second}$ test
+test  10 \unit    {cubic meter per second}  test
+test  10 \textunit{cubic meter per second}  test
+test $10 \unit    {cubic meter per second}$ test
+test $10 \textunit{cubic meter per second}$ test
+\stopbuffer
+
+\typebuffer
+
+\startlines
+\getbuffer
+\stoplines
+
+\stopsection
+
+\startsection[title={Labels}]
+
+The units, prefixes and operators are typeset using the label
+mechanism which means that they can be made to adapt to a language
+and|/|or adapted. Instead of language specific labels you can also
+introduce mappings that don't relate to a language at all. As an
+example we define some bogus mapping.
+
+\startbuffer
+\setupunittext
+  [whatever]
+  [meter=retem,
+   second=dnoces]
+
+\setupprefixtext
+  [whatever]
+  [kilo=olik]
+
+\setupoperatortext
+  [whatever]
+  [solidus={ rep }]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Such a mapping can be partial and the current language will
+be the default fallback and itselfs falls back on the English
+language mapping.
+
+\startbuffer
+\unit{10 km/s}
+\unit{10 Kilo Meter/s}
+\unit{10 kilo Meter/s}
+\unit{10 Kilo m/s}
+\unit{10 k Meter/s}
+\stopbuffer
+
+\typebuffer
+
+When we typeset this we get the normal rendering:
+
+\startlines
+\getbuffer
+\stoplines
+
+However, when we change the language parameter, we get
+a different result:
+
+\startlines
+\setupunit[language=whatever]\getbuffer
+\stoplines
+
+The alternative rendering is set up as follows:
+
+\starttyping
+\setupunit[language=whatever]
+\stoptyping
+
+You can also decide to use a special instance of units:
+
+\starttyping
+\defineunit[wunit][language=whatever]
+\stoptyping
+
+This will define the \type {\wunit} command and leave the original
+\type {\unit} command untouched.
+
+\stopsection
+
+\startsection[title={Digits}]
+
+In addition to units we have digits. These can be used independently
+but the same functionality is also integrated in the unit commands.
+The main purpose of this command is formatting in tables, of which
+we give an example below.
+
+\starttabulate[|l|r|]
+\NC \type{12,345.67 kilogram} \NC \unit{12,345.67 kilogram} \NR
+\NC \type{__,__1.23 kilogram} \NC \unit{__,__1.23 kilogram} \NR
+\NC \type{__,___.12 kilogram} \NC \unit{__,___.12 kilogram} \NR
+\NC \type{__,__1.== kilogram} \NC \unit{__,__1.== kilogram} \NR
+\NC \type{__,___:23 kilogram} \NC \unit{__,___:23 kilogram} \NR
+\stoptabulate
+
+The \type {_} character serves as placeholders. There are some
+assumptions to how numbers are constructed. In principe the input
+assumes a comma to separate thousands and a period to separate the
+fraction.
+
+\getbuffer
+
+You can swap periods and commas in the output. In fact there are a
+few methods available. For instance we can separate the thousands
+with a small space instead of a symbol.
+
+\startbuffer
+\starttabulate[|c|r|r|]
+\HL
+\NC 0 \NC \setupunit[method=0]\unit{00,000.10 kilogram}
+      \NC \setupunit[method=0]\unit{@@,@@0.10 kilogram} \NC \NR
+\NC 1 \NC \setupunit[method=1]\unit{00,000.10 kilogram}
+      \NC \setupunit[method=1]\unit{@@,@@0.10 kilogram} \NC \NR
+\NC 2 \NC \setupunit[method=2]\unit{00,000.10 kilogram}
+      \NC \setupunit[method=2]\unit{@@,@@0.10 kilogram} \NC \NR
+\NC 3 \NC \setupunit[method=3]\unit{00,000.10 kilogram}
+      \NC \setupunit[method=3]\unit{@@,@@0.10 kilogram} \NC \NR
+\NC 4 \NC \setupunit[method=4]\unit{00,000.10 kilogram}
+      \NC \setupunit[method=4]\unit{@@,@@0.10 kilogram} \NC \NR
+\NC 5 \NC \setupunit[method=5]\unit{00,000.10 kilogram}
+      \NC \setupunit[method=5]\unit{@@,@@0.10 kilogram} \NC \NR
+\NC 6 \NC \setupunit[method=6]\unit{00,000.10 kilogram}
+      \NC \setupunit[method=6]\unit{@@,@@0.10 kilogram} \NC \NR
+\HL
+\stoptabulate
+\stopbuffer
+
+\typebuffer % [bodyfont=9pt]
+
+\getbuffer
+
+The digit modes can be summarized as::
+
+\startitemize[n,packed]
+\item periods/comma
+\item commas/period
+\item thinmuskips/comma
+\item thinmuskips/period
+\item thickmuskips/comma
+\item thickmuskips/period
+\stopitemize
+
+You can reverse the order of commas and period in the input by
+setting the parameter \type {order} to \type {reverse}.
+
+The digit parser handles a bunch of special characters as
+well as different formats. We strongly suggest you to use
+the grouped call.
+
+\starttabulate[|l|l|l|]
+\NC \type{.}  \NC , .           \NC comma or period     \NC \NR
+\NC \type{,}  \NC , .           \NC comma or period     \NC \NR
+\NC \type{:}  \NC               \NC invisible period    \NC \NR
+\NC \type{;}  \NC               \NC invisible comma     \NC \NR
+\NC \type{_}  \NC               \NC invisible space     \NC \NR
+\NC \type{/}  \NC               \NC invisible sign      \NC \NR
+\NC \type{-}  \NC $-$           \NC minus sign          \NC \NR
+\NC \type{+}  \NC $+$           \NC plus sign           \NC \NR
+\NC \type{//} \NC               \NC invisible high sign \NC \NR
+\NC \type{--} \NC $\negative$   \NC high minus sign     \NC \NR
+\NC \type{++} \NC $\positive$   \NC high plus sign      \NC \NR
+\NC \type{=}  \NC $\zeroamount$ \NC zero padding        \NC \NR
+\stoptabulate
+
+Let's give some examples:
+
+\starttabulate[|l|r|]
+\NC \type{1}                      \NC \ruledhbox{\strut\digits{1}}                      \NC \NR
+\NC \type{12}                     \NC \ruledhbox{\strut\digits{12}}                     \NC \NR
+\NC \type{12.34}                  \NC \ruledhbox{\strut\digits{12.34}}                  \NC \NR
+\NC \type{123,456}                \NC \ruledhbox{\strut\digits{123,456}}                \NC \NR
+\NC \type{123,456.78}             \NC \ruledhbox{\strut\digits{123,456.78}}             \NC \NR
+\NC \type{12,34}                  \NC \ruledhbox{\strut\digits{12,34}}                  \NC \NR
+\NC \type{.1234}                  \NC \ruledhbox{\strut\digits{.1234}}                  \NC \NR
+\NC \type{1234}                   \NC \ruledhbox{\strut\digits{1234}}                   \NC \NR
+\NC \type{123,456.78^9}           \NC \ruledhbox{\strut\digits{123,456.78^9}}           \NC \NR
+\NC \type{123,456.78e9}           \NC \ruledhbox{\strut\digits{123,456.78e9}}           \NC \NR
+\NC \type{/123,456.78e-9}         \NC \ruledhbox{\strut\digits{/123,456.78e-9}}         \NC \NR
+\NC \type{-123,456.78e-9}         \NC \ruledhbox{\strut\digits{-123,456.78e-9}}         \NC \NR
+\NC \type{+123,456.78e-9}         \NC \ruledhbox{\strut\digits{+123,456.78e-9}}         \NC \NR
+\NC \type{//123,456.78e-9}        \NC \ruledhbox{\strut\digits{//123,456.78e-9}}        \NC \NR
+\NC \type{--123,456.78e-9}        \NC \ruledhbox{\strut\digits{--123,456.78e-9}}        \NC \NR
+\NC \type{++123,456.78e-9}        \NC \ruledhbox{\strut\digits{++123,456.78e-9}}        \NC \NR
+\NC \type{___,___,123,456,789.00} \NC \ruledhbox{\strut\digits{___,___,123,456,789.00}} \NC \NR
+\NC \type{___,___,_12,345,678.==} \NC \ruledhbox{\strut\digits{___,___,_12,345,678.==}} \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title={Adding units}]
+
+It is possible to add extra snippets. This is a two step process:
+first some snippet is defined, next a proper label is set up. In the
+next example we define a couple of \TEX\ dimensions:
+
+\startbuffer
+\registerunit
+  [unit]
+  [point=point,
+   basepoint=basepoint,
+   scaledpoint=scaledpoint,
+   didot=didot,
+   cicero=cicero]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Possible categories are: \type {prefix}, \type {unit}, \type {operator},
+\type {suffix}, \type {symbol},\type {packaged}. Next we define labels:
+
+\startbuffer
+\setupunittext
+  [point=pt,
+   basepoint=bp,
+   scaledpoint=sp,
+   didot=dd,
+   cicero=cc]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Now we can use use these:
+
+\startbuffer
+\unit{10 point / second}
+\stopbuffer
+
+\typebuffer
+
+Of course you can wonder what this means.
+
+\blank \getbuffer \blank
+
+When no label is defined the long name is used:
+
+\startbuffer
+\registerunit
+  [unit]
+  [page=page]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This is used as:
+
+\startbuffer
+\unit{10 point / page}
+\stopbuffer
+
+\typebuffer
+
+Which gives:
+
+\blank \getbuffer \blank
+
+\stopsection
+
+\startsection[title={Built in keywords}]
+
+A given sequence of keywords is translated in an list of internal
+keywords. For instance \type {m}, \type {Meter} and \type {meter}
+all become \type {meter} and that one is used when resolving a
+label. In the next tables the right column mentions the internal
+keyword. The right column shows the Cased variant, but a lowercase
+one is built|-|in as well.
+
+The following prefixes are built|-|in:
+
+\showunits[prefixes]
+
+The following units are supported, including some combinations:
+
+\showunits[units]
+
+The amount of operators is small:
+
+\showunits[operators]
+
+There is also a small set of (names) suffixes:
+
+\showunits[suffixes]
+
+Some symbols get a special treatment:
+
+\showunits[symbols]
+
+These are also special:
+
+\showunits[packaged]
+
+\startsection[title={Colofon}]
+
+\starttabulate[|B|p|]
+\NC author    \NC \getvariable{document}{author}, \getvariable{document}{affiliation}, \getvariable{document}{location} \NC \NR
+\NC version   \NC \currentdate \NC \NR
+\NC website   \NC \getvariable{document}{website} \endash\ \getvariable{document}{support} \NC \NR
+\NC copyright \NC \symbol[cc][cc-by-sa-nc] \NC \NR
+\stoptabulate
+
+\stopsection
+
+\stopdocument

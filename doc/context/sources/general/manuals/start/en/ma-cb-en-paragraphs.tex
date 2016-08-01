@@ -1,0 +1,280 @@
+\startcomponent ma-cb-en-paragraphs
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Paragraph spacing]
+
+\startsection[title=Introduction]
+
+\index{paragraph}
+
+\Command{\tex{par}}
+\Command{\tex{paragraph}}
+
+In \TEX\ and \CONTEXT\ the most important unit of text is the paragraph. You can
+start a new paragraph by:
+
+\startitemize[packed]
+\item an empty line
+\item the \TEX\ command \type{\par}
+\stopitemize
+
+In your \ASCII\ input file you should use empty lines as paragraph separators.
+This will lead to a readable, clearly structured and well organized file and will
+prevent mistakes.
+
+In situations where a command has to be closed explicitly you should use
+\type{\par}.
+
+\startbuffer
+During one of the wars Hasselt lay under siege. After some
+time the city was famine stricken, everything edible was
+eaten. Except for one cow. The cow was kept alive and
+treated very well. \par
+Once a day the citizens of Hasselt took the cow for a walk
+on the ramparts. The besiegers saw the well fed cow and
+became very discouraged. They broke up their camps and
+Hasselt was saved. \par
+In the Hoogstraat in Hasselt there is a stone tablet with a
+representation of the cow that commemorates the siege and
+the shrewdness of the citizens of Hasselt.
+\stopbuffer
+
+\typebuffer
+
+This could also be typed without \type{\par}s and a few empty lines.
+
+\startbuffer
+During one of the wars Hasselt lay under siege. After some
+time the city was famine stricken, everything edible was
+eaten. Except for one cow. The cow was kept alive and
+treated very well.
+
+Once a day the citizens of Hasselt took the cow for a walk
+on the ramparts. The besiegers saw the well fed cow and
+became very discouraged. They broke up their camps and
+Hasselt was saved.
+
+In the Hoogstraat in Hasselt there is a stone tablet with a
+representation of the cow that commemorates the siege and
+the wisdom of the citizens of Hasselt.
+\stopbuffer
+
+\typebuffer
+
+\stopsection
+
+\startsection[title=Inter paragraph spacing]
+
+\index{inter paragraph spacing}
+
+\Command{\tex{setupwhitespace}}
+\Command{\tex{nowhitespace}}
+\Command{\tex{whitespace}}
+\Command{\tex{startlinecorrection}} % VZ 2006-11-15 setup->start
+\Command{\tex{blank}}
+\Command{\tex{setupblank}}
+\Command{\tex{startpacked}}
+\Command{\tex{startunpacked}}
+
+The vertical spacing between paragraphs can be specified by:
+
+\shortsetup{setupwhitespace}
+
+This document is produced with \type{\setupwhitespace[medium]}.
+
+When inter paragraph spacing is specified there are two commands available that
+are seldom needed:
+
+\starttyping
+\nowhitespace
+\whitespace
+\stoptyping
+
+When a paragraph consists of a horizontal line or a framed text like this:
+
+\startbuffer
+\framed{Ridderstraat 27, 8061GH Hasselt}
+\stopbuffer
+
+\getbuffer
+
+Sometimes spacing is suboptimal. For that purpose you could carry out a
+correction with:
+
+\shortsetup{startlinecorrection}
+
+So if you would type:
+
+\startbuffer
+\startlinecorrection
+\framed{Ridderstraat 27, 8061GH Hasselt}
+\stoplinecorrection
+\stopbuffer
+
+\typebuffer
+
+you will get a better output. Only use these commands if really needed!
+
+\getbuffer
+
+Another command to deal with vertical spacing is:
+
+\shortsetup{blank}
+
+The bracket pair is optional and within the bracket pair you can type the amount
+of spacing. Keywords like \type{small}, \type{medium} and \type{big} are related
+to the fontsize.
+
+\startbuffer
+In official writings Hasselt always has the affix Ov. This is an
+abbrevation for the province of {\em Overijssel}.
+\blank[2*big]
+The funny thing is that there is no other Hasselt in the Netherlands.
+So it is redundant.
+\blank
+The affix is a leftover from the times that the Netherlands and
+Belgium were one country under the reign of King Philip II of Spain.
+\blank[2*big]
+Hasselt in Belgium lies in the province of Limburg. One wonders if
+the Belgian people write Hasselt (Li) on their letters.
+\stopbuffer
+
+\typebuffer
+
+The command \type{\blank} without the bracket pair is the default space.
+
+The example would become:
+
+\getbuffer
+
+The default spacing can be set up with:
+
+\shortsetup{setupblank}
+
+If you want to surpress vertical spacing you can use:
+
+\shortsetup{startpacked}
+
+In this manual the whitespace is set at \type{medium}. In the next situation this
+set up is ignored and the lines are packed.
+
+\startbuffer
+\startpacked
+Hasselt (Ov) lies in Overijssel.
+
+Hasselt (Li) lies in Limburg.
+
+Watch out: we talk about Limburg in Belgium. There is
+also a Dutch Limburg.
+\stoppacked
+\stopbuffer
+
+\typebuffer
+
+This will become:
+
+\getbuffer
+
+It is not hard to imagine why there is also:
+
+\shortsetup{startunpacked}
+
+You can force vertical space with \type{\godown}. The distance is specified
+within the brackets.
+
+\shortsetup{godown}
+
+Try not to use this command. It is always better use the \type{\setup...} commands
+to setup your spacing model.
+
+\stopsection
+
+\startsection[title=Whitespace before and after text components]
+
+Most text components that are coded with \CONTEXT\ have a \type{\setup...} command
+with which you can define the whitespace before and after that component.
+
+\starttyping
+\setupitemize
+    [before=,after=]
+
+\setuphead
+    [chapter]
+    [before=,after=]
+
+\setupframedtexts
+    [before=,after=]
+\stoptyping
+
+The use of the \type{\setup...} commands prevents you from having to code
+whitespaces throughout your \TEX\ document. This would lead to unreadable sources
+and inconsistent use of whitepaces.
+
+\stopsection
+
+\startsection[title=Skipping space]
+
+\Command{\tex{hskip}}
+\Command{\tex{vskip}}
+
+You can introduce horizontal and vertical space with \type{\hskip} and
+\type{\vskip} commands.
+
+Try to avoid these commands in your text. It will probably lead to inconsistent
+spacing.
+
+\stopsection
+
+\startsection[title=Indentation]
+
+\index{indentation}
+\index{paragraph+indentation}
+
+\Command{\tex{indenting}}
+\Command{\tex{noindenting}}
+\Command{\tex{setupindenting}}
+
+You can set up the amount of the indentation with:
+
+\shortsetup{setupindenting}
+
+A reasonable indentation is achieved by:
+
+\starttyping
+\setupindenting[yes,]
+\stoptyping
+
+This will lead to indented paragraphs. By default, indentation after white space
+(as issued by \type {\blank}) is suppressed.
+
+You can locally influence the indentation state by using:
+
+\shortsetup{indenting}
+
+When for instance you say \type {never}, from that moment on indentation will be
+surpressed. Saying \type {none}, only influences the next paragraph.
+
+If you choose to use indentations, and at a certain place you explicitly {\em do
+not} want to indent, you can also say:
+
+\starttyping
+\noindenting
+\stoptyping
+
+In some \type{\setup...} commands you can set the parameter \type{indent=yes}. This means
+that the paragraph that follows the textcomponent will indent:
+
+\startbuffer
+\setupitemize[indentnext=yes]
+\stopbuffer
+
+\typebuffer
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,285 @@
+% language=uk
+
+\environment mk-environment
+
+\startcomponent mk-plain
+
+\chapter {Just plain}
+
+\subject{running}
+
+For testing basic \LUATEX\ functionality it makes sense to have a
+minimal system, and traditionally plain \TEX\ has been the most
+natural candidate. It is for this reason that it had been on the
+agenda for a while to provide basic \OPENTYPE\ font support for
+plain \TEX\ as well. Although the \MKIV\ node mode subsystem is
+not yet perfect, the time was right to start experimenting with a
+subset of the \MKIV\ code.
+
+Using plain roughly comes down to the following. First you need
+to generate a format:
+
+\starttyping
+luatex --ini --fmt=luatex.fmt luatex-plain.tex
+\stoptyping
+
+This format has to be moved to a place where it can be found by
+the \KPSE\ library. Since this can differ per distribution there
+is no clear recipe for it, but for \TEXLIVE\ some path ending in
+\type {web2c/luatex} is probably the right spot. After that you
+can run
+
+\starttyping
+luatex luatex-test.tex
+\stoptyping
+
+This file lives under \type {generic/context}. When it
+is run it is quite likely that you will get an error message
+because the font name database cannot be found. You
+can generate one with the following command (which assumes that
+you have \CONTEXT\ installed):
+
+\starttyping
+mtxrun --usekpse --script fonts --names
+\stoptyping
+
+The resulting file \type {luatex-fonts-names.lua} has to be placed
+somewhere in your \TEX\ tree so that it can be found anytime.
+Beware: the \type {--usekpse} flag is only used outside \CONTEXT\
+and provides very limited functionality, just enough for this
+task. Again this is a distribution specific issue so we will not
+dwell upon it here.
+
+The way fonts are defined is modelled after \XETEX, as it makes no
+sense to support the somewhat more fancy \CONTEXT\ way of doing
+things. Keep in mind that although \CONTEXT\ \MKIV\ does support
+the \XETEX\ syntax too, the preferred way there is to use a more
+symbolic feature definition approach.
+
+As this is an experimental setup, it might not always work out as
+expected. Around \LUATEX\ version 0.50 we expect the code to be
+more or less okay.
+
+\subject{implementation}
+
+The \type {luatex-fonts.lua} file is the first in a series of
+basic functionality enhancements for \LUATEX\ derived from the
+\CONTEXT\ \MKIV\ code base. Please don't pollute the \type
+{luatex-*} namespace with code not coming from the \CONTEXT\
+development team as we may add more files.
+
+This file implements a basic font system for a bare \LUATEX\
+system. By default \LUATEX\ only knows about the classic \TFM\
+fonts but it can read other font formats and pass them to \LUA.
+With some glue code one can then construct a suitable \TFM\
+representation that \LUATEX\ can work with. For more advanced font
+support a bit more code is needed that needs to be hooked
+into the callback mechanism.
+
+This file is currently rather simple: it just loads the \LUA\ file
+with the same name. An example of a \type {luatex.tex} file that is
+just the plain \TEX\ format:
+
+\starttyping
+\catcode`\{=1 % left brace is begin-group character
+\catcode`\}=2 % right brace is end-group character
+
+\input plain
+
+\everyjob\expandafter{\the\everyjob\input luatex-fonts\relax}
+
+\dump
+\stoptyping
+
+We could load the \LUA\ file in \type {\everyjob} but maybe some
+day we will need more here.
+
+When defining a font, in addition to the \XETEX\ way, you can use
+two prefixes. A \type {file:}\ prefix forces a file search, while
+a \type {name:}\ prefix will result in consulting the names
+database. The font definitions shown in figure~1 are all valid.
+
+\starttyping
+\font\testa=file:lmroman10-regular at 12pt
+\font\testb=file:lmroman12-regular:+liga; at 24pt
+\font\testc=file:lmroman12-regular:mode=node;+liga; at 24pt
+\font\testd=name:lmroman10bold at 12pt
+\font\testh=cmr10
+\font\testi=ptmr8t
+\font\teste=[lmroman12-regular]:+liga at 30pt
+\font\testf=[lmroman12-regular] at 40pt
+\font\testj=adobesongstd-light % cid font
+\font\testk=cambria(math) {\mathtest 123}
+\font\testl=file:IranNastaliq.ttf:mode=node;script=arab;\
+    language=dflt;+calt;+ccmp;+init;+isol;+medi;+fina;+liga;\
+    +rlig;+kern;+mark;+mkmk at 14pt
+\stoptyping
+
+You can load maths fonts but as Plain \TEX\ is set up for Computer
+Modern (and as we don't adapt Plain \TEX) loading Cambria does
+not give you support for its math features automatically.
+
+If you want access by name you need to generate a font
+database, using:
+
+\starttyping
+mtxrun --script font --names
+\stoptyping
+
+and put the resulting file in a spot where \LUATEX\ can find it.
+
+\subject {remarks}
+
+The code loaded in \type {luatex-fonts.lua} does not come out of
+thin air, but is mostly shared with \CONTEXT; however, in that
+macro package we go beyond what is provided in the plain variant.
+When using this code you need to keep a few things in mind:
+
+\startitemize
+
+\item This subsystem will be extended, improved etc.\ at about the
+same pace as \CONTEXT\ \MKIV. However, because \CONTEXT\ provides a
+rather high level of integration not all features will be supported
+in the same quality. Use \CONTEXT\ if you want more goodies.
+
+\item There is no official \API\ yet, which means that using
+functions implemented here is at your own risk, in the sense that
+names and namespaces might change. There will be a minimal \API\
+defined once \LUATEX\ version 1.0 is out. Instead of patching the
+files it's better to overload functions if needed.
+
+\item The modules are not stripped too much, which makes it
+possible to benefit from improvements in the code that take place
+in the perspective of \CONTEXT\ development. They might be split a
+bit more in due time so the baseline might become smaller.
+
+\item The code is maintained and tested by the \CONTEXT\
+development team. As such it might be better suited for this macro
+package and integration in other systems might demand some
+additional wrapping. The plain version discussed here is the
+benchmark and should be treated as a kind of black box.
+
+\item Problems can be reported to the team but as we use \CONTEXT\
+\MKIV\ as our baseline, you'd better check if the problem is a general
+\CONTEXT\ problem too.
+
+\item The more high level support for features that is provided in
+\CONTEXT\ is not part of the code loaded here as it makes no sense
+elsewhere. Some experimental features are not part of this code
+either but some might show up later.
+
+\item Math font support will be added but only in its basic form
+once the Latin Modern and \TEX\ Gyre math fonts are
+available. Currently traditional and \OPENTYPE\ math fonts can
+be loaded.
+
+\item At this moment the more nifty speedups are not enabled
+because they work in tandem with the alternative file handling
+that \CONTEXT\ uses. Maybe around \LUATEX\ 1.0 we will bring some
+speedup into this code too (if it pays off at all).
+
+\item The code defines a few global tables. If this code is used
+in a larger perspective then you can best make sure that no
+conflicts occur. The \CONTEXT\ package expects users to work in
+their own namespace (\type {userdata}, \type {thirddata}, \type
+{moduledata} or \type {document}). We give ourselves the freedom to
+use any table at the global level but will not use tables that are
+named after macro packages. Later, \CONTEXT\ might operate in
+a more controlled namespace but it has a low priority.
+
+\item There is some tracing code present but this is not enabled
+and not supported as it integrates quite tightly into \CONTEXT. In
+case of problems you can use \CONTEXT\ for tracking down problems.
+
+\item Patching the original code in distributions is dangerous as
+it might fix your problem but introduce new ones for \CONTEXT. So,
+best keep the original code as it is and overload functions and
+callbacks when needed. This is trivial in \LUA.
+
+\item Attributes are (automatically) taken from the range 127||255 so
+you'd best not use these yourself. Don't count on an attribute number
+staying the same and don't mess with these attributes.
+
+\stopitemize
+
+If this all sounds a bit strict, keep in mind that it makes no sense
+for us to maintain multiple code bases and we happen to use \CONTEXT.
+
+\subject{advanced features}
+
+The latest versions now also support font extending, slanting,
+protrusion and expansion. Here are a few examples:
+
+\starttyping
+\pdfprotrudechars2 \pdfadjustspacing2
+
+\font\testa=file:lmroman12-regular:+liga;extend=1.5         at 12pt
+\font\testb=file:lmroman12-regular:+liga;slant=0.8          at 12pt
+\font\testc=file:lmroman12-regular:+liga;protrusion=default at 12pt
+\font\testd=file:lmroman12-regular:+liga;expansion=default  at 12pt
+\stoptyping
+
+The extend and slant options are similar to those used in
+map files. The extend is limited to 10 and the slant to 1.
+
+In the protrusion and expansion specification the keyword \type
+{default} is an entry in a definition table. You can find an
+example at the end of \type {font-dum.lua}.
+
+A setup for expansion looks as follows:
+
+\starttyping
+fonts.expansions.setups['default'] = {
+    stretch = 2, shrink = 2, step = .5, factor = 1,
+
+    [byte('A')] = 0.5, [byte('B')] = 0.7,
+    ...........
+    [byte('8')] = 0.7, [byte('9')] = 0.7,
+}
+\stoptyping
+
+The stretch, shrink and steps become font properties
+and characters gets a value assigned. In pseudo code
+it looks like:
+
+\starttyping
+chr(A).expansion_factor = 0.5 * factor
+\stoptyping
+
+The protrusion table has left and right protrusion
+factors for each relevant character.
+
+\starttyping
+fonts.protrusions.setups['default'] = {
+    factor = 1, left = 1, right = 1,
+
+    [0x002C] = { 0, 1 }, -- comma
+    [0x002E] = { 0, 1 }, -- period
+    [0x003A] = { 0, 1 }, -- colon
+    ........
+    [0x061B] = { 0, 1 }, -- arabic semicolon
+    [0x06D4] = { 0, 1 }, -- arabic full stop
+}
+\stoptyping
+
+So, the comma will stick out in the right margin:
+
+\starttyping
+chr(comma).right_protruding = right * 1 * factor
+\stoptyping
+
+As we prefer measures relative to the width (precentages) we
+actualy use:
+
+\starttyping
+chr(comma).right_protruding = right * 1 * factor * (width/quad)
+\stoptyping
+
+You can add additional tables and access them by keyword in the
+font specification.
+
+The model used in the plain variant is a simplification of the
+\CONTEXT\ model so \CONTEXT\ users should not take this as
+starting point.
+
+\stopcomponent

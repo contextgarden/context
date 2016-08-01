@@ -1,0 +1,96 @@
+% language=uk
+
+\startcomponent about-hz
+
+\environment about-environment
+
+\startchapter[title={Font expansion}]
+
+\startsection[title=Introduction]
+
+A lot in \LUATEX\ is not new. It started as a mix of \PDFTEX\ (which itself is
+built on top of original \TEX\ and \ETEX) and the directional bits of \ALEPH\
+(which is a variant of \OMEGA). Of course large portions have been changed in the
+meantime, most noticeably the input encoding (\UNICODE), fonts with a more
+generic fontloader and \LUA\ based processing, \UNICODE\ math and related font
+rendering, and many subsystems can be overloaded or extended. But at the time I
+write this (end of January 2013) the parbuilder still has the \PDFTEX\ font
+expansion code.
+
+This code is the result of a research project by \THANH. By selectively widening
+shapes a better greyness of the paragraph can be achieved. This trick is inspired
+by the work of Hermann Zapf and therefore, instead of expansion, we often talk of
+{\em hz} optimization.
+
+It started with (runtime) generated \METAFONT\ bitmap fonts and as a consequence
+we ended up with many more font instances. However, when eventually bitmap
+support was dropped and outlines became the norm, the implementation didn't
+change much. Also some of the real work was delegated to the backend and as it
+goes then: never change a working system if there's no reason.
+
+When I played with the \LUA\ based par builder I quickly realized that this
+implementation was far from efficient. It was already known that enabling it
+slowed down par building and I saw that this was largely due to many redundant
+calculations, generating auxiliary fonts, and the interaction between front- and
+backend. And, as I seldom hesitate to reimplement something that can be done
+better (one reason why \CONTEXT\ is never finished) I came to an alternative
+implementation. That was 2010. What helped was that by that time Hartmut Henkel
+already had made the backend part cleaner, in the sense that instead of including
+multiple instances of the same font (but with different glyph widths) the base
+font was transformed in|-|line. This made me realize that we could use just one
+font in the frontend and pass the scale with the glyph node to the backend. And
+so, an extra field was added to glyphs nodes in order to make experiments
+possible.
+
+More than two years later (January 2013) I finally took up this pet project and
+figured out how to adapt the backend. Interestingly a few lines of extra code
+we all that was needed. At the same time the frontend part became much simpler,
+that is, in the \LUA\ parbuilder. But eventually it will be retrofitted into the
+core engine, if only because that's much faster.
+
+\stopsection
+
+\startsection[title=The changes]
+
+The most important changes are the following. Instead of multiple font instances,
+only one is used. This way less memory is used, no extra font instances need to
+be created (and those \OPENTYPE\ fonts can be large).
+
+Because less calculations are needed the code looks less complex and more elegant.
+Okay, the parbuilder code will never really look easy, if only because much more
+is involved.
+
+The glyph related factors are related to the emwidth. This makes not much sense
+so in \CONTEXT\ we define them in fractions of the character width, map them onto
+emwidths, and in the parbuilder need to go to glyph related widths again. If we can
+get rid of these emwidths, we have less complex code.
+
+Probably for reasons of efficiency an expanded font carries a definition that
+tells how much stretch and shrink is permitted and how large the steps are. So,
+for instance a font can be widened 5\% and narrowed 3\% in steps of 1\% which
+gives at most 8 extra instances. There is no real reason why this should be a
+font property and the parbuilder cannot deal with fonts with different steps
+anyway, so it makes more sense to make it a property of the paragraph and treat
+all fonts alike. In the \LUA\ based variant we can even have more granularity but
+we leave that for now. In any case this will lift the limitation of mixed font
+usage that is present in the original mechanism.
+
+The front- and backend code with repect to expansion gets clearly separated. In
+fact, the backend doesn't need to do any calculations other than applying the
+factor that is carried with the glyph. This and previously mentioned simplifications
+make the mechanism more efficient.
+
+It is debatable if expansion needs to be applied to font kerns, as is the case in
+the old mechanism. So, at least it should be an option. Removing this feature
+would again made the code nicer. If we keep it, we should keep in mind that
+expansion doesn't work well with complex fonts (say Arabic) but I will look into
+this later. It might be feasible when using the \LUA\ based variant because then
+we can use some of the information that is carried around with the related
+mechanisms. Of course this then related to the \LUA\ based font builder.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

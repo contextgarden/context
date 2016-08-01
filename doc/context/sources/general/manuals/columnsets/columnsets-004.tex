@@ -1,0 +1,32 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][n=3,page=left]
+
+\definecolor[fakerulecolor]
+
+\definecolumnsetspan[wide] [n=2,background=contrast,color=white]
+\definecolumnsetspan[wider][n=4,background=contrast,color=white]
+
+\starttext
+
+\startcolumnset[example]
+
+  \startcolumnsetspan[wider]
+    wider: \dorecurse{2}{#1: \fakewords{25}{50}\par}
+  \stopcolumnsetspan
+
+  inbetween: \fakewords{25}{50}\par
+
+  \startcolumnsetspan[wide]
+    wide : \dorecurse{2}{#1: \fakewords{25}{50}\par}
+  \stopcolumnsetspan
+
+  after: \dorecurse{15}{#1: \fakewords{100}{200}\par}
+
+\stopcolumnset
+
+\stoptext

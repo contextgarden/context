@@ -1,0 +1,437 @@
+% language=uk
+
+\usemodule[narrowtt]
+
+\environment mk-environment
+
+\startcomponent mk-structure
+
+\chapter{Everything structure}
+
+At the time of this writing, \CONTEXT\ \MKIV\ spends some 50\% of
+its time in \LUA. There are several reasons for this.
+
+\startitemize[packed]
+\item All \IO\ goes via \LUA, including messages and logging. This includes
+      file searching which happened to be done by the \KPSE\ library.
+\item Much font handling is done by \LUA\ too, for instance \OPENTYPE\ features
+      are completely handled by \LUA.
+\item Because \TEX\ is highy optimized, its influence on runtime is less
+      prominent. Even if we delegate some tasks to \LUA, \TEX\ still has
+      work to do.
+\stopitemize
+
+Among the reported statistics of a 242 page version of \type
+{mk.pdf} (not containing this chapter) we find the following:
+
+\startntyping
+input load time           - 0.094 seconds
+startup time              - 0.905 seconds (including runtime option file processing)
+jobdata time              - 0.140 seconds saving, 0.062 seconds loading
+fonts load time           - 5.413 seconds
+xml load time             - 0.000 seconds, lpath calls: 46, cached calls: 31
+lxml load time            - 0.000 seconds preparation, backreferences: 0
+mps conversion time       - 0.000 seconds
+node processing time      - 1.747 seconds including kernel
+kernel processing time    - 0.343 seconds
+attribute processing time - 2.075 seconds
+language load time        - 0.109 seconds, n=4
+graphics processing time  - 0.109 seconds including tex, n=7
+metapost processing time  - 0.484 seconds, loading: 0.016 seconds, execution: 0.203 seconds, n: 65
+current memory usage      - 332 MB
+loaded patterns           - gb:gb:pat:exc:3 nl:nl:pat:exc:4 us:us:pat:exc:2
+control sequences         - 34245 of 165536
+callbacks                 - direct: 235579, indirect: 18665, total: 254244 (1050 per page)
+runtime                   - 25.818 seconds, 242 processed pages, 242 shipped pages, 9.373 pages/second
+\stopntyping
+
+The startup time includes initial font loading (we don't store fonts
+in the format). Jobdata time involves loading and saving multipass data
+used for tables of contents, references, positioning, etc. The time needed
+for loading fonts is over 5 seconds due to the fact that we load a couple of
+real large and complex fonts. Node processing time mostly is related to
+\OPENTYPE\ feature support. The kernel processing time refers to hyphenation
+and line breaking, for which (of course) we use \TEX. Direct callbacks are
+implicit calls to \LUA, using \type {\directlua} while the indirect calls
+concern overloaded \TEX\ functions and callbacks triggered by \TEX\ itself.
+
+Depending on the system load on my laptop, the throughput is around
+10 pages per second for this document, which is due to the fact
+that some font trickery takes place using a few arabic fonts, some
+chinese, a bunch of metapost punk instances, Zapfino, etc.
+
+The times reported are accumulated times and contain quite some
+accumulated rounding errors so assuming that the operating system
+rounds up the times, the totals in practice might be higher. So,
+looking at the numbers, you might wonder if the load on \LUA\ will
+become even larger. This is not necessary. Some tasks can be done
+better in \LUA\ but not always with less code, especially when we
+want to extend functionality and to provide more robust solutions.
+Also, even if we win some processing time we might as well waste
+it in interfacing between \TEX\ and \LUA. For instance, we can
+delegate pretty printing to \LUA, but most documents don't contain
+verbatim at all. We can handle section management by \LUA, but how
+many section headers does a document have?
+
+When the future of \TEX\ is discussed, among the ideas presented
+is to let \TEX\ stick to typesetting and implement it as a
+component (or library) on top of a (maybe dedicated) language.
+This might sound like a nice idea, but eventually we will end up
+with some kind of user interface and a substantial amount of code
+dedicated to dealing with fonts, structure, character management,
+math etc.
+
+In the process of converting \CONTEXT\ to \MKIV\ we try to use
+each language (\TEX, \LUA, \METAPOST) for what it is best suited
+for. Instead of starting from scratch, we start with existing code
+and functionality, because we need a running system. Eventually we
+might find \TEX's role as language being reduced to (or maybe we can
+better talk of \quote {focused on}) mostly aspects of
+typesetting, but \CONTEXT\ as a whole will not be much different
+from the perspective of the user.
+
+So, this is how the transition of \CONTEXT\ takes place:
+
+\startitemize[packed]
+\item We started with replacing isolated bits and pieces of code
+      where \LUA\ is a more natural candidate, like file \IO, encoding
+      issues.
+\item We implement new functionality, for instance \OPENTYPE\
+      and \TYPEONE\ support.
+\item We reimplement mechanisms that are not efficient as we want them
+      to be, like buffers and verbatim.
+\item We add new features, for instance tree based \XML\ processing.
+\item After evaluating we reimplement again when needed (or when \LUATEX\
+      evolves).
+\stopitemize
+
+Yet another transition is the one we will discuss next:
+
+\startitemize[packed]
+\item We replace complex mechanisms by new ones where we separate
+      management and typesetting.
+\stopitemize
+
+This not so trivial effort because it affects many aspects of \CONTEXT\ and
+as such we need to adapt a lot of code at the same time: all things
+related to structure:
+
+\startitemize[packed]
+\item sectioning (chapters, sections, etc)
+\item numbering (pages, itemize, enumeration, floats, etc)
+\item marks (used for headers and footers)
+\item lists (tables of contents, lists of floats, sorted lists)
+\item registers (including collapsing of page ranges)
+\item cross referencing (to text as well as pages)
+\item notes (footnotes, endnotes, etc)
+\stopitemize
+
+All these mechanisms are somehow related. A section head can occur
+in a list, can be cross referenced, might be shows in a header and
+of course can have a number. Such a number can have multiple
+components (1.A.3) where each component can have its own
+conversion, rendering (fonts, colors) and selectively have less
+components. In tables of contents either or not we want to see all
+components, separators etc. Such a table can be generated at each
+level, which demands filtering mechanisms. The same is true for
+registers. There we have page numbers too, and these may be
+prefixed by section numbers, possibly rendered differently than
+the original section number.
+
+Much if this is possible in \CONTEXT\ \MKII, but the code that
+deals with this is not always nice and clean and right from the start
+of the \LUATEX\ project it has been on the agenda to clean it up. The code
+evolved over time and
+functionality was added when needed. But, the projects
+that we deal with demand more (often local) control over the
+components of a number.
+
+What makes structure related data complex is that we need to keep
+track of each aspect in order to be able to reproduce the
+rendering in for instance a table of contents, where we also may
+want to change some of the aspects (for instance separators in a
+different color). Another pending issue is \XML\ and although we
+could normally deal with this quite well, it started making sense
+to make all multi|-|pass data (registers, tables of content,
+sorted lists, references, etc.) more \XML\ aware. This is a
+somewhat hairy task, if only because we need to switch between
+\TEX\ mode and \XML\ mode when needed and at the same time keep an
+eye on unwanted expansion: do we keep structure in the content or
+not?
+
+Rewriting the code that deals with these aspects of typesetting is
+the first step in a separation of code in \MKII\ and \MKIV. Until
+now we tried to share much code, but this no longer makes sense.
+Also, at the \CONTEXT\ conference in Bohinj (2008) it was decided
+that given the development of \MKIV, it made sense to freeze
+\MKII\ (apart from bug fixes and minor extensions). This decision
+opens the road to more drastic changes. We will roll back some of
+the splits in code that made sharing code possible and just
+replace whole components of \CONTEXT\ as a whole. This also gives
+us the opportunity to review code more drastically than until now
+in the perspective of \ETEX.
+
+Because this stage in the rewrite of \CONTEXT\ might bring some
+compatibility issues with it (especially for users who use the
+more obscure tuning options), I will discuss some of the changes
+here. A bit of understanding might make users more tolerant.
+
+The core data structure that we need to deal with is a number, which
+can be constructed in several ways.
+
+\def\NotaBeneR{\inframed[frame=off,background=color,backgroundcolor=mktransparentred]}
+\def\NotaBeneG{\inframed[frame=off,background=color,backgroundcolor=mktransparentgreen]}
+\def\NotaBeneB{\inframed[frame=off,background=color,backgroundcolor=mktransparentblue]}
+\def\NotaBeneY{\inframed[frame=off,background=color,backgroundcolor=mktransparentyellow]}
+\def\NotaBeneS{\inframed[frame=off,background=color,backgroundcolor=mktransparentgray]}
+
+\starttabulate[|l|l|]
+\NC sectioning   \NC \NotaBeneR{1.A.2.II} some title \NC \NR
+\NC pagenumber   \NC page \NotaBeneR{1.A}\NotaBeneG{--}\NotaBeneB{23} \NC \NR
+\NC reference    \NC in chapter \NotaBeneR{2.II} \NC \NR
+\NC marking      \NC \NotaBeneR{A}: some title with preceding number \NC \NR
+\NC contents     \NC \NotaBeneR{2.II} some title with some page number \NotaBeneR{1.A}\NotaBeneG{--}\NotaBeneB{23} \NC \NR
+\NC index        \NC some word \NotaBeneB{23}, \NotaBeneR{A}\NotaBeneG{--}\NotaBeneB{42}---\NotaBeneR{B}\NotaBeneG{--}\NotaBeneB{48} \NC \NR
+\NC itemize      \NC \NotaBeneY{a} first item \NotaBeneY{a.1} subitem item \NC \NR
+\NC enumerate    \NC example \NotaBeneR{1.A.2.II}\NotaBeneG{.}\NotaBeneY{a} \NC \NR
+\NC floatcaption \NC figure \NotaBeneR{1}\NotaBeneG{--}\NotaBeneB{2} \NC \NR
+\NC footnotes    \NC note \NotaBeneS{\symbol[3]} \NC \NR
+\stoptabulate
+
+In this table we see how numbers are composed:
+
+\starttabulate[|l|p|]
+\NC \NotaBeneR{section number} \NC It has several components, separated by symbols
+                                   and with an optional final symbol \NC \NR
+\NC \NotaBeneG{separator}      \NC This can be different for each level and can
+                                   have dedicated rendering options \NC \NR
+\NC \NotaBeneB{page number}    \NC That can be preceded by a (partial) sectionnumber
+                                   and separated from the page number by another symbol \NC \NR
+\NC \NotaBeneY{counter}        \NC It can be preceded by a (partial) sectionnumber and
+                                   can also have subnumbers with its own separation
+                                   properties \NC \NR
+\NC \NotaBeneS{symbol}         \NC Sometimes numbers get represented by symbols in which
+                                   case we use pagewise restarting symbol sets \NC \NR
+\stoptabulate
+
+Say that at some point we store a section number and/or page
+number. With the number we need to store information about the
+conversion (number, character, roman numeral, etc) and the
+separators, including their rendering. However, when we reuse that
+stored information we might want to discard some components and/or
+use a different rendering. In traditional \CONTEXT\ we have
+control over some aspects but due to the way numbers are stored
+for later reuse this control is limited.
+
+Say that we have cloned a subsection head as follows:
+
+\starttyping
+\definehead[MyHead][section]
+\stoptyping
+
+This is used as:
+
+\starttyping
+\MyHead[example]{Example}
+\stoptyping
+
+In \MKII\ we save a list entry (which has the number, the title
+and a reference to the page) and a reference to the the number,
+the title and the page (tagged \type {example}). Page numbers are
+stored in such a way that we can filter at specific section
+levels. This permits local tables of contents.
+
+The entry in the multi pass data file looks as follows (we collect all
+multi pass data in one file):
+
+\starttyping
+\mainreference{}{example}{2--0-1-1-0-0-0-0--1}{1}{{I.I}{Example}}%
+\listentry{MyHead}{2}{I.I}{Example}{2--0-1-1-0-0-0-0--1}{1}%
+\stoptyping
+
+In \MKIV\ we store more information and use tables for that. Currently
+the entry looks as follows:
+
+\starttyping
+structure.lists.collected={
+ {
+   ...
+ },
+ {
+  metadata={
+   catcodes=4,
+   coding="tex",
+   internal=2,
+   kind="section",
+   name="MyHead",
+   reference="example",
+  },
+  pagenumber={
+   numbers={ 1, 1, 0 },
+  },
+  sectionnumber={
+   conversion="R",
+   conversionset="default",
+   numbers={ 0, 2 },
+   separatorset="default",
+  },
+  sectiontitle={
+   label="MyHead",
+   title="Example",
+  },
+ },
+ {
+  ...
+ },
+}
+\stoptyping
+
+There can be much more information in each of the subtables. For
+instance, the \type {pagenumber} and \type {sectionnumber}
+subtables can have \type {prefix}, \type {separatorset},
+\type{conversion}, \type {conversionset}, \type {stopper}, \type
+{segments} and \type {connector} fields, and the \type {metadata}
+table can contain information about the \XML\ root document so
+that associated filtering and handling can be reconstructed. With the
+section title we store information about the preceding label text
+(seldom used, think of \quote{Part B}).
+
+This entry is used for lists as well as cross referencing.
+Actually, the stored information is also used for markings
+(running heads). This means that these mechanisms must be able to
+distinguish between where and how information is stored.
+
+These tables look rather verbose and indeed they are. We end up
+with much larger multi|-|pass data files but fortunately loading them
+is quite efficient. Serializing on the other hand might cost some time
+which is compensated by the fact that we no longer store
+information in token lists associated with nodes in \TEX's lists
+and in the future we might even move more data handling to the
+\LUA\ end. Also, in future versions we will share similar data
+(like page number information) more efficiently.
+
+Storing date at the \LUA\ end also has consequences for the
+typesetting. When specific data is needed a call to \LUA\ is
+necessary. In the future we might offer both push and pull methods
+(\LUA\ pushing information to the typesetting code versus \LUA\
+triggering typesetting code). For lists we pull, and for registers
+we currently push. Depending on our experiences we might change
+these strategies.
+
+A side effect of the rewrite is that we force more consistency.
+For instance, you see a \type {conversion} field in the list. This
+is the old way of defining the way a number gets converted. The
+modern approach is to use sets. Because we now have a more
+stringent inheritance model at the user interface level, this
+might lead to incompatible conversions at lower levels (when
+unset). Instead of cooking up some nasty compatibility hacks, we
+accept some incompatibility, if only because users have to adapt
+their styles to new font technology anyway. And for older
+documents there is still \MKII.
+
+Instead of introducing many extra configuration variables (for each
+level of sectioning) we introduce sets. These replace some of the
+existing parameters and are the follow up on some (undocumented)
+precursor of sets. Examples of sets are:
+
+\starttyping
+\definestructureseparatorset [default][][.]
+\definestructureconversionset[default][][numbers]
+\definestructureresetset     [default][][0]
+\definestructureprefixset    [default][section-2,section-3][]
+\definestructureseparatorset [appendix][][.]
+\definestructureconversionset[appendix][Romannumerals,Characters][]
+\definestructureresetset     [appendix][][0]
+\stoptyping
+
+The third parameter is the default value. The sets that relate to typesetting
+can have a rendering specification:
+
+\starttyping
+\definestructureseparatorset
+  [demosep]
+  [demo->!,demo->?,demo->*,demo->@]
+  [demo->/]
+\stoptyping
+
+Here we apply \type{demo} to each of the separators as well as to the
+default. The renderer is defined with:
+
+\starttyping
+\defineprocessor[demo][style=\bfb,color=red]
+\stoptyping
+
+You can imagine that, although this is quite possible in \TEX,
+dealing with sets, splitting them, handling the rendering, etc.\
+is easier in \LUA\ that in \TEX. Of course the code still looks
+somewhat messy, if only because the problem is messy. Part if this
+mess is related to the fact that we might have to specify all
+components that make up a number.
+
+\starttabulate
+\NC section    \NC section number as part of head  \NC \NR
+\NC list       \NC section number as part of list entry  \NC \NR
+\NC            \NC section number as part of page number prefix \NC \NR
+\NC            \NC (optionally prefixed) page number \NC \NR
+\NC counter    \NC section number as part of counter prefix  \NC \NR
+\NC            \NC (optionally prefixed) counter value(s) \NC \NR
+\NC pagenumber \NC section number as part of page number \NC \NR
+\NC            \NC pagenumber components (realpage, page, subpage) \NC \NR
+\stoptabulate
+
+As a result we have upto 3 sets of parameters:
+
+\starttabulate
+\NC section    \NC \type{section*} \NC \NR
+\NC list       \NC \type{section*} \type{prefix*} \type{page*} \NC \NR
+\NC counter    \NC \type{section*} \type{number*} \NC \NR
+\NC pagenumber \NC \type{prefix*} \type{page*} \NC \NR
+\stoptabulate
+
+When reimplementing the structure related commands, we also have
+to take mechanisms into account that relate to them. For instance,
+index sorter code is also used for sorted lists, so when we adapt
+one mechanism we also have to adapt the other. The same is true
+for cross references, that are used all over the place. It helps
+that for the moment we can omit the more obscure interaction
+related mechanism, if only because users will seldom use them.
+Such mechanisms are also related to the backend and we're not yet
+in the stage where we upgrade the backend code. In case you wonder
+why references can be such a problematic areas think of the
+following:
+
+\starttyping
+\goto{here}[page(10),StartSound{ping},StartVideo{demo}]
+\goto{there}[page(10),VideLayer{example},JS(SomeScript{hi world})]
+\goto{anywhere}[url(mypreviouslydefinedurl)]
+\stoptyping
+
+The \CONTEXT\ cross reference mechanism permits mixed usage of simple
+hyperlinks (jump to some page) and more advanced viewer actions like
+showing widgets and runnign \JAVASCRIPT\ code. And even a simple
+reference like:
+
+\starttyping
+\at{here and there}[somefile::sometarget]
+\stoptyping
+
+involves some code because we need to handle the three words as
+well as the outer reference. \footnote {Currently \CONTEXT\ does
+its own splitting of multiword references, and does so by reusing
+hyperlink resources in the backend format. This might change in
+the future.} The reason why we need to reimplement referencing
+along with structure lays in the fact that for some structure
+components (like section headers and float references) we no
+longer store cross reference information separately but filter it
+from the data stored in the list (see example before).
+
+The \LUA\ code involved in dealing with the more complex
+references shown here is much more flexible and robust than the
+original \TEX\ code. This is a typical example of where the
+accumulated time spent on the \TEX\ based solution is large
+compared to the time spent on the \LUA\ variant. It's like driving
+200 km by car through hilly terrain and wondering how one did that
+in earlier times. Just like today scenery is not by definition better
+than yestedays, \MKIV\ code is not always better than \MKII\ code.
+
+\stopcomponent

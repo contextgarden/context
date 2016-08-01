@@ -1,0 +1,208 @@
+\startcomponent ma-cb-en-pages
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Page breaking and page numbering]
+
+\index{page breaking}
+\index{page numbering}
+
+\Command{\tex{page}}
+\Command{\tex{setuppagenumbering}}
+\Command{\tex{setupuserpagenumber}}
+
+\startsection[title=Page break]
+
+A page can be enforced or blocked by:
+
+\shortsetup{page}
+
+The options can be stated within the brackets. The options and their meaning are
+presented in \in{table}[tab:page options].
+
+\placetable
+  []
+  [tab:page options]
+  {Page options.}
+\starttable[|l|l|]
+\HL
+\NC \bf Option \NC \bf Meaning \NC\SR
+\HL
+\NC \type{yes}           \NC enforce a page \NC\FR
+\NC \type{makeup}        \NC enforce a page without filling \NC\MR
+\NC \type{no}            \NC no page \NC\MR
+\NC \type{preference}    \NC prefer a new page here \NC\MR
+\NC \type{bigpreference} \NC great preference for a new page here \NC\MR
+\NC \type{left}          \NC next page is a left handside page \NC\MR
+\NC \type{right}         \NC next page is a right handside page \NC\MR
+\NC \type{disable}       \NC following commands have no effect \NC\MR
+\NC \type{last}          \NC add pages till even number is reached \NC\MR
+\NC \type{quadruple}     \NC add pages till a multiple of four is reached  \NC\MR
+\NC \type{even}          \NC next page is even \NC\MR
+\NC \type{odd}           \NC next page in odd  \NC\MR
+\NC \type{blank}         \NC no page number  \NC\MR
+\NC \type{empty}         \NC insert an empty page \NC\MR
+\NC \type{reset}         \NC following commands do have effect \NC\MR
+\NC \type{start}         \NC from now on page commands have effect \NC\MR
+\NC \type{stop}          \NC from now on page commands have no effect \NC\LR
+\HL
+\stoptable
+
+\stopsection
+
+\startsection[title=Page numbering]
+
+Numbering pages is done automatically by \CONTEXT. However, numbering the pages
+the way you want it may take some effort.
+
+A rather simple \type{\start ... \stoptext} document will be numbered from
+$1 .. n$ (where $n$ is the last page). If you want your document to number
+its pages alphabetical you can type:
+
+\startbuffer
+\setupuserpagenumber
+    [numberconversion=character]
+\stopbuffer
+
+\typebuffer
+
+in the setup area of your file.
+
+You can enforce a page number with:
+
+\starttyping
+\setupuserpagenumber[number=25]
+\stoptyping
+
+\shortsetup{setupuserpagenumber}
+
+The options of the \type{\setupuserpagenumber} command are given in
+\in{table}[tab:user page number options].
+
+\placetable
+  []
+  [tab:user page number options]
+  {Page numbering: numbering options.}
+\starttable[|l|l|]
+\HL
+\NC \bf Option \NC \bf Meaning \NC\SR
+\HL
+\NC \type{way}                 \NC how to number the document \NC\FR
+\NC \type{prefix}              \NC use pagenumber prefix \NC\MR
+\NC \type{prefixset}           \NC use defined prefixset \NC\MR
+\NC \type{prefixseparatorset}  \NC use defined separator \NC\MR
+\NC \type{state}               \NC start -- stop page numbering \NC\MR
+\NC \type{number}              \NC define page number \NC\MR
+\NC \type{numberconversion}    \NC convert page number \NC\MR
+\NC \type{numberconversionset} \NC used defined conversion set \NC\LR
+\HL
+\stoptable
+
+The \type{prefixset}, \type{prefixseparatorset} and the \type{numberconversionset}
+options are defined with the \type{\defineprefixset}, \type{\defineseparatorset}
+and \type{\defineconversionset} respectively.
+
+This manual uses the \CONTEXT\ standard document section blocks: frontpart,
+bodymatter and appendices. These section blocks are numbered with roman
+characters, numeral digits and characters respectively.
+
+\startbuffer
+\defineconversionset
+  [frontpart:pagenumber][][romannumerals]
+
+\defineconversionset
+  [bodypart:pagenumber] [][numbers]
+
+\defineconversionset
+  [appendix:pagenumber] [][Characters]
+\stopbuffer
+
+\typebuffer
+
+At the start of each section block the number is reset to i, 1 and A respectively.
+
+The same effect would have been obntained with:
+
+\startbuffer
+\startsectionblockenvironment[frontpart]
+  \setupuserpagenumber[numberconversion=romannumerals]
+\stopsectionblockenvironment
+\stopbuffer
+
+\typebuffer
+
+Page numbering and the location of the page numbers can be set up with:
+
+\shortsetup{setuppagenumbering}
+
+The options of this command are shown in \in{table}[tab:page numbering options]:
+
+\placetable
+  []
+  [tab:page numbering options]
+  {Page numbering: layout options.}
+\starttable[|l|l|]
+\HL
+\NC \bf Option \NC \bf Meaning \NC\SR
+\HL
+\NC \type{alternative}     \NC page layout: single or double sided \NC\MR
+\NC \type{location}        \NC location of page number on page \NC\MR
+\NC \type{width}           \NC width of pagen umber \NC\MR
+\NC \type{left}            \NC text left of page number \NC\MR
+\NC \type{right}           \NC text right of page number \NC\MR
+\NC \type{page}            \NC \unknown \NC\MR
+\NC \type{state}           \NC start -- stop page numbering  \NC\MR
+\NC \type{command}         \NC invoke command \NC\MR
+\NC \type{style}           \NC set character style \NC\MR
+\NC \type{color}           \NC set color \NC\LR
+\HL
+\stoptable
+
+Note that this is also the command that indicates that your document is single or
+double sided which has an effect on the left-right page layout.
+
+\startbuffer
+\setuppagenumbering
+  [alternative=doublesided]
+\stopbuffer
+
+\typebuffer
+
+In this manual page numbering is set up with:
+
+\starttyping
+\setuppagenumbering
+  [location={footer,middle},
+   command=\NummerCommando]
+\stoptyping
+
+The \type{\NummerCommando} uses \METAPOST\ to draw a unique random image around
+each page number.
+
+You can recal a page number with \type{\userpagenumber}. If you set up your headertext
+with:
+
+\startbuffer
+  \setupheadertexts
+    [Page \userpagenumber\ of \lastuserpagenumber]
+\stopbuffer
+
+\typebuffer
+
+You would get a header with the actual page number and the total of pages (in that
+section block).
+
+The actual page number and the real page number may differ since there may be pages
+or sections that in your document that are not numbered. If you feel the need to
+display the real page number there is the command \type{\realpagenumber}.
+
+Please refer to the \goto {\CONTEXTWIKI} [
+url(http://wiki.contextgarden.net/Command/setupuserpagenumber) ] for more
+details.
+
+\stopchapter
+
+\stopcomponent
+

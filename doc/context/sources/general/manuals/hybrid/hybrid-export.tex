@@ -1,0 +1,293 @@
+% language=uk
+
+\startluacode
+    job.files.context(dir.glob("exported-*.tex"),"--directives=structures.export.lessstate")
+\stopluacode
+
+\startcomponent hybrid-export
+
+\environment hybrid-environment
+
+\startchapter[title={Exporting XML}]
+
+\startsection [title={Introduction}]
+
+Every now and then on the the mailing list users ask if \CONTEXT\ can produce
+\HTML\ instead of for instance \PDF, and the answer has always been unsatisfying.
+In this chapter I will present the \MKIV\ way of doing this.
+
+\stopsection
+
+\startsection [title={The clumsy way}]
+
+My favourite answer to the question about how to produce \HTML\ (or more general
+\XML\ as it can be transformed) has always been: \quotation {I'd just typeset
+it!}. Take:
+
+\starttyping
+\def\MyChapterCommand#1#2{<h1>#2</h1>}
+\setuphead[chapter][command=\MyChapterCommand]
+\stoptyping
+
+Here \type {\chapter{Hello World}} will produce:
+
+\starttyping
+<h1>Hello World</h1>
+\stoptyping
+
+Now imagine that you hook such commands into all relevant environments and that
+you use a style with no header and footer lines. You use a large page (A2) and a
+small monospaced font (4pt) so that page breaks will not interfere too much. If
+you want columns, fine, just hook in some code that typesets the final columns as
+tables. In the end you will have an ugly looking \PDF\ file but by feeding it
+into \type {pdftotext} you will get a nicely formatted \HTML\ file.
+
+For some languages of course encoding issues would show up and there can be all
+kind of interferences, so eventually the amount of code dealing with it would
+have accumulated. This is why we don't follow this route.
+
+An alternative is to use \type {tex4ht} which does an impressive job for \LATEX,
+and supports \CONTEXT\ to some extent as well. As far as I know it overloads some
+code deep down in the kernel which is something \quote {not done} in the
+\CONTEXT\ universe if only because we cannot keep control over side effects. It
+also complicates maintainance of both systems.
+
+In \MKIV\ however, we do have the ability to export the document to a structured
+\XML\ file so let's have a look at that.
+
+\stopsection
+
+\startsection [title={Structure}]
+
+The ability to export to some more verbose format depends on the availability of
+structural information. As we already tag elements for the sake of tagged \PDF,
+it was tempting to see how well we could use those tags for exporting to \XML. In
+principle it is possible to use Acrobat Professional to export the content using
+tags but you can imagine that we get a better quality if we stay within the scope
+of the producing machinery.
+
+\starttyping
+\setupbackend[export=yes]
+\stoptyping
+
+This is all you need unless you want to fine tune the resulting \XML\ file. If
+you are familiar with tagged \PDF\ support in \CONTEXT, you will recognize the
+result. When you process the following file:
+
+\typefile{exported-001.tex}
+
+You will get a file with the suffix \type {export} that looks as follows:
+\footnote{We will omit the topmost lines in following examples.}
+
+\typefile{exported-001.export}
+
+It's no big deal to postprocess such a file. In that case one can for instance
+ignore the chapter number or combine the number and the title. Of course
+rendering information is lost here. However, sometime it makes sense to export
+some more details. Take the following table:
+
+\typefile[range=2]{exported-002.tex}
+
+Here we need to preserve the span related information as well as cell specific
+alignments as for tables this is an essential part of the structure.
+
+\typefile[range=7]{exported-002.export}
+
+The tabulate mechanism is quite handy for regular text especially when the
+content of cells has to be split over pages. As each line in a paragraph in a
+tabulate becomes a cell, we need to reconstruct the paragraphs from the (split)
+alignment cells.
+
+\typefile[range=2]{exported-003.tex}
+
+This becomes:
+
+\typefile[range=7]{exported-003.export}
+
+The \type {<break/>} elements are injected automatically between paragraphs. We
+could tag each paragraph individually but that does not work that well when we
+have for instance a quotation that spans multiple paragraphs (and maybe starts in
+the middle of one). An empty element is not sensitive for this and is still a
+signal that vertical spacing is supposed to be applied.
+
+\stopsection
+
+\startsection[title=The implementation]
+
+We implement tagging using attributes. The advantage of this is that it does not
+interfere with typesetting, but a disadvantage is that not all parent elements
+are visible. When we encounter some content, we're in the innermost element so if
+we want to do something special, we need to deduce the structure from the current
+child. This is no big deal as we have that information available at each child
+element in the tree.
+
+The first implementation just flushed the \XML\ on the fly (i.e.\ when traversing
+the node list) but when I figured out that collapsing was needed for special
+cases like tabulated paragraphs this approach was no longer valid. So, after some
+experiments I decided to build a complete structure tree in memory \footnote {We
+will see if this tree will be used for other purposes in the future.}. This
+permits us to handle situations like the following:
+
+\typefile[range=2]{exported-005.tex}
+
+Here we get:
+
+\typefile[range=7]{exported-005.export}
+
+The \type {symbol} and \type {packed} attributes are first seen at the \type
+{itemcontent} level (the innermost element) so when we flush the \type
+{itemgroup} element's attributes we need to look at the child elements (content)
+that actually carry the attribute.\footnote {Only glyph nodes are investigated
+for structure.}
+
+I already mentioned collapsing. As paragraphs in a tabulate get split into cells,
+we encounter a mixture that cannot be flushed sequentially. However, as each cell
+is tagged uniquely we can append the lines within a cell. Also, as each paragraph
+gets a unique number, we can add breaks before a new paragraph starts. Collapsing
+and adding breakpoints is done at the end, and not per page, as paragraphs can
+cross pages. Again, thanks to the fact that we have a tree, we can investigate
+content and do this kind of manipulations.
+
+Moving data like footnotes are somewhat special. When notes are put on the page
+(contrary to for instance end notes) the so called \quote {insert} mechanism is
+used where their content is kept with the line where it is defined. As a result
+we see them end up instream which is not that bad a coincidence. However, as in
+\MKIV\ notes are built on top of (enumerated) descriptions, we need to
+distinguish them somehow so that we can cross reference them in the export.
+
+\typefile[range=2]{exported-006.tex}
+
+Currently this will end up as follows:
+
+\typefile[range=7]{exported-006.export}
+
+Graphics are also tagged and the \type {image} element reflects the included
+image.
+
+\typefile[range=2]{exported-007.tex}
+
+If the image sits on another path then that path shows up in an attribute and
+when a page other than~1 is taken from the (pdf) image, it gets mentioned as
+well.
+
+\typefile[range=7]{exported-007.export}
+
+Cross references are another relevant aspect of an export. In due time we will
+export them all. It's not so much complicated because all information is there
+but we need to hook some code into the right spot and making examples for those
+cases takes a while as well.
+
+\typefile[range=2]{exported-009.tex}
+
+We export references in the \CONTEXT\ specific way, so no
+interpretation takes place.
+
+\typefile[range=7]{exported-009.export}
+
+As \CONTEXT\ has an integrated referencing system that deals with internal as
+well as external references, url's, special interactive actions like controlling
+widgets and navigations, etc.\ and we export the raw reference specification as
+well as additional attributes that provide some detail.
+
+\typefile[range=2]{exported-013.tex}
+
+Of course, when postprocessing the exported data, you need to take these variants
+into account.
+
+\typefile[range=7]{exported-013.export}
+
+\stopsection
+
+\startsection[title=Math]
+
+Of course there are limitations. For instance \TEX ies doing math might wonder if
+we can export formulas. To some extent the export works quite well.
+
+\typefile[range=2]{exported-008.tex}
+
+This results in the usual rather verbose presentation \MATHML:
+
+\typefile[range=7]{exported-008.export}
+
+More complex math (like matrices) will be dealt with in due time as for this
+Aditya and I have to take tagging into account when we revisit the relevant code
+as part of the \MKIV\ cleanup and extensions. It's not that complex but it makes
+no sense to come up with intermediate solutions.
+
+Display verbatim is also supported. In this case we tag individual lines.
+
+\typefile[range=2]{exported-010.tex}
+
+The export is not that spectacular:
+
+\typefile[range=7]{exported-010.export}
+
+A rather special case are marginal notes. We do tag them because they
+often contain usefull information.
+
+\typefile[range=2]{exported-012.tex}
+
+The output is currently as follows:
+
+\typefile[range=7]{exported-012.export}
+
+However, this might change in future versions.
+
+\stopsection
+
+\startsection[title=Formatting]
+
+The output is formatted using indentation and newlines. The extra run time needed
+for this (actually, quite some of the code is related to this) is compensated by
+the fact that inspecting the result becomes more convenient. Each environment has
+one of the properties \type {inline}, \type {mixed} and \type {display}. A
+display environment gets newlines around it and an inline environment none at
+all. The mixed variant does something in between. In the following example we tag
+some user elements, but you can as well influence the built in ones.
+
+\typefile[range=2]{exported-004.tex}
+
+This results in:
+
+\typefile[range=7]{exported-004.export}
+
+Keep in mind that elements have no influence on the typeset result apart from
+introducing spaces when used this way (this is not different from other \TEX\
+commands). In due time the formatting might improve a bit but at least we have
+less chance ending up with those megabyte long one||liners that some applications
+produce.
+
+\stopsection
+
+\startsection[title=A word of advise]
+
+In (for instance) \HTML\ class attributes are used to control rendering driven by
+stylesheets. In \CONTEXT\ you can often define derived environments and their
+names will show up in the detail attribute. So, if you want control at that level
+in the export, you'd better use the structure related options built in \CONTEXT,
+for instance:
+
+\typefile[range=2]{exported-011.tex}
+
+This gives two different sections:
+
+\typefile[range=7]{exported-011.export}
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+It is an open question if such an export is useful. Personally I never needed a
+feature like this and there are several reasons for this. First of all, most of
+my work involves going from (often complex) \XML\ to \PDF\ and if you have \XML\
+as input, you can also produce \HTML\ from it. For documents that relate to
+\CONTEXT\ I don't need it either because manuals are somewhat special in the
+sense that they often depend on showing something that ends up on paper (or its
+screen counterpart) anyway. Loosing the makeup also renders the content somewhat
+obsolete. But this feature is still a nice proof of concept anyway.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

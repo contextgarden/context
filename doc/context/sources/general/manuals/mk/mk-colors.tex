@@ -1,0 +1,467 @@
+% language=uk
+
+\startcomponent mk-colors
+
+\environment mk-environment
+
+\chapter{Colors redone}
+
+\subject{introduction}
+
+Color support has been present in \CONTEXT\ right from the start and
+support has been gradualy extended, for instance with transparency
+and spot colors. About 10 years later we have the first major rewrite
+of this mechanism using attributes as implemented in \LUATEX.
+
+Because I needed a test file to check if all things still work as
+expected, I decided to recap the most important commands in this
+chapter.
+
+\subject{color support}
+
+The core command is \type {\definecolor}, so let's define a few
+colors:
+
+\startbuffer
+\definecolor [red]     [r=1]
+\definecolor [green]   [g=1]
+\definecolor [blue]    [b=1]
+\definecolor [yellow]  [y=1]
+\definecolor [magenta] [m=1]
+\definecolor [cyan]    [c=1]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This gives us the following colors:
+
+\showcolorcomponents[red,green,blue,,yellow,magenta,cyan]
+
+As you can see in this table, transparency is part of a color
+specification, so let's define a few transparent colors:
+
+\startbuffer
+\definecolor [t-red]   [r=1,a=1,t=.5]
+\definecolor [t-green] [g=1,a=1,t=.5]
+\definecolor [t-blue]  [b=1,a=1,t=.5]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\showcolorcomponents[t-red,t-green,t-blue]
+
+Because transparency is now separated from color, we can define
+transparent behaviour as follows:
+
+\startbuffer
+\definecolor[half-transparent] [a=1,t=.5]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Implementing process color spaces was not that complex, but spot and multitone
+colors took a bit more code.
+
+\startbuffer
+\definecolor     [parentspot]               [r=.5,g=.2,b=.8]
+\definespotcolor [childspot-1] [parentspot] [p=.7]
+\definespotcolor [childspot-2] [parentspot] [p=.4]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The three colors, two of them are spot colors, show up as follows:
+
+\showcolorcomponents[parentspot,childspot-1,childspot-2]
+
+Multitone colors can also be defined:
+
+\startbuffer
+\definespotcolor [spotone]   [red]   [p=1]
+\definespotcolor [spottwo]   [green] [p=1]
+
+\definespotcolor [spotone-t] [red]   [a=1,t=.5]
+\definespotcolor [spottwo-t] [green] [a=1,t=.5]
+
+\definemultitonecolor
+    [whatever]
+    [spotone=.5,spottwo=.5]
+    [b=.5]
+\definemultitonecolor
+    [whatever-t]
+    [spotone=.5,spottwo=.5]
+    [b=.5]
+    [a=1,t=.5]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Transparencies don't carry over:
+
+\showcolorcomponents[spotone,spottwo,spotone-t,spottwo-t,whatever,whatever-t]
+
+Transparencies combine as follows:
+
+\startbuffer
+\blackrule[width=3cm,height=1cm,color=spotone-t]\hskip-1.5cm
+\blackrule[width=3cm,height=1cm,color=spotone-t]
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\dontleavehmode\getbuffer
+\stoplinecorrection
+
+We can still clone colors and overload color dynamically. I used the following
+test code for the \MKIV\ code:
+
+\startbuffer
+{\green green->red}
+\definecolor[green] [g=1]
+{\green green->green}
+\definecolor[green] [blue]
+{\green green->blue}
+\definecolor[blue] [red]
+{\green green->red}
+\setupcolors[expansion=yes]%
+\definecolor[blue] [red]
+\definecolor[green] [blue]
+\definecolor[blue] [r=1]
+{\green green->blue}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Of course palets and color groups are supported too. We seldom use
+colorgroups, but here is an example:
+
+\startbuffer
+\definecolorgroup
+  [redish]
+  [1.00:0.90:0.90,1.00:0.80:0.80,1.00:0.70:0.70,1.00:0.55:0.55,
+   1.00:0.40:0.40,1.00:0.25:0.25,1.00:0.15:0.15,0.90:0.00:0.00]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The redish color is called by number:
+
+\startbuffer
+\blackrule[width=3cm,height=1cm,depth=0pt,color=redish:1]\quad
+\blackrule[width=3cm,height=1cm,depth=0pt,color=redish:2]\quad
+\blackrule[width=3cm,height=1cm,depth=0pt,color=redish:3]
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\dontleavehmode\getbuffer
+\stoplinecorrection
+
+Palets work with names:
+
+\startbuffer
+\definepalet
+  [complement]
+  [red=cyan,green=magenta,blue=yellow]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This is used as:
+
+\startbuffer
+\blackrule[width=1cm,height=1cm,depth=0pt,color=red]\quad
+\blackrule[width=1cm,height=1cm,depth=0pt,color=green]\quad
+\blackrule[width=1cm,height=1cm,depth=0pt,color=blue]\quad
+\setuppalet[complement]%
+\blackrule[width=1cm,height=1cm,depth=0pt,color=red]\quad
+\blackrule[width=1cm,height=1cm,depth=0pt,color=green]\quad
+\blackrule[width=1cm,height=1cm,depth=0pt,color=blue]
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\dontleavehmode\getbuffer
+\stoplinecorrection
+
+% Rasters are still supported but normally one will use colors:
+%
+% \startbuffer
+% \raster[.5]{\blackrule[width=3cm,height=1cm]}\quad
+% \raster[.8]{\blackrule[width=3cm,height=1cm]}
+% \stopbuffer
+%
+% \typebuffer
+%
+% \startlinecorrection
+% \dontleavehmode\getbuffer
+% \stoplinecorrection
+
+Of course the real torture test is \METAPOST\ inclusion:
+
+\startbuffer
+\startMPcode
+    path p ; p := fullcircle scaled 4cm ;
+    fill p                  withcolor \MPcolor{spotone-t} ;
+    fill p shifted(2cm,0cm) withcolor \MPcolor{spottwo-t} ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+These transparent color circles up as:
+
+\startlinecorrection
+\dontleavehmode\getbuffer
+\stoplinecorrection
+
+Multitone colors also work:
+
+\startbuffer
+\startMPcode
+    path p ; p := fullcircle scaled 2cm ;
+    fill p                  withcolor \MPcolor{spotone} ;
+    fill p shifted(2cm,0cm) withcolor \MPcolor{spottwo} ;
+    fill p shifted(4cm,0cm) withcolor \MPcolor{whatever} ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection
+\dontleavehmode\getbuffer
+\stoplinecorrection
+
+\subject{implementation}
+
+The implementation of colors using attributes if quite different
+from the traditional method. In \MKII\ color support works okay but
+the associated code is not that clean, if only because:
+
+\startitemize[packed]
+\item we need to keep track of grouped color usage
+\item and we do that using dedicated marks (using \TEX's mark mechanism)
+\item since this has limitations, we have quite some optimizations
+\item like local (no marks) and global colors (marks)
+\item and real dirty code to push and pop color states around pages
+\item and some messy code to deal with document colors
+\item and quite some conversion macros (think of \TEX\ not having floats)
+\stopitemize
+
+Although recent versions of \PDFTEX\ have a color stack mechanism, this
+is not adequate for our usage, if only because we support more colorspaces
+than this mechanism is supposed to deal with. (The color stack mechanism is
+written with a particular macro packag ein mind.)
+
+In \MKIV\ attributes behave like colors and therefore we no longer
+need to care about what happens at pageboundaries. Also, we no
+longer have to deal with the limitations of marks. Here:
+
+\startitemize[packed]
+\item we have distributed color spaces, color itself and transparency
+\item all injection of backend code is postponed to shipout time
+\item definition and conversion is delegated to \LUA
+\stopitemize
+
+Of course the current implementation is not as nice as we would like it
+to be. This because:
+
+\startitemize[packed]
+\item support mechanism are under construction
+\item we need to support both \MKII\ and \MKIV\ in one interface
+\item backend support is yet limited
+\stopitemize
+
+Although in principle a mechanism based on attributes is much faster than
+using marks cum suis, the new implementation is slower. The main reason is
+that we need to finalize the to be shipped out box. However, since this
+task involved more than just color, we will gain back some runtime when other
+mechanisms also use attributes.
+
+\subject{complications}
+
+This paragraph is somewhat complex, so skip it when you don't feel comfortable with
+the subject of when you've never seen low level \CONTEXT\ code.
+
+Attributes behave like fonts. This means that they are kind of frozen once
+material is boxed. Consider that we define a box as follows:
+
+\starttyping
+\setbox0\hbox{default {\red red \green green} default}
+\stoptyping
+
+What do you expect to come out the next code? In \MKII\ the \quote
+{default} inside the box will be colored yellow but the internal
+red and and green words will keep their color.
+
+\starttyping
+default {\yellow yellow \box0\ yellow} default
+\stoptyping
+
+When we use fonts switches we don't expect the content of the
+box to change. So, in the following the \quote {default} texts will
+{\em not} become bold.
+
+\starttyping
+\setbox0\hbox{default {\sl slanted \bi bold italic} default}
+default {\bf bold \box0\ bold} default
+\stoptyping
+
+Future versions of \LUATEX\ will provide more control over how attributes
+are applied to boxes, but for the moment we need to fallback on a solution
+built in \MKIV:
+
+\starttyping
+default {\yellow yellow \attributedbox0\ yellow} default
+\stoptyping
+
+There is also a \type {\attributedcopy} macro. These macros signal the
+attribute resolver (that kicks in just before shipout) that this box is to
+be treated special.
+
+In \MKII\ we had a similar situation which is why we had the option (only used
+deep down in \CONTEXT) to encapsulate a bunch of code with
+
+\starttyping
+\startregistercolor[foregroundcolor]
+some macro code ... here foregroundcolor is applied ... more code
+\stopregisteringcode
+\stoptyping
+
+This is for instance used in the \type {\framed} macro. First we package the content,
+foregroundcolor is not yet applied because the injected  specials of literals can interfere
+badly, but by registering the colors the nested color calls are tricked into thinking that
+preceding and following content is colored. When packaged, we apply backgrounds, frames,
+and foregroundcolor to the whole result. Because nested colors were aware of the
+foregroundcolor they have properly reverted to this color when needed.
+
+In \MKIV\ the situation is reversed. Here we definitely need to set the foregroundcolor
+because otherwise attributes are not set and here they don't interfere at all (no extra nodes).
+For this we use the same registration macros. When the lot is packaged, applying foregroundcolor
+is ineffective because the attributes are already applied. Instead of registering we could
+have flushed the framed content using \type {\attributedbox}, but this way we can keep the
+\MKII\ and \MKIV\ code base the same.
+
+To summarize, first the na\"ive approach. Here the nested colors know how to revert, but
+the color switch can interfere with the content (since color commands inject nodes).
+
+\starttyping
+\setbox\framed\vbox
+  {\color[foregroundcolor]{packaged framed content, can have color switches}}
+\stoptyping
+
+The \MKII\ approach registers the foreground color so the nested colors
+know what to do. There is no interfering code:
+
+\starttyping
+\startregistercolor[foregroundcolor]
+\setbox\framed
+\stopregisteringcode
+\setbox\framed{\color[foregroundcolor]{\box\framed}}
+\stoptyping
+
+The registration actually sets the color, so in fact the final coloring is not
+needed (does nothing). An alternative \MKIV\ approach is the following:
+
+\starttyping
+\color
+  [foregroundcolor]
+  {\setbox\framed{packaged framed content, can have color switches}}
+\stoptyping
+
+This works ok because attributes are applied to the whole content, i.e.\
+the box. In \MKII\ this would be quite ineffective and actually result
+in weird side effects.
+
+\starttyping
+< color stack is pushed and marks are set (unless local) >
+< color special or literal sets color to foregroundcolor >
+\setbox\framed{packaged framed content, can have color switches}
+< color special or literal sets color to foregroundcolor >
+< color stack is popped and marks are set (unless local) >
+\stoptyping
+
+So, effectively we set a box, and end up with:
+
+\starttyping
+< whatsits (special, literal and.or mark) >
+< whatsits (special, literal and.or mark) >
+\stoptyping
+
+in the main vertical lost and that will interfere badly with spacing
+and friends.
+
+In \MKIV\ however, a color switch, like a font switch does not leave any
+traces, it just sets a state. Anyway, keep in mind that there are some
+rather fundamental conceptual differences between the two appoaches.
+
+Let's end with an example that demonstrates the problem. We fill two boxes:
+
+% in previous examples we may have messed up colors
+
+\definecolor[red]   [darkred]
+\definecolor[green] [darkgreen]
+\definecolor[blue]  [darkblue]
+\definecolor[yellow][darkyellow]
+
+\startbuffer
+\setbox0\hbox{RED {\blue blue} RED}
+\setbox2\hbox{RED {\blue blue} {\attributedcopy0} RED}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We will flush these in the following lines:
+
+\startbuffer
+{unset \color[red]{red \CopyMe} unset
+    \color[red]{red \hbox{red \CopyMe}} unset}
+{unset \color[red]{red \CopyMe} unset
+    {\red red \hbox{red \CopyMe}} unset}
+{unset \color[red]{red \CopyMe} unset
+    {\red red \setbox0\hbox{red \CopyMe}\box0} unset}
+{unset \color[red]{red \CopyMe} unset
+    {\hbox{\red red \CopyMe}} unset}
+{\blue blue \color[red]{red \CopyMe} blue
+    \color[red]{red \hbox{red \CopyMe}} blue}
+\stopbuffer
+
+\typebuffer
+
+\startbuffer[yes]
+\def\CopyMe{\attributedcopy2\ \copy4}
+\stopbuffer
+
+\startbuffer[no]
+\def\CopyMe{\copy2\ \copy4}
+\stopbuffer
+
+First we define \type {\CopyMe} as follows:
+
+\typebuffer[yes]
+
+This gives:
+
+\start \enableattributeinheritance \getbuffer[yes] \getbuffer \stop
+
+Compare this with:
+
+\typebuffer[no]
+
+This gives:
+
+\getbuffer[no] \getbuffer
+
+You get the picture? At least in early version of \MKIV\ you need to
+enable support for inheritance with:
+
+\starttyping
+\enableattributeinheritance
+\stoptyping
+
+\stopcomponent

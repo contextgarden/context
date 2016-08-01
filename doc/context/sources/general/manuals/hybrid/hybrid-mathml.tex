@@ -1,0 +1,915 @@
+% language=uk
+
+% \enabletrackers[structures.export]
+% \setupbackend[export=yes]
+
+\usemodule[mathml] % also loads calcmath
+
+\startcomponent hybrid-mathml
+
+\environment hybrid-environment
+
+\startchapter[title={Exporting math}]
+
+\startsection [title={Introduction}]
+
+As \CONTEXT\ has an \XML\ export feature and because \TEX\ is often strongly
+associated with math typesetting, it makes sense to take a look at coding and
+exporting math. In the next sections some aspects are discussed. The examples
+shown are a snaphot of the possibilities around June 2011.
+
+\stopsection
+
+\startsection [title={Encoding the math}]
+
+In \CONTEXT\ there are several ways to input math. In the following example we
+will use some bogus math with enough structure to get some interesting results.
+
+The most natural way to key in math is using the \TEX\ syntax. Of course you need
+to know the right commands for accessing special symbols, but if you're familiar
+with a certain domain, this is not that hard.
+
+\startbuffer
+\startformula
+  \frac { x \geq 2 } { y \leq 4 }
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+When you have an editor that can show more than \ASCII\ the following also works
+out well.
+
+\starttyping
+\startformula
+  \frac { x ≥ 2 } { y ≤ 4 }
+\stopformula
+\stoptyping
+
+One can go a step further and use the proper math italic alphabet but there are
+hardly any (monospaced) fonts out there that can visualize it.
+
+\starttyping[escape=yes]
+\startformula
+  \frac { /BTEX\it x/ETEX ≥ 2 } { /BTEX\it y/ETEX ≤ 4 }
+\stopformula
+\stoptyping
+
+Anyhow, \CONTEXT\ is quite capable of remapping the regular alphabets onto the
+real math ones, so you can stick to \type {x} and \type {y}.
+
+Another way to enter the same formula is by using what we call calculator math.
+We came up with this format many years ago when \CONTEXT\ had to process student
+input using a syntax similar to what the calculators they use at school accept.
+
+\startbuffer
+\startformula
+  \calcmath{(x >= 2)/(y <= 4)}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+As \CONTEXT\ is used in a free and open school math project, and because some of
+our projects mix \MATHML\ into \XML\ encoded sources, we can also consider using
+\MATHML. The conceptually nicest way is to use content markup, where the focus is
+on meaning and interchangability and not on rendering. However, we can render it
+quite well. OpenMath, now present in \MATHML~3 is also supported.
+
+\startbuffer
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <divide/>
+    <apply> <geq/> <ci> x </ci> <cn> 2 </cn> </apply>
+    <apply> <leq/> <ci> y </ci> <cn> 4 </cn> </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+In practice \MATHML\ will be coded using the presentational variant. In many
+aspects this way of coding is not much different from what \TEX\ does.
+
+\startbuffer
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <mfrac>
+    <mrow> <mi> x </mi> <mo> &geq; </mo> <mn> 2 </mn> </mrow>
+    <mrow> <mi> y </mi> <mo> &leq; </mo> <mn> 4 </mn> </mrow>
+  </mfrac>
+</math>
+\stopbuffer
+
+\typebuffer \processxmlbuffer
+
+When we enable \XML\ export in the backend of \CONTEXT, all of the above variants
+are converted into the following:
+
+% <m:math display="block">
+%   <m:mrow>
+%     <m:mfrac>
+%       <m:mrow>
+%         <m:mi>𝑥</m:mi>
+%         <m:mo>≥</m:mo>
+%         <m:mn>2</m:mn>
+%       </m:mrow>
+%       <m:mrow>
+%         <m:mi>𝑦</m:mi>
+%         <m:mo>≤</m:mo>
+%         <m:mn>4</m:mn>
+%       </m:mrow>
+%     </m:mfrac>
+%   </m:mrow>
+% </m:math>
+
+\starttyping[escape=yes]
+<m:math display="block">
+  <m:mrow>
+    <m:mfrac>
+      <m:mrow>
+        <m:mi>/BTEX\it x/ETEX</m:mi>
+        <m:mo>≥</m:mo>
+        <m:mn>2</m:mn>
+      </m:mrow>
+      <m:mrow>
+        <m:mi>/BTEX\it y/ETEX</m:mi>
+        <m:mo>≤</m:mo>
+        <m:mn>4</m:mn>
+      </m:mrow>
+    </m:mfrac>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+This is pretty close to what we have entered as presentation \MATHML. The main
+difference is that the (display or inline) mode is registered as attribute and
+that entities have been resolved to \UTF. Of course one could use \UTF\ directly
+in the input.
+
+\stopsection
+
+\startsection [title={Parsing the input}]
+
+In \TEX\ typesetting math happens in two stages. First the input is parsed and
+converted into a so called math list. In the following case it's a rather linear
+list, but in the case of a fraction it is a tree.
+
+\startbuffer
+\startformula
+  x = - 1.23
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+A naive export looks as follows. The sequence becomes an \type {mrow}:
+
+\starttyping[escape=yes]
+<m:math display="block">
+  <m:mrow>
+    <m:mi>/BTEX\it x/ETEX</m:mi>
+    <m:mo>=</m:mo>
+    <m:mo>−</m:mo>
+    <m:mn>1</m:mn>
+    <m:mo>.</m:mo>
+    <m:mn>2</m:mn>
+    <m:mn>3</m:mn>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+However, we can clean this up without too much danger of getting invalid output:
+
+\starttyping[escape=yes]
+<m:math display="block">
+  <m:mrow>
+    <m:mi>/BTEX\it x/ETEX</m:mi>
+    <m:mo>=</m:mo>
+    <m:mo>−</m:mo>
+    <m:mn>1.23</m:mn>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+This is still not optimal, as one can argue that the minus sign is part of the
+number. This can be taken care of at the input end:
+
+\startbuffer
+\startformula
+  x = \mn{- 1.23}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+Now we get:
+
+\starttyping[escape=yes]
+<m:math display="block">
+  <m:mrow>
+    <m:mi>/BTEX\it x/ETEX</m:mi>
+    <m:mo>=</m:mo>
+    <m:mn>−1.23</m:mn>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+Tagging a number makes sense anyway, for instance when we use different numbering
+schemes:
+
+\startbuffer
+\startformula
+  x = \mn{0x20DF} = 0x20DF
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+We get the first number nicely typeset in an upright font but the second one
+becomes a mix of numbers and identifiers:
+
+\getbuffer
+
+This is nicely reflected in the export:
+
+\starttyping[escape=yes]
+<m:math display="block">
+  <m:mrow>
+    <m:mi>/BTEX\it x/ETEX</m:mi>
+    <m:mo>=</m:mo>
+    <m:mn>0x20DF</m:mn>
+    <m:mo>=</m:mo>
+    <m:mn>0</m:mn>
+    <m:mi>/BTEX\it x/ETEX</m:mi>
+    <m:mn>20</m:mn>
+    <m:mi>/BTEX\it D/ETEX</m:mi>
+    <m:mi>/BTEX\it F/ETEX</m:mi>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+In a similar fashion we can use \type {\mo} and \type {\mi} although these are
+seldom needed, if only because characters and symbols already carry these
+properties with them.
+
+\stopsection
+
+\startsection [title={Enhancing the math list}]
+
+When the input is parsed into a math list the individual elements are called
+noads. The most basic noad has pointers to a nucleus, a superscript and a
+subscript and each of them can be the start of a sublist. All lists (with more
+than one character) are quite similar to \type {mrow} in \MATHML. In the export
+we do some flattening because otherwise we would get too many redundant \type
+{mrow}s, not that it hurts but it saves bytes.
+
+\startbuffer
+\startformula
+  x_n^2
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+This renders as:
+
+\getbuffer
+
+And it gets exported as:
+
+\starttyping[escape=yes]
+<m:math display="block">
+  <m:mrow>
+    <m:msubsup>
+      <m:mi>/BTEX\it x/ETEX</m:mi>
+      <m:mi>/BTEX\it n/ETEX</m:mi>
+      <m:mn>2</m:mn>
+    </m:msubsup>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+As said, in the math list this looks more or less the same: we have a noad with a
+nucleus pointing to a math character (\type {x}) and two additional pointers to
+the sub- and superscripts.
+
+After this math list is typeset, we will end up with horizontal and vertical
+lists with glyphs, kerns, glue and other nodes. In fact we end up with what can
+be considered regular references to slots in a font mixed with positioning
+information. In the process the math properties gets lost. This happens between
+step~3 and~4 in the next overview.
+
+\starttabulate[|l|l|l|]
+\NC 1  \NC \XML  \NC optional alternative input \NC \NR
+\NC 2  \NC \TEX  \NC native math coding \NC \NR
+\NC 3  \NC noads \NC intermediate linked list / tree \NC \NR
+\NC 4  \NC nodes \NC linked list with processed (typeset) math \NC \NR
+\NC 5a \NC \PDF  \NC page description suitable for rendering \NC \NR
+\NC 5b \NC \XML  \NC export reflecting the final document content \NC \NR
+\stoptabulate
+
+In \CONTEXT\ \MKIV\ we intercept the math list (with noads) and apply a couple of
+manipulations to it, most noticeably relocation of characters. Last in the
+(currently some 10) manipulation passes over the math list comes tagging. This
+only happens when the export is active or when we produce tagged pdf. \footnote
+{Currently the export is the benchmark and the tagged \PDF\ implementation
+follows, so there can be temporary incompatibilities.}
+
+By tagging the recognizable math snippets we can later use those persistent
+properties to reverse engineer the \MATHML\ from the input.
+
+\stopsection
+
+\startsection [title={Intercepting the typeset content}]
+
+When a page gets shipped out, we also convert the typeset content to an
+intermediate form, ready for export later on. Version 0.22 of the exporter has a
+rather verbose tracing mechanism and the simple example with sub- and superscript
+is reported as follows:
+
+\starttyping[escape=yes]
+<math-8 trigger='268' index='1'>
+  <mrow-20 trigger='268' index='1'>
+    <msubsup-1 trigger='268' index='1'>
+      <mi-15 trigger='268' index='1'>
+        <!-- processing glyph 2 (tag 270) -->
+        <!-- moving from depth 11 to 11 (mi-15) -->
+        <!-- staying at depth 11 (mi-15) -->
+        <!-- start content with length 4 -->
+        /BTEX\it x/ETEX
+        <!-- stop content -->
+        <!-- moving from depth 11 to 11 (mn-13) -->
+      </mi-15>
+      <mn-13 trigger='270' index='2'>
+        <!-- processing kern > threshold (tag 270 => 267)
+        <!-- moving from depth 11 to 11 (mn-13) -->
+        <!-- staying at depth 11 (mn-13) -->
+        <!-- start content with length 1 -->
+        2
+        <!-- stop content -->
+        <!-- injecting spacing 9 -->
+        <!-- moving from depth 11 to 10 (msubsup-1) -->
+      </mn-13>
+    </msubsup-1>
+    <!-- processing glyph 𝑛 (tag 269) -->
+    <!-- moving from depth 9 to 10 (msubsup-1) -->
+    <msubsup-1 trigger='267' index='2'>
+      <!-- start content with length 1 -->
+
+      <!-- stop content -->
+    </msubsup-1>
+    <!-- moving from depth 9 to 11 (mi-16) -->
+    <msubsup-1 trigger='269' index='3'>
+      <mi-16 trigger='269' index='1'>
+        <!-- processing glue > threshold (tag 269 => 262) -->
+        <!-- moving from depth 11 to 11 (mi-16) -->
+        <!-- staying at depth 11 (mi-16) -->
+        <!-- start content with length 4 -->
+        /BTEX\it n/ETEX
+        <!-- stop content -->
+        <!-- injecting spacing 6 -->
+        <!-- moving from depth 11 to 6 (formula-8) -->
+      </mi-16>
+    </msubsup-1>
+  </mrow-20>
+</math-8>
+\stoptyping
+
+This is not yet what we want so some more effort is needed in order to get proper
+\MATHML.
+
+\stopsection
+
+\startsection [title={Exporting the result}]
+
+The report that we showed before representing the simple example with super- and
+subscripts is strongly related to the visual rendering. It happens that \TEX\
+first typesets the superscript and then deals with the subscript. Some spacing is
+involved which shows up in the report between the two scripts.
+
+In \MATHML\ we need to swap the order of the scripts, so effectively we need:
+
+\starttyping[escape=yes]
+<math-8 trigger='268' index='1'>
+  <mrow-20 trigger='268' index='1'>
+    <msubsup-1 trigger='268' index='1'>
+      <mi-15 trigger='268' index='1'>
+        /BTEX\it x/ETEX
+      </mi-15>
+      <mi-16 trigger='269' index='2'>
+        /BTEX\it n/ETEX
+      </mi-16>
+      <mn-13 trigger='270' index='3'>
+        2
+      </mn-13>
+    </msubsup-1>
+  </mrow-20>
+</math-8>
+\stoptyping
+
+This swapping (and some further cleanup) is done before the final tree is written
+to a file. There we get:
+
+\starttyping[escape=yes]
+<m:math display="block">
+  <m:mrow>
+    <m:msubsup>
+      <m:mi>/BTEX\it x/ETEX</m:mi>
+      <m:mi>/BTEX\it n/ETEX</m:mi>
+      <m:mn>2</m:mn>
+    </m:msubsup>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+This looks pretty close to the intermediate format. In case you wonder with how
+much intermediate data we end up, the answer is: quite some. The reason will be
+clear: we intercept typeset output and reconstruct the input from that, which
+means that we have additional information travelling with the content. Also, we
+need to take crossing pages into account and we need to reconstruct paragraphs.
+There is also some overhead in making the \XML\ look acceptable but that is
+neglectable. In terms of runtime, the overhead of an export (including tagging)
+is some 10\% which is not that bad, and there is some room for optimization.
+
+\stopsection
+
+\startsection[title={Special treatments}]
+
+In content \MATHML\ the \type {apply} tag is the cornerstone of the definition.
+Because there is enough information the rendering mechanism can deduce when a
+function is applied and act accordingly when it comes to figuring out the right
+amount of spacing. In presentation \MATHML\ there is no such information and
+there the signal is given by putting a character with code \type {U+2061} between
+the function identifier and the argument. In \TEX\ input all this is dealt with
+in the macro that specifies a function but some ambiguity is left.
+
+Compare the following two formulas:
+
+\startbuffer
+\startformula
+  \tan = \frac { \sin } { \cos }
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In the export this shows up as follows:
+
+\starttyping
+<m:math display="block">
+  <m:mrow>
+    <!-- begin function -->
+      <m:mi>tan</m:mi>
+    <!-- end function -->
+    <m:mo>=</m:mo>
+    <m:mrow>
+      <m:mfrac>
+        <m:mrow>
+          <!-- begin function -->
+            <m:mi>sin</m:mi>
+          <!-- end function -->
+        </m:mrow>
+        <m:mrow>
+          <!-- begin function -->
+            <m:mi>cos</m:mi>
+          <!-- end function -->
+        </m:mrow>
+      </m:mfrac>
+    </m:mrow>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+Watch how we know that \type {tan} is a function and not a multiplication of the
+variables \type {t}, \type{a} and~\type {n}.
+
+In most cases functions will get an argument, as in:
+
+\startbuffer
+\startformula
+  \tan (x) = \frac { \sin (x) } { \cos (x) }
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\starttyping[escape=yes]
+<m:math display="block">
+  <m:mrow>
+    <!-- begin function -->
+      <m:mi>tan</m:mi>
+    <!-- end function -->
+    <m:mo>(</m:mo>
+    <m:mi>/BTEX\it x/ETEX</m:mi>
+    <m:mo>)</m:mo>
+    <m:mo>=</m:mo>
+    <m:mrow>
+      <m:mfrac>
+        <m:mrow>
+          <!-- begin function -->
+            <m:mi>sin</m:mi>
+          <!-- end function -->
+          <m:mo>(</m:mo>
+          <m:mi>/BTEX\it x/ETEX</m:mi>
+          <m:mo>)</m:mo>
+        </m:mrow>
+        <m:mrow>
+          <!-- begin function -->
+            <m:mi>cos</m:mi>
+          <!-- end function -->
+          <m:mo>(</m:mo>
+          <m:mi>/BTEX\it x/ETEX</m:mi>
+          <m:mo>)</m:mo>
+        </m:mrow>
+      </m:mfrac>
+    </m:mrow>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+As expected we now see the arguments but it is still not clear that the function
+has to be applied.
+
+\startbuffer
+\startformula
+  \apply \tan {(x)} = \frac {
+    \apply \sin {(x)}
+  } {
+    \apply \cos {(x)}
+  }
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This time we get the function application signal in the output. We could add it
+automatically in some cases but for the moment we don't do so. Because this
+trigger has no visual rendering and no width it will not be visible in an editor.
+Therefore we output an entity.
+
+\starttyping[escape=yes]
+<m:math display="block">
+  <m:mrow>
+    <m:mi>tan</m:mi>
+    <m:mo>&#x2061;</m:mo>
+    <m:mo>(</m:mo>
+    <m:mi>/BTEX\it x/ETEX</m:mi>
+    <m:mo>)</m:mo>
+    <m:mo>=</m:mo>
+    <m:mrow>
+      <m:mfrac>
+        <m:mrow>
+          <m:mi>sin</m:mi>
+          <m:mo>&#x2061;</m:mo>
+          <m:mo>(</m:mo>
+          <m:mi>/BTEX\it x/ETEX</m:mi>
+          <m:mo>)</m:mo>
+        </m:mrow>
+        <m:mrow>
+          <m:mi>cos</m:mi>
+          <m:mo>&#x2061;</m:mo>
+          <m:mo>(</m:mo>
+          <m:mi>/BTEX\it x/ETEX</m:mi>
+          <m:mo>)</m:mo>
+        </m:mrow>
+      </m:mfrac>
+    </m:mrow>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+In the future, we will extend the \type {\apply} macro to also deal with
+automatically managed fences. Talking of those, fences are actually supported
+when explicitly coded:
+
+\startbuffer
+\startformula
+  \apply \tan {\left(x\right)} = \frac {
+    \apply \sin {\left(x\right)}
+  } {
+    \apply \cos {\left(x\right)}
+  }
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This time we get a bit more structure because delimiters in \TEX\ can be
+recognized easily. Of course it helps that in \CONTEXT\ we already have the
+infrastructure in place.
+
+\starttyping[escape=yes]
+<m:math display="block">
+  <m:mrow>
+    <m:mi>tan</m:mi>
+    <m:mo>&#x2061;</m:mo>
+    <m:mrow>
+      <m:mfenced left="(" right=")">
+        <m:mi>/BTEX\it x/ETEX</m:mi>
+      </m:mfenced>
+    </m:mrow>
+    <m:mo>=</m:mo>
+    <m:mrow>
+      <m:mfrac>
+        <m:mrow>
+          <m:mi>sin</m:mi>
+          <m:mo>&#x2061;</m:mo>
+          <m:mfenced left="(" right=")">
+            <m:mi>/BTEX\it x/ETEX</m:mi>
+          </m:mfenced>
+        </m:mrow>
+        <m:mrow>
+          <m:mi>cos</m:mi>
+          <m:mo>&#x2061;</m:mo>
+          <m:mfenced left="(" right=")">
+            <m:mi>/BTEX\it x/ETEX</m:mi>
+          </m:mfenced>
+        </m:mrow>
+      </m:mfrac>
+    </m:mrow>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+Yet another special treatment is needed for alignments. We use the next example
+to show some radicals as well.
+
+\startbuffer
+\startformula
+  \startalign
+    \NC  a^2 \EQ \sqrt{b}    \NR
+    \NC  c   \EQ \frac{d}{e} \NR
+    \NC      \EQ f           \NR
+  \stopalign
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+It helps that in \CONTEXT\ we use a bit of structure in math alignments. In fact,
+a math alignment is just a regular alignment, with math in its cells. As with
+other math, eventually we end up with boxes so we need to make sure that enough
+information is passed along to reconstuct the original.
+
+\getbuffer
+
+\starttyping[escape=yes]
+<m:math display="inline">
+  <m:mtable detail='align'>
+    <m:mtr>
+      <m:mtd>
+        <m:mrow>
+          <m:msup>
+            <m:mi>/BTEX\it a/ETEX</m:mi>
+            <m:mn>2</m:mn>
+          </m:msup>
+        </m:mrow>
+      </m:mtd>
+      <m:mtd>
+        <m:mrow>
+          <m:mo>=</m:mo>
+          <m:mroot>
+            <m:mi>/BTEX\it b/ETEX</m:mi>
+          </m:mroot>
+        </m:mrow>
+      </m:mtd>
+    </m:mtr>
+    <m:mtr>
+      <m:mtd>
+        <m:mrow>
+          <m:mi>/BTEX\it c/ETEX</m:mi>
+        </m:mrow>
+      </m:mtd>
+      <m:mtd>
+        <m:mrow>
+          <m:mo>=</m:mo>
+          <m:mfrac>
+            <m:mrow>
+              <m:mi>/BTEX\it d/ETEX</m:mi>
+            </m:mrow>
+            <m:mrow>
+              <m:mi>/BTEX\it e/ETEX</m:mi>
+            </m:mrow>
+          </m:mfrac>
+        </m:mrow>
+      </m:mtd>
+    </m:mtr>
+    <m:mtr>
+      <m:mtd>
+        <m:mrow>
+          <m:mo>=</m:mo>
+          <m:mi>/BTEX\it f/ETEX</m:mi>
+        </m:mrow>
+      </m:mtd>
+    </m:mtr>
+  </m:mtable>
+</m:math>
+\stoptyping
+
+Watch how the equal sign ends up in the cell. Contrary to what you might expect,
+the relation symbols (currently) don't end up in their own column. Keep in mind
+that these tables look structured but that presentational \MATHML\ does not
+assume that much structure. \footnote {The spacing could be improved here but
+it's just an example, not something real.}
+
+\stopsection
+
+\startsection[title=Units]
+
+Rather early in the history of \CONTEXT\ we had support for units and the main
+reason for this was that we wanted consistent spacing. The input of the old
+method looks as follows:
+
+\starttyping
+10 \Cubic \Meter \Per \Second
+\stoptyping
+
+This worked in regular text as well as in math and we even have an \XML\ variant.
+A few years ago I played with a different method and the \LUA\ code has been
+laying around for a while but never made it into the \CONTEXT\ core. However,
+when playing with the export, I decided to pick up that thread. The verbose
+variant can now be coded as:
+
+\starttyping
+10 \unit{cubic meter per second}
+\stoptyping
+
+but equally valid is:
+
+\starttyping
+10 \unit{m2/s}
+\stoptyping
+
+and also
+
+\starttyping
+\unit{10 m2/s}
+\stoptyping
+
+is okay. So, one can use the short (often official) symbols as well as more
+verbose names. In order to see what gets output we cook up some bogus units.
+
+\startbuffer
+30 \unit{kilo pascal square meter / kelvin second}
+\stopbuffer
+
+\typebuffer
+
+This gets rendered as: \getbuffer. The export looks as follows:
+
+\starttyping
+30 <unit>kPa⋅m<sup>2</sup>/K⋅s</unit>
+\stoptyping
+
+\startbuffer
+\unit{30 kilo pascal square meter / kelvin second}
+\stopbuffer
+
+You can also say:
+
+\typebuffer
+
+and get: \getbuffer. This time the export looks like this:
+
+\starttyping
+<quantity>
+  <number>30</number>
+  <unit>kPa⋅m<sup>2</sup>/K⋅s</unit>
+</quantity>
+\stoptyping
+
+\startbuffer
+$30 \unit{kilo pascal square meter / kelvin second }$
+\stopbuffer
+
+When we use units in math, the rendering is mostly the same. So,
+
+\typebuffer
+
+Gives: \getbuffer, but the export now looks different:
+
+\starttyping
+<m:math display="inline">
+  <m:mrow>
+  <m:mn>30</m:mn>
+  <m:maction actiontype="unit">
+    <m:mrow>
+      <m:mi mathvariant="normal">k</m:mi>
+      <m:mi mathvariant="normal">P</m:mi>
+      <m:mi mathvariant="normal">a</m:mi>
+      <m:mo>⋅</m:mo>
+      <m:msup>
+          <m:mi mathvariant="normal">m</m:mi>
+          <m:mn>2</m:mn>
+      </m:msup>
+      <m:mo>/</m:mo>
+      <m:mi mathvariant="normal">K</m:mi>
+      <m:mo>⋅</m:mo>
+      <m:mi mathvariant="normal">s</m:mi>
+    </m:mrow>
+  </m:maction>
+  </m:mrow>
+</m:math>
+\stoptyping
+
+Watch how we provide some extra information about it being a unit and how the
+rendering is controlled as by default a renderer could turn the \type {K} and
+other identifiers into math italic. Of course the subtle spacing is lost as we
+assume a clever renderer that can use the information provided in the \type
+{maction}.
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+So far the results of the export look quite acceptable. It is to be seen to what
+extent typographic detail will be added. Thanks to \UNICODE\ math we don't need
+to add style directives. Because we carry information with special spaces, we
+could add these details if needed but for the moment the focus is on getting the
+export robust on the one end, and extending \CONTEXT's math support with some
+additional structure.
+
+The export shows in the previous sections was not entirely honest: we didn't show
+the wrapper. Say that we have this:
+
+\startbuffer
+\startformula
+  e = mc^2
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+This shows up as:
+
+\getbuffer
+
+and exports as:
+
+\starttyping[escape=yes]
+<formula>
+  <formulacontent>
+    <m:math display="block">
+      <m:mrow>
+        <m:mi>/BTEX\it e/ETEX</m:mi>
+        <m:mo>=</m:mo>
+        <m:mi>/BTEX\it m/ETEX</m:mi>
+        <m:msup>
+          <m:mi>/BTEX\it c/ETEX</m:mi>
+          <m:mn>2</m:mn>
+        </m:msup>
+      </m:mrow>
+    </m:math>
+  </formulacontent>
+</formula>
+\stoptyping
+
+\startbuffer
+\placeformula
+  \startformula
+     e = mc^2
+  \stopformula
+\stopbuffer
+
+\typebuffer
+
+This becomes:
+
+\getbuffer
+
+and exports as:
+
+\starttyping[escape=yes]
+<formula>
+  <formulacontent>
+    <m:math display="block">
+      <m:mrow>
+        <m:mi>/BTEX\it e/ETEX</m:mi>
+        <m:mo>=</m:mo>
+        <m:mi>/BTEX\it m/ETEX</m:mi>
+        <m:msup>
+          <m:mi>/BTEX\it c/ETEX</m:mi>
+          <m:mn>2</m:mn>
+        </m:msup>
+      </m:mrow>
+    </m:math>
+  </formulacontent>
+  <formulacaption>
+    (<formulanumber detail='formula'>1.1</formulanumber>)
+  </formulacaption>
+</formula>
+\stoptyping
+
+The caption can also have a label in front of the number. The best way to deal
+with this still under consideration. I leave it to the reader to wonder how we
+get the caption at the same level as the content while in practice the number is
+part of the formula.
+
+Anyway, the previous pages have demonstrated that with version 0.22 of the
+exporter we can already get a quite acceptable math export. Of course more will
+follow.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

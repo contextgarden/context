@@ -1,0 +1,26 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset [example-1] [n=2,balance=yes]
+\definecolumnset [example-2] [n=3,balance=yes]
+
+\starttext \showgrid
+
+  \setupcolumnsetlines[example-1][1][1] [8]
+  \setupcolumnsetlines[example-1][1][2][10]
+
+  \setupcolumnsetstart[example-2][1][1][29]
+  \setupcolumnsetstart[example-2][1][2][29]
+  \setupcolumnsetstart[example-2][1][3][29]
+
+  \startcolumnset [example-1]
+    \dorecurse {1}{\input tufte \par}
+  \stopcolumnset
+  \startcolumnset [example-2]
+    \dorecurse {2}{\input ward  \par}
+  \stopcolumnset
+
+\stoptext

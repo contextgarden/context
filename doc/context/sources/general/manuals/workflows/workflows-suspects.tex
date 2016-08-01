@@ -1,0 +1,54 @@
+% language=uk
+
+\environment workflows-style
+
+\startcomponent workflows-suspects
+
+\startchapter[title={Suspects}]
+
+When many authors and editors are involved there is the danger of inconsistent
+spacing being applied. We're not only talking of the (often invisible in editing
+programs) nobreak spaces, but also spacing inside or outside quotations and
+before and after punctuation or around math.
+
+In \CONTEXT\ we have a built||in suspects checker that you can enable with the
+following command:
+
+\starttyping
+\enabletrackers[typesetters.suspects]
+\stoptyping
+
+The next table shows some identified suspects.
+
+\starttexdefinition ShowSample #1
+    \NC \type{#1}
+    \NC \enabletrackers[typesetters.suspects]#1\disabletrackers[typesetters.spacing]
+    \NC \NR
+\stoptexdefinition
+
+\starttabulate[|||][before=,after=]
+    \ShowSample{foo$x$}
+    \ShowSample{$x$bar}
+    \ShowSample{foo$x$bar}
+    \ShowSample{$f+o+o$:}
+    \ShowSample{;$f+o+o$}
+    \ShowSample{; bar}
+    \ShowSample{foo:bar}
+    \ShowSample{\quote{ foo }}
+    \ShowSample{\quote{bar }}
+    \ShowSample{\quote{ bar}}
+    \ShowSample{(foo )}
+    \ShowSample{\{foo \}}
+    \ShowSample{foo{\bf gnu}bar}
+    \ShowSample{foo{\it gnu}bar}
+    \ShowSample{foo$x^2$bar}
+    \ShowSample{foo\nobreakspace bar}
+\stoptabulate
+
+Of course this analysis is not perfect but we use it in final checking of complex
+documents that are generated automatically from \XML. \footnote {Think of math
+school books where each book is assembled from over a thousands files.}
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,37 @@
+% content=tex
+%
+% copyright=pragma-ade readme=readme.pdf licence=cc-by-nc-sa
+
+\environment columnsets-000
+
+\definecolumnset[example][n=4,page=left]
+
+\starttext
+
+\startcolumnset[example]
+
+\useexternalfigure[fake][fake][width=\textwidth,lines=3]
+
+\placefigure[btlr]{brlr}{\externalfigure[fake]}
+\placefigure[btlr]{brlr}{\externalfigure[fake]}
+\placefigure[btrl]{btrl}{\externalfigure[fake]}
+\placefigure[btrl]{btrl}{\externalfigure[fake]}
+\placefigure[tblr]{tblr}{\externalfigure[fake]}
+\placefigure[tblr]{tblr}{\externalfigure[fake]}
+\placefigure[tbrl]{tbrl}{\externalfigure[fake]}
+\placefigure[tbrl]{tbrl}{\externalfigure[fake]}
+
+\placefigure[lrbt]{lrbt}{\externalfigure[fake]}
+\placefigure[lrbt]{lrbt}{\externalfigure[fake]}
+\placefigure[lrtb]{lrtb}{\externalfigure[fake]}
+\placefigure[lrtb]{lrtb}{\externalfigure[fake]}
+\placefigure[rlbt]{rlbt}{\externalfigure[fake]}
+\placefigure[rlbt]{rlbt}{\externalfigure[fake]}
+\placefigure[rltb]{rltb}{\externalfigure[fake]}
+\placefigure[rltb]{rltb}{\externalfigure[fake]}
+
+\dorecurse{10}{\fakewords{50}{100}\par}
+
+\stopcolumnset
+
+\stoptext

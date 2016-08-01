@@ -1,0 +1,61 @@
+% language=uk
+
+\startcomponent introduction
+
+\environment mk-environment
+
+\chapter{Introduction}
+
+In this document I will keep track of the transition of \CONTEXT\
+from \MKII\ to \MKIV, the latter being the \LUA\ aware version.
+
+The development of \LUATEX\ started with a few email exchanges
+between me and Hartmut Henkel. I had played a bit with \LUA\ in
+\SCITE\ and somehow felt that it would fit into \TEX\ quite well.
+Hartmut made me a version of \PDFTEX\ which provided a \type
+{\lua} command. After exploring this road a bit Taco Hoek\-water
+took over and we quickly reached a point where the \PDFTEX\
+development team could agree on following this road to the future.
+
+The development was boosted by a substantial grant from Colorado
+State University in the context of the Oriental \TEX\ Project of
+Idris Samawi Hamid. This project aims at bringing features into
+\TEX\ that will permit \CONTEXT\ to do high quality Arabic
+typesetting. Due to this grant Taco could spent substantial time
+on development, which in turn meant that I could start playing
+with more advanced features.
+
+This document is not so much a users manual as a history
+of the development. Consider it a collection of articles, and some
+chapters indeed have ended up in the journals of user groups. Things
+may evolve and the way things are done may change, but it felt right
+to keep track of the process this way. Keep in mind that some features
+may have changed while \LUATEX\ matured.
+
+Just for the record: development in the \LUATEX\ project is done
+by Taco Hoekwater, Hartmut Henkel and Hans Hagen. Eventually, the
+stable versions will become \PDFTEX\ version~2 and other members
+of the \PDFTEX\ team will be involved in development and
+maintenance. In order to prevent problems due to new and maybe
+even slightly incompatible features, \PDFTEX\ version~1 will be kept
+around as well, but no fundamentally new features will be added to
+it. For practical reasons we use \LUATEX\ as the name of the
+development version but also for \PDFTEX~2. That way we can use
+both engines side by side.
+
+This document is also one of our test cases. Here we use traditional
+\TEX\ fonts (for math), \TYPEONE\ and \OPENTYPE\ fonts. We use color
+and include test code. Taco and I always test new versions of
+\LUATEX\ (the program) and \MKIV\ (the macros and \LUA\ code) with
+this document before a new version is released. It also means that
+there can be temporary flaws in the rendering. Keep tuned,
+
+\blank
+
+Hans Hagen, Hasselt NL,\crlf August 2006\endash\currentdate[year]
+
+\blank
+
+\type {http://www.luatex.org}
+
+\stopcomponent

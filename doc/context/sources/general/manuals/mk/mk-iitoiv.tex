@@ -1,0 +1,118 @@
+% language=uk
+
+\startcomponent mk-iitoiv
+
+\environment mk-environment
+
+\chapter{From \MKII\ to \MKIV}
+
+Sometime in 2005 the development of \LUATEX\ started, a further
+development of \PDFTEX\ and a precursor to \PDFTEX\ version~2. This
+\TEX\ variant will provide:
+
+\startitemize[packed]
+\item 21--32 bit internals plus a code cleanup
+\item flexible support for \OPENTYPE\ fonts
+\item an internal \UTF\ data flow
+\item the bidirectional typesetting of \ALEPH
+\item \LUA\ callbacks to the most relevant \TEX\ internals
+\item some extensions to \TEX\ (for instance math)
+\item an efficient way to communicate with \METAPOST
+\stopitemize
+
+In the tradition of \TEX\ this successor will be downward
+compatible in most essential parts and in the end, there is
+still \PDFTEX\ version~1 as fall back.
+
+In the mean time we have seen another unicode variant show up,
+\XETEX\ which is under active development, uses external
+libraries, provides access to the fonts on the operating system,
+etc.
+
+From the beginning, \CONTEXT\ always worked with all engines. This
+was achieved by conditional code blocks: depending on what engine
+was used, different code was put in the format and|/|or used at
+runtime. Users normally were unaware of this. Examples of engines
+are \ETEX, \ALEPH, and \XETEX. Because nowadays all engines
+provide the \ETEX\ features, in August 2006 we decided to consider
+those features to be present and drop providing the standard \TEX\
+compatible variants. This is a small effort because all code that
+is sensitive for optimization already has \ETEX\ code branches for
+many years.
+
+However, with the arrival of \LUATEX, we need a more drastic approach.
+Quite some existing code can go away and will be replaced by different
+solutions. Where \TEX\ code ends up in the format file, along with
+its state, \LUA\ code will be initiated at run time, after a \LUA\
+instance is started. \CONTEXT\ reserves its own instance of \LUA.
+
+Most of this will go unnoticed for the users because the user
+interface will not change. For developers however, we need to
+provide a mechanism to deal with these issues. This is why, for the
+first time in \CONTEXT's history we will officially use a kind of
+version tag. When we changed the low level interface from Dutch to
+English we jokingly talked of version~2. So, it makes sense to
+follow this lead.
+
+\startitemize[packed]
+
+\item \notabene {\CONTEXT\ \MKI}\quad At that moment we still had a
+low level Dutch interface, invisible for users but not for developers.
+
+\item \notabene {\CONTEXT\ \MKII}\quad We now have a low level English
+interface, which (as we indeed saw happen) triggers more development by
+users.
+
+\item \notabene {\CONTEXT\ \MKIV}\quad This is the next generation of
+\CONTEXT, with parts re||implemented. It's an at some points drastic
+system overhaul.
+
+\stopitemize
+
+Keep in mind that the functionality does not change, although in
+some places, for instance fonts, \MKIV\ may provide additional
+functionality. The reason why most users will not notice the
+difference (maybe apart from performance and convenience) is that at
+the user interface level nothing changes (most of it deals with
+typesetting, not with low level details).
+
+The hole in the numbering permits us to provide a \MKIII\ version
+as well. Once \XETEX\ is stable, we may use that slot for \XETEX\
+specific implementations.
+
+As per August 2006 the banner is adapted to this distinction:
+
+\starttyping
+...  ver: 2006.09.06 22:46 MK II  fmt: 2006.9.6  ...
+...  ver: 2006.09.06 22:47 MK IV  fmt: 2006.9.6  ...
+\stoptyping
+
+This numbering system is reflected at the file level in such a way
+that we can keep developing the way we do, i.e.\ no files all over
+the place, in subdirectories, etc.
+
+Most of the system's core files are not affected, but some may be, like
+those dealing with fonts, input- and output encodings, file handling,
+etc. Those files may come with different suffixes:
+
+\startitemize
+
+\item \type {somefile.tex}: the main file, implementing the interface
+and common code
+
+\item \type {somefile.mkii}: mostly existing code, suitable for good
+old \TEX\ (\ETEX, \PDFTEX, \ALEPH).
+
+\item \type {somefile.mkiv}: code optimized for use with \LUATEX, which
+could follow completely different approaches
+
+\item \type {somefile.lua}: \LUA\ code, loaded at format generation time
+and|/|or runtime
+
+\stopitemize
+
+As said, some day \type {somefile.mkiii} code may show up. Which
+variant is loaded is determined automatically at format generation
+time as well as at run time.
+
+\stopcomponent

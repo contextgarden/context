@@ -1,0 +1,63 @@
+\startcomponent ma-cb-en-bibliography
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[title=Bibliography]
+
+\index{bibliography}
+\index{\BIBTEX}
+
+\Command{\tex{setuppublications}}
+\Command{\tex{placepublications}}
+\Command{\tex{setupbibtex}}
+
+\CONTEXT\ support the \BIBTEX\ way of managing article and book references. The data
+is stored in a \type{.bib} file. A data entry in a \BIBTEX\ data file could be:
+
+\startbuffer
+@INBOOK{book01,
+   author = "Jonker, J.",
+   title = "From Hasselt to America",
+   publisher = "Bookplan Publishers",
+   year = "2012",
+   chapter = "1.2",
+}
+\stopbuffer
+
+\typebuffer
+
+After loading the database with \type{\setupbibtex[database=hasseltbook]} the following
+command is available:
+
+\setupbibtex[database={hasseltbook},sort=author]
+\setuppublications[refcommand=authoryear]
+
+\startbuffer
+Please refer to \cite[book01] for more information on famous people
+that were born in Hasselt.
+\stopbuffer
+
+\typebuffer
+
+Which would produce:
+
+\getbuffer
+
+In an appendix you can place the complete book list with:
+
+\startbuffer
+\placepublications[criterium=text]
+\stopbuffer
+
+\typebuffer
+
+At this moment (2013 -- 2014) the bibliography mechanism is being completely
+overhauled, so please visit the \goto {\CONTEXTWIKI} [ url
+(http://wiki.contextgarden.net) ] and the \goto {Pragma ADE website} [ url
+(http://www.pragma-ade.com/overview.htm) ] regularly for information.
+
+\stopchapter
+
+\stopcomponent

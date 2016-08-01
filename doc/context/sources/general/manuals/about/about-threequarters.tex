@@ -1,0 +1,330 @@
+% language=uk
+
+\startcomponent about-calls
+
+\environment about-environment
+
+\logo[CRITED]{CritEd}
+
+\startchapter[title={\LUATEX\ 0.79}]
+
+% Hans Hagen, PRAGMA ADE, April 2014
+
+\startsection[title=Introduction]
+
+To some it might look as if not much has been done in \LUATEX\ development but
+this is not true. First of all, the 2013 versions (0.75-0.77) are quite stable
+and can be used for production so there is not much buzz about new things.
+\CONTEXT\ users normally won't even notice changes because most is encapsulated
+in functionality that itself won't change. The binaries on the \type
+{contextgarden.net} are always the latest so an update results in binaries that
+are in sync with the \LUA\ and \TEX\ code. Okay, behaviour might become better
+but that could also be the side effect of better coding. Of course some more
+fundamental changes can result in temporary bugs but those are normally easy to
+solve.
+
+Here I will only mention the most important work done. I'll leave out the
+technical details as they can be found in the manual and in articles that were
+written during development. The version discussed is 0.79.
+
+\stopsection
+
+\startsection[title=Speed]
+
+One of the things we spent a lot of time on is speed. This is of course of more
+importance for a system like \CONTEXT\ that can spend more than half its time in
+\LUA, but eventually we all benefit from it. For the average user it doesn't
+matter much if a run takes a few seconds but in automated workflows these
+accumulate and if a process has to produce 5 documents of 20 pages (each
+demanding a few runs) or a few documents of several hundreds of pages, it might
+make a difference. In the \CRITED\ project we aim for complex documents produced
+from \XML\ at a rate of 20 pages per second, at least for stock \LUATEX.
+\footnote {This might look slow but a lot is happening there. A simple 100 page
+document with one word per page processes at more that 500 pages per second but
+this is hard to match with more realistic documents. When processing data from
+bases using the \CLD\ interface getting 50 pages per seconds is no problem.} In
+an edit|-|preview cycle it feels better if we don't use more than half a second
+for a couple of pages: loading the \TEX\ format, initializing the \LUA\ modules,
+loading fonts, typesetting and producing a proper \PDF\ file. We also want to be
+prepared for the ultra portable computers where multiple cores compensate the
+lower frequency, which harms \TEX\ as sequential processor using one core only.
+
+An important aspect of speedup is that it must not obscure the code. This is why
+the easiest way to achieve it is to use a faster variant of \LUA, and \LUAJIT\
+with its faster virtual machine, is a solution for that. We are aware of the
+fact that processors not necessarily become faster, but that on the other hand
+memory becomes larger. Disk speed also got better with the arrival of
+flash based storage. Because \LUATEX\ should run smoothly on future portable
+devices, the more we can gain now, the better it gets in the future. A decent
+basic performance is possible and we don't have to focus too much on memory and
+disk access and mostly need to keep an eye on basic \CPU\ cycles. Although we
+have some ideas about improving performance, tests demonstrate that \LUATEX\
+is not doing that bad and we don't have to change it's internals. In fact, if we
+do it might as well result in a drastic slowdown!
+
+One interesting performance factor is console output. Because \TEX\ outputs
+immediately with hardly any buffering, it depends a lot on the speed of console
+output. This itself depends on what console is used. \UNIX\ consoles normally
+have some buffering and refresh delay built in. There the speed depends on what
+fonts are used and to what extend the output gets interpreted (escape sequences
+are an example). I've run into cases where a run took seconds more because of a
+bad choice of fonts. On \WINDOWS\ it's more complicated since there the standard
+console (like \TEX) is unbuffered. The good news is that there are several
+alternatives that perform quite well, like console2 and conemu. These
+alternatives buffer output and have refresh delays. But still, on a very high res
+screen, with a large console window logging has impact. Interesting is that when
+I run from the editor (SciTE) output is pretty fast, so normally I never notice
+much of a slowdown. Of course these kind of performance issues can hit you more
+when you work in a remote terminal.
+
+The reason why I mention this is that in order to provide a user feedback about
+issues, there has to be some logging and depending on the kind of use, more or
+less is needed. This means that on the \CONTEXT\ mailing list we sometimes get
+complaints about the amount of logging. It is for this reason that much logging is
+optional and all logging can be disabled as well. Because we go through \LUA\
+we have some control over efficiency too. In the current \LUATEX\ release most
+logging can now be intercepted, including error messages.
+
+Talking of a slowdown, in the \CRITED\ project we have to deal with real large
+indices (tens of thousands of entries) and we found out that in the case of
+interactive variants (register entry to text and back) the use of \LUAJITTEX\
+could bring down a run to a grinding halt. In the end, after much testing we
+figured out that a suboptimal string hashing function was the culprit and we did
+extensive tests with both the \LUAJIT, \LUA\ 5.1 and \LUA\ 5.2 variant. We ended
+up by replacing the \LUAJIT\ hash function by the the \LUA\ 5.1 one which is a
+relative easy operation. Because \LUAJIT\ can address less memory than regular
+\LUA\ it will always be a matter of testing if \LUAJITTEX\ can be used instead of
+\LUATEX. Standard document processing (reports and such) is normally no problem
+but processing large amounts of data from databases can be an issue.
+
+In the process of cleaning up the code base for sure we will also find ways to
+make things run even smoother. But, in any case, version 0.80 is already a good
+benchmark for what can be achieved.
+
+\stopsection
+
+\startsection[title=Nodes]
+
+One of the bottlenecks in the hybrid approach is crossing the so called C
+boundary. This is not really a bottleneck, unless we're talking of many millions
+of function calls. In practice this only happens in for instance more extreme
+font handling (Devanagari or sometimes Arabic). If performance is really an issue
+one can fallback on a more direct node access model. Of course the overhead of
+access should be compared to other related activities: one can gain .25 seconds
+on a run in using the direct access model, but if the whole runs takes 25
+seconds, it can be neglected. If the price paid for it is less readable code it
+should only be done deep down a macro package where no user even sees the code.
+We use this access model in the \CONTEXT\ core modules and so far it looks quite
+okay, especially for more extensive manipulations. The gain in speed is quite
+noticeable if you use the more advanced features of \CONTEXT.
+
+There can be some changes in the node model but not that drastic as the current
+model is quite ok and also stays close to original \TEX\ so that existing
+documentation still applies. One of the changes will be that glue spec (sub)nodes
+will disappear and glue nodes will carry that information. Direction whatsits
+will become first class nodes as they are part of the concept (whatsits
+normally relate to extensions) and the same might happen with image nodes. As a
+side effect we can restructure the code so that it becomes more readable. Some
+experimental \PDFTEX\ functionality will be removed as it can be done better with
+callbacks.
+
+\stopsection
+
+\startsection[title=The parbuilder and HZ]
+
+As we started from \PDFTEX\ we inherit also its experimental code and character.
+One of the objectives is to separate font- and backend as good as possible. We
+have already achieved a lot and apart from bringing consistency in the code, the
+biggest change has been a partial rewrite of the hz code, especially the way
+fonts are managed. Instead of making copies of fonts with different properties,
+we now carry information in the relevant nodes. The backend code already got away
+from multiple fonts by using transformation of the base font instead of
+additional font instances, so this was a natural adaptation. This was actually
+triggered by the fact that a \LUA\ based par builder demonstrated that this made
+sense. The new approach uses less memory and is a bit faster (at least in
+theory).
+
+In callbacks it makes life easier when a node list has a predictable structure.
+For instance, the result of a paragraph broken into lines still has discretionary
+nodes. Is that really needed? Lines can have left- or rightskip nodes, depending
+on the fact if they were set. Math nodes can disappear as part of a cleanup in
+the line break code, but this is unfortunate when one expects them to be
+somewhere in the list in a callback. All this will be made consistent. These are
+issues we will look into on the way to version 1.0.
+
+I occasionally play with the \LUA\ based par builder and it is quite compatible
+even if we take the floating point \LUA\ aspect into account. However when using
+hz the outcome is different: sometimes better, sometimes worse. Personally I
+don't care too much as long as it's consistent. Features like hz are for special
+cases anyway and can never be stable over years if only because fonts evolve. And
+we're talking of bordercase typesetting: narrow columns that no matter what method is
+used will never look okay. \footnote {Some people don't like larger spaces, others
+don't like stretched glyphs.}
+
+\stopsection
+
+\startsection[title=The backend]
+
+The separation of front- and backend is more a pet project. There is some
+experimental code that will get removed or integrated. We try to make the backend
+consistent from the \TEX\ as well as \LUA\ end and some is reflected in
+additional features and callbacks.
+
+Some of the variables that can be set (the \LUA\ counterparts of the \type {\pdf..}
+token registers at the \TEX\ end) are now consistent with each other and avoid
+going via pseudo tokenization.  Typical aspects of a backend that only a few users
+will notice but nevertheless needed work.
+
+The merge of engines also resulted in inconsistencies in function names, like using
+\type {pdf_} in function names where nothing \type {PDF} is involved.
+
+\stopsection
+
+\startsection[title=Backlinks]
+
+In callbacks we mostly deal with node lists. At the \TEX\ end of course we also
+have these lists but there it is quite clear what gets done with them. This means
+that there is no need for double linked lists. It also means that what is known
+as the head of a list can in fact be in the middle. The for \TEX\ characteristic
+nesting model has resulted in stacks and current pointers. The code uses so
+called temp nodes to point at the head node.
+
+As a consequence in \LUATEX, where we present a double linked list, before the
+current version one could run into cases where for instance a head node had a
+prev pointer, even one that made no sense. As said, no big deal in \TEX\ but in
+the hands of a user who manipulates the node list it can be dramatic. The current
+version has cleaned head nodes as well as consistent backlinks, but of course we
+keep the internals mostly unchanged because we stay close to the Knuthian
+original when possible. \footnote {Even with extensions the original
+documentation still covers most of what happens.}
+
+\stopsection
+
+\startsection[title=Properties]
+
+Sometimes you want to associate additional information to a node. A natural way
+to do this is attributes. These can be set at the \TEX\ and \LUA\ end and
+accessed at the \LUA\ end. At the \LUA\ end one can have tables with nodes as
+indices and store extra information but that has the disadvantage that one has no
+clue if such information is current: nodes come and go and are recycled.
+
+For this reason we now have a global properties table where each allocated node
+can have a table with whatever information users might like to store. This itself
+is not special, but the nice thing is that when a node is freed, that information
+is also freed. So, you cannot run into old data. When nodes are copied its
+properties are also copied. The overhead, when not used, is close to zero, which is
+always an objective when extending the core engine.
+
+Of course this model demands that macro package somehow controls consistent use
+but that is not different from what already has to be done. Also, simple
+extensions like this avoid hard codes solutions, which is also something we want
+to avoid.
+
+\stopsection
+
+\startsection[title=\LUA\ calls]
+
+We have so called user nodes that can carry a number, string, token list or node
+list. We now have added \LUA\ to this repertoire. In fact, we now could use only a
+\LUA\ variable and we might have done so in retrospect, but for the moment we we
+stick to the current model of several basic types. The \LUA\ variable can be
+anything and it is up to the user (in some callback) to deal with them.
+
+User nodes are not to be confused with late \LUA\ nodes. You can store a function
+call in a user node but that's about it. You can at a later moment decide to call
+that function but it's still an explicit action. The value of a late \LUA\ node
+on the other hand is dealt with automatically during shipout. When the value is a
+string it gets interpreted as \LUA, but new is that when the value is a function
+it will get called. At that moment we have access to some of the current backend
+properties, like locations.
+
+\stopsection
+
+\startsection[title=Artefacts]
+
+Because \LUATEX\ took code from \PDFTEX, that is built upon \ETEX, which in turn
+is an extension to \TEX, and \OMEGA, that also extends \TEX, there is code that
+no longer makes sense for us. Combine that with the fact that some code carries
+signatures of translated \PASCAL\ to \CCODE, we have some cleanup to do as follow
+up on the not to be underestimated move to \CCODE. This is an ongoing process but
+also fun doing. Luigi and I spend many hours exploring venues and have
+interesting Skype sessions that can easily sidetrack, and with Taco getting more
+time for \LUATEX\ we expect to get most of our (still growing) todo list done.
+
+Because \LUATEX\ started out as an experiment, there is some old code around. For
+instance, we used to have multiple instances and this still shows in some places.
+We can simplify the \LUA\ to \TEX\ interface a bit and clean up the \LUA\ global
+state handling, but we're not in a big hurry with this. Experiments have been
+done with some extensions to the writer code but they are hold back to after the
+cleanup.
+
+In a similar fashion we have sped up the way \LUA\ keyword and values get
+resolved. Already early in the development we did this for critical code like
+passing \LUA\ font tables to \TEX, followed by accessing nodes, but now we have
+done that for most code. There is still some to do but it has the side effect of
+not only consistency but also of helping to document the interface. Of course we
+learn a lot about the \LUA\ internals too. The C macro system is of great help
+here, although the mentioned pascal conversion (web2c) and merged engines have
+resulted in some inconsistency that needs to be cleaned up before we start
+documenting more of the internals (another subproject we want to finish before
+retirement).
+
+\stopsection
+
+\startsection[title=Callbacks]
+
+There are a few more callbacks and most of them come from the tracker. The
+backend now has page related callbacks, the \LUA\ error handler can be
+intercepted. Error messages that consist of multiple pieces are handled better
+too. When a file is opened and closed a callback is now possible. Technically we
+could have combined this with the already present callbacks but as in \TEX\
+synchronization matters these new callbacks relate to current message callbacks
+that show \type {[]}, \type {{}}, \type {<>} and|/|or \type {<<>>} fenced
+filenames, where the later were introduced in successive backend code.
+
+\stopsection
+
+\startsection[title=\LUA]
+
+We currently use \LUA\ 5.2 but a next version will show up soon. Because \LUA\
+5.3 introduces a hybrid number model, this will be one of the next things to play
+with. It could work out well, because \TEX\ is internally integer based (scaled
+points) but you never know. It could be that we need to check existing code for
+serialization and printing issues but normally that will not lead to
+compatibility issues. We could even decide to stick to \LUA\ 5.2 or at least wait
+till all has stabilized. There is some basic support for \UTF\ in 5.3 but in
+\CONTEXT\ we don't depend on that. In practice hardly any processing takes place
+that assumes that \UTF\ is more than a sequence of bytes and \LUA\ can handle
+bytes quite well.
+
+\stopsection
+
+\startsection[title=\CONTEXT]
+
+Of course the development of \LUATEX\ has consequences for \CONTEXT. For
+instance, existing code is used to test alternative solutions and sometimes these
+make it into the core. Some new features are used immediately, like the more
+consistent control over \PDF\ properties, but others have to wait till the new
+binary is more widespread. \footnote {Normally dissemination is rather fast
+because the contextgarden provides recent binaries. The new windows binaries
+often show up within hours after the repository has been updated.}
+
+Some of the improvement in the code base directly relate to \CONTEXT\ activities.
+For instance the \CRITED\ project (complex critical editions) uncovered some
+hashing issues with \LUAJIT\ that have been taken care of now. The (small)
+additions to the \PDF\ backend resulted in a partial cleanup of relatively old
+\CONTEXT\ backend code.
+
+Although some more complex mechanisms, like multi|-|columns are being reworked,
+it is still needed to open up a bit more of the \TEX\ internals, so we have some
+work to do. As usual, version 0.80 doesn't mean that only 0.20 has to be done to
+get to 1.00, as development is not a linear process. The jump from 0.77 to 0.79
+for instance involved a lot of work (exploration as well as testing). But as long
+as it's fun to do, time doesn't matter much. As we've said before: we're in no
+hurry.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

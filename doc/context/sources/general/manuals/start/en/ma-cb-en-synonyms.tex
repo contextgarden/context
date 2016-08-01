@@ -1,0 +1,89 @@
+\startcomponent ma-cb-en-synonyms
+
+\enablemode[**en-us]
+
+\project ma-cb
+
+\startchapter[reference=synonyms,title=Synonyms]
+
+\index{synonyms}
+
+\Command{\tex{definesynonyms}}
+\Command{\tex{setupsynonyms}}
+\Command{\tex{abbreviation}}
+\Command{\tex{infull}}
+\Command{\tex{loadabbreviations}}
+\Command{\tex{placelistofabbreviations}}
+\Command{\tex{completelistofabbreviations}}
+
+In many documents people want to use specific words consistently throughout the
+document. To enforce consistency the command below is available.
+
+\shortsetup{definesynonyms}
+
+The first bracket pair contains the singular form of the synonym, and the second
+contains the plural form. The third bracket pair contains a command.
+
+For example the command \type{\abbreviation} is defined by:
+
+\starttyping
+\definesynonyms[abbreviation][abbreviations][\infull]
+\setupsynonyms[style=cap]
+\stoptyping
+
+Now the command \type{\abbreviation} is available and can be used to state your
+abbreviations:
+
+\starttyping
+\abbreviation{ANWB}{Dutch Automobile Association}
+\abbreviation{VVV}{Bureau of Tourist Information}
+\abbreviation{NS}{Dutch Railways}
+\stoptyping
+
+\abbreviation{VVV}{Bureau of Tourist Information}
+
+If you would type:
+
+\startbuffer
+The Dutch \VVV\ (\infull{VVV}) can provide you with the tourist
+information on Hasselt.
+\stopbuffer
+
+\typebuffer
+
+You would obtain something like this:
+
+\getbuffer
+
+The list of synonyms or abbreviations is best defined in the set up area of your
+input file for maintenance purposes. You can also store this kind of information
+in an external file, and load the file (e.g. \type{abbrev.tex}) with:
+
+\starttyping
+\input abbrev.tex
+\stoptyping
+
+If you want to put a list of the abbreviations used in your document you can
+type:
+
+\starttyping
+\placelistofabbreviations
+\stoptyping
+
+or
+
+\starttyping
+\completelistofabbreviations
+\stoptyping
+
+A complete and sorted list with used abbreviations and their meaning is produced.
+
+The typesetting of synonynms can be influenced with:
+
+\starttyping
+\setupsynonyms
+\stoptyping
+
+\stopchapter
+
+\stopcomponent
