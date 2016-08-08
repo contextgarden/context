@@ -54,17 +54,39 @@
 
 % we need the direct use of \Udelimiter because of { etc
 
-\def\math_fenced_left  {\edef\p_left{\mathfenceparameter\c!left}%
+\newconditional\c_math_fenced_mirror \settrue\c_math_fenced_mirror
+
+\def\math_fenced_left  {\edef\p_left
+                          {\ifconditional\c_math_fenced_mirror
+                             \ifcase\c_math_bidi
+                               \mathfenceparameter\c!left
+                             \else
+                               \mathfenceparameter\c!right
+                             \fi
+                           \else
+                             \mathfenceparameter\c!left
+                           \fi}%
                         \math_fenced_color_push
                         \normalleft\ifx\p_left\empty.\else\Udelimiter\plusfour\fam\p_left\relax\fi
                         \math_fenced_color_pop}
+
 \def\math_fenced_middle{\edef\p_middle{\mathfenceparameter\c!middle}%
                         \mskip\thinmuskip
                         \math_fenced_color_push
                         \normalmiddle\ifx\p_middle\empty.\else\Udelimiter\plusfour\fam\p_middle\relax\fi
                         \math_fenced_color_pop
                         \mskip\thinmuskip}
-\def\math_fenced_right {\edef\p_right{\mathfenceparameter\c!right}%
+
+\def\math_fenced_right {\edef\p_right
+                          {\ifconditional\c_math_fenced_mirror
+                             \ifcase\c_math_bidi
+                               \mathfenceparameter\c!right
+                             \else
+                               \mathfenceparameter\c!left
+                             \fi
+                           \else
+                             \mathfenceparameter\c!right
+                           \fi}%
                         \math_fenced_color_push
                         \normalright\ifx\p_right\empty.\else\Udelimiter\plusfive\fam\p_right\relax\fi
                         \math_fenced_color_pop}
@@ -470,7 +492,7 @@
 \installcorenamespace{mathbig}
 
 \unexpanded\def\choosemathbig#1#2% so we accept \big{||} as well
-  {{\hbox\bgroup
+  {{\naturalhbox\bgroup
       \startimath
         \ifcase\bigmathdelimitermethod
           \math_fenced_step#2\relax

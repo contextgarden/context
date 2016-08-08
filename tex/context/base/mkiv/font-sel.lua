@@ -17,39 +17,39 @@ local splitat, lpegmatch         = lpeg.splitat, lpeg.match
 local formatters                 = string.formatters
 local settings_to_array          = utilities.parsers.settings_to_array
 local settings_to_hash           = utilities.parsers.settings_to_hash
-
+                                 
 local v_default                  = interfaces.variables.default
-
+                                 
 local implement                  = interfaces.implement
-
+                                 
 local selectfont                 = fonts.select or { }
 fonts.select                     = selectfont
-
+                                 
 local data                       = selectfont.data or { }
 selectfont.data                  = data
-
+                                 
 local fallbacks                  = selectfont.fallbacks or { }
 selectfont.fallbacks             = fallbacks
-
+                                 
 local methods                    = selectfont.methods or { }
 selectfont.methods               = methods
-
+                                 
 local extras                     = selectfont.extras or { }
 selectfont.extras                = extras
-
+                                 
 local alternatives               = selectfont.alternatives or { }
 selectfont.alternatives          = alternatives
-
+                                 
 local presets                    = selectfont.presets or { }
 selectfont.presets               = presets
-
+                                 
 local defaults                   = selectfont.defaults or { }
 selectfont.defaults              = defaults
 
 local getlookups                 = fonts.names.getlookups
 local registerdesignsizes        = fonts.goodies.designsizes.register
 local bodyfontsizes              = storage.shared.bodyfontsizes
-
+                                 
 local ctx_definefontsynonym      = context.definefontsynonym
 local ctx_resetfontfallback      = context.resetfontfallback
 local ctx_startfontclass         = context.startfontclass
@@ -82,6 +82,7 @@ defaults["dejavumath"]         = { options = { extras = "dejavu",               
 defaults["neoeuler"]           = { options = { extras = "euler-math",           features = "math\\mathsizesuffix"                                           } }
 defaults["latinmodernmath"]    = { options = { extras = "lm,lm-math",           features = "math\\mathsizesuffix,lm-math", goodies = "lm"                   } }
 defaults["lucidabrightmathot"] = { options = { extras = "lucida-opentype-math", features = "math\\mathsizesuffix",         goodies = "lucida-opentype-math" } }
+defaults["minionmath"]         = { options = { extras = "minion-math",          features = "math\\mathsizesuffix",         goodies = "minion-math"          } }
 defaults["texgyredejavumath"]  = { options = { extras = "dejavu",               features = "math\\mathsizesuffix"                                           } }
 defaults["texgyrepagellamath"] = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
 defaults["texgyrebonummath"]   = { options = { extras = "texgyre",              features = "math\\mathsizesuffix"                                           } }
@@ -227,7 +228,7 @@ local m_alternative = {
     ["sl"] = "italic",
     ["bi"] = "bolditalic",
     ["bs"] = "bolditalic",
-    ["sc"] = "regular"
+    ["sc"] = "smallcaps"
 }
 
 --~ methods["style"] = function(data,alternative,style)
@@ -292,6 +293,18 @@ local function m_style_family(family)
     else
         return nil
     end
+end
+
+local function m_style_subfamily(entries,style,family)
+    local t = { }
+    for index, entry in next, entries do
+        if entry["familyname"] == family and entry["subfamilyname"] == style then -- familyname + subfamilyname
+            t[#t+1] = entry
+        elseif entry["family"] == family and entry["subfamily"] == style then -- family + subfamily
+            t[#t+1] = entry
+        end
+    end
+    return #t ~= 0 and t or nil
 end
 
 local function m_style_weight(entries,style)
@@ -396,13 +409,18 @@ methods["style"] = function(data,alternative,style)
     local fontstyle  = m_alternative[style] or style
     local entries    = m_style_family(fontfamily)
     if entries then
-        entries = m_style_weight(entries,fontstyle)
-        if entries then
-            entries = m_style_style(entries,fontstyle)
+        local subfamily = m_style_subfamily(entries,fontstyle,fontfamily)
+        if subfamily then
+            entries = subfamily
+        else
+            entries = m_style_weight(entries,fontstyle)
             if entries then
-                entries = m_style_variant(entries,fontstyle)
-                if entries and #entries > 1 and designsize == "default" then
-                    entries = m_style_width(entries,fontstyle)
+                entries = m_style_style(entries,fontstyle)
+                if entries then
+                    entries = m_style_variant(entries,fontstyle)
+                    if entries and #entries > 1 and designsize == "default" then
+                        entries = m_style_width(entries,fontstyle)
+                    end
                 end
             end
         end

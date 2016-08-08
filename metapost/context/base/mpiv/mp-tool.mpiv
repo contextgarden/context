@@ -375,6 +375,7 @@ vardef asinh  primary x = ln(x+(x++1))     enddef ;
 
 vardef sinh   primary x = save xx ; xx = exp x ; (xx-1/xx)/2 enddef ;
 vardef cosh   primary x = save xx ; xx = exp x ; (xx+1/xx)/2 enddef ;
+vardef tanh   primary x = save xx ; xx = exp x ; (xx-1/xx)/(xx+1/xx) enddef ;
 
 %D Like mod, but useful for anglesl it returns (-.5d,+.5d] and is used
 %D in for instance mp-chem.

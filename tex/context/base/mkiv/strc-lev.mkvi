@@ -37,7 +37,7 @@
 \unexpanded\def\strc_levels_start_section[#category]%
   {\doifelseassignment{#category}%
      {\clf_startsectionlevel\plusone{\v!default}{\currentnamedsection}[#category]}%
-     {\clf_startsectionlevel\plusone          {}{\currentnamedsection}{#category}}}
+     {\clf_startsectionlevel\plusone {#category}{\currentnamedsection}}}
 
 \unexpanded\def\strc_levels_start_subject[#category]%
   {\doifelseassignment{#category}%

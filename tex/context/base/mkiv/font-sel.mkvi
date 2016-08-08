@@ -1,6 +1,6 @@
 %D \module
 %D   [     file=font-sel,
-%D      version=2016.05.16,
+%D      version=2016.06.19,
 %D        title=\CONTEXT\ User Module,
 %D     subtitle=Selectfont,
 %D       author=Wolfgang Schuster,
@@ -17,8 +17,10 @@
 \installcorenamespace                      {selectfont}
 \installsimplecommandhandler \??selectfont {selectfont}
 
-\unexpanded\def\selectfont_register[#settings]%
+\unexpanded\def\selectfont_register[#style][#settings]%
   {\begingroup
+   \edef\currentselectfont{\expandnamespacevalue\??fontshortstyle{#style}\s!rm}%
+   \checkselectfontparent
    \setupcurrentselectfont[#settings]%
    \edef\p_selectfont_preset{\selectfontparameter\c!preset}%
    \ifx\p_selectfont_preset\empty \else
@@ -37,17 +39,17 @@
             designsize  {\selectfontparameter\s!designsize}%
             rscale      {\selectfontparameter\s!rscale}%
             goodies     {\selectfontparameter\c!goodies}%
-			extras      {\selectfontparameter\c!extras}%
+            extras      {\selectfontparameter\c!extras}%
             features    {\selectfontparameter\c!features}%
-			preset      {\selectfontparameter\c!preset}%
+            preset      {\selectfontparameter\c!preset}%
             range       {\selectfontparameter\c!range}%  fallback only
             offset      {\selectfontparameter\c!offset}% fallback only
             check       {\selectfontparameter\c!check}%  fallback only
             force       {\selectfontparameter\c!force}%  fallback only
         }
-		userdata {%
-			\luaexpanded{#settings}%
-		}}%
+        userdata {%
+            \luaexpanded{#settings}%
+        }}%
    \endgroup}
 
 %D \macros
@@ -233,7 +235,7 @@
 %D \stoptext
 %D \stoptyping
 %D
-%D Another feature of the module is the \type{opticalsize} key which allows one to enable
+%D Another feature of the module is the \type{designsize} key which allows one to enable
 %D optical sizes when they are a feature of the requested font.
 %D
 %D \starttyping
@@ -257,8 +259,8 @@
 
 \def\selectfont_family_define[#typeface][#style][#family][#settings]%
   {\doifelseassignment{#settings}
-     {\selectfont_register[\c!label={#typeface},\c!style={#style},\c!name={#family},#settings]}
-     {\selectfont_register[\c!label={#typeface},\c!style={#style},\c!name={#family},\c!preset={#settings}]}%
+     {\selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},#settings]}
+     {\selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},\c!preset={#settings}]}%
    \clf_definefontfamily\selectfont_index\relax}
 
 \unexpanded\def\definefallbackfamily
@@ -266,9 +268,21 @@
 
 \def\selectfont_fallback_define[#typeface][#style][#family][#settings]%
   {\doifelseassignment{#settings}
-     {\selectfont_register[\c!label={#typeface},\c!style={#style},\c!name={#family},#settings]}
-     {\selectfont_register[\c!label={#typeface},\c!style={#style},\c!name={#family},\c!preset={#settings}]}%
+     {\selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},#settings]}
+     {\selectfont_register[#style][\c!label={#typeface},\c!style={#style},\c!name={#family},\c!preset={#settings}]}%
    \clf_definefallbackfamily\selectfont_index\relax}
+
+\unexpanded\def\setupfontfamily
+  {\dodoubleargument\selectfont_family_setup}
+
+\def\selectfont_family_setup[#style][#settings]%
+  {\ifsecondargument
+     \edef\currentselectfont{\expandnamespacevalue\??fontshortstyle{#style}\s!rm}%
+     \setupcurrentselectfont[#settings]%
+   \else
+     \let\currentselectfont\empty
+     \setupcurrentselectfont[#style]%
+   \fi}
 
 \setupselectfont
   [  \c!features=\s!default,

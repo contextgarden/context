@@ -399,6 +399,23 @@
 
 \installlanguage [\s!arabic] [\s!ar]
 
+\installlanguage
+  [\s!pe]
+  [\c!spacing=\v!broad,
+   \c!leftsentence=\emdash,
+   \c!rightsentence=\emdash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\leftguillemot,
+   \c!rightquote=\rightguillemot,
+   \c!leftquotation=\leftguillemot,
+   \c!rightquotation=\rightguillemot,
+   \c!date={\v!day,\space,\v!month,\space,\v!year}]
+
+\installlanguage [\s!persian] [\s!pe]
+\installlanguage [\s!fa]      [\s!pe] % these two are redundant but sometimes might
+\installlanguage [\s!farsi]   [\s!fa] % sound more natural .. best set labels to 'pe'
+
 % Just aliases to "ar" for now
 
 \installlanguage[\s!ar-ae][\c!default=\s!ar]    % U.A.E.
@@ -413,6 +430,12 @@
 \installlanguage[\s!ar-sd][\c!default=\s!ar]    % Sudan
 \installlanguage[\s!ar-tn][\c!default=\s!ar]    % Tunisia
 \installlanguage[\s!ar-ye][\c!default=\s!ar]    % Yemen
+
+% Farsi (Persian)
+
+\installlanguage[\s!ar-ir][\c!default=\s!pe]
+%installlanguage[\s!pe-ir][\c!default=\s!pe]
+%installlanguage[\s!fa-ir][\c!default=\s!fa]
 
 % Syriac months
 
