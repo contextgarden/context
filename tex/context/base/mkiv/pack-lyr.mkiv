@@ -217,6 +217,7 @@
 
 \def\pack_layers_set[#1][#2][#3]% #4 == box do \fi is ok
   {\bgroup
+   \checkpositionoverlays % otherwise funny regions
    \edef\currentlayer{#1}%
    \edef\p_pack_layers_state{\layerparameter\c!state}%
    \ifx\p_pack_layers_state\v!stop
@@ -266,26 +267,22 @@
    \fi
    \egroup}
 
-% todo left/right
-
+% todo: left/right
 % todo: get position data in one go
 
 \def\pack_layers_set_last_position_yes % target: left|right
   {% this will become one call
    \edef\m_pack_layers_anchor{\??layerposition\the\c_pack_layers_current_data}%
    \edef\m_pack_layers_page  {\MPp\m_pack_layers_anchor}%
-   \edef\m_pack_layers_region{\MPr\m_pack_layers_anchor}%
+   %edef\m_pack_layers_region{\MPr\m_pack_layers_anchor}% wrong one
+   \edef\m_pack_layers_region{\layerparameter\c!region}%
    \d_pack_layers_x_position \dimexpr-\MPx\m_pack_layers_region+\MPx\m_pack_layers_anchor\relax
    \d_pack_layers_y_position \dimexpr \MPy\m_pack_layers_region-\MPy\m_pack_layers_anchor+\MPh\m_pack_layers_region\relax
    \xdef\lastlayerxpos{\the\d_pack_layers_x_position}%
    \xdef\lastlayerypos{\the\d_pack_layers_y_position}%
-   % \writestatus{region}{\m_pack_layers_region -> (\MPx\m_pack_layers_region,\MPy\m_pack_layers_region)}%
-   % \writestatus{self}  {\m_pack_layers_anchor -> (\MPx\m_pack_layers_anchor,\MPy\m_pack_layers_anchor)}%
-   % \writestatus{delta} {(\lastlayerxpos,\lastlayerypos)}%
-   % \begingroup
-   %   \edef\currentlayer{\currentlayer\m_pack_layers_page}%
-   %   \global\letlayerparameter\c!position\v!yes
-   % \endgroup
+ % \writestatus{layering}{region: \m_pack_layers_region=>\MPxywhd\m_pack_layers_region}%
+ % \writestatus        {}{anchor: \m_pack_layers_anchor=>\MPxywhd\m_pack_layers_anchor}%
+ % \writestatus        {}{offset: \c!dx,\c!dy          =>\lastlayerxpos,\lastlayerypos}%
    \global\letlayerparameter\c!state\v!start % needed ?
    \setbox\b_layers\vpack to \d_pack_layers_y_size
      {\hpack to \d_pack_layers_x_size
@@ -294,6 +291,8 @@
 
 \def\pack_layers_set_last_position_nop
   {\setbox\b_layers\emptybox
+   \d_pack_layers_x_position\p_pack_layers_sx\dimexpr\p_pack_layers_x\relax
+   \d_pack_layers_y_position\p_pack_layers_sy\dimexpr\p_pack_layers_y\relax
    \globallet\lastlayerxpos\!!zeropoint
    \globallet\lastlayerypos\!!zeropoint
    \doifinset\v!bottom\p_pack_layers_corner\pack_layers_set_bottom_positions
@@ -359,8 +358,6 @@
    \d_pack_layers_y_offset\p_pack_layers_sy\dimexpr
      \ifx\p_pack_layers_voffset\v!max\d_pack_layers_y_size\else\p_pack_layers_voffset\fi+\p_pack_layers_offset+\p_pack_layers_dy
    \relax
-   \d_pack_layers_x_position\p_pack_layers_sx\dimexpr\p_pack_layers_x\relax
-   \d_pack_layers_y_position\p_pack_layers_sy\dimexpr\p_pack_layers_y\relax
    \ifx\p_pack_layers_position\v!yes
      \pack_layers_set_last_position_yes
    \else
@@ -603,7 +600,7 @@
      {\setlayoutcomponentattribute{\v!layer:#2}}%
      \resetlayoutcomponentattribute
    % we have conflicting demands: some mechanisms want ll anchoring .. I need to figure this out
-   % an dmaybe we will have 'origin=bottom' or so
+   % and maybe we will have 'origin=bottom' or so
    \setbox\nextbox
    \ifx\p_pack_layers_option\v!test \ruledvbox \else \vpack \fi \ifx\p_pack_layers_method\v!overlay to \d_overlay_height \fi \layoutcomponentboxattribute
      {\pack_layers_top_fill
@@ -611,13 +608,13 @@
         {\box\nextbox
          \hss}%
       \pack_layers_bottom_fill}%
-   %
    % \edef\currentlayer{#2}% :\the\realpageno}% local .. check \anchor
    % \edef\p_pack_layers_position{\layerparameter\c!position}% local
    \ifx\p_pack_layers_position\v!yes
      \edef\p_pack_layers_region{\layerparameter\c!region}%
-     \ifx\p_pack_layers_region\empty \else
-       \anch_mark_tagged_box\nextbox\layeranchor
+     \ifx\p_pack_layers_region\empty
+     \else
+       \anch_mark_tagged_box\nextbox\p_pack_layers_region % was \layeranchor
      \fi
    \fi
    \box\nextbox

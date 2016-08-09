@@ -113,14 +113,6 @@ local f_region    = formatters["region:%s"]
 local f_tag_three = formatters["%s:%s:%s"]
 local f_tag_two   = formatters["%s:%s"]
 
------ f_enhance   = formatters["_plib_.enhance(%q)"]
-
------ f_b_column  = formatters["_plib_.b_column(%q)"]
------ f_e_column  = formatters["_plib_.e_column()"]
-
------ f_b_region  = formatters["_plib_.b_region(%q)"]
------ f_e_region  = formatters["_plib_.e_region(%s)"]
-
 local function sorter(a,b)
     return a.y > b.y
 end
@@ -138,7 +130,7 @@ local function initializer()
     collected = jobpositions.collected
     -- add sparse regions
     local pages = structures.pages.collected
-    if pages  then
+    if pages then
         local last = nil
         for p=1,#pages do
             local region = "page:" .. p
@@ -211,21 +203,6 @@ local getpos  = function() getpos  = backends.codeinjections.getpos  return getp
 local gethpos = function() gethpos = backends.codeinjections.gethpos return gethpos() end
 local getvpos = function() getvpos = backends.codeinjections.getvpos return getvpos() end
 
--- local function setdim(name,w,h,d,extra) -- not used
---     local x, y = getpos()
---     tobesaved[name] = {
---         p = texgetcount("realpageno"),
---         x = x ~= 0 and x or nil,
---         y = y ~= 0 and y or nil,
---         w = w ~= 0 and w or nil,
---         h = h ~= 0 and h or nil,
---         d = d ~= 0 and d or nil,
---         e = extra ~= "" and extra or nil,
---         r = region,
---         c = column,
---     }
--- end
-
 local function setall(name,p,x,y,w,h,d,extra)
     tobesaved[name] = {
         p = p,
@@ -237,7 +214,7 @@ local function setall(name,p,x,y,w,h,d,extra)
         e = extra ~= "" and extra or nil,
         r = region,
         c = column,
-r2l = texgetcount("inlinelefttoright") == 1 and true or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 and true or nil,
     }
 end
 
@@ -267,15 +244,12 @@ local function enhance(data)
     if data.c == true then
         data.c = column
     end
- -- if rawget(data,"w") == 0 then
     if data.w == 0 then
         data.w = nil
     end
- -- if rawget(data,"h") == 0 then
     if data.h == 0 then
         data.h = nil
     end
- -- if rawget(data,"d") == 0 then
     if data.d == 0 then
         data.d = nil
     end
@@ -381,7 +355,6 @@ scanners.bposcolumnregistered = function() -- tag
     local tag = scanstring()
     insert(columns,tag)
     column = tag
- -- ctxnode(new_latelua_node(f_b_column(tag)))
     ctxnode(new_latelua_node(function() b_column(tag) end))
 end
 
@@ -391,7 +364,6 @@ scanners.eposcolumn = function()
 end
 
 scanners.eposcolumnregistered = function()
- -- ctxnode(new_latelua_node(f_e_column()))
     ctxnode(new_latelua_node(e_column))
     remove(columns)
     column = columns[#columns]
@@ -433,10 +405,10 @@ local function setregionbox(n,tag)
     local w = getfield(box,"width")
     local h = getfield(box,"height")
     local d = getfield(box,"depth")
-    local y = getvpos()
+    local x, y = getpos() -- was only y
     tobesaved[tag] = {
-        p = true,      -- not enhanced
-        x = true,      -- not enhanced
+     -- p = texgetcount("realpageno"), -- we copy them
+        x = x ~= 0 and x or nil,       -- was true
         y = y ~= 0 and y or nil,
         w = w ~= 0 and w or nil,
         h = h ~= 0 and h or nil,
@@ -448,8 +420,6 @@ end
 local function markregionbox(n,tag,correct) -- correct needs checking
     local tag, box = setregionbox(n,tag)
      -- todo: check if tostring is needed with formatter
- -- local push = new_latelua(f_b_region(tag))
- -- local pop  = new_latelua(f_e_region(tostring(correct)))
     local push = new_latelua(function() b_region(tag) end)
     local pop  = new_latelua(function() e_region(correct) end)
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
@@ -522,7 +492,6 @@ scanners.parpos = function() -- todo: relate to localpar (so this is an intermed
     end
     local tag = f_p_tag(nofparagraphs)
     tobesaved[tag] = t
- -- ctxnode(new_latelua_node(f_enhance(tag)))
     ctxnode(new_latelua_node(function() enhance(tobesaved[tag]) end))
 end
 
@@ -535,9 +504,8 @@ scanners.dosetposition = function() -- name
         x = true,
         y = true,
         n = nofparagraphs > 0 and nofparagraphs or nil,
-r2l = texgetcount("inlinelefttoright") == 1 or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- ctxnode(new_latelua_node(f_enhance(name)))
     ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
@@ -556,9 +524,8 @@ scanners.dosetpositionwhd = function() -- name w h d extra
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
-r2l = texgetcount("inlinelefttoright") == 1 or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- ctxnode(new_latelua_node(f_enhance(name)))
     ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
@@ -578,9 +545,8 @@ scanners.dosetpositionbox = function() -- name box
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
-r2l = texgetcount("inlinelefttoright") == 1 or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- ctxnode(new_latelua_node(f_enhance(name)))
     ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
@@ -600,9 +566,8 @@ scanners.dosetpositionplus = function() -- name w h d extra
         d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
         e = scanstring(),
-r2l = texgetcount("inlinelefttoright") == 1 or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- ctxnode(new_latelua_node(f_enhance(name)))
     ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
@@ -620,9 +585,8 @@ scanners.dosetpositionstrut = function() -- name
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
         n = nofparagraphs > 0 and nofparagraphs or nil,
-r2l = texgetcount("inlinelefttoright") == 1 or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
- -- ctxnode(new_latelua_node(f_enhance(name)))
     ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
 end
 
@@ -972,6 +936,20 @@ scanners.MPxy = function() -- name
     end
 end
 
+scanners.MPwhd = function() -- name
+    local jpi = collected[scanstring()]
+    if jpi then
+        local w = jpi.w or 0
+        local h = jpi.h or 0
+        local d = jpi.d or 0
+        if w ~= 0 or h ~= 0 or d ~= 0 then
+            context("%.5Fpt,%.5Fpt,%.5Fpt",w*pt,h*pt,d*pt)
+            return
+        end
+    end
+    context('0pt,0pt,0pt')
+end
+
 scanners.MPll = function() -- name
     local jpi = collected[scanstring()]
     if jpi then
@@ -1073,6 +1051,7 @@ scanners.MPr = function() -- name
         local r = jpi.r
         if r and r ~= true  then
             context(r)
+            return
         end
         local p = jpi.p
         if p then

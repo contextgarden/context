@@ -283,20 +283,26 @@ function job.load(filename)
     local utilitydata = load(filename)
     if utilitydata then
         local jobpacker = utilitydata.job.packed
-        for l=1,#savelist do
-            local list        = savelist[l]
+        local handlers  = { }
+        for i=1,#savelist do
+            local list        = savelist[i]
             local target      = list[1]
             local initializer = list[3]
             local result      = accesstable(target,utilitydata)
-            local done = packers.unpack(result,jobpacker,true)
+            local done        = packers.unpack(result,jobpacker,true)
             if done then
                 migratetable(target,mark(result))
                 if type(initializer) == "function" then
-                    initializer(result)
+                    handlers[#handlers+1] = { initializer, result }
                 end
             else
                 report_passes("pack version mismatch")
             end
+        end
+        -- so we have all tables available (unpacked)
+        for i=1,#handlers do
+            local handler = handlers[i]
+            handler[1](handler[2])
         end
     end
     statistics.stoptiming(_load_)

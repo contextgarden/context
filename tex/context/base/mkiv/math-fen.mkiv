@@ -58,10 +58,10 @@
 
 \def\math_fenced_left  {\edef\p_left
                           {\ifconditional\c_math_fenced_mirror
-                             \ifcase\c_math_bidi
-                               \mathfenceparameter\c!left
-                             \else
+                             \ifconditional\c_math_right_to_left
                                \mathfenceparameter\c!right
+                             \else
+                               \mathfenceparameter\c!left
                              \fi
                            \else
                              \mathfenceparameter\c!left
@@ -79,10 +79,10 @@
 
 \def\math_fenced_right {\edef\p_right
                           {\ifconditional\c_math_fenced_mirror
-                             \ifcase\c_math_bidi
-                               \mathfenceparameter\c!right
-                             \else
+                             \ifconditional\c_math_right_to_left
                                \mathfenceparameter\c!left
+                             \else
+                               \mathfenceparameter\c!right
                              \fi
                            \else
                              \mathfenceparameter\c!right
