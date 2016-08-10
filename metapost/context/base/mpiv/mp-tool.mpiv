@@ -1095,6 +1095,7 @@ primarydef p randomized s = (
     elseif picture p :
         mfun_randomized_picture(p,s)(randomized)
     else :
+      % p - s/2 + uniformdeviate s % would have been better but we want to be positive
         p + uniformdeviate s
     fi
 ) enddef ;

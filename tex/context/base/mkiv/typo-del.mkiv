@@ -279,15 +279,18 @@
    \globalpushmacro\currentdelimitedlanguage
    \edef\currentdelimitedtext{#1}%
    \edef\m_delimited_argument{#2}%
-   \expandafter\splitstring\m_delimited_argument\at:\to\outerdelimitedlanguage\and\innerdelimitedlanguage
-   \edef\m_delimited_argument_checked{\outerdelimitedlanguage:}%
-   \ifx\m_delimited_argument\m_delimited_argument_checked
+   \ifx\m_delimited_argument\empty
      \let\currentdelimitedlanguage\empty
      \setlanguageparameter\delimitedtextparameter
    \else
+     \doifelseinstring{:}{#2}
+       {\splitstring\m_delimited_argument\at:\to\outerdelimitedlanguage\and\innerdelimitedlanguage}
+       {\let\innerdelimitedlanguage\m_delimited_argument
+        \let\outerdelimitedlanguage\empty}%
      \ifx\innerdelimitedlanguage\empty
        \let\currentdelimitedlanguage\empty
      \else
+        % [*:inner]
        \doiflanguageelse\innerdelimitedlanguage
          {\let\currentdelimitedlanguage\innerdelimitedlanguage
           \let\m_delimited_argument\empty}%
@@ -296,6 +299,7 @@
      \ifx\outerdelimitedlanguage\empty
        \setlanguageparameter\delimitedtextparameter
      \else
+        % [outer:*]
        \doiflanguageelse\outerdelimitedlanguage
          {\let\currentlanguage\outerdelimitedlanguage
           \let\m_delimited_argument\empty}%

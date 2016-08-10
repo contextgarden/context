@@ -978,6 +978,8 @@ local getspecification = definers.getspecification
 -- we can make helper macros which saves parsing (but normaly not
 -- that many calls, e.g. in mk a couple of 100 and in metafun 3500)
 
+local specifiers = { }
+
 do  -- else too many locals
 
     ----- ctx_setdefaultfontname = context.fntsetdefname
@@ -992,6 +994,7 @@ do  -- else too many locals
     local scanners               = tokens.scanners
     local scanstring             = scanners.string
     local scaninteger            = scanners.integer
+    local scannumber             = scanners.number
     local scanboolean            = scanners.boolean
 
     local setmacro               = tokens.setters.macro
@@ -1225,6 +1228,7 @@ do  -- else too many locals
         end
         --
         texsetcount("global","lastfontid",lastfontid)
+        specifiers[lastfontid] = { str, size }
         if not mathsize then
             -- forget about it
         elseif mathsize == 0 then
@@ -1234,6 +1238,26 @@ do  -- else too many locals
         end
         --
         stoptiming(fonts)
+    end
+
+    function scanners.specifiedfontspec()
+        local f = specifiers[scaninteger()]
+        if f then
+            context(f[1])
+        end
+    end
+    function scanners.specifiedfontsize()
+        local f = specifiers[scaninteger()]
+        if f then
+            context(f[2])
+        end
+    end
+    function scanners.specifiedfont()
+        local f = specifiers[scaninteger()]
+        local s = scannumber()
+        if f and s then
+            context("%s at %0.2p",f[1],s * f[2]) -- we round to 2 decimals (as at the tex end)
+        end
     end
 
     --

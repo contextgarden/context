@@ -296,7 +296,9 @@ local function m_style_family(family)
 end
 
 local function m_style_subfamily(entries,style,family)
-    local t = { }
+    local t      = { }
+    local style  = cleanname(style)
+    local family = cleanname(family)
     for index, entry in next, entries do
         if entry["familyname"] == family and entry["subfamilyname"] == style then -- familyname + subfamilyname
             t[#t+1] = entry

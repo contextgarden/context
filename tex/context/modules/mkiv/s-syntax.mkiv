@@ -31,7 +31,7 @@
 \unexpanded\def\module_syntax_Tex             #1{\Sugar{\type{#1}}}
 \unexpanded\def\module_syntax_Literal         #1{\Sugar{\type{#1}}}
 \unexpanded\def\module_syntax_Syntax          #1{\strut\kern-.25em{#1}\kern-.25em}
-\unexpanded\def\module_syntax_Next              {\crlf\hbox to 2em{}\nobreak}
+\unexpanded\def\module_syntax_Next              {\par\strut\kern4em} % {\crlf\hbox to 2em{}\nobreak}
 \unexpanded\def\module_syntax_Whatever        #1{\Sugar{\mathematics{(\hbox{#1})}}}
 \unexpanded\def\module_syntax_Quote           #1{\Sugar{\quote{#1}}}
 \unexpanded\def\module_syntax_Or                {\Sugar{\module_syntax_Indent{\mathematics{\vert}}}}
@@ -70,6 +70,7 @@
    \let\L               \module_syntax_Literal
    \let\S               \module_syntax_Something
    \let\M               \module_syntax_Means
+   \let\N               \module_syntax_Next
    \let\O               \module_syntax_Or
    \let\Q               \module_syntax_Quote
    \let\LB              \module_syntax_Lbrace
