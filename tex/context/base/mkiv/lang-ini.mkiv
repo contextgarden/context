@@ -170,9 +170,9 @@
      \lastnamedcs
    \fi\fi\fi}
 
-\unexpanded\def\setlanguageparameter#1%
-  {\edef\currentusedlanguage{\reallanguagetag{#1\c!language}}%
-  %\let\setlanguageparameter\gobbleoneargument
+\unexpanded\def\setusedlanguage#1%
+% {\edef\currentusedlanguage{\reallanguagetag{#1\c!language}}%
+  {\edef\currentusedlanguage{\reallanguagetag{#1}}%
    \ifx\currentusedlanguage\empty
      \let\currentusedlanguage  \currentlanguage
      \let\usedlanguageparameter\languageparameter

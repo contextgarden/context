@@ -272,39 +272,61 @@
 % \currentusedlanguage
 % \usedlanguageparameter
 
+%D The optional argument can be a language, a narrower spec, or a outer:inner language
+%D specification.
+%D
+%D \starttabulate
+%D     \NC [en]    \NC {\tttf en} \quotation[en]   {{\tttf <en=\currentlanguage>} something french} \NC \NR
+%D     \NC [fr]    \NC {\tttf en} \quotation[fr]   {{\tttf <fr=\currentlanguage>} something french} \NC \NR
+%D     \NC [fr:]   \NC {\tttf fr} \quotation[fr:]  {{\tttf <en=\currentlanguage>} something french} \NC \NR
+%D     \NC [:fr]   \NC {\tttf en} \quotation[:fr]  {{\tttf <fr=\currentlanguage>} something french} \NC \NR
+%D     \NC [fr:fr] \NC {\tttf fr} \quotation[fr:fr]{{\tttf <fr=\currentlanguage>} something french} \NC \NR
+%D     \NC [en:fr] \NC {\tttf en} \quotation[en:fr]{{\tttf <fr=\currentlanguage>} something french} \NC \NR
+%D     \NC [fr:en] \NC {\tttf fr} \quotation[fr:en]{{\tttf <en=\currentlanguage>} something french} \NC \NR
+%D \stoptabulate
+
 \let\currentdelimitedlanguage\empty
+
+\def\typo_delimited_set_language_nop
+  {\setusedlanguage{\delimitedtextparameter\c!language}}
+
+\def\typo_delimited_set_language_yes
+  {\doiflanguageelse\m_delimited_argument
+     \typo_delimited_set_language_yes_a
+     {\doifelseinstring:\m_delimited_argument
+        \typo_delimited_set_language_yes_b
+        \typo_delimited_set_language_nop}}
+
+\def\typo_delimited_set_language_yes_b
+  {\splitstring\m_delimited_argument\at:\to\outerdelimitedlanguage\and\innerdelimitedlanguage
+   \ifx\outerdelimitedlanguage\empty
+     \typo_delimited_set_language_nop
+   \else
+     \doiflanguageelse\outerdelimitedlanguage
+       {\setusedlanguage\outerdelimitedlanguage}%
+       \typo_delimited_set_language_nop
+   \fi
+   \ifx\innerdelimitedlanguage\empty
+   \else
+     \doiflanguageelse\innerdelimitedlanguage
+       {\let\currentdelimitedlanguage\innerdelimitedlanguage}%
+       \donothing
+   \fi
+   \let\m_delimited_argument\empty}
+
+\def\typo_delimited_set_language_yes_a
+  {\let\currentdelimitedlanguage\m_delimited_argument
+   \let\m_delimited_argument\empty}
 
 \def\typo_delimited_push#1#2%
   {\globalpushmacro\currentdelimitedtext     % can we combine these two
-   \globalpushmacro\currentdelimitedlanguage
+   \globalpushmacro\currentdelimitedlanguage % the language used for hyphenation
    \edef\currentdelimitedtext{#1}%
    \edef\m_delimited_argument{#2}%
    \ifx\m_delimited_argument\empty
-     \let\currentdelimitedlanguage\empty
-     \setlanguageparameter\delimitedtextparameter
+     \typo_delimited_set_language_nop
    \else
-     \doifelseinstring{:}{#2}
-       {\splitstring\m_delimited_argument\at:\to\outerdelimitedlanguage\and\innerdelimitedlanguage}
-       {\let\innerdelimitedlanguage\m_delimited_argument
-        \let\outerdelimitedlanguage\empty}%
-     \ifx\innerdelimitedlanguage\empty
-       \let\currentdelimitedlanguage\empty
-     \else
-        % [*:inner]
-       \doiflanguageelse\innerdelimitedlanguage
-         {\let\currentdelimitedlanguage\innerdelimitedlanguage
-          \let\m_delimited_argument\empty}%
-         {\let\currentdelimitedlanguage\empty}%
-     \fi
-     \ifx\outerdelimitedlanguage\empty
-       \setlanguageparameter\delimitedtextparameter
-     \else
-        % [outer:*]
-       \doiflanguageelse\outerdelimitedlanguage
-         {\let\currentlanguage\outerdelimitedlanguage
-          \let\m_delimited_argument\empty}%
-         {\setlanguageparameter\delimitedtextparameter}%
-     \fi
+     \typo_delimited_set_language_yes
    \fi
    \let\currentparentdelimitedtext\currentdelimitedtext
    \global\advance\c_typo_delimited_nesting\plusone
@@ -344,7 +366,7 @@
    \c!right=,
   %\c!level=0,
    \c!method=,
-  %\c!language\v!local,
+  %\c!language=\v!local,
    \c!repeat=\v!no]
 
 \def\typo_delimited_repeat_ideed

@@ -5526,7 +5526,7 @@
   {\xdef\m_syst_helpers_push_macro{\csstring#1}%
    \c_syst_helpers_pop_count\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
    \global\advance\lastnamedcs \minusone
-   \expandafter\let\expandafter#1\csname\the\c_syst_helpers_pop_count\m_syst_helpers_push_macro\endcsname}
+   \global\expandafter\let\expandafter#1\csname\the\c_syst_helpers_pop_count\m_syst_helpers_push_macro\endcsname}
 
 \unexpanded\def\localpopmacro#1%
   {\xdef\m_syst_helpers_push_macro{\csstring#1}%
