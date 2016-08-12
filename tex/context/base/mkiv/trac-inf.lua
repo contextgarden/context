@@ -61,12 +61,13 @@ local function stoptiming(instance)
         timer.timing = it - 1
     else
         local starttime = timer.starttime
-        if starttime then
-            local stoptime = clock()
-            local loadtime = stoptime - starttime
-            timer.stoptime = stoptime
-            timer.loadtime = timer.loadtime + loadtime
-            timer.timing = 0
+        if starttime and starttime > 0 then
+            local stoptime  = clock()
+            local loadtime  = stoptime - starttime
+            timer.stoptime  = stoptime
+            timer.loadtime  = timer.loadtime + loadtime
+            timer.timing    = 0
+            timer.starttime = 0
             return loadtime
         end
     end
@@ -183,7 +184,7 @@ end
 
 function statistics.runtime()
     stoptiming(statistics)
-    stoptiming(statistics) -- somehow we can start the timer twice, but where
+ --  stoptiming(statistics) -- somehow we can start the timer twice, but where
     return statistics.formatruntime(elapsedtime(statistics))
 end
 

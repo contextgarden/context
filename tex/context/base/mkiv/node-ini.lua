@@ -248,6 +248,7 @@ local accentcodes = mark(getsubtypes("accent"))
 --     [1] = "left",
 --     [2] = "middle",
 --     [3] = "right",
+--     [4] = "no",
 -- }
 
 local fencecodes = mark(getsubtypes("fence"))
@@ -274,6 +275,18 @@ local usercodes = allocate {
     [116] = "tokens"      -- t
 }
 
+local noadoptions = allocate {
+    set      =        0x08,
+    unused_1 = 0x00 + 0x08,
+    unused_2 = 0x01 + 0x08,
+    axis     = 0x02 + 0x08,
+    no_axis  = 0x04 + 0x08,
+    exact    = 0x10 + 0x08,
+    left     = 0x11 + 0x08,
+    middle   = 0x12 + 0x08,
+    right    = 0x14 + 0x08,
+}
+
 skipcodes     = allocate(swapped(skipcodes,skipcodes))
 boundarycodes = allocate(swapped(boundarycodes,boundarycodes))
 noadcodes     = allocate(swapped(noadcodes,noadcodes))
@@ -293,6 +306,7 @@ fencecodes    = allocate(swapped(fencecodes,fencecodes))
 rulecodes     = allocate(swapped(rulecodes,rulecodes))
 leadercodes   = allocate(swapped(leadercodes,leadercodes))
 usercodes     = allocate(swapped(usercodes,usercodes))
+noadoptions   = allocate(swapped(noadoptions,noadoptions))
 
 nodes.skipcodes     = skipcodes
 nodes.boundarycodes = boundarycodes
@@ -313,6 +327,7 @@ nodes.fencecodes    = fencecodes
 nodes.rulecodes     = rulecodes
 nodes.leadercodes   = leadercodes
 nodes.usercodes     = usercodes
+nodes.noadoptions   = noadoptions
 
 nodes.gluecodes          = skipcodes -- more official
 nodes.whatsitcodes       = whatcodes -- more official
@@ -327,25 +342,38 @@ kerncodes.kerning          = kerncodes.fontkern
 kerncodes.italiccorrection = kerncodes.italiccorrection or 1 -- new
 
 nodes.codes = allocate { -- mostly for listing
-    glue     = skipcodes,
-    boundary = boundarycodes,
-    noad     = noadcodes,
-    node     = nodecodes,
-    hlist    = listcodes,
-    vlist    = listcodes,
-    glyph    = glyphcodes,
-    kern     = kerncodes,
-    penalty  = penaltycodes,
-    math     = mathnodes,
-    fill     = fillcodes,
-    margin   = margincodes,
-    disc     = disccodes,
-    whatsit  = whatcodes,
-    accent   = accentcodes,
-    fence    = fencecodes,
-    rule     = rulecodes,
-    leader   = leadercodes,
-    user     = usercodes,
+    glue        = skipcodes,
+    boundary    = boundarycodes,
+    noad        = noadcodes,
+    node        = nodecodes,
+    hlist       = listcodes,
+    vlist       = listcodes,
+    glyph       = glyphcodes,
+    kern        = kerncodes,
+    penalty     = penaltycodes,
+    math        = mathnodes,
+    fill        = fillcodes,
+    margin      = margincodes,
+    disc        = disccodes,
+    whatsit     = whatcodes,
+    accent      = accentcodes,
+    fence       = fencecodes,
+    rule        = rulecodes,
+    leader      = leadercodes,
+    user        = usercodes,
+    noadoptions = noadoptions,
+}
+
+nodes.noadoptions = {
+    set      =        0x08,
+    unused_1 = 0x00 + 0x08,
+    unused_2 = 0x01 + 0x08,
+    axis     = 0x02 + 0x08,
+    no_axis  = 0x04 + 0x08,
+    exact    = 0x10 + 0x08,
+    left     = 0x11 + 0x08,
+    middle   = 0x12 + 0x08,
+    right    = 0x14 + 0x08,
 }
 
 local report_codes = logs.reporter("nodes","codes")

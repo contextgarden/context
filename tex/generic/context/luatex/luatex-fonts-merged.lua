@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/09/16 21:55:17
+-- merge date  : 08/13/16 00:54:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -8845,112 +8845,6 @@ function readers.math(f,fontdata,specification)
     reportskippedtable("math")
   end
 end
-local function packoutlines(data,makesequence)
-  local subfonts=data.subfonts
-  if subfonts then
-    for i=1,#subfonts do
-      packoutlines(subfonts[i],makesequence)
-    end
-    return
-  end
-  local common=data.segments
-  if common then
-    return
-  end
-  local glyphs=data.glyphs
-  if not glyphs then
-    return
-  end
-  if makesequence then
-    for index=1,#glyphs do
-      local glyph=glyphs[index]
-      local segments=glyph.segments
-      if segments then
-        local sequence={}
-        local nofsequence=0
-        for i=1,#segments do
-          local segment=segments[i]
-          local nofsegment=#segment
-          nofsequence=nofsequence+1
-          sequence[nofsequence]=segment[nofsegment]
-          for i=1,nofsegment-1 do
-            nofsequence=nofsequence+1
-            sequence[nofsequence]=segment[i]
-          end
-        end
-        glyph.sequence=sequence
-        glyph.segments=nil
-      end
-    end
-  else
-    local hash={}
-    local common={}
-    local reverse={}
-    local last=0
-    for index=1,#glyphs do
-      local segments=glyphs[index].segments
-      if segments then
-        for i=1,#segments do
-          local h=concat(segments[i]," ")
-          hash[h]=(hash[h] or 0)+1
-        end
-      end
-    end
-    for index=1,#glyphs do
-      local segments=glyphs[index].segments
-      if segments then
-        for i=1,#segments do
-          local segment=segments[i]
-          local h=concat(segment," ")
-          if hash[h]>1 then 
-            local idx=reverse[h]
-            if not idx then
-              last=last+1
-              reverse[h]=last
-              common[last]=segment
-              idx=last
-            end
-            segments[i]=idx
-          end
-        end
-      end
-    end
-    if last>0 then
-      data.segments=common
-    end
-  end
-end
-local function unpackoutlines(data)
-  local subfonts=data.subfonts
-  if subfonts then
-    for i=1,#subfonts do
-      unpackoutlines(subfonts[i])
-    end
-    return
-  end
-  local common=data.segments
-  if not common then
-    return
-  end
-  local glyphs=data.glyphs
-  if not glyphs then
-    return
-  end
-  for index=1,#glyphs do
-    local segments=glyphs[index].segments
-    if segments then
-      for i=1,#segments do
-        local c=common[segments[i]]
-        if c then
-          segments[i]=c
-        end
-      end
-    end
-  end
-  data.segments=nil
-end
-otf.packoutlines=packoutlines
-otf.unpackoutlines=unpackoutlines
 local function getinfo(maindata,sub,platformnames,rawfamilynames)
   local fontdata=sub and maindata.subfonts and maindata.subfonts[sub] or maindata
   local names=fontdata.names
@@ -9347,56 +9241,6 @@ function readers.extend(fontdata)
     end
   end
 end
-if fonts.hashes then
-  local identifiers=fonts.hashes.identifiers
-  local loadshapes=readers.loadshapes
-  readers.version=0.006
-  readers.cache=containers.define("fonts","shapes",readers.version,true)
-  local function load(filename,sub)
-    local base=file.basename(filename)
-    local name=file.removesuffix(base)
-    local kind=file.suffix(filename)
-    local attr=lfs.attributes(filename)
-    local size=attr and attr.size or 0
-    local time=attr and attr.modification or 0
-    local sub=tonumber(sub)
-    if size>0 and (kind=="otf" or kind=="ttf" or kind=="tcc") then
-      local hash=containers.cleanname(base) 
-      if sub then
-        hash=hash.."-"..sub
-      end
-      data=containers.read(readers.cache,hash)
-      if not data or data.time~=time or data.size~=size then
-        data=loadshapes(filename,sub)
-        if data then
-          data.size=size
-          data.format=data.format or (kind=="otf" and "opentype") or "truetype"
-          data.time=time
-          packoutlines(data)
-          containers.write(readers.cache,hash,data)
-          data=containers.read(readers.cache,hash) 
-        end
-      end
-      unpackoutlines(data)
-    else
-      data={
-        filename=filename,
-        size=0,
-        time=time,
-        format="unknown",
-        units=1000,
-        glyphs={}
-      }
-    end
-    return data
-  end
-  fonts.hashes.shapes=table.setmetatableindex(function(t,k)
-    local d=identifiers[k]
-    local v=load(d.properties.filename,d.subindex)
-    t[k]=v
-    return v
-  end)
-end
 
 end -- closure
 
@@ -9415,6 +9259,7 @@ local concat,remove=table.concat,table.remove
 local floor,abs,round,ceil=math.floor,math.abs,math.round,math.ceil
 local P,C,R,S,C,Cs,Ct=lpeg.P,lpeg.C,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Ct
 local lpegmatch=lpeg.match
+local formatters=string.formatters
 local readers=fonts.handlers.otf.readers
 local streamreader=readers.streamreader
 local readbytes=streamreader.readbytes
@@ -10237,10 +10082,74 @@ do
       return floor((stems+7)/8)
     end
   end
-  local function unsupported()
+  local function unsupported(t)
     if trace_charstrings then
-      showstate("unsupported")
+      showstate("unsupported "..t)
     end
+    top=0
+  end
+  local function unsupportedsub(t)
+    if trace_charstrings then
+      showstate("unsupported sub "..t)
+    end
+    top=0
+  end
+  local function getstem3()
+    if trace_charstrings then
+      showstate("stem3")
+    end
+    top=0
+  end
+  local function divide()
+    local d=stack[top]
+    top=top-1
+    stack[top]=stack[top]/d
+  end
+  local function closepath()
+    if trace_charstrings then
+      showstate("closepath")
+    end
+    top=0
+  end
+  local function hsbw()
+    if trace_charstrings then
+      showstate("dotsection")
+    end
+    width=stack[top]
+    top=0
+  end
+  local function seac()
+    if trace_charstrings then
+      showstate("seac")
+    end
+    top=0
+  end
+  local function sbw()
+    if trace_charstrings then
+      showstate("sbw")
+    end
+    width=stack[top-1]
+    top=0
+  end
+  local function callothersubr()
+    if trace_charstrings then
+      showstate("callothersubr (unsupported)")
+    end
+    top=0
+  end
+  local function pop()
+    if trace_charstrings then
+      showstate("pop (unsupported)")
+    end
+    top=top+1
+    stack[top]=0 
+  end
+  local function setcurrentpoint()
+    if trace_charstrings then
+      showstate("pop (unsupported)")
+    end
+    x=x+stack[top-1]
+    y=y+stack[top]
     top=0
   end
   local actions={ [0]=unsupported,
@@ -10256,7 +10165,7 @@ do
     unsupported,
     unsupported,
     unsupported,
-    unsupported,
+    hsbw,
     unsupported,
     unsupported,
     unsupported,
@@ -10277,6 +10186,15 @@ do
     hvcurveto,
   }
   local subactions={
+    [000]=dotsection,
+    [001]=getstem3,
+    [002]=getstem3,
+    [006]=seac,
+    [007]=sbw,
+    [012]=divide,
+    [016]=callothersubr,
+    [017]=pop,
+    [033]=setcurrentpoint,
     [034]=hflex,
     [035]=flex,
     [036]=hflex1,
@@ -10284,23 +10202,29 @@ do
   }
   local p_bytes=Ct((P(1)/byte)^0)
   local function call(scope,list,bias,process)
-    local index=stack[top]+bias
-    top=top-1
-    if trace_charstrings then
-      showvalue(scope,index,true)
-    end
-    local str=list[index]
-    if str then
-      if type(str)=="string" then
-        str=lpegmatch(p_bytes,str)
-        list[index]=str
-      end
-      depth=depth+1
-      process(str)
-      depth=depth-1
+    depth=depth+1
+    if top==0 then
+      showstate(formatters["unknown %s call"](scope))
+      top=0
     else
-      report("unknown %s %i",scope,index)
+      local index=stack[top]+bias
+      top=top-1
+      if trace_charstrings then
+        showvalue(scope,index,true)
+      end
+      local tab=list[index]
+      if tab then
+        if type(tab)=="string" then
+          tab=lpegmatch(p_bytes,tab)
+          list[index]=tab
+        end
+        process(tab)
+      else
+        showstate(formatters["unknown %s call %i"](scope,index))
+        top=0
+      end
     end
+    depth=depth-1
   end
   local function process(tab)
     local i=1
@@ -10367,7 +10291,7 @@ do
         local t=tab[i]
         local a=subactions[t]
         if a then
-          a()
+          a(t)
         else
           if trace_charstrings then
             showvalue("<subaction>",t)
@@ -10378,7 +10302,7 @@ do
       else
         local a=actions[t]
         if a then
-          local s=a()
+          local s=a(t)
           if s then
             i=i+s
           end
@@ -10392,25 +10316,36 @@ do
       end
     end
   end
-  parsecharstrings=function(data,glyphs,doshapes)
+  local function setbias(globals,locals)
+    if version==1 then
+      return
+        false,
+        false
+    else
+      return
+        ((globalbias<1240 and 107) or (globalbias<33900 and 1131) or 32768)+1,
+        ((localbias<1240 and 107) or (localbias<33900 and 1131) or 32768)+1
+    end
+  end
+  parsecharstrings=function(data,glyphs,doshapes,version)
     local dictionary=data.dictionaries[1]
     local charstrings=dictionary.charstrings
     local charset=dictionary.charset
+    local private=dictionary.private or { data={} }
     keepcurve=doshapes
     stack={}
     glyphs=glyphs or {}
     strings=data.strings
-    locals=dictionary.subroutines
-    globals=data.routines
-    globalbias=#globals
-    localbias=#locals
-    globalbias=((globalbias<1240 and 107) or (globalbias<33900 and 1131) or 32768)+1
-    localbias=((localbias<1240 and 107) or (localbias<33900 and 1131) or 32768)+1
-    local nominalwidth=dictionary.private.data.nominalwidthx or 0
-    local defaultwidth=dictionary.private.data.defaultwidthx or 0
+    globals=data.routines or {}
+    locals=dictionary.subroutines or {}
+    globalbias=setbias(globals,locals)
+    local nominalwidth=private.data.nominalwidthx or 0
+    local defaultwidth=private.data.defaultwidthx or 0
     for i=1,#charstrings do
-      local str=charstrings[i]
-      local tab=lpegmatch(p_bytes,str)
+      local tab=charstrings[i]
+      if type(tab)=="string" then
+        tab=lpegmatch(p_bytes,tab)
+      end
       local index=i-1
       x=0
       y=0
@@ -10461,19 +10396,18 @@ do
     end
     return glyphs
   end
-  parsecharstring=function(data,dictionary,charstring,glyphs,index,doshapes)
+  parsecharstring=function(data,dictionary,tab,glyphs,index,doshapes,version)
     local private=dictionary.private
     keepcurve=doshapes
     strings=data.strings 
     locals=dictionary.subroutines or {}
     globals=data.routines or {}
-    globalbias=#globals
-    localbias=#locals
-    globalbias=((globalbias<1240 and 107) or (globalbias<33900 and 1131) or 32768)+1
-    localbias=((localbias<1240 and 107) or (localbias<33900 and 1131) or 32768)+1
+    globalbias=setbias(globals,locals)
     local nominalwidth=private and private.data.nominalwidthx or 0
     local defaultwidth=private and private.data.defaultwidthx or 0
-    local tab=lpegmatch(p_bytes,charstring)
+    if type(tab)=="string" then
+      tab=lpegmatch(p_bytes,tab)
+    end
     x=0
     y=0
     width=false
@@ -10497,7 +10431,7 @@ do
     else
       width=nominalwidth+width
     end
-index=index-1
+    index=index-1
     local glyph=glyphs[index] 
     if not glyph then
       glyphs[index]={
@@ -10520,7 +10454,6 @@ index=index-1
       report("width: %s",tostring(width))
       report("boundingbox: % t",boundingbox)
     end
-    return charstring
   end
   resetcharstrings=function()
     result={}
@@ -10634,7 +10567,7 @@ local function readcidprivates(f,data)
   end
   parseprivates(data,dictionaries)
 end
-local function readnoselect(f,data,glyphs,doshapes)
+local function readnoselect(f,data,glyphs,doshapes,version)
   local dictionaries=data.dictionaries
   local dictionary=dictionaries[1]
   readglobals(f,data)
@@ -10644,10 +10577,11 @@ local function readnoselect(f,data,glyphs,doshapes)
   readprivates(f,data)
   parseprivates(data,data.dictionaries)
   readlocals(f,data,dictionary)
-  parsecharstrings(data,glyphs,doshapes)
+  parsecharstrings(data,glyphs,doshapes,version)
   resetcharstrings()
 end
-local function readfdselect(f,data,glyphs,doshapes)
+readers.parsecharstrings=parsecharstrings
+local function readfdselect(f,data,glyphs,doshapes,version)
   local header=data.header
   local dictionaries=data.dictionaries
   local dictionary=dictionaries[1]
@@ -10705,7 +10639,7 @@ local function readfdselect(f,data,glyphs,doshapes)
       readlocals(f,data,dictionaries[i])
     end
     for i=1,#charstrings do
-      parsecharstring(data,dictionaries[fdindex[i]+1],charstrings[i],glyphs,i,doshapes)
+      parsecharstring(data,dictionaries[fdindex[i]+1],charstrings[i],glyphs,i,doshapes,version)
     end
     resetcharstrings()
   end
@@ -21057,7 +20991,7 @@ local setspacekerns=nodes.injections.setspacekerns if not setspacekerns then os.
 if fontfeatures then
   function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
     local features=fontfeatures[font]
-    local enabled=features.spacekern==true and features.kern==true
+    local enabled=features and features.spacekern and features.kern
     if enabled then
       setspacekerns(font,sequence)
     end
@@ -21067,7 +21001,7 @@ else
   function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
     local shared=fontdata[font].shared
     local features=shared and shared.features
-    local enabled=features and features.spacekern==true and features.kern==true
+    local enabled=features and features.spacekern and features.kern
     if enabled then
       setspacekerns(font,sequence)
     end
@@ -21122,7 +21056,7 @@ local function spaceinitializer(tfmdata,value)
           if kern then
             if feat then
               for script,languages in next,kern do
-                local f=feat[k]
+                local f=feat[script]
                 if f then
                   for l in next,languages do
                     f[l]=true
@@ -21142,7 +21076,7 @@ local function spaceinitializer(tfmdata,value)
                 if kerns then
                   for k,v in next,kerns do
                     if type(v)=="table" then
-                      right[k]=v[3] 
+                      right[k]=v[1][3]
                     else
                       right[k]=v
                     end
@@ -21152,7 +21086,7 @@ local function spaceinitializer(tfmdata,value)
                   local kern=v[32]
                   if kern then
                     if type(kern)=="table" then
-                      left[k]=kern[3] 
+                      left[k]=kern[1][3]
                     else
                       left[k]=kern
                     end
@@ -24226,41 +24160,8 @@ handlers.afm=afm
 local readers=afm.readers or {}
 afm.readers=readers
 afm.version=1.512
-local get_indexes
+local get_indexes,get_shapes
 do
-  local n,m
-  local progress=function(str,position,name,size)
-    local forward=position+tonumber(size)+3+2
-    n=n+1
-    if n>=m then
-      return #str,name
-    elseif forward<#str then
-      return forward,name
-    else
-      return #str,name
-    end
-  end
-  local initialize=function(str,position,size)
-    n=0
-    m=size 
-    return position+1
-  end
-  local charstrings=P("/CharStrings")
-  local encoding=P("/Encoding")
-  local dup=P("dup")
-  local put=P("put")
-  local array=P("array")
-  local name=P("/")*C((R("az")+R("AZ")+R("09")+S("-_."))^1)
-  local digits=R("09")^1
-  local cardinal=digits/tonumber
-  local spaces=P(" ")^1
-  local spacing=patterns.whitespace^0
-  local p_filternames=Ct (
-    (1-charstrings)^0*charstrings*spaces*Cmt(cardinal,initialize)*(Cmt(name*spaces*cardinal,progress)+P(1))^1
-  )
-  local p_filterencoding=(1-encoding)^0*encoding*spaces*digits*spaces*array*(1-dup)^0*Cf(
-      Ct("")*Cg(spacing*dup*spaces*cardinal*spaces*name*spaces*put)^1
-,rawset)
   local decrypt
   do
     local r,c1,c2,n=0,0,0,0
@@ -24270,13 +24171,75 @@ do
       r=((cipher+r)*c1+c2)%65536
       return char(plain)
     end
-    decrypt=function(binary)
-      r,c1,c2,n=55665,52845,22719,4
+    decrypt=function(binary,initial,seed)
+      r,c1,c2,n=initial,52845,22719,seed
       binary=gsub(binary,".",step)
       return sub(binary,n+1)
     end
   end
-  local function loadpfbvector(filename)
+  local charstrings=P("/CharStrings")
+  local subroutines=P("/Subrs")
+  local encoding=P("/Encoding")
+  local dup=P("dup")
+  local put=P("put")
+  local array=P("array")
+  local name=P("/")*C((R("az")+R("AZ")+R("09")+S("-_."))^1)
+  local digits=R("09")^1
+  local cardinal=digits/tonumber
+  local spaces=P(" ")^1
+  local spacing=patterns.whitespace^0
+  local routines,vector,chars,n,m
+  local initialize=function(str,position,size)
+    n=0
+    m=size 
+    return position+1
+  end
+  local setroutine=function(str,position,index,size)
+    local forward=position+tonumber(size)
+    local stream=sub(str,position+1,forward)
+    routines[index]=decrypt(stream,4330,4)
+    return forward
+  end
+  local setvector=function(str,position,name,size)
+    local forward=position+tonumber(size)
+    if n>=m then
+      return #str
+    elseif forward<#str then
+      vector[n]=name
+      n=n+1 
+      return forward
+    else
+      return #str
+    end
+  end
+  local setshapes=function(str,position,name,size)
+    local forward=position+tonumber(size)
+    local stream=sub(str,position+1,forward)
+    if n>m then
+      return #str
+    elseif forward<#str then
+      vector[n]=name
+      n=n+1
+      chars [n]=decrypt(stream,4330,4)
+      return forward
+    else
+      return #str
+    end
+  end
+  local p_rd=spacing*(P("RD")+P("-|"))
+  local p_np=spacing*(P("NP")+P("|"))
+  local p_nd=spacing*(P("ND")+P("|"))
+  local p_filterroutines=
+    (1-subroutines)^0*subroutines*spaces*Cmt(cardinal,initialize)*(Cmt(cardinal*spaces*cardinal*p_rd,setroutine)*p_np+P(1))^1
+  local p_filtershapes=
+    (1-charstrings)^0*charstrings*spaces*Cmt(cardinal,initialize)*(Cmt(name*spaces*cardinal*p_rd,setshapes)*p_nd+P(1))^1
+  local p_filternames=Ct (
+    (1-charstrings)^0*charstrings*spaces*Cmt(cardinal,initialize)*(Cmt(name*spaces*cardinal,setvector)+P(1))^1
+  )
+  local p_filterencoding=(1-encoding)^0*encoding*spaces*digits*spaces*array*(1-dup)^0*Cf(
+      Ct("")*Cg(spacing*dup*spaces*cardinal*spaces*name*spaces*put)^1
+,rawset)
+  local function loadpfbvector(filename,shapestoo)
     local data=io.loaddata(resolvers.findfile(filename))
     if not data then
       report_pfb("no data in %a",filename)
@@ -24291,18 +24254,30 @@ do
       report_pfb("no binary data in %a",filename)
       return
     end
-    binary=decrypt(binary,4)
-    local vector=lpegmatch(p_filternames,binary)
-    for i=1,#vector do
-      vector[i-1]=vector[i]
-    end
-    vector[#vector]=nil
-    if not vector then
-      report_pfb("no vector in %a",filename)
-      return
-    end
+    binary=decrypt(binary,55665,4)
+    local names={}
     local encoding=lpegmatch(p_filterencoding,ascii)
-    return vector,encoding
+    local glyphs={}
+    routines,vector,chars={},{},{}
+    if shapestoo then
+      lpegmatch(p_filterroutines,binary)
+      lpegmatch(p_filtershapes,binary)
+      local data={
+        dictionaries={
+          {
+            charstrings=chars,
+            charset=vector,
+            subroutines=routines,
+          }
+        },
+      }
+      fonts.handlers.otf.readers.parsecharstrings(data,glyphs,true,true)
+    else
+      lpegmatch(p_filternames,binary)
+    end
+    names=vector
+    routines,vector,chars=nil,nil,nil
+    return names,encoding,glyphs
   end
   local pfb=handlers.pfb or {}
   handlers.pfb=pfb
@@ -24325,6 +24300,10 @@ do
         end
       end
     end
+  end
+  get_shapes=function(pfbname)
+    local vector,encoding,glyphs=loadpfbvector(pfbname,true)
+    return glyphs
   end
 end
 local spacer=patterns.spacer
@@ -24472,6 +24451,22 @@ function readers.loadfont(afmname,pfbname)
       report_afm("no pfb file for %a",afmname)
     end
     return data
+  end
+end
+function readers.loadshapes(filename)
+  local fullname=resolvers.findfile(filename) or ""
+  if fullname=="" then
+    return {
+      filename="not found: "..filename,
+      glyphs={}
+    }
+  else
+    return {
+      filename=fullname,
+      format="opentype",
+      glyphs=get_shapes(fullname) or {},
+      units=1000,
+    }
   end
 end
 function readers.getinfo(filename)

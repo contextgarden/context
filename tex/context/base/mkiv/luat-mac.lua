@@ -145,9 +145,8 @@ local grammar = { "converter",
                 * stopcode
                 * poplocal,
     texbody     = (
-leadingcomment -- new per 2015-03-03 (ugly)
-+
-                      V("definition")
+                      leadingcomment -- new per 2015-03-03 (ugly)
+                    + V("definition")
                     + identifier
                     + V("braced")
                     + (1 - stopcode)

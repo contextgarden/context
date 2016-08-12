@@ -3665,7 +3665,7 @@ if fontfeatures then
 
     function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
         local features = fontfeatures[font]
-        local enabled  = features.spacekern == true and features.kern == true
+        local enabled  = features and features.spacekern and features.kern
         if enabled then
             setspacekerns(font,sequence)
         end
@@ -3677,7 +3677,7 @@ else -- generic (no hashes)
     function otf.handlers.trigger_space_kerns(head,start,dataset,sequence,_,_,_,_,font,attr)
         local shared   = fontdata[font].shared
         local features = shared and shared.features
-        local enabled  = features and features.spacekern == true and features.kern == true
+        local enabled  = features and features.spacekern and features.kern
         if enabled then
             setspacekerns(font,sequence)
         end
@@ -3739,7 +3739,7 @@ local function spaceinitializer(tfmdata,value) -- attr
                     if kern then
                         if feat then
                             for script, languages in next, kern do
-                                local f = feat[k]
+                                local f = feat[script]
                                 if f then
                                     for l in next, languages do
                                         f[l] = true
@@ -3759,7 +3759,7 @@ local function spaceinitializer(tfmdata,value) -- attr
                                 if kerns then
                                     for k, v in next, kerns do
                                         if type(v) == "table" then
-                                            right[k] = v[3] -- needs checking
+                                            right[k] = v[1][3]
                                         else
                                             right[k] = v
                                         end
@@ -3769,7 +3769,7 @@ local function spaceinitializer(tfmdata,value) -- attr
                                     local kern = v[32]
                                     if kern then
                                         if type(kern) == "table" then
-                                            left[k] = kern[3] -- needs checking
+                                            left[k] = kern[1][3]
                                         else
                                             left[k] = kern
                                         end

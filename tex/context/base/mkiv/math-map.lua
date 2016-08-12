@@ -34,7 +34,7 @@ if not modules then modules = { } end modules ['math-map'] = {
 
 local type, next = type, next
 local floor, div = math.floor, math.div
-local merged = table.merged
+local merged, sortedhash = table.merged, table.sortedhash
 local extract = bit32.extract
 
 local allocate            = utilities.storage.allocate
@@ -557,10 +557,10 @@ mathematics.mapremap  = mathremap
 local boldmap         = allocate { }
 mathematics.boldmap   = boldmap
 
--- all math (a bit of redundancy here)
+-- all math (a bit of redundancy here) (sorted for tracing)
 
-for alphabet, styles in next, alphabets do -- per 9/6/2011 we also have attr for missing
-    for style, data in next, styles do
+for alphabet, styles in sortedhash(alphabets) do -- per 9/6/2011 we also have attr for missing
+    for style, data in sortedhash(styles) do
      -- let's keep the long names (for tracing)
         local n = #mathremap + 1
         local d = {

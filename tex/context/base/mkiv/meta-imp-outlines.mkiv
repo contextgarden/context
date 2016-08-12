@@ -54,7 +54,7 @@ function metapost.showglyph(specification)
     local fontid      = font.current()
     local shapedata   = fonts.hashes.shapes[fontid] -- by index
     local chardata    = fonts.hashes.characters[fontid] -- by unicode
-    local shapeglyphs = shapedata.glyphs
+    local shapeglyphs = shapedata.glyphs or { }
     local character   = validstring(specification.character)
     local index       = validstring(specification.index)
     local alternative = validstring(specification.alternative)
@@ -180,6 +180,8 @@ end
 % \showshape[character=all,alternative=page]
 
 \usemodule[art-01]
+
+% \definedfont[lt55476.afm]
 
 \startcombination[3*1]
     {\ruledhbox{\startMPcode draw textext("\showshape[character=a]") ; \stopMPcode}} {}
