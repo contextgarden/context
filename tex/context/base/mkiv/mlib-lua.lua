@@ -412,7 +412,6 @@ function mp.tb_dimensions(category,name)
     mptriplet(w/factor,h/factor,d/factor)
 end
 
-
 function mp.report(a,b)
     if b then
         report_message("%s : %s",a,b)

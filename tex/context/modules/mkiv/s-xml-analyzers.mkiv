@@ -18,6 +18,7 @@
 \installmodulecommandluasingle \showxmlstructure  {moduledata.xml.analyzers.structure}
 \installmodulecommandluasingle \showxmlcharacters {moduledata.xml.analyzers.characters}
 \installmodulecommandluasingle \showxmlentities   {moduledata.xml.analyzers.entities}
+\installmodulecommandluasingle \showxmlallsetups  {moduledata.xml.analyzers.allsetups}
 
 \stopmodule
 
@@ -33,6 +34,9 @@
 
 \starttext
 
-    \showxmlcharacters[\FileName]
+    \showxmlstructure [\FileName] \page
+    \showxmlentities  [\FileName] \page
+    \showxmlcharacters[\FileName] \page
+    \showxmlallsetups [\FileName] \page
 
 \stoptext

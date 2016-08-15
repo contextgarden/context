@@ -18,12 +18,14 @@
 % usage: context --extra=xml [options] list-of-files
 %
 % --analyze             : show elements and characters
+% --template            : also export template
 % --topspace=dimension  : distance above first line
 % --backspace=dimension : distance before left margin
 % --bodyfont=list       : additional bodyfont settings
 % --paperformat=spec    : paper*print or paperxprint
 %
 % context --extra=xml --analyze path::i-context.xml
+% context --extra=xml --analyze --template path::i-context.xml
 % context --extra=xml --analyze selfautoparent:texmf-context/tex/context/interface/mkiv/i-*.xml
 % end help
 
@@ -52,8 +54,10 @@
 \starttext
 
 \startluacode
-    local files   = document.files
-    local pattern = document.arguments.pattern or (#files == 1 and files[1])
+    local files    = document.files
+    local pattern  = document.arguments.pattern or (#files == 1 and files[1])
+    local analyze  = document.arguments.analyze
+    local template = document.arguments.template
 
     if pattern then
         files = dir.glob(pattern)
@@ -63,12 +67,15 @@
     end
 
     if #files > 0 then
-        if document.arguments.analyze then
-            moduledata.xml.analyzers.structure (files)
+        if analyze then
+            moduledata.xml.analyzers.structure(files)
             context.page()
             moduledata.xml.analyzers.characters(files)
             context.page()
             moduledata.xml.analyzers.entities(files)
+            if template then
+                moduledata.xml.analyzers.allsetups(files,type(template) == "string" and template or nil)
+            end
         else
             context("no action given")
         end

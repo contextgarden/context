@@ -3805,6 +3805,109 @@ typesetting often takes relatively more time than the lookup.
 
 \stopsection
 
+\startsection[title=Finalizers]
+
+The \XML\ parser is also available outside \TEX. Here is an example of its usage.
+We pipe the result to \TEX\ but you can do with \type {t} whatever you like.
+
+\startbuffer
+local x = xml.load("manual-demo-1.xml")
+local t = { }
+
+for c in xml.collected(x,"//*") do
+    if not c.special and not t[c.tg] then
+        t[c.tg] = true
+    end
+end
+
+context.tocontext(table.sortedkeys(t))
+\stopbuffer
+
+\typebuffer
+
+This returns:
+
+\ctxluabuffer
+
+We can wrap this in a finalizer:
+
+\startbuffer
+xml.finalizers.taglist = function(collected)
+    local t = { }
+    for i=1,#collected do
+        local c = collected[i]
+        if not c.special then
+            local tg = c.tg
+            if tg and not t[tg] then
+                t[tg] = true
+            end
+        end
+    end
+    return table.sortedkeys(t)
+end
+\stopbuffer
+
+\typebuffer
+
+Or in a more extensive one:
+
+\startbuffer
+xml.finalizers.taglist = function(collected,parenttoo)
+    local t = { }
+    for i=1,#collected do
+        local c = collected[i]
+        if not c.special then
+            local tg = c.tg
+            if tg and not t[tg] then
+                t[tg] = true
+            end
+            if parenttoo then
+                local p = c.__p__
+                if p and not p.special then
+                    local tg = p.tg .. ":" .. tg
+                    if tg and not t[tg] then
+                        t[tg] = true
+                    end
+                end
+            end
+        end
+    end
+    return table.sortedkeys(t)
+end
+\stopbuffer
+
+\typebuffer \ctxluabuffer
+
+Usage is as follows:
+
+\startbuffer
+local x = xml.load("manual-demo-1.xml")
+local t = xml.applylpath(x,"//*/taglist()")
+
+context.tocontext(t)
+\stopbuffer
+
+\typebuffer
+
+And indeed we get:
+
+\ctxluabuffer
+
+But we can also say:
+
+\startbuffer
+local x = xml.load("manual-demo-1.xml")
+local t = xml.applylpath(x,"//*/taglist(true)")
+
+context.tocontext(t)
+\stopbuffer
+
+\typebuffer
+
+Now we get:
+
+\ctxluabuffer
+
 \stopchapter
 
 \stopbodymatter

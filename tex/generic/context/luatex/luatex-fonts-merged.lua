@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/13/16 00:54:21
+-- merge date  : 08/15/16 22:40:19
 
 do -- begin closure to overcome local limits and interference
 
@@ -9112,6 +9112,13 @@ function readers.loadshapes(filename,n)
     shapes=true,
     subfont=n,
   }
+  if fontdata then
+    for k,v in next,fontdata.glyphs do
+      v.class=nil
+      v.index=nil
+      v.math=nil
+    end
+  end
   return fontdata and {
     filename=filename,
     format=fontdata.format,
@@ -9660,6 +9667,7 @@ do
   local ymax=0
   local checked=false
   local keepcurve=false
+  local version=2
   local function showstate(where)
     report("%w%-10s : [%s] n=%i",depth*2,where,concat(stack," ",1,top),top)
   end
@@ -10101,55 +10109,73 @@ do
     top=0
   end
   local function divide()
-    local d=stack[top]
-    top=top-1
-    stack[top]=stack[top]/d
+    if version==1 then
+      local d=stack[top]
+      top=top-1
+      stack[top]=stack[top]/d
+    end
   end
   local function closepath()
-    if trace_charstrings then
-      showstate("closepath")
+    if version==1 then
+      if trace_charstrings then
+        showstate("closepath")
+      end
     end
     top=0
   end
   local function hsbw()
-    if trace_charstrings then
-      showstate("dotsection")
+    if version==1 then
+      if trace_charstrings then
+        showstate("dotsection")
+      end
+      width=stack[top]
     end
-    width=stack[top]
     top=0
   end
   local function seac()
-    if trace_charstrings then
-      showstate("seac")
+    if version==1 then
+      if trace_charstrings then
+        showstate("seac")
+      end
     end
     top=0
   end
   local function sbw()
-    if trace_charstrings then
-      showstate("sbw")
+    if version==1 then
+      if trace_charstrings then
+        showstate("sbw")
+      end
+      width=stack[top-1]
     end
-    width=stack[top-1]
     top=0
   end
   local function callothersubr()
-    if trace_charstrings then
-      showstate("callothersubr (unsupported)")
+    if version==1 then
+      if trace_charstrings then
+        showstate("callothersubr (unsupported)")
+      end
     end
     top=0
   end
   local function pop()
-    if trace_charstrings then
-      showstate("pop (unsupported)")
+    if version==1 then
+      if trace_charstrings then
+        showstate("pop (unsupported)")
+      end
+      top=top+1
+      stack[top]=0 
+    else
+      top=0
     end
-    top=top+1
-    stack[top]=0 
   end
   local function setcurrentpoint()
-    if trace_charstrings then
-      showstate("pop (unsupported)")
+    if version==1 then
+      if trace_charstrings then
+        showstate("pop (unsupported)")
+      end
+      x=x+stack[top-1]
+      y=y+stack[top]
     end
-    x=x+stack[top-1]
-    y=y+stack[top]
     top=0
   end
   local actions={ [0]=unsupported,
@@ -10322,23 +10348,25 @@ do
         false,
         false
     else
+      local g,l=#globals,#locals
       return
-        ((globalbias<1240 and 107) or (globalbias<33900 and 1131) or 32768)+1,
-        ((localbias<1240 and 107) or (localbias<33900 and 1131) or 32768)+1
+        ((g<1240 and 107) or (g<33900 and 1131) or 32768)+1,
+        ((l<1240 and 107) or (l<33900 and 1131) or 32768)+1
     end
   end
-  parsecharstrings=function(data,glyphs,doshapes,version)
+  parsecharstrings=function(data,glyphs,doshapes,tversion)
     local dictionary=data.dictionaries[1]
     local charstrings=dictionary.charstrings
     local charset=dictionary.charset
     local private=dictionary.private or { data={} }
     keepcurve=doshapes
+    version=tversion
     stack={}
     glyphs=glyphs or {}
     strings=data.strings
     globals=data.routines or {}
     locals=dictionary.subroutines or {}
-    globalbias=setbias(globals,locals)
+    globalbias,localbias=setbias(globals,locals,version)
     local nominalwidth=private.data.nominalwidthx or 0
     local defaultwidth=private.data.defaultwidthx or 0
     for i=1,#charstrings do

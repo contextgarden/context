@@ -187,9 +187,9 @@ function mp.format(fmt,str)
     mpprint(f_textext(formatters[fmt](metapost.untagvariable(str,false))))
 end
 
-function mp.formatted(fmt,num) -- svformat
+function mp.formatted(fmt,...) -- svformat
     fmt = lpegmatch(cleaner,fmt)
-    mpprint(f_textext(formatters[fmt](tonumber(num) or num)))
+    mpprint(f_textext(formatters[fmt](...)))
 end
 
 function mp.graphformat(fmt,num) -- nvformat

@@ -2040,6 +2040,15 @@ function readers.loadshapes(filename,n)
         shapes   = true,
         subfont  = n,
     }
+    if fontdata then
+        -- easier on luajit but still we can hit the 64 K stack constants issue
+        for k, v in next, fontdata.glyphs do
+            v.class = nil
+            v.index = nil
+            v.math  = nil
+         -- v.name  = nil
+        end
+    end
     return fontdata and {
      -- version  = 0.123 -- todo
         filename = filename,

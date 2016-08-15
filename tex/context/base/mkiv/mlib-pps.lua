@@ -1160,16 +1160,17 @@ local function sh_process(object,prescript,before,after)
     local sh_type = prescript.sh_type
     if sh_type then
         nofshades = nofshades + 1
-        local domain   = lpegmatch(domainsplitter,prescript.sh_domain   or "0 1")
-        local centera  = lpegmatch(centersplitter,prescript.sh_center_a or "0 0")
-        local centerb  = lpegmatch(centersplitter,prescript.sh_center_b or "0 0")
+        local domain    = lpegmatch(domainsplitter,prescript.sh_domain   or "0 1")
+        local centera   = lpegmatch(centersplitter,prescript.sh_center_a or "0 0")
+        local centerb   = lpegmatch(centersplitter,prescript.sh_center_b or "0 0")
+        local transform = toboolean(prescript.sh_transform or "yes",true)
         -- compensation for scaling
         local sx = 1
         local sy = 1
         local sr = 1
         local dx = 0
         local dy = 0
-        if true then
+        if transform then
             local first = lpegmatch(coordinatesplitter,prescript.sh_first or "0 0")
             local setx  = lpegmatch(coordinatesplitter,prescript.sh_set_x or "0 0")
             local sety  = lpegmatch(coordinatesplitter,prescript.sh_set_y or "0 0")

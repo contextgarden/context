@@ -1246,6 +1246,15 @@ vardef arrowheadonpath (expr p, s) =
     arrowhead p if s < 1 : cutafter (point (s*arclength(p) + (ahlength/2)) on p) fi
 enddef ;
 
+def resetarrows =
+    hide (
+        ahlength  :=  4 ;
+        ahangle   := 45 ;
+        ahvariant := 0 ;
+        ahdimple  := 1/5 ;
+    )
+enddef ;
+
 %D Points.
 
 def drawpoint expr c =
@@ -2810,5 +2819,18 @@ def mfun_apply_max_dimensions = % not a generic helper, we want to protect this 
 enddef;
 
 extra_endfig := extra_endfig & "mfun_apply_max_dimensions ;" ;
+
+%D Bonus shapes (need along):
+
+path unittriangle, fulltriangle ; % not really units but circle based
+
+unittriangle := point 0   along unitcircle
+             -- point 1/3 along unitcircle
+             -- point 2/3 along unitcircle
+             -- cycle ;
+fulltriangle := point 0   along fullcircle
+             -- point 1/3 along fullcircle
+             -- point 2/3 along fullcircle
+             -- cycle ;
 
 let dump = relax ;

@@ -97,3 +97,5 @@ enddef ;
 vardef MP@#(text t) =
     mlib_luas_lualist("MP." & str @#,t)
 enddef ;
+
+def message = lua.mp.report enddef ;

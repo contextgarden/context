@@ -585,6 +585,7 @@ primarydef p withshademethod m =
     hide(mfun_with_shade_method_analyze(p))
     p
     withprescript "sh_domain=0 1"
+    withprescript "sh_transform=yes"
     withprescript "sh_color=into"
     withprescript "sh_color_a=" & colordecimals white
     withprescript "sh_color_b=" & colordecimals black
@@ -611,6 +612,16 @@ primarydef p withshademethod m =
     fi
 enddef ;
 
+def withshaderadius expr a =
+    withprescript "sh_radius_a=" & decimal (xpart a)
+    withprescript "sh_radius_b=" & decimal (ypart a)
+enddef ;
+
+def withshadeorigin expr a =
+    withprescript "sh_center_a=" & ddecimal a
+    withprescript "sh_center_b=" & ddecimal a
+enddef ;
+
 def withshadevector expr a =
     withprescript "sh_center_a=" & ddecimal (point xpart a of mfun_shade_path)
     withprescript "sh_center_b=" & ddecimal (point ypart a of mfun_shade_path)
@@ -619,6 +630,10 @@ enddef ;
 def withshadedirection expr a =
     withprescript "sh_center_a=" & ddecimal (point xpart a of boundingbox(mfun_shade_path))
     withprescript "sh_center_b=" & ddecimal (point ypart a of boundingbox(mfun_shade_path))
+enddef ;
+
+def withshadetransform expr a = % yes | no
+    withprescript "sh_transform=" & a
 enddef ;
 
 pair shadedup    ; shadedup    := (0.5,2.5) ;
@@ -690,10 +705,47 @@ def shaded text s =
     s
 enddef ;
 
+% For me.
+
+primarydef p shownshadevector v =
+    image (
+        drawarrow (point xpart v of p) -- (point ypart v of p) ;
+        fill fullcircle scaled 2 shifted point xpart v of p ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
+primarydef p shownshadedirection v =
+    image (
+        drawarrow (point xpart v of boundingbox p) -- (point ypart v of boundingbox p) ;
+        fill fullcircle scaled 2 shifted (point xpart v of boundingbox p) ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
+primarydef p shownshadecenter v =
+    image (
+        fill fullcircle scaled 2
+            shifted center p shifted (
+            xpart v * bbwidth (p)/2,
+            ypart v * bbheight(p)/2
+        ) ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
+primarydef p shownshadeorigin v =
+    image (
+        fill fullcircle scaled 2 shifted v ;
+        setbounds currentpicture to center currentpicture -- cycle ;
+    )
+enddef ;
+
 % Old macros:
 
 def withcircularshade (expr a, b, ra, rb, ca, cb) =
     withprescript "sh_type=circular"
+    withprescript "sh_transform=yes"
     withprescript "sh_domain=0 1"
     withprescript "sh_factor=1"
     withprescript "sh_color_a="  & colordecimals ca
@@ -706,6 +758,7 @@ enddef ;
 
 def withlinearshade (expr a, b, ca, cb) =
     withprescript "sh_type=linear"
+    withprescript "sh_transform=yes"
     withprescript "sh_domain=0 1"
     withprescript "sh_factor=1"
     withprescript "sh_color_a="  & colordecimals ca
@@ -1529,6 +1582,9 @@ vardef formatted(expr f, x) = textext(varfmt(f, x)) enddef ;
 %
 % def strfmt = format    enddef ; % old
 % def varfmt = formatted enddef ; % old
+
+
+def fmttext = lua.mp.formatted enddef ;
 
 % new
 
