@@ -245,10 +245,10 @@
 \definefontfeature
   [mathematics]
   [mode=base,
-   liga=yes,
    kern=yes,
-   tlig=yes,
-   trep=yes,
+ % liga=yes, % makes no sense
+ % tlig=yes, % makes no sense
+ % trep=yes, % makes no sense
    mathalternates=yes,
    mathitalics=yes, % we pass them
  % mathgaps=yes,
@@ -271,7 +271,6 @@
   [mathematics-r2l]
   [mathematics]
   [rtlm=yes,
-  %dtls=yes,
    locl=yes]
 
 \definefontfeature[virtualmath]              [mathematics]      % downward compatibility

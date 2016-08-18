@@ -2669,7 +2669,22 @@
 
 %D Handy for defining additional glyphs:
 
-\let\getprivateglyphslot\clf_getprivateglyphslot
+\let\getprivateglyphslot\clf_getprivateglyphslot % kind of private macro
+
+\let\getprivatechar     \clf_getprivatechar     % gives back a utf !
+\let\getprivatemathchar \clf_getprivatemathchar % gives back a utf !
+\let\getprivateslot     \clf_getprivateslot     % companion to fonts.helpers.addprivate
+
+% \unexpanded\def\getprivatemathchar#1%
+%   {\begingroup\the\textfont\zerocount\getprivatechar{#1}\endgroup}
+
+
+\def\privatechar % the text variant gets expanded to utf
+  {\ifmmode
+     \expandafter\getprivatemathchar
+   \else
+     \expandafter\getprivatechar
+   \fi}
 
 % yes or no:
 

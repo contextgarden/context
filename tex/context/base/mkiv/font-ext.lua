@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['font-ext'] = {
 }
 
 local next, type, byte = next, type, string.byte
+local utfchar = utf.char
 
 local context            = context
 local fonts              = fonts
@@ -32,11 +33,13 @@ local registerotffeature = handlers.otf.features.register
 local registerafmfeature = handlers.afm.features.register
 
 local fontdata           = hashes.identifiers
+local fontproperties     = hashes.properties
 
 local allocate           = utilities.storage.allocate
 local settings_to_array  = utilities.parsers.settings_to_array
 local getparameters      = utilities.parsers.getparameters
 local gettexdimen        = tex.getdimen
+local family_font        = node.family_font
 
 local setmetatableindex  = table.setmetatableindex
 
@@ -977,16 +980,16 @@ registerafmfeature(dimensions_specification)
 
 local nodepool    = nodes.pool
 
-local new_special = nodepool.special
+----- new_special = nodepool.special
+----- hpack_node  = node.hpack
 local new_glyph   = nodepool.glyph
-local hpack_node  = node.hpack
 
 local helpers     = fonts.helpers
 local currentfont = font.current
 
 function helpers.addprivate(tfmdata,name,characterdata)
-    local properties = tfmdata.properties
-    local privates = properties.privates
+    local properties  = tfmdata.properties
+    local privates    = properties.privates
     local lastprivate = properties.lastprivate
     if lastprivate then
         lastprivate = lastprivate + 1
@@ -1008,25 +1011,36 @@ function helpers.addprivate(tfmdata,name,characterdata)
     return lastprivate
 end
 
+local function getprivateslot(id,name)
+    if not name then
+        name = id
+        id   = currentfont()
+    end
+    local properties = fontproperties[id]
+    local privates   = properties and properties.privates
+    return privates and privates[name]
+end
+
+helpers.getprivateslot = getprivateslot
+
+-- was originally meant for missing chars:
+--
+-- local char     = tfmdata.characters[p]
+-- local commands = char.commands
+-- if commands then
+--     local fake  = hpack_node(new_special(commands[1][2]))
+--     fake.width  = char.width
+--     fake.height = char.height
+--     fake.depth  = char.depth
+--     return fake
+-- else
+
 local function getprivatenode(tfmdata,name)
-    local properties = tfmdata.properties
-    local privates = properties and properties.privates
-    if privates then
-        local p = privates[name]
-        if p then
-            local char     = tfmdata.characters[p]
-            local commands = char.commands
-            if commands then
-                local fake  = hpack_node(new_special(commands[1][2]))
-                fake.width  = char.width
-                fake.height = char.height
-                fake.depth  = char.depth
-                return fake
-            else
-                -- todo: set current attribibutes
-                return new_glyph(properties.id,p)
-            end
-        end
+    local id = tfmdata.properties.id
+    local p  = getprivateslot(id,name)
+    if p then
+        -- todo: set current attribibutes
+        return new_glyph(id,p)
     end
 end
 
@@ -1042,6 +1056,31 @@ implement {
     name      = "getprivatechar",
     arguments = "string",
     actions   = function(name)
-        context(getprivatenode(fontdata[currentfont()],name))
+        local p = getprivateslot(name)
+        if p then
+            context(utfchar(p))
+        end
+    end
+}
+
+implement {
+    name      = "getprivatemathchar",
+    arguments = "string",
+    actions   = function(name)
+        local p = getprivateslot(family_font(0),name)
+        if p then
+            context(utfchar(p))
+        end
+    end
+}
+
+implement {
+    name      = "getprivateslot",
+    arguments = "string",
+    actions   = function(name)
+        local p = getprivateslot(name)
+        if p then
+            context(p)
+        end
     end
 }

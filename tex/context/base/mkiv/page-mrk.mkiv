@@ -35,22 +35,22 @@
 \newcount\c_page_marks_ny
 
 \startuniqueMPgraphic{print:color}{w,h,l,o}
-    if unknown context_crop : input mp-crop.mpiv ; fi ;
+    loadmodule "crop" ;
     page_marks_add_color(\MPvar w,\MPvar h,\MPvar l,\MPvar o) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{print:marking}{w,h,l,o}
-    if unknown context_crop : input mp-crop.mpiv ; fi ;
+    loadmodule "crop" ;
     page_marks_add_marking(\MPvar w,\MPvar h,\MPvar l,\MPvar o) ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{print:lines}{w,h,l,o,x,y}
-    if unknown context_crop : input mp-crop.mpiv ; fi ;
+    loadmodule "crop" ;
     page_marks_add_lines(\MPvar w,\MPvar h,\MPvar l,\MPvar o,\MPvar x,\MPvar y) ;
 \stopuniqueMPgraphic
 
 \startuseMPgraphic{print:number}{w,h,l,o,n}
-    if unknown context_crop : input mp-crop.mpiv ; fi ;
+    loadmodule "crop" ;
     page_marks_add_number(\MPvar w,\MPvar h,\MPvar l,\MPvar o,\MPvar n) ;
 \stopuseMPgraphic
 

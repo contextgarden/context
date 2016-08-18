@@ -124,6 +124,10 @@ function metapost.format_string(fmt,...)
 end
 
 function metapost.format_number(fmt,num)
+    if not num then
+        num = fmt
+        fmt = "%e"
+    end
     local number = tonumber(num)
     if number then
         local base, exponent = lpegmatch(enumber,formatters[lpegmatch(cleaner,fmt)](number))
@@ -149,6 +153,59 @@ end
 
 implement { name =  "metapostformatted",   actions = metapost.svformat, arguments = { "string", "string" } }
 implement { name =  "metapostgraphformat", actions = metapost.nvformat, arguments = { "string", "string" } }
+
+-- kind of new
+
+local f_exponent = formatters["\\MPexponent{%s}{%s}"]
+
+local mpformatters = table.setmetatableindex(function(t,k)
+    local v = formatters[lpegmatch(cleaner,k)]
+    t[k] = v
+    return v
+end)
+
+function metapost.texexp(num,bfmt,efmt)
+    local number = tonumber(num)
+    if number then
+        local base, exponent = lpegmatch(enumber,format("%e",number))
+        if base and exponent then
+            if bfmt then
+             -- base = formatters[lpegmatch(cleaner,bfmt)](base)
+                base = mpformatters[bfmt](base)
+            else
+                base = format("%f",base)
+            end
+            if efmt then
+             -- exponent = formatters[lpegmatch(cleaner,efmt)](exponent)
+                exponent = mpformatters[efmt](exponent)
+            else
+                exponent = format("%i",exponent)
+            end
+            return f_exponent(base,exponent)
+        elseif bfmt then
+         -- return formatters[lpegmatch(cleaner,bfmt)](number)
+            return mpformatters[bfmt](number)
+        else
+            return number
+        end
+    else
+        return num
+    end
+end
+
+-- not in context a namespace
+
+if _LUAVERSION < 5.2  then
+    utilities.strings.formatters.add(formatters,"texexp", [[texexp(...)]], "local texexp = metapost.texexp")
+else
+    utilities.strings.formatters.add(formatters,"texexp", [[texexp(...)]],      { texexp = metapost.texexp })
+end
+
+-- print(string.formatters["%!3.3!texexp!"](10.4345E30))
+-- print(string.formatters["%3!texexp!"](10.4345E30,"%2.3f","%2i"))
+-- print(string.formatters["%2!texexp!"](10.4345E30,"%2.3f"))
+-- print(string.formatters["%1!texexp!"](10.4345E30))
+-- print(string.formatters["%!texexp!"](10.4345E30))
 
 -- local function test(fmt,n)
 --     logs.report("mp format test","fmt: %s, n: %s, result: %s, \\exponent{%s}{%s}",fmt,n,
@@ -179,6 +236,8 @@ implement { name =  "metapostgraphformat", actions = metapost.nvformat, argument
 local f_textext = formatters[ [[textext("%s")]] ]
 local f_mthtext = formatters[ [[textext("\mathematics{%s}")]] ]
 local f_exptext = formatters[ [[textext("\mathematics{%s\times10^{%s}}")]] ]
+
+-- local cleaner   = Cs((P("\\")/"\\\\" + P("@@")/"@" + P("@")/"%%" + P(1))^0)
 
 local mpprint   = mp.print
 

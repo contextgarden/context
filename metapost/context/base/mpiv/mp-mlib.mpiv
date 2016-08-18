@@ -429,6 +429,75 @@ vardef onetimetextext@#(expr p) = % no draw here
     thetextext@#(p,origin)
 enddef ;
 
+% formatted text
+
+pair mfun_tt_z ;
+
+vardef rawfmttext(text t) = % todo: avoid currentpicture
+    mfun_tt_n := mfun_tt_n + 1 ;
+    mfun_tt_c := nullpicture ;
+    if mfun_trial_run :
+        mfun_tt_o := nullpicture ;
+        addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+        addto mfun_tt_c doublepath unitsquare
+            withprescript "tx_number=" & decimal mfun_tt_n
+            withprescript "tx_stage=trial"
+            withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+            % begin of fmt specific
+            withprescript "tx_type=format"
+            for s = t :
+                        if string  s : withpostscript "s:" & s
+                    elseif numeric s : withpostscript "n:" & decimal s
+                    elseif boolean s : withpostscript "b:" & if s : "true" else : "false" fi
+                    elseif pair    s : hide(mfun_tt_z := s ; )
+                    fi
+            endfor ;
+            % end of fmt specific
+        if not mfun_onetime_textext :
+            addto mfun_tt_p also mfun_tt_c
+                withprescript "tx_global=yes" ;
+        fi ;
+    else :
+        mfun_tt_b := lua.mp.tt_dimensions(mfun_tt_n) ;
+        addto mfun_tt_c doublepath unitsquare
+            xscaled redpart mfun_tt_b
+            yscaled (greenpart mfun_tt_b + bluepart mfun_tt_b)
+            shifted (0,- bluepart mfun_tt_b)
+            withprescript "tx_number=" & decimal mfun_tt_n
+            withprescript "tx_stage=final" ;
+        % begin of fmt specific
+        for s = t :
+            if pair s : mfun_tt_z := s ; fi
+        endfor ;
+        % end of fmt specific
+    fi ;
+    mfun_onetime_textext := false ;
+    mfun_tt_c
+enddef ;
+
+vardef thefmttext@#(text t) =
+    mfun_tt_z := origin ;
+    save p ; picture p ; p := rawfmttext(t) ;
+    p
+        if (mfun_labtype@# >= 10) :
+            shifted (0,ypart center p)
+        fi
+        shifted (mfun_tt_z + textextoffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+enddef ;
+
+vardef fmttext@#(text t) = % no draw here
+    thefmttext@#(t,origin)
+enddef ;
+
+% or just: def fmttext = thefmttext enddef ;
+
+vardef onetimefmttext@#(text t) = % no draw here
+    mfun_onetime_textext := true ;
+    thefmttext@#(t,origin)
+enddef ;
+
+% so much for formatted text
+
 vardef thetexbox@#(expr category, name, z) =
     save p ; picture p ; p := rawtexbox(category,name) ;
     p
@@ -1584,7 +1653,7 @@ vardef formatted(expr f, x) = textext(varfmt(f, x)) enddef ;
 % def varfmt = formatted enddef ; % old
 
 
-def fmttext = lua.mp.formatted enddef ;
+% def fmttext = lua.mp.formatted enddef ;
 
 % new
 

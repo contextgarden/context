@@ -13,6 +13,10 @@ moduledata.fonts.features = moduledata.fonts.features or { }
 
 local sortedhash = table.sortedhash
 
+local v_yes  = interfaces.variables.yes
+local v_no   = interfaces.variables.no
+local c_name = interfaces.constants.name
+
 local NC, NR, bold = context.NC, context.NR, context.bold
 
 function moduledata.fonts.features.showused(specification)
@@ -205,5 +209,24 @@ function moduledata.fonts.features.showallkerns(specification)
     else
         context("no kern pairs found")
         context.par()
+    end
+end
+
+function moduledata.fonts.features.showfeatureset(specification)
+    specification = interfaces.checkedspecification(specification)
+    local name = specification[c_name]
+    if name then
+        local s = fonts.specifiers.contextsetups[name]
+        if s then
+            local t = table.copy(s)
+            t.number = nil
+            if t and next(t) then
+                context.starttabulate { "|T|T|" }
+                    for k, v in sortedhash(t) do
+                       NC() context(k) NC() context(v == true and v_yes or v == false and v_no or tostring(v)) NC() NR()
+                    end
+                context.stoptabulate()
+            end
+        end
     end
 end

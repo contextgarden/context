@@ -874,7 +874,10 @@
 
 \defineexternalfigure
   [\v!combination]
-  [\c!width=\dimexpr(\textwidth-\numexpr\combinationparameter\c!nx-\plusone\relax\dimexpr\combinationparameter\c!distance\relax)/\combinationparameter\c!nx\relax]
+  [\c!width=\dimexpr(%
+     \textwidth-\effectiveleftskip-\effectiverightskip
+    -\numexpr\combinationparameter\c!nx-\plusone\relax\dimexpr\combinationparameter\c!distance\relax
+   )/\combinationparameter\c!nx\relax]
 
 % \startcombination[nx=2,ny=1]
 %     {\externalfigure[dummy][combination]} {}

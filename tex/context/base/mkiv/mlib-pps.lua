@@ -971,6 +971,25 @@ local ctx_MPLIBsettext  = context.MPLIBsettext
 -- we always create at least one instance (for dimensions)
 -- we make sure we don't do that when we use one (else counter issues with e.g. \definelabel)
 
+local eol      = S("\n\r")^1
+local cleaner  = Cs((P("@@")/"@" + P("@")/"%%" + P(1))^0)
+local splitter = Ct(
+    ( (
+        P("s:") * C((1-eol)^1)
+      + P("n:") *  ((1-eol)^1/tonumber)
+      + P("b:") *  ((1-eol)^1/toboolean)
+    ) * eol^0 )^0)
+
+local function applyformat(s)
+    local t = lpegmatch(splitter,s)
+    if #t == 1 then
+        return s
+    else
+        local f = lpegmatch(cleaner,t[1])
+        return formatters[f](unpack(t,2))
+    end
+end
+
 local function tx_analyze(object,prescript)
     local data = top.texdata[metapost.properties.number]
     local tx_stage = prescript.tx_stage
@@ -985,6 +1004,9 @@ local function tx_analyze(object,prescript)
             if txc then
                 c = lpegmatch(pat,txc)
             end
+        end
+        if prescript.tx_type == "format" then
+            s = applyformat(s)
         end
         local a = tonumber(prescript.tr_alternative)
         local t = tonumber(prescript.tr_transparency)

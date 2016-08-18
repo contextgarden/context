@@ -38,7 +38,7 @@ local modes                = { }
 local systemmodes          = { }
 
 -- we could use the built-in tex.is[count|dimen|skip|toks] here but caching
--- at the lua en dis not that bad (and we need more anyway)
+-- at the lua end is not that bad (and we need more anyway)
 
 -- undefined: mode == 0 or cmdname = "undefined_cs"
 

@@ -569,7 +569,7 @@ local function presetcontext(name,parent,features) -- will go to con and shared
     -- optimization)
     local t = { } -- can we avoid t ?
     for k,v in next, features do
---         if v then t[k] = v end
+     -- if v then t[k] = v end
         t[k] = v
     end
     -- needed for dynamic features

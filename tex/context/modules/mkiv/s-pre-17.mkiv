@@ -52,10 +52,6 @@
 \defineoverlay [blowdown] [{\hboxreference[page:\realfolio]{\overlaybutton{page:\realfolio}}}]
 \defineoverlay [forward]  [\overlaybutton{forward}]
 
-\startMPinclusions
-    input "mp-abck.mpiv" ;
-\stopMPinclusions
-
 \startMPpositiongraphic{mppos:connection}
     path pa, pb, pc ; pair ca, cb ;
     initialize_box(\MPpos{\MPvar{self}}) ; pa := pxy ; ca := cxy ;

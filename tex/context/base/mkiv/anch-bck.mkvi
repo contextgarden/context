@@ -348,7 +348,6 @@
    dashtype=1]
 
 \startuseMPgraphic{mpos:region:setup}
-    if unknown context_abck : input mp-abck.mpiv ; fi ;
     boxgridtype   := \MPvar{gridtype} ;
     boxlinetype   := \MPvar{linetype} ;
     boxfilltype   := \MPvar{filltype} ;
@@ -448,7 +447,6 @@
    linewidth=1pt]
 
 \startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth,lineoffset}
-    if unknown context_apos : input mp-apos.mpiv ; fi ;
     \MPgetposboxes{\MPvar{self}}{\MPanchorid}
     if nofposboxes = 1 :
         posboxes[1] := posboxes[1] enlarged \MPvar{lineoffset} cornered \MPvar{lineoffset}  ;
@@ -464,7 +462,6 @@
    linewidth=1pt]
 
 \startMPpositiongraphic{mpos:connect}{linecolor,lineoffset,linewidth}
-    if unknown context_apos : input mp-apos.mpiv ; fi ;
     boxlinewidth  := \MPvar{linewidth} ;
     boxlineoffset := \MPvar{lineoffset} ;
     def boxlineoptions = withcolor \MPvar{linecolor} enddef ;

@@ -1342,6 +1342,12 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="getprivatechar" file="font-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="glyphfontfile" file="font-sym.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-font"/>

@@ -155,7 +155,9 @@
        {\hfil
         \tabskip\centering
         \aligntab
-        \llap{\span\math_text_in_eqalign{\alignmark\alignmark}}%
+        \span
+        \rlap{\math_text_in_eqalign{\alignmark\alignmark}}%
+      % \math_text_in_eqalign{\alignmark\alignmark}%
         \tabskip\zeropoint}%
    \fi\fi
    \global\mathnumberstatus\zerocount
@@ -165,17 +167,17 @@
 
 \def\math_prepare_l_eqalign_no  % \checkeddisplaymath
   {\t_math_align_a
-    {\strut
-     \tabskip\zeropoint
-     \alignmark\alignmark % for picking up the number
-     \aligntab
-     \math_first_in_eqalign
-     \hfil
-     \math_left_of_equalign
-     \span
-     \math_math_in_eqalign{\alignmark\alignmark}%
-     \math_right_of_eqalign
-     \tabskip\zeropoint}%
+     {\strut
+      \tabskip\zeropoint
+      \alignmark\alignmark % for picking up the number
+      \aligntab
+      \math_first_in_eqalign
+      \hfil
+      \math_left_of_equalign
+      \span
+      \math_math_in_eqalign{\alignmark\alignmark}%
+      \math_right_of_eqalign
+      \tabskip\zeropoint}%
    \t_math_align_b
      {\aligntab
       \math_next_in_eqalign
@@ -187,10 +189,11 @@
    \ifnum\mathraggedstatus=\plusone
      \t_math_align_c
        {\hfil
-       \aligntab
-       \kern-\displaywidth
-       \rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}%
-       \tabskip\displaywidth}%
+        \aligntab
+        \kern-\displaywidth
+        \span
+        \rlap{\math_text_in_eqalign{\alignmark\alignmark}}%
+        \tabskip\displaywidth}%
    \else\ifnum\mathraggedstatus=\plusthree
      \t_math_align_c
        {\hfil
@@ -198,7 +201,7 @@
         \aligntab
         \kern-\displaywidth
         \span
-        \math_rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}%
+        \math_rlap{\math_text_in_eqalign{\alignmark\alignmark}}%
         \tabskip\displaywidth}%
    \else
      \t_math_align_c
@@ -206,13 +209,15 @@
         \tabskip\centering
         \aligntab
         \kern-\displaywidth
-        \rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}%
+        \span
+        \rlap{\math_text_in_eqalign{\alignmark\alignmark}}%
         \tabskip\displaywidth}%
    \fi\fi
    \global\mathnumberstatus\zerocount
    \math_build_eqalign
    \the\mathdisplayaligntweaks
    \tabskip\centering}
+
 
 \def\math_halign_checked
    {\halign
@@ -299,7 +304,7 @@
 
 \def\math_alignment_NC_first#1\NR
   {\glet\math_alignment_NC\math_alignment_NC_rest
-   \scratchtoks{\aligntab#1\NR}%
+   \scratchtoks{\math_number_left_of_eqalign\aligntab#1\NR}%
    \dodoubleempty\math_alignment_NC_first_indeed}
 
 \def\math_alignment_NC_first_indeed[#1][#2]%
@@ -308,6 +313,7 @@
 \def\math_alignment_NR
   {\aligntab
    \dostoptagged % finish cell
+   \math_number_right_of_eqalign
    \crcr
    \dostoptagged % finish row
    \noalign{\glet\math_alignment_NC\math_alignment_NC_first}} % noalign used for change state, conditional does not work here
@@ -438,21 +444,25 @@
    \dostarttagged\t!mathtablecell\empty}
 
 \def\math_left_of_equalign
-  {\ifcase\wd\b_strc_formulas_number\else
-     \ifcase\c_strc_math_number_location\or
-       \box\b_strc_formulas_number
-     \fi
-   \fi
-   \ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+  {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
      \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
    \fi}
 
 \def\math_right_of_eqalign
   {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
      \ifcase\lastnamedcs \or \hfill \or \relax \or \hfill \fi
-   \fi
-   \ifcase\wd\b_strc_formulas_number\else
+   \fi}
+
+\def\math_number_right_of_eqalign
+  {\ifcase\wd\b_strc_formulas_number\else
      \ifcase\c_strc_math_number_location\or\or
+       \box\b_strc_formulas_number
+     \fi
+   \fi}
+
+\def\math_number_left_of_eqalign
+  {\ifcase\wd\b_strc_formulas_number\else
+     \ifcase\c_strc_math_number_location\or
        \box\b_strc_formulas_number
      \fi
    \fi}

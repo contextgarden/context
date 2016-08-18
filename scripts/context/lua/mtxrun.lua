@@ -5222,7 +5222,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 36124, stripped down to: 19685
+-- original size: 36621, stripped down to: 19967
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5234,7 +5234,7 @@ if not modules then modules={} end modules ['util-str']={
 utilities=utilities or {}
 utilities.strings=utilities.strings or {}
 local strings=utilities.strings
-local format,gsub,rep,sub=string.format,string.gsub,string.rep,string.sub
+local format,gsub,rep,sub,find=string.format,string.gsub,string.rep,string.sub,string.find
 local load,dump=load,string.dump
 local tonumber,type,tostring=tonumber,type,tostring
 local unpack,concat=table.unpack,table.concat
@@ -5415,6 +5415,25 @@ function number.signed(i)
     return "+",i
   else
     return "-",-i
+  end
+end
+local digit=patterns.digit
+local period=patterns.period
+local three=digit*digit*digit
+local splitter=Cs (
+  (((1-(three^1*period))^1+C(three))*(Carg(1)*three)^1+C((1-period)^1))*(P(1)/""*Carg(2))*C(2)
+)
+patterns.formattednumber=splitter
+function number.formatted(n,sep1,sep2)
+  local s=type(s)=="string" and n or format("%0.2f",n)
+  if sep1==true then
+    return lpegmatch(splitter,s,1,".",",")
+  elseif sep1=="." then
+    return lpegmatch(splitter,s,1,sep1,sep2 or ",")
+  elseif sep1=="," then
+    return lpegmatch(splitter,s,1,sep1,sep2 or ".")
+  else
+    return lpegmatch(splitter,s,1,sep1 or ",",sep2 or ".")
   end
 end
 local zero=P("0")^1/""
@@ -5700,25 +5719,6 @@ end
 local format_W=function(f) 
   return format("nspaces[%s]",tonumber(f) or 0)
 end
-local digit=patterns.digit
-local period=patterns.period
-local three=digit*digit*digit
-local splitter=Cs (
-  (((1-(three^1*period))^1+C(three))*(Carg(1)*three)^1+C((1-period)^1))*(P(1)/""*Carg(2))*C(2)
-)
-patterns.formattednumber=splitter
-function number.formatted(n,sep1,sep2)
-  local s=type(s)=="string" and n or format("%0.2f",n)
-  if sep1==true then
-    return lpegmatch(splitter,s,1,".",",")
-  elseif sep1=="." then
-    return lpegmatch(splitter,s,1,sep1,sep2 or ",")
-  elseif sep1=="," then
-    return lpegmatch(splitter,s,1,sep1,sep2 or ".")
-  else
-    return lpegmatch(splitter,s,1,sep1 or ",",sep2 or ".")
-  end
-end
 local format_m=function(f)
   n=n+1
   if not f or f=="" then
@@ -5743,9 +5743,16 @@ end
 local format_extension=function(extensions,f,name)
   local extension=extensions[name] or "tostring(%s)"
   local f=tonumber(f) or 1
+  local w=find(extension,"%.%.%.")
   if f==0 then
+    if w then
+      extension=gsub(extension,"%.%.%.","")
+    end
     return extension
   elseif f==1 then
+    if w then
+      extension=gsub(extension,"%.%.%.","%%s")
+    end
     n=n+1
     local a="a"..n
     return format(extension,a,a) 
@@ -5753,6 +5760,9 @@ local format_extension=function(extensions,f,name)
     local a="a"..(n+f+1)
     return format(extension,a,a)
   else
+    if w then
+      extension=gsub(extension,"%.%.%.",rep("%%s,",f-1).."%%s")
+    end
     local t={}
     for i=1,f do
       n=n+1
@@ -18824,8 +18834,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 800036
--- stripped bytes    : 290160
+-- original bytes    : 800533
+-- stripped bytes    : 290375
 
 -- end library merge
 

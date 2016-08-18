@@ -11,8 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% def loadfile(expr name) = scantokens("input " & name & ";") enddef ;
-
 if known context_tool : endinput ; fi ;
 
 boolean context_tool ; context_tool := true ;
@@ -2833,4 +2831,145 @@ fulltriangle := point 0   along fullcircle
              -- point 2/3 along fullcircle
              -- cycle ;
 
+%D Kind of special and undocumented. On Wikipedia one can find examples
+%D of quick sort routines. Here we have a variant that permits a
+%D method.
+
+vardef listsize(suffix list) =
+    numeric len ; len := 0 ;
+    forever :
+        exitif unknown list[len+1] ;
+        len := len + 1 ;
+    endfor ;
+    len
+enddef ;
+
+vardef mfun_quick_sort(suffix list)(expr _min_, _max_)(text what) =
+    numeric l ; l := _min_ ;
+    numeric r ; r := _max_ ;
+    numeric m ; m := _min_ ;
+    numeric m ; m := floor(.5[_min_,_max_]) ;
+    _mid_ := what list[m] ;
+    forever :
+        exitif l >= r ;
+        forever :
+            exitif l > _max_ ;
+          % exitif (what list[l]) >= (what list[m]) ;
+            exitif (what list[l]) >= _mid_ ;
+            l := l + 1 ;
+        endfor ;
+        forever :
+            exitif r < _min_ ;
+          % exitif (what list[m]) >= (what list[r]) ;
+            exitif _mid_ >= (what list[r]) ;
+            r := r - 1 ;
+        endfor ;
+        if l <= r :
+          temp := list[l] ;
+          list[l] := list[r] ;
+          list[r] := temp ;
+          l := l + 1 ;
+          r := r - 1 ;
+        fi ;
+    endfor ;
+    if _min_ < r :
+        mfun_quick_sort(list)(_min_,r)(what) ;
+    fi ;
+    if l < _max_ :
+        mfun_quick_sort(list)(l,_max_)(what) ;
+    fi ;
+enddef ;
+
+vardef sortlist(suffix list)(text what) =
+    save _max_ ; numeric _max_ ; _max_ := listsize(list) ;
+    save _mid_ ; numeric _mid_ ;
+    save temp ;
+    if pair list[_max_] :
+        pair temp ;
+    else :
+        numeric temp ;
+    fi ;
+    if pair what list[_max_] :
+        pair _mid_ ;
+    else :
+        numeric _mid_ ;
+    fi ;
+    if _max_ > 1 :
+        mfun_quick_sort(list)(1,_max_)(what) ;
+    fi ;
+enddef ;
+
+vardef copylist(suffix list, target) =
+    save i ; i := 1 ;
+    forever :
+        exitif unknown list[i] ;
+        target[i] := list[i] ;
+        i := i + 1 ;
+    endfor ;
+enddef ;
+
+vardef listtolines(suffix list) =
+    list[1] for i=2 upto listsize(list) : -- list[i] endfor
+enddef ;
+
+vardef listtocurves(suffix list) =
+    list[1] for i=2 upto listsize(list) : .. list[i] endfor
+enddef ;
+
+%D The sorter is used in:
+
+vardef shaped (suffix p) = % takes a list of paths
+    save l ; pair l[] ;
+    save r ; pair r[] ;
+    save i ; i := 1 ;
+    save n ; n := 0 ;
+    forever :
+        exitif unknown p[i] ;
+        n := n + 1 ;
+        l[n] := ulcorner p[i] ;
+        r[n] := urcorner p[i] ;
+        n := n + 1 ;
+        l[n] := llcorner p[i] ;
+        r[n] := lrcorner p[i] ;
+        i := i + 1 ;
+    endfor ;
+    for i = 3 upto n :
+        if xpart r[i] < xpart r[i-1] :
+            r[i] := (xpart r[i],ypart r[i-1]) ;
+        elseif xpart r[i] > xpart r[i-1] :
+            r[i-1] := (xpart r[i-1],ypart r[i]) ;
+        fi ;
+        if xpart l[i] < xpart l[i-1] :
+            l[i-1] := (xpart l[i-1],ypart l[i]) ;
+        elseif xpart l[i] > xpart l[i-1] :
+            l[i] := (xpart l[i],ypart l[i-1]) ;
+        fi ;
+    endfor ;
+    if n > 0 :
+        simplified (
+            for i = 1 upto   n : r[i] -- endfor
+            for i = n downto 1 : l[i] -- endfor
+            cycle
+        )
+    else :
+        origin -- cycle
+    fi
+enddef ;
+
+%D Dumping is fake anyway but let's keep this:
+
 let dump = relax ;
+
+%D Loading modules can be done with:
+
+vardef loadmodule expr name =
+    % input can't be used directly in a macro
+    if unknown scantokens("context_" & name) :
+        save s ; string s ;
+      % s := "mp-" & name & ".mpiv" ;
+      % message("loading module",s) ;
+      % s := "input " & s ;
+        s := "input " & "mp-" & name & ".mpiv" ;
+        expandafter scantokens expandafter s
+    fi ;
+enddef ;
