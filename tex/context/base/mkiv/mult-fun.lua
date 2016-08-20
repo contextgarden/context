@@ -135,5 +135,7 @@ return {
         "addbackground",
         --
         "shadedup", "shadeddown", "shadedleft", "shadedright",
+        --
+        "sortlist", "copylist", "shapedlist", "listtocurves", "listtolines", "listsize",
     },
 }

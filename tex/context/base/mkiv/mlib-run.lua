@@ -6,12 +6,12 @@ if not modules then modules = { } end modules ['mlib-run'] = {
     license   = "see context related readme files",
 }
 
---~ cmyk       -> done, native
---~ spot       -> done, but needs reworking (simpler)
---~ multitone  ->
---~ shade      -> partly done, todo: cm
---~ figure     -> done
---~ hyperlink  -> low priority, easy
+-- cmyk       -> done, native
+-- spot       -> done, but needs reworking (simpler)
+-- multitone  ->
+-- shade      -> partly done, todo: cm
+-- figure     -> done
+-- hyperlink  -> low priority, easy
 
 -- new * run
 -- or
@@ -31,7 +31,8 @@ nears zero.</p>
 
 local type, tostring, tonumber = type, tostring, tonumber
 local format, gsub, match, find = string.format, string.gsub, string.match, string.find
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
+
 local emptystring = string.is_empty
 local P = lpeg.P
 
@@ -324,6 +325,46 @@ if not metapost.initializescriptrunner then
     function metapost.initializescriptrunner() end
 end
 
+do
+
+    local stack, top = { }, nil
+
+    function metapost.setvariable(k,v)
+        if top then
+            top[k] = v
+        else
+            metapost.variables[k] = v
+        end
+    end
+
+    function metapost.pushvariable(k)
+        local t = { }
+        if top then
+            insert(stack,top)
+            top[k] = t
+        else
+            metapost.variables[k] = t
+        end
+        top = t
+    end
+
+    function metapost.popvariable()
+        top = remove(stack)
+    end
+
+    local stack = { }
+
+    function metapost.pushvariables()
+        insert(stack,metapost.variables)
+        metapost.variables = { }
+    end
+
+    function metapost.popvariables()
+        metapost.variables = remove(stack) or metapost.variables
+    end
+
+end
+
 function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig)
     local converted, result = false, { }
     if type(mpx) == "string" then
@@ -332,6 +373,7 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
     if mpx and data then
         local tra = nil
         starttiming(metapost)
+        metapost.variables = { }
         metapost.initializescriptrunner(mpx,trialrun)
         if trace_graphics then
             tra = mp_tra[mpx]

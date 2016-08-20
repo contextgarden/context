@@ -11,10 +11,26 @@
     <flag name="pattern"><short>search for pattern (optional)</short></flag>
     <flag name="count"><short>count matches only</short></flag>
     <flag name="nocomment"><short>skip lines that start with %% or #</short></flag>
+    <flag name="n"><short>show at most n matches</short></flag>
+    <flag name="first"><short>only show first match</short></flag>
+    <flag name="match"><short>return the match (if it is one)</short></flag>
     <flag name="xml"><short>pattern is lpath expression</short></flag>
    </subcategory>
   </category>
  </flags>
+ <examples>
+  <category>
+   <title>Examples</title>
+   <subcategory>
+    <example><command>mtxrun --script grep --pattern=module *.mkiv</command></example>
+    <example><command>mtxrun --script grep --pattern="modules.-%['(.-)'%]" char-*.lua --first</command></example>
+    <example><command>mtxrun --script grep --pattern=module --count *.mkiv</command></example>
+    <example><command>mtxrun --script grep --pattern=module --first *.mkiv</command></example>
+    <example><command>mtxrun --script grep --pattern=module --nocomment *.mkiv</command></example>
+    <example><command>mtxrun --script grep --pattern=module --n=10 *.mkiv</command></example>
+   </subcategory>
+  </category>
+ </examples>
  <comments>
     <comment>patterns are lua patterns and need to be escaped accordingly</comment>
  </comments>

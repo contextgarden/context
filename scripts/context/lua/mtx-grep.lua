@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['mtx-babel'] = {
     license   = "see context related readme files"
 }
 
+-- If needed this one can be optimized for speed as well as use some existing
+-- helpers. We can quit faster on max, and probably use lpeg instead of find.
+
 local helpinfo = [[
 <?xml version="1.0"?>
 <application>
@@ -20,10 +23,26 @@ local helpinfo = [[
     <flag name="pattern"><short>search for pattern (optional)</short></flag>
     <flag name="count"><short>count matches only</short></flag>
     <flag name="nocomment"><short>skip lines that start with %% or #</short></flag>
+    <flag name="n"><short>show at most n matches</short></flag>
+    <flag name="first"><short>only show first match</short></flag>
+    <flag name="match"><short>return the match (if it is one)</short></flag>
     <flag name="xml"><short>pattern is lpath expression</short></flag>
    </subcategory>
   </category>
  </flags>
+ <examples>
+  <category>
+   <title>Examples</title>
+   <subcategory>
+    <example><command>mtxrun --script grep --pattern=module *.mkiv</command></example>
+    <example><command>mtxrun --script grep --pattern="modules.-%['(.-)'%]" char-*.lua --first</command></example>
+    <example><command>mtxrun --script grep --pattern=module --count *.mkiv</command></example>
+    <example><command>mtxrun --script grep --pattern=module --first *.mkiv</command></example>
+    <example><command>mtxrun --script grep --pattern=module --nocomment *.mkiv</command></example>
+    <example><command>mtxrun --script grep --pattern=module --n=10 *.mkiv</command></example>
+   </subcategory>
+  </category>
+ </examples>
  <comments>
     <comment>patterns are lua patterns and need to be escaped accordingly</comment>
  </comments>
@@ -41,7 +60,8 @@ local report = application.report
 scripts      = scripts      or { }
 scripts.grep = scripts.grep or { }
 
-local find, format = string.find, string.format
+local find, match, format = string.find, string.match, string.format
+local lpegmatch = lpeg.match
 
 local cr       = lpeg.P("\r")
 local lf       = lpeg.P("\n")
@@ -59,14 +79,17 @@ function scripts.grep.find(pattern, files, offset)
     if pattern and pattern ~= "" then
         statistics.starttiming(scripts.grep)
         local nofmatches, noffiles, nofmatchedfiles = 0, 0, 0
-        local n, m, name, check = 0, 0, "", nil
-        local count, nocomment = environment.argument("count"), environment.argument("nocomment")
+        local n, m, check = 0, 0, nil
+        local name = ""
+        local count = environment.argument("count")
+        local nocomment = environment.argument("nocomment")
+        local max = tonumber(environment.argument("n")) or (environment.argument("first") and 1) or false
+        local domatch = environment.argument("match")
         if environment.argument("xml") then
             for i=offset or 1, #files do
                 local globbed = dir.glob(files[i])
                 for i=1,#globbed do
-                    local nam = globbed[i]
-                    name = nam
+                    name = globbed[i]
                     local data = xml.load(name)
                     if data and not data.error then
                         n, m, noffiles = 0, 0, noffiles + 1
@@ -83,7 +106,9 @@ function scripts.grep.find(pattern, files, offset)
                         else
                             for c in xml.collected(data,pattern) do
                                 m = m + 1
-                                write_nl(format("%s: %s",name,xml.tostring(c)))
+                                if not max or m <= max then
+                                    write_nl(format("%s: %s",name,xml.tostring(c)))
+                                end
                             end
                         end
                     end
@@ -107,8 +132,14 @@ function scripts.grep.find(pattern, files, offset)
                             -- skip
                         elseif find(line,pattern) then
                             m = m + 1
-                            write_nl(format("%s %6i: %s",name,n,line))
-                            io.flush()
+                            if not max or m <= max then
+                                if domatch then
+                                    write_nl(match(line,pattern))
+                                else
+                                    write_nl(format("%s %6i: %s",name,n,line))
+                                end
+                                io.flush()
+                            end
                         end
                     end
                 end
@@ -125,22 +156,27 @@ function scripts.grep.find(pattern, files, offset)
                         n = n + 1
                         if find(line,pattern) then
                             m = m + 1
-                            write_nl(format("%s %6i: %s",name,n,line))
-                            io.flush()
+                            if not max or m <= max then
+                                if domatch then
+                                    write_nl(match(line,pattern))
+                                else
+                                    write_nl(format("%s %6i: %s",name,n,line))
+                                end
+                                io.flush()
+                            end
                         end
                     end
                 end
             end
-            local capture = (content/check)^0
+            local capture = (content/check)^0 -- todo: break out when max
             for i=offset or 1, #files do
                 local globbed = dir.glob(files[i])
                 for i=1,#globbed do
-                    local nam = globbed[i]
-                    name = nam
+                    name = globbed[i]
                     local data = io.loaddata(name)
                     if data then
                         n, m, noffiles = 0, 0, noffiles + 1
-                        capture:match(data)
+                        lpegmatch(capture,data)
                         if count and m > 0 then
                             nofmatches = nofmatches + m
                             nofmatchedfiles = nofmatchedfiles + 1

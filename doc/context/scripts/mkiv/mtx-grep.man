@@ -20,6 +20,15 @@ count matches only
 .B --nocomment
 skip lines that start with %% or #
 .TP
+.B --n
+show at most n matches
+.TP
+.B --first
+only show first match
+.TP
+.B --match
+return the match (if it is one)
+.TP
 .B --xml
 pattern is lpath expression
 .SH AUTHOR

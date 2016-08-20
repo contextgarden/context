@@ -1084,3 +1084,35 @@ implement {
         end
     end
 }
+
+-- relatively new:
+
+do
+
+    local extraprivates = { }
+
+    function fonts.helpers.addextraprivate(name,f)
+        extraprivates[#extraprivates+1] = { name, f }
+    end
+
+    local function addextraprivates(tfmdata)
+        for i=1,#extraprivates do
+            local e = extraprivates[i]
+            local c = e[2](tfmdata)
+            if c then
+                fonts.helpers.addprivate(tfmdata, e[1], c)
+            end
+        end
+    end
+
+    fonts.constructors.newfeatures.otf.register {
+        name        = "extraprivates",
+        description = "extra privates",
+        default     = true,
+        manipulators = {
+            base = addextraprivates,
+            node = addextraprivates,
+        }
+    }
+
+end

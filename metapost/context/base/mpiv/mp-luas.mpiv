@@ -57,6 +57,8 @@ vardef mlib_luas_luacall(text t) =
             & decimal s
         elseif boolean s :
             & if s : "true" else : "false" fi
+        else :
+            & ditto & tostring(s) & ditto
         fi endfor
     )
 enddef ;
@@ -75,6 +77,8 @@ vardef mlib_luas_lualist(expr c)(text t) =
             & decimal s
         elseif boolean s :
             & if s : "true" else : "false" fi
+        else :
+            & ditto & tostring(s) & ditto
         fi endfor & ")"
     )
 enddef ;

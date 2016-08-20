@@ -340,7 +340,7 @@ local variable =
 
 local pattern_lst = (variable * newline^0)^0
 
-metapost.variables  = { } -- to be stacked
+metapost.variables  = { } -- currently across instances
 metapost.properties = { } -- to be stacked
 
 function metapost.untagvariable(str,variables) -- will be redone
@@ -385,12 +385,6 @@ local function setproperties(figure)
     return properties
 end
 
-local function setvariables(figure)
-    local variables = { }
-    metapost.variables = variables
-    return variables
-end
-
 local function nocomment() end
 
 metapost.comment = nocomment
@@ -409,7 +403,6 @@ function metapost.flush(result,flusher,askedfig)
             local flushfigure = flusher.flushfigure
             local textfigure = flusher.textfigure
             local processspecial = flusher.processspecial or metapost.processspecial
-            local variables  = setvariables(figure) -- also resets then in case of not found
             metapost.comment = flusher.comment or nocomment
             for index=1,#figures do
                 local figure = figures[index]

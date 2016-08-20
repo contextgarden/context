@@ -42,10 +42,20 @@
         <tr><th>--pattern</th><td></td><td>search for pattern (optional)</td></tr>
         <tr><th>--count</th><td></td><td>count matches only</td></tr>
         <tr><th>--nocomment</th><td></td><td>skip lines that start with %% or #</td></tr>
+        <tr><th>--n</th><td></td><td>show at most n matches</td></tr>
+        <tr><th>--first</th><td></td><td>only show first match</td></tr>
+        <tr><th>--match</th><td></td><td>return the match (if it is one)</td></tr>
         <tr><th>--xml</th><td></td><td>pattern is lpath expression</td></tr>
     </table>
 <br/>
-            </div>
+<h1>Examples</h1>
+<tt>mtxrun --script grep --pattern=module *.mkiv</tt>
+<br/><tt>mtxrun --script grep --pattern="modules.-%['(.-)'%]" char-*.lua --first</tt>
+<br/><tt>mtxrun --script grep --pattern=module --count *.mkiv</tt>
+<br/><tt>mtxrun --script grep --pattern=module --first *.mkiv</tt>
+<br/><tt>mtxrun --script grep --pattern=module --nocomment *.mkiv</tt>
+<br/><tt>mtxrun --script grep --pattern=module --n=10 *.mkiv</tt>
+<br/><br/>            </div>
         </div>
     </body>
     </html>

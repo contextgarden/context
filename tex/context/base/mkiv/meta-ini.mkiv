@@ -1492,6 +1492,12 @@
 \def\MPruntab#1#2{\clf_mpruntab{#1}#2\relax} \let\mpruntab\MPruntab % #2 is number
 \def\MPrunset#1#2{\clf_mprunset{#1}{#2}}     \let\mprunset\MPrunset
 
+\prependtoks \clf_mppushvariables \to \everybeforepagebody
+\appendtoks  \clf_mppopvariables  \to \everyafterpagebody
+
+\let\MPpushvariables\clf_mppushvariables
+\let\MPpopvariables \clf_mppopvariables
+
 %D We also provide an outputless run:
 
 \unexpanded\def\startMPcalculation

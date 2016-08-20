@@ -2615,7 +2615,41 @@ vardef undecorated (text imagedata) text decoration =
     currentpicture
 enddef ;
 
-if metapostversion < 1.770  :
+% if metapostversion < 1.770  :
+%
+%     vardef decorated (text imagedata) text decoration =
+%         save mfun_decorated_path, currentpicture ;
+%         picture mfun_decorated_path, currentpicture ;
+%         currentpicture := nullpicture ;
+%         imagedata ;
+%         mfun_decorated_path := currentpicture ;
+%         currentpicture := nullpicture ;
+%         for i within mfun_decorated_path :
+%             addto currentpicture
+%                 if stroked i :
+%                     doublepath pathpart i
+%                     dashed dashpart i
+%                     withpen penpart i
+%                     withcolor colorpart i
+%                     decoration
+%                 elseif filled i :
+%                     contour pathpart i
+%                     withpen penpart i
+%                     withcolor colorpart i
+%                     decoration
+%                 elseif textual i :
+%                     also i
+%                     withcolor colorpart i
+%                     decoration
+%                 else :
+%                     also i
+%                 fi
+%             ;
+%         endfor ;
+%         currentpicture
+%     enddef ;
+%
+% else:
 
     vardef decorated (text imagedata) text decoration =
         save mfun_decorated_path, currentpicture ;
@@ -2631,40 +2665,6 @@ if metapostversion < 1.770  :
                     dashed dashpart i
                     withpen penpart i
                     withcolor colorpart i
-                    decoration
-                elseif filled i :
-                    contour pathpart i
-                    withpen penpart i
-                    withcolor colorpart i
-                    decoration
-                elseif textual i :
-                    also i
-                    withcolor colorpart i
-                    decoration
-                else :
-                    also i
-                fi
-            ;
-        endfor ;
-        currentpicture
-    enddef ;
-
-else:
-
-    vardef decorated (text imagedata) text decoration =
-        save mfun_decorated_path, currentpicture ;
-        picture mfun_decorated_path, currentpicture ;
-        currentpicture := nullpicture ;
-        imagedata ;
-        mfun_decorated_path := currentpicture ;
-        currentpicture := nullpicture ;
-        for i within mfun_decorated_path :
-            addto currentpicture
-                if stroked i :
-                    doublepath pathpart i
-                    dashed dashpart i
-                    withpen penpart i
-                    withcolor colorpart i
                     withprescript prescriptpart i
                     withpostscript postscriptpart i
                     decoration
@@ -2689,7 +2689,7 @@ else:
         currentpicture
     enddef ;
 
-fi ;
+% fi ;
 
 vardef redecorated (text imagedata) text decoration =
     save mfun_decorated_path, currentpicture ;
@@ -2918,7 +2918,7 @@ enddef ;
 
 %D The sorter is used in:
 
-vardef shaped (suffix p) = % takes a list of paths
+vardef shapedlist(suffix p) = % takes a list of paths
     save l ; pair l[] ;
     save r ; pair r[] ;
     save i ; i := 1 ;

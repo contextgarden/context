@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
 
 local format, gmatch, match, split = string.format, string.gmatch, string.match, string.split
 local tonumber, type, unpack = tonumber, type, unpack
-local round, sqrt = math.round, math.sqrt
+local round, sqrt, min, max = math.round, math.sqrt, math.min, math.max
 local insert, remove, concat = table.insert, table.remove, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
 local lpegmatch, tsplitat, tsplitter = lpeg.match, lpeg.tsplitat, lpeg.tsplitter
@@ -835,7 +835,15 @@ local function splitprescript(script)
     local hash = lpegmatch(scriptsplitter,script)
     for i=#hash,1,-1 do
         local h = hash[i]
+if h == "reset" then
+    for k, v in next, hash do
+        if type(k) ~= "number" then
+            hash[k] = nil
+        end
+    end
+else
         hash[h[1]] = h[2]
+end
     end
     if trace_scripts then
         report_scripts(table.serialize(hash,"prescript"))
@@ -1494,28 +1502,31 @@ local types = {
 
 local function gr_process(object,prescript,before,after)
     local gr_state = prescript.gr_state
-    if gr_state then
-        if gr_state == "start" then
-            local gr_type = utilities.parsers.settings_to_hash(prescript.gr_type)
-            before[#before+1] = function()
-                context.MPLIBstartgroup(
-                    gr_type.isolated and 1 or 0,
-                    gr_type.knockout and 1 or 0,
-                    prescript.gr_llx,
-                    prescript.gr_lly,
-                    prescript.gr_urx,
-                    prescript.gr_ury
-                )
-            end
-        elseif gr_state == "stop" then
-            after[#after+1] = function()
-                context.MPLIBstopgroup()
-            end
+    if not gr_state then
+       return
+    elseif gr_state == "start" then
+        local gr_type = utilities.parsers.settings_to_set(prescript.gr_type)
+        local path = object.path
+        local p1, p2, p3, p4 = path[1], path[2], path[3], path[4]
+        local llx = min(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord)
+        local lly = min(p1.y_coord,p2.y_coord,p3.y_coord,p4.y_coord)
+        local urx = max(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord)
+        local ury = max(p1.y_coord,p2.y_coord,p3.y_coord,p4.y_coord)
+        before[#before+1] = function()
+            context.MPLIBstartgroup(
+                gr_type.isolated and 1 or 0,
+                gr_type.knockout and 1 or 0,
+                llx, lly, urx, ury
+            )
         end
-        object.path = false
-        object.color = false
-        object.grouped = true
+    elseif gr_state == "stop" then
+        after[#after+1] = function()
+            context.MPLIBstopgroup()
+        end
     end
+    object.path    = false
+    object.color   = false
+    object.grouped = true
 end
 
 -- outlines
