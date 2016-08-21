@@ -10,8 +10,7 @@ moduledata.fonts         = moduledata.fonts         or { }
 moduledata.fonts.missing = moduledata.fonts.missing or { }
 
 local function legend(id)
-    local c = fonts.hashes.identifiers[id]
-    local privates = c.properties.privates
+    local privates = fonts.helpers.getprivates(id)
     if privates then
         local categories = table.swapped(fonts.loggers.category_to_placeholder)
         context.starttabulate { "|c|l|" }

@@ -153,7 +153,7 @@ local function show_list(list,size,what)
                 result[i] = formatters["%-3s:%s %s (%i)"](direction,joiner,nodecodes[first],skip or 0)
             end
         elseif character >= 0x202A and character <= 0x202C then
-            result[i] = formatters["%-3s:%s   %U"](direction,joiner,character)
+            result[i] = formatters["%-3s:%s %U"](direction,joiner,character)
         else
             result[i] = formatters["%-3s:%s %c %U"](direction,joiner,character,character)
         end
@@ -821,7 +821,7 @@ local function process(head)
         report_directions("after  : %s",show_list(list,size,"direction"))
         report_directions("result : %s",show_done(list,size))
     end
-    head, done = apply_to_list(list,size,head,pardir)
+    local head, done = apply_to_list(list,size,head,pardir)
     return tonode(head), done
 end
 

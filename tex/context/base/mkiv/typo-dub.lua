@@ -915,7 +915,6 @@ local function apply_to_list(list,size,head,pardir)
                 begindir = nil
                 done = true
             end
-        else
         end
         if begindir then
             local d = new_textdir(begindir)
@@ -976,7 +975,7 @@ local function process(head)
         report_directions("after  : %s",show_list(list,size,"direction"))
         report_directions("result : %s",show_done(list,size))
     end
-    head, done = apply_to_list(list,size,head,pardir)
+    local head, done = apply_to_list(list,size,head,pardir)
     return tonode(head), done
 end
 

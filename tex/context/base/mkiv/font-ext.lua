@@ -6,7 +6,9 @@ if not modules then modules = { } end modules ['font-ext'] = {
     license   = "see context related readme files"
 }
 
-local next, type, byte = next, type, string.byte
+local next, type, tonumber = next, type, tonumber
+local formatters = string.formatters
+local byte = string.byte
 local utfchar = utf.char
 
 local context            = context
@@ -79,6 +81,8 @@ expansions.classes = classes
 expansions.vectors = vectors
 
 -- beware, pdftex itself uses percentages * 10
+--
+-- todo: get rid of byte() here
 
 classes.preset = { stretch = 2, shrink = 2, step = .5, factor = 1 }
 
@@ -978,37 +982,44 @@ registerafmfeature(dimensions_specification)
 
 -- a handy helper (might change or be moved to another namespace)
 
-local nodepool    = nodes.pool
+local nodepool       = nodes.pool
+local new_glyph      = nodepool.glyph
 
------ new_special = nodepool.special
------ hpack_node  = node.hpack
-local new_glyph   = nodepool.glyph
+local helpers        = fonts.helpers
+local currentfont    = font.current
 
-local helpers     = fonts.helpers
-local currentfont = font.current
+local currentprivate = 0xE000
+local maximumprivate = 0xEFFF
+
+-- if we run out of space we can think of another range but by sharing we can
+-- use these privates for mechanisms like alignments-on-character and such
+
+local sharedprivates = setmetatableindex(function(t,k)
+    v = currentprivate
+    if currentprivate < maximumprivate then
+        currentprivate = currentprivate + 1
+    else
+        -- reuse last slot, todo: warning
+    end
+    t[k] = v
+    return v
+end)
 
 function helpers.addprivate(tfmdata,name,characterdata)
-    local properties  = tfmdata.properties
-    local privates    = properties.privates
-    local lastprivate = properties.lastprivate
-    if lastprivate then
-        lastprivate = lastprivate + 1
-    else
-        lastprivate = 0xE000
-    end
+    local properties = tfmdata.properties
+    local characters = tfmdata.characters
+    local privates   = properties.privates
     if not privates then
         privates = { }
         properties.privates = privates
     end
-    if name then
-        privates[name] = lastprivate
+    if not name then
+        name = formatters["anonymous_private_0x%05X"](currentprivate)
     end
-    properties.lastprivate = lastprivate
-    tfmdata.characters[lastprivate] = characterdata
-    if properties.finalized then
-        properties.lateprivates = true
-    end
-    return lastprivate
+    local usedprivate = sharedprivates[name]
+    privates[name] = usedprivate
+    characters[usedprivate] = characterdata
+    return usedprivate
 end
 
 local function getprivateslot(id,name)
@@ -1021,35 +1032,95 @@ local function getprivateslot(id,name)
     return privates and privates[name]
 end
 
-helpers.getprivateslot = getprivateslot
-
--- was originally meant for missing chars:
---
--- local char     = tfmdata.characters[p]
--- local commands = char.commands
--- if commands then
---     local fake  = hpack_node(new_special(commands[1][2]))
---     fake.width  = char.width
---     fake.height = char.height
---     fake.depth  = char.depth
---     return fake
--- else
-
 local function getprivatenode(tfmdata,name)
-    local id = tfmdata.properties.id
-    local p  = getprivateslot(id,name)
-    if p then
+    if type(tfmdata) == "number" then
+        tfmdata = fontdata[tfmdata]
+    end
+    local properties = tfmdata.properties
+    local font = properties.id
+    local slot = getprivateslot(font,name)
+    if slot then
         -- todo: set current attribibutes
-        return new_glyph(id,p)
+        local char   = tfmdata.characters[slot]
+        local tonode = char.tonode
+        if tonode then
+            return tonode(font,char)
+        else
+            return new_glyph(font,slot)
+        end
     end
 end
 
-helpers.getprivatenode = getprivatenode
+local function getprivatecharornode(tfmdata,name)
+    if type(tfmdata) == "number" then
+        tfmdata = fontdata[tfmdata]
+    end
+    local properties = tfmdata.properties
+    local font = properties.id
+    local slot = getprivateslot(font,name)
+    if slot then
+        -- todo: set current attribibutes
+        local char   = tfmdata.characters[slot]
+        local tonode = char.tonode
+        if tonode then
+            return "node", tonode(tfmdata,char)
+        else
+            return "char", slot
+        end
+    end
+end
+
+helpers.getprivateslot       = getprivateslot
+helpers.getprivatenode       = getprivatenode
+helpers.getprivatecharornode = getprivatecharornode
+
+function helpers.getprivates(tfmdata)
+    if type(tfmdata) == "number" then
+        tfmdata = fontdata[tfmdata]
+    end
+    local properties = tfmdata.properties
+    return properties and properties.privates
+end
 
 function helpers.hasprivate(tfmdata,name)
+    if type(tfmdata) == "number" then
+        tfmdata = fontdata[tfmdata]
+    end
     local properties = tfmdata.properties
     local privates = properties and properties.privates
     return privates and privates[name] or false
+end
+
+-- relatively new:
+
+do
+
+    local extraprivates = { }
+
+    function fonts.helpers.addextraprivate(name,f)
+        extraprivates[#extraprivates+1] = { name, f }
+    end
+
+    local function addextraprivates(tfmdata)
+        for i=1,#extraprivates do
+            local e = extraprivates[i]
+            local c = e[2](tfmdata)
+            if c then
+                fonts.helpers.addprivate(tfmdata, e[1], c)
+            end
+        end
+    end
+
+    fonts.constructors.newfeatures.otf.register {
+        name        = "extraprivates",
+        description = "extra privates",
+        default     = true,
+        manipulators = {
+            base = addextraprivates,
+            node = addextraprivates,
+        }
+    }
+
 end
 
 implement {
@@ -1084,35 +1155,3 @@ implement {
         end
     end
 }
-
--- relatively new:
-
-do
-
-    local extraprivates = { }
-
-    function fonts.helpers.addextraprivate(name,f)
-        extraprivates[#extraprivates+1] = { name, f }
-    end
-
-    local function addextraprivates(tfmdata)
-        for i=1,#extraprivates do
-            local e = extraprivates[i]
-            local c = e[2](tfmdata)
-            if c then
-                fonts.helpers.addprivate(tfmdata, e[1], c)
-            end
-        end
-    end
-
-    fonts.constructors.newfeatures.otf.register {
-        name        = "extraprivates",
-        description = "extra privates",
-        default     = true,
-        manipulators = {
-            base = addextraprivates,
-            node = addextraprivates,
-        }
-    }
-
-end

@@ -254,6 +254,7 @@ local marks           = false
 local currentfont     = false
 local factor          = 0
 local threshold       = 0
+local checkmarks      = false
 
 local sweepnode       = nil
 local sweepprev       = nil
@@ -959,7 +960,7 @@ function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode)
                 local ba = markanchors[1][basechar]
                 if ba then
                     local ma = markanchors[2]
-                    local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
+                    local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
                     if trace_marks then
                         logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
                             pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -1015,7 +1016,7 @@ function handlers.gpos_mark2ligature(head,start,dataset,sequence,markanchors,rlm
                         local index = getligaindex(start)
                         ba = ba[index]
                         if ba then
-                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar]) -- index
+                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
                             if trace_marks then
                                 logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
                                     pref(dataset,sequence),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
@@ -1064,7 +1065,7 @@ function handlers.gpos_mark2mark(head,start,dataset,sequence,markanchors,rlmode)
                 local ba = markanchors[1][basechar] -- slot 1 has been made copy of the class hash
                 if ba then
                     local ma = markanchors[2]
-                    local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true)
+                    local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true,checkmarks)
                     if trace_marks then
                         logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                             pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -1532,7 +1533,7 @@ function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlooku
                     if ba then
                         local ma = markanchors[2]
                         if ma then
-                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
+                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
                             if trace_marks then
                                 logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
                                     cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -1599,7 +1600,7 @@ function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentl
                             local index = getligaindex(start)
                             ba = ba[index]
                             if ba then
-                                local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
+                                local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
                                 if trace_marks then
                                     logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
                                         cref(dataset,sequence),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
@@ -1652,7 +1653,7 @@ function chainprocs.gpos_mark2mark(head,start,stop,dataset,sequence,currentlooku
                     if ba then
                         local ma = markanchors[2]
                         if ma then
-                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true)
+                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true,checkmarks)
                             if trace_marks then
                                 logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                                     cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -3381,6 +3382,7 @@ local function featuresprocessor(head,font,attr)
         marks         = tfmdata.resources.marks
         threshold,
         factor        = getthreshold(font)
+        checkmarks    = tfmdata.properties.checkmarks
 
     elseif currentfont ~= font then
 
@@ -3820,5 +3822,19 @@ registerotffeature {
     default      = true,
     initializers = {
         node     = spaceinitializer,
+    },
+}
+
+local function markinitializer(tfmdata,value)
+    local properties = tfmdata.properties
+    properties.checkmarks = value
+end
+
+registerotffeature {
+    name         = "checkmarks",
+    description  = "check mark widths",
+    default      = true,
+    initializers = {
+        node     = markinitializer,
     },
 }

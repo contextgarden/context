@@ -802,7 +802,7 @@ setmetatableindex(characters.directions,function(t,k)
         end
     end
     t[k] = false -- maybe 'l'
-    return v
+    return false
 end)
 
 characters.mirrors  = { }
@@ -817,7 +817,7 @@ setmetatableindex(characters.mirrors,function(t,k)
         end
     end
     t[k] = false
-    return v
+    return false
 end)
 
 characters.textclasses  = { }
@@ -832,7 +832,7 @@ setmetatableindex(characters.textclasses,function(t,k)
         end
     end
     t[k] = false
-    return v
+    return false
 end)
 
 --[[ldx--

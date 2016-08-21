@@ -11,59 +11,63 @@ if not modules then modules = { } end modules ['font-chk'] = {
 
 local next = next
 
-local formatters         = string.formatters
-local bpfactor           = number.dimenfactors.bp
-local fastcopy           = table.fastcopy
+local formatters           = string.formatters
+local bpfactor             = number.dimenfactors.bp
+local fastcopy             = table.fastcopy
 
-local report_fonts       = logs.reporter("fonts","checking")
+local report_fonts         = logs.reporter("fonts","checking") -- replace
 
-local allocate           = utilities.storage.allocate
+local allocate             = utilities.storage.allocate
 
-local fonts              = fonts
+local fonts                = fonts
 
-fonts.checkers           = fonts.checkers or { }
-local checkers           = fonts.checkers
+fonts.checkers             = fonts.checkers or { }
+local checkers             = fonts.checkers
 
-local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
-local fontcharacters     = fonthashes.characters
+local fonthashes           = fonts.hashes
+local fontdata             = fonthashes.identifiers
+local fontcharacters       = fonthashes.characters
 
-local helpers            = fonts.helpers
+local helpers              = fonts.helpers
 
-local addprivate         = helpers.addprivate
-local hasprivate         = helpers.hasprivate
-local getprivatenode     = helpers.getprivatenode
+local addprivate           = helpers.addprivate
+local hasprivate           = helpers.hasprivate
+local getprivateslot       = helpers.getprivateslot
+local getprivatecharornode = helpers.getprivatecharornode
 
-local otffeatures        = fonts.constructors.features.otf
-local afmfeatures        = fonts.constructors.features.afm
+local otffeatures          = fonts.constructors.features.otf
+local afmfeatures          = fonts.constructors.features.afm
 
-local registerotffeature = otffeatures.register
-local registerafmfeature = afmfeatures.register
+local registerotffeature   = otffeatures.register
+local registerafmfeature   = afmfeatures.register
 
-local is_character       = characters.is_character
-local chardata           = characters.data
+local is_character         = characters.is_character
+local chardata             = characters.data
 
-local tasks              = nodes.tasks
-local enableaction       = tasks.enableaction
-local disableaction      = tasks.disableaction
+local tasks                = nodes.tasks
+local enableaction         = tasks.enableaction
+local disableaction        = tasks.disableaction
 
-local implement          = interfaces.implement
+local implement            = interfaces.implement
 
-local glyph_code         = nodes.nodecodes.glyph
+local glyph_code           = nodes.nodecodes.glyph
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
-local tonode             = nuts.tonode
+local new_special          = nodes.pool.special
+local hpack_node           = node.hpack
 
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
+local nuts                 = nodes.nuts
+local tonut                = nuts.tonut
+local tonode               = nuts.tonode
 
-local setfield           = nuts.setfield
-local setchar            = nuts.setchar
+local getfont              = nuts.getfont
+local getchar              = nuts.getchar
 
-local traverse_id        = nuts.traverse_id
-local remove_node        = nuts.remove
-local insert_node_after  = nuts.insert_after
+local setfield             = nuts.setfield
+local setchar              = nuts.setchar
+
+local traverse_id          = nuts.traverse_id
+local remove_node          = nuts.remove
+local insert_node_after    = nuts.insert_after
 
 -- maybe in fonts namespace
 -- deletion can be option
@@ -180,11 +184,21 @@ local pdf_blob = "pdf: q %0.6F 0 0 %0.6F 0 0 cm %s %s %s rg %s %s %s RG 10 M 1 j
 
 local cache = { } -- saves some tables but not that impressive
 
+local function missingtonode(tfmdata,character)
+    local commands  = character.commands
+    local fake  = hpack_node(new_special(commands[1][2]))
+    fake.width  = character.width
+    fake.height = character.height
+    fake.depth  = character.depth
+    return fake
+end
+
 local function addmissingsymbols(tfmdata) -- we can have an alternative with rules
     local characters = tfmdata.characters
+    local properties = tfmdata.properties
     local size       = tfmdata.parameters.size
-    local privates   = tfmdata.properties.privates
     local scale      = size * bpfactor
+    local tonode     = properties.finalized and missingtonode or nil
     for i=1,#variants do
         local v = variants[i]
         local tag, r, g, b = v.tag, v.r, v.g, v.b
@@ -197,6 +211,7 @@ local function addmissingsymbols(tfmdata) -- we can have an alternative with rul
                 local char = cache[hash]
                 if not char then
                     char = {
+                        tonode   = tonode,
                         width    = size*fake.width,
                         height   = size*fake.height,
                         depth    = size*fake.depth,
@@ -226,27 +241,21 @@ fonts.loggers.category_to_placeholder = mapping
 function commands.getplaceholderchar(name)
     local id = font.current()
     addmissingsymbols(fontdata[id])
-    context(helpers.getprivatenode(fontdata[id],name))
+    context(getprivatenode(fontdata[id],name))
 end
 
+-- todo in luatex: option to add characters (just slots, no kerns etc)
+
 local function placeholder(font,char)
-    local tfmdata    = fontdata[font]
-    local properties = tfmdata.properties
-    local privates   = properties.privates
-    local category   = chardata[char].category
-    local fakechar   = mapping[category]
-    local p = privates and privates[fakechar]
-    if not p then
+    local tfmdata  = fontdata[font]
+    local category = chardata[char].category
+    local fakechar = mapping[category]
+    local slot = getprivateslot(font,fakechar)
+    if not slot then
         addmissingsymbols(tfmdata)
-        p = properties.privates[fakechar]
+        slot = getprivateslot(font,fakechar)
     end
-    if properties.lateprivates then
-        -- frozen already
-        return "node", getprivatenode(tfmdata,fakechar)
-    else
-        -- good, we have \definefontfeature[default][default][missing=yes]
-        return "char", p
-    end
+    return getprivatecharornode(tfmdata,fakechar)
 end
 
 checkers.placeholder = placeholder

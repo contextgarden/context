@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/20/16 13:39:39
+-- merge date  : 08/21/16 16:29:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -16596,7 +16596,7 @@ function injections.setkern(current,factor,rlmode,x,injection)
     return 0,0
   end
 end
-function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk) 
+function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk,checkmark) 
   local dx,dy=factor*(ba[1]-ma[1]),factor*(ba[2]-ma[2])
   nofregisteredmarks=nofregisteredmarks+1
   if rlmode>=0 then
@@ -16614,6 +16614,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk)
         i.markbase=nofregisteredmarks
         i.markbasenode=base
         i.markmark=mkmk
+        i.checkmark=checkmark
       end
     else
       p.injections={
@@ -16623,6 +16624,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk)
         markbase=nofregisteredmarks,
         markbasenode=base,
         markmark=mkmk,
+        checkmark=checkmark,
       }
     end
   else
@@ -16634,6 +16636,7 @@ function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk)
         markbase=nofregisteredmarks,
         markbasenode=base,
         markmark=mkmk,
+        checkmark=checkmark,
       },
     }
   end
@@ -17185,10 +17188,16 @@ local function inject_everything(head,where)
       end
     else
         ox=px-pn.markx
-      local wn=getfield(n,"width") 
-      if wn~=0 then
-        pn.leftkern=-wn/2
-        pn.rightkern=-wn/2
+      if pn.checkmark then
+        local wn=getfield(n,"width") 
+        if wn~=0 then
+          wn=wn/2
+          if trace_injections then
+            report_injections("correcting non zero width mark %C",getchar(n))
+          end
+          insert_node_before(n,n,newkern(-wn))
+          insert_node_after(n,n,newkern(-wn))
+        end
       end
     end
     local oy=getfield(n,"yoffset")+getfield(p,"yoffset")+pn.marky
@@ -17212,10 +17221,10 @@ local function inject_everything(head,where)
               nofmarks=nofmarks+1
               marks[nofmarks]=current
             else
-local yoffset=i.yoffset
-if yoffset and yoffset~=0 then
-  setfield(current,"yoffset",yoffset)
-end
+              local yoffset=i.yoffset
+              if yoffset and yoffset~=0 then
+                setfield(current,"yoffset",yoffset)
+              end
               if hascursives then
                 local cursivex=i.cursivex
                 if cursivex then
@@ -17856,33 +17865,40 @@ local mappers={
 }
 local classifiers=characters.classifiers
 if not classifiers then
-  local first_arabic,last_arabic=characters.blockrange("arabic")
-  local first_syriac,last_syriac=characters.blockrange("syriac")
-  local first_mandiac,last_mandiac=characters.blockrange("mandiac")
-  local first_nko,last_nko=characters.blockrange("nko")
+  local f_arabic,l_arabic=characters.blockrange("arabic")
+  local f_syriac,l_syriac=characters.blockrange("syriac")
+  local f_mandiac,l_mandiac=characters.blockrange("mandiac")
+  local f_nko,l_nko=characters.blockrange("nko")
+  local f_ext_a,l_ext_a=characters.blockrange("arabicextendeda")
   classifiers=table.setmetatableindex(function(t,k)
-    local c=chardata[k]
-    local v=false
-    if c then
-      local arabic=c.arabic
-      if arabic then
-        v=mappers[arabic]
-        if not v then
-          log.report("analyze","error in mapping arabic %C",k)
-          v=false
-        end
-      elseif k>=first_arabic and k<=last_arabic or k>=first_syriac and k<=last_syriac or
-          k>=first_mandiac and k<=last_mandiac or k>=first_nko   and k<=last_nko   then
-        if categories[k]=="mn" then
-          v=s_mark
-        else
-          v=s_rest
+    if type(k)=="number" then
+      local c=chardata[k]
+      local v=false
+      if c then
+        local arabic=c.arabic
+        if arabic then
+          v=mappers[arabic]
+          if not v then
+            log.report("analyze","error in mapping arabic %C",k)
+            v=false
+          end
+        elseif (k>=f_arabic and k<=l_arabic) or
+            (k>=f_syriac and k<=l_syriac) or
+            (k>=f_mandiac and k<=l_mandiac) or
+            (k>=f_nko   and k<=l_nko)   or
+            (k>=f_ext_a  and k<=l_ext_a)  then
+          if categories[k]=="mn" then
+            v=s_mark
+          else
+            v=s_rest
+          end
         end
       end
+      t[k]=v
+      return v
     end
-    t[k]=v
-    return v
   end)
+  characters.classifiers=classifiers
 end
 function methods.arab(head,font,attr)
   local first,last=nil,nil
@@ -18152,6 +18168,7 @@ local marks=false
 local currentfont=false
 local factor=0
 local threshold=0
+local checkmarks=false
 local sweepnode=nil
 local sweepprev=nil
 local sweepnext=nil
@@ -18767,7 +18784,7 @@ function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode)
         local ba=markanchors[1][basechar]
         if ba then
           local ma=markanchors[2]
-          local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
+          local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
           if trace_marks then
             logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
               pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -18822,7 +18839,7 @@ function handlers.gpos_mark2ligature(head,start,dataset,sequence,markanchors,rlm
             local index=getligaindex(start)
             ba=ba[index]
             if ba then
-              local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar]) 
+              local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
               if trace_marks then
                 logprocess("%s, anchor %s, index %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
                   pref(dataset,sequence),anchor,index,bound,gref(markchar),gref(basechar),index,dx,dy)
@@ -18869,7 +18886,7 @@ function handlers.gpos_mark2mark(head,start,dataset,sequence,markanchors,rlmode)
         local ba=markanchors[1][basechar] 
         if ba then
           local ma=markanchors[2]
-          local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true)
+          local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true,checkmarks)
           if trace_marks then
             logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
               pref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -19251,7 +19268,7 @@ function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlooku
           if ba then
             local ma=markanchors[2]
             if ma then
-              local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
+              local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
               if trace_marks then
                 logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
                   cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -19317,7 +19334,7 @@ function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentl
               local index=getligaindex(start)
               ba=ba[index]
               if ba then
-                local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar])
+                local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
                 if trace_marks then
                   logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
                     cref(dataset,sequence),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
@@ -19369,7 +19386,7 @@ function chainprocs.gpos_mark2mark(head,start,stop,dataset,sequence,currentlooku
           if ba then
             local ma=markanchors[2]
             if ma then
-              local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true)
+              local dx,dy,bound=setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true,checkmarks)
               if trace_marks then
                 logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
                   cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
@@ -20809,6 +20826,7 @@ local function featuresprocessor(head,font,attr)
     marks=tfmdata.resources.marks
     threshold,
     factor=getthreshold(font)
+    checkmarks=tfmdata.properties.checkmarks
   elseif currentfont~=font then
     report_warning("nested call with a different font, level %s, quitting",nesting)
     nesting=nesting-1
@@ -21172,6 +21190,18 @@ registerotffeature {
   default=true,
   initializers={
     node=spaceinitializer,
+  },
+}
+local function markinitializer(tfmdata,value)
+  local properties=tfmdata.properties
+  properties.checkmarks=value
+end
+registerotffeature {
+  name="checkmarks",
+  description="check mark widths",
+  default=true,
+  initializers={
+    node=markinitializer,
   },
 }
 

@@ -547,7 +547,7 @@ local function collect_glyphs(head,offsets)
                         identify(n,"preinjections")
                     end
                 end
-			end
+            end
             local d = getfield(n,"post")
             if d then
                 for n in traverse_id(glyph_code,d) do
@@ -555,7 +555,7 @@ local function collect_glyphs(head,offsets)
                         identify(n,"postinjections")
                     end
                 end
-			end
+            end
             local d = getfield(n,"replace")
             if d then
                 for n in traverse_id(glyph_code,d) do
@@ -563,9 +563,9 @@ local function collect_glyphs(head,offsets)
                         identify(n,"replaceinjections")
                     end
                 end
-			end
+            end
         end
-		n = getnext(n)
+        n = getnext(n)
     end
 
     return glyphs, glyphi, nofglyphs, marks, marki, nofmarks
@@ -600,11 +600,11 @@ local function inject_marks(marks,marki,nofmarks)
                             -- kern(x) glyph(p) kern(w-x) mark(n)
                          -- ox = px - getfield(p,"width") + pn.markx - pp.leftkern
                             --
-							-- According to Kai we don't need to handle leftkern here but I'm
+                            -- According to Kai we don't need to handle leftkern here but I'm
                             -- pretty sure I've run into a case where it was needed so maybe
-	                        -- some day we need something more clever here.
+                            -- some day we need something more clever here.
                             --
-							if false then
+                            if false then
                                 -- a mark with kerning
                                 local leftkern = pp.leftkern
                                 if leftkern then
@@ -635,17 +635,16 @@ local function inject_marks(marks,marki,nofmarks)
                             pn.rightkern = -wn/2
                          -- wx[n] = { 0, -wn/2, 0, -wn }
                         end
-                        -- so far
                     end
                     setfield(n,"xoffset",ox)
                     --
                     local py = getfield(p,"yoffset")
---                     local oy = 0
---                     if marks[p] then
---                         oy = py + pn.marky
---                     else
---                         oy = getfield(n,"yoffset") + py + pn.marky
---                     end
+                 -- local oy = 0
+                 -- if marks[p] then
+                 --     oy = py + pn.marky
+                 -- else
+                 --     oy = getfield(n,"yoffset") + py + pn.marky
+                 -- end
                     local oy = getfield(n,"yoffset") + py + pn.marky
                     setfield(n,"yoffset",oy)
                 else
@@ -753,54 +752,54 @@ local function inject_kerns(head,glist,ilist,length) -- not complete ! compare w
         local n  = glist[i]
         local pn = rawget(properties,n)
         if pn then
-			local dp = nil
-			local dr = nil
+            local dp = nil
+            local dr = nil
             local ni = ilist[i]
             local p  = nil
-			if ni == "injections" then
-				p = getprev(n)
-				if p then
-					local id = getid(p)
-					if id == disc_code then
-						dp = getfield(p,"post")
-						dr = getfield(p,"replace")
-					end
-				end
-			end
-			if dp then
-				local i = rawget(pn,"postinjections")
-				if i then
-					local leftkern = i.leftkern
-					if leftkern and leftkern ~= 0 then
-						local t = find_tail(dp)
-						insert_node_after(dp,t,newkern(leftkern))
+            if ni == "injections" then
+                p = getprev(n)
+                if p then
+                    local id = getid(p)
+                    if id == disc_code then
+                        dp = getfield(p,"post")
+                        dr = getfield(p,"replace")
+                    end
+                end
+            end
+            if dp then
+                local i = rawget(pn,"postinjections")
+                if i then
+                    local leftkern = i.leftkern
+                    if leftkern and leftkern ~= 0 then
+                        local t = find_tail(dp)
+                        insert_node_after(dp,t,newkern(leftkern))
                         setfield(p,"post",dp) -- currently we need to force a tail refresh
-					end
-				end
-			end
-			if dr then
-				local i = rawget(pn,"replaceinjections")
-				if i then
-					local leftkern = i.leftkern
-					if leftkern and leftkern ~= 0 then
-						local t = find_tail(dr)
-						insert_node_after(dr,t,newkern(leftkern))
+                    end
+                end
+            end
+            if dr then
+                local i = rawget(pn,"replaceinjections")
+                if i then
+                    local leftkern = i.leftkern
+                    if leftkern and leftkern ~= 0 then
+                        local t = find_tail(dr)
+                        insert_node_after(dr,t,newkern(leftkern))
                         setfield(p,"replace",dr) -- currently we need to force a tail refresh
-					end
-				end
-			else
-				local i = rawget(pn,ni)
-				if i then
-					local leftkern = i.leftkern
-					if leftkern and leftkern ~= 0 then
-						insert_node_before(head,n,newkern(leftkern)) -- type 0/2
-					end
-					local rightkern = i.rightkern
-					if rightkern and rightkern ~= 0 then
-						insert_node_after(head,n,newkern(rightkern)) -- type 0/2
-					end
-				end
-			end
+                    end
+                end
+            else
+                local i = rawget(pn,ni)
+                if i then
+                    local leftkern = i.leftkern
+                    if leftkern and leftkern ~= 0 then
+                        insert_node_before(head,n,newkern(leftkern)) -- type 0/2
+                    end
+                    local rightkern = i.rightkern
+                    if rightkern and rightkern ~= 0 then
+                        insert_node_after(head,n,newkern(rightkern)) -- type 0/2
+                    end
+                end
+            end
         end
     end
 end
@@ -822,7 +821,7 @@ local function inject_everything(head,where)
     end
     if nofmarks > 0 then
         inject_kerns(head,marks,marki,nofmarks)
-	end
+    end
     if keepregisteredcounts then
         keepregisteredcounts  = false
     else
