@@ -1865,17 +1865,28 @@
       \v!outer=>\doifelserightpagefloat{\let\next\strc_floats_relocate_caption_right}{\let\next\strc_floats_relocate_caption_left }]%
    \next}
 
-\installfloatboxbuilder \v!none    \strc_floats_build_box_default
-\installfloatboxbuilder \s!default \strc_floats_build_box_default
-\installfloatboxbuilder \v!high    \strc_floats_build_box_high
-\installfloatboxbuilder \v!low     \strc_floats_build_box_low
-\installfloatboxbuilder \v!middle  \strc_floats_build_box_middle
+\installfloatboxbuilder \v!none         \strc_floats_build_box_default
+\installfloatboxbuilder \s!default      \strc_floats_build_box_default
+\installfloatboxbuilder \v!high         \strc_floats_build_box_high
+\installfloatboxbuilder \v!low          \strc_floats_build_box_low
+\installfloatboxbuilder \v!middle       \strc_floats_build_box_middle
 
-\installfloatboxbuilder \v!left    \strc_floats_build_box_side
-\installfloatboxbuilder \v!right   \strc_floats_build_box_side
+\installfloatboxbuilder \v!rightmargin  \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!leftmargin   \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!innermargin  \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!outermargin  \strc_floats_build_box_side % added 2016-08-23
 
-\installfloatboxbuilder \v!top     \strc_floats_build_box_top
-\installfloatboxbuilder \v!bottom  \strc_floats_build_box_bottom
+\installfloatboxbuilder \v!left         \strc_floats_build_box_side
+\installfloatboxbuilder \v!right        \strc_floats_build_box_side
+\installfloatboxbuilder \v!inner        \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!outer        \strc_floats_build_box_side % added 2016-08-23
+
+\installfloatboxbuilder \v!lefthanging  \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!righthanging \strc_floats_build_box_side % added 2016-08-23
+\installfloatboxbuilder \v!hang         \strc_floats_build_box_side % added 2016-08-23
+
+\installfloatboxbuilder \v!top          \strc_floats_build_box_top
+\installfloatboxbuilder \v!bottom       \strc_floats_build_box_bottom
 
 % \setuplayout[grid=yes] \showgrid \setupcaptions[style=smallbodyfont,location=grid,inbetween=]
 %

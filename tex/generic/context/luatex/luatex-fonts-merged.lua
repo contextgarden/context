@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/21/16 16:29:10
+-- merge date  : 08/23/16 11:14:05
 
 do -- begin closure to overcome local limits and interference
 
@@ -21132,7 +21132,10 @@ local function spaceinitializer(tfmdata,value)
                 if kerns then
                   for k,v in next,kerns do
                     if type(v)=="table" then
-                      right[k]=v[1][3]
+                      local one=v[1]
+                      if one then
+                        right[k]=one[3]
+                      end
                     else
                       right[k]=v
                     end
@@ -21142,7 +21145,10 @@ local function spaceinitializer(tfmdata,value)
                   local kern=v[32]
                   if kern then
                     if type(kern)=="table" then
-                      left[k]=kern[1][3]
+                      local one=v[1]
+                      if one then
+                        left[k]=one[3]
+                      end
                     else
                       left[k]=kern
                     end

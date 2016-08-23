@@ -3757,11 +3757,15 @@ local function spaceinitializer(tfmdata,value) -- attr
                             local step = steps[i]
                             local coverage = step.coverage
                             if coverage then
+                                -- what to do if we have no [1] but only [2]
                                 local kerns = coverage[32]
                                 if kerns then
                                     for k, v in next, kerns do
                                         if type(v) == "table" then
-                                            right[k] = v[1][3]
+                                            local one = v[1]
+                                            if one then
+                                                right[k] = one[3]
+                                            end
                                         else
                                             right[k] = v
                                         end
@@ -3771,7 +3775,10 @@ local function spaceinitializer(tfmdata,value) -- attr
                                     local kern = v[32]
                                     if kern then
                                         if type(kern) == "table" then
-                                            left[k] = kern[1][3]
+                                            local one = v[1]
+                                            if one then
+                                                left[k] = one[3]
+                                            end
                                         else
                                             left[k] = kern
                                         end
