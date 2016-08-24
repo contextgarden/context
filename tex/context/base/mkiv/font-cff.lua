@@ -1408,7 +1408,7 @@ do
         globals    = data.routines or { }
         locals     = dictionary.subroutines or { }
 
-        globalbias, localbias = setbias(globals,locals,version)
+        globalbias, localbias = setbias(globals,locals)
 
         local nominalwidth = private.data.nominalwidthx or 0
         local defaultwidth = private.data.defaultwidthx or 0
@@ -1478,14 +1478,15 @@ do
         return glyphs
     end
 
-    parsecharstring = function(data,dictionary,tab,glyphs,index,doshapes,version)
+    parsecharstring = function(data,dictionary,tab,glyphs,index,doshapes,tversion)
         local private = dictionary.private
         keepcurve  = doshapes
+        version    = tversion
         strings    = data.strings -- or in dict?
         locals     = dictionary.subroutines or { }
         globals    = data.routines or { }
 
-        globalbias = setbias(globals,locals)
+        globalbias, localbias = setbias(globals,locals)
 
         local nominalwidth = private and private.data.nominalwidthx or 0
         local defaultwidth = private and private.data.defaultwidthx or 0

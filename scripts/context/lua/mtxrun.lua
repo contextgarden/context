@@ -1389,7 +1389,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 37593, stripped down to: 22615
+-- original size: 37840, stripped down to: 22763
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1716,7 +1716,7 @@ function table.fromhash(t)
   end
   return hsh
 end
-local noquotes,hexify,handle,compact,inline,functions
+local noquotes,hexify,handle,compact,inline,functions,metacheck
 local reserved=table.tohash { 
   'and','break','do','else','elseif','end','false','for','function','if',
   'in','local','nil','not','or','repeat','return','then','true','until','while',
@@ -1786,7 +1786,7 @@ local function do_serialize(root,name,depth,level,indexed)
     if compact then
       last=#root
       for k=1,last do
-        if root[k]==nil then
+        if rawget(root,k)==nil then
           last=k-1
           break
         end
@@ -1983,6 +1983,7 @@ local function serialize(_handle,root,name,specification)
     functions=specification.functions
     compact=specification.compact
     inline=specification.inline and compact
+    metacheck=specification.metacheck
     if functions==nil then
       functions=true
     end
@@ -1992,6 +1993,9 @@ local function serialize(_handle,root,name,specification)
     if inline==nil then
       inline=compact
     end
+    if metacheck==nil then
+      metacheck=true
+    end
   else
     noquotes=false
     hexify=false
@@ -1999,6 +2003,7 @@ local function serialize(_handle,root,name,specification)
     compact=true
     inline=true
     functions=true
+    metacheck=true
   end
   if tname=="string" then
     if name=="return" then
@@ -2022,7 +2027,7 @@ local function serialize(_handle,root,name,specification)
     handle("t={")
   end
   if root then
-    if getmetatable(root) then 
+    if metacheck and getmetatable(root) then
       local dummy=root._w_h_a_t_e_v_e_r_
       root._w_h_a_t_e_v_e_r_=nil
     end
@@ -5926,7 +5931,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 28690, stripped down to: 18636
+-- original size: 29007, stripped down to: 18742
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -5940,7 +5945,7 @@ utilities.tables=utilities.tables or {}
 local tables=utilities.tables
 local format,gmatch,gsub,sub=string.format,string.gmatch,string.gsub,string.sub
 local concat,insert,remove,sort=table.concat,table.insert,table.remove,table.sort
-local setmetatable,getmetatable,tonumber,tostring=setmetatable,getmetatable,tonumber,tostring
+local setmetatable,getmetatable,tonumber,tostring,rawget=setmetatable,getmetatable,tonumber,tostring,rawget
 local type,next,rawset,tonumber,tostring,load,select=type,next,rawset,tonumber,tostring,load,select
 local lpegmatch,P,Cs,Cc=lpeg.match,lpeg.P,lpeg.Cs,lpeg.Cc
 local sortedkeys,sortedpairs=table.sortedkeys,table.sortedpairs
@@ -6316,7 +6321,8 @@ function table.twowaymapper(t)
   if not t then
     t={}
   else
-    for i=0,#t do
+    local zero=rawget(t,0)
+    for i=zero or 1,#t do
       local ti=t[i]    
       if ti then
         local i=tostring(i)
@@ -6324,7 +6330,7 @@ function table.twowaymapper(t)
         t[ti]=i    
       end
     end
-    t[""]=t[0] or ""
+    t[""]=zero or ""
   end
   setmetatable(t,selfmapper)
   return t
@@ -6380,7 +6386,7 @@ local function serialize(root,name,specification)
           return nil
         end
       end
-      local haszero=t[0]
+      local haszero=rawget(t,0) 
       if n==nt then
         local tt={}
         for i=1,nt do
@@ -6442,7 +6448,7 @@ local function serialize(root,name,specification)
       local last=0
       last=#root
       for k=1,last do
-        if root[k]==nil then
+        if rawget(root,k)==nil then
           last=k-1
           break
         end
@@ -6587,7 +6593,12 @@ local function serialize(root,name,specification)
 end
 table.serialize=serialize
 if setinspector then
-  setinspector("table",function(v) if type(v)=="table" then print(serialize(v,"table",{})) return true end end)
+  setinspector("table",function(v)
+    if type(v)=="table" then
+      print(serialize(v,"table",{ metacheck=false }))
+      return true
+    end
+  end)
 end
 
 
@@ -18834,8 +18845,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 800533
--- stripped bytes    : 290375
+-- original bytes    : 801097
+-- stripped bytes    : 290685
 
 -- end library merge
 

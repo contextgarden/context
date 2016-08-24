@@ -675,7 +675,6 @@ local function initializedevanagi(tfmdata)
                         end
                     end
                     if kind == "pref" then
-                        local sequence = dataset[3] -- was [5]
                         local steps    = sequence.steps
                         local nofsteps = sequence.nofsteps
                         for i=1,nofsteps do

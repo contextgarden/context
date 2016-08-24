@@ -3754,33 +3754,42 @@ local function spaceinitializer(tfmdata,value) -- attr
                             feat = kern
                         end
                         for i=1,#steps do
-                            local step = steps[i]
+                            local step     = steps[i]
                             local coverage = step.coverage
-                            if coverage then
+                            local rules    = step.rules
+                            local format   = step.format
+                            if rules then
+                                -- not now: analyze (simple) rules
+                            elseif coverage then
                                 -- what to do if we have no [1] but only [2]
-                                local kerns = coverage[32]
+                                local single = format == gpos_single
+                                local kerns  = coverage[32]
                                 if kerns then
                                     for k, v in next, kerns do
-                                        if type(v) == "table" then
+                                        if type(v) ~= "table" then
+                                            right[k] = v
+                                        elseif single then
+                                            right[k] = v[3]
+                                        else
                                             local one = v[1]
                                             if one then
                                                 right[k] = one[3]
                                             end
-                                        else
-                                            right[k] = v
                                         end
                                     end
                                 end
                                 for k, v in next, coverage do
                                     local kern = v[32]
                                     if kern then
-                                        if type(kern) == "table" then
+                                        if type(kern) ~= "table" then
+                                            left[k] = kern
+                                        elseif single then
+                                            left[k] = v[3]
+                                        else
                                             local one = v[1]
                                             if one then
                                                 left[k] = one[3]
                                             end
-                                        else
-                                            left[k] = kern
                                         end
                                     end
                                 end

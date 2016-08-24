@@ -359,6 +359,16 @@
 \unexpanded\def\startmixedcolumns
   {\dodoubleempty\page_mix_start_columns}
 
+\def\page_mix_start_columns_checked#1#2%
+  {\edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
+   \ifx\currentmixedcolumnsmethod\v!box
+     \singleexpandafter#1%
+   \else\ifinsidecolumns
+     \doubleexpandafter#2%
+   \else
+     \doubleexpandafter#1%
+   \fi\fi}
+
 \unexpanded\def\page_mix_start_columns
   {\pushmacro\currentmixedcolumns
    \pushmacro\currentmixedcolumnsmethod
@@ -370,15 +380,24 @@
      \doubleexpandafter\page_mix_start_columns_c
    \fi\fi}
 
-\def\page_mix_start_columns_a[#1][#2]%
+\def\page_mix_start_columns_a[#1]% [#2]%
   {\edef\currentmixedcolumns{#1}%
-   \edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
-   \mixedcolumnsparameter\c!before\relax
+   \page_mix_start_columns_checked
+     \page_mix_start_columns_a_yes
+     \page_mix_start_columns_a_nop}
+
+\def\page_mix_start_columns_a_yes[#1]%
+  {\mixedcolumnsparameter\c!before\relax
    \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup
-   \setupcurrentmixedcolumns[#2]%
+   \setupcurrentmixedcolumns[#1]%
    \page_mix_initialize_columns
-   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname}
+   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname
+   \let\stopmixedcolumns\page_mix_columns_stop_yes}
+
+\def\page_mix_start_columns_a_nop[#1]%
+  {\begingroup
+   \let\stopmixedcolumns\page_mix_columns_stop_nop}
 
 \def\page_mix_start_columns_b[#1][#2]%
   {\doifelseassignment{#1}%
@@ -386,44 +405,65 @@
       \page_mix_error_b}
      {\edef\currentmixedcolumns{#1}%
       \firstargumentfalse}%
-   \edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
-   \mixedcolumnsparameter\c!before\relax % so, it doesn't listen to local settings !
+   \page_mix_start_columns_checked
+     \page_mix_start_columns_b_yes
+     \page_mix_start_columns_b_nop
+   [#1]}
+
+\def\page_mix_start_columns_b_yes[#1]%
+  {\mixedcolumnsparameter\c!before\relax % so, it doesn't listen to local settings !
    \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup
    \iffirstargument
      \setupcurrentmixedcolumns[#1]%
    \fi
    \page_mix_initialize_columns
-   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname} % no \relax
+   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname % no \relax
+   \let\stopmixedcolumns\page_mix_columns_stop_yes}
+
+\def\page_mix_start_columns_b_nop[#1]%
+  {\begingroup
+   \let\stopmixedcolumns\page_mix_columns_stop_nop}
 
 \def\page_mix_error_b
   {\writestatus\m!columns{best use an instance of mixed columns}}
 
 \def\page_mix_start_columns_c[#1][#2]%
   {\let\currentmixedcolumns\empty
-   \edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
-   \mixedcolumnsparameter\c!before\relax
+   \page_mix_start_columns_checked
+     \page_mix_start_columns_c_yes
+     \page_mix_start_columns_c_nop}
+
+\def\page_mix_start_columns_c_yes
+  {\mixedcolumnsparameter\c!before\relax
    \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup
    \page_mix_initialize_columns
    \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname}
+
+\def\page_mix_start_columns_c_nop
+  {\begingroup
+   \let\stopmixedcolumns\page_mix_columns_stop_nop}
 
 \unexpanded\def\page_mix_fast_columns_start#1%
   {\pushmacro\currentmixedcolumns
    \pushmacro\currentmixedcolumnsmethod
    \edef\currentmixedcolumns{#1}%
    \edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
-   \mixedcolumnsparameter\c!before\relax % so, it doesn't list to local settings !
+   \mixedcolumnsparameter\c!before\relax % so, it doesn't listen to local settings !
    \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup
    \page_mix_initialize_columns
-   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname} % no \relax
+   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname % no \relax
+   \let\page_mix_fast_columns_stop\page_mix_columns_stop_yes}
 
 %D When we stop, we switch over to the balancing routine. After we're done we
 %D make sure to set the sizes are set, a somewhat redundant action when we
 %D already have flushed but better be safe.
 
-\unexpanded\def\stopmixedcolumns
+\let\page_mix_fast_columns_stop\relax
+
+\unexpanded\def\page_mix_columns_stop_yes
   {\begincsname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
    \endgroup
    \begincsname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
@@ -431,7 +471,12 @@
    \popmacro\currentmixedcolumnsmethod
    \popmacro\currentmixedcolumns}
 
-% \unexpanded\def\stopmixedcolumns
+\unexpanded\def\page_mix_columns_stop_nop
+  {\endgroup
+   \popmacro\currentmixedcolumnsmethod
+   \popmacro\currentmixedcolumns}
+
+% \unexpanded\def\page_mix_columns_stop_yes
 %   {\begincsname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax
 %    \endgroup
 %    \begincsname\??mixedcolumnsafter\currentmixedcolumnsmethod\endcsname\relax
@@ -446,14 +491,13 @@
 % \fi
 %    }
 
-\let\page_mix_fast_columns_stop\stopmixedcolumns
-
 %D This is how the fast one is used:
 
 \unexpanded\def\strc_itemgroups_start_columns
   {\page_mix_fast_columns_start\s!itemgroupcolumns}
 
-\let\strc_itemgroups_stop_columns\page_mix_fast_columns_stop
+\unexpanded\def\strc_itemgroups_stop_columns
+  {\page_mix_fast_columns_stop} % set by start
 
 \setupmixedcolumns
   [\s!itemgroupcolumns]
@@ -788,25 +832,6 @@
 
 \letvalue{\??mixedcolumnsbefore\s!box}\donothing
 \letvalue{\??mixedcolumnsafter \s!box}\donothing
-
-% \setvalue{\??mixedcolumnsstart\s!box}%
-%   {\edef\p_page_mix_strut{\mixedcolumnsparameter\c!strut}%
-%    \setbox\b_page_mix_collected\vbox\bgroup
-%      \let\currentoutputroutine\s!mixedcolumn % makes \column work
-%      \forgetall
-%      \page_mix_command_set_hsize
-%      \ifx\p_page_mix_strut\v!yes
-%        \begstrut
-%        \ignorespaces
-%      \fi}
-%
-% \setvalue{\??mixedcolumnsstop\s!box}%
-%   {\ifx\p_page_mix_strut\v!yes
-%      \removeunwantedspaces
-%      \endstrut
-%    \fi
-%    \egroup
-%    \page_mix_box_balance}
 
 \setvalue{\??mixedcolumnsstart\s!box}%
   {\edef\p_page_mix_strut{\mixedcolumnsparameter\c!strut}%

@@ -12,7 +12,7 @@ local tables     = utilities.tables
 
 local format, gmatch, gsub, sub = string.format, string.gmatch, string.gsub, string.sub
 local concat, insert, remove, sort = table.concat, table.insert, table.remove, table.sort
-local setmetatable, getmetatable, tonumber, tostring = setmetatable, getmetatable, tonumber, tostring
+local setmetatable, getmetatable, tonumber, tostring, rawget = setmetatable, getmetatable, tonumber, tostring, rawget
 local type, next, rawset, tonumber, tostring, load, select = type, next, rawset, tonumber, tostring, load, select
 local lpegmatch, P, Cs, Cc = lpeg.match, lpeg.P, lpeg.Cs, lpeg.Cc
 local sortedkeys, sortedpairs = table.sortedkeys, table.sortedpairs
@@ -489,7 +489,8 @@ function table.twowaymapper(t)
     if not t then
         t = { }
     else
-        for i=0,#t do
+        local zero = rawget(t,0)
+        for i=zero or 1,#t do
             local ti = t[i]       -- t[1]     = "one"
             if ti then
                 local i = tostring(i)
@@ -497,7 +498,7 @@ function table.twowaymapper(t)
                 t[ti]   = i       -- t["one"] = "1"
             end
         end
-        t[""] = t[0] or ""
+        t[""] = zero or ""
     end
  -- setmetatableindex(t,"key")
     setmetatable(t,selfmapper)
@@ -616,7 +617,8 @@ local function serialize(root,name,specification)
                     return nil
                 end
             end
-            local haszero = t[0]
+         -- local haszero = t[0]
+            local haszero = rawget(t,0) -- don't trigger meta
             if n == nt then
                 local tt = { }
                 for i=1,nt do
@@ -680,7 +682,8 @@ local function serialize(root,name,specification)
             local last  = 0
             last = #root
             for k=1,last do
-                if root[k] == nil then
+                if rawget(root,k) == nil then
+             -- if root[k] == nil then
                     last = k - 1
                     break
                 end
@@ -810,7 +813,8 @@ local function serialize(root,name,specification)
 
     if root then
         -- The dummy access will initialize a table that has a delayed initialization
-        -- using a metatable. (maybe explicitly test for metatable)
+        -- using a metatable. (maybe explicitly test for metatable). This can crash on
+        -- metatables that check the index against a number.
         if getmetatable(root) then -- todo: make this an option, maybe even per subtable
             local dummy = root._w_h_a_t_e_v_e_r_ -- needed
             root._w_h_a_t_e_v_e_r_ = nil
@@ -833,5 +837,10 @@ end
 table.serialize = serialize
 
 if setinspector then
-    setinspector("table",function(v) if type(v) == "table" then print(serialize(v,"table",{})) return true end end)
+    setinspector("table",function(v)
+        if type(v) == "table" then
+            print(serialize(v,"table",{ metacheck = false }))
+            return true
+        end
+    end)
 end

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/23/16 11:14:05
+-- merge date  : 08/24/16 21:16:06
 
 do -- begin closure to overcome local limits and interference
 
@@ -1352,7 +1352,7 @@ function table.fromhash(t)
   end
   return hsh
 end
-local noquotes,hexify,handle,compact,inline,functions
+local noquotes,hexify,handle,compact,inline,functions,metacheck
 local reserved=table.tohash { 
   'and','break','do','else','elseif','end','false','for','function','if',
   'in','local','nil','not','or','repeat','return','then','true','until','while',
@@ -1422,7 +1422,7 @@ local function do_serialize(root,name,depth,level,indexed)
     if compact then
       last=#root
       for k=1,last do
-        if root[k]==nil then
+        if rawget(root,k)==nil then
           last=k-1
           break
         end
@@ -1619,6 +1619,7 @@ local function serialize(_handle,root,name,specification)
     functions=specification.functions
     compact=specification.compact
     inline=specification.inline and compact
+    metacheck=specification.metacheck
     if functions==nil then
       functions=true
     end
@@ -1628,6 +1629,9 @@ local function serialize(_handle,root,name,specification)
     if inline==nil then
       inline=compact
     end
+    if metacheck==nil then
+      metacheck=true
+    end
   else
     noquotes=false
     hexify=false
@@ -1635,6 +1639,7 @@ local function serialize(_handle,root,name,specification)
     compact=true
     inline=true
     functions=true
+    metacheck=true
   end
   if tname=="string" then
     if name=="return" then
@@ -1658,7 +1663,7 @@ local function serialize(_handle,root,name,specification)
     handle("t={")
   end
   if root then
-    if getmetatable(root) then 
+    if metacheck and getmetatable(root) then
       local dummy=root._w_h_a_t_e_v_e_r_
       root._w_h_a_t_e_v_e_r_=nil
     end
@@ -10376,7 +10381,7 @@ do
     strings=data.strings
     globals=data.routines or {}
     locals=dictionary.subroutines or {}
-    globalbias,localbias=setbias(globals,locals,version)
+    globalbias,localbias=setbias(globals,locals)
     local nominalwidth=private.data.nominalwidthx or 0
     local defaultwidth=private.data.defaultwidthx or 0
     for i=1,#charstrings do
@@ -10434,13 +10439,14 @@ do
     end
     return glyphs
   end
-  parsecharstring=function(data,dictionary,tab,glyphs,index,doshapes,version)
+  parsecharstring=function(data,dictionary,tab,glyphs,index,doshapes,tversion)
     local private=dictionary.private
     keepcurve=doshapes
+    version=tversion
     strings=data.strings 
     locals=dictionary.subroutines or {}
     globals=data.routines or {}
-    globalbias=setbias(globals,locals)
+    globalbias,localbias=setbias(globals,locals)
     local nominalwidth=private and private.data.nominalwidthx or 0
     local defaultwidth=private and private.data.defaultwidthx or 0
     if type(tab)=="string" then
@@ -15316,7 +15322,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.025 
+otf.version=3.026 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pdfcache=containers.define("fonts","pdf",otf.version,true)
@@ -21127,30 +21133,38 @@ local function spaceinitializer(tfmdata,value)
             for i=1,#steps do
               local step=steps[i]
               local coverage=step.coverage
-              if coverage then
+              local rules=step.rules
+              local format=step.format
+              if rules then
+              elseif coverage then
+                local single=format==gpos_single
                 local kerns=coverage[32]
                 if kerns then
                   for k,v in next,kerns do
-                    if type(v)=="table" then
+                    if type(v)~="table" then
+                      right[k]=v
+                    elseif single then
+                      right[k]=v[3]
+                    else
                       local one=v[1]
                       if one then
                         right[k]=one[3]
                       end
-                    else
-                      right[k]=v
                     end
                   end
                 end
                 for k,v in next,coverage do
                   local kern=v[32]
                   if kern then
-                    if type(kern)=="table" then
+                    if type(kern)~="table" then
+                      left[k]=kern
+                    elseif single then
+                      left[k]=v[3]
+                    else
                       local one=v[1]
                       if one then
                         left[k]=one[3]
                       end
-                    else
-                      left[k]=kern
                     end
                   end
                 end
@@ -21664,7 +21678,6 @@ local function initializedevanagi(tfmdata)
             end
           end
           if kind=="pref" then
-            local sequence=dataset[3] 
             local steps=sequence.steps
             local nofsteps=sequence.nofsteps
             for i=1,nofsteps do

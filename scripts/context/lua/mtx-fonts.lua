@@ -15,7 +15,7 @@ local nameonly, basename, joinpath, collapsepath = file.nameonly, file.basename,
 local lower = string.lower
 
 local otfversion  = 2.826
-local otlversion  = 3.025
+local otlversion  = 3.026
 
 local helpinfo = [[
 <?xml version="1.0"?>

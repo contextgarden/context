@@ -520,6 +520,7 @@ function xtables.reflow_width()
     local nofrows = data.nofrows
     local nofcolumns = data.nofcolumns
     local rows = data.rows
+-- inspect(rows)
     for r=1,nofrows do
         local row = rows[r]
         for c=1,nofcolumns do
@@ -551,6 +552,7 @@ function xtables.reflow_width()
         showwidths("stage 1",widths,autowidths)
     end
     local noffrozen = 0
+-- here we can also check spans
  -- inspect(data.fixedcspans)
     if options[v_max] then
         for c=1,nofcolumns do
