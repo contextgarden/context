@@ -67,7 +67,7 @@ function metapost.showglyph(specification)
         end
         local glyph = shapeglyphs[index]
         if glyph and (glyph.segments or glyph.sequence) then
-            local units  = data.fontheader and data.fontheader.emsize or 1000
+            local units  = shapedata.units or 1000
             local factor = 100/units
             local paths  = metapost.paths(glyph,factor)
             if #paths > 0 and glyph.boundingbox and glyph.width then

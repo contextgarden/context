@@ -289,7 +289,7 @@ function metapost.output(kind,font,char,advance,shift,ex)
             if glyphs then
                 local glyf = glyphs[index]
                 if glyf then
-                    local units     = shapedata.units or 1000
+                    local units     = 1000 -- factor already takes shapedata.units into account
                     local yfactor   = (sc/units) * parameters[font].factor / 655.36
                     local xfactor   = yfactor
                     local shift     = shift or 0

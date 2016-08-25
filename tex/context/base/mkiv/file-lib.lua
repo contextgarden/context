@@ -48,12 +48,7 @@ function resolvers.uselibrary(specification) -- todo: reporter
         end
         for i=1,#files do
             local filename = files[i]
-            if loaded[filename] then
-                -- next one
-            else
-                if onlyonce then
-                    loaded[filename] = true -- todo: base this on return value
-                end
+            if not loaded[filename] then
                 local foundname = nil
                 local barename  = removesuffix(filename)
                 -- direct search (we have an explicit suffix)
@@ -76,10 +71,18 @@ function resolvers.uselibrary(specification) -- todo: reporter
                         end
                     end
                 end
-                if foundname then
-                    action(name,foundname)
-                elseif failure then
-                    failure(name)
+                if not loaded[foundname] then
+                    if foundname then
+                        action(name,foundname)
+                        if onlyonce then
+                            loaded[foundname] = true -- todo: base this on return value
+                        end
+                    elseif failure then
+                        failure(name)
+                    end
+                    if onlyonce then
+                        loaded[filename]  = true -- todo: base this on return value
+                    end
                 end
             end
         end

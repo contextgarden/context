@@ -318,7 +318,9 @@
   [apa:\s!cite:author]
   [\c!left={(},
    \c!right={)},
-   \c!inbetween={\btxcomma}]
+   \c!inbetween={\btxcomma},
+   \c!separator:names:3={\btxcomma\texampersand\space},
+   \c!separator:names:4={\btxspace\texampersand\space}]
 
 \definebtx
   [apa:\s!cite:default]
@@ -326,7 +328,7 @@
 
 \definebtx
   [apa:\s!cite:authoryears]
-  [apa:\s!cite:authoryear]
+  [apa:\s!cite:author]
   [\c!left=,
    \c!right=,
    \c!inbetween={\btxspace}]

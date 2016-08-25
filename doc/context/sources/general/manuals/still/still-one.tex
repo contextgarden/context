@@ -1,0 +1,234 @@
+% language=uk
+
+\usemodule[art-01,abr-02] \setupbodyfont[11pt]
+
+\starttext
+
+\startchapter[title=\LUATEX\ going stable]
+
+\startsection[title=Introduction]
+
+We're closing in on version 1.0 of \LUATEX\ and at the time of this writing (mid
+April 2016) we're at version 0.95. The last decade we've reported on a regular
+basis about progress in user group journals, \CONTEXT\ related documents and the
+\LUATEX\ manual and it makes no sense to repeat ourselves.
+
+So where do we stand now? I will not go into details about what is available in
+\LUATEX, for that you consult the manual but will stick to the larger picture
+instead.
+
+\stopsection
+
+\startsection[title=What is it]
+
+First of all, as the name suggests, \LUATEX\ has the \LUA\ scripting engine on
+board. Currently we're still at version 5.2 and the reason for not going 5.3 is
+mainly because it has a different implementation of numbers and we cannot foresee
+side effects. We will test this when we move on to \LUATEX\ version 2.0.
+
+The second part of the name indicates that we have some kind of \TEX\ and we
+think we managed to remain largely compatible with the traditional engine. We
+took most of \ETEX, much of \PDFTEX\ and some from \ALEPH\ (\OMEGA). On top of
+that we added a few new primitives and extended others.
+
+If you look at the building blocks of \TEX, you can roughly recognize these:
+
+\startitemize
+\startitem
+    an input parser (tokenizer) that includes macro expansion; its working is
+    well described, of course in the \TEX\ book, but more than three decades of
+    availability has made \TEX's behaviour rather well documented
+\stopitem
+\startitem
+    a list builder that links basic elements like characters (tagged with font
+    information), rules, boxes, glue and kerns together in a double linked
+    list of so called nodes (and noads in intermediate math lists)
+\stopitem
+\startitem
+    a language subsystem that is responsible for hyphenating words using so called
+    patterns and exceptions
+\stopitem
+\startitem
+    a font subsystem that provides information about glyphs properties, and that
+    also makes it possible to construct math symbols from snippets; it also makes
+    sure that the backend knows what to embed
+\stopitem
+\startitem
+    a paragraph builder that breaks a long list into lines and a page builder
+    that splits of chunks that can be wrapped into pages; this is all done within
+    given constraints using a model of rewards and penalties
+\stopitem
+\startitem
+    a first class math renderer that set the standard and has inspired modern
+    math font technology
+\stopitem
+\startitem
+    mechanisms for dealing with floating data, marking page related info, wrapping
+    stuff in boxes, adding glue, penalties and special information
+\stopitem
+\startitem
+    a backend that is responsible for wrapping everything typeset in a format that
+    can be printed and viewed
+\stopitem
+\stopitemize
+
+So far we're still talking of a rather generic variant of \TEX\ with \LUA\ as
+extension language. Next we zoom in on some details.
+
+\stopsection
+
+\startsection[title=Where it differs]
+
+Given experiences with discussing extensions to the engine and given the fact
+that there is never really an agreement about what makes sense or not, the
+decission was made to not extend the engine any more than really needed but to
+provide hooks to do that in \LUA. And, time has proven that this is a feasible
+approach. On the one hand we are as good as possible faithful to the original,
+and at the same time we can deal with todays and near future demands.
+
+Tokenization still happens as before but we can also write input parsers
+ourselves. You can intercept the raw input when it gets read from file, but you
+can also create scanners that you can sort of plug into the parser. Both are a
+compromise between convenience and speed but powerful enough. At the input end we
+now can group catcode changes (catcodes are properties of characters that control
+how they are interpreted) into tables so that switching between regimes is fast.
+
+You can in great detail influence how data gets read from files because the \IO\
+subsystem is opened up. In fact, you have the full power of \LUA\ available when
+doing so. At the same time you can print back from \LUA\ into the input stream.
+
+The input that makes in into \TEX, either or not intercepted and manipulated
+beforehand, is to be in \UTF8. What comes out to the terminal and log is also
+\UTF8, and internally all codepaths work with wide characters. Some memory
+constraints have been lifted, and character related commands accept large
+numbers. This comes at a price, which means that in practice the \LUATEX\ engine
+can be several times slower than the 8|-|bit \PDFTEX, but of course in practice
+performance is mostly determined by the efficiency of macro package, so it might
+actually be faster in situations that would stress its ancestors.
+
+Node lists travel through \TEX\ and can be intercepted at many points. That way
+you can add additional manipulations. You can for instance rely on \TEX\ for
+hyphenation, ligature building and kerning but you can also plug in alternatives.
+For this purpose these stages are clearly separated and less integrated (deep
+down) than in traditional \TEX. There are helpers for accessing lists of nodes,
+individual nodes and you can box those lists too (this is called packing). You
+can adapt, create and destroy node lists at will, as long as you make sure you
+feed back into \TEX\ something that makes sense.
+
+In order to control (or communicate with) nodes from the \TEX\ end, an attribute
+mechanism was added that makes it possible to bind properties to nodes when they
+get added to lists. At the \TEX\ end you can set an attribute that then gets
+assigned to the currently injected nodes, while at the \LUA\ end you can query
+the node for these attributes and their values.
+
+The language subsystem is re|-|implemented and behaves mostly the same as in the
+original \TEX\ program. It has a few extensions and permits runtime loading of
+patterns. In addition to language support we also have basic script support, that
+is: directional information is now part of the stream and contrary to \ALEPH\
+that wraps this into extension whatsits, in \LUATEX\ we have directional nodes as
+core nodes.
+
+The font subsystem is opened up in such a way that you can pass your own fonts to
+the core. You can even construct virtual fonts. This open approach makes it
+possible to support \OPENTYPE\ fonts and whatever format will show up in the
+future. Of course the backend needs to embed the right data in the result file
+but by then the hard work is already done. This approach fits into the always
+present wish of users (and package writers) to be able to implement whatever
+crazy thought one comes up with.
+
+The paragraph builder is a somewhat cleaned up variant of the \PDFTEX\ one,
+combined with directional and boundary support from \ALEPH. The protrusion and
+expansion mechanism have been redone in such a way that the front- and backend
+code is better separated and is somewhat more efficient now. As one can intercept
+the paragraph builder, additional functionality can be injected before, after or
+at some stages in the process.
+
+Of course we have kept the math engine but, because we now need to support
+\OPENTYPE\ math, alternative code paths have been added to deal with the kind of
+information that such fonts provide. We also took the opportunity to open up the
+math machinery a bit so that one can control rendering of some more complex
+elements and set the spacing between elements. Because \TEX\ users are quite
+traditional we had to stop somewhere, simply because legacy code has to be dealt
+with.
+
+Most mentioned auxiliary mechanisms can be accessed via the node lists, for
+instance you can locate inserts and marks in them. The backend related whatsit
+nodes can be recognized as well. At any time one can query and set \TEX\
+registers and intercept boxed material. Of course some knowledge of the inner
+working of \TEX\ helps here.
+
+The backend code is as much as possible separated from the frontend code (but
+there is still some work to do there). As in \PDFTEX\ you can of course inject
+arbitrary \PDF\ code and make feature rich documents. This flexibility keeps
+\TEX\ current.
+
+\stopsection
+
+\startsection[title=Extras]
+
+Is that all? No, apart from some minor extensions that might help to make
+programming somewhat easier \TEX, there are a few more fundamental additions.
+
+Images and reusable content (boxes) are now part of the core instead of them
+being wrapped into backend specific whatsits, although of course the backend has
+to provide support for it. This is more natural in the frontend (and user
+interface) and also more consistent in the engine itself. All backend
+functionality is now collected in three primitives that take arguments. This
+permits a cleaner separation between front- and backend.
+
+Then there is the \METAPOST\ library, a feature already present for many years
+now. It provides \TEX\ with some graphic capabilities that, given the origin,
+fits nicely into the whole. The \LUATEX\ and \MPLIB\ project started about the
+same time and right from the start it was our plan to combine both.
+
+One of the extras is of course \LUA. It not only permits us to interface to the
+internals of \TEX, but it also provides the user with a way to manipulate data.
+Even if you never use \LUA\ to access internals, it might still be found useful
+for occasionally doing things that are hard to accomplish using the macro
+langage.
+
+In addition to stock \LUA\ we include the \LPEG\ library, an image reading
+library (related to the backend) including read access to \PDF\ files via the
+used poppler library, parsing of \PDF\ content streams, zip compression, access
+to the file system, the ability to run commands and socket support. Some of this
+might become external libraries at some point, as we want to keep the expected
+core functionality lean and mean. A nice extra is that we provide \LUAJITTEX, a
+compatible variant that has a faster \LUA\ virtual machine on board.
+
+\stopsection
+
+\startsection[title=Follow up]
+
+The interfaces that we have now have to a large extent evolved to what we had in
+mind. We started with simple experiments: just \LUA\ plus a bit of access to
+registers. Then the Oriental \TEX\ project (with Idris Samawi Hamid) made it
+possible to speed up development and conversion to \CCODE\ and opening up took
+off. After that we gradually moved forward.
+
+That doesn't mean that we're done yet. The \LUATEX\ 1.0 engine will not change
+much. We might add a few things, and for sure we will keep working on the code
+base. The move from \PASCAL\ to \CCODE\ \WEB\ (an impressive job by itself), as
+well as merging functionality of engines (kind of a challenge when you want to
+remain compatible), opening up via \LUA\ (which possibilities even surprised us),
+and experimenting (\CONTEXT\ users paid the price for that) took quite some time,
+also because we played with proofs of concept. It helped that we used the engine
+exclusively for real typesetting related work ourselves.
+
+We will continue to clean up and document the source and stepwise improve the
+manual. If you followed the development of \CONTEXT, you will have noticed that
+\MKIV\ is heavily relying on the \LUA\ interface so stability is important
+(although we can relatively easy adapt to future developments as we did in the
+past). However, the fact that other packages support \LUATEX\ means that we also
+need to keep the 1.0 engine stable. Our challenge is to provide stability on the
+one hand, but not limit ourselves to much on the other. We'll keep you posted on
+what comes next.
+
+\blank
+
+Hans, Hartmut, Luigi, Taco
+
+\stopsection
+
+\stopchapter
+
+\stoptext
