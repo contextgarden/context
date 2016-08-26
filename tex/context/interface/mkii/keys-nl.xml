@@ -172,6 +172,7 @@
 		<cd:variable name='down' value='omlaag'/>
 		<cd:variable name='each' value='elk'/>
 		<cd:variable name='edge' value='rand'/>
+		<cd:variable name='effective' value='effectief'/>
 		<cd:variable name='eight' value='acht'/>
 		<cd:variable name='embed' value='sluitin'/>
 		<cd:variable name='empty' value='leeg'/>

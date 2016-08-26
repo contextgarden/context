@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['x-flow'] = {
 
 -- when we can resolve mpcolor at the lua end we will use metapost.graphic(....) directly
 
+local tonumber = tonumber
+
 moduledata.steps = moduledata.steps or { }
 
 local context    = context

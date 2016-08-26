@@ -168,12 +168,12 @@ enddef ;
 
 vardef drawpredefinedshape (expr t, p, lw, lc, fc) =
     save pp ;
-    if t>1 : % normal shape
+    if t > 1 : % normal shape
         path pp ;
         pp := some_shape_path(t) xyscaled(bbwidth(p), bbheight(p)) shifted center p ;
         fill pp withcolor fc ;
         draw pp withpen pencircle scaled lw withcolor lc ;
-    elseif t=1 : % background only
+    elseif t = 1 : % background only
         path pp ;
         pp := fullsquare xyscaled(bbwidth(p), bbheight(p)) shifted center p ;
         fill pp withcolor fc ;

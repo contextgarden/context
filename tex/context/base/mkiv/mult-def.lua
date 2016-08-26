@@ -13175,6 +13175,10 @@ return {
    ["pe"]="لبه",
    ["ro"]="bordura",
   },
+  ["effective"]={
+   ["en"]="effective",
+   ["nl"]="effectief",
+  },
   ["embed"]={
    ["en"]="embed",
    ["nl"]="sluitin",

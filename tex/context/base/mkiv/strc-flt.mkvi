@@ -744,7 +744,7 @@
      \global\setfalse\c_strc_floats_par_float
    \else
      \doifelsecommon\floatlocation\flushfloatslist
-       {\global\settrue \c_strc_floats_par_float}
+       {\global\settrue \c_strc_floats_par_float}%
        {\global\setfalse\c_strc_floats_par_float}%
    \fi
    \global\d_page_sides_shift      \zeropoint
@@ -779,21 +779,26 @@
      \global\advance\d_page_sides_bottomskip\floatparameter\c!bottomoffset
    \else
      \processallactionsinset
-       [\floatlocation]
+       [\floatlocation]%
        [ 90=>\global\c_strc_floats_rotation\commalistelement\relax,%
         180=>\global\c_strc_floats_rotation\commalistelement\relax,%
         270=>\global\c_strc_floats_rotation\commalistelement\relax]%
    \fi
    \doifelseinset\v!nonumber\floatlocation
-     {\global\nofloatnumbertrue}
+     {\global\nofloatnumbertrue}%
      {\doifelse{\floatcaptionparameter\c!number}\v!yes
-        {\global\nofloatnumberfalse}
+        {\global\nofloatnumberfalse}%
         {\global\nofloatnumbertrue}}%
    \doifelseinset\v!none\floatlocation
-     {\global\nofloatcaptiontrue}
+     {\global\nofloatcaptiontrue}%
      {\global\nofloatcaptionfalse}%
    \doif{\floatcaptionparameter\c!number}\v!none % new
      {\global\nofloatcaptiontrue}%
+   \doifinset\v!effective\floatlocation
+     {\letfloatparameter       \c!leftmargin \effectiveleftskip
+      \letfloatparameter       \c!rightmargin\effectiverightskip
+      \letfloatcaptionparameter\c!leftmargin \effectiveleftskip
+      \letfloatcaptionparameter\c!rightmargin\effectiverightskip}%
    \ifemptyfloatcaption \ifnofloatnumber
      \global\nofloatcaptiontrue
    \fi \fi}
@@ -1309,20 +1314,66 @@
 
 % minwidth=fit,width=max : no overshoot, as wide as graphic
 
+% keep these as reference:
+%
+% \def\strc_floats_align_content_indeed
+%   {\alignstrutmode\zerocount
+%    \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
+%      {\shiftalignedline
+%         {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
+%         {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}}%
+%    \alignedline{\floatparameter\c!location}\v!middle}
+%
+% \def\strc_floats_align_caption_indeed
+%   {\alignstrutmode\zerocount
+%    \shiftalignedline
+%      {\floatcaptionparameter\c!leftmargin }{\floatcaptionparameter\c!rightmargin}%
+%      {\floatcaptionparameter\c!innermargin}{\floatcaptionparameter\c!outermargin}%
+%    \alignedline{\floatparameter\c!location}\v!middle}
+%
+% Test case:
+%
+% \setupfloats[location=left]
+% \setupfloatcaption[width=max]
+%
+% \startfloatcombination
+%     \placefigure{}{}
+%     \placefigure{}{}
+% \stopfloatcombination
+
+%D In a floatcombination we ignore the margins .. if that is ever needed we need another
+%D state (instead of local).
+
+\def\strc_floats_align_indeed
+  {\alignedline{\floatparameter\c!location}\v!middle}
+
+\def\strc_floats_shift_indeed#1%
+  {\shiftalignedline{#1\c!leftmargin}{#1\c!rightmargin}{#1\c!innermargin}{#1\c!outermargin}}
+
 \def\strc_floats_align_content_indeed
   {\alignstrutmode\zerocount
-   \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
-     {\shiftalignedline
-        {\floatparameter\c!leftmargin }{\floatparameter\c!rightmargin}%
-        {\floatparameter\c!innermargin}{\floatparameter\c!outermargin}}%
-   \alignedline{\floatparameter\c!location}\v!middle}
+   \ifx\forcedfloatmethod\v!local \else
+     \doifnotcommon{\floatcaptionparameter\c!location}{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
+       {\strc_floats_shift_indeed\floatparameter}%
+     \expandafter\strc_floats_align_indeed
+   \fi}
 
 \def\strc_floats_align_caption_indeed
   {\alignstrutmode\zerocount
-   \shiftalignedline
-     {\floatcaptionparameter\c!leftmargin }{\floatcaptionparameter\c!rightmargin}%
-     {\floatcaptionparameter\c!innermargin}{\floatcaptionparameter\c!outermargin}%
-   \alignedline{\floatparameter\c!location}\v!middle}
+   \ifx\forcedfloatmethod\v!local
+     \expandafter\strc_floats_align_indeed_local
+   \else
+     \strc_floats_shift_indeed\floatcaptionparameter
+     \expandafter\strc_floats_align_indeed
+   \fi}
+
+% \def\strc_floats_align_indeed_local#1%
+%   {\begingroup
+%    \hsize\wd\floatbox
+%    \strc_floats_align_indeed{#1}%
+%    \endgroup}
+
+\let\strc_floats_align_indeed_local\firstofoneargument
 
 \newdimen\d_strc_floats_content
 \newdimen\d_strc_float_temp_height
@@ -1896,7 +1947,7 @@
 %     test \placefigure{}                 {\externalfigure[cow.pdf][frame=on,grid=depth]} test \page
 %     test \placefigure{\input zapf\relax}{\externalfigure[cow.pdf][frame=on,grid=depth]} test \page
 % \stoptext
-
+
 % This might move to page-flt:
 
 \newif\ifpostponecolumnfloats \postponecolumnfloatsfalse % don't change
@@ -1979,11 +2030,12 @@
 
 \def\strc_floats_prepare_side_caption_fit % or center when smaller
   {\ifdim\wd\b_strc_floats_caption>\wd\b_strc_floats_content\relax
-     \setbox\b_strc_floats_caption\vbox
+    \setbox\b_strc_floats_caption\vbox
        {\forgetall % needed?
         \hsize\wd\b_strc_floats_content
         \strc_floats_make_complete_caption}%
    \else
+     % maybe we should listen to the align option here (now side floats need the max option
      \setbox\b_strc_floats_caption\hpack to \wd\b_strc_floats_content
        {\hss\hbox{\strc_floats_make_complete_caption}\hss}%
    \fi}
@@ -2097,7 +2149,7 @@
 \let\floatlabel       \empty % set by lua
 \let\floatcolumn      \empty % set by lua
 \let\floatrow         \empty % set by lua
-\let\forcedfloatmethod\empty % set by lua
+\let\forcedfloatmethod\empty % set by lua and floatcombinations
 
 \def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
   {\clf_analysefloatmethod{#1}}

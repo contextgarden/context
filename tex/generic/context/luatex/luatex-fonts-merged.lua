@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/25/16 14:14:14
+-- merge date  : 08/26/16 15:35:38
 
 do -- begin closure to overcome local limits and interference
 
@@ -11177,6 +11177,7 @@ local bittest=bit32.btest
 local rshift=bit32.rshift
 local concat=table.concat
 local lower=string.lower
+local copy=table.copy
 local sub=string.sub
 local strip=string.strip
 local tohash=table.tohash
@@ -12610,7 +12611,7 @@ do
                           markclass=d.markclass or nil,
                           flags=d.flags,
                         }
-                        sublookuplist[nofsublookups]=h
+                        sublookuplist[nofsublookups]=copy(h) 
                         sublookuphash[lookupid]=nofsublookups
                         sublookupcheck[lookupid]=1
                       else

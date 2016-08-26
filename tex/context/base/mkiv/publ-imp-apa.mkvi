@@ -35,7 +35,11 @@
    \c!specification=apa,
    \c!otherstext={\btxspace\btxlabeltext{others}},
    %c!journalconversion=\v!normal,
-   \c!monthconversion=\v!month]
+   \c!monthconversion=\v!month,
+   \c!stopper:initials={. }, % with a (breakable) space
+   \c!separator:names:2={\btxcomma}, % aka namesep - in this namespace
+   \c!separator:names:3={\btxcomma\btxnobreakspace\textampersand\space}, % comma separated list
+   \c!separator:names:4={\btxnobreakspace\textampersand\space}] % last of two, no comma!
 
 % First, define list and rendering parameters
 
@@ -61,10 +65,7 @@
    \c!etallimit=7,
    \c!etaldisplay=6,
    \c!etaloption=last,
-   \c!authorconversion=invertedshort,
-   \c!separator:names:2={\btxcomma}, % aka namesep - in this namespace
-   \c!separator:names:3={\btxcomma\btxnobreakspace\textampersand\space}, % comma separated list
-   \c!separator:names:4={\btxnobreakspace\textampersand\space}] % last of two, no comma!
+   \c!authorconversion=invertedshort]
 
 % First, we define a namespace for a few special fields
 
@@ -280,7 +281,6 @@
    \c!authorconversion=\v!name,
    \c!sorttype=normal,
    \c!compress=\v!yes, % note that cite sorts only work with compress=yes.
-   \c!separator:names:2={\btxcomma},
    \c!separator:names:3={\btxcomma\btxlabeltext{and}\space}, % not \textampersand
    \c!separator:names:4={\btxspace\btxlabeltext{and}\space}] % not \textampersand
 
@@ -319,8 +319,8 @@
   [\c!left={(},
    \c!right={)},
    \c!inbetween={\btxcomma},
-   \c!separator:names:3={\btxcomma\texampersand\space},
-   \c!separator:names:4={\btxspace\texampersand\space}]
+   \c!separator:names:3={\btxcomma\textampersand\space},
+   \c!separator:names:4={\btxspace\textampersand\space}]
 
 \definebtx
   [apa:\s!cite:default]
@@ -329,7 +329,7 @@
 \definebtx
   [apa:\s!cite:authoryears]
   [apa:\s!cite:author]
-  [\c!left=,
+  [\c!left=, % these two settings are perhaps redundant?
    \c!right=,
    \c!inbetween={\btxspace}]
 
@@ -337,7 +337,9 @@
   [apa:\s!cite:authornum]
   [apa:\s!cite:author]
   [\c!left={(},
-   \c!right={)}]
+   \c!right={)},
+   \c!separator:names:3={\btxcomma\textampersand\space},
+   \c!separator:names:4={\btxspace\textampersand\space}]
 
 \definebtx
   [apa:\s!cite:author:num] % todo

@@ -199,7 +199,7 @@
      \STEPchartparameter\c!before
      \startbaselinecorrection
        \setlocalhsize
-       \makeSTEPchart[#name]%
+       \dontleavehmode\vpack{\makeSTEPchart[#name]}% we need to ensure leftskip
      \stopbaselinecorrection
      \STEPchartparameter\c!after
    \fi
