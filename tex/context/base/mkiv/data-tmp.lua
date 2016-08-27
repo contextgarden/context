@@ -256,22 +256,22 @@ caches.getwritablepath  = getwritablepath
 -- use e.g. a home path where we have updated file databases and so maybe we need
 -- to check first if we do have a writable one
 
-function caches.getfirstreadablefile(filename,...)
-    local rd = getreadablepaths(...)
-    for i=1,#rd do
-        local path = rd[i]
-        local fullname = file.join(path,filename)
-        if is_readable(fullname) then
-            usedreadables[i] = true
-            return fullname, path
-        end
-    end
-    return caches.setfirstwritablefile(filename,...)
-end
+-- function caches.getfirstreadablefile(filename,...)
+--     local rd = getreadablepaths(...)
+--     for i=1,#rd do
+--         local path = rd[i]
+--         local fullname = file.join(path,filename)
+--         if is_readable(fullname) then
+--             usedreadables[i] = true
+--             return fullname, path
+--         end
+--     end
+--     return caches.setfirstwritablefile(filename,...)
+-- end
 
 -- next time we have an issue, we can test this instead:
 
-function caches.getfirstreadablefile_TEST_ME_FIRST(filename,...)
+function caches.getfirstreadablefile(filename,...)
     -- check if we have already written once
     local fullname, path = caches.setfirstwritablefile(filename,...)
     if is_readable(fullname) then
@@ -297,7 +297,7 @@ function caches.setfirstwritablefile(filename,...)
     return fullname, wr
 end
 
-function caches.define(category,subcategory) -- for old times sake
+function caches.define(category,subcategory) -- not used
     return function()
         return getwritablepath(category,subcategory)
     end
@@ -307,19 +307,31 @@ function caches.setluanames(path,name)
     return format("%s/%s.%s",path,name,luasuffixes.tma), format("%s/%s.%s",path,name,luasuffixes.tmc)
 end
 
-function caches.loaddata(readables,name)
+-- This works best if the first writable is the first readable too. In practice
+-- we can have these situations for file databases:
+--
+-- tma in readable
+-- tma + tmb/c in readable
+--
+-- runtime files like fonts are written to the writable cache anyway
+
+function caches.loaddata(readables,name,writable)
     if type(readables) == "string" then
         readables = { readables }
     end
     for i=1,#readables do
-        local path = readables[i]
-        local tmaname, tmcname = caches.setluanames(path,name)
+        local path   = readables[i]
         local loader = false
+        local tmaname, tmcname = caches.setluanames(path,name)
         if isfile(tmcname) then
             loader = loadfile(tmcname)
         end
         if not loader and isfile(tmaname) then
-            -- in case we have a different engine
+            -- can be different paths when we read a file database from disk
+            local tmacrap, tmcname = caches.setluanames(writable,name)
+            if isfile(tmcname) then
+                loader = loadfile(tmcname)
+            end
             utilities.lua.compile(tmaname,tmcname)
             if isfile(tmcname) then
                 loader = loadfile(tmcname)

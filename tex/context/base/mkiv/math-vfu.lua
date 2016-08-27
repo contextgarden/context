@@ -1083,6 +1083,7 @@ function vfmath.define(specification,set,goodies)
         report_virtual("loading and virtualizing font %a at size %p took %0.3f seconds",name,size,os.clock()-start)
     end
     --
+    main.oldmath = true
     return main
 end
 

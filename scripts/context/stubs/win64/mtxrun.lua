@@ -14949,7 +14949,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 16066, stripped down to: 11938
+-- original size: 16548, stripped down to: 11737
 
 if not modules then modules={} end modules ['data-tmp']={
   version=1.100,
@@ -15153,18 +15153,6 @@ end
 caches.getreadablepaths=getreadablepaths
 caches.getwritablepath=getwritablepath
 function caches.getfirstreadablefile(filename,...)
-  local rd=getreadablepaths(...)
-  for i=1,#rd do
-    local path=rd[i]
-    local fullname=file.join(path,filename)
-    if is_readable(fullname) then
-      usedreadables[i]=true
-      return fullname,path
-    end
-  end
-  return caches.setfirstwritablefile(filename,...)
-end
-function caches.getfirstreadablefile_TEST_ME_FIRST(filename,...)
   local fullname,path=caches.setfirstwritablefile(filename,...)
   if is_readable(fullname) then
     return fullname,path 
@@ -15193,18 +15181,22 @@ end
 function caches.setluanames(path,name)
   return format("%s/%s.%s",path,name,luasuffixes.tma),format("%s/%s.%s",path,name,luasuffixes.tmc)
 end
-function caches.loaddata(readables,name)
+function caches.loaddata(readables,name,writable)
   if type(readables)=="string" then
     readables={ readables }
   end
   for i=1,#readables do
     local path=readables[i]
-    local tmaname,tmcname=caches.setluanames(path,name)
     local loader=false
+    local tmaname,tmcname=caches.setluanames(path,name)
     if isfile(tmcname) then
       loader=loadfile(tmcname)
     end
     if not loader and isfile(tmaname) then
+      local tmacrap,tmcname=caches.setluanames(writable,name)
+      if isfile(tmcname) then
+        loader=loadfile(tmcname)
+      end
       utilities.lua.compile(tmaname,tmcname)
       if isfile(tmcname) then
         loader=loadfile(tmcname)
@@ -17281,7 +17273,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-con"] = package.loaded["data-con"] or true
 
--- original size: 5148, stripped down to: 3680
+-- original size: 5167, stripped down to: 3699
 
 if not modules then modules={} end modules ['data-con']={
   version=1.100,
@@ -17351,7 +17343,7 @@ function containers.read(container,name)
   local storage=container.storage
   local stored=storage[name]
   if not stored and container.enabled and caches and containers.usecache then
-    stored=caches.loaddata(container.readables,name)
+    stored=caches.loaddata(container.readables,name,container.writable)
     if stored and stored.cache_version==container.version then
       if trace_cache or trace_containers then
         report_containers("action %a, category %a, name %a","load",container.subcategory,name)
@@ -18845,8 +18837,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 801097
--- stripped bytes    : 290685
+-- original bytes    : 801598
+-- stripped bytes    : 291368
 
 -- end library merge
 

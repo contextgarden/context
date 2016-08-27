@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/26/16 15:35:38
+-- merge date  : 08/27/16 13:35:36
 
 do -- begin closure to overcome local limits and interference
 
@@ -4481,44 +4481,41 @@ function caches.is_writable(path,name)
   local fullname=makefullname(path,name)
   return fullname and file.is_writable(fullname)
 end
-function caches.loaddata(paths,name)
-  for i=1,#paths do
-    local data=false
-    local luaname,lucname=makefullname(paths[i],name)
-    if lucname and not lfs.isfile(lucname) and type(caches.compile)=="function" then
-      texio.write(string.format("(compiling luc: %s)",lucname))
-      data=loadfile(luaname)
-      if data then
-        data=data()
-      end
-      if data then
-        caches.compile(data,luaname,lucname)
-        return data
-      end
+function caches.loaddata(readables,name,writable)
+  for i=1,#readables do
+    local path=readables[i]
+    local loader=false
+    local luaname,lucname=makefullname(path,name)
+    if lfs.isfile(lucname) then
+      loader=loadfile(lucname)
     end
-    if lucname and lfs.isfile(lucname) then 
-      texio.write(string.format("(load luc: %s)",lucname))
-      data=loadfile(lucname)
-      if data then
-        data=data()
+    if not loader and lfs.isfile(luaname) then
+      local luacrap,lucname=makefullname(writable,name)
+      texio.write(string.format("(compiling luc: %s)",lucname))
+      if lfs.isfile(lucname) then
+        loader=loadfile(lucname)
       end
-      if data then
-        return data
+      caches.compile(data,luaname,lucname)
+      if lfs.isfile(lucname) then
+        texio.write(string.format("(load luc: %s)",lucname))
+        loader=loadfile(lucname)
       else
         texio.write(string.format("(loading failed: %s)",lucname))
       end
+      if not loader then
+        texio.write(string.format("(load lua: %s)",luaname))
+        loader=loadfile(luaname)
+      else
+        texio.write(string.format("(loading failed: %s)",luaname))
+      end
     end
-    if luaname and lfs.isfile(luaname) then
-      texio.write(string.format("(load lua: %s)",luaname))
-      data=loadfile(luaname)
-      if data then
-        data=data()
-      end
-      if data then
-        return data
-      end
+    if loader then
+      loader=loader()
+      collectgarbage("step")
+      return loader
     end
   end
+  return false
 end
 function caches.savedata(path,name,data)
   local luaname,lucname=makefullname(path,name)
@@ -4645,7 +4642,7 @@ function containers.read(container,name)
   local storage=container.storage
   local stored=storage[name]
   if not stored and container.enabled and caches and containers.usecache then
-    stored=caches.loaddata(container.readables,name)
+    stored=caches.loaddata(container.readables,name,container.writable)
     if stored and stored.cache_version==container.version then
       if trace_cache or trace_containers then
         report_containers("action %a, category %a, name %a","load",container.subcategory,name)
