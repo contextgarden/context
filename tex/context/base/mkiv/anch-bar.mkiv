@@ -98,10 +98,10 @@
      {\def\currentsidebar{#1}%
       \setupcurrentsidebar[#2]}%
    \scratchdistance\sidebarparameter\c!distance\relax
+   \scratchdimen\sidebarparameter\c!leftmargindistance\relax
    \edef\m_level{\sidebarparameter\c!level}%
    \ifx\m_level\empty
      \ifnum\c_anch_sidebars_level=\plusone
-       \scratchdimen\sidebarparameter\c!leftmargindistance\relax
        \ifdim\scratchdimen=\zeropoint
          \advance\d_anch_sidebars_distance\scratchdistance\relax
        \else
@@ -112,7 +112,6 @@
      \fi
    \else
      \ifnum\m_level=\plusone
-       \scratchdimen\sidebarparameter\c!leftmargindistance\relax
        \ifdim\scratchdimen=\zeropoint
          \advance\d_anch_sidebars_distance\scratchdistance\relax
        \else

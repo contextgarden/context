@@ -1,4 +1,5 @@
-local gm = swiglib("gmwand.core")
+local gm = require("swiglib.gmwand.core")
+-- local gm = swiglib("gmwand.core")
 
 gm.InitializeMagick(".")
 

@@ -444,7 +444,7 @@ function counters.restore(name)
     local saved = cd.saved
     if not saved then
         -- is ok
-    elseif #saved > 1 then
+    elseif #saved > 0 then
         cd.data = remove(saved)
     else
         report_counters("restore without save for counter %a",name)

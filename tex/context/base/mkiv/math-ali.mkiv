@@ -156,8 +156,8 @@
         \tabskip\centering
         \aligntab
         \span
-        \rlap{\math_text_in_eqalign{\alignmark\alignmark}}%
-      % \math_text_in_eqalign{\alignmark\alignmark}%
+      % \rlap{\math_text_in_eqalign{\alignmark\alignmark}}%
+        \math_text_in_eqalign{\alignmark\alignmark}%
         \tabskip\zeropoint}%
    \fi\fi
    \global\mathnumberstatus\zerocount
@@ -218,14 +218,8 @@
    \the\mathdisplayaligntweaks
    \tabskip\centering}
 
-
 \def\math_halign_checked
-   {\halign
-       \ifnum\c_strc_formulas_mode=\plustwo
-         % currently there is no need for width juggling
-       \else
-          \ifcase\eqalignmode \or to \checkeddisplaywidth \fi
-       \fi}
+   {\halign \ifcase\eqalignmode \or to \checkeddisplaywidth \fi}
 
 \def\math_both_eqalign_no_normal#1#2%
   {\ifmmode

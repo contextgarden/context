@@ -2093,16 +2093,53 @@
 
 % if needed we can get rid of the normalize (predo in font code)
 
-\def\math_text_choice_font#1%
+% \def\math_text_choice_font#1#2#%
+%   {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+%    \hbox#2\bgroup
+%    \font_basics_switchtobodyfont\m_math_text_choice_face
+%    #1%
+%    \let\next}
+
+% \def\math_text_choice_word#1#2#%
+%   {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
+%    \hbox#2\bgroup
+%    \font_basics_switchtobodyfont\m_math_text_choice_face
+%    #1%
+%    \nospacing % \normalnospaces\plusone
+%    \let\next}
+
+%D We accept a low level box specification so that one can make helpers:
+%D
+%D \startbuffer
+%D \startformula
+%D     \startalign[m=2,align={middle}]
+%D         \NC \text to 6cm{One\hfill}           \NC a = 1 \NR
+%D         \NC \text to 6cm{One Two\hfill}       \NC b = 2 \NR
+%D         \NC \text to 6cm{One Two Three\hfill} \NC c = 3 \NR
+%D     \stopalign
+%D \stopformula
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\def\math_text_choice_font#1#2#%
   {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
-   \hbox\bgroup
+   \hbox#2\bgroup
+   \bgroup
+   \aftergroup\hss
+   \aftergroup\egroup
+   \hss
    \font_basics_switchtobodyfont\m_math_text_choice_face
    #1%
    \let\next}
 
-\def\math_text_choice_word#1%
+\def\math_text_choice_word#1#2#%
   {\normalizebodyfontsize\m_math_text_choice_face{\mathstyleface\normalmathstyle}%
-   \hbox\bgroup
+   \hbox#2\bgroup
+   \bgroup
+   \aftergroup\hss
+   \aftergroup\egroup
+   \hss
    \font_basics_switchtobodyfont\m_math_text_choice_face
    #1%
    \nospacing % \normalnospaces\plusone

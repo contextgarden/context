@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/27/16 13:35:36
+-- merge date  : 08/29/16 22:53:15
 
 do -- begin closure to overcome local limits and interference
 
@@ -4487,6 +4487,7 @@ function caches.loaddata(readables,name,writable)
     local loader=false
     local luaname,lucname=makefullname(path,name)
     if lfs.isfile(lucname) then
+      texio.write(string.format("(load luc: %s)",lucname))
       loader=loadfile(lucname)
     end
     if not loader and lfs.isfile(luaname) then

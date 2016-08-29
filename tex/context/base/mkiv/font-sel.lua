@@ -1,5 +1,5 @@
 if not modules then modules = { } end modules ['font-sel'] = {
-    version   = 1.000,
+    version   = 1.001,
     comment   = "companion to font-sel.mkvi",
     author    = "Wolfgang Schuster",
     copyright = "Wolfgang Schuster",
@@ -17,38 +17,38 @@ local splitat, lpegmatch         = lpeg.splitat, lpeg.match
 local formatters                 = string.formatters
 local settings_to_array          = utilities.parsers.settings_to_array
 local settings_to_hash           = utilities.parsers.settings_to_hash
+local allocate                   = utilities.storage.allocate
                                  
 local v_default                  = interfaces.variables.default
                                  
 local implement                  = interfaces.implement
-                                 
-local selectfont                 = fonts.select or { }
-fonts.select                     = selectfont
-                                 
-local data                       = selectfont.data or { }
-selectfont.data                  = data
-                                 
-local fallbacks                  = selectfont.fallbacks or { }
-selectfont.fallbacks             = fallbacks
-                                 
-local methods                    = selectfont.methods or { }
-selectfont.methods               = methods
-                                 
-local extras                     = selectfont.extras or { }
-selectfont.extras                = extras
-                                 
-local alternatives               = selectfont.alternatives or { }
-selectfont.alternatives          = alternatives
-                                 
-local presets                    = selectfont.presets or { }
-selectfont.presets               = presets
-                                 
-local defaults                   = selectfont.defaults or { }
-selectfont.defaults              = defaults
+
+local fonts                      = fonts
 
 local getlookups                 = fonts.names.getlookups
 local registerdesignsizes        = fonts.goodies.designsizes.register
 local bodyfontsizes              = storage.shared.bodyfontsizes
+
+fonts.select                     = fonts.select or { }
+local selectfont                 = fonts.select
+
+selectfont.data                  = selectfont.data         or allocate()
+selectfont.fallbacks             = selectfont.fallbacks    or allocate()
+selectfont.methods               = selectfont.methods      or allocate()
+selectfont.extras                = selectfont.extras       or allocate()
+selectfont.alternatives          = selectfont.alternatives or allocate()
+selectfont.presets               = selectfont.presets      or allocate()
+selectfont.defaults              = selectfont.defaults     or allocate()
+
+storage.register("fonts/select/presets", selectfont.presets, "fonts.select.presets")
+
+local data                       = selectfont.data
+local fallbacks                  = selectfont.fallbacks
+local methods                    = selectfont.methods
+local extras                     = selectfont.extras
+local alternatives               = selectfont.alternatives
+local presets                    = selectfont.presets
+local defaults                   = selectfont.defaults
                                  
 local ctx_definefontsynonym      = context.definefontsynonym
 local ctx_resetfontfallback      = context.resetfontfallback

@@ -1187,7 +1187,7 @@
    \global\let\m_tabl_ntb_same_page   \empty}
 
 \def\tabl_ntb_prelocate_error
-  {\writestatus\m!system{fatal error: use \string\prelocateTBLrows\space to increase table memory (now: \the\c_tabl_prelocated_rows)}}
+  {\writestatus\m!TABLE{fatal error: use \string\prelocateTBLrows\space to increase table memory (now: \the\c_tabl_prelocated_rows)}}
 
 % \prelocateTBLrows{1000} % may speed up large tables
 
@@ -1479,6 +1479,20 @@
 
 \let\tabl_ntb_preroll\relax
 
+\def\tabl_ntb_table_get_max_width#1#2%
+  {#1\wd#2\relax}
+
+% first needs testing (in projects):
+%
+% \def\tabl_ntb_table_get_max_width#1#2%
+%   {#1\zeropoint
+%    \dorecurse\c_tabl_ntb_maximum_col
+%      {\advance#1\tabl_ntb_get_wid\recurselevel
+%       \advance#1\tabl_ntb_get_dis\recurselevel}%
+%    \ifdim#1<\wd#2\relax
+%      #1\wd#2\relax
+%    \fi}
+
 \def\tabl_ntb_table_stop
   {\forgetall % new, here see narrower-004.tex
   %\setbox\scratchbox\hbox
@@ -1501,11 +1515,12 @@
    \dorecurse\c_tabl_ntb_maximum_row
      {\tabl_ntb_let_hei\recurselevel\maxdimen}%
    \tabl_ntb_let_gal\zerocount
-\tabl_ntb_preroll\relax
+   \tabl_ntb_preroll\relax
    \c_tabl_tbl_pass\plusone
    \let\tabl_ntb_pass\tabl_ntb_pass_one
    \let\tabl_ntb_cell_process\tabl_ntb_cell_process_a
    \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
+   \writestatus\m!TABLE{!!\the\wd\scratchbox}%
    \ifcase\tabl_ntb_get_gal\or
     % \c_tabl_tbl_pass\plusone
     % \let\tabl_ntb_pass\tabl_ntb_pass_one
@@ -1513,6 +1528,9 @@
       \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
    \fi
    \tabl_ntb_let_dis\c_tabl_ntb_maximum_col\zeropoint
+   %
+   \tabl_ntb_table_get_max_width\scratchdimen\scratchbox
+   %
    \ifautoTBLspread
      % experimental, stretch non fixed cells to \hsize
      \tabl_ntb_check_widths_one   % trial run
@@ -1520,7 +1538,8 @@
      \tabl_ntb_stretch_widths
      \let\tabl_ntb_cell_process\tabl_ntb_cell_process_b
      \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
-   \else\ifdim\wd\scratchbox>\hsize
+ % \else\ifdim\wd\scratchbox>\hsize
+   \else\ifdim\scratchdimen>\hsize
      \ifautoTBLhsize
        \tabl_ntb_check_widths_one % trial run
        \tabl_ntb_check_widths_two % real run
@@ -1534,7 +1553,8 @@
        \writestatus\m!TABLE{missing\space\number\numexpr\c_tabl_ntb_maximum_col-\c_tabl_ntb_encountered_max\relax\space column(s), guessing widths}%
      \fi
      \edef\savedhsize{\the\hsize}%
-     \hsize\wd\scratchbox\relax % new per 17/04/2006
+   % \hsize\wd\scratchbox\relax % new per 17/04/2006
+     \hsize\scratchdimen\relax % new per 17/04/2006
      \tabl_ntb_check_widths_one % trial run
      \tabl_ntb_check_widths_two % real run
      \hsize\savedhsize
@@ -1593,9 +1613,10 @@
  % \hbox{\registerparoptions\box\b_tabl_ntb_final}% (*) better here
  % better :
    \ifinsidefloat
-     % nothing, else we get a \hsized box
+     % no \dontleavehmode else too wide, otherwise we get a \hsized box
    \else
-     \registerparoptions % (*) better here
+     \registerparoptions % (*) better here (also does a \dontleavehmode)
+     \ifhmode\else\dontleavehmode\fi
    \fi
    \box\b_tabl_ntb_final
    \afterTABLEbox}
@@ -1652,11 +1673,11 @@
 \let\beforeTABLEbox     \relax
 \let\afterTABLEbox      \relax
 
-\def\tabl_ntb_check_widths_one{\tabl_ntb_check_widths_indeed0} % 0 = trial run
-\def\tabl_ntb_check_widths_two{\tabl_ntb_check_widths_indeed1} % 1 = real run
+\def\tabl_ntb_check_widths_one{\tabl_ntb_check_widths_indeed\zerocount} % 0 = trial run
+\def\tabl_ntb_check_widths_two{\tabl_ntb_check_widths_indeed\plusone  } % 1 = real run
 
 \def\tabl_ntb_check_widths_indeed#1%
-  {\iftraceTABLE\tabl_ntb_show_widths{B#1}\fi
+  {\iftraceTABLE\tabl_ntb_show_widths B#1\fi
    \!!counta\zerocount
    \!!dimena\dimexpr
      \hsize
@@ -1689,6 +1710,7 @@
           \fi
         \fi
       \fi}%
+   \iftraceTABLE\tabl_ntb_show_widths M#1\fi
    \ifcase\!!counta \else \divide\!!dimena \!!counta \fi
    \dorecurse\c_tabl_ntb_maximum_col
      {\scratchdimen\tabl_ntb_get_wid\recurselevel\relax
@@ -1701,7 +1723,7 @@
           \tabl_ntb_set_wid\recurselevel{\the\!!dimena}%
         \fi
       \fi}%
-   \iftraceTABLE\tabl_ntb_show_widths{E#1}\fi}
+   \iftraceTABLE\tabl_ntb_show_widths E#1\fi}
 
 \def\tabl_ntb_check_heights_one_indeed
   {\!!countb\tabl_ntb_get_row\c_tabl_ntb_current_row_three\c_tabl_ntb_current_col_three\relax
@@ -1774,13 +1796,15 @@
 \def\tabl_ntb_check_heights_two
   {}
 
-\def\tabl_ntb_show_widths#1%
-  {\vbox
-     {\forgetall
-      \tttf[#1]%
-      \dorecurse\c_tabl_ntb_maximum_col
-        {\scratchdimen\tabl_ntb_get_wid\recurselevel\relax
-         [\recurselevel:\the\scratchdimen]}}}
+\def\tabl_ntb_show_widths#1#2%
+  {\begingroup
+   \scratchdimen\zeropoint
+   \dorecurse\c_tabl_ntb_maximum_col
+     {\advance\scratchdimen\tabl_ntb_get_wid\recurselevel\relax}%
+   \writestatus\m!TABLE{#1 \ifcase#2trial\else real\fi: hsize: \the\hsize, total: \the\scratchdimen}%
+   \dorecurse\c_tabl_ntb_maximum_col
+     {\writestatus\m!TABLE{\space\space\recurselevel: \the\dimexpr\tabl_ntb_get_wid\recurselevel}}%
+   \endgroup}
 
 % \def\tabl_ntb_char_align
 %   {\doifelse{\naturaltablelocalparameter\c!aligncharacter}\v!yes
