@@ -1096,7 +1096,10 @@
 
 \unexpanded\def\currentbtxciteauthor % always author
   {\begingroup
-   \setbtxparameterset\s!cite\s!author
+   %\setbtxparameterset\s!cite\s!author
+   % the alternatives inherit from cite:author
+   % and APA distinguishes authoryears from authoryear ("and" vs. "&")
+   \setbtxparameterset\s!cite\currentbtxcitealternative
    \clf_btxauthor
         {\currentbtxdataset}%
         {\currentbtxtag}%

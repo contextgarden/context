@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['util-sql-client'] = {
+if not modules then modules = { } end modules ['util-sql-imp-client'] = {
     version   = 1.001,
     comment   = "companion to util-sql.lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -144,7 +144,7 @@ SET NOCOUNT ON;
     ]],
 }
 
-local function dataprepared(specification,client)
+local function dataprepared(specification)
     local query = preparetemplate(specification)
     if query then
         local preamble = t_preamble[getserver()] or t_preamble.mysql
@@ -165,7 +165,7 @@ local function dataprepared(specification,client)
     end
 end
 
-local function datafetched(specification,client)
+local function datafetched(specification)
     local runner  = t_runner[getserver()] or t_runner.mysql
     local command = replacetemplate(runner,specification)
     if trace_sql then
@@ -220,11 +220,11 @@ local function execute(specification)
         report_state("error in specification")
         return
     end
-    if not dataprepared(specification,methods.client) then
+    if not dataprepared(specification) then
         report_state("error in preparation")
         return
     end
-    if not datafetched(specification,methods.client) then
+    if not datafetched(specification) then
         report_state("error in fetching, query: %s",string.collapsespaces(io.loaddata(specification.queryfile)))
         return
     end

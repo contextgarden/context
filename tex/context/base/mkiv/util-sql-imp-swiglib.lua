@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['util-sql-swiglib'] = {
+if not modules then modules = { } end modules ['util-sql-imp-swiglib'] = {
     version   = 1.001,
     comment   = "companion to util-sql.lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

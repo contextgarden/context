@@ -158,3 +158,15 @@ end
 -- luautilities.registerdatatype(lpeg.P("!"),"lpeg")
 --
 -- print(luautilities.datatype(lpeg.P("oeps")))
+
+-- local finalizers = { }
+--
+-- function luautilities.registerfinalizer(f)
+--     finalizers[#finalizers+1] = f
+-- end
+--
+-- function luautilities.finalize()
+--     for i=1,#finalizers do
+--         pcall(finalizers[i])
+--     end
+-- end

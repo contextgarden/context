@@ -160,8 +160,8 @@ enddef ;
 
 % New :
 
-save graph_background ; color graph_background ; % if defined, fill the frame.
-save graph_close_file ; boolean graph_close_file ; graph_close_file = false ;
+color graph_background ; % if defined, fill the frame.
+boolean graph_close_file ; graph_close_file = false ;
 
 def begingraph(expr w, h) =
   begingroup

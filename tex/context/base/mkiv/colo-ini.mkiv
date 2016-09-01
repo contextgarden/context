@@ -484,7 +484,9 @@
 
 \def\colo_palet_prepare#1%
   {\edef\colo_palet_name{#1}%
-   \ifcsname\??paletlist\colo_palet_name\endcsname\else
+   \ifcsname\??paletlist\colo_palet_name\endcsname
+     \csname\??paletsize#1\endcsname\zerocount
+   \else
      \colo_palet_allocate\colo_palet_name
    \fi
    \edef\m_colo_palet{\begincsname\??paletlist\colo_palet_name\endcsname}%

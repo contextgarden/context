@@ -109,13 +109,18 @@ have different demands. It also fits in the spirit of \TEX\ and \LUA\ to minimiz
 the core components.
 
 The technical setup is by Luigi Scarso and documentation about how to build the
-libraries is part of the \SWIGLIB\ repository. Testing happens with help of the
-\CONTEXT\ (garden) infrastructure. This short document only deals with usage in
-\CONTEXT\ but also covers rather plain usage.
+libraries is (will be) part of the \SWIGLIB\ repository. Testing happens with
+help of the \CONTEXT\ (garden) infrastructure. This short document only deals
+with usage in \CONTEXT\ but also covers rather plain usage.
 
-\blank \start \em todo: reference to Luigi's manual \stop \blank
+The set of supported libraries in the \SWIGLIB\ subversion trunk is just a subset
+of what is possible and we don't see it as the responsibility of the \LUATEX\
+team to support all that is around. The subset also serves as an example for
+other libraries. We also don't ship wrappers (other that those used in \CONTEXT)
+as this is delegated to the macro packages.
 
 \stopsection
+
 
 \startsection[title=Inside \CONTEXT]
 
@@ -335,6 +340,172 @@ The \MKIV\ lookups are somewhat more robust in the sense that they first check
 for matches on engine specific paths. This comes in handy when the search
 patterns are too generic and one can match on for instance \type {luajittex}
 while \type {luatex} is used.
+
+\stopsection
+
+\startsection[title=Compiling]
+
+Normally you will take the binaries from the \CONTEXT\ garden but if you ever want
+to compile yourself, it's not that hard to do. For \LINUX\ you need to install the
+compilers:
+
+\starttyping
+apt-get install gcc
+apt-get install g++
+\stoptyping
+
+Then you need to make sure you have a copy of the \LUATEX\ sources (you need to use
+your own paths):
+
+\starttyping
+cd /data
+svn checkout https://foundry.supelec.fr/svn/luatex/trunk luatex-trunk
+\stoptyping
+
+or update with:
+
+\starttyping
+cd /data
+svn update luatex-trunk
+\stoptyping
+
+and then export with:
+
+\starttyping
+cd /data
+svn export --force /data/luatex-trunk /data/luatex-trunk-export
+\stoptyping
+
+We go to the export directory and compile \LUATEX:
+
+\starttyping
+cd /data/luatex-trunk-export
+./build.sh --jit
+\stoptyping
+
+The binaries are already stripped (i.e.\ symbols get removed) which makes them
+much smaller.
+
+% strip -s /data/luatex-trunk-export/build/texk/web2c/luatex
+% strip -s /data/luatex-trunk-export/build/texk/web2c/luajittex
+
+\starttyping
+cp data/luatex/luatex-trunk-export/build/texk/web2c/luatex \
+    /data/context/tex/texmf-linux-64/bin
+cp data/luatex/luatex-trunk-export/build/texk/web2c/luajittex \
+    /data/context/tex/texmf-linux-64/bin
+\stoptyping
+
+The native windows binaries are kept very up|-|to|-|date but you can cross compile
+your own if needed. You need to make sure that the cross compiler is installed.
+
+\starttyping
+apt-get install gcc-mingw-w64-x86-64
+apt-get install g++-mingw-w64-x86-64
+apt-get install binutils-mingw-w64
+\stoptyping
+
+Given that you have exported the sources you can now run:
+
+\starttyping
+./build.sh --jit --mingw64
+\stoptyping
+
+Of course we assume a recent \LINUX\ installation here but on \WINDOWS\ you can
+the \quote {\LINUX\ subsystem for \WINDOWS} too. The files can be found in a dedicated
+build directory:
+
+% strip -s /data/luatex-trunk-export/build-windows64/texk/web2c/luatex.exe
+% strip -s /data/luatex-trunk-export/build-windows64/texk/web2c/luajittex.exe
+
+\starttyping
+cp data/luatex/luatex-trunk-export/build-windows64/texk/web2c/luatex.exe \
+    /data/context/tex/tex-context/tex/texmf-linux-64/bin
+cp data/luatex/luatex-trunk-export/build-windows64/texk/web2c/luajittex.exe \
+    /data/context/tex/tex-context/tex/texmf-linux-64/bin
+\stoptyping
+
+You need to wipe out old traces of binaries, because these can confuse the \type {mtxrun}
+stub that checks for them, so we do:
+
+\starttyping
+rm /data/context/tex/tex-context/tex/texmf-win64/bin/luajittex.dll
+rm /data/context/tex/tex-context/tex/texmf-win64/bin/luatex.dll
+\stoptyping
+
+The libraries are compiled in a similar way. This time we get the sources from another
+repository:
+
+\starttyping
+cd /data
+svn checkout https://foundry.supelec.fr/svn/swiglib/trunk swiglib-trunk
+\stoptyping
+
+or update with:
+
+\starttyping
+cd /data
+svn update swiglib-trunk
+\stoptyping
+
+and then export with:
+
+\starttyping
+cd /data
+svn export --force /data/swiglib-trunk /data/swiglib-trunk-export
+\stoptyping
+
+This time you need to be quite explicit with respect to the libraries you want to
+compile :
+
+\starttyping
+cd /data/swiglib-trunk-export
+./build.sh --library=helpers --version=1.0.3
+\stoptyping
+
+You can save yourself some work with:
+
+\starttyping
+mtxrun --script --svnroot=/data/swiglib-trunk-export --make
+\stoptyping
+
+which will create a shell script \type {swiglib-make.sh} with commands that make
+all available libraries. After running that script you can update your tree
+with:
+
+\starttyping
+mtxrun --script --svnroot=/data/swiglib-trunk-export --update
+\stoptyping
+
+For \WINDOWS\ a similar route is followed but first you need to make sure that
+your binaries are able to deal with shared libraries:
+
+\starttyping
+./build-shared.sh --jit --mingw64 --shared
+\stoptyping
+
+Compiling is done as with \LINUX\ but you need to provide the \type {--mingw64}
+flag. Copying is done with:
+
+\starttyping
+cp /data/luatex/luatex-trunk-export/build-windows64-shared\
+    /texk/web2c/.libs/luatex.exe /data/context/tex/texmf-win64/bin
+cp /data/luatex/luatex-trunk-export/build-windows64-shared\
+    /texk/web2c/.libs/luajittex.exe /data/context/tex/texmf-win64/bin
+
+cp /data/luatex/luatex-trunk-export/build-windows64-shared\
+    /libs/lua*/.libs/texlua*dll /data/context/tex/texmf-win64/bin
+cp /data/luatex/luatex-trunk-export/build-windows64-shared\
+    /libs/luajit/.libs/texluajit*dll /data/context/tex/texmf-win64/bin
+cp /data/luatex/luatex-trunk-export/build-windows64-shared\
+    /texk/kpathsea/.libs/libkpathsea*dll /data/context/tex/texmf-win64/bin
+
+rm /data/context/tex/texmf-win64/bin/luajittex.dll
+rm /data/context/tex/texmf-win64/bin/luatex.dll
+\stoptyping
+
+If you're recompiling \type {--make} can save you some time. If your machine can
+handle it \type {--parallel} can speed up the process.
 
 \stopsection
 

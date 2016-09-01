@@ -93,7 +93,7 @@ least currently) no \TEX\ interface. The examples shown here work in \CONTEXT,
 but you need to keep in mind that \LUA\ scripts can also use this interface.
 
 {\em Although this code is under construction the interfaces are unlikely to
-change, if only because we use it on production.}
+change, if only because we use it in production.}
 
 \stopsection
 
@@ -133,6 +133,15 @@ and then load it as follows:
 
 \starttyping
 local presets = table.load("presets.lua")
+\stoptyping
+
+A \type {sqlite} database has a much simpler preset. The default suffix of the
+file is \type {db}. The other fields are just ignored.
+
+\starttyping
+return {
+    database = "test",
+}
 \stoptyping
 
 If you really want, you can use some library to open a connection, execute a
@@ -232,7 +241,7 @@ local data, keys = utilities.sql.execute {
     presets   = presets,
     template  = template,
     variables = {
-        artist = "Dream Theater",
+        artist = "Porcupine Tree",
     },
 }
 \stoptyping

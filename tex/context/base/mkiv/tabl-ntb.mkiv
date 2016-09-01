@@ -2047,37 +2047,89 @@
       \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}}%
    \hskip\tabl_ntb_get_dis{#2}}
 
-\setupTABLE
-  [\c!frameoffset=.5\linewidth,
-   \c!backgroundoffset=\v!frame,
- % \c!framecolor=\s!black,
-   \c!width=\v!fit,
-   \c!height=\v!fit,
-   \c!autowidth=\v!yes,
-   \c!rulethickness=\linewidth,
-   \c!strut=\v!yes,
-   \c!autostrut=\v!no,
-   %
-   \c!color=,
-   \c!style=,
-   \c!headstyle=\v!bold,
-   \c!headcolor=,
-   \c!aligncharacter=\v!no,
-   \c!alignmentcharacter={,},
-   \c!option=, % \v!stretch
-   \c!header=,
-   \c!spaceinbetween=,
-   \c!maxwidth=8\emwidth,
-   \c!textwidth=\v!local, % was \hsize
-   \c!split=\v!auto,
-   \c!splitoffset=\zeropoint,
-   \c!distance=\zeropoint,           % individual column
-   \c!columndistance=\zeropoint,     % each column (whole table)
-   \c!leftmargindistance=\zeropoint, % whole table
-   \c!rightmargindistance=\zeropoint,% whole table
-   \c!left=,
-   \c!right=,
-   \c!setups=]
+\newtoks\everyresetTABLEyes
+\newtoks\everyresetTABLEnop
+
+\appendtoks
+    \setupTABLE [%
+        %
+        % framed defaults
+        %
+        \c!width=\v!fit,%
+        \c!height=\v!fit,%
+        \c!lines=,%
+        \c!offset=.25\exheight,%
+        \c!empty=\v!no,%
+        \c!frame=\v!on,%
+        \c!topframe=,%
+        \c!bottomframe=,%
+        \c!leftframe=,%
+        \c!rightframe=,%
+        \c!radius=.5\bodyfontsize,%
+        \c!rulethickness=\linewidth,%
+        \c!corner=\v!rectangular,%
+        \c!depth=\zeropoint,%
+        \c!foregroundcolor=,%
+        \c!foregroundstyle=,%
+        \c!background=,%
+        \c!backgroundcolor=,%
+        \c!backgroundoffset=\v!frame,%
+        \c!framecolor=,%
+        \c!frameoffset=.5\linewidth,%
+      % \c!backgroundcorner=\framedparameter\c!corner,%
+      % \c!backgrounddepth=\framedparameter\c!depth,%
+      % \c!backgroundradius=\framedparameter\c!radius,%
+      % \c!framecorner=\framedparameter\c!corner,%
+      % \c!framedepth=\framedparameter\c!depth,%
+      % \c!frameradius=\framedparameter\c!radius,%
+        \c!component=,%
+        \c!region=,%
+        \c!align=,%
+        \c!bottom=\vss,%
+        \c!top=,%
+        \c!strut=\v!yes,%
+        \c!autostrut=\v!no,%
+        \c!location=\v!normal,%
+        \c!orientation=,%
+        \c!autowidth=\v!yes,%
+        \c!setups=,%
+        \c!loffset=\zeropoint,%
+        \c!roffset=\zeropoint,%
+        \c!toffset=\zeropoint,%
+        \c!boffset=\zeropoint,%
+        %
+        % table specific
+        %
+        \c!aligncharacter=\v!no,%
+        \c!alignmentcharacter={,},%
+        \c!color=,%
+        \c!columndistance=\zeropoint,%       each column (whole table)
+        \c!distance=\zeropoint,%             individual column
+        \c!headcolor=,%
+        \c!header=,%
+        \c!headstyle=\v!bold,%
+        \c!left=,%
+        \c!leftmargindistance=\zeropoint,%   whole table
+        \c!maxwidth=8\emwidth,%
+        \c!option=,%                         \v!stretch
+        \c!right=,%
+        \c!rightmargindistance=\zeropoint,%  whole table
+        \c!spaceinbetween=,%
+        \c!split=\v!auto,%
+        \c!splitoffset=\zeropoint,%
+        \c!style=,%
+        \c!textwidth=\v!local,%              was \hsize
+    ]%
+\to \everyresetTABLEyes
+
+\appendtoks
+    \setupTABLE [%
+        \c!width=\v!fit,%
+        \c!height=\v!fit%
+    ]%
+\to \everyresetTABLEnop
+
+\the\everyresetTABLEyes
 
 % \bgroup
 % \setupTABLE[column][1][aligncharacter=yes, alignmentcharacter={,}]
@@ -2098,29 +2150,9 @@
 \def\tabl_ntb_parameters_reset % we can use setters instead
   {\ifnum\m_tabl_tbl_level>\plusone % in ieder geval
      \ifconditional\resetTABLEmode
-       % not ok yet
-       \setupTABLE
-         [\c!frameoffset=.5\linewidth,
-          \c!backgroundoffset=\v!frame,
-        % \c!framecolor=\s!black,
-          \c!width=\v!fit,
-          \c!height=\v!fit,
-          \c!autowidth=\v!yes,
-        % \c!rulethickness=\linewidth,
-          \c!strut=\v!no,
-          \c!strut=\v!yes, % needed for mathml, but ... maybe we need another resetTABLEmode
-          \c!autostrut=\v!no,
-          \c!color=,
-          \c!style=,
-          \c!headstyle=,
-          \c!headcolor=,
-          \c!aligncharacter=\v!no,
-          \c!alignmentcharacter={,},
-          \c!maxwidth=8\emwidth]%
+        \the\everyresetTABLEyes
      \else
-       \setupTABLE
-         [\c!width=\v!fit,
-          \c!height=\v!fit]%
+        \the\everyresetTABLEnop
      \fi
   \fi}
 

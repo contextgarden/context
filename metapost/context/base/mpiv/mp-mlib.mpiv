@@ -1026,6 +1026,8 @@ vardef mfun_do_outline_text_flush (expr kind, n, x, y) (text t) =
         mfun_do_outline_text_r (n, x, y) (t)
     elseif kind = "p" :
         mfun_do_outline_text_p (n, x, y) (t)
+    elseif kind = "u" :
+        mfun_do_outline_text_u (n, x, y) (t)
     else :
         mfun_do_outline_text_n (n, x, y) (t)
     fi ;
@@ -1043,6 +1045,18 @@ vardef mfun_do_outline_text_f (expr n, x, y) (text t) =
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
         if mfun_do_outline_n = n :
             fill   i shifted(x,y) mfun_do_outline_options_f withpen pencircle scaled 0
+        else :
+            nofill i shifted(x,y)
+        fi ;
+    endfor ;
+enddef ;
+
+vardef mfun_do_outline_text_u (expr n, x, y) (text t) =
+    mfun_do_outline_n := 0 ;
+    for i=t :
+        mfun_do_outline_n := mfun_do_outline_n + 1 ;
+        if mfun_do_outline_n = n :
+            fillup i shifted(x,y) mfun_do_outline_options_f
         else :
             nofill i shifted(x,y)
         fi ;
@@ -1154,6 +1168,8 @@ vardef outlinetext@# (expr t) text rest =
                 mfun_do_outline_text_set_d rest ;
             elseif kind = "b" :
                 mfun_do_outline_text_set_b rest ;
+            elseif kind = "u" :
+                mfun_do_outline_text_set_f rest ;
             elseif kind = "r" :
                 mfun_do_outline_text_set_r rest ;
             elseif kind = "p" :
