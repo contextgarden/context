@@ -83,37 +83,6 @@
 
 % use zeroskipplusfill
 
-% \def\math_prepare_r_eqalign_no
-%   {\t_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
-%    \t_math_align_b{\aligntab\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
-%    \ifnum\mathraggedstatus=\plusone
-%      \t_math_align_c{\hfil\aligntab\span\math_text_in_eqalign{\alignmark\alignmark}\tabskip\zeropoint}%
-%    \else\ifnum\mathraggedstatus=\plusthree
-%      \t_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill\aligntab\span\math_text_in_eqalign{\alignmark\alignmark}\tabskip\zeropoint}%
-%    \else
-%      \t_math_align_c{\hfil\tabskip\centering\aligntab\llap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\zeropoint}%
-%    \fi\fi
-%    \global\mathnumberstatus\zerocount
-%    \math_build_eqalign
-%    \the\mathdisplayaligntweaks
-%    \tabskip\centering}
-
-% \def\math_prepare_l_eqalign_no  % \checkeddisplaymath
-%   {\t_math_align_a{\strut\math_first_in_eqalign\hfil\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
-%    \t_math_align_b{\aligntab\math_next_in_eqalign\math_left_of_equalign\span\math_math_in_eqalign{\alignmark\alignmark}\math_right_of_eqalign\tabskip\zeropoint}%
-%    % problem: number is handled after rest and so ends up in the margin
-%    \ifnum\mathraggedstatus=\plusone
-%      \t_math_align_c{\hfil\aligntab\kern-\displaywidth\rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
-%    \else\ifnum\mathraggedstatus=\plusthree
-%      \t_math_align_c{\hfil\tabskip\zeropoint\s!plus 1\s!fill\aligntab\kern-\displaywidth\span\math_rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
-%    \else
-%      \t_math_align_c{\hfil\tabskip\centering\aligntab\kern-\displaywidth\rlap{\span\math_text_in_eqalign{\alignmark\alignmark}}\tabskip\displaywidth}%
-%    \fi\fi
-%    \global\mathnumberstatus\zerocount
-%    \math_build_eqalign
-%    \the\mathdisplayaligntweaks
-%    \tabskip\centering}
-
 \def\math_prepare_r_eqalign_no
   {\t_math_align_a
      {\strut
@@ -156,11 +125,9 @@
         \tabskip\centering
         \aligntab
         \span
-      % \rlap{\math_text_in_eqalign{\alignmark\alignmark}}%
-        \math_text_in_eqalign{\alignmark\alignmark}%
+        \llap{\math_text_in_eqalign{\alignmark\alignmark}}%
         \tabskip\zeropoint}%
    \fi\fi
-   \global\mathnumberstatus\zerocount
    \math_build_eqalign
    \the\mathdisplayaligntweaks
    \tabskip\centering}
@@ -213,7 +180,6 @@
         \rlap{\math_text_in_eqalign{\alignmark\alignmark}}%
         \tabskip\displaywidth}%
    \fi\fi
-   \global\mathnumberstatus\zerocount
    \math_build_eqalign
    \the\mathdisplayaligntweaks
    \tabskip\centering}
@@ -235,15 +201,15 @@
 
 \def\math_both_eqalign_no_aligned#1%
   {\ifmmode
-    \the\mathdisplayaligntweaks
-    \global\mathnumberstatus\plusone
-    \ifcase\mathraggedstatus
+     \the\mathdisplayaligntweaks
+     \global\mathnumberstatus\plusone
+     \ifcase\mathraggedstatus
        \def\math_finish_eqalign_no{\crcr\egroup}%
-    \else
+     \else
        % we're in a mathbox
        \vcenter\bgroup
        \def\math_finish_eqalign_no{\crcr\egroup\egroup}%
-    \fi
+     \fi
    \fi
    #1%
    \math_halign_checked\expandafter\bgroup\the\scratchtoks\crcr}
@@ -274,27 +240,6 @@
 \newcount\c_math_eqalign_column
 
 \newtoks \everymathalignment
-
-% \def\math_alignment_NC_first
-%   {\glet\math_alignment_NC\math_alignment_NC_rest}
-%
-% \def\math_alignment_NR
-%   {\aligntab
-%    \dostoptagged % finish cell
-%    \dodoubleempty\math_alignment_NR_indeed} % use xx from tabulate
-%
-% \def\math_alignment_NR_indeed[#1][#2]%
-%   {\strc_formulas_place_number_nested{#1}{#2}% to be tagged (better an attribute)
-%    \crcr
-%    \dostoptagged % finish row
-%    \noalign{\glet\math_alignment_NC\math_alignment_NC_first}} % noalign used for change state, conditional does not work here
-
-% \def\math_alignment_NC_first#1\NR
-%   {\glet\math_alignment_NC\math_alignment_NC_rest
-%    \dotripleempty\math_alignment_NC_first_indeed[{#1}]}
-
-% \def\math_alignment_NC_first_indeed[#1][#2][#3]%
-%   {\strc_formulas_place_number_nested{#2}{#3}\aligntab#1\NR}
 
 \def\math_alignment_NC_first#1\NR
   {\glet\math_alignment_NC\math_alignment_NC_rest
@@ -355,7 +300,7 @@
    \the\everymathalignment
    \c_math_eqalign_column\zerocount
    \processcommacommand
-     [\mathalignmentparameter\c!align]
+     [\mathalignmentparameter\c!align]%
      {\advance\c_math_eqalign_column\plusone\math_eqalign_set_column}% takes argument
    \global\c_math_eqalign_column\plusone
    \dostarttagged\t!math\empty

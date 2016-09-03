@@ -226,7 +226,6 @@
 \to \everyresetformulas
 
 \newconditional\c_strc_formulas_handle_number
-\newconditional\c_strc_formulas_increment
 \newconditional\c_strc_formulas_inside_place
 \newconditional\c_strc_formulas_inside_place_sub
 \newconditional\c_strc_formulas_inside_formulas
@@ -489,9 +488,6 @@
 \let\math_native_leqno\leqno
 \let\math_native_reqno\reqno
 
-\unexpanded\def\resetdisplaymatheq
-  {\let\strc_formulas_place_number\relax}
-
 \unexpanded\def\normaleqno#1{\writestatus\m!system{no native (l)eqno equation number support}}
 
 \let\normalleqno\normaleqno
@@ -741,7 +737,7 @@
    \d_strc_formulas_display_skip_left   \leftskip
    \d_strc_formulas_display_skip_right  \rightskip
    \d_strc_formulas_display_width       \formulaparameter\c!width\relax
-   \d_strc_formulas_display_margin_left \formulaparameter\c!leftmargin \relax
+   \d_strc_formulas_display_margin_left \formulaparameter\c!leftmargin\relax
    \d_strc_formulas_display_margin_right\formulaparameter\c!rightmargin\relax
    \edef\p_option{\formulaparameter\c!option}%
    \ifsecondargument
@@ -816,65 +812,6 @@
 %D % \noindent $$x$$ % no preceding hlist
 %D \startformula x \stopformula % now has \noindent (in mkii we messed with baselineskip)
 %D \stoptyping
-
-% \unexpanded\def\startdisplaymath
-%   {\bgroup
-%    \par
-%    \informulatrue
-%    \beforedisplayspace
-%    \par
-%    \ifvmode
-%      \prevdepth-\maxdimen % texbook pagina 79-80
-%    \fi
-%    \noindent % else funny hlist with funny baselineskip
-%    $$% \Ucheckedstartdisplaymath
-%    \setdisplaydimensions
-%    \startinnermath}
-%
-% \unexpanded\def\stopdisplaymath
-%   {\stopinnermath
-%    $$% \Ucheckedstopdisplaymath
-%    \par
-%    \afterdisplayspace
-%    \par
-%    \egroup}
-%
-% \unexpanded\def\startdisplaymath
-%   {\bgroup
-%    \par
-%    \informulatrue
-%    \beforedisplayspace
-%    \par
-%    \ifvmode
-%      \ifcase\c_strc_formulas_space_model
-%        % nothing
-%      \or
-%        % nothing yet
-%      \or
-%        \prevdepth-\maxdimen % texbook pagina 79-80
-%      \fi
-%    \fi
-%    \noindent % else funny hlist with funny baselineskip
-%    \Ucheckedstartdisplaymath
-%    \setdisplaydimensions
-%    \startinnermath}
-%
-% \unexpanded\def\stopdisplaymath
-%   {\stopinnermath
-%    \Ucheckedstopdisplaymath
-%    \par
-%    \ifvmode
-%      \ifcase\c_strc_formulas_space_model
-%        % nothing
-%      \or
-%        \prevdepth .5\strutdp
-%      \or
-%        \prevdepth\lineheight
-%      \fi
-%    \fi
-%    \afterdisplayspace
-%    \par
-%    \egroup}
 
 \unexpanded\def\startdisplaymath
   {\bgroup
@@ -1043,17 +980,14 @@
 
 \unexpanded\def\strc_formulas_number_again[#1]%
   {\def\currentformulareference{#1}%
-   \glet\strc_formulas_place_number\relax
    \strc_formulas_place_number_in_box}
 
 \unexpanded\def\placeformula
   {\global\settrue\c_strc_formulas_inside_place
-   \settrue\c_strc_formulas_increment
    \dosingleempty\strc_formulas_place}
 
 \unexpanded\def\placesubformula
   {\global\settrue\c_strc_formulas_inside_place_sub
-   \setfalse\c_strc_formulas_increment
    \dosingleempty\strc_formulas_place}
 
 \unexpanded\def\strc_formulas_place[#1]%
@@ -1139,21 +1073,21 @@
 \def\strc_formulas_place_number_nested_indeed#1#2%
   {\def\currentnestedformulareference{#1}%
    \def\currentnestedformulasuffix{#2}%
-   \glet\strc_formulas_place_number\relax
    \strc_formulas_check_reference\c_strc_formulas_nested_number_mode\currentnestedformulareference
    \ifcase\c_strc_formulas_nested_number_mode
      % nothing
    \or
+     \glet\strc_formulas_place_number\relax
      \expandafter\strc_formulas_number % hm, looks ahead for []
    \or
      % nothing
    \or
+     \glet\strc_formulas_place_number\relax
      \expandafter\strc_formulas_number % hm, looks ahead for []
    \fi}
 
 \def\strc_formulas_place_number_indeed
-  {\glet\strc_formulas_place_number\relax
-   \strc_formulas_place_number_in_box}
+  {\strc_formulas_place_number_in_box}
 
 \def\strc_formulas_place_number_in_box
   {\dostarttagged\t!formulacaption\empty

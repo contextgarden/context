@@ -65,12 +65,21 @@ local template = [[
     DEFAULT CHARSET = utf8 ;
 ]]
 
+local sqlite_template = [[
+    CREATE TABLE IF NOT EXISTS %basename% (
+        `id`     INTEGER PRIMARY KEY AUTOINCREMENT,
+        `time`   INTEGER NOT NULL,
+        `type`   INTEGER NOT NULL,
+        `action` TEXT NOT NULL,
+        `data`   TEXT
+    ) ;
+]]
+
 function loggers.createdb(presets,datatable)
 
     local db = checkeddb(presets,datatable)
-
     db.execute {
-        template  = template,
+        template  = db.usedmethod == "sqlite" and sqlite_template or template,
         variables = {
             basename = db.basename,
         },
@@ -141,28 +150,49 @@ function loggers.save(db,data) -- beware, we pass type and action in the data (s
 
 end
 
--- local template =[[
---     REMOVE FROM
---         %basename%
---     WHERE
---         `token` = '%token%' ;
--- ]]
---
--- function loggers.remove(db,token)
---
---     db.execute {
---         template  = template,
---         variables = {
---             basename = db.basename,
---             token    = token,
---         },
---     }
---
---     if trace_sql then
---         report("removed: %s",token)
---     end
---
--- end
+local template =[[
+    DELETE FROM %basename% %WHERE% ;
+]]
+
+function loggers.cleanup(db,specification)
+
+    specification = specification or { }
+
+    local today   = os.date("*t")
+    local before  = specification.before or today
+    local where   = { }
+
+    if type(before) == "number" then
+        before = os.date(before)
+    end
+
+    before = os.time {
+        day    = before.day    or today.day,
+        month  = before.month  or today.month,
+        year   = before.year   or today.year,
+        hour   = before.hour   or 0,
+        minute = before.minute or 0,
+        second = before.second or 0,
+        isdst  = true,
+    }
+
+    where[#where+1] = format("`time` < %s",before)
+
+    db.execute {
+        template  = template,
+        variables = {
+            basename = db.basename,
+            WHERE    = format("WHERE\n%s",concat(where," AND ")),
+        },
+    }
+
+    if db.usedmethod == "sqlite" then
+        db.execute {
+            template  = "VACUUM ;",
+        }
+    end
+
+end
 
 local template_nop =[[
     SELECT

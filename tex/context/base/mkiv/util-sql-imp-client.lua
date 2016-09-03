@@ -26,6 +26,8 @@ local serialize          = sql.serialize
 local deserialize        = sql.deserialize
 local getserver          = sql.getserver
 
+local osclock            = os.gettimeofday
+
 -- Experiments with an p/action demonstrated that there is not much gain. We could do a runtime
 -- capture but creating all the small tables is not faster and it doesn't work well anyway.
 
@@ -172,7 +174,7 @@ local function datafetched(specification)
         local t = osclock()
         report_state("command: %s",command)
         local okay = os.execute(command)
-        report_state("fetchtime: %.3f sec",osclock()-t) -- not okay under linux
+        report_state("fetchtime: %.3f sec, return code: %i",osclock()-t,okay) -- not okay under linux
         return okay == 0
     else
         return os.execute(command) == 0

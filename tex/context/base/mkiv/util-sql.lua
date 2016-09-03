@@ -311,15 +311,30 @@ sql.setserver("mysql")
 
 -- helper:
 
+local sqlmethods = sql.methods
+
 function sql.usedatabase(presets,datatable)
     local name = datatable or presets.datatable
     if name then
-        local method    = presets.method and sql.methods[presets.method] or sql.methods.client
+        local usedmethod = presets.method
+        local method     = usedmethod and sqlmethods[usedmethod]
+        if not method then
+            usedmethod = currentmethod
+            method     = usedmethod and sqlmethods[usedmethod]
+        end
+        if not method then
+            usedmethod = sql.methods.client
+            method     = usedmethod and sqlmethods[usedmethod]
+        end
         local base      = presets.database or "test"
         local basename  = format("`%s`.`%s`",base,name)
         local execute   = nil
         local m_execute = method.execute
-        if method.usesfiles then
+        if not m_execute then
+            execute = function()
+                report_state("no valid execute handler")
+            end
+        elseif method.usesfiles then
             local queryfile   = presets.queryfile  or format("%s-temp.sql",name)
             local resultfile  = presets.resultfile or format("%s-temp.dat",name)
             execute = function(specification) -- variables template
@@ -347,6 +362,7 @@ function sql.usedatabase(presets,datatable)
             end
         end
         return {
+            usedmethod  = usedmethod,
             presets     = preset,
             base        = base,
             name        = name,
