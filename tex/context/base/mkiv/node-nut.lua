@@ -164,6 +164,7 @@ nuts.copy_node             = direct.copy
 nuts.copy_list             = direct.copy_list
 nuts.delete                = direct.delete
 nuts.dimensions            = direct.dimensions
+nuts.rangedimensions       = direct.rangedimensions
 nuts.end_of_math           = direct.end_of_math
 nuts.flush                 = direct.flush_node
 nuts.flush_node            = direct.flush_node
@@ -222,6 +223,23 @@ if LUATEXVERSION < 0.97 then
         local width, stretch, shrink = getglue(n)
         return width == 0 and stretch == 0 and shrink == 0
     end
+
+end
+
+if not direct.rangedimensions then -- LUATEXVERSION < 0.99
+
+    local dimensions = direct.dimensions
+    local getfield   = direct.getfield
+    local findtail   = direct.find_tail
+
+    function direct.rangedimensions(parent,first,last)
+        return dimensions(
+            getfield(parent,"glue_set"), getfield(parent,"glue_sign"), getfield(parent,"glue_order"),
+            first, last or find_tail(first), getfield(parent,"dir")
+        )
+    end
+
+    nuts.rangedimensions = direct.rangedimensions
 
 end
 

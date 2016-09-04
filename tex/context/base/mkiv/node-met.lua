@@ -76,6 +76,7 @@ nodes.copy_node             = node.copy
 nodes.copy_list             = node.copy_list
 nodes.delete                = node.delete
 nodes.dimensions            = node.dimensions
+nodes.rangedimensions       = node.rangedimensions
 nodes.end_of_math           = node.end_of_math
 nodes.flush                 = node.flush_node
 nodes.flush_node            = node.flush_node
@@ -125,6 +126,23 @@ if LUATEXVERSION < 0.97 then
         local width, stretch, shrink = getglue(n)
         return width == 0 and stretch == 0 and shrink == 0
     end
+
+end
+
+if not node.rangedimensions then -- LUATEXVERSION < 0.99
+
+    local dimensions = node.dimensions
+    local getfield   = node.getfield
+    local findtail   = node.find_tail
+
+    function node.rangedimensions(parent,first,last)
+        return dimensions(
+            getfield(parent,"glue_set"), getfield(parent,"glue_sign"), getfield(parent,"glue_order"),
+            first, last or find_tail(first), getfield(parent,"dir")
+        )
+    end
+
+    nodes.rangedimensions = node.rangedimensions
 
 end
 

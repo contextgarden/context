@@ -124,6 +124,7 @@
         ta            \thetransparencyattribute\p_node_rules_color
         offset        \barparameter\c!offset\space % number
         dy            \barparameter\c!dy\space % number
+        empty        {\barparameter\c!empty}%
      \relax}}
 
 \unexpanded\def\node_rules_redefine#1%
@@ -182,6 +183,7 @@
 \setupbars
   [\c!method=0,                 % new: 0=center nested, 1=stack nested
    \c!continue=\v!no,
+   \c!empty=,                   % new: yes = hide text
    \c!offset=0,                 % upwards, replaces: topoffset bottomoffset
    \c!dy=0,
    \c!max=3,

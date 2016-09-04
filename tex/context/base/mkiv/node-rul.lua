@@ -37,6 +37,7 @@ local getfont       = nuts.getfont
 local getsubtype    = nuts.getsubtype
 local getlist       = nuts.getlist
 local setlist       = nuts.setlist
+local flushlist     = nuts.flush_list
 
 local nodecodes     = nodes.nodecodes
 local tasks         = nodes.tasks
@@ -107,7 +108,7 @@ local a_colormodel       = attributes.private('colormodel')
 
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
-local list_dimensions    = nuts.dimensions
+local list_dimensions    = nuts.rangedimensions
 local hpack_nodes        = nuts.hpack
 
 local striprange         = nodes.striprange
@@ -357,8 +358,9 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     if not f then
         return head
     end
-    local w, ht, dp     = list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),f,getnext(l))
+    local w, ht, dp     = list_dimensions(parent,f,getnext(l))
     local method        = d.method
+    local empty         = d.empty == v_yes
     local offset        = d.offset
     local continue      = d.continue
     local dy            = d.dy
@@ -402,14 +404,22 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         if layer then
             setattr(r,a_viewerlayer,layer)
         end
-        local k = new_kern(-w)
-        if foreground then
-            insert_node_after(head,l,k)
-            insert_node_after(head,k,r)
-            l = r
-        else
+        if empty then
             head = insert_node_before(head,f,r)
-            insert_node_after(head,r,k)
+            setlink(r,getnext(l))
+            setprev(f)
+            setnext(l)
+            flushlist(f)
+        else
+            local k = new_kern(-w)
+            if foreground then
+                insert_node_after(head,l,k)
+                insert_node_after(head,k,r)
+                l = r
+            else
+                head = insert_node_before(head,f,r)
+                insert_node_after(head,r,k)
+            end
         end
         if trace_ruled then
             report_ruled("level %a, width %p, height %p, depth %p, nodes %a, text %a",
@@ -489,7 +499,7 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     local next = getnext(last)
     setprev(first)
     setnext(last)
-    local width, height, depth = list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),first,next)
+    local width, height, depth = list_dimensions(parent,first,next)
     local list = hpack_nodes(first,width,"exactly")
     if first == head then
         head = list
@@ -541,13 +551,14 @@ implement {
             { "order" },
             { "method", "integer" },
             { "offset", "number" },
-            { "rulethickness", "string" },
+            { "rulethickness" },
             { "dy", "number" },
             { "max", "number" },
             { "ma", "integer" },
             { "ca", "integer" },
             { "ta", "integer" },
-            { "mp", "string" },
+            { "mp" },
+            { "empty" },
         }
     }
 }

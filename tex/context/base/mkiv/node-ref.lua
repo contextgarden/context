@@ -20,82 +20,83 @@ local concat = table.concat
 
 local attributes, nodes, node = attributes, nodes, node
 
-local allocate            = utilities.storage.allocate, utilities.storage.mark
-local mark                = utilities.storage.allocate, utilities.storage.mark
+local allocate             = utilities.storage.allocate, utilities.storage.mark
+local mark                 = utilities.storage.allocate, utilities.storage.mark
 
-local nodeinjections      = backends.nodeinjections
-local codeinjections      = backends.codeinjections
+local nodeinjections       = backends.nodeinjections
+local codeinjections       = backends.codeinjections
 
-local cleanupreferences   = false
-local cleanupdestinations = true
+local cleanupreferences    = false
+local cleanupdestinations  = true
 
-local transparencies      = attributes.transparencies
-local colors              = attributes.colors
-local references          = structures.references
-local tasks               = nodes.tasks
+local transparencies       = attributes.transparencies
+local colors               = attributes.colors
+local references           = structures.references
+local tasks                = nodes.tasks
 
-local trace_references    = false  trackers.register("nodes.references",        function(v) trace_references   = v end)
-local trace_destinations  = false  trackers.register("nodes.destinations",      function(v) trace_destinations = v end)
-local trace_areas         = false  trackers.register("nodes.areas",             function(v) trace_areas        = v end)
-local show_references     = false  trackers.register("nodes.references.show",   function(v) show_references    = tonumber(v) or (v and 2.25 or false) end)
-local show_destinations   = false  trackers.register("nodes.destinations.show", function(v) show_destinations  = tonumber(v) or (v and 2.00 or false) end)
+local trace_references     = false  trackers.register("nodes.references",        function(v) trace_references   = v end)
+local trace_destinations   = false  trackers.register("nodes.destinations",      function(v) trace_destinations = v end)
+local trace_areas          = false  trackers.register("nodes.areas",             function(v) trace_areas        = v end)
+local show_references      = false  trackers.register("nodes.references.show",   function(v) show_references    = tonumber(v) or (v and 2.25 or false) end)
+local show_destinations    = false  trackers.register("nodes.destinations.show", function(v) show_destinations  = tonumber(v) or (v and 2.00 or false) end)
 
-local report_reference    = logs.reporter("backend","references")
-local report_destination  = logs.reporter("backend","destinations")
-local report_area         = logs.reporter("backend","areas")
+local report_reference     = logs.reporter("backend","references")
+local report_destination   = logs.reporter("backend","destinations")
+local report_area          = logs.reporter("backend","areas")
 
-local nuts                = nodes.nuts
-local nodepool            = nuts.pool
+local nuts                 = nodes.nuts
+local nodepool             = nuts.pool
 
-local tonode              = nuts.tonode
-local tonut               = nuts.tonut
+local tonode               = nuts.tonode
+local tonut                = nuts.tonut
 
-local getfield            = nuts.getfield
-local setfield            = nuts.setfield
-local setlink             = nuts.setlink
-local setnext             = nuts.setnext
-local setprev             = nuts.setprev
-local getnext             = nuts.getnext
-local getprev             = nuts.getprev
-local getid               = nuts.getid
-local getlist             = nuts.getlist
-local setlist             = nuts.setlist
-local getattr             = nuts.getattr
-local setattr             = nuts.setattr
-local getsubtype          = nuts.getsubtype
+local getfield             = nuts.getfield
+local setfield             = nuts.setfield
+local setlink              = nuts.setlink
+local setnext              = nuts.setnext
+local setprev              = nuts.setprev
+local getnext              = nuts.getnext
+local getprev              = nuts.getprev
+local getid                = nuts.getid
+local getlist              = nuts.getlist
+local setlist              = nuts.setlist
+local getattr              = nuts.getattr
+local setattr              = nuts.setattr
+local getsubtype           = nuts.getsubtype
 
-local hpack_list          = nuts.hpack
-local vpack_list          = nuts.vpack
-local list_dimensions     = nuts.dimensions
-local traverse            = nuts.traverse
-local find_node_tail      = nuts.tail
+local hpack_list           = nuts.hpack
+local vpack_list           = nuts.vpack
+local list_dimensions      = nuts.dimensions
+local list_rangedimensions = nuts.rangedimensions
+local traverse             = nuts.traverse
+local find_node_tail       = nuts.tail
 
-local nodecodes           = nodes.nodecodes
-local skipcodes           = nodes.skipcodes
-local listcodes           = nodes.listcodes
+local nodecodes            = nodes.nodecodes
+local skipcodes            = nodes.skipcodes
+local listcodes            = nodes.listcodes
 
-local hlist_code          = nodecodes.hlist
-local vlist_code          = nodecodes.vlist
-local glue_code           = nodecodes.glue
-local glyph_code          = nodecodes.glyph
-local rule_code           = nodecodes.rule
-local dir_code            = nodecodes.dir
-local localpar_code       = nodecodes.localpar
+local hlist_code           = nodecodes.hlist
+local vlist_code           = nodecodes.vlist
+local glue_code            = nodecodes.glue
+local glyph_code           = nodecodes.glyph
+local rule_code            = nodecodes.rule
+local dir_code             = nodecodes.dir
+local localpar_code        = nodecodes.localpar
 
-local leftskip_code       = skipcodes.leftskip
-local rightskip_code      = skipcodes.rightskip
-local parfillskip_code    = skipcodes.parfillskip
+local leftskip_code        = skipcodes.leftskip
+local rightskip_code       = skipcodes.rightskip
+local parfillskip_code     = skipcodes.parfillskip
 
-local line_code           = listcodes.line
+local line_code            = listcodes.line
 
-local new_rule            = nodepool.rule
-local new_kern            = nodepool.kern
+local new_rule             = nodepool.rule
+local new_kern             = nodepool.kern
 
-local flush_node          = nuts.flush
+local flush_node           = nuts.flush
 
-local tosequence          = nodes.tosequence
+local tosequence           = nodes.tosequence
 
-local implement           = interfaces.implement
+local implement            = interfaces.implement
 
 -- Normally a (destination) area is a box or a simple stretch if nodes but when it is
 -- a paragraph we have a problem: we cannot calculate the height well. This happens
@@ -104,7 +105,7 @@ local implement           = interfaces.implement
 local function hlist_dimensions(start,stop,parent)
     local last = stop and getnext(stop)
     if parent then
-        return list_dimensions(getfield(parent,"glue_set"),getfield(parent,"glue_sign"),getfield(parent,"glue_order"),start,last)
+        return list_rangedimensions(parent,start,last)
     else
         return list_dimensions(start,last)
     end

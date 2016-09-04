@@ -487,6 +487,94 @@ context --extra=sql-tables --help
 
 \stopsection
 
+\startsection[title=Example]
+
+The distribution has a few examples, for instance a logger. The following code shows
+a bit of this (we assume that the swiglib sqlite module is present):
+
+\startbuffer
+require("util-sql")
+utilities.sql.setmethod("sqlite")
+require("util-sql-loggers")
+
+local loggers = utilities.sql.loggers
+
+local presets = {
+ -- method    = "sqlite",
+    database  = "loggertest",
+    datatable = "loggers",
+    id        = "loggers",
+}
+
+os.remove("loggertest.db") -- start fresh
+
+local db = loggers.createdb(presets)
+
+loggers.save(db, { -- variant 1: data subtable
+    type   = "error",
+    action = "process",
+    data   = { filename = "test-1", message = "whatever a" }
+} )
+
+loggers.save(db, { -- variant 2: flat table
+    type     = "warning",
+    action   = "process",
+    filename = "test-2",
+    message  = "whatever b"
+} )
+
+
+local result = loggers.collect(db, {
+    start = {
+        day   = 1,
+        month = 1,
+        year  = 2016,
+    },
+    stop = {
+        day   = 31,
+        month = 12,
+        year  = 2116,
+    },
+    limit  = 1000000,
+ -- type   = "error",
+    action = "process"
+})
+
+context.starttabulate { "||||||" }
+for i=1,#result do
+    local r = result[i]
+    context.NC() context(r.time)
+    context.NC() context(r.type)
+    context.NC() context(r.action)
+    if r.data then
+        context.NC() context(r.data.filename)
+        context.NC() context(r.data.message)
+    else
+        context.NC()
+        context.NC()
+    end
+    context.NC() context.NR()
+end
+context.stoptabulate()
+
+-- local result = loggers.cleanup(db, {
+--     before = {
+--         day   = 1,
+--         month = 1,
+--         year  = 2117,
+--     },
+-- })
+\stopbuffer
+
+\typebuffer
+
+In this example we typeset the (small) table):
+
+\ctxluabuffer
+
+
+\stopsection
+
 \startsection[title=Colofon]
 
 \starttabulate[|B|p|]

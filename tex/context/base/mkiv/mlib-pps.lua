@@ -25,7 +25,7 @@ local setmacro             = interfaces.setmacro
 local texsetbox            = tex.setbox
 local textakebox           = tex.takebox
 local copy_list            = node.copy_list
-local free_list            = node.flush_list
+local flush_list           = node.flush_list
 local setmetatableindex    = table.setmetatableindex
 local sortedhash           = table.sortedhash
 
@@ -259,7 +259,7 @@ end
 local function stopjob()
     if top then
         for n, tn in next, top.textexts do
-            free_list(tn)
+            flush_list(tn)
             if trace_textexts then
                 report_textexts("freeing text %s",n)
             end

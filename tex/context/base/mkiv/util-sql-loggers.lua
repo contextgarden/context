@@ -124,7 +124,11 @@ local template =[[
     ) ;
 ]]
 
-function loggers.save(db,data) -- beware, we pass type and action in the data (saves a table)
+-- beware, when we either pass a dat afield explicitly or we're using
+-- a flat table and then nill type and action in the data (which
+-- saves a table)
+
+function loggers.save(db,data)
 
     if data then
 
@@ -132,8 +136,16 @@ function loggers.save(db,data) -- beware, we pass type and action in the data (s
         local kind   = totype[data.type]
         local action = data.action or "unknown"
 
-        data.type   = nil
-        data.action = nil
+        local extra  = data.data
+
+        if extra then
+            -- we have a dedicated data table
+            data = extra
+        else
+            -- we have a flat table
+            data.type   = nil
+            data.action = nil
+        end
 
         db.execute {
             template  = template,
