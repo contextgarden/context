@@ -1239,7 +1239,7 @@ end
 -- topskip
 -- splittopskip
 
-local experiment = false directives.register("vspacing.experiment",function(v) experiment = v end)
+local experiment = true directives.register("vspacing.experiment",function(v) experiment = v end)
 
 local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
     if trace then

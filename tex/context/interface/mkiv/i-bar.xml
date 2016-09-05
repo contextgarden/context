@@ -26,6 +26,10 @@
                     <cd:constant type="no" default="yes"/>
                     <cd:constant type="all"/>
                 </cd:parameter>
+                <cd:parameter name="empty">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
                 <cd:parameter name="unit">
                     <cd:constant type="ex" default="yes"/>
                     <cd:constant type="em"/>
@@ -67,6 +71,12 @@
                 </cd:parameter>
                 <cd:parameter name="mp">
                     <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:text"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
@@ -125,6 +135,12 @@
     </cd:command>
 
     <cd:command name="underbar" file="node-rul.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hiddenbar" file="node-rul.mkiv">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>

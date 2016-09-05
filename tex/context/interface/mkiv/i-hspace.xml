@@ -156,4 +156,10 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="quads" variant="1" file="spac-hor.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-number-optional"/>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

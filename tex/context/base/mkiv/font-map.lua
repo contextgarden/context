@@ -12,6 +12,7 @@ local match, format, find, concat, gsub, lower = string.match, string.format, st
 local P, R, S, C, Ct, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.match
 local floor = math.floor
 local formatters = string.formatters
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 
 local trace_loading = false  trackers.register("fonts.loading", function(v) trace_loading = v end)
 local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_mapping = v end)
@@ -290,15 +291,23 @@ function mappings.addtounicode(data,filename,checklookups)
     local usedmap       = cidinfo and fonts.cid.getmap(cidinfo)
     local uparser       = makenameparser() -- hm, every time?
     if usedmap then
-          oparser       = usedmap and makenameparser(cidinfo.ordering)
-          cidnames      = usedmap.names
-          cidcodes      = usedmap.unicodes
+          oparser  = usedmap and makenameparser(cidinfo.ordering)
+          cidnames = usedmap.names
+          cidcodes = usedmap.unicodes
     end
-    local ns            = 0
-    local nl            = 0
+    local ns = 0
+    local nl = 0
     --
-    for du, glyph in next, descriptions do
-        local name = glyph.name
+    -- in order to avoid differences between runs due to hash randomization we
+    -- run over a sorted list
+    --
+    local dlist = sortedkeys(descriptions)
+    --
+ -- for du, glyph in next, descriptions do
+    for i=1,#dlist do
+        local du    = dlist[i]
+        local glyph = descriptions[du]
+        local name  = glyph.name
         if name then
             local overload = overloads[name]
             if overload then
@@ -436,6 +445,11 @@ function mappings.addtounicode(data,filename,checklookups)
                     end
                 end
             end
+        else
+            local overload = overloads[du]
+            if overload then
+                glyph.unicode = overload.unicode
+            end
         end
     end
     if type(checklookups) == "function" then
@@ -446,7 +460,10 @@ function mappings.addtounicode(data,filename,checklookups)
 
     local collected = false
     local unicoded  = 0
-    for unicode, glyph in next, descriptions do
+ -- for du, glyph in next, descriptions do
+    for i=1,#dlist do
+        local du    = dlist[i]
+        local glyph = descriptions[du]
         if glyph.class == "ligature" and (force_ligatures or not glyph.unicode) then
             if not collected then
                 collected = fonts.handlers.otf.readers.getcomponents(data)
@@ -454,7 +471,7 @@ function mappings.addtounicode(data,filename,checklookups)
                     break
                 end
             end
-            local u = collected[unicode] -- always tables
+            local u = collected[du] -- always tables
             if u then
                 local n = #u
                 for i=1,n do
@@ -478,7 +495,10 @@ function mappings.addtounicode(data,filename,checklookups)
         report_fonts("%n ligature tounicode mappings deduced from gsub ligature features",unicoded)
     end
     if trace_mapping then
-        for unic, glyph in table.sortedhash(descriptions) do
+     -- for unic, glyph in sortedhash(descriptions) do
+        for i=1,#dlist do
+            local du      = dlist[i]
+            local glyph   = descriptions[du]
             local name    = glyph.name or "-"
             local index   = glyph.index or 0
             local unicode = glyph.unicode
@@ -488,12 +508,12 @@ function mappings.addtounicode(data,filename,checklookups)
                     for i=1,#unicode do
                         unicodes[i] = formatters("%U",unicode[i])
                     end
-                    report_fonts("internal slot %U, name %a, unicode %U, tounicode % t",index,name,unic,unicodes)
+                    report_fonts("internal slot %U, name %a, unicode %U, tounicode % t",index,name,du,unicodes)
                 else
-                    report_fonts("internal slot %U, name %a, unicode %U, tounicode %U",index,name,unic,unicode)
+                    report_fonts("internal slot %U, name %a, unicode %U, tounicode %U",index,name,du,unicode)
                 end
             else
-                report_fonts("internal slot %U, name %a, unicode %U",index,name,unic)
+                report_fonts("internal slot %U, name %a, unicode %U",index,name,du)
             end
         end
     end

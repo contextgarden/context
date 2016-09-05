@@ -133,7 +133,7 @@ if not node.rangedimensions then -- LUATEXVERSION < 0.99
 
     local dimensions = node.dimensions
     local getfield   = node.getfield
-    local findtail   = node.find_tail
+    local find_tail  = node.tail
 
     function node.rangedimensions(parent,first,last)
         return dimensions(

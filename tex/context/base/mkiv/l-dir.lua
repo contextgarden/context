@@ -335,6 +335,36 @@ end
 
 dir.globfiles = globfiles
 
+local function globdirs(path,recurse,func,files) -- func == pattern or function
+    if type(func) == "string" then
+        local s = func
+        func = function(name) return find(name,s) end
+    end
+    files = files or { }
+    local noffiles = #files
+    for name in walkdir(path) do
+        if find(name,"^%.") then
+            --- skip
+        else
+            local mode = attributes(name,'mode')
+            if mode == "directory" then
+                if not func or func(name) then
+                    noffiles = noffiles + 1
+                    files[noffiles] = path .. "/" .. name
+                    if recurse then
+                        globdirs(path .. "/" .. name,recurse,func,files)
+                    end
+                end
+            end
+        end
+    end
+    return files
+end
+
+dir.globdirs = globdirs
+
+-- inspect(globdirs("e:/tmp"))
+
 -- t = dir.glob("c:/data/develop/context/sources/**/????-*.tex")
 -- t = dir.glob("c:/data/develop/tex/texmf/**/*.tex")
 -- t = dir.glob("c:/data/develop/context/texmf/**/*.tex")

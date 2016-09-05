@@ -10,6 +10,7 @@ local gmatch, gsub, find, lower, format = string.gmatch, string.gsub, string.fin
 local stripstring = string.strip
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
+local sortedhash = table.sortedhash
 
 local report_media             = logs.reporter("backend","media")
 local report_attachment        = logs.reporter("backend","attachment")
@@ -200,7 +201,7 @@ job.register('job.fileobjreferences.collected', tobesavedobjrefs, initializer)
 local function flushembeddedfiles()
     if next(filestreams) then
         local e = pdfarray()
-        for tag, reference in next, filestreams do
+        for tag, reference in sortedhash(filestreams) do
             if not reference then
                 report_attachment("unreferenced file, tag %a",tag)
             elseif referenced[tag] == "hidden" then

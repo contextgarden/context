@@ -230,7 +230,7 @@ if not direct.rangedimensions then -- LUATEXVERSION < 0.99
 
     local dimensions = direct.dimensions
     local getfield   = direct.getfield
-    local findtail   = direct.find_tail
+    local find_tail  = direct.tail
 
     function direct.rangedimensions(parent,first,last)
         return dimensions(

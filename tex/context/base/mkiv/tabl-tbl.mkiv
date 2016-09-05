@@ -1213,16 +1213,74 @@
 
 % todo: spacing around tabulate when bodyfont is set
 
-\let\tabl_tabulate_inside_before   \relax
-\let\tabl_tabulate_inside_after    \relax
-\let\tabl_tabulate_inside_inbetween\relax
+% \let\tabl_tabulate_inside_before   \relax
+% \let\tabl_tabulate_inside_after    \relax
+% \let\tabl_tabulate_inside_inbetween\relax
+%
+% \def\tabl_tabulate_outside_before
+%   {\whitespace
+%    \tabulationparameter\c!before}
+%
+% \def\tabl_tabulate_outside_after
+%   {\tabulationparameter\c!after}
+
+% \showboxes
+%
+% \startcombination
+%     {\insidefloattrue \starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+%     {\insidefloattrue \starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+% \stopcombination
+%
+% \startcombination
+%     {\vbox{\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate}} {}
+%     {\vbox{\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate}} {}
+% \stopcombination
+%
+% \startcombination
+%     {\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+%     {\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+% \stopcombination
+
+\let\tabl_tabulate_inside_after \relax
+\let\tabl_tabulate_outside_after\relax
+
+\def\tabl_tabulate_inside_before
+  {\ifhmode\par\fi
+   \ifhmode
+     \ifinsidesplitfloat
+       \let\tabl_tabulate_inside_after\relax
+     \else
+       \vbox\bgroup
+       \let\tabl_tabulate_inside_after\egroup
+     \fi
+   \else
+     \let\tabl_tabulate_inside_after\relax
+   \fi}
 
 \def\tabl_tabulate_outside_before
-  {\whitespace
-   \tabulationparameter\c!before}
+  {\ifhmode\par\fi
+   \ifhmode
+     \vbox\bgroup
+     \let\tabl_tabulate_outside_after    \egroup
+     \let\tabl_tabulate_outside_inbetween\relax
+   \else\ifinner
+     \let\tabl_tabulate_outside_after    \relax
+     \let\tabl_tabulate_outside_inbetween\relax
+   \else
+     \whitespace
+     \tabulationparameter\c!before
+     \let\tabl_tabulate_outside_after    \tabl_tabulate_outside_after_indeed
+     \let\tabl_tabulate_outside_inbetween\tabl_tabulate_outside_inbetween_indeed
+   \fi\fi}
 
-\def\tabl_tabulate_outside_after
-  {\tabulationparameter\c!after}
+\def\tabl_tabulate_outside_after_indeed
+  {\tabulationparameter\c!after}%
+
+\def\tabl_tabulate_outside_inbetween_indeed
+  {\doifempty{\tabulationparameter\c!after}
+     {\vskip\strutdp
+      \verticalstrut
+      \vskip-\struttotal}}
 
 \def\tabl_tabulate_outside_inbetween
   {\doifempty{\tabulationparameter\c!after}

@@ -4031,7 +4031,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 17358, stripped down to: 11378
+-- original size: 18247, stripped down to: 12022
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -4295,6 +4295,31 @@ local function globfiles(path,recurse,func,files)
   return files
 end
 dir.globfiles=globfiles
+local function globdirs(path,recurse,func,files) 
+  if type(func)=="string" then
+    local s=func
+    func=function(name) return find(name,s) end
+  end
+  files=files or {}
+  local noffiles=#files
+  for name in walkdir(path) do
+    if find(name,"^%.") then
+    else
+      local mode=attributes(name,'mode')
+      if mode=="directory" then
+        if not func or func(name) then
+          noffiles=noffiles+1
+          files[noffiles]=path.."/"..name
+          if recurse then
+            globdirs(path.."/"..name,recurse,func,files)
+          end
+        end
+      end
+    end
+  end
+  return files
+end
+dir.globdirs=globdirs
 function dir.ls(pattern)
   return concat(glob(pattern),"\n")
 end
@@ -18848,8 +18873,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 802032
--- stripped bytes    : 291598
+-- original bytes    : 802921
+-- stripped bytes    : 291843
 
 -- end library merge
 

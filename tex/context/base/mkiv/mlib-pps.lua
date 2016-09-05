@@ -517,7 +517,7 @@ local parser = Cs((
   + 1
 )^0)
 
-local checking_enabled = true   directives.register("metapost.checktexts",function(v) checking_enabled = v end)
+local checking_enabled = false  directives.register("metapost.checktexts",function(v) checking_enabled = v end)
 
 local function checktexts(str)
     if checking_enabled then

@@ -238,6 +238,7 @@
 		<cd:variable name='here' value='zde'/>
 		<cd:variable name='hereafter' value='nize'/>
 		<cd:variable name='hidden' value='skryte'/>
+		<cd:variable name='hiddenbar' value='hiddenbar'/>
 		<cd:variable name='hiding' value='skryt'/>
 		<cd:variable name='high' value='vysoko'/>
 		<cd:variable name='horizontal' value='horizontalne'/>

@@ -10,6 +10,7 @@ local next = next
 local format, match, concat = string.format, string.match, table.concat
 local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
 local settings_to_hash = utilities.parsers.settings_to_hash
+local sortedhash = table.sortedhash
 local formatters = string.formatters
 
 local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
@@ -144,7 +145,7 @@ local function finishstructure()
             K          = pdfreference(pdfflushobject(structure_kids)),
             ParentTree = pdfreference(pdfflushobject(parent_ref,parenttree)),
             IDTree     = #names > 0 and pdfreference(pdfflushobject(idtree)) or nil,
-            RoleMap    = rolemap,
+            RoleMap    = rolemap, -- sorted ?
         }
         pdfflushobject(structure_ref,structuretree)
         addtocatalog("StructTreeRoot",pdfreference(structure_ref))
@@ -157,7 +158,8 @@ local function finishstructure()
         }
         addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
         --
-        for fulltag, element in next, elements do
+     -- for fulltag, element in next, elements do
+        for fulltag, element in sortedhash(elements) do -- sorting is easier on comparing pdf
             pdfflushobject(element.knum,element.kids)
         end
     end
@@ -190,7 +192,8 @@ local pdf_userproperties = pdfconstant("UserProperties")
 local function makeattribute(t)
     if t and next(t) then
         local properties = pdfarray()
-        for k, v in next, t do
+     -- for k, v in next, t do
+        for k, v in sortedhash(t) do -- easier on comparing pdf
             properties[#properties+1] = pdfdictionary {
                 N = pdfunicode(k),
                 V = pdfunicode(v),

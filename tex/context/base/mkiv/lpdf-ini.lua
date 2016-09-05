@@ -312,58 +312,7 @@ local f_array          = formatters["[ % t ]"]
 local f_key_number     = formatters["/%s %F"]
 local f_tonumber       = formatters["%F"]
 
--- local f_key_value      = formatters["/%s %s"]
--- local f_key_dictionary = formatters["/%s <<% t>>"]
--- local f_dictionary     = formatters["<<% t>>"]
--- local f_key_array      = formatters["/%s [% t]"]
--- local f_array          = formatters["[% t]"]
-
 local tostring_a, tostring_d
-
--- tostring_d = function(t,contentonly,key)
---     if next(t) then
---         local r, rn = { }, 0
---         for k, v in next, t do
---      -- for k, v in sortedhash(t) do -- can be an option
---             rn = rn + 1
---             local tv = type(v)
---             if tv == "string" then
---                 r[rn] = f_key_value(k,toeight(v))
---             elseif tv == "number" then
---                 r[rn] = f_key_number(k,v)
---          -- elseif tv == "unicode" then -- can't happen
---          --     r[rn] = f_key_value(k,tosixteen(v))
---             elseif tv == "table" then
---                 local mv = getmetatable(v)
---                 if mv and mv.__lpdftype then
---                  -- if v == t then
---                  --     report_objects("ignoring circular reference in dirctionary")
---                  --     r[rn] = f_key_null(k)
---                  -- else
---                         r[rn] = f_key_value(k,tostring(v))
---                  -- end
---                 elseif v[1] then
---                     r[rn] = f_key_value(k,tostring_a(v))
---                 else
---                     r[rn] = f_key_value(k,tostring_d(v))
---                 end
---             else
---                 r[rn] = f_key_value(k,tostring(v))
---             end
---         end
---         if contentonly then
---             return concat(r," ")
---         elseif key then
---             return f_key_dictionary(key,r)
---         else
---             return f_dictionary(r)
---         end
---     elseif contentonly then
---         return ""
---     else
---         return "<< >>"
---     end
--- end
 
 tostring_d = function(t,contentonly,key)
     if next(t) then

@@ -238,6 +238,7 @@
 		<cd:variable name='here' value='اینجا'/>
 		<cd:variable name='hereafter' value='ازاین‌به‌بعد'/>
 		<cd:variable name='hidden' value='پنهانی'/>
+		<cd:variable name='hiddenbar' value='hiddenbar'/>
 		<cd:variable name='hiding' value='پنهان‌کردن'/>
 		<cd:variable name='high' value='بلند'/>
 		<cd:variable name='horizontal' value='افقی'/>

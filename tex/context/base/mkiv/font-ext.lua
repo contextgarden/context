@@ -1155,3 +1155,17 @@ implement {
         end
     end
 }
+
+-- requested for latex but not supported unless really needed in context:
+--
+-- registerotffeature {
+--     name         = "ignoremathconstants",
+--     description  = "ignore math constants table",
+--     initializers = {
+--         base = function(tfmdata,key,value)
+--             if value then
+--                 tfmdata.mathparameters = nil
+--             end
+--         end
+--     }
+-- }

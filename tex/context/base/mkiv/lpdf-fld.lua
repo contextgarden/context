@@ -59,7 +59,7 @@ local tostring, next = tostring, next
 local gmatch, lower, format, formatters = string.gmatch, string.lower, string.format, string.formatters
 local lpegmatch = lpeg.match
 local bpfactor, todimen = number.dimenfactors.bp, string.todimen
-
+local sortedhash = table.sortedhash
 local trace_fields = false  trackers.register("backends.fields", function(v) trace_fields = v end)
 
 local report_fields = logs.reporter("backend","fields")
@@ -365,7 +365,8 @@ local function registerfonts()
         checkpdfdocencoding() -- already done
         local d = pdfdictionary()
         local pdffonttype, pdffontsubtype = pdfconstant("Font"), pdfconstant("Type1")
-        for tag, name in next, usedfonts do
+     -- for tag, name in next, usedfonts do
+        for tag, name in sortedhash(usedfonts) do
             local f = pdfdictionary {
                 Type     = pdffonttype,
                 Subtype  = pdffontsubtype,
@@ -653,7 +654,7 @@ local xfdftemplate = [[
 
 function codeinjections.exportformdata(name)
     local result = { }
-    for k, v in table.sortedhash(fields) do
+    for k, v in sortedhash(fields) do
         result[#result+1] = formatters["    <field name='%s'><value>%s</value></field>"](v.name or k,v.default or "")
     end
     local base = file.basename(tex.jobname)
@@ -878,7 +879,7 @@ local forceencoding = false
 
 local function finishfields()
     local sometext = forceencoding
-    for name, field in next, fields do
+    for name, field in sortedhash(fields) do
         local kids = field.kids
         if kids then
             pdfflushobject(field.kidsnum,kids)
@@ -892,7 +893,7 @@ local function finishfields()
             sometext = true
         end
     end
-    for name, field in next, radios do
+    for name, field in sortedhash(radios) do
         local kids = field.kids
         if kids then
             pdfflushobject(field.kidsnum,kids)

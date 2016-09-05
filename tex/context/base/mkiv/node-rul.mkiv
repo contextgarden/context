@@ -131,7 +131,9 @@
   {\def\currentbar{#1}\node_rules_define}
 
 \unexpanded\def\node_rules_direct#1%
-  {\groupedcommand{\node_rules_set{#1}}\relax}
+  {\groupedcommand
+     {\node_rules_set{#1}\barparameter\c!left}%
+     {\relax\barparameter\c!right}}
 
 \unexpanded\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)
   {\edef\currentbar{#1}%
@@ -151,15 +153,19 @@
   {\attribute\ruledattribute\attributeunsetvalue}
 
 \unexpanded\def\nobar
-  {\groupedcommand\resetbar\relax}
+  {\groupedcommand
+     {\resetbar\barparameter\c!left}%
+     {\relax\barparameter\c!right}}
 
 \unexpanded\def\startbar[#1]%
   {\begingroup
    \node_rules_set{#1}%
-   \ignorespaces}
+   \ignorespaces
+   \barparameter\c!left}
 
 \unexpanded\def\stopbar
   {\removeunwantedspaces
+   \barparameter\c!right
    \endgroup}
 
 \unexpanded\def\setbar[#1]%
@@ -218,6 +224,14 @@
 \definebar[\v!underbars]   [\v!underbar]   [\c!continue=\v!no]
 \definebar[\v!overstrikes] [\v!overstrike] [\c!continue=\v!no]
 \definebar[\v!understrikes][\v!understrike][\c!continue=\v!no]
+
+\definebar
+  [\v!hiddenbar]
+  [\v!underbar]
+  [\c!continue=\v!yes,
+   \c!empty=\v!yes,
+   \c!left=\zwj,
+   \c!right=\zwj]
 
 % \setupbar[\v!overstrike][continue=all]
 

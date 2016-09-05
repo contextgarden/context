@@ -13820,6 +13820,9 @@ return {
    ["pe"]="پنهانی",
    ["ro"]="ascuns",
   },
+  ["hiddenbar"]={
+   ["en"]="hiddenbar",
+  },
   ["hiding"]={
    ["cs"]="skryt",
    ["de"]="verbergen",

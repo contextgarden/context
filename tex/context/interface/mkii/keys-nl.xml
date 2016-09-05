@@ -238,6 +238,7 @@
 		<cd:variable name='here' value='hier'/>
 		<cd:variable name='hereafter' value='hieronder'/>
 		<cd:variable name='hidden' value='verborgen'/>
+		<cd:variable name='hiddenbar' value='hiddenbar'/>
 		<cd:variable name='hiding' value='verbergen'/>
 		<cd:variable name='high' value='hoog'/>
 		<cd:variable name='horizontal' value='horizontaal'/>

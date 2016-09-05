@@ -81,22 +81,49 @@ and
 
 \blank \startpacked \bf \getbuffer[two] \stoppacked \blank
 
+The next example is one you can run for your own. The \type {\showinjector}
+command is of course only enabled when the right injection points are to be
+identified. Normally setting injectors happens as last resort. We use it in
+automated \XML\ workflows where last minute control is needed.
+
+\starttyping
+\showinjector
+
+\setinjector[register][3][\column]
+\setinjector[list]    [2][{\blank[3*big]}]
+
+\starttext
+    \placelist[section][criterium=text]
+    \blank[3*big]
+    \placeregister[index][criterium=text]
+    \page
+    \startsection[title=Alpha] first  \index{first}  \stopsection
+    \startsection[title=Beta]  second \index{second} \stopsection
+    \startsection[title=Gamma] third  \index{third}  \stopsection
+    \startsection[title=Delta] fourth \index{fourth} \stopsection
+\stoptext
+\stoptyping
+
 \stopchapter
 
 \stopcomponent
 
-% to be described:
+% some day to be described:
+%
+% \showinjector
+%
+% \xmlmapvalue{xml:injector}{column}{\setinjector[\AskedInjectorGroup][\AskedInjectorNumber][\column]}
+% \xmlmapvalue{xml:injector}{page}  {\setinjector[\AskedInjectorGroup][\AskedInjectorNumber][\page]}
+%
+% \startxmlsetups xml:injector
+%     \edef\AskedInjectorGroup {\xmlatt{#1}{group}}
+%     \edef\AskedInjectorNumber{\xmlatt{#1}{number}}
+%     \xmlvalue{xml:injector}{\xmlatt{#1}{type}}{}
+% \stopxmlsetups
+%
+% \xmlfilter {#1} {/metadata/injectors/injector/command(xml:injector)}
+%
+% \xmlsetinjectors[\xmlattribute{#1}{/metadata/state}{version}]
+%
+% <?context-directive injector list 123 page ?>
 
-% \setinjector[register][3][\column]
-% \setinjector[list]    [2][{\blank[3*big]}]
-
-% \starttext
-%     \placelist[section][criterium=text]
-%     \blank[3*big]
-%     \placeregister[index][criterium=text]
-%     \page
-%     \startsection[title=Alpha] first  \index{first}  \stopsection
-%     \startsection[title=Beta]  second \index{second} \stopsection
-%     \startsection[title=Gamma] third  \index{third}  \stopsection
-%     \startsection[title=Delta] fourth \index{fourth} \stopsection
-% \stoptext
