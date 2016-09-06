@@ -20,8 +20,8 @@ completely remove cache
 .B --list
 show cache
 .TP
-.B --all
-all (not yet implemented)
+.B --fonts
+only wipe fonts
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

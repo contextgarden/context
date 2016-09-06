@@ -18,6 +18,9 @@ a.dir-view:link, a.dir-view:active, a.dir-view:visited {
 .invalid {
 	color: #FF0000 ;
 }
+.invisible {
+	visibility: hidden ;
+}
 button, .commonlink, .smallbutton {
 	font-weight: bold ;
 	font-size: 12px ;

@@ -1002,8 +1002,8 @@ statistics.register("unknown math characters", function()
     return collected(unknowns)
 end)
 
--- math alternates: (in xits       lgf: $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$)
--- math alternates: (in lucidanova lgf: $ABC \mathalternate{italic} ABC$)
+-- math alternates: (in xits     lgf: $ABC$ $\cal ABC$ $\mathalternate{cal}\cal ABC$)
+-- math alternates: (in lucidaot lgf: $ABC \mathalternate{italic} ABC$)
 
 -- todo: set alternate for specific symbols
 -- todo: no need to do this when already loaded

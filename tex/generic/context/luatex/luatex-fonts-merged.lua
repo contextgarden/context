@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/05/16 18:55:36
+-- merge date  : 09/06/16 19:11:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -7258,28 +7258,32 @@ mappings.fromunicode16=fromunicode16
 local ligseparator=P("_")
 local varseparator=P(".")
 local namesplitter=Ct(C((1-ligseparator-varseparator)^1)*(ligseparator*C((1-ligseparator-varseparator)^1))^0)
-local overloads=allocate {
-  IJ={ name="I_J",unicode={ 0x49,0x4A },mess=0x0132 },
-  ij={ name="i_j",unicode={ 0x69,0x6A },mess=0x0133 },
-  ff={ name="f_f",unicode={ 0x66,0x66 },mess=0xFB00 },
-  fi={ name="f_i",unicode={ 0x66,0x69 },mess=0xFB01 },
-  fl={ name="f_l",unicode={ 0x66,0x6C },mess=0xFB02 },
-  ffi={ name="f_f_i",unicode={ 0x66,0x66,0x69 },mess=0xFB03 },
-  ffl={ name="f_f_l",unicode={ 0x66,0x66,0x6C },mess=0xFB04 },
-  fj={ name="f_j",unicode={ 0x66,0x6A } },
-  fk={ name="f_k",unicode={ 0x66,0x6B } },
-}
-for k,v in next,overloads do
-  local name=v.name
-  local mess=v.mess
-  if name then
-    overloads[name]=v
+do
+  local overloads=allocate {
+    IJ={ name="I_J",unicode={ 0x49,0x4A },mess=0x0132 },
+    ij={ name="i_j",unicode={ 0x69,0x6A },mess=0x0133 },
+    ff={ name="f_f",unicode={ 0x66,0x66 },mess=0xFB00 },
+    fi={ name="f_i",unicode={ 0x66,0x69 },mess=0xFB01 },
+    fl={ name="f_l",unicode={ 0x66,0x6C },mess=0xFB02 },
+    ffi={ name="f_f_i",unicode={ 0x66,0x66,0x69 },mess=0xFB03 },
+    ffl={ name="f_f_l",unicode={ 0x66,0x66,0x6C },mess=0xFB04 },
+    fj={ name="f_j",unicode={ 0x66,0x6A } },
+    fk={ name="f_k",unicode={ 0x66,0x6B } },
+  }
+  local o={}
+  for k,v in next,overloads do
+    local name=v.name
+    local mess=v.mess
+    if name then
+      o[name]=v
+    end
+    if mess then
+      o[mess]=v
+    end
+    o[k]=v
   end
-  if mess then
-    overloads[mess]=v
-  end
+  mappings.overloads=o
 end
-mappings.overloads=overloads
 function mappings.addtounicode(data,filename,checklookups)
   local resources=data.resources
   local unicodes=resources.unicodes
@@ -7291,6 +7295,7 @@ function mappings.addtounicode(data,filename,checklookups)
   end
   local properties=data.properties
   local descriptions=data.descriptions
+  local overloads=mappings.overloads
   unicodes['space']=unicodes['space'] or 32
   unicodes['hyphen']=unicodes['hyphen'] or 45
   unicodes['zwj']=unicodes['zwj']  or 0x200D
@@ -7319,7 +7324,7 @@ function mappings.addtounicode(data,filename,checklookups)
     local glyph=descriptions[du]
     local name=glyph.name
     if name then
-      local overload=overloads[name]
+      local overload=overloads[name] or overloads[du]
       if overload then
         glyph.unicode=overload.unicode
       else

@@ -22,12 +22,18 @@ local helpinfo = [[
     <flag name="list"><short>show cache</short></flag>
    </subcategory>
    <subcategory>
-    <flag name="all"><short>all (not yet implemented)</short></flag>
+    <flag name="fonts"><short>only wipe fonts</short></flag>
    </subcategory>
   </category>
  </flags>
 </application>
 ]]
+
+
+local find = string.find
+local filesuffix, replacesuffix = file.suffix, file.replacesuffix
+local isfile = lfs.isfile
+local remove = os.remove
 
 local application = logs.application {
     name     = "mtx-cache",
@@ -45,7 +51,7 @@ local function collect(path)
     local tmas, tmcs, rest = { }, { }, { }
     for i=1,#all do
         local name = all[i]
-        local suffix = file.suffix(name)
+        local suffix = filesuffix(name)
         if suffix == "tma" then
             tmas[#tmas+1] = name
         elseif suffix == "tmc" then
@@ -70,19 +76,22 @@ end
 local function purge(banner,path,list,all)
     report("%s: %s",banner,path)
     report()
+    local fonts = environment.argument("fonts")
     local n = 0
     for i=1,#list do
         local filename = list[i]
-        if string.find(filename,"luatex%-cache") then -- safeguard
-            if all then
-                os.remove(filename)
+        if find(filename,"luatex%-cache") then -- safeguard
+            if fonts and not find(filename,"fonts") then
+                -- skip
+            elseif all then
+                remove(filename)
                 n = n + 1
-            else
-                local suffix = file.suffix(filename)
+            elseif not fonts or find(filename,"fonts") then
+                local suffix = filesuffix(filename)
                 if suffix == "tma" then
-                    local checkname = file.replacesuffix(filename,"tma","tmc")
-                    if lfs.isfile(checkname) then
-                        os.remove(filename)
+                    local checkname = replacesuffix(filename,"tma","tmc")
+                    if isfile(checkname) then
+                        remove(filename)
                         n = n + 1
                     end
                 end

@@ -13,7 +13,7 @@
     <flag name="list"><short>show cache</short></flag>
    </subcategory>
    <subcategory>
-    <flag name="all"><short>all (not yet implemented)</short></flag>
+    <flag name="fonts"><short>only wipe fonts</short></flag>
    </subcategory>
   </category>
  </flags>
