@@ -821,10 +821,12 @@
    \ifcase\c_strc_formulas_mode
      \noindent % prevents that tex injects empty line (when using native display mechanism)
      \Ucheckedstartdisplaymath
+     \the\everydisplay % new (probably too much)
    \or
      \setbox\b_strc_formulas_content\hbox\bgroup
      \normalUstartmath
      \displaystyle
+     \the\everydisplay % new (probably too much)
    \else
      \expandafter\startinnermath
    \fi}

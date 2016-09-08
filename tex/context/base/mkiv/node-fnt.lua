@@ -78,11 +78,6 @@ local setmetatableindex = table.setmetatableindex
 --
 -- maybe getting rid of the intermediate shared can save some time
 
--- potential speedup: check for subtype < 256 so that we can remove that test
--- elsewhere, danger: injected nodes will not be dealt with but that does not
--- happen often; we could consider processing sublists but that might need more
--- checking later on; the current approach also permits variants
-
 local run = 0
 
 local setfontdynamics = { }

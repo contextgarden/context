@@ -18,8 +18,8 @@ more efficient.</p>
 -- eventually mp will have large numbers so we can use sp there too
 
 local tostring, next, rawget, setmetatable = tostring, next, rawget, setmetatable
-local sort = table.sort
-local format, gmatch, match = string.format, string.gmatch, string.match
+local sort, sortedhash, sortedkeys = table.sort, table.sortedhash, table.sortedkeys
+local format, gmatch, match, find = string.format, string.gmatch, string.match, string.find
 local rawget = rawget
 local lpegmatch = lpeg.match
 local insert, remove = table.insert, table.remove
@@ -125,6 +125,76 @@ jobpositions.used       = false
 
 -- todo: register subsets and count them indepently
 
+-- local function initializer()
+--     tobesaved = jobpositions.tobesaved
+--     collected = jobpositions.collected
+--     -- add sparse regions
+--     local pages = structures.pages.collected
+--     if pages then
+--         local last = nil
+--         for p=1,#pages do
+--             local region = "page:" .. p
+--             local data   = collected[region]
+--             if data then
+--                 last   = data
+--                 last.p = nil -- no need for a page
+--             elseif last then
+--                 collected[region] = last
+--             end
+--         end
+--     end
+--     -- enhance regions with paragraphs
+-- --     local sorted = sortedkeys(collected)
+--     --
+--     for tag, data in next, collected do
+-- --     for i=1,#sorted do
+-- --         local tag    = sorted[i]
+-- --         local data   = collected[tag]
+--         local region = data.r
+--         if region then
+--             local r = collected[region]
+--             if r then
+--                 local paragraphs = r.paragraphs
+--                 if not paragraphs then
+--                     r.paragraphs = { data }
+--                 else
+--                     paragraphs[#paragraphs+1] = data
+--                 end
+--                 nofusedregions = nofusedregions + 1
+--             else
+--                 nofmissingregions = nofmissingregions + 1
+--             end
+--         else
+--             nofregular = nofregular + 1
+--         end
+--         setmetatable(data,default)
+--     end
+--     -- add metatable
+--  -- for tag, data in next, collected do
+--  --     setmetatable(data,default)
+--  -- end
+--     -- sort this data
+--     for tag, data in next, collected do
+-- --     for i=1,#sorted do
+-- --         local tag    = sorted[i]
+-- --         local data   = collected[tag]
+--         local region = data.r
+--         if region then
+--             local r = collected[region]
+--             if r then
+--                 local paragraphs = r.paragraphs
+--                 if paragraphs and #paragraphs > 1 then
+--                     sort(paragraphs,sorter)
+--                 end
+--             end
+--         end
+--         -- so, we can be sparse and don't need 'or 0' code
+--     end
+--     jobpositions.used = next(collected)
+-- end
+
+-- todo: categories, like par, page, ... saves find and also ordered tags then
+
 local function initializer()
     tobesaved = jobpositions.tobesaved
     collected = jobpositions.collected
@@ -143,47 +213,50 @@ local function initializer()
             end
         end
     end
-    -- enhance regions with paragraphs
+    -- enhance regions with paragraphs -- could be a list of tags instead -- there can be too many
+    local regions = { }
+ -- for tag, data in sortedhash(collected) do --saves a sort later on but can be huge
     for tag, data in next, collected do
-        local region = data.r
-        if region then
-            local r = collected[region]
-            if r then
-                local paragraphs = r.paragraphs
-                if not paragraphs then
-                    r.paragraphs = { data }
-                else
+        if find(tag,"^p:") then
+            local region = data.r
+            if region then
+                local paragraphs = regions[region]
+                if paragraphs then
+                    local par = match(tag,"%d+")
+                    data.par = tonumber(par)
                     paragraphs[#paragraphs+1] = data
+                    nofusedregions = nofusedregions + 1
+                elseif r == false then
+                    nofmissingregions = nofmissingregions + 1
+                else
+                    local r = collected[region]
+                    if r then
+                        local par = match(tag,"%d+")
+                        data.par = tonumber(par)
+                        paragraphs = { data }
+                        regions[region] = paragraphs
+                        nofusedregions = nofusedregions + 1
+                        r.paragraphs = paragraphs
+                    else
+                        nofmissingregions = nofmissingregions + 1
+                        regions[region] = false
+                    end
                 end
-                nofusedregions = nofusedregions + 1
             else
-                nofmissingregions = nofmissingregions + 1
+                nofregular = nofregular + 1
             end
-        else
-            nofregular = nofregular + 1
         end
         setmetatable(data,default)
     end
-    -- add metatable
- -- for tag, data in next, collected do
- --     setmetatable(data,default)
- -- end
     -- sort this data
-    for tag, data in next, collected do
-        local region = data.r
-        if region then
-            local r = collected[region]
-            if r then
-                local paragraphs = r.paragraphs
-                if paragraphs and #paragraphs > 1 then
-                    sort(paragraphs,sorter)
-                end
-            end
+    for tag, paragraphs in next, regions do
+        if paragraphs then
+            sort(paragraphs,function(a,b) return a.par < b.par end)
         end
-        -- so, we can be sparse and don't need 'or 0' code
     end
     jobpositions.used = next(collected)
 end
+
 
 job.register('job.positions.collected', tobesaved, initializer)
 

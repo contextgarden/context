@@ -1294,10 +1294,11 @@
 
 % Some obsolete (old) helpers:
 
-\def\dodefinehbox[#1][#2]%
+\unexpanded\def\definehbox
+  {\dodoubleargument\spac_align_definehbox}
+
+\def\spac_align_definehbox[#1][#2]%
   {\setvalue{hbox#1}##1{\hbox to #2{\begstrut##1\endstrut\hss}}}
 
-\unexpanded\def\definehbox
-  {\dodoubleargument\dodefinehbox}
 
 \protect \endinput

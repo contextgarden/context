@@ -25,6 +25,8 @@
 %D Modules may provide additional alignment features. The following
 %D mechanisms are provided by the core.
 
+% why all these spans
+
 % n>1 ### needed, strange # interaction in recurse
 
 \newtoks\t_math_align_a
@@ -243,7 +245,8 @@
 
 \def\math_alignment_NC_first#1\NR
   {\glet\math_alignment_NC\math_alignment_NC_rest
-   \scratchtoks{\math_number_left_of_eqalign\aligntab#1\NR}%
+  %\scratchtoks{\math_number_left_of_eqalign\aligntab#1\NR}%
+   \scratchtoks{\aligntab#1\NR}%
    \dodoubleempty\math_alignment_NC_first_indeed}
 
 \def\math_alignment_NC_first_indeed[#1][#2]%
@@ -399,12 +402,12 @@
      \fi
    \fi}
 
-\def\math_number_left_of_eqalign
-  {\ifcase\wd\b_strc_formulas_number\else
-     \ifcase\c_strc_math_number_location\or
-       \box\b_strc_formulas_number
-     \fi
-   \fi}
+% \def\math_number_left_of_eqalign
+%   {\ifcase\wd\b_strc_formulas_number\else
+%      \ifcase\c_strc_math_number_location\or
+%        \box\b_strc_formulas_number
+%      \fi
+%    \fi}
 
 \def\math_eqalign_set_column#1% we could just add to the preamble (as with other alignments)
   {\expandafter\let\csname\??mathalignmentvariant\number\c_math_eqalign_column\expandafter\endcsname

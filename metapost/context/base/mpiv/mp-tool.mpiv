@@ -2290,7 +2290,7 @@ vardef unspiked expr p = (
 path originpath ; originpath := origin -- cycle ;
 
 vardef unitvector primary z =
-    if abs z = abs origin : z else : z/abs z fi
+    if abs z = abs origin : z else : z/abs z fi % hm, abs origin is just origin
 enddef;
 
 % also new
@@ -2971,5 +2971,35 @@ vardef loadmodule expr name =
       % s := "input " & s ;
         s := "input " & "mp-" & name & ".mpiv" ;
         expandafter scantokens expandafter s
+    fi ;
+enddef ;
+
+%D Handy for backgrounds:
+
+def drawpathwithpoints expr p =
+    do_drawpathwithpoints(p)
+enddef ;
+
+def do_drawpathwithpoints(expr p) text t =
+    draw p t ;
+    if length(p) > 2 :
+        begingroup ;
+        save _c_ ; path _c_ ;
+        save _p_; picture _p_ ;
+        _p_ := image (
+            _c_ := if cycle p : fullsquare else : fullcircle fi scaled 6pt ;
+            for i=0 upto length(p) if cycle p : -1 fi :
+                fill _c_ shifted point i of p withcolor white ;
+                draw _c_ shifted point i of p withcolor white/2 withpen pencircle scaled .5pt ;
+                if (i = 0) and cycle p :
+                    _c_ := fullcircle scaled 6pt ;
+                fi ;
+            endfor ;
+            for i=0 upto length(p) if cycle p : -1 fi :
+                draw textext("\infofont " & decimal i) ysized 2pt shifted point i of p ;
+            endfor ;
+        ) ;
+        setbounds _p_ to boundingbox p ;
+        draw _p_ ;
     fi ;
 enddef ;

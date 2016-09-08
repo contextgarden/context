@@ -249,11 +249,18 @@
  % liga=yes, % makes no sense
  % tlig=yes, % makes no sense
  % trep=yes, % makes no sense
+   mathnolimitsmode={0,750}, % this looks okay on the average font
    mathalternates=yes,
    mathitalics=yes, % we pass them
  % mathgaps=yes,
    language=dflt,
    script=math]
+
+\ifdefined\mathnolimitsmode
+    \mathnolimitsmode\plusone % font driven (only opentype)
+\fi
+
+% \adaptfontfeature[*math*][mathnolimitsmode=1000] % only subscript
 
 \definefontfeature
   [mathematics-l2r]

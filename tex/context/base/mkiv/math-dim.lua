@@ -99,6 +99,8 @@ local defaults = {
     radical_degree_before = { default                     = { "RadicalKernBeforeDegree",                  "(5/18)*quad" }, },
     radical_degree_after  = { default                     = { "RadicalKernAfterDegree",                   "(-10/18)*quad" }, },
     radical_degree_raise  = { default                     = { "RadicalDegreeBottomRaisePercent",          "60" }, },
+    no_limit_sub_factor   = { default                     = { "NoLimitSubFactor",                         "0" }, },
+    no_limit_sup_factor   = { default                     = { "NoLimitSupFactor",                         "0" }, },
 }
 
 local styles = {

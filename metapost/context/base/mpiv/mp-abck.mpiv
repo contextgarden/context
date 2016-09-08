@@ -50,17 +50,6 @@ numeric boxfilloffset    ; boxfilloffset    := 0 ;
 numeric boxgriddistance  ; boxgriddistance  := .5cm ;
 numeric boxgridshift     ; boxgridshift     := 0 ;
 
-def abck_show_path(expr p, r, c) =
-    draw p withpen pencircle scaled .5pt withcolor c ;
-    if length(p) > 2 :
-        begingroup ; save _c_ ; path _c_ ; _c_ := fullcircle scaled r ;
-        for i=0 upto length(p) if cycle p : -1 fi :
-            fill _c_ shifted point i of p withcolor white ;
-            draw _c_ shifted point i of p withpen pencircle scaled .5pt withcolor c ;
-        endfor ;
-    fi ;
-enddef ;
-
 vardef abck_draw_path(expr p) =
     if (length p > 2) and (bbwidth(p) > 1) and (bbheight(p) > 1) :
         save pp ; path pp ;
@@ -160,7 +149,7 @@ enddef ;
 
 def show_multi_pars =
     for i=1 upto nofmultipars :
-        abck_show_path(multipars[i], 6pt, .5blue) ;
+        drawpathwithpoints multipars[i] withcolor .5blue ;
     endfor ;
 enddef ;
 

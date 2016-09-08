@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['font-ctx'] = {
 
 local context, commands = context, commands
 
-local format, gmatch, match, find, lower, gsub, byte = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte
+local format, gmatch, match, find, lower, gsub, byte, topattern = string.format, string.gmatch, string.match, string.find, string.lower, string.gsub, string.byte, string.topattern
 local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.serialize, table.sort, table.fastcopy, table.merged
 local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, table.sequenced
 local settings_to_hash, hash_to_string = utilities.parsers.settings_to_hash, utilities.parsers.hash_to_string
@@ -156,13 +156,13 @@ helpers.name = getfontname
 
 if _LUAVERSION < 5.2  then
 
-    utilities.strings.formatters.add(formatters,"font:name",    [["'"..fontname(%s).."'"]],          "local fontname  = fonts.helpers.name")
-    utilities.strings.formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],"local sequenced = table.sequenced")
+    formatters.add(formatters,"font:name",    [["'"..fontname(%s).."'"]],          "local fontname  = fonts.helpers.name")
+    formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],"local sequenced = table.sequenced")
 
 else
 
-    utilities.strings.formatters.add(formatters,"font:name",    [["'"..fontname(%s).."'"]],          { fontname  = helpers.name })
-    utilities.strings.formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ sequenced = table.sequenced    })
+    formatters.add(formatters,"font:name",    [["'"..fontname(%s).."'"]],          { fontname  = helpers.name })
+    formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ sequenced = table.sequenced    })
 
 end
 
@@ -175,58 +175,62 @@ constructors.nofsharedhashes   = 0
 constructors.nofsharedvectors  = 0
 constructors.noffontsloaded    = 0
 
-local shares = { }
-local hashes = { }
+do
 
-function constructors.trytosharefont(target,tfmdata)
-    constructors.noffontsloaded = constructors.noffontsloaded + 1
-    if constructors.sharefonts then
-        local fonthash   = target.specification.hash
-        if fonthash then
-            local properties = target.properties
-            local fullname   = target.fullname
-            local sharedname = hashes[fonthash]
-            if sharedname then
-                -- this is ok for context as we know that only features can mess with font definitions
-                -- so a similar hash means that the fonts are similar too
-                if trace_defining then
-                    report_defining("font %a uses backend resources of font %a (%s)",target.fullname,sharedname,"common hash")
-                end
-                target.fullname = sharedname
-                properties.sharedwith = sharedname
-                constructors.nofsharedfonts = constructors.nofsharedfonts + 1
-                constructors.nofsharedhashes = constructors.nofsharedhashes + 1
-            else
-                -- the one takes more time (in the worst case of many cjk fonts) but it also saves
-                -- embedding time
-                local characters = target.characters
-                local n = 1
-                local t = { target.psname }
-                local u = sortedkeys(characters)
-                for i=1,#u do
-                    local k = u[i]
-                    n = n + 1 ; t[n] = k
-                    n = n + 1 ; t[n] = characters[k].index or k
-                end
-                local checksum   = md5.HEX(concat(t," "))
-                local sharedname = shares[checksum]
+    local shares = { }
+    local hashes = { }
+
+    function constructors.trytosharefont(target,tfmdata)
+        constructors.noffontsloaded = constructors.noffontsloaded + 1
+        if constructors.sharefonts then
+            local fonthash   = target.specification.hash
+            if fonthash then
+                local properties = target.properties
                 local fullname   = target.fullname
+                local sharedname = hashes[fonthash]
                 if sharedname then
+                    -- this is ok for context as we know that only features can mess with font definitions
+                    -- so a similar hash means that the fonts are similar too
                     if trace_defining then
-                        report_defining("font %a uses backend resources of font %a (%s)",fullname,sharedname,"common vector")
+                        report_defining("font %a uses backend resources of font %a (%s)",target.fullname,sharedname,"common hash")
                     end
-                    fullname = sharedname
-                    properties.sharedwith= sharedname
+                    target.fullname = sharedname
+                    properties.sharedwith = sharedname
                     constructors.nofsharedfonts = constructors.nofsharedfonts + 1
-                    constructors.nofsharedvectors = constructors.nofsharedvectors + 1
+                    constructors.nofsharedhashes = constructors.nofsharedhashes + 1
                 else
-                    shares[checksum] = fullname
+                    -- the one takes more time (in the worst case of many cjk fonts) but it also saves
+                    -- embedding time
+                    local characters = target.characters
+                    local n = 1
+                    local t = { target.psname }
+                    local u = sortedkeys(characters)
+                    for i=1,#u do
+                        local k = u[i]
+                        n = n + 1 ; t[n] = k
+                        n = n + 1 ; t[n] = characters[k].index or k
+                    end
+                    local checksum   = md5.HEX(concat(t," "))
+                    local sharedname = shares[checksum]
+                    local fullname   = target.fullname
+                    if sharedname then
+                        if trace_defining then
+                            report_defining("font %a uses backend resources of font %a (%s)",fullname,sharedname,"common vector")
+                        end
+                        fullname = sharedname
+                        properties.sharedwith= sharedname
+                        constructors.nofsharedfonts = constructors.nofsharedfonts + 1
+                        constructors.nofsharedvectors = constructors.nofsharedvectors + 1
+                    else
+                        shares[checksum] = fullname
+                    end
+                    target.fullname  = fullname
+                    hashes[fonthash] = fullname
                 end
-                target.fullname  = fullname
-                hashes[fonthash] = fullname
             end
         end
     end
+
 end
 
 directives.register("fonts.checksharing",function(v)
@@ -582,6 +586,15 @@ local function presetcontext(name,parent,features) -- will go to con and shared
     t.number = number
     setups[name] = t
     return number, t
+end
+
+local function adaptcontext(pattern,features)
+    local pattern = topattern(pattern,false,true)
+    for name in next, setups do
+        if find(name,pattern) then
+            presetcontext(name,name,features)
+        end
+    end
 end
 
 -- local function contextnumber(name) -- will be replaced
@@ -2120,6 +2133,12 @@ do
         name      = "definefontfeature",
         arguments = { "string", "string", "string" },
         actions   = presetcontext
+    }
+
+    implement {
+        name      = "adaptfontfeature",
+        arguments = { "string", "string" },
+        actions   = adaptcontext
     }
 
     local cache = { }

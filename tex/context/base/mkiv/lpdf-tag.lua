@@ -158,7 +158,6 @@ local function finishstructure()
         }
         addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
         --
-     -- for fulltag, element in next, elements do
         for fulltag, element in sortedhash(elements) do -- sorting is easier on comparing pdf
             pdfflushobject(element.knum,element.kids)
         end
@@ -192,7 +191,6 @@ local pdf_userproperties = pdfconstant("UserProperties")
 local function makeattribute(t)
     if t and next(t) then
         local properties = pdfarray()
-     -- for k, v in next, t do
         for k, v in sortedhash(t) do -- easier on comparing pdf
             properties[#properties+1] = pdfdictionary {
                 N = pdfunicode(k),

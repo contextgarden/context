@@ -59,7 +59,9 @@ local how = {
  -- RadicalKernAfterDegree          = "horizontal",
     ScriptPercentScaleDown          = "unscaled",
     ScriptScriptPercentScaleDown    = "unscaled",
-    RadicalDegreeBottomRaisePercent = "unscaled"
+    RadicalDegreeBottomRaisePercent = "unscaled",
+    NoLimitSupFactor                = "unscaled",
+    NoLimitSubFactor                = "unscaled",
 }
 
 function mathematics.scaleparameters(target,original)

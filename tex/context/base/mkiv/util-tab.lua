@@ -169,7 +169,8 @@ function table.tocsv(t,specification)
                     r[f] = tostring(field)
                 end
             end
-            result[#result+1] = concat(r,separator)
+         -- result[#result+1] = concat(r,separator)
+            result[i+1] = concat(r,separator)
         end
         return concat(result,"\n")
     else

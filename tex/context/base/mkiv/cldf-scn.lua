@@ -122,7 +122,7 @@ function interfaces.implement(specification)
         command = args
         for i=1,#actions do
             command = f_action_f(i,command)
-            f[#f+1] = f_action_s(i,i)
+            f[i] = f_action_s(i,i)
         end
         command = f_command(f,args,command)
         command = load(command)

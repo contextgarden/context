@@ -125,6 +125,12 @@
 \def\font_basics_define_font_feature[#featureset][#parent][#settings]%
   {\clf_definefontfeature{#featureset}{#parent}{#settings}}
 
+\unexpanded\def\adaptfontfeature
+  {\dodoubleargument\font_basics_adapt_font_feature}
+
+\def\font_basics_adapt_font_feature[#pattern][#settings]%
+  {\clf_adaptfontfeature{#pattern}{#settings}}
+
 \unexpanded\def\fontfeatureslist
   {\dodoubleargument\font_basics_features_list}
 

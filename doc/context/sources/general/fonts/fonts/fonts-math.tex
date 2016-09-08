@@ -993,6 +993,50 @@ The results are collected here:
 
 \stopsection
 
+\startsection[title=Italics and limits]
+
+An \OPENTYPE\ font treats italic correction differently from traditional fonts.
+For that reason we provide a bit of control over the way the correction is
+applied. There is a parameter \type {\mathnolimitsmode} that controls the
+correction.
+
+\definebodyfontenvironment[20pt]
+
+\startlinecorrection
+\startcombination[5*1]
+    {\ruledhbox to .15\hsize{\hss\showglyphs\switchtobodyfont[20pt]\mathnolimitsmode0$\displaystyle\int\nolimits^0_1$\hss}} {\tttf 0}
+    {\ruledhbox to .15\hsize{\hss\showglyphs\switchtobodyfont[20pt]\mathnolimitsmode1$\displaystyle\int\nolimits^0_1$\hss}} {\tttf 1}
+    {\ruledhbox to .15\hsize{\hss\showglyphs\switchtobodyfont[20pt]\mathnolimitsmode2$\displaystyle\int\nolimits^0_1$\hss}} {\tttf 2}
+    {\ruledhbox to .15\hsize{\hss\showglyphs\switchtobodyfont[20pt]\mathnolimitsmode3$\displaystyle\int\nolimits^0_1$\hss}} {\tttf 3}
+    {\ruledhbox to .15\hsize{\hss\showglyphs\switchtobodyfont[20pt]\mathnolimitsmode4$\displaystyle\int\nolimits^0_1$\hss}} {\tttf 4}
+\stopcombination
+\stoplinecorrection
+
+A value larger than 15 is interpreted as a factor (in the usual \TEX\ way 1000
+means 1.0). In \CONTEXT\ we set the value to 1 which means that the factors for
+super- and subscript are set via math parameters (or constants in the font). We
+use a default of \type {{0,750}} so we don't shift the superscript and the
+subscript we shift less than the italic correction. This is driven by a feature
+but you can change the values before loading a font, for instance with:
+
+\starttyping
+\adaptfontfeature[*math*][mathnolimitsmode={100,800}]
+\stoptyping
+
+The defaults come out as:
+
+\startlinecorrection
+\startcombination[5*1]
+    {\ruledhbox to .15\hsize{\hss\showglyphs\switchtobodyfont[modern,  20pt]$\displaystyle\int\nolimits^0_1$\hss}} {\tttf modern}
+    {\ruledhbox to .15\hsize{\hss\showglyphs\switchtobodyfont[xits,    20pt]$\displaystyle\int\nolimits^0_1$\hss}} {\tttf xits}
+    {\ruledhbox to .15\hsize{\hss\showglyphs\switchtobodyfont[lucidaot,20pt]$\displaystyle\int\nolimits^0_1$\hss}} {\tttf lucidaot}
+    {\ruledhbox to .15\hsize{\hss\showglyphs\switchtobodyfont[pagella, 20pt]$\displaystyle\int\nolimits^0_1$\hss}} {\tttf pagella}
+    {\ruledhbox to .15\hsize{\hss\showglyphs\switchtobodyfont[cambria, 20pt]$\displaystyle\int\nolimits^0_1$\hss}} {\tttf cambria}
+\stopcombination
+\stoplinecorrection
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

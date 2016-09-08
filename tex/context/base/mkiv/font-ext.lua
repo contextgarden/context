@@ -1162,10 +1162,47 @@ implement {
 --     name         = "ignoremathconstants",
 --     description  = "ignore math constants table",
 --     initializers = {
---         base = function(tfmdata,key,value)
+--         base = function(tfmdata,value)
 --             if value then
 --                 tfmdata.mathparameters = nil
 --             end
 --         end
 --     }
 -- }
+
+-- tfmdata.properties.mathnolimitsmode = tonumber(value) or 0
+
+do
+
+    local splitter  = lpeg.splitat(",",tonumber)
+    local lpegmatch = lpeg.match
+
+    local function initialize(tfmdata,value)
+        local mathparameters = tfmdata.mathparameters
+        if mathparameters then
+            local sup, sub
+            if type(value) == "string" then
+                sup, sub = lpegmatch(splitter,value)
+                if not sup then
+                    sub, sup = 0, 0
+                elseif not sub then
+                    sub, sup = sup, 0
+                end
+            elseif type(value) == "number" then
+                sup, sub = 0, value
+            end
+            mathparameters.NoLimitSupFactor = sup
+            mathparameters.NoLimitSubFactor = sub
+        end
+    end
+
+    registerotffeature {
+        name         = "mathnolimitsmode",
+        description  = "influence nolimits placement",
+        initializers = {
+            base = initialize,
+            node = initialize,
+        }
+    }
+
+end

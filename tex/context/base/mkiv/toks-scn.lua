@@ -292,7 +292,8 @@ function tokens.compile(specification)
             tokens._action = a
             for i=1,#a do
                 code    = f_action_f(i,code)
-                f[#f+1] = f_action_s(i,i)
+--                 f[#f+1] = f_action_s(i,i)
+n = n + 1 f[n] = f_action_s(i,i)
             end
             code = f_simple(f,code)
         else
@@ -309,7 +310,8 @@ function tokens.compile(specification)
                 tokens._action = a
                 for i=1,#a do
                     code    = f_action_f(i,code)
-                    f[#f+1] = f_action_s(i,i)
+--                     f[#f+1] = f_action_s(i,i)
+n = n + 1 f[n] = f_action_s(i,i)
                 end
             end
             code = f_table(f,ti,code)
@@ -318,7 +320,8 @@ function tokens.compile(specification)
             tokens._action = a
             for i=1,#a do
                 code    = f_action_f(i,code)
-                f[#f+1] = f_action_s(i,i)
+--                 f[#f+1] = f_action_s(i,i)
+n = n + 1 f[n] = f_action_s(i,i)
             end
             code = f_simple(f,code)
         else
@@ -365,7 +368,8 @@ function tokens.compile(specification)
             tokens._action = a
             for i=1,#a do
                 code    = f_action_f(i,code)
-                f[#f+1] = f_action_s(i,i)
+--                 f[#f+1] = f_action_s(i,i)
+n = n + 1 f[n] = f_action_s(i,i)
             end
         end
         code = f_sequence(c,f,p,code)

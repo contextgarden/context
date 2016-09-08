@@ -1283,7 +1283,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 5983, stripped down to: 2959
+-- original size: 6032, stripped down to: 2959
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -5252,7 +5252,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 36621, stripped down to: 19967
+-- original size: 36650, stripped down to: 19963
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5796,7 +5796,7 @@ local format_extension=function(extensions,f,name)
     local t={}
     for i=1,f do
       n=n+1
-      t[#t+1]="a"..n
+      t[i]="a"..n
     end
     return format(extension,unpack(t))
   end
@@ -5956,7 +5956,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 29007, stripped down to: 18742
+-- original size: 29054, stripped down to: 18735
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6110,7 +6110,7 @@ function table.tocsv(t,specification)
           r[f]=tostring(field)
         end
       end
-      result[#result+1]=concat(r,separator)
+      result[i+1]=concat(r,separator)
     end
     return concat(result,"\n")
   else
@@ -18873,8 +18873,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 802921
--- stripped bytes    : 291843
+-- original bytes    : 803046
+-- stripped bytes    : 291979
 
 -- end library merge
 

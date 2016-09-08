@@ -247,7 +247,7 @@ local mapping = {
 
 local function fieldactions(specification) -- share actions
     local d = nil
-    for key, target in next, mapping do
+    for key, target in sortedhash(mapping) do -- sort so that we can compare pdf
         local code = specification[key]
         if code and code ~= "" then
          -- local a = checked(code)

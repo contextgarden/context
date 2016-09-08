@@ -5,6 +5,7 @@ if not modules then modules = { } end modules ['toks-ini'] = {
     license   = "see context related readme files"
 }
 
+-- this will become a module
 
 local utfbyte, utfchar, utfvalues = utf.byte, utf.char, utf.values
 local format, gsub = string.format, string.gsub

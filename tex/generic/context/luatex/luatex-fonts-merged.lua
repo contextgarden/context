@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/06/16 19:11:21
+-- merge date  : 09/08/16 23:07:51
 
 do -- begin closure to overcome local limits and interference
 
@@ -3953,7 +3953,7 @@ local format_extension=function(extensions,f,name)
     local t={}
     for i=1,f do
       n=n+1
-      t[#t+1]="a"..n
+      t[i]="a"..n
     end
     return format(extension,unpack(t))
   end
@@ -5798,7 +5798,9 @@ end
 local unscaled={
   ScriptPercentScaleDown=true,
   ScriptScriptPercentScaleDown=true,
-  RadicalDegreeBottomRaisePercent=true
+  RadicalDegreeBottomRaisePercent=true,
+  NoLimitSupFactor=true,
+  NoLimitSubFactor=true,
 }
 function constructors.assignmathparameters(target,original)
   local mathparameters=original.mathparameters
