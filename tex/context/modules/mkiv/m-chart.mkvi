@@ -15,7 +15,6 @@
 %    flowsets
 %    autoscaling (bodyfontsteps)
 %    comment
-%    overlay
 %
 % todo:
 %    \useFLOWchart[name][parent][setting,setting][additional settings]
@@ -63,8 +62,6 @@
    \c!commentoffset=.5\bodyfontsize,
    \c!exitoffset=\zeropoint,
  % \c!split=\v!no,
- % \c!maxwidth=,
- % \c!maxheight=,
  % \c!option=,
  % \c!bodyfont=,
  % \c!dot=, % private option
@@ -307,7 +304,7 @@
 
 \unexpanded\def\module_charts_FLOW_include          [#name][#settings]{%
     \begingroup
-        \getparameters[FLOWi][x=1,y=1,#settings]%
+        \getparameters[FLOWi][\c!x=1,\c!y=1,#settings]%
         \ctxcommand{flow_set_include("#name",\number\FLOWix,\number\FLOWiy,\!!bs\detokenize{#settings}\!!es)}%
     \endgroup
     \ignorespaces
@@ -315,7 +312,8 @@
 
 \setvariables
   [flowcell:text]
-  [x=1,
+  [n=0,
+   x=1,
    y=1,
    text=,
    align=,
@@ -323,8 +321,6 @@
 
 \def\FLOWx{\getvariable{flowcell:text}{x}} % compatibility (for Willi)
 \def\FLOWy{\getvariable{flowcell:text}{y}} % compatibility (for Willi)
-
-% \c!background={\@@FLOWbackground,\FLOWoverlay},
 
 \defineoverlay
   [flowcell:figure]
@@ -335,13 +331,15 @@
         \iftrialtypesetting
             \directsetup{flowcell:text:place:indeed}
         \else \iflocation
-            \doifelsenothing {\getvariable{flowcell:text}{destination}} {
+            \edef\flowcelldestination{\getvariable{flowcell:text}{destination}}%
+            \ifx\flowcelldestination\empty
                 \directsetup{flowcell:text:place:indeed}
-            } {
+            \else
                 % tricky: scaling and moving around is not taken into account
-                \setupinteraction[\c!color=,\c!contrastcolor=]
-                \gotobox{\directsetup{flowcell:text:place:indeed}}[\getvariable{flowcell:text}{destination}]
-            }
+                \letinteractionparameter\c!color\empty
+                \letinteractionparameter\c!contrastcolor\empty
+                \gotobox{\directsetup{flowcell:text:place:indeed}}[\flowcelldestination]
+            \fi
         \else
             \directsetup{flowcell:text:place:indeed}
         \fi \fi
@@ -351,16 +349,40 @@
 \startsetups flowcell:text:place:indeed
     \begingroup
         \directsetup{flowcell:text:user}
-        \doifelsenothing {\getvariable{flowcell:text}{figure}} {
-            \expandcheckedcsname{flowcell:}{\getvariable{flowcell:text}{align}}\empty
-                {\getvariable{flowcell:text}{text}}
-            } {
-                \expandcheckedcsname{flowcell:}{\getvariable{flowcell:text}{align}}\empty
-                    [\c!background=flowcell:figure]
-                    {\getvariable{flowcell:text}{text}}
-            }
+        \edef\flowcellfigure {\getvariable{flowcell:text}{figure}}%
+        \edef\flowcelloverlay{\getvariable{flowcell:text}{overlay}}%
+        \edef\flowcellalign  {\getvariable{flowcell:text}{align}}%
+        \edef\flowcellindex  {\getvariable{flowcell:text}{n}}%
+        \ifx\flowcellfigure\empty
+            \ifx\flowcelloverlay\empty
+                \expandcheckedcsname{flowcell:}\flowcellalign\empty
+                    % {\getvariable{flowcell:text}{text}}
+                      {\getFLOWtext\flowcellindex}
+            \else
+                \expandcheckedcsname{flowcell:}\flowcellalign\empty
+                    [\c!background={\flowcelloverlay}]
+                  % {\getvariable{flowcell:text}{text}}
+                    {\getFLOWtext\flowcellindex}
+            \fi
+        \else
+            \expandcheckedcsname{flowcell:}\flowcellalign\empty
+                [\c!background=flowcell:figure]
+              % {\getvariable{flowcell:text}{text}}
+                {\getFLOWtext\flowcellindex}
+        \fi
     \endgroup
 \stopsetups
+
+\unexpanded\def\doFLOWlabel#1#2#3%
+  {\begingroup
+   \def\FLOWx{#1}%
+   \def\FLOWy{#2}%
+   \strut
+   \getFLOWtext{#3}%
+   \endgroup}
+
+\unexpanded\def\getFLOWtext#1%
+  {\ifcase#1\else\ctxcommand{flow_get_text(#1)}\fi}
 
 \defineframed % to be discussed: shape or global
   [flowcell:base]

@@ -102,7 +102,8 @@ typesetters.kerns        = typesetters.kerns or { }
 local kerns              = typesetters.kerns
 
 local report             = logs.reporter("kerns")
-local trace_ligatures    = false  trackers.register("typesetters.kerns.ligatures",function(v) trace_ligatures = v end)
+local trace_ligatures    = false  trackers.register("typesetters.kerns.ligatures",       function(v) trace_ligatures   = v end)
+local trace_ligatures_d  = false  trackers.register("typesetters.kerns.ligatures.detail",function(v) trace_ligatures_d = v end)
 
 -- use_advance is just an experiment: it makes copying glyphs (instead of new_glyph) dangerous
 
@@ -144,18 +145,24 @@ function kerns.keepligature(n) -- might become default
         local c = getchar(n)
         local d = fontdescriptions[f][c].name
         if a > 0 and contextsetups[a].keepligatures == v_auto then
-            report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"kept","dynamic","keepligatures")
+            if trace_ligatures_d then
+                report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"kept","dynamic","keepligatures")
+            end
             setcolor(n,"darkred")
             return true
         end
         local k = fontfeatures[f].keepligatures
         if k == v_auto then
-            report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"kept","static","keepligatures")
+            if trace_ligatures_d then
+                report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"kept","static","keepligatures")
+            end
             setcolor(n,"darkgreen")
             return true
         end
         if not k then
-            report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"split","static","keepligatures")
+            if trace_ligatures_d then
+                report("font %!font:name!, glyph %a, slot %X -> ligature %s, by %s feature %a",f,d,c,"split","static","keepligatures")
+            end
             resetcolor(n)
             return false
         end

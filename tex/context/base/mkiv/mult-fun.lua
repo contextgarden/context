@@ -94,7 +94,7 @@ return {
         --
         "pushcurrentpicture", "popcurrentpicture",
         --
-        "arrowpath",
+        "arrowpath", "resetarrows",
      -- "colorlike",  "dowithpath", "rangepath", "straightpath", "addbackground",
      -- "cleanstring", "asciistring", "setunstringed", "getunstringed", "unstringed",
      -- "showgrid",

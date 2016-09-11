@@ -1472,8 +1472,7 @@ extra_beginfig := extra_beginfig & " miterlimit  := 10 ; "   ; % restores
 extra_beginfig := extra_beginfig & " linejoin := rounded ; " ; % restores
 extra_beginfig := extra_beginfig & " linecap  := rounded ; " ; % restores
 
-%D Normally, arrowheads don't scale well. So we provide a
-%D hack.
+%D Normally, arrowheads don't scale well. So we provide a hack.
 
 boolean autoarrows ; autoarrows := false ;
 numeric ahfactor   ; ahfactor   := 2.5 ;

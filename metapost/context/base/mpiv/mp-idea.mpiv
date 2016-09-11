@@ -28,3 +28,17 @@ vardef somecolor = (1,1,0,0) enddef ;
 
 fill OverlayBox withcolor (rcomponent somecolor,gcomponent somecolor,bcomponent somecolor) ;
 fill OverlayBox withcolor (ccomponent somecolor,mcomponent somecolor,ycomponent somecolor,bcomponent somecolor) ;
+
+% def newcolor     text v = forsuffixes i=v : save i ; color     i ; endfor ; enddef ;
+% def newnumeric   text v = forsuffixes i=v : save i ; numeric   i ; endfor ; enddef ;
+% def newboolean   text v = forsuffixes i=v : save i ; boolean   i ; endfor ; enddef ;
+% def newtransform text v = forsuffixes i=v : save i ; transform i ; endfor ; enddef ;
+% def newpath      text v = forsuffixes i=v : save i ; path      i ; endfor ; enddef ;
+% def newpicture   text v = forsuffixes i=v : save i ; picture   i ; endfor ; enddef ;
+% def newstring    text v = forsuffixes i=v : save i ; string    i ; endfor ; enddef ;
+
+% width := 10 ;
+% beginfig(1) ;
+%   newpath width, height ; width := origin -- cycle ;
+% endfig ;
+% width := 10 ;

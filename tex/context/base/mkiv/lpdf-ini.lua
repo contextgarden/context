@@ -1018,7 +1018,7 @@ end
 
 do
 
-    local timestamp = os.date("%Y-%m-%dT%X") .. os.timezone(true)
+    local timestamp = backends.timestamp()
 
     function lpdf.timestamp()
         return timestamp
@@ -1029,7 +1029,7 @@ do
             n = converters.totime(n)
             if n then
                 converters.settime(n)
-                timestamp = os.date("%Y-%m-%dT%X",os.time(n)) .. os.timezone(true)
+                timestamp = backends.timestamp()
             end
         end
         return timestamp

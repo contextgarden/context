@@ -13,7 +13,7 @@
 
 if known context_asnc : endinput ; fi ;
 
-boolean context_av ; context_asnc := true ;
+boolean context_asnc ; context_asnc := true ;
 
 % will be replaced
 

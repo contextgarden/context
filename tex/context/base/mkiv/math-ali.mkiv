@@ -230,12 +230,9 @@
 \def\math_handle_eqalign_no_l_aligned{\math_both_eqalign_no_aligned\math_prepare_l_eqalign_no}
 \def\math_finish_eqalign_no          {\crcr\egroup}
 
-\let     \reqalignno \math_handle_eqalign_no_r_normal
-\let     \leqalignno \math_handle_eqalign_no_l_normal
-\let\alignreqalignno \math_handle_eqalign_no_r_aligned
-\let\alignleqalignno \math_handle_eqalign_no_l_aligned
-\let      \eqalignno \math_handle_eqalign_no_r_normal
-\let \aligneqalignno \math_handle_eqalign_no_r_aligned
+\let\reqalignno\relax
+\let\leqalignno\relax
+\let\eqalignno \relax
 
 %D Here we implement the user interface part. We start with basic math alignments:
 
@@ -245,8 +242,7 @@
 
 \def\math_alignment_NC_first#1\NR
   {\glet\math_alignment_NC\math_alignment_NC_rest
-  %\scratchtoks{\math_number_left_of_eqalign\aligntab#1\NR}%
-   \scratchtoks{\aligntab#1\NR}%
+   \scratchtoks{\math_number_left_of_eqalign\aligntab#1\NR}% \math_number_left_of_eqalign not used yet
    \dodoubleempty\math_alignment_NC_first_indeed}
 
 \def\math_alignment_NC_first_indeed[#1][#2]%
@@ -395,19 +391,27 @@
      \ifcase\lastnamedcs \or \hfill \or \relax \or \hfill \fi
    \fi}
 
+\newconditional\c_math_alignment_local_number % not used but when true puts in front (todo)
+
 \def\math_number_right_of_eqalign
   {\ifcase\wd\b_strc_formulas_number\else
-     \ifcase\c_strc_math_number_location\or\or
+     \ifconditional\c_math_alignment_local_number
+       \ifcase\c_strc_math_number_location\or\or
+         \box\b_strc_formulas_number
+       \fi
+     \else
        \box\b_strc_formulas_number
      \fi
    \fi}
 
-% \def\math_number_left_of_eqalign
-%   {\ifcase\wd\b_strc_formulas_number\else
-%      \ifcase\c_strc_math_number_location\or
-%        \box\b_strc_formulas_number
-%      \fi
-%    \fi}
+\def\math_number_left_of_eqalign
+  {\ifcase\wd\b_strc_formulas_number\else
+     \ifconditional\c_math_alignment_local_number
+       \ifcase\c_strc_math_number_location\or
+         \box\b_strc_formulas_number
+       \fi
+     \fi
+   \fi}
 
 \def\math_eqalign_set_column#1% we could just add to the preamble (as with other alignments)
   {\expandafter\let\csname\??mathalignmentvariant\number\c_math_eqalign_column\expandafter\endcsname

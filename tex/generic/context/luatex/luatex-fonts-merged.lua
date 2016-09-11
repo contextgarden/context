@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/08/16 23:07:51
+-- merge date  : 09/11/16 20:52:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -12841,7 +12841,7 @@ function readers.gdef(f,fontdata,specification)
           end
         end
       end
-      if marksetsoffset then
+      if marksetsoffset and marksetsoffset>tableoffset then 
         setposition(f,marksetsoffset)
         local format=readushort(f)
         if format==1 then

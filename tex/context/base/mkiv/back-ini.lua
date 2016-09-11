@@ -120,3 +120,22 @@ interfaces.implement {
         nodes.tasks.setaction("shipouts","nodes.handlers.accessibility",v == interfaces.variables.yes)
     end
 }
+
+-- moved to here
+
+local included = table.setmetatableindex( {
+    context  = true,
+    id       = true,
+    metadata = true,
+    date     = true,
+    id       = true,
+    pdf      = true,
+}, function(t,k)
+    return true
+end)
+
+backends.included = included
+
+function backends.timestamp()
+    return os.date("%Y-%m-%dT%X") .. os.timezone(true)
+end

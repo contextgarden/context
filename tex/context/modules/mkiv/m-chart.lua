@@ -10,24 +10,28 @@ if not modules then modules = { } end modules ['x-flow'] = {
 -- use metapost.graphic(....) directly
 
 -- todo: labels
+-- todo: named colors
 
-moduledata.charts = moduledata.charts or { }
-
-local gsub, match, find, format, lower = string.gsub, string.match, string.find, string.format, string.lower
-local setmetatableindex = table.setmetatableindex
+local type, tonumber, rawget, next = type, tonumber, rawget, next
+local gsub, find, lower = string.gsub, string.find, string.lower
 local P, S, C, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.C, lpeg.Cc, lpeg.match
 
-local report_chart = logs.reporter("chart")
+local formatters        = string.formatters
+local setmetatableindex = table.setmetatableindex
 
-local variables  = interfaces.variables
+moduledata.charts       = moduledata.charts or { }
 
-local v_yes      = variables.yes
-local v_no       = variables.no
-local v_none     = variables.none
-local v_standard = variables.standard
-local v_overlay  = variables.overlay
-local v_round    = variables.round
-local v_test     = variables.test
+local report_chart      = logs.reporter("chart")
+
+local variables         = interfaces.variables
+
+local v_yes             = variables.yes
+local v_no              = variables.no
+local v_none            = variables.none
+local v_standard        = variables.standard
+local v_overlay         = variables.overlay
+local v_round           = variables.round
+local v_test            = variables.test
 
 local defaults = {
     chart = {
@@ -252,8 +256,8 @@ end
 
 function commands.flow_set_text(align,str)
     temp.texts[#temp.texts+1] = {
-        location = align,
-        text = str,
+        align = align,
+        text  = str,
     }
 end
 
@@ -504,7 +508,7 @@ local function process_cells(chart,xoffset,yoffset)
                 if shapedata.kind == "line" then
                     local linesettings = settings.line
                     context("flow_shape_line_color := \\MPcolor{%s} ;", linesettings.color)
-                    context("flow_shape_fill_color := \\MPcolor{%s} ;", linesettings.backgroundcolor)
+                    context("flow_shape_fill_color := black ;")
                     context("flow_shape_line_width := %p ; ",           linesettings.rulethickness)
                 elseif focus[cell.focus] or focus[cell.name] then
                     local focussettings = settings.focus
@@ -597,9 +601,17 @@ local function process_connections(chart,xoffset,yoffset)
     end
 end
 
-local texttemplate = "\\setvariables[flowcell:text][x=%s,y=%s,text={%s},align={%s},figure={%s},destination={%s}]"
+local f_texttemplate_t = formatters["\\setvariables[flowcell:text][x=%s,y=%s,n=%i,align={%s},figure={%s},overlay={%s},destination={%s}]"]
+local f_texttemplate_l = formatters["\\doFLOWlabel{%i}{%i}{%i}"]
 
-local splitter = lpeg.splitat(":")
+local splitter   = lpeg.splitat(":")
+local charttexts = { } -- permits " etc in mp
+
+function commands.flow_get_text(n)
+    if n > 0 then
+        context(charttexts[n])
+    end
+end
 
 local function process_texts(chart,xoffset,yoffset)
     local data = chart.data
@@ -607,41 +619,59 @@ local function process_texts(chart,xoffset,yoffset)
     if not data then
         return
     end
+    charttexts = { }
     for i=1,#data do
         local cell = visible(chart,data[i])
         if cell then
-            local x = cell.x or 1
-            local y = cell.y or 1
-            local texts = cell.texts
-            for i=1,#texts do
-                local text = texts[i]
-                local data = text.text
-                local align = validlabellocations[text.align or ""] or text.align or ""
-                local figure = i == 1 and cell.figure or ""
-                local destination = i == 1 and cell.destination or ""
-                context('flow_chart_draw_text(%s,%s,textext("%s")) ;',x,y,format(texttemplate,x,y,data,align,figure,destination))
+            local x           = cell.x or 1
+            local y           = cell.y or 1
+            local figure      = cell.figure or ""
+            local overlay     = cell.overlay or ""
+            local destination = cell.destination or ""
+            local texts       = cell.texts
+            local noftexts    = #texts
+            if noftexts > 0 then
+                for i=1,noftexts do
+                    local text  = texts[i]
+                    local data  = text.text
+                    local align = text.align or ""
+                    local align = validlabellocations[align] or align
+                    charttexts[#charttexts+1] = data
+                    context('flow_chart_draw_text(%s,%s,textext("%s")) ;',x,y,f_texttemplate_t(x,y,#charttexts,align,figure,overlay,destination))
+                    if i == 1 then
+                        figure      = ""
+                        overlay     = ""
+                        destination = ""
+                    end
+                end
+            elseif figure ~= "" or overlay ~= "" or destination ~= "" then
+                context('flow_chart_draw_text(%s,%s,textext("%s")) ;',x,y,f_texttemplate_t(x,y,0,"",figure,overlay,destination))
             end
             local labels = cell.labels
             for i=1,#labels do
-                local label = labels[i]
-                local text = label.text
-                local location = validlabellocations[label.location or ""] or label.location or ""
-                if text and location then
-                    context('flow_chart_draw_label(%s,%s,"%s",textext("\\strut %s")) ;',x,y,location,text)
+                local label    = labels[i]
+                local text     = label.text
+                local location = label.location or ""
+                local location = validlabellocations[location] or location
+                if text and text ~= "" then
+                    charttexts[#charttexts+1] = text
+                    context('flow_chart_draw_label(%s,%s,"%s",textext("%s")) ;',x,y,location,f_texttemplate_l(x,y,#charttexts))
                 end
             end
             local exits = cell.exits
             for i=1,#exits do
-                local exit = exits[i]
-                local text = exit.text
-                local location = validlabellocations[exit.location or ""]
-                if text and location then
+                local exit     = exits[i]
+                local text     = exit.text
+                local location = exit.location or ""
+                local location = validlabellocations[location] or location
+                if text ~= "" then
                     -- maybe make autoexit an option
                     if location == "l" and x == chart.from_x + 1 or
                        location == "r" and x == chart.to_x   - 1 or
                        location == "t" and y == chart.to_y   - 1 or
                        location == "b" and y == chart.from_y + 1 then
-                        context('flow_chart_draw_exit(%s,%s,"%s",textext("\\strut %s")) ;',x,y,location,text)
+                        charttexts[#charttexts+1] = text
+                        context('flow_chart_draw_exit(%s,%s,"%s",textext("%s")) ;',x,y,location,f_texttemplate_l(x,y,#charttexts))
                     end
                 end
             end
@@ -649,10 +679,10 @@ local function process_texts(chart,xoffset,yoffset)
             for i=1,#connections do
                 local comments = connections[i].comments
                 for j=1,#comments do
-                    local comment = comments[j]
-                    local text = comment.text
+                    local comment  = comments[j]
+                    local text     = comment.text
                     local location = comment.location or ""
-                    local length = 0
+                    local length   = 0
                     -- "tl" "tl:*" "tl:0.5"
                     local loc, len = lpegmatch(splitter,location) -- do the following in lpeg
                     if len == "*" then
@@ -664,12 +694,13 @@ local function process_texts(chart,xoffset,yoffset)
                         end
                     elseif loc then
                         location = validcommentlocations[loc] or "*"
-                        length = tonumber(len) or 0
+                        length   = tonumber(len) or 0
                     else
                         location = validcommentlocations[location] or ""
                     end
-                    if text and location then
-                        context('flow_chart_draw_comment(%s,%s,%s,"%s",%s,textext("\\strut %s")) ;',x,y,i,location,length,text)
+                    if text and text ~= "" then
+                        charttexts[#charttexts+1] = text
+                        context('flow_chart_draw_comment(%s,%s,%s,"%s",%s,textext("%s")) ;',x,y,i,location,length,f_texttemplate_l(x,y,#charttexts))
                     end
                 end
             end
@@ -837,6 +868,9 @@ local function makechart(chart)
     context("flow_chart_offset := %p ;",offset)
     --
     context("flow_reverse_y := true ;")
+if chartsettings.option == v_test then
+    context("flow_draw_test_shapes ;")
+end
     process_cells(chart,0,0)
     process_connections(chart,0,0)
     process_texts(chart,0,0)

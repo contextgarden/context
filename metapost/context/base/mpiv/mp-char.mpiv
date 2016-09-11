@@ -678,14 +678,14 @@ vardef flow_valid_connection (expr xfrom, yfrom, xto, yto) =
             flow_xypoints[flow_xypoint] := flow_xylast ;
             for i=1 upto flow_max_x :
                 for j=1 upto flow_max_y :                % was bug: xfrom,yto
-                    if not ( ( (i,j)=(xfrom,yfrom) ) or ( (i,j)=(xto,yto) ) ) :
+%                     if not ( ( (i,j)=(xfrom,yfrom) ) or ( (i,j)=(xto,yto) ) ) :
                         if not flow_xyfree[i][j] :
                             vc := pp intersection_point flow_xypath[i][j] ;
                             if intersection_found :
                                 ok := false
                             fi ;
                         fi ;
-                    fi ;
+%                     fi ;
                 endfor ;
             endfor ;
             % if not ok: message("crossing") ; fi ;
@@ -944,20 +944,27 @@ def flow_connect_bottom_right (expr n) (expr xfrom,yfrom,zfrom) (expr xto,yto,zt
 enddef ;
 
 def flow_draw_test_shape(expr x, y) =
-    flow_draw_shape(x,y,fullcircle, .7, .7) ;
+    flow_draw_shape(x,y,fullcircle,flow_shape_width/flow_grid_width,flow_shape_height/flow_grid_height) ;
 enddef ;
 
 def flow_draw_test_shapes =
+    flow_draw_test_area ;
     for i=1 upto flow_max_x :
         for j=1 upto flow_max_y :
             flow_draw_test_shape(i,j) ;
+            flow_chart_draw_label(i,j,"",textext("\ttx(" & decimal i & "," & decimal j & ")"))
         endfor ;
     endfor ;
 enddef;
 
 def flow_draw_test_area =
     pickup pencircle scaled .5flow_shape_line_width ;
-    draw (unitsquare xscaled flow_max_x yscaled flow_max_y shifted (1,1)) flow_scaled_to_grid withcolor blue ;
+    for i=1 upto flow_max_x + 1 :
+        draw ((i,1) -- (i,flow_max_y+1)) flow_scaled_to_grid withcolor white/2 ;
+    endfor ;
+    for i=1 upto flow_max_y + 1 :
+        draw ((1,i) -- (flow_max_x+1,i)) flow_scaled_to_grid withcolor white/2 ;
+    endfor ;
 enddef ;
 
 def flow_show_connection(expr n, m) =

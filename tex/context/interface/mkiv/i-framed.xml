@@ -93,9 +93,7 @@
                     <cd:constant type="none"/>
                 </cd:parameter>
                 <cd:parameter name="background">
-                    <cd:constant type="foreground"/>
-                    <cd:constant type="color"/>
-                    <cd:constant type="cd:name"/>
+                    <cd:resolve name="value-background"/>
                 </cd:parameter>
                 <cd:parameter name="backgroundoffset">
                     <cd:constant type="frame"/>

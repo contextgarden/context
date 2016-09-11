@@ -94,16 +94,7 @@ pdf.setsuppressoptionalinfo(
  -- + 512 -- pdfnoid
 )
 
-local included = table.setmetatableindex( {
-    context  = true,
-    id       = true,
-    metadata = true,
-    date     = true,
-    id       = true,
-    pdf      = true,
-}, function(t,k)
-    return true
-end)
+local included = backends.included
 
 function lpdf.settrailerid(v)
     if v then

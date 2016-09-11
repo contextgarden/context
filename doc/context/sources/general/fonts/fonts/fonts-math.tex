@@ -996,9 +996,12 @@ The results are collected here:
 \startsection[title=Italics and limits]
 
 An \OPENTYPE\ font treats italic correction differently from traditional fonts.
-For that reason we provide a bit of control over the way the correction is
-applied. There is a parameter \type {\mathnolimitsmode} that controls the
-correction.
+Officially the italic correction is used for placement above and below limits
+where the scripts shift left and right half of the correction from the center of
+the shape. Advanced kerns are then to be used for anchoring the scripts when they
+are placed at the right side (so far no fonts seem to do this). Because we cannot
+foresee if fonts compensate for correction then we can control placement a bit.
+There is a parameter \type {\mathnolimitsmode} that controls the correction.
 
 \definebodyfontenvironment[20pt]
 
@@ -1013,11 +1016,14 @@ correction.
 \stoplinecorrection
 
 A value larger than 15 is interpreted as a factor (in the usual \TEX\ way 1000
-means 1.0). In \CONTEXT\ we set the value to 1 which means that the factors for
-super- and subscript are set via math parameters (or constants in the font). We
-use a default of \type {{0,750}} so we don't shift the superscript and the
-subscript we shift less than the italic correction. This is driven by a feature
-but you can change the values before loading a font, for instance with:
+means 1.0). We have some values left for future use when correction is to be
+combined with kerns.
+
+In \CONTEXT\ we set the value to 1 which means that the factors for super- and
+subscript are set via math parameters (or constants in the font). We use a
+default of \type {{0,750}} so we don't shift the superscript and the subscript we
+shift less than the italic correction. This is driven by a feature but you can
+change the values before loading a font, for instance with:
 
 \starttyping
 \adaptfontfeature[*math*][mathnolimitsmode={100,800}]

@@ -1,0 +1,1339 @@
+% interface=en engine=luatex language=uk
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+
+% somewhat general (derived from mcommon.tex)
+
+\usemodule[abr-02]
+
+\usemodule[setups-basics] \loadsetups[i-chart.xml]
+
+\setupexternalfigures
+  [location={local,default}]
+
+\setuplayout
+  [topspace=15mm,
+   header=15mm,
+   headerdistance=0mm,
+   footer=0cm,
+   width=middle,
+   height=middle]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\definetypeface [mainface] [rm] [serif] [pagella] [default]
+\definetypeface [mainface] [ss] [sans]  [heros]   [default] % [rscale=1.1]
+\definetypeface [mainface] [tt] [mono]  [modern]  [default] % [rscale=1.1]
+\definetypeface [mainface] [mm] [math]  [pagella] [default]
+
+\setupbodyfont[mainface,12pt]
+
+% \definecolor[maincolor][r=.4,g=.2,b=.6]
+\definecolor[maincolor][r=.2,g=.1,b=.3]
+
+\setupwhitespace
+  [big]
+
+\setuptolerance
+  [verytolerant,stretch]
+
+\setuptype
+  [color=maincolor]
+
+\setuptyping
+  [color=maincolor]
+
+\setuphead
+  [section]
+  [style=\bfb,
+   color=maincolor]
+
+\setupinteraction
+  [state=start,
+   color=,
+   contrastcolor=,
+   style=]
+
+\startsetups titlepage
+    \startpagemakeup[doublesided=no,page=no]
+        \useMPgraphic{titlepage}
+    \stoppagemakeup
+    \startstandardmakeup[doublesided=no,page=no]
+        \vfill
+        \startsubject[title=Contents]
+            \startcolumns[distance=4em]
+                \placelist[section][alternative=c,width=2em]
+            \stopcolumns
+        \stopsubject
+    \stopstandardmakeup
+\stopsetups
+
+\startsetups colofon
+    \blank[2*big]
+    \testpage[3]
+    \startpacked
+        \documentvariable{author}\par
+        \documentvariable{affiliation}\par
+        \documentvariable{location}\par
+    \stoppacked
+\stopsetups
+
+\setupdocument
+  [title=No Title,
+   before=\setups{titlepage},
+   after=\setups{colofon}]
+
+% specific for this document
+
+\usemodule[chart]
+
+\setupFLOWcharts
+  [width=2.25cm,
+   height=1.25cm,
+   dx=.25cm,
+   dy=.25cm]
+
+\startuseMPgraphic{titlepage}
+    numeric width, height, delta ;
+    color a, b, c, d ;
+
+    width    := PaperWidth ;
+    height   := PaperHeight ;
+    delta    := width/10 ;
+    ahlength := 6delta ;
+
+    a := white/2 ;
+    b := white/3 ;
+    c := resolvedcolor ("maincolor") ;
+    d := c ;
+
+    path p ; p := unitsquare xscaled width yscaled height ;
+
+    fill p withcolor c ;
+
+    drawarrow llcorner p -- urcorner p withpen pencircle scaled (3.0delta) withcolor a ;
+    draw      llcorner p -- urcorner p withpen pencircle scaled (4.0delta) withcolor a ;
+    drawarrow urcorner p -- llcorner p withpen pencircle scaled (2.5delta) withcolor b ;
+    draw      llcorner p -- urcorner p withpen pencircle scaled (3.0delta) withcolor b ;
+    drawarrow llcorner p -- urcorner p withpen pencircle scaled (2.0delta) withcolor d ;
+    drawarrow urcorner p -- llcorner p withpen pencircle scaled (1.5delta) withcolor d ;
+
+    draw anchored.lrt(
+        textext("\ss\bf \documentvariable{title}") rotated 90 xsized (3delta/4),
+        lrcorner p shifted (-delta,3delta/4)
+    ) withcolor white ;
+
+    resetarrows ;
+
+    setbounds currentpicture to p ;
+\stopuseMPgraphic
+
+\startdocument
+  [title=Flowcharts,
+   author= Hans Hagen,
+   affiliation=PRAGMA ADE,
+   location=Hasselt NL]
+
+\startsection[reference=introduction,title={Introduction}]
+
+This is just another story of \TEX\ meeting \METAPOST. This time we will focus on
+charts, especially flowcharts. In \CONTEXT\ flowchart support is not part of the
+core functionality, but is provided as a module. Therefore, before you can
+actually define a chart, this module must be loaded:
+
+\starttyping
+\usemodule[chart]
+\stoptyping
+
+Once loaded, you has access to the functionality described here. Before we go
+into detail on the features, we will say some words on history.
+
+When dealing with graphics, it makes sense to use a drawing program. In fact,
+before we started using this module, we did use such programs, and they have
+without doubt their advantages. As soon as \CONTEXT\ supported interactive
+documents, there were means to make graphics interactive, and as long as only a
+few graphics are involved, this mechanism works ok.
+
+And then we suddenly had to make a document with thousands of pages and hundreds
+of often rather complicated flowcharts. Because these charts were tightly
+integrated in the main document, they not only had to be consistent in the use of
+fonts, but also had to be interactive and were to be presented both as a whole
+and in subchart parts. We wanted fonts, colors and the overall appearance as well
+as names of people, places, steps, activities and more to be consistent,
+especially because these charts are constantly updated.
+
+I use the term flowchart here because I want to stress that this module typesets
+charts which cells are connected by lines (often arrows). Our first application
+of this module concerned diagrams that expressed actions and relations between
+those actions, using some techniques originating years ago in programming
+environments: lines were not to cross, one should read from top to bottom and
+left to right, etc. However, the module presented here can be used to draw all
+kind of charts, and all kind of connections. But there are limits.
+
+{\em This manual is mostly the one written of end 1998 when the flowchart module
+showed up in the distribution. In the meantime the code has been rewritten for
+\MKIV\ and some functionality is adapted. But the interface hasn't changed much.}
+
+\stopsection
+
+\startsection[title={The grid}]
+
+A flowchart consists of shapes, positioned on a grid, connected by lines. The
+grid enables the user to anchor the shapes and enables the drawing routines to
+determine connections. One can either explicitly specify the grid, or let it be
+calculated automatically.
+
+\startbuffer[grid]
+\setupFLOWcharts
+  [option=test,
+   nx=4,
+   ny=3,
+   dx=\bodyfontsize,
+   dy=\bodyfontsize,
+   width=6\bodyfontsize,
+   height=4\bodyfontsize,
+   maxwidth=\textwidth]
+
+\startFLOWchart [grid]
+\stopFLOWchart
+\stopbuffer
+
+\placefigure
+  [here][fig:grid]
+  {The grid.}
+  {\getbuffer[grid]\FLOWchart[grid]}
+
+Normally the grid is not visible, unless one enters test mode. The grid in \in
+{figure} [fig:grid] is the result of the definition:
+
+\typebuffer[grid]
+
+The most straightforward way of calling up this chart is by saying:
+
+\starttyping
+\FLOWchart[grid]
+\stoptyping
+
+In \in {figure} [fig:grid] we see a grid an dwithin each cell a shape. Normally
+shapes are smaller than grid cells. This is necessary because connecting lines
+need some room. The offset is important, because when a connection follows the
+outer lines, a little extra space outside that line not only looks better, but
+also prevents the line from being clipped. It makes sense to keep the offset as
+well as the space between shapes constant across a document. The numbers are
+typeset outside the bounding box of the figure.
+
+Grid cells are numbered from top to bottom starting at the left side, so the left
+topmost cell is $(1,1)$. Later we will see that because cells have names, these
+numbers play a minor role.
+
+\stopsection
+
+\startsection[title={Shapes}]
+
+A shape is something, typically a text, within a frame. The frame has certain
+dimensions and can have some color and background. In this respect it looks like
+the \CONTEXT\ command \type {\framed}. The most important shapes have been
+assigned names as indicated in \in {figure} [fig:shapes]. There are more shapes,
+but they are identified by a number only. The total number of shapes will quite
+certainly increase. The shapes {\em up}, {\em down}, {\em left} and {\em right}
+are not really shapes, but lines that can be used to force a direction.
+
+\startFLOWchart [shapes]
+\startFLOWcell \name{a} \location{1,1} \shape{node}           \text{node}           \stopFLOWcell
+\startFLOWcell \name{b} \location{2,1} \shape{action}         \text{action}         \stopFLOWcell
+\startFLOWcell \name{c} \location{3,1} \shape{procedure}      \text{procedure}      \stopFLOWcell
+\startFLOWcell \name{d} \location{4,1} \shape{product}        \text{product}        \stopFLOWcell
+\startFLOWcell \name{e} \location{1,2} \shape{decision}       \text{decision}       \stopFLOWcell
+\startFLOWcell \name{f} \location{2,2} \shape{archive}        \text{archive}        \stopFLOWcell
+\startFLOWcell \name{g} \location{3,2} \shape{loop}           \text{loop}           \stopFLOWcell
+\startFLOWcell \name{h} \location{4,2} \shape{wait}           \text{wait}           \stopFLOWcell
+\startFLOWcell \name{i} \location{1,3} \shape{subprocedure}   \text{sub procedure}   \stopFLOWcell
+\startFLOWcell \name{j} \location{2,3} \shape{singledocument} \text{single document} \stopFLOWcell
+\startFLOWcell \name{k} \location{3,3} \shape{multidocument}  \text{multi document}  \stopFLOWcell
+
+\startFLOWcell \name{l} \location{1,4} \shape{right}          \text{right}          \stopFLOWcell
+\startFLOWcell \name{m} \location{2,4} \shape{left}           \text{left}           \stopFLOWcell
+\startFLOWcell \name{n} \location{3,4} \shape{up}             \text{up}             \stopFLOWcell
+\startFLOWcell \name{o} \location{4,4} \shape{down}           \text{down}           \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:shapes]
+  {The shapes.}
+  {\tx\FLOWchart[shapes]}
+
+When no shape is specified, the default shape is used. One can change this
+default value with the \type {\setupFLOWshapes} command.
+
+\startbuffer[cells]
+\startFLOWchart [cells]
+  \startFLOWcell
+    \name     {first}
+    \location {1,1}
+    \shape    {singledocument}
+    \text     {not realy a document}
+  \stopFLOWcell
+\stopFLOWchart
+\stopbuffer
+
+\typebuffer[cells]
+
+\getbuffer[cells]
+
+A flow chart consists of cells. Each cell has a name, is positioned somewhere on
+the grid, has a certain shape, and normally this shape surrounds text. The shape
+is drawn by \METAPOST, and the text is placed by \TEX. Later we will see that
+there are some more fields to fill. Names are local to a chart.
+
+\placefigure
+  [][fig:cells]
+  {}{\tx\FLOWchart[cells]}
+
+\stopsection
+
+\startsection[title={Connections}]
+
+Shapes can be connected. As shown in \in {figure} [fig:points] each shape has
+four connection points: top, bottom, left and right. When connecting shapes we
+refer to their logical names and specify two of the four directions.
+
+\startFLOWchart [points]
+\startFLOWcell \name{a} \location{1,1} \shape{procedure}     \stopFLOWcell
+\startFLOWcell \name{b} \location{2,1} \shape{product}       \stopFLOWcell
+\startFLOWcell \name{c} \location{3,1} \shape{archive}       \stopFLOWcell
+\startFLOWcell \name{d} \location{4,1} \shape{multidocument} \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:points]
+  {The connection points.}
+  {\tx\setupFLOWcharts[dot=con]\FLOWchart[points]}
+
+In \in {figure} [fig:connect] we see three connections. The lines have smooth
+curves and run across the grid lines. By using smooth curves, an option that can
+be turned off, the direction of touching curves is always clear. Here we use
+arrows. Smoothing, arrows and dashed lines are some of the attributes of lines.
+
+\startFLOWchart [connect]
+  \startFLOWcell
+    \name       {alpha}
+    \location   {1,1}
+    \shape      {procedure}
+    \text       {first}
+    \connection [rl] {beta}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {beta}
+    \location   {2,1}
+    \shape      {product}
+    \text       {second}
+    \connection [bl] {alpha}
+    \connection [rl] {gamma}
+  \stopFLOWcell
+  \startFLOWcell
+    \name     {gamma}
+    \location {3,1}
+    \shape    {action}
+    \text     {third}
+  \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:connect]
+  {A few connections.}
+  {\tx\setupFLOWcharts[dot=con]\FLOWchart[connect]}
+
+\startFLOWchart [two]
+  \startFLOWcell
+    \name       {alpha}
+    \location   {1,1}
+    \shape      {action}
+    \text       {first}
+    \connection [rl] {beta}
+    \connection [rl] {alpha}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {beta}
+    \location   {2,1}
+    \shape      {loop}
+    \text       {second}
+    \connection [tr] {beta}
+  \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  {A few more connections.}
+  {\tx\setupFLOWcharts[dot=con]\FLOWchart[two]}
+
+There can be more than one connection per shape. When defining such a connection
+we first specify the direction. In this example \type {[rl]} means connect the
+right point to the left one, while \type {[tr]} results in a connection between
+the top and the right point. The second argument specifies the shape to connect
+to. As we can see, connections can point back to their origin shape.
+
+\startFLOWchart [around]
+  \startFLOWcell
+    \name       {alpha}
+    \location   {1,1}
+    \shape      {procedure}
+    \text       {first}
+    \connection [rl] {gamma}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {beta}
+    \location   {2,1}
+    \shape      {product}
+    \text       {second}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {gamma}
+    \location   {3,1}
+    \shape      {action}
+    \text       {third}
+  \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:around]
+  {Going around shapes.}
+  {\tx\setupFLOWcharts[dot=con]\FLOWchart[around]}
+
+\startFLOWchart [straight]
+  \startFLOWcell
+    \name       {alpha}
+    \location   {2,1}
+    \shape      {procedure}
+    \text       {first}
+    \connection [lt] {gamma}
+    \connection [rt] {delta}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {beta}
+    \location   {3,1}
+    \shape      {product}
+    \text       {second}
+    \connection [tl] {gamma}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {gamma}
+    \location   {1,2}
+    \shape      {action}
+    \text       {third}
+    \connection [rr] {delta}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {delta}
+    \location   {3,2}
+    \shape      {archive}
+    \text       {fourth}
+  \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:straight]
+  {Following grid lines.}
+  {\tx\setupFLOWcharts[dot=con]\FLOWchart[straight]}
+
+The connection drawing routines have a rather strong urge to follow grid lines.
+\in {Figure} [fig:straight] demonstrates this several times. From the first shape
+to the third one, we see that the connection takes the shortest route possible
+without crossing other shapes. I have to admit that the routines in themselves
+are rather stupid, but for normal use they suffice.
+
+\startFLOWchart [straightagain]
+  \startFLOWcell
+    \name       {alpha}
+    \location   {2,1}
+    \shape      {procedure}
+    \text       {first}
+    \connection [lt] {gamma}
+    \connection [rt] {delta}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {beta}
+    \location   {3,1}
+    \shape      {product}
+    \text       {second}
+    \connection [tl] {gamma}
+    \connection [tt] {alpha}
+    \connection [bt] {delta}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {gamma}
+    \location   {1,2}
+    \shape      {action}
+    \text       {third}
+    \connection [rr] {delta}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {delta}
+    \location   {3,2}
+    \shape      {archive}
+    \text       {fourth}
+    \connection [bb] {gamma}
+  \stopFLOWcell
+\stopFLOWchart
+
+Generally speaking, when two lines end at the same point, it makes sense to
+connect these. When on the other hand lines originate at the same point or cross
+eachother, readers can get confused. Therefore such lines are drawn in such a way
+that they don't touch. In this respect, \in {figure} [fig:white] demonstrates a
+less than optimal chart.
+
+\placefigure
+  [here][fig:white]
+  {Confusing (crossing) grid lines.}
+  {\tx\setupFLOWcharts[dot=con]\FLOWchart[straightagain]}
+
+\stopsection
+
+\startsection[title={Adding text}]
+
+In \in {figure} [fig:comment] we have added some comment to a connection. Like
+the dots at the connections, the point halfway the connection shows up in a
+special debugging mode. The comment will be placed relative to this point. In \in
+{figure} [fig:comment] this is to the left of the point.
+
+\startFLOWchart [comment]
+  \startFLOWcell
+    \name       {alpha}
+    \location   {1,1}
+    \shape      {action}
+    \text       {here}
+    \connection [bl] {beta}
+    \comment    [l] {from here to there}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {beta}
+    \location   {2,2}
+    \shape      {action}
+    \text       {there}
+  \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:comment]
+  {Comment to connections.}
+  {\tx\setupFLOWcharts[dot=mid]\FLOWchart[comment]}
+
+It will be no surprise that a comment is defined using \type {\comment}. Comments
+can be anchored to eight locations, simply \type {l}, \type {r}, \type {t}, \type
+{b}, or a combination like \type {tr}.
+
+\starttyping
+\startFLOWcell
+  ...
+  \comment [l] {from here to there}
+  ...
+\stopFLOWcell
+\stoptyping
+
+\startFLOWchart [labels]
+  \startFLOWcell
+    \name       {alpha}
+    \location   {1,1}
+    \shape      {action}
+    \text       {here}
+    \connection [bl] {beta}
+    \label      [b] {from here}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {beta}
+    \location   {2,2}
+    \shape      {action}
+    \text       {there}
+    \label      [l] {to there}
+  \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:labels]
+  {Labels to connection points.}
+  {\tx\setupFLOWcharts[dot=con]\FLOWchart[labels]}
+
+We can also put labels at the connection points. Often this is preferred over
+comment halfway along a connection. Like comments, labels have a dedicated
+command. Here we specify the connection point \type {l}, \type {r}, \type {t} or
+\type {b}.
+
+\starttyping
+\startFLOWcell
+  ...
+  \label [l] {to there}
+  ...
+\stopFLOWcell
+\stoptyping
+
+\startFLOWchart [text]
+  \startFLOWcell
+    \name       {alpha}
+    \location   {1,1}
+    \shape      {action}
+    \text       {here}
+    \connection [bl] {beta}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {beta}
+    \location   {2,2}
+    \shape      {action}
+    \text       {there}
+  \stopFLOWcell
+  \startFLOWcell
+    \shape      {none}
+    \location   {2,1}
+    \text       {Is there any reason to go
+                 from here to there?}
+  \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:text]
+  {Text without shapes.}
+  {\tx\setupFLOWcharts[dot=con]\FLOWchart[text]}
+
+In \in {figure} [fig:text] we see some text without any shapes around it. When
+shape \type {none} is specified, the whole shape area is available for text.
+
+\starttyping
+\startFLOWcell
+  \shape    {none}
+  \location {2,1}
+  \text     {Is there any reason to go
+             from here to there?}
+\stopFLOWcell
+\stoptyping
+
+One can force the alignment with the key characters \type {l}, \type {r}, \type
+{c}, \type {t} and \type {b}. So, the next definition only places text.
+
+\stopsection
+
+\startsection[title={Inheritance}]
+
+When explaining something by using a chart, we often show successive versions of
+the chart, where each version adds a new feature. To prevent us from retyping the
+same components again and again, it helps to partition the source code of the
+complete chart into subcharts. Inclusion of a part is straightforward: the
+subchart is called by name and positioned on the grid.
+
+\startbuffer[include]
+\startFLOWchart [include]
+
+  \includeFLOWchart[labels][x=1,y=1]
+
+  \startFLOWcell
+    \shape    {none}
+    \location {2,1}
+    \text     {There is no reason to go
+               from here to there!}
+  \stopFLOWcell
+
+\stopFLOWchart
+\stopbuffer
+
+\typebuffer[include]
+
+The included sub chart has its own reference point, so one does not have to
+bother about positions.
+
+\getbuffer[include]
+
+\placefigure
+  [here][fig:include]
+  {Sharing components.}
+  {\tx\FLOWchart[include]}
+
+\stopsection
+
+\startsection[title={How it works}]
+
+The charting module, loaded by \type {\usemodule[chart]} is only responsible for
+the \TEX\ part of the job, which means positioning text and graphics generated by
+\METAPOST. The grid, shape and connection drawing routines are grouped together
+in a dedicated \METAPOST\ module.
+
+Because of the mix of \TEX\ and \METAPOST, and because we want to be able to
+scale charts, the buffer mechanism is used. The communication between \TEX\ and
+\METAPOST\ uses the \METAPOST\ embedding macros that are native to \CONTEXT.
+Additional communication from \METAPOST\ to \CONTEXT\ is handled in the module
+itself. This rather fuzzy description is visualized in \in {figure}
+[fig:process]. Depending on the general color settings, among the other processes
+involved are: color conversion and|/|or reduction to grayscales, and conversion
+to \PDF. When watching this module in action, don't feel disturbed by the many
+steps involved.
+
+\startFLOWchart [process]
+  \startFLOWcell
+    \name       {user file}
+    \location   {1,2}
+    \shape      {action}
+    \text       {User File}
+    \connection [rl] {context}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {context}
+    \location   {2,2}
+    \shape      {action}
+    \text       {\CONTEXT}
+    \connection [nrnl] {buffer}
+    \connection [prl] {metapost}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {buffer}
+    \location   {3,2}
+    \shape      {action}
+    \text       {scalable buffer}
+    \connection [nlnr] {context}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {metapost}
+    \location   {4,2}
+    \shape      {action}
+    \text       {\METAPOST}
+    \connection [rr] {graphic}
+    \connection [rr] {datafile}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {graphic}
+    \location   {4,1}
+    \shape      {action}
+    \text       {\POSTSCRIPT}
+    \connection [lt] {context}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {datafile}
+    \location   {4,3}
+    \shape      {action}
+    \text       {Data File}
+    \connection [lb] {context}
+  \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:process]
+  {The process.}
+  {\tx\FLOWchart[process]}
+
+\startbuffer[collection]
+\startFLOWchart [collection]
+  \dorecurse{10}
+    {\dorecurse{8}
+       {\scratchcounter=\numexpr\numexpr##1-1\relax*10+#1\relax
+        \startFLOWcell
+           \name     {#1-##1}
+           \location {#1,##1}
+           \shape    {\the\scratchcounter}
+           \normalexpanded{\label[bc]{\hbox{\tt\the\scratchcounter}}}
+        \stopFLOWcell}}
+\stopFLOWchart
+
+\setupFLOWcharts
+  [width=.08\textwidth,
+   height=.06\textwidth,
+   dx=.01\textwidth,
+   dy=.02\textwidth,
+   linewidth=1pt,
+   dot=yes]
+
+\FLOWchart[collection]
+\stopbuffer
+
+A few pages back we introduced the named shapes. There are however some more
+shapes. Each shape is identified by a number. In \in {figure} [fig:collection]
+all currently available shapes are shown. The zero numbered shape is actually a
+shape, but with zero dimensions. It can be used as a meeting point for lines. The
+unused numbers can be used for new shapes. The maximum number of shapes is
+limited to 4095, which is a \METAPOST\ limitation.
+
+\placefigure
+  [here][fig:collection]
+  {All shapes by number. Shape 0 is valid and has zero dimensions.}
+  {\tx\getbuffer[collection]}
+
+\stopsection
+
+\startsection[title={Bonus points}]
+
+Sometimes charts can become rather large, due to the many shapes used or lines
+drawn. At the same time charts can become unclear because more than one
+connection starts or ends at a shape. \in {Figure} [fig:bonus 1] shows a way out
+of this situation.
+
+\startFLOWchart [bonus 1]
+  \startFLOWcell
+    \name       {tex}
+    \location   {1,1}
+    \shape      {action}
+    \text       {\TEX}
+    \connection [prpl] {pdf}
+    \connection [nrnl] {dvi}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {dvi}
+    \location   {2,1}
+    \shape      {action}
+    \text       {\DVI}
+    \connection [prpl] {ps}
+    \connection [nrr]  {pdf}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {ps}
+    \location   {3,1}
+    \shape      {action}
+    \text       {\POSTSCRIPT}
+    \connection [rnl] {pdf}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {pdf}
+    \location   {4,1}
+    \shape      {action}
+    \text       {\PDF}
+  \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:bonus 1]
+  {Even more points.}
+  {\tx\setupFLOWcharts[dot=all]\FLOWchart[bonus 1]}
+
+\startFLOWchart [bonus 2]
+  \startFLOWcell
+    \name       {tex}
+    \location   {1,1}
+    \shape      {action}
+    \text       {\TEX}
+    \connection [bt] {pdf}
+    \connection [rl] {dvi}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {dvi}
+    \location   {2,1}
+    \shape      {action}
+    \text       {\DVI}
+    \connection [rl] {ps}
+    \connection [br] {pdf}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {ps}
+    \location   {3,1}
+    \shape      {action}
+    \text       {\POSTSCRIPT}
+    \connection [br] {pdf}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {pdf}
+    \location   {1,2}
+    \shape      {action}
+    \text       {\PDF}
+  \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:bonus 2]
+  {An alternative for \in {figure}[fig:bonus 1].}
+  {\tx\FLOWchart[bonus 2]}
+
+\startFLOWchart [bonus 3]
+  \startFLOWcell
+    \name       {tex}
+    \location   {1,1}
+    \shape      {action}
+    \text       {\TEX}
+    \connection [bb] {pdf}
+    \connection [rl] {dvi}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {dvi}
+    \location   {2,1}
+    \shape      {action}
+    \text       {\DVI}
+    \connection [rl] {ps}
+    \connection [tt] {pdf}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {ps}
+    \location   {3,1}
+    \shape      {action}
+    \text       {\POSTSCRIPT}
+    \connection [rl] {pdf}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {pdf}
+    \location   {4,1}
+    \shape      {action}
+    \text       {\PDF}
+  \stopFLOWcell
+\stopFLOWchart
+
+\placefigure
+  [here][fig:bonus 3]
+  {Yet another alternative for \in {figure}[fig:bonus 1].}
+  {\tx\FLOWchart[bonus 3]}
+
+Defining such a chart is not so much harder than previous cases. Each left,
+right, top and bottom point has two companion points: positive and negative. In
+connections the left points are: \type {pl}, \type {l} and \type {nl}: positive
+left, left and negative left, so the first cell in \in {figure} [fig:bonus 1] is
+defined as:
+
+\starttyping
+\startFLOWcell
+  \name       {tex}
+  \location   {1,1}
+  \shape      {action}
+  \text       {\TEX}
+  \connection [prpl] {pdf}
+  \connection [nrnl] {dvi}
+\stopFLOWcell
+\stoptyping
+
+Alternatively to \type {p} and \type {n} one may use \type {+} and \type {-}. As
+soon as the positive and negative points are used, the connection drawing
+routines will take into account the fact that they are off||center. This does not
+free users from thinking about better ways to draw such a chart.
+
+\stopsection
+
+\startsection[title={Clip and focus}]
+
+The flowcharter automatically calculates the size of the grid. When needed, one
+can force the dimensions and/or clip pieces of a chart. \in {Figure}
+[fig:clipped] shows such a clip. This example also shows why the offset, the
+small area around the outer grid lines, is important. \in {Figure} [fig:clipped]
+was produced while the next settings were in action.
+
+\startbuffer[clip]
+\setupFLOWcharts
+  [x=1,y=1,nx=2,ny=1]
+\stopbuffer
+
+\typebuffer[clip]
+
+\placefigure
+  [here][fig:clipped]
+  {Clipping a piece of a chart.}
+  {\tx\getbuffer[clip]\FLOWchart[connect]}
+
+Sometimes, for instance when explaining a chart, it makes sense to emphasize one
+or more particular cells. Therefore this module offers the ability to focus on
+cells. In \in {figure} [fig:focus] we see that the focus is on the cell with name
+\type {dvi}. This is accomplished by saying:
+
+\startbuffer
+\setupFLOWfocus
+  [framecolor=pragmacolor]
+\setupFLOWcharts
+  [focus=dvi]
+\stopbuffer
+
+\typebuffer
+
+\placefigure
+  [here][fig:focus]
+  {Gaining some focus.}
+  {\tx\getbuffer\FLOWchart[bonus 3]}
+
+Clipping and focus bring us to the third way of zooming in: autofocus. \in
+{Figure} [fig:autofocus] shows what happens when we say:
+
+\startbuffer
+\setupFLOWfocus
+  [framecolor=pragmacolor]
+\setupFLOWcharts
+  [focus=dvi,autofocus=dvi,
+   nx=1,ny=1]
+
+\startFLOWchart [bonus 3]
+  \startFLOWcell
+    \name       {tex}
+    \location   {1,1}
+    \shape      {action}
+    \text       {\TEX}
+    \connection [rl] {pdf}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {pdf}
+    \location   {4,1}
+    \shape      {action}
+    \text       {\PDF}
+  \stopFLOWcell
+\stopFLOWchart
+\stopbuffer
+
+\typebuffer
+
+\placefigure
+  [here][fig:autofocus]
+  {Applying autofocus.}
+  {\tx\getbuffer\FLOWchart[bonus 3]}
+
+In \in {figure}[fig:autofocus] we see both focus and auto focus in action.
+
+\stopsection
+
+\startsection[title={Line types}]
+
+As is to be expected, we can set up some characteristics of a chart, the shapes,
+the connecting lines, and the focus. When we want dashed lines and a different
+shape color, we just say:
+
+\startbuffer
+\setupFLOWshapes
+  [framecolor=pragmacolor]
+\setupFLOWlines
+  [framecolor=pragmacolor,
+   dash=yes]
+\stopbuffer
+
+\typebuffer
+
+\placefigure
+  [here][fig:lines]
+  {Dashed and colored lines.}
+  {\tx\getbuffer\FLOWchart[bonus 3]}
+
+We can change the characteristics at several levels: chart, line, shape and|/|or
+focus. In the near future some more options will be added. Once the \METAPOST\
+module is stable and documented, the graphic code will also be accessible. The
+formal definition of the four setup commands is as follows (these diagrams
+conform the \CONTEXT\ conventions):
+
+\setup{setupFLOWcharts}
+
+\setup{setupFLOWfocus}
+
+\setup{setupFLOWlines}
+
+\setup{setupFLOWshapes}
+
+\stopsection
+
+\startsection[title={Overlays}]
+
+Why should we limit ourselves to text? In \CONTEXT\ most frames||related features
+can have overlays. Because in this flowchart module shapes are drawn by
+\METAPOST, we use a slightly different approach: there can be overlays but they
+are sort of clipped by the shape. \in {Figure} [fig:overlay] illustrates this.
+
+\startbuffer
+\defineoverlay
+  [coward]
+  [{\externalfigure
+      [cow]
+      [width=\overlaywidth,
+       height=\overlayheight]}]
+
+\startFLOWchart [overlay]
+  \startFLOWcell
+    \name       {alpha}
+    \location   {1,1}
+    \shape      {procedure}
+    \connection [rl] {beta}
+    \figure     {cow}
+    \text       [lt] {\darkred \bfb COW 1}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {beta}
+    \location   {2,1}
+    \shape      {product}
+    \connection [rl] {gamma}
+    \overlay    {cow}
+    \text       {\darkgreen \bfb COW 2}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {gamma}
+    \location   {3,1}
+    \shape      {action}
+    \connection [rl] {alpha}
+    \overlay    {cow}
+    \text       [rb] {\darkblue \bfb COW 3}
+  \stopFLOWcell
+\stopFLOWchart
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\placefigure
+  [here][fig:overlay]
+  {Overlays.}
+  {\tx\FLOWchart[overlay]}
+
+There are two commands related to overlays. In our example we used: which
+automatically scales figure {\em cow} to the shape size. The normal rules for
+overlays apply. The width and height of the overlay are available at the moment
+the overlay is typeset.
+
+The text is aligned differently in this example and driven by an optional
+argument that can take one of the following values: \type {l}, \type {r}, \type
+{m}, \type {c}, \type {t}, \type {b}, \type {lt}, \type {rt}, \type {mt}, \type
+{ct}, \type {lb}, \type {rb}, \type {mb}, \type {cb}.
+
+\stopsection
+
+\startsection[title={Interaction}]
+
+One of the reasons for writing this module was that we wanted interactive
+flowcharts. The shape text can contain references. \footnote {Currently this only
+works ok when the chart is not scaled.} The shape as a whole becomes a button as
+soon as we add the \type {\destination} entry:
+
+\starttyping
+\startFLOWcell
+  ...
+  \destination {destination}
+  ...
+\stopFLOWcell
+\stoptyping
+
+\startbuffer[movie]
+\defineoverlay
+  [fun]
+  [{\externalfigure
+      [texwork.mov]
+      [width=\framedwidth,
+       height=\framedheight,
+       preview=yes,
+       repeat=yes]}]
+\stopbuffer
+
+\getbuffer[movie]
+
+\starthelptext [alpha]
+  \input knuth \blank D.E.~Knuth
+\stophelptext
+
+\starthelptext [beta]
+  \input tufte \blank E.R.~Tufte
+\stophelptext
+
+\starthelptext [delta]
+  \externalfigure[cow][width=\hsize]
+\stophelptext
+
+\startFLOWchart [interactive]
+
+  \startFLOWcell
+    \name        {alpha}
+    \location    {1,1}
+    \shape       {procedure}
+    \connection  [rl] {beta}
+    \text        {\goto{introduction}[introduction]}
+  \stopFLOWcell
+
+  \startFLOWcell
+    \name       {beta}
+    \location   {2,1}
+    \shape      {product}
+    \connection [rl] {gamma}
+    \text       {Did you\\read me\\indeed?}
+    \destination{introduction}
+  \stopFLOWcell
+
+  \setupFLOWlines[dash=yes]
+
+  \startFLOWcell
+    \name       {gamma}
+    \location   {3,1}
+    \shape      {action}
+    \connection [rl] {alpha}
+    \overlay    {fun}
+  \stopFLOWcell
+
+  \setupFLOWlines[dash=no]
+
+  \startFLOWcell
+    \name       {delta}
+    \location   {4,1}
+    \shape      {decision}
+    \connection [tt] {alpha}
+    \connection [tt] {beta}
+    \connection [tt] {gamma}
+    \figure     {cow}
+  \stopFLOWcell
+
+\stopFLOWchart
+
+\placefigure
+  [here][fig:interactive]
+  {Interactive buttons.}
+  {\tx\FLOWchart[interactive]}
+
+When read as \PDF\ file, \in {figure} [fig:interactive] shows quite a few
+interactive features. The first cell has a \type {\goto} included in the text,
+like:
+
+\starttyping
+\startFLOWcell
+  ...
+  \text {\goto{introduction}[introduction]}
+  ...
+\stopFLOWcell
+\stoptyping
+
+The second shape is interactive as a whole. This is accomplished by saying:
+
+\starttyping
+\startFLOWcell
+  ...
+  \text        {Did you\\read me\\indeed?}
+  \destination {introduction}
+  ...
+\stopFLOWcell
+\stoptyping
+
+The third cell is a movie, which is only visible in suitable viewers. The movie
+is included as an overlay.
+
+\typebuffer[movie]
+
+The last cell is an illustration.
+
+\stopsection
+
+\startsection[title={Splitting charts}]
+
+Sometimes a chart does not fit comfortably on the page. In such cases, it makes
+sense to split up the chart. There is a dedicated setup command to serve
+splitting:
+
+\setup{setupFLOWsplit}
+
+An example of splitting is:
+
+\starttyping
+\setupFLOWsplit
+  [nx=5,ny=10,
+   dx=1,dy=1,
+   before=,after=\page]
+
+\FLOWcharts[mybigflow]
+\stoptyping
+
+For easy alignment of the split pages, cut marks are added. This can be turned
+off by setting \type {marking} to \type {off}. The \type {n} parameters determine
+the number of cells per split off subject, and the \type {d} parameters specify
+the overlap: a value of~1 means that each split off subject has one row and|/|or
+columns in common with its neighbour.
+
+The splitter can be used with the split float placement macro:
+
+\starttyping
+\splitfloat
+  {\placefigure{What a big flowchart this is!}}
+  {\FLOWcharts[mybigflow]}
+\stoptyping
+
+Here every flowchart gets an caption with a decent subnumber.
+
+Related to splitting up charts is the option to define exit points as
+demonstrated in the next chart.
+
+\startbuffer
+\startFLOWchart[metatex]
+  \setupFLOWcharts
+    [width=6\bodyfontsize,
+     height=3\bodyfontsize,
+     dx=\bodyfontsize,
+     dy=\bodyfontsize]
+   \startFLOWcell
+    \name       {texexec 1}
+    \location   {1,1}
+    \shape      {action}
+    \text       {\TEXEXEC}
+    \connection [rl] {context 1}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {context 1}
+    \location   {2,1}
+    \shape      {action}
+    \text       {\CONTEXT}
+    \connection [bt] {metapost 1}
+    \connection [rl] {texexec  2}
+    \exit       [r] {123}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {metapost 1}
+    \location   {2,2}
+    \shape      {action}
+    \text       {\METAPOST}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {texexec 2}
+    \location   {3,1}
+    \shape      {action}
+    \text       {\TEXEXEC}
+    \connection [rl] {context  2}
+    \connection [bt] {metapost 2}
+    \exit       [l] {123}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {context 2}
+    \location   {4,1}
+    \shape      {action}
+    \text       {\CONTEXT}
+  \stopFLOWcell
+  \startFLOWcell
+    \name       {metapost 2}
+    \location   {3,2}
+    \shape      {action}
+    \text       {\METAPOST}
+  \stopFLOWcell
+\stopFLOWchart
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer[a]
+\FLOWchart [metatex] [x=1,nx=2,frame=on]
+\stopbuffer
+
+\startbuffer[b]
+\FLOWchart [metatex] [x=3,nx=2,frame=on]
+\stopbuffer
+
+When we ask for subcharts, the exit points will show up. Because they don't
+attribute to the dimensions of the chart, you can still align charts as expected.
+
+\startlinecorrection[blank] \getbuffer[a] \stoplinecorrection
+\typebuffer[a]
+
+\startlinecorrection[blank] \getbuffer[b] \stoplinecorrection
+\typebuffer[b]
+
+\stopsection
+
+\startsection[title={Other features}]
+
+It is possible to predefine flow charts in a way similar to external figures.
+Currently this mechanism is under construction, so describing it would be a bit
+premature.
+
+Crossing lines, which are often forbidden in charts, can be made less confusing
+by adding a gap in the lines to be crossed. This is one of the features that are
+already implemented but not yet accessible by the \CONTEXT\ user interface.
+
+Another feature, used in this document, concerns automatic down||scaling. As soon
+as we start scaling illustrations, we introduce inconsistent typography,
+especially in the bodyfontsize. Therefore, the flow chart macros, when told to,
+are able to automatically scale down in steps of 1~point.
+
+{\em This manual was first published in GUST magazine and presented at the anual
+meeting of the Polish user group in Bachotek 1999. Next it was published in the
+MAPS volume 23. After that it became Up||To||Date number 1999-003, and now it's
+part of the manual series. This version is for \MKIV.}
+
+\stopsection
+
+\stopdocument

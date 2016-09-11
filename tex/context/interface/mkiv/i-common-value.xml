@@ -4,6 +4,15 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
+    <!-- backgrounds-->
+
+    <cd:define name="value-background">
+        <cd:parameter name="background">
+        <cd:constant type="foreground"/>
+        <cd:constant type="color"/>
+        <cd:constant type="cd:name"/>
+    </cd:define>
+
     <!-- style = ... -->
 
     <cd:define name="value-style">
