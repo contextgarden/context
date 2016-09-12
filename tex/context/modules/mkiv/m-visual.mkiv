@@ -14,7 +14,8 @@
 \unprotect
 
 %D Much will probably be replaced by \LUA\ based solutions which is
-%D rather trivial and fun doing.
+%D rather trivial and fun doing. A lot here makes no sense any more,
+%D for instance whatsits are not used.
 
 %D This module collect a few more visual debugger features. I
 %D needed them for manuals and styles. The macros are documented
@@ -24,13 +25,18 @@
 \definecolor[fakebaselinecolor] [green]
 \definecolor[fakeparindentcolor][blue]
 
-\newif\iffakebaseline \fakebaselinetrue
-\newif\iffaketrigger  \faketriggerfalse
+\newif    \iffakebaseline \fakebaselinetrue
+\newif    \iffaketrigger  \faketriggerfalse
+\newdimen \fakerulewidth  \fakerulewidth=.2pt
 
 \unexpanded\def\fakerule#1%
   {\strut
    \begingroup
-   \directcolored[fakerulecolor]%
+   \ifx\fakerulecolor\relax
+     \directcolored[fr\recurselevel c]%
+   \else
+     \directcolored[fakerulecolor]%
+   \fi
    \iffakebaseline
      \vrule\s!height1.25\exheight\s!depth-.05\exheight\s!width#1%
      \kern-#1%
@@ -75,7 +81,8 @@
    fr8c=darkorange]
 
 \unexpanded\def\onlyfakewords#1#2% min max / 10 40
-  {\getrandomcount\scratchcounter{\ifcase0#1 10\else#1\fi}{\ifcase0#2 40\else#2\fi}%
+  {\ifvmode\noindentation\fi
+   \getrandomcount\scratchcounter{\ifcase0#1 10\else#1\fi}{\ifcase0#2 40\else#2\fi}%
    \dofakewords\scratchcounter
    } % no \par
 
@@ -102,7 +109,7 @@
 \def\doshowfakewords#1%
   {\bgroup
    \setuppalet[fakerule]%
-   \definecolor[fakerulecolor]%
+   \let\fakerulecolor\relax
    \dorecurse{#1}
      {\getrandomcount\scratchcounter{1}{5}%
       \dorecurse\scratchcounter
@@ -141,19 +148,17 @@
      \def\dofakedroppedcaps
        {\setbox\scratchbox\hpack
           {\setbox\scratchbox\hpack{W}%
-           \scratchdimen#1\lineheight
-           \advance\scratchdimen -\lineheight
-           \advance\scratchdimen \dp\strutbox
+           \scratchdimen\dimexpr#1\lineheight-\lineheight+\dp\strutbox\relax
            \vrule
              \s!width#1\wd\scratchbox
              \s!height\ht\scratchbox
              \s!depth\scratchdimen}%
         \ht\scratchbox\ht\strutbox
         \dp\scratchbox\dp\strutbox
-        \hangindent\wd\scratchbox
-        \advance\hangindent .5em
+        \hangindent\dimexpr\wd\scratchbox+.5\emwidth\relax
         \wd\scratchbox\hangindent
-        \hangafter-#1\noindent
+        \hangafter-#1%
+        \noindent
         \llap{\fakeparindentcolor\box\scratchbox}}%
    \fi}
 
@@ -169,13 +174,15 @@
       \doifelseinset{#1}{\v!left,\v!right}
         {\fakewords{2}{4}}
         {\fakewords{4}{10}}}%
-     {\doifinset{#1}{\v!left,\v!right}
-        {\dimen0=.75\dimen0
-         \ifdim\dimen0>.6\hsize \dimen0=.5\hsize\fi
-         \ifdim\dimen0<.3\hsize \dimen0=.3\hsize\fi}%
+     {\getrandomdimen\scratchdimenone{#3}{#4}%
+      \getrandomdimen\scratchdimentwo{#5}{#6}%
+      \doifinset{#1}{\v!left,\v!right}
+        {\scratchdimenone.75\scratchdimenone
+         \ifdim\scratchdimenone>.6\hsize \scratchdimenone.5\hsize\fi
+         \ifdim\scratchdimenone<.3\hsize \scratchdimenone.3\hsize\fi}%
       \framed
-        [\c!width=\dimen0,
-         \c!height=\dimen2,
+        [\c!width=\scratchdimenone,
+         \c!height=\scratchdimentwo,
          \c!frame=\v!off,
          \c!background=\v!color,
          \c!backgroundcolor=fakeparindentcolor]
@@ -183,25 +190,25 @@
    \defrostrandomseed}
 
 \unexpanded\def\fakeimage#1#2#3#4%
-  {\getrandomdimen{\dimen0}{#1}{#3}%
-   \getrandomdimen{\dimen2}{#2}{#4}%
+  {\getrandomdimen\scratchdimenone{#1}{#3}%
+   \getrandomdimen\scratchdimentwo{#2}{#4}%
    \framed
-     [\c!width=\dimen0,
-      \c!height=\dimen2,
+     [\c!width=\scratchdimenone,
+      \c!height=\scratchdimentwo,
       \c!frame=\v!off,
       \c!background=\v!color,
       \c!backgroundcolor=fakeparindentcolor]
      {}}
 
 \unexpanded\def\fakeformula
-  {\dimen0\zeropoint
+  {\scratchdimenone\zeropoint
    \getrandomcount\scratchcounter{3}{6}%
    \dorecurse\scratchcounter
-     {\getrandomdimen\scratchdimen{0.5em}{1.5em}%
-      \mathord{\red\fakerule\scratchdimen}%
+     {\getrandomdimen\scratchdimentwo{0.5\emwidth}{1.5\emwidth}%
+      \mathord{\red\fakerule\scratchdimentwo}%
       \ifnum\recurselevel<\scratchcounter+\fi
-      \advance\scratchdimen\dimen0}%
-   =\mathinner{\red\fakerule\scratchdimen}}
+      \advance\scratchdimentwo\scratchdimenone}%
+   =\mathinner{\red\fakerule\scratchdimentwo}}
 
 \unexpanded\def\fakespacingformula
   {\color[fakebaselinecolor]{\ruledbaseline}\fakeformula}
@@ -306,11 +313,10 @@
    \scratchdimen#1\relax
    \dontinterfere
    \dontcomplain
-   %boxrulewidth5\testrulewidth
    #3#4\relax
    \setbox\scratchbox\normalhbox to \scratchdimen
      {#2{\ruledhbox to \scratchdimen
-           {\vrule #5 20\testrulewidth \s!width \zeropoint
+           {\vrule #5 20\fakerulewidth \s!width \zeropoint
             \normalhss}}}%
    \smashbox\scratchbox
    \normalpenalty\plustenthousand
@@ -321,8 +327,7 @@
   {\ifdim\hangindent>\zeropoint
      \ifnum\hangafter<\zerocount
        \normalhbox
-         {%boxrulewidth5\testrulewidth
-          \setbox\scratchbox\ruledhbox to \hangindent
+         {\setbox\scratchbox\ruledhbox to \hangindent
             {\scratchdimen\strutht
              \advance\scratchdimen \strutdp
              \vrule
@@ -354,7 +359,7 @@
 \unexpanded\def\ruledpar
   {\relax
    \ifhmode
-     \showparagraphcue{40\testrulewidth}\relax\rightrulefalse\relax\s!height
+     \showparagraphcue{40\fakerulewidth}\relax\rightrulefalse\relax\s!height
    \fi
    \normalpar}
 
@@ -362,7 +367,7 @@
   {\relax
    \normalnoindent
    \ruledparagraphcues
-   \showparagraphcue{40\testrulewidth}\llap\leftrulefalse\relax\s!height}
+   \showparagraphcue{40\fakerulewidth}\llap\leftrulefalse\relax\s!height}
 
 \unexpanded\def\ruledindent
   {\relax
@@ -371,7 +376,7 @@
    \ifdim\parindent>\zeropoint
      \showparagraphcue\parindent\relax\relax\relax\s!height
    \else
-     \showparagraphcue{40\testrulewidth}\llap\relax\relax\s!height
+     \showparagraphcue{40\fakerulewidth}\llap\relax\relax\s!height
    \fi
    \normalhskip\parindent}
 
@@ -381,10 +386,9 @@
    \let\par        \normalpar}
 
 \unexpanded\def\showimplicits
-  {\testrulewidth  \defaulttestrulewidth
-   \let\noindent   \rulednoindent
-   \let\indent     \ruledindent
-   \let\par        \ruledpar}
+  {\let\noindent \rulednoindent
+   \let\indent   \ruledindent
+   \let\par      \ruledpar}
 
 %D The next few||line examples show the four cues. Keep in
 %D mind that we only see them when we explicitly open or close
@@ -434,8 +438,8 @@
         \normalhbox
           {\strut
            \vrule
-             \s!height \testrulewidth
-             \s!depth \testrulewidth
+             \s!height \fakerulewidth
+             \s!depth \fakerulewidth
              \s!width 120\points}
       \normalvfill}%
    \smashbox\scratchbox
@@ -452,8 +456,7 @@
    \egroup}
 
 \unexpanded\def\showbaselines
-  {\testrulewidth\defaulttestrulewidth
-   \EveryPar{\ruledbaseline}}
+  {\EveryPar{\ruledbaseline}}
 
 %D \macros
 %D   {showpagebuilder}
@@ -504,7 +507,7 @@
           {\vss\hpack to 3em{\hss#2\hss}\vss}%
       \fi}}
 
-\def\colorrangeA#1%
+\unexpanded\def\colorrangeA#1%
   {\vpack
      {\startcolor[\s!white]%
       \scratchdimen\dimexpr(-\colormarklength*4+\tractempheight+\tractempdepth)/21\relax
@@ -526,7 +529,7 @@
        {\vss\hpack to \scratchdimen{\hss#1\hss}\vss}%
    \fi}
 
-\def\colorrangeB
+\unexpanded\def\colorrangeB
   {\hpack
      {\startcolor[\s!white]%
       \scratchdimen\dimexpr(-\colormarklength*\plustwo+\tractempwidth)/11\relax
@@ -553,7 +556,7 @@
        {\vss\hpack to \scratchdimen{\hss#1\hss}\vss}%
    \fi}
 
-\def\colorrangeC
+\unexpanded\def\colorrangeC
   {\hpack
      {\startcolor[\s!white]%
       \scratchdimen\dimexpr(-\colormarklength*2+\tractempwidth)/14\relax
@@ -641,10 +644,10 @@
 \let\supernormalmarks \normalmarks % mark may already been superseded
 
 \unexpanded\def\showwhatsits
-  {\protected\def\normalmark {\visualwhatsit100+m\supernormalmark }%
-   \protected\def\normalmarks{\visualwhatsit100+m\supernormalmarks}%
-   \protected\def\special    {\visualwhatsit0100s\normalspecial   }%
-   \protected\def\write      {\visualwhatsit001-w\normalwrite     }%
+  {\unexpanded\def\normalmark {\visualwhatsit100+m\supernormalmark }%
+   \unexpanded\def\normalmarks{\visualwhatsit100+m\supernormalmarks}%
+   \unexpanded\def\special    {\visualwhatsit0100s\normalspecial   }%
+   \unexpanded\def\write      {\visualwhatsit001-w\normalwrite     }%
    \let\immediate\immediatewhatsit
    \appendtoks\dontshowwhatsits\to\everystoptext}
 

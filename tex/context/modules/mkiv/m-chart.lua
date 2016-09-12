@@ -433,6 +433,7 @@ function commands.flow_set_location(x,y)
     if type(x) == "string" and not y then
         x, y = lpegmatch(splitter,x)
     end
+    local oldx, oldy = x, y
     if not x or x == "" then
         x = last_x
     elseif type(x) == "number" then
@@ -458,6 +459,15 @@ function commands.flow_set_location(x,y)
         y = last_y + (tonumber(y) or 0)
     else
         y = tonumber(y)
+    end
+    if x < 1 or y < 1 then
+        report_chart("the cell (%s,%s) ends up at (%s,%s) and gets relocated to (1,1)",oldx or"?", oldy or "?", x,y)
+        if x < 1 then
+            x = 1
+        end
+        if y < 1 then
+            y = 1
+        end
     end
     temp.x     = x or 1
     temp.y     = y or 1

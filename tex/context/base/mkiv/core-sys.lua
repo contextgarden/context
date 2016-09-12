@@ -40,6 +40,7 @@ function environment.initializefilenames()
  -- jobfilename          = gsub(jobfilename,  "^./","")
  -- inputfilename        = gsub(inputfilename,"^./","")
 
+    environment.jobfilefullname   = fulljobname
     environment.jobfilename       = jobfilebase
     environment.jobfilesuffix     = lower(suffixonly(jobfilebase))
 
@@ -60,6 +61,7 @@ end
 -- we could set a macro (but will that work when we're expanding? needs testing!)
 
 implement { name = "operatingsystem",     actions = function() context(os.platform)                     end }
+implement { name = "jobfilefullname",     actions = function() context(environment.jobfilefullname)     end }
 implement { name = "jobfilename",         actions = function() context(environment.jobfilename)         end }
 implement { name = "jobfilesuffix",       actions = function() context(environment.jobfilesuffix)       end }
 implement { name = "inputfilebarename",   actions = function() context(environment.inputfilebarename)   end }

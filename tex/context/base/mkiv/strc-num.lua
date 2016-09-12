@@ -631,7 +631,7 @@ implement { name = "countervalue",            actions = { counters.value   , con
 implement { name = "lastcountervalue",        actions = { counters.last    , context }, arguments = { "string", 1 } }
 implement { name = "firstcountervalue",       actions = { counters.first   , context }, arguments = { "string", 1 } }
 implement { name = "nextcountervalue",        actions = { counters.next    , context }, arguments = { "string", 1 } }
-implement { name = "prevcountervalue",        actions = { counters.previous, context }, arguments = { "string", 1 } }
+implement { name = "previouscountervalue",    actions = { counters.previous, context }, arguments = { "string", 1 } }
 implement { name = "subcountervalues",        actions = { counters.subs    , context }, arguments = { "string", 1 } }
 
 implement { name = "rawsubcountervalue",      actions = { counters.raw     , context }, arguments = { "string", "integer" } }

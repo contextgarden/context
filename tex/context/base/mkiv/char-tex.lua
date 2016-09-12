@@ -591,7 +591,8 @@ if not csletters then
                 elseif is_mark[category] then
                     texsetlccode(u,u,u) -- for hyphenation
                 end
-            elseif isletter and u >= 32 and u <= 65536 then
+         -- elseif isletter and u >= 32 and u <= 65536 then
+            elseif isletter then
                 csletters[utfchar(u)] = u
                 --
                 local lc, uc = chr.lccode, chr.uccode

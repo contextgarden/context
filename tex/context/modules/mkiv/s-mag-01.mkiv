@@ -1,0 +1,505 @@
+%D \module
+%D   [      file=s-mag-01,
+%D        version=2016.09.12, % mkiv version of 2002.12.14,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=\CONTEXT\ Magazine Base Style,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style is used for producing explanationary documents. Don't misuse it for
+%D other purposes, since it may confuse users. Don't change the title either, since
+%D it provides a way to categorize documents. Numbers are disabled in instances
+%D produced outside PRAGMA ADE.
+%D
+%D The layout setup is such that one has several text areas available: headers and
+%D footers, margins and edges as well as the main text area. The surrounding (gray)
+%D makes the main page stand out and is suitable for viewing in spread mode.
+%D
+%D Since this style is under constant construction, messing around with settings
+%D will produce unwanted side effects. So, if some feature or settings is needed,
+%D let me know.
+
+% These are reserved for PRAGMA-ADE, don't use them yourself!
+
+% \setupdocument[main=Tricky]
+% \setupdocument[main=Update]
+% \setupdocument[main=HOWTO]
+
+% \setupdocument[main=This Way]      % preludes to a/the manual
+% \setupdocument[main=A Better Way]  % dirty versus clean
+% \setupdocument[main=No Way]        % how users should not do it
+% \setupdocument[main=Your Way]      % how users do it
+% \setupdocument[main=My Way]        % how users do it
+% \setupdocument[main=Our Way]       % how we do things at pragma
+% \setupdocument[main=Their Way]     % how to do latex things in context
+
+\usemodule[narrowtt,scite]
+
+\definepapersize
+  [magazine]
+  [width=\dimexpr\paperwidth-.1\paperwidth\relax,
+   height=\dimexpr\paperheight-.1\paperheight\relax]
+
+\setuppapersize
+  [magazine]
+  [A4]
+
+\setupinteractionscreen
+  [option=doublesided]
+
+\setupexternalfigures
+  [location={local,default}]
+
+\definecolor[OuterColor][s=.3]
+\definecolor[InnerColor][s=.8]
+\definecolor[MainColor] [s=.2]
+\definecolor[TitleColor][s=.9]
+
+\definecolor[MyRed]  [r=.6]
+\definecolor[MyGreen][g=.6]
+\definecolor[MyBlue] [b=.6]
+
+\startreusableMPgraphic{middlepaper}
+    fill OverlayBox
+        withshademethod "circular"
+        withshadecenter center (0.5,0.5)
+        withshadecolors ("InnerColor","OuterColor") ;
+\stopreusableMPgraphic
+
+\startreusableMPgraphic{rightpaper}
+    fill OverlayBox
+        withshademethod "circular"
+        withshadecenter center (0,0.5)
+        withshadecolors ("InnerColor","OuterColor") ;
+\stopreusableMPgraphic
+
+\startreusableMPgraphic{leftpaper}
+    fill OverlayBox
+        withshademethod "circular"
+        withshadecenter center (1,0.5)
+        withshadecolors ("InnerColor","OuterColor") ;
+\stopreusableMPgraphic
+
+\startreusableMPgraphic{page}
+    fill OverlayBox withcolor white ;
+\stopreusableMPgraphic
+
+\startusableMPgraphic{text}
+    StartPage ;
+        for i = Header,Text,Footer :
+            for j = LeftEdge, LeftMargin, Text, RightMargin, RightEdge :
+                draw Field[i][j] withpen pencircle scaled .5pt ;
+            endfor ;
+        endfor ;
+    StopPage ;
+    setbounds currentpicture to Field[Text][Text] ;
+\stopusableMPgraphic
+
+\startsetups[paper]
+
+    \doifmodeelse{*makeup} {
+        \reuseMPgraphic{middlepaper}
+    } {
+        \doifoddpageelse {
+            \reuseMPgraphic{rightpaper}
+        } {
+            \reuseMPgraphic{leftpaper}}
+        }
+
+\stopsetups
+
+\defineoverlay[paper] [\setups{paper}]
+\defineoverlay[page]  [\reuseMPgraphic{page}]
+\defineoverlay[text]  [\doifmode{frame}{\useMPgraphic{text}}]
+
+\setupbackgrounds [paper] [background=paper]
+\setupbackgrounds [page]  [background={page,title}]
+\setupbackgrounds [text]  [background=text]
+
+\definelayer
+  [title]
+  [state=repeat,
+   hoffset=-1cm,
+   voffset=1cm,
+   width=\paperwidth,
+   height=\paperheight]
+
+\setuplayout
+  [width=middle,
+   topspace=1.5cm,
+   height=middle,
+   header=1.5cm,
+   footer=1cm,
+  %grid=yes,
+   headerdistance=.25cm,
+   footerdistance=.5cm,
+   backspace=3cm,
+   margin=1.5cm,
+   margindistance=.25cm,
+   edge=.75cm,
+   edgedistance=.25cm,
+   bottomdistance=1.5cm,
+   bottom=.1\printpaperheight]
+
+\definelayout
+  [listing]
+  [backspace=15mm,
+   curspace=15mm]
+
+\definelayout
+  [makeup]
+  [topspace=1cm,
+   backspace=1cm,
+   header=0pt,
+   footer=0pt,
+   bottom=0pt]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setupbodyfont
+  [pagella,10pt]
+
+\setuptolerance
+  [verytolerant,stretch]
+
+\appendtoks
+    \setups[papershift]%
+\to \beforeeverypage
+
+\startsetups[papershift]
+
+    \setuppapersize[top=\vskip.5cm,bottom=\vss]
+
+    \doifmodeelse{*makeup} {
+        \setuppapersize[left=\hfill,right=\hfill]
+    } {
+        \doifoddpageelse {
+            \setuppapersize[right=\hfill]
+        } {
+            \setuppapersize[left=\hfill]
+        }
+    }
+
+\stopsetups
+
+\setupbottomtexts
+  [\setups{rightbanner}] []
+  [] [\setups{leftbanner}]
+
+\startsetups [leftbanner]
+
+    \definedfont[Regular*default at \the\bottomheight]
+
+    \TitleColor
+
+    \setbox\scratchbox\hbox {
+        \documentvariable{main}
+    }
+    \ht\scratchbox\exheight
+    \dp\scratchbox\zeropoint
+
+    \definedfont[Regular*default sa 2]
+    \doifsomething {\documentvariable{number}} {
+        \doifnot {\documentvariable{number}} {0} {
+            \#\documentvariable{number}
+        }
+    }
+    \quad
+    \currentdate
+    \quad
+    \scale
+        [height=.25\bottomheight]
+        {\box\scratchbox}
+    \quad
+    \hbox to 1.5em{\hss\pagenumber\hss}
+    \quad
+    \hskip-\backspace
+
+\stopsetups
+
+\startsetups [rightbanner]
+
+    \definedfont[Regular*default at \the\bottomheight]
+
+    \TitleColor
+
+    \setbox\scratchbox\hbox {
+        \documentvariable{main}
+    }
+    \ht\scratchbox\exheight
+    \dp\scratchbox\zeropoint
+
+    \hskip-\backspace
+    \definedfont[Regular*default sa 2]
+    \quad
+    \hbox to 1.5em{\hss\pagenumber\hss}
+    \quad
+    \scale
+        [height=.25\bottomheight]
+        {\box\scratchbox}
+    \quad
+    \currentdate
+    \quad
+    \doifmode {atpragma} {
+        \#\documentvariable{number}
+    }
+
+\stopsetups
+
+\startsetups[titlepage]
+
+    \disablemode[frame]
+
+    \doifmode {atpragma} {
+        \definecolor[pragmacolor] [r=1,g=.62,b=.06] % (Pantone 138 CV)
+        \definecolor[OuterColor][.3(\documentvariable{color})]
+    }
+
+    \setuplayout[makeup]
+
+    \startstandardmakeup[doublesided=no]
+
+        \dontcomplain
+
+        \definelayer
+          [makeup]
+          [width=\textwidth,
+           height=\textheight]
+
+        \setlayerframed [
+                makeup
+            ] [
+                corner={left,top},
+                location={right,bottom}
+            ] [
+                frame=off,
+                foregroundcolor=MainColor
+            ] {
+                \scale
+                    [width=\makeupwidth]
+                    {
+                        \definedfont[Regular*default sa 10]
+                        \documentvariable{main}
+                    }
+            }
+
+        \setlayerframed [
+                makeup
+            ] [
+                corner={right,top},
+                location={left},
+                y=.4\textheight
+            ] [
+                frame=off,
+                foregroundcolor=MainColor,
+                width=\textwidth,
+                align=left
+            ] {
+                \definedfont[Regular*default sa 2.5]
+                \setupinterlinespace
+                \startmode[atpragma]
+                    \strut \ConTeXt\ magazine \#\documentvariable{number}\endgraf
+                \stopmode
+                \strut \documentvariable{date} \endgraf
+                \blank
+                \strut \documentvariable{title}\endgraf
+                \doifsomething {\documentvariable{author}} {
+                    \strut \documentvariable{author}\endgraf
+                }
+                \doifsomething {\documentvariable{affiliation}} {
+                    \strut \documentvariable{affiliation}\endgraf
+                }
+            }
+
+        \setlayerframed [
+            makeup
+        ] [
+            corner={right,bottom},
+            location={left,top}
+        ] [
+            frame=off,
+            align=normal,
+            width=.8\textwidth,
+            foregroundcolor=MainColor
+        ] {
+            \getbuffer[abstract]
+        }
+
+        \flushlayer[makeup]
+
+    \stopstandardmakeup
+
+    \setuplayout[reset]
+
+\stopsetups
+
+\startsetups[cleanup]
+
+    \page
+
+    \setuptexttexts
+      [margin]
+      [] []
+
+\stopsetups
+
+\startsetups[listing]
+
+    \page \disablemode[frame]
+
+    \setuptexttexts  [][] \setuptexttexts  []
+    \setupheadertexts[][] \setupheadertexts[source code of this document]
+    \setupfootertexts[][] \setupfootertexts[]
+
+    \setuplayout[listing]
+
+    \start
+
+        \dontcomplain
+
+        \switchtobodyfont[8pt]
+
+        \scitefile[\jobfilefullname]
+
+        \page
+
+    \stop
+
+    \setuplayout
+
+\stopsetups
+
+\startsetups[lastpage]
+
+    \page \disablemode[frame] \page[even]
+
+    \doifoddpageelse {
+    } {
+        \setuplayout[makeup]
+        \startstandardmakeup[doublesided=no,page=]
+        \stopstandardmakeup
+        \setuplayout[reset]
+    }
+
+\stopsetups
+
+\startsetups[title]
+
+    \disablemode[frame]
+
+    \setlayerframed [
+            title
+        ] [
+            corner={left,top},
+            location={left,bottom},
+            rotation=90
+        ] [
+            frame=off,
+            foregroundcolor=TitleColor
+        ] {
+            \definedfont[RegularBold*default sa 2]
+            \strut\documentvariable{title}
+        }
+
+    \setlayerframed [
+            title
+        ] [
+            corner={right,top},
+            rotation=270
+        ] [
+            frame=off,
+            foregroundcolor=TitleColor
+        ] {
+            \definedfont[RegularBold*default sa 2]
+            \strut\documentvariable{title}
+        }
+
+    \doifsomething {\documentvariable{subtitle}} {
+        \setupheadertexts[\documentvariable{subtitle}]
+    }
+
+\stopsetups
+
+\startbuffer[abstract]
+    % no abstract
+\stopbuffer
+
+\setuphead
+  [chapter]
+  [page=yes,
+   after={\blank[2*big]},
+   color=MainColor,
+   style=\bfc]
+
+\setuphead
+  [section]
+  [before={\blank[2*big]},
+   after=\blank,
+   color=MainColor,
+   style=\bfb]
+
+\setuphead
+  [subsection]
+  [before=\blank,
+   after=,
+   color=MainColor,
+   style=\bf]
+
+\setupwhitespace
+  [big]
+
+\definetyping[xtyping] [style=\ttx]
+\definetyping[xxtyping][style=\ttxx]
+
+\definetyping[ntyping] \setuptyping[ntyping][style=\narrowtt]
+\definetype  [ntype]   \setuptype  [ntype]  [style=\narrowtt]
+
+\setupdocument
+  [main={\doifelsemode{atpragma}{This Way}{My Way}},
+  %color=pragmacolor,
+   title={No Title},
+   subtitle=,
+   author={No Author},
+   affiliation=,
+   date={No Date},
+   number=0,
+   before={\setups[titlepage,title]},
+   after={\setups[cleanup,listing,lastpage]}]
+
+\continueifinputfile {s-mag-01.mkiv}
+
+\startbuffer[abstract]
+    This is the zero issue of a semi periodical. The associated style can be used
+    by \CONTEXT\ users to typeset and publish their own issues.
+\stopbuffer
+
+\startdocument
+  [title={Introduction},
+   subtitle={Welcome},
+   author={Hans Hagen},
+   affiliation=PRAGMA ADE,
+   date=Januari 2003,
+   number=0 \MKIV]
+
+This is the zero issue of a range of \CONTEXT\ related publications, in most
+cases short introductions to new functionality. The style may be used by users
+for providing similar documents, but preferably not for other purposes, since it
+may confuse readers in their expectations.
+
+We've chosen a layout which is more functional than beautiful. This layout
+provides several text areas: headers and footers, margins and edges as well as a
+main text area. The surrounding (gray or color) makes the main page (which is
+slightly smaller than A4) stand out and is suitable for viewing in spread mode.
+
+The documents produced at \PRAGMA\ are called {\bf This Way}, user documents gets
+the title {\bf My Way}. The \PRAGMA\ issues are numbered. We strongly advise you
+not to use the \type {mag-} prefix for your issues, since this may lead to
+clashes with files distributed by \PRAGMA.
+
+\stopdocument
