@@ -2377,7 +2377,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-io"] = package.loaded["l-io"] or true
 
--- original size: 9001, stripped down to: 6512
+-- original size: 10421, stripped down to: 7499
 
 if not modules then modules={} end modules ['l-io']={
   version=1.001,
@@ -2387,6 +2387,7 @@ if not modules then modules={} end modules ['l-io']={
   license="see context related readme files"
 }
 local io=io
+local open,flush,write,read=io.open,io.flush,io.write,io.read
 local byte,find,gsub,format=string.byte,string.find,string.gsub,string.format
 local concat=table.concat
 local floor=math.floor
@@ -2403,15 +2404,13 @@ local function readall(f)
   local size=f:seek("end")
   if size==0 then
     return ""
-  elseif size<1024*1024 then
-    f:seek("set",0)
+  end
+  f:seek("set",0)
+  if size<1024*1024 then
     return f:read('*all')
   else
-    local done=f:seek("set",0)
     local step
-    if size<1024*1024 then
-      step=1024*1024
-    elseif size>16*1024*1024 then
+    if size>16*1024*1024 then
       step=16*1024*1024
     else
       step=floor(size/(1024*1024))*1024*1024/8
@@ -2429,7 +2428,7 @@ local function readall(f)
 end
 io.readall=readall
 function io.loaddata(filename,textmode) 
-  local f=io.open(filename,(textmode and 'r') or 'rb')
+  local f=open(filename,(textmode and 'r') or 'rb')
   if f then
     local data=readall(f)
     f:close()
@@ -2438,8 +2437,53 @@ function io.loaddata(filename,textmode)
     end
   end
 end
+function io.copydata(source,target,action)
+  local f=open(source,"rb")
+  if f then
+    local g=open(target,"wb")
+    if g then
+      local size=f:seek("end")
+      if size==0 then
+      else
+        f:seek("set",0)
+        if size<1024*1024 then
+          local data=f:read('*all')
+          if action then
+            data=action(data)
+          end
+          if data then
+            g:write(data)
+          end
+        else
+          local step
+          if size>16*1024*1024 then
+            step=16*1024*1024
+          else
+            step=floor(size/(1024*1024))*1024*1024/8
+          end
+          while true do
+            local data=f:read(step)
+            if data then
+              if action then
+                data=action(data)
+              end
+              if data then
+                g:write(data)
+              end
+            else
+              break
+            end
+          end
+        end
+      end
+      g:close()
+    end
+    f:close()
+    flush()
+  end
+end
 function io.savedata(filename,data,joiner)
-  local f=io.open(filename,"wb")
+  local f=open(filename,"wb")
   if f then
     if type(data)=="table" then
       f:write(concat(data,joiner or ""))
@@ -2449,14 +2493,14 @@ function io.savedata(filename,data,joiner)
       f:write(data or "")
     end
     f:close()
-    io.flush()
+    flush()
     return true
   else
     return false
   end
 end
 function io.loadlines(filename,n) 
-  local f=io.open(filename,'r')
+  local f=open(filename,'r')
   if not f then
   elseif n then
     local lines={}
@@ -2482,7 +2526,7 @@ function io.loadlines(filename,n)
   end
 end
 function io.loadchunk(filename,n)
-  local f=io.open(filename,'rb')
+  local f=open(filename,'rb')
   if f then
     local data=f:read(n or 1024)
     f:close()
@@ -2492,7 +2536,7 @@ function io.loadchunk(filename,n)
   end
 end
 function io.exists(filename)
-  local f=io.open(filename)
+  local f=open(filename)
   if f==nil then
     return false
   else
@@ -2501,7 +2545,7 @@ function io.exists(filename)
   end
 end
 function io.size(filename)
-  local f=io.open(filename)
+  local f=open(filename)
   if f==nil then
     return 0
   else
@@ -2510,11 +2554,11 @@ function io.size(filename)
     return s
   end
 end
-function io.noflines(f)
+local function noflines(f)
   if type(f)=="string" then
-    local f=io.open(filename)
+    local f=open(filename)
     if f then
-      local n=f and io.noflines(f) or 0
+      local n=f and noflines(f) or 0
       f:close()
       return n
     else
@@ -2529,6 +2573,7 @@ function io.noflines(f)
     return n
   end
 end
+io.noflines=noflines
 local nextchar={
   [ 4]=function(f)
     return f:read(1,1,1,1)
@@ -2606,16 +2651,16 @@ function io.bytes(f,n)
 end
 function io.ask(question,default,options)
   while true do
-    io.write(question)
+    write(question)
     if options then
-      io.write(format(" [%s]",concat(options,"|")))
+      write(format(" [%s]",concat(options,"|")))
     end
     if default then
-      io.write(format(" [%s]",default))
+      write(format(" [%s]",default))
     end
-    io.write(format(" "))
-    io.flush()
-    local answer=io.read()
+    write(format(" "))
+    flush()
+    local answer=read()
     answer=gsub(answer,"^%s*(.*)%s*$","%1")
     if answer=="" and default then
       return default
@@ -3292,7 +3337,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 21648, stripped down to: 10238
+-- original size: 21698, stripped down to: 10279
 
 if not modules then modules={} end modules ['l-file']={
   version=1.001,
@@ -3629,13 +3674,15 @@ function file.robustname(str,strict)
     end
   end
 end
-file.readdata=io.loaddata
-file.savedata=io.savedata
+local loaddata=io.loaddata
+local savedata=io.savedata
+file.readdata=loaddata
+file.savedata=savedata
 function file.copy(oldname,newname)
   if oldname and newname then
-    local data=io.loaddata(oldname)
+    local data=loaddata(oldname)
     if data and data~="" then
-      file.savedata(newname,data)
+      savedata(newname,data)
     end
   end
 end
@@ -4031,7 +4078,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 18247, stripped down to: 12022
+-- original size: 18330, stripped down to: 12091
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -4484,9 +4531,13 @@ end
 file.expandname=dir.expandname 
 local stack={}
 function dir.push(newdir)
-  insert(stack,currentdir())
+  local curdir=currentdir()
+  insert(stack,curdir)
   if newdir and newdir~="" then
     chdir(newdir)
+    return newdir
+  else
+    return curdir
   end
 end
 function dir.pop()
@@ -8082,7 +8133,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 30767, stripped down to: 21312
+-- original size: 31048, stripped down to: 21463
 
 if not modules then modules={} end modules ['trac-log']={
   version=1.001,
@@ -8127,6 +8178,14 @@ local direct,subdirect,writer,pushtarget,poptarget,setlogfile,settimedlog,setpro
 if tex and (tex.jobname or tex.formatname) then
   if texio.setescape then
     texio.setescape(0) 
+  end
+  if arg then
+    for k,v in next,arg do 
+      if v=="--ansi" or v=="--c:ansi" then
+        variant="ansi"
+        break
+      end
+    end
   end
   local function useluawrites()
     local texio_write_nl=texio.write_nl
@@ -13891,7 +13950,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-xml"] = package.loaded["trac-xml"] or true
 
--- original size: 6534, stripped down to: 5072
+-- original size: 6591, stripped down to: 5119
 
 if not modules then modules={} end modules ['trac-xml']={
   version=1.001,
@@ -14041,6 +14100,7 @@ function reporters.export(t,methods,filename)
         if filename then
           local fullname=file.replacesuffix(filename,method)
           t.report("saving export in %a",fullname)
+          dir.mkdirs(file.pathpart(fullname))
           io.savedata(fullname,result)
         else
           reporters.lines(t,result)
@@ -17428,7 +17488,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-use"] = package.loaded["data-use"] or true
 
--- original size: 4000, stripped down to: 3052
+-- original size: 4150, stripped down to: 3182
 
 if not modules then modules={} end modules ['data-use']={
   version=1.001,
@@ -17473,7 +17533,7 @@ function resolvers.automount(usecache)
 end
 statistics.register("used config file",function() return caches.configfiles() end)
 statistics.register("used cache path",function() return caches.usedpaths() end)
-function statistics.savefmtstatus(texname,formatbanner,sourcefile) 
+function statistics.savefmtstatus(texname,formatbanner,sourcefile,kind,banner) 
   local enginebanner=status.banner
   if formatbanner and enginebanner and sourcefile then
     local luvname=file.replacesuffix(texname,"luv") 
@@ -17484,6 +17544,10 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile)
       sourcefile=sourcefile,
     }
     io.savedata(luvname,table.serialize(luvdata,true))
+    lua.registerfinalizer(function()
+      logs.report("format banner","%s",banner)
+      logs.newline()
+    end)
   end
 end
 function statistics.checkfmtstatus(texname)
@@ -18725,7 +18789,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 6967, stripped down to: 5631
+-- original size: 7413, stripped down to: 6012
 
 if not modules then modules={} end modules ['luat-fmt']={
   version=1.001,
@@ -18739,23 +18803,42 @@ local concat=table.concat
 local quoted=string.quoted
 local luasuffixes=utilities.lua.suffixes
 local report_format=logs.reporter("resolvers","formats")
-local function primaryflags() 
-  local trackers=environment.argument("trackers")
-  local directives=environment.argument("directives")
+local function primaryflags()
+  local arguments=environment.arguments
   local flags={}
-  if trackers and trackers~="" then
-    flags={ "--trackers="..quoted(trackers) }
+  if arguments.silent then
+    flags[#flags+1]="--interaction=batchmode"
   end
-  if directives and directives~="" then
-    flags={ "--directives="..quoted(directives) }
-  end
-  if environment.argument("jit") then
-    flags={ "--jiton" }
+  if arguments.jit then
+    flags[#flags+1]="--jiton"
   end
   return concat(flags," ")
 end
-function environment.make_format(name,silent)
+local function secondaryflags()
+  local arguments=environment.arguments
+  local trackers=arguments.trackers
+  local directives=arguments.directives
+  local flags={}
+  if trackers and trackers~="" then
+    flags[#flags+1]="--c:trackers="..quoted(trackers)
+  end
+  if directives and directives~="" then
+    flags[#flags+1]="--c:directives="..quoted(directives)
+  end
+  if arguments.silent then
+    flags[#flags+1]="--c:silent"
+  end
+  if arguments.jit then
+    flags[#flags+1]="--c:jiton"
+  end
+  if arguments.ansi then
+    flags[#flags+1]="--c:ansi"
+  end
+  return concat(flags," ")
+end
+function environment.make_format(name,arguments)
   local engine=environment.ownmain or "luatex"
+  local silent=environment.arguments.silent
   local olddir=dir.current()
   local path=caches.getwritablepath("formats",engine) or "" 
   if path~="" then
@@ -18812,9 +18895,11 @@ function environment.make_format(name,silent)
     return
   end
   local dump=os.platform=="unix" and "\\\\dump" or "\\dump"
+  local command=format("%s --ini %s --lua=%s %s %s %s",
+    engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),secondaryflags(),dump)
   if silent then
     statistics.starttiming()
-    local command=format("%s --ini --interaction=batchmode %s --lua=%s %s %s > temp.log",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),dump)
+    local command=format("%s > temp.log",command)
     local result=os.execute(command)
     local runtime=statistics.stoptiming()
     if result~=0 then
@@ -18824,7 +18909,6 @@ function environment.make_format(name,silent)
     end
     os.remove("temp.log")
   else
-    local command=format("%s --ini %s --lua=%s %s %sdump",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),dump)
     report_format("running command: %s\n",command)
     os.execute(command)
   end
@@ -18873,8 +18957,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 803046
--- stripped bytes    : 291979
+-- original bytes    : 805533
+-- stripped bytes    : 292660
 
 -- end library merge
 

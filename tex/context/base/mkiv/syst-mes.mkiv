@@ -11,12 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newtoks\everywritestring
-
-\def\writedirect  {\immediate\write\statuswrite}
-\def\writeline    {\writedirect{}}
-\def\writestring#1{\begingroup\the\everywritestring\writedirect{#1}\endgroup}
-\let\writebanner   \writestring
+\def\writestring  {\immediate\write\statuswrite}
+\def\writeline    {\writestring{}}
 \let\message       \normalmessage
 
 \endinput

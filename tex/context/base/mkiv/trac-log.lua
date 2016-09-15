@@ -114,6 +114,16 @@ if tex and (tex.jobname or tex.formatname) then
         texio.setescape(0) -- or (false)
     end
 
+    if arg then
+        -- we're don't have environment.arguments yet
+        for k, v in next, arg do -- k can be negative !
+            if v == "--ansi" or v == "--c:ansi" then
+                variant = "ansi"
+                break
+            end
+        end
+    end
+
     local function useluawrites()
 
         -- quick hack, awaiting speedup in engine (8 -> 6.4 sec for --make with console2)

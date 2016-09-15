@@ -1,0 +1,65 @@
+%D \module
+%D   [       file=x-math-svg,
+%D        version=2014.09.19,
+%D          title=\CONTEXT\ XML Modules,
+%D       subtitle=\MATHML\ to \SVG,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt XML Macros / MathML to SVG Converter}
+
+\usemodule[x][mathml]
+
+\registerctxluafile{x-math-svg}{}
+
+\starttexdefinition MakeSVGMath #index#page#mode
+    \setbox\scratchbox\hbox\bgroup
+        \xmlprocessbuffer{main}{math-#page}{}
+    \egroup
+    \ctxlua {
+        moduledata.svgmath.register(#index, #page, {
+            mode   = "#mode",
+            width  = \number\wd\scratchbox,
+            height = \number\ht\scratchbox,
+            depth  = \number\dp\scratchbox,
+        } )
+    }
+    \startTEXpage
+        \box\scratchbox
+    \stopTEXpage
+\stoptexdefinition
+
+\starttexdefinition ReuseSVGMath #index#page
+    \ctxlua {
+        moduledata.svgmath.register(#index,#page)
+    }
+\stoptexdefinition
+
+% assume the same font .. what to do with size
+
+\startluacode
+
+    local svgstyle = document.arguments.svgstyle or ""
+
+    if type(svgstyle) == "string" and svgstyle ~= "" then
+        context.environment { svgstyle }
+    else
+        context.setupbodyfont { "pagella" }
+    end
+
+\stopluacode
+
+% \continueifinputfile{x-math-svg.mkvi}
+
+\starttext
+
+    \startluacode
+        moduledata.svgmath.process(environment.arguments.inputfile)
+    \stopluacode
+
+\stoptext

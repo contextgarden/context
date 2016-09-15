@@ -39,7 +39,7 @@
 %D up and the dependencies are more consistent.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2016.09.11 20:52}
+\edef\contextversion{2016.09.15 19:07}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -573,7 +573,7 @@
 \to \everyjob
 
 \appendtoks
-    \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkiv","\contextkind")}% can become automatic
+    \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkiv","\contextkind","\contextbanner")}% can become automatic
 \to \everydump
 
 \errorstopmode \dump \endinput

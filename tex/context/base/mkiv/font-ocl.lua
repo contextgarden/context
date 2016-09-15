@@ -76,8 +76,15 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                         local b, e = getactualtext(unicode)
                         local w = character.width or 0
                         local s = #colorlist
-                        local n = 1
+                        local n = 2
                         local t = {
+                            -- We need to force page first because otherwise the q's get outside
+                            -- the font switch and as a consequence the next character has no font
+                            -- set (well, it has: the preceding one). As a consequence these fonts
+                            -- are somewhat inefficient as each glyph gets the font set. It's a
+                            -- side effect of the fact that a font is handled when a character gets
+                            -- flushed.
+                            { "special", "pdf:page: " },
                             { "special", "pdf:direct: q " .. b }
                         }
                         for i=1,s do

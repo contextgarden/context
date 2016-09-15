@@ -185,7 +185,8 @@ local function report_start(left,name)
         -- skip
     elseif left ~= 1 then
         if all then
-            report_load("%s > %s",types[left],name or "?")
+         -- report_load("%s > %s",types[left],name or "?")
+            report_load("type %a, name %a",types[left],name or "?")
         end
     elseif find(name,"virtual://") then
         insert(stack,false)
@@ -193,7 +194,8 @@ local function report_start(left,name)
         insert(stack,name)
         total = total + 1
         level = level + 1
-        report_open("%i > %i > %s",level,total,name or "?")
+     -- report_open("%i > %i > %s",level,total,name or "?")
+        report_open("level %i, order %i, name %a",level,total,name or "?")
     end
 end
 
@@ -201,7 +203,8 @@ local function report_stop(right)
     if level == 1 or not right or right == 1 then
         local name = remove(stack)
         if name then
-            report_close("%i > %i > %s",level,total,name or "?")
+         -- report_close("%i > %i > %s",level,total,name or "?")
+            report_close("level %i, order %i, name %a",level,total,name or "?")
             level = level - 1
         end
     end

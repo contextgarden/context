@@ -1,0 +1,446 @@
+%D \module
+%D   [       file=m-streams,
+%D        version=2006.03.21,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Streams,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D First we implement a simple left||right synchronization
+%D mechanism, which we may perfect and extend over time.
+
+\unprotect
+
+\defineoutputstream [\v!left]
+\defineoutputstream [\v!right]
+
+\definemarknote[\v!left]
+\definemarknote[\v!right]
+
+\startsetups stream:\v!left:bottom
+    \flushmarknotes[\v!left]
+\stopsetups
+\startsetups stream:\v!right:bottom
+    \flushmarknotes[\v!right]
+\stopsetups
+\startsetups stream:\v!left:reset
+   \erasemarknotes[\v!left]
+\stopsetups
+\startsetups stream:\v!right:reset
+   \erasemarknotes[\v!right]
+\stopsetups
+
+\def\LeftNote               {\setmarknote             [\v!left]}  % {#1}
+\def\RightNote              {\setmarknote             [\v!right]} % {#1}
+\def\SwitchToLeft           {\enableoutputstream      [\v!left]}
+\def\SwitchToRight          {\enableoutputstream      [\v!right]}
+\def\SwitchToNormal         {\enableoutputstream      [\s!default]}
+\def\SynchronizeLeftAndRight{\synchronizeoutputstreams[\v!left,\v!right]}
+\def\FlushLeftAndRight      {\flushoutputstreampages  [\v!left,\v!right]}
+
+\protect
+
+% \topskip     \strutheight
+% \splittopskip\strutheight
+
+%D Example of usage:
+%D
+%D \starttyping
+%D \nopenalties \setupinterlinespace[top=height] \setupcolors[state=start]
+%D
+%D \showgrid \showstruts
+%D
+%D \starttext
+%D
+%D \title{Whatever} \page
+%D
+%D \dorecurse {5} {
+%D     \let\RecurseLevel\recurselevel
+%D     \SwitchToLeft   \dorecurse{10}{\dontleavehmode{\tf\RecurseLevel:l \begstrut \input tufte \endstrut \endgraf}}
+%D     \SwitchToRight  \dorecurse{10}{\dontleavehmode{\sl\RecurseLevel:r \begstrut \input knuth \endstrut \endgraf}}
+%D     \SwitchToNormal \SynchronizeLeftAndRight
+%D     \SwitchToLeft   \dorecurse{10}{\dontleavehmode{\bf\RecurseLevel:l \begstrut \input zapf  \endstrut \endgraf}}
+%D     \SwitchToRight  \dorecurse{10}{\dontleavehmode{\bs\RecurseLevel:r \begstrut \input davis \endstrut \endgraf}}
+%D     \SwitchToNormal \SynchronizeLeftAndRight
+%D }
+%D
+%D \FlushLeftAndRight
+%D
+%D \stoptext
+%D \stoptyping
+%D
+%D Another example:
+%D
+%D \starttyping
+%D \nopenalties \setupinterlinespace[top=height] \setupcolors[state=start]
+%D
+%D \showgrid \showstruts
+%D
+%D \starttext
+%D
+%D \SwitchToNormal \FlushLeftAndRight \page
+%D
+%D \def\StartCouple{\page\SwitchToNormal}
+%D \def\StopCouple {\SwitchToNormal \SynchronizeLeftAndRight \FlushLeftAndRight}
+%D
+%D \def\Original   {\SwitchToNormal\SynchronizeLeftAndRight\SwitchToLeft}
+%D \def\Translation{\SwitchToRight}
+%D
+%D \StartCouple
+%D \dorecurse{10} {
+%D     \Original    o: \begstrut \inright{\blackrule}\input tufte   \endstrut \LeftNote {tufte}   \endgraf
+%D     \Translation t: \begstrut \inleft {\blackrule}\input zapf    \endstrut \RightNote{zapf}    \endgraf
+%D     \Original    o: \begstrut \inright{\blackrule}\input knuth   \endstrut \LeftNote {knuth}   \endgraf
+%D     \Translation t: \begstrut \inleft {\blackrule}\input davis   \endstrut \RightNote{davis}   \endgraf
+%D     \Original    o: \begstrut \inright{\blackrule}\input douglas \endstrut \LeftNote {douglas} \endgraf
+%D     \Translation t: \begstrut \inleft {\blackrule}\input bryson  \endstrut \RightNote{bryson}  \endgraf
+%D }
+%D \StopCouple
+%D \stoptext
+%D \stoptyping
+
+%D Next we implement stream layers.
+
+\unprotect
+
+\def\overloadtextwidth#1%
+  {\makeupwidth#1\relax
+   \textwidth\makeupwidth
+   \hsize\makeupwidth}
+
+\startsetups streamlayer:default:settings
+  % set hsize etc, like \overloadtextwidth{12cm}
+\stopsetups
+
+\startsetups streamlayer:default:extras
+  % flush goodies, like local floats
+\stopsetups
+
+\startsetups streamlayer:default:place
+  \setlayer
+    [\currentstreamlayer]
+    [\c!preset=\v!left\v!top]
+    {\outputstreambox[\currentstreamlayer]}%
+\stopsetups
+
+\startsetups streamlayer:default:copy
+  \setlayer
+    [\currentstreamlayer]
+    [\c!preset=\v!left\v!top]
+    {\outputstreamcopy[\currentstreamlayer]}%
+\stopsetups
+
+\startsetups streamlayer:default:reset
+   \outputstreambox[\currentstreamlayer]
+\stopsetups
+
+\startsetups streamlayer:default:flush
+    \tightlayer[\currentstreamlayer]
+\stopsetups
+
+\def\definestreamlayer
+  {\dodoubleempty\dodefinestreamlayer}
+
+\def\dodefinestreamlayer[#1][#2]%
+  {\defineoutputstream[#1]%
+   \defineoutputstream[main]%
+   \definelayer[#1][\c!method=\v!fit,\c!width=\textwidth,#2]}
+
+\def\dostreamsetups#1%
+  {\doifsetupselse{streamlayer:\currentstreamlayer:#1}
+     {\directsetup{streamlayer:\currentstreamlayer:#1}}
+     {\directsetup{streamlayer:\s!default:#1}}}
+
+\def\startstreamlayer[#1]%
+  {\bgroup
+%    \def\startstreamlayer[##1]{\bgroup\let\stopstreamlayer\egroup}%
+   \edef\currentstreamlayer{#1}%
+   \enableoutputstream[main]%
+   \synchronizeoutput
+   \enableoutputstream[\currentstreamlayer]%
+   \bgroup
+   \dostreamsetups{settings}}
+
+\def\stopstreamlayer
+  {\endgraf
+   \egroup
+   \disableoutputstream % \enableoutputstream[\s!default]%
+   \outputstreambox[main]%
+%    \dostreamsetups{place}%
+%    \dostreamsetups{extras}%
+%    \dostreamsetups{flush}%
+   \egroup}
+
+\def\preparestreamlayer{\dosingleempty\dopreparestreamlayer}
+\def\flushstreamlayer  {\dosingleempty\doflushstreamlayer  }
+\def\placestreamlayer  {\dosingleempty\doplacestreamlayer  }
+
+\def\dopreparestreamlayer[#1]%
+  {\bgroup
+   \edef\currentstreamlayer{\iffirstargument#1\else\currentstreamlayer\fi}%
+   \dostreamsetups{place}%
+   \dostreamsetups{extras}%
+%  \dostreamsetups{flush}%
+   \egroup}
+
+\def\doflushstreamlayer[#1]%
+  {\bgroup
+   \edef\currentstreamlayer{\iffirstargument#1\else\currentstreamlayer\fi}%
+   \dostreamsetups{flush}%
+   \egroup}
+
+\def\doplacestreamlayer[#1]%
+  {\preparestreamlayer[#1]%
+   \flushstreamlayer[#1]}
+
+\protect
+
+%D Usage:
+
+%D \starttyping
+%D \setupinterlinespace[top=height]
+%D
+%D \setupcolors[state=start]
+%D
+%D \definestreamlayer[block]
+%D
+%D \definemeasure[localtextwidth] [\dimexpr.7\textwidth\relax]
+%D \definemeasure[localfloatwidth][\dimexpr.3\textwidth-2\bodyfontsize\relax]
+%D
+%D \startsetups streamlayer:block:settings
+%D   \hsize=\measure{localtextwidth}
+%D   \setupfloat[figure][maxwidth=\measure{localfloatwidth}]
+%D \stopsetups
+%D
+%D \startsetups streamlayer:block:extras
+%D   \setuplocalfloats
+%D     [before=\blank,
+%D      after=\blank,
+%D      inbetween=\blank]
+%D   \setbox\scratchbox\vbox{\hsize\measure{localfloatwidth}\getlocalfloats}
+%D   \ifdim\ht\scratchbox>\thelayerheight\currentstreamlayer\relax
+%D     % more float than text
+%D     \setlayerframed
+%D       [\currentstreamlayer]
+%D       [preset=righttop]
+%D       [frame=off,
+%D        offset=overlay]
+%D       {\box\scratchbox}
+%D   \else
+%D     % more text than float
+%D     \setuplocalfloats
+%D       [before=\vfill,
+%D        after=\removedepth\vfill,
+%D        inbetween=\removedepth\vfill]
+%D     \setlayerframed
+%D       [\currentstreamlayer]
+%D       [preset=righttop]
+%D       [frame=off,
+%D        offset=overlay]
+%D       {\vbox to \thelayerheight\currentstreamlayer {\hsize\measure{localfloatwidth}\getlocalfloats}}
+%D   \fi
+%D   \resetlocalfloats
+%D \stopsetups
+%D
+%D \startsetups streamlayer:block:place
+%D   \setlayerframed
+%D     [\currentstreamlayer]
+%D     [preset=lefttop]
+%D     [frame=off,
+%D      offset=overlay]
+%D     {\outputstreambox[\currentstreamlayer]}%
+%D \stopsetups
+%D
+%D \startsetups streamlayer:block:flush
+%D    \framed
+%D      [offset=overlay,
+%D       frame=off,
+%D       background=color,
+%D       backgroundcolor=red]
+%D      {\tightlayer[\currentstreamlayer]}
+%D \stopsetups
+%D
+%D \setupbodyfont[small]
+%D
+%D \starttext
+%D
+%D \dorecurse {10} {
+%D     \startstreamlayer[block]
+%D         \title{Sample \recurselevel}
+%D         \input tufte \endgraf
+%D         \placefigure[local]{}{}
+%D         \placefigure[local]{}{}
+%D         \ifodd\recurselevel\relax \placefigure[local]{}{} \fi
+%D         \startitemize[columns]
+%D             \item xxx
+%D             \item xxx
+%D             \item xxx
+%D             \item xxx
+%D             \item xxx
+%D         \stopitemize
+%D     \stopstreamlayer
+%D     \placestreamlayer[block]
+%D }
+%D
+%D \dorecurse {10} {
+%D     \startstreamlayer[block]
+%D         \title{Sample \recurselevel}
+%D         \startcolumns
+%D             \input tufte
+%D         \stopcolumns
+%D     \stopstreamlayer
+%D     \placestreamlayer[block]
+%D }
+%D
+%D \stoptext
+%D \stoptyping
+
+\def\starttextstreamlayer
+  {\startstreamlayer}
+
+\def\stoptextstreamlayer
+  {\endgraf
+   % maybe depth if no proper depth and no skip
+   \removelastskip
+   \stopstreamlayer}
+
+\def\placetextstreamlayer{\placestreamlayer}
+
+%D \starttyping
+%D \definestreamlayer[whatever][width=12cm]
+%D
+%D \startstreamlayer[whatever]
+%D   \startitemize[columns,two][after=]
+%D     \item one
+%D     \item two
+%D     \item three
+%D     \item four
+%D   \stopitemize
+%D \stopstreamlayer
+%D
+%D \framed[strut=no,align=normal]{\placestreamlayer[whatever]\obeydepth}
+%D
+%D \starttextstreamlayer[whatever]
+%D   \startitemize[columns,two]
+%D     \item one
+%D     \item two
+%D     \item three
+%D     \item four
+%D   \stopitemize
+%D \stoptextstreamlayer
+%D
+%D \framed[strut=no]{\placetextstreamlayer[whatever]}
+%D \stoptyping
+
+\endinput
+
+\setupinterlinespace[top=height]
+
+\setupcolors[state=start]
+
+\definestreamlayer[block]
+
+\definemeasure[localtextwidth] [\dimexpr.7\textwidth\relax]
+\definemeasure[localfloatwidth][\dimexpr.3\textwidth-2\bodyfontsize\relax]
+
+\startsetups streamlayer:block:settings
+  \hsize=\measure{localtextwidth}
+  \setupfloat[figure][maxwidth=\measure{localfloatwidth}]
+\stopsetups
+
+\startsetups streamlayer:block:extras
+  \setuplocalfloats
+    [before=\whitespace\blank,
+     after=\whitespace\blank,
+     inbetween=\whitespace\blank]
+  \setbox\scratchbox\vbox{\hsize\measure{localfloatwidth}\getlocalfloats}
+  \ifdim\ht\scratchbox>\thelayerheight\currentstreamlayer\relax
+    % more float than text
+    \setlayerframed
+      [\currentstreamlayer]
+      [preset=righttop]
+      [frame=off,
+       offset=overlay]
+      {\box\scratchbox}
+  \else
+    % more text than float
+    \setuplocalfloats
+      [before=\vfill,
+       after=\removedepth\vfill,
+       inbetween=\removedepth\vfill]
+    \setlayerframed
+      [\currentstreamlayer]
+      [preset=righttop]
+      [frame=off,
+       offset=overlay]
+      {\vbox to \thelayerheight\currentstreamlayer {\hsize\measure{localfloatwidth}\getlocalfloats}}
+  \fi
+  \resetlocalfloats
+\stopsetups
+
+\startsetups streamlayer:block:place
+  \setlayerframed
+    [\currentstreamlayer]
+    [preset=lefttop]
+    [frame=off,
+     offset=overlay]
+    {\outputstreambox[\currentstreamlayer]}%
+\stopsetups
+
+\startsetups streamlayer:block:flush
+   \framed
+     [offset=overlay,
+      frame=off,
+      background=color,
+      backgroundcolor=red]
+     {\tightlayer[\currentstreamlayer]}
+\stopsetups
+
+\setupbodyfont[small]
+
+\starttext
+
+% \definestreamlayer[block]
+%
+% \startstreamlayer[block]
+%     \title{Sample \recurselevel}
+%     \startcolumns
+%         \dorecurse{4}{\input tufte \par}
+%     \stopcolumns
+% \stopstreamlayer
+% \placestreamlayer[block]
+
+\dorecurse {10} {
+    \startstreamlayer[block]
+        \title{Sample \recurselevel}
+        \input tufte \endgraf
+        \placefigure[local]{}{}
+        \placefigure[local]{}{}
+        \ifodd\recurselevel\relax \placefigure[local]{}{} \fi
+        \startitemize[columns]
+            \item xxx
+            \item xxx
+            \item xxx
+            \item xxx
+            \item xxx
+        \stopitemize
+    \stopstreamlayer
+    \placestreamlayer[block]
+}
+
+\dorecurse {10} {
+    \startstreamlayer[block]
+        \title{Sample \recurselevel}
+        \startcolumns
+            \input tufte
+        \stopcolumns
+    \stopstreamlayer
+    \placestreamlayer[block]
+}
+
+\stoptext

@@ -1395,4 +1395,7 @@ function OnOpen(filename)
     editor:Colourise(0,editor.TextLength)
 end
 
--- output.LexerLanguage = ""
+-- Last time I checked the source teh output pane errorlist lexer was still
+-- hardcoded and could not be turned off ... alas.
+
+-- output.Lexer = 0

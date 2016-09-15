@@ -13,18 +13,37 @@ local luasuffixes = utilities.lua.suffixes
 
 local report_format = logs.reporter("resolvers","formats")
 
-local function primaryflags() -- not yet ok
-    local trackers   = environment.argument("trackers")
-    local directives = environment.argument("directives")
-    local flags = { }
+local function primaryflags()
+    local arguments  = environment.arguments
+    local flags      = { }
+    if arguments.silent then
+        flags[#flags+1] = "--interaction=batchmode"
+    end
+    if arguments.jit then
+        flags[#flags+1] = "--jiton"
+    end
+    return concat(flags," ")
+end
+
+local function secondaryflags()
+    local arguments  = environment.arguments
+    local trackers   = arguments.trackers
+    local directives = arguments.directives
+    local flags      = { }
     if trackers and trackers ~= "" then
-        flags = { "--trackers=" .. quoted(trackers) }
+        flags[#flags+1] = "--c:trackers=" .. quoted(trackers)
     end
     if directives and directives ~= "" then
-        flags = { "--directives=" .. quoted(directives) }
+        flags[#flags+1] = "--c:directives=" .. quoted(directives)
     end
-    if environment.argument("jit") then
-        flags = { "--jiton" }
+    if arguments.silent then
+        flags[#flags+1] = "--c:silent"
+    end
+    if arguments.jit then
+        flags[#flags+1] = "--c:jiton"
+    end
+    if arguments.ansi then
+        flags[#flags+1] = "--c:ansi"
     end
     return concat(flags," ")
 end
@@ -32,8 +51,9 @@ end
 -- The silent option is Taco. It's a bit of a hack because we cannot yet mess
 -- with directives. In fact, I could probably clean up the maker a bit by now.
 
-function environment.make_format(name,silent)
+function environment.make_format(name,arguments)
     local engine = environment.ownmain or "luatex"
+    local silent = environment.arguments.silent
     -- change to format path (early as we need expanded paths)
     local olddir = dir.current()
     local path = caches.getwritablepath("formats",engine) or "" -- maybe platform
@@ -96,10 +116,12 @@ function environment.make_format(name,silent)
         return
     end
     -- generate format
-    local dump = os.platform=="unix" and "\\\\dump" or "\\dump"
+    local dump    = os.platform=="unix" and "\\\\dump" or "\\dump"
+    local command = format("%s --ini %s --lua=%s %s %s %s",
+        engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),secondaryflags(),dump)
     if silent then
         statistics.starttiming()
-        local command = format("%s --ini --interaction=batchmode %s --lua=%s %s %s > temp.log",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),dump)
+        local command = format("%s > temp.log",command)
         local result  = os.execute(command)
         local runtime = statistics.stoptiming()
         if result ~= 0 then
@@ -109,7 +131,6 @@ function environment.make_format(name,silent)
         end
         os.remove("temp.log")
     else
-        local command = format("%s --ini %s --lua=%s %s %sdump",engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),dump)
         report_format("running command: %s\n",command)
         os.execute(command)
     end

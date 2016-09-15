@@ -223,9 +223,9 @@
 
   \def\selectinterface
     {\writestatus{interface}{defining \currentinterface\space interface}%
-     \writeline
-     \writestatus{interface}{using    \currentresponses\space messages}%
-     \writeline
+    %writeline
+     \writestatus{interface}{using \currentresponses\space messages}%
+    %\writeline
      \let\selectinterface\relax}
 
 \else
@@ -242,10 +242,10 @@
         \doifundefined{\s!prefix!##1}{\let##1=##2}}%
      \selectinterface\currentinterface\defaultinterface
      \writestatus{interface}{defining \currentinterface\space interface}%
-     \writeline
+    %\writeline
      \selectinterface\currentresponses\currentinterface
      \writestatus{interface}{using \currentresponses\space messages}%
-     \writeline
+    %\writeline
      \let\selectinterface\relax}
 
 \fi
@@ -836,7 +836,12 @@
    int: \currentinterface/\currentresponses}
 
 \unexpanded\def\showcontextbanner
-  {\writeline\writebanner{\contextbanner}\writeline}
+ %{\writeline
+ % \writestring\contextbanner
+ % \writeline}
+  {\writestatus\m!system\empty
+   \writestatus\m!system\contextbanner
+   \writestatus\m!system\empty}
 
 \edef\formatversion
   {\the\normalyear .\the\normalmonth.\the\normalday}
@@ -855,6 +860,6 @@
   \def\dump{\the\everydump\normaldump}
 \fi
 
-\appendtoks \showcontextbanner \to \everydump
+% \appendtoks \showcontextbanner \to \everydump
 
 \protect \endinput

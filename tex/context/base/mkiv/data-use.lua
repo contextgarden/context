@@ -56,7 +56,7 @@ statistics.register("used cache path",  function() return caches.usedpaths() end
 
 -- experiment (code will move)
 
-function statistics.savefmtstatus(texname,formatbanner,sourcefile) -- texname == formatname
+function statistics.savefmtstatus(texname,formatbanner,sourcefile,kind,banner) -- texname == formatname
     local enginebanner = status.banner
     if formatbanner and enginebanner and sourcefile then
         local luvname = file.replacesuffix(texname,"luv") -- utilities.lua.suffixes.luv
@@ -67,6 +67,10 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile) -- texname ==
             sourcefile   = sourcefile,
         }
         io.savedata(luvname,table.serialize(luvdata,true))
+        lua.registerfinalizer(function()
+            logs.report("format banner","%s",banner)
+            logs.newline()
+        end)
     end
 end
 

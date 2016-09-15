@@ -975,7 +975,7 @@ function scripts.context.pipe() -- still used?
 end
 
 local function make_mkiv_format(name,engine)
-    environment.make_format(name,environment.arguments.silent) -- jit is picked up later
+    environment.make_format(name) -- jit is picked up later
 end
 
 local make_mkii_format

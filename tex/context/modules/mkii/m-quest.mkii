@@ -1,0 +1,232 @@
+%D \module
+%D   [       file=m-invull,
+%D        version=1995.01.10,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Exercise,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%I Invuloefeningen kunnen worden vormgegeven met het
+%I de commando's:
+%I
+%I   \definieerinvulwoord[trefwoord]{woord,woord}
+%I   \invulwoord[trefwoord]
+%I   \invulwoord{woord,woord,...}
+%I
+%I Daarbij kan het een en ander worden ingesteld met
+%I
+%I   \stelinvullenin[status=,nummer=,links=,rechts=,letter=]
+%P
+%I Er zijn drie manieren om woorden in te vullen. De meest
+%I eenvoudige is die waarbij de in te vullen woorden in de
+%I tekst staan.
+%I
+%I   bla bla \invulwoord{een,alfa} bla bla bla bla bla bla
+%I   bla bla bla bla bla bla bla bla \invulwoord{twee,beta}.
+%I
+%I De gezette tekst hangt af van de instellingen:
+%I
+%I   [status=leeg]             ________
+%I   [status=vol,nummer=1]     'een' respectievelijk 'twee'
+%I   [status=vol,nummer=2]     'alfa' respectievelijk 'beta'
+%I
+%I Het nummer heeft dus betrekking op het volgnummer in de
+%I opgegeven reeks.
+%P
+%I Bij de tweede manier worden eerste de alternatieven
+%I gedefinieerd:
+%I
+%I   \definieerinvulwoord{een,alfa}
+%I   \definieerinvulwoord{twee,beta}
+%I
+%I die vervolgens worden opgeroepen:
+%I
+%I   bla \invulwoord[+] bla bla bla bla bla bla bla bla bla
+%I   bla bla bla bla bla bla bla bla bla bla \invulwoord[+].
+%I
+%I De mogelijke instellingen komen overeen met die van de
+%I eerste manier.
+%P
+%I De derde manier is een variant op de tweede. Bij grote
+%I teksten kan men het overzicht kwijtraken. Het is daarom
+%I mogelijk 'logische' namen toe te kennen aan woorden.
+%I
+%I   \definieerinvulwoord[a]{een,alfa}
+%I   \definieerinvulwoord[b]{twee,beta}
+%I
+%I die vervolgens worden opgeroepen:
+%I
+%I   bla \invulwoord[a] bla bla bla bla bla bla bla bla bla
+%I   bla bla bla bla bla bla bla bla bla bla \invulwoord[b].
+%I
+%I Dit maakt het bovendien mogelijk woorden meerdere malen
+%I (in een willekeurige volgorde op te roepen:
+%I
+%I   bla \invulwoord[a] bla \invulwoord[b] bla bla bla bla
+%I   bla bla bla bla \invulwoord[b] bla bla \invulwoord[a].
+%P
+%I Bij [status=leeg] wordt een streep gezet die in breedte
+%I overeenkomt met het woord dat er eigenlijk hoort te
+%I staan. De ingevulde tekst komt visueel daardoor overeen
+%I met de in te vullen tekst, wat vergelijken vereenvoudigd.
+%I
+%I Met [status=reset] worden enkele tellers weer op 0 gezet.
+%I Dit kan nodig zijn als meerdere invuloefeningen in een
+%I tekst worden gezet.
+%I
+%I Als \versie[voorlopig] is ingesteld, worden bij invullers
+%I zonder logische namen tussen haakjes de volgnummers
+%I getoond.
+
+%S \startsetup
+%S   \command
+%S     [stelinvullenin]
+%S   \type
+%S     [\c!vars!]
+%S   \variable
+%S     [\c!letter]
+%S     [\v!normaal,\v!vet,\v!schuin,\v!vetschuin,\v!type,\v!kap,
+%S      \v!klein...,\c!command!]
+%S     [\v!vet]
+%S   \variable
+%S     [\c!links]
+%S     [\c!text!]
+%S     []
+%S   \variable
+%S     [\c!rechts]
+%S     [\c!text!]
+%S     []
+%S   \variable
+%S     [\c!status]
+%S     [\v!leeg,\v!vol,\v!reset]
+%S     [\v!vol]
+%S   \variable
+%S     [\c!nummer]
+%S     [\c!number!]
+%S     [1]
+%S   \variable
+%S     [\c!lijn]
+%S     [\v!aan,\v!uit]
+%S     [\v!aan]
+%S \stopsetup
+
+%S \startsetup
+%S   \command
+%S     [invulwoord]
+%S   \type
+%S     [\c!ref!,\c!opt!\c!val!\c!opt!\c!args!]
+%S   \value
+%S     [\c!text!]
+%S \stopsetup
+
+%S \startsetup
+%S   \command
+%S     [definieerinvulwoord]
+%S   \type
+%S     [\c!ref!,\c!opt!\c!val!\c!args!]
+%S   \value
+%S     [\c!text!]
+%S \stopsetup
+
+%  Mogelijke uitbreidingen
+%
+%  -  [breedte=<maat>,passend,ruim]
+%  -  invullijst met nummers
+%  -  weergeven lijst tijdens definitie blokkeren
+%  -  door elkaar definieren
+
+\unprotect
+
+\definesystemvariable    {iv}
+
+\definereferenceconstant {fillin} {:iv:}
+
+\newcount\invulteller \newcount\invulput \newcount\invulget
+
+\def\stelinvullenin
+  {\dosingleargument\dostelinvullenin}
+
+\def\dostelinvullenin[#1]%
+  {\getparameters[\??iv][#1]%
+   \doif\@@ivstate\v!reset
+     {\global\invulput\zerocount
+      \global\invulget\zerocount
+      \let\@@ivstate\empty}}
+
+\def\definieerinvulwoord
+  {\dosingleempty\dodefinieerinvulwoord}
+
+\def\dodefinieerinvulwoord[#1]#2%
+  {\iffirstargument
+     \setgvalue{\r!fillin#1}{\simpleinvulwoord{#2}}%
+   \else
+     \global\advance\invulput \plusone
+     \setgvalue{\r!fillin\the\invulput}{\simpleinvulwoord{#2}}%
+   \fi
+   \doifconcepttracing
+     {\ifnum\invulput>\zerocount
+        \setbox\scratchbox\hbox{~\ttx(\the\invulput)}%
+        \wd\scratchbox\zeropoint
+        \box\scratchbox
+        \par
+      \fi}}
+
+\def\dosimpleinvulwoord#1%
+  {\ifnum\@@ivnumber>\zerocount \advance\invulteller \plusone \fi
+   \ifnum\invulteller=\@@ivnumber\relax
+     \bgroup
+     \doconvertfont\@@ivstyle
+       {\@@ivleft
+        \doifelse\@@ivstate\v!empty
+          {\doifelse\@@ivrule\v!on\leeginvulwoord\geeninvulwoord}
+          {\doifelse\@@ivrule\v!on\underbar      \firstofoneargument}%
+        {#1}%
+        \@@ivright}%
+     \egroup
+   \fi}%
+
+\def\simpleinvulwoord#1%
+  {\ifnum\@@ivnumber>0
+     \invulteller\zerocount
+     \processcommalist[#1]\dosimpleinvulwoord
+   \else
+     \dosimpleinvulwoord{#1}%
+   \fi}
+
+\def\complexinvulwoord[#1]%
+  {\bgroup
+   \doifsomething{#1}
+     {\global\advance\invulget \plusone
+      \doconvertfont\@@ivstyle
+        {\@@ivleft\getvalue{\r!fillin\the\invulget}\@@ivright}}
+     {\doconvertfont\@@ivstyle
+        {\@@ivleft\getvalue{\r!fillin           #1}\@@ivright}}%
+   \egroup}
+
+\definecomplexorsimple\invulwoord
+
+\def\leeginvulwoord#1%
+  {{\let\redounderbar\dodounderbar
+    \def\dodounderbar##1{\redounderbar{\hphantom{##1}}}%
+    \underbar{#1}}}
+
+\def\geeninvulwoord#1%
+  {{\def\dodounderbar##1{\hphantom{##1}}%
+    \underbar{#1}}}
+
+% when nummer > 0, then commalist processing; beware of $(1,2)$, use { } there
+
+\stelinvullenin
+  [\c!number=0,
+   \c!style=\v!bold,
+   \c!rule=\v!on,
+   \c!left=,
+   \c!right=,
+   \c!state=]
+
+\protect \endinput

@@ -3040,7 +3040,7 @@
    \endgroup}
 
 %D \macros
-%D   {writestring,writeline,writebanner,
+%D   {writestring,writeline,
 %D    writestatus,statuswidth,normalwritestatus}
 %D
 %D Maybe one didn't notice, but we've already introduced a
@@ -3063,11 +3063,8 @@
 
 \ifdefined\writestring \else
 
-    \newtoks\everywritestring
-
-               \def\writedirect  {\immediate\write\statuswrite}
-               \def\writeline    {\writedirect{}}
-    \unexpanded\def\writestring#1{\begingroup\the\everywritestring\writedirect{#1}\endgroup}
+    \unexpanded\def\writestring{\immediate\write\statuswrite}
+    \unexpanded\def\writeline  {\writestring{}}
 
 \fi
 
@@ -3100,15 +3097,14 @@
 %D a macro accepting two arguments and a boolean (in fact a
 %D few macro's too).
 
-\newif\ifdebuggerinfo
-
-\unexpanded\def\debuggerinfo#1#2%
-  {\ifdebuggerinfo
-     \writestatus{debugger}{#1:: #2}%
-   \fi}
-
-\ifdefined\writestatus \else            \let\writestatus\normalwritestatus \fi
-\ifdefined\writebanner \else \unexpanded\def\writebanner{\writestring}     \fi
+% \newif\ifdebuggerinfo
+%
+% \unexpanded\def\debuggerinfo#1#2%
+%   {\ifdebuggerinfo
+%      \writestatus{debugger}{#1:: #2}%
+%    \fi}
+%
+% \ifdefined\writestatus \else \let\writestatus\normalwritestatus \fi
 
 % % % % % % % % % % % % % % % % % % % % % % % %
 

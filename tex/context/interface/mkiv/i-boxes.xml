@@ -979,9 +979,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="beginvbox" file="supp-box.mkiv">
-    <cd:command name="beginhbox" file="supp-box.mkiv">
-    <cd:command name="endvbox" file="supp-box.mkiv">
-    <cd:command name="endhbox" file="supp-box.mkiv">
+    <cd:command name="beginvbox" file="supp-box.mkiv"/>
+    <cd:command name="beginhbox" file="supp-box.mkiv"/>
+    <cd:command name="endvbox" file="supp-box.mkiv"/>
+    <cd:command name="endhbox" file="supp-box.mkiv"/>
 
 </cd:interface>

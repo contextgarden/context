@@ -11,7 +11,7 @@ local helpinfo = [[
 <application>
  <metadata>
   <entry name="name">mtx-cache</entry>
-  <entry name="detail">ConTeXt & MetaTeX Cache Management</entry>
+  <entry name="detail">ConTeXt &amp; MetaTeX Cache Management</entry>
   <entry name="version">0.10</entry>
  </metadata>
  <flags>

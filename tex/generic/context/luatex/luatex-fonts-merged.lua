@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/11/16 20:52:09
+-- merge date  : 09/15/16 19:07:45
 
 do -- begin closure to overcome local limits and interference
 
@@ -2018,6 +2018,7 @@ if not modules then modules={} end modules ['l-io']={
   license="see context related readme files"
 }
 local io=io
+local open,flush,write,read=io.open,io.flush,io.write,io.read
 local byte,find,gsub,format=string.byte,string.find,string.gsub,string.format
 local concat=table.concat
 local floor=math.floor
@@ -2034,15 +2035,13 @@ local function readall(f)
   local size=f:seek("end")
   if size==0 then
     return ""
-  elseif size<1024*1024 then
-    f:seek("set",0)
+  end
+  f:seek("set",0)
+  if size<1024*1024 then
     return f:read('*all')
   else
-    local done=f:seek("set",0)
     local step
-    if size<1024*1024 then
-      step=1024*1024
-    elseif size>16*1024*1024 then
+    if size>16*1024*1024 then
       step=16*1024*1024
     else
       step=floor(size/(1024*1024))*1024*1024/8
@@ -2060,7 +2059,7 @@ local function readall(f)
 end
 io.readall=readall
 function io.loaddata(filename,textmode) 
-  local f=io.open(filename,(textmode and 'r') or 'rb')
+  local f=open(filename,(textmode and 'r') or 'rb')
   if f then
     local data=readall(f)
     f:close()
@@ -2069,8 +2068,53 @@ function io.loaddata(filename,textmode)
     end
   end
 end
+function io.copydata(source,target,action)
+  local f=open(source,"rb")
+  if f then
+    local g=open(target,"wb")
+    if g then
+      local size=f:seek("end")
+      if size==0 then
+      else
+        f:seek("set",0)
+        if size<1024*1024 then
+          local data=f:read('*all')
+          if action then
+            data=action(data)
+          end
+          if data then
+            g:write(data)
+          end
+        else
+          local step
+          if size>16*1024*1024 then
+            step=16*1024*1024
+          else
+            step=floor(size/(1024*1024))*1024*1024/8
+          end
+          while true do
+            local data=f:read(step)
+            if data then
+              if action then
+                data=action(data)
+              end
+              if data then
+                g:write(data)
+              end
+            else
+              break
+            end
+          end
+        end
+      end
+      g:close()
+    end
+    f:close()
+    flush()
+  end
+end
 function io.savedata(filename,data,joiner)
-  local f=io.open(filename,"wb")
+  local f=open(filename,"wb")
   if f then
     if type(data)=="table" then
       f:write(concat(data,joiner or ""))
@@ -2080,14 +2124,14 @@ function io.savedata(filename,data,joiner)
       f:write(data or "")
     end
     f:close()
-    io.flush()
+    flush()
     return true
   else
     return false
   end
 end
 function io.loadlines(filename,n) 
-  local f=io.open(filename,'r')
+  local f=open(filename,'r')
   if not f then
   elseif n then
     local lines={}
@@ -2113,7 +2157,7 @@ function io.loadlines(filename,n)
   end
 end
 function io.loadchunk(filename,n)
-  local f=io.open(filename,'rb')
+  local f=open(filename,'rb')
   if f then
     local data=f:read(n or 1024)
     f:close()
@@ -2123,7 +2167,7 @@ function io.loadchunk(filename,n)
   end
 end
 function io.exists(filename)
-  local f=io.open(filename)
+  local f=open(filename)
   if f==nil then
     return false
   else
@@ -2132,7 +2176,7 @@ function io.exists(filename)
   end
 end
 function io.size(filename)
-  local f=io.open(filename)
+  local f=open(filename)
   if f==nil then
     return 0
   else
@@ -2141,11 +2185,11 @@ function io.size(filename)
     return s
   end
 end
-function io.noflines(f)
+local function noflines(f)
   if type(f)=="string" then
-    local f=io.open(filename)
+    local f=open(filename)
     if f then
-      local n=f and io.noflines(f) or 0
+      local n=f and noflines(f) or 0
       f:close()
       return n
     else
@@ -2160,6 +2204,7 @@ function io.noflines(f)
     return n
   end
 end
+io.noflines=noflines
 local nextchar={
   [ 4]=function(f)
     return f:read(1,1,1,1)
@@ -2237,16 +2282,16 @@ function io.bytes(f,n)
 end
 function io.ask(question,default,options)
   while true do
-    io.write(question)
+    write(question)
     if options then
-      io.write(format(" [%s]",concat(options,"|")))
+      write(format(" [%s]",concat(options,"|")))
     end
     if default then
-      io.write(format(" [%s]",default))
+      write(format(" [%s]",default))
     end
-    io.write(format(" "))
-    io.flush()
-    local answer=io.read()
+    write(format(" "))
+    flush()
+    local answer=read()
     answer=gsub(answer,"^%s*(.*)%s*$","%1")
     if answer=="" and default then
       return default
@@ -2655,13 +2700,15 @@ function file.robustname(str,strict)
     end
   end
 end
-file.readdata=io.loaddata
-file.savedata=io.savedata
+local loaddata=io.loaddata
+local savedata=io.savedata
+file.readdata=loaddata
+file.savedata=savedata
 function file.copy(oldname,newname)
   if oldname and newname then
-    local data=io.loaddata(oldname)
+    local data=loaddata(oldname)
     if data and data~="" then
-      file.savedata(newname,data)
+      savedata(newname,data)
     end
   end
 end
@@ -23271,8 +23318,9 @@ local function initializecolr(tfmdata,kind,value)
             local b,e=getactualtext(unicode)
             local w=character.width or 0
             local s=#colorlist
-            local n=1
+            local n=2
             local t={
+              { "special","pdf:page: " },
               { "special","pdf:direct: q "..b }
             }
             for i=1,s do

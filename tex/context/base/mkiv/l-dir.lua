@@ -587,9 +587,13 @@ file.expandname = dir.expandname -- for convenience
 local stack = { }
 
 function dir.push(newdir)
-    insert(stack,currentdir())
+    local curdir = currentdir()
+    insert(stack,curdir)
     if newdir and newdir ~= "" then
         chdir(newdir)
+        return newdir
+    else
+        return curdir
     end
 end
 

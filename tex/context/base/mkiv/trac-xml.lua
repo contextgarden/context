@@ -169,6 +169,7 @@ function reporters.export(t,methods,filename)
                 if filename then
                     local fullname = file.replacesuffix(filename,method)
                     t.report("saving export in %a",fullname)
+                    dir.mkdirs(file.pathpart(fullname))
                     io.savedata(fullname,result)
                 else
                     reporters.lines(t,result)

@@ -2961,7 +2961,7 @@ let dump = relax ;
 
 %D Loading modules can be done with:
 
-vardef loadmodule expr name =
+def loadmodule expr name = % no vardef
     % input can't be used directly in a macro
     if unknown scantokens("context_" & name) :
         save s ; string s ;

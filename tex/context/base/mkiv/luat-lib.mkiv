@@ -88,4 +88,8 @@
 \registerctxluafile{lxml-aux}{1.001}
 \registerctxluafile{lxml-mis}{1.001}
 
+\normalprotected\def\writestatus#1#2{\ctxlua{logs.status([==[#1]==],[==[#2]==])}}
+\normalprotected\def\writestring  #1{\ctxlua{logs.writer([==[#1]==],"\string\n")}}
+\normalprotected\def\writeline      {\ctxlua{logs.newline()}}
+
 \endinput
