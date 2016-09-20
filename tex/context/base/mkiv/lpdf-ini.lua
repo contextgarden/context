@@ -1189,10 +1189,13 @@ end
 do
 
     local f_actual_text_one   = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ %s EMC ET"]
-    local f_actual_text_one_b = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ "]
     local f_actual_text_two   = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ %s EMC ET"]
+    local f_actual_text_one_b = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ "]
     local f_actual_text_two_b = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ "]
-    local s_actual_text_e     = " EMC ET"
+    local f_actual_text_b     = formatters["BT /Span << /ActualText <feff%s> >> BDC [<feff>] TJ "]
+    local s_actual_text_e     = "EMC ET"
+    local f_actual_text_b_not = formatters["/Span << /ActualText <feff%s> >> BDC [<feff>] TJ "]
+    local s_actual_text_e_not = "EMC"
     local f_actual_text       = formatters["/Span <</ActualText %s >> BDC"]
 
     local context   = context
@@ -1209,7 +1212,9 @@ do
     end
 
     function codeinjections.startunicodetoactualtext(unicode)
-        if unicode < 0x10000 then
+        if type(unicode) == "string" then
+            return f_actual_text_b(unicode)
+        elseif unicode < 0x10000 then
             return f_actual_text_one_b(unicode)
         else
             return f_actual_text_two_b(unicode/1024+0xD800,unicode%1024+0xDC00)
@@ -1218,6 +1223,14 @@ do
 
     function codeinjections.stopunicodetoactualtext()
         return s_actual_text_e
+    end
+
+    function codeinjections.startunicodetoactualtextdirect(unicode)
+        return f_actual_text_b_not(unicode)
+    end
+
+    function codeinjections.stopunicodetoactualtextdirect()
+        return s_actual_text_e_not
     end
 
     implement {

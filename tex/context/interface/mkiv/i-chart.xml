@@ -66,10 +66,6 @@
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                 </cd:parameter>
-                <cd:parameter name="autofocus">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
-                </cd:parameter>
                 <cd:parameter name="background">
                     <cd:resolve name="value-background"/>
                 </cd:parameter>

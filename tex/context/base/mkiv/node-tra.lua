@@ -279,11 +279,11 @@ local function showsimplelist(h,depth,n)
 end
 
 -- \startluacode
--- callback.register('buildpage_filter',function() nodes.show_simple_list(tex.lists.contrib_head) end)
+-- callbacks.register('buildpage_filter',function() nodes.show_simple_list(tex.lists.contrib_head) end)
 -- \stopluacode
 -- \vbox{b\footnote{n}a}
 -- \startluacode
--- callback.register('buildpage_filter',nil)
+-- callbacks.register('buildpage_filter',nil)
 -- \stopluacode
 
 nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end

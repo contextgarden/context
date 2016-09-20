@@ -148,9 +148,11 @@
 %
 % we can also use \xmlmap for border etc
 
+% \registerctxluafile{lxml-css}{1.001}
+
 \starttexdefinition cssgetsinglepadding #1
    \ctxlua {
-     context((moduledata.css.padding(
+     context((xml.css.padding(
          "#1",
          \number\dimexpr0.1ex,
          \number\dimexpr0.01\hsize,

@@ -11,31 +11,33 @@ if not modules then modules = { } end modules ['font-ocl'] = {
 local tostring, next, format = tostring, next, string.format
 
 local formatters = string.formatters
+local tounicode  = fonts.mappings.tounicode
 
 local otf = fonts.handlers.otf
 
-local f_color_start = formatters["pdf:direct: %f %f %f rg"]
-local s_color_stop  = "pdf:direct:"
+local f_color = formatters["pdf:direct:%f %f %f rg"]
 
 if context then
 
     local startactualtext = nil
     local stopactualtext  = nil
 
-    function otf.getactualtext(n)
+    function otf.getactualtext(s)
         if not startactualtext then
-            startactualtext = backends.codeinjections.startunicodetoactualtext
-            stopactualtext  = backends.codeinjections.stopunicodetoactualtext
+            startactualtext = backends.codeinjections.startunicodetoactualtextdirect
+            stopactualtext  = backends.codeinjections.stopunicodetoactualtextdirect
         end
-        return startactualtext(n), stopactualtext()
+        return startactualtext(s), stopactualtext()
     end
 
 else
 
     local tounicode = fonts.mappings.tounicode16
 
-    function otf.getactualtext(n)
-        return "/Span << /ActualText <feff" .. tounicode(n) .. "> >> BDC", "EMC"
+    function otf.getactualtext(s)
+        return
+            "/Span << /ActualText <feff" .. n .. "> >> BDC",
+            "EMC"
     end
 
 end
@@ -63,7 +65,7 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
             --
             for i=1,classes do
                 local p = palette[i]
-                colorvalues[i] = { "special", f_color_start(p[1]/255,p[2]/255,p[3]/255) }
+                colorvalues[i] = { "special", f_color(p[1]/255,p[2]/255,p[3]/255) }
             end
             --
             local getactualtext = otf.getactualtext
@@ -73,10 +75,9 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                 if description then
                     local colorlist = description.colors
                     if colorlist then
-                        local b, e = getactualtext(unicode)
+                        local b, e = getactualtext(tounicode(characters[unicode].unicode or 0xFFFD))
                         local w = character.width or 0
                         local s = #colorlist
-                        local n = 2
                         local t = {
                             -- We need to force page first because otherwise the q's get outside
                             -- the font switch and as a consequence the next character has no font
@@ -84,9 +85,10 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                             -- are somewhat inefficient as each glyph gets the font set. It's a
                             -- side effect of the fact that a font is handled when a character gets
                             -- flushed.
-                            { "special", "pdf:page: " },
-                            { "special", "pdf:direct: q " .. b }
+                            { "special", "pdf:page:q" },
+                            { "special", "pdf:raw:" .. b }
                         }
+                        local n = #t
                         for i=1,s do
                             local entry = colorlist[i]
                             n = n + 1 t[n] = colorvalues[entry.class]
@@ -95,7 +97,8 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                                 n = n + 1 t[n] = { "right", -w }
                             end
                         end
-                        n = n + 1 t[n] = { "special", "pdf:direct:" .. e .. " Q" }
+                        n = n + 1 t[n] = { "special", "pdf:page:" .. e }
+                        n = n + 1 t[n] = { "special", "pdf:raw:Q" }
                         character.commands = t
                     end
                 end

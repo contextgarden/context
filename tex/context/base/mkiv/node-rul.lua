@@ -19,6 +19,8 @@ if not modules then modules = { } end modules ['node-rul'] = {
 
 local attributes, nodes, node = attributes, nodes, node
 
+local ceil = math.ceil
+
 local nuts          = nodes.nuts
 local tonode        = nuts.tonode
 local tonut         = nuts.tonut
@@ -40,6 +42,7 @@ local setlist       = nuts.setlist
 local flushlist     = nuts.flush_list
 
 local nodecodes     = nodes.nodecodes
+local rulecodes     = nodes.rulecodes
 local tasks         = nodes.tasks
 
 local properties    = nodes.properties
@@ -51,6 +54,8 @@ local rule_code     = nodecodes.rule
 local boundary_code = nodecodes.boundary
 local dir_code      = nodecodes.dir
 local math_code     = nodecodes.math
+
+local family_font   = node.family_font
 
 function nodes.striprange(first,last) -- todo: dir
     if first and last then -- just to be sure
@@ -113,7 +118,10 @@ local hpack_nodes        = nuts.hpack
 
 local striprange         = nodes.striprange
 
-local fontdata           = fonts.hashes.identifiers
+local fonthashes         = fonts.hashes
+local fontdata           = fonthashes.identifiers
+local fontunicodes       = fonthashes.unicodes
+local fontcharacters     = fonthashes.characters
 local variables          = interfaces.variables
 local dimenfactor        = fonts.helpers.dimenfactor
 local splitdimen         = number.splitdimen
@@ -149,6 +157,9 @@ local nodepool           = nuts.pool
 local new_rule           = nodepool.rule
 local new_userrule       = nodepool.userrule
 local new_kern           = nodepool.kern
+local new_glyph          = nodepool.glyph
+local new_hlist          = nodepool.hlist
+local new_vlist          = nodepool.vlist
 
 -- we can use this one elsewhere too
 --
@@ -311,8 +322,89 @@ rules.userrule    = userrule
 local ruleactions = { }
 rules.ruleactions = ruleactions
 
-callback.register("process_rule",function(n,h,v)
-    local n = tonut(n)
+local function mathradical(n,h,v)
+ -- local size = getfield(n,"index")
+    local fam  = getfield(n,"transform")
+    local font = family_font(fam)
+    local characters = fontcharacters[font]
+    local unicodes   = fontunicodes[font]
+    if not characters or not unicodes then
+        return
+    end
+    local mchar = unicodes["radical.extender"]
+    local echar = unicodes["radical.end"]
+    if mchar and echar then
+        local ewidth = characters[echar].width
+        local mwidth = characters[mchar].width
+        local delta  = h - ewidth
+        local glyph  = new_glyph(font,echar)
+        local head   = glyph
+        if delta > 0 then
+            local count = ceil(delta/mwidth)
+            local kern  = (delta - count * mwidth) / count
+            for i=1,count do
+                local k = new_kern(kern)
+                local g = new_glyph(font,mchar)
+                setlink(k,head)
+                setlink(g,k)
+                head = g
+            end
+        end
+        local height = characters[mchar].height
+        local list   = new_hlist(head)
+        local kern   = new_kern(height-v)
+        list = setlink(kern,list)
+        local list = new_vlist(kern)
+        insert_node_after(n,n,list)
+    end
+end
+
+local function mathrule(n,h,v)
+ -- local size = getfield(n,"index")
+    local fam  = getfield(n,"transform")
+    local font = family_font(fam)
+    local characters = fontcharacters[font]
+    local unicodes   = fontunicodes[font]
+    if not characters or not unicodes then
+        return
+    end
+    local bchar = unicodes["rule.begin"]
+    local mchar = unicodes["rule.ex"]
+    local echar = unicodes["rule.end"]
+    if bchar and mchar and echar then
+        local bwidth = characters[bchar].width
+        local mwidth = characters[mchar].width
+        local ewidth = characters[echar].width
+        local delta  = h - ewidth - bwidth
+        local glyph  = new_glyph(font,echar)
+        local head   = glyph
+        if delta > 0 then
+            local count = ceil(delta/mwidth)
+            local kern  = (delta - count * mwidth) / (count+1)
+            for i=1,count do
+                local k = new_kern(kern)
+                local g = new_glyph(font,mchar)
+                setlink(k,head)
+                setlink(g,k)
+                head = g
+            end
+            local k = new_kern(kern)
+            setlink(k,head)
+            head = k
+        end
+        local g = new_glyph(font,bchar)
+        setlink(g,head)
+        head = g
+        local height = characters[mchar].height
+        local list   = new_hlist(head)
+        local kern   = new_kern(height-v)
+        list = setlink(kern,list)
+        local list = new_vlist(kern)
+        insert_node_after(n,n,list)
+    end
+end
+
+local function useraction(n,h,v)
     local p = properties[n]
     if p then
         local i = p.type or "draw"
@@ -321,7 +413,28 @@ callback.register("process_rule",function(n,h,v)
             a(p,h,v,i,n)
         end
     end
-end)
+end
+
+local subtypeactions = {
+    [rulecodes.user]     = useraction,
+    [rulecodes.over]     = mathrule,
+    [rulecodes.under]    = mathrule,
+    [rulecodes.fraction] = mathrule,
+    [rulecodes.radical]  = mathradical,
+}
+
+callbacks.register(
+    "process_rule",
+    function(n,h,v)
+        local n = tonut(n)
+        local s = getsubtype(n)
+        local a = subtypeactions[s]
+        if a then
+            a(n,h,v)
+        end
+    end,
+    "handle additional user rule features"
+)
 
 --
 

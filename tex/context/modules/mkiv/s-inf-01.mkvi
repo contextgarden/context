@@ -39,7 +39,7 @@
         "colo%-pan.tex", ".*test.*"
     }
     local types = {
-        "tex", "mkii", "mkiv", "mkvi", "lua"
+        "tex", "mkii", "mkiv", "mkvi", "lua", -- "mpiv"
     }
     local patterns = {
         "^([a-z][a-z][a-z][a-z])%-[a-z0-9%-]+%.[a-z]+",
@@ -150,7 +150,7 @@
         for k, v in table.sortedpairs(what) do
             local c = what == size and comp[k] or nope
             context.NC()
-            context("%s~%s~~%s~~%s",
+            context("\\bf %s~%s~~%s~~%s",
                 (used.mkii[k] and "ii") or "~~",
                 (used.mkiv[k] and "iv") or "~~",
                 (used.mkvi[k] and "vi") or "~~",
@@ -197,7 +197,7 @@
 \starttexdefinition Top #what#fraction#total#bigones
     \hbox to 5em{\hss#total}%
     \enspace
-    \hbox {#what\ifnum#total=#bigones\else~#bigones\rlap{~+}\fi\hss}%
+    \hbox {{\bf#what}\ifnum#total=#bigones\else~#bigones\rlap{~+}\fi\hss}%
 \stoptexdefinition
 
 \starttexdefinition Bar #color#size#nobigones#fraction
@@ -225,19 +225,26 @@
 \stoptexdefinition
 
 \starttexdefinition Up #color#width
-    \scratchdimen#width\dimexpr 16em\relax
+%     \scratchdimen#width\dimexpr 16em\relax
+    \scratchdimen#width\dimexpr 40em\relax
     \ifdim\scratchdimen=\zeropoint
         \kern1em
+    \else\ifdim\scratchdimen>13em
+        \blackrule[color=bar:#color,height=15em,width=1em]%
+        \hskip-1.1em
+        \blackrule[color=white,height=14em,width=1.2em]%
+        \hskip-1.1em
+        \blackrule[color=bar:#color,height=13em,width=1em]%
     \else
         \ifdim\scratchdimen<\onepoint \scratchdimen\onepoint \fi
         \blackrule[color=bar:#color,height=\scratchdimen,width=1em]%
-    \fi
+    \fi\fi
 \stoptexdefinition
 
 \starttexdefinition Show #title#how#what
     \startTEXpage[offset=1em,width=fit]
         \hbox{\tttf\strut\currentdate~-~#title}
-        \par
+        \blank[line]
         \ctxlua{document.context_state_\number#how("#what")}
     \stopTEXpage
 \stoptexdefinition
@@ -249,7 +256,7 @@
         {The number of files used in ConTeXt (base modules and styles).}
         {1}{number}
     \Show
-        {The size of (core) files used in ConTeXt (- indicates exclusion of large data files; + indicates inclusion of large data files; comment and spaces removed.)}
+        {The size of (core) files used in ConTeXt (- : large data files excluded; + : large data files included; comment and spaces removed)}
         {1}{size}
     \Show
         {The relative number of files used in ConTeXt (tex, mkii, mkiv, mkvi, lua).}

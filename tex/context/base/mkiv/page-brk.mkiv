@@ -246,12 +246,25 @@
   {\page
    \doifelseoddpage\donothing\page_reset_marks_and_insert_dummy}
 
+% \installpagebreakmethod \v!quadruple % not yet ok inside columnsets
+%   {\ifdoublesided
+%      \ifnum\numexpr\realpageno/\plusfour\relax=\numexpr\realpageno/\plustwo\relax\else
+%        \page_breaks_handle_direct\v!yes
+%        \page_breaks_handle_direct\v!empty
+%        \page_breaks_handle_direct\v!empty
+%      \fi
+%    \fi}
+
 \installpagebreakmethod \v!quadruple % not yet ok inside columnsets
   {\ifdoublesided
-     \ifnum\numexpr\realpageno/\plusfour\relax=\numexpr\realpageno/\plustwo\relax\else
+     \ifcase\modulonumber\plusfour\realpageno\else
        \page_breaks_handle_direct\v!yes
-       \page_breaks_handle_direct\v!empty
-       \page_breaks_handle_direct\v!empty
+       \doloop
+         {\ifcase\modulonumber\plusfour\realpageno\relax
+            \exitloop
+          \else
+            \page_breaks_handle_direct\v!empty
+          \fi}%
      \fi
    \fi}
 

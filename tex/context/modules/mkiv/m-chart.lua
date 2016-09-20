@@ -581,6 +581,7 @@ local function process_connections(chart,xoffset,yoffset)
     local settings = chart.settings
     for i=1,#data do
         local cell = visible(chart,data[i])
+-- local cell = data[i]
         if cell then
             local connections = cell.connections
             for j=1,#connections do
@@ -590,7 +591,7 @@ local function process_connections(chart,xoffset,yoffset)
                 if othercell then -- and visible(chart,data[i]) then
                     local cellx, celly = cell.x, cell.y
                     local otherx, othery, location = othercell.x, othercell.y, connection.location
-                    if otherx > 0 and othery > 0 and cellx > 0 and celly > 0 and connection.location then
+                    if otherx > 0 and othery > 0 and cellx > 0 and celly > 0 and location then
                         local what_cell, where_cell, what_other, where_other = lpegmatch(what,location)
                         if what_cell and where_cell and what_other and where_other then
                             local linesettings = settings.line
@@ -733,7 +734,6 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
         print("no such chart",chartname)
         return
     end
--- chart = table.copy(chart)
     chart = expanded(chart,settings)
     local chartsettings = chart.settings.chart
     local autofocus = chart.settings.chart.autofocus
@@ -762,6 +762,14 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
             if miny == 0 or y > maxy then maxy = y end
         end
     end
+-- optional:
+if x + nx > maxx then
+    nx = maxx - x + 1
+end
+if y + ny > maxy then
+    ny = maxy - y + 1
+end
+    --
  -- print("1>",x,y,nx,ny)
  -- print("2>",minx, miny, maxx, maxy)
     -- check of window should be larger (maybe autofocus + nx/ny?)
@@ -878,9 +886,9 @@ local function makechart(chart)
     context("flow_chart_offset := %p ;",offset)
     --
     context("flow_reverse_y := true ;")
-if chartsettings.option == v_test then
-    context("flow_draw_test_shapes ;")
-end
+    if chartsettings.option == v_test then
+        context("flow_draw_test_shapes ;")
+    end
     process_cells(chart,0,0)
     process_connections(chart,0,0)
     process_texts(chart,0,0)
@@ -919,9 +927,9 @@ local function splitchart(chart)
         if done then
             last_x = to_x
         end
--- if first_x >= to_x then
---     break
--- end
+     -- if first_x >= to_x then
+     --     break
+     -- end
         local part_y = 0
         local first_y = from_y
         while true do
@@ -931,31 +939,31 @@ local function splitchart(chart)
             if done then
                 last_y = to_y
             end
--- if first_y >= to_y then
---     break
--- end
+         -- if first_y >= to_y then
+         --     break
+         -- end
             --
-local data = chart.data
-for i=1,#data do
-    local cell = data[i]
---     inspect(cell)
-    local cx, cy = cell.x, cell.y
-    if cx >= first_x and cx <= last_x then
-        if cy >= first_y and cy <= last_y then
-            report_chart("part (%s,%s) of %a is split from (%s,%s) -> (%s,%s)",part_x,part_y,name,first_x,first_y,last_x,last_y)
-            local x  = first_x
-            local y  = first_y
-            local nx = last_x - first_x + 1
-            local ny = last_y - first_y + 1
-            context.beforeFLOWsplit()
-            context.handleFLOWsplit(function()
-                makechart(getchart(settings,x,y,nx,ny)) -- we need to pass frozen settings !
-            end)
-            context.afterFLOWsplit()
-            break
-        end
-    end
-end
+            local data = chart.data
+            for i=1,#data do
+                local cell = data[i]
+            --     inspect(cell)
+                local cx, cy = cell.x, cell.y
+                if cx >= first_x and cx <= last_x then
+                    if cy >= first_y and cy <= last_y then
+                        report_chart("part (%s,%s) of %a is split from (%s,%s) -> (%s,%s)",part_x,part_y,name,first_x,first_y,last_x,last_y)
+                        local x  = first_x
+                        local y  = first_y
+                        local nx = last_x - first_x + 1
+                        local ny = last_y - first_y + 1
+                        context.beforeFLOWsplit()
+                        context.handleFLOWsplit(function()
+                            makechart(getchart(settings,x,y,nx,ny)) -- we need to pass frozen settings !
+                        end)
+                        context.afterFLOWsplit()
+                        break
+                    end
+                end
+            end
             --
             if done then
                 break
