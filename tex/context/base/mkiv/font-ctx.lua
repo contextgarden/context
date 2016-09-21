@@ -2529,21 +2529,25 @@ constructors.privateslots = constructors.privateslots or { }
 
 storage.register("fonts/constructors/privateslots", constructors.privateslots, "fonts.constructors.privateslots")
 
-local privateslots    = constructors.privateslots
-local lastprivateslot = 0xFD000
+do
 
-constructors.privateslots = setmetatableindex(privateslots,function(t,k)
-    local v = lastprivateslot
-    lastprivateslot = lastprivateslot + 1
-    t[k] = v
-    return v
-end)
+    local privateslots    = constructors.privateslots
+    local lastprivateslot = 0xFD000
 
-implement {
-    name      = "getprivateglyphslot",
-    actions   = function(name) context(privateslots[name]) end,
-    arguments = "string",
-}
+    constructors.privateslots = setmetatableindex(privateslots,function(t,k)
+        local v = lastprivateslot
+        lastprivateslot = lastprivateslot + 1
+        t[k] = v
+        return v
+    end)
+
+    implement {
+        name      = "getprivateglyphslot",
+        actions   = function(name) context(privateslots[name]) end,
+        arguments = "string",
+    }
+
+end
 
 -- an extra helper
 
@@ -2604,3 +2608,32 @@ statistics.register("used fonts",function()
         end
     end
 end)
+
+-- new
+
+do
+
+    local settings_to_array    = utilities.parsers.settings_to_array
+    local namedcolorattributes = attributes.colors.namedcolorattributes
+    local colorvalues          = attributes.colors.values
+
+    implement {
+        name      = "definefontcolorpalette",
+        arguments = { "string", "string" },
+        actions   = function(name,set)
+            set = settings_to_array(set)
+            for i=1,#set do
+                local name = set[i]
+                local space, color = namedcolorattributes(name)
+                local values = colorvalues[color]
+                if values then
+                    set[i] = { r = values[3], g = values[4],  b = values[5] }
+                else
+                    set[i] = { r = 0, g = 0, b = 0 }
+                end
+            end
+            otf.registerpalette(name,set)
+        end
+    }
+
+end

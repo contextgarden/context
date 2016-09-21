@@ -323,9 +323,8 @@ local ruleactions = { }
 rules.ruleactions = ruleactions
 
 local function mathradical(n,h,v)
- -- local size = getfield(n,"index")
-    local fam  = getfield(n,"transform")
-    local font = family_font(fam)
+ -- local size       = getfield(n,"index")
+    local font       = getfield(n,"transform")
     local characters = fontcharacters[font]
     local unicodes   = fontunicodes[font]
     if not characters or not unicodes then
@@ -360,9 +359,8 @@ local function mathradical(n,h,v)
 end
 
 local function mathrule(n,h,v)
- -- local size = getfield(n,"index")
-    local fam  = getfield(n,"transform")
-    local font = family_font(fam)
+ -- local size       = getfield(n,"index")
+    local font       = getfield(n,"transform")
     local characters = fontcharacters[font]
     local unicodes   = fontunicodes[font]
     if not characters or not unicodes then

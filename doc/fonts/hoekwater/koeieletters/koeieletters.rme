@@ -1,21 +1,27 @@
 Remarks
 
-The Koeieletters font is copyrighted (2006) by Hans Hagen
-and Taco Hoekwater. The font is based on original drawings
-by Duane Bibby.
+The Koeieletters font is copyrighted by Hans Hagen and Taco Hoekwater. The
+font is based on original drawings by Duane Bibby. There are two versions:
 
-The Koeieletters font is distributed under the Creative
-Commons Attribution No Derivative Works licence. A summary
-of this licence can be found at the bottom of this file. The
-complete version of the licence can be found at:
+Type1    : 2006  koeie*.afm  koeie*.tfm  koeie*.pfb
+TrueType : 2016  koeieletterso.ttf
+
+Because the shapes are in fact artistic drawings the Koeieletters font is
+distributed under the Creative Commons Attribution No Derivative Works
+licence. A summary of this licence can be found at the bottom of this file.
+The complete version of the licence can be found at:
 
     http://creativecommons.org/licenses/by-nd/2.5/legalcode
 
-The font is supported by ConTeXt and more information about
-its history, evolution and usage can be found in the manual
-at www.pragma-ade.com.
+The font is supported by ConTeXt and more information about its history,
+evolution and usage can be found in articles in the NTG Maps, the ConTeXt
+Group Journal and in manual distributed with Context.
 
-==== http://creativecommons.org/licenses/by-nd/2.5/ ====
+www.pragma-ade.com
+contextgarden.net
+
+
+============= http://creativecommons.org/licenses/by-nd/2.5/ ==============
 
 Attribution-NoDerivs 2.5
 
@@ -26,20 +32,22 @@ You are free:
 
 Under the following conditions:
 
-    Attribution: You must attribute the work in the manner
-    specified by the author or licensor.
+    Attribution: You must attribute the work in the manner specified by the
+    author or licensor.
 
-    Derivative Works: You may not alter, transform, or
-    build upon this work.
+    Derivative Works: You may not alter, transform, or build upon this work.
 
-    * For any reuse or distribution, you must make clear
-      to others the license terms of this work.
-    * Any of these conditions can be waived if you get
-      permission from the copyright holder.
+    * For any reuse or distribution, you must make clear to others the
+      license terms of this work.
+    * Any of these conditions can be waived if you get permission from the
+      copyright holder.
 
-Your fair use and other rights are in no way affected
-by the above.
+Your fair use and other rights are in no way affected by the above.
 
-==== end of copy =======================================
+============= end of copy =================================================
 
 
+If you think this sounds a bit strict, keep in mind that we use this font
+for predictable demonstration and explorative purposes in ConTeXt and that
+the font is based on original artwork. Feel free to use the font any way
+you want. Just don't mess with the design.

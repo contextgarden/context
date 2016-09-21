@@ -2678,13 +2678,20 @@
 % \unexpanded\def\getprivatemathchar#1%
 %   {\begingroup\the\textfont\zerocount\getprivatechar{#1}\endgroup}
 
-
 \def\privatechar % the text variant gets expanded to utf
   {\ifmmode
      \expandafter\getprivatemathchar
    \else
      \expandafter\getprivatechar
    \fi}
+
+% new
+
+\unexpanded\def\definefontcolorpalette
+  {\dodoubleargument\font_define_color_palette}
+
+\def\font_define_color_palette[#1][#2]%
+  {\clf_definefontcolorpalette{#1}{#2}}
 
 % yes or no:
 

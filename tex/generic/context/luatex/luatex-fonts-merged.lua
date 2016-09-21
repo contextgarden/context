@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/20/16 21:12:45
+-- merge date  : 09/21/16 18:26:43
 
 do -- begin closure to overcome local limits and interference
 
@@ -23270,10 +23270,15 @@ if not modules then modules={} end modules ['font-ocl']={
   license="see context related readme files"
 }
 local tostring,next,format=tostring,next,string.format
+local round,max=math.round,math.round
 local formatters=string.formatters
 local tounicode=fonts.mappings.tounicode
+local graytorgb=attributes.colors.graytorgb
+local cmyktorgb=attributes.colors.cmyktorgb
 local otf=fonts.handlers.otf
 local f_color=formatters["pdf:direct:%f %f %f rg"]
+local f_gray=formatters["pdf:direct:%f g"]
+local s_black="pdf:direct:0 g"
 if context then
   local startactualtext=nil
   local stopactualtext=nil
@@ -23292,11 +23297,35 @@ else
       "EMC"
   end
 end
+local sharedpalettes={}
+function otf.registerpalette(name,values)
+  sharedpalettes[name]=values
+  for i=1,#values do
+    local v=values[i]
+    local r,g,b
+    local s=v.s
+    if s then
+      r,g,b=graytorgb(s)
+    else
+      local c,m,y,k=v.c,v.m,v.y,v.k
+      if c or m or y or k then
+        r,g,b=cmyktorgb(c or 0,m or 0,y or 0,k or 0)
+      else
+        r,g,b=v.r,v.g,v.b
+      end
+    end
+    values[i]={
+      max(r and round(r*255) or 0,255),
+      max(g and round(g*255) or 0,255),
+      max(b and round(b*255) or 0,255)
+    }
+  end
+end
 local function initializecolr(tfmdata,kind,value) 
   if value then
     local palettes=tfmdata.resources.colorpalettes
     if palettes then
-      local palette=palettes[tonumber(value) or 1] or palettes[1] or {}
+      local palette=sharedpalettes[value] or palettes[tonumber(value) or 1] or palettes[1] or {}
       local classes=#palette
       if classes==0 then
         return
@@ -23311,7 +23340,12 @@ local function initializecolr(tfmdata,kind,value)
       }
       for i=1,classes do
         local p=palette[i]
-        colorvalues[i]={ "special",f_color(p[1]/255,p[2]/255,p[3]/255) }
+        local r,g,b=p[1],p[2],p[3]
+        if r==g and g==b then
+          colorvalues[i]={ "special",f_gray(r/255) }
+        else
+          colorvalues[i]={ "special",f_color(r/255,g/255,b/255) }
+        end
       end
       local getactualtext=otf.getactualtext
       for unicode,character in next,characters do
@@ -23329,7 +23363,7 @@ local function initializecolr(tfmdata,kind,value)
             local n=#t
             for i=1,s do
               local entry=colorlist[i]
-              n=n+1 t[n]=colorvalues[entry.class]
+              n=n+1 t[n]=colorvalues[entry.class] or s_black
               n=n+1 t[n]={ "char",entry.slot }
               if s>1 and i<s and w~=0 then
                 n=n+1 t[n]={ "right",-w }
