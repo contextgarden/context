@@ -1,0 +1,16 @@
+return {
+    name = "koeielettersot",
+    version = "1.00",
+    comment = "Goodies that complement koeielettersot",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        rules = {
+            ["radical.extender"] = "radical.extender",
+            ["radical.end"]      = "radical.end",
+            ["hrule.begin"]      = "rule.begin",
+            ["hrule.extender"]   = "rule.ex",
+            ["hrule.end"]        = "rule.end",
+        }
+    }
+}

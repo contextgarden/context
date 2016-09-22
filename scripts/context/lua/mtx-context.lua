@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['mtx-context'] = {
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local format, gmatch, match, gsub, find = string.format, string.gmatch, string.match, string.gsub, string.find
 local quote, validstring = string.quote, string.valid
-local concat = table.concat
+local sort, concat, insert, sortedhash = table.sort, table.concat, table.insert, table.sortedhash
 local settings_to_array = utilities.parsers.settings_to_array
 local appendtable = table.append
 local lpegpatterns, lpegmatch, Cs, P = lpeg.patterns, lpeg.match, lpeg.Cs, lpeg.P
@@ -1438,6 +1438,7 @@ function scripts.context.modules(pattern)
         dir.glob(filejoinname(filepathpart(found,pattern)),list)
     end
     local done = { } -- todo : sort
+    local none = { x = { }, m = { }, s = { }, t = { } }
     for i=1,#list do
         local v = list[i]
         local base = filebasename(v)
@@ -1445,7 +1446,7 @@ function scripts.context.modules(pattern)
             done[base] = true
             local suffix = filesuffix(base)
             if suffix == "tex" or suffix == "mkiv" or suffix == "mkvi" or suffix == "mkix" or suffix == "mkxi" then
-                local prefix = match(base,"^([xmst])%-")
+                local prefix, rest = match(base,"^([xmst])%-(.*)")
                 if prefix then
                     v = resolvers.findfile(base) -- so that files on my dev path are seen
                     local data = io.loaddata(v) or ""
@@ -1465,10 +1466,25 @@ function scripts.context.modules(pattern)
                             end
                         end
                         report()
+                    else
+                        insert(none[prefix],rest)
                     end
                 end
             end
         end
+    end
+
+    local function show(k,v)
+        sort(v)
+        if #v > 0 then
+            report()
+            for i=1,#v do
+                report("%s : %s",k,v[i])
+            end
+        end
+    end
+    for k, v in sortedhash(none) do
+        show(k,v)
     end
 end
 
@@ -1747,9 +1763,9 @@ elseif getargument("update") then
     scripts.context.update()
 elseif getargument("expert") then
     application.help("expert", "special")
-elseif getargument("modules") then
+elseif getargument("showmodules") or getargument("modules") then
     scripts.context.modules()
-elseif getargument("extras") then
+elseif getargument("showextras") or getargument("extras") then
     scripts.context.extras(environment.files[1] or getargument("extras"))
 elseif getargument("extra") then
     scripts.context.extra()

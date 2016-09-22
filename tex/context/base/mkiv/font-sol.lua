@@ -351,7 +351,8 @@ function splitters.split(head)
     local function flush() -- we can move this
         local font = getfont(start)
         local last = getnext(stop)
-        local list = last and copy_node_list(start,last) or copy_node_list(start)
+--         local list = last and copy_node_list(start,last) or copy_node_list(start)
+        local list = last and copy_node_list(start,stop) or copy_node_list(start)
         local n = #cache + 1
         if encapsulate then
             local user_one = new_usernumber(splitter_one,n)
@@ -369,7 +370,8 @@ function splitters.split(head)
                 end
             end
         end
-        if rlmode == "TRT" or rlmode == "+TRT" then
+        local r2l = rlmode == "TRT" or rlmode == "+TRT"
+        if r2l then
             local dirnode = new_textdir("+TRT")
             setlink(dirnode,list)
             list = dirnode
@@ -377,16 +379,17 @@ function splitters.split(head)
         local c = {
             original  = list,
             attribute = attribute,
-            direction = rlmode,
+         -- direction = rlmode,
             font      = font
         }
         if trace_split then
             report_splitters("cached %4i: font %a, attribute %a, direction %a, word %a",
-                n, font, attribute, nodes_to_utf(list,true), rlmode and "r2l" or "l2r")
+                n, font, attribute, nodes_to_utf(list,true), r2l and "r2l" or "l2r")
         end
         cache[n] = c
         local solution = solutions[attribute]
-        local l, m = #solution.less, #solution.more
+        local l = #solution.less
+        local m = #solution.more
         if l > max_less then max_less = l end
         if m > max_more then max_more = m end
         start, stop, done = nil, nil, true
@@ -570,9 +573,10 @@ local function doit(word,list,best,width,badness,line,set,listdir)
                 return false, changed
             end
         end
-        local original, attribute, direction = found.original, found.attribute, found.direction
-        local solution = solutions[attribute]
-        local features = solution and solution[set]
+        local original  = found.original
+        local attribute = found.attribute
+        local solution  = solutions[attribute]
+        local features  = solution and solution[set]
         if features then
             local featurenumber = features[best] -- not ok probably
             if featurenumber then

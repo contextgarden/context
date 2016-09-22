@@ -2466,11 +2466,10 @@
 
 \installcorenamespace{mathrules}
 
-\unexpanded\def\enablemathrules #1{\global\letvalue{\??mathrules#1}\plusone}
-\unexpanded\def\disablemathrules#1{\global\letvalue{\??mathrules#1}\zerocount}
+\unexpanded\def\enablemathrules{\global\letvalue{\??mathrules\fontclass}\plusone}
 
 \appendtoks
-    \mathrulesmode\ifcsname\??mathrules\fontname\textfont\zerocount\endcsname
+    \mathrulesmode\ifcsname\??mathrules\fontclass\endcsname
       \lastnamedcs
     \else
       \zerocount
