@@ -2637,3 +2637,18 @@ do
     }
 
 end
+
+do
+
+    local pattern = C((1-S("* "))^1)
+
+    implement {
+        name      = "truefontname",
+        arguments = "string",
+        actions   = function(s)
+         -- context(match(s,"[^* ]+") or s)
+            context(lpegmatch(pattern,s) or s)
+        end
+    }
+
+end

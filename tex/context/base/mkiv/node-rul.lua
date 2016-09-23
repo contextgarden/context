@@ -17,43 +17,116 @@ if not modules then modules = { } end modules ['node-rul'] = {
 -- fill s withcolor .5white ;
 -- draw boundingbox s withcolor yellow;
 
-local attributes, nodes, node = attributes, nodes, node
+local floor = math.floor
 
-local nuts          = nodes.nuts
-local tonode        = nuts.tonode
-local tonut         = nuts.tonut
+local attributes         = attributes
+local nodes              = nodes
+local tasks              = nodes.tasks
+local properties         = nodes.properties
 
-local getfield      = nuts.getfield
-local setfield      = nuts.setfield
-local setnext       = nuts.setnext
-local setprev       = nuts.setprev
-local setlink       = nuts.setlink
-local getnext       = nuts.getnext
-local getprev       = nuts.getprev
-local getid         = nuts.getid
-local getattr       = nuts.getattr
-local setattr       = nuts.setattr
-local getfont       = nuts.getfont
-local getsubtype    = nuts.getsubtype
-local getlist       = nuts.getlist
-local setlist       = nuts.setlist
-local flushlist     = nuts.flush_list
+local nuts               = nodes.nuts
+local tonode             = nuts.tonode
+local tonut              = nuts.tonut
 
-local nodecodes     = nodes.nodecodes
-local rulecodes     = nodes.rulecodes
-local tasks         = nodes.tasks
+local getfield           = nuts.getfield
+local setfield           = nuts.setfield
+local setnext            = nuts.setnext
+local setprev            = nuts.setprev
+local setlink            = nuts.setlink
+local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getid              = nuts.getid
+local getattr            = nuts.getattr
+local setattr            = nuts.setattr
+local getfont            = nuts.getfont
+local getsubtype         = nuts.getsubtype
+local getlist            = nuts.getlist
+local setlist            = nuts.setlist
 
-local properties    = nodes.properties
-local attribs       = node.current_attr
+local flushlist          = nuts.flush_list
+local effective_glue     = nuts.effective_glue
+local insert_node_after  = nuts.insert_after
+local insert_node_before = nuts.insert_before
+local find_tail          = nuts.tail
+local setglue            = nuts.setglue
+local traverse_id        = nuts.traverse_id
+local list_dimensions    = nuts.rangedimensions
+local hpack_nodes        = nuts.hpack
+local attribs            = nuts.current_attr
 
-local glyph_code    = nodecodes.glyph
-local disc_code     = nodecodes.disc
-local rule_code     = nodecodes.rule
-local boundary_code = nodecodes.boundary
-local dir_code      = nodecodes.dir
-local math_code     = nodecodes.math
+local nodecodes          = nodes.nodecodes
+local rulecodes          = nodes.rulecodes
+local gluecodes          = nodes.gluecodes
+local listcodes          = nodes.listcodes
+local kerncodes          = nodes.kerncodes
 
-function nodes.striprange(first,last) -- todo: dir
+local glyph_code         = nodecodes.glyph
+local disc_code          = nodecodes.disc
+local rule_code          = nodecodes.rule
+local boundary_code      = nodecodes.boundary
+local localpar_code      = nodecodes.localpar
+local dir_code           = nodecodes.dir
+local math_code          = nodecodes.math
+local glue_code          = nodecodes.glue
+local penalty_code       = nodecodes.penalty
+local kern_code          = nodecodes.kern
+local hlist_code         = nodecodes.hlist
+local vlist_code         = nodecodes.vlist
+
+local indent_code        = listcodes.indent
+local line_code          = listcodes.line
+
+local leftskip_code      = gluecodes.leftskip
+local rightskip_code     = gluecodes.rightskip
+local parfillskip_code   = gluecodes.parfillskip
+local userskip_code      = gluecodes.userskip
+local spaceskip_code     = gluecodes.spaceskip
+local xspaceskip_code    = gluecodes.xspaceskip
+local leader_code        = gluecodes.leaders
+
+local kerning_code       = kerncodes.kern
+
+local nodepool           = nuts.pool
+
+local new_rule           = nodepool.rule
+local new_userrule       = nodepool.userrule
+local new_kern           = nodepool.kern
+
+local n_tostring         = nodes.idstostring
+local n_tosequence       = nodes.tosequence
+
+local variables          = interfaces.variables
+local implement          = interfaces.implement
+
+local privateattributes  = attributes.private
+
+local a_ruled            = privateattributes('ruled')
+local a_runningtext      = privateattributes('runningtext')
+local a_color            = privateattributes('color')
+local a_transparency     = privateattributes('transparency')
+local a_colormodel       = privateattributes('colormodel')
+local a_linefiller       = privateattributes("linefiller")
+local a_viewerlayer      = privateattributes("viewerlayer")
+
+local v_both             = variables.both
+local v_left             = variables.left
+local v_right            = variables.right
+local v_local            = variables["local"]
+local v_yes              = variables.yes
+local v_all              = variables.all
+local v_foreground       = variables.foreground
+
+local fonthashes         = fonts.hashes
+local fontdata           = fonthashes.identifiers
+local fontunicodes       = fonthashes.unicodes
+local fontcharacters     = fonthashes.characters
+local fontresources      = fonthashes.resources
+
+local dimenfactor        = fonts.helpers.dimenfactor
+local splitdimen         = number.splitdimen
+local setmetatableindex  = table.setmetatableindex
+
+local function striprange(first,last) -- todo: dir
     if first and last then -- just to be sure
         if first == last then
             return first, last
@@ -91,69 +164,9 @@ function nodes.striprange(first,last) -- todo: dir
     return first, last
 end
 
+nodes.striprange = striprange
+
 -- todo: order and maybe other dimensions
-
-local floor = math.floor
-
-local trace_ruled        = false  trackers.register("nodes.rules", function(v) trace_ruled = v end)
-local report_ruled       = logs.reporter("nodes","rules")
-
-local n_tostring         = nodes.idstostring
-local n_tosequence       = nodes.tosequence
-
-local a_ruled            = attributes.private('ruled')
-local a_runningtext      = attributes.private('runningtext')
-local a_color            = attributes.private('color')
-local a_transparency     = attributes.private('transparency')
-local a_colormodel       = attributes.private('colormodel')
-
-local insert_node_before = nuts.insert_before
-local insert_node_after  = nuts.insert_after
-local list_dimensions    = nuts.rangedimensions
-local hpack_nodes        = nuts.hpack
-
-local striprange         = nodes.striprange
-
-local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
-local fontunicodes       = fonthashes.unicodes
-local fontcharacters     = fonthashes.characters
-local fontresources      = fonthashes.resources
-local variables          = interfaces.variables
-local dimenfactor        = fonts.helpers.dimenfactor
-local splitdimen         = number.splitdimen
-
-local v_yes              = variables.yes
-local v_all              = variables.all
-local v_foreground       = variables.foreground
-
-local nodecodes          = nodes.nodecodes
-local skipcodes          = nodes.skipcodes
-local kerncodes          = nodes.kerncodes
-
-local glyph_code         = nodecodes.glyph
-local disc_code          = nodecodes.disc
-local glue_code          = nodecodes.glue
-local penalty_code       = nodecodes.penalty
-local kern_code          = nodecodes.kern
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
-local rule_code          = nodecodes.rule
-local boundary_code      = nodecodes.boundary
-local dir_code           = nodecodes.dir
-
-local userskip_code      = skipcodes.userskip
-local spaceskip_code     = skipcodes.spaceskip
-local xspaceskip_code    = skipcodes.xspaceskip
-local leader_code        = skipcodes.leaders
-
-local kerning_code       = kerncodes.kern
-
-local nodepool           = nuts.pool
-
-local new_rule           = nodepool.rule
-local new_userrule       = nodepool.userrule
-local new_kern           = nodepool.kern
 
 -- we can use this one elsewhere too
 --
@@ -374,12 +387,13 @@ callbacks.register(
 
 --
 
+local trace_ruled   = false  trackers.register("nodes.rules", function(v) trace_ruled = v end)
+local report_ruled  = logs.reporter("nodes","rules")
+
 function rules.define(settings)
     data[#data+1] = settings
     context(#data)
 end
-
-local a_viewerlayer = attributes.private("viewerlayer")
 
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
     local font = nil
@@ -475,7 +489,6 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
                 level,w,ht,dp,n_tostring(f,l),n_tosequence(f,l,true))
         end
     end
-
     if mp and mp ~= "" then
         local r = userrule {
             width  = w,
@@ -511,7 +524,9 @@ end
 
 local process = nodes.processwords
 
-rules.handler = function(head) return process(a_ruled,data,flush_ruled,head) end
+rules.handler = function(head)
+    return process(a_ruled,data,flush_ruled,head)
+end
 
 function rules.enable()
     tasks.enableaction("shipouts","nodes.rules.handler")
@@ -577,18 +592,200 @@ function nodes.shifts.enable()
     tasks.enableaction("shipouts","nodes.shifts.handler")
 end
 
--- linefillers (placeholder)
+-- linefillers
 
 nodes.linefillers      = nodes.linefillers      or { }
 nodes.linefillers.data = nodes.linefillers.data or { }
 
+storage.register("nodes/linefillers/data", nodes.linefillers.data, "nodes.linefillers.data")
+
+local data = nodes.linefillers.data
+
+function nodes.linefillers.define(settings)
+    data[#data+1] = settings
+    context(#data)
+end
+
+local function linefiller(current,data,width,location)
+    local height = data.height
+    local depth  = data.depth
+    local mp     = data.mp
+    local ma     = data.ma
+    local ca     = data.ca
+    local ta     = data.ta
+    if mp and mp ~= "" then
+        return tonut(userrule {
+            width     = width,
+            height    = height,
+            depth     = depth,
+            type      = "mp",
+            line      = data.rulethickness,
+            data      = mp,
+            ma        = ma,
+            ca        = ca,
+            ta        = ta,
+            option    = location,
+            direction = getfield(current,"dir"),
+        })
+    else
+        local linefiller = new_rule(width,height,depth)
+        if ca then
+            setattr(linefiller,a_colorspace,ma)
+            setattr(linefiller,a_color,ca)
+        end
+        if ta then
+            setattr(linefiller,a_transparency,ta)
+        end
+        return linefiller
+    end
+end
+
+local function find_attr(head,attr)
+    while head do
+        local a = head[attr]
+        if a then
+            return a, head
+        end
+        head = getnext(head)
+    end
+end
+
 function nodes.linefillers.handler(head)
-    return head, false
+    for current in traverse_id(hlist_code,tonut(head)) do
+        if getsubtype(current) == line_code then
+            local list = getlist(current)
+            if list then
+                -- why doesn't leftskip take the attributes
+                -- or list[linefiller] or maybe first match (maybe we need a fast helper for that)
+                local a = getattr(current,a_linefiller)
+                if a then
+                    local class = a % 1000
+                    local data  = data[class]
+                    if data then
+                        local location   = data.location
+                        local scope      = data.scope
+                        local distance   = data.distance
+                        local threshold  = data.threshold
+                        local leftlocal  = false
+                        local rightlocal = false
+                        --
+                        if scope == v_right then
+                            leftlocal = true
+                        elseif scope == v_left then
+                            rightlocal = true
+                        elseif scope == v_local then
+                            leftlocal  = true
+                            rightlocal = true
+                        end
+                        --
+                        if location == v_left or location == v_both then
+                            local lskip = nil -- leftskip
+                            local iskip = nil -- indentation
+                            local head  = list
+                            while head do
+                                local id = getid(head)
+                                if id == glue_code then
+                                    if getsubtype(head) == leftskip_code then
+                                        lskip = head
+                                    else
+                                        break
+                                    end
+                                elseif id == localpar_code or id == dir_code then
+                                    -- go on
+                                elseif id == hlist_code then
+                                    if getsubtype(head) == indent_code then
+                                        iskip = head
+                                    end
+                                    break
+                                else
+                                    break
+                                end
+                                head = getnext(head)
+                            end
+                            if head then
+                                local indentation = iskip and getfield(iskip,"width") or 0
+                                local leftfixed   = lskip and getfield(lskip,"width") or 0
+                                local lefttotal   = lskip and effective_glue(lskip,current) or 0
+                                local width = lefttotal - (leftlocal and leftfixed or 0) + indentation - distance
+                                if width > threshold then
+                                    if iskip then
+                                        setfield(iskip,"width",0)
+                                    end
+                                    if lskip then
+                                        setglue(lskip,leftlocal and getfield(lskip,"width") or nil)
+                                        if distance > 0 then
+                                            insert_node_after(list,lskip,new_kern(distance))
+                                        end
+                                        insert_node_after(list,lskip,linefiller(current,data,width,"left"))
+                                    else
+                                        insert_node_before(list,head,linefiller(current,data,width,"left"))
+                                        if distance > 0 then
+                                            insert_node_before(list,head,new_kern(distance))
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        --
+                        if location == v_right or location == v_both then
+                            local pskip = nil -- parfillskip
+                            local rskip = nil -- rightskip
+                            local tail  = find_tail(list)
+                            while tail and getid(tail) == glue_code do
+                                local subtype = getsubtype(tail)
+                                if subtype == rightskip_code then
+                                    rskip = tail
+                                elseif subtype == parfillskip_code then
+                                    pskip = tail
+                                else
+                                    break
+                                end
+                                tail = getprev(tail)
+                            end
+                            if tail then
+                                local rightfixed = rskip and getfield(rskip,"width") or 0
+                                local righttotal = rskip and effective_glue(rskip,current) or 0
+                                local parfixed   = pskip and getfield(pskip,"width") or 0
+                                local partotal   = pskip and effective_glue(pskip,current) or 0
+                                local width = righttotal - (rightlocal and rightfixed or 0) + partotal - distance
+                                if width > threshold then
+                                    if pskip then
+                                        setglue(pskip)
+                                    end
+                                    if rskip then
+                                        setglue(rskip,rightlocal and getfield(rskip,"width") or nil)
+                                        if distance > 0 then
+                                            insert_node_before(list,rskip,new_kern(distance))
+                                        end
+                                        insert_node_before(list,rskip,linefiller(current,data,width,"right"))
+                                    else
+                                        insert_node_after(list,tail,linefiller(current,data,width,"right"))
+                                        if distance > 0 then
+                                            insert_node_after(list,tail,new_kern(distance))
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return head
+end
+
+local enable = false
+
+function nodes.linefillers.enable()
+    if not enable then
+    -- we could now nil it
+        tasks.enableaction("finalizers","nodes.linefillers.handler")
+        enable = true
+    end
 end
 
 -- interface
-
-local implement = interfaces.implement
 
 implement {
     name      = "definerule",
@@ -635,4 +832,31 @@ implement {
     name     = "enableshifts",
     onlyonce = true,
     actions  = nodes.shifts.enable
+}
+
+implement {
+    name      = "definelinefiller",
+    actions   = { nodes.linefillers.define, context },
+    arguments = {
+        {
+            { "method", "integer" },
+            { "location", "string" },
+            { "scope", "string" },
+            { "mp", "string" },
+            { "ma", "integer" },
+            { "ca", "integer" },
+            { "ta", "integer" },
+            { "depth", "dimension" },
+            { "height", "dimension" },
+            { "distance", "dimension" },
+            { "threshold", "dimension" },
+            { "rulethickness", "dimension" },
+        }
+    }
+}
+
+implement {
+    name     = "enablelinefillers",
+    onlyonce = true,
+    actions  = nodes.linefillers.enable
 }

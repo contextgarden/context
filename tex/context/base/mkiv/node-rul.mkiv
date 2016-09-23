@@ -442,4 +442,122 @@
      {\begingroup\dostartisolation\begingroup#1}
      {#2\endgroup\dostopisolation\endgroup}}
 
+%D More rules.
+
+% The following code rocks and was written with the Toto Live in Poland bluray
+% in loop mode on my 5.1 surround development setup (the Toto lineup with Simon
+% Phillips on drums). The Amsterdam concert is equally energizing.
+
+\installcorenamespace{linefiller}
+\installcorenamespace{linefillerindex}
+\installcorenamespace{linefillerattribute}
+
+\installcommandhandler \??linefiller {linefiller} \??linefiller
+
+\definesystemattribute[linefiller][public]
+
+\newtoks\t_node_linefiller_checklist
+
+\let\c_node_linefiller_index\relax % temporary synonym
+
+\let\setuplinefillers\setuplinefiller
+
+\appendtoks
+    \ifsecondargument
+        \node_linefiller_define
+    \else
+        \the\t_node_linefiller_checklist
+    \fi
+\to \everysetuplinefiller
+
+\appendtoks
+    \ifcsname\??linefillerindex\currentlinefiller\endcsname
+        \lastnamedcs\zerocount
+    \else
+        \expandafter\newcount\csname\??linefillerindex\currentlinefiller\endcsname
+    \fi
+    \etoksapp\t_node_linefiller_checklist{\t_node_linefiller_checklist\node_linefiller_redefine{\currentlinefiller}}%
+    \node_linefiller_define
+\to \everydefinelinefiller
+
+\unexpanded\def\node_linefiller_define
+  {\edef\p_node_rules_color{\linefillerparameter\c!color}%
+   \setevalue{\??linefillerattribute\currentlinefiller}{\number
+   \clf_definelinefiller
+    %method         \linefillerparameter\c!method
+     location      {\linefillerparameter\c!location}%
+     scope         {\linefillerparameter\c!scope}%
+     mp            {\includeMPgraphic{\linefillerparameter\c!mp}}%
+     ma             \thecolormodelattribute
+     ca             \thecolorattribute\p_node_rules_color
+     ta             \thetransparencyattribute\p_node_rules_color
+     height         \dimexpr\linefillerparameter\c!height\relax
+     depth          \dimexpr\linefillerparameter\c!depth\relax
+     distance       \dimexpr\linefillerparameter\c!distance\relax
+     threshold      \dimexpr\linefillerparameter\c!threshold\relax
+     rulethickness  \dimexpr\linefillerparameter\c!rulethickness\relax
+   \relax}}
+
+\unexpanded\def\node_linefiller_redefine#1%
+  {\def\currentlinefiller{#1}\node_linefiller_define}
+
+\unexpanded\def\node_linefiller_set#1% todo: check parent ! todo: move attr etc to lua
+  {\def\currentlinefiller{#1}%
+   \expandafter\let\expandafter\c_node_linefiller_index\csname\??linefillerindex#1\endcsname
+   \advance\c_node_linefiller_index\plusone
+   \clf_enablelinefillers
+   \attribute\linefillerattribute\numexpr
+      \plusthousand*\c_node_linefiller_index
+     +\csname\??linefillerattribute#1\ifcsname\??linefiller#1:\number\c_node_linefiller_index\s!parent\endcsname:\number\c_node_linefiller_index\fi\endcsname
+   \relax}
+
+\unexpanded\def\startlinefiller
+  {\dodoubleempty\node_linefiller_start}
+
+\unexpanded\def\node_linefiller_start[#1][#2]%
+  {\begingroup
+   \par
+   \def\currentlinefiller{#1}%
+   \ifsecondargument
+     % we need to update settings
+     \setuplinefiller[#1][#2]% no \setupcurrentlinefiller as we need to update settings
+   \fi
+   \node_linefiller_set{#1}%
+   \linefillerparameter\c!before
+   \usealignparameter\linefillerparameter
+   \uselinefillerstyleandcolor\c!textstyle\c!textcolor} % bars have foregroundcolor
+
+\unexpanded\def\stoplinefiller
+  {\par
+   \linefillerparameter\c!after
+   \endgroup}
+
+\unexpanded\def\setlinefiller[#1]%
+  {\node_linefiller_set{#1}}
+
+\setuplinefillers
+  [%c!method=0,
+   %c!mp=,
+   \c!location=\v!both,
+   \c!scope=\v!local,
+   \c!distance=\zeropoint,
+   \c!threshold=\zeropoint,
+   \c!rulethickness=\linewidth,
+   \c!height=\linewidth,
+   \c!depth=\zeropoint,
+  %\c!textcolor=,
+  %\c!textstyle=,
+  %\c!align=,
+  %\c!before=,
+  %\c!after=,
+   \c!color=]
+
+\definelinefiller
+  [filler]
+  [\c!height=.75\exheight,
+  %\c!mp=rules:filler:demo,
+  %\c!threshold=.25\emwidth,
+   \c!distance=.25\emwidth,
+   \c!rulethickness=.25\exheight]
+
 \protect \endinput

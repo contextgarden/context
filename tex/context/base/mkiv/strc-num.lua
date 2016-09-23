@@ -165,7 +165,7 @@ local function enhance()
     enhance = nil
 end
 
-local function allocate(name,i) -- can be metatable
+local function allocate(name,i) -- can be metatable but it's a bit messy
     local cd = counterdata[name]
     if not cd then
         cd = {
@@ -182,20 +182,24 @@ local function allocate(name,i) -- can be metatable
     cd = cd.data
     local ci = cd[i]
     if not ci then
-        ci = {
-            number = 0,
-            start  = 0,
-            saved  = 0,
-            step   = 1,
-            range  = 1,
-            offset = false,
-            stop   = 0, -- via metatable: last, first, stop only for tracing
-        }
-        setmetatableindex(ci, function(t,s) return constructor[s](t,name,i) end)
-        cd[i] = ci
-        tobesaved[name][i] = { }
-    else
-        if enhance then enhance() end -- not stored in bytecode
+        for i=1,i do
+            if not cd[i] then
+                ci = {
+                    number = 0,
+                    start  = 0,
+                    saved  = 0,
+                    step   = 1,
+                    range  = 1,
+                    offset = false,
+                    stop   = 0, -- via metatable: last, first, stop only for tracing
+                }
+                setmetatableindex(ci, function(t,s) return constructor[s](t,name,i) end)
+                cd[i] = ci
+                tobesaved[name][i] = { }
+            end
+        end
+    elseif enhance then
+        enhance() -- not stored in bytecode
     end
     return ci
 end

@@ -2917,6 +2917,8 @@ enddef ;
 
 %D The sorter is used in:
 
+% not yet ok
+
 vardef shapedlist(suffix p) = % takes a list of paths
     save l ; pair l[] ;
     save r ; pair r[] ;
