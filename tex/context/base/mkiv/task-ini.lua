@@ -108,8 +108,9 @@ appendaction("math",         "normalizers", "noads.handlers.italics",   nil, "no
 appendaction("math",         "normalizers", "noads.handlers.classes",   nil, "nohead")           -- disabled
 
 appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
-------------("math",         "builders",    "noads.handlers.italics",  nil, "nohead")            -- disabled
+------------("math",         "builders",    "noads.handlers.italics",   nil, "nohead")           -- disabled
 appendaction("math",         "builders",    "typesetters.directions.processmath")                -- disabled (has to happen pretty late)
+appendaction("math",         "builders",    "noads.handlers.makeup",    nil, "nohead")           -- disabled (has to happen last)
 
 appendaction("finalizers",   "lists",       "typesetters.paragraphs.normalize")                  -- moved here
 appendaction("finalizers",   "lists",       "typesetters.margins.localhandler")                  -- disabled
@@ -200,6 +201,7 @@ disableaction("math",        "noads.handlers.italics")
 disableaction("math",        "noads.handlers.domains")
 disableaction("math",        "noads.handlers.classes")
 disableaction("math",        "noads.handlers.autofences")
+disableaction("math",        "noads.handlers.makeup")
 disableaction("math",        "typesetters.directions.processmath")
 
 disableaction("mvlbuilders", "typesetters.margins.globalhandler")

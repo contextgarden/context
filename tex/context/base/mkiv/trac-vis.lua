@@ -99,6 +99,7 @@ local insert_node_before  = nuts.insert_before
 local insert_node_after   = nuts.insert_after
 local traverse_nodes      = nuts.traverse
 local linked_nodes        = nuts.linked
+local apply_to_nodes      = nuts.apply
 
 local effectiveglue       = nuts.effective_glue
 
@@ -240,7 +241,7 @@ end
 local function setvisual(n,a,what,list) -- this will become more efficient when we have the bit lib linked in
     if not n or n == "reset" then
         return unsetvalue
-    elseif n == "makeup" then
+    elseif n == true or n == "makeup" then
         if not a or a == 0 or a == unsetvalue then
             a = preset_makeup
         else
@@ -286,6 +287,16 @@ end
 
 function nuts.setvisuals(n,mode)
     setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true,true))
+end
+
+function nuts.applyvisuals(n,mode)
+    local a = unsetvalue
+    if mode == true then
+        a = texgetattribute (a_visual)
+    elseif mode then
+        a = setvisual(mode)
+    end
+    apply_to_nodes(n,function(n) setattr(n,a_visual,a) end)
 end
 
 function nuts.copyvisual(n,m)

@@ -90,6 +90,13 @@ local listcodes = mark(getsubtypes("list"))
 
 local rulecodes = mark(getsubtypes("rule"))
 
+if not rulecodes[5] then
+    rulecodes[5] = "over"
+    rulecodes[6] = "under"
+    rulecodes[7] = "fraction"
+    rulecodes[8] = "radical"
+end
+
 -- local glyphcodes = allocate {
 --     [0] = "character",
 --     [1] = "glyph",

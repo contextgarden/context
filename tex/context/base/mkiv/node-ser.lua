@@ -26,6 +26,7 @@ local nodecodes   = nodes.nodecodes
 local subtcodes   = nodes.codes
 local noadcodes   = nodes.noadcodes
 local getfields   = nodes.fields
+local nodekeys    = nodes.keys
 
 local tonode      = nodes.tonode
 
@@ -105,7 +106,7 @@ nodes.ignorablefields = ignore
 
 local function astable(n,sparse) -- not yet ok, might get obsolete anyway
     n = tonode(n)
-    local f, t = getfields(n), { }
+    local f = getfields(n)
     for i=1,#f do
         local v = f[i]
         local d = n[v]
@@ -258,3 +259,40 @@ function nodes.print(head,n)
         head = head.next
     end
 end
+
+-- quick hack, nicer is to have a proper expand per node type
+-- already prepared
+
+local function apply(n,action)
+    while n do
+        action(n)
+        local id = n.id
+        if id == hlist_code or id == vlist_code then
+            apply(n.list,action)
+        end
+        n = n.next
+    end
+end
+
+nodes.apply = apply
+
+local nuts    = nodes.nuts
+local getid   = nuts.getid
+local getlist = nuts.getlist
+local getnext = nuts.getnext
+
+local function apply(n,action)
+    while n do
+        action(n)
+        local id = getid(n)
+        if id == hlist_code or id == vlist_code then
+            local list = getlist(n,action)
+            if list then
+                apply(list,action)
+            end
+        end
+        n = getnext(n)
+    end
+end
+
+nuts.apply = apply

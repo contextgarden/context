@@ -1,0 +1,817 @@
+% interface=en engine=luatex language=uk
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+
+\setupbodyfont
+  [dejavu,10pt]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\setupwhitespace
+  [big]
+
+\setuplayout
+  [header=15mm,
+   topspace=15mm,
+   footer=0mm,
+   bottomspace=20mm,
+   height=middle,
+   backspace=20mm,
+   cutspace=20mm,
+   width=middle]
+
+\usemodule[x][setups-basics]
+
+\loadsetups[context-en]
+\loadsetups[i-linefiller]
+
+\startdocument
+
+\startMPpage
+
+    StartPage ;
+
+        linecap := butt ;
+
+        fill Page withcolor .25[yellow/4,green/2] ;
+
+        path p ; p := (ulcorner Page ..  urcorner Page .. lrcorner Page) ;
+
+        draw image (
+            for i=1/200 step 1/200 until 1 :
+                draw p scaled i dashed dashpattern (on 4 randomized 2 off 4 randomized 2) ;
+            endfor ;
+        ) withcolor white ;
+
+        draw anchored.urt(
+            textext("\ss RULES") xsized .5PaperWidth,
+            urcorner Page shifted(-15mm,-20mm)
+        ) withcolor white ;
+
+        draw anchored.urt(
+            textext("\ss HANS HAGEN") xsized .5PaperWidth,
+            lrcorner Page shifted(-15mm,40mm)
+        ) withcolor white ;
+
+        draw anchored.urt(
+            textext("\ss A CONTEXT MKIV MANUAL") xsized .5PaperWidth,
+            lrcorner Page shifted(-15mm,20mm)
+        ) withcolor white ;
+
+        setbounds currentpicture to Page ;
+
+    StopPage ;
+
+\stopMPpage
+
+\startsubject[title=Introduction]
+
+This manual describes just one type of rules: those that somehow magically are
+bound to the typeset text. We will mention a few mechanisms that relate to this
+in the sense that they share some of the underlaying code and logic. The term
+\quotation {rules} should be interpreted liberally as we can kick in some
+\METAPOST\ which then can get us away from straight rules.
+
+This manual will not be that extensive, after all these mechanisms are not that
+complex to configure.
+
+\stopsubject
+
+\startsubject[title=Underlining and overstriking]
+
+Already in \CONTEXT\ \MKII\ we had underlining available but with some
+limitations. We could handle more than one word but at some point you hit the
+limits of the engine. The \MKIV\ implementation is more flexible. In fact you can
+underline a whole document (which was actually a request from a user). This
+feature was also used by a collegue who was experimenting with texts for
+dyslectic readers.
+
+This mechanism is generic in the sense that a framework is provided to define
+rules that run alongside text. Take this:
+
+\setupbars[foregroundcolor=darkyellow,color=darkred]
+
+\startbuffer
+\underbars {drawing \underbar{bars} under words is a typewriter leftover}
+\overstrikes {striking words makes them \overstrike {unreadable} but
+sometimes even \overbar {top lines} come into view.}
+\stopbuffer
+
+\typebuffer
+
+This shows up as:
+
+\getbuffer
+
+We can best explain what happens by looking at how these commands are
+defined:
+
+\starttyping
+\definebar[overbar]   [method=1,dy=0.4, offset=1.8, continue=yes]
+\definebar[underbar]  [method=1,dy=-0.4,offset=-0.3,continue=yes]
+\definebar[overstrike][method=0,dy=0.4, offset=0.5, continue=yes]
+
+\definebar
+  [understrike]
+  [method=0,
+   offset=1.375,
+   rulethickness=2.5,
+   continue=yes,
+   order=background]
+
+\definebar[overbars]    [overbar]    [continue=no]
+\definebar[underbars]   [underbar]   [continue=no]
+\definebar[overstrikes] [overstrike] [continue=no]
+\definebar[understrikes][understrike][continue=no]
+\stoptyping
+
+The formal definitions of the commands are show in \definition [definebar, setupbar].
+
+\showdefinition{definebar}
+\showdefinition{setupbar}
+
+The \type {dy} parameter specifies the shift up or down. The offset defines how
+nested bars are shifted. The \type {method} determines centering of the bar: we
+set it to zero when we want an overstrike. The \type {continue} parameter is
+responsible for drawing over spaces and the \type {order} determines the layering.
+
+The units are either hard coded values like points or relate to the font at the spot
+of the bar. Here are some examples:
+
+\startbuffer
+\setupbars[unit=mm,rulethickness=1]     bar \underbar{foo} bar\quad
+\setupbars[unit=ex,rulethickness=1]     bar \underbar{foo} bar\quad
+\setupbars[unit=pt,rulethickness=1]     bar \underbar{foo} bar\quad
+\setupbars[unit=pt,rulethickness=10pt]  bar \underbar{foo} bar
+\stopbuffer
+
+\typebuffer \blank \start \getbuffer \stop \blank
+
+As if underlining wasn't already bad enough, of course at some point there came a
+request for dashed lines.
+
+\startbuffer
+test \underrandoms{test me} and \underrandom{test} or \underrandom{grep}
+test \underdashes {test me} and \underdash  {test} or \underdash  {grep}
+test \underdots   {test me} and \underdot   {test} or \underdot   {grep}
+\stopbuffer
+
+\typebuffer
+
+The above variants are predefined and render as:
+
+\startlines
+\tfb \getbuffer
+\stoplines
+
+A graphic is defined as follows. It boils down to drawing one or more shapes. In
+this example we also force a specific boundingbox so that the result gets
+positioned right.
+
+\starttyping
+\startuseMPgraphic{rules:under:...}
+    draw
+        ((0,RuleDepth) -- (RuleWidth,RuleDepth))
+        shifted (0,RuleFactor*RuleOffset)
+        withpen pencircle scaled RuleThickness
+        withcolor RuleColor ;
+    setbounds currentpicture to unitsquare xysized(RuleWidth,RuleHeight) ;
+\stopuseMPgraphic
+\stoptyping
+
+The following variables are available:
+
+\starttabulate[|T|||]
+\BC variable      \BC type     \BC meaning                                 \NC \NR
+\ML
+\NC RuleDirection \NC string   \NC the direction of the line               \NC \NR
+\NC RuleOption    \NC string   \NC whatever the caller finds useful        \NC \NR
+\NC RuleWidth     \NC number   \NC the requested width of the rule         \NC \NR
+\NC RuleHeight    \NC number   \NC the requested height of the rule        \NC \NR
+\NC RuleDepth     \NC number   \NC the requested depth of the rule         \NC \NR
+\NC RuleThickness \NC number   \NC the linewidth                           \NC \NR
+\NC RuleFactor    \NC number   \NC the set factor (e.g. an \type {ex})     \NC \NR
+\NC RuleOffset    \NC number   \NC an (optional) offset in case of nesting \NC \NR
+\NC RuleColor     \NC color    \NC the color                               \NC \NR
+\stoptabulate
+
+The \type {RuleFactor} can be used as multiplier for the \type {RuleOffset}.
+Later we will see an example of how to use the \type {RuleDirection} and \type
+{RuleOption}.
+
+The extra under commands are defined as follows. Watch the \type {mp} parameter:
+it refers to a graphic.
+
+\starttyping
+\definebar
+  [undergraphic]
+  [mp=rules:under:dash,
+   offset=-.2,
+   order=background]
+
+\definebar[underrandom] [undergraphic][mp=rules:under:random]
+\definebar[underrandoms][underrandom] [continue=yes]
+
+\definebar[underdash]   [undergraphic][mp=rules:under:dash]
+\definebar[underdashes] [underdash]   [continue=yes]
+
+\definebar[underdot]    [undergraphic][mp=rules:under:dots]
+\definebar[underdots]   [underdot]    [continue=yes]
+\stoptyping
+
+A nasty side effect of the implementation is that because we look mostly at glyphs,
+optionally separated by glue or kern some text might get unseen and therefore not
+treated.
+
+\startbuffer
+\underbars{We see this \high{\tfxx ®} symbol \runninghbox to 1cm{\hss} often.}
+\underbar {We see this \high{\tfxx ®} symbol \runninghbox to 1cm{\hss} often.}
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlines
+\getbuffer
+\stoplines
+
+A running box is seen as text. As you (probably) expect, a nested ornamental
+rule is supported as well:
+
+\startbuffer
+\underbars{We see this \high{\tfxx\underdot{®}} symbol \runninghbox to 1cm{\hss} often.}
+\underbar {We see this \high{\tfxx\underdot{®}} symbol \runninghbox to 1cm{\hss} often.}
+\stopbuffer
+
+\typebuffer
+
+This time we get (you might need a magnifier to see it):
+
+\startlines
+\getbuffer
+\stoplines
+
+\stopsubject
+
+\startsubject[title=Shifting]
+
+We mention shifting here because it shares code with the bars. There are two
+shifts defined but you can define more:
+
+\starttyping
+\defineshift
+  [shiftup]
+  [method=0,
+   dy=-1,
+   unit=ex,
+   continue=yes,
+   style=\txx]
+
+\defineshift
+  [shiftdown]
+  [method=1,
+   dy=.3,
+   unit=ex,
+   continue=yes,
+   style=\txx,
+   color=]
+\stoptyping
+
+An example of using the commands defined this way is:
+
+\startbuffer
+Let's go \shiftup{up} and \shiftdown{down} a bit!
+\stopbuffer
+
+\typebuffer
+
+or: \inlinebuffer\ Here we just shift words but you can shift more than that
+although I haven't yet seen a useful example of that:
+
+\startbuffer
+We can \shiftup {\input{tufte}} whole paragraphs if we really want.
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The formal definitions are given in \definition[defineshift, setupshift,
+startshift]. The \type {align} switch is there for directional (and testing)
+purposes and is normally not used (or even useful in a line). The \type {dy}
+is multiplied by the \type {factor} that itself can depend on the used font.
+
+\showdefinition{defineshift}
+\showdefinition{setupshift}
+\showdefinition{startshift}
+
+\stopsubject
+
+\startsubject[title=Fillers]
+
+The possibility of line fillers was mentioned by Mojca on the \CONTEXT\ mailing
+list and it's actually not that hard to implement them. The only need I ever had
+for it was to fill out lines on some legal form and that was actually just some
+fun challenge in \MKII\ times. The code got lost and never made it into \CONTEXT.
+This time it was added as a side effect of a thread at the tenth \CONTEXT\
+meeting.
+
+The ideas is to fill the rest of a line with some kind of (ornamental) rule. I'm
+not sure what sense it makes, even in legal documents. If it is to prevent
+additions then one should wonder if additions at the end of a (kind of arbitrary)
+broken line is what we should be afraid of most. So, for now, let's consider it
+an educational feature.
+
+\startbuffer
+\definelinefiller
+  [filler-1]
+  [height=.75\exheight,
+   distance=.25\emwidth,
+   rulethickness=.25\exheight,
+   textcolor=darkyellow,
+   before=\blank,
+   after=\blank,
+   color=darkred]
+
+\startlinefiller[filler-1]
+    \input ward
+\stoplinefiller
+\stopbuffer
+
+\typebuffer
+
+Here we define a filler. As you can see, a rule gets added at the end of a
+paragraph.
+
+\getbuffer
+
+\startbuffer
+\startalign[flushleft,broad]
+    \startlinefiller[filler-1]
+        \input ward
+    \stoplinefiller
+\stopalign
+\stopbuffer
+
+This time we don't justify:
+
+\typebuffer
+
+Now more lines get a rule appended:
+
+\getbuffer
+
+Before we continue it must be noted that the environment creates a paragraph. If
+you don't want that you need to use \type {\setlinefiller} instead. Next we show
+a \type {middle} alignment:
+
+\startbuffer
+\startalign[middle]
+    \startlinefiller[filler-1]
+        \input ward
+    \stoplinefiller
+\stopalign
+\stopbuffer
+
+\getbuffer
+
+\startbuffer
+\startalign[middle]
+    \startnarrower
+        \startlinefiller[filler-1]
+            \input ward
+        \stoplinefiller
+    \stopnarrower
+\stopalign
+\stopbuffer
+
+Let's add another level of complexity, left- and right skips:
+
+\typebuffer
+
+Here we get:
+
+\getbuffer
+
+The lines stay within the narrower boundaries but you can extend them
+to the margins if you like:
+
+\startbuffer
+\startalign[middle]
+    \startnarrower
+        \startlinefiller[filler-1][scope=global]
+            \input ward
+        \stoplinefiller
+    \stopnarrower
+\stopalign
+\stopbuffer
+
+\typebuffer
+
+This looks like:
+
+\getbuffer
+
+You can also use a \type {left} or \type {right} scope, as in:
+
+\startbuffer
+\startalign[middle]
+    \startnarrower
+        \startlinefiller[filler-1][scope=right]
+            \input ward
+        \stoplinefiller
+    \stopnarrower
+\stopalign
+\stopbuffer
+
+\typebuffer
+
+Only the right rules extend into the margins.
+
+\getbuffer
+
+\startbuffer
+\startalign[middle]
+    \startnarrower
+        \startlinefiller[filler-1][scope=right,location=right]
+            \input ward
+        \stoplinefiller
+    \stopnarrower
+\stopalign
+\stopbuffer
+
+You can get rid of the left rules:
+
+\typebuffer
+
+So:
+
+\getbuffer
+
+Of course these rules are somewhat boring so let's now kick in some \METAPOST.
+
+\startbuffer[mp]
+\setuplinefiller
+  [filler-1]
+  [mp=rules:filler:demo,
+  %threshold=.25\emwidth,
+   color=darkred]
+
+\startuseMPgraphic{rules:filler:demo}
+    drawarrow
+        if RuleDirection == "TRT" : reverse fi
+            ((0,RuleHeight) -- (RuleWidth,RuleHeight))
+        withpen
+            pencircle scaled RuleThickness
+        withcolor
+            if RuleOption == "left" : complemented fi RuleColor ;
+    setbounds currentpicture to
+        unitsquare xysized(RuleWidth,RuleHeight) ;
+\stopuseMPgraphic
+\stopbuffer
+
+\typebuffer[mp] \getbuffer[mp]
+
+The previous example now looks like:
+
+\getbuffer
+
+\startbuffer
+\startalign[middle,r2l]
+    \startnarrower[4*middle]
+        \startlinefiller[filler-1]  [scope=global]
+            \input ward
+        \stoplinefiller
+    \stopnarrower
+\stopalign
+\stopbuffer
+
+This time we also change the direction and we can let the \METAPOST\ graphic
+adapt to that by reverting the arrows.
+
+\typebuffer
+
+The direction \type {TRT} is \TEX\ speak for a right|-|to|-|left direction. We
+use a latin script example for convenience.
+
+\getbuffer
+
+\startbuffer[mp]
+\startuseMPgraphic{rules:filler:demo}
+    drawarrow
+        if RuleDirection == "TRT" : reverse fi
+            if RuleOption == "right" : reverse fi
+            ((0,RuleHeight) -- (RuleWidth,RuleHeight))
+        withpen
+            pencircle scaled RuleThickness
+        withcolor
+            if RuleOption == "left" : complemented fi RuleColor ;
+    setbounds currentpicture to
+        unitsquare xysized(RuleWidth,RuleHeight) ;
+\stopuseMPgraphic
+\stopbuffer
+
+% \startbuffer
+% \startnarrower[4*middle]
+%     \startlinefiller[filler-1] [scope=global,align=middle]
+%         \parindent   100pt
+%         \parfillskip 100pt
+%         \input ward
+%     \stoplinefiller
+% \stopnarrower
+% \stopbuffer
+
+\startbuffer
+\startnarrower[4*middle]
+    \startlinefiller[filler-1] [scope=global,align={middle,r2l}]
+        \parindent   100pt
+        \parfillskip 100pt
+        \input ward
+    \stoplinefiller
+\stopnarrower
+\stopbuffer
+
+The next rendering shows what happens when we set \type {\parindent} and \type
+{\parfillskip} to an excessive have a \type {100pt}.
+
+\getbuffer[mp] \getbuffer
+
+Here we have adapted the graphic a bit:
+
+\starttyping
+if RuleDirection == "TRT" : reverse fi
+    if RuleOption == "right" : reverse fi
+    ((0,RuleHeight) -- (RuleWidth,RuleHeight))
+\stoptyping
+
+\showdefinition{definelinefiller}
+\showdefinition{setuplinefiller}
+
+\stopsubject
+
+% \startsubject[title=Backgrounds]
+% \stopsubject
+
+\startsubject[title=User rules]
+
+Characters and rules are the only graphical elements that \TEX\ really knows
+about. Even if you see images in a document, you should realize that they are
+just blobs with dimensions and that the backend replaces such blobs by real
+images.
+
+The primitive operations for rules are \type {\hrule} and \type {\vrule} and the
+main difference is to what way they adapt to their situation when no dimensions
+are given and the mode change they trigger.
+
+\startbuffer
+hrule{\darkred   \hrule width 10cm height 3mm depth 2mm}\par
+vrule{\darkyellow\vrule width 10cm height 3mm depth 2mm}\par
+hrule{\darkred   \hrule width 10cm                     }\par
+vrule{\darkyellow\vrule            height 3mm depth 2mm}\par
+
+hrule{\darkred   \leaders\hrule height 1mm\relax\hfill}hrule\par
+\stopbuffer
+
+\typebuffer
+
+When more text is to follow you should end a specification with \type {\relax} to
+make sure that the scanner stops looking for more arguments. With \type {\leaders}
+you can create flexible rules.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+In \CONTEXT\ we also have so called frame rules:
+
+\startbuffer
+\color[darkred]{\frule
+    width 10cm
+    height 1cm
+    line   1mm
+\relax}
+\stopbuffer
+
+\typebuffer
+
+This will produce a rectangle:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+There are a few more keywords. Keep in mind that we actually have a new kind of
+primitive here, so we follow the \TEX\ conventions of keywords.
+
+\startbuffer
+\ruledhbox\bgroup
+    \darkgray \frule width 100mm height 10mm depth 8mm radius 2mm line 2pt type fill\relax
+    \hskip-100mm
+    \darkred  \frule width 100mm height 10mm depth 8mm radius 2mm line 2pt\relax
+    \hskip-100mm
+    \hbox to 100mm{\white \bold \hfill some handy word with frames\hfill}
+\egroup
+\stopbuffer
+
+\typebuffer
+
+Of course this is a rather low level way of doing frames and such, but when you
+like that kind of low level programming you get the possibility here.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+You can combine this with existing mechanisms. Take the following:
+
+\startbuffer
+\defineoverlay[normalframe]
+  [\frule
+     width \overlaywidth
+     height\overlayheight
+     line  \overlaylinewidth
+  ]
+
+\defineoverlay[ovalframe]
+  [\frule
+     width  \overlaywidth
+     height \overlayheight
+     line   \overlaylinewidth
+     radius \overlayradius
+  ]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\hbox \bgroup
+    \framed                                  {test}\quad
+    \framed[frame=off]                       {test}\quad
+    \framed[background=normalframe,frame=off]{test}\quad
+    \framed[background=normalframe,frame=off]{test}\quad
+    \framed[corner=round]                    {test}\quad
+    \framed[corner=round]                    {test}\quad
+    \framed[background=ovalframe,frame=off]  {test}\quad
+    \framed[background=ovalframe,frame=off]  {test}\quad
+    \framed[background=ovalframe,frame=on]   {test}\quad
+    \framed[background=ovalframe,frame=on]   {test}\quad
+\egroup
+\stopbuffer
+
+This is a variant on the already available round corners:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The above result is accomplished with:
+
+\typebuffer
+
+Given the examples in the previous sections it will be no surprise that we
+can also use \METAPOST.
+
+\startbuffer
+\startuseMPgraphic{demoshape:back}
+    fill
+        unitcircle xysized (RuleWidth,RuleHeight+RuleDepth)
+        withcolor RuleColor ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{demoshape:fore}
+    draw
+        unitcircle xysized (RuleWidth,RuleHeight+RuleDepth)
+        withcolor RuleColor
+        withpen pencircle scaled 4RuleThickness ;
+\stopuseMPgraphic
+
+\hbox\bgroup
+    \darkgray \frule width 100mm height 10mm depth 8mm type mp line 2pt
+        data {\includeMPgraphic{demoshape:back}}
+    \relax
+    \hskip-100mm
+    \darkred \frule width 100mm height 10mm depth 8mm type mp line 2pt
+        data {\includeMPgraphic{demoshape:fore}}
+    \relax
+    \hskip-100mm
+    \hbox to 100mm{\white \bold \hfill some handy word with frames\hfill}
+\egroup
+\stopbuffer
+
+\typebuffer
+
+Or rendered:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The \type {\blackrule} command is the more high level way to inject a rule.
+
+\startbuffer
+\blackrule
+  [width=10cm,
+   height=1cm,
+   depth=1cm,
+   color=darkred]
+\stopbuffer
+
+\typebuffer
+
+This produces a boring rule:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Again we can revert to \METAPOST:
+
+\startbuffer
+\blackrule
+  [width=10cm,
+   height=1cm,
+   depth=1cm,
+   color=darkred,
+   type=mp,
+   mp=demoshape:back]
+\stopbuffer
+
+\typebuffer
+
+or:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The formal definition of this command is shown in \definition [setupblackrules,
+blackrule].
+
+\showdefinition{setupblackrules}
+\showdefinition{blackrule}
+
+\stopsubject
+
+\startsubject[title=Hiding]
+
+In education a to be filled in text is often represented by a gap in the running text
+and the bar drawing mechanism supports this. THere is a predefined \type {\hiddenbar}
+command:
+
+\starttyping
+\definebar
+  [hiddenbar] [underbar]
+  [continue=yes,empty=yes,
+   left=\zwj,right=\zwj]
+\stoptyping
+
+\startbuffer
+\input ward \hiddenbar               {\color[red]{invisible}}
+\input ward \hiddenbar          {\quad\color[red]{invisible}\quad}
+\input ward \hiddenbar{\quad\quad\quad\color[red]{invisible}\quad\quad\quad}
+\input ward \hiddenbar               {\color[red]{invisible}\quad\quad\quad\quad\quad\quad}
+\input ward
+\stopbuffer
+
+\getbuffer
+
+The previous text is generated with:
+
+\typebuffer
+
+Here is a variant that inserts spacing at the left and right edges. In this case
+the spacing is kept at a linebreak:
+
+\startbuffer
+\definebar
+  [widehiddenbar]
+  [hiddenbar]
+  [left={\quads[3]},
+   right={\quads[3]}]
+
+\widehiddenbar{invisible} \input weisman
+\widehiddenbar{invisible} \input weisman
+\widehiddenbar{invisible}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsubject
+
+\stopdocument

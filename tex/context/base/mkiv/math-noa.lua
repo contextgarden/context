@@ -1629,7 +1629,9 @@ function handlers.classes(head,style,penalties)
     return true
 end
 
-registertracker("math.classes",function(v) tasks.setaction("math","noads.handlers.classes",v) end)
+registertracker("math.classes",function(v)
+    tasks.setaction("math","noads.handlers.classes",v)
+end)
 
 -- experimental
 
@@ -1790,14 +1792,29 @@ do
 
 end
 
-
 -- just for me
 
 function handlers.showtree(head,style,penalties)
     inspect(nodes.totree(head))
 end
 
-registertracker("math.showtree",function(v) tasks.setaction("math","noads.handlers.showtree",v) end)
+registertracker("math.showtree",function(v)
+    tasks.setaction("math","noads.handlers.showtree",v)
+end)
+
+-- also for me
+
+local applyvisuals = nuts.applyvisuals
+local visual       = false
+
+function handlers.makeup(head)
+    applyvisuals(tonut(head),visual)
+end
+
+registertracker("math.makeup",function(v)
+    visual = v
+    tasks.setaction("math","noads.handlers.makeup",v)
+end)
 
 -- the normal builder
 
