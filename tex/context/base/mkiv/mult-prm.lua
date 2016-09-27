@@ -1214,6 +1214,7 @@ return {
   "suppressifcsnameerror",
   "suppresslongerror",
   "suppressoutererror",
+  "suppressmathparerror",
   "synctex",
   "tabskip",
   "tagcode",

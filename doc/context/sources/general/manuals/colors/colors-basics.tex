@@ -1,0 +1,1204 @@
+% language=uk
+
+\startcomponent colors-basics
+
+\environment colors-environment
+
+\usemodule[setups-basics] \loadsetups[i-color]
+
+\startchapter[title=Basics][color=darkred]
+
+\startsection[title=Color models]
+
+When you work with displays, and most of us do, the dominant color model is \RGB.
+As far as I know \CMYK\ electrowetting displays are still not in production and
+even there the \CMYK\ seems to have made place for \RGB\ (at least in promotion
+movies). This is strange since where \RGB\ is used in cases where colors are
+radiated, \CMYK\ shows up in reflective situations (and epub readers are just
+that). But \RGB\ and \CMYK\ being complementary is not the only difference:
+\CMYK\ has an explicit black channel, and as a consequence you cannot go from one
+to the other color space without loss.
+
+In print \CMYK\ is dominant but in order to get real good colors you can go with
+spot colors. The ink is not mixed with others but applied in more or less
+quantity. A mixture of spot colors and \CMYK\ is used too. You can combine spot
+colors into a so called multitone color. Often spot colors have names (for
+instance refering to Pantone) but they always have a specification in another
+color space in order to be shown on screen. Think of \quotation {gold} being a
+valid ink, but hard to render on screen, so some yellowish replacement is used
+there when documents get prepared on screen.
+
+In \CONTEXT\ all these models are supported, either or not at the same time. In \MKII\
+you had to turn on color support explicitly, if only because of the impact of the
+overhead on performance, but in \MKIV\ color is on by default. You can disable it
+with:
+
+\starttyping
+\setupcolors
+  [state=stop]
+\stoptyping
+
+The three mentioned models are controlled by keys, and by default we have set:
+
+\starttyping
+\setupcolors
+  [rgb=yes,
+   cmyk=yes,
+   spot=yes]
+\stoptyping
+
+Spot colors and their combinations in multitone colors are controlled by the same
+parameter. You can define colors in the \HSV\ color space but in the end these
+become and behave like \RGB.
+
+\stopsection
+
+\startsection[title=Using color]
+
+Normally you will use colors grouped. Most environments accept a \type {color}
+parameter (some have \type {textcolor} or similar longer names too). In a running
+text you can use:
+
+\starttyping
+\color[red]{This will show up red.}
+\stoptyping
+
+or:
+
+\starttyping
+\startcolor[red]
+    This will show up red.
+\stopcolor
+\stoptyping
+
+In case you don't want the grouping you can use:
+
+\starttyping
+\directcolor[red]
+\stoptyping
+
+You can even use:
+
+\starttyping
+\colored[r=0.5]{also red}
+\stoptyping
+
+In which case an anonymous color is used. An ungrouped variant of this is:
+
+\starttyping
+\directcolored[r=0.5]
+\stoptyping
+
+You will seldom use these direct variants, but they might come in handy when you
+write macros yourself where extra grouping starts interfering. In fact, it often
+makes sense to use a bit more abstraction:
+
+\startbuffer
+\definehighlight
+  [important]
+  [color=red]
+
+First \highlight[important]{or} second \important {or} third.
+\stopbuffer
+
+\typebuffer
+
+This gives: \inlinebuffer .
+
+\stopsection
+
+\startsection[title=Using \CMYK\ or \RGB]
+
+When you compare colors in different color spaces, you need to be aware of the
+fact that when a black component is used in \CMYK, conversion to \RGB\ might give
+the same results but going back from that to \CMYK\ will look different from the
+original. Also, \CMYK\ colors are often tuned for specific paper.
+
+\startbuffer
+\definecolor[demo:rgb:1][r=1.0,g=1.0]
+\definecolor[demo:rgb:2][r=1.0,g=1.0,b=0.5]
+\definecolor[demo:rgb:3][r=1.0,g=1.0,b=0.6]
+\definecolor[demo:cmy:1][y=1.0]
+\definecolor[demo:cmy:2][y=0.5]
+\definecolor[demo:cmy:3][y=0.4]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+In these definitions we have no black component. In \in {figure}
+[color:rgb:cmyk:1] we see how these colors translate to the other color spaces.
+
+\startbuffer[compare]
+\startbuffer
+\definemeasure[demo][(\textwidth-2em)/3]
+\startcombination[3*2]
+    {\blackrule[width=\measure{demo},height=1cm,depth=0cm,color=demo:rgb:1]}{\infofont\colorcomponents{demo:rgb:1}}
+    {\blackrule[width=\measure{demo},height=1cm,depth=0cm,color=demo:rgb:2]}{\infofont\colorcomponents{demo:rgb:2}}
+    {\blackrule[width=\measure{demo},height=1cm,depth=0cm,color=demo:rgb:3]}{\infofont\colorcomponents{demo:rgb:3}}
+    {\blackrule[width=\measure{demo},height=1cm,depth=0cm,color=demo:cmy:1]}{\infofont\colorcomponents{demo:cmy:1}}
+    {\blackrule[width=\measure{demo},height=1cm,depth=0cm,color=demo:cmy:2]}{\infofont\colorcomponents{demo:cmy:2}}
+    {\blackrule[width=\measure{demo},height=1cm,depth=0cm,color=demo:cmy:3]}{\infofont\colorcomponents{demo:cmy:3}}
+\stopcombination
+\stopbuffer
+
+\startcombination[1*4]
+    {\setupcolors[rgb=yes,cmyk=yes]\getbuffer} {Both \RGB\ and \CMYK\ enabled}
+    {\setupcolors [rgb=no,cmyk=yes]\getbuffer} {Only \CMYK\ enabled.}
+    {\setupcolors [rgb=yes,cmyk=no]\getbuffer} {Only \RGB\ enabled.}
+    {\setupcolors  [rgb=no,cmyk=no]\getbuffer} {Both \RGB\ and \CMYK\ disabled.}
+\stopcombination
+\stopbuffer
+
+\startplacefigure[location=page,reference=color:rgb:cmyk:1,title={What happens when we disable color spaces.}]
+    \getbuffer[compare]
+\stopplacefigure
+
+\startbuffer
+\definecolor[demo:rgb:1][r=0.5,g=0.6,b=0.7]
+\definecolor[demo:rgb:2][r=0.5,g=0.6,b=0.7]
+\definecolor[demo:rgb:3][r=0.5,g=0.6,b=0.7]
+\definecolor[demo:cmy:1][c=0.5,m=0.4,y=0.3]
+\definecolor[demo:cmy:2][c=0.4,m=0.3,y=0.2,k=0.1]
+\definecolor[demo:cmy:3][c=0.3,m=0.2,y=0.1,k=0.2]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+When we define the colors as above, you can see a difference between the \RGB\
+and \CMYK\ values, but also between a black component versus black distributed
+over the colorants. This is seen best in \in {figure} [color:rgb:cmyk:2] when we
+compare the first and third colors alongside. In \in {figure} [color:rgb:cmyk:3]
+you see the whole repertoire.
+
+\startplacefigure[reference=color:rgb:cmyk:2,title={The impact of black on a \CMYK\ color.}]
+\startMPcode
+    fill fullsquare xyscaled (TextWidth,25mm) withcolor \MPcolor{demo:cmy:3} ;
+    fill fullsquare xyscaled (TextWidth,20mm) withcolor \MPcolor{demo:cmy:1} ;
+    fill fullsquare xyscaled (TextWidth,10mm) withcolor \MPcolor{demo:cmy:3} ;
+    fill fullsquare xyscaled (TextWidth, 5mm) withcolor \MPcolor{demo:cmy:1} ;
+\stopMPcode
+\stopplacefigure
+
+\startplacefigure[reference=color:rgb:cmyk:3,title={What happens when we disable color spaces (black component).}]
+    \getbuffer[compare]
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Conversion]
+
+A conversion to gray happens when \RGB\ and \CMYK\ are both disabled. The following
+setting forces conversion. It disables both \RGB\ and \CMYK:
+
+\starttyping
+\setupcolors
+  [conversion=always]
+\stoptyping
+
+The default setting is \type {yes} which means that colors will be reduced to gray in
+the backend. This is an optimization which can result in slightly smaller output:
+
+\starttabulate[|l|c|l|]
+\NC          \NC \bf \# \NC \bf \PDF\ sequence                  \NC \NR
+\NC \bf cmyk \NC 23     \NC \tttf 0 0 0 0.5 k 0 0 0 0.5 K       \NC \NR
+\NC \bf rgb  \NC 29     \NC \tttf 0.5 0.5 0.5 rg 0.5 0.5 0.5 RG \NC \NR
+\NC \bf gray \NC 11     \NC \tttf 0.5 g 0.5 G                   \NC \NR
+\stoptabulate
+
+The conversion to gray is controlled by:
+
+\starttyping
+\setupcolors
+  [factor=yes]
+\stoptyping
+
+Like \type {conversion} the \type {factor} is a global setting. You can play with the factor values.
+The default (\type {yes}) uses the factors used by color television:
+
+\startformula
+    s = 0.30r + 0.59g + 0.11b
+\stopformula
+
+In \in {figure} [color:demo:gray] we demonstrate what happens when you use different
+values. Normally you won't change the defaults but for experimenting we do provide
+the option:
+
+\starttyping
+\setupcolors
+  [factor=0.20:0.40:0.40]
+\stoptyping
+
+There is one pitfall. Colors are finalized per page and as this is a backend
+feature the value current when a page is shipped out is used. An exception are
+\METAPOST\ graphics, as they have local resources and are finalized immediately.
+This is hardly a limitation because one will never set these numbers in the
+middle of a document.
+
+\starttexdefinition color:demo:gray:do
+    \definecolor[demo:rgb:0][r=0.5,g=0.6,b=0.7]
+  % \blackrule[width=4cm,height=1cm,color=demo:rgb:0]
+    \lower.4\strutdp\hbox\bgroup
+        \startMPcode
+            fill unitsquare xyscaled (.5TextWidth,.9LineHeight)
+                withcolor "demo:rgb:0";
+        \stopMPcode
+    \egroup
+\stoptexdefinition
+
+\starttexdefinition color:demo:gray #1#2#3
+    \NC \tttf #1 \NC \tttf #2  \NC \tttf #3 \NC
+        \setupcolors[factor={#1:#2:#3}]
+        \setupcolors[rgb=no,cmyk=no]
+        \texdefinition{color:demo:gray:do}
+        \setupcolors[factor=yes]
+    \NC \NR
+\stoptexdefinition
+
+\startplacefigure[reference=color:demo:gray,title={Color to gray conversion using factors.}]
+\starttabulate[|c|c|c|c|]
+\NC \bf r \NC \bf g \NC \bf b \NC \bf gray \NC \NR
+\NC       \NC       \NC       \NC \texdefinition{color:demo:gray:do} \NC \NR
+\texdefinition{color:demo:gray}{0.30}{0.59}{0.11}
+\texdefinition{color:demo:gray}{0.30}{0.11}{0.59}
+\texdefinition{color:demo:gray}{0.59}{0.30}{0.11}
+\texdefinition{color:demo:gray}{0.11}{0.30}{0.59}
+\texdefinition{color:demo:gray}{0.11}{0.59}{0.30}
+\texdefinition{color:demo:gray}{0.59}{0.11}{0.30}
+\texdefinition{color:demo:gray}{0.20}{0.40}{0.40}
+\texdefinition{color:demo:gray}{0.30}{0.60}{0.10}
+\texdefinition{color:demo:gray}{0.20}{0.30}{0.20}
+\texdefinition{color:demo:gray}{0.40}{0.40}{0.40}
+\stoptabulate
+\stopplacefigure
+
+\stopsection
+
+% let's take a break and watch: https://www.youtube.com/watch?v=baLrrW3El-M
+
+\startsection[title=Definitions]
+
+The mostly used color definition command is \type {\definecolor}. Here we define the
+primary colors:
+
+\startbuffer
+\definecolor [red]     [r=1]
+\definecolor [green]   [g=1]
+\definecolor [blue]    [b=1]
+\definecolor [yellow]  [y=1]
+\definecolor [magenta] [m=1]
+\definecolor [cyan]    [c=1]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+These can be visualized as follows:
+
+\startbuffer
+\showcolorcomponents[red,green,blue,yellow,magenta,cyan,black]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Transparency is included in these tables but is, as already noted, in fact
+independent. It can be defined with a color:
+
+\startbuffer
+\definecolor [t:red]   [r=1,a=1,t=.5]
+\definecolor [t:green] [g=1,a=1,t=.5]
+\definecolor [t:blue]  [b=1,a=1,t=.5]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This time the transparency values show up too:
+
+\showcolorcomponents[t:red,t:green,t:blue]
+
+Because transparency is separated from color, we can define transparent behaviour
+as follows:
+
+\startbuffer
+\definecolor[t:only] [a=1,t=.5]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+    \dontleavehmode
+    \blackrule[width=4cm,height=1cm,color=darkgreen]%
+    \hskip-2cm
+    \color[t:only]{\blackrule[width=4cm,height=1cm,color=darkred]}%
+    \hskip-2cm
+    \color[t:only]{\blackrule[width=4cm,height=1cm]}
+\stopbuffer
+
+\typebuffer
+
+We skip back to create an overlay, so we get:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+In the section about transparency a bit more will be said about the relation between
+color and transparencies and how to cheat.
+
+As soon as you need to typeset something for professional printing, spot colors
+will show up so they are supported too. A spot color is not really a color but
+related to the substance that gets put on the paper. This can be ink but also
+something metallic, like silver, gold or some texture. In these cases we need
+something to represent it when not printed on a suitable device so again we end
+up with a color. This is reflected in the way spot colors are set up.
+
+\startbuffer
+\definecolor     [parentspot]               [r=.5,g=.2,b=.8]
+\definespotcolor [childspot-1] [parentspot] [p=.7,e=fancy]
+\definespotcolor [childspot-2] [parentspot] [p=.4]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The three colors, two of them are spot colors, show up as follows:
+
+\setupcolors[spot=yes]
+
+\showcolorcomponents[parentspot,childspot-1,childspot-2]
+
+The \type {p} is comparable to the \type {s} in gray scales. The \type {e}
+parameter can be used to specify a name for the color. In the \PDF\ file that
+name will become the separation name (a popular commercial naming scheme is
+Pantone).
+
+A combination of spotcolor is called a multitone color. These are defined as
+follows (we also define a few spotcolors and use transparency):
+
+\startbuffer
+\definespotcolor [spotone]   [darkred]   [p=1]
+\definespotcolor [spottwo]   [darkgreen] [p=1]
+
+\definespotcolor [spotone-t] [darkred]   [a=1,t=.5]
+\definespotcolor [spottwo-t] [darkgreen] [a=1,t=.5]
+
+\definemultitonecolor
+    [whatever]
+    [spotone=.5,spottwo=.5]
+    [b=.5]
+
+\definemultitonecolor
+    [whatever-t]
+    [spotone=.5,spottwo=.5]
+    [b=.5]
+    [a=1,t=.5]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\showcolorcomponents[spotone,spottwo,spotone-t,spottwo-t,whatever,whatever-t]
+
+Transparencies combine as follows:
+
+\startbuffer
+\blackrule[width=3cm,height=1cm,color=spotone-t]\hskip-1.5cm
+\blackrule[width=3cm,height=1cm,color=spotone-t]
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\dontleavehmode\getbuffer
+\stoplinecorrection
+
+In case you want to specify colors in the \HSV\ color space, you can do that too.
+The hue parameter (\type {h}) is in degrees and runs from 0 upto 360 (larger
+values get divided). The saturation (\type {s}) and value (\type {v}) parameters
+run from 0 to 1. The \type {v} parameter is mandate. In \in {figure} [fig:hsv] we
+show what the last two variables do.
+
+\starttyping
+\definecolor[somecolor][h=125,s=0.5,v=0.8]
+\stoptyping
+
+\startMPextensions
+    vardef hsvcircle(expr s, v) =
+        image ( save p ; path p ; p := fullcircle ;
+            save l ; numeric l ; l := length(p)/360 ;
+            for i=0 upto 360 :
+                fill origin -- subpath (i*l,(i+1)*l) of p -- cycle withcolor hsvtorgb(i,s,v) ;
+            endfor ;
+        )
+    enddef;
+\stopMPextensions
+
+\startplacefigure[reference=fig:hsv,title={Four hsv color circle running from 0 to 360 degrees, with zero at the right.}]
+    \startcombination[4*1]
+        {\startMPcode draw hsvcircle(0.6,0.6) scaled 3cm ; \stopMPcode} {\tttf s=0.6 v=0.6}
+        {\startMPcode draw hsvcircle(0.4,0.6) scaled 3cm ; \stopMPcode} {\tttf s=0.4 v=0.6}
+        {\startMPcode draw hsvcircle(0.6,0.4) scaled 3cm ; \stopMPcode} {\tttf s=0.6 v=0.4}
+        {\startMPcode draw hsvcircle(0.4,0.4) scaled 3cm ; \stopMPcode} {\tttf s=0.4 v=0.4}
+    \stopcombination
+\stopplacefigure
+
+% \scratchdimen\dimexpr(\textwidth-118pt)/120\relax
+% \dontleavehmode \dostepwiserecurse{0}{359}{1}{%
+%     \definecolor[tempcolor][h=#1,s=0.6,v=0.6]%
+%     \blackrule[color=tempcolor,width=\scratchdimen,height=1ex,depth=1ex]%
+%     \hskip1pt
+% }
+
+If you need to use hexadecimal color specifications you can use these
+definitions:
+
+\starttyping
+\definecolor[mycolor][x=4477AA]
+\definecolor[mycolor][h=4477AA]
+\definecolor[mycolor][x=66]
+\definecolor[mycolor][#4477AA]
+\stoptyping
+
+The \type {#} is normally not accepted in \TEX\ source code but when you get the
+specification from elsewhere (e.g.\ \XML) it can be convenient.
+
+\stopsection
+
+\startsection[title=Freezing colors]
+
+We can clone colors and thereby overload color dynamically. You can however
+freeze colors via the setup option \type {expansion}.
+
+\startbuffer
+\definecolor[green]   [r=.5]{({\green green ->   red})}
+\definecolor[green]   [g=.5]{({\green green -> green})}
+\definecolor[green]   [blue]{({\green green ->  blue})}
+\definecolor[blue]     [red]{({\green green ->   red})}
+\setupcolors[expansion=yes]%
+\definecolor[blue]     [red]%
+\definecolor[green]   [blue]%
+\definecolor[blue]    [r=.5]{({\green green ->  blue})}
+\stopbuffer
+
+\typebuffer
+
+\start
+\definecolor[red]  [r=.5]%
+\definecolor[green][g=.5]%
+\definecolor[blue] [b=.5]%
+\getbuffer
+\stop
+
+\stopsection
+
+\startsection[title=Color groups]
+
+Nowadays we seldom use colorgroups but they are still supported. Groups are
+collections of distinctive colors, something we needed in projects where many
+graphics had to be made and consistency between text and image colors was
+important. The groups can be translated into similar collections in drawing
+programs used at that time.
+
+\startbuffer
+\definecolorgroup
+  [redish]
+  [1.00:0.90:0.90, % 1
+   1.00:0.80:0.80, % 2
+   1.00:0.70:0.70, % 3
+   1.00:0.55:0.55, % 4
+   1.00:0.40:0.40, % 5
+   1.00:0.25:0.25, % 6
+   1.00:0.15:0.15, % 7
+   0.90:0.00:0.00] % 8
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The redish color is called by number:
+
+\startbuffer
+\blackrule[width=3cm,height=1cm,depth=0pt,color=redish:1]\quad
+\blackrule[width=3cm,height=1cm,depth=0pt,color=redish:2]\quad
+\blackrule[width=3cm,height=1cm,depth=0pt,color=redish:3]
+\stopbuffer
+
+\typebuffer
+
+The number of elements is normally limited and eight is about what is useful and
+still distinguishes good enough when printed in black and white.
+
+\startlinecorrection
+\dontleavehmode\getbuffer
+\stoplinecorrection
+
+\startlinecorrection
+\setupcolors[rgb=no,cmyk=no]\dontleavehmode\getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Palets]
+
+Color palets are handy when you want to use a set of (named) colors but
+also want to switch efficiently between different definitions:
+
+\startbuffer
+\definepalet
+  [standard]
+  [darkred=darkcyan,
+   darkgreen=darkmagenta,
+   darkblue=darkyellow]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The \type {\setuppalet} commands switches to a palet. When a requested color is
+not part of a palet, a regular lookup happens. This is used as:
+
+\startbuffer
+\blackrule[width=15mm,height=10mm,depth=0mm,color=darkred]\quad
+\blackrule[width=15mm,height=10mm,depth=0mm,color=darkgreen]\quad
+\blackrule[width=15mm,height=10mm,depth=0mm,color=darkblue]\quad
+\setuppalet[standard]%
+\blackrule[width=15mm,height=10mm,depth=0mm,color=darkred]\quad
+\blackrule[width=15mm,height=10mm,depth=0mm,color=darkgreen]\quad
+\blackrule[width=15mm,height=10mm,depth=0mm,color=darkblue]
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\dontleavehmode \getbuffer
+\stoplinecorrection
+
+Here we use color names but often you end up with more symbolic names:
+
+\starttyping
+\definepalet
+  [standard]
+  [important=darkred,
+   notabene=darkgreen,
+   warning=darkyellow]
+\stoptyping
+
+As with the regular color commands, the palet mechanism is an old one but it is
+well integrated. Instead of inheriting you can also use definitions:
+
+\starttyping
+\definepalet
+  [standard]
+  [important={r=.5},
+   notabene={g=.5},
+   warning={r=.5,g=.5}]
+\stoptyping
+
+\stopsection
+
+\startsection[title=Transparency]
+
+We already discussed transparency as part of colors. In most cases we will choose
+type {normal} (or \type {1}) as transparency type, but there are more:
+
+\startluacode
+    local codes = table.swapped(attributes.transparencies.names)
+
+    context.startcolumns { n = 4 }
+    context.starttabulate ( { "|B||" }, { keeptogether = "no" } )
+    for i=0,#codes do
+        context.NC()
+        context(i)
+        context.NC()
+        context(codes[i])
+        context.NC()
+        context.NR()
+    end
+    context.stoptabulate()
+    context.stopcolumns()
+\stopluacode
+
+In \in {figure} [fig:transparency] we compare these variants. Not all are as
+effective as their effect depends on several factors. You can read more about it
+in the \PDF\ specification.
+
+\startMPextensions
+    vardef transdemo(expr b)  =
+        image ( save p ; path p ; p := fullcircle ;
+            save l ; numeric l ; l := length(p)/16 ;
+            if (b = 1) or (b = 3) :
+                fill fullcircle scaled 1.00 withcolor yellow ;
+                fill fullcircle scaled 0.80 withcolor red ;
+                fill fullcircle scaled 0.60 withcolor black ;
+                fill fullcircle scaled 0.40 withcolor white ;
+                fill fullcircle scaled 0.20 withcolor .5white ;
+            fi ;
+            if (b = 2) or (b = 3) :
+                for i=0 upto 15 :
+                    fill origin -- subpath (i*l,(i+1)*l) of p -- cycle
+                        withcolor red
+                        withtransparency (i,0.5) ;
+                    draw textext("\ttbf " & decimal i) ysized .04 shifted (.45,0) rotated (i*360/16 + 360/32) ;
+                endfor ;
+            fi ;
+        )
+    enddef;
+\stopMPextensions
+
+\startplacefigure[reference=fig:transparency,title={The differences between the transparency options. The center is explicitly filled with white.}]
+    \startcombination[3*1]
+        {\startMPcode draw transdemo(1) scaled 4cm ; \stopMPcode} {\tttf backgrounds used}
+        {\startMPcode draw transdemo(2) scaled 4cm ; \stopMPcode} {\tttf transparencies used}
+        {\startMPcode draw transdemo(3) scaled 4cm ; \stopMPcode} {\tttf transparency overlayed}
+    \stopcombination
+\stopplacefigure
+
+Colors and transparencies are coupled by definitions. We will explain this by
+some examples. When we say:
+
+\startbuffer
+\definecolor[clr1][r=.5]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+A non|-|transparent color is defined and when we say:
+
+\startbuffer
+\definecolor[clr2][g=.5,a=1,t=.5]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We defined a color with a transparency. However, color and transparency get separated
+attributes. So when we nest them as in:
+
+\startbuffer
+\color[clr1]{\bf RED   \color[clr2] {GREEN}}
+\color[clr2]{\bf GREEN \color[clr1] {RED}  }
+\stopbuffer
+
+\typebuffer
+
+we get:
+
+\startlines \getbuffer \stoplines
+
+The transparency of the outer color is also applied to the inner color. If you
+don't want that, you explicitly need to set them:
+
+\startbuffer
+\definecolor[clr3][b=.5,a=1,t=1]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\color[clr1]{\bf RED   \color[clr2] {GREEN} \color[clr3]{BLUE} }
+\color[clr2]{\bf GREEN \color[clr1] {RED}   \color[clr2]{GREEN}}
+\color[clr3]{\bf BLUE  \color[clr1] {RED}   \color[clr2]{GREEN}}
+\stopbuffer
+
+\typebuffer
+
+we get:
+
+\startlines \getbuffer \stoplines
+
+If you define a transparent|-|only color, you get transparent black:
+
+\startbuffer
+\definecolor[clr4][a=1,t=.5]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+So:
+
+\startbuffer
+\color[clr1]{\bf RED    \color[clr4] {RED}}
+\color[clr4]{\bf BLACK  \color[clr1] {RED}}
+\stopbuffer
+
+\typebuffer
+
+gives:
+
+\startlines \getbuffer \stoplines
+
+In addition to the already discussed definers and setters we also have a few
+special ones. Personally I never needed them but they are the for completeness.
+
+\startbuffer
+\definetransparency[tsp1][a=1,t=.5]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We apply this to some text:
+
+\startbuffer
+\color      [clr1]{\bf RED   \transparent[tsp1] {RED}   }
+\transparent[tsp1]{\bf BLACK \color      [clr1] {RED}   }
+\transparent[tsp1]{\bf BLACK \transparent[reset]{BLACK} }
+\stopbuffer
+
+\typebuffer
+
+and get:
+
+\startlines \getbuffer \stoplines
+
+We can also only switch color:
+
+\startbuffer
+\color[clr1]{\bf RED \color    [clr2] {GREEN}}
+\color[clr1]{\bf RED \coloronly[clr2] {GREEN}}
+\stopbuffer
+
+\typebuffer
+
+So the second line has no transparency:
+
+\startlines \getbuffer \stoplines
+
+The \typ {\starttransparent} and \type {\startcoloronly} commands are the
+complements of \typ {\transparent} and \typ {\coloronly}.
+
+\stopsection
+
+\startsection[title=Interpolation]
+
+You can define intermediate colors in a way comparable with \METAPOST\ \type
+{.5[red,green]} kind of specifications. Here are some examples:
+
+\startbuffer
+\definecolor [mycolor1] [.5(red,green)]
+\definecolor [mycolor2] [.8(red,green)]
+\definecolor [mycolor3] [.4(red,white)]
+\definecolor [mycolor4] [.4(white,red)]
+
+\showcolorcomponents[red,green,mycolor1,mycolor2,mycolor3,mycolor4]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+An older method, still available is:
+
+\starttyping
+\defineintermediatecolor[mycolor5][0.5,red,green]
+\stoptyping
+
+A variation on this are complementary colors:
+
+\startbuffer
+\definecolor[mycolor1][.5(blue,red)]
+\definecolor[mycolor2][-.5(blue,red)]
+\definecolor[mycolor3][-(blue)]
+\definecolor[mycolor4][-(red)]
+
+\showcolorcomponents[blue,red,mycolor1,mycolor2,mycolor3,mycolor4]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopsection
+
+\startsection[title=PDF]
+
+Although it is not perfect, \PDF\ evolved in such a way that it will stay around
+for a while. One reason is that it has become a standard, or more precisely a set
+of standards. Depending on what variant you choose color support is limited.
+
+\startluacode
+
+local function state(v)
+    context.NC()
+    if v then
+        context("\\star")
+    end
+end
+
+context.starttabulate { "|l|c|c|c|c|c|" }
+context.NC() context.bold("format")
+context.NC() context.bold("gray")
+context.NC() context.bold("rgb")
+context.NC() context.bold("cmyk")
+context.NC() context.bold("spot")
+-------.NC() context.bold("multi")
+context.NC() context.bold("transparency")
+context.NC() context.NR()
+for name, data in table.sortedhash(lpdf.formats.data) do
+    context.NC() context.type(name)
+    state(data.gray_scale)
+    state(data.rgb_colors)
+    state(data.cmyk_colors)
+    state(data.spot_colors)
+ -- state(data.nchannel_colorspace)
+ -- state(data.calibrated_rgb_colors)
+ -- state(data.cielab_colors)
+    state(data.transparency)
+ -- state(data.include_intents)
+ -- state(data.internal_icc_profiles)
+ -- state(data.external_icc_profiles)
+    context.NR()
+end
+context.stoptabulate()
+
+\stopluacode
+
+When you have set the \type{format} with \type {\setupbackend} to one of the
+known formats mentioned in the previous table, the color conversions will
+automatically kick in.
+
+\stopsection
+
+\startsection[title=Unboxing]
+
+This paragraph is somewhat complex, so skip it when you don't feel comfortable
+with the subject or when you've never seen low level \CONTEXT\ code.
+
+Colors are implemented using attributes. Attributes behave like fonts. This means
+that they are kind of frozen once material is boxed. Consider that we define a
+box as follows:
+
+\startbuffer
+\setbox0\hbox{\bf default {\darkred red \darkgreen green} default}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+What do you expect to come out the next code? In \MKII\ the \quote {default}
+inside the box will be colored yellow but the internal red and and green words
+will keep their color.
+
+\startbuffer
+\bf default {\darkyellow yellow {\box0} yellow} default
+\stopbuffer
+
+\typebuffer
+
+This is what we get in \MKIV: \start \inlinebuffer \stop
+
+When we use fonts switches we don't expect the content of the
+box to change. So, in the following the \quote {default} texts will
+{\em not} become bold.
+
+\startbuffer
+\setbox0\hbox{default {\sl slanted \bi bold italic} default}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+default {\bf bold {\box0} bold} default
+\stopbuffer
+
+\typebuffer
+
+Now we get: \inlinebuffer .
+
+Redoing a box with a new font is sort of tricky as by then all kind of
+manipulations have been applied and the original inputs is long gone. But colors
+are easier to deal with and therefore in \MKIV\ we have a trick to make sure the
+outer color gets applied to the box:
+
+\startbuffer[enable]
+\enabledirectives
+  [attributes.inheritance]
+\stopbuffer
+
+\startbuffer
+default {\bf \darkyellow yellow {\attributedbox0} yellow} default
+\stopbuffer
+
+\typebuffer
+
+So, we get: \start\inlinebuffer[box]\inlinebuffer[enable]\space\inlinebuffer
+\stop, but only after we have enabled this mechanisms explicitly:
+
+\typebuffer[enable]
+
+There is also an \type {\attributedcopy} macro. These macros signal the attribute
+resolver that this box is to be treated special.
+
+In \MKII\ we have a similar situation which is why we had the option (only used
+deep down in \CONTEXT) to encapsulate a bunch of code with
+
+\starttyping
+\startregistercolor[foregroundcolor]
+some macro code ... here foregroundcolor is applied ... more code
+\stopregistercolor
+\stoptyping
+
+This is for instance used in the \type {\framed} macro. First we package the
+content, foregroundcolor is not yet applied because the injected specials of
+literals can interfere badly, but by registering the colors the nested color
+calls are tricked into thinking that preceding and following content is colored.
+When packaged, we apply backgrounds, frames, and foregroundcolor to the whole
+result. Because nested colors were aware of the foregroundcolor they have
+properly reverted to this color when needed.
+
+In \MKIV\ the situation is reversed. Here we definitely need to set the
+foregroundcolor because otherwise attributes are not set. This is no problem
+because contrary to \MKII\ colors don't interfere (no extra nodes). We could have
+flushed the framed content using \type {\attributedbox}, but we don't want to
+enable inheritance by default because it comes with some overhead.
+
+\stopsection
+
+\startsection[title=Color intents]
+
+If we do this:
+
+\startbuffer
+\startoverlay
+    {\blackrule[color=darkred, height=2cm,width=4cm]}
+    {\blackrule[color=darkblue,height=1cm,width=3cm]}
+\stopoverlay
+\stopbuffer
+
+\typebuffer
+
+we get:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The blue rectangle is drawn on top of the red one. In print, normally the
+printing engine will make sure that there is no red below the blue. In case of
+transparent colors this is somewhat tricky because then we definitely want to see
+part of what lays below.
+
+You can control this process with the following commands:
+
+\starttyping
+\setupcolors
+  [intent=...]
+\stoptyping
+
+The default setting is \type {none} but you can set the intent to \type {overprint} or
+\type {knockout} as well. In a running text you can use the following commands:
+
+\starttyping
+\startcolorintent[overprint|knockout]
+    ...
+\stopcolorintent
+
+\startoverprint
+    ...
+\stopoverprint
+
+\startknockout
+    ...
+\stopknockout
+\stoptyping
+
+In practice you will probably seldom need to deal with this so best leave the defaults
+as they are.
+
+\stopsection
+
+\startsection[title=Collections]
+
+Collections are predefined sets of colors. You find them in the files \type
+{colo-imp-*.mkiv} and you can make such files yourself. When you define a color a
+command is generated by default. When you load a collection, there is a danger
+that you redefine commands unintended. For that reason most collections are
+wrapped in:
+
+\starttyping
+\startprotectedcolors
+    % definitions
+\stopprotectedcolors
+\stoptyping
+
+This prevents commands being defined and assumes that colors are accessed by
+using the \type {color} parameter of setup commands or in the text with:
+
+\starttyping
+\color[somecolor]{this gets colored}
+
+\startcolor[somecolor]
+    this gets colored
+\stopcolorintent
+\stoptyping
+
+The default set (\type {rgb}) is already preloaded with:
+
+\starttyping
+\usecolors[rgb] % preloaded
+\stoptyping
+
+You can get a list of colors with
+
+\startbuffer
+\showcolor[rgb]
+\stopbuffer
+
+\typebuffer
+
+This generates the list:
+
+\getbuffer
+
+These are the collections shipped with \CONTEXT. Some names are
+
+\starttabulate[|T||]
+\NC crayola \NC crayon colors \NC \NR
+\NC dem     \NC a demo set of groups and palets \NC \NR
+\NC ema     \NC an old coming from an Emacs user \NC \NR
+%NC pan     \NC a bunch of Pantone colors \NC \NR % can't be distributed
+%NC pra     \NC colors used at \PRAGMA \NC \NR
+\NC rainbow \NC a series of color groups by Alan \NC \NR
+\NC ral     \NC a set often used in industry (from Germany) \NC \NR
+\NC rgb     \NC a basic set of colors defined in the \RGB\ color space \NC \NR
+%NC ros     \NC the roscolux color set used in theater and cinema lighting \NC \NR % probably can't be distributed
+\NC x11     \NC (most of the) standard X11 \RGB\ colors \NC \NR
+\stoptabulate
+
+You can look in these files to see what gets defined. Even if you don't use them
+they might be illustrative,
+
+\stopsection
+
+\startsection[title=Text color]
+
+Setting the color of the running text is done with:
+
+\starttyping
+\setupcolors
+  [textcolor=darkgray]
+\stoptyping
+
+If needed you can also set the \type {pagecolormodel} there but its default value
+is \type {none} which means that it will obey the global settings.
+
+\stopsection
+
+\startsection[title=Tikz]
+
+In case you use the TikZ graphical subsystem you need to be aware of the the fact
+that its color support is more geared towards \LATEX. There is glue code that
+binds the \CONTEXT\ color system to its internal representation but there can
+still be problems. For instance, not all color systems are supported so \CONTEXT\
+will try to remap, but only when it knows that it has to do so. You can best not
+mix colorspaces when you use TikZ. If you really want (and there is no real
+reason to do so) you can say:
+
+\starttyping
+\enabledirectives[colors.pgf]
+\stoptyping
+
+and then (at the cost of some extra overhead) define colors as:
+
+\starttyping
+\definecolor[pgfcolora][blue!50!green]
+\definecolor[pgfcolorb][red!50!blue]
+\stoptyping
+
+\stopsection
+
+\startsection[title=Implementation details]
+
+The low level implementation of colors in \MKIV\ is fundamentally different from
+\MKII. In \MKIV\ something like this happens:
+
+\starttyping
+one \color[red]{two} three
+\stoptyping
+
+becomes (with grouping):
+
+\starttyping
+one {<start color: red>two<stop color>} three
+\stoptyping
+
+the start and stop points are in fact injections in the input: a special (for
+\DVI) or literals (for \PDF) is inserted that turns the color on and off, but
+also information is carried along about the state of color, so that we can
+properly nest as well as pick up the current color after a page break. We never
+had real problems with this mechanism but one had to keep in mind that injections
+like this could interfere with typesetting. This mechanism didn't rely on the
+engine for housekeeping, all was done at the \TEX\ end using so called marks.
+
+In \MKIV\ we use attributes. This means that the sequence now looks like:
+
+\starttyping
+one {<set color attribute to red>two} three
+\stoptyping
+
+The actual handling of color happens when a page is shipped out and there is no
+interference with typesetting. The work is mostly done in \LUA.
+
+Colorspaces (\RGB, \CMYK, spot) were already supported in \MKII\ and of course
+still are in \MKIV. However, the colorspace is now a more independent property.
+At some point in \MKII\ we also implemented transparency as a property of a
+color. In \MKIV\ transparency is still defined with a color but handled
+independently. This means that where in \MKII\ color is just one axis, in \MKIV\
+we have three: colorspace (model), color and transparency. This of course has a
+bit of a performance and memory hit, but in practice a user won't notice it.
+
+\stopsection
+
+\startsection[title=Grouping]
+
+The \type {\color} and \type {\startcolor} command group their arguments. There might
+be cases where this interferes with your intentions, for instance when you want to
+set some variable and use its value later on.
+
+\startbuffer
+1 \scratchcounter=1
+plus
+1 \advance \scratchcounter by 1
+equals
+\the\scratchcounter
+\stopbuffer
+
+\typebuffer
+
+The summation works out okay: {\bf \inlinebuffer}.
+
+\startbuffer
+\color[darkblue]{1 \scratchcounter=1}
+plus
+\color[darkblue]{1 \advance \scratchcounter by 1}
+equals
+\color[darkgreen]{\the\scratchcounter}
+\stopbuffer
+
+\typebuffer
+
+Here the final result depends on the value of \type {\scratchcounter}:
+{\scratchcounter 3 \bf \inlinebuffer}.
+
+\startbuffer
+\start
+    \pushcolor[darkblue]1 \scratchcounter=1 \popcolor
+    plus
+    \pushcolor[darkblue]1 \advance \scratchcounter by 1 \popcolor
+    equals
+    \pushcolor[darkgreen]\the\scratchcounter \popcolor
+\stop
+\stopbuffer
+
+\typebuffer
+
+Here we get: {\bf \inlinebuffer}. The \typ {\pushcolor} and \typ {\popcolor}
+commands can be used nested which give a bot of overhead. The \typ {\savecolor}
+and \typ {\restorecolor} commands are variants that don't stack. They are a bit
+more efficient but if you use them nested you probably also will use some
+grouping. Where the push||pop pair needs to be matched, the save||restore pair
+doesn't impose that restriction.
+
+\stopsection
+
+\startsection[title=Commands]
+
+There are quite some commands that relate to colors but you probably only need
+\typ {\definecolor}, \type {\color} and \typ {\startcolor} \unknown \typ
+{\stopcolor}. Here we show the complete list. Some commands are redundant, for
+instance \typ {\definenamedcolor} is the same as \typ {\definecolor}.
+
+\placeallsetups
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

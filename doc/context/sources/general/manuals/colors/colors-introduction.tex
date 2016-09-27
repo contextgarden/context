@@ -1,0 +1,49 @@
+% language=uk
+
+\startcomponent colors-introduction
+
+\environment colors-environment
+
+\startchapter[title=Introduction][color=darkgray]
+
+This manual fits in the series where we discus fundamental subsystems like fonts
+and languages. Here we will collect the more technical backgrounds. This document
+is not meant as a manual for users who start with \CONTEXT, for that we have
+other manuals.
+
+Color has a rather long history in \CONTEXT\ because we supported it right from
+the start. In the times that \DVI\ backend drivers were used, specials were the
+way to force color in the result. However, each driver had different demands:
+some expected specific color directives, others a sequence of for instance
+\POSTSCRIPT\ commands. When \PDF\ showed up, resource management entered the
+game. Because ot always used a backend driver model in \CONTEXT, it could easily
+be adapted. All management, for instance of nested colors, was done in \TEX\
+code. If advanced color support hadn't been available right from the start, we'd
+probably not be using \TEX\ now.
+
+In \MKIV\ color support was implemented from scratch but in a for the user
+downward compatible way. In that respect this manual is not going to reveal
+anything revolutionary. Much of the work is now delegated to \LUA\ and because of
+that directives are no longer part of the (expanded) input stream. As a result
+color is now more robust and less intrusive.
+
+Because \METAPOST\ support is well integrated, we also communicate colors to
+\METAPOST. In \MKIV\ the communication between the two engines was upgraded and
+hopefully evolved into an (even) more convenient interface.
+
+External graphics are in fact islands in the document flow: they manage their
+resources like colors themselves. However, there are some ways to deal with the
+demands of publishers and printers with respect to colors. These will be
+discussed too.
+
+\getbuffer[underconstruction]
+
+\startlines
+Hans Hagen
+PRAGMA ADE, Hasselt NL
+2016
+\stoplines
+
+\stopchapter
+
+\stopcomponent

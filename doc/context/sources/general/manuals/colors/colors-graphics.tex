@@ -1,0 +1,234 @@
+% language=uk
+
+\startcomponent colors-basics
+
+\environment colors-environment
+
+\startchapter[title=Graphics][color=darkblue]
+
+\startsection[title=Conversion]
+
+There is not that much to tell about graphics and color simply because from the
+perspective of \TEX\ a graphic is just a blob with dimensions that travels
+through the system and in the backend gets included as|-|is. This means that when
+there is a problem with an image you have to go back to the source of that image
+and fix it there.
+
+It can happen that you need to manipulate an image and in a fully automated
+workflow that can be cumbersome. For that reason \CONTEXT\ has a mechanism for
+converting graphics.
+
+\startluacode
+    context.starttabulate { "|BT|T|" }
+    context.NC() context.bold("original")
+    context.NC() context.bold("target")
+    context.NC() context.NR()
+    for k, v in table.sortedhash(figures.converters) do
+        context.NC() context(k)
+        context.NC() context("%{\\quad }t",table.sortedkeys(v))
+        context.NC() context.NR()
+    end
+    context.stoptabulate()
+\stopluacode
+
+Some of these converters are applied automatically. For instance if you include
+an \type {eps} image, \CONTEXT\ will try to convert it into a \PDF\ file and only
+do that once (unless the image changed). Of course it needs a conversion program,
+but as long as you have GhostScript, GraphicMagick and InkScape on your machine
+it should work out well.
+
+You can also define your own converters (we use a verbose variant):
+
+\starttyping
+\startluacode
+    -- of course we need options
+
+    local resolutions = {
+        [interfaces.variables.low]    = "150x150",
+        [interfaces.variables.medium] = "300x300",
+        [interfaces.variables.high]   = "600x600",
+    }
+
+    figures.programs.lowrespng = {
+        command  = "gm",
+        argument = [[convert -resample %resolution% "%oldname%" "%newname%"]],
+    }
+
+    figures.converters["png"]["lowres.png"] = function(oldname,newname,resolution)
+        runprogram (
+            figures.programs.lowrespng.command,
+            figures.programs.lowrespng.argument,
+            {
+                oldname    = oldname,
+                newname    = newname,
+                resolution = resolutions[resolution] or "150x150"
+            }
+        )
+    end
+\stopluacode
+\stoptyping
+
+Usage is as follows:
+
+\starttyping
+\externalfigure[mill.png][conversion=lowres.png]
+\stoptyping
+
+\stopsection
+
+\startsection[title=Recoloring]
+
+You can think of more complex conversions, like converting a gray scale image to
+a colored one.
+
+\startbuffer
+\startluacode
+    figures.programs.recolor = {
+        command  = "gm",
+        argument = [[convert -recolor "%color%" "%oldname%" "%newname%"]],
+    }
+
+    figures.converters["png"]["recolor.png"] =
+        function(oldname,newname,resolution,arguments)
+            figures.programs.run (
+                figures.programs.recolor.command,
+                figures.programs.recolor.argument,
+                {
+                    oldname = oldname,
+                    newname = newname,
+                    color   = arguments or ".5 0 0 .7 0 0 .9 0 0",
+                }
+            )
+        end
+\stopluacode
+\stopbuffer
+
+\typebuffer % built in so no \getbuffer
+
+\startbuffer
+\useexternalfigure[mill][mill.png][conversion=recolor.png]
+\startcombination[3*2]
+  {\externalfigure[mill][arguments=.5 0 0 .7 0 0 .9 0 0]}{\figurefilearguments}
+  {\externalfigure[mill][arguments=.7 0 0 .9 0 0 .5 0 0]}{\figurefilearguments}
+  {\externalfigure[mill][arguments=.9 0 0 .5 0 0 .7 0 0]}{\figurefilearguments}
+  {\externalfigure[mill][arguments=.5 0 0 .9 0 0 .7 0 0]}{\figurefilearguments}
+  {\externalfigure[mill][arguments=.7 0 0 .5 0 0 .9 0 0]}{\figurefilearguments}
+  {\externalfigure[mill][arguments=.9 0 0 .7 0 0 .5 0 0]}{\figurefilearguments}
+\stopcombination
+\stopbuffer
+
+This can be applied as follows. The \type {resolution} and \type {color}
+parameters get passed to the converter. This method is actually built
+in already.
+
+\typebuffer
+
+The results are shown in \in {figure} [fig:recolor]. In this case we pass the
+colors to be use in a kind of matrix notation that GraphicMagick needs.
+
+\startplacefigure[reference=fig:recolor,title={Recoloring bitmap images.}]
+    \getbuffer
+\stopplacefigure
+
+Recoloring an image this way is actually not the best solution because
+there is an internal mechanism that does the same. This trick (currently)
+only works with spot colors.
+
+\startbuffer
+\definecolor [my-blue]   [c=1,m=.38,y=0,k=.64] % pms 2965 uncoated m
+\definecolor [my-yellow] [c=0,m=.28,y=1,k=.06] % pms  124 uncoated m
+
+\definespotcolor [my-blue-100]   [my-blue]   [p=1]
+\definespotcolor [my-yellow-100] [my-yellow] [p=1]
+\definespotcolor [my-blue-50]    [my-blue]   [p=.5]
+\definespotcolor [my-yellow-50]  [my-yellow] [p=.5]
+
+\definemultitonecolor [my-mix] [my-blue=.12,my-yellow=.28] [c=.1,m=.1,y=.3,k=.1]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+These colors show up as:
+
+\starttabulate[|T||]
+\NC my-blue       \NC \blackrule[color=my-blue,      width=.6\textwidth,height=5mm] \NC \NR
+\NC my-blue-50    \NC \blackrule[color=my-blue-50,   width=.6\textwidth,height=5mm] \NC \NR
+\NC my-blue-100   \NC \blackrule[color=my-blue-100,  width=.6\textwidth,height=5mm] \NC \NR
+\NC my-yellow     \NC \blackrule[color=my-yellow,    width=.6\textwidth,height=5mm] \NC \NR
+\NC my-yellow-50  \NC \blackrule[color=my-yellow-50, width=.6\textwidth,height=5mm] \NC \NR
+\NC my-yellow-100 \NC \blackrule[color=my-yellow-100,width=.6\textwidth,height=5mm] \NC \NR
+\NC my-mix        \NC \blackrule[color=my-mix,       width=.6\textwidth,height=5mm] \NC \NR
+\stoptabulate
+
+\useexternalfigure[demofig][mill.png][object=no,width=.2\textwidth]
+
+\startbuffer
+\startcombination[4*1]
+  {\externalfigure[demofig]}                      {no color}
+  {\externalfigure[demofig][color=my-mix]}        {indexed duotone}
+  {\externalfigure[demofig][color=my-blue-100]}   {spot color}
+  {\externalfigure[demofig][color=my-yellow-100]} {spot color}
+\stopcombination
+\stopbuffer
+
+\typebuffer
+
+This time we don't call an external program but we add an indexed color map to the
+image. The result can be seen in \in {figure} [fig:reindexing].
+
+\startplacefigure[reference=fig:reindexing,title={Reindexing bitmap images.}]
+    \getbuffer
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Profiles]
+
+Color profiles are used to control the printing process. There is some (limited)
+support for that built in. An example of a setup that we use in a project is the
+following:
+
+\starttyping
+\setupexternalfigures
+  [order={pdf,eps,png,jpg},
+   conversion=cmyk.pdf,
+   method=auto]
+\stoptyping
+
+So, we prefer \PDF\ vector images, if needed converted from \EPS. When there is
+no vector image we check for a \PNG\ and as last resort for a \JPG. The
+\type{method} is set to \type {auto} which means that we check if the image file
+indeed is reflected in the suffix. This is needed because in a workflow with tens
+of thousands of images there can be bad ones.
+
+The \type {conversion} parameter will make \CONTEXT\ check if there is a \type
+{cmyk.pdf} converter defined and when that is the case, it's applied. That
+specific converter will add a color profile to the image. You can set the
+profiles with:
+
+\starttyping
+\enabledirectives[graphics.conversion.rgbprofile=srgb.icc]
+\enabledirectives[graphics.conversion.cmykprofile=isocoated_v2_eci.icc]
+\stoptyping
+
+and these happens to be the defaults. You have to make sure that the files are
+present, preferable in \type{t:/texmf/colors/icc/context}. If you add profiles
+you need to make sure that \type {colorprofiles.lua} is updated accordingly.
+
+Just for completeness, in our situation, we also have set:
+
+\starttyping
+\enabledirectives[graphics.conversion.eps.cleanup.ai]
+\enabledirectives[graphics.extracheck]
+\stoptyping
+
+The first directive will make sure that confusing sections (for instance meant to
+the drawing program) are stripped from an \EPS\ file, and the second one forces
+some extra checking on the image (just to make sure that the engine doesn't exit
+on bad images).
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,756 @@
+% language=uk
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+
+\usemodule[spreadsheet]
+\usemodule[art-01,abr-02]
+
+\definecolor[darkred]  [r=.4]
+\definecolor[darkgreen][g=.4]
+\definecolor[darkblue] [b=.4]
+
+\definecolor[maincolor] [darkred]
+\definecolor[extracolor][darkblue]
+
+\setuptyping
+  [color=extracolor]
+
+\setuptype
+  [color=extracolor]
+
+\setuphead
+  [section]
+  [color=maincolor]
+
+\setupbodyfont
+  [10pt]
+
+\setupinteraction
+  [hidden]
+
+% \setupnumbering
+%   [alternative=doublesided]
+
+\startdocument
+  [metadata:author=Hans Hagen,
+   metadata:title=Simple Spreadsheets,
+   author=Hans Hagen,
+   affiliation=PRAGMA ADE,
+   location=Hasselt NL,
+   title=Simple Spreadsheets,
+   extra=ConTeXt MkIV,
+   support=www.contextgarden.net,
+   website=www.pragma-ade.nl]
+
+\startMPpage
+
+    StartPage;
+
+    numeric n, m ; n := 3 * 4 ; m := 4 * 4 ;
+    numeric w, h ; w := PaperWidth/n ; h := PaperHeight/m ;
+
+    for i=1 upto n :
+        for j=1 upto m :
+            fill
+                unitsquare
+                xysized (w,h)
+                shifted ((i-1)*w,(j-1)*h)
+                withcolor .5[i*red/n,j*blue/m]
+            ;
+        endfor ;
+    endfor ;
+
+    for i=1 upto n :
+        for j=1 upto m :
+            draw
+                textext("\tt" & char(64+i) & if j < 10 : "0" else : "" fi & decimal j)
+                xysized (.7*w,.7*h)
+                shifted (i*w-.5w,(m+1-j)*h-.5h)
+                withcolor .5[(n+1-i)*green/n,(m+1-j)*yellow/m]
+            ;
+        endfor ;
+    endfor ;
+
+    draw
+        textext.llft("\ssbf{\documentvariable{title}}")
+        xsized (PaperHeight-h)
+        rotated 90
+        shifted (PaperWidth-1.75w,PaperHeight-h/2)
+        withcolor white
+    ;
+
+    draw
+        textext.llft("\ssbf{\documentvariable{extra}}")
+        ysized (h/2)
+        shifted (PaperWidth-2.5w,3.75h)
+        withcolor white
+    ;
+
+
+    draw
+        textext.llft("\ssbf{\documentvariable{author}}")
+        ysized (h/2)
+        shifted (PaperWidth-2.5w,2.75h)
+        withcolor white
+    ;
+
+    draw
+        textext.llft("\ssbf \currentdate")
+        ysized (h/2)
+        shifted (PaperWidth-2.5w,1.75h)
+        withcolor white
+    ;
+
+    StopPage;
+
+\stopMPpage
+
+% \page[empty] \setuppagenumber[start=1]
+
+\startsubject[title={Contents}]
+
+\placelist[section][criterium=all,interaction=all]
+
+\stopsubject
+
+\startsection [title={Introduction}]
+
+Occasionally a question pops up on the \CONTEXT\ mailing list and answering it
+becomes a nice distraction from a boring task at hand. The spreadsheet module is
+the result of such a diversion. As with more support code in \CONTEXT, this is
+not a replacement for \quote {the real thing} but just a nice feature for simple
+cases. The module is loaded with
+
+\starttyping
+\usemodule[spreadsheet]
+\stoptyping
+
+So this is (at least currently) not one of the core functionalities but an
+add||on. Of course some useful extensions might appear in the future.
+
+\stopsection
+
+\startsection [title={Spreadsheet tables}]
+
+We can use \LUA\ in each cell, because under the hood it is all \LUA. There is
+some basic parsing applied so that we can use the usual \type {A..Z} variables to
+access cells.
+
+\startbuffer[demo]
+\startspreadsheettable[test]
+  \startrow
+    \startcell 1.1         \stopcell
+    \startcell 2.1         \stopcell
+    \startcell A[1] + B[1] \stopcell
+  \stoprow
+  \startrow
+    \startcell 2.1         \stopcell
+    \startcell 2.2         \stopcell
+    \startcell A[2] + B[2] \stopcell
+  \stoprow
+  \startrow
+    \startcell A[1] + B[1] \stopcell
+    \startcell A[2] + B[2] \stopcell
+    \startcell A[3] + B[3] \stopcell
+  \stoprow
+\stopspreadsheettable
+\stopbuffer
+
+\typebuffer[demo]
+
+The rendering is shown in \in {figure} [spreadsheet:1]. Keep in mind that in
+\LUA\ all calculations are done using floats, at least in \LUA\ versions with
+version numbers preceding 5.3.
+
+\placefigure
+  [here]
+  [spreadsheet:1]
+  {A simple spreadsheet.}
+  {\getbuffer[demo]}
+
+The last cell can also look like this:
+
+\starttyping
+\startcell
+function()
+  local s = 0
+  for i=1,2 do
+    for j=1,2 do
+      s = s + dat[i][j]
+    end
+  end
+  return s
+end
+\stopcell
+\stoptyping
+
+The content of a cell is either a number or a function. In this example
+we just loop over the (already set) cells and calculate their sum. The
+\type {dat} variable accesses the grid of cells.
+
+\starttyping
+\startcell
+function()
+  local s = 0
+  for i=1,2 do
+    for j=1,2 do
+      s = s + dat[i][j]
+    end
+  end
+  tmp.total = s
+end
+\stopcell
+\stoptyping
+
+In this variant we store the sum in the table \type {tmp} which is local to the
+current sheet. Another table is \type {fnc} where we can store functions. This
+table is shared between all sheets. There are two predefined functions:
+
+\starttyping
+sum(columnname,firstrow,lastrow)
+fmt(specification,n)
+\stoptyping
+
+The \type {sum} function works top||down in columns, and roughly looks like
+this:
+
+\starttyping
+function sum(currentcolumn,firstrow,lastrow)
+  local r = 0
+  for i = firstrow, lastrow do
+    r = r + cells[currentcolumn][i]
+  end
+  return r
+end
+\stoptyping
+
+The last two arguments are optional:
+
+\starttyping
+sum(columnname,lastrow)
+\stoptyping
+
+This is equivalent to:
+
+\starttyping
+function sum(currentcolumn,lastrow)
+  local r = 0
+  for i = 1, lastrow do
+    r = r + cells[currentcolumn][i]
+  end
+  return r
+end
+\stoptyping
+
+While:
+
+\starttyping
+sum(columnname)
+\stoptyping
+
+boils down to:
+
+\starttyping
+function sum(currentcolumn)
+  local r = 0
+  for i = 1, currentrow do
+    r = r + cells[currentcolumn][i]
+  end
+  return r
+end
+\stoptyping
+
+Empty cells or cells that have no numbers are skipped. Let's now see these
+functions in action:
+
+\startbuffer[demo]
+\startspreadsheettable[test]
+  \startrow
+    \startcell 1.1 \stopcell \startcell 2.1 \stopcell
+  \stoprow
+  \startrow
+    \startcell 2.1 \stopcell \startcell 2.2 \stopcell
+  \stoprow
+  \startrow
+    \startcell
+      function()
+        local s = 0
+        for i=1,2 do
+          for j=1,2 do
+            s = s + dat[i][j]
+          end
+        end
+        context.bold(s)
+      end
+    \stopcell
+    \startcell
+      function()
+        local s = 1
+        for i=1,2 do
+          for j=1,2 do
+            s = s * dat[i][j]
+          end
+        end
+        context.bold(fmt("@.1f",s))
+      end
+    \stopcell
+  \stoprow
+\stopspreadsheettable
+\stopbuffer
+
+\typebuffer[demo]
+
+The result is shown in \in {figure} [spreadsheet:2]. Watch the \type {fmt} call:
+we use an at sign instead of a percent to please \TEX.
+
+\placefigure
+  [here]
+  [spreadsheet:2]
+  {Cells can be (complex) functions.}
+  {\getbuffer[demo]}
+
+Keep in mind that we're typesetting and that doing complex calculations is not
+our main objective. A typical application of this module is in making bills, for
+which you can combine it with the correspondence modules. We leave that as an
+exercise for the reader and stick to a simple example.
+
+\startbuffer[demo]
+\startspreadsheettable[test]
+  \startrow
+    \startcell[align=flushleft,width=8cm] "item one" \stopcell
+    \startcell[align=flushright,width=3cm] @ "0.2f EUR" 3.50 \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "item two" \stopcell
+    \startcell[align=flushright] @ "0.2f EUR" 8.45 \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "tax 19\percent" \stopcell
+    \startcell[align=flushright] @ "0.2f EUR" 0.19 * (B[1]+B[2]) \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "total 1" \stopcell
+    \startcell[align=flushright] @ "0.2f EUR" sum(B,1,3) \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "total 2" \stopcell
+    \startcell[align=flushright] @ "0.2f EUR" B[1] + B[2] + B[3] \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "total 3" \stopcell
+    \startcell[align=flushright] @ "0.2f EUR" sum(B) \stopcell
+  \stoprow
+\stopspreadsheettable
+\stopbuffer
+
+\typebuffer[demo]
+
+Here (and in \in {figure} [spreadsheet:8]) you see a quick and more
+readable way to format cell content. The \type {@} in the template is
+optional, but needed in cases like this:
+
+\starttyping
+@ "(@0.2f) EUR" 8.45
+\stoptyping
+
+A \type {@} is only prepended when no \type {@} is given in the template.
+
+\placefigure
+  [here]
+  [spreadsheet:8]
+  {Cells can be formatted by using \type {@} directives.}
+  {\getbuffer[demo]}
+
+In practice this table we can be less specific and let \type {\sum} behave more
+automatical. That way the coding can be simplified (see \in {figure}
+[spreadsheet:7]) and also look nicer.
+
+\startbuffer[demo]
+\startspreadsheettable[test][frame=off]
+  \startrow
+    \startcell[align=flushleft,width=8cm] "The first item" \stopcell
+    \startcell[align=flushright,width=3cm] @ "0.2f EUR" 3.50 \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "The second item" \stopcell
+    \startcell[align=flushright] @ "0.2f EUR" 8.45 \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "The third item" \stopcell
+    \startcell[align=flushright] @ "0.2f EUR" 5.90 \stopcell
+  \stoprow
+  \startrow[topframe=on]
+    \startcell[align=flushleft] "VAT 19\percent" \stopcell
+    \startcell[align=flushright] @ "0.2f EUR" 0.19 * sum(B) \stopcell
+  \stoprow
+  \startrow[topframe=on]
+    \startcell[align=flushleft] "\bf Grand total" \stopcell
+    \startcell[align=flushright] @ "0.2f EUR" sum(B) \stopcell
+  \stoprow
+\stopspreadsheettable
+\stopbuffer
+
+\typebuffer[demo]
+
+\placefigure
+  [here]
+  [spreadsheet:7]
+  {The \type {sum} function accumulates stepwise.}
+  {\getbuffer[demo]}
+
+There are a few more special start characters. This is demonstrated in \in
+{figure} [spreadsheet:9]. An \type {=} character is ignored. \footnote {Taco
+suggested to support this because some spreadsheet programs use that character to
+flush a value.} When we start with an \type {!}, the content is not typeset.
+Strings can be surrounded by single or double quotes and are not really
+processed.
+
+\startbuffer[demo]
+\startspreadsheettable[test][offset=1ex]
+  \startrow
+    \startcell[align=flushleft] "first" \stopcell
+    \startcell[align=flushleft] '\type{@ "[@i]" 1}' \stopcell
+    \startcell[align=flushright,width=3cm] @ "[@i]" 1 \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "second" \stopcell
+    \startcell[align=flushleft] '\type{= 2}' \stopcell
+    \startcell[align=flushright] = 2 \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "third" \stopcell
+    \startcell[align=flushleft] '\type{! 3}' \stopcell
+    \startcell[align=flushright] ! 3 \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "fourth" \stopcell
+    \startcell[align=flushleft] '\type{4}' \stopcell
+    \startcell[align=flushright] 4 \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "\bf total one" \stopcell
+    \startcell[align=flushleft] '\type{sum(C)}' \stopcell
+    \startcell[align=flushright] sum(C) \stopcell
+  \stoprow
+  \startrow
+    \startcell[align=flushleft] "\bf total two" \stopcell
+    \startcell[align=flushleft] '\type{= sum(C)}' \stopcell
+    \startcell[align=flushright] = sum(C) \stopcell
+  \stoprow
+\stopspreadsheettable
+\stopbuffer
+
+\typebuffer[demo]
+
+The \type {sum} function is clever enough not to include itself in the
+summation. Only preceding cells are taken into account, given that they
+represent a number.
+
+\placefigure
+  [here]
+  [spreadsheet:9]
+  {Cells can be hidden by \type {!} and can contain strings only.}
+  {\getbuffer[demo]}
+
+\stopsection
+
+\startsection [title={Normal tables}]
+
+In the previous examples we used \TEX\ commands for structuring the sheet but
+the content of cells is \LUA\ code. It is also possible to stick to a regular
+table and use specific commands to set and get cell data.
+
+\startbuffer[demo]
+\bTABLE[align=middle]
+  \bTR
+    \bTD \getspr{100} \eTD \bTD test \setspr{30} \eTD
+  \eTR
+  \bTR
+    \bTD \getspr{20} \eTD \bTD \getspr{4+3} \eTD
+  \eTR
+  \bTR
+    \bTD \getspr{A[1] + A[2]} \eTD
+    \bTD \getspr{B1 + B2} \eTD
+  \eTR
+  \bTR
+    \bTD[nx=2] \bf \getspr{(A[3] + B[3]) /100} \eTD
+  \eTR
+  \bTR
+    \bTD[nx=2] \bf \getspr{fmt("@0.3f",(A[3] + B[3]) /100)} \eTD
+  \eTR
+  \bTR
+    \bTD[nx=2] \bf \getspr{fmt("@0.3f",(sum(A,1,2)) / 10)} \eTD
+  \eTR
+\eTABLE
+\stopbuffer
+
+\typebuffer[demo]
+
+The method to use depends on the complexity of the table. If there is
+more text than data then this method is probably more comfortable.
+
+\placefigure
+  [here]
+  [spreadsheet:3]
+  {A sheet can be filled and accessed from regular tables.}
+  {\getbuffer[demo]}
+
+% \setupspreadsheet[mysheet]
+%
+% \startspreadsheet[mysheet]
+%
+% \bTABLE[align=middle]
+%   \bTR
+%     \bTD \getspr{100} \eTD \bTD test \setspr{30} \eTD
+%   \eTR
+%   \bTR
+%     \bTD \getspr{20} \eTD \bTD \getspr{4+3.5} \eTD
+%   \eTR
+%   \bTR
+%     \bTD \getspr{A[1] + A[2]} \eTD
+%     \bTD \getspr{B[1] + B[2]} \eTD
+%   \eTR
+%   \bTR
+%     \bTD[nx=2] \bf \getspr{A[3] + B[3]} \eTD
+%   \eTR
+% \eTABLE
+%
+% \stopspreadsheet
+
+\stopsection
+
+\startsection[title={A few settings}]
+
+It's possible to influence the rendering. The following example demonstrates
+this. We don't use any formatting directives.
+
+\startbuffer[demo]
+\startspreadsheettable[test]
+  \startrow
+    \startcell   123456.78 \stopcell
+  \stoprow
+  \startrow
+    \startcell  1234567.89 \stopcell
+  \stoprow
+  \startrow
+    \startcell A[1] + A[2] \stopcell
+  \stoprow
+\stopspreadsheettable
+\stopbuffer
+
+\typebuffer[demo]
+
+\placefigure
+  [here]
+  [spreadsheet:4]
+  {Formatting (large) numbers.}
+  {\getbuffer[demo]}
+
+\in {Figure} [spreadsheet:4] demonstrates how this gets rendered by
+default. However, often you want numbers to be split in parts separated by
+periods and commas. This can be done as follows:
+
+\startbuffer[setup]
+\definehighlight[BoldAndRed]  [style=bold,color=darkred]
+\definehighlight[BoldAndGreen][style=bold,color=darkgreen]
+
+\setupspreadsheet
+  [test]
+  [period={\BoldAndRed{.}},
+   comma={\BoldAndGreen{,}},
+   split=yes]
+\stopbuffer
+
+\typebuffer[setup] \getbuffer[setup]
+
+\placefigure
+  [here]
+  [spreadsheet:5]
+  {Formatting (large) numbers with style and color.}
+  {\getbuffer[setup,demo]}
+
+\stopsection
+
+\startsection[title={The \LUA\ end}]
+
+You can also use spreadsheets from within \LUA. The following example is
+rather straightforward:
+
+\startbuffer[demo-a]
+\startluacode
+context.startspreadsheettable { "test" }
+  context.startrow()
+    context.startcell() context("123456.78")   context.stopcell()
+  context.stoprow()
+  context.startrow()
+    context.startcell() context("1234567.89")  context.stopcell()
+  context.stoprow()
+  context.startrow()
+    context.startcell() context("A[1] + A[2]") context.stopcell()
+  context.stoprow()
+context.stopspreadsheettable()
+\stopluacode
+\stopbuffer
+
+\typebuffer[demo-a]
+
+However, even more \LUA|-|ish is the next variant:
+
+\startbuffer[demo-b]
+\startluacode
+  local set = moduledata.spreadsheets.set
+  local get = moduledata.spreadsheets.get
+
+  moduledata.spreadsheets.start("test")
+    set("test",1,1,"123456.78")
+    set("test",2,1,"1234567.89")
+    set("test",3,1,"A[1] + A[2]")
+  moduledata.spreadsheets.stop()
+
+  context.bTABLE()
+    context.bTR()
+      context.bTD() context(get("test",1,1)) context.eTD()
+    context.eTR()
+    context.bTR()
+      context.bTD() context(get("test",2,1)) context.eTD()
+    context.eTR()
+    context.bTR()
+      context.bTD() context(get("test",3,1)) context.eTD()
+    context.eTR()
+  context.eTABLE()
+\stopluacode
+\stopbuffer
+
+\typebuffer[demo-b]
+
+Of course the second variant does not make much sense as we can do this way
+more efficient by not using a spreadsheet at all:
+
+\startbuffer[demo-c]
+\startluacode
+  local A1, A2 = 123456.78, 1234567.89
+  context.bTABLE()
+    context.bTR()
+      context.bTD() context(A1)    context.eTD()
+    context.eTR()
+    context.bTR()
+      context.bTD() context(A2)    context.eTD()
+    context.eTR()
+    context.bTR()
+      context.bTD() context(A1+A2) context.eTD()
+    context.eTR()
+  context.eTABLE()
+\stopluacode
+\stopbuffer
+
+\typebuffer[demo-c]
+
+You can of course use format explicitly. Here we use the normal percent
+directives because we're in \LUA, and not in \TEX, where percentage
+signs are a bit of an issue.
+
+\startbuffer[demo-d]
+\startluacode
+  local A1, A2 = 123456.78, 1234567.89
+  local options = { align = "flushright" }
+  context.bTABLE()
+    context.bTR()
+      context.bTD(options)
+        context("%0.2f",A1)
+      context.eTD()
+    context.eTR()
+    context.bTR()
+      context.bTD(options)
+        context("%0.2f",A2)
+      context.eTD()
+    context.eTR()
+    context.bTR()
+      context.bTD(options)
+        context("%0.2f",A1+A2)
+      context.eTD()
+    context.eTR()
+  context.eTABLE()
+\stopluacode
+\stopbuffer
+
+\typebuffer[demo-d]
+
+As expected and shown in \in {figure} [spreadsheet:6], only the first and last
+variant gets the numbers typeset nicely.
+
+\placefigure
+  [here]
+  [spreadsheet:6]
+  {Spreadsheets purely done as \CONTEXT\ \LUA\ Document.}
+  {\startcombination[4*1]
+     {\getbuffer[demo-a]} {}
+     {\getbuffer[demo-b]} {}
+     {\getbuffer[demo-c]} {}
+     {\getbuffer[demo-d]} {}
+   \stopcombination}
+
+\stopsection
+
+\startsection[title={Helper macros}]
+
+There are two helper macros that you can use to see what is stored in a
+spreadsheet:
+
+\starttyping
+\inspectspreadsheet[test]
+\showspreadsheet   [test]
+\stoptyping
+
+The first command reports the content of \type {test} to the console, and
+the second one typesets it in the running text:
+
+\blank
+\showspreadsheet[test]
+\blank
+
+Another helper function is \type {\doifelsespreadsheetcell}, You can use this
+one to check if a cell is set.
+
+\startbuffer[demo]
+(1,1): \doifelsespreadsheetcell[test]{1}{1}{set}{unset}
+(2,2): \doifelsespreadsheetcell[test]{2}{2}{set}{unset}
+(9,9): \doifelsespreadsheetcell[test]{9}{9}{set}{unset}
+\stopbuffer
+
+\typebuffer[demo]
+
+This gives:
+
+\startlines
+\getbuffer[demo]
+\stoplines
+
+There is not much more to say about this module, apart from that it is a
+nice example of a \TEX\ and \LUA\ mix. Maybe some more (basic) functionality
+will be added in the future but it all depends on usage.
+
+\stopsection
+
+\startsubject[title={Colofon}]
+
+\starttabulate[|B|p|]
+\NC author    \NC \getvariable{document}{author}, \getvariable{document}{affiliation}, \getvariable{document}{location} \NC \NR
+\NC version   \NC \currentdate \NC \NR
+\NC website   \NC \getvariable{document}{website} \endash\ \getvariable{document}{support} \NC \NR
+\NC copyright \NC \symbol[cc][cc-by-sa-nc] \NC \NR
+\stoptabulate
+
+\stopsubject
+
+\stopdocument

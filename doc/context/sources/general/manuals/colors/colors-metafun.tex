@@ -1,0 +1,695 @@
+% language=uk
+
+\startcomponent colors-basics
+
+\environment colors-environment
+
+\startchapter[title=Metafun][color=darkyellow]
+
+\startsection[title=Defining and using]
+
+In \METAPOST\ itself colors are defined as numbers or sets:
+
+\starttyping
+color     red  ; red  := (1,0,0) ;
+cmykcolor cyan ; cyan := (1,0,0,0) ;
+numeric   gray ; gray := 0.5 ;
+\stoptyping
+
+You don't need much fantasy to see that this fits well in the data model of
+\METAPOST. In fact, transparency could be represented as a \type {pair}. The
+disadvantage of having no generic color type is that you cannot mix them. In case
+you need to manipulate them, you can check the type:
+
+\starttyping
+if cmykcolor cyan : ... fi ;
+\stoptyping
+
+because \METAFUN\ is tightly integrated in \CONTEXT\ you can refer to colors
+known at the \TEX\ end by string. So,
+
+\starttyping
+string mycolor ; mycolor := "red" ;
+\stoptyping
+
+and then:
+
+\starttyping
+fill fullcircle scaled 4cm withcolor mycolor ;
+\stoptyping
+
+is quite okay. For completeness we also have \type {namedcolor} but it's not
+really needed:
+
+\starttyping
+fill fullcircle scaled 4cm withcolor namedcolor("red");
+\stoptyping
+
+You can define spot colors too but normally you will refer to colors
+defined at the \TEX\ end.
+
+\startbuffer[spot]
+\startMPcode
+    fill fullcircle scaled 3cm withcolor
+        .5 * spotcolor("whatever",(.3,.4,.5)) ;
+    fill fullcircle scaled 2cm withcolor
+             spotcolor("whatever",(.3,.4,.5)) ;
+    fill fullcircle scaled 1cm withcolor
+             spotcolor("whatever",(.3,.4,.5)/2) ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[multi]
+\startMPcode
+    fill fullcircle scaled 3cm withcolor
+        .5 * multitonecolor("whatever",(.3,.4,.5),(.5,.3,.4)) ;
+    fill fullcircle scaled 2cm withcolor
+             multitonecolor("whatever",(.3,.4,.5),(.5,.3,.4)) ;
+    fill fullcircle scaled 1cm withcolor
+             multitonecolor("whatever",(.3,.4,.5)/2,(.5,.3,.4)/2) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[spot]
+
+Multitones are defined as:
+
+\typebuffer[multi]
+
+Some \PDF\ renderers have problems with fractions of such colors and even display
+the wrong colors. So, in these examples the third alternative in the sets of
+three might be more robust than the first. The result is shown in \in {figure}
+[fig:mpspot].
+
+\startplacefigure[reference=fig:mpspot,title={Spot and multitones directly defined in \METAFUN.}]
+    \startcombination[2*1]
+        {\getbuffer[spot]}  {}
+        {\getbuffer[multi]} {}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Passing colors]
+
+Originally \TEX\ and \METAPOST\ were separated processes and even in \LUATEX\
+they still are. There can be many independent \METAPOST\ instances present, but
+always there is \LUA\ as glue between them. In the early days of \LUATEX\ this
+was a one way channel: the \METAPOST\ output is available at the \TEX\ end in
+\LUA\ as a table and properties are used to communicate extensions. In today's
+\LUATEX\ the \METAPOST\ library has access to \LUA\ itself so that gives us a
+channel to \TEX, although with some limitations.
+
+Say that we have a color defined as follows:
+
+\startbuffer
+\definecolor[MyColor][r=.25,g=.50,b=.75]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can apply this to a rule:
+
+\startbuffer
+\blackrule[color=MyColor,width=3cm,height=1cm,depth=0cm]
+\stopbuffer
+
+\typebuffer
+
+From this we get:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+In \TEX\ (code) we can do this:
+
+\startbuffer
+\startMPcode
+    fill unitsquare xyscaled (3cm,1cm) withcolor \MPcolor {MyColor} ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+When the code is pushed to \METAPOST\ the color gets expanded, in this case to
+\typ {(0.25, 0.50, 0.75)} because we specified an \RGB\ color but the other
+colorspaces are supported too.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Equally valid code is:
+
+\starttyping
+\startMPcode
+    fill unitsquare xyscaled (3cm,1cm) withcolor "MyColor" ;
+\stopMPcode
+\stoptyping
+
+This is very un-\METAPOST\ as naturally it can only deal with numerics for gray
+scales, triplets for \RGB\ colors, and quadruplets for \CMYK\ colors. In
+\METAFUN\ (as present in \CONTEXT\ MKIV) the \type {withcolor} operator also
+accepts a string, which is resolved to a color specification.
+
+For the record we note that when you use transparent colors, a more complex
+specification gets passed with \type {\MPcolor} or resolved (via the string). The
+same is true for spot and multitone colors. It will be clear that when you want
+to assign a color to a variable you have to make sure the type matches. A rather
+safe way to define colors is:
+
+\starttyping
+def MyColor =
+    \MPcolor{MyColor}
+enddef ;
+\stoptyping
+
+and because we can use strings, string variables are also an option.
+
+\stopsection
+
+\startsection[title=Grouping]
+
+The reason for discussing these details is that there is a rather fundamental
+concept of grouping in \TEX\ which can lead to unexpected side effects. The
+reason is that there is no grouping at the \LUA\ end, unless one uses a kind of
+stack, and that in \METAPOST\ grouping is an explicit feature.
+
+\starttyping
+\scratchcounter=123
+\bgroup
+    \scratchcounter=456
+\egroup
+\stoptyping
+
+After this \TEX\ code is expanded the counter has value 123. In \METAPOST\ you
+can do the following:
+
+\starttyping
+scratchcounter := 123 ;
+\begingroup
+    scratchcounter := 456 ;
+\endgroup
+\stoptyping
+
+but here the counter is 456 afterwards! You explicitly need to save a value:
+
+\starttyping
+scratchcounter := 123 ;
+\begingroup
+    save scratchcounter ;
+    numeric scratchcounter ; % variables are numeric by default anyway
+    scratchcounter := 456 ;
+\endgroup
+\stoptyping
+
+The difference perfectly makes sense if you think about the kind of applications
+\TEX\ and \METAPOST\ are used for. In \LUA\ you can do this:
+
+
+\starttyping
+scratchcounter = 123
+do
+    local scratchcounter = 456
+end
+\stoptyping
+
+and in fact, a \type {then}, \type {else}, \type {while}, \type {repeat}, \type
+{do} and function body also behave this way.
+
+So, what is the impact on colors? Imagine that you do this:
+
+\startbuffer
+\bgroup
+    \definecolor[MyColor][s=.5]
+    \startMPcode
+        pickup pencircle scaled 4mm ;
+        draw fullcircle scaled 30mm withcolor \MPcolor{MyColor} ;
+        draw fullcircle scaled 15mm withcolor "MyColor" ;
+    \stopMPcode
+\egroup
+\quad
+\startMPcode
+    pickup pencircle scaled 4mm ;
+    draw fullcircle scaled 30mm withcolor \MPcolor{MyColor} ;
+    draw fullcircle scaled 15mm withcolor "MyColor" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+We get the following colors:
+
+\startlinecorrection
+\hbox{\getbuffer}
+\stoplinecorrection
+
+Because \type {\MPcolor} is a \TEX\ macro, its value gets expanded when the
+graphic is calculated. After the group (first graphic) the color is restored.
+But, in order to access the colors defined at the \TEX\ end in \METAPOST\ by name
+(using \LUA) we need to make sure that a defined color is registered at that end.
+Before we could use the string accessor in \METAPOST\ colors, this was never a
+real issue. We kept the values in a (global) \LUA\ table which was good enough
+for the cases where we wanted to access color specifications, for instance for
+tracing. Such colors never changed in a document. But with the more dynamic
+\METAPOST\ graphics we cannot do that: there is no way that \METAPOST\ (or \LUA)
+later on can know that the color was defined inside a group as clone. For daily
+usage it's enough to know that we have found a way around it in \CONTEXT\ at
+neglectable overhead. In the rare case this mechanism fails, you can always
+revert to the \type {\MPcolor} method.
+
+\startbuffer
+\definecolor[DemoOne][red]
+\definecolor[DemoTwo][s=.8,t=0.5,a=1]
+
+%definepalet[DemoPalet][NumberColor={g=1}]
+\definepalet[DemoPalet][NumberColor=red,red=cyan]
+\definepalet[DemoPalet][NumberColor=red]
+
+\setuppalet[DemoPalet]
+
+\bgroup
+    \definecolor[red]    [b=.8]
+    \definecolor[DemoOne][yellow]
+    \startMPcode
+        fill fullcircle scaled 10 withcolor "NumberColor" ;
+        fill fullcircle scaled  7 withcolor "red" ;
+        fill fullcircle scaled  6 withcolor .5\MPcolor{red} ;
+        fill fullcircle scaled  4 shifted (-4,0) withcolor \MPcolor{DemoTwo} ;
+        fill fullcircle scaled  4 shifted ( 4,0) withcolor "DemoTwo" ;
+        fill fullcircle scaled  2 withcolor "DemoOne" ;
+        fill fullcircle scaled  1 withcolor \MPcolor{NumberColor} ;
+        currentpicture := currentpicture xysized(5cm,3cm) ;
+    \stopMPcode
+\egroup
+\hskip1cm
+\startMPcode
+    fill fullcircle scaled 10 withcolor "NumberColor" ;
+    fill fullcircle scaled  7 withcolor "red" ;
+    fill fullcircle scaled  6 withcolor .5\MPcolor{red} ;
+    fill fullcircle scaled  4 shifted (-4,0) withcolor \MPcolor{DemoTwo} ;
+    fill fullcircle scaled  4 shifted ( 4,0) withcolor "DemoTwo" ;
+    fill fullcircle scaled  2 withcolor "DemoOne" ;
+    fill fullcircle scaled  1 withcolor \MPcolor{NumberColor} ;
+        currentpicture := currentpicture xysized(5cm,3cm) ;
+\stopMPcode
+\stopbuffer
+
+The following example was used when developing the string based color resolver.
+The complication was in getting the color palets resolved right without too much
+overhead. Again we demonstrate this because border cases might occur that are not
+catched (yet).
+
+\startlinecorrection
+    \hbox {\getbuffer}
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Transparency]
+
+Transparency is supported at the \TEX\ end: either or not bound to colors. We
+already saw how to use colors, here's how to apply transparency:
+
+\startbuffer
+\startMPcode
+    fill fullsquare xyscaled (4cm,2cm) randomized 5mm
+        withcolor "darkred" ;
+    fill fullsquare xyscaled (2cm,4cm) randomized 5mm
+        withcolor "darkblue" withtransparency ("normal",0.5) ;
+
+    fill fullsquare xyscaled (4cm,2cm) randomized 5mm shifted (45mm,0)
+        withcolor "darkred"  withtransparency ("normal",0.5) ;
+    fill fullsquare xyscaled (2cm,4cm) randomized 5mm shifted (45mm,0)
+        withcolor "darkblue" withtransparency ("normal",0.5) ;
+
+    fill fullsquare xyscaled (4cm,2cm) randomized 5mm shifted (90mm,0)
+        withcolor "darkred"  withtransparency ("normal",0.5) ;
+    fill fullsquare xyscaled (2cm,4cm) randomized 5mm shifted (90mm,0)
+        withcolor "darkblue" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+We get a mixture of normal and transparent colors. Instead of \type {normal}
+you can also pass a number (with \type {1} being \type {normal}).
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Shading]
+
+Shading is available too. This mechanism is a bit more complex deep down because
+it needs resources as well as shading vectors that adapt themselves to the current
+scale. We will not go into detail about the shading properties here.
+
+\startbuffer
+\startMPcode
+    comment("two shades with mp colors");
+    fill fullcircle scaled 5cm
+        withshademethod "circular"
+        withshadevector (2cm,1cm)
+        withshadecenter (.1,.5)
+        withshadedomain (.2,.6)
+        withshadefactor 1.2
+        withshadecolors (red,white)
+        ;
+    fill fullcircle scaled 5cm shifted (6cm,0)
+        withshademethod "circular"
+        withcolor "red" shadedinto "blue"
+    ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+You can use normal \METAPOST\ colors as well as named colors.
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+\startbuffer
+\startMPcode
+    comment("two shades with named colors");
+    fill fullcircle scaled 5cm
+        withshademethod "circular"
+        withshadecolors ((1,0,0),(0,0,1,0))
+    ;
+    fill fullcircle scaled 5cm shifted (6cm,0)
+        withshademethod "circular"
+        withcolor (1,0,0,0) shadedinto "blue"
+    ;
+\stopMPcode
+\stopbuffer
+
+The color space of the first color determines if the second one needs
+to be converted, so this is valid:
+
+\typebuffer
+
+The first circle is in \RGB\ colors and the second in \CMYK.
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+You cannot use spot colors but you can use transparency, so with:
+
+\startbuffer
+\startMPcode
+    comment("three transparent shades");
+    fill fullcircle scaled 5cm
+        withshademethod "circular"
+        withshadecolors ("red","green")
+        withtransparency ("normal",0.5)
+    ;
+    fill fullcircle scaled 5cm shifted (30mm,0)
+        withshademethod "circular"
+        withshadecolors ("green","blue")
+        withtransparency ("normal",0.5)
+    ;
+    fill fullcircle scaled 5cm shifted (60mm,0)
+        withshademethod "circular"
+        withshadecolors ("blue","yellow")
+        withtransparency ("normal",0.5)
+    ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+we get:
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+You can define a shade and use it later on, for example:
+
+\startbuffer
+\startMPcode
+    defineshade myshade
+        withshademethod "circular"
+        withshadefactor 1
+        withshadedomain (0,1)
+        withshadecolors (black,white)
+        withtransparency (1,.5)
+    ;
+
+    fill fullcircle xyscaled(.75TextWidth,4cm)
+        shaded myshade ;
+    fill fullcircle xyscaled(.75TextWidth,4cm) shifted (.125TextWidth,0)
+        shaded myshade ;
+    fill fullcircle xyscaled(.75TextWidth,4cm) shifted (.25TextWidth,0)
+        shaded myshade ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+This gives three transparent shaded shapes:
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+A very special shade is the following:
+
+\startbuffer
+\startMPcode
+    fill fullsquare yscaled 5ExHeight xscaled TextWidth
+        withshademethod "linear"
+        withshadevector (0,1)
+        withshadestep (
+            withshadefraction .3
+            withshadecolors (red,green)
+        )
+        withshadestep (
+            withshadefraction .5
+            withshadecolors (green,blue)
+        )
+        withshadestep (
+            withshadefraction .7
+            withshadecolors (blue,red)
+        )
+        withshadestep (
+            withshadefraction 1
+            withshadecolors (red,yellow)
+        )
+    ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+The result is a colorful band:
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Text]
+
+The text typeset with \type {textext} is processed in \TEX\ using the
+current settings. A text can of course have color directives embedded.
+
+\startbuffer
+\startMPcode
+numeric u ; u := 8mm ;
+draw thetextext("RED",                     (0,0u)) withcolor darkred ;
+draw thetextext("\darkgreen GREEN",        (0,1u)) ;
+draw thetextext("\darkblue   BLUE",        (0,2u)) withcolor darkred ;
+draw thetextext("BLACK {\darkgreen GREEN}",(0,3u)) ;
+draw thetextext("RED   {\darkblue   BLUE}",(0,4u)) withcolor darkred ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+In this example we demonstrate that you can also apply a color to the
+resulting picture.
+
+\startlinecorrection
+\tttfd \getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Helpers]
+
+\stopsection
+
+There are several color related macros in \METAFUN\ and these are discussed
+in the \METAFUN\ manual, so we only mention a few here.
+
+\startbuffer
+\startMPcode
+    fill fullsquare xyscaled(TextWidth,4cm)
+        withcolor darkred ;
+    fill fullsquare xyscaled(TextWidth,3cm)
+        withcolor complementary darkred ;
+    fill fullsquare xyscaled(TextWidth,2cm)
+        withcolor complemented darkred ;
+    fill fullsquare xyscaled(TextWidth,1cm)
+        withcolor grayed darkred ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+This example code is shown in \in {figure} [fig:complemen-1]. The \type
+{complementary} operator subtracts the given color from white, the \type
+{complemented} operator calculates its values from opposites (so a zero becomes a
+one). In \in {figure} [fig:complemen-2] a more extensive example is shown.
+
+\startplacefigure
+    [reference=fig:complemen-1,
+     title={The \type {complementary}, \type {complemented} and \type
+     {grayed} methodscompared.}]
+    \getbuffer
+\stopplacefigure
+
+\startMPdefinitions
+    % This is an old example I had laying around since 2005. The original was just
+    % a framed text with the graphic as background but here I use textext instead.
+    def MyCompare (text method) =
+
+        picture p ; p := textext("\quad \bf
+            I don't understand about complementary colors\quad
+            And what they say\quad
+            Side by side they both get bright\quad
+            Together they both get gray\quad"
+        ) ;
+
+        numeric w ; w := bbwidth  p ;
+        numeric h ; h := bbheight p ;
+
+        for i = 1 upto 10 :
+            fill fullsquare
+                xscaled (w/10)
+                yscaled 5h
+                shifted (-w/2-w/20+i*w/10,-3h/2)
+                withcolor (i*red/10)
+                withtransparency(1,.5) ;
+            fill fullsquare
+                xscaled (w/10)
+                yscaled 5h
+                shifted (-w/2-w/20+i*w/10,3h/2)
+                withcolor method (i*red/10)
+                withtransparency(1,.5) ;
+        endfor ;
+        addbackground withcolor .75white ;
+
+        draw p withcolor white ;
+
+        currentpicture := currentpicture xsized TextWidth ;
+    enddef ;
+\stopMPdefinitions
+
+\startplacefigure[reference=fig:complemen-2,title={Two methods to complement colors compared (text: Fiona Apple).}]
+    \startcombination[1*2]
+        {\startMPcode MyCompare(complemented)  ; \stopMPcode} {complemented}
+        {\startMPcode MyCompare(complementary) ; \stopMPcode} {complementary}
+    \stopcombination
+\stopplacefigure
+
+As we discussed before, the different color models in \METAPOST\ cannot be mixed
+in expressions. We therefore have two macros that expand into white or black
+in the right colorspace.
+
+\typebuffer
+
+\startbuffer
+\startMPcode
+    fill fullsquare xyscaled(TextWidth,4cm)
+        withcolor .5[(.5,0,0),   whitecolor (.5,0,0)] ;
+    fill fullsquare xyscaled(TextWidth,3cm)
+        withcolor .5[(.5,0,0),   blackcolor (.5,0,0)] ;
+    fill fullsquare xyscaled(TextWidth,2cm)
+        withcolor .5[(.5,0,0,0), whitecolor (.5,0,0,0)] ;
+    fill fullsquare xyscaled(TextWidth,1cm)
+        withcolor .5[(.5,0,0,0), blackcolor (.5,0,0,0)] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+There are two macros that can be used to resolve string to colors: \type
+{resolvedcolor} and \type {namedcolor}. A resolved color is expanded via \LUA\
+while a named color is handled in the backend, when the result is converted to
+\PDF. The resolved approach is more recent and is the same as a string color
+specification.
+
+\startbuffer
+\startMPcode
+    fill fullcircle scaled 4cm withcolor .5 resolvedcolor "darkred" ;
+    fill fullcircle scaled 3cm withcolor .5 resolvedcolor "gray" ;
+    fill fullcircle scaled 2cm withcolor .5 namedcolor    "darkblue" ;
+    fill fullcircle scaled 1cm withcolor .5 namedcolor    "gray" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+There is a \type {drawoptions} macro that can be used to define properties in one go.
+
+\startbuffer
+\startMPcode
+    drawoptions(withcolor "darkgreen");
+    fill fullcircle scaled 4cm  ;
+    fill fullcircle scaled 3cm withcolor white ;
+    fill fullcircle scaled 2cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The drawback of this approach is that, because we use so called pre- and
+postscripts for achieving special effects (like spotcolors and shading)
+successive \type {withcolor} calls can interfere in a way that unexpected results
+turn up. A way out is to use properties:
+
+\startbuffer
+\startMPcode
+    property p[] ;
+    p1 = properties(withcolor "darkred") ;
+    p2 = properties(withcolor "white") ;
+    fill fullcircle scaled 4cm withproperties p1 ;
+    fill fullcircle scaled 3cm withproperties p2 ;
+    fill fullcircle scaled 2cm withproperties p1 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+This results in:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\stopchapter
+
+\stopcomponent
