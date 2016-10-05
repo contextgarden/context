@@ -447,12 +447,16 @@ function constructors.scale(tfmdata,specification)
     local haskerns         = properties.haskerns     or properties.mode == "base" -- we can have afm in node mode
     local hasligatures     = properties.hasligatures or properties.mode == "base" -- we can have afm in node mode
     local realdimensions   = properties.realdimensions
+    local writingmode      = properties.writingmode or "horizontal"
+    local identity         = properties.identity or "horizontal"
     --
     if changed and not next(changed) then
         changed = false
     end
     --
-    target.type = isvirtual and "virtual" or "real"
+    target.type        = isvirtual and "virtual" or "real"
+    target.writingmode = writingmode == "vertical" and "vertical" or "horizontal"
+    target.identity    = identity == "vertical" and "vertical" or "horizontal"
     --
     target.postprocessors = tfmdata.postprocessors
     --
@@ -894,6 +898,8 @@ function constructors.finalize(tfmdata)
             cidinfo       = tfmdata.cidinfo       or nil,
             format        = tfmdata.format        or "type1",
             direction     = tfmdata.direction     or 0,
+            writingmode   = tfmdata.writingmode   or "horizontal",
+            identity      = tfmdata.identity      or "horizontal",
         }
     end
     if not tfmdata.resources then

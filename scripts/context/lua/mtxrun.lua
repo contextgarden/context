@@ -6684,7 +6684,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 4610, stripped down to: 3559
+-- original size: 5725, stripped down to: 4416
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -6774,8 +6774,21 @@ function files.readcardinal2(f)
   local a,b=byte(f:read(2),1,2)
   return 0x100*a+b
 end
+function files.readcardinal2le(f)
+  local b,a=byte(f:read(2),1,2)
+  return 0x100*a+b
+end
 function files.readinteger2(f)
   local a,b=byte(f:read(2),1,2)
+  local n=0x100*a+b
+  if n>=0x8000 then
+    return n-0x10000
+  else
+    return n
+  end
+end
+function files.readinteger2le(f)
+  local b,a=byte(f:read(2),1,2)
   local n=0x100*a+b
   if n>=0x8000 then
     return n-0x10000
@@ -6787,8 +6800,21 @@ function files.readcardinal3(f)
   local a,b,c=byte(f:read(3),1,3)
   return 0x10000*a+0x100*b+c
 end
+function files.readcardinal3le(f)
+  local c,b,a=byte(f:read(3),1,3)
+  return 0x10000*a+0x100*b+c
+end
 function files.readinteger3(f)
   local a,b,c=byte(f:read(3),1,3)
+  local n=0x10000*a+0x100*b+c
+  if n>=0x80000 then
+    return n-0x1000000
+  else
+    return n
+  end
+end
+function files.readinteger3le(f)
+  local c,b,a=byte(f:read(3),1,3)
   local n=0x10000*a+0x100*b+c
   if n>=0x80000 then
     return n-0x1000000
@@ -6800,8 +6826,21 @@ function files.readcardinal4(f)
   local a,b,c,d=byte(f:read(4),1,4)
   return 0x1000000*a+0x10000*b+0x100*c+d
 end
+function files.readcardinal4le(f)
+  local d,c,b,a=byte(f:read(4),1,4)
+  return 0x1000000*a+0x10000*b+0x100*c+d
+end
 function files.readinteger4(f)
   local a,b,c,d=byte(f:read(4),1,4)
+  local n=0x1000000*a+0x10000*b+0x100*c+d
+  if n>=0x8000000 then
+    return n-0x100000000
+  else
+    return n
+  end
+end
+function files.readinteger4le(f)
+  local d,c,b,a=byte(f:read(4),1,4)
   local n=0x1000000*a+0x10000*b+0x100*c+d
   if n>=0x8000000 then
     return n-0x100000000
@@ -18957,8 +18996,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 805533
--- stripped bytes    : 292660
+-- original bytes    : 806648
+-- stripped bytes    : 292918
 
 -- end library merge
 

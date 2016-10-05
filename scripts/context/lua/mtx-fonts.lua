@@ -118,8 +118,8 @@ loadmodule("font-otr.lua")
 loadmodule("font-cff.lua")
 loadmodule("font-ttf.lua")
 loadmodule("font-tmp.lua")
-loadmodule("font-dsp.lua") -- not yet in distribution
-loadmodule("font-oup.lua") -- not yet in distribution
+loadmodule("font-dsp.lua")
+loadmodule("font-oup.lua")
 
 loadmodule("font-onr.lua")
 

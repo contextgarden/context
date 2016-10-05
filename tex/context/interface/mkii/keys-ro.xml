@@ -1238,6 +1238,7 @@
 		<cd:constant name='topspace' value='spatiusus'/>
 		<cd:constant name='topstate' value='staresus'/>
 		<cd:constant name='totalnumber' value='totalnumber'/>
+		<cd:constant name='transform' value='transform'/>
 		<cd:constant name='translate' value='translate'/>
 		<cd:constant name='trimoffset' value='trimoffset'/>
 		<cd:constant name='type' value='type'/>

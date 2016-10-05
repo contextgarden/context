@@ -253,18 +253,22 @@ local function flushxmpinfo()
     commands.pushrandomseed()
     commands.setrandomseed(os.time())
 
+
+    local version    = status.luatex_version
+    local revision   = status.luatex_revision
+
     local packetid   = "no unique packet id here" -- 24 chars
     local documentid = "no unique document id here"
     local instanceid = "no unique instance id here"
-    local producer   = format("LuaTeX-%0.2f.%s",status.luatex_version/100,status.luatex_revision)
+    local producer   = format("LuaTeX-%i.%i.%s",math.div(version,100),math.mod(version,100),revision)
     local creator    = "LuaTeX + ConTeXt MkIV"
     local time       = lpdf.timestamp()
     local fullbanner = status.banner
 
     if included.id ~= "fake" then
         packetid   = randomstring(24)
-        documentid = "uuid:%s" .. os.uuid()
-        instanceid = "uuid:%s" .. os.uuid()
+        documentid = "uuid:" .. os.uuid()
+        instanceid = "uuid:" .. os.uuid()
     end
 
     pdfaddxmpinfo("DocumentID",      documentid)

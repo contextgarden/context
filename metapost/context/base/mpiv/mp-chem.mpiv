@@ -48,9 +48,7 @@ path
 pair
     chem_origin, chem_mirror,
     chem_pair[], % scratch
-    chem_sb_pair, chem_sb_pair.m, chem_sb_pair.p, chem_sb_pair.b ;
-
-
+    chem_sb_pair, chem_sb_pair.m, chem_sb_pair.mm, chem_sb_pair.p, chem_sb_pair.pp, chem_sb_pair.b ;
 
 picture
     chem_pic; % scratch
@@ -91,7 +89,9 @@ chem_text_max           := 1.25 ;
 chem_dot_factor         := 2 ; % *linewidth
 chem_sb_pair            := (0.25,0.75) ; %chem_sb_dash   := dashpattern(off 0.25 on 0.5 off 0.25) ;
 chem_sb_pair.m          := (0.25,1   ) ; %chem_sb_dash.m := dashpattern(off 0.25 on 0.75) ;
+chem_sb_pair.mm         := (0.50,1   ) ; %chem_sb_dash.m := dashpattern(off 0.25 on 0.75) ;
 chem_sb_pair.p          := (0   ,0.75) ; %chem_sb_dash.p := dashpattern(on  0.75 off 0.25) ;
+chem_sb_pair.pp         := (0   ,0.50) ; %chem_sb_dash.p := dashpattern(on  0.75 off 0.25) ;
 chem_sb_pair.b          := (0   ,1   ) ; %chem_sb_dash.b := dashpattern(on  1) ;
 
 chem_bd_wedge           := true ; % according to IUPAC 2005

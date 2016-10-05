@@ -87,7 +87,12 @@ local trace_conversion  = false  trackers.register  ("graphics.conversion", func
 local trace_inclusion   = false  trackers.register  ("graphics.inclusion",  function(v) trace_inclusion  = v end)
 local trace_usage       = false  trackers.register  ("graphics.usage",      function(v) trace_usage      = v end)
 
-local extra_check       = false  directives.register("graphics.extracheck", function(v) extra_check      = v end)
+local extra_check       = false  directives.register("graphics.extracheck",    function(v) extra_check    = v end)
+local auto_transform    = true   directives.register("graphics.autotransform", function(v) auto_transform = v end)
+
+if LUATEXVERSION <= 1 then
+    auto_transform = false
+end
 
 local report_inclusion  = logs.reporter("graphics","inclusion")
 local report_figures    = logs.reporter("system","graphics")
@@ -1287,6 +1292,44 @@ function existers.generic(askedname,resolve)
     return result
 end
 
+-- pdf : 0-3: 0 90 180 270
+-- jpeg: 0 unset 1-4: 0 90 180 270 5-8: flipped r/c
+
+local transforms = setmetatableindex (
+    {
+        ["orientation-1"] = 0, ["R0"]     = 0,
+        ["orientation-2"] = 4, ["R0MH"]   = 4,
+        ["orientation-3"] = 2, ["R180"]   = 2,
+        ["orientation-4"] = 6, ["R0MV"]   = 6,
+        ["orientation-5"] = 5, ["R270MH"] = 5,
+        ["orientation-6"] = 3, ["R90"]    = 3,
+        ["orientation-7"] = 7, ["R90MH"]  = 7,
+        ["orientation-8"] = 1, ["R270"]   = 1,
+    },
+    function(t,k) -- transforms are 0 .. 7
+        local v = tonumber(k) or 0
+        if v < 0 or v > 7 then
+            v = 0
+        end
+        t[k] = v
+        return v
+    end
+)
+
+local function checktransform(figure,forced)
+    if auto_transform then
+        local orientation = (forced ~= "" and forced ~= v_auto and forced) or figure.orientation or 0
+        local transform   = transforms["orientation-"..orientation]
+        print(orientation,figure.orientation,transform)
+        figure.transform = transform
+        if math.odd(transform) then
+            return figure.height, figure.width
+        else
+            return figure.width, figure.height
+        end
+    end
+end
+
 function checkers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     local name       = du.fullname or "unknown generic"
@@ -1348,8 +1391,10 @@ function checkers.generic(data)
         end
     end
     if figure then
-        du.width       = figure.width
-        du.height      = figure.height
+        local width, height = checktransform(figure,dr.transform)
+        --
+        du.width       = width
+        du.height      = height
         du.pages       = figure.pages
         du.depth       = figure.depth or 0
         du.colordepth  = figure.colordepth or 0
@@ -1357,6 +1402,8 @@ function checkers.generic(data)
         du.yresolution = figure.yres or 0
         du.xsize       = figure.xsize or 0
         du.ysize       = figure.ysize or 0
+        du.rotation    = figure.rotation or 0    -- in pdf multiples or 90% in jpeg 1
+        du.orientation = figure.orientation or 0 -- jpeg 1 2 3 4 (0=unset)
         ds.private     = figure
         ds.hash        = hash
     end
@@ -1840,6 +1887,7 @@ implement {
             { "color" },
             { "arguments" },
             { "repeat" },
+            { "transform" },
             { "width", "dimen" },
             { "height", "dimen" },
         }

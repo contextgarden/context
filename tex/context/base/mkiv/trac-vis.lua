@@ -508,9 +508,13 @@ end)
 local function ruledbox(head,current,vertical,layer,what,simple,previous,trace_origin,parent)
     local wd = getfield(current,"width")
     if wd ~= 0 then
-        local ht = getfield(current,"height")
-        local dp = getfield(current,"depth")
+        local ht    = getfield(current,"height")
+        local dp    = getfield(current,"depth")
         local shift = getfield(current,"shift")
+        local dir   = getfield(current,"dir")
+--         if dir == "LTL" or dir == "RRT" then
+--             wd, ht, dp = ht + dp, wd, 0
+--         end
         local next = getnext(current)
         local prev = previous
      -- local prev = getprev(current) -- prev can be wrong in math mode < 0.78.3
@@ -635,12 +639,16 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous,trace_o
     end
 end
 
-local function ruledglyph(head,current,previous)
+local function ruledglyph(head,current,previous) -- wrong for vertical glyphs
     local wd = getfield(current,"width")
  -- local wd = chardata[getfont(current)][getchar(current)].width
     if wd ~= 0 then
-        local ht = getfield(current,"height")
-        local dp = getfield(current,"depth")
+        local ht  = getfield(current,"height")
+        local dp  = getfield(current,"depth")
+--         local dir = getfield(current,"dir")
+-- if dir == "LTL" or dir = "RTT" then
+--     wd, ht, dp = ht + dp, wd, 0
+-- end
         local next = getnext(current)
         local prev = previous
         setboth(current)

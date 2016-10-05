@@ -287,6 +287,8 @@ end
 local remapper = {
     ["+"] = "p",
     ["-"] = "m",
+    ["--"] = "mm",
+    ["++"] = "pp",
 }
 
 local dchrs     = R("09")
@@ -299,7 +301,7 @@ local set       = Ct(digit^2)
 local colon     = P(":")
 local equal     = P("=")
 local other     = 1 - digit - colon - equal
-local remapped  = sign / remapper
+local remapped  = (sign * sign + sign) / remapper
 local operation = Cs(other^1)
 local special   = (colon * C(other^1)) + Cc("")
 local text      = (equal * C(P(1)^0)) + Cc(false)

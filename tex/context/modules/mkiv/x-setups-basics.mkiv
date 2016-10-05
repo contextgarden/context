@@ -362,7 +362,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:make:variable
-    \xmlatt{#1}{value}
+    \setupintfont{\xmlatt{#1}{value}}
 \stopxmlsetups
 
 \let\m_cmd_current_hash\empty
@@ -477,7 +477,7 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:instance
-    \xmlatt{#1}{value}\enspace
+    \xmlatt{#1}{value}\enskip % we need a break
 \stopxmlsetups
 
 \startxmlsetups xml:setups:typeset:instances
@@ -745,7 +745,7 @@
 \unexpanded\def\show_setup_any#1#2%
   {\bgroup
    \global\advance\c_cmd_current_argument\plusone
-   \doif{\xmlatt{#1}{optional}}{yes}\donetrue\donefalse
+   \doifelse{\xmlatt{#1}{optional}}{yes}\donetrue\donefalse
    \setbox0=\hbox
      {\ifdone\sl\fi
       \doifelse{\xmlatt{#1}{list}}{yes}
@@ -883,9 +883,10 @@
     }
     \blank[\v!big,\v!samepage]
     \starttabulate[|l|p|]
+        % no /interface here
         \xmlall
             {#1}
-            {/interface/command[@name=='\currentsetupparametercommand' or @handler=='\currentsetupparametercommand']/arguments/assignments/parameter/command(xml:setups:parameters:value)}
+            {interface/command[@name=='\currentsetupparametercommand' or @handler=='\currentsetupparametercommand']/arguments/assignments/parameter/command(xml:setups:parameters:value)}
         \ifnum\noftabulaterows = \zerocount
             \NC \parameterkey{no specific settings} \NC \NC \NR
         \fi

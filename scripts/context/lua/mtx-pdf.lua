@@ -112,8 +112,12 @@ local function getfonts(pdffile)
     for i=1,pdffile.pages.n do
         local page = pdffile.pages[i]
         local fontlist = page.Resources.Font
-        for k, v in next, lpdf.epdf.expand(fontlist) do
-            usedfonts[k] = lpdf.epdf.expand(v)
+        if fontlist then
+            for k, v in next, lpdf.epdf.expand(fontlist) do
+                usedfonts[k] = lpdf.epdf.expand(v)
+            end
+        else
+            report("no fonts")
         end
     end
     return usedfonts

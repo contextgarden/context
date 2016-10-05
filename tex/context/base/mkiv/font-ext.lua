@@ -1206,3 +1206,39 @@ do
     }
 
 end
+
+do
+
+    local function initialize(tfmdata,value)
+        local properties = tfmdata.properties
+        if properties then
+            properties.identity = value == "vertical" and "vertical" or "horizontal"
+        end
+    end
+
+    registerotffeature {
+        name         = "identity",
+        description  = "set font identity",
+        initializers = {
+            base = initialize,
+            node = initialize,
+        }
+    }
+
+    local function initialize(tfmdata,value)
+        local properties = tfmdata.properties
+        if properties then
+            properties.writingmode = value == "vertical" and "vertical" or "horizontal"
+        end
+    end
+
+    registerotffeature {
+        name         = "writingmode",
+        description  = "set font direction",
+        initializers = {
+            base = initialize,
+            node = initialize,
+        }
+    }
+
+end

@@ -32,7 +32,7 @@ local match, gmatch, lower, gsub, strip, find = string.match, string.gmatch, str
 local char, byte, sub = string.char, string.byte, string.sub
 local abs = math.abs
 local bxor, rshift = bit32.bxor, bit32.rshift
-local P, S, R, Cmt, C, Ct, Cs, lpegmatch, patterns = lpeg.P, lpeg.S, lpeg.R, lpeg.Cmt, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.match, lpeg.patterns
+local P, S, R, Cmt, C, Ct, Cs, Cg, Cf, lpegmatch, patterns = lpeg.P, lpeg.S, lpeg.R, lpeg.Cmt, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Cg, lpeg.Cf, lpeg.match, lpeg.patterns
 local derivetable = table.derive
 
 local trace_features     = false  trackers.register("afm.features",   function(v) trace_features = v end)

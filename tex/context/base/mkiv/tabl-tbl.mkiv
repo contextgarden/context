@@ -1241,10 +1241,12 @@
 %     {\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
 % \stopcombination
 
-\let\tabl_tabulate_inside_after \relax
-\let\tabl_tabulate_outside_after\relax
+\let\tabl_tabulate_inside_after     \relax
+\let\tabl_tabulate_outside_after    \relax
+\let\tabl_tabulate_inside_inbetween \relax
+\let\tabl_tabulate_outside_inbetween\relax
 
-\def\tabl_tabulate_inside_before
+\unexpanded\def\tabl_tabulate_inside_before
   {\ifhmode\par\fi
    \ifhmode
      \ifinsidesplitfloat
@@ -1257,7 +1259,7 @@
      \let\tabl_tabulate_inside_after\relax
    \fi}
 
-\def\tabl_tabulate_outside_before
+\unexpanded\def\tabl_tabulate_outside_before
   {\ifhmode\par\fi
    \ifhmode
      \vbox\bgroup
@@ -1269,6 +1271,7 @@
    \else
      \whitespace
      \tabulationparameter\c!before
+     \relax
      \let\tabl_tabulate_outside_after    \tabl_tabulate_outside_after_indeed
      \let\tabl_tabulate_outside_inbetween\tabl_tabulate_outside_inbetween_indeed
    \fi\fi}
@@ -1282,7 +1285,7 @@
       \verticalstrut
       \vskip-\struttotal}}
 
-\def\tabl_tabulate_outside_inbetween
+\def\tabl_tabulate_inside_inbetween % needs checking
   {\doifempty{\tabulationparameter\c!after}
      {\vskip\strutdp
       \verticalstrut

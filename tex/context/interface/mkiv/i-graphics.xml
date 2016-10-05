@@ -234,6 +234,11 @@
                     <!-- only passed by the system: -->
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <cd:parameter name="transform">
+                    <cd:constant type="auto" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:text"/> <!-- for experts: orientation-[1..8] -->
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/27/16 23:41:51
+-- merge date  : 10/05/16 15:15:36
 
 do -- begin closure to overcome local limits and interference
 
@@ -4245,8 +4245,21 @@ function files.readcardinal2(f)
   local a,b=byte(f:read(2),1,2)
   return 0x100*a+b
 end
+function files.readcardinal2le(f)
+  local b,a=byte(f:read(2),1,2)
+  return 0x100*a+b
+end
 function files.readinteger2(f)
   local a,b=byte(f:read(2),1,2)
+  local n=0x100*a+b
+  if n>=0x8000 then
+    return n-0x10000
+  else
+    return n
+  end
+end
+function files.readinteger2le(f)
+  local b,a=byte(f:read(2),1,2)
   local n=0x100*a+b
   if n>=0x8000 then
     return n-0x10000
@@ -4258,8 +4271,21 @@ function files.readcardinal3(f)
   local a,b,c=byte(f:read(3),1,3)
   return 0x10000*a+0x100*b+c
 end
+function files.readcardinal3le(f)
+  local c,b,a=byte(f:read(3),1,3)
+  return 0x10000*a+0x100*b+c
+end
 function files.readinteger3(f)
   local a,b,c=byte(f:read(3),1,3)
+  local n=0x10000*a+0x100*b+c
+  if n>=0x80000 then
+    return n-0x1000000
+  else
+    return n
+  end
+end
+function files.readinteger3le(f)
+  local c,b,a=byte(f:read(3),1,3)
   local n=0x10000*a+0x100*b+c
   if n>=0x80000 then
     return n-0x1000000
@@ -4271,8 +4297,21 @@ function files.readcardinal4(f)
   local a,b,c,d=byte(f:read(4),1,4)
   return 0x1000000*a+0x10000*b+0x100*c+d
 end
+function files.readcardinal4le(f)
+  local d,c,b,a=byte(f:read(4),1,4)
+  return 0x1000000*a+0x10000*b+0x100*c+d
+end
 function files.readinteger4(f)
   local a,b,c,d=byte(f:read(4),1,4)
+  local n=0x1000000*a+0x10000*b+0x100*c+d
+  if n>=0x8000000 then
+    return n-0x100000000
+  else
+    return n
+  end
+end
+function files.readinteger4le(f)
+  local d,c,b,a=byte(f:read(4),1,4)
   local n=0x1000000*a+0x10000*b+0x100*c+d
   if n>=0x8000000 then
     return n-0x100000000
@@ -6084,10 +6123,14 @@ function constructors.scale(tfmdata,specification)
   local haskerns=properties.haskerns   or properties.mode=="base" 
   local hasligatures=properties.hasligatures or properties.mode=="base" 
   local realdimensions=properties.realdimensions
+  local writingmode=properties.writingmode or "horizontal"
+  local identity=properties.identity or "horizontal"
   if changed and not next(changed) then
     changed=false
   end
   target.type=isvirtual and "virtual" or "real"
+  target.writingmode=writingmode=="vertical" and "vertical" or "horizontal"
+  target.identity=identity=="vertical" and "vertical" or "horizontal"
   target.postprocessors=tfmdata.postprocessors
   local targetslant=(parameters.slant     or parameters[1] or 0)*factors.pt 
   local targetspace=(parameters.space     or parameters[2] or 0)*hdelta
@@ -6473,6 +6516,8 @@ function constructors.finalize(tfmdata)
       cidinfo=tfmdata.cidinfo    or nil,
       format=tfmdata.format    or "type1",
       direction=tfmdata.direction   or 0,
+      writingmode=tfmdata.writingmode  or "horizontal",
+      identity=tfmdata.identity   or "horizontal",
     }
   end
   if not tfmdata.resources then
@@ -8291,11 +8336,43 @@ readers.hhea=function(f,fontdata,specification)
         reserved_3=readshort(f),
         reserved_4=readshort(f),
         metricdataformat=readshort(f),
-        nofhmetrics=readushort(f),
+        nofmetrics=readushort(f),
       }
     else
       fontdata.horizontalheader={
-        nofhmetrics=0,
+        nofmetrics=0,
+      }
+    end
+  end
+end
+readers.vhea=function(f,fontdata,specification)
+  if specification.details then
+    local datatable=fontdata.tables.vhea
+    if datatable then
+      setposition(f,datatable.offset)
+      local version=readfixed(f)
+      fontdata.verticalheader={
+        version=version,
+        ascender=readfword(f),
+        descender=readfword(f),
+        linegap=readfword(f),
+        maxadvanceheight=readufword(f),
+        mintopsidebearing=readfword(f),
+        minbottomsidebearing=readfword(f),
+        maxextent=readfword(f),
+        caretsloperise=readshort(f),
+        caretsloperun=readshort(f),
+        caretoffset=readshort(f),
+        reserved_1=readshort(f),
+        reserved_2=readshort(f),
+        reserved_3=readshort(f),
+        reserved_4=readshort(f),
+        metricdataformat=readshort(f),
+        nofmetrics=readushort(f),
+      }
+    else
+      fontdata.verticalheader={
+        nofmetrics=0,
       }
     end
   end
@@ -8346,7 +8423,8 @@ readers.hmtx=function(f,fontdata,specification)
     local datatable=fontdata.tables.hmtx
     if datatable then
       setposition(f,datatable.offset)
-      local nofmetrics=fontdata.horizontalheader.nofhmetrics
+      local horizontalheader=fontdata.horizontalheader
+      local nofmetrics=horizontalheader.nofmetrics
       local glyphs=fontdata.glyphs
       local nofglyphs=fontdata.nofglyphs
       local width=0 
@@ -8365,6 +8443,43 @@ readers.hmtx=function(f,fontdata,specification)
           glyph.width=width
         end
       end
+    end
+  end
+end
+readers.vmtx=function(f,fontdata,specification)
+  if specification.glyphs then
+    local datatable=fontdata.tables.vmtx
+    if datatable then
+      setposition(f,datatable.offset)
+      local verticalheader=fontdata.verticalheader
+      local nofmetrics=verticalheader.nofmetrics
+      local glyphs=fontdata.glyphs
+      local nofglyphs=fontdata.nofglyphs
+      local vheight=0
+      local vdefault=verticalheader.ascender+verticalheader.descender
+      local topsidebearing=0
+      for i=0,nofmetrics-1 do
+        local glyph=glyphs[i]
+        vheight=readshort(f)
+        topsidebearing=readshort(f)
+        if vheight~=0 and vheight~=vdefault then
+          glyph.vheight=vheight
+        end
+      end
+      for i=nofmetrics,nofglyphs-1 do
+        local glyph=glyphs[i]
+        if vheight~=0 and vheight~=vdefault then
+          glyph.vheight=vheight
+        end
+      end
+    end
+  end
+end
+readers.vorg=function(f,fontdata,specification)
+  if specification.glyphs then
+    local datatable=fontdata.tables.vorg
+    if datatable then
+      report("todo: %s","vorg")
     end
   end
 end
@@ -8925,7 +9040,7 @@ function readers.math(f,fontdata,specification)
     reportskippedtable("math")
   end
 end
-local function getinfo(maindata,sub,platformnames,rawfamilynames)
+local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo)
   local fontdata=sub and maindata.subfonts and maindata.subfonts[sub] or maindata
   local names=fontdata.names
   local info=nil
@@ -8978,6 +9093,27 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames)
       descender=metrics.typodescender,
       platformnames=platformnames and fontdata.platformnames or nil,
     }
+    if metricstoo then
+      local keys={
+        "version",
+        "ascender","descender","linegap",
+        "maxadvancewidth","maxadvanceheight","maxextent",
+        "minbottomsidebearing","mintopsidebearing",
+      }
+      local h=fontdata.horizontalheader or {}
+      local v=fontdata.verticalheader  or {}
+      if h then
+        local th={}
+        local tv={}
+        for i=1,#keys do
+          local key=keys[i]
+          th[key]=h[key] or 0
+          tv[key]=v[key] or 0
+        end
+        info.horizontalmetrics=th
+        info.verticalmetrics=tv
+      end
+    end
   elseif n then
     info={
       filename=fontdata.filename,
@@ -9061,7 +9197,10 @@ local function readdata(f,offset,specification)
   readers["head"](f,fontdata,specification)
   readers["maxp"](f,fontdata,specification)
   readers["hhea"](f,fontdata,specification)
+  readers["vhea"](f,fontdata,specification)
   readers["hmtx"](f,fontdata,specification)
+  readers["vmtx"](f,fontdata,specification)
+  readers["vorg"](f,fontdata,specification)
   readers["post"](f,fontdata,specification)
   readers["cff" ](f,fontdata,specification)
   readers["cmap"](f,fontdata,specification)
@@ -9229,7 +9368,7 @@ function readers.loadfont(filename,n)
       descriptions=fontdata.descriptions,
       format=fontdata.format,
       goodies={},
-      metadata=getinfo(fontdata,n),
+      metadata=getinfo(fontdata,n,false,false,true),
       properties={
         hasitalics=fontdata.hasitalics or false,
         maxcolorclass=fontdata.maxcolorclass,

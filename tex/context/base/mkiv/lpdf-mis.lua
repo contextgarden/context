@@ -197,7 +197,8 @@ local function setupidentity()
         if author ~= "" then
             addtoinfo("Author",  pdfunicode(author), author) -- '/Author' in /Info, 'Creator' in XMP
         end
-        local creator = identity.creator or ""
+     -- local creator = identity.creator or ""
+        local creator = "LuaTeX + ConTeXt MkIV" -- has to be the same in CreatorTool
         if creator ~= "" then
             addtoinfo("Creator", pdfunicode(creator), creator) -- '/Creator' in /Info, 'CreatorTool' in XMP
         end
