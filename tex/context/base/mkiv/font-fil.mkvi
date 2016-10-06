@@ -185,69 +185,72 @@
 
 % todo: replace * by ... less messy with features
 
-% \def\truefontname#name%
-%   {\expandafter\font_helpers_true_fontname#name*\empty*\relax}
-%
-% \def\font_helpers_true_fontname#name*#first#rest*#crap\relax
-%   {\ifcsname\??fontfile\fontclass#name\endcsname
-%      \ifx#first\empty
-%       %\expandafter\truefontname\csname\??fontfile\fontclass#name\endcsname
-%        \expandafter\truefontname\lastnamedcs
-%      \else
-%       %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\fontclass#name\endcsname*#first#rest%
-%        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
-%      \fi
-%    \else\ifcsname\??fontfile\defaultfontclass#name\endcsname
-%      \ifx#first\empty
-%       %\expandafter\truefontname\csname\??fontfile\defaultfontclass#name\endcsname
-%        \expandafter\truefontname\lastnamedcs
-%      \else
-%       %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\defaultfontclass#name\endcsname*#first#rest%
-%        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
-%      \fi
-%    \else\ifcsname\??fontfile#name\endcsname
-%      \ifx#first\empty
-%       %\expandafter\truefontname\csname\??fontfile#name\endcsname
-%        \expandafter\truefontname\lastnamedcs
-%      \else
-%       %\expandafter\font_helpers_true_fontname_check\csname\??fontfile#name\endcsname*#first#rest%
-%        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
-%      \fi
-%    \else
-%      #name\ifx#first\empty\else*#first#rest\fi
-%    \fi\fi\fi}
-%
-% \def\font_helpers_true_fontname_check#name%
-%   {\expandafter\font_helpers_true_fontname_check_indeed#name*\relax}
-%
-% \def\font_helpers_true_fontname_check_indeed#name*#crap\relax
-%   {\ifcsname\??fontfile\fontclass#name\endcsname
-%     %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\fontclass#name\endcsname
-%      \expandafter\font_helpers_true_fontname_check\lastnamedcs
-%    \else\ifcsname\??fontfile\defaultfontclass#name\endcsname
-%     %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\defaultfontclass#name\endcsname
-%      \expandafter\font_helpers_true_fontname_check\lastnamedcs
-%    \else\ifcsname\??fontfile#name\endcsname
-%     %\expandafter\font_helpers_true_fontname_check\csname\??fontfile#name\endcsname
-%      \expandafter\font_helpers_true_fontname_check\lastnamedcs
-%    \else
-%      #name%
-%    \fi\fi\fi}
-
 \def\truefontname#name%
- %{\normalexpanded{\noexpand\font_helpers_true_fontname{\clf_truefontname{#name}}}}
-  {\expandafter\expandafter\expandafter\font_helpers_true_fontname\expandafter\expandafter\expandafter{\clf_truefontname{#name}}}
+  {\expandafter\font_helpers_true_fontname#name*\empty*\relax}
 
-\def\font_helpers_true_fontname#name%
+\def\font_helpers_true_fontname#name*#first#rest*#crap\relax
   {\ifcsname\??fontfile\fontclass#name\endcsname
-     \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+     \ifx#first\empty
+      %\expandafter\truefontname\csname\??fontfile\fontclass#name\endcsname
+       \expandafter\truefontname\lastnamedcs
+     \else
+      %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\fontclass#name\endcsname*#first#rest%
+       \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
+     \fi
    \else\ifcsname\??fontfile\defaultfontclass#name\endcsname
-     \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+     \ifx#first\empty
+      %\expandafter\truefontname\csname\??fontfile\defaultfontclass#name\endcsname
+       \expandafter\truefontname\lastnamedcs
+     \else
+      %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\defaultfontclass#name\endcsname*#first#rest%
+       \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
+     \fi
    \else\ifcsname\??fontfile#name\endcsname
-     \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+     \ifx#first\empty
+      %\expandafter\truefontname\csname\??fontfile#name\endcsname
+       \expandafter\truefontname\lastnamedcs
+     \else
+      %\expandafter\font_helpers_true_fontname_check\csname\??fontfile#name\endcsname*#first#rest%
+       \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
+     \fi
    \else
-     \clf_truefontname{#name}%
+     #name\ifx#first\empty\else*#first#rest\fi
    \fi\fi\fi}
+
+\def\font_helpers_true_fontname_check#name%
+  {\expandafter\font_helpers_true_fontname_check_indeed#name*\relax}
+
+\def\font_helpers_true_fontname_check_indeed#name*#crap\relax
+  {\ifcsname\??fontfile\fontclass#name\endcsname
+    %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\fontclass#name\endcsname
+     \expandafter\font_helpers_true_fontname_check\lastnamedcs
+   \else\ifcsname\??fontfile\defaultfontclass#name\endcsname
+    %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\defaultfontclass#name\endcsname
+     \expandafter\font_helpers_true_fontname_check\lastnamedcs
+   \else\ifcsname\??fontfile#name\endcsname
+    %\expandafter\font_helpers_true_fontname_check\csname\??fontfile#name\endcsname
+     \expandafter\font_helpers_true_fontname_check\lastnamedcs
+   \else
+     #name%
+   \fi\fi\fi}
+
+% ok when the last lookup is not stripped .. we ned to be able to define synonyms for symbols
+%
+% \def\truefontname#name%
+%  %{\normalexpanded{\noexpand\font_helpers_true_fontname{\clf_truefontname{#name}}}}
+%   {\expandafter\expandafter\expandafter\font_helpers_true_fontname\expandafter\expandafter\expandafter{\clf_truefontname{#name}}}
+%
+% \def\font_helpers_true_fontname#name%
+%   {\ifcsname\??fontfile\fontclass#name\endcsname
+%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+%    \else\ifcsname\??fontfile\defaultfontclass#name\endcsname
+%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+%    \else\ifcsname\??fontfile#name\endcsname
+%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+%    \else
+%    % \clf_truefontname{#name}%
+%      #name% so the last one can have features !
+%    \fi\fi\fi}
 
 \def\expandfontsynonym#command#name% one level expansion
   {\ifcsname\??fontfile\fontclass#name\endcsname

@@ -59,7 +59,7 @@
 
 \installcorenamespace {columns}
 
-\installcommandhandler \??columns {columns} \??columns
+\installframedcommandhandler \??columns {columns} \??columns
 
 %D Going to a new columns is done by means of a \type {\ejectcolumn}. The
 %D following definition does not always work.
@@ -104,7 +104,7 @@
 
 %D A hook:
 
-    \let\finishcolumnbox\relax
+\let\finishcolumnbox\relax % todo in mkiv
 
 %D This will change to a local one:
 
@@ -1457,21 +1457,12 @@
 % 3 \input tufte  \par \placefigure{}{\framed[width=\hsize,height=3cm]{3}}
 % \stopcolumns
 
-    % \def\backgroundfinishcolumnbox
-    %   {\doifelseinset\@@kloffset{\v!none,\v!overlay}
-    %      {\let\@@kloffset\!!zeropoint}
-    %      {\scratchdimen\@@kloffset
-    %       \advance\scratchdimen -\@@klrulethickness
-    %       \edef\@@kloffset{\the\scratchdimen}}%
-    %    \localframed
-    %      [\??kl]
-    %      [\c!strut=\v!no,
-    %       \c!width=\v!fit,
-    %       \c!height=\v!fit,
-    %       \c!align=]}
-
-    \def\backgroundfinishcolumnbox
-      {}
+\def\backgroundfinishcolumnbox
+  {\inheritedcolumnsframed}
+   % [\c!strut=\v!no,
+   %  \c!width=\v!fit,
+   %  \c!height=\v!fit,
+   %  \c!align=]}
 
 % to be reconsidered ... (in any case they need to be unexpandable sinze 2011.12.30)
 
@@ -1607,8 +1598,12 @@
     \edef\p_option{\columnsparameter\c!option}%
     \ifx\p_option\v!background
         \let\finishcolumnbox\backgroundfinishcolumnbox
+        \doifelseinset{\columnsparameter\c!offset}{\v!none,\v!overlay}
+          {\d_page_mul_offset\zeropoint}%
+          {\d_page_mul_offset\dimexpr\columnsparameter\c!offset-\columnsparameter\c!rulethickness\relax}%
+    \else
+        \d_page_mul_offset\zeropoint
     \fi
-    \d_page_mul_offset\columnsparameter\c!offset\relax
     \edef\p_command{\columnsparameter\c!command}%
     \ifx\p_command\empty \else
         \let\postprocesscolumnline\p_command

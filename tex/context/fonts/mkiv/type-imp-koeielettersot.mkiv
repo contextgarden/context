@@ -18,26 +18,27 @@
 
 \definefontfeature
   [sheepdigits]
-  [%mode=node,
+  [mode=node,
    script=latn,
    ss01=yes]
 
 \definefontfeature
   [cowslogos]
-  [%mode=node,
+  [mode=node,
    script=latn,
    ss02=yes,
    dlig=yes]
 
 \definefontfeature
   [cowsligatures]
-  [%mode=node,
+  [mode=node,
    script=latn,
    dlig=yes]
 
 \definefontfeature
   [cowscolors]
-  [colr=yes,
+  [mode=node,
+   colr=yes,
    ss02=yes,
    dlig=yes]
 
@@ -126,21 +127,21 @@
 
 \starttext
 
-% \loadtypescriptfile[cowotf]
+\loadtypescriptfile[cowotf]
 
 \definecolor[cowred]   [r=.50]
 \definecolor[cowgreen] [g=.50]
 \definecolor[cowblue]  [b=.50]
 \definecolor[cowyellow][y=.25]
 
-% \startluacode
-%     fonts.handlers.otf.registerpalette("demo", {
-%         { g = .50 },
-%         { y = .25 },
-%         { b = .50 },
-%         { r = .50 },
-%     })
-% \stopluacode
+\startluacode
+    fonts.handlers.otf.registerpalette("demo", {
+        { g = .50 },
+        { y = .25 },
+        { b = .50 },
+        { r = .50 },
+    })
+\stopluacode
 
 \definefontcolorpalette[cows][cowgreen,cowyellow,cowblue,cowred]
 
@@ -149,5 +150,17 @@
 \setupbodyfont[coloredcows,12pt]
 
 \input zapf
+
+\definefontsynonym
+  [CowsColored]
+  [koeielettersot]
+
+\showotfcomposition
+  {koeielettersot*default,cowscolors}
+  {1}
+  {context}
+
+\scale[width=\textwidth]{\getnamedglyphdirect{CowsColored*default,cowscolors}{contextlogo}}
+\scale[width=\textwidth]{\definedfont[CowsColored*default,cowscolors]context}
 
 \stoptext

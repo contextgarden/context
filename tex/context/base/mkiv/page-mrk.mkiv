@@ -25,12 +25,15 @@
 \def\pagecutmarkoffset {3mm} % slightly larger than before, and now a fixed size
 \def\pagecutmarkmargin{10cm}
 
+% maybe all these should be global
+
 \newconditional\c_page_marks_add_more_color
 \newconditional\c_page_marks_add_more_marking
 \newconditional\c_page_marks_add_more_lines
 \newconditional\c_page_marks_add_page_lines
 \newconditional\c_page_marks_add_more_number
 
+\newcount\c_page_marks_max
 \newcount\c_page_marks_nx
 \newcount\c_page_marks_ny
 
@@ -135,6 +138,11 @@
      \ifconditional\c_page_marks_add_more_number
        \page_marks_add_number
      \fi
+     \global\advance\c_page_marks_max\minusone
+     \ifnum\c_page_marks_max>\zerocount\else
+       \glet\page_marks_add_more\gobbleoneargument
+       \glet\page_marks_add_page\gobbleoneargument
+     \fi
    \egroup}
 
 \let\page_marks_add_page\gobbleoneargument
@@ -174,13 +182,31 @@
    \settrue\c_page_marks_add_more_marking
    \settrue\c_page_marks_add_more_number}
 
+\installpagecutmark\v!one {\global\c_page_marks_max\plusone}
+\installpagecutmark\v!two {\global\c_page_marks_max\plustwo}
+\installpagecutmark\v!four{\global\c_page_marks_max\plusfour}
+
+\unexpanded\def\page_marks_set#1%
+  {\begincsname\??layoutmarking#1\endcsname}
+
 \appendtoks
     \setfalse\c_page_marks_add_page_lines
     \setfalse\c_page_marks_add_more_color
     \setfalse\c_page_marks_add_more_marking
     \setfalse\c_page_marks_add_more_lines
     \setfalse\c_page_marks_add_more_number
-    \begincsname\??layoutmarking\layoutparameter\c!marking\endcsname
+    \global\c_page_marks_max\maxcount
+    \rawprocesscommacommand[\layoutparameter\c!marking]\page_marks_set
+    \ifnum\c_page_marks_max<\maxcount
+      \ifconditional\c_page_marks_add_page_lines  \else
+      \ifconditional\c_page_marks_add_more_color  \else
+      \ifconditional\c_page_marks_add_more_marking\else
+      \ifconditional\c_page_marks_add_more_lines  \else
+      \ifconditional\c_page_marks_add_more_number \else
+        \settrue\c_page_marks_add_page_lines
+        \settrue\c_page_marks_add_more_number
+      \fi\fi\fi\fi\fi
+    \fi
     \ifconditional\c_page_marks_add_page_lines
       \let\page_marks_add_page\page_marks_add_page_indeed
     \else

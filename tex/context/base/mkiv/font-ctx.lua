@@ -2640,7 +2640,7 @@ end
 
 do
 
-    local pattern = C((1-S("* "))^1)
+    local pattern = C((1-S("* "))^1) -- strips all after * or ' at'
 
     implement {
         name      = "truefontname",
