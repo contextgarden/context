@@ -55,14 +55,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="symbol" variant="1" file="symb-ini.mkiv">
+    <cd:command name="symbol" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="symbol" variant="2" file="symb-ini.mkiv">
+    <cd:command name="symbol" variant="direct" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>

@@ -99,7 +99,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tabulation" type="environment" generated="yes" variant="generated" file="tabl-tbl.mkiv">
+    <cd:command name="tabulation" type="environment" generated="yes" variant="example" file="tabl-tbl.mkiv">
         <cd:sequence>
             <cd:variable value="tabulation"/>
         </cd:sequence>
@@ -138,7 +138,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tabulate" type="environment" generated="yes" variant="generated" file="tabl-tbl.mkiv">
+    <cd:command name="tabulate" type="environment" generated="yes" variant="example" file="tabl-tbl.mkiv">
         <cd:sequence>
             <cd:variable value="tabulate"/>
         </cd:sequence>
@@ -148,6 +148,10 @@
                 <cd:inherit name="setuptabulate"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="legend"/>
+            <cd:constant value="fact"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="tabulatehead" type="environment" file="tabl-tbl.mkiv">

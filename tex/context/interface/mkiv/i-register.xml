@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupregister" variant="1" file="strc-reg.mkiv">
+    <cd:command name="setupregister" variant="argument" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-number-list-optional"/>
@@ -178,9 +178,10 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupregister" variant="2" file="strc-reg.mkiv">
+    <cd:command name="setupregister" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
+                <cd:constant type="cd:name"/>
                 <cd:constant type="cd:number" prefix="cd:name" method="range"/>
             </cd:keywords>
             <cd:assignments list="yes">
@@ -345,7 +346,7 @@
 
     <!--
 
-        <cd:command name="setupregisters" variant="1" file="strc-reg.mkiv">
+        <cd:command name="setupregisters" variant="argument" file="strc-reg.mkiv">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:resolve name="keyword-number-list-optional"/>
@@ -355,9 +356,10 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupregisters" variant="2" file="strc-reg.mkiv">
+        <cd:command name="setupregisters" file="strc-reg.mkiv">
             <cd:arguments>
                 <cd:keywords optional="yes">
+                    <cd:constant type="cd:name"/>
                     <cd:constant type="cd:number" prefix="cd:name" method="range"/>
                 </cd:keywords>
                 <cd:assignments list="yes">
@@ -368,7 +370,7 @@
 
     -->
 
-    <cd:command name="register" generated="yes" variant="generated:1" file="strc-reg.mkiv">
+    <cd:command name="register" generated="yes" variant="example" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:variable value="register"/>
         </cd:sequence>
@@ -379,9 +381,12 @@
             </cd:keywords>
             <cd:index list="yes"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="index"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="register" generated="yes" variant="generated:2" file="strc-reg.mkiv">
+    <cd:command name="register" generated="yes" variant="example:ownnumber" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:variable value="register"/>
         </cd:sequence>
@@ -393,9 +398,12 @@
             <cd:resolve name="argument-text"/>
             <cd:index list="yes"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="index"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="seeregister" generated="yes" variant="generated" file="strc-reg.mkiv">
+    <cd:command name="seeregister" generated="yes" variant="example" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="see"/>
             <cd:variable value="register"/>
@@ -411,9 +419,12 @@
                 <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
             </cd:keywords>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="index"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="placeregister" generated="yes" variant="generated" file="strc-reg.mkiv">
+    <cd:command name="placeregister" generated="yes" variant="example" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="place"/>
             <cd:variable value="register"/>
@@ -423,9 +434,12 @@
                 <cd:inherit name="setupregister"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="index"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="completeregister" generated="yes" variant="generated" file="strc-reg.mkiv">
+    <cd:command name="completeregister" generated="yes" variant="example" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="complete"/>
             <cd:variable value="register"/>
@@ -435,9 +449,12 @@
                 <cd:inherit name="setupregister"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="index"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="setupregister" generated="yes" variant="generated" file="strc-reg.mkiv">
+    <cd:command name="setupregister" generated="yes" variant="example" file="strc-reg.mkiv">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:variable value="register"/>
@@ -448,9 +465,12 @@
                 <cd:inherit name="setupregister"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="index"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="index" variant="1" file="strc-reg.mkiv">
+    <cd:command name="index" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:text"/>
@@ -460,7 +480,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="index" variant="2" file="strc-reg.mkiv">
+    <cd:command name="index" variant="ownnumber" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:text"/>

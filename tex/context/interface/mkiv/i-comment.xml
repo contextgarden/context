@@ -91,7 +91,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="comment" generated="yes" variant="generated" file="scrn-wid.mkvi">
+    <cd:command name="comment" generated="yes" variant="example" file="scrn-wid.mkvi">
         <cd:sequence>
             <cd:variable value="comment"/>
         </cd:sequence>
@@ -102,9 +102,12 @@
             </cd:assignments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="comment"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="comment" type="environment" generated="yes" variant="generated" file="scrn-wid.mkvi">
+    <cd:command name="comment" type="environment" generated="yes" variant="example" file="scrn-wid.mkvi">
         <cd:sequence>
             <cd:variable value="comment"/>
         </cd:sequence>
@@ -114,6 +117,9 @@
                 <cd:inherit name="setupcomment"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="comment"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="placecomments" file="scrn-wid.mkvi"/>

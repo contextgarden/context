@@ -193,25 +193,33 @@
 
     -->
 
-    <cd:command name="note" type="environment" generated="yes" variant="generated:1" file="strc-not.mkvi">
+    <cd:command name="note" type="environment" generated="yes" variant="example:assignment" file="strc-not.mkvi">
         <cd:sequence>
             <cd:variable value="note"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="assignment-constructiondata-list-optional"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="footnote"/>
+            <cd:constant value="endnote"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="note" type="environment" generated="yes" variant="generated:2" file="strc-not.mkvi">
+    <cd:command name="note" type="environment" generated="yes" variant="example" file="strc-not.mkvi">
         <cd:sequence>
             <cd:variable value="note"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="footnote"/>
+            <cd:constant value="endnote"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="note" generated="yes" variant="generated:1" file="strc-not.mkvi">
+    <cd:command name="note" generated="yes" variant="example" file="strc-not.mkvi">
         <cd:sequence>
             <cd:variable value="note"/>
         </cd:sequence>
@@ -219,15 +227,23 @@
             <cd:resolve name="keyword-reference-list-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="footnote"/>
+            <cd:constant value="endnote"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="note" generated="yes" variant="generated:2" file="strc-not.mkvi">
+    <cd:command name="note" generated="yes" variant="example:assignment" file="strc-not.mkvi">
         <cd:sequence>
             <cd:variable value="note"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="assignment-constructiondata-list"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="footnote"/>
+            <cd:constant value="endnote"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="definenote" file="strc-not.mkvi">
@@ -330,7 +346,7 @@
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
                 <cd:parameter name="after">
-                    <cd:constant type="cd.command"/>
+                    <cd:constant type="cd:command"/>
                 </cd:parameter>
                 <cd:parameter name="inbetween">
                     <cd:constant type="cd:command"/>
@@ -388,7 +404,7 @@
 
     -->
 
-    <cd:command name="setnote" variant="1" file="strc-not.mkvi">
+    <cd:command name="setnote" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-reference-list-optional"/>
@@ -396,14 +412,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setnote" variant="2" file="strc-not.mkvi">
+    <cd:command name="setnote" variant="assignment" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="assignment-constructiondata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setnotetext" variant="1" file="strc-not.mkvi">
+    <cd:command name="setnotetext" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-reference-list-optional"/>
@@ -411,7 +427,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setnotetext" variant="2" file="strc-not.mkvi">
+    <cd:command name="setnotetext" variant="assignment" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="assignment-constructiondata-list"/>
@@ -483,39 +499,39 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="footnote" type="environment" variant="1" file="strc-not.mkvi">
+    <cd:command name="footnote" type="environment" variant="assignment" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="assignment-constructiondata-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="footnote" type="environment" variant="2" file="strc-not.mkvi">
+    <cd:command name="footnote" type="environment" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="footnote" variant="1" file="strc-not.mkvi">
+    <cd:command name="footnote" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="footnote" variant="2" file="strc-not.mkvi">
+    <cd:command name="footnote" variant="assignment" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="assignment-constructiondata-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="footnotetext" variant="1" file="strc-not.mkvi">
+    <cd:command name="footnotetext" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="footnotetext" variant="2" file="strc-not.mkvi">
+    <cd:command name="footnotetext" variant="assignment" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="assignment-constructiondata-list"/>
         </cd:arguments>
@@ -539,26 +555,26 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="endnote" type="environment" variant="1" file="strc-not.mkvi">
+    <cd:command name="endnote" type="environment" variant="assignment" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="assignment-constructiondata-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="endnote" type="environment" variant="2" file="strc-not.mkvi">
+    <cd:command name="endnote" type="environment" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="endnote" variant="1" file="strc-not.mkvi">
+    <cd:command name="endnote" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="endnote" variant="2" file="strc-not.mkvi">
+    <cd:command name="endnote" variant="assignment" file="strc-not.mkvi">
         <cd:arguments>
             <cd:resolve name="assignment-constructiondata-list"/>
         </cd:arguments>
@@ -598,16 +614,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linenote" generated="yes" variant="generated" file="strc-lnt.mkvi">
+    <cd:command name="linenote" generated="yes" variant="example" file="strc-lnt.mkvi">
         <cd:sequence>
             <cd:variable value="linenote"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="linenote"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="startlinenote" generated="yes" variant="generated" file="strc-lnt.mkvi">
+    <cd:command name="startlinenote" generated="yes" variant="example" file="strc-lnt.mkvi">
         <cd:sequence>
             <cd:string value="start"/>
             <cd:variable value="linenote"/>
@@ -616,9 +635,12 @@
             <cd:resolve name="keyword-reference"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="linenote"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="stoplinenote" generated="yes" variant="generated" file="strc-lnt.mkvi">
+    <cd:command name="stoplinenote" generated="yes" variant="example" file="strc-lnt.mkvi">
         <cd:sequence>
             <cd:string value="stop"/>
             <cd:variable value="linenote"/>
@@ -626,6 +648,9 @@
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="linenote"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="fromlinenote" file="strc-lnt.mkvi">

@@ -50,7 +50,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="viewerlayer" type="environment" generated="yes" variant="generated" file="attr-lay.mkiv">
+    <cd:command name="viewerlayer" type="environment" generated="yes" variant="example" file="attr-lay.mkiv">
         <cd:sequence>
             <cd:variable value="viewerlayer"/>
         </cd:sequence>

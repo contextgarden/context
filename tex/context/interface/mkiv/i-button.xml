@@ -60,7 +60,7 @@
 
     -->
 
-    <cd:command name="button" generated="yes" variant="generated" file="scrn-but.mkvi">
+    <cd:command name="button" generated="yes" variant="example" file="scrn-but.mkvi">
         <cd:sequence>
             <cd:variable value="button"/>
         </cd:sequence>
@@ -71,6 +71,9 @@
             <cd:resolve name="argument-text"/>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="button"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="button" file="scrn-but.mkvi">
@@ -83,13 +86,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlaybutton" variant="1" file="scrn-but.mkvi">
+    <cd:command name="overlaybutton" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlaybutton" variant="2" file="scrn-but.mkvi">
+    <cd:command name="overlaybutton" variant="direct" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
         </cd:arguments>
@@ -135,21 +138,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="psh" variant="button" file="scrn-fld.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference"/>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="\"/>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="psh" type="environment" variant="button" file="scrn-fld.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="psh" scope="interactionmenu" file="scrn-fld.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+                <cd:resolve name="string-text"/>
+                <cd:delimiter name="\"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="rollbutton" variant="1" file="scrn-fld.mkvi">
+        <cd:command name="psh" type="environment" scope="interactionmenu" file="scrn-fld.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="rollbutton" variant="interactionmenu" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -160,7 +167,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rollbutton" variant="2" file="scrn-fld.mkvi">
+    <cd:command name="rollbutton" variant="button" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupbutton"/>
@@ -170,18 +177,22 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rob" variant="button" file="scrn-fld.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference"/>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="\"/>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="rob" variant="button" type="environment" file="scrn-fld.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="rob" scope="interactionmenu" file="scrn-fld.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+                <cd:resolve name="string-text"/>
+                <cd:delimiter name="\"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="rob" type="environment" scope="interactionmenu" file="scrn-fld.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

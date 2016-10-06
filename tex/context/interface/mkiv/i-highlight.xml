@@ -32,7 +32,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="highlight" generated="yes" variant="generated" file="core-sys.mkiv">
+    <cd:command name="highlight" generated="yes" variant="example" file="core-sys.mkiv">
         <cd:sequence>
             <cd:variable value="highlight"/>
         </cd:sequence>

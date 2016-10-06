@@ -89,7 +89,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linenumbering" type="environment" variant="1" file="page-lin.mkvi">
+    <cd:command name="linenumbering" type="environment" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -98,7 +98,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linenumbering" type="environment" variant="2" file="page-lin.mkvi">
+    <cd:command name="linenumbering" type="environment" variant="argument" file="page-lin.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:keywords optional="yes">

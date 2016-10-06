@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="installlanguage" variant="1" file="lang-ini.mkiv">
+    <cd:command name="installlanguage" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -13,7 +13,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installlanguage" variant="2" file="lang-ini.mkiv">
+    <cd:command name="installlanguage" variant="name" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-language"/>
@@ -39,10 +39,6 @@
                 </cd:parameter>
                 <cd:parameter name="patterns">
                     <cd:constant type="cd:file"/>
-                </cd:parameter>
-                <cd:parameter name="factor">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
                 </cd:parameter>
                 <cd:parameter name="lefthyphenmin">
                     <cd:constant type="cd:number"/>
@@ -120,6 +116,10 @@
                 <cd:parameter name="rightsubsentence">
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -131,7 +131,7 @@
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
-
+            
     <cd:command name="doiflanguageelse" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-language"/>
@@ -147,7 +147,7 @@
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
-
+            
     <cd:command name="doifpatternselse" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-language"/>
@@ -156,7 +156,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="language" generated="yes" variant="generated" file="lang-ini.mkiv">
+    <cd:command name="language" generated="yes" variant="example" file="lang-ini.mkiv">
         <cd:sequence>
             <cd:variable value="language"/>
         </cd:sequence>

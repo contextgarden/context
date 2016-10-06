@@ -72,6 +72,23 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="checkvariables" file="core-env.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="set">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="reset">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="cd:key">
+                    <cd:constant type="cd:value"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="setvariable" file="core-env.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>

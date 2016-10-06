@@ -80,7 +80,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="synonym" generated="yes" variant="generated" file="strc-syn.mkiv">
+    <cd:command name="synonym" generated="yes" variant="example" file="strc-syn.mkiv">
         <cd:sequence>
             <cd:variable value="synonym"/>
         </cd:sequence>
@@ -89,6 +89,9 @@
             <cd:resolve name="argument-text"/>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="abbreviation"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="definesynonym" file="strc-syn.mkiv">
@@ -104,7 +107,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelistofsynonyms" generated="yes" variant="generated" file="strc-syn.mkiv">
+    <cd:command name="placelistofsynonyms" generated="yes" variant="example" file="strc-syn.mkiv">
         <cd:sequence>
             <cd:string value="placelistof"/>
             <cd:variable value="synonyms"/>
@@ -114,9 +117,12 @@
                 <cd:inherit name="setupsynonyms"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="abbreviations"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="completelistofsynonyms" generated="yes" variant="generated" file="strc-syn.mkiv">
+    <cd:command name="completelistofsynonyms" generated="yes" variant="example" file="strc-syn.mkiv">
         <cd:sequence>
             <cd:string value="completelistof"/>
             <cd:variable value="synonyms"/>
@@ -126,6 +132,9 @@
                 <cd:inherit name="setupsynonyms"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="abbreviations"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="registersynonym" file="strc-syn.mkiv">

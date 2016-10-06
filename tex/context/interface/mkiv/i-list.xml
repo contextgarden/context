@@ -88,7 +88,7 @@
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
                 <cd:parameter name="command">
-                    <cd:constant type="cd:threeargument"/>
+                    <cd:constant type="cd:threearguments"/>
                 </cd:parameter>
                 <cd:parameter name="numbercommand">
                     <cd:constant type="cd:oneargument"/>
@@ -409,7 +409,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcombinedlist" generated="yes" variant="generated" file="strc-lst.mkvi">
+    <cd:command name="setupcombinedlist" generated="yes" variant="example" file="strc-lst.mkvi">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:variable value="combinedlist"/>
@@ -419,9 +419,12 @@
                 <cd:inherit name="setuplist"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="content"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="placecombinedlist" generated="yes" variant="generated" file="strc-lst.mkvi">
+    <cd:command name="placecombinedlist" generated="yes" variant="example" file="strc-lst.mkvi">
         <cd:sequence>
             <cd:string value="place"/>
             <cd:variable value="combinedlist"/>
@@ -431,9 +434,12 @@
                 <cd:inherit name="setuplist"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="content"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="completecombinedlist" generated="yes" variant="generated" file="strc-lst.mkvi">
+    <cd:command name="completecombinedlist" generated="yes" variant="example" file="strc-lst.mkvi">
         <cd:sequence>
             <cd:string value="complete"/>
             <cd:variable value="combinedlist"/>
@@ -443,6 +449,9 @@
                 <cd:inherit name="setuplist"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="content"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="setupcontent" file="strc-lst.mkvi">

@@ -173,6 +173,10 @@
                 <cd:parameter name="right">
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
+                <cd:parameter name="range">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
                 <cd:parameter name="language">
                     <cd:constant type="cd:language"/>
                 </cd:parameter>

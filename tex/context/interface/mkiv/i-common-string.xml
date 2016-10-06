@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?context-directive job ctxfile x-setups.ctx ?>
-
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
     <!--       *  -->

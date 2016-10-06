@@ -57,7 +57,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="indentedtext" type="environment" generated="yes" variant="generated" file="strc-ind.mkiv">
+    <cd:command name="indentedtext" type="environment" generated="yes" variant="example" file="strc-ind.mkiv">
         <cd:sequence>
             <cd:variable value="indentedtext"/>
         </cd:sequence>

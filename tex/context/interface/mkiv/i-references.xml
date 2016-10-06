@@ -346,7 +346,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="referenceformat" generated="yes" variant="generated" file="strc-ref.mkvi">
+    <cd:command name="referenceformat" generated="yes" variant="example" file="strc-ref.mkvi">
         <cd:sequence>
             <cd:variable value="referenceformat"/>
         </cd:sequence>

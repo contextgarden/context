@@ -39,7 +39,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecolor" variant="1" file="colo-ini.mkiv">
+    <cd:command name="definecolor" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -86,14 +86,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecolor" variant="2" file="colo-ini.mkiv">
+    <cd:command name="definecolor" variant="name" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineglobalcolor" variant="1" file="colo-ini.mkiv">
+    <cd:command name="defineglobalcolor" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -102,14 +102,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineglobalcolor" variant="2" file="colo-ini.mkiv">
+    <cd:command name="defineglobalcolor" variant="name" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definenamedcolor" variant="1" file="colo-ini.mkiv">
+    <cd:command name="definenamedcolor" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -118,7 +118,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definenamedcolor" variant="2" file="colo-ini.mkiv">
+    <cd:command name="definenamedcolor" variant="name" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-color"/>
@@ -235,14 +235,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="colored" variant="1" file="colo-ini.mkiv">
+    <cd:command name="colored" variant="name" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="colored" variant="2" file="colo-ini.mkiv">
+    <cd:command name="colored" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="definecolor"/>
@@ -275,13 +275,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directcolored" variant="1" file="colo-ini.mkiv">
+    <cd:command name="directcolored" variant="name" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directcolored" variant="2" file="colo-ini.mkiv">
+    <cd:command name="directcolored" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="definecolor"/>
@@ -366,7 +366,7 @@
 
     <cd:command name="color" type="environment" begin="save" end="restore" file="colo-ini.mkiv"/>
 
-    <cd:command name="definepalet" variant="1" file="colo-ini.mkiv">
+    <cd:command name="definepalet" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -377,7 +377,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definepalet" variant="2" file="colo-ini.mkiv">
+    <cd:command name="definepalet" variant="name" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -398,7 +398,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcolormodel" file="colo-ini.mkiv">
+    <cd:command name="setcolormodell" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="black"/>

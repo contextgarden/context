@@ -50,7 +50,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fittingpage" type="environment" generated="yes" variant="generated" file="page-app.mkiv">
+    <cd:command name="fittingpage" type="environment" generated="yes" variant="example" file="page-app.mkiv">
         <cd:sequence>
             <cd:variable value="fittingpage"/>
         </cd:sequence>
@@ -59,6 +59,10 @@
                 <cd:inherit name="setupfittingpage"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="TEXpage"/>
+            <cd:constant value="MPpage"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="TEXpage" type="environment" file="page-app.mkiv">

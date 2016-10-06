@@ -59,7 +59,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="snaptogrid" variant="1" file="spac-ver.mkiv">
+    <cd:command name="snaptogrid" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:resolve name="value-grid"/>
@@ -69,7 +69,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="snaptogrid" variant="2" file="spac-ver.mkiv">
+    <cd:command name="snaptogrid" variant="list" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="definegridsnapping"/>
@@ -79,7 +79,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placeongrid" variant="1" file="spac-ver.mkiv">
+    <cd:command name="placeongrid" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:resolve name="value-grid"/>
@@ -88,7 +88,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placeongrid" variant="2" file="spac-ver.mkiv">
+    <cd:command name="placeongrid" variant="list" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="definegridsnapping"/>
@@ -97,7 +97,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gridsnapping" type="environment" variant="1" file="spac-ver.mkiv">
+    <cd:command name="gridsnapping" type="environment" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:resolve name="value-grid"/>
@@ -105,7 +105,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="gridsnapping" type="environment" variant="2" file="spac-ver.mkiv">
+    <cd:command name="gridsnapping" type="environment" variant="list" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="definegridsnapping"/>

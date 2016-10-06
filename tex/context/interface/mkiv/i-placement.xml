@@ -60,7 +60,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placement" generated="yes" variant="generated" file="pack-mis.mkiv">
+    <cd:command name="placement" generated="yes" variant="example" file="pack-mis.mkiv">
         <cd:sequence>
             <cd:variable value="placement"/>
         </cd:sequence>

@@ -95,13 +95,31 @@
 
     -->
 
-    <cd:command name="bar" generated="yes" variant="generated" file="node-rul.mkiv">
+    <cd:command name="bar" generated="yes" variant="example" file="node-rul.mkiv">
         <cd:sequence>
             <cd:variable value="bar"/>
         </cd:sequence>
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="overbar"/>
+            <cd:constant value="underbar"/>
+            <cd:constant value="overstrike"/>
+            <cd:constant value="understrike"/>
+            <cd:constant value="overbars"/>
+            <cd:constant value="underbars"/>
+            <cd:constant value="overstrikes"/>
+            <cd:constant value="understrikes"/>
+            <cd:constant value="underrandom"/>
+            <cd:constant value="underrandoms"/>
+            <cd:constant value="underdash"/>
+            <cd:constant value="underdashes"/>
+            <cd:constant value="underdot"/>
+            <cd:constant value="underdots"/>
+            <cd:constant value="nobar"/>
+            <cd:constant value="hiddenbar"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="bar" type="environment" file="node-rul.mkiv">
@@ -224,6 +242,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetbar" file="node-rul.mkiv" />
+    <cd:command name="resetbar" file="node-rul.mkiv"/>
 
 </cd:interface>

@@ -148,83 +148,87 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="raw" variant="interactionmenu" file="scrn-but.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference"/>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="\"/>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="raw" type="environment" variant="interactionmenu" file="scrn-but.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="raw" scope="interactionmenu" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+                <cd:resolve name="string-text"/>
+                <cd:delimiter name="\"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="but" variant="interactionmenu" file="scrn-but.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference"/>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="\"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="raw" type="environment" scope="interactionmenu" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="but" type="environment" variant="interactionmenu" file="scrn-but.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="but" scope="interactionmenu" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+                <cd:resolve name="string-text"/>
+                <cd:delimiter name="\"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="got" variant="interactionmenu" file="scrn-but.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference"/>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="\"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="but" type="environment" scope="interactionmenu" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="got" type="environment" variant="interactionmenu" file="scrn-but.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="got" scope="interactionmenu" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+                <cd:resolve name="string-text"/>
+                <cd:delimiter name="\"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="nop" variant="interactionmenu" file="scrn-but.mkvi">
-        <cd:arguments>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="\"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="got" type="environment" scope="interactionmenu" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="nop" type="environment" variant="interactionmenu" file="scrn-but.mkvi"/>
+        <cd:command name="nop" scope="interactionmenu" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="string-text"/>
+                <cd:delimiter name="\"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="txt" variant="interactionmenu" file="scrn-but.mkvi">
-        <cd:arguments>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="\"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="nop" type="environment" scope="interactionmenu" file="scrn-but.mkvi"/>
 
-    <cd:command name="txt" type="environment" variant="interactionmenu" file="scrn-but.mkvi"/>
+        <cd:command name="txt" scope="interactionmenu" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="string-text"/>
+                <cd:delimiter name="\"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="rul" variant="interactionmenu" file="scrn-but.mkvi">
-        <cd:arguments>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="\"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="txt" type="environment" scope="interactionmenu" file="scrn-but.mkvi"/>
 
-    <cd:command name="rul" type="environment" variant="interactionmenu" file="scrn-but.mkvi"/>
+        <cd:command name="rul" scope="interactionmenu" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="string-text"/>
+                <cd:delimiter name="\"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="com" variant="interactionmenu" file="scrn-but.mkvi">
-        <cd:arguments>
-            <cd:resolve name="string-text"/>
-            <cd:delimiter name="\"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="rul" type="environment" scope="interactionmenu" file="scrn-but.mkvi"/>
 
-    <cd:command name="com" type="environment" variant="interactionmenu" file="scrn-but.mkvi"/>
+        <cd:command name="com" scope="interactionmenu" file="scrn-but.mkvi">
+            <cd:arguments>
+                <cd:resolve name="string-text"/>
+                <cd:delimiter name="\"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="com" type="environment" scope="interactionmenu" file="scrn-but.mkvi"/>
+
+    -->
 
     <cd:command name="includemenu" file="scrn-but.mkvi">
         <cd:arguments>
@@ -241,7 +245,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="menubutton" variant="1" file="scrn-but.mkvi">
+    <cd:command name="menubutton" variant="interactionmenu" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -254,7 +258,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="menubutton" variant="2" file="scrn-but.mkvi">
+    <cd:command name="menubutton" variant="button" file="scrn-but.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupbutton"/>

@@ -1157,13 +1157,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="strippedcsname" variant="1" file="syst-aux.mkiv">
+    <cd:command name="strippedcsname" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="strippedcsname" variant="2" file="syst-aux.mkiv">
+    <cd:command name="strippedcsname" variant="string" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="none">
                 <cd:constant type="cd:text"/>
@@ -1171,13 +1171,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="complexorsimple" variant="1" file="syst-aux.mkiv">
+    <cd:command name="complexorsimple" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="complexorsimple" variant="2" file="syst-aux.mkiv">
+    <cd:command name="complexorsimple" variant="argument" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:text"/>
@@ -1186,13 +1186,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="complexorsimpleempty" variant="1" file="syst-aux.mkiv">
+    <cd:command name="complexorsimpleempty" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="complexorsimpleempty" variant="2" file="syst-aux.mkiv">
+    <cd:command name="complexorsimpleempty" variant="argument" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:text"/>
@@ -1201,13 +1201,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecomplexorsimple" variant="1" file="syst-aux.mkiv">
+    <cd:command name="definecomplexorsimple" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecomplexorsimple" variant="2" file="syst-aux.mkiv">
+    <cd:command name="definecomplexorsimple" variant="argument" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:text"/>
@@ -1216,13 +1216,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecomplexorsimpleempty" variant="1" file="syst-aux.mkiv">
+    <cd:command name="definecomplexorsimpleempty" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecomplexorsimpleempty" variant="2" file="syst-aux.mkiv">
+    <cd:command name="definecomplexorsimpleempty" variant="argument" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:text"/>
@@ -1619,13 +1619,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="increment" variant="1" file="syst-aux.mkiv">
+    <cd:command name="increment" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="increment" variant="2" file="syst-aux.mkiv">
+    <cd:command name="increment" variant="argument" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="parentheses" list="yes">
                 <cd:constant type="cd:csname"/>
@@ -1634,28 +1634,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="increment" variant="1" file="syst-aux.mkiv">
+    <cd:command name="decrement" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="increment" variant="2" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:keywords delimiters="parentheses" list="yes">
-                <cd:constant type="cd:csname"/>
-                <cd:constant type="cd:number"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="decrement" variant="1" file="syst-aux.mkiv">
-        <cd:arguments>
-            <cd:csname/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="decrement" variant="2" file="syst-aux.mkiv">
+    <cd:command name="decrement" variant="argument" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="parentheses" list="yes">
                 <cd:constant type="cd:csname"/>
@@ -1682,13 +1667,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkedstrippedcsname" variant="1" file="syst-aux.mkiv">
+    <cd:command name="checkedstrippedcsname" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkedstrippedcsname" variant="2" file="syst-aux.mkiv">
+    <cd:command name="checkedstrippedcsname" variant="string" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>
         </cd:arguments>

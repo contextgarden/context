@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinteraction" variant="1" file="scrn-ini.mkvi">
+    <cd:command name="setupinteraction" file="scrn-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -119,7 +119,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinteraction" variant="2" file="scrn-ini.mkvi">
+    <cd:command name="setupinteraction" variant="name" file="scrn-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>

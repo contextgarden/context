@@ -317,8 +317,8 @@
     <cd:command name="currentdate" file="core-con.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
-                <cd:constant type="yes"/>
-                <cd:constant type="moth"/>
+                <cd:constant type="year"/>
+                <cd:constant type="month"/>
                 <cd:constant type="day"/>
                 <cd:constant type="weekday"/>
                 <cd:constant type="y"/>
@@ -341,6 +341,19 @@
                 <cd:constant type="dd:ord"/>
                 <cd:constant type="D:ord"/>
                 <cd:constant type="cd:text"/>
+                <cd:constant type="referral"/>
+                <cd:constant type="day:+"/>
+                <cd:constant type="day:++"/>
+                <cd:constant type="d:+"/>
+                <cd:constant type="d:++"/>
+                <cd:constant type="dd:+"/>
+                <cd:constant type="dd:++"/>
+                <cd:constant type="D:+"/>
+                <cd:constant type="D:++"/>
+                <cd:constant type="month:jalali"/>
+                <cd:constant type="m:jalali"/>
+                <cd:constant type="jalali:to"/>
+                <cd:constant type="jalali:from"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>
@@ -399,7 +412,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineconversion" variant="1" file="core-con.mkiv">
+    <cd:command name="defineconversion" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="keyword-name"/>
@@ -407,7 +420,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineconversion" variant="2" file="core-con.mkiv">
+    <cd:command name="defineconversion" variant="list" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="keyword-name"/>

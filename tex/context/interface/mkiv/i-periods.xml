@@ -24,13 +24,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="periods" variant="1" file="enco-ini.mkiv">
+    <cd:command name="periods" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="periods" variant="2" file="enco-ini.mkiv">
+    <cd:command name="periods" variant="assignment" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupperiods"/>

@@ -46,7 +46,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="effect" type="environment" generated="yes" variant="generated" file="attr-eff.mkiv">
+    <cd:command name="effect" type="environment" generated="yes" variant="example" file="attr-eff.mkiv">
         <cd:sequence>
             <cd:variable value="effect"/>
         </cd:sequence>

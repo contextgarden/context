@@ -78,7 +78,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sorting" generated="yes" variant="generated" file="strc-syn.mkiv">
+    <cd:command name="sorting" generated="yes" variant="example" file="strc-syn.mkiv">
         <cd:sequence>
             <cd:variable value="sorting"/>
         </cd:sequence>
@@ -86,6 +86,9 @@
             <cd:resolve name="keyword-name-optional"/>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="logo"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="definesort" file="strc-syn.mkiv">
@@ -100,7 +103,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelistofsorts" generated="yes" variant="generated" file="strc-syn.mkiv">
+    <cd:command name="placelistofsorts" generated="yes" variant="example" file="strc-syn.mkiv">
         <cd:sequence>
             <cd:string value="placelistof"/>
             <cd:variable value="sorts"/>
@@ -110,9 +113,12 @@
                 <cd:inherit name="setupsorting"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="logos"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="completelistofsorts" generated="yes" variant="generated" file="strc-syn.mkiv">
+    <cd:command name="completelistofsorts" generated="yes" variant="example" file="strc-syn.mkiv">
         <cd:sequence>
             <cd:string value="completelistof"/>
             <cd:variable value="sorts"/>
@@ -122,6 +128,9 @@
                 <cd:inherit name="setupsorting"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="logos"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="doifelsecurrentsortingused" file="strc-syn.mkiv">

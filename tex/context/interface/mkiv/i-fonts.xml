@@ -259,11 +259,15 @@
                     <cd:constant type="yes"/>
                     <cd:constant type="no"/>
                 </cd:parameter>
+                <cd:parameter name="checkmarks">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
                 <cd:parameter name="cd:name">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                 </cd:parameter>
-                <cd:parameter name="cd:mathnolimitsmode">
+                <cd:parameter name="mathnolimitsmode">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
             </cd:assignments>
@@ -286,49 +290,49 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="addfeature" variant="1" file="font-fea.mkvi">
+    <cd:command name="addfeature" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="addfeature" variant="2" file="font-fea.mkvi">
+    <cd:command name="addfeature" variant="direct" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subtractfeature" variant="1" file="font-fea.mkvi">
+    <cd:command name="subtractfeature" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subtractfeature" variant="2" file="font-fea.mkvi">
+    <cd:command name="subtractfeature" variant="direct" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="replacefeature" variant="1" file="font-fea.mkvi">
+    <cd:command name="replacefeature" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="replacefeature" variant="2" file="font-fea.mkvi">
+    <cd:command name="replacefeature" variant="direct" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetandaddfeature" variant="1" file="font-fea.mkvi">
+    <cd:command name="resetandaddfeature" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetandaddfeature" variant="2" file="font-fea.mkvi">
+    <cd:command name="resetandaddfeature" variant="direct" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
@@ -344,7 +348,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="feature" variant="1" file="font-fea.mkvi">
+    <cd:command name="feature" file="font-fea.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="+"/>
@@ -365,7 +369,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="feature" variant="2" file="font-fea.mkvi">
+    <cd:command name="feature" variant="direct" file="font-fea.mkvi">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="+"/>
@@ -595,7 +599,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefont" variant="1" file="font-ini.mkvi">
+    <cd:command name="definefont" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-font"/>
@@ -605,7 +609,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefont" variant="2" file="font-ini.mkvi">
+    <cd:command name="definefont" variant="argument" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-font"/>
@@ -728,7 +732,7 @@
 
     <cd:command name="txx" file="font-ini.mkvi"/>
 
-    <cd:command name="definebodyfont" variant="1" file="font-fil.mkvi">
+    <cd:command name="definebodyfont" file="font-fil.mkvi">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="cd:name"/>
@@ -789,7 +793,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebodyfont" variant="2" file="font-fil.mkvi">
+    <cd:command name="definebodyfont" variant="argument" file="font-fil.mkvi">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="cd:name"/>
@@ -907,7 +911,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="switchstyleonly" variant="1" file="font-ini.mkiv">
+    <cd:command name="switchstyleonly" file="font-ini.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="rm"/>
@@ -930,7 +934,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="switchstyleonly" variant="2" file="font-ini.mkiv">
+    <cd:command name="switchstyleonly" variant="command" file="font-ini.mkiv">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
@@ -1251,13 +1255,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="style" type="environment" generated="yes" variant="generated" file="font-sty.mkvi">
+    <cd:command name="style" type="environment" generated="yes" variant="example" file="font-sty.mkvi">
         <cd:sequence>
             <cd:variable value="style"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="style" generated="yes" variant="generated" file="font-sty.mkvi">
+    <cd:command name="style" generated="yes" variant="example" file="font-sty.mkvi">
         <cd:sequence>
             <cd:variable value="style"/>
         </cd:sequence>
@@ -1266,7 +1270,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="style" type="environment" variant="1" file="font-sty.mkvi">
+    <cd:command name="style" type="environment" variant="argument" file="font-sty.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -1275,7 +1279,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="style" type="environment" variant="2" file="font-sty.mkvi">
+    <cd:command name="style" type="environment" file="font-sty.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupstyle"/>
@@ -1283,7 +1287,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="style" variant="1" file="font-sty.mkvi">
+    <cd:command name="style" variant="argument" file="font-sty.mkvi">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -1293,7 +1297,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="style" variant="2" file="font-sty.mkvi">
+    <cd:command name="style" file="font-sty.mkvi">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupstyle"/>

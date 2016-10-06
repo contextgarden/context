@@ -85,7 +85,7 @@
 
     -->
 
-    <cd:command name="combination" type="environment" variant="1" file="pack-com.mkiv">
+    <cd:command name="combination" type="environment" variant="matrix" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:keywords optional="yes">
@@ -94,7 +94,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="combination" type="environment" variant="2" file="pack-com.mkiv">
+    <cd:command name="combination" type="environment" file="pack-com.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -105,13 +105,13 @@
 
     <!--
 
-        <cd:command name="content" type="environment" variant="combination" file="pack-com.mkiv"/>
+        <cd:command name="content" type="environment" scope="combination" file="pack-com.mkiv"/>
 
-        <cd:command name="caption" type="environment" variant="combination" file="pack-com.mkiv"/>
+        <cd:command name="caption" type="environment" scope="combination" file="pack-com.mkiv"/>
 
     -->
 
-    <cd:command name="floatcombination" type="environment" variant="1" file="pack-com.mkiv">
+    <cd:command name="floatcombination" type="environment" variant="matrix" file="pack-com.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:matrix"/>
@@ -120,7 +120,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="floatcombination" type="environment" variant="2" file="pack-com.mkiv">
+    <cd:command name="floatcombination" type="environment" file="pack-com.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupcombination"/>

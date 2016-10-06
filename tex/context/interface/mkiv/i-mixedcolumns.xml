@@ -19,7 +19,7 @@
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
                 <cd:parameter name="grid">
-                    <cd:inherit name="setupgrid"/>
+                    <cd:inherit name="definegridsnapping"/>
                 </cd:parameter>
                 <cd:parameter name="rulethickness">
                     <cd:constant type="cd:dimension"/>
@@ -105,7 +105,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mixedcolumns" type="environment" generated="yes" variant="generated" file="page-mix.mkiv">
+    <cd:command name="mixedcolumns" type="environment" generated="yes" variant="example" file="page-mix.mkiv">
         <cd:sequence>
             <cd:variable value="mixedcolumns"/>
         </cd:sequence>
@@ -114,6 +114,10 @@
                 <cd:inherit name="setupmixedcolumns"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="itemgroupcolumns"/>
+            <cd:constant value="boxedcolumns"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="boxedcolumns" type="environment" file="page-mix.mkiv">

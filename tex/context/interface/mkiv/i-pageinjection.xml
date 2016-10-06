@@ -49,14 +49,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pageinjection" variant="1" file="page-inj.mkvi">
+    <cd:command name="pageinjection" file="page-inj.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="assignment-userdata-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pageinjection" variant="2" file="page-inj.mkvi">
+    <cd:command name="pageinjection" variant="assignment" file="page-inj.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuppageinjection"/>

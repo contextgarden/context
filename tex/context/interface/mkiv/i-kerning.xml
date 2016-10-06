@@ -49,7 +49,7 @@
 
     <cd:command name="resetcharacterkerning" file="typo-krn.mkiv"/>
 
-    <cd:command name="characterkerning" generated="yes" variant="generated" file="typo-krn.mkiv">
+    <cd:command name="characterkerning" generated="yes" variant="example" file="typo-krn.mkiv">
         <cd:sequence>
             <cd:variable value="characterkerning"/>
         </cd:sequence>

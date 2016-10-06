@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?context-directive job ctxfile x-setups.ctx ?>
-
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
     <!--        *    -->
@@ -471,6 +469,35 @@
     <!--        *   -->
     <!-- \... [...] -->
     <!--            -->
+    <!-- * PATH     -->
+
+    <cd:define name="keyword-path">
+        <cd:keywords>
+            <cd:constant type="cd:path"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="keyword-path-optional">
+        <cd:keywords optional="yes">
+            <cd:constant type="cd:path"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="keyword-path-list">
+        <cd:keywords list="yes">
+            <cd:constant type="cd:path"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="keyword-path-list-optional">
+        <cd:keywords list="yes" optional="yes">
+            <cd:constant type="cd:path"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... [...] -->
+    <!--            -->
     <!-- * FONT     -->
 
     <cd:define name="keyword-font">
@@ -698,6 +725,28 @@
     <cd:define name="keyword-btxalternative-optional">
         <cd:keywords optional="yes">
             <cd:resolve name="value-btxalternative"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... [...] -->
+    <!--            -->
+    <!-- * FORMULA  -->
+
+    <cd:define name="keyword-formula-list-optional">
+        <cd:keywords list="yes" optional="yes">
+            <cd:resolve name="value-formula"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *           -->
+    <!-- \... [...]         -->
+    <!--                    -->
+    <!-- * FORMULAREFERENCE -->
+
+    <cd:define name="keyword-formulareference-list-optional">
+        <cd:keywords list="yes" optional="yes">
+            <cd:resolve name="value-formulareference"/>
         </cd:keywords>
     </cd:define>
 

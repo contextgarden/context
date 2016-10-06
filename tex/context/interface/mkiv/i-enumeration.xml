@@ -185,7 +185,7 @@
 
     -->
 
-    <cd:command name="enumeration" type="environment" generated="yes" variant="generated:1" file="strc-enu.mkvi">
+    <cd:command name="enumeration" type="environment" generated="yes" variant="example" file="strc-enu.mkvi">
         <cd:sequence>
             <cd:variable value="enumeration"/>
         </cd:sequence>
@@ -194,7 +194,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="enumeration" type="environment" generated="yes" variant="generated:2" file="strc-enu.mkvi">
+    <cd:command name="enumeration" type="environment" generated="yes" variant="example:title" file="strc-enu.mkvi">
         <cd:sequence>
             <cd:variable value="enumeration"/>
         </cd:sequence>
@@ -204,7 +204,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="enumeration" generated="yes" variant="generated" file="strc-enu.mkvi">
+    <cd:command name="enumeration" generated="yes" variant="example" file="strc-enu.mkvi">
         <cd:sequence>
             <cd:variable value="enumeration"/>
         </cd:sequence>

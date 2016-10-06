@@ -389,7 +389,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupMPgraphics" file="meta-ini">
+    <cd:command name="setupMPgraphics" file="meta-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="color">

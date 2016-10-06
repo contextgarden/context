@@ -107,7 +107,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="attachment" generated="yes" variant="generated" file="scrn-wid.mkvi">
+    <cd:command name="attachment" generated="yes" variant="example" file="scrn-wid.mkvi">
         <cd:sequence>
             <cd:variable value="attachment"/>
         </cd:sequence>
@@ -117,9 +117,12 @@
                 <cd:inherit name="setupattachment"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="attachment"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="attachment" type="environment" generated="yes" variant="generated" file="scrn-wid.mkvi">
+    <cd:command name="attachment" type="environment" generated="yes" variant="example" file="scrn-wid.mkvi">
         <cd:sequence>
             <cd:variable value="attachment"/>
         </cd:sequence>
@@ -129,6 +132,9 @@
                 <cd:inherit name="setupattachment"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="attachment"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="placeattachments" file="scrn-wid.mkvi"/>

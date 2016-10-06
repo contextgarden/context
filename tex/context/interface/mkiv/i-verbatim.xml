@@ -77,7 +77,7 @@
         </cd:arguments>
     </cd:command>        
 
-    <cd:command name="type" variant="1" file="buff-ver.mkiv">
+    <cd:command name="type" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptype"/>
@@ -86,7 +86,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="type" variant="2" file="buff-ver.mkiv">
+    <cd:command name="type" variant="angles" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptype"/>
@@ -95,7 +95,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typ" variant="1" file="buff-ver.mkiv">
+    <cd:command name="typ" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptype"/>
@@ -104,7 +104,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typ" variant="2" file="buff-ver.mkiv">
+    <cd:command name="typ" variant="angles" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptype"/>
@@ -113,7 +113,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="type" generated="yes" variant="generated:1" file="buff-ver.mkiv">
+    <cd:command name="type" generated="yes" variant="example" file="buff-ver.mkiv">
         <cd:sequence>
             <cd:variable value="type"/>
         </cd:sequence>
@@ -125,7 +125,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="type" generated="yes" variant="generated:2" file="buff-ver.mkiv">
+    <cd:command name="type" generated="yes" variant="example:angles" file="buff-ver.mkiv">
         <cd:sequence>
             <cd:variable value="type"/>
         </cd:sequence>
@@ -251,7 +251,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typing" type="environment" variant="1" file="buff-ver.mkiv">
+    <cd:command name="typing" type="environment" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptyping"/>
@@ -259,7 +259,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typing" type="environment" variant="2" file="buff-ver.mkiv">
+    <cd:command name="typing" type="environment" variant="argument" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="continue"/>
@@ -267,7 +267,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typing" type="environment" generated="yes" variant="generated:1" file="buff-ver.mkiv">
+    <cd:command name="typing" type="environment" generated="yes" variant="example" file="buff-ver.mkiv">
         <cd:sequence>
             <cd:variable value="typing"/>
         </cd:sequence>
@@ -276,9 +276,17 @@
                 <cd:inherit name="setuptyping"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="typing"/>
+            <cd:constant value="LUA"/>
+            <cd:constant value="MP"/>
+            <cd:constant value="PARSEDXML"/>
+            <cd:constant value="TEX"/>
+            <cd:constant value="XML"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="typing" type="environment" generated="yes" variant="generated:2" file="buff-ver.mkiv">
+    <cd:command name="typing" type="environment" generated="yes" variant="example:argument" file="buff-ver.mkiv">
         <cd:sequence>
             <cd:variable value="typing"/>
         </cd:sequence>
@@ -287,6 +295,14 @@
                 <cd:constant type="continue"/>
             </cd:keywords>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="typing"/>
+            <cd:constant value="LUA"/>
+            <cd:constant value="MP"/>
+            <cd:constant value="PARSEDXML"/>
+            <cd:constant value="TEX"/>
+            <cd:constant value="XML"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="tex" file="buff-ver.mkiv">
@@ -363,7 +379,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="LUA" type="environment" variant="1" file="buff-ver.mkiv">
+    <cd:command name="LUA" type="environment" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptyping"/>
@@ -371,7 +387,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="LUA" type="environment" variant="2" file="buff-ver.mkiv">
+    <cd:command name="LUA" type="environment" variant="argument" file="buff-ver.mkiv">
         <cd:sequence>
             <cd:variable value="lua"/>
         </cd:sequence>
@@ -382,7 +398,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MP" type="environment" variant="1" file="buff-ver.mkiv">
+    <cd:command name="MP" type="environment" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptyping"/>
@@ -390,7 +406,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MP" type="environment" variant="2" file="buff-ver.mkiv">
+    <cd:command name="MP" type="environment" variant="argument" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="continue"/>
@@ -398,7 +414,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="XML" type="environment" variant="1" file="buff-ver.mkiv">
+    <cd:command name="XML" type="environment" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptyping"/>
@@ -406,7 +422,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="XML" type="environment" variant="2" file="buff-ver.mkiv">
+    <cd:command name="XML" type="environment" variant="argument" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="continue"/>
@@ -414,7 +430,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="PARSEDXML" type="environment" variant="1" file="buff-ver.mkiv">
+    <cd:command name="PARSEDXML" type="environment" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptyping"/>
@@ -422,7 +438,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="PARSEDXML" type="environment" variant="2" file="buff-ver.mkiv">
+    <cd:command name="PARSEDXML" type="environment" variant="argument" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="continue"/>
@@ -430,7 +446,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TEX" type="environment" variant="1" file="buff-ver.mkiv">
+    <cd:command name="TEX" type="environment" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptyping"/>
@@ -438,7 +454,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TEX" type="environment" variant="2" file="buff-ver.mkiv">
+    <cd:command name="TEX" type="environment" variant="argument" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="continue"/>

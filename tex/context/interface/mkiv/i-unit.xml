@@ -4,13 +4,13 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="digits" variant="1" file="phys-dim.mkiv">
+    <cd:command name="digits" file="phys-dim.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="digits" variant="2" file="phys-dim.mkiv">
+    <cd:command name="digits" variant="string" file="phys-dim.mkiv">
         <cd:arguments>
             <cd:resolve name="string-number"/>
         </cd:arguments>
@@ -75,13 +75,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="unit" generated="yes" variant="generated" file="phys-dim.mkiv">
+    <cd:command name="unit" generated="yes" variant="example" file="phys-dim.mkiv">
         <cd:sequence>
             <cd:variable value="unit"/>
         </cd:sequence>
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="unit"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="unit" file="phys-dim.mkiv">

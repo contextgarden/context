@@ -55,7 +55,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagegrid" type="environment" generated="yes" variant="generated" file="page-cst.mkiv">
+    <cd:command name="pagegrid" type="environment" generated="yes" variant="example" file="page-cst.mkiv">
         <cd:sequence>
             <cd:variable value="pagegrid"/>
         </cd:sequence>

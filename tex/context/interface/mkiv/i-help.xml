@@ -23,7 +23,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="help" generated="yes" variant="generated" file="scrn-hlp.mkvi">
+    <cd:command name="help" generated="yes" variant="example" file="scrn-hlp.mkvi">
         <cd:sequence>
             <cd:variable value="help"/>
         </cd:sequence>
@@ -32,15 +32,21 @@
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="helptext"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="help" type="environment" generated="yes" variant="generated" file="scrn-hlp.mkvi">
+    <cd:command name="help" type="environment" generated="yes" variant="example" file="scrn-hlp.mkvi">
         <cd:sequence>
             <cd:variable value="help"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-reference-optional"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="helptext"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="doifelsehelp" file="scrn-hlp.mkvi">

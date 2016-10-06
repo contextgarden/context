@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="table" type="environment" variant="1" file="tabl-tab.mkiv">
+    <cd:command name="table" type="environment" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:template/>
             <cd:assignments list="yes" optional="yes">
@@ -13,7 +13,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="table" type="environment" variant="2" file="tabl-tab.mkiv">
+    <cd:command name="table" type="environment" variant="name" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -31,13 +31,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tables" type="environment" variant="1" file="tabl-tab.mkiv">
+    <cd:command name="tables" type="environment" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:template/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tables" type="environment" variant="2" file="tabl-tab.mkiv">
+    <cd:command name="tables" type="environment" variant="name" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
@@ -170,7 +170,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Raise" variant="1" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Raise" variant="argument" scope="table" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords delimiters="parentheses" optional="yes">
                     <cd:constant type="cd:dimension"/>
@@ -179,14 +179,14 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Raise" variant="2" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Raise" variant="string" scope="table" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="string-number-optional"/>
                 <cd:content/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Lower" variant="1" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Lower" variant="argument" scope="table" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords delimiters="parentheses" optional="yes">
                     <cd:constant type="cd:dimension"/>
@@ -195,14 +195,14 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Lower" variant="2" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Lower" variant="string" scope="table" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="string-number-optional"/>
                 <cd:content/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="BackSpace" variant="1" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="BackSpace" variant="argument" scope="table" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords delimiters="parentheses" optional="yes">
                     <cd:constant type="cd:dimension"/>
@@ -210,13 +210,13 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="BackSpace" variant="2" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="BackSpace" variant="string" scope="table" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="string-number-optional"/>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Vspace" variant="1" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Vspace" variant="argument" scope="table" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:keywords delimiters="parentheses" optional="yes">
                     <cd:constant type="cd:dimension"/>
@@ -224,7 +224,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="Vspace" variant="2" scope="table" file="tabl-tab.mkiv">
+        <cd:command name="Vspace" variant="string" scope="table" file="tabl-tab.mkiv">
             <cd:arguments>
                 <cd:resolve name="string-number-optional"/>
             </cd:arguments>

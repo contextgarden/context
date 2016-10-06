@@ -128,7 +128,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="margindata" generated="yes" variant="generated" file="typo-mar.mkiv">
+    <cd:command name="margindata" generated="yes" variant="example" file="typo-mar.mkiv">
         <cd:sequence>
             <cd:variable value="margindata"/>
         </cd:sequence>
@@ -144,6 +144,30 @@
             </cd:assignments>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="inleftmargin"/>
+            <cd:constant value="inrightmargin"/>
+            <cd:constant value="inoutermargin"/>
+            <cd:constant value="ininnermargin"/>
+            <cd:constant value="inleftedge"/>
+            <cd:constant value="inrightedge"/>
+            <cd:constant value="inouteredge"/>
+            <cd:constant value="ininneredge"/>
+            <cd:constant value="atleftmargin"/>
+            <cd:constant value="atrightmargin"/>
+            <cd:constant value="inleft"/>
+            <cd:constant value="inright"/>
+            <cd:constant value="inouter"/>
+            <cd:constant value="ininner"/>
+            <cd:constant value="inmargin"/>
+            <cd:constant value="inother"/>
+            <cd:constant value="margintext"/>
+            <!--
+                <cd:constant value="marginword"/>
+                <cd:constant value="margintitle"/>
+                <cd:constant value="inothermargin"/>
+            -->
+        </cd:instances>
     </cd:command>
 
     <cd:command name="margindata" file="typo-mar.mkiv">
@@ -170,9 +194,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -185,9 +211,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -200,9 +228,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -215,9 +245,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -230,9 +262,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -245,9 +279,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -260,9 +296,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -275,9 +313,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -290,9 +330,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -305,9 +347,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -410,9 +454,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -425,9 +471,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -440,9 +488,11 @@
                 </cd:parameter>
                 <cd:inherit name="setupmargindata"/>
             </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
+            <!--
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+            -->
             <cd:content/>
         </cd:arguments>
     </cd:command>

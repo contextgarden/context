@@ -166,7 +166,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxfunctiondefinition" generated="yes" variant="generated" file="luat-ini.mkiv">
+    <cd:command name="ctxfunctiondefinition" generated="yes" variant="example" file="luat-ini.mkiv">
         <cd:sequence>
             <cd:variable value="ctxfunctiondefinition"/>
         </cd:sequence>
@@ -184,7 +184,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxfunction" generated="yes" variant="generated" file="luat-ini.mkiv">
+    <cd:command name="ctxfunction" generated="yes" variant="example" file="luat-ini.mkiv">
         <cd:sequence>
             <cd:variable value="ctxfunction"/>
         </cd:sequence>

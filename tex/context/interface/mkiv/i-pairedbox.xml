@@ -90,7 +90,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppairedbox" generated="yes" variant="generated" file="pack-com.mkiv">
+    <cd:command name="setuppairedbox" generated="yes" variant="example" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:variable value="pairedbox"/>
@@ -100,9 +100,12 @@
                 <cd:inherit name="setuppairedbox"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="legend"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="placepairedbox" generated="yes" variant="generated" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" generated="yes" variant="example" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="place"/>
             <cd:variable value="pairedbox"/>
@@ -114,9 +117,12 @@
             <cd:content/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="legend"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="placepairedbox" type="environment" generated="yes" variant="generated" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" type="environment" generated="yes" variant="example" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="place"/>
             <cd:variable value="pairedbox"/>
@@ -126,6 +132,9 @@
                 <cd:inherit name="setuppairedbox"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="legend"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="setuplegend" file="pack-com.mkiv">

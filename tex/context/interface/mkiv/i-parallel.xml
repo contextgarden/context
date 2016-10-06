@@ -76,7 +76,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="parallel" type="environment" generated="yes" variant="generated" file="buff-par.mkvi">
+    <cd:command name="parallel" type="environment" generated="yes" variant="example" file="buff-par.mkvi">
         <cd:sequence>
             <cd:variable value="parallel"/>
         </cd:sequence>

@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?context-directive job ctxfile x-setups.ctx ?>
-
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <!-- backgrounds-->
+    <!-- background = ... -->
 
     <cd:define name="value-background">
-        <cd:parameter name="background">
         <cd:constant type="foreground"/>
         <cd:constant type="color"/>
         <cd:constant type="cd:name"/>
@@ -19,6 +16,8 @@
         <cd:constant type="cd:style"/>
         <cd:constant type="cd:command"/>
     </cd:define>
+
+    <!-- a = ... -->
 
     <cd:define name="value-transparency">
         <cd:constant type="cd:number"/>
@@ -572,6 +571,24 @@
     <cd:define name="value-btxauthor">
         <cd:constant type="author"/>
         <cd:constant type="editor"/>
+    </cd:define>
+
+    <!-- formula = ... -->
+
+    <cd:define name="value-formula">
+        <cd:constant type="packed"/>
+        <cd:constant type="tight"/>
+        <cd:constant type="middle"/>
+        <cd:constant type="frame"/>
+        <cd:inherit name="setupbodyfont"/>
+    </cd:define>
+
+    <!-- formula = ... -->
+
+    <cd:define name="value-formulareference">
+        <cd:constant type="+"/>
+        <cd:constant type="-"/>
+        <cd:constant type="cd:reference"/>
     </cd:define>
 
 </cd:interface>

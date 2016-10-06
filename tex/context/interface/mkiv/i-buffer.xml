@@ -97,13 +97,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buffer" type="environment" generated="yes" variant="generated" file="buff-ini.mkiv">
+    <cd:command name="buffer" type="environment" generated="yes" variant="example" file="buff-ini.mkiv">
         <cd:sequence>
             <cd:variable value="buffer"/>
         </cd:sequence>
+        <cd:instances>
+            <cd:constant value="hiding"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="getbuffer" generated="yes" variant="generated" file="buff-ini.mkiv">
+    <cd:command name="getbuffer" generated="yes" variant="example" file="buff-ini.mkiv">
         <cd:sequence>
             <cd:string value="get"/>
             <cd:variable value="buffer"/>
@@ -121,14 +124,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="savebuffer" variant="1" file="buff-ini.mkiv">
+    <cd:command name="savebuffer" variant="list" file="buff-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-buffer-list"/>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="savebuffer" variant="2" file="buff-ini.mkiv">
+    <cd:command name="savebuffer" file="buff-ini.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="list">
@@ -172,7 +175,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typebuffer" generated="yes" variant="generated" file="buff-ver.mkiv">
+    <cd:command name="typebuffer" generated="yes" variant="example" file="buff-ver.mkiv">
         <cd:sequence>
             <cd:string value="type"/>
             <cd:variable value="buffer"/>

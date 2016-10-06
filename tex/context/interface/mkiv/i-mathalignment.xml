@@ -37,7 +37,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathalignment" type="environment" generated="yes" variant="generated" file="math-ali.mkiv">
+    <cd:command name="mathalignment" type="environment" generated="yes" variant="example" file="math-ali.mkiv">
         <cd:sequence>
             <cd:variable value="mathalignment"/>
         </cd:sequence>
@@ -46,6 +46,10 @@
                 <cd:inherit name="setupmathalignment"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="align"/>
+            <cd:constant value="mathalignment"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="mathalignment" type="environment" file="math-ali.mkiv">

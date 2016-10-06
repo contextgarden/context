@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplayout" variant="1" file="page-lay.mkiv">
+    <cd:command name="setuplayout" file="page-lay.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes">
@@ -211,7 +211,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplayout" variant="2" file="page-lay.mkiv">
+    <cd:command name="setuplayout" variant="name" file="page-lay.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>

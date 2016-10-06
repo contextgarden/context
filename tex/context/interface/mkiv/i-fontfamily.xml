@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definefontfamily" variant="1" file="font-sel.mkvi">
+    <cd:command name="definefontfamily" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -68,7 +68,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefontfamily" variant="2" file="font-sel.mkvi">
+    <cd:command name="definefontfamily" variant="preset" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -97,7 +97,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefallbackfamily" variant="1" file="font-sel.mkvi">
+    <cd:command name="definefallbackfamily" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -177,7 +177,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefallbackfamily" variant="2" file="font-sel.mkvi">
+    <cd:command name="definefallbackfamily" variant="preset" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -206,7 +206,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefontfamilypreset" variant="1" file="font-sel.mkvi">
+    <cd:command name="definefontfamilypreset" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">
@@ -215,7 +215,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definefontfamilypreset" variant="2" file="font-sel.mkvi">
+    <cd:command name="definefontfamilypreset" variant="name" file="font-sel.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>

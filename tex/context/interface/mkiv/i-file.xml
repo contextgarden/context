@@ -4,13 +4,13 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="input" variant="1" file="file-ini.mkvi">
+    <cd:command name="input" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="input" variant="2" file="file-ini.mkvi">
+    <cd:command name="input" variant="string" file="file-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="string-file"/>
         </cd:arguments>
@@ -74,7 +74,7 @@
 
     <cd:command name="doifelsepath" file="file-ini.mkvi">
         <cd:arguments>
-            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
@@ -82,7 +82,7 @@
 
     <cd:command name="doifpathelse" file="file-ini.mkvi">
         <cd:arguments>
-            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
@@ -106,7 +106,7 @@
 
     <cd:command name="doifelsepathexists" file="file-ini.mkvi">
         <cd:arguments>
-            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
@@ -114,7 +114,7 @@
 
     <cd:command name="doifpathexistselse" file="file-ini.mkvi">
         <cd:arguments>
-            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
@@ -180,19 +180,19 @@
 
     <cd:command name="usepath" file="file-job.mkvi">
         <cd:arguments>
-            <cd:resolve name="keyword-file-list"/>
+            <cd:resolve name="keyword-path-list"/>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="usesubpath" file="file-job.mkvi">
         <cd:arguments>
-            <cd:resolve name="keyword-file-list"/>
+            <cd:resolve name="keyword-path-list"/>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="path" type="environment" begin="push" end="pop" file="file-job.mkvi">
         <cd:arguments>
-            <cd:resolve name="keyword-file"/>
+            <cd:resolve name="keyword-path"/>
         </cd:arguments>
     </cd:command>
 
@@ -313,7 +313,7 @@
 
     <cd:command name="readfixfile" file="file-res.mkvi">
         <cd:arguments>
-            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
@@ -322,7 +322,7 @@
 
     <cd:command name="readsetfile" file="file-res.mkvi">
         <cd:arguments>
-            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

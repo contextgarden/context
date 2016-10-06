@@ -28,7 +28,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tooltip" generated="yes" variant="generated:1" file="scrn-fld.mkvi">
+    <cd:command name="tooltip" generated="yes" variant="example" file="scrn-fld.mkvi">
         <cd:sequence>
             <cd:variable value="tooltip"/>
         </cd:sequence>
@@ -39,9 +39,12 @@
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="tooltip"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="tooltip" generated="yes" variant="generated:2" file="scrn-fld.mkvi">
+    <cd:command name="tooltip" generated="yes" variant="example:argument" file="scrn-fld.mkvi">
         <cd:sequence>
             <cd:variable value="tooltip"/>
         </cd:sequence>
@@ -54,9 +57,12 @@
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="tooltip"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="tooltip" variant="1" file="scrn-fld.mkvi">
+    <cd:command name="tooltip" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptooltip"/>
@@ -66,7 +72,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tooltip" variant="2" file="scrn-fld.mkvi">
+    <cd:command name="tooltip" variant="argument" file="scrn-fld.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="left"/>

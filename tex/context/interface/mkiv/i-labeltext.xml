@@ -11,7 +11,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplabeltext" generated="yes" variant="generated" file="lang-lab.mkiv">
+    <cd:command name="setuplabeltext" generated="yes" variant="example" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:variable value="label"/>
@@ -21,9 +21,20 @@
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="head"/>
+            <cd:constant value="label"/>
+            <cd:constant value="mathlabel"/>
+            <cd:constant value="taglabel"/>
+            <cd:constant value="unit"/>
+            <cd:constant value="operator"/>
+            <cd:constant value="prefix"/>
+            <cd:constant value="suffix"/>
+            <cd:constant value="btxlabel"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="presetlabeltext" generated="yes" variant="generated" file="lang-lab.mkiv">
+    <cd:command name="presetlabeltext" generated="yes" variant="example" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="preset"/>
             <cd:variable value="label"/>
@@ -33,9 +44,20 @@
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="assignment-userdata-list"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="head"/>
+            <cd:constant value="label"/>
+            <cd:constant value="mathlabel"/>
+            <cd:constant value="taglabel"/>
+            <cd:constant value="unit"/>
+            <cd:constant value="operator"/>
+            <cd:constant value="prefix"/>
+            <cd:constant value="suffix"/>
+            <cd:constant value="btxlabel"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="copylabeltext" generated="yes" variant="generated" file="lang-lab.mkiv">
+    <cd:command name="copylabeltext" generated="yes" variant="example" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="copy"/>
             <cd:variable value="label"/>
@@ -45,9 +67,20 @@
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="assignment-labeldata-list"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="head"/>
+            <cd:constant value="label"/>
+            <cd:constant value="mathlabel"/>
+            <cd:constant value="taglabel"/>
+            <cd:constant value="unit"/>
+            <cd:constant value="operator"/>
+            <cd:constant value="prefix"/>
+            <cd:constant value="suffix"/>
+            <cd:constant value="btxlabel"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="labeltext" type="environment" generated="yes" variant="generated" file="lang-lab.mkiv">
+    <cd:command name="labeltext" type="environment" generated="yes" variant="example" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:variable value="label"/>
             <cd:string value="text"/>
@@ -56,16 +89,38 @@
             <cd:resolve name="keyword-language-optional"/>
             <cd:resolve name="keyword-key"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="head"/>
+            <cd:constant value="label"/>
+            <cd:constant value="mathlabel"/>
+            <cd:constant value="taglabel"/>
+            <cd:constant value="unit"/>
+            <cd:constant value="operator"/>
+            <cd:constant value="prefix"/>
+            <cd:constant value="suffix"/>
+            <cd:constant value="btxlabel"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="labellanguage" generated="yes" variant="generated" file="lang-lab.mkiv">
+    <cd:command name="labellanguage" generated="yes" variant="example" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:variable value="label"/>
             <cd:string value="language"/>
         </cd:sequence>
+        <cd:instances>
+            <cd:constant value="head"/>
+            <cd:constant value="label"/>
+            <cd:constant value="mathlabel"/>
+            <cd:constant value="taglabel"/>
+            <cd:constant value="unit"/>
+            <cd:constant value="operator"/>
+            <cd:constant value="prefix"/>
+            <cd:constant value="suffix"/>
+            <cd:constant value="btxlabel"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="labeltext" generated="yes" variant="generated" file="lang-lab.mkiv">
+    <cd:command name="labeltext" generated="yes" variant="example" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:variable value="label"/>
             <cd:string value="text"/>
@@ -73,9 +128,20 @@
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="head"/>
+            <cd:constant value="label"/>
+            <cd:constant value="mathlabel"/>
+            <cd:constant value="taglabel"/>
+            <cd:constant value="unit"/>
+            <cd:constant value="operator"/>
+            <cd:constant value="prefix"/>
+            <cd:constant value="suffix"/>
+            <cd:constant value="btxlabel"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="labeltexts" generated="yes" variant="generated" file="lang-lab.mkiv">
+    <cd:command name="labeltexts" generated="yes" variant="example" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:variable value="label"/>
             <cd:string value="texts"/>
@@ -84,9 +150,14 @@
             <cd:resolve name="argument-key"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="head"/>
+            <cd:constant value="label"/>
+            <cd:constant value="mathlabel"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="leftlabeltext" generated="yes" variant="generated" file="lang-lab.mkiv">
+    <cd:command name="leftlabeltext" generated="yes" variant="example" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="left"/>
             <cd:variable value="label"/>
@@ -95,9 +166,14 @@
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="head"/>
+            <cd:constant value="label"/>
+            <cd:constant value="mathlabel"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="rightlabeltext" generated="yes" variant="generated" file="lang-lab.mkiv">
+    <cd:command name="rightlabeltext" generated="yes" variant="example" file="lang-lab.mkiv">
         <cd:sequence>
             <cd:string value="right"/>
             <cd:variable value="label"/>
@@ -106,6 +182,11 @@
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="head"/>
+            <cd:constant value="label"/>
+            <cd:constant value="mathlabel"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="setuplabeltext" file="lang-lab.mkiv">

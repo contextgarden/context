@@ -55,13 +55,17 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="shift" generated="yes" variant="generated" file="node-rul.mkiv">
+    <cd:command name="shift" generated="yes" variant="example" file="node-rul.mkiv">
         <cd:sequence>
             <cd:variable value="shift"/>
         </cd:sequence>
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="shiftup"/>
+            <cd:constant value="shiftdown"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="shift" type="environment" file="node-rul.mkiv">

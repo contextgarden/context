@@ -62,13 +62,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="module" type="environment" variant="1" file="file-mod.mkvi">
+    <cd:command name="module" type="environment" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="module" type="environment" variant="2" file="file-mod.mkvi">
+    <cd:command name="module" type="environment" variant="string" file="file-mod.mkvi">
         <cd:arguments>
             <cd:resolve name="string-file"/>
         </cd:arguments>

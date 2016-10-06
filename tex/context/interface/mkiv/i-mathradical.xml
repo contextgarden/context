@@ -36,7 +36,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathradical" generated="yes" variant="generated" file="math-rad.mkvi">
+    <cd:command name="mathradical" generated="yes" variant="example" file="math-rad.mkvi">
         <cd:sequence>
             <cd:variable value="mathradical"/>
         </cd:sequence>

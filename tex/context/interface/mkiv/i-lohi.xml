@@ -34,13 +34,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="low" generated="yes" variant="generated" file="typo-scr.mkiv">
+    <cd:command name="low" generated="yes" variant="example" file="typo-scr.mkiv">
         <cd:sequence>
             <cd:variable value="low"/>
         </cd:sequence>
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="unitslow"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="low" file="typo-scr.mkiv">
@@ -79,13 +82,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="high" generated="yes" variant="generated" file="typo-scr.mkiv">
+    <cd:command name="high" generated="yes" variant="example" file="typo-scr.mkiv">
         <cd:sequence>
             <cd:variable value="high"/>
         </cd:sequence>
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="unitshigh"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="high" file="typo-scr.mkiv">
@@ -127,7 +133,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lowhigh" generated="yes" variant="generated" file="typo-scr.mkiv">
+    <cd:command name="lowhigh" generated="yes" variant="example" file="typo-scr.mkiv">
         <cd:sequence>
             <cd:variable value="lowhigh"/>
         </cd:sequence>
@@ -193,7 +199,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lowmidhigh" generated="yes" variant="generated" file="typo-scr.mkiv">
+    <cd:command name="lowmidhigh" generated="yes" variant="example" file="typo-scr.mkiv">
         <cd:sequence>
             <cd:variable value="lowmidhigh"/>
         </cd:sequence>

@@ -83,6 +83,15 @@
         <cd:sequence>
             <cd:variable value="script"/>
         </cd:sequence>
+        <cd:instances>
+            <cd:constant value="hangul"/>
+            <cd:constant value="hanzi"/>
+            <cd:constant value="nihongo"/>
+            <cd:constant value="ethiopic"/>
+            <cd:constant value="thai"/>
+            <cd:constant value="latin"/>
+            <cd:constant value="test"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="hangul" file="scrp-ini.mkvi"/>

@@ -86,13 +86,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="marginrule" type="environment" variant="1" file="anch-bar.mkiv">
+    <cd:command name="marginrule" type="environment" file="anch-bar.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="marginrule" type="environment" variant="2" file="anch-bar.mkiv">
+    <cd:command name="marginrule" type="environment" variant="assignment" file="anch-bar.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupmarginrule"/>

@@ -53,7 +53,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathmatrix" type="environment" generated="yes" variant="generated" file="math-ali.mkiv">
+    <cd:command name="mathmatrix" type="environment" generated="yes" variant="example" file="math-ali.mkiv">
         <cd:sequence>
             <cd:variable value="mathmatrix"/>
         </cd:sequence>
@@ -62,6 +62,10 @@
                 <cd:inherit name="setupmathmatrix"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="matrix"/>
+            <cd:constant value="mathmatrix"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="mathmatrix" type="environment" file="math-ali.mkiv">

@@ -125,9 +125,6 @@
                     <cd:constant type="reset"/>
                 </cd:parameter>
                 <cd:parameter name="header">
-                    <cd:constant type=""/>
-                </cd:parameter>
-                <cd:parameter name="header">
                     <cd:resolve name="value-textstate"/>
                 </cd:parameter>
                 <cd:parameter name="text">
@@ -252,7 +249,7 @@
 
     -->
 
-    <cd:command name="section" generated="yes" variant="generated:1" file="strc-sec.mkiv">
+    <cd:command name="section" generated="yes" variant="example" file="strc-sec.mkiv">
         <cd:sequence>
             <cd:variable value="section"/>
         </cd:sequence>
@@ -260,9 +257,24 @@
             <cd:resolve name="keyword-reference-list-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="part"/>
+            <cd:constant value="chapter"/>
+            <cd:constant value="section"/>
+            <cd:constant value="subsection"/>
+            <cd:constant value="subsubsection"/>
+            <cd:constant value="subsubsubsection"/>
+            <cd:constant value="subsubsubsubsection"/>
+            <cd:constant value="title"/>
+            <cd:constant value="subject"/>
+            <cd:constant value="subsubject"/>
+            <cd:constant value="subsubsubject"/>
+            <cd:constant value="subsubsubsubject"/>
+            <cd:constant value="subsubsubsubsubject"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="section" generated="yes" variant="generated:2" file="strc-sec.mkiv">
+    <cd:command name="section" generated="yes" variant="example:ownnumber" file="strc-sec.mkiv">
         <cd:sequence>
             <cd:variable value="section"/>
         </cd:sequence>
@@ -271,18 +283,48 @@
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="part"/>
+            <cd:constant value="chapter"/>
+            <cd:constant value="section"/>
+            <cd:constant value="subsection"/>
+            <cd:constant value="subsubsection"/>
+            <cd:constant value="subsubsubsection"/>
+            <cd:constant value="subsubsubsubsection"/>
+            <cd:constant value="title"/>
+            <cd:constant value="subject"/>
+            <cd:constant value="subsubject"/>
+            <cd:constant value="subsubsubject"/>
+            <cd:constant value="subsubsubsubject"/>
+            <cd:constant value="subsubsubsubsubject"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="section" generated="yes" variant="generated:3" file="strc-sec.mkiv">
+    <cd:command name="section" generated="yes" variant="example:assignment" file="strc-sec.mkiv">
         <cd:sequence>
             <cd:variable value="section"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="assignment-sectiondata-list"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="part"/>
+            <cd:constant value="chapter"/>
+            <cd:constant value="section"/>
+            <cd:constant value="subsection"/>
+            <cd:constant value="subsubsection"/>
+            <cd:constant value="subsubsubsection"/>
+            <cd:constant value="subsubsubsubsection"/>
+            <cd:constant value="title"/>
+            <cd:constant value="subject"/>
+            <cd:constant value="subsubject"/>
+            <cd:constant value="subsubsubject"/>
+            <cd:constant value="subsubsubsubject"/>
+            <cd:constant value="subsubsubsubsubject"/>
+        </cd:instances>
     </cd:command>
 
-    <cd:command name="section" type="environment" generated="yes" variant="generated" file="strc-sec.mkiv">
+    <cd:command name="section" type="environment" generated="yes" variant="example" file="strc-sec.mkiv">
         <cd:sequence>
             <cd:variable value="section"/>
         </cd:sequence>
@@ -290,6 +332,21 @@
             <cd:resolve name="assignment-sectiondata-list-optional"/>
             <cd:resolve name="assignment-userdata-list-optional"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="part"/>
+            <cd:constant value="chapter"/>
+            <cd:constant value="section"/>
+            <cd:constant value="subsection"/>
+            <cd:constant value="subsubsection"/>
+            <cd:constant value="subsubsubsection"/>
+            <cd:constant value="subsubsubsubsection"/>
+            <cd:constant value="title"/>
+            <cd:constant value="subject"/>
+            <cd:constant value="subsubject"/>
+            <cd:constant value="subsubsubject"/>
+            <cd:constant value="subsubsubsubject"/>
+            <cd:constant value="subsubsubsubsubject"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="part" file="strc-sec.mkiv">
@@ -675,5 +732,7 @@
     <cd:command name="headnumberwidth" file="strc-ren.mkiv"/>
 
     <cd:command name="headnumberdistance" file="strc-ren.mkiv"/>
+
+    <cd:command name="headsetupspacing" file="strc-ren.mkiv"/>
 
 </cd:interface>

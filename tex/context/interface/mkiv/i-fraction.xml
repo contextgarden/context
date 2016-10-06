@@ -80,7 +80,7 @@
 
     -->
 
-    <cd:command name="fraction" generated="yes" variant="generated" file="math-frc.mkiv">
+    <cd:command name="fraction" generated="yes" variant="example" file="math-frc.mkiv">
         <cd:sequence>
             <cd:variable value="fraction"/>
         </cd:sequence>
@@ -88,6 +88,16 @@
             <cd:content/>
             <cd:content/>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="xfrac"/>
+            <cd:constant value="xxfrac"/>
+            <cd:constant value="frac"/>
+            <cd:constant value="sfrac"/>
+            <cd:constant value="dfrac"/>
+            <cd:constant value="binom"/>
+            <cd:constant value="dbinom"/>
+            <cd:constant value="tbinom"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="frac" file="math-frc.mkiv">

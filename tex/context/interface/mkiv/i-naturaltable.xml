@@ -105,6 +105,8 @@
                 </cd:parameter>
                 <cd:parameter name="alignmentcharacter">
                     <cd:constant type="cd:text"/>
+                    <cd:constant type="cd:text" prefix="number" method="apply"/>
+                    <cd:constant type="cd:text" prefix="text" method="apply"/>
                 </cd:parameter>
                 <cd:parameter name="distance">
                     <cd:constant type="cd:dimension"/>
@@ -113,6 +115,7 @@
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
                 <cd:parameter name="style">
+                    <cd:constant type="math"/>
                     <cd:resolve name="value-style"/>
                 </cd:parameter>
                 <cd:inherit name="setupframed"/>

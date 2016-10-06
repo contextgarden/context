@@ -41,7 +41,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathcases" type="environment" generated="yes" variant="generated" file="math-ali.mkiv">
+    <cd:command name="mathcases" type="environment" generated="yes" variant="example" file="math-ali.mkiv">
         <cd:sequence>
             <cd:variable value="mathcases"/>
         </cd:sequence>
@@ -50,6 +50,10 @@
                 <cd:inherit name="setupmathcases"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:constant value="cases"/>
+            <cd:constant value="mathcases"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="mathcases" type="environment" file="math-ali.mkiv">

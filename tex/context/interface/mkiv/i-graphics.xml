@@ -86,7 +86,7 @@
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
                 <cd:parameter name="arguments">
-                    <cd:constant type="cd:string"/>
+                    <cd:constant type="cd:text"/>
                 </cd:parameter>
                 <cd:parameter name="repeat">
                     <cd:constant type="yes"/>
@@ -233,11 +233,6 @@
                     <cd:constant type="no"/>
                     <!-- only passed by the system: -->
                     <cd:constant type="cd:number"/>
-                </cd:parameter>
-                <cd:parameter name="transform">
-                    <cd:constant type="auto" default="yes"/>
-                    <cd:constant type="none"/>
-                    <cd:constant type="cd:text"/> <!-- for experts: orientation-[1..8] -->
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>

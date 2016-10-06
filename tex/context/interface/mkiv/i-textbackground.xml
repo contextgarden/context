@@ -122,7 +122,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textbackground" type="environment" generated="yes" variant="generated" file="anch-bck.mkiv">
+    <cd:command name="textbackground" type="environment" generated="yes" variant="example" file="anch-bck.mkiv">
         <cd:sequence>
             <cd:variable value="textbackground"/>
         </cd:sequence>
@@ -133,7 +133,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textbackground" generated="yes" variant="generated" file="anch-bck.mkiv">
+    <cd:command name="textbackground" generated="yes" variant="example" file="anch-bck.mkiv">
         <cd:sequence>
             <cd:variable value="textbackground"/>
         </cd:sequence>
