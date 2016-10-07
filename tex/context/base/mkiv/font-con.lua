@@ -1097,7 +1097,11 @@ end)
 
 do
 
-    local function setindeed(mode,target,group,name,action,position)
+    local function setindeed(mode,source,target,group,name,position)
+        local action = source[mode]
+        if not action then
+            return
+        end
         local t = target[mode]
         if not t then
             report_defining("fatal error in setting feature %a, group %a, mode %a",name,group,mode)
@@ -1128,15 +1132,10 @@ do
             report_defining("fatal source error in setting feature %a, group %a",name,group)
             os.exit()
         end
-        local node     = source.node
-        local base     = source.base
         local position = source.position
-        if node then
-            setindeed("node",target,group,name,node,position)
-        end
-        if base then
-            setindeed("base",target,group,name,base,position)
-        end
+        setindeed("node",source,target,group,name,position)
+        setindeed("base",source,target,group,name,position)
+        setindeed("plug",source,target,group,name,position)
     end
 
     local function register(where,specification)
@@ -1203,9 +1202,9 @@ do
                 defaults     = { },
                 descriptions = tables and tables.features or { },
                 used         = statistics and statistics.usedfeatures or { },
-                initializers = { base = { }, node = { } },
-                processors   = { base = { }, node = { } },
-                manipulators = { base = { }, node = { } },
+                initializers = { base = { }, node = { }, plug = { } },
+                processors   = { base = { }, node = { }, plug = { } },
+                manipulators = { base = { }, node = { }, plug = { } },
             }
             features.register = function(specification) return register(features,specification) end
             handler.features = features -- will also become hidden

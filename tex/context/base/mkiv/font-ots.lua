@@ -128,6 +128,7 @@ local trace_details      = false  registertracker("otf.details",      function(v
 local trace_steps        = false  registertracker("otf.steps",        function(v) trace_steps        = v end)
 local trace_skips        = false  registertracker("otf.skips",        function(v) trace_skips        = v end)
 local trace_directions   = false  registertracker("otf.directions",   function(v) trace_directions   = v end)
+local trace_plugins      = false  registertracker("otf.plugins",      function(v) trace_plugins      = v end)
 
 local trace_kernruns     = false  registertracker("otf.kernruns",     function(v) trace_kernruns     = v end)
 local trace_discruns     = false  registertracker("otf.discruns",     function(v) trace_discruns     = v end)
@@ -3324,7 +3325,7 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
     end
 end
 
--- to be checkedL nowadays we probably can assume properly matched directions
+-- to be checked, nowadays we probably can assume properly matched directions
 -- so maybe we no longer need a stack
 
 local function txtdirstate(start,stack,top,rlparmode)
@@ -3364,6 +3365,10 @@ local function pardirstate(start)
     end
     return getnext(start), new, new
 end
+
+otf.helpers             = otf.helpers or { }
+otf.helpers.txtdirstate = txtdirstate
+otf.helpers.pardirstate = pardirstate
 
 local function featuresprocessor(head,font,attr)
 
@@ -3425,7 +3430,7 @@ local function featuresprocessor(head,font,attr)
     -- Keeping track of the headnode is needed for devanagari (I generalized it a bit
     -- so that multiple cases are also covered.)
 
-    -- We don't goto the next node of a disc node is created so that we can then treat
+    -- We don't goto the next node when a disc node is created so that we can then treat
     -- the pre, post and replace. It's a bit of a hack but works out ok for most cases.
 
     for s=1,#datasets do
@@ -3637,6 +3642,34 @@ end
 
 -- so far
 
+local plugins = { }
+otf.plugins   = plugins
+
+function otf.registerplugin(name,f)
+    if type(name) == "string" and type(f) == "function" then
+        plugins[name] = { name, f }
+    end
+end
+
+local function plugininitializer(tfmdata,value)
+    if type(value) == "string" then
+        tfmdata.shared.plugin = plugins[value]
+    end
+end
+
+local function pluginprocessor(head,font)
+    local s = fontdata[font].shared
+    local p = s and s.plugin
+    if p then
+        if trace_plugins then
+            report_process("applying plugin %a",p[1])
+        end
+        return p[2](head,font)
+    else
+        return head, false
+    end
+end
+
 local function featuresinitializer(tfmdata,value)
     -- nothing done here any more
 end
@@ -3648,9 +3681,11 @@ registerotffeature {
     initializers = {
         position = 1,
         node     = featuresinitializer,
+        plug     = plugininitializer,
     },
     processors   = {
         node     = featuresprocessor,
+        plug     = pluginprocessor,
     }
 }
 

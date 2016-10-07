@@ -23,6 +23,11 @@
    ss01=yes]
 
 \definefontfeature
+  [mathsheepdigits]
+  [sheepdigits]
+  [mode=base]
+
+\definefontfeature
   [cowslogos]
   [mode=node,
    script=latn,
@@ -73,7 +78,7 @@
     \starttypescript [\s!all] [koeielettersotf,sheepotf]
         \definefontsynonym [Sheep]         [koeielettersot][\s!features=sheepdefault]
         \definefontsynonym [SheepLogo]     [koeielettersot][\s!features=cowslogos]
-        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features=sheepdigits,\s!goodies=koeielettersot]
+        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features=mathsheepdigits,\s!goodies=koeielettersot]
     \stoptypescript
 
 %   \definefontsynonym[\s!MathRoman][file:texgyredejavu-math][\s!features=\s!math\mathsizesuffix,\s!goodies=dejavu-math]
@@ -87,7 +92,7 @@
     \starttypescript [\s!all] [coloredsheepotf]
         \definefontsynonym [Sheep]         [koeielettersot][\s!features=sheepcolored]
         \definefontsynonym [SheepLogo]     [koeielettersot][\s!features=cowslogos]
-        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features=sheepdigits,\s!goodies=koeielettersot]
+        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features=mathsheepdigits,\s!goodies=koeielettersot]
     \stoptypescript
 
     \starttypescript [\s!serif] [cowsotf,coloredcowsotf]
@@ -124,6 +129,14 @@
 \protect
 
 \continueifinputfile{type-imp-koeielettersot.mkiv}
+
+\starttext
+
+\setupbodyfont[sheep]
+
+$1^1$
+
+\stoptext
 
 \starttext
 

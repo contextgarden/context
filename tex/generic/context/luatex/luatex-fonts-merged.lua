@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/07/16 00:14:19
+-- merge date  : 10/08/16 00:11:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -6656,7 +6656,11 @@ setmetatableindex(formats,function(t,k)
   return rawget(t,file.suffix(l))
 end)
 do
-  local function setindeed(mode,target,group,name,action,position)
+  local function setindeed(mode,source,target,group,name,position)
+    local action=source[mode]
+    if not action then
+      return
+    end
     local t=target[mode]
     if not t then
       report_defining("fatal error in setting feature %a, group %a, mode %a",name,group,mode)
@@ -6685,15 +6689,10 @@ do
       report_defining("fatal source error in setting feature %a, group %a",name,group)
       os.exit()
     end
-    local node=source.node
-    local base=source.base
     local position=source.position
-    if node then
-      setindeed("node",target,group,name,node,position)
-    end
-    if base then
-      setindeed("base",target,group,name,base,position)
-    end
+    setindeed("node",source,target,group,name,position)
+    setindeed("base",source,target,group,name,position)
+    setindeed("plug",source,target,group,name,position)
   end
   local function register(where,specification)
     local name=specification.name
@@ -6755,9 +6754,9 @@ do
         defaults={},
         descriptions=tables and tables.features or {},
         used=statistics and statistics.usedfeatures or {},
-        initializers={ base={},node={} },
-        processors={ base={},node={} },
-        manipulators={ base={},node={} },
+        initializers={ base={},node={},plug={} },
+        processors={ base={},node={},plug={} },
+        manipulators={ base={},node={},plug={} },
       }
       features.register=function(specification) return register(features,specification) end
       handler.features=features 
@@ -7751,6 +7750,7 @@ registerotffeature {
   initializers={
     base=setmode,
     node=setmode,
+    plug=setmode,
   }
 }
 registerotffeature {
@@ -7759,6 +7759,7 @@ registerotffeature {
   initializers={
     base=setlanguage,
     node=setlanguage,
+    plug=setlanguage,
   }
 }
 registerotffeature {
@@ -7767,6 +7768,7 @@ registerotffeature {
   initializers={
     base=setscript,
     node=setscript,
+    plug=setscript,
   }
 }
 otftables.featuretypes=allocate {
@@ -18286,6 +18288,7 @@ local trace_details=false registertracker("otf.details",function(v) trace_detail
 local trace_steps=false registertracker("otf.steps",function(v) trace_steps=v end)
 local trace_skips=false registertracker("otf.skips",function(v) trace_skips=v end)
 local trace_directions=false registertracker("otf.directions",function(v) trace_directions=v end)
+local trace_plugins=false registertracker("otf.plugins",function(v) trace_plugins=v end)
 local trace_kernruns=false registertracker("otf.kernruns",function(v) trace_kernruns=v end)
 local trace_discruns=false registertracker("otf.discruns",function(v) trace_discruns=v end)
 local trace_compruns=false registertracker("otf.compruns",function(v) trace_compruns=v end)
@@ -21025,6 +21028,9 @@ local function pardirstate(start)
   end
   return getnext(start),new,new
 end
+otf.helpers=otf.helpers or {}
+otf.helpers.txtdirstate=txtdirstate
+otf.helpers.pardirstate=pardirstate
 local function featuresprocessor(head,font,attr)
   local sequences=sequencelists[font] 
   if not sequencelists then
@@ -21239,6 +21245,30 @@ local function featuresprocessor(head,font,attr)
   head=tonode(head)
   return head,done
 end
+local plugins={}
+otf.plugins=plugins
+function otf.registerplugin(name,f)
+  if type(name)=="string" and type(f)=="function" then
+    plugins[name]={ name,f }
+  end
+end
+local function plugininitializer(tfmdata,value)
+  if type(value)=="string" then
+    tfmdata.shared.plugin=plugins[value]
+  end
+end
+local function pluginprocessor(head,font)
+  local s=fontdata[font].shared
+  local p=s and s.plugin
+  if p then
+    if trace_plugins then
+      report_process("applying plugin %a",p[1])
+    end
+    return p[2](head,font)
+  else
+    return head,false
+  end
+end
 local function featuresinitializer(tfmdata,value)
 end
 registerotffeature {
@@ -21248,9 +21278,11 @@ registerotffeature {
   initializers={
     position=1,
     node=featuresinitializer,
+    plug=plugininitializer,
   },
   processors={
     node=featuresprocessor,
+    plug=pluginprocessor,
   }
 }
 otf.nodemodeinitializer=featuresinitializer

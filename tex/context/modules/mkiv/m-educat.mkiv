@@ -48,6 +48,7 @@
    \dontcomplain
    \setupanswerarea
      [\c!n=0,\c!m=,#1,\c!location=\v!text]%
+   \let\currenttextbackground\v!answerarea
    \doifelsenothing{\textbackgroundparameter\c!m}
      {\expandafter\donoanswerspace}
      {\expandafter\dodoanswerspace}%
@@ -110,6 +111,7 @@
    \dontcomplain
    \setupanswerarea
      [\c!n=0,\c!m=,#1,\c!location=\v!text]%
+   \let\currenttextbackground\v!answerarea
    \doifnot{\textbackgroundparameter\c!option}\v!joinedup\softbreak
    \doifelsenothing{\textbackgroundparameter\c!m}
      {\expandafter\donostartanswerlines}
