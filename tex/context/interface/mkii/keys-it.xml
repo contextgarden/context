@@ -382,6 +382,7 @@
 		<cd:variable name='note' value='note'/>
 		<cd:variable name='nothanging' value='nonsospeso'/>
 		<cd:variable name='nothyphenated' value='nonsillabato'/>
+		<cd:variable name='notjoinedup' value='notjoinedup'/>
 		<cd:variable name='november' value='novembre'/>
 		<cd:variable name='nowhere' value='danessunaparte'/>
 		<cd:variable name='nowhite' value='nobianco'/>

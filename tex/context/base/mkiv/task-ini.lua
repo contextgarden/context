@@ -49,13 +49,15 @@ appendaction("processors",   "words",       "typesetters.firstlines.handler")   
 
 appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split")     -- experimental
 appendaction("processors",   "fonts",       "nodes.handlers.characters")                         -- maybe todo
-appendaction("processors",   "fonts",       "nodes.injections.handler")                          -- maybe todo
+appendaction("processors",   "fonts",       "nodes.injections.handler")
+appendaction("processors",   "fonts",       "typesetters.fontkerns.handler")
 appendaction("processors",   "fonts",       "nodes.handlers.protectglyphs", nil, "nohead")       -- maybe todo
 appendaction("processors",   "fonts",       "builders.kernel.ligaturing")                        -- always on (could be selective: if only node mode)
 appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- always on (could be selective: if only node mode)
 appendaction("processors",   "fonts",       "nodes.handlers.stripping")                          -- disabled (might move)
 ------------("processors",   "fonts",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 
+appendaction("processors",   "lists",       "typesetters.rubies.check")                          -- disabled (maybe someplace else)
 appendaction("processors",   "lists",       "typesetters.characteralign.handler")                -- disabled (we need to to this after otf appliance)
 appendaction("processors",   "lists",       "typesetters.spacings.handler")                      -- disabled
 appendaction("processors",   "lists",       "typesetters.kerns.handler")                         -- disabled
@@ -78,6 +80,7 @@ appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility")     
 appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds")                        -- disabled
 appendaction("shipouts",     "normalizers", "nodes.handlers.alignbackgrounds")                   -- disabled
 ------------("shipouts",     "normalizers", "nodes.handlers.export")                             -- disabled
+appendaction("shipouts",     "normalizers", "typesetters.rubies.attach")                         -- disabled
 
 appendaction("shipouts",     "finishers",   "nodes.visualizers.handler")                         -- disabled
 appendaction("shipouts",     "finishers",   "attributes.colors.handler")                         -- disabled
@@ -167,6 +170,8 @@ disableaction("processors",  "typesetters.italics.handler")
 disableaction("processors",  "languages.visualizediscretionaries")
 disableaction("processors",  "nodes.handlers.stripping")
 disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
+disableaction("processors",  "nodes.rubies.check")
+disableaction("processors",  "typesetters.fontkerns.handler")
 
 disableaction("shipouts",    "typesetters.margins.finalhandler")
 disableaction("shipouts",    "builders.paragraphs.expansion.trace")
@@ -187,6 +192,8 @@ disableaction("shipouts",    "nodes.handlers.alignbackgrounds")
 disableaction("shipouts",    "nodes.references.handler")
 disableaction("shipouts",    "nodes.destinations.handler")
 -------------("shipouts",    "nodes.handlers.export")
+disableaction("shipouts","nodes.rubies.attach")
+
 
 disableaction("finalizers",  "typesetters.margins.localhandler")
 disableaction("finalizers",  "builders.paragraphs.keeptogether")

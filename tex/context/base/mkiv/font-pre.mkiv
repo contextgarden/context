@@ -667,6 +667,8 @@
 \definefontfeature[f:oldstyle] [onum=yes]
 \definefontfeature[f:tabular]  [tnum=yes]
 \definefontfeature[f:superiors][sups=yes]
+\definefontfeature[f:kern]     [kern=yes]
+\definefontfeature[f:kerns]    [kern=yes]
 
 \definealternativestyle [\v!smallcaps] [\setsmallcaps] [\setsmallcaps]
 \definealternativestyle [\v!oldstyle]  [\setoldstyle ] [\setoldstyle ]
@@ -687,7 +689,7 @@
 %D
 %D For tracing purposes we define:
 
-\definefont[tinyfont][dejavusansmono at 1ex]
+\definefont[tinyfont][file:dejavusansmono at 1ex]
 
 %D \macros
 %D   {infofont}
@@ -700,8 +702,8 @@
 \let\infofont    \relax % satisfy dep checker
 \let\infofontbold\relax % satisfy dep checker
 
-\definefont[infofont]    [dejavusansmono     at 6pt] % todo \the\everybodyfont
-\definefont[infofontbold][dejavusansmonobold at 6pt] % todo \the\everybodyfont
+\definefont[infofont]    [file:dejavusansmono      at 6pt] % todo \the\everybodyfont
+\definefont[infofontbold][file:dejavusansmono-bold at 6pt] % todo \the\everybodyfont
 
 %D Optimization (later we overload in math):
 

@@ -714,9 +714,9 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                             local tmp = next and getnext(next) or nil -- needs checking
                             local changestop = next == stop
                             local tempcurrent = copy_node(next)
-							copyinjection(tempcurrent,next)
+                            copyinjection(tempcurrent,next)
                             local nextcurrent = copy_node(current)
-							copyinjection(nextcurrent,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
+                            copyinjection(nextcurrent,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
                             setnext(tempcurrent,nextcurrent)
                             setprev(nextcurrent,tempcurrent)
                             setprop(tempcurrent,a_state,s_blwf)
@@ -725,7 +725,7 @@ local function deva_reorder(head,start,stop,font,attr,nbspaces)
                             if getchar(next) == getchar(tempcurrent) then
                                 flush_list(tempcurrent)
                                 local n = copy_node(current)
-								copyinjection(n,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
+                                copyinjection(n,current) -- KE: necessary? HH: probably not as positioning comes later and we rawget/set
                                 setchar(current,dotted_circle)
                                 head = insert_node_after(head, current, n)
                             else
@@ -1269,7 +1269,7 @@ function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replaceme
         setnext(prev,stop)
     end
     if head == start then
-    	head = stop
+        head = stop
     end
     flush_list(start)
     return head, stop, true
@@ -1578,7 +1578,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                         if halant[getchar(current)] then
                             setnext(getnext(current),tmp)
                             local nc = copy_node(current)
-							copyinjection(nc,current)
+                            copyinjection(nc,current)
                             setchar(current,dotted_circle)
                             head = insert_node_after(head,current,nc)
                         else
@@ -1642,17 +1642,17 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
     local last = getnext(stop)
     while current ~= last do
         local char, target, cn = locl[current] or getchar(current), nil, getnext(current)
--- not so efficient (needed for malayalam)
-local tpm = twopart_mark[char]
-if tpm then
-    local extra = copy_node(current)
-	copyinjection(extra,current)
-    char = tpm[1]
-    setchar(current,char)
-    setchar(extra,tpm[2])
-    head = insert_node_after(head,current,extra)
-end
---
+        -- not so efficient (needed for malayalam)
+        local tpm = twopart_mark[char]
+        if tpm then
+            local extra = copy_node(current)
+            copyinjection(extra,current)
+            char = tpm[1]
+            setchar(current,char)
+            setchar(extra,tpm[2])
+            head = insert_node_after(head,current,extra)
+        end
+        --
         if not moved[current] and dependent_vowel[char] then
             if pre_mark[char] then            -- Before first half form in the syllable
                 moved[current] = true
@@ -2081,7 +2081,7 @@ end
 
 local function inject_syntax_error(head,current,mark)
     local signal = copy_node(current)
-	copyinjection(signal,current)
+    copyinjection(signal,current)
     if mark == pre_mark then
         setchar(signal,dotted_circle)
     else
@@ -2127,8 +2127,8 @@ function methods.deva(head,font,attr)
             end
             if standalone then
                 -- stand alone cluster (at the start of the word only): #[Ra+H]+NBSP+[N]+[<[<ZWJ|ZWNJ>]+H+C>]+[{M}+[N]+[H]]+[SM]+[(VD)]
-				local syllableend = analyze_next_chars_one(c,font,2)
-				current = getnext(syllableend)
+                local syllableend = analyze_next_chars_one(c,font,2)
+                current = getnext(syllableend)
                 if syllablestart ~= syllableend then
                     head, current, nbspaces = deva_reorder(head,syllablestart,syllableend,font,attr,nbspaces)
                     current = getnext(current)

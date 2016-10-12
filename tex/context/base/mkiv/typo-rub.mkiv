@@ -1,0 +1,170 @@
+%D \module
+%D   [       file=typo-rub,
+%D        version=2016.10.10,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Rubies,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Experimental and unfinished.
+
+% todo: distance
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Rubies}
+
+\unprotect
+
+\registerctxluafile{typo-rub}{1.001}
+
+\definesystemattribute[ruby]
+
+\installcorenamespace {ruby}
+\installcorenamespace {rubyanalyze}
+\installcorenamespace {rubyplacement}
+
+\installcommandhandler \??ruby {ruby} \??ruby
+
+% \appendtoks
+%     \clf_defineruby
+%         align   {\rubyparameter\c!align}
+%         stretch {\rubyparameter\c!stretch}
+%         hoffset  \rubyparameter\c!hoffset
+%         voffset  \rubyparameter\c!voffset
+%     \relax
+% \to \everydefineruby
+
+\unexpanded\def\ruby
+  {\dosingleempty\typo_ruby_yes}
+
+\unexpanded\def\typo_ruby_yes[#1]#2#3%
+  {\dontleavehmode
+   \begingroup
+   \let\typo_ruby_yes\typo_ruby_nop % no nesting
+   \edef\currentruby{#1}%
+   \edef\p_location{\rubyparameter\c!location}%
+   \let|\relax
+   \ifcsname\??rubyanalyze\p_location\endcsname
+     \expandafter\lastnamedcs\else\expandafter\typo_ruby_analyze
+   \fi{#2}{#3}%
+   \endgroup}
+
+\unexpanded\def\typo_ruby_nop[#1]#2#3%
+  {#2}
+
+\def\typo_ruby_analyze#1#2%
+  {\clf_ruby
+     base    {#1}%
+     comment {#2}
+   \relax}
+
+\setvalue{\??rubyanalyze\v!top}#1#2%
+  {\clf_ruby
+     align   {\rubyparameter\c!align}%
+     stretch {\rubyparameter\c!stretch}%
+     hoffset  \rubyparameter\c!hoffset
+     voffset  \rubyparameter\c!voffset
+     base    {#1}%
+     comment {#2}
+   \relax}
+
+\setvalue{\??rubyplacement\v!top}#1#2%
+  {\setbox\scratchbox\hbox\bgroup
+     \userubystyleandcolor\c!style\c!color
+     #2%
+   \egroup
+   \clf_setruby \scratchbox
+   \relax
+   #1}
+
+\setvalue{\??rubyplacement\v!right}#1#2%
+  {#1%
+   \edef\p_distance{\rubyparameter\c!distance}%
+   \ifx\p_distance\empty\else\ifx\p_distance\v!none\else\hskip\p_distance\fi\fi
+   \begingroup
+   \userubystyleandcolor\c!style\c!color
+   \rubyparameter\c!left#2\rubyparameter\c!right
+   \endgroup}
+
+\setvalue{\??rubyplacement\v!left}#1#2%
+  {\begingroup
+   \userubystyleandcolor\c!style\c!color
+   \rubyparameter\c!left#2\rubyparameter\c!right
+   \endgroup
+   \edef\p_distance{\rubyparameter\c!distance}%
+   \ifx\p_distance\empty\else\ifx\p_distance\v!none\else\hskip\p_distance\fi\fi
+   #1}
+
+\unexpanded\def\setruby#1#2%
+  {\begingroup
+   \ifcsname\??rubyplacement\p_location\endcsname
+     \lastnamedcs{#1}{#2}%
+   \else
+     #1%
+   \fi
+   \endgroup}
+
+\unexpanded\def\startruby
+  {\dosingleempty\typo_ruby_start_yes}
+
+\unexpanded\def\typo_ruby_start_yes[#1]%
+  {\dontleavehmode
+   \begingroup
+   \let\typo_ruby_start_yes\begingroup
+   \edef\currentruby{#1}%
+   \clf_startruby
+        align   {\rubyparameter\c!align}%
+        stretch {\rubyparameter\c!stretch}%
+        hoffset  \rubyparameter\c!hoffset
+        voffset  \rubyparameter\c!voffset
+   \relax}
+
+\unexpanded\def\stopruby
+  {\endgroup}
+
+\setupruby
+  [\c!style=\txx,
+   \c!location=\v!top,
+   \c!left=(,
+   \c!right=),
+   \c!distance=\zeropoint, % \v!none means no skip at all so no break either
+   \c!hoffset=\zeropoint,
+   \c!voffset=-2\exheight]
+
+\protect \endinput
+
+% \usemodule[art-01]\setupbodyfont[dejavu,12pt]
+%
+% \defineruby[auto]  [align=auto,color=darkred]
+% \defineruby[left]  [align=flushleft,color=darkred]
+% \defineruby[right] [align=flushright,color=darkred]
+% \defineruby[spread][stretch=yes]
+%
+% \showframe \showglyphs \showfontkerns \setupinterlinespace[22pt]
+%
+% \starttext
+%
+% \startbuffer
+%     \dorecurse{20}{\ruby{XYZ}{a|bc|d} }\par
+%     \dorecurse{20}{\ruby{PQR}{p|q|r} }\par
+%     \dorecurse{20}{\ruby{XYZ}{1|22|333} }\par
+%     \dorecurse{20}{\ruby{XYZ}{111|222|333} }\par
+%     \dorecurse{20}{\ruby{XYZ}{foobar} }\par
+%     \dorecurse{20}{\ruby{XYZ}{fooledbar} }\par
+%     \dorecurse{20}{\ruby[spread]{XYZ}{fooledbar} }\par
+%     \dorecurse{20}{\ruby{extremely}{wide} }\par
+%     \dorecurse{20}{\ruby{wide}{extremely} }\par
+%  stopbuffer
+%
+% \testfeatureonce{1}{\start \setupinterlinespace[16pt] \setupruby[location=none]                   \getbuffer \stop \page}
+% \testfeatureonce{1}{\start \setupinterlinespace[16pt] \setupruby[location=right]                  \getbuffer \stop \page}
+% \testfeatureonce{1}{\start \setupinterlinespace[28pt] \setupruby[align=auto,color=darkred]        \getbuffer \stop \page}
+% \testfeatureonce{1}{\start \setupinterlinespace[28pt] \setupruby[align=flushleft,color=darkgreen] \getbuffer \stop \page}
+% \testfeatureonce{1}{\start \setupinterlinespace[28pt] \setupruby[align=flushright,color=darkblue] \getbuffer \stop \page}
+% \testfeatureonce{1}{\start \setupinterlinespace[28pt] \setupruby[align=middle,color=darkyellow]   \getbuffer \stop \page}
+%
+% \stoptext

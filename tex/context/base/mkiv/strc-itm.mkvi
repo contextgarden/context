@@ -23,6 +23,10 @@
 %D no surprise that I had that cd running several times when updating this
 %D code. One of the highlights of 2011.
 
+%D This module needs to be rewritten but that is tricky with respect to
+%D compatibilitity. Basically each major variant (regular, text, columns,
+%D horizontal, etc) needs to be on its own.
+
 % todo: check breaks
 % todo: check grouping
 % todo: fixedconversion
@@ -406,70 +410,70 @@
      \settrue\c_strc_itemgroups_pack
    \fi}
 
-\setvalue{\??itemgroupkeyword\!!zerocount}{} % ignore 0
-\setvalue{\??itemgroupkeyword\v!packed   }{\strc_itemgroups_process_set_option_pack}
-\setvalue{\??itemgroupkeyword\v!intro    }{\settrue\c_strc_itemgroups_intro} % here? not set to false
-\setvalue{\??itemgroupkeyword\v!autointro}{\settrue\c_strc_itemgroups_auto_intro}
-\setvalue{\??itemgroupkeyword\v!broad    }{\ifx\itemgroupfirst\empty
-                                             \let\itemgroupfirst\!!plusone
-                                           \fi
-                                           \letitemgroupparameter\c!factor\itemgroupfirst}
-\setvalue{\??itemgroupkeyword\v!text     }{\settrue\c_strc_itemgroups_text
-                                           \settrue\c_strc_itemgroups_inline
-                                           \settrue\c_strc_itemgroups_joined
-                                           \strc_itemgroups_process_set_option_pack}
-\setvalue{\??itemgroupkeyword\v!before   }{\settrue\c_strc_itemgroups_before}
-\setvalue{\??itemgroupkeyword\v!after    }{\settrue\c_strc_itemgroups_after}
-\setvalue{\??itemgroupkeyword\v!nowhite  }{\settrue\c_strc_itemgroups_nowhite}
-\setvalue{\??itemgroupkeyword\v!margin   }{\setitemgroupparameter\c!width{-2em}} % signal
-\setvalue{\??itemgroupkeyword\v!inmargin }{\setitemgroupparameter\c!width{-2em}} % signal
-\setvalue{\??itemgroupkeyword\v!atmargin }{\ifnum\c_strc_itemgroups_nesting>\plusone
-                                             \setitemgroupparameter\c!width{0em}%
-                                           \fi} % signal
-\setvalue{\??itemgroupkeyword\v!intext   }{\settrue\c_strc_itemgroups_inline}
-\setvalue{\??itemgroupkeyword\v!loose    }{\setfalse\c_strc_itemgroups_optimize}
-\setvalue{\??itemgroupkeyword\v!fit      }{\settrue\c_strc_itemgroups_fitting}
-\setvalue{\??itemgroupkeyword\v!nofit    }{\setfalse\c_strc_itemgroups_fitting}
-\setvalue{\??itemgroupkeyword\v!paragraph}{\settrue\c_strc_itemgroups_paragraph
-                                           \strc_itemgroups_process_set_option_pack}
-\setvalue{\??itemgroupkeyword\v!joinedup }{\settrue\c_strc_itemgroups_joined
-                                           \strc_itemgroups_process_set_option_pack}
-\setvalue{\??itemgroupkeyword\v!serried  }{\edef\itemgroupfirst{-\ifx\itemgroupfirst\empty1\else\itemgroupfirst\fi}%
-                                           \letitemgroupparameter\c!factor\itemgroupfirst}
-\setvalue{\??itemgroupkeyword\v!stopper  }{\letitemgroupparameter\c!placestopper\v!yes} % keep {}
-\setvalue{\??itemgroupkeyword\v!unpacked }{\setfalse\c_strc_itemgroups_pack}
-\setvalue{\??itemgroupkeyword\v!repeat   }{\settrue\c_strc_itemgroups_repeat}
-\setvalue{\??itemgroupkeyword\v!norepeat }{\setfalse\c_strc_itemgroups_repeat}
-\setvalue{\??itemgroupkeyword\v!reverse  }{\settrue\c_strc_itemgroups_reverse}
-\setvalue{\??itemgroupkeyword\v!columns  }{\settrue\c_strc_itemgroups_columns}
-\setvalue{\??itemgroupkeyword\v!one      }{\letitemgroupparameter\c!n\plusone}
-\setvalue{\??itemgroupkeyword\v!two      }{\letitemgroupparameter\c!n\plustwo}
-\setvalue{\??itemgroupkeyword\v!three    }{\letitemgroupparameter\c!n\plusthree}
-\setvalue{\??itemgroupkeyword\v!four     }{\letitemgroupparameter\c!n\plusfour}
-\setvalue{\??itemgroupkeyword\v!five     }{\letitemgroupparameter\c!n\plusfive}
-\setvalue{\??itemgroupkeyword\v!six      }{\letitemgroupparameter\c!n\plussix}
-\setvalue{\??itemgroupkeyword\v!seven    }{\letitemgroupparameter\c!n\plusseven}
-\setvalue{\??itemgroupkeyword\v!eight    }{\letitemgroupparameter\c!n\pluseight}
-\setvalue{\??itemgroupkeyword\v!nine     }{\letitemgroupparameter\c!n\plusnine}
-%setvalue{\??itemgroupkeyword\v!standard }{\setupcurrentitemgroup
-%                                            [\c!width     =1.5\emwidth,%
-%                                             \c!distance  =.5\emwidth,%
-%                                             \c!factor    =0,%
-%                                             \c!inner     =,%
-%                                             \c!beforehead=,%
-%                                             \c!afterhead =\blank,%
-%                                             \c!before    =\blank,%
-%                                             \c!inbetween =\blank,%
-%                                             \c!after     =\blank]}
-\setvalue{\??itemgroupkeyword\v!standard }{\setitemgroupparameter\c!width     {1.5\emwidth}%
-                                           \setitemgroupparameter\c!distance  {.5\emwidth}%
-                                           \letitemgroupparameter\c!factor    \!!zerocount
-                                           \letitemgroupparameter\c!inner     \empty
-                                           \letitemgroupparameter\c!beforehead\empty
-                                           \letitemgroupparameter\c!afterhead \blank
-                                           \letitemgroupparameter\c!before    \blank
-                                           \letitemgroupparameter\c!inbetween \blank
-                                           \letitemgroupparameter\c!after     \blank}
+\setvalue{\??itemgroupkeyword\!!zerocount  }{} % ignore 0
+\setvalue{\??itemgroupkeyword\v!packed     }{\strc_itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!intro      }{\settrue\c_strc_itemgroups_intro} % here? not set to false
+\setvalue{\??itemgroupkeyword\v!autointro  }{\settrue\c_strc_itemgroups_auto_intro}
+\setvalue{\??itemgroupkeyword\v!broad      }{\ifx\itemgroupfirst\empty
+                                               \let\itemgroupfirst\!!plusone
+                                             \fi
+                                             \letitemgroupparameter\c!factor\itemgroupfirst}
+\setvalue{\??itemgroupkeyword\v!text       }{\settrue\c_strc_itemgroups_text
+                                             \settrue\c_strc_itemgroups_inline
+                                             \settrue\c_strc_itemgroups_joined
+                                             \strc_itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!before     }{\settrue\c_strc_itemgroups_before}
+\setvalue{\??itemgroupkeyword\v!after      }{\settrue\c_strc_itemgroups_after}
+\setvalue{\??itemgroupkeyword\v!nowhite    }{\settrue\c_strc_itemgroups_nowhite}
+\setvalue{\??itemgroupkeyword\v!margin     }{\setitemgroupparameter\c!width{-2em}} % signal
+\setvalue{\??itemgroupkeyword\v!inmargin   }{\setitemgroupparameter\c!width{-2em}} % signal
+\setvalue{\??itemgroupkeyword\v!atmargin   }{\ifnum\c_strc_itemgroups_nesting>\plusone
+                                               \setitemgroupparameter\c!width{0em}%
+                                             \fi} % signal
+\setvalue{\??itemgroupkeyword\v!intext     }{\settrue\c_strc_itemgroups_inline}
+\setvalue{\??itemgroupkeyword\v!loose      }{\setfalse\c_strc_itemgroups_optimize}
+\setvalue{\??itemgroupkeyword\v!fit        }{\settrue\c_strc_itemgroups_fitting}
+\setvalue{\??itemgroupkeyword\v!nofit      }{\setfalse\c_strc_itemgroups_fitting}
+\setvalue{\??itemgroupkeyword\v!paragraph  }{\settrue\c_strc_itemgroups_paragraph
+                                             \strc_itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!joinedup   }{\settrue\c_strc_itemgroups_joined
+                                             \strc_itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!notjoinedup}{\setfalse\c_strc_itemgroups_joined}
+\setvalue{\??itemgroupkeyword\v!serried    }{\edef\itemgroupfirst{-\ifx\itemgroupfirst\empty1\else\itemgroupfirst\fi}%
+                                             \letitemgroupparameter\c!factor\itemgroupfirst}
+\setvalue{\??itemgroupkeyword\v!stopper    }{\letitemgroupparameter\c!placestopper\v!yes} % keep {}
+\setvalue{\??itemgroupkeyword\v!repeat     }{\settrue\c_strc_itemgroups_repeat}
+\setvalue{\??itemgroupkeyword\v!norepeat   }{\setfalse\c_strc_itemgroups_repeat}
+\setvalue{\??itemgroupkeyword\v!reverse    }{\settrue\c_strc_itemgroups_reverse}
+\setvalue{\??itemgroupkeyword\v!columns    }{\settrue\c_strc_itemgroups_columns}
+\setvalue{\??itemgroupkeyword\v!one        }{\letitemgroupparameter\c!n\plusone}
+\setvalue{\??itemgroupkeyword\v!two        }{\letitemgroupparameter\c!n\plustwo}
+\setvalue{\??itemgroupkeyword\v!three      }{\letitemgroupparameter\c!n\plusthree}
+\setvalue{\??itemgroupkeyword\v!four       }{\letitemgroupparameter\c!n\plusfour}
+\setvalue{\??itemgroupkeyword\v!five       }{\letitemgroupparameter\c!n\plusfive}
+\setvalue{\??itemgroupkeyword\v!six        }{\letitemgroupparameter\c!n\plussix}
+\setvalue{\??itemgroupkeyword\v!seven      }{\letitemgroupparameter\c!n\plusseven}
+\setvalue{\??itemgroupkeyword\v!eight      }{\letitemgroupparameter\c!n\pluseight}
+\setvalue{\??itemgroupkeyword\v!nine       }{\letitemgroupparameter\c!n\plusnine}
+%setvalue{\??itemgroupkeyword\v!standard   }{\setupcurrentitemgroup
+%                                              [\c!width     =1.5\emwidth,%
+%                                               \c!distance  =.5\emwidth,%
+%                                               \c!factor    =0,%
+%                                               \c!inner     =,%
+%                                               \c!beforehead=,%
+%                                               \c!afterhead =\blank,%
+%                                               \c!before    =\blank,%
+%                                               \c!inbetween =\blank,%
+%                                               \c!after     =\blank]}
+\setvalue{\??itemgroupkeyword\v!standard   }{\setitemgroupparameter\c!width     {1.5\emwidth}%
+                                             \setitemgroupparameter\c!distance  {.5\emwidth}%
+                                             \letitemgroupparameter\c!factor    \!!zerocount
+                                             \letitemgroupparameter\c!inner     \empty
+                                             \letitemgroupparameter\c!beforehead\empty
+                                             \letitemgroupparameter\c!afterhead \blank
+                                             \letitemgroupparameter\c!before    \blank
+                                             \letitemgroupparameter\c!inbetween \blank
+                                             \letitemgroupparameter\c!after     \blank}
 
 
 \def\strc_itemgroups_initialize_local
@@ -1664,7 +1668,14 @@
      \c_strc_itemgroups_collected_done   \zerocount
      \c_strc_itemgroups_collected_current\zerocount
      \ifnum\c_strc_itemgroups_collected_stored>\zerocount
-       \doubleexpandafter\strc_itemgroups_collected_flush
+       \ifconditional\c_strc_itemgroups_horizontal
+         \strc_itemgroups_before_command
+         \setfalse\c_strc_itemgroups_first
+         \strc_itemgroups_collected_flush
+        %\strc_itemgroups_after_command % triggered elsewhere
+       \else
+         \strc_itemgroups_collected_flush
+       \fi
      \fi
    \fi}
 

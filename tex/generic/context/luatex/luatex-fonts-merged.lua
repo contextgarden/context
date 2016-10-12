@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/08/16 00:11:10
+-- merge date  : 10/12/16 17:26:31
 
 do -- begin closure to overcome local limits and interference
 
@@ -16018,7 +16018,6 @@ local function getgsub(tfmdata,k,kind,value)
       local properties=tfmdata.properties
       local validlookups,lookuplist=otf.collectlookups(rawdata,kind,properties.script,properties.language)
       if validlookups then
-        local choice=tonumber(value) or 1 
         for i=1,#lookuplist do
           local lookup=lookuplist[i]
           local steps=lookup.steps
@@ -18294,6 +18293,7 @@ local trace_discruns=false registertracker("otf.discruns",function(v) trace_disc
 local trace_compruns=false registertracker("otf.compruns",function(v) trace_compruns=v end)
 local trace_testruns=false registertracker("otf.testruns",function(v) trace_testruns=v end)
 local optimizekerns=true
+local alwaysdisc=true  registerdirective("otf.alwaysdisc",function(v) alwaysdisc=v end)
 local report_direct=logs.reporter("fonts","otf direct")
 local report_subchain=logs.reporter("fonts","otf subchain")
 local report_chain=logs.reporter("fonts","otf chain")
@@ -18675,7 +18675,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
         setlink(discfound,next)
         setboth(base)
         setfield(base,"components",copied)
-        setdisc(discfound,pre,post,base,discretionary_code)
+        setdisc(discfound,pre,post,base) 
         base=prev 
       end
     end
@@ -20844,6 +20844,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
             return true,d>1
           end
         end
+      else
       end
       start=getnext(start)
     else
@@ -20957,6 +20958,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
             report_missing_coverage(dataset,sequence)
           end
         end
+      else
       end
       start=getnext(start)
     else
@@ -21058,6 +21060,7 @@ local function featuresprocessor(head,font,attr)
   local rlmode=0
   local done=false
   local datasets=otf.dataset(tfmdata,font,attr)
+  local forcedisc=alwaysdisc or not attr
   local dirstack={} 
   sweephead={}
   for s=1,#datasets do
@@ -21150,16 +21153,21 @@ local function featuresprocessor(head,font,attr)
             elseif char==false then
               start=getnext(start)
             elseif id==disc_code then
-              local ok
-              if gpossing then
-                start,ok=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-              elseif typ=="gsub_ligature" then
-                start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+              local a=forcedisc or getsubtype(start)==discretionary_code or getattr(start,0)==attr
+              if a then
+                local ok
+                if gpossing then
+                  start,ok=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+                elseif typ=="gsub_ligature" then
+                  start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+                else
+                  start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+                end
+                if ok then
+                  success=true
+                end
               else
-                start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-              end
-              if ok then
-                success=true
+                start=getnext(start)
               end
             elseif id==math_code then
               start=getnext(end_of_math(start))
@@ -21211,16 +21219,21 @@ local function featuresprocessor(head,font,attr)
           elseif char==false then
             start=getnext(start)
           elseif id==disc_code then
-            local ok
-            if gpossing then
-              start,ok=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-            elseif typ=="gsub_ligature" then
-              start,ok=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+            local a=forcedisc or getsubtype(start)==discretionary_code or getattr(start,0)==attr
+            if a then
+              local ok
+              if gpossing then
+                start,ok=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+              elseif typ=="gsub_ligature" then
+                start,ok=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+              else
+                start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+              end
+              if ok then
+                success=true
+              end
             else
-              start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-            end
-            if ok then
-              success=true
+              start=getnext(start)
             end
           elseif id==math_code then
             start=getnext(end_of_math(start))

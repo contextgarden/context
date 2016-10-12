@@ -489,7 +489,7 @@ end
 
 -- written while listening to Alanis Morissette's acoustic
 -- Jagged Little Pill and Tori Amos' Beekeeper after
--- reinstalling on my good old ATH-7
+-- reinstalling my good old ATH-7
 
 local language = props["ctx.spellcheck.language"]
 local wordsize = props["ctx.spellcheck.wordsize"]

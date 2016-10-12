@@ -1233,6 +1233,44 @@ command:
 
 \stopsection
 
+\startsection[title=Extra font kerns]
+
+Fonts are processed independent of each other. Sometimes that is unfortunate for
+kerning, although in practice it won't happen that often. We can enable an
+additional kerning mechanism to deal with these cases. The \type
+{\setextrafontkerns} command takes one argument between square brackets. The
+effect can be seen below:
+
+\startbuffer
+    VA {\smallcaps va} V{\smallcaps a}
+    VA {\bf VA} V{\bf A} {\bf V}A
+    V{\it A}
+\stopbuffer
+
+\starttabulate[|Tl|l|p|]
+\HL
+\BC key \BC result \BC logic \NC \NR
+\HL
+\NC no kerns \NC \showfontkerns\setextrafontkerns[reset]\subff{f:kern}\inlinebuffer \NC no kerns at all \NC \NR
+\NC kerns    \NC \showfontkerns\setextrafontkerns[reset]\inlinebuffer \NC kerns within a font (feature) run \NC \NR
+\HL
+\NC none     \NC \showfontkerns\setextrafontkerns [none]\inlinebuffer \NC only extra kerns within fonts \NC \NR
+\NC min      \NC \showfontkerns\setextrafontkerns  [min]\inlinebuffer \NC minimal kerns within and across fonts \NC \NR
+\NC max      \NC \showfontkerns\setextrafontkerns  [max]\inlinebuffer \NC maximum kerns within and across fonts \NC \NR
+\NC mixed    \NC \showfontkerns\setextrafontkerns[mixed]\inlinebuffer \NC averaged kerns within and across fonts \NC \NR
+\HL
+\stoptabulate
+
+The content is defined as:
+
+\typebuffer
+
+This mechanism obeys grouping so you have complete control over where and when
+it gets applied. The \type {\showfontkerns} command can be used to trace the
+injection of (font) kerns.
+
+\stopsection
+
 \startsection[title=Ligatures]
 
 For some Latin fonts ligature building is quite advanced, take Unifraktur. I have no

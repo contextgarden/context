@@ -98,8 +98,11 @@
      \edef\p_factor{\mathextensibleparameter\c!factor}%
      \ifsecondargument
        \doifassignmentelse{#2}
-         {\setupcurrentmathextensible[#2]}%
+         {\setupcurrentmathextensible[#2]%
+          \edef\p_factor{\mathextensibleparameter\c!factor}}%
          {\edef\p_factor{#2}}%
+     \else
+       \edef\p_factor{\mathextensibleparameter\c!factor}%
      \fi
      \Uvextensible
         axis   % can be an option
@@ -117,5 +120,32 @@
 % \stopformula
 
 \definemathextensible[integral][\c!symbol="222B]
+
+\unexpanded\def\autointegral#1#2#3%
+  {\ifmmode
+     \setbox\nextbox\mathstylehbox{#3}%
+     \scratchdimen\ifdim\nextboxht>\nextboxdp\nextboxht\else\nextboxdp\fi
+     \mathlimop{%
+       \Uvextensible
+         height \scratchdimen
+         depth \scratchdimen
+         exact%
+         axis%
+         \Udelimiter \plusfour \zerocount "222B%
+     }%
+     \limits % nolimits needs more work: kerning and so
+     \normalsuperscript{#1}%
+     \normalsubscript{#2}%
+     \box\nextbox
+   \else
+      \char"222B\relax
+   \fi}
+
+% \startformula
+%     a =
+%     \autointegral{t}{b}1 +
+%     \autointegral{t}{b}{\frac{\frac{3}{4}}{\frac{1}{2}}} +
+%     \autointegral{t}{b}{\frac{\frac{\frac{\frac{1}{2}}{2}}{2}}{2}}
+% \stopformula
 
 \protect \endinput

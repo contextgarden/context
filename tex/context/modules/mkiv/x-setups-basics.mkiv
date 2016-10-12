@@ -167,11 +167,11 @@
             local commands   = interfaces.complete.commands
             local elements   = interfaces.complete.elements
 
-            local function replace(pattern,attribute,one,two)
+            local function replace(pattern,attribute,one,two,three)
                 for e in xml.collected(x,pattern) do
                     local t = e.at[attribute]
                     if t then
-                        local c = one[t] or (two and two[t])
+                        local c = one[t] or (two and two[t]) or (three and three[t])
                         if c then
                             local v = c[interface]
                             if v then
@@ -182,7 +182,7 @@
                 end
             end
 
-            replace('cd:command',   'name',    commands, elements)
+            replace('cd:command',   'name',    commands, elements, variables)
             replace('cd:string',    'value',   commands, elements)
             replace('cd:variable' , 'value',   variables)
 
@@ -192,6 +192,7 @@
             replace('cd:variable',  'type',    variables)
             replace('cd:inherit',   'name',    commands, elements)
 
+            replace('cd:instances/cd:constant',  'value',    variables)
         end
 
         if tex.modes["setups:save"] and environment.currentrun == 1 then

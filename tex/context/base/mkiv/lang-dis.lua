@@ -43,6 +43,9 @@ local disc_code          = nodecodes.disc
 local glyph_code         = nodecodes.glyph
 
 local discretionary_code = disccodes.discretionary
+local explicit_code      = disccodes.explicit
+local automatic_code     = disccodes.automatic
+local regular_code       = disccodes.regular
 
 local a_visualize        = attributes.private("visualizediscretionary")
 local setattribute       = tex.setattribute
@@ -56,7 +59,7 @@ local expanders = {
         -- \discretionary
         return template
     end,
-    [disccodes.explicit] = function(d,template)
+    [explicit_code] = function(d,template)
         -- \-
         local pre, post, replace = getdisc(d)
         local done = false
@@ -78,13 +81,13 @@ local expanders = {
         end
         if done then
             -- todo: take existing penalty
-            setdisc(d,pre,post,replace,discretionary_code,tex.exhyphenpenalty)
+            setdisc(d,pre,post,replace,explicit_code,tex.exhyphenpenalty)
         else
-            setfield(d,"subtype",discretionary_code)
+            setfield(d,"subtype",explicit_code)
         end
         return template
     end,
-    [disccodes.automatic] = function(d,template)
+    [automatic_code] = function(d,template)
         -- following a - : the pre and post chars are already appended and set
         -- so we have pre=preex and post=postex .. however, the previous
         -- hyphen is already injected ... downside: the font handler sees this
@@ -115,16 +118,16 @@ local expanders = {
                 else
                     -- can't happen
                 end
-                setdisc(d,pre,post,replace,discretionary_code,tex.hyphenpenalty)
+                setdisc(d,pre,post,replace,automatic_code,tex.hyphenpenalty)
             else
              -- print("lone regular discretionary ignored")
             end
         else
-            setdisc(d,pre,post,replace,discretionary_code,tex.hyphenpenalty)
+            setdisc(d,pre,post,replace,automatic_code,tex.hyphenpenalty)
         end
         return template
     end,
-    [disccodes.regular] = function(d,template)
+    [regular_code] = function(d,template)
         if check_regular then
             -- simple
             if not template then
@@ -155,7 +158,7 @@ local expanders = {
                     setchar(post,postchar)
                 end
                 if done then
-                    setdisc(d,pre,post,replace,discretionary_code,tex.hyphenpenalty)
+                    setdisc(d,pre,post,replace,regular_code,tex.hyphenpenalty)
                 end
             else
              -- print("lone regular discretionary ignored")
@@ -163,7 +166,7 @@ local expanders = {
             return template
         else
             -- maybe also set penalty here
-            setsubtype(d,discretionary_code)
+            setsubtype(d,regular_code)
         end
     end,
     [disccodes.first] = function()

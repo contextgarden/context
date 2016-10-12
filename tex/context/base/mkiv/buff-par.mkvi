@@ -15,24 +15,40 @@
 
 \registerctxluafile{buff-par}{1.001}
 
-%D This module is developped for Thomas Schmitz as part of a project. There is
-%D no documentation yet.
+%D This module is made for Thomas Schmitz as part of a project. There is
+%D no documentation yet. Also, this code is unfinished and not tested well.
 %D
 %D \starttyping
 %D \defineparallel[main][one,two]
 %D
 %D \startmain
 %D \startone
-%D     first 1
-%D     [reference] first 2
+%D     first 0
+%D     [reference] first 1
+%D     first 2
 %D     first 3
 %D \stopone
 %D \starttwo
 %D     second 1
+%D     second 2
 %D \stoptwo
 %D \stopmain
 %D
-%D \placeparallel[main][one,two][criterium=all]
+%D \startmain
+%D \startone
+%D     first 4
+%D     first 4
+%D \stopone
+%D \starttwo
+%D     second 3
+%D     second 4
+%D \stoptwo
+%D \stopmain
+%D
+%D \placeparallel[main][one][criterium=all]
+%D
+%D \placeparallel[main][two][criterium=all]
+%D \stoptyping
 
 %D criterium=all start=<number> n=<number>
 
@@ -134,7 +150,8 @@
   {}
 
 \def\buff_parallel_flush_yes
-  {\directsetup{\namedparallelparameter{\currentparallel:\currentparallelinstance}\c!setups}}
+ %{\directsetup{\namedparallelparameter{\currentparallel:\currentparallelinstance}\c!setups}}
+  {\directsetup{\namedparallelparameter{\currentparallelinstance}\c!setups}}
 
 \unexpanded\def\doifelseparallel#name#instance%
   {\clf_doifelseparallel{#name}{#instance}}

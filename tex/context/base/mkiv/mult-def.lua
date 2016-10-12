@@ -14198,6 +14198,10 @@ return {
    ["pe"]="متصل‌بالا",
    ["ro"]="unit",
   },
+  ["notjoinedup"]={
+   ["en"]="notjoinedup",
+   ["nl"]="nietaansluitend",
+  },
   ["july"]={
    ["cs"]="cervenec",
    ["de"]="juli",

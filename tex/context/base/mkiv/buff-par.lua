@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['buff-par'] = {
     license   = "see context related readme files"
 }
 
-local insert, remove, find, gmatch = table.insert, table.remove, string.find, string.gmatch
+local insert, remove, find, gmatch, match = table.insert, table.remove, string.find, string.gmatch, string.match
 local fullstrip, formatters = string.fullstrip, string.formatters
 
 local trace_parallel  = false  trackers.register("buffers.parallel", function(v) trace_parallel = v end)
@@ -90,18 +90,31 @@ function parallel.save(category,tag,content,frombuffer)
     -- use lpeg
     if find(content,"%s*%[") then
         local done = false
-        for label, content in gmatch(content,"%s*%[(.-)%]%s*([^%[]+)") do
+
+        local function flush(content,label)
             if done then
                 line = { }
                 insert(lines,line)
             else
                 done = true
             end
+            line.content = fullstrip(content)
+            line.label   = label
+        end
+
+
+        local leading, rest = match(content,"^%s*([^%[]+)(.*)$")
+        if leading then
+            if leading ~= "" then
+                flush(leading)
+            end
+            content = rest
+        end
+        for label, content in gmatch(content,"%s*%[(.-)%]%s*([^%[]+)") do
             if trace_parallel and label ~= "" then
                 report_parallel("reference found of category %a, tag %a, label %a",category,tag,label)
             end
-            line.content = fullstrip(content)
-            line.label   = label
+            flush(content,label)
         end
     else
         line.content = fullstrip(content)
