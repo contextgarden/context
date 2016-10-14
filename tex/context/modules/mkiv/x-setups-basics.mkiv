@@ -45,7 +45,7 @@
   [\c!width=\hsize,
    \c!height=\v!fit,
    \c!align=\v!right,
-   \c!offset=0.75\emwidth]
+   \c!offset=0.75\emwidth] % \exheight
 
 \popmacro\setuptext
 
@@ -362,6 +362,10 @@
     \xmlatt{#1}{value}
 \stopxmlsetups
 
+\startxmlsetups xml:setups:make:instance
+    \m_cmd_instance
+\stopxmlsetups
+
 \startxmlsetups xml:setups:make:variable
     \setupintfont{\xmlatt{#1}{value}}
 \stopxmlsetups
@@ -372,6 +376,7 @@
 \let\m_cmd_name        \empty
 \let\m_cmd_start       \empty
 \let\m_cmd_stop        \empty
+\let\m_cmd_instance    \empty
 
 \startxmlsetups xml:setups:make:prepare
     \edef\m_cmd_current_hash{\xmlatt{#1}{hash}}
@@ -379,7 +384,7 @@
     \xmldoifelseempty{#1}{/sequence} {
         \edef\m_cmd_name{\xmlatt{#1}{name}}
     } {
-        \edef\m_cmd_name{\xmlfilter{#1}{/sequence/(string|variable)/command(xml:setups:make:*)}}
+        \edef\m_cmd_name{\xmlfilter{#1}{/sequence/(string|variable|instance)/command(xml:setups:make:*)}}
     }
     \doifelse {\xmlatt{#1}{type}} {environment} {
         \doifsomethingelse {\xmlatt{#1}{begin}} {
@@ -478,7 +483,11 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:instance
-    \xmlatt{#1}{value}\enskip % we need a break
+    \doifelse {\xmltag{#1}} {resolve} {
+        \ctxlua{lxml.command(moduledata.setups.definitions['\xmlatt{#1}{name}'],"constant","xml:setups:instance")}
+    } {
+        \xmlatt{#1}{value}\enskip % we need a break
+    }
 \stopxmlsetups
 
 \startxmlsetups xml:setups:typeset:instances
@@ -486,7 +495,7 @@
         \godown[.75\lineheight]
         {\ttbf instances:}
         \enspace
-        \xmlfilter{#1}{/instances/constant/command(xml:setups:instance)}
+        \xmlfilter{#1}{/instances/(constant|resolve)/command(xml:setups:instance)}
         \removeunwantedspaces
     }
 \stopxmlsetups
@@ -916,6 +925,15 @@
 \let\cmdbasicsetup\basicsetup
 \let\cmdshortsetup\shortsetup
 \let\cmdfullsetup \showsetup
+
+\unexpanded\def\cmd_with_instance#1#2#3%
+  {\edef\m_cmd_instance{#3}%
+   #1{#2}%
+   \let\m_cmd_instance\empty}
+
+\unexpanded\def\cmdbasicsetupinstance{\cmd_with_instance\cmdbasicsetup}
+\unexpanded\def\cmdshortsetupinstance{\cmd_with_instance\cmdshortsetup}
+\unexpanded\def\cmdfullsetupinstance {\cmd_with_instance\cmdfullsetup }
 
 % bonus
 

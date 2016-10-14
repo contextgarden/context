@@ -294,15 +294,15 @@ local function preparesplit(specification) -- a rather large function
         }
     end
 
-    local column        = 1
-    local line          = 0
-    local result        = results[1]
-    local lasthead      = nil
-    local rest          = nil
-    local lastlocked    = nil
-    local lastcurrent   = nil
-    local lastcontent   = nil
-    local backtracked   = false
+    local column      = 1
+    local line        = 0
+    local result      = results[1]
+    local lasthead    = nil
+    local rest        = nil
+    local lastlocked  = nil
+    local lastcurrent = nil
+    local lastcontent = nil
+    local backtracked = false
 
     if trace_state then
         report_state("setting collector to column %s",column)
@@ -408,12 +408,12 @@ local function preparesplit(specification) -- a rather large function
             result.height = height
             result.depth  = depth
         end
-        head    = current
-        height  = 0
-        depth   = 0
+        head   = current
+        height = 0
+        depth  = 0
         if column == nofcolumns then
             column = 0 -- nicer in trace
-            rest = head
+            rest   = head
             return false, 0
         else
             local skipped
@@ -434,7 +434,6 @@ local function preparesplit(specification) -- a rather large function
     local function checked(advance,where,locked)
         local total   = skip + height + depth + advance
         local delta   = total - target
--- - 65536*3
         local state   = "same"
         local okay    = false
         local skipped = 0

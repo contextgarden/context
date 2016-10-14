@@ -1211,7 +1211,7 @@
 
   <cd:command name="localfootnotes" type="environment" file="core-not.tex" category="footnotes">
     <cd:sequence>
-      <cd:string value="localfootnotes"/>
+      <cd:string value="lokalevoetnoten"/>
     </cd:sequence>
   </cd:command>
 
@@ -2740,7 +2740,7 @@
 
   <cd:command name="marginblock" type="environment" file="page-flt.tex">
     <cd:sequence>
-      <cd:string value="marginblock"/>
+      <cd:string value="margeblok"/>
     </cd:sequence>
   </cd:command>
 
@@ -7122,7 +7122,7 @@
 
   <cd:command name="linecorrection" type="environment">
     <cd:sequence>
-      <cd:string value="linecorrection"/>
+      <cd:string value="regelcorrectie"/>
     </cd:sequence>
   </cd:command>
 
@@ -7221,7 +7221,7 @@
 
   <cd:command name="alignment" type="environment" file="core-spa.tex">
     <cd:sequence>
-      <cd:string value="alignment"/>
+      <cd:string value="uitlijnen"/>
     </cd:sequence>
     <cd:arguments>
       <cd:keywords n="1" optional="yes" list="yes">

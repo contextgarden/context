@@ -1326,6 +1326,7 @@
 		<cd:command name='Words' value='Words'/>
 		<cd:command name='about' value='about'/>
 		<cd:command name='adaptlayout' value='adaptlayout'/>
+		<cd:command name='alignment' value='alignment'/>
 		<cd:command name='arg' value='arg'/>
 		<cd:command name='at' value='at'/>
 		<cd:command name='atleftmargin' value='atleftmargin'/>
@@ -1542,11 +1543,13 @@
 		<cd:command name='leftmargindistance' value='leftmargindistance'/>
 		<cd:command name='leftmarginwidth' value='leftmarginwidth'/>
 		<cd:command name='leg' value='leg'/>
+		<cd:command name='linecorrection' value='linecorrection'/>
 		<cd:command name='linewidth' value='linethickness'/>
 		<cd:command name='listheight' value='listheight'/>
 		<cd:command name='listlength' value='listlength'/>
 		<cd:command name='listsymbol' value='listsymbol'/>
 		<cd:command name='listwidth' value='listwidth'/>
+		<cd:command name='localfootnotes' value='localfootnotes'/>
 		<cd:command name='logfields' value='logfields'/>
 		<cd:command name='lohi' value='lohi'/>
 		<cd:command name='low' value='low'/>
@@ -1555,6 +1558,7 @@
 		<cd:command name='makeupheight' value='makeupheight'/>
 		<cd:command name='makeupwidth' value='makeupwidth'/>
 		<cd:command name='mar' value='mar'/>
+		<cd:command name='marginblock' value='marginblock'/>
 		<cd:command name='margindistance' value='margindistance'/>
 		<cd:command name='marginrule' value='marginrule'/>
 		<cd:command name='margintext' value='margintext'/>
@@ -1654,6 +1658,7 @@
 		<cd:command name='rightmarginwidth' value='rightmarginwidth'/>
 		<cd:command name='romannumerals' value='romannumerals'/>
 		<cd:command name='rotate' value='rotate'/>
+		<cd:command name='savebuffer' value='savebuffer'/>
 		<cd:command name='scale' value='scale'/>
 		<cd:command name='screen' value='screen'/>
 		<cd:command name='selectblocks' value='selectblocks'/>
@@ -1689,7 +1694,9 @@
 		<cd:command name='setupcombinations' value='setupcombinations'/>
 		<cd:command name='setupcombinedlist' value='setupcombinedlist'/>
 		<cd:command name='setupcomment' value='setupcomment'/>
+		<cd:command name='setupdescription' value='setupdescription'/>
 		<cd:command name='setupdescriptions' value='setupdescriptions'/>
+		<cd:command name='setupenumeration' value='setupenumeration'/>
 		<cd:command name='setupenumerations' value='setupenumerations'/>
 		<cd:command name='setupexternalfigures' value='setupexternalfigures'/>
 		<cd:command name='setupfield' value='setupfield'/>
@@ -1704,8 +1711,10 @@
 		<cd:command name='setupfootnotedefinition' value='setupfootnotedefinition'/>
 		<cd:command name='setupfootnotes' value='setupfootnotes'/>
 		<cd:command name='setupforms' value='setupforms'/>
+		<cd:command name='setupformula' value='setupformula'/>
 		<cd:command name='setupformulas' value='setupformulae'/>
 		<cd:command name='setupframed' value='setupframed'/>
+		<cd:command name='setupframedtext' value='setupframedtext'/>
 		<cd:command name='setupframedtexts' value='setupframedtexts'/>
 		<cd:command name='setuphead' value='setuphead'/>
 		<cd:command name='setupheader' value='setupheader'/>
@@ -1734,7 +1743,9 @@
 		<cd:command name='setuplinewidth' value='setuplinewidth'/>
 		<cd:command name='setuplist' value='setuplist'/>
 		<cd:command name='setupmakeup' value='setupmakeup'/>
+		<cd:command name='setupmarginblock' value='setupmarginblock'/>
 		<cd:command name='setupmarginblocks' value='setupmarginblocks'/>
+		<cd:command name='setupmargindata' value='setupmargindata'/>
 		<cd:command name='setupmarginrules' value='setupmarginrules'/>
 		<cd:command name='setupmarking' value='setupmarking'/>
 		<cd:command name='setupmathalignment' value='setupmathalignment'/>
@@ -1913,6 +1924,7 @@
 		<cd:command name='testcolumn' value='testcolumn'/>
 		<cd:command name='testpage' value='testpage'/>
 		<cd:command name='tex' value='tex'/>
+		<cd:command name='textbackground' value='textbackground'/>
 		<cd:command name='textheight' value='textheight'/>
 		<cd:command name='textreference' value='textreference'/>
 		<cd:command name='textrule' value='textrule'/>

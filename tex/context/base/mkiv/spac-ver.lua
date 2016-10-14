@@ -56,6 +56,33 @@ local texnest      = tex.nest
 local variables    = interfaces.variables
 local implement    = interfaces.implement
 
+local v_local      = variables["local"]
+local v_global     = variables["global"]
+local v_box        = variables.box
+local v_min        = variables.min
+local v_max        = variables.max
+local v_none       = variables.none
+local v_line       = variables.line
+local v_noheight   = variables.noheight
+local v_nodepth    = variables.nodepth
+local v_line       = variables.line
+local v_first      = variables.first
+local v_last       = variables.last
+local v_top        = variables.top
+local v_bottom     = variables.bottom
+local v_minheight  = variables.minheight
+local v_maxheight  = variables.maxheight
+local v_mindepth   = variables.mindepth
+local v_maxdepth   = variables.maxdepth
+local v_offset     = variables.offset
+local v_strut      = variables.strut
+
+local v_hfraction  = variables.hfraction
+local v_dfraction  = variables.dfraction
+local v_bfraction  = variables.bfraction
+local v_tlines     = variables.tlines
+local v_blines     = variables.blines
+
 -- vertical space handler
 
 local trace_vbox_vspacing    = false  trackers.register("vspacing.vbox",     function(v) trace_vbox_vspacing    = v end)
@@ -154,19 +181,19 @@ vspacingdata.snapmethods  = snapmethods
 storage.register("builders/vspacing/data/snapmethods", snapmethods, "builders.vspacing.data.snapmethods")
 
 local default = {
-    maxheight = true,
-    maxdepth  = true,
-    strut     = true,
-    hfraction = 1,
-    dfraction = 1,
-    bfraction = 0.25,
+    [v_maxheight] = true,
+    [v_maxdepth]  = true,
+    [v_strut]     = true,
+    [v_hfraction] = 1,
+    [v_dfraction] = 1,
+    [v_bfraction] = 0.25,
 }
 
 local fractions = {
-    minheight = "hfraction", maxheight = "hfraction",
-    mindepth  = "dfraction", maxdepth  = "dfraction",
-    box       = "bfraction",
-    top       = "tlines",    bottom    = "blines",
+    [v_minheight] = v_hfraction, [v_maxheight] = v_hfraction,
+    [v_mindepth]  = v_dfraction, [v_maxdepth]  = v_dfraction,
+    [v_box]       = v_bfraction,
+    [v_top]       = v_tlines,    [v_bottom]    = v_blines,
 }
 
 local values = {
@@ -202,13 +229,14 @@ local function listtohash(str)
         else
             detail = tonumber("0" .. key)
             if detail then
-                t.hfraction, t.dfraction = detail, detail
+                t[v_hfraction] = detail
+                t[v_dfraction] = detail
             end
         end
     end
     if next(t) then
-        t.hfraction = t.hfraction or 1
-        t.dfraction = t.dfraction or 1
+        t[v_hfraction] = t[v_hfraction] or 1
+        t[v_dfraction] = t[v_dfraction] or 1
         return t
     else
         return default
@@ -219,7 +247,8 @@ function vspacing.definesnapmethod(name,method)
     local n = #snapmethods + 1
     local t = listtohash(method)
     snapmethods[n] = t
-    t.name, t.specification = name, method
+    t.name          = name   -- not interfaced
+    t.specification = method -- not interfaced
     context(n)
 end
 
@@ -325,7 +354,7 @@ local function fixedprofile(current)
     return profiling and profiling.fixedprofile(current)
 end
 
-local function snap_hlist(where,current,method,height,depth) -- method.strut is default
+local function snap_hlist(where,current,method,height,depth) -- method[v_strut] is default
     if fixedprofile(current) then
         return
     end
@@ -334,18 +363,18 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
     if t then
         t[#t+1] = formatters["list content: %s"](listtoutf(list))
         t[#t+1] = formatters["parent id: %s"](nodereference(current))
-        t[#t+1] = formatters["snap method: %s"](method.name)
-        t[#t+1] = formatters["specification: %s"](method.specification)
+        t[#t+1] = formatters["snap method: %s"](method.name) -- not interfaced
+        t[#t+1] = formatters["specification: %s"](method.specification) -- not interfaced
     end
     local snapht, snapdp
-    if method["local"] then
+    if method[v_local] then
         -- snapping is done immediately here
         snapht = texgetdimen("bodyfontstrutheight")
         snapdp = texgetdimen("bodyfontstrutdepth")
         if t then
             t[#t+1] = formatters["local: snapht %p snapdp %p"](snapht,snapdp)
         end
-    elseif method["global"] then
+    elseif method[v_global] then
         snapht = texgetdimen("globalbodyfontstrutheight")
         snapdp = texgetdimen("globalbodyfontstrutdepth")
         if t then
@@ -366,15 +395,15 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
         end
     end
 
-    local h        = (method.noheight and 0) or height or getfield(current,"height")
-    local d        = (method.nodepth  and 0) or depth  or getfield(current,"depth")
-    local hr       = method.hfraction or 1
-    local dr       = method.dfraction or 1
-    local br       = method.bfraction or 0
+    local h        = (method[v_noheight] and 0) or height or getfield(current,"height")
+    local d        = (method[v_nodepth]  and 0) or depth  or getfield(current,"depth")
+    local hr       = method[v_hfraction] or 1
+    local dr       = method[v_dfraction] or 1
+    local br       = method[v_bfraction] or 0
     local ch       = h
     local cd       = d
-    local tlines   = method.tlines or 1
-    local blines   = method.blines or 1
+    local tlines   = method[v_tlines] or 1
+    local blines   = method[v_blines] or 1
     local done     = false
     local plusht   = snapht
     local plusdp   = snapdp
@@ -391,7 +420,7 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
 --     }
 -- end
 
-    if method.box then
+    if method[v_box] then
         local br = 1 - br
         if br < 0 then
             br = 0
@@ -402,30 +431,30 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
         local x = n * snaphtdp - h - d
         plusht = h + x / 2
         plusdp = d + x / 2
-    elseif method.max then
+    elseif method[v_max] then
         local n = ceiled((h+d)/snaphtdp)
         local x = n * snaphtdp - h - d
         plusht = h + x / 2
         plusdp = d + x / 2
-    elseif method.min then
+    elseif method[v_min] then
         local n = floored((h+d)/snaphtdp)
         local x = n * snaphtdp - h - d
         plusht = h + x / 2
         plusdp = d + x / 2
-    elseif method.none then
+    elseif method[v_none] then
         plusht, plusdp = 0, 0
         if t then
             t[#t+1] = "none: plusht 0pt plusdp 0pt"
         end
     end
-    if method.halfline then -- extra halfline
+    if method[v_halfline] then -- extra halfline
         plusht = plusht + snaphtdp/2
         plusdp = plusdp + snaphtdp/2
         if t then
             t[#t+1] = formatters["halfline: plusht %p plusdp %p"](plusht,plusdp)
         end
     end
-    if method.line then -- extra line
+    if method[v_line] then -- extra line
         plusht = plusht + snaphtdp
         plusdp = plusdp + snaphtdp
         if t then
@@ -433,7 +462,7 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
         end
     end
 
-    if method.first then
+    if method[v_first] then
         local thebox = current
         local id = getid(thebox)
         if id == hlist_code then
@@ -471,7 +500,7 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
         elseif t then
             t[#t+1] = "first: not done, no vbox"
         end
-    elseif method.last then
+    elseif method[v_last] then
         local thebox = current
         local id = getid(thebox)
         if id == hlist_code then
@@ -509,12 +538,12 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
             t[#t+1] = "last: not done, no vbox"
         end
     end
-    if method.minheight then
+    if method[v_minheight] then
         ch = floored((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
         if t then
             t[#t+1] = formatters["minheight: %p"](ch)
         end
-    elseif method.maxheight then
+    elseif method[v_maxheight] then
         ch = ceiled((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
         if t then
             t[#t+1] = formatters["maxheight: %p"](ch)
@@ -525,12 +554,12 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
             t[#t+1] = formatters["set height: %p"](ch)
         end
     end
-    if method.mindepth then
+    if method[v_mindepth] then
         cd = floored((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
         if t then
             t[#t+1] = formatters["mindepth: %p"](cd)
         end
-    elseif method.maxdepth then
+    elseif method[v_maxdepth] then
         cd = ceiled((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
         if t then
             t[#t+1] = formatters["maxdepth: %p"](cd)
@@ -541,20 +570,20 @@ local function snap_hlist(where,current,method,height,depth) -- method.strut is 
             t[#t+1] = formatters["set depth: %p"](cd)
         end
     end
-    if method.top then
+    if method[v_top] then
         ch = ch + tlines * snaphtdp
         if t then
             t[#t+1] = formatters["top height: %p"](ch)
         end
     end
-    if method.bottom then
+    if method[v_bottom] then
         cd = cd + blines * snaphtdp
         if t then
             t[#t+1] = formatters["bottom depth: %p"](cd)
         end
     end
 
-    local offset = method.offset
+    local offset = method[v_offset]
     if offset then
         -- we need to set the attr
         if t then

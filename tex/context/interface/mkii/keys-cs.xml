@@ -1326,6 +1326,7 @@
 		<cd:command name='Words' value='Slova'/>
 		<cd:command name='about' value='oref'/>
 		<cd:command name='adaptlayout' value='prizpusobvzhled'/>
+		<cd:command name='alignment' value='alignment'/>
 		<cd:command name='arg' value='arg'/>
 		<cd:command name='at' value='pref'/>
 		<cd:command name='atleftmargin' value='atleftmargin'/>
@@ -1542,11 +1543,13 @@
 		<cd:command name='leftmargindistance' value='vzdalenostlevemarginalie'/>
 		<cd:command name='leftmarginwidth' value='sirkalevemarginalie'/>
 		<cd:command name='leg' value='leg'/>
+		<cd:command name='linecorrection' value='linecorrection'/>
 		<cd:command name='linewidth' value='tloustkacary'/>
 		<cd:command name='listheight' value='vyskaseznamu'/>
 		<cd:command name='listlength' value='delkaseznamu'/>
 		<cd:command name='listsymbol' value='listsymbol'/>
 		<cd:command name='listwidth' value='sirkaseznamu'/>
+		<cd:command name='localfootnotes' value='localfootnotes'/>
 		<cd:command name='logfields' value='zaznamovepole'/>
 		<cd:command name='lohi' value='nivy'/>
 		<cd:command name='low' value='nizky'/>
@@ -1555,6 +1558,7 @@
 		<cd:command name='makeupheight' value='vyskasazby'/>
 		<cd:command name='makeupwidth' value='sirkasazby'/>
 		<cd:command name='mar' value='okr'/>
+		<cd:command name='marginblock' value='marginblock'/>
 		<cd:command name='margindistance' value='vzdalenostmarginalie'/>
 		<cd:command name='marginrule' value='marginalnilinka'/>
 		<cd:command name='margintext' value='marginalnitext'/>
@@ -1654,6 +1658,7 @@
 		<cd:command name='rightmarginwidth' value='sirkapravemarginalie'/>
 		<cd:command name='romannumerals' value='rimskecislice'/>
 		<cd:command name='rotate' value='otocit'/>
+		<cd:command name='savebuffer' value='savebuffer'/>
 		<cd:command name='scale' value='meritko'/>
 		<cd:command name='screen' value='obrazovka'/>
 		<cd:command name='selectblocks' value='vyberbloky'/>
@@ -1689,7 +1694,9 @@
 		<cd:command name='setupcombinations' value='nastavspojeni'/>
 		<cd:command name='setupcombinedlist' value='nastavkombinovanyseznam'/>
 		<cd:command name='setupcomment' value='nastavkomentar'/>
+		<cd:command name='setupdescription' value='setupdescription'/>
 		<cd:command name='setupdescriptions' value='nastavpopisy'/>
+		<cd:command name='setupenumeration' value='setupenumeration'/>
 		<cd:command name='setupenumerations' value='nastavvycty'/>
 		<cd:command name='setupexternalfigures' value='nastavexterniobrazy'/>
 		<cd:command name='setupfield' value='nastavpole'/>
@@ -1704,8 +1711,10 @@
 		<cd:command name='setupfootnotedefinition' value='nastavdefinicipoznamekpodcarou'/>
 		<cd:command name='setupfootnotes' value='nastavpoznamkypodcarou'/>
 		<cd:command name='setupforms' value='setupforms'/>
+		<cd:command name='setupformula' value='setupformula'/>
 		<cd:command name='setupformulas' value='nastavrovnice'/>
 		<cd:command name='setupframed' value='nastavoramovani'/>
+		<cd:command name='setupframedtext' value='setupframedtext'/>
 		<cd:command name='setupframedtexts' value='nastavoramovanetexty'/>
 		<cd:command name='setuphead' value='nastavnadpis'/>
 		<cd:command name='setupheader' value='nastavzahlavi'/>
@@ -1734,7 +1743,9 @@
 		<cd:command name='setuplinewidth' value='nastavsirkucary'/>
 		<cd:command name='setuplist' value='nastavseznam'/>
 		<cd:command name='setupmakeup' value='nastavupravu'/>
+		<cd:command name='setupmarginblock' value='setupmarginblock'/>
 		<cd:command name='setupmarginblocks' value='nastavmarginalniblok'/>
+		<cd:command name='setupmargindata' value='setupmargindata'/>
 		<cd:command name='setupmarginrules' value='nastavmarginalnilinky'/>
 		<cd:command name='setupmarking' value='nastavznaceni'/>
 		<cd:command name='setupmathalignment' value='setupmathalignment'/>
@@ -1913,6 +1924,7 @@
 		<cd:command name='testcolumn' value='testcolumn'/>
 		<cd:command name='testpage' value='testpage'/>
 		<cd:command name='tex' value='tex'/>
+		<cd:command name='textbackground' value='textbackground'/>
 		<cd:command name='textheight' value='vyskatextu'/>
 		<cd:command name='textreference' value='odkaznatext'/>
 		<cd:command name='textrule' value='textovalinka'/>

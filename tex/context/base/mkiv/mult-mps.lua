@@ -76,7 +76,7 @@ return {
         "arrowhead",
         "currentpen", "currentpicture", "cuttings",
         "defaultfont", "extra_beginfig", "extra_endfig",
-        "ditto", "EOF", "down",
+        "down",
         "evenly", "fullcircle", "halfcircle", "identity", "in", "left",
         "pensquare",  "penrazor",  "penspec",
         "origin", "quartercircle", "right",
@@ -128,6 +128,8 @@ return {
         "defaultpen", "defaultscale",
         "join_radius",
         "charscale", -- actually a mult-fun one
+        --
+        "ditto", "EOF", -- maybe also down etc
         --
         "pen_lft", "pen_rt", "pen_top", "pen_bot", -- "pen_count_",
     },

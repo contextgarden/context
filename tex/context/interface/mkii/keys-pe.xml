@@ -1326,6 +1326,7 @@
 		<cd:command name='Words' value='Words'/>
 		<cd:command name='about' value='درمورد'/>
 		<cd:command name='adaptlayout' value='تنظیم‌طرح‌بندی'/>
+		<cd:command name='alignment' value='alignment'/>
 		<cd:command name='arg' value='افزودن'/>
 		<cd:command name='at' value='در'/>
 		<cd:command name='atleftmargin' value='درحاشیه‌چپ'/>
@@ -1542,11 +1543,13 @@
 		<cd:command name='leftmargindistance' value='فاصله‌حاشیه‌چپ'/>
 		<cd:command name='leftmarginwidth' value='عرض‌حاشیه‌چپ'/>
 		<cd:command name='leg' value='پا'/>
+		<cd:command name='linecorrection' value='linecorrection'/>
 		<cd:command name='linewidth' value='عرض‌خط'/>
 		<cd:command name='listheight' value='ارتفاع‌خط'/>
 		<cd:command name='listlength' value='طول‌لیست'/>
 		<cd:command name='listsymbol' value='نمادلیست'/>
 		<cd:command name='listwidth' value='عرض‌لیست'/>
+		<cd:command name='localfootnotes' value='localfootnotes'/>
 		<cd:command name='logfields' value='میدانهای‌گزارش'/>
 		<cd:command name='lohi' value='پابا'/>
 		<cd:command name='low' value='پایین'/>
@@ -1555,6 +1558,7 @@
 		<cd:command name='makeupheight' value='ارتفاع‌آرایش'/>
 		<cd:command name='makeupwidth' value='عرض‌آرایش'/>
 		<cd:command name='mar' value='حاش'/>
+		<cd:command name='marginblock' value='marginblock'/>
 		<cd:command name='margindistance' value='فاصله‌حاشیه'/>
 		<cd:command name='marginrule' value='خط‌حاشیه'/>
 		<cd:command name='margintext' value='متن‌حاشیه'/>
@@ -1654,6 +1658,7 @@
 		<cd:command name='rightmarginwidth' value='عرض‌حاشیه‌راست'/>
 		<cd:command name='romannumerals' value='اعدادلاتین'/>
 		<cd:command name='rotate' value='دوران'/>
+		<cd:command name='savebuffer' value='savebuffer'/>
 		<cd:command name='scale' value='مقیاس'/>
 		<cd:command name='screen' value='پرده'/>
 		<cd:command name='selectblocks' value='انتخاب‌بلوکها'/>
@@ -1689,7 +1694,9 @@
 		<cd:command name='setupcombinations' value='بارگذاری‌ترکیب‌ها'/>
 		<cd:command name='setupcombinedlist' value='بارگذاری‌لیست‌ترکیبی'/>
 		<cd:command name='setupcomment' value='بارگذاری‌توضیح'/>
+		<cd:command name='setupdescription' value='setupdescription'/>
 		<cd:command name='setupdescriptions' value='بارگذاری‌شرح'/>
+		<cd:command name='setupenumeration' value='setupenumeration'/>
 		<cd:command name='setupenumerations' value='بارگذاری‌شماره‌گذاریها'/>
 		<cd:command name='setupexternalfigures' value='بارگذاری‌شکلهای‌خارجی'/>
 		<cd:command name='setupfield' value='بارگذاری‌میدان'/>
@@ -1704,8 +1711,10 @@
 		<cd:command name='setupfootnotedefinition' value='بارگذاری‌تعریف‌پانوشت'/>
 		<cd:command name='setupfootnotes' value='بارگذاری‌پانوشتها'/>
 		<cd:command name='setupforms' value='بارگذاری‌طرح'/>
+		<cd:command name='setupformula' value='setupformula'/>
 		<cd:command name='setupformulas' value='بارگذاری‌فرمولها'/>
 		<cd:command name='setupframed' value='بارگذاری‌قالبی'/>
+		<cd:command name='setupframedtext' value='setupframedtext'/>
 		<cd:command name='setupframedtexts' value='بارگذاری‌متن‌قالبی'/>
 		<cd:command name='setuphead' value='بارگذاری‌سر'/>
 		<cd:command name='setupheader' value='بارگذاری‌سربرگ'/>
@@ -1734,7 +1743,9 @@
 		<cd:command name='setuplinewidth' value='بارگذاری‌عرض‌خط'/>
 		<cd:command name='setuplist' value='بارگذاری‌لیست'/>
 		<cd:command name='setupmakeup' value='بارگذاری‌آرایش'/>
+		<cd:command name='setupmarginblock' value='setupmarginblock'/>
 		<cd:command name='setupmarginblocks' value='بارگذاری‌بلوکهای‌حاشیه'/>
+		<cd:command name='setupmargindata' value='setupmargindata'/>
 		<cd:command name='setupmarginrules' value='بارگذاری‌خطهای‌حاشیه'/>
 		<cd:command name='setupmarking' value='بارگذاری‌نشانه‌گذاری'/>
 		<cd:command name='setupmathalignment' value='بارگذاری‌تنظیم‌ریاضی'/>
@@ -1913,6 +1924,7 @@
 		<cd:command name='testcolumn' value='ستون‌امتحان'/>
 		<cd:command name='testpage' value='صفحه‌تست'/>
 		<cd:command name='tex' value='تک'/>
+		<cd:command name='textbackground' value='textbackground'/>
 		<cd:command name='textheight' value='ارتفاع‌متن'/>
 		<cd:command name='textreference' value='مرجع‌متن'/>
 		<cd:command name='textrule' value='خط‌متن'/>

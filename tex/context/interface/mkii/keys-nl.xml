@@ -142,7 +142,7 @@
 		<cd:variable name='color' value='kleur'/>
 		<cd:variable name='column' value='kolom'/>
 		<cd:variable name='columns' value='kolommen'/>
-		<cd:variable name='combination' value='combination'/>
+		<cd:variable name='combination' value='combinatie'/>
 		<cd:variable name='command' value='commando'/>
 		<cd:variable name='commands' value='commandos'/>
 		<cd:variable name='comment' value='commentaar'/>
@@ -1326,6 +1326,7 @@
 		<cd:command name='Words' value='Woorden'/>
 		<cd:command name='about' value='about'/>
 		<cd:command name='adaptlayout' value='paslayoutaan'/>
+		<cd:command name='alignment' value='uitlijnen'/>
 		<cd:command name='arg' value='arg'/>
 		<cd:command name='at' value='op'/>
 		<cd:command name='atleftmargin' value='oplinkermarge'/>
@@ -1542,11 +1543,13 @@
 		<cd:command name='leftmargindistance' value='linkermargeafstand'/>
 		<cd:command name='leftmarginwidth' value='linkermargebreedte'/>
 		<cd:command name='leg' value='leg'/>
+		<cd:command name='linecorrection' value='regelcorrectie'/>
 		<cd:command name='linewidth' value='lijndikte'/>
 		<cd:command name='listheight' value='lijsthoogte'/>
 		<cd:command name='listlength' value='lijstlengte'/>
 		<cd:command name='listsymbol' value='lijstsymbool'/>
 		<cd:command name='listwidth' value='lijstbreedte'/>
+		<cd:command name='localfootnotes' value='lokalevoetnoten'/>
 		<cd:command name='logfields' value='registreervelden'/>
 		<cd:command name='lohi' value='laho'/>
 		<cd:command name='low' value='laag'/>
@@ -1555,6 +1558,7 @@
 		<cd:command name='makeupheight' value='zethoogte'/>
 		<cd:command name='makeupwidth' value='zetbreedte'/>
 		<cd:command name='mar' value='mar'/>
+		<cd:command name='marginblock' value='margeblok'/>
 		<cd:command name='margindistance' value='margeafstand'/>
 		<cd:command name='marginrule' value='kantlijn'/>
 		<cd:command name='margintext' value='margetekst'/>
@@ -1654,6 +1658,7 @@
 		<cd:command name='rightmarginwidth' value='rechtermargebreedte'/>
 		<cd:command name='romannumerals' value='romeins'/>
 		<cd:command name='rotate' value='roteer'/>
+		<cd:command name='savebuffer' value='bewaarbuffer'/>
 		<cd:command name='scale' value='schaal'/>
 		<cd:command name='screen' value='scherm'/>
 		<cd:command name='selectblocks' value='selecteerblokken'/>
@@ -1689,7 +1694,9 @@
 		<cd:command name='setupcombinations' value='stelcombinatiesin'/>
 		<cd:command name='setupcombinedlist' value='stelsamengesteldelijstin'/>
 		<cd:command name='setupcomment' value='stelcommentaarin'/>
+		<cd:command name='setupdescription' value='steldoordefinierenin'/>
 		<cd:command name='setupdescriptions' value='steldoordefinierenin'/>
+		<cd:command name='setupenumeration' value='steldoornummerenin'/>
 		<cd:command name='setupenumerations' value='steldoornummerenin'/>
 		<cd:command name='setupexternalfigures' value='stelexternefigurenin'/>
 		<cd:command name='setupfield' value='stelveldin'/>
@@ -1704,8 +1711,10 @@
 		<cd:command name='setupfootnotedefinition' value='stelvoetnootdefinitiein'/>
 		<cd:command name='setupfootnotes' value='stelvoetnotenin'/>
 		<cd:command name='setupforms' value='stelformulierenin'/>
+		<cd:command name='setupformula' value='stelformulein'/>
 		<cd:command name='setupformulas' value='stelformulesin'/>
 		<cd:command name='setupframed' value='stelomlijndin'/>
+		<cd:command name='setupframedtext' value='stelkadertekstin'/>
 		<cd:command name='setupframedtexts' value='stelkadertekstenin'/>
 		<cd:command name='setuphead' value='stelkopin'/>
 		<cd:command name='setupheader' value='stelhoofdin'/>
@@ -1734,7 +1743,9 @@
 		<cd:command name='setuplinewidth' value='stellijndiktein'/>
 		<cd:command name='setuplist' value='stellijstin'/>
 		<cd:command name='setupmakeup' value='stelopmaakin'/>
+		<cd:command name='setupmarginblock' value='stelmargeblokkenin'/>
 		<cd:command name='setupmarginblocks' value='stelmargeblokkenin'/>
+		<cd:command name='setupmargindata' value='stelinmargein'/>
 		<cd:command name='setupmarginrules' value='stelkantlijnin'/>
 		<cd:command name='setupmarking' value='stelmarkeringin'/>
 		<cd:command name='setupmathalignment' value='stelwiskundeuitlijnenin'/>
@@ -1913,6 +1924,7 @@
 		<cd:command name='testcolumn' value='testkolom'/>
 		<cd:command name='testpage' value='testpagina'/>
 		<cd:command name='tex' value='tex'/>
+		<cd:command name='textbackground' value='tekstachtergrond'/>
 		<cd:command name='textheight' value='teksthoogte'/>
 		<cd:command name='textreference' value='tekstreferentie'/>
 		<cd:command name='textrule' value='tekstlijn'/>

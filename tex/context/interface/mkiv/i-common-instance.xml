@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:define name="instance-float">
+        <cd:constant value="chemical"/>
+        <cd:constant value="figure"/>
+        <cd:constant value="table"/>
+        <cd:constant value="intermezzo"/>
+        <cd:constant value="graphic"/>
+    </cd:define>
+
+</cd:interface>

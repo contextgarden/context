@@ -185,6 +185,7 @@ local function processerror(offset)
     local lasttexerror = status.lasterrorstring or "?"
     local lastluaerror = status.lastluaerrorstring or lasttexerror
     local luaerrorline = match(lastluaerror,[[lua%]?:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
+    local lastmpserror = match(lasttexerror,[[^.-mp%serror:%s*(.*)$]])
     resetmessages()
     lastluaerror = gsub(lastluaerror,"%[\\directlua%]","[ctxlua]")
     tracers.printerror {
@@ -192,6 +193,7 @@ local function processerror(offset)
         linenumber   = linenumber,
         offset       = tonumber(offset) or 10,
         lasttexerror = lasttexerror,
+        lastmpserror = lastmpserror,
         lastluaerror = lastluaerror,
         luaerrorline = luaerrorline,
         lastcontext  = lastcontext,
@@ -204,9 +206,11 @@ function tracers.printerror(specification)
     local filename     = specification.filename
     local linenumber   = specification.linenumber
     local lasttexerror = specification.lasttexerror
+    local lastmpserror = specification.lastmpserror
     local lastluaerror = specification.lastluaerror
     local lastcontext  = specification.lasterrorcontext
     local luaerrorline = specification.luaerrorline
+    local errortype    = specification.errortype
     local offset       = specification.offset
     local report       = errorreporter(luaerrorline)
     if not filename then
@@ -217,7 +221,8 @@ function tracers.printerror(specification)
         report_nl()
         if luaerrorline then
             report("lua error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
-         -- report("error on line %s in file %s:\n\n%s",linenumber,filename,lasttexerror)
+        elseif lastmpserror then
+            report("mp error on line %s in file %s:\n\n%s",linenumber,filename,lastmpserror)
         else
             report("tex error on line %s in file %s: %s",linenumber,filename,lasttexerror)
             if lastcontext then

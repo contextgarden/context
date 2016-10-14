@@ -30,7 +30,8 @@ nears zero.</p>
 --ldx]]--
 
 local type, tostring, tonumber = type, tostring, tonumber
-local format, gsub, match, find = string.format, string.gsub, string.match, string.find
+local gsub, match, find = string.gsub, string.match, string.find
+local striplines = utilities.strings.striplines
 local concat, insert, remove = table.concat, table.insert, table.remove
 
 local emptystring = string.is_empty
@@ -160,14 +161,15 @@ function metapost.reporterror(result)
         report_metapost("error: no result object returned")
     elseif result.status > 0 then
         local t, e, l = result.term, result.error, result.log
+        local report = metapost.texerrors and texerrormessage or report_metapost
         if t and t ~= "" then
-            (metapost.texerrors and texerrormessage or report_metapost)("terminal: %s",t)
+            report("mp error: %s",striplines(t))
         end
         if e == "" or e == "no-error" then
             e = nil
         end
         if e then
-            (metapost.texerrors and texerrormessage or report_metapost)("error: %s",e)
+            report("mp error: %s",striplines(e))
         end
         if not t and not e and l then
             metapost.lastlog = metapost.lastlog .. "\n" .. l
@@ -416,75 +418,115 @@ function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, 
             end
             -- end of hacks
         end
+
+        local function process(d,i)
+         -- d = string.gsub(d,"\r","")
+            if d then
+                if trace_graphics then
+                    if i then
+                        tra.inp:write(formatters["\n%% begin snippet %s\n"](i))
+                    end
+                    tra.inp:write(d)
+                    if i then
+                        tra.inp:write(formatters["\n%% end snippet %s\n"](i))
+                    end
+                end
+                starttiming(metapost.exectime)
+                result = mpx:execute(d) -- some day we wil use a coroutine with textexts
+                stoptiming(metapost.exectime)
+                if trace_graphics and result then
+                    local str = result.log or result.error
+                    if str and str ~= "" then
+                        tra.log:write(str)
+                    end
+                end
+                if not metapost.reporterror(result) then
+                    if metapost.showlog then
+                        local str = result.term ~= "" and result.term or "no terminal output"
+                        if not emptystring(str) then
+                            metapost.lastlog = metapost.lastlog .. "\n" .. str
+                            report_metapost("log: %s",str)
+                        end
+                    end
+                    if result.fig then
+                        converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
+                    end
+                end
+            elseif i then
+                report_metapost("error: invalid graphic component %s",i)
+            else
+                report_metapost("error: invalid graphic")
+            end
+        end
+
         if type(data) == "table" then
             if trace_tracingall then
                 mpx:execute("tracingall;")
             end
          -- table.insert(data,2,"")
             for i=1,#data do
-                local d = data[i]
-             -- d = string.gsub(d,"\r","")
-                if d then
-                    if trace_graphics then
-                        tra.inp:write(formatters["\n%% begin snippet %s\n"](i))
-                        tra.inp:write(d)
-                        tra.inp:write(formatters["\n%% end snippet %s\n"](i))
-                    end
-                    starttiming(metapost.exectime)
-                    result = mpx:execute(d) -- some day we wil use a coroutine with textexts
-                    stoptiming(metapost.exectime)
-                    if trace_graphics and result then
-                        local str = result.log or result.error
-                        if str and str ~= "" then
-                            tra.log:write(str)
-                        end
-                    end
-                    if not metapost.reporterror(result) then
-                        if metapost.showlog then
-                            local str = result.term ~= "" and result.term or "no terminal output"
-                            if not emptystring(str) then
-                                metapost.lastlog = metapost.lastlog .. "\n" .. str
-                                report_metapost("log: %s",str)
-                            end
-                        end
-                        if result.fig then
-                            converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
-                        end
-                    end
-                else
-                    report_metapost("error: invalid graphic component %s",i)
-                end
+                process(data[i],i)
+--                 local d = data[i]
+--              -- d = string.gsub(d,"\r","")
+--                 if d then
+--                     if trace_graphics then
+--                         tra.inp:write(formatters["\n%% begin snippet %s\n"](i))
+--                         tra.inp:write(d)
+--                         tra.inp:write(formatters["\n%% end snippet %s\n"](i))
+--                     end
+--                     starttiming(metapost.exectime)
+--                     result = mpx:execute(d) -- some day we wil use a coroutine with textexts
+--                     stoptiming(metapost.exectime)
+--                     if trace_graphics and result then
+--                         local str = result.log or result.error
+--                         if str and str ~= "" then
+--                             tra.log:write(str)
+--                         end
+--                     end
+--                     if not metapost.reporterror(result) then
+--                         if metapost.showlog then
+--                             local str = result.term ~= "" and result.term or "no terminal output"
+--                             if not emptystring(str) then
+--                                 metapost.lastlog = metapost.lastlog .. "\n" .. str
+--                                 report_metapost("log: %s",str)
+--                             end
+--                         end
+--                         if result.fig then
+--                             converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
+--                         end
+--                     end
+--                 else
+--                     report_metapost("error: invalid graphic component %s",i)
+--                 end
             end
        else
             if trace_tracingall then
                 data = "tracingall;" .. data
             end
-            if trace_graphics then
-                tra.inp:write(data)
-            end
-            starttiming(metapost.exectime)
-            result = mpx:execute(data)
-            stoptiming(metapost.exectime)
-            if trace_graphics and result then
-                local str = result.log or result.error
-                if str and str ~= "" then
-                    tra.log:write(str)
-                end
-            end
-            -- todo: error message
-            if not result then
-                report_metapost("error: no result object returned")
-            elseif result.status > 0 then
-                report_metapost("error: %s",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
-            else
-                if metapost.showlog then
-                    metapost.lastlog = metapost.lastlog .. "\n" .. result.term
-                    report_metapost("info: %s",result.term or "no-term")
-                end
-                 if result.fig then
-                    converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
-                end
-            end
+            process(data)
+--             starttiming(metapost.exectime)
+--             result = mpx:execute(data)
+--             stoptiming(metapost.exectime)
+--             if trace_graphics and result then
+--                 local str = result.log or result.error
+--                 if str and str ~= "" then
+--                     tra.log:write(str)
+--                 end
+--             end
+--             -- todo: error message
+--             if not result then
+--                 report_metapost("error: no result object returned")
+--             elseif result.status > 0 then
+--                 report_metapost("error: %s",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
+--             else
+--                 if metapost.showlog then
+--                     metapost.lastlog = metapost.lastlog .. "\n" .. result.term
+--                     report_metapost("info: %s",result.term or "no-term")
+--                 end
+--                  if result.fig then
+--                     converted = metapost.convert(result, trialrun, flusher, multipass, askedfig)
+--                 end
+--             end
         end
         if trace_graphics then
             local banner = "\n% end graphic\n\n"

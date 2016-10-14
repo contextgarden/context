@@ -62,11 +62,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="indentation" file="spac-hor.mkiv"/>
+    <cd:command name="indentation" file="spac-hor.mkiv" coreprimitive="yes"/>
 
-    <cd:command name="noindentation" file="spac-hor.mkiv"/>
+    <cd:command name="noindentation" file="spac-hor.mkiv" coreprimitive="yes"/>
 
-    <cd:command name="doindentation" file="spac-hor.mkiv"/>
+    <cd:command name="doindentation" file="spac-hor.mkiv" coreprimitive="yes"/>
 
     <cd:command name="checknextindentation" file="spac-hor.mkiv">
         <cd:arguments>

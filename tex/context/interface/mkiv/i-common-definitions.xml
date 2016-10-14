@@ -7,5 +7,6 @@
     <cd:interfacefile filename="i-common-keyword.xml"/>
     <cd:interfacefile filename="i-common-string.xml"/>
     <cd:interfacefile filename="i-common-value.xml"/>
+    <cd:interfacefile filename="i-common-instance.xml"/>
 
 </cd:interface>

@@ -81,6 +81,8 @@
         \expandafter\noexpand\csname             #1texts\endcsname
         \expandafter\noexpand\csname              #1text\endcsname}}
 
+% hm, not interfaced
+
 \unexpanded\def\lang_labels_define_class_indeed#1#2#3#4#5#6#7#8#9%
   {\setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%
    \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%

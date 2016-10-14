@@ -50,6 +50,34 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
 
 -- todo: hjcodes (<32 == length) if i really want it
 
+-- start:
+--
+-- boundary  : yes when wordboundary
+-- hlist     : when hyphenationbounds 1 or 3
+-- vlist     : when hyphenationbounds 1 or 3
+-- rule      : when hyphenationbounds 1 or 3
+-- dir       : when hyphenationbounds 1 or 3
+-- whatsit   : when hyphenationbounds 1 or 3
+-- glue      : yes
+-- math      : skipped
+-- glyph     : exhyphenchar (one only) : yes (so no -- ---)
+-- otherwise : yes
+--
+-- end:
+--
+-- boundary  : yes
+-- glyph     : yes when different language
+-- glue      : yes
+-- penalty   : yes
+-- kern      : yes when not italic (for some historic reason)
+-- hlist     : when hyphenationbounds 2 or 3
+-- vlist     : when hyphenationbounds 2 or 3
+-- rule      : when hyphenationbounds 2 or 3
+-- dir       : when hyphenationbounds 2 or 3
+-- whatsit   : when hyphenationbounds 2 or 3
+-- ins       : when hyphenationbounds 2 or 3
+-- adjust    : when hyphenationbounds 2 or 3
+
 local type, rawset, tonumber, next = type, rawset, tonumber, next
 
 local P, R, S, Cg, Cf, Ct, Cc, C, Carg, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.Cg, lpeg.Cf, lpeg.Ct, lpeg.Cc, lpeg.C, lpeg.Carg, lpeg.Cs

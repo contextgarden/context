@@ -439,7 +439,8 @@
    \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup
    \page_mix_initialize_columns
-   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname}
+   \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname
+   \let\stopmixedcolumns\page_mix_columns_stop_yes}
 
 \def\page_mix_start_columns_c_nop
   {\begingroup

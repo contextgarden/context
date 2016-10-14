@@ -228,7 +228,8 @@
    \ifgridsnapping
      \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!topoffset}%
      \ifdim\textbackgroundskip>\zeropoint
-       \struttedbox{\hpack{\raise\textbackgroundskip\hpack{\bpos\v_anch_backgrounds_text_current}}}%
+       \struttedbox % not always ok (e.g. setups)
+         {\hpack{\raise\textbackgroundskip\hpack{\bpos\v_anch_backgrounds_text_current}}}%
      \else
        \bpos\v_anch_backgrounds_text_current
      \fi
@@ -281,7 +282,8 @@
    \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!bottomoffset}%
    \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
      \ifdim\textbackgroundskip>\zeropoint
-       \struttedbox\plusone{\hpack{\lower\textbackgroundskip\hpack{\epos\v_anch_backgrounds_text_current}}}%
+       \struttedbox % not always ok (e.g. setups)
+         {\hpack{\lower\textbackgroundskip\hpack{\epos\v_anch_backgrounds_text_current}}}%
      \else
        \epos\v_anch_backgrounds_text_current
      \fi

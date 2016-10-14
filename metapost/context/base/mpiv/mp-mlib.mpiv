@@ -1381,18 +1381,30 @@ vardef mfun_boolean_to_string(expr b) =
     if b : "true" else : "false" fi
 enddef ;
 
-vardef tostring(expr value) =
-    if     numeric   value : mfun_numeric_to_string(value)
-    elseif pair      value : mfun_pair_to_string(value)
-    elseif rgbcolor  value : mfun_rgbcolor_to_string(value)
-    elseif cmykcolor value : mfun_cmykcolor_to_string(value)
-    elseif greycolor value : mfun_greycolor_to_string(value)
-    elseif boolean   value : mfun_boolean_to_string(value)
-    elseif path      value : mfun_path_to_string(value)
-    elseif transform value : mfun_transform_to_string(value)
-    else                   : value
+vardef tostring primary v =
+    if     numeric   v : mfun_numeric_to_string(v)
+    elseif pair      v : mfun_pair_to_string(v)
+    elseif rgbcolor  v : mfun_rgbcolor_to_string(v)
+    elseif cmykcolor v : mfun_cmykcolor_to_string(v)
+    elseif greycolor v : mfun_greycolor_to_string(v)
+    elseif boolean   v : mfun_boolean_to_string(v)
+    elseif path      v : mfun_path_to_string(v)
+    elseif transform v : mfun_transform_to_string(v)
+    else               : v
     fi
 enddef ;
+
+vardef topair primary p =
+    if     pair    p : "(" & decimal xpart p & "," & decimal ypart p & ")"
+    elseif numeric p : "(" & decimal       p & "," & decimal       p & ")"
+    else             : "" fi
+enddef ;
+
+string dq ; dq := char 92 & char 34 ;
+string sq ; sq := char 92 & char 39 ;
+
+vardef quote     primary s = sq & tostring(s) & sq enddef;
+vardef quotation primary s = dq & tostring(s) & dq enddef;
 
 vardef mfun_tagged_string(expr value) =
     if     numeric   value : "1:" & mfun_numeric_to_string(value)

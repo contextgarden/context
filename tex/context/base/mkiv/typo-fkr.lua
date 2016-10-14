@@ -95,29 +95,33 @@ function typesetters.fontkerns.handler(head)
     return kepthead, done
 end
 
-local variables    = interfaces.variables
-local unsetvalue   = attributes.unsetvalue
-local enabled      = false
-local setattribute = tex.setattribute
+if context then
 
-local values       = {
-    [variables.none ] = 0,
-    [variables.min  ] = 1,
-    [variables.max  ] = 2,
-    [variables.mixed] = 3,
-    [variables.reset] = unsetvalue,
-}
+    local variables    = interfaces.variables
+    local unsetvalue   = attributes.unsetvalue
+    local enabled      = false
+    local setattribute = tex.setattribute
 
-local function setextrafontkerns(str)
-    if not enabled then
-        nodes.tasks.enableaction("processors","typesetters.fontkerns.handler")
-        enabled = true
+    local values       = {
+        [variables.none ] = 0,
+        [variables.min  ] = 1,
+        [variables.max  ] = 2,
+        [variables.mixed] = 3,
+        [variables.reset] = unsetvalue,
+    }
+
+    local function setextrafontkerns(str)
+        if not enabled then
+            nodes.tasks.enableaction("processors","typesetters.fontkerns.handler")
+            enabled = true
+        end
+        setattribute(a_extrakern,values[str] or unsetvalue)
     end
-    setattribute(a_extrakern,values[str] or unsetvalue)
-end
 
-interfaces.implement {
-    name      = "setextrafontkerns",
-    arguments = "string",
-    actions   = setextrafontkerns,
-}
+    interfaces.implement {
+        name      = "setextrafontkerns",
+        arguments = "string",
+        actions   = setextrafontkerns,
+    }
+
+end

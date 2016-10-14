@@ -1326,6 +1326,7 @@
 		<cd:command name='Words' value='Cuvinte'/>
 		<cd:command name='about' value='despre'/>
 		<cd:command name='adaptlayout' value='adapteazaaspect'/>
+		<cd:command name='alignment' value='alignment'/>
 		<cd:command name='arg' value='arg'/>
 		<cd:command name='at' value='la'/>
 		<cd:command name='atleftmargin' value='atleftmargin'/>
@@ -1542,11 +1543,13 @@
 		<cd:command name='leftmargindistance' value='distantamarginestanga'/>
 		<cd:command name='leftmarginwidth' value='latimemarginestanga'/>
 		<cd:command name='leg' value='leg'/>
+		<cd:command name='linecorrection' value='linecorrection'/>
 		<cd:command name='linewidth' value='grosimelinie'/>
 		<cd:command name='listheight' value='inaltimelista'/>
 		<cd:command name='listlength' value='lungimelista'/>
 		<cd:command name='listsymbol' value='listsymbol'/>
 		<cd:command name='listwidth' value='latimelista'/>
+		<cd:command name='localfootnotes' value='localfootnotes'/>
 		<cd:command name='logfields' value='logcampuri'/>
 		<cd:command name='lohi' value='jossus'/>
 		<cd:command name='low' value='jos'/>
@@ -1555,6 +1558,7 @@
 		<cd:command name='makeupheight' value='inaltimemakeup'/>
 		<cd:command name='makeupwidth' value='latimemakeup'/>
 		<cd:command name='mar' value='mar'/>
+		<cd:command name='marginblock' value='marginblock'/>
 		<cd:command name='margindistance' value='distantamargine'/>
 		<cd:command name='marginrule' value='liniemargine'/>
 		<cd:command name='margintext' value='textmarginal'/>
@@ -1654,6 +1658,7 @@
 		<cd:command name='rightmarginwidth' value='latimemarginedreapta'/>
 		<cd:command name='romannumerals' value='numereromane'/>
 		<cd:command name='rotate' value='roteste'/>
+		<cd:command name='savebuffer' value='savebuffer'/>
 		<cd:command name='scale' value='scala'/>
 		<cd:command name='screen' value='ecran'/>
 		<cd:command name='selectblocks' value='selecteazablocuri'/>
@@ -1689,7 +1694,9 @@
 		<cd:command name='setupcombinations' value='seteazacombinari'/>
 		<cd:command name='setupcombinedlist' value='seteazalistacombinata'/>
 		<cd:command name='setupcomment' value='seteazacomentariu'/>
+		<cd:command name='setupdescription' value='setupdescription'/>
 		<cd:command name='setupdescriptions' value='seteazadescriere'/>
+		<cd:command name='setupenumeration' value='setupenumeration'/>
 		<cd:command name='setupenumerations' value='seteazaenumerare'/>
 		<cd:command name='setupexternalfigures' value='seteazafiguriexterne'/>
 		<cd:command name='setupfield' value='seteazacamp'/>
@@ -1704,8 +1711,10 @@
 		<cd:command name='setupfootnotedefinition' value='seteazadefinireanotasubsol'/>
 		<cd:command name='setupfootnotes' value='seteazanotasubsol'/>
 		<cd:command name='setupforms' value='seteazaformulare'/>
+		<cd:command name='setupformula' value='setupformula'/>
 		<cd:command name='setupformulas' value='seteazaformule'/>
 		<cd:command name='setupframed' value='seteazainconjurat'/>
+		<cd:command name='setupframedtext' value='setupframedtext'/>
 		<cd:command name='setupframedtexts' value='definestetexteinconjurate'/>
 		<cd:command name='setuphead' value='seteazatitlu'/>
 		<cd:command name='setupheader' value='seteazaantet'/>
@@ -1734,7 +1743,9 @@
 		<cd:command name='setuplinewidth' value='seteazagrosimelinie'/>
 		<cd:command name='setuplist' value='seteazalista'/>
 		<cd:command name='setupmakeup' value='seteazamakeup'/>
+		<cd:command name='setupmarginblock' value='setupmarginblock'/>
 		<cd:command name='setupmarginblocks' value='seteazablocurimarginale'/>
+		<cd:command name='setupmargindata' value='setupmargindata'/>
 		<cd:command name='setupmarginrules' value='seteazaliniimargine'/>
 		<cd:command name='setupmarking' value='seteazamarcaje'/>
 		<cd:command name='setupmathalignment' value='setupmathalignment'/>
@@ -1913,6 +1924,7 @@
 		<cd:command name='testcolumn' value='testcolumn'/>
 		<cd:command name='testpage' value='testpage'/>
 		<cd:command name='tex' value='tex'/>
+		<cd:command name='textbackground' value='textbackground'/>
 		<cd:command name='textheight' value='inaltimetext'/>
 		<cd:command name='textreference' value='referintatext'/>
 		<cd:command name='textrule' value='riglatext'/>

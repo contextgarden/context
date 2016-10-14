@@ -15,6 +15,7 @@ return {
         "metapostversion",
         "maxdimensions",
         "drawoptionsfactor",
+        "dq", "sq",
     },
     commands = {
         "transparency",
@@ -126,7 +127,7 @@ return {
         --
         "decorated", "redecorated", "undecorated",
         --
-        "passvariable", "passarrayvariable", "tostring", "format", "formatted",
+        "passvariable", "passarrayvariable", "tostring", "topair", "format", "formatted", "quotation", "quote",
         "startpassingvariable", "stoppassingvariable",
         --
         "eofill", "eoclip", "nofill", "fillup", "eofillup",

@@ -1326,6 +1326,7 @@
 		<cd:command name='Words' value='Mots'/>
 		<cd:command name='about' value='concernant'/>
 		<cd:command name='adaptlayout' value='adaptedisposition'/>
+		<cd:command name='alignment' value='alignment'/>
 		<cd:command name='arg' value='arg'/>
 		<cd:command name='at' value='a'/>
 		<cd:command name='atleftmargin' value='atleftmargin'/>
@@ -1542,11 +1543,13 @@
 		<cd:command name='leftmargindistance' value='distancemargegauche'/>
 		<cd:command name='leftmarginwidth' value='largeurmargegauche'/>
 		<cd:command name='leg' value='leg'/>
+		<cd:command name='linecorrection' value='linecorrection'/>
 		<cd:command name='linewidth' value='largeurligne'/>
 		<cd:command name='listheight' value='hauteurliste'/>
 		<cd:command name='listlength' value='llongueurliste'/>
 		<cd:command name='listsymbol' value='listesymbole'/>
 		<cd:command name='listwidth' value='largeurliste'/>
+		<cd:command name='localfootnotes' value='localfootnotes'/>
 		<cd:command name='logfields' value='logchamp'/>
 		<cd:command name='lohi' value='baha'/>
 		<cd:command name='low' value='bas'/>
@@ -1555,6 +1558,7 @@
 		<cd:command name='makeupheight' value='hauteurmakeup'/>
 		<cd:command name='makeupwidth' value='largeurmakeup'/>
 		<cd:command name='mar' value='mar'/>
+		<cd:command name='marginblock' value='marginblock'/>
 		<cd:command name='margindistance' value='distancemarge'/>
 		<cd:command name='marginrule' value='margereglee'/>
 		<cd:command name='margintext' value='textemarge'/>
@@ -1654,6 +1658,7 @@
 		<cd:command name='rightmarginwidth' value='largeurmargedroite'/>
 		<cd:command name='romannumerals' value='chiffresromains'/>
 		<cd:command name='rotate' value='oriente'/>
+		<cd:command name='savebuffer' value='savebuffer'/>
 		<cd:command name='scale' value='echelle'/>
 		<cd:command name='screen' value='ecran'/>
 		<cd:command name='selectblocks' value='selectionneblocs'/>
@@ -1689,7 +1694,9 @@
 		<cd:command name='setupcombinations' value='reglecombinaisons'/>
 		<cd:command name='setupcombinedlist' value='reglelisteimbriquee'/>
 		<cd:command name='setupcomment' value='reglecommentaire'/>
+		<cd:command name='setupdescription' value='setupdescription'/>
 		<cd:command name='setupdescriptions' value='regledescriptions'/>
+		<cd:command name='setupenumeration' value='setupenumeration'/>
 		<cd:command name='setupenumerations' value='regleenumerations'/>
 		<cd:command name='setupexternalfigures' value='reglefiguresexternes'/>
 		<cd:command name='setupfield' value='reglechamp'/>
@@ -1704,8 +1711,10 @@
 		<cd:command name='setupfootnotedefinition' value='definitnotepdp'/>
 		<cd:command name='setupfootnotes' value='reglenotepdp'/>
 		<cd:command name='setupforms' value='regleformulaires'/>
+		<cd:command name='setupformula' value='setupformula'/>
 		<cd:command name='setupformulas' value='regleformules'/>
 		<cd:command name='setupframed' value='regleencadre'/>
+		<cd:command name='setupframedtext' value='setupframedtext'/>
 		<cd:command name='setupframedtexts' value='setupframedtexts'/>
 		<cd:command name='setuphead' value='regletete'/>
 		<cd:command name='setupheader' value='regleentete'/>
@@ -1734,7 +1743,9 @@
 		<cd:command name='setuplinewidth' value='regleepaisseurligne'/>
 		<cd:command name='setuplist' value='regleliste'/>
 		<cd:command name='setupmakeup' value='reglemakeup'/>
+		<cd:command name='setupmarginblock' value='setupmarginblock'/>
 		<cd:command name='setupmarginblocks' value='regleblocmarge'/>
+		<cd:command name='setupmargindata' value='setupmargindata'/>
 		<cd:command name='setupmarginrules' value='reglemargereglee'/>
 		<cd:command name='setupmarking' value='reglemarquage'/>
 		<cd:command name='setupmathalignment' value='setupmathalignment'/>
@@ -1913,6 +1924,7 @@
 		<cd:command name='testcolumn' value='testcolumn'/>
 		<cd:command name='testpage' value='testpage'/>
 		<cd:command name='tex' value='tex'/>
+		<cd:command name='textbackground' value='textbackground'/>
 		<cd:command name='textheight' value='hauteurtexte'/>
 		<cd:command name='textreference' value='referencetexte'/>
 		<cd:command name='textrule' value='ligneregleetexte'/>

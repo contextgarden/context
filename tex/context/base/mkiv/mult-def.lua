@@ -3424,6 +3424,10 @@ return {
    ["pe"]="دوران",
    ["ro"]="roteste",
   },
+  ["savebuffer"]={
+   ["en"]="savebuffer",
+   ["nl"]="bewaarbuffer",
+  },
   ["scale"]={
    ["cs"]="meritko",
    ["de"]="format",
@@ -3784,6 +3788,10 @@ return {
    ["pe"]="بارگذاری‌شرح",
    ["ro"]="seteazadescriere",
   },
+  ["setupdescription"]={
+   ["en"]="setupdescription",
+   ["nl"]="steldoordefinierenin",
+  },
   ["setupenumerations"]={
    ["cs"]="nastavvycty",
    ["de"]="stellebeschreibungein",
@@ -3793,6 +3801,10 @@ return {
    ["nl"]="steldoornummerenin",
    ["pe"]="بارگذاری‌شماره‌گذاریها",
    ["ro"]="seteazaenumerare",
+  },
+  ["setupenumeration"]={
+   ["en"]="setupenumeration",
+   ["nl"]="steldoornummerenin",
   },
   ["setupexternalfigures"]={
    ["cs"]="nastavexterniobrazy",
@@ -3934,6 +3946,10 @@ return {
    ["pe"]="بارگذاری‌فرمولها",
    ["ro"]="seteazaformule",
   },
+  ["setupformula"]={
+   ["en"]="setupformula",
+   ["nl"]="stelformulein",
+  },
   ["setupframed"]={
    ["cs"]="nastavoramovani",
    ["de"]="stelleumrahmtein",
@@ -3953,6 +3969,10 @@ return {
    ["nl"]="stelkadertekstenin",
    ["pe"]="بارگذاری‌متن‌قالبی",
    ["ro"]="definestetexteinconjurate",
+  },
+  ["setupframedtext"]={
+   ["en"]="setupframedtext",
+   ["nl"]="stelkadertekstin",
   },
   ["setuphead"]={
    ["cs"]="nastavnadpis",
@@ -4227,6 +4247,14 @@ return {
    ["nl"]="stelmargeblokkenin",
    ["pe"]="بارگذاری‌بلوکهای‌حاشیه",
    ["ro"]="seteazablocurimarginale",
+  },
+  ["setupmarginblock"]={
+   ["en"]="setupmarginblock",
+   ["nl"]="stelmargeblokkenin",
+  },
+  ["setupmargindata"]={
+   ["en"]="setupmargindata",
+   ["nl"]="stelinmargein",
   },
   ["setupmarginrules"]={
    ["cs"]="nastavmarginalnilinky",
@@ -5032,6 +5060,10 @@ return {
    ["pe"]="شروع‌تنظیم",
    ["ro"]="startaliniere",
   },
+  ["alignment"]={
+   ["en"]="alignment",
+   ["nl"]="uitlijnen",
+  },
   ["startbackground"]={
    ["cs"]="startpozadi",
    ["de"]="starthintergrund",
@@ -5176,6 +5208,10 @@ return {
    ["pe"]="شروع‌تصحیح‌خط",
    ["ro"]="startcorectielinie",
   },
+  ["linecorrection"]={
+   ["en"]="linecorrection",
+   ["nl"]="regelcorrectie",
+  },
   ["startlinenumbering"]={
    ["cs"]="startcislovaniradku",
    ["de"]="startzeilennumerierung",
@@ -5216,6 +5252,10 @@ return {
    ["pe"]="شروع‌پانوشتهای‌موضعی",
    ["ro"]="startnotesubsollocale",
   },
+  ["localfootnotes"]={
+   ["en"]="localfootnotes",
+   ["nl"]="lokalevoetnoten",
+  },
   ["startmakeup"]={
    ["cs"]="startuprava",
    ["de"]="startumbruch",
@@ -5235,6 +5275,10 @@ return {
    ["nl"]="startmargeblok",
    ["pe"]="شروع‌بلوک‌حاشیه",
    ["ro"]="startblocmarginal",
+  },
+  ["marginblock"]={
+   ["en"]="marginblock",
+   ["nl"]="margeblok",
   },
   ["startmarginrule"]={
    ["cs"]="startmarginalnilinka",
@@ -5409,6 +5453,10 @@ return {
   ["starttextbackground"]={
    ["en"]="starttextbackground",
    ["nl"]="starttekstachtergrond",
+  },
+  ["textbackground"]={
+   ["en"]="textbackground",
+   ["nl"]="tekstachtergrond",
   },
   ["starttextrule"]={
    ["cs"]="starttextovalinka",
@@ -12921,6 +12969,7 @@ return {
   },
   ["combination"]={
    ["en"]="combination",
+   ["nl"]="combinatie",
   },
   ["command"]={
    ["cs"]="prikaz",

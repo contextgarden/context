@@ -12,6 +12,9 @@
                 <cd:inherit name="setupfloat"/>
             </cd:assignments>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-float"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="definefloat" variant="name" file="strc-flt.mkvi">
@@ -20,6 +23,9 @@
             <cd:resolve name="keyword-plural-optional"/>
             <cd:resolve name="keyword-singular-optional"/>
         </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-float"/>
+        </cd:instances>
     </cd:command>
 
     <cd:command name="setupfloat" file="strc-flt.mkvi">
@@ -337,11 +343,7 @@
             <cd:content/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="chemical"/>
-            <cd:constant value="figure"/>
-            <cd:constant value="table"/>
-            <cd:constant value="intermezzo"/>
-            <cd:constant value="graphic"/>
+            <cd:resolve name="instance-float"/>
         </cd:instances>
     </cd:command>
 
@@ -365,12 +367,19 @@
             <cd:resolve name="assignment-userdata-list-optional"/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="chemical"/>
-            <cd:constant value="figure"/>
-            <cd:constant value="table"/>
-            <cd:constant value="intermezzo"/>
-            <cd:constant value="graphic"/>
+            <cd:resolve name="instance-float"/>
         </cd:instances>
+    </cd:command>
+
+    <cd:command name="placefloat" generated="yes" variant="instance" file="strc-flt.mkvi">
+        <cd:sequence>
+            <cd:string value="place"/>
+            <cd:instance/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="assignment-floatdata-list-optional"/>
+            <cd:resolve name="assignment-userdata-list-optional"/>
+        </cd:arguments>
     </cd:command>
 
     <cd:command name="placefloat" type="environment" file="strc-flt.mkvi">
@@ -465,7 +474,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placefigure" file="strc-flt.mkvi">
+    <!--
+
+    <cd:command file="strc-flt.mkvi" name="placefigure">
         <cd:arguments>
             <cd:resolve name="keyword-floatlocation-list-optional"/>
             <cd:resolve name="keyword-reference-list-optional"/>
@@ -473,6 +484,8 @@
             <cd:content/>
         </cd:arguments>
     </cd:command>
+
+    -->
 
     <cd:command name="placefigure" type="environment" file="strc-flt.mkvi">
         <cd:arguments>

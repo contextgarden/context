@@ -1326,6 +1326,7 @@
 		<cd:command name='Words' value='Parole'/>
 		<cd:command name='about' value='intorno'/>
 		<cd:command name='adaptlayout' value='adattalayout'/>
+		<cd:command name='alignment' value='alignment'/>
 		<cd:command name='arg' value='arg'/>
 		<cd:command name='at' value='al'/>
 		<cd:command name='atleftmargin' value='atleftmargin'/>
@@ -1542,11 +1543,13 @@
 		<cd:command name='leftmargindistance' value='distanzamarginesinistro'/>
 		<cd:command name='leftmarginwidth' value='ampiezzamarginesinistro'/>
 		<cd:command name='leg' value='leg'/>
+		<cd:command name='linecorrection' value='linecorrection'/>
 		<cd:command name='linewidth' value='spessoreriga'/>
 		<cd:command name='listheight' value='altezzaelenco'/>
 		<cd:command name='listlength' value='lunghezzaelenco'/>
 		<cd:command name='listsymbol' value='listsymbol'/>
 		<cd:command name='listwidth' value='ampiezzaelenco'/>
+		<cd:command name='localfootnotes' value='localfootnotes'/>
 		<cd:command name='logfields' value='logcampi'/>
 		<cd:command name='lohi' value='pedap'/>
 		<cd:command name='low' value='ped'/>
@@ -1555,6 +1558,7 @@
 		<cd:command name='makeupheight' value='altezzamakeup'/>
 		<cd:command name='makeupwidth' value='ampiezzamakeup'/>
 		<cd:command name='mar' value='mar'/>
+		<cd:command name='marginblock' value='marginblock'/>
 		<cd:command name='margindistance' value='distanzamargine'/>
 		<cd:command name='marginrule' value='lineamargine'/>
 		<cd:command name='margintext' value='testoinmargine'/>
@@ -1654,6 +1658,7 @@
 		<cd:command name='rightmarginwidth' value='ampiezzamarginedestro'/>
 		<cd:command name='romannumerals' value='numeriromani'/>
 		<cd:command name='rotate' value='ruota'/>
+		<cd:command name='savebuffer' value='savebuffer'/>
 		<cd:command name='scale' value='scala'/>
 		<cd:command name='screen' value='schermo'/>
 		<cd:command name='selectblocks' value='selezionablocchi'/>
@@ -1689,7 +1694,9 @@
 		<cd:command name='setupcombinations' value='impostacombinazioni'/>
 		<cd:command name='setupcombinedlist' value='impostaelencocombinato'/>
 		<cd:command name='setupcomment' value='impostacommento'/>
+		<cd:command name='setupdescription' value='setupdescription'/>
 		<cd:command name='setupdescriptions' value='impostadescrizioni'/>
+		<cd:command name='setupenumeration' value='setupenumeration'/>
 		<cd:command name='setupenumerations' value='impostaenumerazioni'/>
 		<cd:command name='setupexternalfigures' value='impostafigureesterne'/>
 		<cd:command name='setupfield' value='impostacampo'/>
@@ -1704,8 +1711,10 @@
 		<cd:command name='setupfootnotedefinition' value='impostadefinizionenotepdp'/>
 		<cd:command name='setupfootnotes' value='impostanotepdp'/>
 		<cd:command name='setupforms' value='impostaforms'/>
+		<cd:command name='setupformula' value='setupformula'/>
 		<cd:command name='setupformulas' value='impostaformule'/>
 		<cd:command name='setupframed' value='impostaincorniciato'/>
+		<cd:command name='setupframedtext' value='setupframedtext'/>
 		<cd:command name='setupframedtexts' value='impostatestiincorniciati'/>
 		<cd:command name='setuphead' value='impostatesta'/>
 		<cd:command name='setupheader' value='impostainstestazione'/>
@@ -1734,7 +1743,9 @@
 		<cd:command name='setuplinewidth' value='impostaampiezzariga'/>
 		<cd:command name='setuplist' value='impostaelenco'/>
 		<cd:command name='setupmakeup' value='impostamakeup'/>
+		<cd:command name='setupmarginblock' value='setupmarginblock'/>
 		<cd:command name='setupmarginblocks' value='impostablocchimargine'/>
+		<cd:command name='setupmargindata' value='setupmargindata'/>
 		<cd:command name='setupmarginrules' value='impostalineemargine'/>
 		<cd:command name='setupmarking' value='impostamarcatura'/>
 		<cd:command name='setupmathalignment' value='setupmathalignment'/>
@@ -1913,6 +1924,7 @@
 		<cd:command name='testcolumn' value='testcolumn'/>
 		<cd:command name='testpage' value='testpage'/>
 		<cd:command name='tex' value='tex'/>
+		<cd:command name='textbackground' value='textbackground'/>
 		<cd:command name='textheight' value='altezzatesto'/>
 		<cd:command name='textreference' value='riferimentotesto'/>
 		<cd:command name='textrule' value='lineatesto'/>
