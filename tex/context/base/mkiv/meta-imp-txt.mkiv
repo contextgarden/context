@@ -150,84 +150,239 @@
 \setupshapetexts
   [\c!bodyfont=]
 
-%%%%%%% rotfont nog definieren
-
 \doifundefined{RotFont}{\definefont[RotFont][RegularBold*default]}
 
-\unexpanded\def\processfollowingtoken#1% strut toegevoegd
-  {\appendtoks#1\to\MPtoks
-   \setbox\MPbox=\hbox{\RotFont\setstrut\strut\the\MPtoks}%
-   \startMPdrawing
-     n := n + 1 ; len[n] := \the\wd\MPbox ;
-   \stopMPdrawing
-   \startMPdrawing[-]
-   % pic[n] := textext{\RotFont\setstrut\strut#1} ; % btex \RotFont\setstrut\strut#1 etex ;
-     pic[n] := btex \RotFont\setstrut\strut#1 etex ;
-     pic[n] := pic[n] shifted - llcorner pic[n] ;
-   \stopMPdrawing}
+% \startuseMPgraphic{followtokens}
+%   % we default to nothing
+% \stopuseMPgraphic
 
-\startuseMPgraphic{followtokens}
-  % we default to nothing
-\stopuseMPgraphic
+% \unexpanded\def\processfollowingtoken#1% strut toegevoegd
+%   {\appendtoks#1\to\MPtoks
+%    \setbox\MPbox=\hbox{\RotFont\setstrut\strut\the\MPtoks}%
+%    \startMPdrawing
+%      n := n + 1 ; len[n] := \the\wd\MPbox ;
+%    \stopMPdrawing
+%    \startMPdrawing[-]
+%    % pic[n] := textext{\RotFont\setstrut\strut#1} ; % btex \RotFont\setstrut\strut#1 etex ;
+%      pic[n] := btex \RotFont\setstrut\strut#1 etex ;
+%      pic[n] := pic[n] shifted - llcorner pic[n] ;
+%    \stopMPdrawing}
+%
+% \unexpanded\def\dofollowtokens#1#2%
+%   {\vbox\bgroup
+%    \forgetall
+%    \dontcomplain
+%    \doifundefined{RotFont}{\definefont[RotFont][RegularBold*default]}%
+%    \MPtoks\emptytoks
+%    \resetMPdrawing
+%    \startMPdrawing
+%      \includeMPgraphic{followtokens} ;
+%      picture pic[] ; numeric len[], n ; n := 0 ;
+%    \stopMPdrawing
+%    \handletokens#2\with\processfollowingtoken
+%    \startMPdrawing
+%      if unknown RotPath  : path    RotPath  ; RotPath  := origin ; fi ;
+%      if unknown RotColor : color   RotColor ; RotColor := black  ; fi ;
+%      if unknown TraceRot : boolean TraceRot ; TraceRot := false  ; fi ;
+%      if unknown ExtraRot : numeric ExtraRot ; ExtraRot := 0      ; fi ;
+%      numeric al, at, pl, pc, wid, pos ; pair ap, ad ;
+%      al := arclength RotPath ;
+%      if al=0 :
+%        al := len[n] + ExtraRot ;
+%        RotPath := origin -- (al,0) ;
+%      fi ;
+%      if al<len[n]:
+%        RotPath := RotPath scaled ((len[n]+ExtraRot)/al) ;
+%        al := arclength RotPath ;
+%      fi ;
+%      if \number#1 = 1 :
+%        pl := (al-len[n])/(if n>1 : (n-1) else : 1 fi) ;
+%        pc := 0 ;
+%      else : % centered / MP
+%        pl := 0 ;
+%        pc := arclength RotPath/2 - len[n]/2 ;
+%      fi ;
+%      if TraceRot :
+%        draw RotPath withpen pencircle scaled 1pt withcolor blue ;
+%      fi ;
+%      for i=1 upto n :
+%        wid := abs(xpart urcorner pic[i] - xpart llcorner pic[i]) ;
+%        pos := len[i]-wid/2 + (i-1)*pl + pc ;
+%        at := arctime   pos of RotPath ;
+%        ap := point     at  of RotPath ;
+%        ad := direction at  of RotPath ;
+%        draw pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap
+%          withcolor RotColor ;
+%        if TraceRot :
+%          draw boundingbox
+%             pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap
+%             withpen pencircle scaled .25pt withcolor red ;
+%          draw ap
+%             withpen pencircle scaled .50pt withcolor green ;
+%        fi ;
+%      endfor ;
+%    \stopMPdrawing
+%    \MPdrawingdonetrue
+%    \getMPdrawing
+%    \resetMPdrawing
+%    \egroup}
+
+\unexpanded\def\getfollowtoken#1%
+ {\hbox\bgroup
+    \strut
+    \ctxlua{mp.follow_text(#1)}%
+  \egroup}
+
+\definefontfeature[mp:tp][liga=no]
+
+\startMPdefinitions
+    def mfun_follow_draw (expr alternative) =
+        if unknown RotPath  : path    RotPath  ; RotPath  := origin ; fi ;
+      % if unknown RotColor : color   RotColor ; RotColor := black  ; fi ;
+        if unknown TraceRot : boolean TraceRot ; TraceRot := false  ; fi ;
+        if unknown ExtraRot : numeric ExtraRot ; ExtraRot := 0      ; fi ;
+        picture pic[] ;
+        numeric len[] ; len[0] := 0 ;
+        numeric n ; n := lua.mp.follow_size() ;
+        for i=1 upto n :
+            pic[i] := lua.mp.follow_slot(i) ;
+            pic[i] := pic[i] shifted - llcorner pic[i] ;
+            len[i] := len[i-1] + lua.mp.follow_width(i) ;
+        endfor ;
+        numeric al, at, pl, pc, wid, pos ; pair ap, ad ;
+        al := arclength RotPath ;
+        if al = 0 :
+            al := len[n] + ExtraRot ;
+            RotPath := origin -- (al,0) ;
+        fi ;
+        if al < len[n]:
+           RotPath := RotPath scaled ((len[n]+ExtraRot)/al) ;
+           al := arclength RotPath ;
+        fi ;
+        if alternative = 1 :
+           pl := (al-len[n])/(if n>1 : (n-1) else : 1 fi) ;
+           pc := 0 ;
+        else : % centered / MP
+           pl := 0 ;
+           pc := arclength RotPath/2 - len[n]/2 ;
+        fi ;
+        if TraceRot :
+           draw RotPath withpen pencircle scaled 1pt withcolor blue ;
+        fi ;
+        for i=1 upto n :
+          % wid := abs(xpart urcorner pic[i] - xpart llcorner pic[i]) ;
+            wid := lua.mp.follow_width(i) ;
+            pos := len[i]-wid/2 + (i-1)*pl + pc ;
+            at := arctime   pos of RotPath ;
+            ap := point     at  of RotPath ;
+            ad := direction at  of RotPath ;
+            if mfun_trial_run :
+                % skip (ok, somewhat inefficient as we can consider a
+                % dedicated store and textext variant (todo)
+            else :
+                pic[i] := pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap ;
+                draw pic[i] ; % withcolor RotColor ;
+                if TraceRot :
+                    draw boundingbox pic[i] withpen pencircle scaled .25pt withcolor red ;
+                    draw ap withpen pencircle scaled .50pt withcolor green ;
+                fi ;
+            fi ;
+        endfor ;
+    enddef ;
+\stopMPdefinitions
+
+\startluacode
+    local nodecodes = nodes.nodecodes
+
+    local visible_code = {
+        [nodecodes.glyph] = true,
+        [nodecodes.glue]  = true,
+        [nodecodes.hlist] = true,
+        [nodecodes.vlist] = true,
+        [nodecodes.rule]  = true,
+    }
+
+    local disc_code = nodecodes.disc
+    local kern_code = nodecodes.kern
+
+    local c_userkern = nodes.kerncodes.userkern
+    local a_fontkern = attributes.private("fontkern")
+
+    local n = nil
+    local s = 0
+
+    function mp.follow_reset()
+        r = nil
+        s = 0
+    end
+
+    function mp.follow_initialize(b)
+        if not r then
+            local l = tex.takebox(b).list
+            n = { }
+            s = 0
+            while l do
+                local c = l
+                l = l.next
+                local id = c.id
+                if visible_code[id] then
+                    s = s + 1
+                    n[s] = c
+                    c.prev = nil
+                    c.next = nil
+                elseif id == kern_code then
+                    if c.subtype == c_userkern and not c[a_fontkern] then
+                        s = s + 1
+                        n[s] = c
+                        c.prev = nil
+                    else
+                        n[s].next = c
+                        c.prev = n[s]
+                    end
+                    c.next = nil
+                elseif id == disc_code then
+                    local r = c.replace
+                    while r do
+                        s = s + 1
+                        n[s] = r
+                        r = r.next
+                        r.prev = nil
+                        r.next = nil
+                    end
+                end
+            end
+        end
+    end
+
+    function mp.follow_size()
+        mp.print(s)
+    end
+
+    function mp.follow_slot(i)
+        mp.print('textext("\\getfollowtoken{' .. i .. '}")')
+    end
+
+    function mp.follow_text(s)
+        context(n[s])
+    end
+
+    function mp.follow_width(i)
+        mp.print(number.topoints(n[i].width))
+    end
+\stopluacode
 
 \unexpanded\def\dofollowtokens#1#2%
   {\vbox\bgroup
    \forgetall
    \dontcomplain
-   \doifundefined{RotFont}{\definefont[RotFont][RegularBold*default]}%
-   \MPtoks\emptytoks
-   \resetMPdrawing
-   \startMPdrawing
+   \setbox\scratchbox\hbox{\addff{mp:tp}#2}%
+   \ctxlua{mp.follow_initialize(\number\scratchbox)}%
+   \stopluacode
+   \startMPcode
      \includeMPgraphic{followtokens} ;
-     picture pic[] ; numeric len[], n ; n := 0 ;
-   \stopMPdrawing
-   \handletokens#2\with\processfollowingtoken
-   \startMPdrawing
-     if unknown RotPath  : path    RotPath  ; RotPath  := origin ; fi ;
-     if unknown RotColor : color   RotColor ; RotColor := black  ; fi ;
-     if unknown TraceRot : boolean TraceRot ; TraceRot := false  ; fi ;
-     if unknown ExtraRot : numeric ExtraRot ; ExtraRot := 0      ; fi ;
-     numeric al, at, pl, pc, wid, pos ; pair ap, ad ;
-     al := arclength RotPath ;
-     if al=0 :
-       al := len[n] + ExtraRot ;
-       RotPath := origin -- (al,0) ;
-     fi ;
-     if al<len[n]:
-       RotPath := RotPath scaled ((len[n]+ExtraRot)/al) ;
-       al := arclength RotPath ;
-     fi ;
-     if \number#1 = 1 :
-       pl := (al-len[n])/(if n>1 : (n-1) else : 1 fi) ;
-       pc := 0 ;
-     else : % centered / MP
-       pl := 0 ;
-       pc := arclength RotPath/2 - len[n]/2 ;
-     fi ;
-     if TraceRot :
-       draw RotPath withpen pencircle scaled 1pt withcolor blue ;
-     fi ;
-     for i=1 upto n :
-       wid := abs(xpart urcorner pic[i] - xpart llcorner pic[i]) ;
-       pos := len[i]-wid/2 + (i-1)*pl + pc ;
-       at := arctime   pos of RotPath ;
-       ap := point     at  of RotPath ;
-       ad := direction at  of RotPath ;
-       draw pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap
-         withcolor RotColor ;
-       if TraceRot :
-         draw boundingbox
-            pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap
-            withpen pencircle scaled .25pt withcolor red ;
-         draw ap
-            withpen pencircle scaled .50pt withcolor green ;
-       fi ;
-     endfor ;
-%      fill boundingbox currentpicture ;
-   \stopMPdrawing
-   \MPdrawingdonetrue
-   \getMPdrawing
-   \resetMPdrawing
+     mfun_follow_draw(\number#1) ;
+   \stopMPcode
+   \ctxlua{mp.follow_reset()}%
    \egroup}
 
 \unexpanded\def\followtokens        {\dofollowtokens1}
@@ -262,6 +417,8 @@
 %    \followtokenscentered{So now we have two commands.}}
 % \stopoverlay
 
+% \followtokengraphicscale{6cm}
+% \followtokens{Hans Hagen uses {\darkred\TeX}, {\darkgreen\Lua}, {\darkblue \MetaPost} and friends.}
 
 \startuseMPgraphic{fuzzycount}
    begingroup
@@ -289,7 +446,7 @@
   [fuzzycount]
   [n=10]
 
-\def\fuzzycount#1%
+\unexpanded\def\fuzzycount#1%
   {{\tx\useMPgraphic{fuzzycount}{n=#1}}}
 
 \defineconversion[fuzzy][\fuzzycount]

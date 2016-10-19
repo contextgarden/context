@@ -240,8 +240,9 @@ local function validspecification(specification)
         setmetatable(specification,defaults)
     end
     local templatefile = specification.templatefile or "query"
-    local queryfile    = specification.queryfile  or presets.queryfile  or file.nameonly(templatefile) .. "-temp.sql"
-    local resultfile   = specification.resultfile or presets.resultfile or file.nameonly(templatefile) .. "-temp.dat"
+    local name         = file.nameonly(templatefile)
+    local queryfile    = specification.queryfile  or presets.queryfile  or format("%s-temp.sql",name)
+    local resultfile   = specification.resultfile or presets.resultfile or format("%s-temp.dat",name)
     specification.queryfile  = queryfile
     specification.resultfile = resultfile
     if trace_sql then
@@ -338,9 +339,9 @@ function sql.usedatabase(presets,datatable)
             local queryfile   = presets.queryfile  or format("%s-temp.sql",name)
             local resultfile  = presets.resultfile or format("%s-temp.dat",name)
             execute = function(specification) -- variables template
-                if not specification.presets    then specification.presets    = presets   end
-                if not specification.queryfile  then specification.queryfile  = queryfile end
-                if not specification.resultfile then specification.resultfile = queryfile end
+                if not specification.presets    then specification.presets    = presets    end
+                if not specification.queryfile  then specification.queryfile  = queryfile  end
+                if not specification.resultfile then specification.resultfile = resultfile end
                 return m_execute(specification)
             end
         else

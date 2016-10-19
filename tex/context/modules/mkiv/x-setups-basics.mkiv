@@ -25,6 +25,8 @@
 %D Currently we load the \XML\ file and when not in the english interface we just
 %D remap the relevant words to their translation.
 
+%D Todo: use lua instead of synonyms
+
 \unprotect
 
 \defineregister
@@ -120,10 +122,55 @@
     }
 \stopxmlsetups
 
+\startxmlsetups xml:setups:assemblename:instance
+    \doifelse {\xmlatt{#1}{type}} {environment} {
+        \doifsomethingelse {\xmlatt{#1}{begin}} {
+            \edef\currentSETUPprefix{\xmllastatt}%
+        } {
+            \let\currentSETUPprefix\e!start
+        }
+    } {
+        \let\currentSETUPprefix\empty
+    }
+%     \edef\currentSETUPname{\xmlatt{#1}{name}}
+    \let\currentSETUPgenerated\empty
+    \doifelsenothing {\xmlatt{#1}{variant}} {
+        \let\currentSETUPvariant\empty
+    } {
+        \def\currentSETUPvariant{:\xmllastatt}
+    }
+    \edef\currentSETUPfullname {
+        \currentSETUPprefix
+        \currentSETUPname
+        \currentSETUPvariant
+        \currentSETUPgenerated
+    }
+\stopxmlsetups
+
+% \startxmlsetups xml:setups:register
+%     \doifelse {\xmlatt{#1}{variant}} {instance} {
+%         \def\docommand##1%
+%           {\def\currentSETUPname{##1}%
+%            \xmlsetup{#1}{xml:setups:assemblename:instance}
+%            \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{##1}}}}%
+%         \processcommacommand[\clf_getinstances{#1}]\docommand
+%     } {
+%         \xmlsetup{#1}{xml:setups:assemblename}
+%         % not really needed if we just use setups
+%         \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{}}}
+%     }
+% \stopxmlsetups
+
 \startxmlsetups xml:setups:register
+    \doif {\xmlatt{#1}{variant}} {instance} {
+        \def\docommand##1%
+          {\xmlsetup{#1}{xml:setups:assemblename:instance}
+           \expanded{\texcommand[stp:x:\currentSETUPfullname:##1]{{#1}{##1}}}}%
+        \processcommacommand[\clf_getinstances{#1}]\docommand
+    }
     \xmlsetup{#1}{xml:setups:assemblename}
     % not really needed if we just use setups
-    \expanded{\texcommand[stp:x:\currentSETUPfullname]{#1}}
+    \expanded{\texcommand[stp:x:\currentSETUPfullname]{{#1}{}}}
 \stopxmlsetups
 
 \startluacode
@@ -151,7 +198,6 @@
         for c in xml.collected(x,"cd:interface/cd:define") do
             definitions[c.at.name] = c
         end
-
         for c in xml.collected(x,"cd:interface/cd:interface") do
             c.at.file = c.__f__
             c.at["xmlns:cd"] = nil
@@ -225,6 +271,23 @@
         context(n)
     end
 
+    local function getinstances(id)
+        local t = { }
+        local x = lxml.getid(id)
+        local r = xml.first(x,"/instances/resolve")
+        if r then
+            local x = setups.definitions[r.at.name]
+            for c in xml.collected(x,"constant") do
+                t[#t+1] = c.at.value
+            end
+        else
+            for c in xml.collected(x,"/instances/constant") do
+                t[#t+1] = c.at.value
+            end
+        end
+        return t
+    end
+
     interfaces.implement {
         name      = "getsetupstring",
         actions   = function(s)
@@ -248,6 +311,12 @@
         arguments = "string",
     }
 
+    interfaces.implement {
+        name      = "getinstances",
+        actions   = { getinstances, function(t) context("%,t",t) end },
+        overload  = true,
+        arguments = { "string" },
+    }
 \stopluacode
 
 % <?xml version="1.0" encoding="UTF-8"?>
@@ -307,7 +376,12 @@
 \unexpanded\def\showsetup {\c_cmd_kind\plustwo  \cmd_show_setup}
 
 \unexpanded\def\showsetupinlist#1#2#3%
-  {\c_cmd_kind\plustwo\xmlsetup{#3}{xml:setups:typeset}\par}
+  {%(#1)(#2)(#3)\par
+   \edef\m_cmd_instance{\secondoftwoarguments#3}%
+   \c_cmd_kind\plustwo
+   \xmlsetup{\firstoftwoarguments#3}{xml:setups:typeset}
+   \let\m_cmd_instance\empty
+   \par}
 
 \installtextracker
   {cmd.showsetup}
@@ -331,7 +405,12 @@
    \fi
    \startelement[setup][name=#1]%
      \startelement[noexport][comment={setup definition #1}]%
-       \xmlsetup{\rawsynonymname{texcommand}{stp:x:#1}}{xml:setups:typeset}
+       \edef\cmd_id{\rawsynonymname{texcommand}{stp:x:#1}}%
+       \ifx\cmd_id\empty
+          missing: stp:x:#1
+       \else
+         \xmlsetup{\expandafter\firstoftwoarguments\cmd_id}{xml:setups:typeset}
+       \fi
      \stopelement
    \stopelement}
 
@@ -363,7 +442,11 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:make:instance
-    \m_cmd_instance
+    \ifx\m_cmd_instance\empty
+        \setupintfont{\xmlatt{#1}{value}}
+    \else
+        \m_cmd_instance
+    \fi
 \stopxmlsetups
 
 \startxmlsetups xml:setups:make:variable
@@ -491,13 +574,15 @@
 \stopxmlsetups
 
 \startxmlsetups xml:setups:typeset:instances
-    \xmldoif{#1}{/instances} {
-        \godown[.75\lineheight]
-        {\ttbf instances:}
-        \enspace
-        \xmlfilter{#1}{/instances/(constant|resolve)/command(xml:setups:instance)}
-        \removeunwantedspaces
-    }
+    \ifx\m_cmd_instance\empty
+        \xmldoif{#1}{/instances} {
+            \godown[.75\lineheight]
+            {\ttbf instances:}
+            \enspace
+            \xmlfilter{#1}{/instances/(constant|resolve)/command(xml:setups:instance)}
+            \removeunwantedspaces
+        }
+    \fi
 \stopxmlsetups
 
 \startxmlsetups xml:setups:typeset:yes

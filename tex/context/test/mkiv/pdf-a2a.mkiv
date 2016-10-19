@@ -1,0 +1,40 @@
+% PDF/A-2a
+
+\enabletrackers[structure.tags,backend.tags]
+
+\setupbackend
+  [format=PDF/A-2a,
+   intent=sRGB IEC61966-2.1, % use <info> entry here; otherwise problems with predefined default profile
+   profile=sRGB.icc, % use <filename> here
+   level=0]
+
+\setuptagging[state=start]
+
+\setupcolors[cmyk=no]
+\definecolor[rgbblack][b=0.01]
+\definecolor[transtest][r=1,g=1,t=.5]
+
+\placebookmarks[chapter][all][force=yes]
+
+\starttext
+
+\starttextcolor[rgbblack]
+
+\startchapter[title=aa,bookmark=bb,list=cc,marking=dd]
+
+Test it
+
+\stopchapter
+
+\stoptextcolor
+
+\hbox\bgroup
+    \blackrule[width=1cm,height=1cm,color=red]
+    \blackrule[width=1cm,height=1cm,color=green]
+    \blackrule[width=1cm,height=1cm,color=blue]
+    \blackrule[width=1cm,height=1cm,color=rgbblack]
+    \blackrule[width=1cm,height=1cm,color=transtest]\hskip-.5cm
+    \blackrule[width=1cm,height=1cm,color=transtest]
+\egroup
+
+\stoptext

@@ -331,10 +331,13 @@
 
     -->
 
-    <cd:command name="placefloat" generated="yes" variant="example" file="strc-flt.mkvi">
+    <cd:command name="placefloat" generated="yes" variant="instance" file="strc-flt.mkvi">
         <cd:sequence>
             <cd:string value="place"/>
+            <cd:instance value="float"/>
+<!--
             <cd:variable value="float"/>
+-->
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-floatlocation-list-optional"/>
@@ -357,10 +360,36 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placefloat" type="environment" generated="yes" variant="example" file="strc-flt.mkvi">
+<!--
+    <cd:command name="placefloat" type="environment" file="strc-flt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-singular"/>
+            <cd:resolve name="assignment-floatdata-list-optional"/>
+            <cd:resolve name="assignment-userdata-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placefloat" generated="yes" variant="instance" file="strc-flt.mkvi">
         <cd:sequence>
             <cd:string value="place"/>
-            <cd:variable value="float"/>
+            <cd:instance value="float"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="assignment-floatdata-list-optional"/>
+            <cd:resolve name="assignment-userdata-list-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-float"/>
+        </cd:instances>
+    </cd:command>
+
+-->
+
+    <cd:command name="placefloat" type="environment" generated="yes" variant="instance" file="strc-flt.mkvi">
+        <cd:sequence>
+            <cd:string value="place"/>
+            <cd:instance value="float"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="assignment-floatdata-list-optional"/>
@@ -369,25 +398,6 @@
         <cd:instances>
             <cd:resolve name="instance-float"/>
         </cd:instances>
-    </cd:command>
-
-    <cd:command name="placefloat" generated="yes" variant="instance" file="strc-flt.mkvi">
-        <cd:sequence>
-            <cd:string value="place"/>
-            <cd:instance/>
-        </cd:sequence>
-        <cd:arguments>
-            <cd:resolve name="assignment-floatdata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="placefloat" type="environment" file="strc-flt.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-singular"/>
-            <cd:resolve name="assignment-floatdata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
     </cd:command>
 
     <cd:command name="floattext" type="environment" generated="yes" variant="example" file="strc-flt.mkvi">
@@ -474,7 +484,7 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
+<!--
 
     <cd:command file="strc-flt.mkvi" name="placefigure">
         <cd:arguments>
@@ -484,8 +494,6 @@
             <cd:content/>
         </cd:arguments>
     </cd:command>
-
-    -->
 
     <cd:command name="placefigure" type="environment" file="strc-flt.mkvi">
         <cd:arguments>
@@ -669,6 +677,7 @@
             </cd:assignments>
         </cd:arguments>
     </cd:command>
+-->
 
     <cd:command name="setuplocalfloats" file="strc-flt.mkvi">
         <cd:arguments>

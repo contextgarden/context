@@ -307,12 +307,16 @@
 
 \installdirectcommandhandler \??pagenumbering {pagenumbering}
 
+% some day ifsinglesided and ifdoublesided will become obsolete
+
 \appendtoks
    \singlesidedfalse \setfalse\layoutisdoublesided
    \doublesidedfalse \setfalse\layoutissinglesided
+   \resetsystemmode\v!singlesided
+   \resetsystemmode\v!doublesided
    \processallactionsinset[\directpagenumberingparameter\c!alternative]
-     [ \v!singlesided=>\singlesidedtrue\settrue\layoutissinglesided,
-       \v!doublesided=>\doublesidedtrue\settrue\layoutisdoublesided]%
+     [ \v!singlesided=>\setsystemmode\v!singlesided\singlesidedtrue\settrue\layoutissinglesided,
+       \v!doublesided=>\setsystemmode\v!doublesided\doublesidedtrue\settrue\layoutisdoublesided]%
    \ifdefined\trackingmarginnotestrue
      \ifdoublesided
        \trackingmarginnotestrue

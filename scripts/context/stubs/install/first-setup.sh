@@ -5,13 +5,10 @@
 # you may change this if you want ...
 CONTEXTROOT="$PWD/tex"
 
-# suggested by Tobias Florek to check for ruby & rsync
+# suggested by Tobias Florek to check for rsync
 if [ ! -x "`which rsync`" ]; then
 	echo "You need to install rsync first."
 	exit 1
-fi
-if [ ! -x "`which ruby`" ]; then
-	echo "You might want to install Ruby first if you want to use pdfTeX or XeTeX."
 fi
 
 system=`uname -s`
@@ -23,11 +20,32 @@ case "$system" in
 		case "$cpu" in
 			i*86) platform="linux" ;;
 			x86_64|ia64) platform="linux-64" ;;
+
 			# a little bit of cheating with ppc64 (won't work on Gentoo)
 			ppc|ppc64) platform="linux-ppc" ;;
+
 			# we currently support just mipsel, but Debian is lying (reports mips64)
 			# we need more hacks to fix the situation, this is just a temporary solution
 			mips|mips64|mipsel|mips64el) platform="linux-mipsel" ;;
+
+			armv7l) platform="linux-armhf"
+				# machine id output by uname(1) is insufficent to determine whether this
+				# is a soft or hard float system so we check ourselves.
+				# a) binutils, this should work almost everywhere
+				if $(which readelf >/dev/null 2>&1); then
+					readelf -A /proc/self/exe | grep -q '^ \+Tag_ABI_VFP_args'
+					if [ ! $? ]; then
+						platform="linux-armel"
+					fi
+				# b) debian-specific fallback
+				elif $(which dpkg >/dev/null 2>&1); then
+					if [ "$(dpkg --print-architecture)" = armel ]; then
+						platform="linux-armel"
+					fi
+				fi
+				# else go with hard fp
+				;;
+
 			*) platform="unknown" ;;
 		esac ;;
 	# Mac OS X
@@ -49,15 +67,29 @@ case "$system" in
 	# kFreeBSD (debian)
 	GNU/kFreeBSD)
 		case "$cpu" in
-			i*86) platform="kfreebsd-i386" ;;
-			x86_64|amd64) platform="kfreebsd-amd64" ;;
+			#i*86) platform="kfreebsd-i386" ;;
+			#x86_64|amd64) platform="kfreebsd-amd64" ;;
 			*) platform="unknown" ;;
 		esac ;;
 	# cygwin
+	# OpenBSD
+	OpenBSD|freebsd)
+		case "$cpu" in
+			i*86) platform="openbsd" ;;
+			x86_64) platform="openbsd" ;; # no special binaries are available yet
+			amd64) platform="openbsd-amd64" ;;
+			*) platform="unknown" ;;
+		esac ;;
 	CYGWIN*)
 		case "$cpu" in
 			i*86) platform="cygwin" ;;
-			x86_64|ia64) platform="cygwin-64" ;;
+			x86_64|ia64) platform="cygwin" ;;
+			*) platform="unknown" ;;
+		esac ;;
+	# UWIN
+	UWIN*)
+		case "$cpu" in
+			i*86) platform="mswin" ;;
 			*) platform="unknown" ;;
 		esac ;;
 	# SunOS/Solaris
@@ -87,6 +119,10 @@ if test "$platform" = "unknown" ; then
 	echo "Error: your system \"$system $cpu\" is not supported yet."
 	echo "Please report to the ConTeXt mailing-list (ntg-context@ntg.nl)"
 	exit
+elif test "$platform" = "linux-ppc" ; then
+	echo "Error: support for your system \"$platform\" has been dropped."
+	echo "Please ask on to the ConTeXt mailing-list if you still need it (ntg-context@ntg.nl)"
+	exit
 fi
 
 # if you want to enforce some specific platform
@@ -96,11 +132,16 @@ fi
 # download or rsync the latest scripts first
 rsync -rlptv rsync://contextgarden.net/minimals/setup/$platform/bin .
 
+# use native windows binaries on cygwin
+if test "$platform" = "cygwin" ; then
+	platform=mswin
+fi
+
 # download or update the distribution
 # you may remove the --context=beta switch if you want to use "current"
 # you can use --engine=luatex if you want just mkiv
 env PATH="$PWD/bin:$CONTEXTROOT/texmf-$platform/bin:$PATH" \
-mtxrun --script ./bin/mtx-update.lua --force --update --make --context=beta --platform=$platform --texroot="$CONTEXTROOT" $@
+./bin/mtxrun --script ./bin/mtx-update.lua --force --update --make --context=beta --platform=$platform --texroot="$CONTEXTROOT" $@
 
 echo
 echo "When you want to use context, you need to initialize the tree by typing:"
@@ -113,8 +154,3 @@ echo "to PATH variable if you want to set it permanently."
 echo "This can usually be done in .bashrc, .bash_profile"
 echo "(or whatever file is used to initialize your shell)."
 echo
-
-if [ ! -x "`which ruby`" ]; then
-	echo "You might want to install Ruby first if you want to use pdfTeX or XeTeX."
-	echo
-fi

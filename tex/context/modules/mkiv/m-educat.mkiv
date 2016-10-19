@@ -47,7 +47,7 @@
   {\begingroup
    \dontcomplain
    \setupanswerarea
-     [\c!n=0,\c!m=,#1,\c!location=\v!text]%
+     [\c!n=0,\c!m=#1,\c!location=\v!text]%
    \let\currenttextbackground\v!answerarea
    \doifelsenothing{\textbackgroundparameter\c!m}
      {\expandafter\donoanswerspace}
@@ -158,8 +158,10 @@
    #2%
    \getvalue{\e!stop\e!answerlines}}
 
-\protect \doifnotmode{demo}{\endinput}
-
+\protect
+
+\continueifinputfile{m-educat.mkiv}
+
 %D Test materiaal.
 
 \starttext

@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['lpdf-xmp'] = {
 }
 
 local tostring, type = tostring, type
-local format, random, char, gsub, concat = string.format, math.random, string.char, string.gsub, table.concat
+local format, gsub = string.format, string.gsub
+local utfchar = utf.char
 local xmlfillin = xml.fillin
 
 local trace_xmp  = false  trackers.register("backend.xmp",  function(v) trace_xmp  = v end)
@@ -26,14 +27,15 @@ local pdfconstant          = lpdf.constant
 local pdfreference         = lpdf.reference
 local pdfflushstreamobject = lpdf.flushstreamobject
 
--- I wonder why this begin end is empty / w (no time now to look into it) / begin can also be "?"
+-- The XMP packet wrapper is kind of fixed, see page 10 of XMPSpecificationsPart1.pdf from
+-- XMP-Toolkit-SDK-CC201607.zip. So we hardcode the id.
 
-local xpacket = [[
-<?xpacket begin="﻿" id="%s"?>
+local xpacket = format ( [[
+<?xpacket begin="﻿%s%s" id="W5M0MpCehiHzreSzNTczkc9d"?>
 
-%s
+%%s
 
-<?xpacket end="w"?>]]
+<?xpacket end="w"?>]], utfchar(0xFEFF), utfchar(0x0089) )
 
 local mapping = {
     -- user defined keys (pdfx:)
@@ -239,25 +241,13 @@ end
 
 -- flushing
 
-local function randomstring(n)
-    local t = { }
-    for i=1,n do
-        t[i] = char(96 + random(26))
-    end
-    return concat(t)
-end
-
-randomstring(26) -- kind of initializes and kicks off random
-
 local function flushxmpinfo()
     commands.pushrandomseed()
     commands.setrandomseed(os.time())
 
-
     local version    = status.luatex_version
     local revision   = status.luatex_revision
 
-    local packetid   = "no unique packet id here" -- 24 chars
     local documentid = "no unique document id here"
     local instanceid = "no unique instance id here"
     local producer   = format("LuaTeX-%i.%i.%s",math.div(version,100),math.mod(version,100),revision)
@@ -266,7 +256,6 @@ local function flushxmpinfo()
     local fullbanner = status.banner
 
     if included.id ~= "fake" then
-        packetid   = randomstring(24)
         documentid = "uuid:" .. os.uuid()
         instanceid = "uuid:" .. os.uuid()
     end
@@ -301,7 +290,7 @@ local function flushxmpinfo()
         report_xmp("stop xmp blob")
         logs.poptarget()
     end
-    blob = format(xpacket,packetid,blob)
+    blob = format(xpacket,blob)
     if not verbose and pdf.getcompresslevel() > 0 then
         blob = gsub(blob,">%s+<","><")
     end

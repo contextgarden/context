@@ -1709,6 +1709,10 @@ end
 
 -- getting it done
 
+if getargument("timedlog") then
+    logs.settimedlog()
+end
+
 if getargument("nostats") then
     setargument("nostatistics",true)
     setargument("nostat",nil)

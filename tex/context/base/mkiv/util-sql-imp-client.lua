@@ -109,11 +109,11 @@ local function splitdata(data) -- todo: hash on first line ... maybe move to cli
             end
         end
         p = Cf(Ct("") * p,rawset) * newline^1
-if getserver() == "mssql" then
-        p = skipfirst * skipdashes * Ct(p^0)
-else
-        p = skipfirst * Ct(p^0)
-end
+        if getserver() == "mssql" then
+            p = skipfirst * skipdashes * Ct(p^0)
+        else
+            p = skipfirst * Ct(p^0)
+        end
         cache[first] = { parser = p, keys = keys }
         local entries = lpegmatch(p,data)
         return entries or { }, keys
@@ -134,6 +134,11 @@ local t_runner = {
     mssql = [[sqlcmd -S %host% %?U: -U "%username%" ?% %?P: -P "%password%" ?% -I -W -w 65535 -s"]] .. "\t" .. [[" -m 1 -i "%queryfile%" -o "%resultfile%"]],
 }
 
+local t_runner_login = {
+    mysql = [[mysql --login-path="%login%" --batch --database="%database%" --default-character-set=utf8 < "%queryfile%" > "%resultfile%"]],
+    mssql = [[sqlcmd -S %host% %?U: -U "%username%" ?% %?P: -P "%password%" ?% -I -W -w 65535 -s"]] .. "\t" .. [[" -m 1 -i "%queryfile%" -o "%resultfile%"]],
+}
+
 local t_preamble = {
     mysql = [[
 SET GLOBAL SQL_MODE=ANSI_QUOTES;
@@ -149,7 +154,7 @@ SET NOCOUNT ON;
 local function dataprepared(specification)
     local query = preparetemplate(specification)
     if query then
-        local preamble = t_preamble[getserver()] or t_preamble.mysql
+        local preamble  = t_preamble[getserver()] or t_preamble.mysql
         if preamble then
             preamble = replacetemplate(preamble,specification.variables,'sql')
             query = preamble .. "\n" .. query
@@ -168,7 +173,7 @@ local function dataprepared(specification)
 end
 
 local function datafetched(specification)
-    local runner  = t_runner[getserver()] or t_runner.mysql
+    local runner  = (specification.login and t_runner_login or t_runner)[getserver()] or t_runner.mysql
     local command = replacetemplate(runner,specification)
     if trace_sql then
         local t = osclock()
@@ -227,7 +232,7 @@ local function execute(specification)
         return
     end
     if not datafetched(specification) then
-        report_state("error in fetching, query: %s",string.collapsespaces(io.loaddata(specification.queryfile)))
+        report_state("error in fetching, query: %s",string.collapsespaces(io.loaddata(specification.queryfile) or "?"))
         return
     end
     local data = dataloaded(specification)

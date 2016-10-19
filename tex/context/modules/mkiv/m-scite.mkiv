@@ -57,10 +57,10 @@ buffers.scite = scite
 -- context output:
 
 local f_def_color = formatters["\\definecolor[slxc%s][h=%s%s%s]%%"]
-local f_fore_none = formatters["\\def\\slx%s#1{{\\slxc%s#1}}%%"]
-local f_fore_bold = formatters["\\def\\slx%s#1{{\\slxc%s\\bf#1}}%%"]
-local f_none_bold = formatters["\\def\\slx%s#1{{\\bf#1}}%%"]
-local f_none_none = formatters["\\def\\slx%s#1{{#1}}%%"]
+local f_fore_none = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s#1}}%%"]
+local f_fore_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s\\bf#1}}%%"]
+local f_none_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\bf#1}}%%"]
+local f_none_none = formatters["\\unexpanded\\def\\slx%s#1{{#1}}%%"]
 local f_texstyled = formatters["\\slx%s{%s}"]
 local f_hanging   = formatters["\\slxb{%s}%s\\slxe"]
 
@@ -90,7 +90,7 @@ local replacer = lpeg.replacer {
     ["\\"] = "\\slxB ",
     ["%"]  = "\\slxP ",
     ["~"]  = "\\slxT ",
-    [" "]  = "\\slxS ",
+    [" "]  = "\\slxS ", -- can be made more efficient: \\slxF{n}
 }
 
 local colors = nil
@@ -169,6 +169,10 @@ end
 
 local p1 = lpeg.tsplitat(lpeg.patterns.newline)
 local p2 = lpeg.P("\\slxS ")^1
+local p3 = lpeg.Cs((lpeg.Cp() * lpeg.P(" ") * lpeg.Cp() / function(b,e) return "\\slxF{" .. (e-b-1) .. "}" end
+         + (1-lpeg.P(" "))^1)^0)
+
+-- slxb could have a \hskip so then we can replace the slxS's
 
 local function indent(str)
     local l = lpegmatch(p1,str)
@@ -181,7 +185,10 @@ local function indent(str)
             else
                 n = 0
             end
-            l[i] = f_hanging(n,s)
+s = lpegmatch(p3,s) -- can be combined
+            l[i] = f_hanging(n,s) -- "\\slxb{%s}%s\\slxe "
+-- print(">",s)
+-- print("<",l[i])
         end
     end
     return concat(l,"\n")
@@ -211,10 +218,12 @@ end
 
 \unprotect
 
+\newdimen\scitespaceskip
+
 \unexpanded\def\buff_scite_slxb#1%
   {%\begingroup
-   \hangindent\dimexpr\numexpr#1+1\relax\emwidth\relax
-   \hangafter \numexpr\numexpr#1+1\relax}
+   \hangindent\numexpr#1+2\relax\scitespaceskip
+   \hangafter 1\relax}
 
 \unexpanded\def\buff_scite_slxe
   {\par
@@ -223,7 +232,9 @@ end
 \unexpanded\def\installscitecommands
   {\ctxlua{buffers.scite.installcommands()}%
    \let\installscitecommands\relax
-   \def\slxS{\fixedspace\allowbreak}%
+   \scitespaceskip\fontcharwd\font`0\relax
+   \unexpanded\def\slxS{\hskip\scitespaceskip}%
+   \unexpanded\def\slxF##1{\hskip##1\scitespaceskip\relax}%
    \let\slxb\buff_scite_slxb
    \let\slxe\buff_scite_slxe}
 
@@ -251,7 +262,7 @@ end
    \raggedright
    \startcontextcode
    \startlines
-   \getbuffer[lex]%
+   \getbuffer[lex]
    \stoplines
    \stopcontextcode
    \stop}

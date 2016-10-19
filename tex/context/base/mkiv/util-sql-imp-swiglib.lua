@@ -436,7 +436,7 @@ local function datafetched(specification,query,converter)
         local q = query[i]
         local r, m = connection:execute(q)
         if m then
-            report_state("error in query, stage: %s",string.collapsespaces(q))
+            report_state("error in query, stage: %s",string.collapsespaces(q or "?"))
             message = message and format("%s\n%s",message,m) or m
         end
         if type(r) == "table" then

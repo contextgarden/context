@@ -1163,12 +1163,14 @@ end
 
 function figures.identify(data)
     data = data or callstack[#callstack] or lastfiguredata
-    local list = identifiers.list -- defined at the end
-    for i=1,#list do
-        local identifier = list[i]
-        local data = identifier(data)
-        if data and (not data.status and data.status.status > 0) then
-            break
+    if data then
+        local list = identifiers.list -- defined at the end
+        for i=1,#list do
+            local identifier = list[i]
+            local data = identifier(data)
+            if data and (not data.status and data.status.status > 0) then
+                break
+            end
         end
     end
     return data
@@ -1320,7 +1322,6 @@ local function checktransform(figure,forced)
     if auto_transform then
         local orientation = (forced ~= "" and forced ~= v_auto and forced) or figure.orientation or 0
         local transform   = transforms["orientation-"..orientation]
-        print(orientation,figure.orientation,transform)
         figure.transform = transform
         if math.odd(transform) then
             return figure.height, figure.width

@@ -829,10 +829,12 @@
      \the\everydisplay % new (probably too much)
    \else
      \expandafter\startinnermath
-   \fi}
+   \fi
+   \begingroup} % less interference with upcoming a \over b
 
 \unexpanded\def\stopdisplaymath
-  {\ifcase\c_strc_formulas_mode
+  {\endgroup    % less interference with upcoming a \over b
+   \ifcase\c_strc_formulas_mode
      \Ucheckedstopdisplaymath
    \or
      \normalUstopmath

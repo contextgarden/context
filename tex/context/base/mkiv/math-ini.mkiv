@@ -137,10 +137,12 @@
 \unexpanded\def\startforceddisplaymath
   {\startimath
    \displaystyle
+   \begingroup
    \settrue\indisplaymath}
 
 \unexpanded\def\stopforceddisplaymath
-  {\stopimath}
+  {\endgroup
+   \stopimath}
 
 % \unexpanded\def\rawmathcharacter#1% slow but only for tracing
 %   {\begingroup
@@ -2474,7 +2476,7 @@
     \else
       \zerocount
     \fi
-    \mathrulesfam\fam\textstyle
+    \mathrulesfam\zerocount
 \to \everymathematics
 
 \protect \endinput

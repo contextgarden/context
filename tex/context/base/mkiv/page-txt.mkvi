@@ -28,9 +28,9 @@
 %D  {setuptop, setupheader, setuptext,
 %D   setupfooter, setupbottom}
 %D
-%D The macros in this module sometimes look a bit more complicated
-%D than needed, which is a direct result of the fact that their
-%D ancestors are quite old and upward compatibility is a must.
+%D The macros in this module sometimes look a bit more complicated than
+%D needed, which is a direct result of the fact that their ancestors are
+%D quite old and upward compatibility is a must.
 %D
 %D \showsetup{setuptop}
 %D \showsetup{setupheader}
@@ -154,11 +154,10 @@
 %D  {setuptoptexts, setupheadertexts, setuptexttexts,
 %D   setupfootertexts, setupbottomtexts}
 %D
-%D The next macros take one or more arguments. The exact setup
-%D depends on the number of arguments. Although not that
-%D intuitive, the current scheme evolved out of the original.
-%D When margin and edge texts as well as middle texts showed
-%D up, the current odd|/|even scheme surfaced.
+%D The next macros take one or more arguments. The exact setup depends on the number
+%D of arguments. Although not that intuitive, the current scheme evolved out of the
+%D original. When margin and edge texts as well as middle texts showed up, the
+%D current odd|/|even scheme surfaced.
 %D
 %D \showsetup{setuptoptexts}
 %D \showsetup{setupheadertexts}
@@ -174,80 +173,8 @@
 
 % todo: \setuplayoutelementtext
 
-% An alternative approach is to have more variables but that does not
-% make the code less complex (probably more).
-
-% \unexpanded\def\page_layouts_setup_texts[#vertical][#horizontal][#a][#b][#c][#d]%
-%   {\ifsixthargument
-%      \edef\currentlayoutelement{#vertical:#horizontal}%
-%      \setlayoutelementparameter\c!lefttext
-%        {\page_layouts_process_element_double
-%           \c!leftstyle \c!leftcolor \c!leftwidth {#a}%
-%           \c!rightstyle\c!rightcolor\c!rightwidth{#d}}%
-%      \setlayoutelementparameter\c!righttext
-%        {\page_layouts_process_element_double
-%           \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
-%           \c!leftstyle \c!leftcolor \c!leftwidth {#c}}%
-%    \else\iffifthargument
-%      \edef\currentlayoutelement{#vertical:\v!text}%
-%      \setlayoutelementparameter\c!lefttext
-%        {\page_layouts_process_element_double
-%           \c!leftstyle \c!leftcolor \c!leftwidth {#horizontal}%
-%           \c!rightstyle\c!rightcolor\c!rightwidth{#c}}%
-%      \setlayoutelementparameter\c!righttext
-%        {\page_layouts_process_element_double
-%           \c!rightstyle\c!rightcolor\c!rightwidth{#a}%
-%           \c!leftstyle \c!leftcolor \c!leftwidth {#b}}%
-%    \else\iffourthargument
-%      \edef\currentlayoutelement{#vertical:#horizontal}%
-%      \doifelsenothing{\detokenize{#a}}
-%        {\resetlayoutelementparameter\c!lefttext}
-%        {\setlayoutelementparameter\c!lefttext
-%           {\page_layouts_process_element_double
-%              \c!leftstyle\c!leftcolor\c!leftwidth{#a}%
-%              \c!leftstyle\c!leftcolor\c!leftwidth{#a}}}%
-%      \doifelsenothing{\detokenize{#b}}
-%        {\resetlayoutelementparameter\c!righttext}
-%        {\setlayoutelementparameter\c!righttext
-%           {\page_layouts_process_element_double
-%              \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
-%              \c!rightstyle\c!rightcolor\c!rightwidth{#b}}}%
-%    \else\ifthirdargument
-%      \edef\currentlayoutelement{#vertical:\v!text}%
-%      \doifelsenothing{\detokenize{#horizontal}}
-%        {\resetlayoutelementparameter\c!lefttext}
-%        {\setlayoutelementparameter\c!lefttext
-%           {\page_layouts_process_element_double
-%              \c!leftstyle\c!leftcolor\c!leftwidth{#horizontal}%
-%              \c!leftstyle\c!leftcolor\c!leftwidth{#horizontal}}}%
-%      \doifelsenothing{\detokenize{#a}}
-%        {\resetlayoutelementparameter\c!righttext}
-%        {\setlayoutelementparameter\c!righttext
-%           {\page_layouts_process_element_double
-%              \c!rightstyle\c!rightcolor\c!rightwidth{#a}%
-%              \c!rightstyle\c!rightcolor\c!rightwidth{#a}}}%
-%    \else\ifsecondargument
-%      \edef\currentlayoutelement{#vertical:\v!text}%
-%      \resetlayoutelementparameter\c!lefttext
-%      \resetlayoutelementparameter\c!righttext
-%      \doifelsenothing{\detokenize{#horizontal}}
-%        {\resetlayoutelementparameter\c!middletext}
-%        {\setlayoutelementparameter\c!middletext
-%           {\page_layouts_process_element_single\c!style\c!color\c!width{#horizontal}}}%
-%    \else
-%      \edef\currentlayoutelement{#vertical:\v!text}%
-%      \resetlayoutelementparameter\c!lefttext
-%      \resetlayoutelementparameter\c!righttext
-%      \resetlayoutelementparameter\c!middletext
-%      \edef\currentlayoutelement{#vertical:\v!margin}%
-%      \resetlayoutelementparameter\c!lefttext
-%      \resetlayoutelementparameter\c!righttext
-%      \resetlayoutelementparameter\c!middletext
-%      \edef\currentlayoutelement{#vertical:\v!edge}%
-%      \resetlayoutelementparameter\c!lefttext
-%      \resetlayoutelementparameter\c!righttext
-%      \resetlayoutelementparameter\c!middletext
-%    \fi\fi\fi\fi\fi}
+%D An alternative approach is to have more variables but that does not make the code
+%D less complex (probably more).
 
 \unexpanded\def\page_layouts_setup_text_six#vertical#horizontal#a#b#c#d%
   {\edef\currentlayoutelement{#vertical:#horizontal}%
@@ -332,8 +259,8 @@
    \ifsecondargument\page_layouts_setup_text_two  {#vertical}{#horizontal}\else
                     \page_layouts_setup_text_one  {#vertical}\fi\fi\fi\fi\fi}
 
-%D Left and right texts are swapped on odd and even pages, but
-%D only when double sided typesetting is enabled.
+%D Left and right texts are swapped on odd and even pages, but only when double
+%D sided typesetting is enabled.
 
 \unexpanded\def\page_layouts_process_element_double
   {\doifelseoddpage
@@ -346,8 +273,7 @@
 \def\page_layouts_process_element_double_even#lstyle#color#lwidth#lcontent#rstyle#rcolor#rwidth#rcontent%
   {\page_layouts_process_element_single#rstyle#rcolor#rwidth{#rcontent}}
 
-%D The next macro will be cleaned up and made less messy and
-%D dependent.
+%D The next macro will be cleaned up and made less messy and dependent.
 
 \let\m_page_layouts_element_content\empty
 
@@ -392,8 +318,7 @@
 \setvalue{\??layouttextspecial\v!pagenumber}{\page_layouts_place_page_number}
 \setvalue{\??layouttextspecial\v!date      }{\currentdate}
 
-%D When specified, the texts are automatically limited in
-%D length.
+%D When specified, the texts are automatically limited in length.
 
 % % where used ?
 %
@@ -417,9 +342,8 @@
 \appendtoks \page_layouts_place_text_line\v!footer\footerheight \to \footertextcontent
 \appendtoks \page_layouts_place_text_line\v!bottom\bottomheight \to \bottomtextcontent
 
-%D Texts can be disabled, moved up and ignored, depending in
-%D the \type {status} variable. This is handled by the next
-%D couple of macros.
+%D Texts can be disabled, moved up and ignored, depending in the \type {status}
+%D variable. This is handled by the next couple of macros.
 
 \newcount\c_page_layouts_element_state_n
 
@@ -494,21 +418,31 @@
    \page_layouts_place_text_line_indeed#vertical#height%
    \egroup}
 
+% \setupheadertexts            [11]
+% \definetext [title] [header] [aa]
+% \setupheadertexts            [11] [22]
+% \definetext [title] [header] [aa] [bb]
+% \setupheadertexts            [text] [11] [22]
+% \definetext [title] [header] [text] [aa] [bb]
+% \setupheadertexts            [11] [22] [33] [44]
+% \definetext [title] [header] [aa] [bb] [cc] [dd]
+% \setupheadertexts            [text] [11] [22] [33] [44]
+% \definetext [title] [header] [text] [aa] [bb] [cc] [dd]
+
 \def\page_layouts_place_text_line_unknown#vertical#height%
   {\global\settrue\resyncaftertextline
    \begingroup % new
    \page_layouts_reset_element_status#vertical%
-   \csname\namedlayoutelementhash#vertical\textlinestatus\endcsname
-   \csname\namedlayoutelementhash#vertical\v!text  \textlinestatus\endcsname
-   \csname\namedlayoutelementhash#vertical\v!margin\textlinestatus\endcsname
-   \csname\namedlayoutelementhash#vertical\v!edge  \textlinestatus\endcsname
+   \begincsname\namedlayoutelementhash{#vertical}\textlinestatus\endcsname
+   \begincsname\namedlayoutelementhash{#vertical:\v!text}\textlinestatus\endcsname
+   \begincsname\namedlayoutelementhash{#vertical:\v!margin}\textlinestatus\endcsname
+   \begincsname\namedlayoutelementhash{#vertical:\v!edge}\textlinestatus\endcsname
    \page_layouts_place_text_line_indeed#vertical#height%
    \endgroup}
 
 \letvalue{\??layouttextsline\s!unknown}\page_layouts_place_text_line_unknown
 
-%D The following macro has to be called after a page
-%D is flushed.
+%D The following macro has to be called after a page is flushed.
 
 \unexpanded\def\resetlayouttextlines % public
   {\csname\??layouttextsreset\v!top   \endcsname
@@ -523,7 +457,7 @@
    \fi}
 
 \def\getspecificlayouttext#vertical#horizontal#what%
-  {\csname\namedlayoutelementhash{#vertical:#horizontal}#what\endcsname}
+  {\begincsname\namedlayoutelementhash{#vertical:#horizontal}#what\endcsname}
 
 % \settext[header][text][middle][xxx][yyy]
 
@@ -565,9 +499,8 @@
 \letvalue{\??layouttextcontent\v!text:\c!left  }\c!lefttext
 \letvalue{\??layouttextcontent\v!text:\c!right }\c!righttext
 
-%D The placement of a whole line is handled by the next two
-%D macros. These are hooked into the general purpose token
-%D list registers mentioned before.
+%D The placement of a whole line is handled by the next two macros. These are hooked
+%D into the general purpose token list registers mentioned before.
 
 \def\page_layouts_place_text_line_indeed#vertical#height%
   {\let\currentlayouttextline#vertical%
@@ -692,10 +625,9 @@
       \hbox \layoutcomponentboxattribute to #width{#content}%
       \layoutelementparameter\c!after}}
 
-%D Although it is far better to use backgrounds for this
-%D purpose, one can add a rule in the following way. This
-%D method makes the rules disappear in case of an empty text
-%D line. Consider this a feature.
+%D Although it is far better to use backgrounds for this purpose, one can add a rule
+%D in the following way. This method makes the rules disappear in case of an empty
+%D text line. Consider this a feature.
 %D
 %D \starttyping
 %D \setupheadertexts[left][right]
@@ -717,14 +649,13 @@
 %D \macros
 %D   {definetext}
 %D
-%D Some macros ago, we implemented the \type {status} option
-%D \type {unknown}. This one is used to take care of
-%D symbolic texts handlers.
+%D Some macros ago, we implemented the \type {status} option \type {unknown}. This
+%D one is used to take care of symbolic texts handlers.
 %D
 %D \showsetup{definetext}
 %D
-%D The next example demonstrates how we can use this
-%D mechanism to provide page (event) dependent text lines.
+%D The next example demonstrates how we can use this mechanism to provide page
+%D (event) dependent text lines.
 %D
 %D \starttyping
 %D \definetext[chapter][footer][pagenumber]
@@ -737,24 +668,6 @@
 
 \unexpanded\def\definetext
   {\doseventupleempty\page_layouts_define_text}
-
-% \def\page_layouts_define_text[#tag][#vertical][#horizontal][#a][#b][#c][#d]%
-%   {\ifseventhargument
-%      \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}%
-%        {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a][#b][#c][#d]}%
-%    \else\ifsixthargument
-%      \setvalue{\namedlayoutelementhash{#vertical}#tag}%
-%        {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a][#b][#c]}%
-%    \else\iffifthargument
-%      \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}%
-%        {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a][#b]}%
-%    \else\iffourthargument
-%      \setvalue{\namedlayoutelementhash{#vertical}#tag}%
-%        {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal][#a]}%
-%    \else
-%      \setvalue{\namedlayoutelementhash{#vertical}#tag}%
-%        {\dosixtupleempty\page_layouts_setup_texts[#vertical][#horizontal]}%
-%    \fi\fi\fi\fi}
 
 \def\page_layouts_define_text[#tag][#vertical][#horizontal][#a][#b][#c][#d]%
   {\ifseventhargument
@@ -784,8 +697,8 @@
 \installpagebreakmethod \v!footer
   {\doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\v!footer][\c!state=\v!empty]}}
 
-%D While the header and footer lines are moved away from the
-%D main text, the top and bottom lines are centered.
+%D While the header and footer lines are moved away from the main text, the top and
+%D bottom lines are centered.
 
 \setuplayoutelement[\v!top   ][\c!state=\v!normal,\c!n=0,\c!before=\vss,\c!after=\vss,\c!strut=]
 \setuplayoutelement[\v!header][\c!state=\v!normal,\c!n=0,\c!before=,    \c!after=\vss,\c!strut=\v!yes]
@@ -794,10 +707,10 @@
 \setuplayoutelement[\v!bottom][\c!state=\v!normal,\c!n=0,\c!before=\vss,\c!after=\vss,\c!strut=]
 
 %D Moved here from strc-pag:
-
-% We reset a previous location but only when it has a pagenumber
-% associated. This is a rather messy test but better than the MkII
-% way where we use states and keep settings.
+%D
+%D We reset a previous location but only when it has a pagenumber associated. This
+%D is a rather messy test but better than the MkII way where we use states and keep
+%D settings.
 
 \let\m_page_layouts_page_number_location  \relax
 \let\m_page_layouts_page_number_location_v\relax
@@ -975,12 +888,11 @@
    \smashbox\b_page_layouts_element
    \box\b_page_layouts_element}
 
-%D The main text area has to be combined with some additional
-%D (tracing) information.
-
-% will be stored as normal and overloaded in page-lyr and later in
-% page-spr we overload the the stored version .. evenatually i will
-% clear up the experimental mess
+%D The main text area has to be combined with some additional (tracing) information.
+%D
+%D This will be stored as normal and overloaded in page-lyr and later in page-spr we
+%D overload the the stored version .. evenatually i will clear up the experimental
+%D mess.
 
 \def\settextpagecontent#1#2#3% #2 and #3 will disappear / is overloaded
   {\setbox#1\hbox to \makeupwidth % maybe \hpack
@@ -997,4 +909,3 @@
    \dp#1\zeropoint}
 
 \protect \endinput
-

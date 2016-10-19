@@ -528,7 +528,7 @@
 % but, since not all fonts have .5em digits:
 
 \unexpanded\def\fixedspace
-  {\setbox\scratchbox\hbox{\mathortext{0}{0}}%
+  {\setbox\scratchbox\hpack{\mathortext{0}{0}}% was \hbox
    \hskip\wd\scratchbox\relax}
 
 \unexpanded\def\fixedspaces

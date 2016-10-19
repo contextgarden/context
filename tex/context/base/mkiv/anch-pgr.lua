@@ -676,7 +676,7 @@ implement {
                     end
                 end
             else
-                print("\n missing",tag)
+             -- print("\n missing",tag)
             end
         end
         context(f_template_a(nofboxes,list))

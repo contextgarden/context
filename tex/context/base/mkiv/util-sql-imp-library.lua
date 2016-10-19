@@ -143,7 +143,7 @@ local function fetched(specification,query,converter)
         local q = query[i]
         local r, m = connection:execute(q)
         if m then
-            report_state("error in query to host %a: %s",specification.host,string.collapsespaces(q))
+            report_state("error in query to host %a: %s",specification.host,string.collapsespaces(q or "?"))
             if m then
                 report_state("message: %s",m)
             end

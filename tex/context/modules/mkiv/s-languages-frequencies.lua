@@ -31,3 +31,7 @@ function moduledata.languages.frequencies.showlist(specification)
     end
     context.stoptabulate()
 end
+
+-- function MP.frqc(language,slot)
+--     mp.print(languages.frequencies.getdata(language).frequencies[slot])
+-- end

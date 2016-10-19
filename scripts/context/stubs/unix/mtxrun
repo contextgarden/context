@@ -6684,7 +6684,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 5725, stripped down to: 4416
+-- original size: 5809, stripped down to: 4470
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -6695,7 +6695,7 @@ if not modules then modules={} end modules ['util-fil']={
 }
 local byte=string.byte
 local char=string.char
-local extract=bit32.extract
+local extract=bit32 and bit32.extract
 local floor=math.floor
 utilities=utilities or {}
 local files={}
@@ -6857,16 +6857,18 @@ function files.readfixed4(f)
     return n+(0x100*c+d)/0xFFFF
   end
 end
-function files.read2dot14(f)
-  local a,b=byte(f:read(2),1,2)
-  local n=0x100*a+b
-  local m=extract(n,0,30)
-  if n>0x7FFF then
-    n=extract(n,30,2)
-    return m/0x4000-4
-  else
-    n=extract(n,30,2)
-    return n+m/0x4000
+if extract then
+  function files.read2dot14(f)
+    local a,b=byte(f:read(2),1,2)
+    local n=0x100*a+b
+    local m=extract(n,0,30)
+    if n>0x7FFF then
+      n=extract(n,30,2)
+      return m/0x4000-4
+    else
+      n=extract(n,30,2)
+      return n+m/0x4000
+    end
   end
 end
 function files.skipshort(f,n)
@@ -6905,7 +6907,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 4264, stripped down to: 3349
+-- original size: 4360, stripped down to: 3409
 
 if not modules then modules={} end modules ['util-sac']={
   version=1.001,
@@ -6915,7 +6917,7 @@ if not modules then modules={} end modules ['util-sac']={
   license="see context related readme files"
 }
 local byte,sub=string.byte,string.sub
-local extract=bit32.extract
+local extract=bit32 and bit32.extract
 utilities=utilities or {}
 local streams={}
 utilities.streams=streams
@@ -7057,19 +7059,21 @@ function streams.readfixed4(f)
     return n+(0x100*c+d)/0xFFFF
   end
 end
-function streams.read2dot14(f)
-  local i=f[2]
-  local j=i+1
-  f[2]=j+1
-  local a,b=byte(f[1],i,j)
-  local n=0x100*a+b
-  local m=extract(n,0,30)
-  if n>0x7FFF then
-    n=extract(n,30,2)
-    return m/0x4000-4
-  else
-    n=extract(n,30,2)
-    return n+m/0x4000
+if extract then
+  function streams.read2dot14(f)
+    local i=f[2]
+    local j=i+1
+    f[2]=j+1
+    local a,b=byte(f[1],i,j)
+    local n=0x100*a+b
+    local m=extract(n,0,30)
+    if n>0x7FFF then
+      n=extract(n,30,2)
+      return m/0x4000-4
+    else
+      n=extract(n,30,2)
+      return n+m/0x4000
+    end
   end
 end
 function streams.skipshort(f,n)
@@ -18996,8 +19000,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 806648
--- stripped bytes    : 292918
+-- original bytes    : 806828
+-- stripped bytes    : 292984
 
 -- end library merge
 

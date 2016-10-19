@@ -398,7 +398,8 @@ local template_cleanup_nop =[[
 
 function tickets.cleanupdb(db,delta,nodata) -- maybe delta in db
 
-    local time = delta and (ostime() - delta) or 0
+    local now  = ostime()
+    local time = delta and (now - delta) or now
 
     local records, keys = db.execute {
         template  = nodata and template_cleanup_nop or template_cleanup_yes,

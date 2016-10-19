@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['util-sac'] = {
 -- with bytes)
 
 local byte, sub = string.byte, string.sub
-local extract = bit32.extract
+local extract = bit32 and bit32.extract
 
 utilities         = utilities or { }
 local streams     = { }
@@ -177,20 +177,24 @@ function streams.readfixed4(f)
     end
 end
 
-function streams.read2dot14(f)
-    local i = f[2]
-    local j = i + 1
-    f[2] = j + 1
-    local a, b = byte(f[1],i,j)
-    local n = 0x100 * a + b
-    local m = extract(n,0,30)
-    if n > 0x7FFF then
-        n = extract(n,30,2)
-        return m/0x4000 - 4
-    else
-        n = extract(n,30,2)
-        return n + m/0x4000
+if extract then
+
+    function streams.read2dot14(f)
+        local i = f[2]
+        local j = i + 1
+        f[2] = j + 1
+        local a, b = byte(f[1],i,j)
+        local n = 0x100 * a + b
+        local m = extract(n,0,30)
+        if n > 0x7FFF then
+            n = extract(n,30,2)
+            return m/0x4000 - 4
+        else
+            n = extract(n,30,2)
+            return n + m/0x4000
+        end
     end
+
 end
 
 function streams.skipshort(f,n)
