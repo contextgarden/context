@@ -751,6 +751,10 @@
 
 \definetyping[\v!typing]
 
+% the \zeropoint forces the number to the margin but also works ok in text
+
+\setuplinenumbering[\v!typing][\c!location=\v!left,\c!width=\zeropoint]
+
 \setuptyping       [\v!file]  [\s!parent=\??typing       \v!typing] % we don't want \start..\stop overload
 \setuplinenumbering[\v!file]  [\s!parent=\??linenumbering\v!typing]
 

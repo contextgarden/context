@@ -125,9 +125,9 @@ local function step_make_chart(settings)
     local cellsettings = settings.cell
     local linesettings = settings.line
 
-    local start = context.startMPcode
-    local stop  = context.stopMPcode
-    local flush = context
+    local start = nil
+    local stop  = nil
+    local flush = nil
 
     if false then
 
@@ -137,24 +137,27 @@ local function step_make_chart(settings)
 
         local mpcode = false
 
-        local function start()
+        start = function()
             mpcode = { }
         end
-        local function stop()
+        stop = function()
+            local code = concat(mpcode,"\n")
+         -- print(code)
             metapost.graphic {
-                instance        = "metafun",
+             -- instance        = "metafun",
+                instance        = "steps",
                 format          = "metafun",
-                data            = concat(mpcode,"\n"),
+                data            = code,
              -- initializations = "",
              -- extensions      = "",
              -- inclusions      = "",
-             -- definitions     = "",
+                definitions     = 'loadmodule "step" ;',
              -- figure          = "",
                 method          = "double",
             }
             mpcode = false
         end
-        local function flush(fmt,first,...)
+        flush = function(fmt,first,...)
             if first then
                 mpcode[#mpcode+1] = formatters[fmt](first,...)
             else
@@ -162,10 +165,15 @@ local function step_make_chart(settings)
             end
         end
 
+    else
+
+        start = function() context.startMPcode("steps") end
+        stop  = context.stopMPcode
+        flush = context
+
     end
     --
     start()
-    flush("if unknown context_cell : input mp-step.mpiv ; fi ;")
     flush("step_begin_chart ;")
     --
     local alternative = utilities.parsers.settings_to_hash(chartsettings.alternative)
@@ -182,24 +190,24 @@ local function step_make_chart(settings)
         flush("chart_align := true ;")
     end
     --
-    flush("text_line_color   := resolvedcolor(%q) ;", textsettings.framecolor)
-    flush("text_line_width   := %p ;",                textsettings.rulethickness)
-    flush("text_fill_color   := resolvedcolor(%q) ;", textsettings.backgroundcolor)
-    flush("text_offset       := %p ;",                textsettings.offset)
-    flush("text_distance_set := %p ;",                textsettings.distance)
+    flush("text_line_color   := %q ;", textsettings.framecolor)
+    flush("text_line_width   := %p ;", textsettings.rulethickness)
+    flush("text_fill_color   := %q ;", textsettings.backgroundcolor)
+    flush("text_offset       := %p ;", textsettings.offset)
+    flush("text_distance_set := %p ;", textsettings.distance)
     --
-    flush("cell_line_color := resolvedcolor(%q) ;", cellsettings.framecolor)
-    flush("cell_line_width := %p ;",                cellsettings.rulethickness)
-    flush("cell_fill_color := resolvedcolor(%q) ;", cellsettings.backgroundcolor)
-    flush("cell_offset     := %p ;",                cellsettings.offset)
-    flush("cell_distance_x := %p ;",                cellsettings.dx)
-    flush("cell_distance_y := %p ;",                cellsettings.dy)
+    flush("cell_line_color := %q ;", cellsettings.framecolor)
+    flush("cell_line_width := %p ;", cellsettings.rulethickness)
+    flush("cell_fill_color := %q ;", cellsettings.backgroundcolor)
+    flush("cell_offset     := %p ;", cellsettings.offset)
+    flush("cell_distance_x := %p ;", cellsettings.dx)
+    flush("cell_distance_y := %p ;", cellsettings.dy)
     --
-    flush("line_line_color := resolvedcolor(%q) ;", linesettings.color)
-    flush("line_line_width := %p ;",                linesettings.rulethickness)
-    flush("line_distance   := %p ;",                linesettings.distance)
-    flush("line_offset     := %p ;",                linesettings.offset)
-    flush("line_height     := %p ;",                linesettings.height)
+    flush("line_line_color := %q ;", linesettings.color)
+    flush("line_line_width := %p ;", linesettings.rulethickness)
+    flush("line_distance   := %p ;", linesettings.distance)
+    flush("line_offset     := %p ;", linesettings.offset)
+    flush("line_height     := %p ;", linesettings.height)
     --
     for i=1,chart.count do
         local step = steps[i]
@@ -210,7 +218,7 @@ local function step_make_chart(settings)
         if ali then
             local text = ali.text
             local shape = ali.shape
-            flush('step_cell_ali(%s,%s,%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i) ;',
+            flush('step_cell_ali(%s,%s,%s,%q,%q,%p,%i) ;',
                 tonumber(text.left) or 0,
                 tonumber(text.middle) or 0,
                 tonumber(text.right) or 0,
@@ -222,7 +230,7 @@ local function step_make_chart(settings)
         end
         if top then
             local shape = top.shape
-            flush('step_cell_top(%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i) ;',
+            flush('step_cell_top(%s,%q,%q,%p,%i) ;',
                 tonumber(top.text.top) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
@@ -232,7 +240,7 @@ local function step_make_chart(settings)
         end
         if bot then
             local shape = bot.shape
-            flush('step_cell_bot(%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i) ;',
+            flush('step_cell_bot(%s,%q,%q,%p,%i) ;',
                 tonumber(bot.text.bot) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
@@ -249,7 +257,7 @@ local function step_make_chart(settings)
         if top then
             local shape = top.shape
             local line  = top.line
-            flush('step_text_top(%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i,resolvedcolor(%q),%p,%i) ;',
+            flush('step_text_top(%s,%q,%q,%p,%i,%q,%p,%i) ;',
                 tonumber(top.text.top) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
@@ -263,7 +271,7 @@ local function step_make_chart(settings)
         if mid then -- used ?
             local shape = mid.shape
             local line  = mid.line
-            flush('step_text_mid(%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i,resolvedcolor(%q),%p,%i) ;',
+            flush('step_text_mid(%s,%q,%q,%p,%i,%q,%p,%i) ;',
                 tonumber(mid.text.mid) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,
@@ -277,7 +285,7 @@ local function step_make_chart(settings)
         if bot then
             local shape = bot.shape
             local line  = bot.line
-            flush('step_text_bot(%s,resolvedcolor(%q),resolvedcolor(%q),%p,%i,resolvedcolor(%q),%p,%i) ;',
+            flush('step_text_bot(%s,%q,%q,%p,%i,%q,%p,%i) ;',
                 tonumber(bot.text.bot) or 0,
                 shape.framecolor,
                 shape.backgroundcolor,

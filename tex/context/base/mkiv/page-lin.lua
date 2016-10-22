@@ -405,17 +405,19 @@ function boxed.stage_one(n,nested)
                         end
                     end
                     if getattr(n,a_displaymath) then
+                        -- this probably needs to be adapted !
                         if is_display_math(n) then
                             check_number(n,a,skip)
                         end
                     else
-                        local v = getattr(list,a_verbatimline)
-                        if not v or v ~= last_v then
-                            last_v = v
+-- -- we now prevent nesting anyway .. maybe later we need to check again
+--                         local v = getattr(list,a_verbatimline)
+--                         if not v or v ~= last_v then
+--                             last_v = v
                             check_number(n,a,skip)
-                        else
-                            check_number(n,a,skip,true)
-                        end
+--                         else
+--                             check_number(n,a,skip,true)
+--                         end
                     end
                     skip = false
                 end

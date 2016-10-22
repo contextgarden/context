@@ -17,6 +17,17 @@
 
 \unprotect
 
+\defineMPinstance
+  [steps]
+  [\s!format=metafun,
+   \s!extensions=\v!yes,
+   \s!initializations=\v!yes]
+  %\c!method=\s!double]
+
+\startMPdefinitions{steps}
+    loadmodule "step" ;
+\stopMPdefinitions
+
 \installcorenamespace {stepcharts}
 \installcorenamespace {steptables}
 \installcorenamespace {stepcells}

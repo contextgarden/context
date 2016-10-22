@@ -31,11 +31,11 @@ local pdfflushstreamobject = lpdf.flushstreamobject
 -- XMP-Toolkit-SDK-CC201607.zip. So we hardcode the id.
 
 local xpacket = format ( [[
-<?xpacket begin="﻿%s%s" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<?xpacket begin="﻿%s" id="W5M0MpCehiHzreSzNTczkc9d"?>
 
 %%s
 
-<?xpacket end="w"?>]], utfchar(0xFEFF), utfchar(0x0089) )
+<?xpacket end="w"?>]], utfchar(0xFEFF) )
 
 local mapping = {
     -- user defined keys (pdfx:)

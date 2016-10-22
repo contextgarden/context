@@ -174,11 +174,21 @@
 % \startlinenumbering[name][<startvalue>|continue|settings]
 
 \unexpanded\def\startlinenumbering
-  {\dodoubleempty\page_lines_start}
+  {\begingroup
+   \dodoubleempty\page_lines_start}
+
+\newcount\c_pages_lines_nesting
 
 \def\page_lines_start % we stay downward compatible
-  {\begingroup
-   \ifsecondargument
+  {\advance\c_pages_lines_nesting\plusone
+   \ifnum\c_pages_lines_nesting>\plusone
+     \expandafter\dodoubleempty\expandafter\gobbletwooptionals
+   \else
+     \expandafter\page_lines_start_indeed
+   \fi}
+
+\def\page_lines_start_indeed
+  {\ifsecondargument
      \expandafter\page_lines_start_two
    \else\iffirstargument
      \doubleexpandafter\page_lines_start_one
@@ -276,9 +286,11 @@
    \attribute\linenumberattribute\csname\??linenumberinginstance\currentlinenumbering\endcsname\relax}
 
 \unexpanded\def\stoplinenumbering
-  {\attribute\linenumberattribute\attributeunsetvalue
-   \the\aftereverylinenumbering
-   \ifconditional\c_page_lines_auto_narrow\par\fi
+  {\ifconditional\c_pages_lines_nesting=\plusone
+     \attribute\linenumberattribute\attributeunsetvalue
+     \the\aftereverylinenumbering
+     \ifconditional\c_page_lines_auto_narrow\par\fi
+   \fi
    \endgroup}
 
 % number placement .. will change into (the new) margin code

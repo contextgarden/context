@@ -14,9 +14,9 @@
 % maybe todo: step prefixes .. no save needed
 % not todo  : make it unreadable by lots of suffix compaction
 
-if known context_cell : endinput ; fi ;
+if known context_step : endinput ; fi ;
 
-boolean context_cell ; context_cell := true ;
+boolean context_step ; context_step := true ;
 
 def initialize_step_variables =
     save
@@ -28,12 +28,12 @@ def initialize_step_variables =
 
     string  chart_category      ; chart_category      := "" ;
 
-    color   text_line_color     ; text_line_color     := red ;
-    color   cell_line_color     ; cell_line_color     := blue ;
-    color   line_line_color     ; line_line_color     := green ;
+    string  text_line_color     ; text_line_color     := "red" ;
+    string  cell_line_color     ; cell_line_color     := "blue" ;
+    string  line_line_color     ; line_line_color     := "green" ;
 
-    color   text_fill_color     ; text_fill_color     := white ;
-    color   cell_fill_color     ; cell_fill_color     := white ;
+    string  text_fill_color     ; text_fill_color     := "white" ;
+    string  cell_fill_color     ; cell_fill_color     := "white" ;
 
     numeric text_line_width     ; text_line_width     := 2pt ;
     numeric cell_line_width     ; cell_line_width     := 2pt ;
@@ -155,17 +155,17 @@ def step_begin_chart =
         save start_t, start_m, start_b ; numeric start_t[], start_m[], start_b[] ;
         save cells_a ; picture cells_a[][] ;
 
-        save cell_top_colors ; color cell_top_colors[] ;
-        save cell_bot_colors ; color cell_bot_colors[] ;
-        save text_top_colors ; color text_top_colors[] ;
-        save text_mid_colors ; color text_mid_colors[] ;
-        save text_bot_colors ; color text_bot_colors[] ;
+        save cell_top_colors ; string cell_top_colors[] ;
+        save cell_bot_colors ; string cell_bot_colors[] ;
+        save text_top_colors ; string text_top_colors[] ;
+        save text_mid_colors ; string text_mid_colors[] ;
+        save text_bot_colors ; string text_bot_colors[] ;
 
-        save cell_top_fills  ; color cell_top_fills[] ;
-        save cell_bot_fills  ; color cell_bot_fills[] ;
-        save text_top_fills  ; color text_top_fills[] ;
-        save text_mid_fills  ; color text_mid_fills[] ;
-        save text_bot_fills  ; color text_bot_fills[] ;
+        save cell_top_fills  ; string cell_top_fills[] ;
+        save cell_bot_fills  ; string cell_bot_fills[] ;
+        save text_top_fills  ; string text_top_fills[] ;
+        save text_mid_fills  ; string text_mid_fills[] ;
+        save text_bot_fills  ; string text_bot_fills[] ;
 
         save cell_top_lines  ; numeric cell_top_lines[] ;
         save cell_bot_lines  ; numeric cell_bot_lines[] ;
@@ -183,9 +183,9 @@ def step_begin_chart =
         save line_mid_lines  ; numeric line_mid_lines[] ;
         save line_bot_lines  ; numeric line_bot_lines[] ;
 
-        save line_top_colors ; color line_top_colors[] ;
-        save line_mid_colors ; color line_mid_colors[] ;
-        save line_bot_colors ; color line_bot_colors[] ;
+        save line_top_colors ; string line_top_colors[] ;
+        save line_mid_colors ; string line_mid_colors[] ;
+        save line_bot_colors ; string line_bot_colors[] ;
 
         save line_top_shapes ; numeric line_top_shapes[] ;
         save line_mid_shapes ; numeric line_mid_shapes[] ;

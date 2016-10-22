@@ -1188,13 +1188,23 @@ end
 
 do
 
-    local f_actual_text_one   = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ %s EMC ET"]
-    local f_actual_text_two   = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ %s EMC ET"]
-    local f_actual_text_one_b = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ "]
-    local f_actual_text_two_b = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ "]
-    local f_actual_text_b     = formatters["BT /Span << /ActualText <feff%s> >> BDC [<feff>] TJ "]
+ -- local f_actual_text_one   = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ %s EMC ET"]
+ -- local f_actual_text_two   = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ %s EMC ET"]
+ -- local f_actual_text_one_b = formatters["BT /Span << /ActualText <feff%04x> >> BDC [<feff>] TJ "]
+ -- local f_actual_text_two_b = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC [<feff>] TJ "]
+ -- local f_actual_text_b     = formatters["BT /Span << /ActualText <feff%s> >> BDC [<feff>] TJ "]
+ -- local s_actual_text_e     = "EMC ET"
+ -- local f_actual_text_b_not = formatters["/Span << /ActualText <feff%s> >> BDC [<feff>] TJ "]
+ -- local s_actual_text_e_not = "EMC"
+ -- local f_actual_text       = formatters["/Span <</ActualText %s >> BDC"]
+
+    local f_actual_text_one   = formatters["BT /Span << /ActualText <feff%04x> >> %s EMC ET"]
+    local f_actual_text_two   = formatters["BT /Span << /ActualText <feff%04x%04x> >> %s EMC ET"]
+    local f_actual_text_one_b = formatters["BT /Span << /ActualText <feff%04x> >> "]
+    local f_actual_text_two_b = formatters["BT /Span << /ActualText <feff%04x%04x> >> "]
+    local f_actual_text_b     = formatters["BT /Span << /ActualText <feff%s> >> "]
     local s_actual_text_e     = "EMC ET"
-    local f_actual_text_b_not = formatters["/Span << /ActualText <feff%s> >> BDC [<feff>] TJ "]
+    local f_actual_text_b_not = formatters["/Span << /ActualText <feff%s> >> "]
     local s_actual_text_e_not = "EMC"
     local f_actual_text       = formatters["/Span <</ActualText %s >> BDC"]
 
