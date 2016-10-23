@@ -1,0 +1,161 @@
+% tests/mkiv/scripts/korean-005.tex
+% examplex elsewhere
+
+% \enablemode[print]
+
+\usemodule[present-overlap,abr-02]
+
+\startdocument
+  [title=Sorting,
+   subtitle=registers,
+   location=\ConTeXt\ Meeting 2011]
+
+\startluacode
+
+local function show(t,start,stop)
+    if type(t) == "table" then
+        start = start or 1
+        stop = stop or #t
+        for i=start,stop do
+            if i > start then
+                context.space()
+            end
+            if type(t[i]) == "number" then
+                context(utf.char(t[i]))
+            else
+                context(t[i])
+            end
+        end
+    elseif type(t) == "string" then
+        context(t)
+    elseif type(t) == "number" then
+        context(utf.char(t))
+    end
+end
+
+function context.ShowCharacterData(n)
+    local d = characters.data[n]
+    if d then
+        local bTR, bTD, eTD, eTR = context.bTR, context.bTD, context.eTD, context.eTR
+        context.bTABLE()
+            bTR() bTD() context("unicode")  eTD() bTD() show(n)                      eTD() eTR()
+            bTR() bTD() context("shcode")   eTD() bTD() show(characters.shchars [n]) eTD() eTR()
+            bTR() bTD() context("lccode")   eTD() bTD() show(characters.lcchars [n]) eTD() eTR()
+            bTR() bTD() context("uccode")   eTD() bTD() show(characters.ucchars [n]) eTD() eTR()
+            bTR() bTD() context("fscode")   eTD() bTD() show(characters.fschars [n]) eTD() eTR() -- leadconsonant
+            bTR() bTD() context("specials") eTD() bTD() show(
+               characters.remap_hangul_syllabe(characters.specials[n]),2) eTD() eTR()
+        context.eTABLE()
+    end
+end
+
+\stopluacode
+
+\unexpanded\def\ShowCharacterData#1{\cldcommand{ShowCharacterData("#1")}}
+
+\Topic{The old way}
+
+\StartSteps
+\startitemize
+\startitem in \MKII\ sorting is delegated to \TEXUTIL\ i.e.\ a multipass action \stopitem \FlushStep
+\startitem encoding vectors are passed along \stopitem \FlushStep
+\startitem sort vectors depend on the language \stopitem \FlushStep
+\startitem there are the usual complications with direct characters and commands \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Moving on}
+
+\StartSteps
+\startitemize
+\startitem in \MKIV\ sorting happens during the run \stopitem \FlushStep
+\startitem we only have to deal with \UNICODE\ (utf) \stopitem \FlushStep
+\startitem sort vectors still depend on the language \stopitem \FlushStep
+\startitem sorting can be controlled by methods \stopitem \FlushStep
+\startitem there is no universal solution (conflicting user demands, mixed languages) \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Character data}
+
+\setupTABLE[background=color,backgroundcolor=lightgray,rulethickness=.75bp,framecolor=darkgray]
+
+\StartSteps
+\startcombination[5*1]
+    {\definedfont[Normal*none]\ShowCharacterData{a}}            {regular\FlushStep}
+    {\definedfont[Normal*none]\ShowCharacterData{ä}}            {accent\FlushStep}
+    {\definedfont[Normal*none]\ShowCharacterData{æ}}            {ligature\FlushStep}
+    {\definedfont[adobemyungjostd-medium]\ShowCharacterData{그}} {hangul\FlushStep}
+    {\definedfont[adobemyungjostd-medium]\ShowCharacterData{학}} {hangul\FlushStep}
+\stopcombination
+\StopSteps
+
+\Topic{Sorting methods}
+
+\StartSteps
+\starttabulate[|l|l|r|]
+    \NC ch \NC raw character \NC       \FlushStep \NC \NR
+    \NC uc \NC unicode       \NC       \FlushStep \NC \NR
+    \NC mm \NC mapping       \NC minus \FlushStep \NC \NR
+    \NC zm \NC               \NC zero  \FlushStep \NC \NR
+    \NC pm \NC               \NC plus  \FlushStep \NC \NR
+    \NC mc \NC lower case    \NC minus \FlushStep \NC \NR
+    \NC zc \NC               \NC zero  \FlushStep \NC \NR
+    \NC pc \NC               \NC plus  \FlushStep \NC \NR
+\stoptabulate
+\StopSteps
+
+\Topic{Predefined methods}
+
+\StartSteps
+\starttabulate[|l|l|]
+    \NC before \NC mm,mc,uc \NC \NR
+    \NC after  \NC pm,mc,uc \NC \NR
+    \NC first  \NC pc,mm,uc \NC \NR
+    \NC last   \NC mc,mm,uc \NC \NR
+\stoptabulate
+
+\FlushStep
+
+\starttyping
+\enabletrackers[sorters.tests]
+\enabletrackers[sorters.methods]
+\stoptyping
+
+\FlushStep
+\StopSteps
+
+\Topic{An example (1)}
+
+\startbuffer
+àâá\index{àâá}
+aaa\index{aaa}
+aab\index{aab}
+Aaa\index{Aaa}
+Aab\index{Aab}
+\stopbuffer
+
+\StartSteps
+\typebuffer \FlushStep
+
+\startlines \getbuffer \stoplines \FlushStep
+\StopSteps
+
+\Topic{An example (2)}
+
+% \enabletrackers[sorters.tests]
+% \enabletrackers[sorters.methods]
+
+\setupregister[index][criterium=text,n=1,before=,after=]
+\defineframed[indexframed][align=normal,width=.2\textwidth,strut=no]
+
+\StartSteps
+\startcombination[4*1]
+    {\setupinteraction[state=stop]\indexframed{\placeregister[index][method={mm,mc,uc}]}} {mm,mc,uc\FlushStep}
+    {\setupinteraction[state=stop]\indexframed{\placeregister[index][method={pm,mc,uc}]}} {pm,mc,uc\FlushStep}
+    {\setupinteraction[state=stop]\indexframed{\placeregister[index][method={pc,mm,uc}]}} {pc,mm,uc\FlushStep}
+    {\setupinteraction[state=stop]\indexframed{\placeregister[index][method={mc,mm,uc}]}} {mc,mm,uc\FlushStep}
+\stopcombination
+\StopSteps
+
+\stopdocument

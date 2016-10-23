@@ -1,0 +1,94 @@
+% \enablemode[print]
+
+\usemodule[present-overlap,abr-02]
+
+\startdocument
+  [title=e-books,
+   subtitle=old wine in new bottles,
+   location=\ConTeXt\ Meeting 2011]
+
+\Topic{Some observations}
+
+\StartSteps
+\startitemize
+\item Most ebooks are just books (or try to be). \FlushStep
+\item Only a small portion has (or needs) design. \FlushStep
+\item To what extent appreciation matters is hard to measure. \FlushStep
+\item Vendor locking is spoiling much. \FlushStep
+\item 10 years of low res screens have made readers tolerant. \FlushStep
+\item Publishers already lost the edge. \FlushStep
+\item Eventually authors will publish themselves. \FlushStep
+\stopitemize
+\StopSteps
+
+% Does quality matter (just look around you)
+% Does livetime matter (much tolerance for potentially crappy old stuff anyway)
+% Does timebound look and feel matter (it helps to put into perspective)
+
+\Topic{What is an ebook}
+
+\StartSteps
+\startitemize
+\item Nicest is it being a \PDF\ (some design). \FlushStep
+\item Easiest is it being an \XHTML\ file (with some \CSS). \FlushStep
+\item Pointless it is being a frozen app. \FlushStep
+\item We can already provide a \PDF\ for paper and screen for quite a while. \FlushStep
+\item We can consider providing an \XHTML\ alongside as reflowable variant. \FlushStep
+\item Who knows what we can provide in the future. \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{The starting point}
+
+\StartSteps
+\startitemize
+\item No output is better than the input. \FlushStep
+\item Fixing bad coding is a waste of energy. \FlushStep
+\item Not that many publishers want to invest in coding. \FlushStep
+\item Not that many tools enforce structure. \FlushStep
+\item The real good devices still have to come but we can be ready for it. \FlushStep
+\item The intelligence has to be in the macro package, not in the engine. \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Implementation}
+
+\StartSteps
+\startitemize
+\item Some users have to produce tagged pdf (to satisfy validators). \FlushStep
+\item It helps that many commands in \CONTEXT\ are built upon a relatively small generic set. \FlushStep
+\item So, given some basic structure, supporting tags is easy. \FlushStep
+\item It integrates in the core. \FlushStep
+\item And as a side effect an export was equally easy to support. \FlushStep
+\item The overhead is not that large (upto 10\%). \FlushStep
+\item Instead of going for freaky solutions (no need for challenges) we assume proper structure. \FlushStep
+\item It's not to hard to extend the current features. \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Consequence for users}
+
+\StartSteps
+\startitemize
+\item Use \type{\startchapter} cum suis, but that was already the \MKIV\ fashion. \FlushStep
+\item Preferable use \type{\startitem} instead of \type {\item}. \FlushStep
+\item Playing safe means tagging paragraphs with \type {\startparagraph}. \FlushStep
+\item Use style environments instead of font switches. \FlushStep
+\item Just use whatever structural markup that \CONTEXT\ already provides for ages. \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{An example}
+
+\StartSteps
+\startitemize
+\item A normal input with \TEX\ commands (cld-mkiv.tex) \FlushStep
+\item Regular (tagged) output (cld-mkiv.pdf) \FlushStep
+\item Structured output (cld-mkiv.xml) \FlushStep
+\item Reflowable output (cld-mkiv-export.xhtml) \FlushStep
+\item Dynamic styling (cld-mkiv-export.css) \FlushStep
+\item Basic template (cld-mkiv-export.template) \FlushStep
+\stopitemize
+\StopSteps
+
+\stopdocument

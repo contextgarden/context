@@ -1,0 +1,20 @@
+\usemodule[present-tiles]
+
+\startdocument[title=Whatever We\\Want Here,subtitle=Whatever We\\Want There]
+
+\dorecurse {12} {
+    \starttopic[title=Topic #1]
+        \input tufte
+        \blank[3*line]
+        \bold{Buttons (roll-over in acrobat):}
+        \blank[line]
+        \starttabulate[|T||]
+            \NC click left  top    \NC home      \NC \NR
+            \NC click right top    \NC contents  \NC \NR
+            \NC click left  bottom \NC previous  \NC \NR
+            \NC click left  bottom \NC next page \NC \NR
+        \stoptabulate
+    \stoptopic
+}
+
+\stopdocument

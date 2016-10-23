@@ -325,6 +325,17 @@
 \unexpanded\def\presetdocument[#settings]%
   {\checkvariables[\s!document][#settings]}
 
+% We silently ignore missing documents. Beware: there are no begin/end setups
+% invoked as we expect the loaded document to be wrapped in \startdocument ...
+% \stopdocument. This is just a convenient variant of input.
+%
+% \unexpanded\def\document
+%   {\dosingleempty\syst_document}
+%
+% \def\syst_document[#1]#2%
+%    \startdocument[#1]
+%    \readfile{#2}{}{}}
+
 % metadata:author  metadata:title  metadata:subject
 
 \setvariables

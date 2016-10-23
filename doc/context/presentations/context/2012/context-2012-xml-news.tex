@@ -1,0 +1,131 @@
+\usemodule[present-stepwise,present-bars,abr-01]
+
+\startdocument
+  [title={Processing XML, some basics},
+   color=darkcyan]
+
+\StartSteps
+
+\startsubject[title=Topics]
+
+    \startitemize[packed]
+
+        \startitem processing  \stopitem \FlushStep
+        \startitem selecting   \stopitem \FlushStep
+        \startitem flushing    \stopitem \FlushStep
+        \startitem testing     \stopitem \FlushStep
+        \startitem basics only \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps \page \StartSteps
+
+\startsubject[title=Processing]
+
+    \starttyping
+    \xmlprocessfile   {name} {filename} {setup}
+    \xmlprocessbuffer {name} {filename} {setup}
+    \xmlloadonly      {name} {filename} {setup}
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Loading]
+
+    \starttyping
+    \xmlload       {name} {filename}   {setup}
+    \xmlloadbuffer {name} {buffername} {setup}
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps \page \StartSteps
+
+\startsubject[title=Injecting elements]
+
+    \starttyping
+    \xmlall   {node} {pattern}
+    \xmlfirst {node} {pattern}
+    \xmllast  {node} {pattern}
+    \xmlflush {node}
+    \stoptyping \FlushStep
+
+    \starttyping
+    \xmlraw     {node} {pattern}
+    \xmlcontext {node} {pattern}
+    \xmlstrip   {node} {pattern}
+    \xmltag     {node}
+    \xmltext    {node} {pattern}
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps \page \StartSteps
+
+\startsubject[title=Injecting attributes]
+
+    \starttyping
+    \xmlatt          {node} {name}
+    \xmlattdef       {node} {namev {default}
+    \xmlattribute    {node} {pattern} {name}
+    \xmlattributedef {node} {pattern} {name} {default}
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Injecting properties]
+
+    \starttyping
+    \xmlcount     {node} {pattern}
+    \xmlname      {node}
+    \xmlnamespace {node}
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps \page \StartSteps
+
+\startsubject[title=Filters]
+
+    \starttyping
+    \xmlcommand {node} {pattern} {setup
+    \xmlfilter  {node} {pattern}
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Much more]
+
+    \starttyping
+    \xmlverbatim        {node}
+    \xmldisplayverbatim {node}
+    \xmlinlineverbatim  {node}
+    \stoptyping \FlushStep
+
+    \starttyping
+    \xmlinclude {node} {pattern} {attribute}
+    \xmlshow    {node}
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps \page \StartSteps
+
+\startsubject[title=Testing]
+
+    \starttyping
+    \xmldoif         {node} {pattern} {true}
+    \xmldoifnot      {node} {pattern} {true}
+    \xmldoifelse     {node} {pattern} {true} {false}
+    \xmldoiftext     {node} {pattern} {true}
+    \xmldoifnottext  {node} {pattern} {true}
+    \xmldoifelsetext {node} {pattern} {true} {false}
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\stopdocument

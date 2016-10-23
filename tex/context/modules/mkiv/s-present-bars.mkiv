@@ -1,0 +1,128 @@
+%D \module
+%D   [      file=s-present-bars,
+%D        version=2012.07.10,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment bars,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Okay, this one makes me a bit ashamed as it's probably too simple and unattractive but
+%D as it was used for a whole bunch of presentations it made it into a module anyway.
+
+\startmodule[present-bars]
+
+\setupbodyfont
+  [dejavu]
+
+\setuppapersize
+  [S6]
+
+\setuplayout
+  [backspace=12pt,
+   width=middle,
+   height=middle,
+   topspace=12pt,
+   header=36pt,
+   footer=36pt,
+   headerdistance=12pt,
+   footerdistance=12pt]
+
+\definecolor
+  [maincolor]
+  [darkblue]
+
+\startreusableMPgraphic{page}
+    StartPage ;
+        fill
+            Page
+            withcolor \MPcolor{maincolor} ;
+        fill
+            Field[Text][Header]
+                leftenlarged BackSpace
+                rightenlarged CutSpace
+            withcolor darkgray ;
+        fill
+            Field[Text][Footer]
+                leftenlarged BackSpace
+                rightenlarged CutSpace
+            withcolor darkgray ;
+    StopPage ;
+\stopreusableMPgraphic
+
+\setupheader
+  [color=maincolor,
+   style=bold,
+   before=\vss,
+   after=\vss]
+
+\setupheader
+  [color=maincolor,
+   style=bold,
+   before=\vss,
+   after=\vss]
+
+\setupheadertexts
+  [Breskens 2012]
+  [\getvariable{document}{title}]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\defineoverlay
+  [page]
+  [\reuseMPgraphic{page}]
+
+\setupbackgrounds
+  [footer][text]
+  [background=goback]
+
+\defineoverlay
+  [goback]
+  [\overlaybutton{PreviousPage}]
+
+\setuppagenumbering
+  [location=]
+
+\setupcolors
+  [textcolor=white]
+
+\setvariables
+  [document]
+  [maincolor=darkblue,
+   set=\setups{document:setup}]
+
+\startsetups document:setup
+
+    \doifsomething {\getvariable{document}{color}} {
+
+       \definecolor[maincolor][\getvariable{document}{color}]
+
+    }
+
+\stopsetups
+
+\setupinteraction
+  [state=start,
+   click=no]
+
+\usemodule[abr-01]
+\usemodule[pre-60]
+
+\stopmodule
+
+\continueifinputfile{s-present-bars.mkiv}
+
+\usemodule[present-common]
+
+%\inputpresentationfile{context/2012/context-2012-after-the-cleanup.tex}
+%\inputpresentationfile{context/2012/context-2012-the-script.tex}
+%\inputpresentationfile{context/2012/context-2012-lexing-sources.tex}
+%\inputpresentationfile{context/2012/context-2012-mixed-columns.tex}
+%\inputpresentationfile{context/2012/context-2012-visual-debugging.tex}
+\inputpresentationfile{context/2012/context-2012-xml-news.tex}

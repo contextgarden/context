@@ -1,0 +1,242 @@
+\usemodule[present-luatex]
+
+\startdocument
+  [title={\luaTeX},
+   subtitle={Version 1.00},
+   location={ConTeXt meeting \emdash\ September 2016},
+   mp:title={luatex},
+   mp:subtitle={1.00\space\endash\space2016}]
+
+\startstandardmakeup
+
+After ten years of stepwise development and experimenting we release version 1.00
+of \LuaTeX\ during the 10\high{th} \ConTeXt\ meeting in the Netherlands, September
+2016.
+
+The interface is now rather stable and will not change significantly which means
+that one can write stable packages.
+
+So, it's time for a bit reflection as well as time to tell what we will be doing
+next.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+Around 2005, after we talked a bit about it, Hartmut added the \Lua\ scripting
+language to \pdfTeX\ as an experiment.
+
+This add|-|on was inspired by the \Lua\ extension to the Scite editor that I
+(still) use.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+One could query counter registers and box dimensions and print strings to the
+\TeX\ input buffer.
+
+The Oriental \TeX\ project then made it possible to go forward and come up with a
+complete interface.
+
+For this, Taco converted the code base from Pascal to C, an impressive effort.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+We spent more than a year intensively discussing, testing and implementing
+the interface between \TeX\ and \Lua.
+
+In successive years we polished things and extended bits and pieces.
+
+The last few years we cleaned up, filled in gaps and reached the point where we
+were more of less satisfied.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+The core is still traditional \TeX, but extended with \pdfTeX\ protrusion and
+expansion (reworked) and directional features from Aleph (cleaned up).
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+The font subsystem accept now wide fonts.
+
+The hyphenation machinery can use runtime loaded (and extended) patterns.
+
+Hyphenation, ligaturing, kerning are separated.
+
+Most steps in processing node lists can be intercepted using callbacks.
+
+The math machinery has opentype math code paths.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+All in- and output can be controlled and intercepted.
+
+The backend code has been separated better.
+
+You can write (simple) parsers.
+
+Nodes can be accessed and manipulated.
+
+Images and reuseable boxes are now native.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+The project is driven by \ConTeXt\ users and \ConTeXt\ development.
+
+Right from the start \ConTeXt\ supported \LuaTeX.
+
+This means that most mechanisms have been tested in production.
+
+Raw performance is less than 8 bit \pdfTeX\ but in practice and on modern
+machines \LuaTeX\ behaves well.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+We will continue development, but functionality will stay stable within versions.
+Of course bugs will be fixed.
+
+The code will be further streamlined and documented. We deliberately postponed some
+cleanup till after version 1.00.
+
+Of course the manual will be improved over time.
+
+\stopstandardmakeup
+
+\startstandardmakeup[bottom=,top=]
+
+    \vfil
+
+    \ssbf
+
+    Hans Hagen     \par
+    Hartmut Henkel \par
+    Taco Hoekwater \par
+    Luigi Scarso   \par
+
+    \vfil \vfil \vfil
+
+    \txx
+
+    many thanks to all the\break
+    early adopters
+
+    \vfil
+
+\stopstandardmakeup
+
+% ideas
+
+\startstandardmakeup
+
+    \midaligned{Some ideas (1)}
+
+    So far we managed to avoid extensions beyond those needed as part of the opening
+    up.
+
+    We stick close to Don Knuths concepts so that existing documentation still
+    conceptualy applies. We keep our promise of not adding to the core.
+
+    We might open up (make configureable) some of the still hard coded properties.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+    \midaligned{Some ideas (2)}
+
+    Some node lists can use a bit of (non critical) cleanup, for instance passive
+    nodes, local par nodes, and other left|-|overs. Maybe we should add missing
+    left|/|right skips.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+    \midaligned{Some ideas (3)}
+
+    We can optimize some callback resolution (more direct) so that we can gain a little
+    performance.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+    \midaligned{Some ideas (4)}
+
+    Inheritance of attributes needs checking and maybe we need to permits some more
+    explicit settings.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+    \midaligned{Some ideas (5)}
+
+    Bring some more code to the api file. Use the global PDF and \Lua\ states
+    consistently. Some macros can probably go away.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+    \midaligned{Some ideas (6)}
+
+    Minimize return values of \Lua\ functions; only return nil when we expect
+    multiple calls in in one line.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+    \midaligned{Some ideas (7)}
+
+    Figure out a way to deal with literals in virtual characters (relates to font
+    switching in the result).
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+    \midaligned{Some ideas (8)}
+
+    Maybe reorganize some code so that documentation is easier. See if we can stick
+    close to what Don Knuth documents.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+    \midaligned{Some ideas (9)}
+
+    Cleanup and isolate the backend a bit more. Maybe add a bit more options to
+    delegate to \Lua. Get rid of some historic PDF artifacts.
+
+\stopstandardmakeup
+
+\startstandardmakeup
+
+    \midaligned{Some ideas (10)}
+
+    It is tempting to think of a (lean and mean) \LuaTeX\ variant for \ConTeXt.
+
+    We will not touch stable unless it concerns bug fixes, but we will expose
+    \ConTeXt\ users to the experimental branch (as we do now).
+
+    So \unknown\ be prepared.
+
+\stopstandardmakeup
+
+\stopdocument

@@ -1,0 +1,138 @@
+\usemodule[present-ovals]
+
+\definecolor[maincolor][darkgray]
+
+\definefont[largett][Mono sa 3]
+
+\starttext
+
+\startstandardmakeup
+    \bfc\setstrut
+    \vfil
+    \midaligned{\strut the interaction between}
+    \vfil
+    \midaligned{\strut ligatures hyphenation}
+    \vfil
+    \midaligned{\strut and kerning}
+    \vfil
+    \bf\setstrut
+    \vfil
+    \midaligned{\strut Hans Hagen}
+    \vfil
+    \midaligned{\strut Bacho\TeX\ 2015}
+    \vfil
+\stopstandardmakeup
+
+\starttitle[title={Ligature}]
+\startlines \largett\setupinterlinespace
+    {\red e}{\red f}{\red f}{\red e}
+    {\red e}{\blue ff}{\red e}
+    {\red e}{\vl}{\blue ff}{\vl}{\red e}
+\stoplines
+\stoptitle
+
+\starttitle[title={Discretionary}]
+\startlines \bigger \setupinterlinespace
+    \type{\discretionary{pre}{post}{replace}}
+    \blank
+    \type{explicit: \-}
+    \blank
+    \type{automatic: -}
+    \blank
+    \type{regular: patterns}
+    \blank
+    \type{first: internal}
+    \type{second: internal}
+\stoplines
+\stoptitle
+
+\starttitle[title={Hyphenated ligature}]
+\startlines \largett\setupinterlinespace
+    {\red e}{\red f}{\green -}{\red f}{\red e}
+    {\red e}[{\red f}{\green -}][{\red f}][{\blue ff}]{\red e}
+    {\red e}[{\vl}{\red f}{\vl}{\green -}][{\red f}{\vl}][{\vl}{\blue ff}{\vl}]{\red e}
+\stoplines
+\stoptitle
+
+\starttitle[title={Substitution}]
+\startlines \largett\setupinterlinespace
+{\red e}{\red f}{\red f}{\red e}
+{\red e}{\magenta f}{\cyan f}{\red e}
+{\red e}{\vl}{\magenta f}{\vl}{\cyan f}{\vl}{\red e}
+\stoplines
+\stoptitle
+\stoptitle
+
+\starttitle[title={Hyphenation substitution}]
+\startlines \largett\setupinterlinespace
+{\red e}{\red f}{\green -}{\red f}{\red e}
+{\red e}[{\red f}{\green -}][{\red f}][{\magenta f}{\cyan f}]{\red e}
+{\red e}[{\vl}{\red f}{\vl}{\green -}][{\red f}{\vl}][{\vl}{\magenta f}{\vl}{\cyan f}{\vl}]{\red e}
+\stoplines
+\stoptitle
+
+\starttitle[title={Hyphenation substitution (2)}]
+\startlines \largett\setupinterlinespace
+{\red e}{\red f}{\green -}{\red f}{\red e}
+{\red e}[{\red f}{\green -}][{\green -}{\red f}][{\magenta f}{\cyan f}]{\red e}
+{\red e}[{\vl}{\red f}{\vl}{\green -}][{\green -}{\vl}{\red f}{\vl}][{\vl}{\magenta f}{\vl}{\cyan f}{\vl}]{\red e}
+\stoplines
+\stoptitle
+
+\starttitle[title={Hyphenation substitution (3)}]
+\startlines \largett\setupinterlinespace
+{\red e}{\red f}{\green -}{\red f}{\red e}
+{\red e}[{\yellow f}{\green -}][{\green -}{\red f}][{\magenta f}{\cyan f}]{\red e}
+{\red e}[{\vl}{\yellow f}{\vl}{\green -}][{\green -}{\vl}{\red f}{\vl}][{\vl}{\magenta f}{\vl}{\cyan f}{\vl}]{\red e}
+\stoplines
+\stoptitle
+
+\starttitle[title={Hyphenation substitution (4)}]
+\startlines \largett\setupinterlinespace
+\dontleavehmode\hbox{{\red e}{\red f}{\green -}{\red f}{\red i}{\green -}{\red c}{\red i}{\red e}{\red n}{\red t}}
+\dontleavehmode\hbox{{\red e}[{\red f}{\green -}][{\blue fi}][{\blue ffi}{\green -}]{\red c}}
+\dontleavehmode\hbox{{\red e}[{\vl}{\red f}{\vl}{\green -}][{\blue fi}{\vl}][{\vl}{\blue ffi}{\vl}{\green -}{\vl}]{\red c}}
+\stoplines
+\stoptitle
+
+\starttitle[title={Languages}]
+\startlines \largett\setupinterlinespace
+{\red f}{\red i}{\red j}{\red n}
+{\blue fi}{\red j}{\red n}
+{\red f}{\blue ij}{\red n}
+\stoplines
+\stoptitle
+
+\starttitle[title={Relevance of typesetting}]
+\startparagraph glyphs (shapes) are a way to communicate \stopparagraph
+\startparagraph writing and reading are complementary \stopparagraph
+\startparagraph both were instrumental to progress \stopparagraph
+\startparagraph and both are under pressure \stopparagraph
+\startparagraph we need to distinguish between art and useability \stopparagraph
+\startparagraph typography is a tool, not an aim \stopparagraph
+\stoptitle
+
+\starttitle[title={Relevance of ligatures}]
+\startparagraph save space (less medium needed) \stopparagraph
+\startparagraph kind of arbitrary applied / provided \stopparagraph
+\startparagraph less relevant apart from look \stopparagraph
+\startparagraph alien for most readers \stopparagraph
+\startparagraph not always better readable \stopparagraph
+\startparagraph better spend energy elsewhere \stopparagraph
+\stoptitle
+
+\page
+
+\usemodule[punk] \usetypescript[punk]
+
+\startstandardmakeup
+
+    \definedfont[demo@punk at 40pt] \setupinterlinespace \EnableRandomPunk
+
+    Should we really care about such features in a time when kids no
+    longer need to write and don't seem to care at all about how things
+    look.
+
+\stopstandardmakeup
+
+\stoptext

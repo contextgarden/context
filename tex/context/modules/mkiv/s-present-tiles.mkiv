@@ -11,15 +11,18 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D The Bacho\TeX\ 2013 style.
+%D In this style the table of contents is a bunch of rectangular blobs. The layout
+%D adapts itself upto 25 pages. This style was made for Bacho\TeX\ 2013.
+
+\startmodule[present-tiles]
 
 \setupbodyfont[pagella,14.4pt]
 
 \setuppapersize[S6][S6]
 
-\definecolor[primarycolor]  [.50(darkblue,darkgreen)]
-\definecolor[secondarycolor][.25(darkblue,darkyellow)]
-\definecolor[mixedcolor]    [s=.35]
+\definecolor[maincolor] [.50(darkblue,darkgreen)]
+\definecolor[othercolor][.25(darkblue,darkyellow)]
+\definecolor[mixedcolor][s=.35]
 
 \setupcolors
   [textcolor=white]
@@ -88,7 +91,7 @@
    background=color,
    frame=off,
    foregroundstyle=MyTopicListFont,
-   backgroundcolor=primarycolor,
+   backgroundcolor=maincolor,
    foregroundcolor=white]
 
 \setupwhitespace
@@ -171,7 +174,7 @@
    frame=off]
 
 \defineframed[nb] [bb] [empty=yes]
-\defineframed[rb] [bb] [backgroundcolor=white,foregroundcolor=secondarycolor]
+\defineframed[rb] [bb] [backgroundcolor=white,foregroundcolor=othercolor]
 \defineframed[db] [bb] [backgroundcolor=mixedcolor,foregroundcolor=white]
 
 \definepushbutton [prev]
@@ -235,7 +238,7 @@
    align={flushleft,lohi},
    background=color,
    backgroundcolor=white,
-   foregroundcolor=secondarycolor]
+   foregroundcolor=othercolor]
 
 \startsetups [document:titlepage]
 
@@ -245,12 +248,12 @@
     \setupbackgrounds
       [page]
       [background={color,menupage},
-       backgroundcolor=secondarycolor]
+       backgroundcolor=othercolor]
 
     \setupbackgrounds
       [text]
       [background={color,menupage},
-       backgroundcolor=secondarycolor]
+       backgroundcolor=othercolor]
 
     \starttopicmakeup[reference=homepage]
 
@@ -277,12 +280,12 @@
     \setupbackgrounds
       [page]
       [background={color,homepage},
-       backgroundcolor=secondarycolor]
+       backgroundcolor=othercolor]
 
     \setupbackgrounds
       [text]
       [background={color,menupage},
-       backgroundcolor=secondarycolor]
+       backgroundcolor=othercolor]
 
     \startcontentmakeup[reference=menupage]
 
@@ -296,23 +299,25 @@
       [page]
     % [background={color,menupage},
       [background={color,invoke},
-       backgroundcolor=primarycolor]
+       backgroundcolor=maincolor]
 
     \setupbackgrounds
       [text]
     % [background={color,nextpage,setbuttons,buttons},
       [background={color,setbuttons,buttons},
-       backgroundcolor=secondarycolor]
+       backgroundcolor=othercolor]
 
 \stopsetups
 
 \setupdocument
   [before=\directsetup{document:titlepage}]
 
+\stopmodule
+
 \continueifinputfile{s-present-tiles.mkiv}
 
-\startdocument[title=Whatever We\\Want Here,subtitle=Whatever We\\Want There]
+\usemodule[present-common]
 
-    \dorecurse{12}{\starttopic[title=Topic #1]\input tufte \stoptopic}
-
-\stopdocument
+%inputpresentationfile{examples/present-tiles-001.tex}
+%inputpresentationfile{context/2013/context-2013-speed.tex}
+\inputpresentationfile{context/2013/context-2013-math.tex}

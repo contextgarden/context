@@ -1,0 +1,453 @@
+\usemodule[present-stepwise,present-bars,abr-01]
+
+\startdocument
+  [title=The scripts,
+   color=darkblue]
+
+\StartSteps
+
+\startsubject[title=Some myths]
+
+    \startitemize[packed]
+
+        \startitem \CONTEXT\ looks al lot like plain \TEX\ and expects users to program macros. \stopitem \FlushStep
+        \startitem \CONTEXT\ depends on \RUBY. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=The truth]
+
+    \startitemize[packed]
+
+        \startitem On the average users don't have to program. Configuring is not programming. \stopitem \FlushStep
+        \startitem As \TEX\ lacks commandline handling and job control, helpers are provided. \stopitem \FlushStep
+        \startitem Of course users can still program a lot, but not all need that. \stopitem \FlushStep
+        \startitem Of course users can directly run \CONTEXT, but why should they. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=A few facts]
+
+    \startitemize[packed]
+
+        \startitem The \CONTEXT\ distribution provides a sort of ecosystem. \stopitem \FlushStep
+        \startitem In \MKII\ indeed we use \RUBY\ for some job control. \stopitem \FlushStep
+        \startitem But in \MKIV\ all is (of course) done in \LUA. \stopitem \FlushStep
+        \startitem Two scripts play an important role: mtxrun and context. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=The \quote {mtxrun} script]
+
+    \startitemize[packed]
+
+        \startitem Locates and runs scripts, has a lot of helpers preloaded. \stopitem \FlushStep
+        \startitem It is in fact my \LUA\ runner on top the \TEXLUA. \stopitem \FlushStep
+        \startitem It knows about files and the environment we run in. \stopitem \FlushStep
+        \startitem It has some features that makes it easier to integrate in services. \stopitem \FlushStep
+        \startitem This way we don't need stubs (and avoid potential conflicts in name). \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=The \quote {context} script]
+
+\startitemize[packed]
+
+    \startitem It runs \CONTEXT\ and keeps track of how many runs are needed. \stopitem \FlushStep
+    \startitem Contrary to its \MKII\ ancestor it is not needed for index sorting etc. \stopitem \FlushStep
+    \startitem It has a few extensions that are loaded on demand: extras \stopitem \FlushStep
+
+\stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=A regular run]
+
+    \starttyping
+    context [--run] filename
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Running from an editor]
+
+    \starttyping
+    context --autopdf filename
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Running from an service]
+
+    \starttyping
+    mtxrun --path=somepath --script context filename
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Controlling the rendering]
+
+    \starttyping
+    --usemodule=list
+    --environment=list
+    --mode=list
+    --arguments=list
+    --path=list
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Controlling with ctx files]
+
+    \starttyping
+    --ctx=name
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Also in preamble]
+
+    \starttyping
+    <?context-directive job ctxfile m4all.ctx ?>
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=A ctx file]
+
+\starttyping
+<?xml version='1.0' standalone='yes'?>
+
+<ctx:job>
+    <ctx:message>EPUB Formatter</ctx:message>
+    <ctx:flags>
+        <ctx:flag>purge</ctx:flag>
+        <ctx:flag>global</ctx:flag>
+    </ctx:flags>
+    <ctx:process>
+        <ctx:resources>
+            <ctx:module>epub-01</ctx:module>
+        </ctx:resources>
+    </ctx:process>
+</ctx:job>
+\stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Multiple products from one source]
+
+    \starttyping
+    --result=name
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=When imposition is needed]
+
+    \starttyping
+    --arrange
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Cleanup after runs]
+
+    \starttyping
+    --batchmode
+    --purge(all)
+    --purgeresult
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Sometimes faster (in services)]
+
+    \starttyping
+    --once
+    --runs=2
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Normally automatically done]
+
+    \starttyping
+    --make
+    --generate
+    --touch
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Seldom used]
+
+    \starttyping
+    --interface
+    --randomseed=number
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Information about extra control]
+
+    \starttyping
+    --trackers
+    --directives
+    --showlogcategories
+    --version
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Controlling the machinery]
+
+    \starttyping
+    --trackers=list
+    --directives=list
+    --silent=list
+    --noconsole
+    --nostatistics
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=When no local file is used]
+
+    \starttyping
+    --global
+    --nofile
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=When the automatics recognition doesn't work]
+
+    \starttyping
+    --forcexml
+    --forcecld
+    --forcelua
+    --forcemp
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Only handy for development (or me)]
+
+    \starttyping
+    --profile
+    --timing
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Forget about these]
+
+    \starttyping
+    --paranoid
+    --update
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Some hidden treasures]
+
+    \starttyping
+    --extras
+    --extra=name
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Arguments can be prefixed]
+
+    \starttyping
+    environment:
+    relative:
+    auto:
+    locate:
+    filename:
+    pathname:
+    home:
+    selfautoloc:
+    selfautoparent:
+    selfautodir:
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Recent (probably unnoticed) change]
+
+    \starttyping
+    luatex
+      --fmt=".../tex/texmf-cache/luatex-cache/context/.../formats/cont-en"
+      --lua=".../tex/texmf-cache/luatex-cache/context/.../formats/cont-en.lui"
+      --jobname="context-the-script"
+      --no-parse-first-line
+      --c:autopdf
+      --c:currentrun=1
+      --c:fulljobname="./context-the-script.tex"
+      --c:input="./context-the-script.tex"
+      --c:kindofrun=1
+      "cont-yes.mkiv"
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=Another change]
+
+\startitemize[packed]
+
+    \startitem The (runtime generated) options file is no longer there. \stopitem \FlushStep
+    \startitem For as far as possible arguments are passed directly. \stopitem \FlushStep
+    \startitem Input files are always loaded indirectly, no more stubs. \stopitem \FlushStep
+
+\stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=About 30 mtx/lmx scripts]
+
+    \starttyping
+    mtx-check.lua
+    mtx-convert.lua
+    mtx-epub.lua
+    mtx-fonts.lua
+    mtx-modules.lua
+    mtx-patterns.lua
+    mtx-pdf.lua
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=These are run like]
+
+    \starttyping
+    mtxrun --script pdf
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Several mtx templates]
+
+    \starttyping
+    mtx-context-arrange.lua
+    mtx-context-combine.lua
+    mtx-context-listing.lua
+    mtx-context-select.lua
+    mtx-context-timing.lua
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\startsubject[title=These are run like]
+
+    \starttyping
+    context --extra=arrange [--help] ...
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Local preferences]
+
+    \starttyping
+    texmfcnf.lua
+    \stoptyping \FlushStep
+
+\stopsubject
+
+\StopSteps
+
+\stopdocument
+

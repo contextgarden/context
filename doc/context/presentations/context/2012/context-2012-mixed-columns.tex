@@ -1,0 +1,79 @@
+\usemodule[present-stepwise,present-bars,abr-01]
+
+\startdocument
+  [title=The scripts,
+   color=darkyellow]
+
+\StartSteps
+
+\startsubject[title=Output]
+
+    \startitemize[packed]
+
+        \startitem \TEX\ collects content paragraph wise. \stopitem \FlushStep
+        \startitem In between it can trigger the so called output routine. \stopitem \FlushStep
+        \startitem At that moment you can do something with the result. \stopitem \FlushStep
+        \startitem One of the things you can do is package all collected so far in a page. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=Bonus]
+
+    \startitemize[packed]
+
+        \startitem In \LUATEX\ we can also intercept content at more places. \stopitem \FlushStep
+        \startitem For instance before and after each paragraph is processed. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps \page \StartSteps
+
+\startsubject[title=Columns]
+
+    \startitemize[packed]
+
+        \startitem \TEX\ has no concept of columns. \stopitem \FlushStep
+        \startitem You need to fake them by fiddling with the width and spitting boxes. \stopitem \FlushStep
+        \startitem Often we can use tabulate (no output routine). \stopitem \FlushStep
+        \startitem For some local applications we use simple columns. \stopitem \FlushStep
+        \startitem In for instance itemize we used a mixed one- and multi-column model. \stopitem \FlushStep
+        \startitem Columnsets are another (independent) mechanism, strongly grid based. \stopitem \FlushStep
+        \startitem Traditional multicolumns are being replaced by a new mechanism: mixed columns. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=Pitfalls]
+
+    \startitemize[packed]
+
+        \startitem Footnotes: page, first or last column, each column (delayed, immediate). \stopitem \FlushStep
+        \startitem Graphics: moving floats around is more complex than in single columns. \stopitem \FlushStep
+        \startitem Nesting: how about columns inside columns. \stopitem \FlushStep
+        \startitem Balancing: can be hard taking all into account. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps \page \StartSteps
+
+\startsubject[title=Questions]
+
+    \startitemize[packed]
+
+        \startitem Do complex column mechanisms still make sense given the move to electronic paper. \stopitem \FlushStep
+        \startitem If so, what functionality should be provided. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\stopdocument

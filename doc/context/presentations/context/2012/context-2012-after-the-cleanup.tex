@@ -1,0 +1,162 @@
+\usemodule[present-stepwise,present-bars,abr-01]
+
+\startdocument
+  [title=After the cleanup,
+   color=darkred]
+
+\StartSteps
+
+\startsubject[title=The update]
+
+    \startitemize[packed]
+
+        \startitem The move to \MKIV\ is more than supporting an engine. \stopitem \FlushStep
+        \startitem It is a complete rewrite (pruning, extending, cleaning). \stopitem \FlushStep
+        \startitem Although somewhat crippled by the fact that we want to remain compatible. \stopitem \FlushStep
+        \startitem But sometimes we sacrifice compatibility by getting rid of old stuff. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=The current state]
+
+    \startitemize[packed]
+
+        \startitem A lot of work, more than I had thought, so it takes longer. \stopitem \FlushStep
+        \startitem Most \TEX\ code is done (some structure and column code left). \stopitem \FlushStep
+        \startitem New namespaces and helpers mostly done, but will be checked for constency. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=What is there todo]
+
+    \startitemize[packed]
+
+        \startitem Some code might become generalized (also depends on others). \stopitem \FlushStep
+        \startitem Layer and positioning code might get a more extensive \LUA\ and \XML\ interface. \stopitem \FlushStep
+        \startitem Structure related code will support setups (some already in place). \stopitem \FlushStep
+        \startitem New page builder variants will be explored (anyway more column support and floats). \stopitem \FlushStep
+        \startitem Math domains cq.\ dictionaries (basics already in place, just needs time). \stopitem \FlushStep
+        \startitem Math list optimization (pet project). \stopitem \FlushStep
+        \startitem Generate dependecy trees (easier now) and more consistent code loading order. \stopitem \FlushStep
+        \startitem All error messages needs checking (some gone, some not yet translated). \stopitem \FlushStep
+        \startitem Update all xml definitions (work in progress, also relates to wiki). \stopitem \FlushStep
+        \startitem Optimize positioning system (a bit more powerful now, but also more resources). \stopitem \FlushStep
+        \startitem More support for css like styling (makes it easier to share code). \stopitem \FlushStep
+        \startitem Modules (especially those for tracing) need to be normalized. \stopitem \FlushStep
+        \startitem Some styles (mostly private presentation styles) needs to be fixed. \stopitem \FlushStep
+        \startitem Pick up the \quote {lean and mean} \CONTEXT\ variant project. \stopitem \FlushStep
+        \startitem Now that we have more code isolated, we can define an api. \stopitem \FlushStep
+        \startitem Some manuals need to be updated (most still applies). \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=What I have to keep in mind]
+
+    \startitemize[packed]
+
+        \startitem What is handy for me is not always handy for all users. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=But nevertheless there will be new things]
+
+    \startitemize[packed]
+
+        \startitem Elements of our processing framework will show up in the distribution. \stopitem \FlushStep
+        \startitem It's just more convenient to have one installation for related things. \stopitem \FlushStep
+        \startitem This is also why support for databases has been added recently. \stopitem \FlushStep
+        \startitem Running (blocking) \TEX\ jobs needs special treatment (ticket management). \stopitem \FlushStep
+        \startitem It makes sense to use the well developed \TDS\ infrastructure. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Keep an eye on updates]
+
+    \startitemize[packed]
+
+        \startitem Rewriting the code base leads to bugs but these are often resolved quickly
+                   (indeed by Wolfgang). \stopitem \FlushStep
+        \startitem Following the mailing list helps and nowadays the wiki is adapted close to
+                   realtime (coordinated by Sietse). \stopitem \FlushStep
+        \startitem Changes in standards and related tools are supported and followed by those who
+                   depend on them (ask Peter). \stopitem \FlushStep
+        \startitem Sometimes users have demands and these end up as extensions to existing
+                   mechanisms (Aditya's elastic modules). \stopitem \FlushStep
+        \startitem Issues with platforms are often quickly dealt with (if Luigi doesn't know it
+                   \unknown). \stopitem \FlushStep
+        \startitem And of course I add new things driven by projects, challenges (and an occasional
+                   stack of new \CD's). \stopitem \FlushStep
+        \startitem New releases (and betas) are checked against a growing set of test files (Lukas
+                   mails a report after each update). \stopitem \FlushStep
+    \stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Just ask]
+
+    \startitemize[packed]
+
+        \startitem We started long ago with what ended up as \MKII\ and \MPII. \stopitem \FlushStep
+        \startitem We currently have \MKIV\ and \MPIV. \stopitem \FlushStep
+        \startitem It has some features that we tag as \MKVI. \stopitem \FlushStep
+        \startitem Recently \MKIX\ and \MKXI\ were introduced. \stopitem \FlushStep
+        \blank
+        \startitem Examples: \MKIV, \MKVI, \MKIX, \MKXI \stopitem \FlushStep
+        \blank
+        \startitem So, what should \MKIC\ provide \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=What I'm working on]
+
+    \startitemize[packed]
+
+        \startitem Proper dependency chain so that we can make small dedicated formats. \stopitem \FlushStep
+        \startitem Support for typesetting from databases (text, graphics). \stopitem \FlushStep
+        \startitem Next iteration if (job) tickets processing system cq. framework. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps
+
+% show latest manuals
+
+\stopdocument

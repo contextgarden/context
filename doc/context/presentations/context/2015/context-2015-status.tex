@@ -1,0 +1,87 @@
+\usemodule[present-ovals]
+
+\setupwhitespace
+  [halfline]
+
+\doifelsemode {atpragma} {
+    \usetypescriptfile[ghz]
+    \setupbodyfont[palatino-informal]
+    \setupbodyfont[24pt,ss]
+    \definefont[whatever][file:palatinosansinflcom-med*default at 10pt]
+} {
+    \setupbodyfont[palatino]
+    \setupbodyfont[24pt,ss]
+    \definefont[whatever][Bold*default at 10pt]
+}
+
+\setuplayout[topspace=.10\paperheight]
+
+\definecolor[maincolor][orange]
+%definecolor[othercolor][black]
+
+\startuseMPgraphic{common}
+
+    detailpaths ; % let draw = detaileddraw ;
+
+    drawoptionsfactor := .03bp ;
+
+    drawlineoptions   (withpen pencircle scaled 1.0 drawoptionsfactor withcolor .5white) ;
+    drawpointoptions  (withpen pencircle scaled 4.0 drawoptionsfactor withcolor   white) ;
+    drawcontroloptions(withpen pencircle scaled 2.5 drawoptionsfactor withcolor   white) ;
+    drawpathoptions   (withpen pencircle scaled 5.0 drawoptionsfactor withcolor .8white) ;
+
+    vardef oneliner(expr t, x, y) =
+        outlinetext.b (t) (withcolor .75white) (withcolor .25white) ysized 2cm shifted (x,y)
+    enddef ;
+
+\stopuseMPgraphic
+
+\startuseMPgraphic{whatif}
+    \includeMPgraphic{common}
+    normaldraw oneliner("\whatever \setstrut \strut \ConTeXt", 0mm,  0mm) ;
+    normaldraw oneliner("\whatever \setstrut \strut 2015",    11mm,-20mm) ;
+\stopuseMPgraphic
+
+\startdocument
+
+\startstandardmakeup
+    \scale[width=\textwidth]{\useMPgraphic{whatif}}
+\stopstandardmakeup
+
+\starttexdefinition statusstep #1
+    \startparagraph
+        #1
+    \stopparagraph
+\stoptexdefinition
+
+\starttexdefinition status #1#2
+    \starttitle[title={#1}]
+        \processcommalist[#2]\statusstep
+    \stoptitle
+\stoptexdefinition
+
+\status{fonts}       {new loader, stable interfaces, related mechanisms can be cleaned up, extensions possible}
+\status{hyphenation} {experimental, normalization considered}
+\status{spacing}     {functional stable, maybe some cleanup needed}
+\status{metafun}     {updated tex and backend interface, occasional additions, module for graphs pending}
+\status{math}        {stable, some improvements possible, maybe lua variant (fun project)}
+\status{margins}     {quite okay, right2left adaption in progress}
+\status{structure}   {stable, maybe cleanup}
+\status{conversions} {stable}
+\status{sorting}     {works, extension possible, japanese in progress}
+\status{publications}{getting there, documentation pending}
+\status{color}       {stable}
+\status{backend}     {stable, awaiting some cleanup in engine backend}
+\status{images}      {stable}
+\status{epub}        {always work in progress}
+\status{columns}     {mixed more or less stable, columsets to be redone, better float support needed}
+\status{file io}     {stable}
+\status{tables}      {stable, maybe some xtables extensions}
+\status{verbatim}    {stable, maybe some cleanup}
+\status{xml}         {stable, maybe some more helpers}
+\status{positioning} {okay, optimization possible}
+\status{cldf}        {okay, always more possible}
+\status{layout}      {okay, bidi model neeed}
+\status{scripts}     {work in progress}
+
+\stopdocument

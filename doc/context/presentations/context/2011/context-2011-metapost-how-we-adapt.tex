@@ -1,0 +1,104 @@
+% \enablemode[print]
+
+\usemodule[present-overlap,abr-02]
+
+\startdocument
+  [title=MetaPost,
+   subtitle=how we adapt,
+   location=\ConTeXt\ Meeting 2011]
+
+\Topic{Development Stage}
+
+\StartSteps
+\startitemize
+\startitem we started with simple usage (logos) and \POSTSCRIPT\ output \stopitem \FlushStep
+\startitem then we moved on to conversion to \PDF\ using \TEX\ macro solution \stopitem \FlushStep
+\startitem this has the advantage that fonts are handled by \TEX \stopitem \FlushStep
+\startitem for a long time this was a generic solution (later became the \MKII\ variant) \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Development Stage}
+
+\StartSteps
+\startitemize
+\startitem we added some extensions (transparency, cmyk, etc) and \METAFUN\ showed up \stopitem \FlushStep
+\startitem that extension mechanism uses special colors as signals \stopitem \FlushStep
+\startitem we always collected btex ... etex in order to speed up processing \stopitem \FlushStep
+\startitem in addition we added textext and similar features \stopitem \FlushStep
+\startitem communication between \METAFUN\ and \CONTEXT\ became more advanced over time \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Development Stage}
+
+\StartSteps
+\startitemize
+\startitem when \LUATEX\ showed up a substitution based lua converter was written \stopitem \FlushStep
+\startitem later when \LPEG\ came around an experimental lpeg converter showed up \stopitem \FlushStep
+\startitem some changes were made to textext processing and run management \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Development Stage}
+
+\StartSteps
+\startitemize
+\startitem the arrival of mplib had rather big consequences \stopitem \FlushStep
+\startitem integration of \METAFUN\ became less of a runtime burden \stopitem \FlushStep
+\startitem a more definitive lpeg converter was written \stopitem \FlushStep
+\startitem text handling was kept internal (but still needs two passes) \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Development Stage}
+
+\StartSteps
+\startitemize
+\startitem some extensions were changed to use the new pre/postscripts functionality \stopitem \FlushStep
+\startitem the lpeg converter was adapted accordingly \stopitem \FlushStep
+\startitem multiple (independent) \METAPOST\ instances were now supported \stopitem \FlushStep
+\startitem the chemical code was overhauled and moved to the core \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Development Stage}
+
+\StartSteps
+\startitemize
+\startitem by now all extensions use pre/postscripts \stopitem \FlushStep
+\startitem this made it easier to add more extend functionality \stopitem \FlushStep
+\startitem again the lpeg converter was adapted (simplified) \stopitem \FlushStep
+\startitem it became possible to do some color trickery with text \stopitem \FlushStep
+\startitem but (till now) color spaces are more complex (mp has a mixed model) \stopitem \FlushStep
+\startitem so we might move towards a slightly different approach \stopitem \FlushStep
+\startitem a couple of helpers were added for Mojca (some more will follow) \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Development Stage}
+
+\StartSteps
+\startitemize
+\startitem we're now splitting the code in \MPII\ and \MPIV\ code bases \stopitem \FlushStep
+\startitem from now on the focus will be on \MPIV \stopitem \FlushStep
+\startitem the (rather old) \METAFUN\ code will be cleaned up \stopitem \FlushStep
+\startitem where possible namespaces will be added \stopitem \FlushStep
+\startitem as \METAFUN\ us loaded runtime we see an impact on startup time (quite some files) \stopitem \FlushStep
+\startitem so maybe we will use a packed and/or zipped pseudo format file for faster loading \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Development Stage}
+
+\StartSteps
+\startitemize
+\startitem an overhaul of the flowchart code is on the agenda \stopitem \FlushStep
+\startitem we also want to finish (and cleanup) the chemical related code \stopitem \FlushStep
+\startitem simple data/graphics helpers will be provided (graph replacement) \stopitem \FlushStep
+\startitem and of course we keep moving on (who knows what \METAPOST\ 2 will bring us) \stopitem \FlushStep
+\startitem some examples: tests/mkiv/metapost/plugins-* \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\stopdocument

@@ -1,0 +1,108 @@
+%D \module
+%D   [      file=s-present-phone,
+%D        version=2016.04.20, % or about
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Phone,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The theme of Bacho\TeX\ was \quote {Getting \TEX\ out of the closet}. And, as I'm
+%D always a bit sceptical about efforts to get a specialized toolbox like \TEX\
+%D accepted in a large scale generic user base, I decided to give a talk dedicated
+%D to Jerzy (the always optimistic organizer). (One can actually wonder if \TEX\ was
+%D ever hidden in a closet.) And, because I had to get the attention of some nephew
+%D and nieces I took there I gave the presentation without beamer but on my phone.
+%D On such a device one just swipes but I still added two buttons. Watch the small
+%D full|-|hd|-|ratio paper dimensions and 6 point font size.
+
+\startmodule[s-present-phone]
+
+\setupinteraction
+  [state=start]
+
+\definepapersize
+  [phone]
+  [width=108.0pt,
+   height=192.0pt]
+
+\definelayout
+  [phone]
+  [backspace=3pt,
+   topspace=6pt,
+   bottomspace=3pt,
+   header=0pt,
+   footer=0pt,
+   bottom=10pt,
+   bottomdistance=5pt,
+   height=fit,
+   width=middle]
+
+\setuplayout
+  [phone]
+
+\setuppapersize
+  [phone]
+
+\setupbodyfont
+  [dejavu,ss,6pt]
+
+\setupalign
+  [tolerant,flushleft]
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundcolor=maincolor]
+
+\setupbackgrounds
+  [bottom]
+  [text]
+  [background=color,
+   backgroundcolor=othercolor,
+   backgroundoffset=\backspace]
+
+\definecolor[maincolor] [r=.7,g=.3,b=0]
+\definecolor[othercolor][r=0,g=.3,b=.7]
+
+\setupcolors
+  [textcolor=white]
+
+\setupinteraction
+  [menu=on,
+   color=white,
+   contrastcolor=white]
+
+\setupinteractionmenu
+  [bottom]
+  [state=start,
+   style=\ss\bf]
+
+\setupitemgroup
+  [itemize]
+  [inbetween={\blank[medium]}]
+
+\startinteractionmenu[bottom]
+    \startgot [previouspage] \textminus \stopgot
+    \starttxt \getmarking[section]      \stoptxt
+    \startgot [nextpage]     \textplus  \stopgot
+\stopinteractionmenu
+
+\setuphead
+  [section]
+  [page=yes,
+   before=,
+   after={\blank[disable]},
+   placehead=empty]
+
+\stopmodule
+
+\continueifinputfile{s-present-phone.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{bachotex/2016/bachotex-2016-toolbox.tex}

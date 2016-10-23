@@ -1,0 +1,132 @@
+%D \module
+%D   [      file=s-present-banner,
+%D        version=2016.04.30, % around
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Banner,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style was made for the Bacho\TeX\ 2016 conference. The banner below
+%D the text advances through the title.
+
+\startmodule[present-banner]
+
+\definecolor[maincolor] [b=.65]
+\definecolor[othercolor][s=.35]
+
+\startluacode
+    function mp.Banner(s,mode)
+     -- local r = tex.count.realpageno
+        local r = tex.count.realpageno - 1
+        local n = #s
+        local i = mode and 1 or 0
+        local t = string.gsub(s,".",function(s)
+            if s == " " or i > n then
+                return s
+            elseif i == r then
+                i = i + 1
+                if mode then
+                    return "\\color[othercolor]{" .. s .. "}"
+                else
+                    return "\\maincolor " .. s
+                end
+            else
+                i = i + 1
+                return s
+            end
+        end)
+        mp.quoted(t)
+    end
+\stopluacode
+
+\startuseMPgraphic{page}
+    StartPage ;
+        fill Page withcolor \MPcolor{maincolor} ;
+        draw anchored(image (
+          % draw textext.top (lua.mp.Banner("\documentvariable{title}",true))
+            draw textext.top (lua.mp.Banner("\documentvariable{title}",false))
+                xsized (.9PaperWidth)
+                withcolor white;
+        ), center bottomboundary Page);
+      % fill Field[Text][Text] enlarged 10pt withcolor (\MPcolor{maincolor})/1.5 ;
+        fill Field[Text][Text] enlarged 10pt withcolor .1white ;
+    StopPage ;
+\stopuseMPgraphic
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\defineoverlay
+  [page]
+  [\useMPgraphic{page}]
+
+\setupbodyfont
+  [lucidaot,10pt]
+
+\setuppapersize
+  [S6]
+
+\setuplayout
+  [backspace=30pt,
+   width=middle,
+   height=middle,
+   topspace=30pt,
+   bottomspace=100pt,
+   header=0pt,
+   footer=0pt,
+   margin=0pt]
+
+\setupcolors
+  [textcolor=white]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [chapter]
+  [style=\bfd,
+   after={\blank[big]}]
+
+\setuphead
+  [section]
+  [style=\bfa,
+   before=\blank,
+   after={\blank[medium]}]
+
+\definehighlight[nb][style=bold]
+
+\setupitemgroup[itemize][before=,after=]
+\setupitemgroup[itemize][packed]
+
+\setupdocument
+  [title=Title,
+   subtitle=Subtitle,
+   location=\currentdate]
+
+\startsetups document:start
+
+    \startstandardmakeup
+
+        \raggedcenter
+
+        \dontleavehmode\scale[width=1.00\textwidth]{\documentvariable{title}}    \vfil
+        \dontleavehmode\scale[width=0.75\textwidth]{\documentvariable{subtitle}} \vfil
+        \dontleavehmode\scale[width=0.45\textwidth]{\documentvariable{location}} \vfil
+
+    \stopstandardmakeup
+
+\stopsetups
+
+\stopmodule
+
+\continueifinputfile{s-present-banner.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{bachotex/2016/bachotex-2016-opentype.tex}

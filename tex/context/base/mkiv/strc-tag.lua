@@ -315,7 +315,7 @@ function tags.start(tag,specification)
             metadata = nil
         end
         local userdata = specification.userdata
-        if user ~= "" and type(userdata) == "string"  then
+        if userdata ~= "" and type(userdata) == "string"  then
             specification.userdata = settings_to_hash(userdata)
         end
         local detail = specification.detail

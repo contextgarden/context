@@ -1,0 +1,244 @@
+% \enablemode[print]
+
+\usemodule[present-stepwise,present-tiles,abr-02]
+
+\definecolor[maincolor] [darkgray]
+\definecolor[othercolor][b=.3]
+
+\setupinteractionscreen
+  [option=max]
+
+% \setupalign
+%   [flushleft,tolerant]
+
+\defineframed
+  [conclusion]
+  [location=low,
+   width=max,
+   align=flushleft,
+   background=color,
+   backgroundcolor=white,
+   foregroundcolor=othercolor]
+
+\setupbodyfont[15pt]
+
+\startdocument
+  [title={Math:\\\\progress or standing still},
+  %subtitle={Hans Hagen\\TUG Conference\\October 2013}]
+   subtitle={Hans Hagen\\\ConTeXt\ Meeting\\September 2013}]
+
+\StartSteps \starttopic [title={Math as script}]
+
+    \startitem math can be input using the \TEX\ syntax, \MATHML, calculator like sequences, \unknown \FlushStep \stopitem
+    \startitem but apart from content \MATHML\ all stay close to good old \TEX \FlushStep \stopitem
+    \startitem although not officially a script, \OPENTYPE\ treats it as such, but without control \FlushStep \stopitem
+
+    \blank[2*big]
+
+    \starttyping
+    $ ( (x + 1) / a + 1 )^2  = (x - 1) / b $
+    \stoptyping
+
+    \FlushStep
+
+    \starttyping
+    $ \left( \frac{x + 1}{a}  + 1 \right)^2  = \frac{x - 1}{b} $
+    \stoptyping
+
+    \FlushStep
+
+    \starttyping
+    <mfenced open="(" close = ")">
+      <mfrac>...</mfrac> <mo>+</mo> <mn>1</mn>
+    </mfenced>
+    \stoptyping
+
+    \FlushStep
+
+    \starttyping
+    <mrow>
+      <mo>(</mo> <mfrac>...</mfrac> <mo>+</mo> <mn>1</mn> <mo>)</mo>
+    </mrow>
+    \stoptyping
+
+    \FlushStep
+
+    \vfilll \conclusion{There is recognition of math as a proper (but not standardized) script.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Alphabets}]
+
+    \startitem the shape (style) of a character determines its meaning \FlushStep \stopitem
+    \startitem but in most cases an type {a} is entered as \ASCII\ character \FlushStep \stopitem
+    \startitem and tagged with some rendering directive, often indicating a font style \FlushStep \stopitem
+    \startitem in traditional \TEX\ we have alphabets in different fonts, so we're talking switches \FlushStep \stopitem
+    \startitem in \UNICODE\ and \OPENTYPE\ we have alphabets with standardized code points (but gaps too) \FlushStep \stopitem
+    \startitem this has big advantages for communicating, transferring data etc \FlushStep \stopitem
+    \startitem but a math engine still has to deal with \ASCII\ input as well \FlushStep \stopitem
+    \startitem multiple axis: types, alphabets, styles, variants, shapes, modifiers \FlushStep \stopitem
+
+    \vfilll \conclusion{We're off better but the gaps are an anomality.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Heavy bold}]
+
+    \startitem for titles and captions we might need bolder math \FlushStep \stopitem
+    \startitem bold symbols in math have special meaning \FlushStep \stopitem
+    \startitem so when going full bold they should become heavy \FlushStep \stopitem
+    \startitem heavy math involves boldening everything, including extensibles \FlushStep \stopitem
+    \startitem there are currently no fonts that have such complete heavy companions \FlushStep \stopitem
+
+    \vfilll \conclusion{We need proper bold fonts, but they need to be relatively complete.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Radicals}]
+
+    \startitem this always has been (and still is) a combination of vertical extensibles and horizontal rules \FlushStep \stopitem
+    \startitem it is the only two dimensional extensible so always a bit of an exception \FlushStep \stopitem
+    \startitem in the wide engines we now have more direct support primitive for that (no macro needed) \FlushStep \stopitem
+    \startitem in practice (at least in \MKIV) we still use macros because we want control \FlushStep \stopitem
+
+    \vfilll \conclusion{Native support for radicals is nice to have and makes coding cleaner.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Primes}]
+
+    \startitem this is a special case as we (sort of) have upto two superscripts  \FlushStep \stopitem
+    \startitem and also need to handle an optional subscript of the base symbol \FlushStep \stopitem
+    \startitem and in order to be visually okay, we need to collect multiple primes \FlushStep \stopitem
+    \startitem some fonts have primes raised, some have them flying high \FlushStep \stopitem
+    \startitem maybe at some point the upcoming math pre- and postscripts will help \FlushStep \stopitem
+
+    \vfilll \conclusion{Supporting primes will always be a bit of a pain but I stay on top of it.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Accents}]
+
+    \startitem they can go on top or below one or more characters (also in combination) \FlushStep \stopitem
+    \startitem accents have some hard codes positional properties \FlushStep \stopitem
+    \startitem the wide engines have more direct support for this \FlushStep \stopitem
+    \startitem fonts provide a limited set of sizes, such accents cannot extend (by design) \FlushStep \stopitem
+
+    \vfilll \conclusion{Engine support for accents is better now but maybe fonts need to have more sizes.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Stackers}]
+
+    \startitem arrows (and other horizontal extensibles) traditionally were made from snippets \FlushStep \stopitem
+    \startitem we need them also for chemistry, in rather flexible ways \FlushStep \stopitem
+    \startitem in upcoming math fonts they are become real extensibles \FlushStep \stopitem
+    \startitem but then we still need to deal with existing fonts that lack them (one font in the end) \FlushStep \stopitem
+    \startitem there will be native support for so called character leaders \FlushStep \stopitem
+
+    \vfilll \conclusion{Stackers are more easily implemented although fonts pose some challenges.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Fences}]
+
+    \startitem these go left and right (or in the middle) of things \FlushStep \stopitem
+    \startitem there need to be a matching pair else we get an error \FlushStep \stopitem
+    \startitem they have to adapt their size to what they wrap \FlushStep \stopitem
+    \startitem \TEX ies can take care of that in their input \FlushStep \stopitem
+    \startitem but in for instance \MATHML\ checking all this is a bit of a pain \FlushStep \stopitem
+    \startitem this is still the domain of macros \FlushStep \stopitem
+    \startitem but we could make the engines a bit more tolerant (hard to do) \FlushStep \stopitem
+
+    \vfilll \conclusion{Matching fences will always be a bit of a problem.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Directions}]
+
+    \startitem bidirectional math is mostly a matter of the availability of fonts \FlushStep \stopitem
+    \startitem there need to be some agreement (at the macro package level) of control \FlushStep \stopitem
+    \startitem it's (for me) a visually interesting challenge \FlushStep \stopitem
+    \startitem there are some \TEX ies working on these matters (quite some research is done already) \FlushStep \stopitem
+
+    \vfilll \conclusion{Right to left math will show up thanks to pioneers.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Structure}]
+
+    \startitem demand for tagging also means that we need to carry a bit more info around \FlushStep \stopitem
+    \startitem this puts a little more burden on the user \FlushStep \stopitem
+    \startitem in the end it largely is a macro package issue \FlushStep \stopitem
+    \startitem better tagging of input can also help rendering \FlushStep \stopitem
+    \startitem detailed control at the \TEX\ level makes that users can spoil the game \FlushStep \stopitem
+
+    \vfilll \conclusion{In these times structure gets more important so minimal coding is less an option.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Italic correction}]
+
+    \startitem in traditional \TEX\ fonts this was used for spacing as well as special purposed \FlushStep \stopitem
+    \startitem across fonts there was never much correction \FlushStep \stopitem
+    \startitem \OPENTYPE\ doesn't have this concept \FlushStep \stopitem
+    \startitem \OPENTYPE\ math has some of if but also more powerful kerning \FlushStep \stopitem
+    \startitem generally speaking: we can ignore italic corrections \FlushStep \stopitem
+
+    \vfilll \conclusion{We need to accept that old concepts die and new onces show up.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Big}]
+
+    \startitem normally extensible fences are chosen automatically \FlushStep \stopitem
+    \startitem but macro packages provide tricks to choose a size \FlushStep \stopitem
+    \startitem extensible steps are unpredictable but still several mechanisms can be provided \FlushStep \stopitem
+
+    \vfilll \conclusion{Users will always want control and no engine can provide that but macros can.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Macros}]
+
+    \startitem some special symbols were constructed by macros (and using special font properties) \FlushStep \stopitem
+    \startitem these are mostly gone (the diagonal dots) \FlushStep \stopitem
+    \startitem if it is ever needed again, we should extend the fonts \FlushStep \stopitem
+
+    \vfilll \conclusion{Thanks to new font technologies and wide engines need less dirty tricks.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Unscripting}]
+
+    \startitem you can bet on those funny \UNICODE\ super and subscripts showing up in input \FlushStep \stopitem
+    \startitem it's a somewhat limited and unuseable lot for math (a modifier would have made more sense) \FlushStep \stopitem
+    \startitem it's one of these legacies that we need to deal with \FlushStep \stopitem
+    \startitem so the macro package needs to intercept them and map them onto proper math \FlushStep \stopitem
+
+    \vfilll \conclusion{We always need to deal with weird input, if only because standards lack.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Combining fonts}]
+
+    \startitem we can expect math fonts to be rather complete and if not, one should choose another one \FlushStep \stopitem
+    \startitem but sometimes (for simple math) you want to swap in alphabets and digits that match the text font \FlushStep \stopitem
+    \startitem given that we talk of ranges this is easy to support at the macro package level \FlushStep \stopitem
+
+    \vfilll \conclusion{Although fonts are more complete, occasional combinations should remain possible.} \FlushStep
+
+\stoptopic \StopSteps
+
+\StartSteps \starttopic [title={Tracing}]
+
+    \startitem there are lots of symbols involved \FlushStep \stopitem
+    \startitem and we have those extensibles too \FlushStep \stopitem
+    \startitem the larger the fonts get the more checking we need to do \FlushStep \stopitem
+    \startitem so macro packages need to provide some tracing options (or tables in print) \FlushStep \stopitem
+
+    \vfilll \conclusion{We keep an eye on things.} \FlushStep
+
+\stoptopic \StopSteps
+
+\stopdocument

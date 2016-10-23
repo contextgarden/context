@@ -1,0 +1,296 @@
+\usemodule[present-stepwise,present-bars,abr-01]
+
+\startdocument
+  [title=Visual debugging,
+   color=darkmagenta]
+
+\StartSteps
+
+\startsubject[title=How it started]
+
+    \startitemize[packed]
+
+        \startitem Some 15 years ago I wanted some more feedback. \stopitem \FlushStep
+        \startitem So I figured out a way to visualize boxes, kerns, glue, etc. \stopitem \FlushStep
+        \startitem Some aspects were tricky, like stretch and shrink (no \ETEX\ yet), fillers, leaders, etc. \stopitem \FlushStep
+        \startitem I gave some presentations and it was nice to see the puzzled faces. \stopitem \FlushStep
+        \startitem As unboxing does not work, it is somewhat interfering. \stopitem \FlushStep
+        \startitem When not enabed there is no overhead but we did disable it at some places. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=Do we need it]
+
+    \startitemize[packed]
+
+        \startitem I wonder if anyone ever used it. \stopitem \FlushStep
+        \startitem Some of the helpers are quite handy, like \type {\ruledhbox}. \stopitem \FlushStep
+        \startitem So these had to be provided anyway, so: where to stop? \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps \page \StartSteps
+
+\startsubject[title=All kind of debugging]
+
+    \startitemize[packed]
+
+        \startitem We have more debugging, much shows up when writing new code. \stopitem \FlushStep
+        \startitem Think of fonts, math, graphics, characters, etc. \stopitem \FlushStep
+        \startitem Some make no sense in \MKIV, so they're gone, but new ones show up. \stopitem \FlushStep
+        \startitem In due time this will all be normalized (as most lives in modules). \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps \page \StartSteps
+
+\startsubject[title=Why we kept it]
+
+    \startitemize[packed]
+
+        \startitem When cleaning up the code I had to decide to keep it or redo it as it could be done \MKIV-ish. \stopitem \FlushStep
+        \startitem But as we already had some \LUA\ based extras it made sense to redo it. \stopitem \FlushStep
+        \startitem The old code is still there as module (also because it had some more funstuff). \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=How it worked]
+
+    \startitemize[packed]
+
+        \startitem In \MKII\ primitives are overloaded. \stopitem \FlushStep
+        \startitem So effectively, when enabled, \type {\hbox} cum suis become macros. \stopitem \FlushStep
+        \startitem We use rules (and leaders) to visualize properties. \stopitem \FlushStep
+        \startitem Some constructs interfere so we need to compensate side effects. \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps \page \StartSteps
+
+\startsubject[title=How it works]
+
+    \startitemize[packed]
+
+        \startitem The basics were a rather trivial quick job as we had a lot in place already. \stopitem \FlushStep
+        \startitem Interpreting the node list and injecting visualizers. \stopitem \FlushStep
+        \startitem We use colors, rules and text but much can be overlayed. \stopitem \FlushStep
+        \startitem Control over what gets visualized at the \TEX\ end. \stopitem \FlushStep
+        \startitem Control over what gets shown by using layers. \stopitem \FlushStep
+        \startitem As usual most time went into visualization choices and optimzation. \stopitem \FlushStep
+        \startitem Some visualizers interfered with (hardcoded) expectations in the backend. \stopitem \FlushStep
+        \startitem When I decided to use layers I had to adapt some oter code (mostly out of efficiency). \stopitem \FlushStep
+        \startitem There is room for more (but first I want the bitlib of \LUA\ 5.2). \stopitem \FlushStep
+
+    \stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\defineoverlay[invoke][\overlaybutton{NextPage}]
+
+\defineframed
+  [MyFramed]
+  [background=color,
+   backgroundcolor=yellow,
+   offset=overlay,
+   frame=off]
+
+\startbuffer
+\ruledhbox{j}
+\ruledhbox{jj}
+\ruledhbox{jjj}
+\ruledhbox{jjjj}
+\ruledhbox{jjjjj}
+\stopbuffer
+
+\startsubject[title=Details 1]
+
+    \scale[width=\textwidth]{\MyFramed \bgroup
+         {\getbuffer}\removeunwantedspaces
+    \egroup}
+
+    \typebuffer
+
+\stopsubject
+
+\page
+
+\startbuffer
+\ruledhbox{take boxes}
+\stopbuffer
+
+\startsubject[title=Details 2a]
+
+    \scale[width=\textwidth]{\MyFramed \bgroup
+         {\getbuffer}\removeunwantedspaces
+    \egroup}
+
+    \typebuffer
+
+\stopsubject
+
+\page
+
+\startbuffer
+\ruledhbox{some depth too}
+\stopbuffer
+
+\startsubject[title=Details 2b]
+
+    \scale[width=\textwidth]{\MyFramed \bgroup
+         {\getbuffer}\removeunwantedspaces
+    \egroup}
+
+    \typebuffer
+
+\stopsubject
+
+\page
+
+\startbuffer
+\showmakeup \hbox{again an hbox}
+\stopbuffer
+
+\startsubject[title=Details 3a]
+
+    \scale[width=\textwidth]{\MyFramed \bgroup
+         {\getbuffer}\removeunwantedspaces
+    \egroup}
+
+    \typebuffer
+
+\stopsubject
+
+\page
+
+\startbuffer
+\ruledvtop{\ruledvbox{\ruledhbox{multiple boxes}}}
+\stopbuffer
+
+\startsubject[title=Details 3b]
+
+    \scale[width=\textwidth]{\MyFramed \bgroup
+         {\getbuffer}\removeunwantedspaces
+    \egroup}
+
+    \typebuffer
+
+\stopsubject
+
+\page
+
+\startbuffer
+\showmakeup \hbox{multiple boxes}
+\stopbuffer
+
+\startsubject[title=Details 3c]
+
+    \scale[width=\textwidth]{\MyFramed \bgroup
+        \hskip.5em
+         {\getbuffer}\removeunwantedspaces
+        \hskip.5em
+    \egroup}
+
+    \typebuffer
+
+\stopsubject
+
+\page
+
+\startbuffer
+\showmakeup \vbox{\hbox{multiple boxes}}
+\stopbuffer
+
+\startsubject[title=Details 3c]
+
+    \scale[width=\textwidth]{\MyFramed \bgroup
+        \hskip.5em
+         {\getbuffer}\removeunwantedspaces
+        \hskip.5em
+    \egroup}
+
+    \typebuffer
+
+\stopsubject
+
+\page
+
+\startbuffer
+\showmakeup \vtop{\vbox{\hbox{multiple boxes}}}
+\stopbuffer
+
+\startsubject[title=Details 3d]
+
+    \scale[width=\textwidth]{\MyFramed \bgroup
+        \hskip.5em
+         {\getbuffer}\removeunwantedspaces
+        \hskip.5em
+    \egroup}
+
+    \typebuffer
+
+\stopsubject
+
+\page
+
+\startbuffer
+\showstruts why \strut use \strut's
+\stopbuffer
+
+\startsubject[title=Details 4]
+
+    \scale[width=\textwidth]{\MyFramed \bgroup
+         {\getbuffer}\removeunwantedspaces
+    \egroup}
+
+    \typebuffer
+
+\stopsubject
+
+\page
+
+\startbuffer
+\showglyphs glyphs
+\stopbuffer
+
+\startsubject[title=Details 5]
+
+    \scale[width=\textwidth]{\MyFramed \bgroup
+         {\getbuffer}\removeunwantedspaces
+    \egroup}
+
+    \typebuffer
+
+\stopsubject
+\page
+
+\startbuffer
+\enabletrackers[visualizers.whatsit]glyphs \righttoleft glyphs
+\stopbuffer
+
+\startsubject[title=Details 6]
+
+    \scale[width=\textwidth]{\MyFramed \bgroup
+         \hskip.75em
+         {\getbuffer}\removeunwantedspaces
+         \hskip.75em
+    \egroup}
+
+    \typebuffer
+
+\stopsubject
+
+\stopdocument

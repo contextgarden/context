@@ -1,0 +1,67 @@
+\usemodule[present-overlap,abr-02]
+
+\startdocument
+  [title=MathML,
+   subtitle=or math in general,
+   location=\ConTeXt\ Meeting 2011]
+
+\Topic{Some developments}
+
+\StartSteps
+\startitemize
+\startitem \MATHML\ started as an interchange format on the one hand (content) \stopitem \FlushStep
+\startitem but also provides a rendering variant (presentation) \stopitem \FlushStep
+\startitem and in the meantime has been merged with what is called open math \stopitem \FlushStep
+\startitem we now have \MATHML\ 3 and \CONTEXT\ has been updated a while ago to support this \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Some history}
+
+\StartSteps
+\startitemize
+\startitem we supported \MATHML\ right from the start \stopitem \FlushStep
+\startitem in \MKII\ quite some data juggling takes place because we need to do some analysis \stopitem \FlushStep
+\startitem the \MKII\ code has been upgraded a few times but is now frozen \stopitem \FlushStep
+\startitem in \MKIV\ we have rewritten all code using the first version of the new \XML\ parser \stopitem \FlushStep
+\startitem it currently is a mixture of \LUA, \TEX\ and \METAPOST \stopitem \FlushStep
+\startitem there will probably be a partial rewrite some day in the future \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{\UNICODE}
+
+\StartSteps
+\startitemize
+\startitem in the meantime \UNICODE\ has been extended with math  \stopitem \FlushStep
+\startitem in the past in \MATHML\ special characters and symbols were accessed by entity \stopitem \FlushStep
+\startitem but now we can exclusively use \UNICODE\ characters and forget about the entities \stopitem \FlushStep
+\startitem no matter what, we do need to do some analysis on the content of (presentation) elements \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Rendering}
+
+\StartSteps
+\startitemize
+\startitem we still provide rendering options as there might be (cultural) differences \stopitem \FlushStep
+\startitem in both marks we just need to load the module \stopitem \FlushStep
+\startitem in \MKIV\ you need a reasonable namespace directive \stopitem \FlushStep
+\startitem content markup can give better results than presentation markup \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\Topic{Consequences}
+
+\StartSteps
+\startitemize
+\startitem we already use a database or definitions \stopitem \FlushStep
+\startitem we won't go the (somewhat extreme) route of more commands \stopitem \FlushStep
+\startitem we're working on a subsystem for field driven rendering \stopitem \FlushStep
+\startitem bidirectional math already works but will be integrated in the layout model \stopitem \FlushStep
+\startitem cultural specific solutions are possible (we already provide language specific functions) \stopitem \FlushStep
+\startitem more information is carried around (for rendering as well as export), for instance functions \stopitem \FlushStep
+\stopitemize
+\StopSteps
+
+\stopdocument

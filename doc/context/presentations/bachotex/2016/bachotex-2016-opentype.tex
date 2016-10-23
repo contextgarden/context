@@ -1,0 +1,631 @@
+\usemodule[present-banner]
+
+\startdocument
+  [title={OPENTYPE FONTS},
+   subtitle={the generic loader},
+   location={Hans Hagen \endash\ bacho\TeX\ 2016}]
+
+\starttitle[title={how engines sees a font}]
+
+\startsubject[title={\TeX}]
+
+    \highlight [nb] {fields:} width, height, depth, italic correction, kern table,
+    ligature tree, vf commands, next size pointer, extensible specification
+    \highlight [nb] {and} a set of text and math parameters
+
+\stopsubject
+
+\startsubject[title={\pdfTeX}]
+
+    \highlight [nb] {extra fields:} left protruding, right protruding, expansion
+    factor \highlight [nb] {and} parameters to control these
+
+\stopsubject
+
+\startsubject[title={\LuaTeX}]
+
+    \highlight [nb] {extra fields:} math top accent, math bot accent, tounicode,
+    adapted extensible specification, vertical variants, horizontal variants,
+    name, index, used status, math kerns \highlight [nb] {and} extra parameters
+    \highlight [nb] {and} math constants \highlight [nb] {and} no 8~bit
+    limitations
+
+\stopsubject
+
+\startsubject[title={\XeTeX}]
+
+    probably something similar
+
+\stopsubject
+
+\stoptitle
+
+\starttitle[title={font handling}]
+
+\startsubject[title={loading opentype font data}]
+
+    \startitemize
+        \startitem
+            till recently we used the built|-|in fontforge loader library
+        \stopitem
+        \startitem
+            but now we use a recently written \Lua\ loader
+        \stopitem
+        \startitem
+            but use a similar feature handler
+        \stopitem
+        \startitem
+            in \ConTeXt\ one can fall back to the old loader/handler
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title={applying (opentype) features}]
+
+    \highlight [nb] {generic modes:} base, node \crlf
+    \highlight [nb] {\ConTeXt\ modes:} base, node, auto, dynamic
+
+\stopsubject
+
+\startsubject[title={locating (opentype) fonts}]
+
+    \startitemize
+        \startitem
+            \highlight [nb] {file}: kpse in generic, resolvers in \ConTeXt
+        \stopitem
+        \startitem
+            \highlight [nb] {name}: simple in generic, extended in \ConTeXt,
+            different in \LaTeX
+        \stopitem
+        \startitem
+            \highlight [nb] {spec}: not in generic (uses font database)
+        \stopitem
+        \startitem
+            \highlight [nb] {virtual}: not in generic
+        \stopitem
+        \startitem
+            \highlight [nb] {lua}: delegated to low level interfaces
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\stoptitle
+
+\starttitle[title={preparations}]
+
+\startsubject[title={after loading}]
+
+    \startitemize
+        \startitem
+            initialize format driven substitution
+        \stopitem
+        \startitem
+            initialize format driven positioning
+        \stopitem
+        \startitem
+            enable analysis of states/properties
+        \stopitem
+        \startitem
+            initialize additional data for engine (protrusion, expansion, extend,
+            slant)
+        \stopitem
+        \startitem
+            apply user or \TeX\ format extensions
+        \stopitem
+        \startitem
+            apply manipulations before and after loading
+        \stopitem
+        \startitem
+            (build virtual fonts)
+        \stopitem
+        \startitem
+            enable special script handlers (fuzzy side of opentype)
+        \stopitem
+        \startitem
+            pass metrics and some metadata to \TeX
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title={benefit}]
+
+    efficient access to all font properties for additional processing beforehand
+    or afterwards
+
+\stopsubject
+
+\stoptitle
+
+\starttitle[title={processing}]
+
+\startsubject[title={steps}]
+
+    \startitemize
+        \startitem
+            (comes after hyphenation)
+        \stopitem
+        \startitem
+            first identifies to be handled modes
+        \stopitem
+        \startitem
+            normalization (in \ConTeXt) node list
+        \stopitem
+        \startitem
+            delegate handling to \TeX\ or \Lua
+        \stopitem
+        \startitem
+            when using \Lua\ features are applied in prescribed order:
+            substitution, positioning, etc.
+        \stopitem
+        \startitem
+            as last step positioning is finalized (left/right kern injection,
+            space kerning, anchoring, cursives)
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title={remarks}]
+
+    \startitemize
+        \startitem
+            efficient contextual analysis is|-|non trivial
+        \stopitem
+        \startitem
+            discretionaries need special care: ...pre ...replace... post...
+        \stopitem
+        \startitem
+            there is no real limit in extensions
+        \stopitem
+        \startitem
+            it's not too hard to inject experimental code
+        \stopitem
+        \startitem
+            so users can add their own features
+        \stopitem
+        \startitem
+            some day there may be alternative handlers
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\stoptitle
+
+\starttitle[title={math}]
+
+\startsubject[title={format}]
+
+    the opentype math specification stays close to \TeX, but has extensions and
+    more control (see articles & presentations by Ulrik Vieth)
+
+\stopsubject
+
+\startsubject[title={loading}]
+
+    \startitemize
+        \startitem
+            maps more or less directly onto internal structures
+        \stopitem
+        \startitem
+            in \ConTeXt\ we use(d) virtual unicode fonts awaiting lm/gyre
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title={processing}]
+
+    character mapping and special element handling remains macro package
+    dependent
+
+\stopsubject
+
+\startsubject[title={construction}]
+
+    \startitemize
+        \startitem
+            we split code paths when needed: traditional or opentype (no longer
+            heuristics)
+        \stopitem
+        \startitem
+            the \luaTeX\ engine provides much control over spacing and a bit more
+            over rendering
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\stoptitle
+
+\starttitle[title={the basics of loading}]
+
+\startsubject[title={the format}]
+
+    \startitemize
+        \startitem
+            it evolved out of competing formats by apple, microsoft and adobe
+        \stopitem
+        \startitem
+            two flavours can normally be recognized by suffix: \type {ttf} and
+            \type {otf}
+        \stopitem
+        \startitem
+            main differences are bounding box info, global kern tables, cubic vs
+            quadratic curves
+        \stopitem
+        \startitem
+            multiple sub fonts inside \type {ttc} files (font collections)
+        \stopitem
+        \startitem
+            it's considered a standard (so it should be possible to implement)
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title={the specification}]
+
+    \startitemize
+        \startitem
+            the only useable reference is on the microsoft website
+        \stopitem
+        \startitem
+            (the iso mpeg standard is more or less a bunch of ugly rendered
+            webpages)
+        \stopitem
+        \startitem
+            trial and error helps understanding/identifying fuzzy aspects
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\stoptitle
+
+\starttitle[title={the available loaders}]
+
+\startsubject[title={the fontforge loader}]
+
+    \startitemize
+        \startitem
+            offers the same view on the font as the editor (good for debugging)
+        \stopitem
+        \startitem
+            in order to process a font some optimal data structures are created
+            after loading
+        \stopitem
+        \startitem
+            we cache fonts because loading and creating these structures takes
+            time and it saves memory too
+        \stopitem
+        \startitem
+            fontforge has a lot of heuristics (catching issues collected over
+            time) but these are hard to get rid of when they're wrong
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title={the lua loader}]
+
+    \startitemize
+        \startitem
+            this started out as experiment for loading outlines in \MetaFun
+        \stopitem
+        \startitem
+            it avoids the conversion to optimal structures for handling
+        \stopitem
+        \startitem
+            we can hook in better heuristics (data is more raw)
+        \stopitem
+        \startitem
+            it fits in the wish for maximum flexibility (next stage \ConTeXt)
+        \stopitem
+        \startitem
+            it's rather trivial to extend and adapt without hard coding
+        \stopitem
+        \startitem
+            the performance can be a bit less on initial loading (pre|-|cache)
+            but there is a bit of room to improve
+        \stopitem
+        \startitem
+            it's much more efficient in identifying fonts (not a real issue in
+            practice)
+        \stopitem
+        \startitem
+            in practice most fonts behave ok (no recovery needed) but there are
+            some sloppy fonts around
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\stoptitle
+
+\starttitle[title={what do we load}]
+
+\startsubject[title={tables}]
+
+    \startitemize
+        \startitem
+            opentype is mostly tables with lots of subtables
+        \stopitem
+        \startitem
+            there are required, truetype outline, postscript outline, (svg and
+            bitmap), typography & additional ones
+        \stopitem
+        \startitem
+            the typographic tables specify transformations to apply (gdef, gsub,
+            gpos)
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title={calculations}]
+
+    \startitemize
+        \startitem
+            as we need ht/dp we need to calculate the boundingbox of postscript
+            outlines (cff parser)
+        \stopitem
+        \startitem
+            internally we use unicodes instead of indices
+        \stopitem
+        \startitem
+            we need to identify/filter the right unicode information
+        \stopitem
+        \startitem
+            we want to do more so we need to carry around more info (tounicode etc)
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title={pitfalls}]
+
+    \startitemize
+        \startitem
+            there is no real consistent approach to use of basic features:
+            single, one to multiple, multiple to one & many to many replacements,
+            and look ahead and/or back based solutions
+        \stopitem
+        \startitem
+            in principle consistent families like lm/gyre could share common data
+            and logic but otherwise there is much diversity around
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\stoptitle
+
+\starttitle[title={a few details}]
+
+\startsubject[title={loading}]
+
+    \startitemize
+        \startitem
+            load the file (subfont if needed) in a \Lua\ friendly format
+        \stopitem
+        \startitem
+            prepare for later processing and/or access
+        \stopitem
+        \startitem
+            optimize data structures
+        \stopitem
+        \startitem
+            cache the instance (and compile to bytecode)
+        \stopitem
+        \startitem
+            share loaded font data where possible
+        \stopitem
+        \startitem
+            initialize & mark enabled features
+        \stopitem
+        \startitem
+            pass metrics, parameters and some properties to \TeX
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title={processing}]
+
+    \startitemize
+        \startitem
+            we need to run over enabled features (also virtual non|-|opentype
+            ones)
+        \stopitem
+        \startitem
+            we use lookup hashes to determine if action is needed
+        \stopitem
+        \startitem
+            if needed we access detailed data and apply it
+        \stopitem
+        \startitem
+            there can be a few but also many hundreds of loops over the node list
+        \stopitem
+        \startitem
+            contextual matching can make us end up with a real lot of access and
+            analysis
+        \stopitem
+        \startitem
+            descending into discretionaries adds significant overhead (so it's
+            optimized)
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\stoptitle
+
+\starttitle[title={traditional fonts}]
+
+\startsubject[title={tfm}]
+
+    \startitemize
+        \startitem
+            there is a built|-|in loader for \type {tfm}, \type {ofm}, \type {vf}
+            and \type {ovf} files
+        \stopitem
+        \startitem
+            encoding and filename mapping is as usual (\type {enc} and \type
+            {map} files)
+        \stopitem
+        \startitem
+            (in the early days \ConTeXt\ filtered info from those \type {enc}
+            files too)
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title={type one}]
+
+    \startitemize
+        \startitem
+            type one fonts have their own loader that gets information from \type
+            {afm} files
+        \stopitem
+        \startitem
+            the \type {pfb} file is consulted to get the index (to unicode)
+            mapping
+        \stopitem
+        \startitem
+            the \type {afm} loader was already written in \Lua\ but we now can also use
+            \Lua\ for the \type {pfb} file
+        \stopitem
+    \stopitemize
+
+\stopsubject
+
+\stoptitle
+
+\starttitle[title={remarks}]
+
+    \startitemize
+        \startitem
+            features like additional character kerning don't belong in the font
+            handler as they are (to some extent) macro package dependant
+        \stopitem
+        \startitem
+            the same is true for italic correction (often input related and
+            therefore a macro package specific issue)
+        \stopitem
+        \startitem
+            setting up protrusion and expansion is again somewhat macro package
+            dependent
+        \stopitem
+        \startitem
+            \ConTeXt\ has many extra font related mechanisms and features
+            (described in a more technical manual)
+        \stopitem
+        \blank
+        \startitem
+            this has to work well with the core subsystems: languages especially
+            hyphenators, specific script demands, typesetting (all kind), builders
+            (paragraph, page), etc.
+        \stopitem
+        \startitem
+            a complication is that we do this more and more in \Lua, but still need to
+            support the built|-|in mechanismsm too
+        \stopitem
+        \blank
+        \startitem
+            the interfacing to macro packages differs (for plain \TeX\ we use
+            code that ships with \ConTeXt)
+        \stopitem
+        \startitem
+            for bugs and issues of with fonts in \ConTeXt\ you use its mailing list (or
+            mail me)
+        \stopitem
+        \startitem
+            the \LaTeX\ interface is handled by Philipp Gesang
+    \stopitemize
+
+\stoptitle
+
+\starttitle[title={future}]
+
+    \startitemize
+        \startitem
+            we'll improve handling of border cases (within the constraints of
+            performance)
+        \stopitem
+        \startitem
+            we might provide a few more hooks for plug|-|ins
+        \stopitem
+        \startitem
+            the type one \type {pfb} reader will be extended to provide outlines
+            (not complex, needed for \MetaFun)
+        \stopitem
+        \startitem
+            we keep playing with extra new features and virtual fonts
+        \stopitem
+        \blank
+        \startitem
+            maybe some more code can be made generic (fwiw)
+        \stopitem
+    \stopitemize
+
+\stoptitle
+
+\starttitle[title={credits}]
+
+    \startitemize
+        \startitem
+            Kai Eigner and Ivo Geradts for (experimental) patches in the handlers
+            for rare, complex & creepy fonts
+        \stopitem
+        \startitem
+            Philipp Gesang for binding the generic code to \LaTeX\ font mechanims.
+        \stopitem
+        \startitem
+            Idris Samawi Hamid for testing and providing the very complex and
+            demanding Husayni font
+        \stopitem
+        \startitem
+            Hartmut Henkel for the initial cleaning up of expansion and protrusion
+        \stopitem
+        \startitem
+            Taco Hoekwater for the original loader and discussions and a lot more
+        \stopitem
+        \startitem
+            Boguslaw Jackowski and friends for the fonts and patience with us
+        \stopitem
+        \startitem
+            Dohyun Kim for testing and suggestions on CJK font support
+        \stopitem
+        \startitem
+            Mojca Miklavec for distributions, managing us, and basically everything
+        \stopitem
+        \startitem
+            Luigi Scarso for patiently testing and managing my patches and testing
+            very beta code
+        \stopitem
+        \startitem
+            Thomas Schmitz for using betas in deadline critital book production
+            and making sure we patch fast
+        \stopitem
+        \startitem
+            Ton Otten for permitting me to work on all this \TeX\ related stuff for
+            ever and ever (and using to the extreme)
+        \stopitem
+        \startitem
+            Wolfgang Schuster for knowing and testing every detail of \ConTeXt\
+            and writing selectfont (for system fonts)
+        \stopitem
+        \blank
+        \startitem
+            and all (\ConTeXt) users who patiently accept betas and testing
+        \stopitem
+    \stopitemize
+
+\stoptitle
+
+\stopdocument

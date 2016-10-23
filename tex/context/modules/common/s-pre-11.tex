@@ -57,7 +57,7 @@
    \dorecurse{\CurrentMaxItem}
      {\startMPdrawing
         initialize_box(\MPpos{item-\realfolio-\recurselevel}) ;
-        linewidth := .25cm ; 
+        linewidth := .25cm ;
         q[\recurselevel] := tensecircle (wxy,hxy,linewidth) shifted cxy ;
         fill q[\recurselevel] withcolor .9white  ;
         pickup pencircle scaled linewidth ;
@@ -69,20 +69,20 @@
       \stopMPdrawing}%
    \dostepwiserecurse{2}{\CurrentTopic}{1}
      {\startMPdrawing
-        draw 
-          rt  point 3 of p[\recurselevel-1] -- 
-          lft point 7 of p[\recurselevel]  
-          withcolor \MPcolor{ArrowColor} ; 
+        draw
+          rt  point 3 of p[\recurselevel-1] --
+          lft point 7 of p[\recurselevel]
+          withcolor \MPcolor{ArrowColor} ;
       \stopMPdrawing}%
    \dostepwiserecurse{2}{\CurrentMaxItem}{1}
      {\startMPdrawing
-        draw 
-          bot point 9 of q[\recurselevel-1] -- 
-          top point 5 of q[\recurselevel]  
-          withcolor \MPcolor{ArrowColor} ; 
+        draw
+          bot point 9 of q[\recurselevel-1] --
+          top point 5 of q[\recurselevel]
+          withcolor \MPcolor{ArrowColor} ;
       \stopMPdrawing}%
    \startMPdrawing
-     draw Page 
+     draw Page
        withpen pencircle scaled .5cm
        withcolor \MPcolor{EdgeColor} ;
      StopPage ;
@@ -139,7 +139,7 @@
   {\startstandardmakeup
    \dontcomplain
    \vskip.875cm
-   \hbox to \makeupwidth 
+   \hbox to \makeupwidth
      {\hfill
       \dorecurse{\CurrentTopic}
         {\edef\Topic{topic-\realfolio-\recurselevel}%
@@ -156,7 +156,7 @@
    \vfilll
    \dorecurse{\CurrentMaxItem}
      {\edef\Item{item-\realfolio-\recurselevel}
-      \hbox to \makeupwidth 
+      \hbox to \makeupwidth
         {\hfill
          \hpos
            {\Item}
@@ -179,42 +179,42 @@
 
 \doifnotmode{demo}{\endinput}
 
-\starttext 
+\starttext
 
-\StartIdea 
+\StartIdea
   \StartTopic
      A Nice Idea
   \StopTopic
-  \StartItem 
+  \StartItem
     \input reich \relax
-  \StopItem 
-  \StartItem 
+  \StopItem
+  \StartItem
     \input reich \relax
-  \StopItem 
-  \StartItem 
+  \StopItem
+  \StartItem
     \input reich \relax
-  \StopItem 
+  \StopItem
 \StopIdea
 
-\StartIdea 
+\StartIdea
   \StartTopic
      One More Nice Idea
   \StopTopic
-  \StartItem 
+  \StartItem
     \input reich \relax
-  \StopItem 
-  \StartItem 
+  \StopItem
+  \StartItem
     \input reich \relax
-  \StopItem 
+  \StopItem
 \StopIdea
 
-\StartIdea 
+\StartIdea
   \StartTopic
      The Last Idea
   \StopTopic
-  \StartItem 
+  \StartItem
     \input tufte \relax
-  \StopItem 
+  \StopItem
 \StopIdea
 
-\stoptext 
+\stoptext

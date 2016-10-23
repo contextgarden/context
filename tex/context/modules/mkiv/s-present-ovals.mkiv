@@ -1,0 +1,94 @@
+%D \module
+%D   [      file=s-present-ovals,
+%D        version=2015.04.20,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Ovals,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style was made for some of the font and language related presentations at
+%D Bacho\TeX\ 2015. It's a bit boring but it suits simple presentations. It provides
+%D no structure as each page content is kind of special.
+
+\startmodule[s-present-ovals]
+
+\setuppapersize[S6]
+
+\definecolor[maincolor] [darkred]
+\definecolor[othercolor][maincolor]
+
+\startuseMPgraphic{page}
+
+    fill Page enlarged 2mm withcolor .5[white,\MPcolor{othercolor}] ;
+
+    if NOfPages > 1 :
+
+        numeric PageFraction ; PageFraction := (RealPageNumber-1) / (NOfPages-1) ;
+        numeric WidthDelta   ; WidthDelta   := 2 * PaperWidth  / 10 ;
+        numeric HeightDelta  ; HeightDelta  := 2 * PaperHeight / 10 ;
+        numeric WidthOffset  ; WidthOffset  := WidthDelta  + PageFraction*(PaperWidth  - 2WidthDelta ) ;
+        numeric HeightOffset ; HeightOffset := HeightDelta + PageFraction*(PaperHeight - 2HeightDelta) ;
+
+        fill
+            (ulcorner Page) shifted (WidthOffset,0)   ..
+            (urcorner Page) shifted (0,-HeightOffset) ..
+            (lrcorner Page) shifted (-WidthOffset,0)  ..
+            (llcorner Page) shifted (0,HeightOffset)  ..
+            cycle withcolor \MPcolor{maincolor} ;
+
+        clip currentpicture to Page ;
+
+    fi ;
+
+\stopuseMPgraphic
+
+% e-mess has always been okay by definition which makes it easier to blame generators
+
+\defineoverlay
+  [page]
+  [\useMPgraphic{page}]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\setupalign
+  [middle,broad]
+
+\setupcolors
+  [textcolor=white]
+
+\setupbodyfont
+  [pagella,17.3pt]
+
+\setuplayout
+  [height=middle,
+   width=middle,
+   topspace=.05\paperheight,
+   backspace=.15\paperwidth,
+   header=0pt,
+   footer=0pt]
+
+\setupwhitespace
+  [line]
+
+\setuphead
+  [title]
+  [style=\bfb,
+   alternative=middle,
+   before=,
+   number=no]
+
+\stopmodule
+
+\continueifinputfile{s-present-ovals.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{bachotex/2015/bachotex-2015-ligatures.tex}
+%inputpresentationfile{bachotex/2015/context-2015-status.tex}

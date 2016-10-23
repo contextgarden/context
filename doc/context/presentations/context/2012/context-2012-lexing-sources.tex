@@ -1,0 +1,81 @@
+\usemodule[present-stepwise,present-bars,abr-01]
+
+\definecolor[verydark][s=.2]
+
+\startdocument
+  [title=Lexing sources,
+   color=verydark]
+
+\StartSteps
+
+\startsubject[title=What is lexing]
+
+    \startitemize[packed]
+    \startitem Computer languages have mandate structure. \stopitem \FlushStep
+    \startitem You can avoid errors by checking the input. \stopitem \FlushStep
+    \startitem Editors can help by coloring reserved words, concept etc. \stopitem \FlushStep
+    \startitem Consistency in coloring different languages makes sense. \stopitem \FlushStep
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=When did we start]
+
+    \startitemize[packed]
+    \startitem We wrote our first editor begin 90's. \stopitem \FlushStep
+    \startitem An extension quickly followed when we moved to \TEX: \TEXEDIT. \stopitem \FlushStep
+    \startitem When \MODULA\ was no longer fashion we moved on to \PERL: \TEXWORK\ (quick demo) \stopitem \FlushStep
+    \startitem When we ran into \SCITE\ we start using that. \stopitem \FlushStep
+    \startitem I provided syntax highlighting for \TEX\ and \METAPOST\ (support for multiple formats etc.). \stopitem \FlushStep
+    \stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=Side effect of \MKIV]
+
+    \startitemize[packed]
+    \startitem \SCITE\ got \LPEG\ based lexing (external lexing). \stopitem \FlushStep
+    \startitem I already had already written some lexers for the pretty printers. \stopitem \FlushStep
+    \startitem So I gave it a go and made some more advanced lexers. \stopitem \FlushStep
+    \startitem These ship with \CONTEXT: \TEX, \XML, \PDF, \LUA, \CLD, \METAPOST, text. \stopitem \FlushStep
+    \stopitemize
+
+\stopsubject
+
+\startsubject[title=Characteristics]
+
+    \startitemize[packed]
+    \startitem The \TEX\ lexer supports nested lexing of \LUA\ and \METAPOST. \stopitem \FlushStep
+    \startitem Integrated spell checking is provided. \stopitem \FlushStep
+    \startitem Unfortunately there is no lexing for \SCITE\ on \MACOSX\ (not that I care too much nowadays). \stopitem \FlushStep
+    \startitem It is a pitty that we have no access to \SCITE\ internal as with the regular \LUA\ interface. \stopitem \FlushStep
+    \startitem On my good old machine huge files lex somewhat slow (at the end). \stopitem \FlushStep
+    \stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\page
+
+\StartSteps
+
+\startsubject[title=The future]
+
+    \startitemize[packed]
+    \startitem I will improve the current lexers. \stopitem \FlushStep
+    \startitem An \SQL\ lexer will be added at some point \stopitem \FlushStep
+    \startitem I might make an \HTML/\CSS\ variant that supports nexted \LMX. \stopitem \FlushStep
+    \stopitemize
+
+\stopsubject
+
+\StopSteps
+
+\stopdocument
