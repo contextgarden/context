@@ -513,9 +513,6 @@ def do_initialize_par (expr fpos, tpos, mpos, ppos, rw,rl,rr,rh,ra,ri) =
 
 enddef ;
 
-TopSkip     := 0 ; % will move
-StrutHeight := 0 ; % will move
-
 pair last_multi_par_shift ; last_multi_par_shift := origin ;
 
 def relocate_multipars (expr xy) =

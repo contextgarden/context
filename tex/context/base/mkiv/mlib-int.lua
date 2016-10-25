@@ -68,11 +68,11 @@ function mp.NOfPages            () mpprint(getcount("lastpageno"))              
 function mp.CurrentColumn       () mpprint(getcount("mofcolumns"))                  end
 function mp.NOfColumns          () mpprint(getcount("nofcolumns"))                  end
 
-function mp.BaseLineSkip        () mpprint(getdimen("baselineskip")        *factor) end
+function mp.BaseLineSkip        () mpprint(get     ("baselineskip").width  *factor) end
 function mp.LineHeight          () mpprint(getdimen("lineheight")          *factor) end
 function mp.BodyFontSize        () mpprint(getdimen("bodyfontsize")        *factor) end
 
-function mp.TopSkip             () mpprint(getdimen("topskip")             *factor) end
+function mp.TopSkip             () mpprint(get     ("topskip").width       *factor) end
 function mp.StrutHeight         () mpprint(getdimen("strutht")             *factor) end
 function mp.StrutDepth          () mpprint(getdimen("strutdp")             *factor) end
 
@@ -80,8 +80,8 @@ function mp.PageNumber          () mpprint(getcount("pageno"))                  
 function mp.RealPageNumber      () mpprint(getcount("realpageno"))                  end
 function mp.NOfPages            () mpprint(getcount("lastpageno"))                  end
 
-function mp.CurrentWidth        () mpprint(get("hsize")                    *factor) end
-function mp.CurrentHeight       () mpprint(get("vsize")                    *factor) end
+function mp.CurrentWidth        () mpprint(get     ("hsize")               *factor) end
+function mp.CurrentHeight       () mpprint(get     ("vsize")               *factor) end
 
 function mp.EmWidth             () mpprint(emwidths [false]*factor) end
 function mp.ExHeight            () mpprint(exheights[false]*factor) end

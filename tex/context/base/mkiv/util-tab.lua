@@ -491,7 +491,7 @@ function table.twowaymapper(t)
         t = { }
     else
         local zero = rawget(t,0)
-        for i=zero or 1,#t do
+        for i=zero and 0 or 1,#t do
             local ti = t[i]       -- t[1]     = "one"
             if ti then
                 local i = tostring(i)
@@ -499,7 +499,6 @@ function table.twowaymapper(t)
                 t[ti]   = i       -- t["one"] = "1"
             end
         end
-        t[""] = zero or ""
     end
  -- setmetatableindex(t,"key")
     setmetatable(t,selfmapper)

@@ -6007,7 +6007,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 29054, stripped down to: 18735
+-- original size: 29032, stripped down to: 18719
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6398,7 +6398,7 @@ function table.twowaymapper(t)
     t={}
   else
     local zero=rawget(t,0)
-    for i=zero or 1,#t do
+    for i=zero and 0 or 1,#t do
       local ti=t[i]    
       if ti then
         local i=tostring(i)
@@ -6406,7 +6406,6 @@ function table.twowaymapper(t)
         t[ti]=i    
       end
     end
-    t[""]=zero or ""
   end
   setmetatable(t,selfmapper)
   return t
@@ -19000,8 +18999,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 806828
--- stripped bytes    : 292984
+-- original bytes    : 806806
+-- stripped bytes    : 292978
 
 -- end library merge
 

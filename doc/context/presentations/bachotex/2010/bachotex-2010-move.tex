@@ -1,0 +1,114 @@
+% \enablemode[paper]
+
+\usemodule[present-stepwise,present-wobbling,abr-02]
+
+\setuppapersize[S6][S6] \setupbodyfont[11pt] \def\METAPOST{MetaPost}
+
+% \definecolor[maincolor] [red]
+% \definecolor[extracolor][blue]
+
+\definecolor[maincolor] [green]
+\definecolor[extracolor][red]
+
+% \StartText{...}{...}
+
+\startdocument
+  [title={Hybrids: \crlf the evolution of \CONTEXT},
+   topic={Bacho\TEX, May 3, 2010}]
+
+\StartItems{How you code your documents}
+    \StartItem
+        Coding in \TEX\ is quite natural and given a proper macro set
+        the overhead is not that large.
+    \StopItem
+    \StartItem
+        Coding in \XML\ makes sense when you have to manipulate or reuse
+        your data and when \TEX\ is just the renderer.
+    \StopItem
+    \StartItem
+        For non|-|artistic graphics \METAPOST\ provides a convenient input
+        language. It also plays well with \TEX.
+    \StopItem
+    \StartItem
+        Some problems can more conveniently be solved in a procedural programming
+        language and \LUA\ perfectly fits in there.
+    \StopItem
+\StopItems
+
+\StartItems{How the codebase evolves}
+    \StartItem
+        Of course we started with only \TEX\ code. Functionality has been nicely
+        split in modules
+    \StopItem
+    \StartItem
+        Front- and backend code has always been separated.
+    \StopItem
+    \StartItem
+        The user interface is quite consistent which provides backward compatibility
+        as well extensibility.
+    \StopItem
+    \StartItem
+        For quite some time \METAPOST\ support has been tightly integrated, including
+        a  two way communication between these subsystems.
+    \StopItem
+    \StartItem
+        When we decided on \LUA\ as language it didn't take long before large chunks of
+        \CONTEXT\ were rewritten using it.
+    \StopItem
+\StopItems
+
+\StartItems{How the codebase evolves}
+    \StartItem
+        Most font handling takes place in \LUA\ and as usual with \TEX\ we can do more
+        than fonts provide.
+    \StopItem
+    \StartItem
+        Other subsystems, like languages, input encoding, file io and xml also were among
+        the first to be supported by \LUA.
+    \StopItem
+    \StartItem
+        Lots of information is now carried around, especially related to structure. This will
+        permit users more freedom.
+    \StopItem
+    \StartItem
+        Notes, descriptions and enumerations also rely on \LUA.
+    \StopItem
+    \StartItem
+        Graphics (including \METAPOST) is all dealt with in \LUA. Float management is currently
+        on the agenda.
+    \StopItem
+    \StartItem
+        The backend code is completely rewritten in \LUA. We've disabled the low level primitives
+        so that third party modules can not spoil the game (this was already the case in \MKII).
+    \StopItem
+    \StartItem
+        Eventually most management tasks will move from \TEX\ to \LUA, but we keep in pace with
+        \LUATEX\ development and don't push things to the limit.
+    \StopItem
+\StopItems
+
+\StartItems{where we will end up}
+    \StartItem
+        Eventually we will have a more layered macro package so that one can make specialized
+        versions.
+    \StopItem
+    \StartItem
+        In addition to the regular \TEX\ interface there will be a \LUA\ interface. We already have
+        one such interface but there will be more.
+    \StopItem
+    \StartItem
+        It will be possible to avoid \TEX\ code completely which makes sense in predictable
+        workflows where no artistic intervening is needed.
+    \StopItem
+    \StartItem
+        Core \TEX\ functionality will also be available as (often less efficient) \LUA\ variant
+        so that we can extend it. We already provide hooks into the callback subsystem.
+    \StopItem
+    \StartItem
+        We can already all of this intermixed so the user has complete freedom of choice.
+    \StopItem
+\StopItems
+
+\stopdocument
+
+% \StopText

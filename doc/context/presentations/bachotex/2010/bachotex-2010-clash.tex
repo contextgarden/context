@@ -1,0 +1,231 @@
+% \enablemode[paper]
+
+\usemodule[present-stepwise,present-wobbling,abr-02]
+
+\setuppapersize[S6][S6] \setupbodyfont[10pt] \def\METAPOST{MetaPost}
+
+% \StartText{...}{...}
+
+\startdocument
+  [title={\TEX\ and Reality\crlf Clashing Mindsets?},
+   topic={Bacho\TEX, May 1, 2010}]
+
+\StartItems{Some reasons to use \TEX}
+    \StartItem
+        There can be several reasons for using \TEX. Some are subjective.
+    \StopItem
+    \StartItem
+        You like the way it works: you edit a document using a simple editor,
+        add a couple of directives and delay rendering. It's the content and
+        structure that matter.
+    \StopItem
+    \StartItem
+        You need it for instance because you have to typeset math and you believe that
+        no other tool can do a better job on that.
+    \StopItem
+    \StartItem
+        You found out that it can save time because it is programmable and after all,
+        programming is a nice distraction from writing.
+    \StopItem
+    \StartItem
+        You don't want to change a 20 year old habit and why quit using something that
+        you know well by now.
+    \StopItem
+    \StartItem
+        You like an occasional fight with a batch oriented system and updating (sometimes to
+        the extend of compiling) can be done while watching a movie.
+    \StopItem
+    \StartItem
+        You dislike learning a new program every 5 years. Of course it would be different
+        if we'd live for 500 years.
+    \StopItem
+\StopItems
+
+\StartItems{My reasons to use \TEX}
+    \StartItem
+        I've always used \TEX\ and can do what I need to do with it. I like to
+        focus on what can be done instead of what can't.
+    \StopItem
+    \StartItem
+        I don't like disposable tools and am quite lucky that \TEX\ still
+        can adapt to my needs.
+    \StopItem
+    \StartItem
+        I like my job but only when using the current tools and cooking up
+        reuseable solutions.
+    \StopItem
+    \StartItem
+        I need it for rendering (often educational) content and also use it
+        for fun.
+    \StopItem
+    \StartItem
+        In the process I need to implement styles based on designs provided by
+        designers, most probably only know click and point tools but some of them
+        can think outside that box.
+    \StopItem
+\StopItems
+
+
+\StartItems{Using \TEX\ in projects}
+    \StartItem
+        Each project has at least a few challenges, the input,
+        the design, graphics, the boundary conditions, interfaces, etc.
+    \StopItem
+    \StartItem
+        In quite some cases a printed product is an afterthought and coding is
+        driven by viewing on the web.
+    \StopItem
+    \StartItem
+        Most time goes into mapping structure. Coding is done in \XML\ because
+        we can then manipulate content and publishers can reuse it.
+    \StopItem
+    \StartItem
+        Publishers often use a preselected designer and ask him/her to come
+        up with a design.
+    \StopItem
+    \StartItem
+        Chapter openings and title pages take some effort as well, especially
+        if the implementation has to be exact. For some reason design comes before
+        content so the designer has to guess.
+    \StopItem
+    \StartItem
+        Although one can try to catch bordercases it hardly pays off as the eventual
+        solutions are not that logic. Simplification is preferred over heuristics.
+    \StopItem
+    \StartItem
+        Unfortunately designers never use the fact that we can program variations and
+        and flexible solutions. On the other hand in a later stage we can quite conveniently
+        provide solutions for problems resulting in the editorial workflow.
+    \StopItem
+\StopItems
+
+\StartItems{Struggling with structure}
+    \StartItem
+        Structure in regular \TEX\ documents assumes a proper nesting of chapters,
+        sections, subsections etc.
+    \StopItem
+    \StartItem
+        In \CONTEXT\ we can clone heads and configure them independently. Often we end up with
+        tens of variants.
+    \StopItem
+    \StartItem
+        In practice numberings can intermix, for instance subsections can be numbered
+        per chapter instead of per subsection.
+    \StopItem
+    \StartItem
+        Numbers seldom run like 1 \unknown\ 1.1 \unknown\ 1.1.1 and individual components can be omitted and can
+        have different properties (font, color). This quickly becomes messy as more (unexpected)
+        structure is added.
+    \StopItem
+    \StartItem
+        It's for this reason that we now have a more complex model of resetting and synchronization
+        of states in \CONTEXT. Actually we keep adding more structure support.
+    \StopItem
+    \StartItem
+        Additional information that is used in a chapter sometimes is also used elsewhere, as
+        in tables of contents (for instance icons). Therefore in \CONTEXT\ \MKIV\ we now have
+        the possibility to let userdata travel around.
+    \StopItem
+\StopItems
+
+\StartItems{Bringing system in color}
+    \StartItem
+        When making a product line it helps if there is some systematic
+        approach in defining colors but it does not work out that way.
+    \StopItem
+    \StartItem
+        Unfortunately we can never use the colorpalet and colorgroup features
+        that have been present in \CONTEXT\ from the start.
+    \StopItem
+    \StartItem
+        Spotcolors are nice as they enforce a more systematic approach than
+        process colors. In such cases there is often some system.
+    \StopItem
+    \StartItem
+        With processcolors we often have to fight the \quotation {on my screen 0.01
+        \letterpercent\ makes a big difference} dilemma.
+    \StopItem
+    \StartItem
+        Automatically converting graphics to such color spaces can save a lot of time and
+        money.
+    \StopItem
+\StopItems
+
+\StartItems{Relations between fonts}
+    \StartItem
+        Although there is some fashion in using fonts most designs use at least
+        a few different ones.
+    \StopItem
+    \StartItem
+        Not all fonts are equally well equipped and one cannot rely too much on
+        features without testing them first. Although \OPENTYPE\ makes things
+        easier it also introduces problems due to incomplete features.
+    \StopItem
+    \StartItem
+        A macro package assumes some logic in sizes and relations but this is of no
+        use in practice. Most if the font mechanism is simply not used.
+    \StopItem
+    \StartItem
+        The same is true for interline spacing. Often some standard latin quote and
+        title is used to determine the spec. Not seldom most spacing is inconsistent.
+    \StopItem
+    \StartItem
+        It looks like justification is not wanted that much, let alone advanced features
+        like protrusion and expansion. Inter|-|character spacing is sometimes requested.
+    \StopItem
+\StopItems
+
+\StartItems{Why I still use \TEX}
+    \StartItem
+        We started making \CONTEXT\ for our own use, especially complex and demanding
+        educational documents.
+    \StopItem
+    \StartItem
+        Nowadays we stick to typesetting and as we specialize in automated processing
+        we have to operate within strict bounds.
+    \StopItem
+    \StartItem
+        We use not that many handy features as there is hardly any structure in the designs
+        we have to implement.
+    \StopItem
+    \StartItem
+        But we use quite some of the manipulative power of \CONTEXT. Also, we are able to
+        fulfil even the most extreme demands.
+    \StopItem
+    \StartItem
+        It's user demand that is the driving force behind most new features. Users typically
+        use \CONTEXT\ in a different way than we do.
+    \StopItem
+    \StartItem
+        And \unknown\ some things can probably only be done with \TEX, especially in automated
+        workflows.
+    \StopItem
+\StopItems
+
+\StartItems{Suggestions for designers}
+    \StartItem
+        Talk to those implementing the design, let them show you what can be done. Stick to
+        general designs and don't go into much detail. It's the look and feel that matters.
+    \StopItem
+    \StartItem
+        Think in systematic solutions. Lack of freedom in interactive placement of graphics can
+        be compensated by other variations.
+    \StopItem
+    \StartItem
+        Think outside the box. Use the fact that the system is programmable and can adapt. And it
+        probably goes beyond what you can think of.
+    \StopItem
+    \StartItem
+        Try to make a design extensible. There will always be more structure. Some components
+        will have less text that expected. Titles can be very short or quite long. Keep in mind
+        that you cannot tweak.
+    \StopItem
+    \StartItem
+        Try to see a pattern in structure and provide escapes for strange cases. Give the implementor
+        some freedom.
+    \StopItem
+\StopItems
+
+\stopdocument
+
+% \StopText

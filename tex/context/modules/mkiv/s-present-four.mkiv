@@ -1,0 +1,188 @@
+%D \module
+%D   [      file=s-present-four,
+%D        version=2011.04.15, % about
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Four,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Just another one-time used Bacho\TEX\ presentation style that I found back
+%D when cleaning up old files. It's just simple pages in a shape and this time
+%D we hook it into a section command.
+
+\startmodule[present-four]
+
+\setupbodyfont
+  [dejavu,11pt]
+
+\setupcolors
+  [textcolor=white]
+
+\setupalign
+  [flushleft]
+
+\startuseMPgraphic{page}
+    vardef One =
+            ulcorner Page --
+        .75[ulcorner Page, urcorner Page] --
+        .60[ulcorner Page, lrcorner Page] --
+        .75[ulcorner Page, llcorner Page] --
+            cycle
+    enddef;
+    vardef One =
+            ulcorner Page --
+        .80[ulcorner Page, urcorner Page] --
+        .65[ulcorner Page, lrcorner Page] --
+        .80[ulcorner Page, llcorner Page] --
+            cycle
+    enddef;
+    vardef Two   = One rotatedaround(center Page, 90) enddef ;
+    vardef Three = One rotatedaround(center Page,180) enddef ;
+    vardef Four  = One rotatedaround(center Page,270) enddef ;
+    StartPage ;
+        if CurrentLayout = "layout:0" :
+            fill Two   withcolor .25[red,blue] ;
+            fill Three withcolor .25[blue,yellow] ;
+            fill Four  withcolor .25[yellow,blue] ;
+            fill One   withcolor .5white ;
+        elseif CurrentLayout = "layout:1" :
+            fill Two   withcolor .25[red,blue] ;
+            fill Three withcolor .25[blue,yellow] ;
+            fill Four  withcolor .25[yellow,blue] ;
+            fill One   withcolor .25[green,red] ;
+        elseif CurrentLayout = "layout:2" :
+            fill One   withcolor .25[green,red] ;
+            fill Two   withcolor .25[red,blue] ;
+            fill Three withcolor .25[blue,yellow] ;
+            fill Four  withcolor .25[yellow,blue] ;
+        elseif CurrentLayout = "layout:3" :
+            fill One   withcolor .25[green,red] ;
+            fill Two   withcolor .25[red,blue] ;
+            fill Four  withcolor .25[yellow,blue] ;
+            fill Three withcolor .25[blue,yellow] ;
+        elseif CurrentLayout = "layout:4" :
+            fill One   withcolor .25[green,red] ;
+            fill Three withcolor .25[blue,yellow] ;
+            fill Four  withcolor .25[yellow,blue] ;
+            fill Two   withcolor .25[red,blue] ;
+        fi ;
+    StopPage ;
+\stopuseMPgraphic
+
+\setupbackgrounds
+  [page]
+  [background={page}]
+
+\setupinteraction
+  [state=start,
+   click=no]
+
+\setupinteractionscreen
+  [option=max]
+
+\defineoverlay
+  [page]
+  [\useMPgraphic{page}]
+
+\definepapersize
+  [mine]
+  [width=400pt,
+   height=400pt]
+
+\setuppapersize
+  [mine]
+
+\setuplayout
+  [header=0pt,
+   footer=0pt,
+   margin=0pt,
+   width=middle,
+   height=middle]
+
+% \showframe
+
+\definelayout
+  [layout:0]
+  [backspace=10pt,cutspace=.375\paperwidth,
+   bottomspace=.35\paperheight,topspace=10pt]
+
+\definelayout
+  [layout:1]
+  [backspace=10pt,cutspace=.375\paperwidth,
+   bottomspace=.35\paperheight,topspace=10pt]
+
+\definelayout
+  [layout:2]
+  [backspace=.35\paperwidth,cutspace=10pt,
+   bottomspace=.375\paperheight,topspace=10pt]
+
+\definelayout
+  [layout:3]
+  [backspace=.375\paperwidth,cutspace=10pt,
+   bottomspace=10pt,topspace=.375\paperheight]
+
+\definelayout
+  [layout:4]
+  [backspace=10pt,cutspace=.375\paperwidth,
+   bottomspace=10pt,topspace=.35\paperheight]
+
+\setuptyping
+  [space=fixed]
+
+\startluacode
+    local n = -1
+    function documentdata.StartPage()
+        if n == 4 then
+            n = 1
+        else
+            n = n + 1
+        end
+        context.setuplayout { string.format("layout:%s",n) }
+    end
+    function documentdata.StopPage()
+        context.page()
+    end
+\stopluacode
+
+\unexpanded\def\StartPage
+  {\bgroup
+   \ctxlua{documentdata.StartPage()}}
+
+\unexpanded\def\StopPage
+  {\ctxlua{documentdata.StopPage()}
+   \egroup}
+
+\startsetups subject:start
+    \bgroup
+    \ctxlua{documentdata.StartPage()}
+\stopsetups
+
+\startsetups subject:stop
+    \ctxlua{documentdata.StopPage()}
+    \egroup
+\stopsetups
+
+\setuphead[subject]
+  [beforesection=\directsetup{subject:start},
+   aftersection=\directsetup{subject:stop}]
+
+\startsetups document:start
+    \StartPage
+        \definedfont[SerifBold*default at 48pt]
+        \setupinterlinespace
+        \documentvariable{title}
+    \StopPage
+\stopsetups
+
+\stopmodule
+
+\continueifinputfile{s-present-four.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{bachotex/2011/bachotex-2011-cld-and-mkvi.tex}

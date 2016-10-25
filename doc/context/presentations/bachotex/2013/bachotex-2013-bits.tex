@@ -1,0 +1,223 @@
+% \enablemode[print]
+
+\usemodule[pre-stepwise,present-tiles,abr-02]
+
+\definecolor[maincolor] [darkgray]
+\definecolor[othercolor][r=.3,b=.3]
+
+% \setupinteractionscreen
+%   [option=max]
+
+\startdocument
+  [title={Bits and pieces:\\\\ConTeXt\\MetaPost\\Lua and more},
+   subtitle={Hans Hagen\\EuroBacho\TeX\\May 2013}]
+
+\StartSteps
+
+\starttopic[title={ConTeXt\\recently done}]
+
+    \startitemize
+        \startitem some more cleanup of old left||overs \FlushStep \stopitem
+        \startitem most mechanisms now use the new level of parameter abstraction \FlushStep \stopitem
+        \startitem only a few fundamental incompatibilities (split of mechanisms, more control) \FlushStep \stopitem
+        \startitem slow introduction of hooks and extensions via setups \FlushStep \stopitem
+        \startitem first version of new multi|| column routines \FlushStep \stopitem
+        \startitem replacing mechanism that have a (too) complex implementation \FlushStep \stopitem
+        \startitem exploring the mix (e.g. chemistry with Alan) \FlushStep \stopitem
+        \startitem remove some ugly left||overs from \MKII\ math \FlushStep \stopitem
+        \startitem normalized dynamic fonts (mostly interfacing) \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={ConTeXt\\next on the todo list}]
+
+    \startitemize
+        \startitem more definitive split between generic and context (generated) \FlushStep \stopitem
+        \startitem some math extensions, maybe already math dictionaries \FlushStep \stopitem
+        \startitem normalize all styles and modules \FlushStep \stopitem
+        \startitem play a bit more with the \LUA\ parbuilder \FlushStep \stopitem
+        \startitem add more integrated bidi layout support \FlushStep \stopitem
+        \startitem finalize experimental (auto)script code \FlushStep \stopitem
+        \startitem investigate what more is needed in the \CLD\ interface \FlushStep \stopitem
+        \startitem check multi||lingual interface translations (not entirely in sync now) \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={MetaPost\\recently done}]
+
+    \startitemize
+        \startitem we already had instances, a bit more configurability added \FlushStep \stopitem
+        \startitem instances now can be initialized to a number model \FlushStep \stopitem
+        \startitem some of the (runtime loaded) \METAFUN\ code has been optimized (as \METAPOST\ has become somewhat slower and now has dynamic memory management \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={MetaPost\\next on the todo list}]
+
+    \startitemize
+        \startitem reimplement and extend graph (with Alan) \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={Lua\\recently done}]
+
+    \startitemize
+        \startitem font code has been better isolated \FlushStep \stopitem
+        \startitem basic modules are more or less stable now \FlushStep \stopitem
+        \startitem support for \SQL, templates and other workflow helper code \FlushStep \stopitem
+        \startitem the \CLD\ manual has been extended (continuous effort) \FlushStep \stopitem
+        \startitem messages and tracing have been checked and made more consistent \FlushStep \stopitem
+        \startitem it is possible to build libraries so that one can use the same kind of code in projects (\type {mtxrun} using \LUATEX\ vs \type {mtxlibs} using \LUA) \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={Lua\\next on the todo list}]
+
+    \startitemize
+        \startitem maybe cleanup of file database code (no real need to be completely \type {kpse} and \TDS\ compatible) \FlushStep \stopitem
+        \startitem pick up run||from|||zip experiment \FlushStep \stopitem
+        \startitem maybe more some framework code in the distribution \FlushStep \stopitem
+        \startitem experiment with some libraries (sockets, graphics, \type {gsl}) \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={Lua\TeX\\recently done}]
+
+    \startitemize
+        \startitem
+            Luigi cooked up \LUAJITTEX\ and we did lots of experiments \unknown\
+            our pet project turned into an persistent extra engine \unknown\ some
+            10 upto 40\% speedup due to faster \LUA\ interpreter (no \type {jit})
+        \FlushStep \stopitem
+        \startitem
+            I prototyped some speedups with access to node properties \unknown\
+            Luigi and I tested this across platforms \unknown\ and Taco finalized
+            and integrated all into the codebase
+        \FlushStep \stopitem
+        \startitem
+            Taco did the periodical check of tracker items \unknown\ some not too
+            intrusive patches and fixes have been applied \unknown\ the new
+            \METAPOST\ library has been integrated.
+        \FlushStep \stopitem
+        \startitem
+            I played with a speedup of logging to the console and identified some
+            bottlenecks \unknown\ Taco decided to make some improvements in the
+            code base.
+        \FlushStep \stopitem
+        \startitem
+            I did some parbuilder experiments in \CONTEXT\ with simplified hz
+            \unknown\ trivial extension needed in backend \unknown\ in the
+            meantime Hartmut decided to drastically cleanup the whole code path.
+        \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={Lua\TeX\\next on the todo list}]
+
+    \startitemize
+        \startitem remove some old engine stuff (after tl 2013 is out) \FlushStep \stopitem
+        \startitem with Luigi, get \SWIGLIB\ project upto speed (and running) \FlushStep \stopitem
+        \startitem with Hartmut, get ex||factor implemented in the backend (explored in the \LUA\ parbuilder) \FlushStep \stopitem
+        \startitem with Taco, catch up on some ideas we have accumulated \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={Fonts\\next on the todo list}]
+
+    \startitemize
+        \startitem normalize a few extensions \FlushStep \stopitem
+        \startitem implement some more detailed control \FlushStep \stopitem
+        \startitem play with the \LUA\ parbuilder (if it makes sense at all) \FlushStep \stopitem
+        \startitem finish (and test) support for Devanagari \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=Manuals]
+
+    \startitemize
+        \startitem new manuals for templates, \SQL, \SCITE, extreme tables, etc. \FlushStep \stopitem
+        \startitem first uploads of the (technical) font manual \FlushStep \stopitem
+        \startitem package some sources to the documentation zip \FlushStep \stopitem
+    \stopitemize
+
+    todo:
+
+    \startitemize
+        \startitem check metafun for additions \FlushStep \stopitem
+        \startitem check and extend the \XML\ manual \FlushStep \stopitem
+        \startitem check and republish the mathml manual \FlushStep \stopitem
+        \startitem redo some of the specific manuals for \MKIV \FlushStep \stopitem
+        \startitem beginners manual is being redone (by Ton) \FlushStep \stopitem
+        \startitem chemistry manual is being redone (by Alan) \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=Scripts]
+
+    \startitemize
+        \startitem additional help info support (\TEXLIVE\ requirement) \FlushStep \stopitem
+        \startitem relatively stable but most are still a first||version \FlushStep \stopitem
+        \startitem improve the \SCITE\ reference lexers \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\starttopic[title=Speed]
+
+\goto{pre-bt-2013-speed}[file(pre-bt-2013-speed)] \FlushStep
+
+\stoptopic
+
+\stopdocument

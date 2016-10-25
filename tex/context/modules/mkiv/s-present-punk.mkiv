@@ -1,8 +1,8 @@
 %D \module
-%D   [      file=s-pre-70,
+%D   [      file=s-present-punk,
 %D        version=2008.04.15,
 %D          title=\CONTEXT\ Style File,
-%D       subtitle=Presentation Environment 70,
+%D       subtitle=Presentation Environment Punk,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -48,7 +48,7 @@
 
 \setupinteraction
   [state=start,
-   %click=off,
+  %click=off,
    menu=on]
 
 %D We predefine a few palets. Of course you can define more.
@@ -67,8 +67,8 @@
 
 \setuppalet[punk-one]
 
-%D We use a few backgrounds. The hyperlink that invokes the
-%D stepper is hooked into the text background.
+%D We use a few backgrounds. The hyperlink that invokes the stepper is hooked
+%D into the text background.
 
 \definelayer
   [page]
@@ -101,8 +101,7 @@
    color=white, % pagecolor,
    contrastcolor=white] % pagecolor,
 
-%D We define a rather simple navigational panel at the
-%D bottom
+%D We define a rather simple navigational panel at the bottom
 
 \setupinteractionmenu
   [bottom]
@@ -139,7 +138,8 @@
     \definesymbol[next]      [\string>\string>]
 \stopsymbolset
 
-\setupinteraction[symbolset=punk]
+\setupinteraction
+  [symbolset=punk]
 
 %D Because the font is rather large, we use less whitespace.
 
@@ -147,12 +147,9 @@
   [chapter]
   [after={\blank[big]}]
 
-%D Run this file with the command: \type {context --mode=demo s-pre-70}
-%D in order to get an example.
+\continueifinputfile{s-present-punk.mkiv}
 
-\continueifinputfile{s-pre-70.mkiv}
-
-\usemodule[pre-60] % use the stepper
+\usemodule[pre-stepwise]
 
 \starttext
 

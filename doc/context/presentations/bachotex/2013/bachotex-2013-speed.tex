@@ -1,0 +1,115 @@
+% \enablemode[print]
+
+\usemodule[pre-stepwise,present-tiles,abr-02]
+
+\definecolor[maincolor] [darkgray]
+\definecolor[othercolor][r=.3,g=.3]
+
+% \setupinteractionscreen
+%   [option=max]
+
+\setupbodyfont[15pt]
+
+\startdocument
+  [title={Speed:\\\\can we make\\it any faster},
+   subtitle={Hans Hagen\\EuroBacho\TeX\\May 2013}]
+
+\StartSteps
+
+\starttopic[title={Speed}]
+
+    \startitemize
+        \startitem speed matters in a edit-run-preview cycle although this is mostly perception \FlushStep \stopitem
+        \startitem the nicer the interface, the slower it gets, but you seldom set something up \FlushStep \stopitem
+        \startitem everything you provide gets used at some point, also in inefficient ways \FlushStep \stopitem
+        \startitem lots of local (grouped) tweaks leads to many mechanisms kicking in unseen \FlushStep \stopitem
+        \startitem wrong use of functionality can have drastic and unexpected speed penalties \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={Pages per minute}]
+
+    \startitemize
+        \startitem we try to speed up baseline performance (in pages per second) \FlushStep \stopitem
+        \startitem identify and optimize critical routines, both at the \TEX\ and \LUA\ end \FlushStep \stopitem
+        \startitem of course the machine (Dell M90, SSD, 4GB, 2.33 Ghz T7600, Windows 8) and versions if \LUATEX\ (0.72+) and \CONTEXT\ matter \FlushStep \stopitem
+    \stopitemize
+
+    \blank
+
+    \starttyping
+    \dorecurse {1000} {test \page}
+    \stoptyping
+
+    \FlushStep
+
+    \blank
+
+    \starttabulate[|r|r|r|r|]
+    \HL
+    \NC \bf \# pages \NC \bf Januari \NC \bf April \NC \bf May\rlap{\quad(2013)} \NR
+    \HL
+    \NC     1 \NC   2 \NC   2 \NC   2 \NC \NR
+    \NC    10 \NC  15 \NC  17 \NC  17 \NC \NR
+    \NC   100 \NC  90 \NC 109 \NC 110 \NC \NR
+    \NC  1000 \NC 185 \NC 234 \NC 259 \NC \NR
+    \NC 10000 \NC 215 \NC 258 \NC 289 \NC \NR
+    \HL
+    \stoptabulate
+
+    \FlushStep
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={What happens}]
+
+    \startitemize
+        \startitem load macros and \LUA\ code is loaded from the format \FlushStep \stopitem
+        \startitem the system gets initialized, think of fonts and languages \FlushStep \stopitem
+        \startitem additional (runtime) files are loaded \FlushStep \stopitem
+        \startitem text is typeset and eventually gets passed to the page builder \FlushStep \stopitem
+        \startitem pages are packaged, this includes reverting to global document states \FlushStep \stopitem
+        \startitem the \PDF\ representation is created \FlushStep \stopitem
+        \startitem each of these steps has its bottlenecks \FlushStep \stopitem
+        \startitem the more we don, the more \LUA\ gets involved \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={What we can do}]
+
+    \startitemize
+        \startitem avoid copying boxes where possible \FlushStep \stopitem
+        \startitem only enable initializers and finalizers when functionality is used \FlushStep \stopitem
+        \startitem be clever with fonts, in usage as well as in supporting features \FlushStep \stopitem
+        \startitem use trial runs in multi||pass mechanisms \FlushStep \stopitem
+        \startitem avoid too much macro expansion (only matters for tracing) \FlushStep \stopitem
+        \startitem accept that more functionality has a price \FlushStep \stopitem
+    \stopitemize
+
+    but
+
+    \startitemize
+        \startitem don't compromise functionality \FlushStep \stopitem
+        \startitem avoid too obscure code \FlushStep \stopitem
+        \startitem forget about optimization by means of combining functionality \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\stopdocument

@@ -160,9 +160,10 @@ if _LUAVERSION < 5.2  then
     formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],"local sequenced = table.sequenced")
 
 else
+    -- somehow can fail:
 
     formatters.add(formatters,"font:name",    [["'"..fontname(%s).."'"]],          { fontname  = helpers.name })
-    formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ sequenced = table.sequenced    })
+    formatters.add(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ sequenced = table.sequenced })
 
 end
 
@@ -540,10 +541,11 @@ local function presetcontext(name,parent,features) -- will go to con and shared
         for p in gmatch(parent,"[^, ]+") do
             local s = setups[p]
             if s then
-                for k,v in next, s do
-                    if features[k] == nil then
+                for k, v in next, s do
+-- no, as then we cannot overload: e.g. math,mathextra
+--                     if features[k] == nil then
                         features[k] = v
-                    end
+--                     end
                 end
             else
                 -- just ignore an undefined one .. i.e. we can refer to not yet defined
@@ -1093,7 +1095,7 @@ do  -- else too many locals
         local scaledfontmode  = scaninteger() -- \scaledfontmode
 
         if trace_defining then
-            report_defining("start stage two: %s (size %s)",str,size)
+            report_defining("start stage two: %s, size %s, features %a & %a",str,size,classfeatures,fontfeatures)
         end
         -- name is now resolved and size is scaled cf sa/mo
         local lookup, name, sub, method, detail = getspecification(str or "")

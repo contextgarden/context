@@ -49,7 +49,7 @@
 
     \starttypescript [\s!math] [eulernova] [\s!name]
         \loadfontgoodies[euler-math]
-        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features=\s!math\mathsizesuffix]
+        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features={\s!math\mathsizesuffix,mathextra}]
     \stoptypescript
 
     \starttypescript [pagella-eulernova]
@@ -67,11 +67,11 @@
     \stoptypescript
 
     \starttypescript [\s!math] [euleroverpagella] [\s!name]
-        \definefontsynonym [MathRoman] [texgyrepagella-math] [\s!features=\s!math\mathsizesuffix,\s!fallbacks=euleroverpagella]
+        \definefontsynonym [MathRoman] [texgyrepagella-math] [\s!features={\s!math\mathsizesuffix,mathextra},\s!fallbacks=euleroverpagella]
     \stoptypescript
 
     \starttypescript [\s!math] [pagellaovereuler] [\s!name]
-        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features=\s!math\mathsizesuffix,\s!fallbacks=pagellaovereuler]
+        \definefontsynonym [MathRoman] [\s!file:euler.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!fallbacks=pagellaovereuler]
     \stoptypescript
 
     \starttypescript [pagella-with-euler]

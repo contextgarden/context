@@ -1,0 +1,205 @@
+% \enablemode[print]
+
+\usemodule[pre-stepwise,present-tiles,abr-02]
+
+\definecolor[maincolor] [darkgray]
+\definecolor[othercolor][g=.3,b=.3]
+
+% \setupinteractionscreen
+%   [option=max]
+
+\setupbodyfont[opendyslexic,ss]
+
+\startdocument
+  [title={Lua\TeX\ for dummies\\\\(so you can still leave)},
+   subtitle={Hans Hagen\\EuroBacho\TeX\\May 2013}]
+
+\StartSteps
+
+\starttopic[title={The \TEX\ perspective}]
+
+    \startitemize
+        \startitem it started out as \PDFTEX \FlushStep \stopitem
+        \startitem then got merged with \ALEPH \FlushStep \stopitem
+        \startitem but we left out the ugly bits of both \FlushStep \stopitem
+        \startitem it's exclusively \UTF-8 \FlushStep \stopitem
+        \startitem it's math machinery got extended with \OPENTYPE\ like features \FlushStep \stopitem
+        \startitem there are no fundamental extensions as it's impossible to agree in them \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={The \LUA\ perspective}]
+
+    \startitemize
+        \startitem it just a \LUA\ engine \FlushStep \stopitem
+        \startitem it has some extra libraries on board \FlushStep \stopitem
+        \startitem you don't even have to use \TEX \FlushStep \stopitem
+        \startitem but there are hooks into the \TEX\ machinery \FlushStep \stopitem
+        \startitem and we can go further by loading libraries \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={The hybrid perspective}]
+
+    \startitemize
+        \startitem we can extend \TEX\ using \LUA \FlushStep \stopitem
+        \startitem eventually everything will be opened up \FlushStep \stopitem
+        \startitem users never have to see any of that \FlushStep \stopitem
+        \startitem they can simply use \LUA\ for scripting and print results to \TEX \FlushStep \stopitem
+        \startitem but developers can go deep into the \TEX\ internals and mess around \FlushStep \stopitem
+        \startitem the average user will just depend on what a macro package will provide \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={The complications}]
+
+    \startitemize
+        \startitem normally one wants a bit of infrastructure (management) \FlushStep \stopitem
+        \startitem and maybe a special user space, hidden from core extensions \FlushStep \stopitem
+        \startitem but history has tought that users can't be controlled that way \FlushStep \stopitem
+        \startitem so we stick to just providing the mechanisms \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={The future}]
+
+    \startitemize
+        \startitem there are a couple of generic modules (derived from \CONTEXT) \FlushStep \stopitem
+        \startitem in principle I can make more generic modules \FlushStep \stopitem
+        \startitem that's after all the idea behind the (to be) \METATEX\ variant \FlushStep \stopitem
+        \startitem but does it really make sense as one still needs substantial subsystems \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={This workshop}]
+
+    \startitemize
+        \startitem just using \LUA: it's what most users will do \FlushStep \stopitem
+        \startitem showing the hooks: it's what developers want to use \FlushStep \stopitem
+        \startitem answering questions: it's probably the most I can do \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={Just plain}]
+
+    We need to make a format, like:
+
+    \starttyping
+    luatex --ini plain \dump
+    \stoptyping
+
+    \FlushStep
+
+    and can then run files with:
+
+    \starttyping
+    luatex --fmt=plain somefile.tex
+    \stoptyping
+
+    \FlushStep
+
+    This is a another way:
+
+    \starttyping
+    mtxrun --script plain --make --texformat=plain
+    \stoptyping
+
+    \FlushStep
+
+    with:
+
+    \starttyping
+    mtxrun --script plain --texformat=plain somefile.tex
+    \stoptyping
+
+    \FlushStep
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={A bit less plain}]
+
+    In order to profit from \OPENTYPE\ fonts:
+
+    \starttyping
+    mtxrun --script plain --make
+    \stoptyping
+
+    \FlushStep
+
+    with:
+
+    \starttyping
+    mtxrun --script plain somefile.tex
+    \stoptyping
+
+    \FlushStep
+
+    On windows you can copy \type {mtxrun.exe} to \type {plain.exe} and stick to:
+
+    \starttyping
+    plain --make
+    \stoptyping
+
+    \FlushStep
+
+    with:
+
+    \starttyping
+    plain somefile.tex
+    \stoptyping
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title={Hardly plain}]
+
+    If you can live with a bit less plain:
+
+    \starttyping
+    context yourfile.tex
+    \stoptyping
+
+    \FlushStep
+
+\stoptopic
+
+\StopSteps
+
+\stopdocument

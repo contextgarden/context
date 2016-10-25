@@ -26,6 +26,15 @@ return {
          -- default = {
          -- },
             -- driven by 'mathdimensions' feature
+            default = {
+                -- the root is quite displaced
+                [0x221A] = {
+                    -- 73, -960, 853, 40
+                    yoffset = 960 - 40,
+                    height  = 960,
+                    depth   =  40,
+                },
+            },
             signs   = {
                 -- set dimensions
              -- [0x00B1] = { -- ±

@@ -1,0 +1,319 @@
+% \enablemode[print]
+
+\usemodule[pre-stepwise,present-tiles,abr-02]
+
+\definecolor[maincolor] [s=.6]
+\definecolor[othercolor][s=.2]
+
+% \setupinteractionscreen
+%   [option=max]
+
+\startdocument
+  [title={How about those\\typographic virtues:\\do they still make sense?},
+   subtitle={Hans Hagen\\EuroBacho\TeX\\May 2013}]
+
+\StartSteps
+
+\starttopic[title=Typesetting]
+
+    \FlushStep
+
+    \startitemize
+        \startitem somehow we turned sounds into speech into language \FlushStep \stopitem
+        \startitem and after that it may have started with writing in the sand \FlushStep \stopitem
+        \startitem followed by painting on cave walls \FlushStep \stopitem
+        \startitem or maybe carving symbols in wood \FlushStep \stopitem
+        \startitem and figuring out some writing system \FlushStep \stopitem
+        \startitem that made it possible to chisel thoughts in stone \FlushStep \stopitem
+        \startitem and eventually putting blobs on paper \FlushStep \stopitem
+        \startitem that we somehow managed to map onto pixels \FlushStep \stopitem
+    \stopitemize
+
+    but \FlushStep
+
+    \startitemize
+        \startitem typesetting only happened very lately \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=In the process]
+
+    \FlushStep
+
+    \startitemize
+        \startitem mankind optimized the basic shapes (to suit the language) \FlushStep \stopitem
+        \startitem and kept inventing new symbols \FlushStep \stopitem
+        \startitem more and more automated typesetting and rendering and printing \FlushStep \stopitem
+        \startitem and of course this went with all kind of silly arguments \FlushStep \stopitem
+    \stopitemize
+
+    think of this: \FlushStep
+
+    \startitemize
+        \startitem for ages scribes were the only way to get high end arabic typesetting \FlushStep \stopitem
+        \startitem and now we can do this mostly automatic (in good and bad ways) \FlushStep \stopitem
+        \startitem so we endangered yet another craft  \FlushStep \stopitem
+    \stopitemize
+
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=But eventually]
+
+    \FlushStep
+
+    \startitemize
+        \startitem new interfaces will bring new ways of reading (how about leap motion) \FlushStep \stopitem
+        \startitem and we'll go from manual to visual (glasses, look at gaming) \FlushStep \stopitem
+        \startitem so information will be pushed more or less directly into our brain \FlushStep \stopitem
+        \startitem while high quality rendering moves to the arts department \FlushStep \stopitem
+        \startitem and in the end probably not much gets printed any more \FlushStep \stopitem
+        \startitem so we will share, stare at and discuss books no longer the way we do now \FlushStep \stopitem
+        \startitem just look at how kids deal with information nowadays \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=Targeting paper]
+
+    \FlushStep
+
+    \startitemize
+        \startitem we kept trying to save space by combine shapes and using umlauts and accents \FlushStep \stopitem
+        \startitem we can make it look better, using ligatures, alternative shapes \FlushStep \stopitem
+        \startitem color comes cheap, as does mixing fonts \FlushStep \stopitem
+        \startitem went from left to right and vise versa and top to bottom and mixed all this \FlushStep \stopitem
+        \startitem papers and magazines squeezed more into columns (in fact, we get less newspapers and magazines, but more advertising, so for a while there's as much print but more of dubious quality) \FlushStep \stopitem
+        \startitem and we even optimized the art of unreadability as in anti||smoke warnings \FlushStep \stopitem
+        \startitem thanks to software we can tweak fonts, mess with kerning, fool ourselve with expansion and protrusion \FlushStep \stopitem
+        \startitem we mess around with margins, aspect ratios, scaling, rotating, and justification \FlushStep \stopitem
+        \startitem and yes, we introduced conventions but also entered endless debates \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=Towards displays]
+
+    \FlushStep
+
+    \startitemize
+        \startitem nowadays we can fake the old stuff on the screen and simulate paper \FlushStep \stopitem
+        \startitem we have weird user interfaces as we still want to recognize the old e.g.\ funny borders and strange buttons \FlushStep \stopitem
+        \startitem and we're told how less pixels are actually needed to keep us happy \FlushStep \stopitem
+        \startitem while we stare at ourselves on those mirroring and radiating displays \FlushStep \stopitem
+        \startitem lack of detail gets nicely compensated with special reading compensation programs at school \FlushStep \stopitem
+        \startitem and still progress is hampered by copyrighting trivial properties and inventions that anyone can come up with given the machinery \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=The state of affairs]
+
+    \FlushStep
+
+    \startitemize
+        \startitem we already lost (or maybe never reached) optimal quality \FlushStep \stopitem
+        \startitem it looks like ragged right won the battle \FlushStep \stopitem
+        \startitem and messing with fonts beyond what designers had in mind is okay \FlushStep \stopitem
+        \startitem the users start controlling the layout by scaling, rotating and setting properties \FlushStep \stopitem
+    \stopitemize
+
+    so \FlushStep
+
+    \startitemize
+        \startitem why do we texies still bother about typography, hobyism apart \FlushStep \stopitem
+        \startitem does paying so much attention and trying to be original still fit into rappidly changing times \FlushStep \stopitem
+        \startitem we're not alone: the same is true for programs, apps, operating systems, etc \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=Take ligatures]
+
+    \FlushStep
+
+    \definefont[TestA][texgyrepagella-regular*default]
+    \definefont[TestB][cambria*default]
+    \definefont[TestC][dejavuserif*default]
+    \definefont[TestD][lmroman10-regular*default]
+
+    \startcombination[alternative=none,nx=1,ny=4]
+        {\hbox to \textwidth{\scale[height=.1\textheight]{\TestA fi ffi fl ffl ij}\hss}}
+        {\hbox to \textwidth{\scale[height=.1\textheight]{\TestB fi ffi fl ffl ij}\hss\tlap{\scale[height=.25\textheight]{\TestB ffl\hskip.1emffi}}}}
+        {\hbox to \textwidth{\scale[height=.1\textheight]{\TestC fi ffi fl ffl ij}\hss}}
+        {\hbox to \textwidth{\scale[height=.1\textheight]{\TestD fi ffi fl ffl ij}\hss\tlap{\scale[height=.25\textheight]{\TestD ffl\hskip.1emffi}}}}
+    \stopcombination
+
+    \FlushStep
+
+    Subtle kerning, partial substitution, different shapes: take your
+    choice. Can texies really claim that their ffi looks the best? Just
+    stare at it for a while.
+
+    \FlushStep
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=Accent battles]
+
+    \FlushStep
+
+    \startcombination[alternative=label,nx=5,ny=2]
+        {\scale[height=.25\textheight]{\definedfont[texgyrepagella-regular]š}}
+        {\scale[height=.25\textheight]{\definedfont[dejavuserif]š}}
+        {\scale[height=.25\textheight]{\definedfont[cambria]š}}
+        {\scale[height=.25\textheight]{\definedfont[texgyretermes-regular]š}}
+        {\scale[height=.25\textheight]{\definedfont[lucidabrightot]š}}
+        {\scale[height=.25\textheight]{\definedfont[texgyrebonum-regular]š}}
+        {\scale[height=.25\textheight]{\definedfont[texgyreheros-regular]š}}
+        {\scale[height=.25\textheight]{\definedfont[lmroman10-regular]š}}
+        {\scale[height=.25\textheight]{\definedfont[KozMinPr6N-Regular]š}}
+        {\scale[height=.25\textheight]{\definedfont[zapfinoextraltpro]š}}
+    \stopcombination
+
+    \FlushStep
+
+    \blank
+
+    Of course there are some conventions, but given that designs are \unknown\ well,
+    designs \unknown\ it's never going to be okay for all of us.
+
+    \FlushStep
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=Justification]
+
+    \FlushStep
+
+  % \externalfigure[chinese-courier.jpg][height=.7\textheight]
+    \externalfigure[chinese-courier.jpg][width=\textwidth]
+
+    \FlushStep
+
+    \blank
+
+    Intercharacter spacing, interglyph spacing, tightening symbols: why bother
+    any longer: let's play safe and from now on advice to use monospaced ragged
+    right.
+
+    \FlushStep
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=Backslashes]
+
+    \FlushStep
+
+    \startitemize
+        \startitem you always need a way to escape formatting directives \FlushStep \stopitem
+        \startitem so texies have the backslash and a few more special characters \FlushStep \stopitem
+        \startitem coding in \XML\ seems to be too complex and awkward for most users \FlushStep \stopitem
+        \startitem but \ASCII\ based quick and dirty formatting becomes a fashion (\type {*doc}) \FlushStep \stopitem
+        \startitem of course influencing the makeup and making things nice involves even nastier escapes \FlushStep \stopitem
+        \startitem and in the process we eventually loose quality \FlushStep \stopitem
+    \stopitemize
+
+    but \FlushStep
+
+    \startitemize
+        \startitem it fits nicely into quick and dirty often one||time markup \FlushStep \stopitem
+        \startitem and real markup, maybe targeted at reuse, becomes a speciality, craft, hobby or disappears \FlushStep \stopitem
+        \startitem there is no reason why what we do now stays \unknown\ we have no copying monks left either \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=Endangered features]
+
+    \FlushStep
+
+    \startitemize
+        \startitem ebooks are mostly single sided \FlushStep \stopitem
+        \startitem but somehow we still care about pages (or can't look beyond them) \FlushStep \stopitem
+        \startitem there is no longer room and need for multi||columns \FlushStep \stopitem
+        \startitem and also no need for footnotes as we can have roll||overs \FlushStep \stopitem
+        \startitem paper size can still be different but can swap to landscape\FlushStep \stopitem
+        \startitem floats become cumbersome compared to paper books, so no floats \FlushStep \stopitem
+        \startitem margins, they waste space and we already have hardware margins \FlushStep \stopitem
+        \startitem a proper tables of contents still make some sense \FlushStep \stopitem
+        \startitem indices can be replaced but searching in most cases \FlushStep \stopitem
+        \startitem bibliographies can become pop||ups \FlushStep \stopitem
+        \startitem readers are encouraged to choose and scale fonts so the design has limitations \FlushStep \stopitem
+        \startitem and why even bother optimizing the look and feel \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\StartSteps
+
+\starttopic[title=The future of \TEX]
+
+    \FlushStep
+
+    \startitemize
+        \startitem as it happens: these are all mechanisms that complicate the \TEX\ machinery and workflow \FlushStep \stopitem
+        \startitem and removing the need for them might as well remove the need for \TEX \FlushStep \stopitem
+        \startitem but still, for a long time \CONTEXT\ \MKIV\ can fulfill the needs as demands probably only become more simple \FlushStep \stopitem
+        \startitem and I can start working on a simple version: twittertex™, monospaced, one paragraph fat most 140 characters, no pages, no structure, maybe random generated content, etc. \FlushStep \stopitem
+        \startitem or maybe first make some intermediate version: markuptex™, geared at ebooks in some kind of \XML\ format \FlushStep \stopitem
+        \startitem and Luigi will make \type {livetex}, a dna based typesetting plugin that connects to our already built||in retina \FlushStep \stopitem
+    \stopitemize
+
+    however, \FlushStep
+
+    \startitemize
+        \startitem looking at the still active \TEX\ crowd we will stay around for a while \FlushStep \stopitem
+        \startitem given that we manage to advocate the virtues of typographical traditions \FlushStep \stopitem
+        \startitem and for that, we might need to reinvent ourselves (a nice theme for a conference) \FlushStep \stopitem
+    \stopitemize
+
+\stoptopic
+
+\StopSteps
+
+\stopdocument
+

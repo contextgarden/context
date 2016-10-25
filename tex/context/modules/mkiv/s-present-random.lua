@@ -1,10 +1,13 @@
-if not modules then modules = { } end modules ['steps'] = {
+if not modules then modules = { } end modules ['present-random'] = {
     version   = 1.001,
-    comment   = "companion to steps.mkiv",
+    comment   = "companion to s-present-random.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
+
+-- For the moment we keep the namespace steps because it can become some
+-- shared module some day.
 
 moduledata.steps = moduledata.steps or { }
 local steps      = moduledata.steps

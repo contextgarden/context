@@ -1,0 +1,154 @@
+% \enablemode[print]
+
+\usemodule[present-stepwise,present-four,abr-02]
+
+\abbreviation [METAPOST] {MetaPost} {}
+
+\startdocument
+  [title=Finding\par the\par balance]
+
+%D This style is mostly for myself \unknown\ to get an idea of what I need to
+%D talk about, in this case the rather drastic transformation of the \CONTEXT\
+%D code base to \MKIV\ and \LUA.
+
+\startsubject[title={No way back}]
+
+\StartSteps
+
+\startitemize
+\startitem We have passed the point of no return already years ago. \stopitem \FlushStep
+\startitem Most users now use \MKIV, with an occasional fall-back on \MKII. \stopitem \FlushStep
+\startitem The code base is now completely split, with the exception of some modules. \stopitem \FlushStep
+\startitem Some solutions are implemented in \LUA\ with only a small wrapper at the \TEX\ end. \stopitem \FlushStep
+\stopitemize
+
+\StopSteps
+
+\stopsubject
+
+\startsubject[title={To get an idea}]
+
+\StartSteps
+
+\startitemize
+\startitem structure: sectioning, notes, descriptions, registers, synonyms \stopitem \FlushStep
+\startitem typesetting: sectioning, notes, descriptions, \stopitem \FlushStep
+\stopitemize
+
+\StopSteps
+
+\stopsubject
+
+\startsubject[title={Hybrid coding}]
+
+\StartSteps
+
+\startitemize
+\startitem The complete \CONTEXT\ user interface is available at the \LUA\ end (context namespace). \stopitem \FlushStep
+\startitem Eventually all \LUA\ solutions will have a dual interface: \LUA\ (all kind of namespaces) and
+towards \TEX\ (the command namespace). \stopitem \FlushStep
+\startitem Some of the support \LUA\ modules can also be used independent from \CONTEXT. \stopitem \FlushStep
+\stopitemize
+
+\StopSteps \StopPage
+
+\startsubject[title={Coding in \TEX}]
+
+\StartSteps
+
+\starttyping
+\starttabulate[|l|c|r|]
+\NC one   \NC 1 \NC first  \NC \NR
+\NC two   \NC 2 \NC second \NC \NR
+\NC three \NC 3 \NC third  \NC \NR
+\stoptabulate
+\stoptyping
+\FlushStep
+
+\StopSteps \StopPage
+
+\startsubject[title={Coding in \LUA}]
+
+\StartSteps
+
+\starttyping
+local NC = context.NC
+local NR = context.NR
+
+context.starttabulate { "|l|c|r|" }
+NC() one   NC() 1 NC() first  NC() NR()
+NC() two   NC() 2 NC() second NC() NR()
+NC() three NC() 3 NC() third  NC() NR()
+context.stoptabulate()
+\stoptyping
+\FlushStep
+
+\StopSteps \StopPage
+
+\startsubject[title={Pure \LUA\ vs \TEX}]
+
+\StartSteps
+
+\starttyping
+function converters.ordinal(n,language)
+    local t = ordinals[language]
+    return t and t(n)
+end
+
+function commands.ordinal(n,language)
+    local t = ordinals[language]
+    local o = t and t(n)
+    if o then
+        context.highordinalstr(o)
+    end
+end
+\stoptyping
+\FlushStep
+
+\StopSteps \StopPage
+
+\startsubject[title={Up to \MKVI}]
+
+\StartSteps
+
+\starttyping
+\def\MyPlace#Country#City%
+  {\blank
+   #City is situated in #Country
+   \blank}
+
+\starttexdefinition MyName #Name
+    My name is: #Name.
+\stoptexdefinition
+
+\MyPlace{Netherlands}{Hasselt}
+\MyPlace{Poland}     {Bachotek}
+
+\MyName{Hans Hagen}
+\stoptyping
+\FlushStep
+
+\StopSteps \StopPage
+
+\startsubject[title={\CONTEXT\ \LUA\ Documents}]
+
+\StartSteps
+
+Let's look at some examples: \FlushStep
+
+\starttyping
+cld-math-001.cld
+music-001.cld
+m-zint.mkiv
+s-edu-01.mkiv
+m-morse.mkvi
+scrn-wid.[lua|mkvi]
+[grph|lpdf|back]-swf.mkiv
+\stoptyping
+\FlushStep
+
+(In 2016 I'd show different examples.) \FlushStep
+
+\StopSteps \StopPage
+
+\stopdocument

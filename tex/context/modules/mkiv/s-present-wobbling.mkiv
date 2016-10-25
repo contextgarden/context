@@ -1,0 +1,339 @@
+%D \module
+%D   [      file=s-prent-wobbling,
+%D        version=2010.04.28,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Wobbling,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This a bit old stuyls and I should adapt it a bit but as it sort of works ok I'll
+%D  not do that now.
+
+\startmodule[present-wobbling]
+
+%setuppapersize[S6][S6]
+\setuppapersize[SM][SM]
+
+\setupinteraction
+  [state=start,
+   contrastcolor=white,
+   color=white,
+   click=no]
+
+\setuplayout
+  [location=middle,
+   topspace=60pt,
+   bottomspace=80pt,
+   backspace=80pt,
+   header=0pt,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+\setupcolors
+  [textcolor=white]
+
+\setupbodyfont[pagella]
+
+\definecolor[maincolor] [blue]
+\definecolor[extracolor][green]
+
+% \definecolor[maincolor] [red]
+% \definecolor[extracolor][blue]
+
+\startMPdefinitions
+    picture MySoFar ; MySoFar := nullpicture ;
+    path MyLastOne ; MyLastOne := origin -- cycle ;
+    path MyLeftSteps, MyRightSteps ;
+    boolean MyPageDone ; MyPageDone := false ;
+
+    vardef MySmallShape(expr parent) =
+        path p ; p := boundingbox parent ;
+        numeric w, h ; w := bbwidth(p) ; h := bbheight(p) ;
+        urcorner p shifted (-uniformdeviate w/4,0) --
+        lrcorner p shifted (0,uniformdeviate h/4) --
+        llcorner p shifted (uniformdeviate w/4,0) --
+        ulcorner p shifted (0,-uniformdeviate h/4) -- cycle
+    enddef ;
+
+    vardef MyShape(expr parent) =
+        path p ; p := boundingbox parent ;
+        if MyPageDone :
+            MyPageDone := false ;
+            urcorner p shifted (-EmWidth + -uniformdeviate CutSpace/2,0) --
+            lrcorner p shifted (0,EmWidth + uniformdeviate BottomSpace/2) --
+            llcorner p shifted (EmWidth + uniformdeviate BackSpace/2,0) --
+            ulcorner p shifted (0,-EmWidth + -uniformdeviate TopSpace/2) -- cycle
+        else :
+            MyPageDone := true ;
+            urcorner p shifted (0,-EmWidth + -uniformdeviate TopSpace/2) --
+            lrcorner p shifted (-EmWidth + -uniformdeviate CutSpace/2,0) --
+            llcorner p shifted (0,EmWidth + uniformdeviate BottomSpace/2) --
+            ulcorner p shifted (EmWidth + uniformdeviate BackSpace/2,0) -- cycle
+        fi
+    enddef ;
+
+    vardef MyMakeOne =
+        MyLastOne := MyShape(Page) ;
+    enddef ;
+
+    vardef MyAddOne =
+        addto MySoFar also image(fill MyLastOne withcolor "maincolor" withtransparency(1,.25) ; ) ;
+    enddef ;
+
+    vardef MyDrawOne =
+        fill MyLastOne withcolor black ;
+        fill MyLastOne withcolor "maincolor" withtransparency(1,.25) ;
+    enddef ;
+
+    vardef MyDrawPage =
+        draw MySoFar ;
+    enddef ;
+
+    vardef MySetSteps =
+        path l, r ; numeric s ; path ll[], rr[] ; path t ;
+        l := point 2 of MyLastOne -- point 3 of MyLastOne ;
+        r := point 0 of MyLastOne -- point 1 of MyLastOne ;
+        t := topboundary Field[Text][Text] rightenlarged TextWidth leftenlarged TextWidth ;
+        s := bbheight(Field[Text][Text])/LineHeight + 2 ;
+        t := t shifted (0,-TopSkip) ;
+        for i=1 upto s :
+            ll[i] := t intersectionpoint l ;
+            rr[i] := t intersectionpoint r ;
+            t := t shifted (0,-LineHeight) ;
+        endfor ;
+        MyLeftSteps  := for i=1 upto s : ll[i] -- endfor cycle ;
+        MyRightSteps := for i=1 upto s : rr[i] -- endfor cycle ;
+    enddef ;
+
+    vardef MyDrawText(expr txt) =
+        pair a ; a := (point 1 of MyLastOne) - (point 2 of MyLastOne) ;
+        picture p ; p := txt ;
+        p := p
+            shifted (-EmWidth,EmWidth)
+            shifted ulcorner txt
+            shifted point 1 of MyLastOne ;
+        p := p rotatedaround(lrcorner p, radian * tan(ypart a/xpart a)) ;
+        setbounds p to origin -- cycle ;
+        draw p ;
+    enddef ;
+
+    vardef MyDrawTitle(expr txt) =
+      % pair a ; a := (point 2 of MyLastOne) - (point 3 of MyLastOne) ;
+        pair a ; a := (point 3 of MyLastOne) - (point 4 of MyLastOne) ;
+        picture p ;
+        if bbheight(txt) > bbwidth(txt) :
+            p := txt ysized(0.8*TextHeight) ;
+        else :
+            p := txt xsized(0.8*TextWidth) ;
+        fi ;
+        numeric d ; d := arclength(point 2 of MyLastOne -- point 3 of MyLastOne) - bbheight(p) ;
+        p := p
+            shifted (BackSpace,-d/2)
+            shifted -ulcorner p
+            shifted point 3 of MyLastOne ;
+      % p := p rotatedaround(ulcorner p, - radian * tan(xpart a/ypart a)) ;
+      % p := p rotatedaround(ulcorner p,  radian * tan(ypart a/xpart a)) ;
+        setbounds p to origin -- cycle ;
+        draw p ;
+    enddef ;
+
+    vardef MyDrawSteps =
+        s := bbheight(Field[Text][Text])/LineHeight + 2 ;
+        for i=1 upto s :
+            draw ll[i] withpen pencircle scaled 1mm ;
+            draw rr[i] withpen pencircle scaled 1mm ;
+            draw ll[i] -- rr[i] ;
+        endfor ;
+        draw Field[Text][Text] ;
+    enddef ;
+
+\stopMPdefinitions
+
+\startuseMPgraphic{initialization}
+    StartPage ;
+        MySoFar := image(fill Page enlarged 12pt withcolor "maincolor" withtransparency(1,.25) ;) ;
+        MyMakeOne ;
+        MySetSteps ;
+    StopPage ;
+\stopuseMPgraphic
+
+\appendtoks
+    \startnointerference
+        \useMPgraphic{initialization}
+    \stopnointerference
+\to \everystarttext
+
+\unexpanded\def\TitleCommand#1%
+  {\framed
+     [frame=off,
+      offset=overlay,
+      align=flushleft,
+      foregroundcolor=white,
+      foregroundstyle={\tfd},
+      bottom=\vskip2\lineheight]
+     {\setupinterlinespace
+      \setupwhitespace[halfline]%
+     %\showstruts
+      \begstrut
+      #1%
+      \endstrut}}
+
+\unexpanded\def\TopicCommand#1%
+  {\color[white]{\tfb#1}}
+
+\startuseMPgraphic{page}
+    StartPage ;
+        MyDrawPage ;
+        MyDrawOne ;
+        MySetSteps ;
+        if RealPageNumber == 1 :
+            MyDrawTitle(textext("\TitleCommand{\documentvariable{title}}")) ;
+            MyDrawText (textext("\TopicCommand{\documentvariable{topic}}")) ;
+        fi ;
+        %
+        % we have multiple runs when we have text
+        %
+      % MyDrawSteps ;
+      % MyMakeOne ;
+      % MySetSteps ;
+    StopPage ;
+\stopuseMPgraphic
+
+\appendtoks
+    \startnointerference
+        \startMPcode
+            MyAddOne ;
+            MyMakeOne ;
+            MySetSteps ;
+        \stopMPcode
+    \stopnointerference
+\to \everyshipout
+
+\defineoverlay[page][\useMPgraphic{page}]
+
+\startuseMPgraphic{symbol}
+    path p ; p := MySmallShape(unitsquare scaled (.6*LineHeight)) ;
+    fill p withcolor white ;
+    fill p withcolor "extracolor" withtransparency(1,.25) ;
+\stopuseMPgraphic
+
+\definesymbol[mysymbol][\struttedbox{\useMPgraphic{symbol}}]
+
+\setupitemgroup
+  [itemize] [1]
+  [symbol=mysymbol]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\startluacode
+    local texdimen = tex.dimen
+    function document.SetParShape()
+        local leftpath  = metapost.getclippath { mpx = "metafun", data = "clip currentpicture to MyLeftSteps ;" }
+        local rightpath = metapost.getclippath { mpx = "metafun", data = "clip currentpicture to MyRightSteps ;" }
+        local shape = { }
+        for i=1,#leftpath do
+            local left  = leftpath[i].x_coord
+            local right = rightpath[i].x_coord
+            local hsize = right - left - (texdimen.backspace + texdimen.cutspace)*number.dimenfactors.bp
+            shape[#shape+1] = string.format("%sbp %sbp",left,hsize)
+        end
+     -- print(table.serialize(shape))
+     -- context.parshape(string.format("%s %s ",#shape,table.concat(shape," ")))
+        context("\\parshape %s %s ",#shape,table.concat(shape," "))
+    end
+\stopluacode
+
+\nopenalties \dontcomplain
+
+\setupwhitespace[none]
+
+\startsetups document:start
+    \bgroup
+    \let\crlf\endgraf % \par in a mp textext doesn't work well
+    \startstandardmakeup
+        % dummy page
+    \stopstandardmakeup
+    \egroup
+\stopsetups
+
+\unexpanded\def\StartText#1#2% for old times sake
+  {\startdocument[title={#1},subtitle={#2}]}
+
+\unexpanded\def\StopText
+  {\stopdocument
+   \setupdocument[title=,topic=]}
+
+\unexpanded\def\StartItems#1%
+  {\setupdocument[topic={#1}]
+   \startstandardmakeup[top=,bottom=\vss]
+   \startelement[items][title={#1}]%
+   \ctxlua{document.SetParShape()}
+   \StartSteps}
+
+\unexpanded\def\StopItems
+  {\StopSteps
+   \stopelement
+   \stopstandardmakeup}
+
+\unexpanded\def\StartItem
+  {\dontleavehmode
+   \startelement[item]%
+   \llap{\symbol[mysymbol]\quad}% graphic
+   \ignorespaces}
+
+\unexpanded\def\StopItem
+  {\removeunwantedspaces
+   \nobreak
+   \crlf
+   \stopelement
+   \crlf
+   \FlushStep}
+
+\unexpanded\def\ShapeParagraph
+  {\ctxlua{document.SetParShape()}}
+
+% no parshape yet
+
+\unexpanded\def\StartParagraphs#1%
+  {\setupdocument[topic={#1}]
+   \startstandardmakeup[top=,bottom=\vss]
+  %\ctxlua{document.SetParShape()}
+   \startelement[paragraphs]%
+   \StartSteps}
+
+\unexpanded\def\StopParagraphs
+  {\StopSteps
+   \stopelement
+   \stopstandardmakeup}
+
+\unexpanded\def\StartParagraph
+  {\startelement[paragraph]}
+
+\unexpanded\def\StopParagraph
+  {\par
+   \stopelement
+   \FlushStep}
+
+% experiment .. likely to change
+
+\setelementexporttag[items]     [nature][display]
+\setelementexporttag[item]      [nature][mixed]
+\setelementexporttag[paragraphs][nature][display]
+\setelementexporttag[paragraph] [nature][mixed]
+
+\stopmodule
+
+\continueifinputfile{s-present-wobbling.mkiv}
+
+\usemodule[present-common]
+
+%inputpresentationfile{bachotex/2010/bachotex-2010-clash.tex}
+\inputpresentationfile{bachotex/2010/bachotex-2010-move.tex}

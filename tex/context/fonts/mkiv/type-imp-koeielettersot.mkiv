@@ -72,27 +72,27 @@
     \starttypescript [\s!all] [cowsotf]
         \definefontsynonym [Cows]         [koeielettersot][\s!features=cowsdefault]
         \definefontsynonym [CowsLogo]     [koeielettersot][\s!features=cowslogos]
-        \definefontsynonym [CowsMathRoman][koeielettersot][\s!goodies=koeielettersot]
+        \definefontsynonym [CowsMathRoman][koeielettersot][\s!features=mathextra,\s!goodies=koeielettersot]
     \stoptypescript
 
     \starttypescript [\s!all] [koeielettersotf,sheepotf]
         \definefontsynonym [Sheep]         [koeielettersot][\s!features=sheepdefault]
         \definefontsynonym [SheepLogo]     [koeielettersot][\s!features=cowslogos]
-        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features=mathsheepdigits,\s!goodies=koeielettersot]
+        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features={mathsheepdigits,mathextra},\s!goodies=koeielettersot]
     \stoptypescript
 
-%   \definefontsynonym[\s!MathRoman][file:texgyredejavu-math][\s!features=\s!math\mathsizesuffix,\s!goodies=dejavu-math]
+%   \definefontsynonym[\s!MathRoman][file:texgyredejavu-math][\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=dejavu-math]
 
     \starttypescript [\s!all] [coloredcowsotf]
         \definefontsynonym [Cows]         [koeielettersot][\s!features=cowscolored]
         \definefontsynonym [CowsLogo]     [koeielettersot][\s!features=cowslogos]
-        \definefontsynonym [CowsMathRoman][koeielettersot][\s!goodies=koeielettersot]
+        \definefontsynonym [CowsMathRoman][koeielettersot][\s!features=mathextra,\s!goodies=koeielettersot]
     \stoptypescript
 
     \starttypescript [\s!all] [coloredsheepotf]
         \definefontsynonym [Sheep]         [koeielettersot][\s!features=sheepcolored]
         \definefontsynonym [SheepLogo]     [koeielettersot][\s!features=cowslogos]
-        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features=mathsheepdigits,\s!goodies=koeielettersot]
+        \definefontsynonym [SheepMathRoman][koeielettersot][\s!features={mathsheepdigits,mathextra},\s!goodies=koeielettersot]
     \stoptypescript
 
     \starttypescript [\s!serif] [cowsotf,coloredcowsotf]

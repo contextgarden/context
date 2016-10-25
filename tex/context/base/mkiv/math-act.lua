@@ -301,7 +301,9 @@ function mathematics.overloaddimensions(target,original,set)
     end
 end
 
-sequencers.appendaction("aftercopyingcharacters", "system","mathematics.overloaddimensions")
+-- no, it's a feature now (see good-mth):
+--
+-- sequencers.appendaction("aftercopyingcharacters", "system","mathematics.overloaddimensions")
 
 -- a couple of predefined tweaks:
 
