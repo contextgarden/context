@@ -439,4 +439,46 @@
 % \let\dostophanchoring    \dostopanchoring
 % \let\dostopvanchoring    \dostopanchoring
 
+%D Here because in strc-ren we are too early:
+
+% % \definemargindata
+% %   [margintext:chapter]
+% %   [margintext:section]
+% %
+% % \defineheadalternative
+% %   [margintext:chapter]
+% %   [margintext]
+% %   [margintext=margintext:chapter]
+% %
+% % \setuphead
+% %   [chapter]
+% %   [alternative=margintext:chapter]
+%
+% \setuphead
+%   [chapter]
+%   [alternative=margintext]
+
+\definemargindata
+  [\v!margintext:\v!section]
+  [\v!left]
+  [\c!margin=\v!margin,
+   \c!width=\leftmarginwidth,
+   \c!align=\v!flushright]
+
+\defineheadalternative
+  [\v!margintext]
+  [\c!alternative=\v!somewhere,
+   \c!margintext=\v!margintext:\v!section,
+   \c!renderingsetup=\??headrenderings:\v!margintext]
+
+\startsetups[\??headrenderings:\v!margintext]
+    \executeifdefined{\headalternativeparameter\c!margintext}\margintext {
+        \ifconditional\headshownumber
+            \headnumbercontent
+            \hskip\headnumberdistance
+        \fi
+        \headtextcontent
+    }
+\stopsetups
+
 \protect \endinput

@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\startmodule[present-punk]
+
 %D At the cost of more runtime and a larger output file, we
 %D turn on randomization. The instances are cached in the
 %D MkIV cache, so successive runs use the same shapes.
@@ -147,27 +149,10 @@
   [chapter]
   [after={\blank[big]}]
 
+\stopmodule
+
 \continueifinputfile{s-present-punk.mkiv}
 
-\usemodule[pre-stepwise]
+\usemodule[present-common]
 
-\starttext
-
-\title {Punk for dummies}
-
-\dorecurse{10} {
-
-    \title{Just a few dummy pages}
-
-    \StartSteps
-        \startitemize[packed]
-            \startitem bla \FlushStep \stopitem
-            \startitem bla bla \FlushStep \stopitem
-            \startitem bla bla bla \FlushStep \stopitem
-            \startitem bla bla bla bla \FlushStep \stopitem
-        \stopitemize
-    \StopSteps
-
-}
-
-\stoptext
+\inputpresentationfile{examples/present-punk-001.tex}

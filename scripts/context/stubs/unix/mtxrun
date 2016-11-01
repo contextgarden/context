@@ -1283,7 +1283,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 6032, stripped down to: 2959
+-- original size: 6077, stripped down to: 3002
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -1323,20 +1323,20 @@ local fullstripper=patterns.fullstripper
 local collapser=patterns.collapser
 local longtostring=patterns.longtostring
 function string.strip(str)
-  return lpegmatch(stripper,str) or ""
+  return str and lpegmatch(stripper,str) or ""
 end
 function string.fullstrip(str)
-  return lpegmatch(fullstripper,str) or ""
+  return str and lpegmatch(fullstripper,str) or ""
 end
 function string.collapsespaces(str)
-  return lpegmatch(collapser,str) or ""
+  return str and lpegmatch(collapser,str) or ""
 end
 function string.longtostring(str)
-  return lpegmatch(longtostring,str) or ""
+  return str and lpegmatch(longtostring,str) or ""
 end
 local pattern=P(" ")^0*P(-1)
 function string.is_empty(str)
-  if str=="" then
+  if not str or str=="" then
     return true
   else
     return lpegmatch(pattern,str) and true or false
@@ -1389,7 +1389,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 37840, stripped down to: 22763
+-- original size: 38086, stripped down to: 22844
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2208,6 +2208,12 @@ function table.swapped(t,s)
     n[v]=k
   end
   return n
+end
+function table.hashed(t) 
+  for i=1,#t do
+    t[t[i]]=i
+  end
+  return t
 end
 function table.mirrored(t) 
   local n={}
@@ -6007,7 +6013,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 29032, stripped down to: 18719
+-- original size: 29317, stripped down to: 18749
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6393,11 +6399,11 @@ function table.autokey(t,k)
   return v
 end
 local selfmapper={ __index=function(t,k) t[k]=k return k end }
-function table.twowaymapper(t)
-  if not t then
-    t={}
-  else
-    local zero=rawget(t,0)
+function table.twowaymapper(t)  
+  if not t then         
+    t={}          
+  else             
+    local zero=rawget(t,0) 
     for i=zero and 0 or 1,#t do
       local ti=t[i]    
       if ti then
@@ -18999,8 +19005,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 806806
--- stripped bytes    : 292978
+-- original bytes    : 807382
+-- stripped bytes    : 293400
 
 -- end library merge
 

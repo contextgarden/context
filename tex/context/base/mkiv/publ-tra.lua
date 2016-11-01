@@ -141,8 +141,8 @@ function tracers.showdatasetcompleteness(settings)
         ctx_NC()
             if indirect then
                 context("\\darkblue")
-                ctx_verbatim(value)
-            elseif value then
+            end
+            if value then
                 ctx_verbatim(value)
             end
         ctx_NC() ctx_NR()
@@ -153,7 +153,7 @@ function tracers.showdatasetcompleteness(settings)
     local function special(done,key,value)
         ctx_NC() if not done then ctx_monobold("special") end
         ctx_NC() context(key)
-        ctx_NC() ctx_verbatim(value)
+        ctx_NC() if value then ctx_verbatim(value) end
         ctx_NC() ctx_NR()
         return done or true
     end
@@ -161,7 +161,7 @@ function tracers.showdatasetcompleteness(settings)
     local function extra(done,key,value)
         ctx_NC() if not done then ctx_monobold("extra") end
         ctx_NC() context(key)
-        ctx_NC() ctx_verbatim(value)
+        ctx_NC() if value then ctx_verbatim(value) end
         ctx_NC() ctx_NR()
         return done or true
     end
@@ -348,7 +348,9 @@ function tracers.showdatasetauthors(settings)
             ctx_verbatim(i)
         end
         ctx_NC()
-        ctx_verbatim(k)
+        if k then
+            ctx_verbatim(k)
+        end
         ctx_EQ()
         if type(v) == "table" then
             local t = { }
@@ -360,8 +362,9 @@ function tracers.showdatasetauthors(settings)
                     t[i] = vi
                 end
             end
-            ctx_verbatim(concat(t, " | "))
-        else
+            v = concat(t, " | ")
+        end
+        if v then
             ctx_verbatim(v)
         end
         ctx_NC()
@@ -376,9 +379,9 @@ function tracers.showdatasetauthors(settings)
     end
 
     local function commonrow(key,value)
-        ctx_NC() ctx_rlap(function() ctx_verbatim(key) end)
+        ctx_NC() if key then ctx_rlap(function() ctx_verbatim(key) end) end
         ctx_NC()
-        ctx_EQ() ctx_verbatim(value)
+        ctx_EQ() if value then ctx_verbatim(value) end
         ctx_NC() ctx_NR()
     end
 

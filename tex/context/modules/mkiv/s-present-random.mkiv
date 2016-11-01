@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\startmodule[present-random]
+
 %D Unfortunately there are not that many viewers that support javascript
 %D control over layers.
 
@@ -203,41 +205,11 @@
 \let\StartText\starttext % for old times sake
 \let\StopText \stoptext  % for old times sake
 
+\stopmodule
+
 \continueifinputfile{s-present-random.mkiv}
 
-% \enablemode[paper]
+\usemodule[present-common]
 
-% \usemodule[present-stepwise]
-\usemodule[abr-02]
+\inputpresentationfile{examples/present-random-001.tex}
 
-\doifelsemode {atpragma} {
-    \usetypescriptfile[type-hgz]
-    \usetypescript[palatino-informal]
-    \setupbodyfont[palatino-informal,15pt]
-} {
-    \setupbodyfont[modern-variable,15pt]
-}
-
-\logo [METAPOST] {MetaPost}
-
-\starttext
-
-\StartTopics
-    \StartTopic[1] A \StopTopic
-    \StartTopic[5] B \StopTopic
-    \StartTopic[9] C \StopTopic
-\StopTopics
-
-\StartTopics
-    \StartTopic A \StopTopic
-    \StartTopic B \StopTopic
-    \StartTopic C \StopTopic
-    \StartTopic D \StopTopic
-    \StartTopic E \StopTopic
-    \StartTopic F \StopTopic
-    \StartTopic G \StopTopic
-    \StartTopic H \StopTopic
-    \StartTopic I \StopTopic
-\StopTopics
-
-\stoptext

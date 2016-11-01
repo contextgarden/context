@@ -1,6 +1,6 @@
 %D \module
 %D   [      file=s-pre-16,
-%D        version=1999.09.01, 
+%D        version=1999.09.01,
 %D          title=\CONTEXT\ Style File,
 %D       subtitle=Presentation Environment 16,
 %D         author=Hans Hagen,
@@ -13,7 +13,7 @@
 
 %D The first version of this style was made late summer 1999,
 %D but its first usage was during a course I gave in BRNO.
-%D It's a rather simple style with a dominating background. 
+%D It's a rather simple style with a dominating background.
 
 \setuppapersize
   [S6][S6]
@@ -42,11 +42,11 @@
   [state=start]
 
 \definecolor[gray] [s=.4]
-\definecolor[white][s=.8] 
+\definecolor[white][s=.8]
 
-\definecolor[red]  [r=.8] \definecolor[cyan]   [g=.8,b=.8] 
-\definecolor[green][g=.8] \definecolor[magenta][r=.8,b=.8] 
-\definecolor[blue] [b=.8] \definecolor[yellow] [r=.8,g=.8] 
+\definecolor[red]  [r=.8] \definecolor[cyan]   [g=.8,b=.8]
+\definecolor[green][g=.8] \definecolor[magenta][r=.8,b=.8]
+\definecolor[blue] [b=.8] \definecolor[yellow] [r=.8,g=.8]
 
 \definecolor[PageColor][gray]
 \definecolor[TextColor][yellow]
@@ -66,49 +66,49 @@
    symbol=FuzzyDot]
 
 \startuseMPgraphic{FuzzyCircle}
-  path p ; numeric w, h, l ; 
-  w := OverlayWidth ; h := OverlayHeight ; 
-  def dd = (1 randomized (1/5)) enddef ; 
+  path p ; numeric w, h, l ;
+  w := OverlayWidth ; h := OverlayHeight ;
+  def dd = (1 randomized (1/5)) enddef ;
   pickup pencircle xscaled 10pt yscaled 2pt rotated 30;
-  for i:=1 upto 50 : 
-    p := (-dd,-dd)..(dd,-dd)..(dd,dd)..(-dd,dd)..cycle ; 
-    p := p rotatedaround (center p, uniformdeviate 360) ;   
-    p := p xscaled (w/2) yscaled (h/2) ; 
-    l := length(p)/2 ; 
-    p := p cutbefore point   (uniformdeviate l) of p ;   
-    p := p cutafter  point (l+uniformdeviate l) of p ;   
+  for i:=1 upto 50 :
+    p := (-dd,-dd)..(dd,-dd)..(dd,dd)..(-dd,dd)..cycle ;
+    p := p rotatedaround (center p, uniformdeviate 360) ;
+    p := p xscaled (w/2) yscaled (h/2) ;
+    l := length(p)/2 ;
+    p := p cutbefore point   (uniformdeviate l) of p ;
+    p := p cutafter  point (l+uniformdeviate l) of p ;
     draw p withcolor \MPcolor{LineColor} randomized (.4,1) ;
-  endfor ; 
+  endfor ;
   picture s ; s := currentpicture xysized (w-15,h-15) ;
   currentpicture := nullpicture ;
-  fill boundingbox s enlarged 60pt withcolor \MPcolor{PageColor} ; 
-  addto currentpicture also s ; 
+  fill boundingbox s enlarged 60pt withcolor \MPcolor{PageColor} ;
+  addto currentpicture also s ;
 \stopuseMPgraphic
 
 \startuseMPgraphic{FuzzyDot}
-  path p ; numeric w ; 
-  w := BodyFontSize/2 ; 
-  def dd = (w randomized (w/2)) enddef ; 
+  path p ; numeric w ;
+  w := BodyFontSize/2 ;
+  def dd = (w randomized (w/2)) enddef ;
   pickup pencircle xscaled (w/2) yscaled (w/3) rotated 30 ;
-  for i=0 step 45 until 135 : 
+  for i=0 step 45 until 135 :
     p := (-dd,0)--(dd,0) ;
     p := p rotatedaround (origin,i-w+uniformdeviate w) ;
     draw p withcolor \MPcolor{LineColor} randomized (.3,.8) ;
-  endfor ; 
+  endfor ;
 \stopuseMPgraphic
 
 \defineoverlay [FuzzyCircle] [\useMPgraphic{FuzzyCircle}]
 \defineoverlay [GoOn]        [{\setupinteraction[click=no]\overlaybutton{forward}}]
 \defineoverlay [Again]       [\overlaybutton{firstpage}]
 
-\definesymbol 
-  [FuzzyDot] 
+\definesymbol
+  [FuzzyDot]
   [\lower\dp\strutbox\hbox{\useMPgraphic{FuzzyDot}}]
 
 \def\Item%
   {\par\noindent\symbol[FuzzyDot]\hskip.5em\nobreak}
 
-\setupitemize 
+\setupitemize
   [all]
   [packed]
   [symbol=FuzzyDot]
@@ -134,15 +134,15 @@
   [alternative=g,
    interaction=all]
 
-%D Since we want a colored text, and since color directive 
-%D can spoil the spacing, we use a foregroundcolor. 
+%D Since we want a colored text, and since color directive
+%D can spoil the spacing, we use a foregroundcolor.
 
 \setupbackgrounds
   [text]
   [foregroundcolor=TextColor]
 
-%D Unfortunately this does not work when on the page colors 
-%D are set, so we play safe and say: 
+%D Unfortunately this does not work when on the page colors
+%D are set, so we play safe and say:
 
 \setupmakeup
   [standard]
@@ -165,13 +165,13 @@
    \stopcolumns
    \page}
 
-%D Some fakes. 
+%D Some fakes.
 
 \def\Subject  {\Topic}
 \def\Subjects {}
 
-%D A bonus (copied from \type {s-pre-02} but with a different 
-%D vertical alignment. 
+%D A bonus (copied from \type {s-pre-02} but with a different
+%D vertical alignment.
 
 \def\StartTitlePage%
   {\startstandardmakeup
@@ -188,16 +188,16 @@
   {\StartTitlePage#1\StopTitlePage}
 
 \doifnotmode{demo}{\endinput}
-
-\starttext 
+
+\starttext
 
 \Topics{...}
 
-\StartIdea 
+\StartIdea
   \Topic{...}
-  ... 
-  \NextIdea 
+  ...
+  \NextIdea
   ...
 \StopIdea
 
-\stoptext 
+\stoptext

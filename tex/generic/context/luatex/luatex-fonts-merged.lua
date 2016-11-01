@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/25/16 09:57:25
+-- merge date  : 11/01/16 10:08:25
 
 do -- begin closure to overcome local limits and interference
 
@@ -964,20 +964,20 @@ local fullstripper=patterns.fullstripper
 local collapser=patterns.collapser
 local longtostring=patterns.longtostring
 function string.strip(str)
-  return lpegmatch(stripper,str) or ""
+  return str and lpegmatch(stripper,str) or ""
 end
 function string.fullstrip(str)
-  return lpegmatch(fullstripper,str) or ""
+  return str and lpegmatch(fullstripper,str) or ""
 end
 function string.collapsespaces(str)
-  return lpegmatch(collapser,str) or ""
+  return str and lpegmatch(collapser,str) or ""
 end
 function string.longtostring(str)
-  return lpegmatch(longtostring,str) or ""
+  return str and lpegmatch(longtostring,str) or ""
 end
 local pattern=P(" ")^0*P(-1)
 function string.is_empty(str)
-  if str=="" then
+  if not str or str=="" then
     return true
   else
     return lpegmatch(pattern,str) and true or false
@@ -1844,6 +1844,12 @@ function table.swapped(t,s)
     n[v]=k
   end
   return n
+end
+function table.hashed(t) 
+  for i=1,#t do
+    t[t[i]]=i
+  end
+  return t
 end
 function table.mirrored(t) 
   local n={}

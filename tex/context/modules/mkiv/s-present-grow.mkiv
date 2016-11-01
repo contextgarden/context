@@ -1,0 +1,171 @@
+%D \module
+%D   [      file=s-present-grow, % was s-pre-10
+%D        version=unknown,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Grow,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style is derived from the ninth style, which was used first at \EUROTEX\ 99
+%D and later at \TUG\ 2000. This alternative builds up a page.
+
+\usemodule[present-windows] % not that much used
+
+\startmodule[present-grow]
+
+%D We use blue colors instead of yellow ones. Since we have used symbolic names, we
+%D can easily overload the existing scheme.
+
+\definecolor[LineColor][r=.40,g=.40,b=1.00]
+
+%D Here we don't use fixed dimensions, but fit the sample windows and derive the
+%D text windows's width from this one.
+
+\setupframedtexts
+  [SampleText]
+  [width=fit,height=fit,
+   background={background,nextpage}]
+
+%D The topic goes to the top right corner of the screen which means that it is
+%D positioned left down to the reference point. Watch how we make data on this layer
+%D (here only the topic but it can be more) persistent.
+
+\setuplayer
+  [topic]
+  [y=0pt,x=\makeupwidth,
+   location=lb,
+   state=repeat,
+   hoffset=-\FrameSkip,
+   voffset=\FrameSkip]
+
+%D Clicking on the page brings us back.
+
+\setupbackgrounds
+  [page]
+  [background={previouspage,color,topic}]
+
+%D All layers end up on the text area. This could have been the page area too since
+%D these have the same dimensions.
+
+\setupbackgrounds
+  [text]
+  [background={common,sample,text}]
+
+%D We overload this one (\MKIV):
+
+\defineoverlay [samepage] [\overlaybutton{nextpage}]
+
+%D Because we build up the text window step by step, we will separate the entries by
+%D white space.
+
+\startsetups [always]
+    \setupwhitespace[big]
+    \setupblank[big]
+\stopsetups
+
+%D The \type {\Topic} commands can be simplified to:
+
+\unexpanded\def\Topic#1%
+  {\resetlayer[topic]
+   \setlayer[topic]{\bfb\setstrut\color[TextColor]{#1}}}
+
+%D We also provide a way to erase the topic.
+
+\unexpanded\def\NoTopic
+  {\resetlayer[topic]}
+
+%D We have to redefine the structuring commands to support the resetting of buffer
+%D counters.
+
+\newcounter\TextN
+
+\unexpanded\def\StartSample
+  {\doglobal\newcounter\TextN
+   \dostartbuffer[sample][StartSample][StopSample]}
+
+\unexpanded\def\StartText
+  {\doglobal\newcounter\TextN
+   \dostartbuffer[text][StartText][StopText]}
+
+\unexpanded\def\StartSubText
+  {\doglobal\increment\TextN
+   \dostartbuffer[text-\TextN][StartSubText][StopSubText]}
+
+\unexpanded\def\StopText
+  {\startstandardmakeup
+     \DoSampleText{text}{common}{nextpage}
+   \stopstandardmakeup}
+
+\unexpanded\def\StopSubText
+  {\startstandardmakeup
+     \DoSampleText{text}{common}{nextpage}
+   \stopstandardmakeup}
+
+%D The \type {\DoSampleText} command is adapted to support addition of subtexts
+%D (each subtext goes into its own buffer).
+
+\unexpanded\def\DoSampleText#1#2#3%
+  {\setupframedtexts[SampleText][background={background,#3}]
+   \bgroup
+   \setups[#1]%
+   \setups[always]%
+   \setbox\nextbox=\hbox
+     {\startSampleText[none]
+        \getbuffer[#1]\par
+        \doif{#1}{text}
+          {\dorecurse{\TextN}{\getbuffer[text-\recurselevel]\par}}
+      \stopSampleText}
+   \xdef\SampleTextWidth{\the\wd\nextbox}
+   \setlayer[#2]{\box\nextbox}%
+   \egroup}
+
+%D Since we are no longer swapping windows, we end up with a much simplier \type
+%D {\Stopidea} macro. We don't reset samples at the inner level.
+
+\unexpanded\def\StartIdea
+  {\bgroup
+   \let\StopSample \relax
+   \let\StopText   \relax
+   \let\StopSubText\relax
+   \def\StartSample{\dostartbuffer[sample][StartSample][StopSample]}}
+
+\unexpanded\def\StopIdea
+  {\startstandardmakeup
+     \DoSampleText{sample}{sample}{nextpage}
+     \SetTextWidth
+     \DoSampleText{text}  {text}  {nextpage}
+   \stopstandardmakeup
+   \egroup}
+
+%D Here we determine the width of the text window. It is derived from the width of
+%D the sample and stays the same within a sequence.
+
+\unexpanded\def\SetTextWidth
+  {\ifnum\TextN<1 % yes or no, may change
+     \scratchdimen=\makeupwidth
+     \advance\scratchdimen by -\SampleTextWidth
+     \advance\scratchdimen by  \FrameSkip
+     \xdef\SampleWidth{\the\scratchdimen}%
+   \fi
+   \setupframedtexts
+     [SampleText]
+     [width=\SampleWidth]}
+
+%D We use the (already implemented) second alternative of the titlepage graphic.
+%D Please don't change this.
+
+\defineoverlay[joke] [\useMPgraphic{joke}{n=1}] % not to be changed !
+
+\stopmodule
+
+\continueifinputfile{s-present-grow.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{examples/present-grow-001.tex}
+

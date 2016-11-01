@@ -1077,7 +1077,7 @@ function table.count(t)
     return n
 end
 
-function table.swapped(t,s) -- hash
+function table.swapped(t,s) -- hash, we need to make sure we don't mess up next
     local n = { }
     if s then
         for k, v in next, s do
@@ -1090,7 +1090,14 @@ function table.swapped(t,s) -- hash
     return n
 end
 
-function table.mirrored(t) -- hash
+function table.hashed(t) -- list, add hash to index (save because we are not yet mixed
+    for i=1,#t do
+        t[t[i]] = i
+    end
+    return t
+end
+
+function table.mirrored(t) -- hash, we need to make sure we don't mess up next
     local n = { }
     for k, v in next, t do
         n[v] = k

@@ -3845,15 +3845,16 @@
    \global\expandafter\def\csname\??recurseaction\recursedepth\endcsname##1##2{#4}%
    \global\expandafter\let\csname\??recurseindex\recursedepth\endcsname\recurselevel
    \csname\??recursestepwise
+     % we need the x in order to avoid the \relax that tex adds
      \ifnum#3>\zerocount
-       \ifnum#2<#1\else d\fi
+       \ifnum#2<#1x\else d\fi
      \else\ifnum#3<\zerocount
-       \ifnum#1<#2\else r\fi
+       \ifnum#1<#2x\else r\fi
      \fi\fi
    \expandafter\endcsname\normalexpanded{{\number#1}{\number#2}{\number#3}}}
  % \expandafter\endcsname\expandafter{\number#1\expandafter}\expandafter{\number#2\expandafter}\expandafter{\number#3}}
 
-\letvalue{\??recursestepwise  }\syst_helpers_stepwise_exit
+\letvalue{\??recursestepwise x}\syst_helpers_stepwise_exit
 \letvalue{\??recursestepwise d}\syst_helpers_stepwise_recurse
 \letvalue{\??recursestepwise r}\syst_helpers_stepwise_reverse
 

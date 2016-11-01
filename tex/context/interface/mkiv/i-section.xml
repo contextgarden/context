@@ -211,6 +211,9 @@
                 <cd:parameter name="distance">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="textdistance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
                 <cd:parameter name="commandbefore">
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
@@ -695,6 +698,7 @@
                 <cd:parameter name="alternative">
                     <cd:constant type="horizontal"/>
                     <cd:constant type="vertical" default="yes"/>
+                    <cd:constant type="somewhere"/>
                 </cd:parameter>
                 <cd:parameter name="renderingsetup">
                     <cd:constant type="cd:name"/>
@@ -732,6 +736,8 @@
     <cd:command name="headnumberwidth" file="strc-ren.mkiv"/>
 
     <cd:command name="headnumberdistance" file="strc-ren.mkiv"/>
+
+    <cd:command name="headtextdistance" file="strc-ren.mkiv"/>
 
     <cd:command name="headsetupspacing" file="strc-ren.mkiv"/>
 

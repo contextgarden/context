@@ -64,18 +64,19 @@ local jnumber    = (1-whitespace-rparent-rbrace-comma)^1 / tonumber
 local key        = jstring
 
 local jsonconverter = { "value",
-    object   = lbrace * Cf(Ct("") * V("pair") * (comma * V("pair"))^0,rawset) * rbrace,
-    pair     = Cg(optionalws * key * optionalws * colon * V("value")),
-    array    = Ct(lparent * V("value") * (comma * V("value"))^0 * rparent),
-    value    = optionalws * (jstring + V("object") + V("array") + jtrue + jfalse + jnull + jnumber + #rparent) * optionalws,
+    hash  = lbrace * Cf(Ct("") * (V("pair") * (comma * V("pair"))^0 + optionalws),rawset) * rbrace,
+    pair  = Cg(optionalws * key * optionalws * colon * V("value")),
+    array = Ct(lparent * (V("value") * (comma * V("value"))^0 + optionalws) * rparent),
+--  value = optionalws * (jstring + V("hash") + V("array") + jtrue + jfalse + jnull + jnumber + #rparent) * optionalws,
+    value = optionalws * (jstring + V("hash") + V("array") + jtrue + jfalse + jnull + jnumber) * optionalws,
 }
 
 -- local jsonconverter = { "value",
---     object   = lbrace * Cf(Ct("") * V("pair") * (comma * V("pair"))^0,rawset) * rbrace,
---     pair     = Cg(optionalws * V("string") * optionalws * colon * V("value")),
---     array    = Ct(lparent * V("value") * (comma * V("value"))^0 * rparent),
---     string   = jstring,
---     value    = optionalws * (V("string") + V("object") + V("array") + jtrue + jfalse + jnull + jnumber) * optionalws,
+--     hash   = lbrace * Cf(Ct("") * (V("pair") * (comma * V("pair"))^0 + optionalws),rawset) * rbrace,
+--     pair   = Cg(optionalws * V("string") * optionalws * colon * V("value")),
+--     array  = Ct(lparent * (V("value") * (comma * V("value"))^0 + optionalws) * rparent),
+--     string = jstring,
+--     value  = optionalws * (V("string") + V("hash") + V("array") + jtrue + jfalse + jnull + jnumber) * optionalws,
 -- }
 
 -- lpeg.print(jsonconverter) -- size 181
@@ -156,3 +157,5 @@ end
 -- inspect(tmp)
 
 -- inspect(json.tostring(true))
+
+return json

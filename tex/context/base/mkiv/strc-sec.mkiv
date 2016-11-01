@@ -345,6 +345,7 @@
     %\c!deeptextcommand=,
     %\c!default=,
     \c!distance=\zeropoint,
+    \c!textdistance=\zeropoint,
     \c!textwidth=\zeropoint,   % signal too
     \c!numberwidth=\zeropoint, % signal too
     \c!width=\zeropoint,       % signal too
@@ -660,8 +661,9 @@
 \newconditional\c_strc_sectioning_empty
 \newconditional\c_strc_sectioning_hidden
 
-\newconditional\headshownumber % public
-\newconditional\headisdisplay  % public
+\newconditional\headshownumber  % public
+\newconditional\headisdisplay   % public
+\newconditional\headissomewhere % public
 
 \setvalue{\??headincrement\v!yes  }{\settrue \c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
 \setvalue{\??headincrement\v!no   }{\setfalse\c_strc_sectioning_increment\setfalse\c_strc_sectioning_to_list}
@@ -796,7 +798,7 @@
   {\dontleavehmode
    \begingroup
    \unexpanded\def\\{\space}% messy here, but the default (and needs to be grouped)
-   \settrue\headisdisplay % triggers interlinespace checking
+   \global\settrue\headisdisplay % triggers interlinespace checking
    \edef\currenthead{#1}%
    \strc_rendering_initialize_style_and_color\c!textstyle\c!textcolor
    \relax
@@ -807,7 +809,7 @@
 \def\strc_sectioning_place_head_number[#1]%
   {\dontleavehmode
    \begingroup
-   \settrue\headisdisplay % triggers interlinespace checking
+   \global\settrue\headisdisplay % triggers interlinespace checking
    \edef\currenthead{#1}%
    \strc_rendering_initialize_style_and_color\c!numberstyle\c!numbercolor
    \relax

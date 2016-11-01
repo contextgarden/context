@@ -14,7 +14,7 @@
 %D This style looks a lot like number 22. This time we don't
 %D cycle but build up the page. One can click on the text go
 %D to the page wanted. Clicking on the titl ebrings you to the
-%D previous page. 
+%D previous page.
 
 \startmode [demo]
   \disablemode[demo] \usemodule[pre-22] \enablemode[demo]
@@ -24,13 +24,13 @@
   \usemodule[pre-22]
 \stopnotmode
 
-%D We use a simple two||color scheme. 
+%D We use a simple two||color scheme.
 
 \definecolor[DotColor][r=.5,g=.6,b=.7]
 \definecolor[TopColor][r=.7,g=.6,b=.5]
 \definecolor[BotColor][TopColor]
 
-%D We will not delay page building. 
+%D We will not delay page building.
 
 \let\BuildPage\relax
 
@@ -51,14 +51,14 @@
    \setlayer[temp]{\foundbox{Subtext}\CurrentSummary}
    \stopstandardmakeup}
 
-%D The title page is not added to the main layer (or 
-%D actually, it is, but we erase the layer before it's 
-%D used). 
+%D The title page is not added to the main layer (or
+%D actually, it is, but we erase the layer before it's
+%D used).
 
 \long\def\MakeTitlePage#1#2%
   {\startstandardmakeup
    \definereference[thispage][]
-   \switchtobodyfont[32pt] 
+   \switchtobodyfont[32pt]
    \StartSummary{#1}{}#2\StopSummary
    \resetlayer[main]
    \setlayer[temp]{\foundbox{Summary}\CurrentSummary}

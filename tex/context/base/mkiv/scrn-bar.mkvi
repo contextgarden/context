@@ -125,9 +125,10 @@
 
 \def\scrn_bar_buttons_indeed[#settings][#list]%
   {\begingroup
-  %\let\menuparameter\interactionbarparameter
+  %\let\currentinteractionbar\empty
    \setupcurrentinteractionbar[#settings]%
-   \d_scrn_bar_width\interactionbarparameter\c!width
+   \d_scrn_bar_width   \interactionbarparameter\c!width\relax
+   \d_scrn_bar_distance\interactionbarparameter\c!distance\relax
    \ifdim\d_scrn_bar_width=\zeropoint
      \d_scrn_bar_width1.5\emwidth
    \fi
@@ -157,6 +158,10 @@
    \hbox to \scratchdimentwo
      {\setnostrut
       \startsymbolset[\interactionparameter\c!symbolset]%
+      \setupbuttons
+        [#settings,%
+         \c!height=\the\scratchheight,%
+         \c!width=\the\scratchdimenone]%
       \processallactionsinset
         [#list]
         [   \v!page=>\scrn_bar_goto\v!firstpage
@@ -173,11 +178,7 @@
    \endgroup}
 
 \def\scrn_bar_goto#action%
-  {\button
-     [\c!height=\the\scratchheight,\c!width=\the\scratchdimenone]%
-     {\symbol[#action]}% we could expand this one once only
-     [#action]%
-   \hss}
+  {\button{\symbol[#action]}[#action]\hss}
 
 % todo: this will be \letblackruleparameter\c!width\scratchdimenone (faster)
 
@@ -346,31 +347,34 @@
           \advance\scratchcounterfive \plusone
           \ifnum\recurselevel=\firstsubpage\relax \!!doneatrue \fi
           \ifnum\recurselevel=\lastsubpage \relax \!!doneatrue \fi
+          \scratchcountersix\therealsubpageno\recurselevel\relax
           \c_scrn_bar_mode
             \if!!donea
-              \ifnum\recurselevel<\realpageno
+              \ifnum\scratchcountersix<\realpageno
                 \zerocount
-              \else\ifnum\recurselevel>\realpageno
+              \else\ifnum\scratchcountersix>\realpageno
                 \plustwo
               \else
                 \plusfour
               \fi\fi
             \else
               \ifnum\scratchcounterfive=\scratchcountertwo
-                \ifnum\recurselevel<\realpageno
+                \ifnum\scratchcountersix<\realpageno
                   \plusone
-                \else\ifnum\recurselevel>\realpageno
+                \else\ifnum\scratchcountersix>\realpageno
                   \plusthree
                 \else
                   \plustwo
                 \fi\fi
               \else
-                \plusthree
+                \minusone
               \fi
             \fi
-          \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\scrn_bar_goto_indeed\c_scrn_bar_mode}[page(\therealsubpageno\recurselevel)]}%
-          \hss
-          \scratchcounterfive\zerocount}%
+          \ifnum\c_scrn_bar_mode<\zerocount\else
+            \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\scrn_bar_goto_indeed\c_scrn_bar_mode}[realpage(\the\scratchcountersix)]}%
+            \hss
+            \scratchcounterfive\zerocount
+          \fi}%
        \unskip
      \egroup
    }\fi}

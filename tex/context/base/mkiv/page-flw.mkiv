@@ -141,3 +141,42 @@
    \endgroup}
 
 \protect \endinput
+
+% \setuppapersize [A6]
+% \setupbodyfont [pagella, 12pt]
+%
+% \definetextflow [even]  [width=\textwidth]
+% \definetextflow [odd]   [width=\textwidth]
+%
+% \starttextflow [even] \dorecurse{15}{\input bryson} \stoptextflow
+% \starttextflow [odd]  \dorecurse {5}{\input knuth } \stoptextflow
+%
+% \starttext
+%
+% \doloop {
+%     \ifodd\realpageno
+%         \doiftextflowelse{odd} {
+%             \bgroup
+%             \vsize\dimexpr\textheight-\strutdp\relax
+%             \flushtextflow{odd}
+%             \egroup
+%         } {
+%             \null
+%         }
+%         \page
+%     \else
+%         \doiftextflowelse{even} {
+%             \bgroup
+%             \vsize\dimexpr\textheight-\strutdp\relax
+%             \flushtextflow{even}
+%             \egroup
+%         } {
+%           \null
+%         }
+%         \page
+%     \fi
+%     \doiftextflowelse{even}\donothing{\doiftextflowelse{odd}\donothing\exitloop}
+% }
+%
+% \stoptext
+

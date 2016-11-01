@@ -87,6 +87,36 @@ enddef ;
 let triplet    = rgbcolor ;
 let quadruplet = cmykcolor ;
 
+%D Image redefined, for Alan:
+
+vardef image@#(text t) =
+    save currentpicture ;
+    picture currentpicture ;
+    currentpicture := nullpicture ;
+    t ;
+    currentpicture
+    shifted (mfun_labxf@#*lrcorner currentpicture +
+             mfun_labyf@#*ulcorner currentpicture +
+             (1-mfun_labxf@#-mfun_labyf@#)*llcorner currentpicture)
+enddef ;
+
+% 10% faster
+%
+% vardef image@#(text t) =
+%     save currentpicture ;
+%     picture currentpicture ;
+%     currentpicture := nullpicture ;
+%     t ;
+%     currentpicture
+%     if str @# <> "" :
+%         shifted (
+%               mfun_labxf@#               * lrcorner currentpicture
+%          +                 mfun_labyf@#  * ulcorner currentpicture
+%          + (1-mfun_labxf@#-mfun_labyf@#) * llcorner currentpicture
+%         )
+%     fi
+% enddef ;
+
 %D Colors:
 
 newinternal nocolormodel   ; nocolormodel   := 1 ;

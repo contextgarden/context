@@ -36,7 +36,7 @@
 \setupinteractionscreen
   [option=max]
 
-\def\SomeShape%
+\unexpanded\def\SomeShape
   {\resetMPdrawing
    \startMPdrawing
      path p[], q[] ; pair a, b ;
@@ -48,11 +48,11 @@
         p[\recurselevel] := tensecircle (wxy,hxy,.25cm) shifted cxy ;
         fill p[\recurselevel] withcolor .9white  ;
         pickup pencircle scaled .25cm ;
-        \ifnum\recurselevel=\CurrentTopic\space
+        if \recurselevel = \CurrentTopic :
           draw p[\recurselevel] withcolor \MPcolor{ShowColor} ;
-        \else
+        else :
           draw p[\recurselevel] withcolor \MPcolor{DoneColor} ;
-        \fi
+        fi ;
       \stopMPdrawing}%
    \dorecurse{\CurrentMaxItem}
      {\startMPdrawing
@@ -61,11 +61,11 @@
         q[\recurselevel] := tensecircle (wxy,hxy,linewidth) shifted cxy ;
         fill q[\recurselevel] withcolor .9white  ;
         pickup pencircle scaled linewidth ;
-        \ifnum\recurselevel=\CurrentMaxItem\space
+        if \recurselevel = \CurrentMaxItem :
           draw q[\recurselevel] withcolor \MPcolor{ShowColor} ;
-        \else
+        else :
           draw q[\recurselevel] withcolor \MPcolor{DoneColor} ;
-        \fi
+        fi ;
       \stopMPdrawing}%
    \dostepwiserecurse{2}{\CurrentTopic}{1}
      {\startMPdrawing
@@ -90,14 +90,14 @@
    \MPdrawingdonetrue
    \getMPdrawing}
 
-\def\TitlePage#1%
+\unexpanded\def\TitlePage#1%
   {\startstandardmakeup
      \setupalign[middle]
      \def\\{\vfil\bfb\setupinterlinespace}
      \bfd\setupinterlinespace
      \vfil#1\vfil\vfil
    \stopstandardmakeup}
-
+
 \definecolor[PageColor][r=.5,g=.4,b=.3]
 \definecolor[LineColor][r=.7,g=.6,b=.5]
 
@@ -123,19 +123,19 @@
 \doglobal\newcounter\CurrentItem
 \doglobal\newcounter\CurrentTopic
 
-\def\StartIdea%
+\unexpanded\def\StartIdea
   {\doglobal\newcounter\CurrentItem}
 
-\def\StartTopic%
+\unexpanded\def\StartTopic
   {\doglobal\increment\CurrentTopic
    \dostartbuffer[topic-\CurrentTopic][StartTopic][StopTopic]}
 
-\def\StopIdea%
+\unexpanded\def\StopIdea
   {\dorecurse{\CurrentItem}
      {\let\CurrentMaxItem\recurselevel
       \doStopIdea}}
 
-\def\doStopIdea%
+\unexpanded\def\doStopIdea
   {\startstandardmakeup
    \dontcomplain
    \vskip.875cm
@@ -170,14 +170,14 @@
    \vfilll
    \stopstandardmakeup}
 
-\def\StartItem%
+\unexpanded\def\StartItem
   {\doglobal\increment\CurrentItem
    \dostartbuffer[item-\CurrentItem][StartItem][StopItem]}
 
 \lefthyphenmin =\maxdimen
 \righthyphenmin=\maxdimen
 
-\doifnotmode{demo}{\endinput}
+% \doifnotmode{demo}{\endinput}
 
 \starttext
 

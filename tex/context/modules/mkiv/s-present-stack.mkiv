@@ -1,0 +1,194 @@
+%D \module
+%D   [      file=s-present-stack, % was s-pre-11
+%D        version=1999.08.20,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Stack,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[present-stack]
+
+%D This is ancient but shows a few tricks so we keep it around in \MKIV\
+%D anyway.
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [topspace=0cm,
+   backspace=0cm,
+   header=0pt,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+\doifelsemode {asintended} {
+    \setupbodyfont[ludicaot,14.4pt]
+} {
+    \setupbodyfont[pagella,14.4pt]
+}
+
+\setupinteraction
+  [click=no,
+   display=new,
+   state=start]
+
+\setupinteractionscreen
+  [option=max]
+
+\unexpanded\def\SomeShape
+  {\resetMPdrawing
+   \startMPdrawing
+     path p[], q[] ; pair a, b ;
+     StartPage ;
+   \stopMPdrawing
+   \dorecurse{\CurrentTopic}
+     {\startMPdrawing
+        initialize_box(\MPpos{topic-\realfolio-\recurselevel}) ;
+        p[\recurselevel] := tensecircle (wxy,hxy,.25cm) shifted cxy ;
+        fill p[\recurselevel] withcolor .9white  ;
+        pickup pencircle scaled .25cm ;
+        if \recurselevel = \CurrentTopic :
+          draw p[\recurselevel] withcolor \MPcolor{ShowColor} ;
+        else :
+          draw p[\recurselevel] withcolor \MPcolor{DoneColor} ;
+        fi ;
+      \stopMPdrawing}%
+   \dorecurse{\CurrentMaxItem}
+     {\startMPdrawing
+        initialize_box(\MPpos{item-\realfolio-\recurselevel}) ;
+        linewidth := .25cm ;
+        q[\recurselevel] := tensecircle (wxy,hxy,linewidth) shifted cxy ;
+        fill q[\recurselevel] withcolor .9white  ;
+        pickup pencircle scaled linewidth ;
+        if \recurselevel = \CurrentMaxItem :
+          draw q[\recurselevel] withcolor \MPcolor{ShowColor} ;
+        else :
+          draw q[\recurselevel] withcolor \MPcolor{DoneColor} ;
+        fi ;
+      \stopMPdrawing}%
+   \dostepwiserecurse{2}{\CurrentTopic}{1}
+     {\startMPdrawing
+        draw
+          rt  point 3 of p[\recurselevel-1] --
+          lft point 7 of p[\recurselevel]
+          withcolor \MPcolor{ArrowColor} ;
+      \stopMPdrawing}%
+   \dostepwiserecurse{2}{\CurrentMaxItem}{1}
+     {\startMPdrawing
+        draw
+          bot point 9 of q[\recurselevel-1] --
+          top point 5 of q[\recurselevel]
+          withcolor \MPcolor{ArrowColor} ;
+      \stopMPdrawing}%
+   \startMPdrawing
+     draw Page
+       withpen pencircle scaled .5cm
+       withcolor \MPcolor{EdgeColor} ;
+     StopPage ;
+   \stopMPdrawing
+   \MPdrawingdonetrue
+   \getMPdrawing}
+
+\unexpanded\def\TitlePage#1%
+  {\startstandardmakeup
+     \setupalign[middle]
+     \def\\{\vfil\bfb\setupinterlinespace}
+     \bfd\setupinterlinespace
+     \vfil#1\vfil\vfil
+   \stopstandardmakeup}
+
+\definecolor[PageColor][r=.5,g=.4,b=.3]
+\definecolor[LineColor][r=.7,g=.6,b=.5]
+
+\definecolor[PageColor]  [s=.60]
+\definecolor[ShowColor]  [r=.40]
+\definecolor[EdgeColor]  [g=.40]
+\definecolor[DoneColor]  [r=.40,g=.40]
+\definecolor[ArrowColor] [b=.40]
+\definecolor[LineColor]  [r=.60,g=.60]
+\definecolor[GotoColor]  [ArrowColor]
+
+\setupinteraction
+  [color=GotoColor,
+   contrastcolor=GotoColor]
+
+\defineoverlay [shape] [\SomeShape]
+\defineoverlay [next]  [\overlaybutton{forward}] % [{nextpage}]
+
+\setupbackgrounds
+  [page]
+  [background={color,next,shape},
+   backgroundcolor=PageColor]
+
+\doglobal\newcounter\CurrentMaxItem
+\doglobal\newcounter\CurrentItem
+\doglobal\newcounter\CurrentTopic
+
+\unexpanded\def\StartIdea
+  {\doglobal\newcounter\CurrentItem}
+
+\unexpanded\def\StartTopic
+  {\doglobal\increment\CurrentTopic
+   \dostartbuffer[topic-\CurrentTopic][StartTopic][StopTopic]}
+
+\unexpanded\def\StopIdea
+  {\dorecurse{\CurrentItem}
+     {\let\CurrentMaxItem\recurselevel
+      \doStopIdea}}
+
+\unexpanded\def\doStopIdea
+  {\startstandardmakeup
+   \dontcomplain
+   \vskip.875cm
+   \hbox to \makeupwidth
+     {\hfill
+      \dorecurse{\CurrentTopic}
+        {\edef\Topic{topic-\realfolio-\recurselevel}%
+         \hpos
+           {\Topic}
+           {\framed
+              [frame=off,align=middle,offset=.25cm]
+              {\getbuffer[topic-\recurselevel]}}%
+         \ifnum\recurselevel<\CurrentTopic
+           \hskip.875cm
+         \fi}%
+      \hfill}
+   \vskip.875cm
+   \vfilll
+   \dorecurse{\CurrentMaxItem}
+     {\edef\Item{item-\realfolio-\recurselevel}
+      \hbox to \makeupwidth
+        {\hfill
+         \hpos
+           {\Item}
+           {\framed
+              [width=.75\makeupwidth,
+               frame=off,
+               align=middle,offset=.125cm]
+              {\getbuffer[item-\recurselevel]}}%
+          \hfill}
+      \vskip.875cm}
+   \vfilll
+   \stopstandardmakeup}
+
+\unexpanded\def\StartItem
+  {\doglobal\increment\CurrentItem
+   \dostartbuffer[item-\CurrentItem][StartItem][StopItem]}
+
+\setupalign
+  [nothyphenated]
+
+\stopmodule
+
+\continueifinputfile{s-present-stack.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{examples/present-stack-001.tex}
+

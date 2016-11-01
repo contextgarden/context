@@ -63,7 +63,7 @@
    \dorecurse{\CurrentMaxItem}
      {\startMPdrawing
         initialize_box(\MPpos{item-\realfolio-\recurselevel}) ;
-        linewidth := .25cm ; 
+        linewidth := .25cm ;
         p := tensecircle (wxy,hxy,linewidth) shifted cxy ;
         fill p withcolor .9white  ;
         pickup pencircle scaled linewidth ;
@@ -73,8 +73,8 @@
         \else
           draw p withcolor \MPcolor{DoneColor} ;
         \fi
-        dxab := xpart a-xpart b ; 
-        dyab := ypart a-ypart b ; 
+        dxab := xpart a-xpart b ;
+        dyab := ypart a-ypart b ;
         sign := if dyab>0 : - fi 1 ;
         drawarrow
           a --
@@ -82,7 +82,7 @@
           if abs(dyab)>4linewidth :
             a shifted (-dxab/2,+sign*2linewidth) --
             b shifted (+dxab/2,-sign*2linewidth) ..
-          fi 
+          fi
           {left} b shifted (-2linewidth+dxab/2,0) --
           b
           withcolor \MPcolor{ArrowColor} ;
@@ -107,7 +107,7 @@
 \setupinteraction[color=GotoColor,contrastcolor=GotoColor]
 
 \defineoverlay [shape] [\SomeShape]
-\defineoverlay [next]  [\overlaybutton{forward}] 
+\defineoverlay [next]  [\overlaybutton{forward}]
 
 \setupbackgrounds
   [page]
@@ -183,44 +183,44 @@
      \vfil#1\vfil\vfil
    \stopstandardmakeup}
 
-\endinput 
+\doifnotmode{demo}{\endinput}
 
-% \starttext
-% 
-% \StartIdea
-%   \StartTopic
-%      What a topic
-%   \StopTopic
-%   \StartItem
-%     \input reich \relax
-%   \StopItem
-%   \StartItem
-%     \input reich \relax
-%   \StopItem
-%   \StartItem
-%     \input reich \relax
-%   \StopItem
-% \StopIdea
-% 
-% \StartIdea
-%   \StartTopic
-%      One More Nice Idea
-%   \StopTopic
-%   \StartItem
-%     \input reich \relax
-%  \StopItem
-%   \StartItem
-%     \input reich \relax
-%   \StopItem
-% \StopIdea
-% 
-% \StartIdea
-%   \StartTopic
-%      The Last Idea
-%   \StopTopic
-%   \StartItem
-%     \input tufte \relax
-%   \StopItem
-% \StopIdea
-% 
-% \stoptext
+\starttext
+
+\StartIdea
+  \StartTopic
+     What a topic
+  \StopTopic
+  \StartItem
+    \input reich \relax
+  \StopItem
+  \StartItem
+    \input reich \relax
+  \StopItem
+  \StartItem
+    \input reich \relax
+  \StopItem
+\StopIdea
+
+\StartIdea
+  \StartTopic
+     One More Nice Idea
+  \StopTopic
+  \StartItem
+    \input reich \relax
+ \StopItem
+  \StartItem
+    \input reich \relax
+  \StopItem
+\StopIdea
+
+\StartIdea
+  \StartTopic
+     The Last Idea
+  \StopTopic
+  \StartItem
+    \input tufte \relax
+  \StopItem
+\StopIdea
+
+\stoptext

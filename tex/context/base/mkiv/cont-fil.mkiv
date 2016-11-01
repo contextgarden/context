@@ -12,7 +12,7 @@
 %C details.
 
 % todo: use full names and remove calls at the tex end (now integrated in
-% lua library code
+% lua library code .. then we can load it at runtime when needed.
 
 \writestatus{loading}{ConTeXt File Synonyms}
 
@@ -45,21 +45,28 @@
     \definefilesynonym [res-log]         [res-09]
     \definefilesynonym [res-identify]    [res-12]
 
-\definefilesynonym [med-show]        [res-50]
+    \definefilesynonym [med-show]        [res-50]
 
 \definefilesynonym [pre-general]     [pre-00]
-
-\definefilesynonym [pre-original]    [pre-01]
-\definefilesynonym [pre-green]       [pre-02]
-\definefilesynonym [pre-funny]       [pre-03]
-\definefilesynonym [pre-colorful]    [pre-04]
-\definefilesynonym [pre-fuzzy]       [pre-05]
+\definefilesynonym [pre-01]          [present-original]
+\definefilesynonym [pre-original]    [present-original]
+\definefilesynonym [pre-02]          [present-green]
+\definefilesynonym [pre-green]       [present-green]
+\definefilesynonym [pre-03]          [present-funny]
+\definefilesynonym [pre-funny]       [present-funny]
+\definefilesynonym [pre-04]          [present-colorful]
+\definefilesynonym [pre-colorful]    [present-colorful]
+\definefilesynonym [pre-05]          [present-fuzzy]
+\definefilesynonym [pre-fuzzy]       [present-fuzzy]
 \definefilesynonym [pre-polish]      [pre-06]
 \definefilesynonym [pre-spider]      [pre-07]
 \definefilesynonym [pre-wonder]      [pre-08]
-\definefilesynonym [pre-windows]     [pre-09]
-\definefilesynonym [pre-grow]        [pre-10]
-\definefilesynonym [pre-stack]       [pre-11]
+\definefilesynonym [pre-09]          [present-windows]
+\definefilesynonym [pre-windows]     [present-windows]
+\definefilesynonym [pre-10]          [present-grow]
+\definefilesynonym [pre-grow]        [present-grow]
+\definefilesynonym [pre-11]          [present-stack]
+\definefilesynonym [pre-stack]       [present-stack]
 \definefilesynonym [pre-arrows]      [pre-12]
 \definefilesynonym [pre-writing]     [pre-13]
 \definefilesynonym [pre-split]       [pre-14]
@@ -72,7 +79,6 @@
 \definefilesynonym [pre-zoom]        [pre-21]
 \definefilesynonym [pre-cycle]       [pre-22]
 \definefilesynonym [pre-super]       [pre-23]
-
 %definefilesynonym [pre-more]        [pre-24]
 %definefilesynonym [pre-more]        [pre-25]
 \definefilesynonym [pre-more]        [pre-26]
@@ -80,20 +86,17 @@
 %definefilesynonym [pre-more]        [pre-28]
 %definefilesynonym [pre-more]        [pre-29]
 %definefilesynonym [pre-more]        [pre-30]
-
 \definefilesynonym [pre-41]          [present-tiles]
-\definefilesynonym [pre-62]          [present-overlap]
-
 \definefilesynonym [pre-60]          [present-stepwise]
-\definefilesynonym [pre-61]          [present-stepper]
-\definefilesynonym [pre-69]          [present-wobbling]
-\definefilesynonym [pre-70]          [present-punk]
-\definefilesynonym [pre-71]          [present-random]
-
 \definefilesynonym [pre-stepwise]    [present-stepwise]
+\definefilesynonym [pre-61]          [present-stepper]
 \definefilesynonym [pre-stepper]     [present-stepper]
-\definefilesynonym [pre-random]      [present-random]
+\definefilesynonym [pre-62]          [present-overlap]
+\definefilesynonym [pre-69]          [present-wobbling]
 \definefilesynonym [pre-punk]        [present-punk]
+\definefilesynonym [pre-70]          [present-punk]
+\definefilesynonym [pre-random]      [present-random]
+\definefilesynonym [pre-71]          [present-random]
 
 \definefilesynonym [abr-pseudocaps]  [abr-01]
 \definefilesynonym [abr-smallcaps]   [abr-02]

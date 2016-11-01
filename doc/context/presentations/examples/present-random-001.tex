@@ -1,0 +1,38 @@
+% \enablemode[paper]
+% \usemodule[present-stepwise]
+
+\usemodule[present-random]
+
+\usemodule[abr-02]
+
+\doifelsemode {atpragma} {
+    \usetypescriptfile[type-hgz]
+    \usetypescript[palatino-informal]
+    \setupbodyfont[palatino-informal,15pt]
+} {
+    \setupbodyfont[modern-variable,15pt]
+}
+
+\logo [METAPOST] {MetaPost}
+
+\starttext
+
+\StartTopics
+    \StartTopic[1] A \StopTopic
+    \StartTopic[5] B \StopTopic
+    \StartTopic[9] C \StopTopic
+\StopTopics
+
+\StartTopics
+    \StartTopic A \StopTopic
+    \StartTopic B \StopTopic
+    \StartTopic C \StopTopic
+    \StartTopic D \StopTopic
+    \StartTopic E \StopTopic
+    \StartTopic F \StopTopic
+    \StartTopic G \StopTopic
+    \StartTopic H \StopTopic
+    \StartTopic I \StopTopic
+\StopTopics
+
+\stoptext

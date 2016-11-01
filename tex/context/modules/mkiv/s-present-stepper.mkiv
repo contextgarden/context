@@ -1,8 +1,8 @@
 %D \module
-%D   [      file=s-pre-61,
+%D   [      file=s-present-stepper, % was s-pre-61
 %D        version=2004.03.15,
 %D          title=\CONTEXT\ Style File,
-%D       subtitle=Presentation Environment 61,
+%D       subtitle=Presentation Environment Stepper,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -13,9 +13,11 @@
 
 %D Optima
 
+\startmodule[present-stepper]
+
 \usemodule[pre-60]
 
-\doifmodeelse {mkiv} {
+\doifmodeelse {atpragma,asintended} {
     \usetypescriptfile[ghz]
     \definetypeface[mainface][ss][sans][optima-nova][default]
 } {
@@ -24,7 +26,9 @@
 }
 
 \setupbodyfont[mainface,ss,18pt]
-\setupinterlinespace[line=3.25ex]
+
+\setupinterlinespace
+  [line=3.25ex]
 
 \setuppapersize
   [S6][S6]
@@ -98,8 +102,7 @@
 \definecolor [interactioncolor] [r=.8,g=.8,b=.6]
 
 \setupcolors
-  [state=start,
-   textcolor=maincolor]
+  [textcolor=maincolor]
 
 \setupbackgrounds
   [page]
@@ -122,47 +125,38 @@
 \defineoverlay[page][\uniqueMPgraphic{page-\ifcase\realpageno\or one\else plus\fi}]
 
 \startuniqueMPgraphic{page-one}
-  StartPage ;
-    fill Page
-      enlarged 4pt
-      withcolor \MPcolor{pagecolor} ;
-    fill Field[Text][Text]
-      enlarged 10pt
-    % topenlarged   (HeaderHeight+HeaderDistance)
-      leftenlarged  (BackSpace+4pt)
-      rightenlarged (CutSpace +4pt)
-      withcolor OverlayColor ;
-  StopPage ;
+    StartPage ;
+        fill Page
+            enlarged 4pt
+            withcolor \MPcolor{pagecolor} ;
+        fill Field[Text][Text]
+            enlarged 10pt
+          % topenlarged   (HeaderHeight+HeaderDistance)
+            leftenlarged  (BackSpace+4pt)
+            rightenlarged (CutSpace +4pt)
+            withcolor OverlayColor ;
+    StopPage ;
 \stopuniqueMPgraphic
 
 \startuniqueMPgraphic{page-plus}
-  StartPage ;
-    fill Page
-      enlarged 4pt
-      withcolor \MPcolor{pagecolor} ;
-    fill Field[Text][Text]
-      enlarged 10pt
-      leftenlarged  (BackSpace+4pt)
-      rightenlarged (CutSpace+4pt)
-      withcolor OverlayColor ;
-  StopPage ;
+    StartPage ;
+        fill Page
+            enlarged 4pt
+            withcolor \MPcolor{pagecolor} ;
+        fill Field[Text][Text]
+            enlarged 10pt
+            leftenlarged  (BackSpace+4pt)
+            rightenlarged (CutSpace+4pt)
+            withcolor OverlayColor ;
+    StopPage ;
 \stopuniqueMPgraphic
 
-% this needs to be sorted out !
-
-\appendtoks
-    \NormalizeFontHeight \HeadFont        {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
-    \NormalizeFontHeight \TitleFont       {\setstrut\strut\quad} {2.0\headerheight} {SansBold}
-    \NormalizeFontHeight \SubTitleFont    {\setstrut\strut\quad} {1.5\headerheight} {SansBold}
-    \NormalizeFontHeight \SubSubTitleFont {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
-\to \everystarttext
-
-\appendtoks
-    \NormalizeFontHeight \HeadFont        {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
-    \NormalizeFontHeight \TitleFont       {\setstrut\strut\quad} {2.0\headerheight} {SansBold}
-    \NormalizeFontHeight \SubTitleFont    {\setstrut\strut\quad} {1.5\headerheight} {SansBold}
-    \NormalizeFontHeight \SubSubTitleFont {\setstrut\strut\quad} {1.0\headerheight} {SansBold}
-\to \everystoptext
+\startsetups fonts:normalize
+    \definefont[HeadFont]        [SansBold*default ht \the\dimexpr0.750\headerheight\relax]
+    \definefont[TitleFont]       [SansBold*default ht \the\dimexpr1.500\headerheight\relax]
+    \definefont[SubTitleFont]    [SansBold*default ht \the\dimexpr0.375\headerheight\relax]
+    \definefont[SubSubTitleFont] [SansBold*default ht \the\dimexpr0.750\headerheight\relax]
+\stopsetups
 
 \setuphead
   [chapter]
@@ -192,7 +186,9 @@
   [broad,right]
 
 \def\doTitlePage#1#2#3%
-  {\startstandardmakeup[headerstate=high]
+  {\setups[fonts:normalize]
+   \resetsetups[fonts:normalize]
+   \startstandardmakeup[headerstate=high]
      \def\\{\def\\{\endgraf\quad\quad}\endgraf\quad\ignorespaces#2}%
      #1\setstrut\setupinterlinespace\vfil#3\vfil\vfil
    \stopstandardmakeup}
@@ -222,54 +218,10 @@
   [bottom] [text]
   [background=topics]
 
-\continueifinputfile{s-present-stepper.tex}
+\stopmodule
 
-\starttext
+\continueifinputfile{s-present-stepper.mkiv}
 
-\TitlePage{Stepwise\\Refinement}
+\usemodule[present-common]
 
-\Topics{Topics}
-
-\Topic{Female Artists}
-
-\StartSteps
-
-\startitemize
-\item Fiona Apple \FlushStep
-\item Tori Amos \FlushStep
-\item Kate Bush \FlushStep
-\item Heather Nova \FlushStep
-\item Alanis Morissette \FlushStep
-\item Suzanne Vega \FlushStep
-\stopitemize
-
-\StopSteps
-
-\Topic{Male Composers}
-
-\StartSteps
-
-\startitemize
-\item John Adams \FlushStep
-\item Steve Reich \FlushStep
-\item Louis Andriessen \FlushStep
-\item Olivier Messiaen \FlushStep
-\stopitemize
-
-\StopSteps
-
-\Topic{And Some More}
-
-\StartSteps
-
-\startitemize
-\item Mark Hollis   \FlushStep
-\item Roger Waters  \FlushStep
-\item David Gilmore \FlushStep
-\item Peter Gabriel \FlushStep
-\item Randy Newman  \FlushStep
-\stopitemize
-
-\StopSteps
-
-\stoptext
+\inputpresentationfile{examples/present-stepper-001.tex}

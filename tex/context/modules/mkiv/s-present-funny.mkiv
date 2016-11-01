@@ -1,0 +1,208 @@
+%D \module
+%D   [      file=s-present-funny, % was s-pre-03
+%D        version=1998.09.06,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Funny,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[present-funny]
+
+%D This is the third environment for typesetting interactive presentations. I used
+%D this style for a talk on \TEX\ and \JAVASCRIPT\ at \TUG98, mainly because I
+%D didn't want to use the same style three times. Therefore this is a rather simple,
+%D silly style.
+
+\usemodule[pre-general]
+
+%D \macros
+%D  {setupbodyfont}
+%D
+%D We use a large bodyfont. Combined with the fancy
+%D background, this does not leave that much room for text, but
+%D presentations should use much text anyway.
+
+\doifelsemode {asintended} {
+    \setupbodyfont[ludicaot,14.4pt]
+} {
+    \setupbodyfont[pagella,14.4pt]
+}
+
+%D \macros
+%D   {setuppapersize,setuplayout,setupinteractionscreen}
+%D
+%D The page dimensions are set to size \type {S6}, being 600pt by 450pt. We use wide
+%D margins and discard headers and footers. We also launch the document full screen.
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   topspace=75pt,
+   backspace=100pt,
+   header=0pt,
+   footer=0pt]
+
+\setupinteractionscreen
+  [option=max]
+
+%D \macros
+%D   {definecolor}
+%D
+%D Next, color support is turned on and a dark red color is defined. Other red
+%D shades will be derived from this one color.
+
+\definecolor [PageColor]       [black]
+\definecolor [BackgroundColor] [s=.85]
+\definecolor [OrnamentColor]   [r=.75]
+\definecolor [PositionColor]   [s=.55]
+
+%D \macros
+%D   {setupinteraction}
+%D
+%D We turn on interaction mode and use the same color for hyperlinks and redundant
+%D hyperlinks (the ones that point to the current page).
+
+\setupinteraction
+  [state=start,
+   contrastcolor=OrnamentColor,
+   color=OrnamentColor]
+
+%D \macros
+%D   {defineoverlay, setupbackgrounds}
+%D
+%D The joke in this presentation is the elliptical shape of which the bottom part
+%D includes a page indication.
+
+\defineoverlay
+  [PageShape][\useMPgraphic{PageShape}]
+
+\startuseMPgraphic{PageShape}
+    StartPage ;
+        path p ; pair pa, pb ; numeric len ; color contrastcolor ;
+        fill Page withcolor \MPcolor {PageColor} ;
+        pickup pencircle rotated 45 xscaled 10pt yscaled 20pt ;
+        p := Page enlarged (-10pt,-15pt) superellipsed .8 ;
+        p := p shifted (-1.5pt,0) ; % looks better
+        fill p withcolor \MPcolor{BackgroundColor} ;
+        draw p withcolor \MPcolor{OrnamentColor} ;
+        contrastcolor = \MPcolor{PositionColor} ;
+        if (RealPageNumber > 0) and (NOfPages > 0):
+            draw point 5 of p withcolor contrastcolor ;
+            draw point 7 of p withcolor contrastcolor ;
+            len := 2/NOfPages ;
+            pa := point (5+len* RealPageNumber   ) of p ;
+            pb := point (5+len*(RealPageNumber-1)) of p ;
+            draw (p cutafter pa) cutbefore pb
+                withcolor contrastcolor ;
+        fi ;
+    StopPage ;
+\stopuseMPgraphic
+
+%D We use the viewer provided feature to go to the previous or next page.
+
+\defineoverlay[PrevButton][\overlaybutton{PreviousPage}]
+\defineoverlay[NextButton][\overlaybutton{NextPage}]
+
+\setupbackgrounds
+  [page]
+  [background={PageShape,PrevButton}]
+
+\setupbackgrounds
+  [text][text]
+  [background=NextButton]
+
+% or using hard coded next/prev pages:
+%
+% \defineoverlay[PrevButton][\overlaybutton{previouspage}]
+% \defineoverlay[NextButton][\overlaybutton{nextpage}]
+%
+% \setupbackgrounds[state=repeat]
+% \setupbackground[text][text][background=NextButton]
+%
+% or simply (using an repeated layer):
+%
+% \setupbackground[text][background=NextButton]
+
+%D \macros
+%D   {definehead, setuphead}
+%D
+%D Like the other presentation styles, we use \type {\Topic} instead of \type
+%D {\chapters}. This time we don't provide an additional sectioning. So we have:
+%D
+%D \starttyping
+%D \TitlePage{How nice}
+%D
+%D \Topics{This is about ...}
+%D
+%D \Topic{The first one}
+%D
+%D \Topic{Another one}
+%D \stoptyping
+
+\definehead [Topic] [chapter]
+\definehead [Nopic] [title]
+
+\setuphead
+  [Topic,Nopic]
+  [after={\blank[3*medium]},
+   number=no,
+   style=\bfb,
+   page=yes,
+   alternative=middle]
+
+\setuplist
+  [Topic]
+  [alternative=g,
+   interaction=all,
+   before=,
+   after=]
+
+\let\Subject\Topic
+
+%D The tables of contents is associated with \type {\Topics}.
+
+\unexpanded\def\Topics#1%
+  {\Nopic[Topics]{#1}
+   \placelist[Topic][criterium=all]}
+
+\unexpanded\def\Subjects
+  {}
+
+%D Instead of \type {\TitlePage}, one can use the pair \type {\StartTitlePage} --
+%D \type {\StopTitlePage}:
+%D
+%D \starttyping
+%D \StartTitlePage
+%D A Self Made Title
+%D \StopTitlePage
+%D \stoptyping
+
+\unexpanded\def\StartTitlePage
+  {\startstandardmakeup
+   \bfd\setupinterlinespace
+   \setupalign[middle]
+   \vfil
+   \def\\{\vfil\bfb\setupinterlinespace}}
+
+\unexpanded\def\StopTitlePage
+  {\vfil\vfil\vfil
+   \stopstandardmakeup}
+
+\unexpanded\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+\stopmodule
+
+\continueifinputfile{s-present-funny.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{examples/present-funny-001.tex}

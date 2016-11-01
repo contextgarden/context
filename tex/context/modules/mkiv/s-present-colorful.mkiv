@@ -1,0 +1,384 @@
+%D \module
+%D   [      file=s-present-colorful, % was s-pre-04
+%D        version=1998.09.06,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Colorful,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\usemodule[present-general]
+
+\startmodule[present-colorful]
+
+%D \macros
+%D   {setupbodyfont}
+%D
+%D This is just another environment for typesetting interactive presentations. I
+%D wrote this module on behalf of a course I gave for the United Kingdom \TeX\ users
+%D group.
+
+\setupbodyfont[postscript,14.4pt]
+
+%D \macros
+%D   {setupcolors,definecolor}
+%D
+%D I started using dark blue for the navigational elements. In that context, dark
+%D red is a logical choice for the contrast color. While playing around with the
+%D navigational elements I decided to use the not so dominant color yellow for the
+%D status bar.
+%D
+%D A few days before I wrote this style, the recent acquisition of Mondriaans last
+%D painting by the Dutch governement was a hot topic in the Dutch news scenary.
+%D Therefore I decided to replace the rather dull title page by something more
+%D colorful, in mondriaan colors, but far more random than any of his paintings. For
+%D consistence we remap the already defined primary colors.
+%D
+%D The \MKIV\ version is adapted abit so that the title is better visible.
+
+\setupcolors [state=start]
+
+\definecolor [NoneColor] [s=.6]
+\definecolor [GotoColor] [b=.6]        \definecolor[blue]  [GotoColor]
+\definecolor [ExitColor] [r=.6]        \definecolor[red]   [ExitColor]
+\definecolor [JumpColor] [s=.6]
+\definecolor [UserColor] [g=.6]        \definecolor[green] [UserColor]
+%definecolor [StepColor] [r=.6,g=.6]   \definecolor[yellow][StepColor]
+\definecolor [StepColor] [y=.8]        \definecolor[yellow][StepColor]
+
+\definecolor [PageColor] [s=.80]       \definecolor[gray]  [PageColor]
+\definecolor [TextColor] [s=.90]
+\definecolor [TitleColor][s=.90]
+
+%D \macros
+%D   {setuppapersize}
+%D
+%D As usual, we take a screen oriented paper size:
+
+\setuppapersize
+  [S6][S6]
+
+%D \macros
+%D   {setuplayout,setupinteractionscreen}
+%D
+%D The layout definition fits into this $600\times450$ point area, but the
+%D dimensions are somewhat diffused by the text background offset.
+
+\setuplayout
+  [width=530pt,
+   height=400pt,
+   header=0pt,
+   footer=0pt,
+   backspace=15pt,
+   topspace=15pt,
+   bottomdistance=15pt,
+   bottom=10pt,
+   margin=0pt,
+   rightedgedistance=15pt,
+   rightedge=30pt]
+
+\setupinteractionscreen
+  [option=max]
+
+%D \macros
+%D   {setupbackgrounds}
+%D
+%D Both the page and the text area have a gray background. The \type {[text,text]}
+%D area also has an offset. Later we will see that we have to compensate for that in
+%D the navigational areas.
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundcolor=PageColor]
+
+\setupbackgrounds
+  [text][text]
+  [background=color,
+   backgroundcolor=TextColor,
+   backgroundoffset=5pt]
+
+%D \macros
+%D   {setupinteraction}
+%D
+%D For convenient navigation, we turn on interaction.
+
+\setupinteraction
+  [state=start,
+   menu=on,
+   color=UserColor,
+   contrastcolor=NoneColor]
+
+%D \macros
+%D   {setupsubpagenumber}
+%D
+%D When navigating the document, we keep the title page out of sight, therefore we
+%D use sub page numbers.
+
+\setupsubpagenumber
+  [state=start,
+   way=bytext]
+
+%D \macros
+%D   {setupinteractionmenu}
+%D
+%D There is only one interaction menu, located in the right edge of the screen. Both
+%D offsets enlarge the edge by the same amount as the text background offset.
+
+\setupinteractionmenu
+  [right]
+  [state=start,
+   frame=off,
+   strut=no,
+   offset=0pt,
+   inbetween=,
+   bottomoffset=-5pt,
+   topoffset=-5pt]
+
+%D \macros
+%D   {startinteractionmenu}
+%D
+%D The menu itself is not that spectacular. We use the start||stop alternative for
+%D setting the content. The macro \type {\interactioncolor} expands into either the
+%D interaction color or the contrast color, the latter only when no jump is
+%D possible.
+
+\startinteractionmenu[right]
+    \setupinteraction[color=GotoColor]
+    \but [previoussubpage] \Triangle {90}\hsize\interactioncolor \\
+    \vskip10pt
+    \but [nextsubpage]     \Triangle{270}\hsize\interactioncolor \\
+    \vfill
+    \but [PreviousJump]    \Triangle{180}\hsize{NoneColor}       \\
+    \vskip-5pt
+    \but [NextJump]        \Triangle  {0}\hsize{NoneColor}       \\
+\stopinteractionmenu
+
+%D \macros
+%D   {setupinteractionbar}
+%D
+%D The interaction bar at the bottom is also larger than the normal width of the
+%D bottom area.
+
+\setupinteractionbar
+  [width=\textwidth,
+   height=\bottomheight,
+   distance=10pt,
+   color=NoneColor,
+   contrastcolor=StepColor]
+
+%D \macros
+%D   {setupbottomtexts}
+%D
+%D The bar is centered in the middle.
+
+\setupbottomtexts
+  [{\interactionbar[alternative=f]}]
+
+%D We can exit viewing with a close button, located on the rightmost bottom area.
+
+\unexpanded\def\CloseButton
+  {\ifnum\realpageno>\plusone
+     \button
+       [width=\rightedgewidth,
+        height=\bottomheight,
+        offset=overlay,
+        background=color,
+        backgroundcolor=ExitColor,
+        frame=off]
+       {}%
+       [CloseDocument]%
+  \fi}
+
+\setupbottomtexts
+  [edge][][\CloseButton]
+
+%D \macros
+%D   {definesymbol,setupitemize}
+%D
+%D Because some prominent things are rectangular or triangular, we prefer some
+%D different symbols in itemizations:
+
+\definesymbol[1][\blacktriangleright]
+\definesymbol[2][\blacktriangledown]
+\definesymbol[3][\blacktriangleright]
+\definesymbol[4][\blacktriangledown]
+
+\setupitemize[each][color=NoneColor]
+
+%D \macros
+%D   {TitlePage,defineoverlay,button,setupalign,
+%D    setupbackgrounds,setupinteraction,setupinteractionbar,
+%D    startstandardmakeup,switchtobodyfont,setupinterlinespace}
+%D
+%D Now the main layout and navigational definitions are done, it makes sense to
+%D define and tune some structuring commands. First we build the titlepage.
+
+\defineoverlay [TitleGraphic] [\useMPgraphic{title}]
+\defineoverlay [NextPage]     [\overlaybutton{nextpage}]
+
+\unexpanded\def\StartTitlePage
+  {\setupbackgrounds[page][background={color,TitleGraphic,NextPage}]
+   \setupbackgrounds[text][text][background=]
+   \setupinteraction[menu=off]
+   \setupinteractionbar[state=stop]
+   \startpagemakeup
+   \switchtobodyfont[24pt]
+   \bfd\setupinterlinespace
+   \setupalign[middle]
+   \vfil
+   \let\\=\vfil
+   \scale
+     [factor=max]\bgroup
+       \framed
+         [frame=off,
+          align=middle,
+          foregroundcolor=TitleColor,
+          offset=.05\textwidth]
+         \bgroup}
+
+\unexpanded\def\StopTitlePage
+  {\egroup
+   \egroup
+   \vfil\vfil\vfil
+   \stoppagemakeup
+   \setupinteraction[menu=on]
+   \setupinteractionbar[state=start]
+   \setupbackgrounds[page][background=color]
+   \setupbackgrounds[text][text][background=color]}
+
+\unexpanded\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+%D \macros
+%D   {Topic, Nopic, Subject,
+%D    definehead, setuphead}
+%D
+%D We use \type {\Topic} and \type {\Subject} instead of chapters and sections. The
+%D \type {\Nopic} alternative is meant for internal use.
+
+\definehead [Topic]   [chapter]
+\definehead [Nopic]   [title]
+\definehead [Subject] [section]
+
+\setuphead
+  [Topic,Nopic]
+  [after={\blank[3*medium]},
+   number=no,
+   style=\bfb,
+   page=yes,
+   alternative=middle]
+
+\setuphead
+  [Subject]
+  [after=\blank,
+   number=no,
+   page=yes,
+   continue=no,
+   style=\bfa]
+
+%D \macros
+%D   {Topics, Subjects,
+%D    setuplist, placelist, startcolumns}
+%D
+%D This style is meant for the more large presentations, and therefore provided for
+%D a list of topics as well as local lists of subjects. When many topics are
+%D introduces, the list is typeset in columns.
+
+\setuplist
+  [Topic,Subject]
+  [alternative=g,
+   interaction=all,
+   before=,
+   after=]
+
+\setuplist
+  [Topic]
+  [criterium=all]
+
+\unexpanded\def\Topics#1%
+  {\determinelistcharacteristics[Topic]
+   \ifnum\utilitylistlength>0
+     \Nopic[Topics]{#1}
+     \ifnum\utilitylistlength>12
+       \startcolumns
+         \placelist[Topic]
+       \stopcolumns
+     \else
+       \placelist[Topic]
+     \fi
+   \fi}
+
+\unexpanded\def\Subjects%
+  {\placelist[Subject]}
+
+%D Last we define the overlays. Look at the way colors are linked into the macros.
+
+\setupMPvariables
+  [triangle]
+  [width=1cm,
+   rotation=0,
+   color=black]
+
+\startuniqueMPgraphic{triangle}{width,rotation,color}
+    fill triangle xsized \MPvar{width} rotated \MPvar{rotation} withcolor \MPvar{color} ;
+\stopuniqueMPgraphic
+
+\unexpanded\def\Triangle#1#2#3%
+  {\uniqueMPgraphic{triangle}{rotation=#1,width=#2,c:color=#3}}
+
+% \startuseMPgraphic{title}
+%     path p ; numeric sx, sy, cc ;
+%     for i=1 upto 250 :
+%         sx := uniformdeviate 30 ;
+%         sy := uniformdeviate 30 ;
+%         cc := round(uniformdeviate 2) ;
+%         if round(uniformdeviate 1) = 0 :
+%             p := unitsquare xscaled sx yscaled sy ;
+%         else :
+%             p := unittriangle scaled sx rotated (round(uniformdeviate 3) * 90) ;
+%         fi ;
+%         p := p shifted (uniformdeviate OverlayWidth,uniformdeviate OverlayHeight) ;
+%         fill p
+%             withcolor
+%                 if     cc = 0 : "GotoColor"
+%                 elseif cc = 1 : "ExitColor"
+%                 elseif cc = 2 : "StepColor" fi ;
+%     endfor ;
+% \stopuseMPgraphic
+
+\startuseMPgraphic{title}
+    path p ; numeric sx, sy, cc ;
+    fill Page withcolor "StepColor" ;
+    for i=1 upto 1000 :
+        sx := 50 + uniformdeviate 50 ;
+        sy := 50 + uniformdeviate 50 ;
+        cc := round(uniformdeviate 2) ;
+        if round(uniformdeviate 1) = 0 :
+            p := unitsquare xscaled sx yscaled sy ;
+        else :
+            p := unittriangle scaled sx rotated (round(uniformdeviate 3) * 90) ;
+        fi ;
+        p := p shifted (uniformdeviate OverlayWidth,uniformdeviate OverlayHeight) ;
+        fill p
+            withcolor
+                if     cc = 0 : "GotoColor"
+                elseif cc = 1 : "ExitColor"
+                elseif cc = 2 : "StepColor" fi ;
+        draw p
+            withpen pencircle scaled 1/2
+            withcolor white ;
+    endfor ;
+\stopuseMPgraphic
+
+\stopmodule
+
+\continueifinputfile{s-present-colorful.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{examples/present-colorful-001.tex}

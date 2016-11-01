@@ -1,0 +1,11 @@
+\usemodule[present-shaded]
+
+\startdocument
+    \dorecurse {10} {
+        \startchapter[title={Whatever}][color=shade:#1]
+            \section{test}
+            test #1
+            \namedstructureuservariable{chapter}{color}
+        \stopchapter
+    }
+\stopdocument

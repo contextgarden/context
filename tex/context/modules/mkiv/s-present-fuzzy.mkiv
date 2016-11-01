@@ -1,0 +1,225 @@
+%D \module
+%D   [      file=s-present-fuzzy, % was s-pre-05
+%D        version=1998.12.12,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Fuzzy,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\usemodule[present-general]
+
+\startmodule[present-fuzzy]
+
+%D As all styles sofar, this one has the same structuring commands.
+
+\doifelsemode {asintended} {
+    \setupbodyfont[ludicaot,14.4pt]
+} {
+    \setupbodyfont[pagella,14.4pt]
+}
+
+\definecolor [BackgroundColor] [s=.95]
+\definecolor [OrnamentColor]   [r=.6,g=.7,b=.8]
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [width=430pt,
+   height=400pt,
+   header=0pt,
+   footer=0pt,
+   margin=0pt,
+   backspace=25pt,
+   topspace=25pt,
+   rightedgedistance=20pt,
+   rightedge=110pt]
+
+\setupinteractionscreen
+  [option=max]
+
+\setupbackgrounds
+  [state=repeat]
+
+\setupbackgrounds
+  [page]
+  [backgroundcolor=white]
+
+\setupbackgrounds
+  [text][text]
+  [background={HashFrameA,NextPage},
+   backgroundoffset=20pt]
+
+\defineoverlay
+  [HashFrameA]
+  [\useMPgraphic{HashFrameA}]
+
+\defineoverlay
+  [HashFrameB]
+  [\useMPgraphic{HashFrameB}]
+
+\setupinteraction
+  [state=start,
+   menu=on,
+   color=OrnamentColor,
+   contrastcolor=OrnamentColor]
+
+%D Watch how we use a list alternative that matches the menu.
+
+\setupinteractionmenu
+  [right]
+  [background=HashFrameB,
+   style=smallbold,
+   frame=off,
+   offset=10pt,
+   height=35pt,
+   before=,
+   after=,
+   inbetween=\endgraf,
+   width=\rightedgewidth]
+
+\startinteractionmenu[right]
+  \placelist
+    [Topic]
+    [criterium=all,
+     alternative=right,
+     maxwidth=.8\rightedgewidth,
+     interaction=all,
+     before=,
+     after=]
+  \vfill
+  \setupinteractionmenu
+    [right]
+    [height=30pt]
+  \but [CloseDocument] Close \\
+\stopinteractionmenu
+
+\setupwhitespace
+  [big]
+
+\setupblank
+  [big]
+
+%D \macros
+%D   {TitlePage}
+%D
+%D Now the main layout and navigational definitions are done, it makes sense to
+%D define and tune some structuring commands. First we build the titlepage.
+
+\defineoverlay [TitleGraphic] [\useMPgraphic{TitleGraphic}]
+\defineoverlay [NextPage]     [\overlaybutton{forward}]
+
+\unexpanded\def\StartTitlePage
+  {\setupbackgrounds[page][background={color,TitleGraphic,NextPage}]
+   \setupbackgrounds[text][text][background=]
+   \setupinteraction[menu=off]
+   \setupinteractionbar[state=stop]
+   \setuplayout[width=550pt,rightedge=0pt]
+   \startstandardmakeup
+   \switchtobodyfont[24pt]
+   \bfd\setupinterlinespace
+   \setupalign[middle]
+   \vfil
+   \let\\=\vfil}
+
+\unexpanded\def\StopTitlePage
+  {\vfil\vfil\vfil
+   \stopstandardmakeup
+   \setuplayout[width=430pt,rightedge=110pt]
+   \setupinteraction[menu=on]
+   \setupinteractionbar[state=start]
+   \setupbackgrounds[page][background=color]
+   \setupbackgrounds[text][text][background={HashFrameA,NextPage}]}
+
+\unexpanded\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+%D \macros
+%D   {Topics,Subjects}
+%D
+%D Because the lists are in the menu, we don't honor list placement macros.
+
+\unexpanded\def\Topics#1{}
+\unexpanded\def\Subjects{}
+
+%D \macros
+%D   {Topic, Nopic, Subject}
+%D
+%D Since this style is meant for rather flat structured documents, only \type
+%D {\Topic} makes sense.
+
+\definehead [Topic]   [chapter]
+\definehead [Nopic]   [title]
+\definehead [Subject] [section]
+
+\setuphead
+  [Topic, Nopic]
+  [after={\blank[3*medium]},
+   number=no,
+   style=\tfb,
+   page=yes,
+   alternative=middle]
+
+\setuphead
+  [Subject]
+  [after=\blank,
+   number=no,
+   page=yes,
+   continue=no,
+   style=\tfa]
+
+%D We use only one kind of base graphic, which is sligthly
+%D tuned for the different usage.
+
+\startMPdefinitions
+    def random_hash_frame (expr width, height, offset, linewidth ) =
+
+        def delta = ((uniformdeviate .5offset) + .25offset) enddef ;
+        x1 := offset ; y1 := offset ; x2 := width-offset ; y2 := height-offset ;
+
+        drawoptions(withpen pencircle scaled linewidth withcolor \MPcolor{BackgroundColor}) ;
+        fill z1--(x2,y1)--z2--(x1,y2)--cycle ;
+
+        drawoptions(withpen pencircle scaled linewidth withcolor \MPcolor{OrnamentColor}) ;
+        draw (x1-delta,y1)--(x2+delta,y1) ;
+        draw (x2,y1-delta)--(x2,y2+delta) ;
+        draw (x2+delta,y2)--(x1-delta,y2) ;
+        draw (x1,y2+delta)--(x1,y1-delta) ;
+
+        drawoptions();
+        setbounds currentpicture to unitsquare xscaled width yscaled height ;
+    enddef ;
+\stopMPdefinitions
+
+\startuseMPgraphic{HashFrameA}
+    random_hash_frame(OverlayWidth,OverlayHeight,15pt,2pt) ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{HashFrameB}
+    random_hash_frame(OverlayWidth,OverlayHeight, 5pt,2pt) ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{TitleGraphic}
+    numeric offset, width, height ;
+    for i=1 upto 300 :
+        offset := uniformdeviate 10pt ;
+        width  := 2*offset + 30pt + uniformdeviate 30pt ;
+        height := 2*offset + 10pt + uniformdeviate 10pt ;
+        addto currentpicture also
+            image(random_hash_frame(width,height,offset,1pt)) shifted
+            (uniformdeviate OverlayWidth, uniformdeviate OverlayHeight) ;
+    endfor ;
+\stopuseMPgraphic
+
+\stopmodule
+
+\continueifinputfile{s-present-fuzzy.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{examples/present-fuzzy-001.tex}

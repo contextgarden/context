@@ -1317,18 +1317,34 @@ do
 
     -- formatted.command([catcodes,]format[,...])
 
+--     local function formattedflush(parent,c,catcodes,fmt,...)
+--         if type(catcodes) == "number" then
+--             if fmt then
+--                 local result
+--                 pushcatcodes(catcodes)
+--                 result = writer(parent,c,formatters[fmt](...))
+--                 popcatcodes()
+--                 return result
+--             else
+--                 -- no need to change content catcodes
+--                 return writer(parent,c)
+--             end
+--         else
+--             return writer(parent,c,formatters[catcodes](fmt,...))
+--         end
+--     end
+
     local function formattedflush(parent,c,catcodes,fmt,...)
-        if type(catcodes) == "number" then
-            if fmt then
-                local result
-                pushcatcodes(catcodes)
-                result = writer(parent,c,formatters[fmt](...))
-                popcatcodes()
-                return result
-            else
-                -- no need to change content catcodes
-                return writer(parent,c)
-            end
+        if not catcodes then
+            return writer(parent,c)
+        elseif not fmt then
+            return writer(parent,c,catcodes)
+        elseif type(catcodes) == "number" then
+            local result
+            pushcatcodes(catcodes)
+            result = writer(parent,c,formatters[fmt](...))
+            popcatcodes()
+            return result
         else
             return writer(parent,c,formatters[catcodes](fmt,...))
         end
@@ -1356,10 +1372,10 @@ do
     local function caller(parent,catcodes,fmt,...)
         if not catcodes then
             -- nothing
+        elseif not fmt then
+            flush(catcodes)
         elseif type(catcodes) == "number" then
-            if fmt then
-                flush(catcodes,formatters[fmt](...))
-            end
+            flush(catcodes,formatters[fmt](...))
         else
             flush(formatters[catcodes](fmt,...))
         end

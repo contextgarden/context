@@ -578,8 +578,18 @@ do
     local p_left     = (p_whitespace^0 * left) / ""
     local p_right    = (right * p_whitespace^0) / ""
 
+    local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
+    local key        = C((1-space-equal)^1)
+    local tag        = C((1-space-comma)^0)
+    local category   = C((1-space-left)^1)
+    local s_quoted   = ((escape*single) + collapsed + (1-single))^0
+    local d_quoted   = ((escape*double) + collapsed + (1-double))^0
+
+    local reference  = P("@{") * C((R("az","AZ","09") + S("_:-"))^1) * P("}")
+    local r_value    = reference * Carg(1) / resolve
+
     local balanced   = P {
-        [1] = ((escape * (left+right)) + (collapsed + 1 - (left+right))^1 + V(2))^0,
+        [1] = ((escape * (left+right)) + (collapsed + r_value + 1 - (left+right))^1 + V(2))^0,
         [2] = left * V(1) * right,
     }
 
@@ -590,26 +600,22 @@ do
 
     local unbalanced = (left/"") * balanced * (right/"") * P(-1)
 
-    local keyword    = C((R("az","AZ","09") + S("@_:-"))^1)
-    local key        = C((1-space-equal)^1)
-    local tag        = C((1-space-comma)^0)
-    local reference  = keyword
-    local category   = C((1-space-left)^1)
-    local s_quoted   = ((escape*single) + collapsed + (1-single))^0
-    local d_quoted   = ((escape*double) + collapsed + (1-double))^0
-
+    local reference  = P("@") * C((R("az","AZ","09") + S("_:-"))^1)
     local b_value    = p_left * balanced * p_right
  -- local u_value    = p_left * unbalanced * p_right -- get rid of outer { }
  -- local s_value    = (single/"") * (u_value + s_quoted) * (single/"")
  -- local d_value    = (double/"") * (u_value + d_quoted) * (double/"")
     local s_value    = (single/"") * (unbalanced + s_quoted) * (single/"")
     local d_value    = (double/"") * (unbalanced + d_quoted) * (double/"")
-    local r_value    = reference * Carg(1) /resolve
+    local r_value    = reference * Carg(1) / resolve
 
     local somevalue  = d_value + b_value + s_value + r_value
     local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0))
 
-    value = value / function(s) return lpegmatch(lpegpatterns.stripper,s) end
+    local stripper   = lpegpatterns.stripper
+    value            = value / function(s)
+        return lpegmatch(stripper,s)
+    end
 
     local forget     = percent^1 * (1-lineending)^0
     local spacing    = spacing * forget^0 * spacing
@@ -631,6 +637,9 @@ do
     -- loadluadata  -> dataset.luadata
 
     -- converttoxml -> dataset.xmldata from dataset.luadata
+
+    -- author = "al-" # @AHSAI # "," # @SHAYKH # " " # @AHMAD # " Ibn " # @ZAYNIDDIN
+    -- author = {al-@{AHSAI}, @{SHAYKH} @{AHMAD} Ibn @{ZAYNIDDIN}}
 
     function publications.loadbibdata(dataset,content,source,kind)
         if not source then

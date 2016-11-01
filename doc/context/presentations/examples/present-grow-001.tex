@@ -1,0 +1,138 @@
+\usemodule[present-grow]
+
+\def\SomeSymbol#1#2{\definedfont[ContextNavigation at #1]\fontcharbyindex{#2}}
+
+\setupcombinations[distance=\FrameOffset,inbetween=\vskip\FrameOffset]
+
+\starttext
+
+\TitlePage{Some Famous Symbols}
+
+\Topic{Symbols}
+
+\StartSample
+  \startcombination[2*2]
+    {\SomeSymbol{5cm}{1}} {}
+    {\SomeSymbol{5cm}{3}} {}
+    {\SomeSymbol{5cm}{2}} {}
+    {\SomeSymbol{5cm}{4}} {}
+  \stopcombination
+\StopSample
+
+\Topic{Previous}
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{7cm}{1}
+  \StopSample
+  \StartText
+    This symbol can be used to indicate a hyperlink to a
+    previous page.
+  \StopText
+\StopIdea
+
+\StartIdea
+  \StartSubText
+    As one can expect there is also a symbol for going to
+    the next page.
+  \StopSubText
+\StopIdea
+
+\Topic{Previous}
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{9cm}{2}
+  \StopSample
+  \StartText
+     This symbol is actually just a mirrored version of the
+     first symbol we showed.
+  \StopText
+\StopIdea
+
+\NoTopic
+
+\StartText
+  Is this nice or not?
+\StopText
+
+\Topic{First and Last}
+
+\StartSample
+  \SomeSymbol{11cm}{3}
+\StopSample
+
+\StartSample
+  \SomeSymbol{11cm}{4}
+\StopSample
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{5cm}{3}
+  \StopSample
+  \StartText
+    A few screens back, we saw this symbol.
+  \StopText
+\StopIdea
+
+\StartIdea
+  \StartSubText
+    This symbol represents the beginning of something.
+  \StopSubText
+\StopIdea
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{5cm}{4}
+  \StopSample
+  \StartSubText
+    Just like this one represents an end.
+  \StopSubText
+\StopIdea
+
+\StartIdea
+  \StartSubText
+    They look just like the symbols found on audio and
+    video players.
+  \StopSubText
+\StopIdea
+
+\Topic{Summary}
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{6cm}{1}
+  \StopSample
+  \StartText
+    So we have a symbol for previous \unknown
+  \StopText
+\StopIdea
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{6cm}{2}
+  \StopSample
+  \StartSubText
+    \unknown\ and one for next \unknown
+  \StopSubText
+\StopIdea
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{6cm}{3}
+  \StopSample
+  \StartSubText
+    \unknown\ and yet another for first \unknown
+  \StopSubText
+\StopIdea
+
+\StartIdea
+  \StartSample
+    \SomeSymbol{6cm}{4}
+  \StopSample
+  \StartSubText
+    \unknown\ and of course for last.
+  \StopSubText
+\StopIdea
+
+\stoptext

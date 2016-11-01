@@ -1,0 +1,350 @@
+%D \module
+%D   [      file=s-resent-windows, % was s-pre-09
+%D        version=unknown,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Windows,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[present-windows]
+
+%D I made this style when I had to give a presentation on the \MAPS\ bibliography
+%D production for several user group meetings. This style is rather tuned for
+%D combinations of examples and explanations. The colors match the \MAPS\
+%D bibliography colors.
+
+\doifelsemode {asintended} {
+    \setupbodyfont[ludicaot,14.4pt]
+} {
+    \setupbodyfont[pagella,14.4pt]
+}
+
+%D A couple of years later, in 2001 this style was documented and made public. While
+%D documenting, I also changed box building on top of overlays into the now
+%D available layer positioning. So, this styles demonstrates quite some tricks.
+%D
+%D I'm sure that nowadays it can be done with less code but therei sno real need to
+%D rewrite history.
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [topspace=0cm,
+   backspace=0cm,
+   header=0pt,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+%D Local environments can be set by using the setups commands. For downward
+%D compatibility, we keep supporting the \type {\...Settings} hooks. Using local
+%D environments is seldom needed.
+
+\let\TextSettings  \empty
+\let\SampleSettings\empty
+
+\startsetups [text]   \TextSettings   \stopsetups
+\startsetups [sample] \SampleSettings \stopsetups
+
+%D The dimensions are kind of fixed.
+
+\def\FrameWidth  {448pt}
+\def\FrameHeight {348pt}
+\def\FrameOffset {24pt}
+\def\FrameSkip   {12pt}
+
+%D But they {\em can} and {\em will} be changed.
+
+\def\FrameWidth  {408pt}
+\def\FrameHeight {318pt}
+
+%D The funny values come from the $3:4$ display aspect ratio.
+
+\definecolor[PageColor]       [s=.40]
+\definecolor[TextColor]       [s=.90]
+\definecolor[InteractionColor][r=.40]
+\definecolor[LineColor]       [r=.60,g=.60]
+
+%D Of course we go interactive and since we will probably open other documents, we
+%D make sure that the viewer opens a new window.
+
+\setupinteraction
+  [color=InteractionColor,
+   contrastcolor=LineColor,
+   display=new,
+   state=start]
+
+\setupinteractionscreen
+  [option=max]
+
+%D Before we come to the real macros, we do a little bit of tuning.
+
+\setupitemize
+  [1][packed]
+
+\setuptyping
+  [blank=medium]
+
+%D Apart from the titlepage, the page gets a simple colored background. Later we
+%D will activate the background.
+
+\setupbackgrounds
+  [page]
+  [backgroundcolor=PageColor]
+
+%D Everything gets frames by a nice \METAPOST\ frame.
+
+\defineoverlay [background] [\uniqueMPgraphic{background}]
+
+\startuniqueMPgraphic{background}
+    pickup pencircle scaled (1.5*\FrameSkip) ;
+    draw OverlayBox withcolor "PageColor" ;
+    pickup pencircle scaled \FrameSkip ;
+    fill OverlayBox withcolor "TextColor" ;
+    draw OverlayBox withcolor "LineColor" ;
+\stopuniqueMPgraphic
+
+%D We will present samples and explanation pair||wise, so we need a hyperlink that
+%D skips a page. Contrary to \MKII\ we put the next button in the page background and
+%D the two windows get buttons that toggle between them. This is easier.
+
+\defineoverlay [nextpage]     [\overlaybutton{nextpage}]
+\defineoverlay [previouspage] [\overlaybutton{previouspage}]
+\defineoverlay [skippage]     [\overlaybutton{realpage(\number\numexpr\realpageno+2\relax)}]
+\defineoverlay [samepage]     [\overlaybutton{realpage(\number\numexpr\realpageno  \relax)}]
+
+%D Layers are normally used to position multiple content on a specific overlay. Here
+%D we will use them to position only and since the samples and text will swap place,
+%D we will use quite a few layers.
+
+\defineoverlay [text]   [\composedlayer{text}]
+\defineoverlay [sample] [\composedlayer{sample}]
+\defineoverlay [common] [\composedlayer{common}]
+
+%D There are three positions. When combined, the sample and text windows overlap,
+%D otherwise the lone window is centered. We could have used one layer and reversed
+%D the order by setting the \type {direction} parameter, but this approach is more
+%D readable.
+
+\definelayer
+  [text]
+  [x=\makeupwidth,
+   y=\makeupheight,
+   location=lt,
+   hoffset=-\FrameSkip,
+   voffset=-\FrameSkip]
+
+\definelayer
+  [sample]
+  [hoffset=\FrameSkip,
+   voffset=\FrameSkip]
+
+\definelayer
+  [common]
+  [x=.5\makeupwidth,
+   y=.5\makeupheight,
+   location=c]
+
+%D The topic is put in the lower right corner of the text window.
+
+\defineoverlay [topic] [\composedlayer{topic}]
+
+\definelayer
+  [topic]
+  [x=\FrameWidth,
+   y=\FrameHeight,
+   location=lt,
+   hoffset=-\FrameOffset,
+   voffset=-\FrameSkip]
+
+%D The topic is put in a framed box. That way we can make sure that it gets a
+%D background, which looks better when it covers something else. Otherwise we could
+%D have stuck to:
+%D
+%D \starttyping
+%D \def\Topic#1%
+%D   {\setlayer[topic]{\color[PageColor]{\bfb\setstrut#1}}}
+%D \stoptyping
+%D
+%D But, we go for the nice alternative:
+
+\unexpanded\def\Topic#1%
+  {\doifsomething{#1}
+     {\setlayer [topic]
+        {\bfb\setstrut
+         \inframed
+           [frame=off,
+            foregroundcolor=PageColor,
+            offset=0pt,
+            background=color,
+            backgroundcolor=TextColor]
+           {#1}}}}
+
+%D The sample as well as the explanation will be collected in a buffer. That way we
+%D can reuse the content. We could have used a box instead, but can we be sure that
+%D the content is not adapting itself? So, buffers we use.
+
+\resetbuffer[sample]
+\resetbuffer[text]
+
+%D Both the sample and explanation are kind of windowed.
+
+\defineframedtext
+  [SampleText]
+  [width=\FrameWidth,
+   height=\FrameHeight,
+   offset=\FrameOffset,
+   frame=off,
+   align=normal,
+   strut=no,
+   before=,
+   after=,
+   background=background]
+
+%D We safe some keying in by combining things in one macro.
+
+\unexpanded\def\DoSampleText#1#2#3% kind layer overlays
+  {\setupframedtexts[SampleText][background={background,#3}]
+   \setlayer[#2]
+     {\startSampleText[none]
+        \setups[#1]
+        \getbuffer[#1]
+      \stopSampleText}}
+
+\unexpanded\def\StartSample{\dostartbuffer[sample][StartSample][StopSample]}
+\unexpanded\def\StartText  {\dostartbuffer[text]  [StartText]  [StopText]}
+
+%D The following definitions apply at the outer level.
+
+\unexpanded\def\StopSample
+  {\startstandardmakeup
+     \DoSampleText{sample}{common}{samepage}
+   \stopstandardmakeup
+   \resetbuffer[sample]}
+
+\unexpanded\def\StopText
+  {\startstandardmakeup
+     \DoSampleText{text}{common}{topic,samepage}
+   \stopstandardmakeup
+   \resetbuffer[text]}
+
+\setupbackgrounds[page][background={color,nextpage}]
+\setupbackgrounds[text][background=common]
+
+%D When we combine sample and text, we get slightly different definitions. As you
+%D can see we generate two pages. Watch how we manipulate the order of the overlays
+%D and teh nature of the buttons. Here some abstraction really pays off.
+
+\unexpanded\def\StartIdea
+  {\bgroup
+   \let\StopSample\relax
+   \let\StopText  \relax}
+
+\unexpanded\def\StopIdea
+  {\setupbackgrounds[page][background={color,skippage}]
+   \setupbackgrounds[text][background={text,sample}]
+   \startstandardmakeup
+     \DoSampleText{sample}{sample}{nextpage}
+     \DoSampleText{text}  {text}  {topic,nextpage}
+   \stopstandardmakeup
+   \setupbackgrounds[page][background={color,nextpage}]
+   \setupbackgrounds[text][background={sample,text}]
+   \startstandardmakeup
+     \DoSampleText{sample}{sample}{previouspage}
+     \DoSampleText{text}  {text}  {topic,previouspage}
+   \stopstandardmakeup
+   \egroup}
+
+%D The rest of the definitions takes care of the title page. Please don't steal this
+%D one for your own documents.
+
+\defineoverlay[joke] [\useMPgraphic{joke}{n=0}] % not to be changed!
+
+\startuseMPgraphic{joke}{n}
+    StartPage ;
+        path p, q ; numeric w ; pair xy ;
+        set_grid(OverlayWidth,OverlayHeight,OverlayWidth/8,OverlayHeight/8) ;
+        if \MPvar{n}=1 :
+            p := fulldiamond ; fill Page withcolor \MPcolor{TextColor} ;
+        else :
+            p := fullsquare  ; fill Page withcolor \MPcolor{PageColor} ;
+        fi ;
+        forever :
+            xy := center Page randomized (OverlayWidth,OverlayHeight) ;
+            if new_on_grid(xpart xy, ypart xy) :
+                q := (p xyscaled (OverlayWidth/5,OverlayHeight/5))
+                    randomized (\FrameSkip,\FrameSkip)
+                    shifted xy ;
+                w := (\FrameSkip) randomized (\FrameSkip/2) ;
+                draw q withcolor \MPcolor{PageColor} withpen pencircle scaled (1.5w) ;
+                fill q withcolor \MPcolor{TextColor} ;
+                draw q withcolor \MPcolor{LineColor} withpen pencircle scaled (   w) ;
+            fi ;
+            exitif grid_full ;
+        endfor ;
+    StopPage ;
+\stopuseMPgraphic
+
+\defineoverlay[fuzzy][\useMPgraphic{fuzzy}]
+
+\startuseMPgraphic{fuzzy}
+    path p ; numeric w ;
+    p := (fullsquare xyscaled (OverlayWidth,OverlayHeight))
+            randomized (\FrameSkip,\FrameSkip) ;
+    w := (\FrameSkip) randomized (\FrameSkip/2) ;
+    draw p withcolor \MPcolor{PageColor} withpen pencircle scaled (1.5w) ;
+    fill p withcolor \MPcolor{TextColor} ;
+    draw p withcolor \MPcolor{LineColor} withpen pencircle scaled (   w) ;
+\stopuseMPgraphic
+
+%D This time we use a fit window, but with a slightly randomized frame, our
+%D trademark so to say.
+
+\unexpanded\def\StartTitlePage
+  {\bgroup
+   \setupbackgrounds[page][background={joke,nextpage}]
+   \startstandardmakeup
+   \switchtobodyfont[big]
+   \setupframedtexts
+     [SampleText]
+     [background=fuzzy,
+      foregroundcolor=PageColor,
+      width=fit,
+      height=fit,
+      align=middle]
+   \startSampleText[middle]
+   \bfd\setupinterlinespace
+   \def\\{\bfb\setupinterlinespace\vfil\def\\{\vfil}}}
+
+\unexpanded\def\StopTitlePage
+  {\stopSampleText
+   \stopstandardmakeup
+   \egroup}
+
+\unexpanded\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+%D Let's nil some error prone presentation macros.
+
+\let\Subject  \Topic
+\let\Topics   \gobbleoneargument
+\let\Subjects \relax
+
+%D We will avoid \quote {overfull} messages.
+
+\dontcomplain
+
+\stopmodule
+
+\continueifinputfile{s-present-windows.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{examples/present-windows-001.tex}
+

@@ -156,12 +156,6 @@
 
 \continueifinputfile{s-present-shaded.mkiv}
 
-\startdocument
-    \dorecurse {10} {
-        \startchapter[title={Whatever}][color=shade:#1]
-            \section{test}
-            test #1
-            \namedstructureuservariable{chapter}{color}
-        \stopchapter
-    }
-\stopdocument
+\usemodule[present-common]
+
+\inputpresentationfile{examples/present-shaded-001.tex}
