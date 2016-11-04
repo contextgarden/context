@@ -29,14 +29,14 @@ virtual ones that match traditional \TEX\ properties, but this would not be a
 nice solution.
 
 It must be noted that in the process of implementing support for the new fonts,
-Taco turned some noad types (see below) into a generic noad with a subtype. This
+Taco (Hoekwater) turned some noad types (see below) into a generic noad with a subtype. This
 simplified the transition. At the same time, a lot of detailed control was added
 in the way successive characters are spaced.
 
-In \LUATEX\ pre 0.85, the italic correction was always added when a character got
+In \LUATEX\ before 0.85, the italic correction was always added when a character got
 boxed (a frequently used preparation in the math builder). Now this is only done
 for the traditional fonts because, concerning italic correction, the \OPENTYPE\
-standard states: \footnote {Recently version 1.7 was published on the Microsoft
+standard states: \footnote {Recently version 1.8 has been published on the Microsoft
 website.}
 
 \startitemize[n]
@@ -47,7 +47,7 @@ website.}
     \stopitem
     \startitem
         When positioning limits on an N-ary operator (e.g., integral sign), the
-        horizontal position of the upper limit is moved to the right by ½ of the
+        horizontal position of the upper limit is moved to the right by half of the
         italics correction, while the position of the lower limit is moved to the
         left by the same distance.
     \stopitem
@@ -69,24 +69,26 @@ And, with respect to kerning:
 \stopitemize
 
 I must admit that when the first implementation showed up, my natural reaction to
-unexpected behaviour was just to compensate it. One such solution was simply not
+unexpected behaviour was just to compensate for it. One such solution was simply not
 to pass the italic correction to the engine and deal with it in \LUA. In
-practice, that didn't work out well for all cases; one reason was that the engine
+practice, that didn't work well for all cases; one reason was that the engine
 saw the combination of old fonts as a new one and followed a mixed code path.
 \footnote {\CONTEXT\ employed \UNICODE\ math right from the start of \LUATEX.}
 Another approach I tried was a mix of manipulated italic values and \LUA, but
-finally as specifications settled I decided to leave it to the engine completely,
+finally, as specifications settled I decided to leave it to the engine completely,
 if only because successive versions of \LUATEX\ behaved much better.
 
-So, as we are closing in on the first release of \LUATEX, I decided to fix the
-pending issues and sat down to look at the math related code. I must admit that I
+So, as we were closing in on the first stable release of \LUATEX\ (1.0.0
+was released on September~27, 2016; this note was mostly written in the
+early part of 2016), I decided to fix the
+pending issues and sat down to look at the math|-|related code. I must admit that I
 had never looked in depth into that part of the machinery. In the next sections I
-will discuss some of the outcome of this exercise.
+will discuss some of the outcomes of this exercise.
 
 I will also discuss some extensions that have been on the agenda for years. They
 are rather generic and handy, but I must also admit that the \MKIV\ code related
 to math has so many options to control rendering that I'm not sure if they will
-ever be used in \CONTEXT. Nevertheless, these generic extensions fit will into
+ever be used in \CONTEXT. Nevertheless, these generic extensions fit well into
 the set of basic features of \LUATEX.
 
 \stopsection
@@ -94,15 +96,15 @@ the set of basic features of \LUATEX.
 \startsection[title=Italic correction]
 
 As stated above, the normal code path included italic correction in all the math
-boxes that are made. This meant that, in some places, this correction had to be
+boxes made. This meant that, in some places, the correction had to be
 removed and/or moved to another place in the chain. This is a natural side effect
 of the fact that \TEX\ runs over the intermediate list of math nodes (noads) and
 turns them into regular nodes, mostly glyphs, kerns, glue and boxes.
 
-The complication is not so much these italic corrections themselves, because we
+The complication is not so much the italic corrections themselves, because we
 could just continue to do the same, but the fact that these corrections are to be
 interpreted differently in case of integrals. There, the problem is that we have
-to (kind of) look back at what is done in order to determine what italic
+to (kind of) look backward at what is done in order to determine what italic
 corrections are to be applied.
 
 The original solution was to keep track of the applied correction via variables
@@ -138,7 +140,7 @@ that will (for sure) show up in the future.
 \placefigure
   [here]
   [fig:italic-correction-1]
-  {Some examples of italic correction (1).}
+  {Italic correction examples (1): superscripts shifted right and subscripts left.}
   {\scale[width=\textwidth]{\getbuffer[ic-1]}}
 
 In \in {figure} [fig:italic-correction-1] we show two examples of inline italic
@@ -147,24 +149,24 @@ left. In the case of an integral sign, we need to move half the correction. This
 is triggered by the \type {\nolimits} primitive. In \in {figure}
 [fig:italic-correction-2] we show the difference between just an integral
 character and one tagged as having limits. \footnote {We show some boxes so that
-you get an idea what \TEX\ is doing. Basically \TEX\ puts superscripts and
+you can get an idea what \TEX\ is doing. Essentially, \TEX\ puts superscripts and
 subscripts on top of each other with some kern in between and then corrects the
 dimensions.}
 
 \placefigure
   [here]
   [fig:italic-correction-2]
-  {Some examples of italic correction (2).}
+  {Italic correction examples (2): plain integral vs.\ integral with limits}
   {\scale[width=\textwidth]{\getbuffer[ic-2]}}
 
 The amount of correction, if present at all, depends on the font, and in this
-document we use Dejavu math. \in {Figure} [fig:italic-correction-3] shows a few
-variants. As you can see, the amount of correction is very font dependent.
+document we use DejaVu math. \in {Figure} [fig:italic-correction-3] shows a few
+variants. As you can see, the amount of correction is highly font dependent.
 
 \placefigure
   [here]
   [fig:italic-correction-3]
-  {Some examples of italic correction (3).}
+  {Italic correction examples (3): correction amounts are font-dependent.}
   {\startcombination[1*4]
      {\switchtobodyfont [pagella]\scale[width=\textwidth]{\getbuffer[ic-1]}} {cambria}
      {\switchtobodyfont [cambria]\scale[width=\textwidth]{\getbuffer[ic-1]}} {pagella}
@@ -256,7 +258,9 @@ predictable.
 \placefigure
   [here]
   [fig:demoint]
-  {pagella, cambria, latin modern and lucida}
+  {Comparison of integral variants (standard, wrapped, bigger, even
+   bigger) among fonts: \TeX\ Gyre Pagella, Cambria, Latin Modern, and
+   Lucida OT.}
   {\scale[width=\textwidth]{\getbuffer}}
 
 Another observation is that Latin Modern does not provide (at least not yet)
@@ -300,8 +304,8 @@ use the stepwise larger glyphs and before we end up using the composed shapes.
 When no dimensions are specified, the normal construction takes place and the
 only keyword that can be used then is \type {noaxis} which keeps the axis out of
 the calculations. After about a week of experimenting and exploring options, this
-combination made most sense, read: no fuzzy heuristics but predictable behaviour;
-after all, one might need different solutions for different fonts or
+combination made most sense, read: no fuzzy heuristics but predictable behaviour.
+After all, one might need different solutions for different fonts or
 circumstances and the applied logic (and expectations) can (and will, for sure)
 differ per macro package.
 
@@ -351,13 +355,13 @@ differ per macro package.
 \placefigure
   [here]
   [fig:integral-spec]
-  {cambria integrals with dimensions}
+  {Cambria integrals, with dimensions.}
   {\getbuffer[nocontext,cambria,delimiter-integral-spec]}
 
 \placefigure
   [here]
   [fig:leftparent-spec]
-  {cambria left parenthesis with dimensions}
+  {Cambria left parenthesis, with dimensions.}
   {\getbuffer[nocontext,cambria,delimiter-leftparent-spec]}
 
 \def\SampleDelimiterAuto#1#2%
@@ -389,20 +393,19 @@ differ per macro package.
 \placefigure
   [here]
   [fig:integral]
-  {cambria integrals adaptive}
+  {Cambria integrals, adaptive: \type {axis} left and \type {noaxis} right.}
   {\getbuffer[nocontext,cambria,delimiter-integral-auto]}
 
 \placefigure
   [here]
   [fig:leftparent]
-  {cambria left parenthesis adaptive}
+  {Cambria left parenthesis, adaptive: \type {axis} left and \type {noaxis} right.}
   {\getbuffer[nocontext,cambria,delimiter-leftparent-auto]}
-
 \stopsection
 
 \startsection[title=Horizontal delimiters]
 
-Horizontal extenders also got some new options. Although one can achieve similar
+Horizontal extenders also have some new options. Although one can achieve similar
 results with macros, the following might look a bit more natural. Also, some
 properties are lost once the delimiter is constructed, so macros can become
 complex when trying to determine the original dimensions involved.
@@ -428,8 +431,8 @@ $\Uhextensible width 30pt 0 "2194$
 The \type {left}, \type {middle} and \type {right} keywords are only interpreted
 when the requested size can't be met due to stepwise larger glyph selection
 (i.e., before we start using arbitrary sizes made of snippets). \in {Figure}
-[fig:hextensible] shows what we get when we step from 2 up to 20 points with
-increments of 2 points in cambria.
+[fig:hextensible] shows what we get when we step from 2--20 points by
+increments of 2 points in Cambria.
 
 \unexpanded\def\ExtensibleFunA#1%
   {\switchtobodyfont[cambria,17.3pt]%
@@ -467,9 +470,8 @@ increments of 2 points in cambria.
     {Stepwise wider \type {\Uhextensible} with options (cambria).}
     {\getbuffer}
 
-The dimensions and options can also be given to the \type {\Uoverdelimiter},
-\type {\Uunderdelimiter}, \type {\Udelimiterover} and \type {\Udelimiterunder}
-primitives. \in {Figure} [fig:delimiterunder] shows what happens when the
+The dimensions and options can also be given to the four primitives \type {\Uoverdelimiter},
+\type {\Uunderdelimiter}, \type {\Udelimiterover} and \type {\Udelimiterunder}. \in {Figure} [fig:delimiterunder] shows what happens when the
 delimiter is smaller than requested. The samples look like this:
 
 \starttyping
@@ -477,7 +479,7 @@ $\Udelimiterunder width 1pt 0 "2194 {\hbox{\strut !}}
 \stoptyping
 
 When no dimension is given the keywords are ignored as it makes no sense to
-mess with the extensible then.
+mess with the extensible in that case.
 
 \unexpanded\def\DelimiterFunA#1%
   {\switchtobodyfont[cambria,20.7pt]%
@@ -520,15 +522,15 @@ mess with the extensible then.
 
 \startsection[title=Accents]
 
-Already many years ago, I observed that overlaying characters (which happens when
-we negate an operator that has no composed glyph) didn't always give nice results
+Many years ago, I observed that overlaying characters (which happens when
+we negate an operator which has no composed negation glyph) didn't always give nice results
 and, therefore, a tracker item was created. When going over the todo list, I ran
 across a suggested patch by Khaled Hosny that added an overlay accent type. As
 the suggested solution fits in with the other extensions, a variant has been
 implemented.
 
-The results really depend on the quality and completeness of the font, so here we
-will show xits. The placement of an \type {overlay} also depends on the top
+The results definitely depend on the quality and completeness of the font, so here we
+will show \type {xits}. The placement of an \type {overlay} also depends on the top
 accent shift as specified in the font for the used glyph. Instead of a fixed
 criterion for trying to find the best match, an additional \type {fraction}
 (numerator) parameter can be specified. A value of $800$ means that the target
@@ -558,7 +560,7 @@ specification is:
 \stoptyping
 
 \in {Figure} [fig:accent-1] shows what we get when we use different fractions
-(from 800 upto 1500 with a step of 100). We see that \type {\overlay} is not
+(from 800 up to 1500 with a step of 100). We see that \type {\overlay} is not
 always useful.
 
 \startbuffer[accents-1]
@@ -592,7 +594,7 @@ $\Umathaccent overlay "0 "0 "0338 {\tf xxx}$
 \stopbuffer
 
 Normally you can forget about the factor because overlays make most sense for
-inline math, which uses relative small glyphs, so we can get \getbuffer
+inline math, which uses relatively small glyphs, so we can get \getbuffer
 [accents-2] with the following code:
 
 \typebuffer[accents-2]
@@ -635,7 +637,7 @@ Such a fraction is specified as:
 x + { {a} \abovewithdelims () 5pt {b} }
 \stoptyping
 
-A new keyword \type {exact} will nil the excessive spacing:
+A new keyword \type {exact} avoids the excessive spacing:
 
 \starttyping
 x + { {a} \abovewithdelims () exact 5pt {b} }
@@ -722,11 +724,11 @@ $\displaystyle x + {{\strut a} \abovewithdelims() exact 2pt {\strut b}}$
 
 \startsection[title=Skewed fractions]
 
-The math parameter table contains some parameters that specify a horizontal and a
-vertical gap for skewed fractions. Some guessing is needed in order to implement
+The math parameter table contains values specifying horizontal and
+vertical gaps for skewed fractions. Some guessing is needed in order to implement
 something that uses them, so we now provide a primitive similar to the other
 fraction related ones but with a few options that one can use to influence the
-rendering. Of course, a user can mess around a bit with the parameters \type
+rendering. Of course, a user can mess around directly with the parameters \type
 {\Umathskewedfractionhgap} and \type {\Umathskewedfractionvgap}.
 
 The syntax used here is:
@@ -738,7 +740,7 @@ The syntax used here is:
 
 The options can be \type {noaxis} and \type {exact}, a combination of them or
 just nothing. By default we add half the axis to the shifts and also by default
-we zero the width of the middle character. For Latin Modern the result looks as
+we zero the width of the middle character. For Latin Modern, the result looks as
 follows:
 
 \def\ShowA#1#2#3{$x + { {#1} \Uskewed           /    #3 {#2} } + x$}
@@ -827,7 +829,7 @@ $b_{\scriptstyle x=xx}^{\scriptstyle x=xx}$
 $b_{\crampedscriptstyle x=xx}^{\crampedscriptstyle x=xx}$
 \stoptyping
 
-Now we set the following parameters
+Now we set the following parameters:
 
 \startbuffer[setup]
 \Umathordrelspacing\scriptstyle=30mu
@@ -871,7 +873,7 @@ alone or in combinations.
 When we set \type {\mathscriptsmode} to a value other than zero, these are used
 for calculating fixed positions. This is something that is needed in, for
 instance, chemical equations. You can manipulate the mentioned variables to
-achieve different effects, and the logic is shown in the following table. In
+achieve different effects, and the specifications are shown in the following table. In
 order to see the differences in more detail, they are enlarged in \in {figure}
 [fig:mathscriptsmode].
 
@@ -907,7 +909,7 @@ order to see the differences in more detail, they are enlarged in \in {figure}
 
 The changes that we have made are hopefully not too intrusive. Instead of
 extending existing commands, new ones were introduced so that compatibility
-should not really be a problem. To some extend, these extensions violate the
+should not be a significant problem. To some extent, these extensions violate the
 principle that extensions should be done in \LUA, but \TEX\ being a math renderer
 and \OPENTYPE\ replacing old font technology, we felt that we should make an
 exception here. Hopefully, not too many bugs were introduced.

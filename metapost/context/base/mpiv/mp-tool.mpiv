@@ -95,27 +95,14 @@ vardef image@#(text t) =
     currentpicture := nullpicture ;
     t ;
     currentpicture
-    shifted (mfun_labxf@#*lrcorner currentpicture +
-             mfun_labyf@#*ulcorner currentpicture +
-             (1-mfun_labxf@#-mfun_labyf@#)*llcorner currentpicture)
+    if str @# <> "" :
+        shifted (
+              mfun_labxf@#               * lrcorner p
+         +                 mfun_labyf@#  * ulcorner p
+         + (1-mfun_labxf@#-mfun_labyf@#) * llcorner p
+        )
+    fi
 enddef ;
-
-% 10% faster
-%
-% vardef image@#(text t) =
-%     save currentpicture ;
-%     picture currentpicture ;
-%     currentpicture := nullpicture ;
-%     t ;
-%     currentpicture
-%     if str @# <> "" :
-%         shifted (
-%               mfun_labxf@#               * lrcorner currentpicture
-%          +                 mfun_labyf@#  * ulcorner currentpicture
-%          + (1-mfun_labxf@#-mfun_labyf@#) * llcorner currentpicture
-%         )
-%     fi
-% enddef ;
 
 %D Colors:
 

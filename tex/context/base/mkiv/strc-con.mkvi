@@ -914,6 +914,9 @@
      \global\let\currentconstructionexpansion\v!no
    \fi
    %
+   \ifx\currentconstructionreferenceprefix\empty
+     \global\let\currentconstructionreferenceprefix\referenceprefix
+   \fi
    \ifx\currentconstructionexpansion\s!xml
      \xmlstartraw
        \xdef\currentconstructiontitle   {\constructionparameter\c!title}%
@@ -972,7 +975,7 @@
             internal  \nextinternalreference
             order     \nextinternalorderreference
             reference {\currentconstructionreference}
-            prefix    {\referenceprefix}
+            prefix    {\currentconstructionreferenceprefix}
           % block     {\currentsectionblock}
           % section   structures.sections.currentid(),
         }

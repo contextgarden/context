@@ -7745,6 +7745,9 @@ return {
    ["pe"]="حاشیه‌زوج",
    ["ro"]="marginepara",
   },
+  ["exact"]={
+   ["en"]="exact",
+  },
   ["exitoffset"]={
    ["en"]="exitoffset",
   },

@@ -92,7 +92,7 @@ local function parsedxml(root,pattern)
 end
 
 local function parser(str,settings)
-    parsedxml(xml.convert(str),settings and settings.pattern)
+    parsedxml(xml.convert(string.strip(str)),settings and settings.pattern)
 end
 
 visualizers.parsedxml = parsedxml -- for use at the lua end (maybe namespace needed)

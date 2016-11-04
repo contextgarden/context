@@ -1,8 +1,8 @@
 %D \module
-%D   [      file=s-pre-68,
+%D   [      file=s-present-simple, % was: s-pre-68,
 %D        version=2009.08.28,
 %D          title=\CONTEXT\ Style File,
-%D       subtitle=Presentation Environment 68,
+%D       subtitle=Presentation Environment Simple,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -11,7 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\usemodule[pre-60,abr-02]
+\usemodule[present-stepwise]
+
+\startmodule[present-simple]
 
 % style
 
@@ -34,7 +36,7 @@
 
 \startreusableMPgraphic{page}
     StartPage ;
-        fill Page enlarged 5mm withcolor \MPcolor{maincolor} ;
+        fill Page enlarged 5mm withcolor "maincolor" ;
     StopPage ;
 \stopreusableMPgraphic
 
@@ -71,80 +73,79 @@
   [chapter]
   [style=\bfc]
 
-\definehead[Title][title]
+\definehead
+  [Title]
+  [title]
 
-\definesymbol[MyBullet][\uniqueMPgraphic{bullit}]
+\definesymbol
+  [MyBullet]
+  [\uniqueMPgraphic{bullit}]
 
-\setupitemgroup[itemize][each][symbol=MyBullet]
+\setupitemgroup
+  [itemize]
+  [each]
+  [symbol=MyBullet]
 
-\usetypescript[cambria]
-\setupbodyfont[cambria,14.4pt]
+\doifelsemode {asintended,atpragma} {
+    \setupbodyfont[cambria,14.4pt]
+} {
+    \setupbodyfont[pagella,14.4pt]
+}
 
 % interface
 
-\def\StartItems
+\unexpanded\def\StartItems
   {\begingroup
    \StartSteps
    \startitemize
-   \def\StartItems{\startitemize\def\StopItems{\stopitemize}}}
+   \unexpanded\def\StartItems{\startitemize\unexpanded\def\StopItems{\stopitemize}}}
 
-\def\StopItems
+\unexpanded\def\StopItems
   {\FlushStep
    \stopitemize
    \NextPageSymbol
    \StopSteps
    \endgroup}
 
-\def\Item
-  {\def\Item{\FlushStep\item}
+\unexpanded\def\Item
+  {\unexpanded\def\Item{\FlushStep\item}
    \item}
 
-\def\NextPageSymbol
+\unexpanded\def\NextPageSymbol
   {\setlayer
      [extra]
      [preset=rightbottom,offset=2mm]
-     {\ifnum\realpageno=\lastpage
+     {\ifnum\realpageno=\lastpage\relax
        \reuseMPgraphic{last}%
-      \else\ifnum\realpageno>1
+      \else\ifnum\realpageno>\plusone
        \reuseMPgraphic{next}%
       \fi\fi
       \FlushStep}}
 
-\def\TitlePage#1#2%
+\unexpanded\def\TitlePage#1#2%
   {\startstandardmakeup[bottom=,top=]
    \scale[width=\textwidth]{\framed[align=flushleft,foregroundstyle=\bf,frame=off]{#1}}
    \vfilll
    \hfill\scale[width=.5\textwidth]{\framed[align=flushright,foregroundstyle=\bf,frame=off]{#2}}
    \stopstandardmakeup}
 
-\doifnotmode{demo}{\endinput}
+\unexpanded\def\StartTopic#1%
+  {\Title{#1}}
 
-\starttext
+\unexpanded\def\StopTopic
+  {\page}
 
-\TitlePage{I'm running\\out of examples}{Hans Hagen\\Someplace, 2031}
+\startsetups document:start
+    \TitlePage
+      {\documentvariable{title}}
+      {\documentvariable{author}\\
+       \documentvariable{location}}
+\stopsetups
 
-\Title{Alpha}
+\stopmodule
 
-\StartItems
-\Item one
-\Item two
-\Item three
-\StopItems
+\continueifinputfile{s-present-simple.mkiv}
 
-\Title{Beta}
+\usemodule[present-common]
 
-\StartItems
-\Item four
-\Item five
-\Item six
-\StopItems
-
-\Title{Gamma}
-
-\StartItems
-\Item seven
-\Item eight
-\Item nine
-\StopItems
-
-\stoptext
+\inputpresentationfile{examples/present-simple-001.tex}

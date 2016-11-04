@@ -1,0 +1,206 @@
+%D \module
+%D   [      file=s-present-slanted, % was: s-pre-64,
+%D        version=2006.05.11,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Slanted,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style is kept as reference (but can be usedof course). It was used at the
+%D TUG conference in San Diego in 2007 (the very early days if \LUATEX\ and \MKIV).
+%D
+%D This was one of he four presentations, each with a different style. The other
+%D styles were quite ok but I just lack time (ane motivation) to generalize them,
+
+\usemodule[s][pre-60]
+
+\newcounter\shapesynctag
+\newdimen  \slantedshapedimen
+\newdimen  \slantedshapestep
+\newdimen  \slantedshapeleftskip
+\newdimen  \slantedshapeoffset
+\newdimen  \slantedshapeextra
+\newdimen  \slantedshapedelta
+
+\positioningtrue
+
+\unexpanded\def\AdaptShape
+  {\doglobal\increment\shapesynctag
+   \getnoflines\textheight
+   \slantedshapestep\dimexpr\slantedshapeleftskip/\noflines\relax
+   \leftskip\slantedshapeleftskip
+   \scratchdimen\dimexpr
+     \MPy{text:\MPp\shapesynctag}
+    +\MPh{text:\MPp\shapesynctag}
+    -\topskip
+    -\MPy\shapesynctag
+    +\slantedshapeextra
+   \relax
+   \getnoflines\scratchdimen
+   \slantedshapedimen \noflines \slantedshapestep
+   \scratchtoks\emptytoks
+   \dorecurse{30}
+     {\appendetoks
+         \the\dimexpr
+           -\slantedshapedimen
+           +\slantedshapeoffset
+           +\slantedshapedelta
+         \relax
+         \space
+         \the\dimexpr
+           \hsize
+          -2\slantedshapeoffset
+         \relax
+         \space
+      \to\scratchtoks
+      \advance\slantedshapedimen \slantedshapestep}%
+   \parshape 30 \the\scratchtoks
+   \strut\xypos\shapesynctag}
+
+\setuppapersize[S6][S6]
+
+\setupinteraction
+  [state=start,
+   click=no]
+
+\setupinteractionscreen
+  [option=max]
+
+\setuplayout
+  [backspace=12pt,
+   topspace=24pt,
+   height=middle,
+   width=middle,
+   header=0pt,
+   footer=0pt]
+
+\definecolor[maincolor][b=.5]
+\definecolor[somecolor][g=.5]
+\definecolor[morecolor][r=.5]
+
+\setupcolors
+  [textcolor=maincolor]
+
+\setupbodyfont
+  [pagella]
+
+\setupbackgrounds
+  [text]% [text]
+  [background={base,text,invoke}]
+
+\definelayer
+  [text]
+  [width=\textwidth,
+   height=\textheight]
+
+\definelayer
+  [base]
+  [width=\textwidth,
+   height=\textheight]
+
+\definetype [epet] [style=,color=morecolor]
+\setuptype         [style=,color=somecolor]
+\slantedshapeleftskip150pt
+\slantedshapeoffset   12pt
+\slantedshapeextra    10pt
+
+\startreusableMPgraphic{page}
+    StartPage ;
+        fill Page withcolor \MPcolor{maincolor} ;
+        path p ; p := Field[Text][Text] enlarged 6pt ;
+        p :=
+            llcorner p shifted (0,-12pt) --
+            lrcorner p shifted (-150pt,0) --
+            urcorner p shifted (0,12pt) --
+            ulcorner p shifted (150pt,0) --
+            cycle ;
+        fill p
+            withcolor .9white ;
+    StopPage ;
+\stopreusableMPgraphic
+
+\defineoverlay
+  [page]
+  [\reuseMPgraphic{page}]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\setupalign
+  [flushleft]
+
+\unexpanded\def\StartItem
+  {\blank[line]
+   \begingroup
+   \EveryPar {\AdaptShape}} % beware: \ABBREV aan begin gaat fout
+
+\unexpanded\def\StopItem
+  {\endgraf
+   \endgroup
+   \blank[line]}
+
+\unexpanded\def\StartType
+  {\blank[halfline]
+   \begingroup
+   \EveryPar {\AdaptShape}
+   \dontleavehmode \quad}
+
+\unexpanded\def\StopType
+  {\endgraf
+   \endgroup
+   \blank[halfline]}
+
+\unexpanded\def\StartTopic#1%
+  {\page
+   \setlayer
+     [text]
+     [preset=lefttop,
+      rotation=90]
+     {\color[white]{\scale[height=24pt]{\strut#1}}}}
+
+\unexpanded\def\StopTopic
+  {\page}
+
+\startsetups document:start
+    \ifdefined\TitleFont \else
+        \definedfont[TitleFont][Bold*default sa 4]
+    \fi
+    \ifdefined\MainTextFont
+        \MainTextFont
+    \fi
+    \Banner{\documentvariable{location}}
+    \StartTopic{\documentvariable{author}}
+    \startstandardmakeup
+        \TitleFont
+        \setupinterlinespace[line=3ex]
+        \vfill
+        \def\docommand##1{\StartItem\dontleavehmode\quad{\morecolor##1}\StopItem}
+        \processcommacommand[\documentvariable{title}]\docommand
+        \vfill
+    \stopstandardmakeup
+    \StopTopic
+\stopsetups
+
+\startsetups document:stop
+\stopsetups
+
+\unexpanded\def\Banner#1%
+  {\setuplayer
+     [base]
+     [state=repeat]
+   \setlayer
+     [base]
+     [preset=rightbottom]
+     {\color[white]{\scale[height=9pt]{\strut#1}}}}
+
+\continueifinputfile{s-present-slanted.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{tug/2007/tug-2007-fonts.tex}

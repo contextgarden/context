@@ -80,13 +80,13 @@ local andsplitter   = Ct { "start",
 
 local commasplitter = Ct { "start",
     start = Cs(V("outer")) + (p_empty + Cs((V("inner") + (1-p_comma))^1) + p_comma)^1,
-    outer = (P("{")/"") * ((V("inner") + P(1-P("}")))^1) * (P("}")/""),
+    outer = (P("{")/"") * ((V("inner") + P(1-P("}")))^1) * ((P("}") * P(-1))/""),
     inner = P("{") * ((V("inner") + P(1-P("}")))^1) * P("}"),
 }
 
 local spacesplitter = Ct { "start",
     start = Cs(V("outer")) + (Cs((V("inner") + (1-p_space))^1) + p_space)^1,
-    outer = (P("{")/"") * ((V("inner") + P(1-P("}")))^1) * (P("}")/""),
+    outer = (P("{")/"") * ((V("inner") + P(1-P("}")))^1) * ((P("}") * P(-1))/""),
     inner = P("{") * ((V("inner") + P(1-P("}")))^1) * P("}"),
 }
 

@@ -554,7 +554,7 @@ local beginline = C(patterns.beginline)   * CargOne / f_beginline
 local anything  = C(patterns.somecontent) * CargOne / f_default
 
 ----- verbosed  = (space + newline * (emptyline^0) * beginline + anything)^0
-local verbosed  = (space + newline * (emptyline^0) * beginline + emptyline + newline + anything)^0
+local verbosed  = (space + newline * (emptyline^0) * beginline + newline * emptyline + newline + anything)^0
 
 local function write(s,settings) -- bad name
     lpegmatch(verbosed,s,1,settings or false)

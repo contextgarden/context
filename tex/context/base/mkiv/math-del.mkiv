@@ -79,6 +79,8 @@
   [\c!symbol=0,
    \c!command=\v!yes,
    \c!factor=1.5,
+   \c!axis=\v!yes,
+ % \c!exact=\v!yes
    \c!height=\exheight,
    \c!depth=\exheight]
 
@@ -93,33 +95,49 @@
   {\dodoubleempty\math_fenced_extensible_indeed}
 
 \unexpanded\def\math_fenced_extensible_indeed[#1][#2]%
-  {\mathop{%
-     \edef\currentmathextensible{#1}%
-     \edef\p_factor{\mathextensibleparameter\c!factor}%
-     \ifsecondargument
-       \doifassignmentelse{#2}
-         {\setupcurrentmathextensible[#2]%
-          \edef\p_factor{\mathextensibleparameter\c!factor}}%
-         {\edef\p_factor{#2}}%
-     \else
-       \edef\p_factor{\mathextensibleparameter\c!factor}%
-     \fi
-     \Uvextensible
-        axis   % can be an option
-        height \p_factor\dimexpr\mathextensibleparameter\c!height\relax
-        depth  \p_factor\dimexpr\mathextensibleparameter\c!depth\relax
-        \Udelimiter\zerocount\zerocount\mathextensibleparameter\c!symbol
-     \relax}%
-   }
+  {\mathop
+     {\edef\currentmathextensible{#1}%
+      \edef\p_factor{\mathextensibleparameter\c!factor}%
+      \ifsecondargument
+        \doifassignmentelse{#2}
+          {\setupcurrentmathextensible[#2]%
+           \edef\p_factor{\mathextensibleparameter\c!factor}}%
+          {\edef\p_factor{#2}}%
+      \else
+        \edef\p_factor{\mathextensibleparameter\c!factor}%
+      \fi
+      \edef\p_exact{\mathextensibleparameter\c!exact}%
+      \edef\p_axis {\mathextensibleparameter\c!axis}%
+      \edef\p_leftoffset{\mathextensibleparameter\c!leftoffset}%
+      \edef\p_rightoffset{\mathextensibleparameter\c!rightoffset}%
+      \ifx\p_leftoffset\empty\else
+        \mskip\p_leftoffset
+      \fi
+      \Uvextensible
+         \ifx\p_exact\v!yes exact \fi
+         \ifx\p_axis \v!yes axis  \fi
+         height \p_factor\dimexpr\mathextensibleparameter\c!height\relax
+         depth  \p_factor\dimexpr\mathextensibleparameter\c!depth \relax
+         \Udelimiter\zerocount\zerocount\mathextensibleparameter\c!symbol
+      \relax
+      \ifx\p_rightoffset\empty\else
+        \mskip\p_rightoffset
+      \fi}}
 
 \let\mathextensible\math_fenced_extensible
 
-% \startformula
-%     \integral[factor=3] \frac{1}{2}
-%     \integral[5] \frac{1}{2}
-% \stopformula
-
 \definemathextensible[integral][\c!symbol="222B]
+
+% \setupmathextensible[integral][rightoffset=-3mu,exact=yes,factor=2]
+%
+% \let\int\integral
+%
+% \startlines
+% \ruledhbox{$\integral           f\frac{1}{2}$}
+% \ruledhbox{$\integral[factor=1] f\frac{1}{2}$}
+% \ruledhbox{$\integral[factor=3] f\frac{1}{2}$}
+% \ruledhbox{$\int                f\frac{1}{2}$}
+% \stoplines
 
 \unexpanded\def\autointegral#1#2#3%
   {\ifmmode
@@ -138,7 +156,7 @@
      \normalsubscript{#2}%
      \box\nextbox
    \else
-      \char"222B\relax
+     \char"222B\relax
    \fi}
 
 % \startformula
