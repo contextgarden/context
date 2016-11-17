@@ -647,25 +647,70 @@
 \def\font_basics_check_math_bodyfont#style#alternative#size%
   {}
 
+% \def\font_basics_check_text_bodyfont#style#alternative#size% size can be empty (checking needed as \bf is already defined)
+%   {\setugvalue{#style#size}{\font_helpers_set_current_font_style_size{#style}{#size}}% \rma
+%    \setugvalue{#alternative#size}{\font_helpers_set_current_font_alternative_size{#alternative}{#size}}% \sla
+%    \setugvalue{#style#alternative#size}{\font_helpers_set_current_font_style_alternative_size{#style}{#alternative}{#size}}% \rmsla
+%    \ifcsname\s!normal#style\endcsname % text/math check
+%      \expandafter\let\csname#style\expandafter\endcsname\csname\s!normal#style\endcsname
+%    \else
+%      \setugvalue{#style}{\font_helpers_set_current_font_style{#style}}% \rm
+%    \fi
+%    \ifcsname\s!normal#alternative\endcsname % text/math check
+%      \expandafter\let\csname#alternative\expandafter\endcsname\csname\s!normal#alternative\endcsname
+%    \else
+%      \setugvalue{#alternative}{\font_helpers_set_current_font_alternative{#alternative}}% \sl
+%    \fi
+%    \setugvalue{#style\s!x}{\font_helpers_set_current_font_x_style_alternative{#style}}% \rmx
+%    \setugvalue{#style\s!xx}{\font_helpers_set_current_font_xx_style_alternative{#style}}% \rmxx
+%    \setugvalue{#alternative\s!x}{\font_helpers_set_current_font_x_alternative{#alternative}}% \slx
+%    \setugvalue{#alternative\s!xx}{\font_helpers_set_current_font_xx_alternative{#alternative}}% \slxx
+%    \setugvalue{#style#alternative}{\font_helpers_set_current_font_style_alternative{#style}{#alternative}}}% \rmsl
+
+% \def\font_basics_check_text_bodyfont#style#alternative#size% size can be empty (checking needed as \bf is already defined)
+%   {\ifcsname#style#size\endcsname\else
+%      \setugvalue{#style#size}{\font_helpers_set_current_font_style_size{#style}{#size}}% \rma
+%    \fi
+%    \ifcsname#alternative#size\endcsname\else
+%      \setugvalue{#alternative#size}{\font_helpers_set_current_font_alternative_size{#alternative}{#size}}% \sla
+%    \fi
+%    \ifcsname#style#alternative#size\endcsname\else
+%      \setugvalue{#style#alternative#size}{\font_helpers_set_current_font_style_alternative_size{#style}{#alternative}{#size}}% \rmsla
+%    \fi
+%    \ifcsname#style\endcsname\else
+%      \setugvalue{#style}{\font_helpers_set_current_font_style{#style}}% \rm
+%    \fi
+%    \ifcsname#alternative\endcsname\else
+%      \setugvalue{#alternative}{\font_helpers_set_current_font_alternative{#alternative}}% \sl
+%    \fi
+%    \ifcsname#style\s!x\endcsname\else
+%      \setugvalue{#style\s!x }{\font_helpers_set_current_font_x_style_alternative{#style}}% \rmx
+%      \setugvalue{#style\s!xx}{\font_helpers_set_current_font_xx_style_alternative{#style}}% \rmxx
+%    \fi
+%    \ifcsname#alternative\s!x\endcsname\else
+%      \setugvalue{#alternative\s!x }{\font_helpers_set_current_font_x_alternative{#alternative}}% \slx
+%      \setugvalue{#alternative\s!xx}{\font_helpers_set_current_font_xx_alternative{#alternative}}% \slxx
+%    \fi
+%    \ifcsname#style#alternative\endcsname\else
+%      \setugvalue{#style#alternative}{\font_helpers_set_current_font_style_alternative{#style}{#alternative}}% \rmsl
+%    \fi}
+
+\def\font_basics_check_text_bodyfont_step#whatever#body% size can be empty (checking needed as \bf is already defined)
+  {\ifcsname#whatever\endcsname\else
+     \setugvalue{#whatever}{#body}%
+   \fi}
+
 \def\font_basics_check_text_bodyfont#style#alternative#size% size can be empty (checking needed as \bf is already defined)
-  {\setugvalue{#style#size}{\font_helpers_set_current_font_style_size{#style}{#size}}% \rma
-   \setugvalue{#alternative#size}{\font_helpers_set_current_font_alternative_size{#alternative}{#size}}% \sla
-   \setugvalue{#style#alternative#size}{\font_helpers_set_current_font_style_alternative_size{#style}{#alternative}{#size}}% \rmsla
-   \ifcsname\s!normal#style\endcsname % text/math check
-     \expandafter\let\csname#style\expandafter\endcsname\csname\s!normal#style\endcsname
-   \else
-     \setugvalue{#style}{\font_helpers_set_current_font_style{#style}}% \rm
-   \fi
-   \ifcsname\s!normal#alternative\endcsname % text/math check
-     \expandafter\let\csname#alternative\expandafter\endcsname\csname\s!normal#alternative\endcsname
-   \else
-     \setugvalue{#alternative}{\font_helpers_set_current_font_alternative{#alternative}}% \sl
-   \fi
-   \setugvalue{#style\s!x}{\font_helpers_set_current_font_x_style_alternative{#style}}% \rmx
-   \setugvalue{#style\s!xx}{\font_helpers_set_current_font_xx_style_alternative{#style}}% \rmxx
-   \setugvalue{#alternative\s!x}{\font_helpers_set_current_font_x_alternative{#alternative}}% \slx
-   \setugvalue{#alternative\s!xx}{\font_helpers_set_current_font_xx_alternative{#alternative}}% \slxx
-   \setugvalue{#style#alternative}{\font_helpers_set_current_font_style_alternative{#style}{#alternative}}}% \rmsl
+  {\font_basics_check_text_bodyfont_step{#style#size}{\font_helpers_set_current_font_style_size{#style}{#size}}% \rma
+   \font_basics_check_text_bodyfont_step{#alternative#size}{\font_helpers_set_current_font_alternative_size{#alternative}{#size}}% \sla
+   \font_basics_check_text_bodyfont_step{#style#alternative#size}{\font_helpers_set_current_font_style_alternative_size{#style}{#alternative}{#size}}% \rmsla
+   \font_basics_check_text_bodyfont_step{#style}{\font_helpers_set_current_font_style{#style}}% \rm
+   \font_basics_check_text_bodyfont_step{#alternative}{\font_helpers_set_current_font_alternative{#alternative}}% \sl
+   \font_basics_check_text_bodyfont_step{#style\s!x }{\font_helpers_set_current_font_x_style_alternative{#style}}% \rmx
+   \font_basics_check_text_bodyfont_step{#style\s!xx}{\font_helpers_set_current_font_xx_style_alternative{#style}}% \rmxx
+   \font_basics_check_text_bodyfont_step{#alternative\s!x }{\font_helpers_set_current_font_x_alternative{#alternative}}% \slx
+   \font_basics_check_text_bodyfont_step{#alternative\s!xx}{\font_helpers_set_current_font_xx_alternative{#alternative}}% \slxx
+   \font_basics_check_text_bodyfont_step{#style#alternative}{\font_helpers_set_current_font_style_alternative{#style}{#alternative}}}% \rmsl
 
 %D Scaling macros:
 %D
@@ -2410,7 +2455,6 @@
 
 \unexpanded\def\switchtobodyfont[#specification]% could become an ifx
   {\doifsomething{#specification}{\font_basics_switchtobodyfont{#specification}}}
-
 
 \unexpanded\def\usebodyfontparameter#1%
   {\edef\m_font_bodyfont_asked{#1\c!bodyfont}%

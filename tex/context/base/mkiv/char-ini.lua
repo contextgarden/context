@@ -178,6 +178,7 @@ insert(characters.ranges,{
 })
 
 local blocks = allocate {
+    ["adlam"]                                      = { first = 0x1E900, last = 0x1E95F,             description = "Adlam" },
     ["aegeannumbers"]                              = { first = 0x10100, last = 0x1013F,             description = "Aegean Numbers" },
     ["ahom"]                                       = { first = 0x11700, last = 0x1173F,             description = "Ahom" },
     ["alchemicalsymbols"]                          = { first = 0x1F700, last = 0x1F77F,             description = "Alchemical Symbols" },
@@ -202,6 +203,7 @@ local blocks = allocate {
     ["bassavah"]                                   = { first = 0x16AD0, last = 0x16AFF,             description = "Bassa Vah" },
     ["batak"]                                      = { first = 0x01BC0, last = 0x01BFF,             description = "Batak" },
     ["bengali"]                                    = { first = 0x00980, last = 0x009FF, otf="beng", description = "Bengali" },
+    ["bhaiksuki"]                                  = { first = 0x11C00, last = 0x11C6F,             description = "Bhaiksuki" },
     ["blockelements"]                              = { first = 0x02580, last = 0x0259F, otf="bopo", description = "Block Elements" },
     ["bopomofo"]                                   = { first = 0x03100, last = 0x0312F, otf="bopo", description = "Bopomofo" },
     ["bopomofoextended"]                           = { first = 0x031A0, last = 0x031BF, otf="bopo", description = "Bopomofo Extended" },
@@ -247,6 +249,7 @@ local blocks = allocate {
     ["cyrillic"]                                   = { first = 0x00400, last = 0x004FF, otf="cyrl", description = "Cyrillic" },
     ["cyrillicextendeda"]                          = { first = 0x02DE0, last = 0x02DFF, otf="cyrl", description = "Cyrillic Extended-A" },
     ["cyrillicextendedb"]                          = { first = 0x0A640, last = 0x0A69F, otf="cyrl", description = "Cyrillic Extended-B" },
+    ["cyrillicextendedc"]                          = { first = 0x01C80, last = 0x01C8F,             description = "Cyrillic Extended-C" },
     ["cyrillicsupplement"]                         = { first = 0x00500, last = 0x0052F, otf="cyrl", description = "Cyrillic Supplement" },
     ["deseret"]                                    = { first = 0x10400, last = 0x1044F, otf="dsrt", description = "Deseret" },
     ["devanagari"]                                 = { first = 0x00900, last = 0x0097F, otf="deva", description = "Devanagari" },
@@ -297,6 +300,7 @@ local blocks = allocate {
     ["georgian"]                                   = { first = 0x010A0, last = 0x010FF, otf="geor",  description = "Georgian" },
     ["georgiansupplement"]                         = { first = 0x02D00, last = 0x02D2F, otf="geor",  description = "Georgian Supplement" },
     ["glagolitic"]                                 = { first = 0x02C00, last = 0x02C5F, otf="glag",  description = "Glagolitic" },
+    ["glagoliticsupplement"]                       = { first = 0x1E000, last = 0x1E02F,              description = "Glagolitic Supplement" },
     ["gothic"]                                     = { first = 0x10330, last = 0x1034F, otf="goth",  description = "Gothic" },
     ["grantha"]                                    = { first = 0x11300, last = 0x1137F,              description = "Grantha" },
     ["greekandcoptic"]                             = { first = 0x00370, last = 0x003FF, otf="grek",  description = "Greek and Coptic" },
@@ -316,6 +320,7 @@ local blocks = allocate {
     ["highsurrogates"]                             = { first = 0x0D800, last = 0x0DB7F,              description = "High Surrogates" },
     ["hiragana"]                                   = { first = 0x03040, last = 0x0309F, otf="kana",  description = "Hiragana" },
     ["ideographicdescriptioncharacters"]           = { first = 0x02FF0, last = 0x02FFF,              description = "Ideographic Description Characters" },
+    ["ideographicsymbolsandpunctuation"]           = { first = 0x16FE0, last = 0x16FFF,              description = "Ideographic Symbols and Punctuation" },
     ["imperialaramaic"]                            = { first = 0x10840, last = 0x1085F,              description = "Imperial Aramaic" },
     ["inscriptionalpahlavi"]                       = { first = 0x10B60, last = 0x10B7F,              description = "Inscriptional Pahlavi" },
     ["inscriptionalparthian"]                      = { first = 0x10B40, last = 0x10B5F,              description = "Inscriptional Parthian" },
@@ -377,6 +382,7 @@ local blocks = allocate {
     ["malayalam"]                                  = { first = 0x00D00, last = 0x00D7F, otf="mlym",  description = "Malayalam" },
     ["mandaic"]                                    = { first = 0x00840, last = 0x0085F, otf="mand",  description = "Mandaic" },
     ["manichaean"]                                 = { first = 0x10AC0, last = 0x10AFF,              description = "Manichaean" },
+    ["marchen"]                                    = { first = 0x11C70, last = 0x11CBF,              description = "Marchen" },
     ["mathematicalalphanumericsymbols"]            = { first = 0x1D400, last = 0x1D7FF, math = true, description = "Mathematical Alphanumeric Symbols" },
     ["mathematicaloperators"]                      = { first = 0x02200, last = 0x022FF, math = true, description = "Mathematical Operators" },
     ["meeteimayek"]                                = { first = 0x0ABC0, last = 0x0ABFF,              description = "Meetei Mayek" },
@@ -394,6 +400,7 @@ local blocks = allocate {
     ["modi"]                                       = { first = 0x11600, last = 0x1165F,              description = "Modi" },
     ["modifiertoneletters"]                        = { first = 0x0A700, last = 0x0A71F,              description = "Modifier Tone Letters" },
     ["mongolian"]                                  = { first = 0x01800, last = 0x018AF, otf="mong",  description = "Mongolian" },
+    ["mongoliansupplement"]                        = { first = 0x11660, last = 0x1167F,              description = "Mongolian Supplement" },
     ["mro"]                                        = { first = 0x16A40, last = 0x16A6F,              description = "Mro" },
     ["multani"]                                    = { first = 0x11280, last = 0x112AF,              description = "Multani" },
     ["musicalsymbols"]                             = { first = 0x1D100, last = 0x1D1FF, otf="musc",  description = "Musical Symbols" },
@@ -401,6 +408,7 @@ local blocks = allocate {
     ["myanmarextendeda"]                           = { first = 0x0AA60, last = 0x0AA7F,              description = "Myanmar Extended-A" },
     ["myanmarextendedb"]                           = { first = 0x0A9E0, last = 0x0A9FF,              description = "Myanmar Extended-B" },
     ["nabataean"]                                  = { first = 0x10880, last = 0x108AF,              description = "Nabataean" },
+    ["newa"]                                       = { first = 0x11400, last = 0x1147F,              description = "Newa" },
     ["newtailue"]                                  = { first = 0x01980, last = 0x019DF,              description = "New Tai Lue" },
     ["nko"]                                        = { first = 0x007C0, last = 0x007FF, otf="nko",   description = "NKo" },
     ["numberforms"]                                = { first = 0x02150, last = 0x0218F,              description = "Number Forms" },
@@ -416,6 +424,7 @@ local blocks = allocate {
     ["opticalcharacterrecognition"]                = { first = 0x02440, last = 0x0245F,              description = "Optical Character Recognition" },
     ["oriya"]                                      = { first = 0x00B00, last = 0x00B7F, otf="orya",  description = "Oriya" },
     ["ornamentaldingbats"]                         = { first = 0x1F650, last = 0x1F67F,              description = "Ornamental Dingbats" },
+    ["osage"]                                      = { first = 0x104B0, last = 0x104FF,              description = "Osage" },
     ["osmanya"]                                    = { first = 0x10480, last = 0x104AF, otf="osma",  description = "Osmanya" },
     ["pahawhhmong"]                                = { first = 0x16B00, last = 0x16B8F,              description = "Pahawh Hmong" },
     ["palmyrene"]                                  = { first = 0x10860, last = 0x1087F,              description = "Palmyrene" },
@@ -466,6 +475,8 @@ local blocks = allocate {
     ["taixuanjingsymbols"]                         = { first = 0x1D300, last = 0x1D35F,              description = "Tai Xuan Jing Symbols" },
     ["takri"]                                      = { first = 0x11680, last = 0x116CF,              description = "Takri" },
     ["tamil"]                                      = { first = 0x00B80, last = 0x00BFF, otf="taml",  description = "Tamil" },
+    ["tangut"]                                     = { first = 0x17000, last = 0x187FF,              description = "Tangut" },
+    ["tangutcomponents"]                           = { first = 0x18800, last = 0x18AFF,              description = "Tangut Components" },
     ["telugu"]                                     = { first = 0x00C00, last = 0x00C7F, otf="telu",  description = "Telugu" },
     ["thaana"]                                     = { first = 0x00780, last = 0x007BF, otf="thaa",  description = "Thaana" },
     ["thai"]                                       = { first = 0x00E00, last = 0x00E7F, otf="thai",  description = "Thai" },
@@ -674,16 +685,17 @@ characters.linebreaks = {
 
     -- non-tailorable line breaking classes
 
-    ["bk"] = "mandatory break",                              -- nl, ps : cause a line break (after)
-    ["cr"] = "carriage return",                              -- cr : cause a line break (after), except between cr and lf
-    ["lf"] = "line feed",                                    -- lf : cause a line break (after)
-    ["cm"] = "combining mark",                               -- combining marks, control codes : prohibit a line break between the character and the preceding character
-    ["nl"] = "next line",                                    -- nel : cause a line break (after)
-    ["sg"] = "surrogate",                                    -- surrogates :do not occur in well-formed text
-    ["wj"] = "word joiner",                                  -- wj : prohibit line breaks before and after
-    ["zw"] = "zero width space",                             -- zwsp : provide a break opportunity
-    ["gl"] = "non-breaking (glue)",                          -- cgj, nbsp, zwnbsp : prohibit line breaks before and after
-    ["sp"] = "space",                                        -- space : enable indirect line breaks
+    ["bk"]  = "mandatory break",                             -- nl, ps : cause a line break (after)
+    ["cr"]  = "carriage return",                             -- cr : cause a line break (after), except between cr and lf
+    ["lf"]  = "line feed",                                   -- lf : cause a line break (after)
+    ["cm"]  = "combining mark",                              -- combining marks, control codes : prohibit a line break between the character and the preceding character
+    ["nl"]  = "next line",                                   -- nel : cause a line break (after)
+    ["sg"]  = "surrogate",                                   -- surrogates :do not occur in well-formed text
+    ["wj"]  = "word joiner",                                 -- wj : prohibit line breaks before and after
+    ["zw"]  = "zero width space",                            -- zwsp : provide a break opportunity
+    ["gl"]  = "non-breaking (glue)",                         -- cgj, nbsp, zwnbsp : prohibit line breaks before and after
+    ["sp"]  = "space",                                       -- space : enable indirect line breaks
+    ["zwj"] = "zero width joiner",                           -- prohibit line breaks within joiner sequences
 
     -- break opportunities
 
@@ -716,6 +728,8 @@ characters.linebreaks = {
     ["ai"] = "ambiguous (alphabetic or ideographic)",        -- characters with ambiguous east asian width : act like al when the resolved eaw is n; otherwise, act as id
     ["al"] = "alphabetic",                                   -- alphabets and regular symbols : are alphabetic characters or symbols that are used with alphabetic characters
     ["cj"] = "conditional japanese starter",                 -- small kana : treat as ns or id for strict or normal breaking.
+    ["eb"] = "emoji base",                                   -- all emoji allowing modifiers, do not break from following emoji modifier
+    ["em"] = "emoji modifier",                               -- skin tone modifiers, do not break from preceding emoji base
     ["h2"] = "hangul lv syllable",                           -- hangul : form korean syllable blocks
     ["h3"] = "hangul lvt syllable",                          -- hangul : form korean syllable blocks
     ["hl"] = "hebrew letter",                                -- hebrew : do not break around a following hyphen; otherwise act as alphabetic

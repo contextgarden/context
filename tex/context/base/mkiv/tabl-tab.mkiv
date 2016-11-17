@@ -981,7 +981,10 @@
 \def\tabl_table_normal_full_rule
   {\starttablenoalign
    \!ttGetHalfRuleThickness
+   \scratchdistance\directtablesparameter\c!openup
+   \ifzeropt\scratchdistance\else\kern\scratchdistance\fi
    \hrule\s!height\scratchdimen\s!depth\scratchdimen
+   \ifzeropt\scratchdistance\else\kern\scratchdistance\fi
    \stoptablenoalign}
 
 \def\tabl_table_normal_short_rule % was: \!ttShortHrule
@@ -2268,6 +2271,7 @@
    \c!commands=,
    \c!background=,
    \c!backgroundcolor=,
-   \c!split=\v!auto]
+   \c!split=\v!auto,
+   \c!openup=\zeropoint]
 
 \protect \endinput

@@ -117,6 +117,9 @@
                     <cd:constant type="strut"/>
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <cd:parameter name="openup">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

@@ -130,7 +130,10 @@
 
 % \setupmathextensible[integral][rightoffset=-3mu,exact=yes,factor=2]
 %
-% \let\int\integral
+% \let\inlineint \int
+% \let\displayint\integral
+%
+% \unexpanded\def\int{\ifmmode\inlineordisplaymath\inlineint\displayint\else\normalint\fi}
 %
 % \startlines
 % \ruledhbox{$\integral           f\frac{1}{2}$}

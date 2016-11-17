@@ -1,0 +1,347 @@
+%D \module
+%D   [      file=s-pre-19,
+%D        version=2000.07.31,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 19,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style is made in the process or writing the \METAFUN\
+%D manual. It exploits a few tricks, like graphics calculated
+%D using positional information. It also uses the (at that
+%D moment) new menu list placement alternative. If you forget
+%D about the definition of the button shapes, which is
+%D complicated in any system, this style is not even that hard
+%D to follow. Watch how the left side of the buttons follow
+%D the right side of the text graphic.
+%D
+%D While playing bit with this style, the random alternative
+%D made me think of those organic building with non equal
+%D windows (we have a few in The Netherlands), so I decided to
+%D label this style as \type {pre-organic}.
+%D
+%D At the end of this file, there is a small test file, so
+%D when you process this file with \TEXEXEC\ and the options
+%D \type {--mode=demo} and \type {--pdf}, you will get a demo
+%D document.
+
+%D We use one of the standard screen \quote {paper} sizes, and
+%D map it onto the same size, so that we get a nicely cropped
+%D page.
+
+\setuppapersize
+  [S6][S6]
+
+%D Like in the \METAFUN\ manual, we use the Palatino as main
+%D bodyfont. This font is quite readable on even low
+%D resolution screens, although I admit that this style is
+%D developed using an $1400\times1050$ pixel LCD screen, so I
+%D may be biased.
+
+%\startmode[asintended] \setupbodyfont[ppl] \stopmode
+
+%D The layout specification sets up a text area and a right
+%D edge area where the menus will go. Watch the rather large
+%D edge distance. By setting the header and footer dimensions
+%D to zero, we automatically get rid of page body ornaments,
+%D like the pagenumber.
+
+\setuplayout
+  [topspace=48pt,
+   backspace=48pt,
+   cutspace=12pt,
+   width=400pt,
+   margin=0cm,
+   rightedge=88pt,
+   rightedgedistance=48pt,
+   header=0cm,
+   footer=0cm,
+   height=middle]
+
+%D We use a moderate, about a line height, interparagraph
+%D white space.
+
+\setupwhitespace
+  [big]
+
+%D Of course we use colors, since on computer displays they
+%D come for free.
+
+\setupcolors
+  [state=start]
+
+\definecolor [red]    [r=.75]
+\definecolor [yellow] [r=.75,g=.75]
+\definecolor [gray]   [s=.50]
+\definecolor [white]  [s=.85]
+
+\definecolor [PageColor]        [yellow]
+\definecolor [TextColor]        [white]
+\definecolor [OrnamentColor]    [red]
+\definecolor [InteractionColor] [red]
+\definecolor [ContrastColor]    [gray]
+
+%D This is an interactive document, so we enable interaction.
+%D In this style, we disable the viewer's \quote {highlight a
+%D hyperlink when it's clicked on} feature. We will use a
+%D menu, so we enable menus. Later we will see the contract
+%D color |<|hyperlinks gets that color when we are already on
+%D the location|>| in action.
+
+\setupinteraction
+  [state=start,
+   click=off,
+   color=InteractionColor,
+   contrastcolor=ContrastColor,
+   menu=on]
+
+%D The menu itself is set up as follows. Because we will
+%D calculate menubuttons based on their position on the page,
+%D we have to keep track of the positions. Therefore, we set
+%D the \type {position} variable to \type {yes}.
+
+\setupinteractionmenu
+  [right]
+  [frame=off,
+   position=yes,
+   align=middle,
+   topoffset=-.75cm,
+   bottomoffset=-.75cm,
+   color=gray,
+   contrastcolor=gray,
+   style=bold,
+   before=,
+   after=]
+
+%D The menu content is rather sober: a list of topics (later
+%D we will define the command that generates topic entries),
+%D and a close button.
+
+\startinteractionmenu[right]
+  \placelist[Topic][alternative=right]
+  \vfill
+  \but [CloseDocument] close \\
+\stopinteractionmenu
+
+%D We have now arived at the more interesting part of the style
+%D definition: the graphic that goes in the page background.
+%D Because this graphic will change, we define a usable
+%D \METAPOST\ graphic. Page backgrounds are recalculated each
+%D page, opposite to the other backgrounds that are calculated
+%D when a new background is defined, or when repetitive
+%D calculation is turned on.
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\defineoverlay
+  [page]
+  [\useMPgraphic{page}]
+
+\setupMPvariables
+  [page]
+  [alternative=3]
+
+\startuseMPgraphic{page}
+
+  \includeMPgraphic{rightsuperbutton}
+
+  StartPage ;
+
+    path p, q ; pickup pencircle scaled 3pt ;
+
+    p := Field[Text][Text] enlarged 36pt superellipsed .90 ;
+
+    fill Page withcolor \MPcolor{PageColor} ;
+    fill p    withcolor \MPcolor{TextColor} ;
+    draw p    withcolor \MPcolor{OrnamentColor} ;
+
+    p := Field[Text][Text] enlarged 48pt superellipsed .90 ;
+
+    def right_menu_button (expr nn, rr, pp, xx, yy, ww, hh, dd) =
+      if (pp>0) and (rr>0) :
+        q := rightsuperbutton(p,xx,yy,RightEdgeWidth,hh) ;
+        fill q withcolor \MPcolor{TextColor} ;
+        draw q withcolor if rr=2 : \MPcolor{ContrastColor}
+                            else : \MPcolor{InteractionColor} fi ;
+      fi ;
+    enddef ;
+
+    \MPmenubuttons{right}
+
+  StopPage ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{page}
+
+  \includeMPgraphic{rightsuperbutton}
+
+  StartPage ;
+
+    numeric alternative, seed, superness, squeezeness, randomness ;
+    path p, q ; transform t ;
+
+    alternative := \MPvar{alternative} ;
+    seed        := uniformdeviate 100 ;
+
+    if alternative > 10 :
+      superness   := .85  + ((\realfolio-1)/\lastpage) * .15 ;
+      squeezeness := 12pt - ((\realfolio-1)/\lastpage) * 10pt ;
+    else :
+      superness   := .90 ;
+      squeezeness := 12pt ;
+    fi ;
+
+    randomness := squeezeness ;
+
+    alternative := alternative mod 10 ;
+
+    t := identity if alternative=3: shifted (9pt,-9pt) fi ;
+
+    % first we draw the shape that surrounds the text
+
+    randomseed := seed ;
+
+    p := Field[Text][Text] enlarged if
+      alternative = 1 : 36pt superellipsed superness   elseif
+      alternative = 2 : 36pt squeezed      squeezeness elseif
+      alternative = 3 : 36pt randomized    randomness  else
+                      : 36pt                           fi ;
+    pickup pencircle scaled 3pt ;
+
+    fill Page withcolor \MPcolor{PageColor} ;
+    fill p    withcolor \MPcolor{TextColor} ;
+    draw p    withcolor \MPcolor{OrnamentColor} ;
+
+    % we set p to the wider shape from which we will chip off pieces
+
+    randomseed := seed ;
+
+    p := ( Field[Text][Text] enlarged if
+      alternative = 1 : 48pt superellipsed superness   elseif
+      alternative = 2 : 48pt squeezed      squeezeness elseif
+      alternative = 3 : 36pt randomized    randomness  else
+                      : 48pt                           fi ) transformed t ;
+
+    % calls to *_menu_button are generated automatically ...
+
+    vardef right_menu_button (expr nn, rr, pp, xx, yy, ww, hh, dd) =
+      save q ; path q ;
+      if (pp>0) and (rr>0) :
+        q := rightsuperbutton(p,xx,yy,RightEdgeWidth,hh) ; % \MPw{menu:right:\realfolio}
+        fill q withcolor \MPcolor{TextColor} ;
+        draw q withcolor if rr=2 : \MPcolor{ContrastColor}
+                            else : \MPcolor{InteractionColor} fi ;
+      fi ;
+    enddef ;
+
+    % ... and inserted when the graphic data is flushed here ...
+
+    \MPmenubuttons{right}
+
+  StopPage ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{rightsuperbutton}
+
+vardef rightsuperbutton (expr pat, xpos, ypos, wid, hei) =
+
+  save p, ptop, pbot, t, b, edge, shift, width, height ;
+  path p, ptop, pbot ; pair t, b ; numeric edge, shift, width, height ;
+
+  edge  := xpos + wid ; shift := ypos + hei ;
+
+  p := rightpath pat ;
+
+  ptop := ((-infinity,shift)--(edge,shift)) ;
+  pbot := ((-infinity,shift-hei)--(edge,shift-hei)) ;
+
+  t := p intersection_point ptop ;
+  b := p intersection_point pbot ;
+
+  p := subpath(0,xpart (p intersectiontimes ptop)) of p ;
+  p := subpath(xpart (p intersectiontimes pbot),length(p)) of p ;
+
+  (p --               t -- point 1 of ptop &
+        point 1 of ptop -- point 1 of pbot &
+        point 1 of pbot -- b
+     -- cycle)
+
+enddef ;
+
+\stopuseMPgraphic
+
+%D Topics are identified with \type {\Topic}, which is an
+%D instance of chapter headings. The number is made invisible.
+%D Since it still is a numbered section header, \CONTEXT\ will
+%D write the header to the table of contents.
+
+\definehead
+  [Topic]
+  [chapter]
+
+\setuphead
+  [Topic]
+  [number=no]
+
+%D We will use a bold font in the table of contents. We also
+%D force a complete list.
+
+\setuplist
+  [Topic]
+  [criterium=all,
+   style=bold,
+   before=,
+   after=]
+
+%D The \type {\TitlePage} macro looks horrible, because we
+%D want to keep the interface simple: a list of small
+%D sentences, separated by \type {\\}.
+
+\def\StartTitlePage
+  {\startstandardmakeup
+     \switchtobodyfont[big]
+     \def\\{\vfill\bfb\let\\=\par}
+     \bfd\setupinterlinespace\gray
+     \vskip.5cm}
+
+\def\StopTitlePage
+  {\\\vskip.5cm  % the \\ is really needed
+   \stopstandardmakeup}
+
+\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+%D A couple of goodies:
+
+\def\Subject   {\Topic}
+\def\Topics  #1{}
+\def\Subjects  {}
+
+%D For those who want to test:
+
+\doifnotmode{demo}{\endinput}
+
+\starttext
+
+\setupMPvariables[page][alternative=3]
+
+\TitlePage
+  {A Few Nice Quotes\\
+   A Simple Style Demo\\
+   Hans Hagen, August 2000}
+
+
+\Topic {Douglas R. Hofstadter} \input douglas \page
+\Topic {Donald  E. Knuth}      \input knuth   \page
+\Topic {Edward  R. Tufte}      \input tufte   \page
+\Topic {Hermann    Zapf}       \input zapf    \page
+%Topic {David   F. Stork}      \input stork   \page
+
+\stoptext

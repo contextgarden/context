@@ -1404,7 +1404,7 @@ local function attribute(collected,a,default)
     end
 end
 
-local function chainattribute(collected,arguments) -- todo: optional levels
+local function chainattribute(collected,arguments,default) -- todo: optional levels
     if collected and #collected > 0 then
         local e = collected[1]
         while e do
@@ -1413,12 +1413,16 @@ local function chainattribute(collected,arguments) -- todo: optional levels
                 local a = at[arguments]
                 if a then
                     contextsprint(notcatcodes,a)
+                    return
                 end
             else
                 break -- error
             end
             e = e.__p__
         end
+    end
+    if default then
+        contextsprint(notcatcodes,default)
     end
 end
 

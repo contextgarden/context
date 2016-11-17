@@ -48,9 +48,9 @@ local application = logs.application {
 
 local gmatch, match, gsub, find, lower, format = string.gmatch, string.match, string.gsub, string.find, string.lower, string.format
 local concat = table.concat
-local split = string.split
+local split, splitlines, strip = string.split, string.splitlines, string.strip
 local are_equal = table.are_equal
-local tonumber = tonumber
+local tonumber, tostring, rawget = tonumber, tostring, rawget
 local lpegmatch = lpeg.match
 local formatters = string.formatters
 
@@ -74,7 +74,6 @@ local split_space_table = lpeg.tsplitat(" ")
 local split_space_two   = lpeg.splitat (" ")
 local split_range_two   = lpeg.splitat ("..")
 local split_colon_table = lpeg.tsplitat(lpeg.P(" ")^0 * lpeg.P(";") * lpeg.P(" ")^0)
-
 
 local skipped = {
     [0x002C6] = true, -- MODIFIER LETTER CIRCUMFLEX ACCENT
@@ -331,7 +330,7 @@ function scripts.unicode.update()
     end
     for i=1,#standardizedvariants do
         local si = standardizedvariants[i]
-        local pair, addendum = si[1], string.strip(si[2])
+        local pair, addendum = si[1], strip(si[2])
         local first, second = lpegmatch(split_space_two,pair) -- string.splitup(pair," ")
         first = tonumber(first,16)
         second = tonumber(second,16)
@@ -362,7 +361,7 @@ end
 local preamble
 
 local function splitdefinition(str,index)
-    local l = string.splitlines(str)
+    local l = splitlines(str)
     local t = { }
     if index then
         for i=1,#l do
@@ -420,7 +419,7 @@ function scripts.unicode.load()
         report("using: %s",fullname)
         dofile(fullname)
         --
-        preamble = data:gsub("characters%.data%s*=%s*%{.*","")
+        preamble = gsub(data,"characters%.data%s*=%s*%{.*","")
         --
         textfiles = {
             unicodedata          = resolvers.findfile("unicodedata.txt")          or "",
@@ -456,7 +455,9 @@ end
 
 function scripts.unicode.save(filename)
     if preamble then
-        io.savedata(filename,preamble .. table.serialize(characters.data,"characters.data", { hexify = true, noquotes = true } ))
+        local data = table.serialize(characters.data,"characters.data", { hexify = true, noquotes = true })
+        data = gsub(data,"%{%s+%[0xFE0E%]=\"text style\",%s+%[0xFE0F%]=\"emoji style\",%s+%}","variants_emoji")
+        io.savedata(filename,preamble .. data)
     end
 end
 
@@ -469,7 +470,7 @@ function scripts.unicode.extras() -- old code
     local fullname = resolvers.findfile("blocks.txt") or ""
     if fullname ~= "" then
         local data   = io.loaddata(fullname)
-        local lines  = string.splitlines(data)
+        local lines  = splitlines(data)
         local map    = { }
         local blocks = characters.blocks
         local result = { }

@@ -1,0 +1,19 @@
+\usemodule[present-balls]
+
+\starttext
+
+\TitlePage{Do you know \TEX ?}
+
+\startbuffer
+\StartIdea
+    \StartItem We use \TEX\ for typesetting       \unknown \StopItem
+    \StartItem mathematical text                  \unknown \StopItem
+    \StartItem but also for text that has no math \unknown \StopItem
+    \StartItem or presentations like this         \unknown \StopItem
+    \StartItem and whatever you can come up with!          \StopItem
+\StopIdea
+\stopbuffer
+
+\dorecurse{6}{\getbuffer}
+
+\stoptext

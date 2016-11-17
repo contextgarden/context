@@ -1,0 +1,186 @@
+%D \module
+%D   [      file=s-pre-15,
+%D        version=1999.09.01,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 15,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is one of the styles I made for the presentation on
+%D the \NTS\ project at Euro\TeX\ 1998. You need balls to let
+%D \TEX\ typeset graphics, but this style demonstrates that it
+%D can be done.
+%D
+%D This presentation is meant for presentations that build up
+%D an idea stepwise.
+%D
+%D \starttyping
+%D \TitlePage{Do you know \TEX ?}
+%D
+%D \StartIdea
+%D   \StartItem We use \TEX\ for typesetting       \unknown \StopItem
+%D   \StartItem mathematical text                  \unknown \StopItem
+%D   \StartItem but also for text that has no math \unknown \StopItem
+%D   \StartItem or presentations like this         \unknown \StopItem
+%D   \StartItem and whatever you can come up with!          \StopItem
+%D \StopIdea
+%D \stoptyping
+
+%D The basic layout is rather simple and used as much of the
+%D screen as possible.
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [backspace=25pt,
+   topspace=25pt,
+   width=middle,
+   height=middle,
+   header=0pt,
+   footer=0pt]
+
+\setupinteraction
+  [state=start,
+   display=new,
+   color=LineColor,
+   contrastcolor=LineColor,
+   click=no]
+
+\setupinteractionscreen
+  [option=max]
+
+\startmode[asintended] \setupbodyfont[lbr] \stopmode
+
+\setupbodyfont[14.4pt]
+
+%D We use a lot of color. You can remap them if you want
+%D different ones. The ideas circulate over the colors.
+
+\setupcolors
+  [state=start]
+
+\definecolor[TextColor][s=.8]
+\definecolor[PageColor][s=.6]
+\definecolor[LineColor][s=.4]
+
+\definecolor[red]  [r=.4]        \definecolor[cyan]   [g=.4,b=.4]
+\definecolor[green][g=.4]        \definecolor[magenta][r=.4,b=.4]
+\definecolor[blue] [b=.4]        \definecolor[yellow] [r=.4,g=.4]
+
+\definecolor[linecolor 1][red]   \definecolor[linecolor 5][cyan]
+\definecolor[linecolor 2][green] \definecolor[linecolor 6][magenta]
+\definecolor[linecolor 3][blue]  \definecolor[linecolor 4][yellow]
+
+%D We use variables to make sure that the graphics are reused
+%D but unique.
+
+\setupMPvariables[pageframe][pagecolor=PageColor,linecolor=LineColor]
+\setupMPvariables[textframe][textcolor=TextColor,linecolor=LineColor]
+
+\setupbackgrounds
+  [page]
+  [background={pageframe,nextpage}]
+
+\defineoverlay [pageframe] [\uniqueMPgraphic{pageframe}]
+\defineoverlay [textframe] [\uniqueMPgraphic{textframe}]
+\defineoverlay [nextpage]  [\overlaybutton{forward}]
+
+\startuniqueMPgraphic{pageframe}{pagecolor,linecolor}
+  path p ; p := fullsquare xyscaled (OverlayWidth,OverlayHeight) ;
+  pickup pencircle scaled 10pt ;
+  fill p withcolor \MPvar{pagecolor} ;
+  draw p withcolor \MPvar{linecolor} ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{textframe}{textcolor,linecolor}
+  path p ; p := fullcircle xyscaled (OverlayWidth,OverlayHeight) ;
+  pickup pencircle scaled 10pt ;
+  fill p withcolor \MPvar{textcolor} ;
+  draw p withcolor \MPvar{linecolor} ;
+\stopuniqueMPgraphic
+
+%D The rest of the file implements the nasty part: typesetting
+%D text embedded in a graphic. The text is collected in a box
+%D so that we can reuse it.
+
+\newbox\CollectedIdeas
+\newcounter\CurrentTopic
+
+\def\StartItem%
+  {\setbox\CollectedIdeas=\hbox\bgroup
+     \ifdim\wd\CollectedIdeas>0pt \unhbox\CollectedIdeas\hskip25pt \fi
+     \setbox\scratchbox=\hbox\bgroup
+       \framed
+         [width=160pt,height=160pt,align=middle,frame=off,
+          background=textframe,offset=15pt,top=\vfill,bottom=\vfill]
+        \bgroup}
+
+\def\StopItem%
+  {\egroup
+   \egroup
+   \setbox\scratchbox=\hbox{\lower.5\ht\scratchbox\box\scratchbox}%
+   \ht\scratchbox=.5\ht\scratchbox
+   \dp\scratchbox=  \ht\scratchbox
+   \box\scratchbox
+   \egroup
+   \startstandardmakeup
+     \dontcomplain
+     \leftskip       0pt plus 50pt
+     \rightskip      0pt plus 50pt
+     \parfillskip    0pt
+     \baselineskip 100pt
+     \unhcopy\CollectedIdeas
+   \stopstandardmakeup}
+
+\def\StartIdea%
+  {\ifnum\CurrentTopic=6 \doglobal\newcounter\CurrentTopic \fi
+   \doglobal\increment\CurrentTopic
+   \definecolor[LineColor][linecolor \CurrentTopic]
+   \setbox\CollectedIdeas=\null}
+
+\def\StopIdea%
+  {}
+
+\def\StartTitlePage%
+  {\startstandardmakeup
+   \setupalign[middle]
+   \def\\{\vfil\bfb\setupinterlinespace}
+   \bfd\setupinterlinespace
+   \vfil}
+
+\def\StopTitlePage%
+  {\vfil\vfil
+   \stopstandardmakeup}
+
+\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+\doifnotmode{demo}{\endinput}
+
+%D A simple test on functionality.
+
+\setupoutput[pdftex]
+
+\starttext
+
+\TitlePage{Do you know \TEX ?}
+
+\startbuffer
+\StartIdea
+  \StartItem We use \TEX\ for typesetting       \unknown \StopItem
+  \StartItem mathematical text                  \unknown \StopItem
+  \StartItem but also for text that has no math \unknown \StopItem
+  \StartItem or presentations like this         \unknown \StopItem
+  \StartItem and whatever you can come up with!          \StopItem
+\StopIdea
+\stopbuffer
+
+\dorecurse{6}{\getbuffer}
+
+\stoptext

@@ -1,0 +1,191 @@
+%D \module
+%D   [      file=s-present-split, % s-pre-14,
+%D        version=1999.08.20,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Split,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D In the process of making a couple of simple styles for \EUROTEX\ 99, I came to
+%D this one. The joke is in the pagenumber. This style can be used for short
+%D presentations with much text.
+
+\startmodule[present-split]
+
+\startmode[asintended,atpragma] \setupbodyfont[lucidaot] \stopmode
+
+\setupbodyfont[14.4pt]
+
+%D Since we expect text, we can best be very tolerant.
+
+\setuptolerance
+  [verytolerant,stretch]
+
+%D As most styles we choose a large screen page size.
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [width=fit,
+   rightedge=3cm,
+   margin=0pt,
+   rightedgedistance=2cm,
+   height=middle,
+   header=0pt,
+   footer=0pt,
+   topspace=1cm,
+   backspace=1cm]
+
+%D We only use two colors, named \type {ColorOne} and \type {ColorTwo}:
+
+\definecolor [ColorOne] [r=.6,g=.4,b=.4]
+\definecolor [ColorTwo] [r=.4,g=.6,b=.6]
+
+%D If you've looked at the demo file, you will have noticed that the background
+%D consists of four pieces: two filled rectangles and two half numbers. In older
+%D versions these are put on the page using four overlays, here we use a much
+%D cleaner implementation is the following. If you hate \METAPOST, you can run
+%D this style in the specified mode:
+
+\setupbackgrounds
+  [page]
+  [background={number}]
+
+\defineoverlay[number][\useMPgraphic{number}]
+
+\startuseMPgraphic{number}
+    StartPage ;
+        picture Left, Right ;
+        numeric Shift ; Shift := -TextWidth - BackSpace - RightEdgeDistance/2 ;
+        fill Page withcolor "ColorOne" ;
+        fill Page leftenlarged Shift withcolor "ColorTwo" ;
+        if RealPageNumber > 1 :
+            Left := Right := textext("\bf\folio") ysized 3cm ;
+            clip Right to boundingbox Right shifted ( bbwidth(Right)/2,0) ;
+            clip Left  to boundingbox Left  shifted (-bbwidth(Left) /2,0) ;
+            draw Left  shifted (-Shift,2.25cm) withcolor "ColorTwo" ;
+            draw Right shifted (-Shift,2.25cm) withcolor "ColorOne" ;
+        fi ;
+    StopPage ;
+\stopuseMPgraphic
+
+%D We use the simple label typesetting present in \METAPOST\ because digits are
+%D seldom kerned so real \TEX ing is not needed. As in the previous method, we let
+%D the graphics overlap so that we don't get white lines due to rounding problems in
+%D viewers.
+%D
+%D We put a button behind the text (this overlay is calculated each page).
+
+\defineoverlay
+  [nextpage]
+  [\overlaybutton{nextpage}]
+
+\setupbackgrounds
+  [text]
+  [backgroundoffset=.5cm,
+   background=nextpage]
+
+%D We still have to turn on interaction mode.
+
+\setupinteraction
+  [state=start,
+   display=new,
+   menu=on]
+
+\setupinteraction
+  [color=,
+   contrastcolor=]
+
+%D Next we define structuring commands.
+
+\definehead[Topic]  [chapter] \setuphead[Topic]  [style=\bfc]
+\definehead[Subject][section] \setuphead[Subject][style=\bfa]
+
+\setuphead
+  [Topic,Subject]
+  [number=no,
+   after={\blank[big]}]
+
+%D Because we will provide a menu, we don't offer lists.
+
+\let\Topics  \gobbleoneargument
+\let\Subjects\relax
+
+%D The table of contents goes to the right edge.
+
+\startinteractionmenu[right]
+  \setupinteraction
+    [color=black,
+     contrastcolor=Two]
+  \placelist
+    [Topic]
+    [alternative=e,
+     frame=off,
+     criterium=all]
+  \vfill
+\stopinteractionmenu
+
+\setuplist
+  [Topic]
+  [width=\rightedgewidth,
+   maxwidth=\rightedgewidth,
+   style=\bfa]
+
+%D We safe some space:
+
+\setupwhitespace
+  [medium]
+
+\setupblank
+  [medium]
+
+%D In the titlepage, we still use the \TEX\ overlays, so that we don't have to
+%D define a second graphic.
+
+\unexpanded\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+\unexpanded\def\StartTitlePage
+  {\startstandardmakeup
+   \setupalign[middle]
+   \unexpanded\def\\{\vfil\bfb\setupinterlinespace}
+   \bfd\setupinterlinespace
+   \vfil}
+
+\unexpanded\def\StopTitlePage
+  {\vfil\vfil\vfil
+   \stopstandardmakeup}
+
+\startsetups document:start
+    \StartTitlePage
+        \documentvariable{title}
+        \doifsomething {\documentvariable{subtitle}} {
+            \\
+            \documentvariable{subtitle}
+        }
+        \doifsomething {\documentvariable{location}} {
+            \\
+            \documentvariable{location}
+        }
+    \StopTitlePage
+\stopsetups
+
+\startsetups document:stop
+    %
+\stopsetups
+
+\stopmodule
+
+%D This is it.
+
+\continueifinputfile{s-present-split.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{examples/present-split-001.tex}

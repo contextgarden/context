@@ -1,0 +1,263 @@
+%D \module
+%D   [      file=s-pre-14,
+%D        version=1999.08.20,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment 14,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D In the process of making a couple of simple styles for
+%D \EUROTEX\ 99, I came to this one. The joke is in the
+%D pagenumber. This style can be used for short presentations
+%D with much text.
+
+\startmode[asintended] \setupbodyfont[lbr] \stopmode
+
+\setupbodyfont[14.4pt]
+
+%D Since we expect text, we can best be very tolerant.
+
+\setuptolerance
+  [verytolerant,stretch]
+
+%D As most styles we choose a large screen page size.
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [width=fit,
+   rightedge=3cm,
+   margin=0pt,
+   rightedgedistance=2cm,
+   height=middle,
+   header=0pt,
+   footer=0pt,
+   topspace=1cm,
+   backspace=1cm]
+
+%D We only use two colors, named \type {One} and \type
+%D {Two}:
+
+\setupcolors
+  [state=start]
+
+\definecolor [One] [r=.6,g=.4,b=.4]
+\definecolor [Two] [r=.4,g=.6,b=.6]
+
+%D If you've looked at the demo file, you will have noticed
+%D that the background consists of four pieces: two filled
+%D rectangles and two half numbers. These are put on th epage
+%D using four overlays:
+
+\setupbackgrounds
+  [page]
+  [background={one,two,three,four}]
+
+%D When we code this in \TEX, we get the following
+%D definitions. As an alternative we coudl have used layers
+%D but I'm afraid that it would not have led to less code.
+
+\defineoverlay
+  [one]
+  [{\framed
+     [frame=off,background=color,backgroundcolor=Two,
+      width=\overlaywidth,height=\overlayheight]
+     {}}]
+
+\defineoverlay
+  [three]
+  [{\hbox to \overlaywidth
+      {\hfill\SetOverlayWidth
+       \framed
+         [frame=off,background=color,backgroundcolor=One,
+          width=\overlaywidth,height=\overlayheight]
+         {}}}]
+
+%D We could have used the main backgroundcolor instead of
+%D overlay \type {one}.
+
+\definefont[NumberFont][RegularBold at 3cm]
+
+\defineoverlay
+  [two]
+  [{\framed
+     [frame=off,width=\overlaywidth,height=\overlayheight,
+      offset=overlay]
+     {\vfill
+      \NumberFont\setstrut\SetOverlayWidth
+      \hbox to \hsize
+         {\hfill
+          \setupinteraction[style=,color=]%
+          \setbox0=\hbox{\strut\One\pagenumber}%
+          \hbox to 0pt{\hss\gotobox{\box0}[previouspage]\hss}%
+          \hskip\overlaywidth}}}]
+
+\defineoverlay
+  [four]
+  [{\framed
+     [frame=off,width=\overlaywidth,height=\overlayheight,offset=overlay]
+     {\vfill
+      \hbox to \hsize
+        {\hfill
+         \SetOverlayWidth
+         \framed
+           [frame=off,width=\overlaywidth,height=\overlayheight,offset=overlay]
+           {\vfill\NumberFont\setstrut
+            \setbox0=\hbox{\strut\Two\pagenumber}%
+            \setbox2=\hbox{\clip[nx=2,ny=1,x=2,y=1]{\copy0}}%
+            \dp2=\dp0
+            \hbox to \hsize{\hbox to 0pt{\hss\hskip.5\wd0\box2\hss}\hfill}}}}}]
+
+\def\SetOverlayWidth%
+  {\scratchdimen         =  \rightedgedistance
+   \divide\scratchdimen  by 2
+   \advance\scratchdimen by \rightedgewidth
+   \advance\scratchdimen by \backspace
+   \edef\overlaywidth{\the\scratchdimen}}
+
+%D A much cleaner implementation is the following. If you hate
+%D \METAPOST, you can run this style in the specified mode:
+
+\startnotmode[no-metapost]
+
+\setupbackgrounds
+  [page]
+  [background={number}]
+
+\defineoverlay[number][\useMPgraphic{number}]
+
+\startuseMPgraphic{number}
+  StartPage ;
+    path Vage ; picture Left, Right ;
+    x1 = x2 = xpart (llcorner Field[Text][RightEdge] shifted (-RightEdgeDistance/2,0)) ;
+    y1 = ypart llcorner Page ;
+    y2 = ypart ulcorner Page ;
+    Vage := llcorner Page -- z1 -- z2 -- ulcorner Page -- cycle ;
+    fill Page withcolor \MPcolor {One} ;
+    fill Vage withcolor \MPcolor {Two} ;
+    if PageNumber>0 :
+      defaultfont  := "\truefontname{RegularBold}" ;
+      Left := Right := thelabel("\folio",origin) ysized 3cm ;
+      clip Right to boundingbox Right shifted (bbwidth(Right)/2,0) ;
+      draw Left  shifted z1 shifted (0,2.25cm) withcolor \MPcolor {One} ;
+      draw Right shifted z1 shifted (0,2.25cm) withcolor \MPcolor {Two} ;
+    fi ;
+  StopPage ;
+\stopuseMPgraphic
+
+\stopnotmode
+
+%D We use the simple label typesetting present in \METAPOST\
+%D because digits are seldom kerned so real \TEX ing is not
+%D needed. As in the previous method, we let the graphics
+%D overlap so that we don't get white lines due to rounding
+%D problems in viewers.
+%D
+%D We put a  button behind the text (this overlay is calculated
+%D each page).
+
+\defineoverlay
+  [nextpage]
+  [\overlaybutton{nextpage}]
+
+\setupbackgrounds
+  [text]
+  [backgroundoffset=.5cm,
+   background=nextpage]
+
+%D We still have to turn on interaction mode.
+
+\setupinteraction
+  [state=start,
+   display=new,
+   menu=on]
+
+\setupinteraction
+  [color=,
+   contrastcolor=]
+
+%D Next we define structuring commands.
+
+\definehead[Topic]  [chapter] \setuphead[Topic]  [style=\bfc]
+\definehead[Subject][section] \setuphead[Subject][style=\bfa]
+
+\setuphead
+  [Topic,Subject]
+  [number=no,
+   after={\blank[big]}]
+
+%D Because we will provide a menu, we don't offer lists.
+
+\let\Topics  \gobbleoneargument
+\let\Subjects\relax
+
+%D The table of contents goes to the right edge.
+
+\startinteractionmenu[right]
+  \setupinteraction
+    [color=black,
+     contrastcolor=Two]
+  \placelist
+    [Topic]
+    [alternative=e,
+     frame=off,
+     criterium=all]
+  \vfill
+\stopinteractionmenu
+
+\setuplist
+  [Topic]
+  [width=\rightedgewidth,
+   maxwidth=\rightedgewidth,
+   style=\bfa]
+
+%D We safe some space:
+
+\setupwhitespace
+  [medium]
+
+\setupblank
+  [medium]
+
+%D In the titlepage, we still use the \TEX\ overlays,
+%D so that we don't have to define a second graphic.
+
+\def\TitlePage#1%
+  {\StartTitlePage#1\StopTitlePage}
+
+\def\StartTitlePage%
+  {\bgroup
+   \setupbackgrounds[page][background={one,three}]
+   \startstandardmakeup
+     \setupalign[middle]
+     \def\\{\vfil\bfb\setupinterlinespace}
+     \bfd\setupinterlinespace
+     \vfil}
+
+\def\StopTitlePage%
+  {\vfil\vfil\vfil
+   \stopstandardmakeup
+   \egroup}
+
+%D This is it.
+
+\doifnotmode{demo}{\endinput}
+
+\starttext
+
+\TitlePage{Some Quotes\\(that you probably know by now)}
+
+\Topic{Tufte}   \input tufte
+\Topic{Knuth}   \input knuth
+\Topic{Reich}   \input reich
+\Topic{Zapf}    \input zapf
+\Topic{Materie} \input materie
+%Topic{Stork}   \input stork
+
+\stoptext
