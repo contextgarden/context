@@ -271,6 +271,7 @@
 
 \def\strc_lists_place_indeed#tag#list#settings%
   {\begingroup
+   \the\t_lists_every_renderingcleanup % \let\currentlistentrylocation\empty
    \edef\currentlist{#tag}%
    \setupcurrentlist[#settings]%
    \the\everystructurelist
@@ -527,6 +528,7 @@
 
 \unexpanded\def\strclistsentryprocess#tag#method#index#extra% This one is called at the lua end!
   {\clf_pushlist#index\relax
+  %\let\currentlistentrylocation\empty
    \edef\currentlist      {#tag}%
    \edef\currentlistmethod{#method}%
    \edef\currentlistindex {#index}%

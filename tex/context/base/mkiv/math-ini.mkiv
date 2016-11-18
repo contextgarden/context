@@ -460,9 +460,9 @@
 \ifdefined\normalbi\else\let\normalbi\bi\fi \unexpanded\def\bi{\ifmmode\mathbi\else\normalbi\fi}
 \ifdefined\normalbs\else\let\normalbs\bs\fi \unexpanded\def\bs{\ifmmode\mathbs\else\normalbs\fi}
 
-\let\normalrm\rm \unexpanded\def\rm{\ifmmode\mathrm\else\normalrm\fi}
-\let\normalss\ss \unexpanded\def\ss{\ifmmode\mathss\else\normalss\fi}
-\let\normaltt\tt \unexpanded\def\tt{\ifmmode\mathtt\else\normaltt\fi}
+\unexpanded\def\rm{\ifmmode\mathrm\else\normalrm\fi}
+\unexpanded\def\ss{\ifmmode\mathss\else\normalss\fi}
+\unexpanded\def\tt{\ifmmode\mathtt\else\normaltt\fi}
 
 \ifdefined\mr \else \let\mr\relax \fi
 \ifdefined\mb \else \let\mb\relax \fi

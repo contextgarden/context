@@ -625,7 +625,7 @@ local function makereference(width,height,depth,reference) -- height and depth a
             nofreferences = nofreferences + 1
             local result, current, texts
             if show_references then
-                local d = sr[1]
+                local d = resolved
                 if d then
                     local r = d.reference
                     local p = d.prefix

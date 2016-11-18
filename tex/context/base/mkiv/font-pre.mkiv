@@ -706,7 +706,8 @@
 \definefont[infofont]    [file:dejavusansmono      at 6pt] % todo \the\everybodyfont
 \definefont[infofontbold][file:dejavusansmono-bold at 6pt] % todo \the\everybodyfont
 
-%D Optimization (later we overload in math):
+%D Optimization (later we overload in math). Also needed in order to get \type {\ss}
+%D properly defined.
 
 \unexpanded\def\normaltf{\let\fontalternative\s!tf\font_helpers_synchronize_font}
 \unexpanded\def\normalbf{\let\fontalternative\s!bf\font_helpers_synchronize_font}
@@ -721,6 +722,14 @@
 \let\sl\normalsl
 \let\bi\normalbi
 \let\bs\normalbs
+
+\unexpanded\def\normalrm{\font_helpers_set_current_font_style{\s!rm}}
+\unexpanded\def\normalss{\font_helpers_set_current_font_style{\s!ss}}
+\unexpanded\def\normaltt{\font_helpers_set_current_font_style{\s!tt}}
+
+\let\rm\normalrm
+\let\ss\normalss
+\let\tt\normaltt
 
 \protect \endinput
 

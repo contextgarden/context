@@ -72,7 +72,7 @@
 
 props = props or { } -- setmetatable(props,{ __index = function(k,v) props[k] = "unknown" return "unknown" end } )
 
-local byte, lower, upper, gsub, sub, find, rep, match, gmatch, format = string.byte, string.lower, string.upper, string.gsub, string.sub, string.find, string.rep, string.match, string.gmatch, string.format
+local byte, lower, upper, gsub, sub, find, rep, match, gmatch, format, char = string.byte, string.lower, string.upper, string.gsub, string.sub, string.find, string.rep, string.match, string.gmatch, string.format, string.char
 local sort, concat = table.sort, table.concat
 
 local crlf = "\n"
@@ -262,6 +262,30 @@ end
 
 local magicstring = rep("<ctx-crlf/>", 2)
 
+local l2 = char(0xC0)
+local l3 = char(0xE0)
+local l4 = char(0xF0)
+
+local function utflen(str)
+    local n = 0
+    local l = 0
+    for s in gmatch(str,".") do
+        if l > 0 then
+            l = l - 1
+        else
+            n = n + 1
+            if s >= l4 then
+                l = 3
+            elseif s >= l3 then
+                l = 2
+            elseif s >= l2 then
+                l = 1
+            end
+        end
+    end
+    return n
+end
+
 function wrap_text()
 
     -- We always go to the end of a line, so in fact some of
@@ -295,6 +319,7 @@ function wrap_text()
 
     local replacement = { }
     local templine    = ''
+    local tempsize    = 0
     local indentation = rep(' ',startcolumn)
     local selection   = editor:GetSelText()
 
@@ -307,13 +332,20 @@ function wrap_text()
             replacement[#replacement+1] = templine
             replacement[#replacement+1] = ""
             templine = ''
-        elseif #templine + #snippet > length then
-            replacement[#replacement+1] = templine
-            templine = indentation .. snippet
-        elseif #templine == 0 then
-            templine = indentation .. snippet
+            tempsize = 0
         else
-            templine = templine .. ' ' .. snippet
+            local snipsize = utflen(snippet)
+            if tempsize + snipsize > length then
+                replacement[#replacement+1] = templine
+                templine = indentation .. snippet
+                tempsize = startcolumn + snipsize
+            elseif tempsize == 0 then
+                templine = indentation .. snippet
+                tempsize = tempsize + startcolumn + snipsize
+            else
+                templine = templine .. ' ' .. snippet
+                tempsize = tempsize + 1 + snipsize
+            end
         end
     end
 
