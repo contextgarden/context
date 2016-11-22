@@ -37,9 +37,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathalignment" type="environment" generated="yes" variant="example" file="math-ali.mkiv">
+    <cd:command name="mathalignment" type="environment" generated="yes" variant="instance" file="math-ali.mkiv">
         <cd:sequence>
-            <cd:variable value="mathalignment"/>
+            <cd:instance value="mathalignment"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -47,25 +47,28 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="align"/>
-            <cd:constant value="mathalignment"/>
+            <cd:resolve name="instance-mathalignment"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="mathalignment" type="environment" file="math-ali.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmathalignment"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="align" type="environment" file="math-ali.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmathalignment"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="mathalignment" type="environment" file="math-ali.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmathalignment"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="align" type="environment" file="math-ali.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmathalignment"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

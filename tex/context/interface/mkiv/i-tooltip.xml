@@ -28,9 +28,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tooltip" generated="yes" variant="example" file="scrn-fld.mkvi">
+    <cd:command name="tooltip" generated="yes" variant="instance" file="scrn-fld.mkvi">
         <cd:sequence>
-            <cd:variable value="tooltip"/>
+            <cd:instance value="tooltip"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -40,13 +40,13 @@
             <cd:resolve name="argument-text"/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="tooltip"/>
+            <cd:resolve name="instance-tooltip"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="tooltip" generated="yes" variant="example:argument" file="scrn-fld.mkvi">
+    <cd:command name="tooltip" generated="yes" variant="instance:argument" file="scrn-fld.mkvi">
         <cd:sequence>
-            <cd:variable value="tooltip"/>
+            <cd:instance value="tooltip"/>
         </cd:sequence>
         <cd:arguments>
             <cd:keywords optional="yes">
@@ -58,30 +58,34 @@
             <cd:resolve name="argument-text"/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="tooltip"/>
+            <cd:resolve name="instance-tooltip"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="tooltip" file="scrn-fld.mkvi">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuptooltip"/>
-            </cd:assignments>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="tooltip" variant="argument" file="scrn-fld.mkvi">
-        <cd:arguments>
-            <cd:keywords optional="yes">
-                <cd:constant type="left"/>
-                <cd:constant type="middle"/>
-                <cd:constant type="right"/>
-            </cd:keywords>
-            <cd:resolve name="argument-text"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="tooltip" file="scrn-fld.mkvi">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuptooltip"/>
+                </cd:assignments>
+                <cd:resolve name="argument-text"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tooltip" variant="argument" file="scrn-fld.mkvi">
+            <cd:arguments>
+                <cd:keywords optional="yes">
+                    <cd:constant type="left"/>
+                    <cd:constant type="middle"/>
+                    <cd:constant type="right"/>
+                </cd:keywords>
+                <cd:resolve name="argument-text"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

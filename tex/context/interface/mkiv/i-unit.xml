@@ -75,23 +75,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="unit" generated="yes" variant="example" file="phys-dim.mkiv">
+    <cd:command name="unit" generated="yes" variant="instance" file="phys-dim.mkiv">
         <cd:sequence>
-            <cd:variable value="unit"/>
+            <cd:instance value="unit"/>
         </cd:sequence>
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="unit"/>
+            <cd:resolve name="instance-unit"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="unit" file="phys-dim.mkiv">
-        <cd:arguments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
+    <!--
+
+        <cd:command name="unit" file="phys-dim.mkiv">
+            <cd:arguments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
     <cd:command name="installunitsseparator" file="phys-dim.mkiv">
         <cd:arguments>

@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <!--
+
+        <cd:command name="setupSTEPchart" file="m-steps.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="category">
+                        <cd:constant type="cd:name"/>
+                    </cd:parameter>
+                    <cd:parameter name="before">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="after">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="alternative">
+                        <cd:constant type="horizontal" default="yes"/>
+                        <cd:constant type="vertical"/>
+                        <cd:constant type="three"/>
+                    </cd:parameter>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setupSTEPcharts" file="m-steps.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupSTEPchart"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupSTEPcharts" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="category">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="horizontal" default="yes"/>
+                    <cd:constant type="vertical"/>
+                    <cd:constant type="three"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="setupSTEPcell" file="m-steps.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="offset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="rulethickness">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="framecolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="backgroundcolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="style">
+                        <cd:resolve name="value-style"/>
+                    </cd:parameter>
+                    <cd:parameter name="color">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="dx">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="dy">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="alternative">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setupSTEPcells" file="m-steps.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupSTEPcell"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupSTEPcells" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="framecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="backgroundcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="dx">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="dy">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="setupSTEPtext" file="m-steps.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="offset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="distance">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="rulethickness">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="framecolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="backgroundcolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="style">
+                        <cd:resolve name="value-style"/>
+                    </cd:parameter>
+                    <cd:parameter name="color">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="alternative">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setupSTEPtexts" file="m-steps.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupSTEPtexts"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupSTEPtexts" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="framecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="backgroundcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="setupSTEPline" file="m-steps.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="rulethickness">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="height">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="distance">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="offset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="color">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="alternative">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setupSTEPlines" file="m-steps.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupSTEPline"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupSTEPlines" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="STEPchart" type="environment" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupSTEPchart"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="STEPtable" type="environment" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupSTEPchart"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="STEPaligntable" type="environment" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupSTEPchart"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="STEPchart" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupSTEPchart"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="makeSTEPchart" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="STEPcell" type="environment" file="m-steps.mkvi"/>
+
+    <cd:command name="cells" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="cells" variant="aligntable" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="texts" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="cell" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="text" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="toptext" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bottext" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="topcell" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="botcell" file="m-steps.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

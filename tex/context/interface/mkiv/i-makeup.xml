@@ -122,9 +122,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="makeup" type="environment" generated="yes" variant="example" file="page-mak.mkvi">
+    <cd:command name="makeup" type="environment" generated="yes" variant="instance" file="page-mak.mkvi">
         <cd:sequence>
-            <cd:variable value="makeup"/>
+            <cd:instance value="makeup"/>
             <cd:string value="makeup"/>
         </cd:sequence>
         <cd:arguments>
@@ -133,43 +133,44 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="standard"/>
-            <cd:constant value="page"/>
-            <cd:constant value="text"/>
-            <cd:constant value="middle"/>
+            <cd:resolve name="instance-makeup"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="standardmakeup" type="environment" file="page-mak.mkvi">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmakeup"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="textmakeup" type="environment" file="page-mak.mkvi">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmakeup"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="standardmakeup" type="environment" file="page-mak.mkvi">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmakeup"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="pagemakeup" type="environment" file="page-mak.mkvi">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmakeup"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="textmakeup" type="environment" file="page-mak.mkvi">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmakeup"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="middlemakeup" type="environment" file="page-mak.mkvi">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmakeup"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="pagemakeup" type="environment" file="page-mak.mkvi">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmakeup"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="middlemakeup" type="environment" file="page-mak.mkvi">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmakeup"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

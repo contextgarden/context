@@ -149,6 +149,9 @@
                     <cd:constant type="no" default="yes"/>
                     <cd:constant type="xml"/>
                 </cd:parameter>
+                <cd:parameter name="referenceprefix">
+                    <cd:resolve name="value-referenceprefix"/>
+                </cd:parameter>
                 <cd:parameter name="sample">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>

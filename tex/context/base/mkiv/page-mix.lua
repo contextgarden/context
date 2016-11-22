@@ -15,6 +15,8 @@ if not modules then modules = { } end modules ["page-mix"] = {
 -- local trackers, logs, storage = trackers, logs, storage
 -- local number, table = number, table
 
+-- todo: explore vsplit (for inserts)
+
 local next, type = next, type
 local concat = table.concat
 local ceil, floor = math.ceil, math.floor
@@ -106,8 +108,15 @@ local forcedbreak         = -123
 
 local function collectinserts(result,nxt,nxtid)
     local inserts, currentskips, nextskips, inserttotal = { }, 0, 0, 0
+local i = result.i
+if not i then
+    i = 0
+    result.i = i
+end
     while nxt do
         if nxtid == insert_code then
+            i = i + 1
+result.i = i
             inserttotal = inserttotal + getfield(nxt,"height") -- height includes depth
             local s = getsubtype(nxt)
             local c = inserts[s]
@@ -115,9 +124,11 @@ local function collectinserts(result,nxt,nxtid)
                 report_state("insert of class %s found",s)
             end
             if not c then
+local skip  = structures.notes.check_spacing(s,i) -- before
+local width = getfield(getskip(skip),"width")
                 c = { }
                 inserts[s] = c
-                local width = getfield(getskip(s),"width")
+--                 local width = getfield(getskip(s),"width")
                 if not result.inserts[s] then
                     currentskips = currentskips + width
                 end

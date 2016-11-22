@@ -251,25 +251,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typing" type="environment" file="buff-ver.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuptyping"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="typing" type="environment" variant="argument" file="buff-ver.mkiv">
-        <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:constant type="continue"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="typing" type="environment" generated="yes" variant="example" file="buff-ver.mkiv">
+    <cd:command name="typing" type="environment" generated="yes" variant="instance" file="buff-ver.mkiv">
         <cd:sequence>
-            <cd:variable value="typing"/>
+            <cd:instance value="typing"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -277,18 +261,13 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="typing"/>
-            <cd:constant value="LUA"/>
-            <cd:constant value="MP"/>
-            <cd:constant value="PARSEDXML"/>
-            <cd:constant value="TEX"/>
-            <cd:constant value="XML"/>
+            <cd:resolve name="instance-typing"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="typing" type="environment" generated="yes" variant="example:argument" file="buff-ver.mkiv">
+    <cd:command name="typing" type="environment" generated="yes" variant="instance:argument" file="buff-ver.mkiv">
         <cd:sequence>
-            <cd:variable value="typing"/>
+            <cd:instance value="typing"/>
         </cd:sequence>
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
@@ -296,12 +275,7 @@
             </cd:keywords>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="typing"/>
-            <cd:constant value="LUA"/>
-            <cd:constant value="MP"/>
-            <cd:constant value="PARSEDXML"/>
-            <cd:constant value="TEX"/>
-            <cd:constant value="XML"/>
+            <cd:resolve name="instance-typing"/>
         </cd:instances>
     </cd:command>
 
@@ -379,87 +353,107 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="LUA" type="environment" file="buff-ver.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuptyping"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="LUA" type="environment" variant="argument" file="buff-ver.mkiv">
-        <cd:sequence>
-            <cd:variable value="lua"/>
-        </cd:sequence>
-        <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:constant type="continue"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="typing" type="environment" file="buff-ver.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuptyping"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="MP" type="environment" file="buff-ver.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuptyping"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="typing" type="environment" variant="argument" file="buff-ver.mkiv">
+            <cd:arguments>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:constant type="continue"/>
+                </cd:keywords>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="MP" type="environment" variant="argument" file="buff-ver.mkiv">
-        <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:constant type="continue"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="LUA" type="environment" file="buff-ver.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuptyping"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="XML" type="environment" file="buff-ver.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuptyping"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="LUA" type="environment" variant="argument" file="buff-ver.mkiv">
+            <cd:sequence>
+                <cd:variable value="lua"/>
+            </cd:sequence>
+            <cd:arguments>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:constant type="continue"/>
+                </cd:keywords>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="XML" type="environment" variant="argument" file="buff-ver.mkiv">
-        <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:constant type="continue"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="MP" type="environment" file="buff-ver.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuptyping"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="PARSEDXML" type="environment" file="buff-ver.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuptyping"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="MP" type="environment" variant="argument" file="buff-ver.mkiv">
+            <cd:arguments>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:constant type="continue"/>
+                </cd:keywords>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="PARSEDXML" type="environment" variant="argument" file="buff-ver.mkiv">
-        <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:constant type="continue"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="XML" type="environment" file="buff-ver.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuptyping"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="TEX" type="environment" file="buff-ver.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuptyping"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="XML" type="environment" variant="argument" file="buff-ver.mkiv">
+            <cd:arguments>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:constant type="continue"/>
+                </cd:keywords>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="TEX" type="environment" variant="argument" file="buff-ver.mkiv">
-        <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:constant type="continue"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="PARSEDXML" type="environment" file="buff-ver.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuptyping"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="PARSEDXML" type="environment" variant="argument" file="buff-ver.mkiv">
+            <cd:arguments>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:constant type="continue"/>
+                </cd:keywords>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="TEX" type="environment" file="buff-ver.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuptyping"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="TEX" type="environment" variant="argument" file="buff-ver.mkiv">
+            <cd:arguments>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:constant type="continue"/>
+                </cd:keywords>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definespreadsheet" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupspreadsheet"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupspreadsheet" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="period">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="comma">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="split">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetspreadsheet" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="spreadsheet" type="environment" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showspreadsheet" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="inspectspreadsheet" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setspreadsheet" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-number"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getspreadsheet" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-number"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsespreadsheetcell" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifspreadsheetcellelse" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-number"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLEsetspreadsheet" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="TABLEgetspreadsheet" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setspr" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getspr" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="spreadsheettable" type="environment" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupTABLE"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="row" type="environment" file="m-spreadsheet.mkiv"/>
+
+    <cd:command name="cell" type="environment" file="m-spreadsheet.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="bTD"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

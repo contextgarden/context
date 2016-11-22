@@ -105,9 +105,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mixedcolumns" type="environment" generated="yes" variant="example" file="page-mix.mkiv">
+    <cd:command name="mixedcolumns" type="environment" generated="yes" variant="instance" file="page-mix.mkiv">
         <cd:sequence>
-            <cd:variable value="mixedcolumns"/>
+            <cd:instance value="mixedcolumns"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -115,17 +115,20 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="itemgroupcolumns"/>
-            <cd:constant value="boxedcolumns"/>
+            <cd:resolve name="instance-mixedcolumns"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="boxedcolumns" type="environment" file="page-mix.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmixedcolumns"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
+
+        <cd:command name="boxedcolumns" type="environment" file="page-mix.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmixedcolumns"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

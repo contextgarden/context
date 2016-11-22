@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="fakerule" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dimension"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dorandomrecurse" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fakelines" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:keywords name="keywords" delimiters="braces">
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:nothing"/>
+            </cd:keywords>
+            <cd:keywords name="keywords" delimiters="braces">
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:nothing"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fakewords" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:keywords name="keywords" delimiters="braces">
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:nothing"/>
+            </cd:keywords>
+            <cd:keywords name="keywords" delimiters="braces">
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:nothing"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fakenwords" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+            <cd:keywords name="keywords" delimiters="braces">
+                <cd:constant type="cd:number"/>
+                <cd:constant type="cd:nothing"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showfakewords" file="m-visual.mkiv"/>
+
+    <cd:command name="fakeword" file="m-visual.mkiv"/>
+
+    <cd:command name="fakeparindent" file="m-visual.mkiv"/>
+
+    <cd:command name="fakeddroppedcaps" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fakefigure" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:inherit name="placefloat"/>
+            </cd:keywords>
+            <cd:resolve name="keyword-reference-list-optional"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-dimension"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fakeimage" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-dimension"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fakeformula" file="m-visual.mkiv"/>
+
+    <cd:command name="fakespacingformula" file="m-visual.mkiv"/>
+
+    <cd:command name="smashedgrid" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes" optional="yes">
+                <cd:inherit name="basegrid"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bodyfontgrid" file="m-visual.mkiv"/>
+
+    <cd:command name="emexgrid" file="m-visual.mkiv"/>
+
+    <cd:command name="simplethesis" file="m-visual.mkiv"/>
+
+    <cd:command name="showbaselines" file="m-visual.mkiv"/>
+
+    <cd:command name="showpagebuilder" file="m-visual.mkiv"/>
+
+    <cd:command name="tagbox" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:keywords optional="yes">
+                <cd:constant type="l"/>
+                <cd:constant type="r"/>
+                <cd:constant type="t"/>
+                <cd:constant type="b"/>
+                <cd:constant type="lt"/>
+                <cd:constant type="lb"/>
+                <cd:constant type="rt"/>
+                <cd:constant type="rb"/>
+                <cd:constant type="tl"/>
+                <cd:constant type="bl"/>
+                <cd:constant type="tr"/>
+                <cd:constant type="br"/>
+            </cd:keywords>
+            <cd:csname/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="coloredhbox" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="coloredvbox" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="coloredvtop" file="m-visual.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="coloredstrut" file="m-visual.mkiv"/>
+
+</cd:interface>

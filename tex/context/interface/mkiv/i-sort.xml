@@ -78,16 +78,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sorting" generated="yes" variant="example" file="strc-syn.mkiv">
+    <cd:command name="sorting" generated="yes" variant="instance" file="strc-syn.mkiv">
         <cd:sequence>
-            <cd:variable value="sorting"/>
+            <cd:instance value="sorting"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:content/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="logo"/>
+            <cd:resolve name="instance-sort"/>
         </cd:instances>
     </cd:command>
 
@@ -103,10 +103,10 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelistofsorts" generated="yes" variant="example" file="strc-syn.mkiv">
+    <cd:command name="placelistofsorts" generated="yes" variant="instance" file="strc-syn.mkiv">
         <cd:sequence>
             <cd:string value="placelistof"/>
-            <cd:variable value="sorts"/>
+            <cd:instance value="sorts"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -114,14 +114,14 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="logos"/>
+            <cd:resolve name="instance-sortlist"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="completelistofsorts" generated="yes" variant="example" file="strc-syn.mkiv">
+    <cd:command name="completelistofsorts" generated="yes" variant="instance" file="strc-syn.mkiv">
         <cd:sequence>
             <cd:string value="completelistof"/>
-            <cd:variable value="sorts"/>
+            <cd:instance value="sorts"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -129,7 +129,7 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="logos"/>
+            <cd:resolve name="instance-sortlist"/>
         </cd:instances>
     </cd:command>
 
@@ -171,27 +171,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="logo" file="strc-syn.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="placelistoflogos" file="strc-syn.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupsorting"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="logo" file="strc-syn.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="completelistoflogos" file="strc-syn.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupsorting"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="placelistoflogos" file="strc-syn.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupsorting"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="completelistoflogos" file="strc-syn.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupsorting"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

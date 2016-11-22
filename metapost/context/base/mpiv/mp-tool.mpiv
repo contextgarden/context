@@ -1517,31 +1517,158 @@ vardef arrowpath expr p = % patch by Peter Rolf: supports squared pen and shifti
     ))
 enddef;
 
-% def _finarr text t =
-%     if autoarrows : set_ahlength (t) fi ;
-%     draw     arrowpath _apth t ; % arrowpath added
-%     filldraw arrowhead _apth t ;
-% enddef;
+% New experimental extension: also handling pictures:
+%
+% drawarrow fullsquare scaled 2cm withcolor green ;
+% drawarrow fullcircle scaled 3cm withcolor green ;
+% drawarrow image (
+%     draw fullsquare scaled 4cm withcolor red ;
+%     draw fullcircle scaled 5cm withcolor blue ;
+% ) ;
+% currentpicture := currentpicture shifted (-bbwidth(currentpicture)-1cm,0) ;
+% drawdblarrow fullsquare scaled 2cm withcolor green ;
+% drawdblarrow fullcircle scaled 3cm withcolor green ;
+% drawdblarrow image (
+%     draw fullsquare scaled 4cm withcolor red ;
+%     draw fullcircle scaled 5cm withcolor blue ;
+% ) ;
 
-% def _finarr text t =
-%     if autoarrows : set_ahlength (t) fi ;
-%     draw arrowpath _apth t ; % arrowpath added
-%     fill arrowhead _apth t ;
-%     draw arrowhead _apth t ;
-% enddef;
+vardef stroked_paths(expr p) =
+    save n ; numeric n ; n := 0 ;
+    for i within p :
+        if stroked i :
+            n := n + 1 ;
+        fi
+    endfor ;
+    n
+enddef ;
 
-% def _finarr text t =
-%     if autoarrows : set_ahlength (t) fi ;
-%     draw arrowpath _apth t ; % arrowpath added
-%     fill arrowhead _apth t ;
-%     draw arrowhead _apth t undashed ;
-% enddef;
+def mfun_decoration_i expr i =
+    withpen penpart i
+    withcolor colorpart i
+    withprescript prescriptpart i
+    withpostscript postscriptpart i
+enddef ;
 
-def _finarr text t =
-    if autoarrows : set_ahlength (t) fi ;
-    draw arrowpath _apth t ; % arrowpath added
-    fillup arrowhead _apth t ;
-enddef;
+% We could collapse all in one helper but in context we nowaways don't want
+% the added obscurity. Tokens come cheap.
+
+numeric mfun_arrow_snippets ;
+numeric mfun_arrow_count ;
+
+def drawarrow expr p =
+    begingroup ;
+    save mfun_arrow_path ;
+    path mfun_arrow_path ;
+    if path p :
+        mfun_arrow_path := p ;
+        expandafter mfun_draw_arrow_path
+    elseif picture p :
+        save mfun_arrow_picture ;
+        picture mfun_arrow_picture ;
+        mfun_arrow_picture := p ;
+        expandafter mfun_draw_arrow_picture
+    else :
+        expandafter mfun_draw_arrow_nothing
+    fi
+enddef ;
+
+def drawdblarrow expr p =
+    begingroup ;
+    save mfun_arrow_path ;
+    path mfun_arrow_path ;
+    if path p :
+        mfun_arrow_path := p ;
+        expandafter mfun_draw_arrow_path_double
+    elseif picture p :
+        save mfun_arrow_picture ;
+        picture mfun_arrow_picture ;
+        mfun_arrow_picture := p ;
+        expandafter mfun_draw_arrow_picture_double
+    else :
+        expandafter mfun_draw_arrow_nothing
+    fi
+enddef ;
+
+def mfun_draw_arrow_nothing text t =
+enddef ;
+
+def mfun_with_arrow_path (text t) =
+    if autoarrows :
+        set_ahlength(t)
+    fi ;
+    t
+    endgroup ;
+enddef ;
+
+def mfun_with_arrow_picture (text t) =
+    if autoarrows :
+        set_ahlength(t)
+    fi ;
+    mfun_arrow_count := 0 ;
+    mfun_arrow_snippets := stroked_paths(mfun_arrow_picture) ;
+    for i within mfun_arrow_picture :
+        if stroked i :
+            mfun_arrow_count := mfun_arrow_count + 1 ;
+            mfun_arrow_path := pathpart i ;
+            t
+        fi ;
+    endfor ;
+    endgroup ;
+enddef ;
+
+% The path is shortened so that the arrow head extends it to the original
+% length. In case of a double arrow the path gets shortened twice.
+
+def mfun_draw_arrow_path text t =
+    mfun_with_arrow_path (
+        draw arrowpath mfun_arrow_path t ;
+        fillup arrowhead mfun_arrow_path t ;
+    ) ;
+enddef ;
+
+def mfun_draw_arrow_path_double text t =
+    mfun_with_arrow_path (
+        draw arrowpath (reverse arrowpath mfun_arrow_path) t ;
+        fillup arrowhead mfun_arrow_path t ;
+        fillup arrowhead reverse mfun_arrow_path t ;
+    ) ;
+enddef ;
+
+% The picture variant is not treating each path but only the first and
+% last path. This can be somewhat counterintuitive but is needed for Alan's
+% macros. So here the last and in case of a double path first paths in a
+% picture get the shortening.
+
+def mfun_draw_arrow_picture text t =
+    mfun_with_arrow_picture (
+        if mfun_arrow_count = mfun_arrow_snippets :
+            draw arrowpath mfun_arrow_path mfun_decoration_i i t ;
+            fillup arrowhead mfun_arrow_path mfun_decoration_i i t ;
+        else :
+            draw mfun_arrow_path mfun_decoration_i i t ;
+        fi ;
+    )
+enddef ;
+
+def mfun_draw_arrow_picture_double text t =
+    mfun_with_arrow_picture (
+        draw
+            if mfun_arrow_count = 1 :
+                arrowpath reverse
+            fi
+            if mfun_arrow_count = mfun_arrow_snippets :
+                arrowpath
+            fi
+            mfun_arrow_path mfun_decoration_i i t ;
+        if mfun_arrow_count = 1 :
+            fillup arrowhead reverse mfun_arrow_path mfun_decoration_i i t ;
+        fi
+        if mfun_arrow_count = mfun_arrow_snippets :
+            fillup arrowhead mfun_arrow_path mfun_decoration_i i t ;
+        fi
+    )
+enddef ;
 
 %D Handy too ......
 
@@ -2861,9 +2988,9 @@ vardef listsize(suffix list) =
 enddef ;
 
 vardef mfun_quick_sort(suffix list)(expr _min_, _max_)(text what) =
+    save l, r, m ;
     numeric l ; l := _min_ ;
     numeric r ; r := _max_ ;
-    numeric m ; m := _min_ ;
     numeric m ; m := floor(.5[_min_,_max_]) ;
     _mid_ := what list[m] ;
     forever :

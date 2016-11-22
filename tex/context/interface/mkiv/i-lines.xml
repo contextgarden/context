@@ -88,9 +88,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lines" type="environment" generated="yes" variant="example" file="spac-lin.mkiv">
+    <cd:command name="lines" type="environment" generated="yes" variant="instance" file="spac-lin.mkiv">
         <cd:sequence>
-            <cd:variable value="lines"/>
+            <cd:instance value="lines"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -98,17 +98,21 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="lines"/>
+            <cd:resolve name="instance-lines"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="lines" type="environment" file="spac-lin.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuplines"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
+
+        <cd:command name="lines" type="environment" file="spac-lin.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuplines"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
     <cd:command name="emptylines" file="spac-lin.mkiv">
         <cd:arguments>

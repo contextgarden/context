@@ -197,6 +197,7 @@
                     <cd:constant type="middle"/>
                     <cd:constant type="bottom"/>
                     <cd:constant type="reverse"/>
+                    <cd:constant type="margintext"/>
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
                 <cd:parameter name="width">
@@ -239,47 +240,31 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
+    <cd:command name="setupheads" file="strc-sec.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-section-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setuphead"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
 
-        <cd:command name="setupheads" file="strc-sec.mkiv">
-            <cd:arguments>
-                <cd:resolve name="keyword-section-list-optional"/>
-                <cd:assignments list="yes">
-                    <cd:inherit name="setuphead"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
-
-    <cd:command name="section" generated="yes" variant="example" file="strc-sec.mkiv">
+    <cd:command name="section" generated="yes" variant="instance" file="strc-sec.mkiv">
         <cd:sequence>
-            <cd:variable value="section"/>
+            <cd:instance value="section"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="part"/>
-            <cd:constant value="chapter"/>
-            <cd:constant value="section"/>
-            <cd:constant value="subsection"/>
-            <cd:constant value="subsubsection"/>
-            <cd:constant value="subsubsubsection"/>
-            <cd:constant value="subsubsubsubsection"/>
-            <cd:constant value="title"/>
-            <cd:constant value="subject"/>
-            <cd:constant value="subsubject"/>
-            <cd:constant value="subsubsubject"/>
-            <cd:constant value="subsubsubsubject"/>
-            <cd:constant value="subsubsubsubsubject"/>
+            <cd:resolve name="instance-section"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="section" generated="yes" variant="example:ownnumber" file="strc-sec.mkiv">
+    <cd:command name="section" generated="yes" variant="instance:ownnumber" file="strc-sec.mkiv">
         <cd:sequence>
-            <cd:variable value="section"/>
+            <cd:instance value="section"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
@@ -287,252 +272,220 @@
             <cd:resolve name="argument-text"/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="part"/>
-            <cd:constant value="chapter"/>
-            <cd:constant value="section"/>
-            <cd:constant value="subsection"/>
-            <cd:constant value="subsubsection"/>
-            <cd:constant value="subsubsubsection"/>
-            <cd:constant value="subsubsubsubsection"/>
-            <cd:constant value="title"/>
-            <cd:constant value="subject"/>
-            <cd:constant value="subsubject"/>
-            <cd:constant value="subsubsubject"/>
-            <cd:constant value="subsubsubsubject"/>
-            <cd:constant value="subsubsubsubsubject"/>
+            <cd:resolve name="instance-section"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="section" generated="yes" variant="example:assignment" file="strc-sec.mkiv">
+    <cd:command name="section" generated="yes" variant="instance:assignment" file="strc-sec.mkiv">
         <cd:sequence>
-            <cd:variable value="section"/>
+            <cd:instance value="section"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="assignment-sectiondata-list"/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="part"/>
-            <cd:constant value="chapter"/>
-            <cd:constant value="section"/>
-            <cd:constant value="subsection"/>
-            <cd:constant value="subsubsection"/>
-            <cd:constant value="subsubsubsection"/>
-            <cd:constant value="subsubsubsubsection"/>
-            <cd:constant value="title"/>
-            <cd:constant value="subject"/>
-            <cd:constant value="subsubject"/>
-            <cd:constant value="subsubsubject"/>
-            <cd:constant value="subsubsubsubject"/>
-            <cd:constant value="subsubsubsubsubject"/>
+            <cd:resolve name="instance-section"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="section" type="environment" generated="yes" variant="example" file="strc-sec.mkiv">
+    <cd:command name="section" type="environment" generated="yes" variant="instance" file="strc-sec.mkiv">
         <cd:sequence>
-            <cd:variable value="section"/>
+            <cd:instance value="section"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="assignment-sectiondata-list-optional"/>
             <cd:resolve name="assignment-userdata-list-optional"/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="part"/>
-            <cd:constant value="chapter"/>
-            <cd:constant value="section"/>
-            <cd:constant value="subsection"/>
-            <cd:constant value="subsubsection"/>
-            <cd:constant value="subsubsubsection"/>
-            <cd:constant value="subsubsubsubsection"/>
-            <cd:constant value="title"/>
-            <cd:constant value="subject"/>
-            <cd:constant value="subsubject"/>
-            <cd:constant value="subsubsubject"/>
-            <cd:constant value="subsubsubsubject"/>
-            <cd:constant value="subsubsubsubsubject"/>
+            <cd:resolve name="instance-section"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="part" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="chapter" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="part" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="section" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="chapter" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsection" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="section" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsection" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsection" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsubsection" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubsection" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsubsubsection" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubsubsection" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="title" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubsubsubsection" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subject" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="title" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubject" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subject" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsubject" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubject" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsubsubject" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubsubject" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsubsubsubject" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-reference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubsubsubject" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="part" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubsubsubsubject" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-reference-list-optional"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="chapter" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="part" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="section" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="chapter" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsection" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="section" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsection" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsection" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsubsection" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubsection" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsubsubsection" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubsubsection" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="title" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubsubsubsection" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subject" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="title" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubject" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subject" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsubject" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubject" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsubsubject" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubsubject" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="subsubsubsubsubject" type="environment" file="strc-sec.mkiv">
-        <cd:arguments>
-            <cd:resolve name="assignment-sectiondata-list-optional"/>
-            <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="subsubsubsubject" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="subsubsubsubsubject" type="environment" file="strc-sec.mkiv">
+            <cd:arguments>
+                <cd:resolve name="assignment-sectiondata-list-optional"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
     <cd:command name="namedsection" type="environment" file="strc-sec.mkiv">
         <cd:arguments>

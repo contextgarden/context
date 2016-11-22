@@ -448,3 +448,26 @@ function notes.internalid(tag,n)
         return r.internal
     end
 end
+
+-- for the moment here but better in some builder modules
+
+local report_insert = logs.reporter("pagebuilder","insert")
+local trace_insert  = false  trackers.register("pagebuilder.insert",function(v) trace_insert = v end)
+
+local texgetglue = tex.getglue
+local texsetglue = tex.setglue
+
+function notes.check_spacing(n,i)
+    local gn, pn, mn = texgetglue(n)
+    local gi, pi, mi = texgetglue(i > 1 and "s_strc_notes_inbetween" or "s_strc_notes_before")
+    local gt, pt, mt = gn+gi, pn+pi, mn+mi
+    if trace_insert then
+        report_insert("%s %i: %p plus %p minus %p","always   ",n,gn,pn,mn)
+        report_insert("%s %i: %p plus %p minus %p",i > 1 and "inbetween" or "before   ",n,gi,pi,mi)
+        report_insert("%s %i: %p plus %p minus %p","effective",n,gt,pt,mt)
+    end
+    texsetglue(0,gt,pt,mt) -- for the moment we use skip register 0
+    return 0
+end
+
+callback.register("build_page_insert", notes.check_spacing)

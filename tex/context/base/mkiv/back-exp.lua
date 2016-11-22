@@ -122,7 +122,7 @@ local getlist           = nuts.getlist
 local getid             = nuts.getid
 local getfield          = nuts.getfield
 local getattr           = nuts.getattr
-local setattr           = nuts.setattr
+local setattr           = nuts.setattr -- maybe use properties
 local isglyph           = nuts.isglyph
 
 local traverse_id       = nuts.traverse_id

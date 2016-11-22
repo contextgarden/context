@@ -393,10 +393,10 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupitemgroup" generated="yes" variant="example" file="strc-itm.mkvi">
+    <cd:command name="setupitemgroup" generated="yes" variant="instance" file="strc-itm.mkvi">
         <cd:sequence>
             <cd:string value="setup"/>
-            <cd:variable value="itemgroup"/>
+            <cd:instance value="itemgroup"/>
         </cd:sequence>
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
@@ -411,13 +411,13 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="itemize"/>
+            <cd:resolve name="instance-itemgroup"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="itemgroup" type="environment" generated="yes" variant="example" file="strc-itm.mkvi">
+    <cd:command name="itemgroup" type="environment" generated="yes" variant="instance" file="strc-itm.mkvi">
         <cd:sequence>
-            <cd:variable value="itemgroup"/>
+            <cd:instance value="itemgroup"/>
         </cd:sequence>
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
@@ -428,7 +428,7 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="itemize"/>
+            <cd:resolve name="instance-itemgroup"/>
         </cd:instances>
     </cd:command>
 
@@ -563,30 +563,34 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="itemize" type="environment" file="strc-itm.mkvi">
-        <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:inherit name="setupitemgroup"/>
-            </cd:keywords>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupitemgroup"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="setupitemize" file="strc-itm.mkvi">
-        <cd:arguments>
-            <cd:keywords list="yes" optional="yes">
-                <cd:constant type="each"/>
-                <cd:constant type="cd:number"/>
-            </cd:keywords>
-            <cd:keywords list="yes" optional="yes">
-                <cd:inherit name="setupitemgroup"/>
-            </cd:keywords>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupitemgroup"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="itemize" type="environment" file="strc-itm.mkvi">
+            <cd:arguments>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:inherit name="setupitemgroup"/>
+                </cd:keywords>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupitemgroup"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setupitemize" file="strc-itm.mkvi">
+            <cd:arguments>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:constant type="each"/>
+                    <cd:constant type="cd:number"/>
+                </cd:keywords>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:inherit name="setupitemgroup"/>
+                </cd:keywords>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupitemgroup"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
 </cd:interface>

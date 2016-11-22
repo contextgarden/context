@@ -53,9 +53,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathmatrix" type="environment" generated="yes" variant="example" file="math-ali.mkiv">
+    <cd:command name="mathmatrix" type="environment" generated="yes" variant="instance" file="math-ali.mkiv">
         <cd:sequence>
-            <cd:variable value="mathmatrix"/>
+            <cd:instance value="mathmatrix"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -63,26 +63,29 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="matrix"/>
-            <cd:constant value="mathmatrix"/>
+            <cd:resolve name="instance-mathmatrix"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="mathmatrix" type="environment" file="math-ali.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmathmatrix"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="matrix" type="environment" file="math-ali.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmathmatrix"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="mathmatrix" type="environment" file="math-ali.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmathmatrix"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="matrix" type="environment" file="math-ali.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmathmatrix"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
     <cd:command name="matrices" type="environment" file="math-ali.mkiv">
         <cd:arguments>

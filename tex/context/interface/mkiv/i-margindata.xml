@@ -128,9 +128,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="margindata" generated="yes" variant="example" file="typo-mar.mkiv">
+    <cd:command name="margindata" generated="yes" variant="instance" file="typo-mar.mkiv">
         <cd:sequence>
-            <cd:variable value="margindata"/>
+            <cd:instance value="margindata"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -145,28 +145,7 @@
             <cd:content/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="inleftmargin"/>
-            <cd:constant value="inrightmargin"/>
-            <cd:constant value="inoutermargin"/>
-            <cd:constant value="ininnermargin"/>
-            <cd:constant value="inleftedge"/>
-            <cd:constant value="inrightedge"/>
-            <cd:constant value="inouteredge"/>
-            <cd:constant value="ininneredge"/>
-            <cd:constant value="atleftmargin"/>
-            <cd:constant value="atrightmargin"/>
-            <cd:constant value="inleft"/>
-            <cd:constant value="inright"/>
-            <cd:constant value="inouter"/>
-            <cd:constant value="ininner"/>
-            <cd:constant value="inmargin"/>
-            <cd:constant value="inother"/>
-            <cd:constant value="margintext"/>
-            <!--
-                <cd:constant value="marginword"/>
-                <cd:constant value="margintitle"/>
-                <cd:constant value="inothermargin"/>
-            -->
+            <cd:resolve name="instance-margindata"/>
         </cd:instances>
     </cd:command>
 
@@ -186,318 +165,253 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inleftmargin" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="inrightmargin" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="inoutermargin" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="ininnermargin" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="inleftedge" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="inrightedge" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="ininneredge" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="inouteredge" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="atleftmargin" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="atrightmargin" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="inleft" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="inright" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="ininner" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="inouter" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="inmargin" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="inother" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmarginframed"/>
-            </cd:assignments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="margintext" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="marginword" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="margintitle" file="typo-mar.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="reference">
-                    <cd:constant type="cd:reference"/>
-                </cd:parameter>
-                <cd:inherit name="setupmargindata"/>
-            </cd:assignments>
-            <!--
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupmarginframed"/>
-                </cd:assignments>
-            -->
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
     <!--
+
+        <cd:command name="inleftmargin" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="inrightmargin" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="inoutermargin" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="ininnermargin" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="inleftedge" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="inrightedge" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="ininneredge" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="inouteredge" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="atleftmargin" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="atrightmargin" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="inleft" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="inright" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="ininner" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="inouter" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="inmargin" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="inother" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupmarginframed"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="margintext" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="marginword" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="margintitle" file="typo-mar.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="reference">
+                        <cd:constant type="cd:reference"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupmargindata"/>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
 
         <cd:command name="inothermargin" file="typo-mar.mkiv">
             <cd:arguments>

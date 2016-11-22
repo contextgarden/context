@@ -138,9 +138,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tabulate" type="environment" generated="yes" variant="example" file="tabl-tbl.mkiv">
+    <cd:command name="tabulate" type="environment" generated="yes" variant="instance" file="tabl-tbl.mkiv">
         <cd:sequence>
-            <cd:variable value="tabulate"/>
+            <cd:instance value="tabulate"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
@@ -149,8 +149,7 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="legend"/>
-            <cd:constant value="fact"/>
+            <cd:resolve name="instance-tabulate"/>
         </cd:instances>
     </cd:command>
 
@@ -174,25 +173,25 @@
 
     <cd:command name="tabulateautoline" file="tabl-tbl.mkiv"/>
 
-    <cd:command name="legend" type="environment" file="tabl-tbl.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuptabulate"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="fact" type="environment" file="tabl-tbl.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuptabulate"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
     <!--
+
+        <cd:command name="legend" type="environment" file="tabl-tbl.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuptabulate"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="fact" type="environment" file="tabl-tbl.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuptabulate"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
 
         <cd:command name="VL" scope="tabulate" file="tabl-tbl.mkiv">
             <cd:arguments>

@@ -1053,17 +1053,55 @@
 \newskip \s_strc_notes_distance % we need to implement stretch
 \newcount\c_strc_notes_columns
 
+% \def\strc_notes_set_distance
+%   {\begingroup
+%    \setbox\scratchbox\vbox % no reuse as it can mirror
+%      {\forgetall
+%       \restoreglobalbodyfont % really needed
+%       \dontcomplain
+%       \noteparameter\c!before
+%       \placenoterule
+%       \noteparameter\c!after}%
+%    \expandafter\endgroup\expandafter
+%    \s_strc_notes_distance\the\htdp\scratchbox\relax} % also dp now
+
+\newskip       \s_strc_notes_before
+\newskip       \s_strc_notes_inbetween
+\newconditional\c_strc_notes_first_flushed
+
+\appendtoks
+    \edef\p_spacebefore{\rootnoteparameter\c!spacebefore}%
+    \ifx\p_spacebefore\empty
+        \global\s_strc_notes_before\zeropoint
+    \else
+        \setbox\scratchbox\vbox{\blank[\p_spacebefore]\global\s_strc_notes_before\lastskip}%
+    \fi
+    \edef\p_spaceinbetween{\rootnoteparameter\c!spaceinbetween}%
+    \ifx\p_spaceinbetween\empty
+        \global\s_strc_notes_inbetween\zeropoint
+    \else
+        \setbox\scratchbox\vbox{\blank[\p_spaceinbetween]\global\s_strc_notes_inbetween\lastskip}%
+    \fi
+\to \everysynchronizenote
+
 \def\strc_notes_set_distance
   {\begingroup
+   \restoreglobalbodyfont
    \setbox\scratchbox\vbox % no reuse as it can mirror
      {\forgetall
-    % \strc_notes_set_bodyfont
       \dontcomplain
       \noteparameter\c!before
       \placenoterule
+      \strut
       \noteparameter\c!after}%
+   % also dp now
+   \scratchdimen\dimexpr\htdp\scratchbox-\lineheight\relax
+   \ifgridsnapping
+     \getnoflines\scratchdimen
+     \scratchdimen\noflines\lineheight
+   \fi
    \expandafter\endgroup\expandafter
-   \s_strc_notes_distance\the\htdp\scratchbox\relax} % also dp now
+   \s_strc_notes_distance\the\scratchdimen\relax}
 
 \def\strc_notes_set_columns
   {\c_strc_notes_columns\noteparameter\c!n\relax
@@ -1356,14 +1394,18 @@
 %
 % \dorecurse{6}{\input tufte\footnote{\input ward \input tufte \relax}}
 
+\newconditional\c_strc_notes_first_placed
+
 \unexpanded\def\placenoteinserts
-  {\strc_notes_process\strc_notes_place_inserts}
+  {\setfalse\c_strc_notes_first_placed
+   \strc_notes_process\strc_notes_place_inserts}
 
 \def\strc_notes_place_inserts
   {\strc_notes_set_delayed % \strc_notes_synchronize % we need to know if it's delayed
    \ifconditional\c_strc_notes_delayed \else
      \ifdim\ht\currentnoteinsertionnumber>\zeropoint % or a faster delayed test
        \strc_notes_place_inserts_indeed
+       \settrue\c_strc_notes_first_placed
      \fi
    \fi}
 
@@ -1373,6 +1415,17 @@
      \endgraf
      \ifvmode
        \whitespace
+       \ifconditional\c_strc_notes_first_placed
+         \edef\p_spaceinbetween{\noteparameter\c!spaceinbetween}%
+         \ifx\p_spaceinbetween\empty\else
+           \blank[\p_spaceinbetween]%
+         \fi
+       \else
+         \edef\p_spacebefore{\noteparameter\c!spacebefore}%
+         \ifx\p_spacebefore\empty\else
+           \blank[\p_spacebefore]%
+         \fi
+       \fi
        \noteparameter\c!before
      \fi
      \placenoterule

@@ -90,10 +90,10 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppairedbox" generated="yes" variant="example" file="pack-com.mkiv">
+    <cd:command name="setuppairedbox" generated="yes" variant="instance" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="setup"/>
-            <cd:variable value="pairedbox"/>
+            <cd:instance value="pairedbox"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes">
@@ -101,14 +101,14 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="legend"/>
+            <cd:resolve name="instance-pairedbox"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placepairedbox" generated="yes" variant="example" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" generated="yes" variant="instance" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="place"/>
-            <cd:variable value="pairedbox"/>
+            <cd:instance value="pairedbox"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -118,14 +118,14 @@
             <cd:resolve name="argument-text"/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="legend"/>
+            <cd:resolve name="instance-pairedbox"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placepairedbox" type="environment" generated="yes" variant="example" file="pack-com.mkiv">
+    <cd:command name="placepairedbox" type="environment" generated="yes" variant="instance" file="pack-com.mkiv">
         <cd:sequence>
             <cd:string value="place"/>
-            <cd:variable value="pairedbox"/>
+            <cd:instance value="pairedbox"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
@@ -133,35 +133,39 @@
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="legend"/>
+            <cd:resolve name="instance-pairedbox"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="setuplegend" file="pack-com.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes">
-                <cd:inherit name="setuppairedbox"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="placelegend" file="pack-com.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuppairedbox"/>
-            </cd:assignments>
-            <cd:content/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="setuplegend" file="pack-com.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuppairedbox"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="placelegend" type="environment" file="pack-com.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuppairedbox"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
+        <cd:command name="placelegend" file="pack-com.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuppairedbox"/>
+                </cd:assignments>
+                <cd:content/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="placelegend" type="environment" file="pack-com.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuppairedbox"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
     <cd:command name="placeontopofeachother" file="pack-com.mkiv">
         <cd:arguments>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="translateinput" file="m-translate.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-text"/>
+            <cd:resolve name="keyword-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetinputtranslation" file="m-translate.mkiv"/>
+
+    <cd:command name="enableinputtranslation" file="m-translate.mkiv"/>
+
+    <cd:command name="disableinputtranslation" file="m-translate.mkiv"/>
+
+    <cd:command name="readtranslatedfile" file="m-translate.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

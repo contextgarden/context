@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/18/16 22:20:13
+-- merge date  : 11/22/16 20:03:56
 
 do -- begin closure to overcome local limits and interference
 
@@ -13540,7 +13540,11 @@ local f_unicode=formatters["U%05X"]
 local f_index=formatters["I%05X"]
 local f_character_y=formatters["%C"]
 local f_character_n=formatters["[ %C ]"]
-local doduplicates=true 
+local check_duplicates=true 
+local check_soft_hyphen=false 
+directives.register("otf.checksofthyphen",function(v)
+  check_soft_hyphen=v
+end)
 local function replaced(list,index,replacement)
   if type(list)=="number" then
     return replacement
@@ -13608,7 +13612,7 @@ local function unifyresources(fontdata,indices)
     end
   end
   local done={}
-  local duplicates=doduplicates and resources.duplicates
+  local duplicates=check_duplicates and resources.duplicates
   if duplicates and not next(duplicates) then
     duplicates=false
   end
@@ -13845,10 +13849,31 @@ local function unifyresources(fontdata,indices)
   unifythem(resources.sublookups)
 end
 local function copyduplicates(fontdata)
-  if doduplicates then
+  if check_duplicates then
     local descriptions=fontdata.descriptions
     local resources=fontdata.resources
     local duplicates=resources.duplicates
+    if check_soft_hyphen then
+      local ds=descriptions[0xAD]
+      if not ds or ds.width==0 then
+        if ds then
+          descriptions[0xAD]=nil
+          report("patching soft hyphen")
+        else
+          report("adding soft hyphen")
+        end
+        if not duplicates then
+          duplicates={}
+          resources.duplicates=duplicates
+        end
+        local dh=duplicates[0x2D]
+        if dh then
+          dh[#dh+1]={ [0xAD]=true }
+        else
+          duplicates[0x2D]={ [0xAD]=true }
+        end
+      end
+    end
     if duplicates then
       for u,d in next,duplicates do
         local du=descriptions[u]

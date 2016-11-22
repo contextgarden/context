@@ -620,7 +620,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     local pfmwidth   = result.pfmwidth    or 0
     local pfmweight  = result.pfmweight   or 0
     --
-    specifications[#specifications + 1] = {
+    specifications[#specifications+1] = {
         filename       = filename, -- unresolved
         cleanfilename  = cleanfilename,
      -- subfontindex   = subfont,
@@ -1078,16 +1078,10 @@ local function analyzefiles(olddata)
                 if result then
                     if #result > 0 then
                         for r=1,#result do
-                            local ok = check_name(data,result[r],storedname,modification,suffix,r) -- subfonts start at zero
-                         -- if not ok then
-                         --     nofskipped = nofskipped + 1
-                         -- end
+                            check_name(data,result[r],storedname,modification,suffix,r) -- subfonts start at zero
                         end
                     else
-                        local ok = check_name(data,result,storedname,modification,suffix)
-                     -- if not ok then
-                     --     nofskipped = nofskipped + 1
-                     -- end
+                        check_name(data,result,storedname,modification,suffix)
                     end
                     if trace_warnings and message and message ~= "" then
                         report_names("warning when identifying %s font %a, %s",suffix,completename,message)

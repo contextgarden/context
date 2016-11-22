@@ -34,15 +34,15 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="low" generated="yes" variant="example" file="typo-scr.mkiv">
+    <cd:command name="low" generated="yes" variant="instance" file="typo-scr.mkiv">
         <cd:sequence>
-            <cd:variable value="low"/>
+            <cd:instance value="low"/>
         </cd:sequence>
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="unitslow"/>
+            <cd:resolve name="instance-low"/>
         </cd:instances>
     </cd:command>
 
@@ -82,15 +82,15 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="high" generated="yes" variant="example" file="typo-scr.mkiv">
+    <cd:command name="high" generated="yes" variant="instance" file="typo-scr.mkiv">
         <cd:sequence>
-            <cd:variable value="high"/>
+            <cd:instance value="high"/>
         </cd:sequence>
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
         <cd:instances>
-            <cd:constant value="unitshigh"/>
+            <cd:resolve name="instance-high"/>
         </cd:instances>
     </cd:command>
 
@@ -133,9 +133,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lowhigh" generated="yes" variant="example" file="typo-scr.mkiv">
+    <cd:command name="lowhigh" generated="yes" variant="instance" file="typo-scr.mkiv">
         <cd:sequence>
-            <cd:variable value="lowhigh"/>
+            <cd:instance value="lowhigh"/>
         </cd:sequence>
         <cd:arguments>
             <cd:keywords optional="yes">
@@ -199,9 +199,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lowmidhigh" generated="yes" variant="example" file="typo-scr.mkiv">
+    <cd:command name="lowmidhigh" generated="yes" variant="instance" file="typo-scr.mkiv">
         <cd:sequence>
-            <cd:variable value="lowmidhigh"/>
+            <cd:instance value="lowmidhigh"/>
         </cd:sequence>
         <cd:arguments>
             <cd:content/>

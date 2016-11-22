@@ -36,18 +36,14 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
-
-        <cd:command name="setupscripts" file="scrp-ini.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-name-list-optional"/>
-                <cd:assignments list="yes">
-                    <cd:inherit name="setupscript"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
+    <cd:command name="setupscripts" file="scrp-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupscript"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
 
     <cd:command name="setscript" file="scrp-ini.mkvi">
         <cd:arguments>
@@ -79,34 +75,28 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="script" generated="yes" varianet="generated" file="scrp-ini.mkvi">
+    <cd:command name="script" generated="yes" varianet="instance" file="scrp-ini.mkvi">
         <cd:sequence>
-            <cd:variable value="script"/>
+            <cd:instance value="script"/>
         </cd:sequence>
         <cd:instances>
-            <cd:constant value="hangul"/>
-            <cd:constant value="hanzi"/>
-            <cd:constant value="nihongo"/>
-            <cd:constant value="ethiopic"/>
-            <cd:constant value="thai"/>
-            <cd:constant value="latin"/>
-            <cd:constant value="test"/>
+            <cd:resolve name="instance-script"/>
         </cd:instances>
     </cd:command>
 
-    <cd:command name="hangul" file="scrp-ini.mkvi"/>
-
-    <cd:command name="hanzi" file="scrp-ini.mkvi"/>
-
-    <cd:command name="nihongo" file="scrp-ini.mkvi"/>
-
-    <cd:command name="ethiopic" file="scrp-ini.mkvi"/>
-
-    <cd:command name="thai" file="scrp-ini.mkvi"/>
-
-    <cd:command name="latin" file="scrp-ini.mkvi"/>
-
     <!--
+
+        <cd:command name="hangul" file="scrp-ini.mkvi"/>
+
+        <cd:command name="hanzi" file="scrp-ini.mkvi"/>
+
+        <cd:command name="nihongo" file="scrp-ini.mkvi"/>
+
+        <cd:command name="ethiopic" file="scrp-ini.mkvi"/>
+
+        <cd:command name="thai" file="scrp-ini.mkvi"/>
+
+        <cd:command name="latin" file="scrp-ini.mkvi"/>
 
         <cd:command name="test" file="scrp-ini.mkvi"/>
 

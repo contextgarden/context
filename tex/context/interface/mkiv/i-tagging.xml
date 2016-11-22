@@ -25,6 +25,13 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="element" type="environment" file="strc-tag.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="assignment-userdata-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="doifelseinelement" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
