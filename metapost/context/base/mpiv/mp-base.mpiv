@@ -458,8 +458,8 @@ enddef ;
 
 % special operators
 
-vardef incr suffix $ = $:=$+1; $ enddef ;
-vardef decr suffix $ = $:=$-1; $ enddef ;
+vardef incr suffix $ = $ := $ + 1 ; $ enddef ;
+vardef decr suffix $ = $ := $ - 1 ; $ enddef ;
 
 def reflectedabout(expr w,z) = % reflects about the line w..z
     transformed

@@ -1625,3 +1625,32 @@ enddef ;
 def comment expr str =
     special "metapost.comment[[" & str & "]]" ;
 enddef ;
+
+% This overloads a dummy:
+
+vardef uniquelist(suffix list) =
+    % this can be optimized by passing all values at once and returning
+    % a result but for now this is ok .. we need an undef foo
+    save i, j, h ;
+    if known lis[0] :
+        i := 0 ;
+        j := -1 ;
+    else :
+        i := 1 ;
+        j := 0 ;
+    fi ;
+    h := lua.mp.newhash() ;
+    forever :
+        exitif unknown list[i] ;
+        if not lua.mp.inhash(h,list[i]) :
+            j := j + 1 ;
+            list[j] := list[i] ;
+            lua.mp.tohash(h,list[i]) ;
+        fi ;
+        i := i + 1 ;
+    endfor ;
+    for n = j+1 step 1 until i-1 :
+        dispose(list[n])
+    endfor ;
+    lua.mp.disposehash(h) ;
+enddef ;

@@ -1,0 +1,116 @@
+%D \module
+%D   [       file=mp-node.mpiv,
+%D        version=1998.02.15,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=Node Based Graphics,
+%D         author=Alan Braslau,
+%D           date=\currentdate,
+%D      copyright={Alan Braslau & \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Ths crossing macros were written as part of this module but as they
+%D can be of use elsewhere they are defined in mp-tool.
+
+if known context_node : endinput ; fi ;
+
+boolean context_node ; context_node := true ;
+
+% returns a picture
+
+vardef makenode@#(suffix p)(text t) =
+    save i ; numeric i ;
+    for a = t :
+        if not known i : % first argument is the index
+            i = a ;
+            if not picture p.pic[i] : picture p.pic[] ; fi
+                %
+                % note that one needs to declare "path p[] ; picture p[]pic[] ;"
+                % before calling node() if one is to use a pseudo-array for p
+                % because "picture p1.pic[] ;" is not a valid syntax!
+                %
+        else :
+            if known p.pic[i] :
+                addto p.pic[i] also
+            else :
+                p.pic[i] :=
+            fi
+            if     picture a           : a
+            elseif string  a           : textext@#(a)
+            elseif numeric a           : textext@#(decimal a)
+            elseif ((boolean a) and a) : image(draw origin)
+            else                       : nullpicture
+            fi ;
+        fi
+    endfor
+enddef ;
+
+vardef node@#(suffix p)(text t) =
+    makenode@#(p)(t) ;
+    for a = t :
+        if known p.pic[a] :
+            p.pic[a] if known p : shifted point a of p fi
+        else :
+            nullpicture
+        fi
+        exitif true ;
+    endfor
+enddef ;
+
+% returns a path
+
+vardef fromto@#(expr d)(suffix p)(expr f)(suffix q)(text s) =
+    save r, t, l ;
+    path r[] ; numeric t ; picture l ;
+    for a = s :
+        if not known t :
+            t = a ;
+            r0 = if ((not numeric d) and
+                     (point f of p = point f of q) and
+                     (point t of p = point t of q)) :
+                     subpath (f,t) of p
+                 else :
+                     point f of p -- point t of q
+                 fi ;
+            save deviation ; numeric deviation ;
+            deviation := if numeric d: d else: 0 fi ;
+            r1 = if deviation=0 : r0
+                else :
+                    point 0 of r0 ..
+                    unitvector direction .5length r0 of r0 rotated 90
+                        scaled deviation * arclength r0
+                        shifted point .5length r0 of r0 ..
+                    point length r0 of r0
+                fi ;
+        else :
+            if known l :
+                addto l also
+            else :
+                l :=
+            fi
+                 if     picture a           : a
+                 elseif string a            : textext@#(a)
+                 elseif numeric a           : textext@#(decimal a)
+                 elseif ((boolean a) and a) : image(draw origin withpen currentpen scaled 4)
+                 else                       : nullpicture
+                 fi ;
+        fi
+    endfor
+    r2 = r1
+        if known p.pic[f if cycle p: mod length p fi] :
+            cutbefore boundingbox (p.pic[f if cycle p: mod length p fi] shifted point f of p)
+        fi
+        if known q.pic[t if cycle q: mod length q fi] :
+            cutafter  boundingbox (q.pic[t if cycle q: mod length q fi] shifted point t of q)
+        fi
+        ;
+    if known l :
+        l := l shifted point .5length r2 of r2 ;
+        draw l ;
+        (r2 if str @# = "" : crossingunder l fi)
+    else :
+        r2
+    fi
+enddef ;

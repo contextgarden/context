@@ -12,6 +12,8 @@ modules.</p>
 --ldx]]--
 
 -- this module is being reconstructed
+--
+-- todo: datatype table per node type
 
 -- todo: query names with new node.subtypes
 

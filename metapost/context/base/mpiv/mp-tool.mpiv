@@ -104,6 +104,27 @@ vardef image@#(text t) =
     fi
 enddef ;
 
+%D Variables
+
+def dispose suffix s =
+    begingroup ;
+    save ss ;
+    if     numeric   s : numeric   ss
+    elseif boolean   s : boolean   ss
+    elseif pair      s : pair      ss
+    elseif path      s : path      ss
+    elseif picture   s : picture   ss
+    elseif string    s : string    ss
+    elseif transform s : transform ss
+    elseif color     s : color     ss
+    elseif rgbcolor  s : rgbcolor  ss
+    elseif cmykcolor s : cmykcolor ss
+    else             s : numeric   ss
+    fi ;
+    s := ss ;
+    endgroup ;
+enddef ;
+
 %D Colors:
 
 newinternal nocolormodel   ; nocolormodel   := 1 ;
@@ -351,6 +372,42 @@ enddef;
 %     hide(picture mfun_a_b ; mfun_a_b := a ; setbounds mfun_a_b to b;)
 %     mfun_a_b
 % enddef ;
+
+%D Here are some special ones, cooked up in the process of Alan's mp-node
+%D module:
+
+vardef boundingradius primary p =
+    if picture p :
+        max(
+            abs((llcorner p) shifted -center p),
+            abs((lrcorner p) shifted -center p),
+            abs((urcorner p) shifted -center p),
+            abs((ulcorner p) shifted -center p)
+        )
+    elseif pen p :
+        boundingradius image(draw makepath p ;)
+    elseif path p :
+        boundingradius image(draw p ;)
+    fi
+enddef ;
+
+vardef boundingcircle primary p =
+    fullcircle scaled 2boundingradius p shifted center p
+enddef ;
+
+vardef boundingpoint@#(expr p) =
+    if picture p : % pen?
+        (                 mfun_labxf@# *ulcorner p
+         +                mfun_labyf@# *lrcorner p
+         +(1-mfun_labxf@#-mfun_labyf@#)*urcorner p)
+    elseif path p :
+        boundingpoint@#(image(draw p ;))
+   %elseif pair p :
+   %    p
+   %else :
+   %    origin
+    fi
+enddef ;
 
 %D Some missing functions can be implemented rather straightforward (thanks to
 %D Taco and others):
@@ -1501,10 +1558,14 @@ def set_ahlength (text t) =
     ahlength := (ahfactor*pen_size(t)) ;
 enddef ;
 
+% vardef pen_size (text t) =
+%     save p ; picture p ; p := nullpicture ;
+%     addto p doublepath (top origin -- bot origin) t ;
+%     (ypart urcorner p - ypart lrcorner p)
+% enddef ;
+
 vardef pen_size (text t) =
-    save p ; picture p ; p := nullpicture ;
-    addto p doublepath (top origin -- bot origin) t ;
-    (ypart urcorner p - ypart lrcorner p)
+    (ypart top origin - ypart bot origin)
 enddef ;
 
 %D The next two macros are adapted versions of plain
@@ -1595,16 +1656,16 @@ enddef ;
 
 def mfun_with_arrow_path (text t) =
     if autoarrows :
-        set_ahlength(t)
-    fi ;
+        set_ahlength(t) ;
+    fi
     t
     endgroup ;
 enddef ;
 
 def mfun_with_arrow_picture (text t) =
     if autoarrows :
-        set_ahlength(t)
-    fi ;
+        set_ahlength(t) ;
+    fi
     mfun_arrow_count := 0 ;
     mfun_arrow_snippets := stroked_paths(mfun_arrow_picture) ;
     for i within mfun_arrow_picture :
@@ -2978,13 +3039,31 @@ fulltriangle := point 0   along fullcircle
 %D of quick sort routines. Here we have a variant that permits a
 %D method.
 
+% vardef listsize(suffix list) =
+%     numeric len ; len := 0 ;
+%     forever :
+%         exitif unknown list[len+1] ;
+%         len := len + 1 ;
+%     endfor ;
+%     len
+% enddef ;
+
 vardef listsize(suffix list) =
-    numeric len ; len := 0 ;
+    numeric len ; len := 1 ;
     forever :
-        exitif unknown list[len+1] ;
+        exitif unknown list[len] ;
         len := len + 1 ;
     endfor ;
-    len
+    len if unknown list[0] : - 1 fi
+enddef ;
+
+vardef listlast(suffix list) =
+    numeric len ; len := if known list[0] : 0 else : 1 fi  ;
+    forever :
+        len := len + 1 ;
+        exitif unknown list[len] ;
+    endfor ;
+    len - 1
 enddef ;
 
 vardef mfun_quick_sort(suffix list)(expr _min_, _max_)(text what) =
@@ -3024,9 +3103,11 @@ vardef mfun_quick_sort(suffix list)(expr _min_, _max_)(text what) =
 enddef ;
 
 vardef sortlist(suffix list)(text what) =
-    save _max_ ; numeric _max_ ; _max_ := listsize(list) ;
+    save _max_ ; numeric _max_ ;
     save _mid_ ; numeric _mid_ ;
     save temp ;
+  % _max_ := listsize(list) ;
+    _max_ := listlast(list) ;
     if pair list[_max_] :
         pair temp ;
     else :
@@ -3038,8 +3119,13 @@ vardef sortlist(suffix list)(text what) =
         numeric _mid_ ;
     fi ;
     if _max_ > 1 :
-        mfun_quick_sort(list)(1,_max_)(what) ;
+      % mfun_quick_sort(list)(1,_max_)(what) ;
+        mfun_quick_sort(list)(if known list[0] : 0 else : 1 fi,_max_)(what) ;
     fi ;
+enddef ;
+
+vardef uniquelist(suffix list) =
+    % this one will be defined later
 enddef ;
 
 vardef copylist(suffix list, target) =
@@ -3147,4 +3233,136 @@ def do_drawpathwithpoints(expr p) text t =
         setbounds _p_ to boundingbox p ;
         draw _p_ ;
     fi ;
+enddef ;
+
+%D These new helpers are by Alan and are used in for instance the mp-node
+%D module.
+
+newinternal crossingoption ; crossingoption := 0 ;
+newinternal crossingscale  ; crossingscale  := 20 ;
+
+% primary, secondary or tertiary? always hard to decide but primary makes sense
+
+vardef infotext(expr txt, ysize) =
+    textext("\infofont" & if numeric txt : decimal fi txt) ysized ysize
+enddef ;
+
+primarydef p crossingunder q =
+    begingroup
+    save pic ; picture pic ; pic := nullpicture ;
+    if picture p :
+        for i within p :
+            if stroked i :
+                addto pic also image(draw pathpart i crossingunder q) ;
+            fi
+        endfor
+    elseif path p :
+        save n, m, t, a, b, c, r, h ;
+        numeric n, m, t[] ;
+        path a, b, c, r, hold[] ;
+        c := makepath(currentpen scaled crossingscale) ;
+        r := if picture q : boundingbox fi q ;
+        t[0] := n := m := 0 ;
+        a := p ;
+save last ; numeric last ; last := infinity ;
+        forever : % find all intersections
+            clearxy ; z = a intersectiontimes r ;
+exitif x = last ; % prevent loop
+last := x ;
+% maybe we need a threshold for x ;
+% message(decimal x & "+" & decimal m) ;
+            if (x < 0) and (m > 0) :
+                a := hold[m] ; m := m - 1 ;
+                clearxy ; z = a intersectiontimes r ;
+            else :
+                exitif x < 0 ;
+            fi
+            (t[incr n], whatever) = p intersectiontimes point x of a ;
+            if x = 0 :
+                a := a cutbefore c shifted point x of a ;
+            elseif x = length a :
+                a := a cutafter  c shifted point x of a ;
+            else : % before or after?
+                b := subpath (0,x) of a cutafter  c shifted point x of a ;
+                a := subpath (x,length a) of a cutbefore c shifted point x of a ;
+                clearxy ; z = a intersectiontimes r ;
+                if x < 0 :
+                    a := b ;
+                else :
+                    clearxy ; z = b intersectiontimes r ;
+                    if x >= 0 :
+                        hold[incr m] := b ;
+                    fi
+                fi
+            fi
+        endfor
+
+        if n = 0 : % No crossings, we return the PATH
+            save pic ; path pic ; pic := p ;
+        else : % n>0
+            sortlist(t,) ;
+            % we add too much, maybe a test is needed
+            t[incr n] = length p if cycle p : + t[1] fi ;
+% save tt[] ; numeric tt[] ; uniquelist(t,tt) ; t := tt ;
+            % Now, n>1 !
+            % t[0] is the first point of the path and t[n] is the last point
+            % (or the first intersection beyond the length if cyclic)
+            m := 0 ;
+            for i=if cycle p: 2 else: 1 fi upto n :
+                % skip the first segment if cyclic
+                % as it gets repeated (fully) at the end.
+                a := subpath (t[i-1],t[i]) of p
+                    if i > 1 :
+                        cutbefore (c shifted point t[i-1] of p)
+                    fi
+                    if (i < n) or (cycle p) :
+                        cutafter  (c shifted point t[i]   of p)
+                    fi ;
+                if (not picture q) or (a outsideof q) :
+                    if crossingoption > 0 :
+                        addto pic also infotext (
+                            if crossingoption = 1 :
+                                incr(m)
+                            elseif crossingoption = 2 :
+                                i if cycle p: -1 fi
+                            fi
+                            ,crossingscale/5)
+                        shifted point t[i] of p ;                        ;
+                    fi ;
+                    addto pic doublepath a withpen currentpen ;
+                fi
+            endfor
+        fi
+    fi
+    pic
+    endgroup
+enddef ;
+
+primarydef p insideof q =
+    begingroup
+        save pth, pic, t ;
+        path pth ; picture pic ;
+        pic := if path q : image(draw q;) else : q fi ;
+        pth := p -- center pic ;
+        (t, whatever) = pth intersectiontimes boundingbox pic ;
+        t < 0
+    endgroup
+enddef ;
+
+primarydef p outsideof q =
+    not (p insideof q)
+enddef ;
+
+%D Also handy:
+
+vardef circularpath(expr n) =
+    reverse (for i=0 step 2/n until 8-2/n+2eps: point i of fullcircle .. endfor cycle) rotated 90
+enddef ;
+
+vardef squarepath(expr n) =
+    for i=0 step 1/n until 4-1/n + 2eps: point i of fullsquare -- endfor cycle
+enddef ;
+
+vardef linearpath(expr n) =
+    origin for i=1/n step 1/n until 1-1/n + 2eps: -- point i of (origin--(1,0)) endfor
 enddef ;

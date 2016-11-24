@@ -16,8 +16,13 @@ return {
         "maxdimensions",
         "drawoptionsfactor",
         "dq", "sq",
+        "crossingscale", "crossingoption",
     },
     commands = {
+        "loadmodule",
+        --
+        "dispose",
+        --
         "transparency",
         --
         "sqr", "log", "ln", "exp", "inv", "pow", "pi", "radian",
@@ -39,6 +44,8 @@ return {
         "llmoved", "lrmoved", "urmoved", "ulmoved",
         "rightarrow", "leftarrow", "centerarrow",
         "boundingbox", "innerboundingbox", "outerboundingbox", "pushboundingbox", "popboundingbox",
+        "boundingradius", "boundingcircle", "boundingpoint",
+        "crossingunder", "insideof", "outsideof",
         "bottomboundary", "leftboundary", "topboundary", "rightboundary",
         "xsized", "ysized", "xysized", "sized", "xyscaled",
         "intersection_point", "intersection_found", "penpoint",
@@ -58,7 +65,7 @@ return {
         "graphictext", "loadfigure", "externalfigure", "figure", "register", "outlinetext", -- "lua",
         "checkedbounds", "checkbounds", "strut", "rule",
         "withmask", "bitmapimage",
-        "colordecimals", "ddecimal", "dddecimal", "ddddecimal",
+        "colordecimals", "ddecimal", "dddecimal", "ddddecimal", "colordecimalslist",
         "textext", "thetextext", "rawtextext", "textextoffset", "texbox", "thetexbox", "rawtexbox",
         "verbatim",
         "thelabel", "label",
@@ -74,7 +81,7 @@ return {
      -- "define_sampled_linear_shade", "define_sampled_circular_shade",
         "space", "crlf", "dquote", "percent", "SPACE", "CRLF", "DQUOTE", "PERCENT",
         "grayscale", "greyscale", "withgray", "withgrey",
-        "colorpart",
+        "colorpart", "colorlike",
         "readfile",
         "clearxy", "unitvector", "center", -- redefined
         "epsed", "anchored",
@@ -137,6 +144,8 @@ return {
         --
         "shadedup", "shadeddown", "shadedleft", "shadedright",
         --
-        "sortlist", "copylist", "shapedlist", "listtocurves", "listtolines", "listsize",
+        "sortlist", "copylist", "shapedlist", "listtocurves", "listtolines", "listsize", "listlast", "uniquelist",
+        --
+        "circularpath", "squarepath", "linearpath",
     },
 }

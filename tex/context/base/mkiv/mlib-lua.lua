@@ -419,3 +419,33 @@ function mp.report(a,b)
         report_message("%s : %s","message",a)
     end
 end
+
+--
+
+local hashes = { }
+
+function mp.newhash()
+    for i=1,#hashes+1 do
+        if not hashes[i] then
+            hashes[i] = { }
+            mpprint(i)
+            return
+        end
+    end
+end
+
+function mp.disposehash(n)
+    hashes[n] = nil
+end
+
+function mp.inhash(n,key)
+    local h = hashes[n]
+    mpprint(h and h[key] or false)
+end
+
+function mp.tohash(n,key)
+    local h = hashes[n]
+    if h then
+        h[key] = true
+    end
+end
