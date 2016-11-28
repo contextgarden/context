@@ -378,6 +378,7 @@
    \c!depth=\v!fit,
    \c!nx=40,
    \c!ny=10,
+   \c!buffer=\v!comment,
    \c!location=\v!high]
 
 \appendtoks
@@ -473,8 +474,9 @@
      transparencyvalue \numexpr\thetransparencyattribute{\commentparameter\c!color}\relax
      option            {\commentparameter\c!option}% % todo
      symbol            {\commentparameter\c!symbol}%
-     buffer            {\v!comment}%
+     buffer            {\commentparameter\c!buffer}% {\v!comment}%
      layer             {\commentparameter\c!textlayer}%
+     space             {\commentparameter\c!space}%
    \relax
    \wd\b_scrn_comment_link\currentcommentwidth
    \ht\b_scrn_comment_link\currentcommentheight

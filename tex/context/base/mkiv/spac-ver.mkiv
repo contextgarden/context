@@ -1474,7 +1474,6 @@
      \attribute \snapvboxattribute\attribute\snapmethodattribute
    \fi}
 
-
 \unexpanded\def\definegridsnapping
   {\dodoubleargument\spac_grids_define}
 
@@ -1524,6 +1523,7 @@
 
 \definegridsnapping[\v!strict]   [\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut]
 \definegridsnapping[\v!tolerant] [\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut]
+\definegridsnapping[\v!math]     [\v!maxdepth:1.05,\v!maxheight:1.05,\v!strut] % experimental, maybe 1.1
 
 \definegridsnapping[\v!top]      [\v!minheight,\v!maxdepth,\v!strut]
 \definegridsnapping[\v!bottom]   [\v!maxheight,\v!mindepth,\v!strut]

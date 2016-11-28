@@ -174,8 +174,8 @@
         seed        := uniformdeviate 100 ;
 
         if alternative > 10 :
-            superness   := .85  + ((\realfolio-1)/\lastpage) * .15 ;
-            squeezeness := 12pt - ((\realfolio-1)/\lastpage) * 10pt ;
+            superness   := .85  + ((\realfolio-1)/max(\lastpage,1)) * .15 ;
+            squeezeness := 12pt - ((\realfolio-1)/max(\lastpage,1)) * 10pt ;
         else :
             superness   := .90 ;
             squeezeness := 12pt ;

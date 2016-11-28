@@ -192,6 +192,7 @@ implement {
             { "symbol" },
             { "buffer" },
             { "layer" },
+            { "space" },
         }
     }
 }

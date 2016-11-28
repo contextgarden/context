@@ -31,6 +31,7 @@ local pen_info        = mplib.pen_info
 local object_fields   = mplib.fields
 
 local save_table      = false
+local force_stroke    = false
 
 metapost              = metapost or { }
 local metapost        = metapost
@@ -66,6 +67,10 @@ directives.register("metapost.savetable",function(v)
     else
         save_table = false
     end
+end)
+
+trackers.register("metapost.forcestroke",function(v)
+    force_stroke = v
 end)
 
 local pdfliteral = function(pdfcode)
@@ -560,7 +565,9 @@ function metapost.flush(result,flusher,askedfig)
                                             else
                                                 flushnormalpath(path,result,open)
                                             end
-                                            if objecttype == "fill" then
+                                            if force_stroke then
+                                                result[#result+1] = open and "S" or "h S"
+                                            elseif objecttype == "fill" then
                                                 result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
                                             elseif objecttype == "outline" then
                                                 if both then
@@ -597,7 +604,9 @@ function metapost.flush(result,flusher,askedfig)
                                             else
                                                 flushnormalpath(path,result,open)
                                             end
-                                            if objecttype == "fill" then
+                                            if force_stroke then
+                                                result[#result+1] = open and "S" or "h S"
+                                            elseif objecttype == "fill" then
                                                 result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
                                             elseif objecttype == "outline" then
                                                 result[#result+1] = open and "S" or "h S"

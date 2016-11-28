@@ -33,7 +33,7 @@
    %\c!margin=,
    %\c!align=,
    %\c!separator=,
-   %\c!grid=,
+   \c!grid=\v!math,
    \c!location=\v!right,
    \c!left=(,
    \c!right=),
@@ -625,8 +625,12 @@
 \def\strc_math_obey_depth
   {\ifvmode\ifdim\prevdepth<\zeropoint\else\ifdim\prevdepth<\strutdp
      % maybe add a tracing option here
-     \kern\dimexpr\strutdp-\prevdepth\relax
-     \prevdepth\strutdp
+     \ifgridsnapping
+       \directvspacing\v!depth
+     \else
+       \kern\dimexpr\strutdp-\prevdepth\relax
+       \prevdepth\strutdp
+     \fi
    \fi\fi\fi}
 
 \setvalue{\??mathdisplayspacemodel\v!before:3}%
@@ -646,7 +650,7 @@
    \fi\fi}
 
 \setvalue{\??mathdisplayspacemodel\v!after:3}%
-  {\prevdepth\strutdp
+  {\prevdepth\strutdp % \directvspacing\v!depth
    \ifx\p_spaceafter\v!none
      % nothing
    \else\ifx\p_spaceafter\empty

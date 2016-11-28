@@ -19,11 +19,7 @@ return {
         "crossingscale", "crossingoption",
     },
     commands = {
-        "loadmodule",
-        --
-        "dispose",
-        --
-        "transparency",
+        "loadmodule", "dispose", "nothing", "transparency", "tolist", "topath", "tocycle",
         --
         "sqr", "log", "ln", "exp", "inv", "pow", "pi", "radian",
         "tand", "cotd", "sin", "cos", "tan", "cot", "atan", "asin", "acos",
@@ -130,7 +126,7 @@ return {
         "drawlineoptions", "drawpointoptions", "drawcontroloptions", "drawlabeloptions",
         "draworiginoptions", "drawboundoptions", "drawpathoptions", "resetdrawoptions",
         --
-        "undashed",
+        "undashed", "pencilled",
         --
         "decorated", "redecorated", "undecorated",
         --

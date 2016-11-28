@@ -33,6 +33,7 @@ local v_hidden                 = variables.hidden
 local v_auto                   = variables.auto
 local v_embed                  = variables.embed
 local v_max                    = variables.max
+local v_yes                    = variables.yes
 
 local pdfconstant              = lpdf.constant
 local pdfdictionary            = lpdf.dictionary
@@ -381,7 +382,7 @@ function codeinjections.attachmentid(filename) -- not used in context
     return filestreams[filename]
 end
 
-local nofcomments, usepopupcomments, stripleading = 0, false, true
+local nofcomments, usepopupcomments = 0, false
 
 local defaultattributes = {
     ["xmlns"]           = "http://www.w3.org/1999/xhtml",
@@ -415,10 +416,12 @@ end
 
 function nodeinjections.comment(specification) -- brrr: seems to be done twice
     nofcomments = nofcomments + 1
-    local text = stripstring(specification.data or "")
-    if stripleading then
+    local text = specification.data or ""
+    if specification.space ~= v_yes then
+        text = stripstring(text)
         text = gsub(text,"[\n\r] *","\n")
     end
+    text = gsub(text,"\r","\n")
     local name, appearance = analyzesymbol(specification.symbol,comment_symbols)
     local tag      = specification.tag      or "" -- this is somewhat messy as recent
     local title    = specification.title    or "" -- versions of acrobat see the title

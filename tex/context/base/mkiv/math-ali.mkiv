@@ -767,8 +767,10 @@
 
 \def\math_matrix_stop
   {\crcr
-   \mathstrut\crcr
-   \noalign{\kern-\baselineskip}%
+ % \ifgridsnapping \else
+     \mathstrut\crcr
+     \noalign{\vskip-\baselineskip}%
+ % \fi
    \egroup
    \popmacro\math_matrix_NC
    \egroup
@@ -1297,7 +1299,7 @@
 \def\strc_math_number_right_overflow_outside
   {\vpack\bgroup
      \strc_math_flush_box_framed_fit_inline
-     \hskip\zeropoint % nicely breaks the line with out introducing funny vertical spacing ... why o why
+%      \hskip\zeropoint % nicely breaks the line without introducing funny vertical spacing ... why o why
      \hpack to \displaywidth\bgroup
        \hss
        \math_box_llapped_math_no
@@ -1310,7 +1312,7 @@
        \math_box_rlapped_math_no
        \hss
      \egroup
-     \hskip\zeropoint % nicely breaks the line with out introducing funny vertical spacing ... why o why
+     \hskip\zeropoint % nicely breaks the line without introducing funny vertical spacing ... why o why
      \strc_math_flush_box_framed_fit_inline
    \egroup}
 
@@ -1481,6 +1483,11 @@
 \unexpanded\def\strc_math_box_stop
   {\stopforceddisplaymath
    \egroup
+ % % not needed, attribute driven
+ % \ifgridsnapping
+ %   \snaptogrid[\v!math]\vbox
+ % \fi
+ % \bgroup
    % check number
    \d_strc_math_number_width\wd\b_strc_formulas_number
    %
@@ -1533,6 +1540,7 @@
      \else
        \strc_math_flush_box
      \fi
+ % \egroup
    \egroup}
 
 \defineinnermathhandler\v!left      {\strc_math_box_start\plusone  }{\strc_math_box_stop}

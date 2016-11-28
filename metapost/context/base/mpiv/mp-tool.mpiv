@@ -34,6 +34,10 @@ prologues    := 1 ;
 warningcheck := 0 ;
 mpprocset    := 1 ;
 
+%D Handy:
+
+def nothing = enddef ;
+
 %D Namespace handling:
 
 % let exclamationmark = ! ;
@@ -107,22 +111,25 @@ enddef ;
 %D Variables
 
 def dispose suffix s =
-    begingroup ;
-    save ss ;
-    if     numeric   s : numeric   ss
-    elseif boolean   s : boolean   ss
-    elseif pair      s : pair      ss
-    elseif path      s : path      ss
-    elseif picture   s : picture   ss
-    elseif string    s : string    ss
-    elseif transform s : transform ss
-    elseif color     s : color     ss
-    elseif rgbcolor  s : rgbcolor  ss
-    elseif cmykcolor s : cmykcolor ss
-    else             s : numeric   ss
+    if known s :
+        begingroup ;
+            save ss ;
+            if     numeric   s : numeric   ss
+            elseif boolean   s : boolean   ss
+            elseif pair      s : pair      ss
+            elseif path      s : path      ss
+            elseif picture   s : picture   ss
+            elseif string    s : string    ss
+            elseif transform s : transform ss
+            elseif color     s : color     ss
+            elseif rgbcolor  s : rgbcolor  ss
+            elseif cmykcolor s : cmykcolor ss
+            elseif pen       s : pen       ss
+            else             s : numeric   ss
+            fi ;
+            s := ss ;
+        endgroup ;
     fi ;
-    s := ss ;
-    endgroup ;
 enddef ;
 
 %D Colors:
@@ -1779,9 +1786,7 @@ enddef ;
 
 %D To be documented.
 
-path freesquare ;
-
-freesquare := (
+path freesquare ; freesquare := (
     (-1,0) -- (-1,-1) -- (0,-1) -- (+1,-1) --
     (+1,0) -- (+1,+1) -- (0,+1) -- (-1,+1) -- cycle
 ) scaled .5 ;
@@ -3243,8 +3248,8 @@ newinternal crossingscale  ; crossingscale  := 20 ;
 
 % primary, secondary or tertiary? always hard to decide but primary makes sense
 
-vardef infotext(expr txt, ysize) =
-    textext("\infofont" & if numeric txt : decimal fi txt) ysized ysize
+vardef infotext@#(expr txt, ysize) =
+    textext@#("\infofont " & if numeric txt : decimal fi txt) ysized ysize
 enddef ;
 
 primarydef p crossingunder q =
@@ -3355,14 +3360,68 @@ enddef ;
 
 %D Also handy:
 
-vardef circularpath(expr n) =
+vardef circularpath primary n =
     reverse (for i=0 step 2/n until 8-2/n+2eps: point i of fullcircle .. endfor cycle) rotated 90
 enddef ;
 
-vardef squarepath(expr n) =
+vardef squarepath primary n =
     for i=0 step 1/n until 4-1/n + 2eps: point i of fullsquare -- endfor cycle
 enddef ;
 
-vardef linearpath(expr n) =
+vardef linearpath primary n =
     origin for i=1/n step 1/n until 1-1/n + 2eps: -- point i of (origin--(1,0)) endfor
+enddef ;
+
+%D  A nice tracing helper:
+
+color       pensilcolor ; pensilcolor := .5red ;
+newinternal pensilstep  ; pensilstep  := 1/25 ;
+
+vardef pensilled(expr p, q) =
+    image (
+        draw p withcolor pensilcolor withpen q ;
+        for i = 0 step pensilstep until length(p) + eps:
+            draw point i of p withcolor white withtransparency (1,.5) withpen q ;
+        endfor ;
+    )
+enddef ;
+
+%D Easy to forget but handy for manuals:
+
+vardef tolist(suffix l)(text t) =
+    save n ; n := 1 ;
+    for p = t :
+        if numeric p :
+            n := p ;
+            dispose(l[n])
+        elseif pair p :
+            l[n] := p ;
+            n := n + 1 ;
+        elseif path p :
+            for i=0 step 1 until length(p) :
+                l[n] := point i of p ;
+                n := n + 1 ;
+            endfor ;
+        else :
+            % ignore
+        fi ;
+    endfor ;
+    forever :
+        exitif unknown l[n] ;
+        dispose(l[n])
+        n := n + 1 ;
+    endfor ;
+enddef ;
+
+vardef topath(suffix p)(text t) =
+    save i ; i := if known p[1] : 2 ; p[1] elseif known p[0] : 1 ; p[0] else : 0 ; origin fi
+    forever :
+        exitif unknown p[i] ;
+        t p[i]
+        hide(i := i + 1)
+    endfor
+enddef ;
+
+vardef tocycle(suffix p)(text t) =
+    topath(p,t) t cycle
 enddef ;

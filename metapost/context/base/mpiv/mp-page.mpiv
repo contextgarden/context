@@ -300,6 +300,14 @@ vardef InnerEdgeDistance   = if not OnRightPage : lua.mp.RightEdgeDistance  () e
 vardef OuterSpaceWidth     = if not OnRightPage : lua.mp.BackSpace          () else : lua.mp.CutSpace           () fi enddef ;
 vardef InnerSpaceWidth     = if not OnRightPage : lua.mp.CutSpace           () else : lua.mp.BackSpace          () fi enddef ;
 
+% indices
+
+vardef OuterMargin = if not OnRightPage : LeftMargin  else : RightMargin fi enddef ;
+vardef InnerMargin = if not OnRightPage : RightMargin else : LeftMargin  fi enddef ;
+
+vardef OuterEdge   = if not OnRightPage : LeftEdge    else : RightEdge   fi enddef ;
+vardef InnerEdge   = if not OnRightPage : Rightedge   else : LeftEdge    fi enddef ;
+
 % vardef CurrentLayout = lua.mp.CurrentLayout () enddef ;
 
 vardef OverlayWidth      = lua.mp.OverlayWidth    ()  enddef ;
