@@ -871,7 +871,7 @@ secondarydef p intersection_point q =
     begingroup
     save x_, y_ ;
     (x_,y_) = p intersectiontimes q ;
-    if x_<0 :
+    if x_ < 0 :
         intersection_found := false ;
         center p % origin
     else :
@@ -3262,25 +3262,21 @@ primarydef p crossingunder q =
             fi
         endfor
     elseif path p :
-        save n, m, t, a, b, c, r, h ;
+        save n, m, t, a, b, c, r, bcuttings, hold ;
         numeric n, m, t[] ;
-        path a, b, c, r, hold[] ;
+        path a, b, c, r, bcuttings, hold[] ;
         c := makepath(currentpen scaled crossingscale) ;
         r := if picture q : boundingbox fi q ;
         t[0] := n := m := 0 ;
         a := p ;
-save last ; numeric last ; last := infinity ;
-        forever : % find all intersections
+        % The cutbefore/cutafter using c below prevents endless loops!
+       %forever : % find all intersections
+        for i=1 upto 100 : % limit the number, until we can make this robust
             clearxy ; z = a intersectiontimes r ;
-exitif x = last ; % prevent loop
-last := x ;
-% maybe we need a threshold for x ;
-% message(decimal x & "+" & decimal m) ;
-            if (x < 0) and (m > 0) :
+            if x < 0 :
+                exitif m < 1 ;
                 a := hold[m] ; m := m - 1 ;
                 clearxy ; z = a intersectiontimes r ;
-            else :
-                exitif x < 0 ;
             fi
             (t[incr n], whatever) = p intersectiontimes point x of a ;
             if x = 0 :
@@ -3288,17 +3284,25 @@ last := x ;
             elseif x = length a :
                 a := a cutafter  c shifted point x of a ;
             else : % before or after?
-                b := subpath (0,x) of a cutafter  c shifted point x of a ;
+                b := subpath (0,x)        of a cutafter  c shifted point x of a ;
+                bcuttings := cuttings ;
                 a := subpath (x,length a) of a cutbefore c shifted point x of a ;
                 clearxy ; z = a intersectiontimes r ;
                 if x < 0 :
                     a := b ;
+                    cuttings := bcuttings ;
                 else :
-                    clearxy ; z = b intersectiontimes r ;
-                    if x >= 0 :
-                        hold[incr m] := b ;
+                    if length bcuttings > 0 :
+                        clearxy ; z = b intersectiontimes r ;
+                        if x >= 0 :
+                            hold[incr m] := b ;
+                        fi
                     fi
                 fi
+            fi
+            if length cuttings = 0 :
+                exitif m < 1 ;
+                a := hold[m] ; m := m - 1 ;
             fi
         endfor
 
@@ -3316,6 +3320,16 @@ last := x ;
             for i=if cycle p: 2 else: 1 fi upto n :
                 % skip the first segment if cyclic
                 % as it gets repeated (fully) at the end.
+                if crossingoption > 0 :
+                    if crossingoption = 1 :
+                        addto pic doublepath c shifted point t[i] of p
+                        withpen currentpen withtransparency(1,.5) ;
+                    elseif crossingoption = 2 :
+                        addto pic also
+                        infotext (incr m,crossingscale/5)
+                        shifted point t[i] of p ;
+                    fi
+                fi
                 a := subpath (t[i-1],t[i]) of p
                     if i > 1 :
                         cutbefore (c shifted point t[i-1] of p)
@@ -3324,16 +3338,6 @@ last := x ;
                         cutafter  (c shifted point t[i]   of p)
                     fi ;
                 if (not picture q) or (a outsideof q) :
-                    if crossingoption > 0 :
-                        addto pic also infotext (
-                            if crossingoption = 1 :
-                                incr(m)
-                            elseif crossingoption = 2 :
-                                i if cycle p: -1 fi
-                            fi
-                            ,crossingscale/5)
-                        shifted point t[i] of p ;                        ;
-                    fi ;
                     addto pic doublepath a withpen currentpen ;
                 fi
             endfor

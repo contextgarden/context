@@ -933,15 +933,16 @@ local function cm(object)
     local op = object.path
     if op then
         local first, second, fourth = op[1], op[2], op[4]
-        local tx, ty = first.x_coord      , first.y_coord
-        local sx, sy = second.x_coord - tx, fourth.y_coord - ty
-        local rx, ry = second.y_coord - ty, fourth.x_coord - tx
-        if sx == 0 then sx = 0.00001 end
-        if sy == 0 then sy = 0.00001 end
-        return sx, rx, ry, sy, tx, ty
-    else
-        return 1, 0, 0, 1, 0, 0 -- weird case
+        if fourth then
+            local tx, ty = first.x_coord      , first.y_coord
+            local sx, sy = second.x_coord - tx, fourth.y_coord - ty
+            local rx, ry = second.y_coord - ty, fourth.x_coord - tx
+            if sx == 0 then sx = 0.00001 end
+            if sy == 0 then sy = 0.00001 end
+            return sx, rx, ry, sy, tx, ty
+        end
     end
+    return 1, 0, 0, 1, 0, 0 -- weird case
 end
 
 -- color

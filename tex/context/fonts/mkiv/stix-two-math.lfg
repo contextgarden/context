@@ -1,0 +1,27 @@
+return {
+    name = "stix-two-math",
+    version = "1.00",
+    comment = "Goodies that complement stix two opentype.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        -- these tags are suggestions and can still change
+        alternates = {
+            calligraphic = { feature = 'ss01', value = 1, comment = "Mathematical Alternative Calligraphic Characters" },
+            italic       = { feature = 'ss02', value = 1, comment = "Mathematical Alternative Lowercase Italic" },
+            barred       = { feature = 'ss03', value = 1, comment = "Mathematical Alternative Barred Characters" }, -- hbar, lambdabar etc
+            primes       = { feature = 'ss04', value = 1, comment = "Mathematical Alternative Primes" },            -- larger/lower primes, minute etc
+            arrow        = { feature = 'ss05', value = 1, comment = "Mathematical Alternative Smaller Arrows" },
+            narrower     = { feature = 'ss06', value = 1, comment = "Mathematical Alternative Narrower Elements" }, -- narrower/shorter element etc
+            small        = { feature = 'ss07', value = 1, comment = "Mathematical Alternative Smaller Operators" },
+            upright      = { feature = 'ss08', value = 1, comment = "Mathematical Alternative Upright Symbols" },   -- upright integrals etc.
+            negated      = { feature = 'ss09', value = 1, comment = "Mathematical Alternative Negated Symbols" },
+            relation     = { feature = 'ss10', value = 1, comment = "Mathematical Alternative Relations" },
+            negatedset   = { feature = 'ss09', value = 1, comment = "Mathematical Alternative Negated Set Symbols" },
+         -- todo         = { feature = 'ss14', value = 1, comment = "" },
+            circled      = { feature = 'ss16', value = 1, comment = "Mathematical Alternative Circled Operators" },
+        },
+    },
+}
+
+

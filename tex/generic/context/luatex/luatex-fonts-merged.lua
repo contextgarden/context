@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/28/16 13:30:27
+-- merge date  : 12/02/16 10:13:47
 
 do -- begin closure to overcome local limits and interference
 
@@ -16382,12 +16382,10 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
     if kind=="gsub_single" then
       for i=1,#steps do
         for unicode,data in next,steps[i].coverage do
-          if not changed[unicode] then
             if trace_singles then
               report_substitution(feature,sequence,descriptions,unicode,data)
             end
             changed[unicode]=data
-          end
         end
       end
     elseif kind=="gsub_alternate" then

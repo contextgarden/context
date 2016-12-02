@@ -1249,9 +1249,14 @@ function figures.done(data)
     local box = texgetbox(nr)
     ds.width  = box.width
     ds.height = box.height
-    ds.xscale = ds.width /(du.width  or 1)
-    ds.yscale = ds.height/(du.height or 1)
-    ds.page   = ds.page or du.page or dr.page -- sort of redundant but can be limited
+    -- somehow this fails on some of tacos files
+ -- ds.xscale = ds.width /(du.width  or 1)
+ -- ds.yscale = ds.height/(du.height or 1)
+    -- so we add some extra safeguards
+    ds.xscale = ds.width /(du.width  and du.width>0  and du.width  or du.xsize) or 1
+    ds.yscale = ds.height/(du.height and du.height>0 and du.height or du.ysize) or 1
+    -- sort of redundant but can be limited
+    ds.page   = ds.page or du.page or dr.page
     return data
 end
 

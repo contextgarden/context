@@ -373,12 +373,14 @@
 % sense now so we have commands to deal with it
 
 \unexpanded\def\mathaltcalligraphic{\math_set_font_alternate{calligraphic}\cal}          % set via goody file
+\unexpanded\def\mathaltitalic      {\math_set_font_alternate{italic}}                    % set via goody file
 \unexpanded\def\mathslashedzero    {\begingroup\math_set_font_alternate{zero}∅\endgroup} % set via goody file or automatic
 \unexpanded\def\mathdotless        {\math_set_font_alternate{dotless}}                   % set via goody file or automatic
 \unexpanded\def\mathdotlessi       {\begingroup\mathdotless i\endgroup}
 \unexpanded\def\mathdotlessj       {\begingroup\mathdotless j\endgroup}
 
 \let\mathaltcal\mathaltcalligraphic
+\let\mathaltit \mathaltitalic
 
 %let\textslashedzero\slashedzero \unexpanded\def\autoslashedzero{\mathortext\mathslashedzero\textslashedzero}
 \let\textdotlessi   \dotlessi    \unexpanded\def\autodotlessi   {\mathortext\mathdotlessi   \textdotlessi}
@@ -398,7 +400,7 @@
 \let\setmathfontstylealternate  \math_set_font_style_alternate
 \let\setmathfontstylealternative\math_set_font_style_alternate
 
-\let\mathalternate            \math_set_font_alternate
+\let\mathalternate              \math_set_font_alternate
 
 \unexpanded\def\mathupright   {\math_set_attribute\s!regular\s!tf\math_set_font_style_alternate\s!tf}
 \unexpanded\def\mathitalic    {\math_set_attribute\s!regular\s!it\math_set_font_style_alternate\s!it}

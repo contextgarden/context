@@ -18,14 +18,15 @@ if known context_node : endinput ; fi ;
 
 boolean context_node ; context_node := true ;
 
-% returns a picture
+% returns a pair suffix if the path is unknown
 
 vardef makenode@#(suffix p)(text t) =
     save i ; numeric i ;
     for a = t :
-        if not known i : % first argument is the index
+        if unknown i : % first argument is the index
             i = a ;
             if not picture p.pic[i] : picture p.pic[] ; fi
+            if not pair    p.pos[i] : pair    p.pos[] ; fi
                 %
                 % note that one needs to declare "path p[] ; picture p[]pic[] ;"
                 % before calling node() if one is to use a pseudo-array for p
@@ -45,11 +46,19 @@ vardef makenode@#(suffix p)(text t) =
             fi ;
         fi
     endfor
+    p.pos[i] if known p : := point i of p ; fi
 enddef ;
 
+% returns a picture
+
 vardef node@#(suffix p)(text t) =
-    makenode@#(p)(t) ;
+    if pair makenode@#(p)(t) :
+        % nop: gobble the function return.
+    fi
     for a = t :
+        if (unknown p) and (known p.pos[a]) :
+            makenodepath(p) ;
+        fi
         if known p.pic[a] :
             p.pic[a] if known p : shifted point a of p fi
         else :
@@ -65,8 +74,14 @@ vardef fromto@#(expr d)(suffix p)(expr f)(suffix q)(text s) =
     save r, t, l ;
     path r[] ; numeric t ; picture l ;
     for a = s :
-        if not known t :
+        if unknown t :
             t = a ;
+            if (unknown p) and (known p.pos[f]) :
+                makenodepath(p) ;
+            fi
+            if (unknown q) and (known q.pos[t]) :
+                makenodepath(q) ;
+            fi
             r0 = if ((not numeric d) and
                      (point f of p = point f of q) and
                      (point t of p = point t of q)) :
@@ -114,3 +129,46 @@ vardef fromto@#(expr d)(suffix p)(expr f)(suffix q)(text s) =
         r2
     fi
 enddef ;
+
+% returns pair: bounding point of the node picture
+
+vardef nodeboundingpoint@#(suffix p)(expr i) =
+    if known p.pic[i] :
+        boundingpoint@#(p.pic[i])
+    else :
+        origin
+    fi
+enddef ;
+
+% returns pair: scaled laboff direction 
+
+vardef relative@#(expr s) =
+    (mfun_laboff@# scaled s)
+enddef ;
+
+% returns pair: vector between nodes (+ optional scale)
+
+vardef betweennodes@#(suffix p)(expr f)(suffix q)(text s) =
+    save t ; numeric t ;
+    for a = s :
+        if unknown t :
+            t = a ;
+            nodeboundingpoint@#(q,t) + nodeboundingpoint@#(p,f)
+        else :
+            + relative@#(a)
+        fi
+    endfor
+enddef ;
+
+% build a path from the node positions.
+% Must be continuous in index starting at 0.
+
+vardef makenodepath(suffix p) =
+    if unknown p :
+        save i ; i = -1 ;
+        p = forever : exitif unknown p.pos[incr i] ;
+                 p.pos[i] --
+             endfor cycle ;
+    fi
+enddef ;
+
