@@ -342,6 +342,69 @@ properties.
 
 \stopsection
 
+\startsection[title=Selectfont]
+
+The selectfont interface by Wolfgang Schuster can be used to define fonts
+by name. For a long term project workflow you probably want to use filenames
+but for average use names do well:
+
+\starttyping
+\definefontfamily [mainface] [serif] [DejaVu Serif]
+\definefontfamily [mainface] [sans]  [DejaVu Sans]
+\definefontfamily [mainface] [mono]  [DejaVu Sans Mono] [features=none]
+\definefontfamily [mainface] [math]  [Dejavu Math]
+\stoptyping
+
+This setup is triggered in the usual way:
+
+\starttyping
+\setupbodyfont[mainface]
+\stoptyping
+
+When you combine different designs you may need to apply a relative scale:
+
+\starttyping
+\definefontfamily [mainface] [math]  [XITS Math] [rscale=1.1]
+\stoptyping
+
+Some fonts come in designsizes, like Latin Modern:
+
+\starttyping
+\definefontfamily
+  [mainface]
+  [serif]
+  [Latin Modern Roman]
+  [designsize=auto]
+\stoptyping
+
+You can define fallbacks, for example:
+
+\starttyping
+\definefallbackfamily
+  [mainface]
+  [serif]
+  [DejaVu Serif]
+  [range=cyrillic]
+
+\definefontfamily [mainface] [serif] [TeX Gyre Pagella]
+\stoptyping
+
+Here Pagella is used with missing characters taken from Dejavu. The ranges
+are defined with:
+
+\starttyping
+\definefontfamilypreset
+  [range:cyrillic]
+  [range={cyrillic,
+          cyrillicextendeda,
+          cyrillicextendedb,
+          cyrillicsupplement}]
+\stoptyping
+
+For more details you can consult the wiki and the source file \type {font-sel.mkvi}.
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

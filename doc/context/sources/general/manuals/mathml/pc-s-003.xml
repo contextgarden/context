@@ -1,0 +1,40 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <eq/>
+    <apply> <plus/>
+      <cn> 1 </cn> 
+      <apply> <minus/>
+        <apply> <divide/>
+          <cn> 1 </cn> 
+          <apply> <power/>
+            <cn> 2 </cn> 
+            <cn> 2 </cn> 
+          </apply>
+        </apply>
+      </apply>
+      <apply> <divide/>
+        <cn> 1 </cn> 
+        <apply> <power/>
+          <cn> 3 </cn> 
+          <cn> 2 </cn> 
+        </apply>
+      </apply>
+      <apply> <minus/>
+        <apply> <divide/>
+          <cn> 1 </cn> 
+          <apply> <power/>
+            <cn> 4 </cn> 
+            <cn> 2 </cn> 
+          </apply>
+        </apply>
+      </apply>
+      <ci> &cdots; </ci>
+    </apply>
+    <apply> <divide/>
+      <apply> <power/>
+        <ci> &pi; </ci>
+        <cn> 2 </cn> 
+      </apply>
+      <cn> 12 </cn> 
+    </apply>
+  </apply>
+</math>

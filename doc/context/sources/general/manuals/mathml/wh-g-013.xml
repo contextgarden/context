@@ -1,0 +1,27 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <eq/>
+    <apply> <times/>
+      <cn> 2 </cn>
+      <apply> <cos/>
+        <ci> &alpha; </ci>
+      </apply>
+      <apply> <cos/>
+        <ci> &beta; </ci>
+      </apply>
+    </apply>
+    <apply> <plus/>
+      <apply> <cos/>
+        <apply> <plus/>
+          <ci> &alpha; </ci>
+          <ci> &beta; </ci>
+        </apply>
+      </apply>
+      <apply> <cos/>
+        <apply> <minus/>
+          <ci> &alpha; </ci>
+          <ci> &beta; </ci>
+        </apply>
+      </apply>
+    </apply>
+  </apply>
+</math>

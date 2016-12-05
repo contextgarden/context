@@ -1,0 +1,32 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <forall/>
+    <condition>
+      <mrow>
+        <mi> &bigtriangleup; </mi>
+        <mi> A </mi>
+        <mi> B </mi>
+        <mi> C </mi>
+      </mrow>
+    </condition>
+    <apply> <plus/>
+      <apply> <divide/>
+        <ci> a </ci>
+        <apply> <sin/>
+          <ci> &alpha; </ci>
+        </apply>
+      </apply>
+      <apply> <divide/>
+        <ci> b </ci>
+        <apply> <sin/>
+          <ci> &beta; </ci>
+        </apply>
+      </apply>
+      <apply> <divide/>
+        <ci> c </ci>
+        <apply> <sin/>
+          <ci> &gamma; </ci>
+        </apply>
+      </apply>
+    </apply>
+  </apply>
+</math>

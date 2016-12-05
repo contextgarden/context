@@ -1,0 +1,310 @@
+% language=uk
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+%
+% comment   : Some chapters might have been published in TugBoat, the NTG Maps, the ConTeXt
+%             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
+%             to users for testing, feedback and corrections.
+
+\usemodule[mag-01,abr-02]
+
+\setupcolors[rgb=no,cmyk=yes]
+
+\definecolor[red]      [c=.25,m=.75,y=.75,k=.25]
+\definecolor[green]    [c=.75,m=.25,y=.75,k=.25]
+\definecolor[blue]     [c=.75,m=.75,y=.25,k=.25]
+
+\definecolor[tred]     [c=.25,m=.75,y=.75,k=.25,t=.5,a=1]
+\definecolor[tgreen]   [c=.75,m=.25,y=.75,k=.25,t=.5,a=1]
+\definecolor[tblue]    [c=.75,m=.75,y=.25,k=.25,t=.5,a=1]
+\definecolor[tblack]   [s=0,t=.75,a=1]
+
+\definecolor[ocyan]    [c=.75]
+\definecolor[omagenta] [m=.75]
+\definecolor[oyellow]  [y=.75]
+\definecolor[ogray]    [s=.5]
+
+\startbuffer[abstract]
+    Occasionally we experiment a bit with (\PDF) features that are useful but at
+    the same time dangerous when applied uncontrolled. In the process of cleaning
+    up some files in my source tree and triggered by a discussion about overprint
+    I decided to move some of that code into the kernel. You are warned!
+\stopbuffer
+
+
+\startdocument
+  [title={A Few Dangerous Features},
+   author=Hans Hagen,
+   affiliation=PRAGMA ADE,
+   date=June 2004,
+   number=6 \MKIV]
+
+\subject{Remark}
+
+The features discussed here have a so called global character, i.e. all settings
+are global by nature. Future releases may introduce (and by default change to)
+local behaviour. So, don't make your documents depending on local/global
+behaviour. In most cases you will probably not notice the difference.
+
+\subject{Being negative}
+
+The \CONTEXT\ page imposition machinery provides negation because sometimes
+raster image processors need that feature. In that case negation is applied to
+the whole page. Within the document stream inverted colors are normally (and
+best) realized with defining an appropriate color. For special purposes we also
+provide negation
+
+\startbuffer
+\startcolor[red]\ignorespaces
+    \input ward
+    \startnegative\ignorespaces
+        \input ward
+        \startpositive\ignorespaces
+            \input ward
+        \removeunwantedspaces\stoppositive
+        \input ward
+    \removeunwantedspaces\stopnegative
+    \input ward
+\removeunwantedspaces\stopcolor
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We can also apply negation to graphic, but the result may not be what we expect.
+While writing this document \in {figure} [fig:negated] negates well when view in
+\GHOSTSCRIPT\ but \ACROBAT~6 shows a strange vertical line pattern.
+
+\startbuffer
+\startcombination
+  {\startpositive
+     \externalfigure[hacker.jpg][width=4cm]%
+   \stoppositive}
+  {normal}
+  {\startnegative
+     \externalfigure[hacker.jpg][width=4cm]%
+   \stopnegative}
+  {negative}
+\stopcombination
+\stopbuffer
+
+\typebuffer
+
+\placefigure
+  [here] [fig:negated]
+  {Negation of graphics.}
+  {\getbuffer}
+
+\subject{Font effects}
+
+Another bag of tricks concerns font effects. As with negation and the to be
+discussed overprint these are implemented using the \CONTEXT\ (still
+experimental) feature handler, but this time we don't provide direct commands.
+Instead we use arguments to control the effects.
+
+\startbuffer
+In this paragraph we have \starteffect[hidden]hidden a piece of
+text\stopeffect. How useful this feature is depends on the kind
+of documents you make. An alternative is to put the text in a
+viewer layer (\starteffect[hidden]as provided by \PDF\stopeffect)
+that is hidden, but since that feature is not widely available
+the effects approach is safer.
+\stopbuffer
+
+\typebuffer \getbuffer
+
+More interesting is changing the way a font is rendered. An outline version is
+rendered with the \type {outer} effect.
+
+\startbuffer
+\bf \starteffect[outer]\input ward \stopeffect \par
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+The \type {inner} effect is the normal one so there is no reason to show it here.
+The \type {both} option combines the two resulting in an extra bold version.
+
+\startbuffer
+\bf \starteffect[both]\input ward \stopeffect \par
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+You can influence the linewidth as is demonstrated in the following example:
+
+\startbuffer
+\setupeffect[outer][rulethickness=.8pt]
+\bfd \starteffect[outer]Bigger is Beautiful\stopeffect
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+Speaking of 2004, in \CONTEXT\ (read: \TEX) intercharacter spacing can only be
+achieved by macro processing. The next method works well, but you need to
+manipulate the \type {\hsize} yourself, since the typesetting engine is unaware
+of this backend manipulation.
+
+\startbuffer
+\setupeffect[both][stretch=2]
+\setupalign[right]
+\dontleavehmode \hsize=.6\hsize
+\bf \starteffect[both]\input ward \stopeffect \par
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+The \type {normal} (or \type {inner}) alternative looks as follows:
+
+\startbuffer
+\setupeffect[normal][stretch=2]
+\setupalign[right]
+\dontleavehmode \hsize=.6\hsize
+\bf \starteffect[normal]\input ward \stopeffect \par
+\stopbuffer
+
+\typebuffer \start \getbuffer \stop
+
+\subject{Overprint and knockout}
+
+Another feature that should be used with care is overprint. Normally a raster
+image processor will knock out colored areas under colored text or areas on top.
+This works well when the printing engine (or press) is able to precisely align
+the color plates. If not, you will get artifacts that show up as follows (often
+such effects occur in newspapers and cheap magazines):
+
+\definelayer[fake][width=6cm,height=4cm]
+
+\setlayerframed
+  [fake]
+  [preset=lefttop]
+  [frame=off,width=8cm,height=4cm,
+   background=color,backgroundcolor=blue,foregroundcolor=white]
+  {\definedfont[SerifBold at 6\bodyfontsize]cheap}
+
+\setlayerframed
+  [fake]
+  [preset=lefttop,offset=1pt]
+  [frame=off,width=8cm,height=4cm,
+   foregroundcolor=tblack]
+  {\definedfont[SerifBold at 6\bodyfontsize]cheap}
+
+\startbaselinecorrection
+\tightlayer[fake]
+\stopbaselinecorrection
+
+On the one hand we get white spots and depending on how well the ink covers, we
+can get darker spots as well. In such cases it's best to overprint the
+background, which of course only works as expected when the top color is a well
+covering black. Otherwise we probably may have to compensate the color, which in
+turn depends on the kind of paper used.
+
+At the document level, you can set the overprint with:
+
+\starttyping
+\setupcolors[overprint=yes]
+\stoptyping
+
+We show a few examples of local usage: a simple application first (\in {figure}
+{a} [fig:overprint]):
+
+\startbuffer[a]
+\framed
+  [background=color,backgroundcolor=ocyan,
+   frame=off,offset=.25cm,strut=no]
+  {\bfb\setstrut
+   \startoverprint
+   \framed
+     [background=color,backgroundcolor=omagenta,
+      foregroundcolor=oyellow,align={lohi,middle},
+      frame=off,width=2.5cm,height=2cm]
+     {overprint\\\startknockout knockout \stopknockout}%
+   \stopoverprint
+   \framed
+     [background=color,backgroundcolor=omagenta,
+      foregroundcolor=oyellow,align={lohi,middle},
+      frame=off,width=2.5cm,height=2cm]
+     {knockout\\\startoverprint overprint\stopoverprint}}%
+\stopbuffer
+
+\typebuffer[a]
+
+We can nest overprint and turn it off as well (\in {figure} {b} [fig:overprint]):
+
+\startbuffer[b]
+\startoverprint
+\framed
+  [background=color,backgroundcolor=ocyan,
+   frame=off,offset=.25cm,strut=no]
+  {\bfb\setstrut
+   \framed
+     [background=color,backgroundcolor=omagenta,
+      foregroundcolor=oyellow,align={lohi,middle},
+      frame=off,width=2.5cm,height=2cm]
+     {overprint\\\startknockout knockout\stopknockout}%
+   \startknockout
+   \framed
+     [background=color,backgroundcolor=omagenta,
+      foregroundcolor=oyellow,align={lohi,middle},
+      frame=off,width=2.5cm,height=2cm]
+     {knockout\\\startoverprint overprint\stopoverprint}%
+   \stopknockout}%
+\stopoverprint
+\stopbuffer
+
+\typebuffer[b]
+
+Sometimes the overprint preview in \ACROBAT\ works better when we apply a gray
+background (\in {figure} {c} [fig:overprint]). We use rather ugly pure \CMYK\
+colors, otherwise the effect is not visible in overprint preview mode.
+
+\startbuffer[c]
+\framed
+  [background=color,backgroundcolor=ogray,backgroundoffset=.25em,
+   frame=off,offset=overlay]
+  {\getbuffer[a]}
+\stopbuffer
+
+\typebuffer[c]
+
+and (\in {figure} {d} [fig:overprint]):
+
+\startbuffer[d]
+\framed
+  [background=color,backgroundcolor=ogray,backgroundoffset=.25em,
+   frame=off,offset=overlay]
+  {\getbuffer[b]}
+\stopbuffer
+
+\typebuffer[d]
+
+\startbuffer
+\startcombination[2*2]
+  {\getbuffer[a]} {a}
+  {\getbuffer[c]} {c}
+  {\getbuffer[b]} {b}
+  {\getbuffer[d]} {d}
+\stopcombination
+\stopbuffer
+
+\placefigure
+  [here] [fig:overprint]
+  {Preview overprint and knockout.}
+  {\getbuffer}
+
+If we look at examples~b and~d of \in {figure} [fig:overprint]) in \ACROBAT\
+overprint preview mode, we will see that the effect depends on where we apply the
+overprint settings. As said, these are tricky features and should be used with
+care and understanding.
+
+\stopdocument

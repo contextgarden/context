@@ -1,0 +1,90 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <forall/>
+    <condition>
+      <mrow>
+        <mi> &bigtriangleup; </mi>
+        <mi> A </mi>
+        <mi> B </mi>
+        <mi> C </mi>
+      </mrow>
+    </condition>
+    <apply> <eq/>
+      <apply> <power/>
+        <ci> a </ci>
+        <cn> 2 </cn>
+      </apply>
+      <apply> <plus/>
+        <apply> <power/>
+          <ci> b </ci>
+          <cn> 2 </cn>
+        </apply>
+        <apply> <power/>
+          <ci> c </ci>
+          <cn> 2 </cn>
+        </apply>
+        <apply> <minus/>
+          <apply> <times/>
+            <cn> 2 </cn>
+            <ci> b </ci>
+            <ci> c </ci>
+            <apply> <cos/>
+              <ci> &alpha; </ci>
+            </apply>
+          </apply>
+        </apply>
+      </apply>
+    </apply>
+   <apply> <eq/>
+      <apply> <power/>
+        <ci> b </ci>
+        <cn> 2 </cn>
+      </apply>
+      <apply> <plus/>
+        <apply> <power/>
+          <ci> a </ci>
+          <cn> 2 </cn>
+        </apply>
+        <apply> <power/>
+          <ci> c </ci>
+          <cn> 2 </cn>
+        </apply>
+        <apply> <minus/>
+          <apply> <times/>
+            <cn> 2 </cn>
+            <ci> a </ci>
+            <ci> c </ci>
+            <apply> <cos/>
+              <ci> &beta; </ci>
+            </apply>
+          </apply>
+        </apply>
+      </apply>
+    </apply>
+   <apply> <eq/>
+      <apply> <power/>
+        <ci> c </ci>
+        <cn> 2 </cn>
+      </apply>
+      <apply> <plus/>
+        <apply> <power/>
+          <ci> a </ci>
+          <cn> 2 </cn>
+        </apply>
+        <apply> <power/>
+          <ci> b </ci>
+          <cn> 2 </cn>
+        </apply>
+        <apply> <minus/>
+          <apply> <times/>
+            <cn> 2 </cn>
+            <ci> a </ci>
+            <ci> b </ci>
+            <apply> <cos/>
+              <ci> &gamma; </ci>
+            </apply>
+          </apply>
+        </apply>
+      </apply>
+    </apply>
+  </apply>
+</math>

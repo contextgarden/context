@@ -1,0 +1,29 @@
+\startcomponent math-titlepage
+
+\startMPpage
+
+    StartPage;
+        fill Page withcolor .35magenta ;
+        picture p ; p := image ( draw outlinetext.b
+            ("\textdollar")
+            (withcolor .35green)
+            (withcolor .5yellow withpen pencircle scaled .1) ;
+        ) ;
+        p := p xysized(PaperWidth - 20pt,PaperHeight - 20pt ) ;
+        p := p shifted - llcorner p shifted (10pt,10pt) ;
+        draw p ;
+        picture p ; p := image ( draw outlinetext.b
+            ("math")
+            (withcolor .35green)
+            (withcolor .5yellow withpen pencircle scaled .2) ;
+        ) ;
+        p := p xsized(PaperWidth/2 - 40pt) ;
+        p := p shifted - llcorner p shifted (10pt,10pt) ;
+        draw p shifted (PaperWidth/2 + 20pt,20pt);
+    StopPage;
+
+\stopMPpage
+
+\page[empty] \setuppagenumber[number=1]
+
+\stopcomponent

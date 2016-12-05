@@ -223,6 +223,21 @@
 \unexpanded\def\Lopenbracketmirrored {\math_fenced_fenced_stop {mirroredopenbracket}}  \unexpanded\def\Ropenbracketmirrored {\math_fenced_fenced_start{mirroredopenbracket}}
 \unexpanded\def\Lnothingmirrored     {\math_fenced_fenced_stop {mirrorednothing}}      \unexpanded\def\Rnothingmirrored     {\math_fenced_fenced_start{mirrorednothing}}
 
+\definemathfence [interval]                     [\c!left="2997,\c!right="2998]
+\definemathfence [openinterval]      [interval] [\c!left="2998,\c!right="2998]
+\definemathfence [leftopeninterval]  [interval] [\c!left="2997,\c!right="2997]
+\definemathfence [rightopeninterval] [interval] [\c!left="2998,\c!right="2998]
+
+\unexpanded\def\Linterval            {\math_fenced_fenced_start{interval}}
+\unexpanded\def\Lointerval           {\math_fenced_fenced_start{openinterval}}
+\unexpanded\def\Llointerval          {\math_fenced_fenced_start{leftopeninterval}}
+\unexpanded\def\Lrointerval          {\math_fenced_fenced_start{rightopeninterval}}
+
+\unexpanded\def\Rinterval            {\math_fenced_fenced_stop {interval}}
+\unexpanded\def\Rointerval           {\math_fenced_fenced_stop {openinterval}}
+\unexpanded\def\Rlointerval          {\math_fenced_fenced_stop {leftopeninterval}}
+\unexpanded\def\Rrointerval          {\math_fenced_fenced_stop {rightopeninterval}}
+
 % \startformula
 % \left{ \frac{1}{a} \right}
 % \left[ \frac{1}{b} \right]
@@ -392,6 +407,8 @@
 % \installmathfencepair { \Lbrace          } \Rbrace
 % \installmathfencepair } \Rbracemirrored  { \Lbracemirrored
 
+\installmathfencepair ⦗ \Linterv              ⦘ \Rinterv
+
 \appendtoks
     \ignorediscretionaries % so $\mtext{a|b}$ works, this is ok because it's an \hbox
 \to \everymathematics
@@ -439,6 +456,12 @@
 \installmathfencepair \lmoustache   \Lmoustache   \rmoustache   \Rmoustache
 \installmathfencepair \llbracket    \Lopenbracket \rrbracket    \Ropenbracket
 \installmathfencepair \lgroup       \Lgroup       \rgroup       \Rgroup
+
+\installmathfencepair \linterval    \Linterval    \rinterval    \Rinterval
+%installmathfencepair \linterv      \Linterval    \rinterv      \Rinterval
+\installmathfencepair \lointerval   \Linterval    \rointerval   \Rinterval
+\installmathfencepair \llointerval  \Llointerval  \rlointerval  \Rlointerval
+\installmathfencepair \lrointerval  \Lrointerval  \rrointerval  \Rrointerval
 
 \let\textlbar\lbar \let\mathlbar\Lbar
 \let\textrbar\lbar \let\mathrbar\Rbar

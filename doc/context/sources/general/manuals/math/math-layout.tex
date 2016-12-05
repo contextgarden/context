@@ -1,0 +1,59 @@
+\startenvironment math-layout
+
+\switchtobodyfont  [modern]
+\switchtobodyfont  [dejavu]
+\switchtobodyfont [cambria]
+\switchtobodyfont[lucidaot]
+\switchtobodyfont    [xits]
+
+\setupbodyfont
+  [pagella]
+
+\setupwhitespace
+  [big]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setuplayout
+  [backspace=2cm,
+   width=middle,
+   cutspace=2cm,
+   topspace=2cm,
+   header=2cm,
+   height=middle,
+   footer=0pt,
+   bottomspace=2cm]
+
+\setuplayout
+  [backspace=2cm,
+   topspace=2cm,
+   header=2cm,
+   height=middle,
+   width=middle]
+
+\setuphead
+  [chapter]
+  [header=high,
+   style=\bfc,
+   color=darkmagenta]
+
+\setuphead
+  [section]
+  [style=\bfb,
+   color=darkmagenta]
+
+\setuphead
+  [subsection]
+  [style=\bfa,
+   color=darkmagenta]
+
+\usemodule[abr-02]
+
+\usemodule[x][setups-basics]
+
+\usemodule[visual]
+
+\loadsetups[i-context]
+
+\stopenvironment

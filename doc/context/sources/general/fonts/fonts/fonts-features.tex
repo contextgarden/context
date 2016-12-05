@@ -4,6 +4,9 @@
 
 \environment fonts-environment
 
+% windows: seguiemj.ttf              (windows 10)
+% public : emojionecolor-svginot.ttf (https://github.com/eosrei/emojione-color-font)
+
 \startMPextensions
     vardef MyRectangle(expr n, w, h, x, y, c) =
         image (
@@ -824,141 +827,141 @@ results might differ a bit.
 
 \stopsubsection
 
-\startsubsection[title=Color]
+    \startsubsection[title=Color]
 
-% TODO: use emojionecolor-svginot-archived.ttf
+    % TODO: use emojionecolor-svginot-archived.ttf
 
-A recent new (and evolving) addition to \OPENTYPE\ is colored glyphs. One variant
-(by \MICROSOFT) uses overlays and this method is quite efficient.
+    A recent new (and evolving) addition to \OPENTYPE\ is colored glyphs. One variant
+    (by \MICROSOFT) uses overlays and this method is quite efficient.
 
-\startbuffer
-\definefontfeature[colored][colr=yes]
-\definefontsynonym[Emoji][file:seguiemj.ttf*default,colored]
+    \startbuffer
+    \definefontfeature[colored][colr=yes]
+    \definefontsynonym[Emoji][file:seguiemj.ttf*default,colored]
 
-\definesymbol[bug][\getglyphdirect{Emoji}{\char"1F41B}]
-\definesymbol[ant][\getglyphdirect{Emoji}{\char"1F41C}]
-\definesymbol[bee][\getglyphdirect{Emoji}{\char"1F41D}]
-\stopbuffer
+    \definesymbol[bug][\getglyphdirect{Emoji}{\char"1F41B}]
+    \definesymbol[ant][\getglyphdirect{Emoji}{\char"1F41C}]
+    \definesymbol[bee][\getglyphdirect{Emoji}{\char"1F41D}]
+    \stopbuffer
 
-\typebuffer \getbuffer
+    \typebuffer \getbuffer
 
-Here we see a \symbol[bug], \symbol[ant] and \symbol[bee], and they come in
-color! Once \UNICODE\ started adding such symbols (and more get added) the
-distinction between characters and symbols get even fuzzier. Of course one
-can argue that we communicate in pictograms but even then, given that
-mankind lasts a while, the \UNICODE\ repertoire will explode.
+    Here we see a \symbol[bug], \symbol[ant] and \symbol[bee], and they come in
+    color! Once \UNICODE\ started adding such symbols (and more get added) the
+    distinction between characters and symbols get even fuzzier. Of course one
+    can argue that we communicate in pictograms but even then, given that
+    mankind lasts a while, the \UNICODE\ repertoire will explode.
 
-\startplacefigure[title={A few emojis from \type {seguiemj.ttf}}]
-    \startcombination [3*1]
-        {\scale[width=.3\textwidth]{\symbol[bug]}} {\type{U+1F41B}: bug}
-        {\scale[width=.3\textwidth]{\symbol[ant]}} {\type{U+1F41C}: ant}
-        {\scale[width=.3\textwidth]{\symbol[bee]}} {\type{U+1F41D}: bee}
-    \stopcombination
-\stopplacefigure
+    \startplacefigure[title={A few emojis from \type {seguiemj.ttf}}]
+        \startcombination [3*1]
+            {\scale[width=.3\textwidth]{\symbol[bug]}} {\type{U+1F41B}: bug}
+            {\scale[width=.3\textwidth]{\symbol[ant]}} {\type{U+1F41C}: ant}
+            {\scale[width=.3\textwidth]{\symbol[bee]}} {\type{U+1F41D}: bee}
+        \stopcombination
+    \stopplacefigure
 
-Here we use \type {seguiemj.ttf}, a font that comes with \MSWINDOWS. Colors are
-achieved by combining glyphs rendered in different colors. A variant that uses
-\SVG\ instead of overlays is \type {emojionecolor-svginot.ttf}:
+    Here we use \type {seguiemj.ttf}, a font that comes with \MSWINDOWS. Colors are
+    achieved by combining glyphs rendered in different colors. A variant that uses
+    \SVG\ instead of overlays is \type {emojionecolor-svginot.ttf}:
 
-\startbuffer
-\definefontfeature[svg][svg=yes]
-\definefontsynonym[Emoji][file:emojionecolor-svginot.ttf*default,svg]
-\stopbuffer
+    \startbuffer
+    \definefontfeature[svg][svg=yes]
+    \definefontsynonym[Emoji][file:emojionecolor-svginot.ttf*default,svg]
+    \stopbuffer
 
-\typebuffer \getbuffer
+    \typebuffer \getbuffer
 
-This time we get \symbol[bug], \symbol[ant] and \symbol[bee] and they look
-quite different. Both fonts also have ligatures and you can wonder what sense
-that makes. It makes it impossible to swap fonts and as there is no standard
-one never knows what to expect.
+    This time we get \symbol[bug], \symbol[ant] and \symbol[bee] and they look
+    quite different. Both fonts also have ligatures and you can wonder what sense
+    that makes. It makes it impossible to swap fonts and as there is no standard
+    one never knows what to expect.
 
-\startplacefigure[title={A few emojis from \type {emojionecolor-svginot.ttf}}]
-    \startcombination [3*1]
-        {\scale[width=.3\textwidth]{\symbol[bug]}} {\type{U+1F41B}: bug}
-        {\scale[width=.3\textwidth]{\symbol[ant]}} {\type{U+1F41C}: ant}
-        {\scale[width=.3\textwidth]{\symbol[bee]}} {\type{U+1F41D}: bee}
-    \stopcombination
-\stopplacefigure
+    \startplacefigure[title={A few emojis from \type {emojionecolor-svginot.ttf}}]
+        \startcombination [3*1]
+            {\scale[width=.3\textwidth]{\symbol[bug]}} {\type{U+1F41B}: bug}
+            {\scale[width=.3\textwidth]{\symbol[ant]}} {\type{U+1F41C}: ant}
+            {\scale[width=.3\textwidth]{\symbol[bee]}} {\type{U+1F41D}: bee}
+        \stopcombination
+    \stopplacefigure
 
-\definefont[emoji][file:emojionecolor-svginot.ttf*default,svg]
+    \definefont[emoji][file:emojionecolor-svginot.ttf*default,svg]
 
-\def\FourFaces{\char128104\zwj\char128105\zwj\char128102\zwj\char128102\relax}
+    \def\FourFaces{\char128104\zwj\char128105\zwj\char128102\zwj\char128102\relax}
 
-\def\Man  {\char"1F468\relax}
-\def\Woman{\char"1F469\relax}
-\def\Boy  {\char"1F466\relax}
-\def\Girl {\char"1F467\relax}
+    \def\Man  {\char"1F468\relax}
+    \def\Woman{\char"1F469\relax}
+    \def\Boy  {\char"1F466\relax}
+    \def\Girl {\char"1F467\relax}
 
-How do we know what faces add up to the ligature {\emoji\Man \zwj \Woman \zwj
-\Girl \zwj \Boy} and how are we supposed to know that there should {\darkgray
-\type {zwj}} in between? When we input four faces separated by zero width
-joiners, we get a four face symbol instead. The reason for having the joiners in
-between is probably to avoid unexpected ligatures. The sequence \type {man},
-\type {woman}, \type {boy}, \type {boy} gives \type {family}:
-%
-{\emoji\Man}   + {\darkgray \type {zwj}}
-{\emoji\Woman} + {\darkgray \type {zwj}}
-{\emoji\Boy}   + {\darkgray \type {zwj}}
-{\emoji\Boy}   = {\emoji\Man \zwj \Woman \zwj \Boy \zwj \Boy},
-%
-but two girls also work:
-%
-{\emoji\Man}   + {\darkgray \type {zwj}}
-{\emoji\Woman} + {\darkgray \type {zwj}}
-{\emoji\Girl}  + {\darkgray \type {zwj}}
-{\emoji\Girl}  = {\emoji\Man \zwj \Woman \zwj \Girl \zwj \Girl},
-%
-so does a mixture of kids:
-%
-{\emoji\Man}   + {\darkgray \type {zwj}}
-{\emoji\Woman} + {\darkgray \type {zwj}}
-{\emoji\Girl}  + {\darkgray \type {zwj}}
-{\emoji\Boy}   = {\emoji\Man \zwj \Woman \zwj \Girl \zwj \Boy},
-%
-although (at least currently):
-%
-{\emoji\Man}   + {\darkgray \type {zwj}}
-{\emoji\Woman} + {\darkgray \type {zwj}}
-{\emoji\Boy}   + {\darkgray \type {zwj}}
-{\emoji\Girl}  = {\emoji\Man \zwj \Woman \zwj \Boy \zwj \Girl},
-%
-gives twin boys. Of course the real family emoj is {\emoji\char"1F46A}.
+    How do we know what faces add up to the ligature {\emoji\Man \zwj \Woman \zwj
+    \Girl \zwj \Boy} and how are we supposed to know that there should {\darkgray
+    \type {zwj}} in between? When we input four faces separated by zero width
+    joiners, we get a four face symbol instead. The reason for having the joiners in
+    between is probably to avoid unexpected ligatures. The sequence \type {man},
+    \type {woman}, \type {boy}, \type {boy} gives \type {family}:
+    %
+    {\emoji\Man}   + {\darkgray \type {zwj}}
+    {\emoji\Woman} + {\darkgray \type {zwj}}
+    {\emoji\Boy}   + {\darkgray \type {zwj}}
+    {\emoji\Boy}   = {\emoji\Man \zwj \Woman \zwj \Boy \zwj \Boy},
+    %
+    but two girls also work:
+    %
+    {\emoji\Man}   + {\darkgray \type {zwj}}
+    {\emoji\Woman} + {\darkgray \type {zwj}}
+    {\emoji\Girl}  + {\darkgray \type {zwj}}
+    {\emoji\Girl}  = {\emoji\Man \zwj \Woman \zwj \Girl \zwj \Girl},
+    %
+    so does a mixture of kids:
+    %
+    {\emoji\Man}   + {\darkgray \type {zwj}}
+    {\emoji\Woman} + {\darkgray \type {zwj}}
+    {\emoji\Girl}  + {\darkgray \type {zwj}}
+    {\emoji\Boy}   = {\emoji\Man \zwj \Woman \zwj \Girl \zwj \Boy},
+    %
+    although (at least currently):
+    %
+    {\emoji\Man}   + {\darkgray \type {zwj}}
+    {\emoji\Woman} + {\darkgray \type {zwj}}
+    {\emoji\Boy}   + {\darkgray \type {zwj}}
+    {\emoji\Girl}  = {\emoji\Man \zwj \Woman \zwj \Boy \zwj \Girl},
+    %
+    gives twin boys. Of course the real family emoj is {\emoji\char"1F46A}.
 
-In our times for sure many combinations are possible, so:
-%
-{\emoji\Man}  + {\darkgray \type {zwj}}
-{\emoji\Man}  + {\darkgray \type {zwj}}
-{\emoji\Girl} + {\darkgray \type {zwj}}
-{\emoji\Girl} = {\emoji\Man \zwj \Man \zwj \Girl \zwj \Girl},
-%
-indeed gives a family, but I wonder at what point cultural bias will creep into
-font design. One can even wonder how clothing and haircut will demand frequent
-font updates: {\emoji\char"1F46B}, {\emoji\char"1F46C}, {\emoji\char"1F46D}.
+    In our times for sure many combinations are possible, so:
+    %
+    {\emoji\Man}  + {\darkgray \type {zwj}}
+    {\emoji\Man}  + {\darkgray \type {zwj}}
+    {\emoji\Girl} + {\darkgray \type {zwj}}
+    {\emoji\Girl} = {\emoji\Man \zwj \Man \zwj \Girl \zwj \Girl},
+    %
+    indeed gives a family, but I wonder at what point cultural bias will creep into
+    font design. One can even wonder how clothing and haircut will demand frequent
+    font updates: {\emoji\char"1F46B}, {\emoji\char"1F46C}, {\emoji\char"1F46D}.
 
-In the math alphabets we have a couple of annoying holes because some characters
-were already present in \UNICODE. The bad thing here is that we now always have
-to deal with these exceptions. But not so with emojis because here eventually all
-variants will show up. Where a character \type {A} in red or blue uses the same
-code point, a white telephone {\emoji\char"1F57E} and black telephone
-{\emoji\char"1F57F} have their own. And because obsolete scripts are already
-supported in \UNICODE\ and more get added, we can expect old artifacts also
-showing up at some time. Soon the joystick {\emoji\char"1F579} will be an unknown
-item to most of us, while the \MICROSOFT\ hololens migth get its slot.
+    In the math alphabets we have a couple of annoying holes because some characters
+    were already present in \UNICODE. The bad thing here is that we now always have
+    to deal with these exceptions. But not so with emojis because here eventually all
+    variants will show up. Where a character \type {A} in red or blue uses the same
+    code point, a white telephone {\emoji\char"1F57E} and black telephone
+    {\emoji\char"1F57F} have their own. And because obsolete scripts are already
+    supported in \UNICODE\ and more get added, we can expect old artifacts also
+    showing up at some time. Soon the joystick {\emoji\char"1F579} will be an unknown
+    item to most of us, while the \MICROSOFT\ hololens migth get its slot.
 
-\startplacefigure[title={Will all animals come in stages of development?}]
-    \startcombination [3*1]
-        {\scale[width=.3\textwidth]{\emoji\char"1F423}} {\type{U+1F423}: hatching chick}
-        {\scale[width=.3\textwidth]{\emoji\char"1F424}} {\type{U+1F424}: baby chick}
-        {\scale[width=.3\textwidth]{\emoji\char"1F425}} {\type{U+1F425}: front-facing baby chick}
-    \stopcombination
-\stopplacefigure
+    \startplacefigure[title={Will all animals come in stages of development?}]
+        \startcombination [3*1]
+            {\scale[width=.3\textwidth]{\emoji\char"1F423}} {\type{U+1F423}: hatching chick}
+            {\scale[width=.3\textwidth]{\emoji\char"1F424}} {\type{U+1F424}: baby chick}
+            {\scale[width=.3\textwidth]{\emoji\char"1F425}} {\type{U+1F425}: front-facing baby chick}
+        \stopcombination
+    \stopplacefigure
 
-For sure these mechanisms will evolve and to what extent we support them depends
-on what users want. At least we have the basics implemented.
+    For sure these mechanisms will evolve and to what extent we support them depends
+    on what users want. At least we have the basics implemented.
 
-\stopsubsection
+    \stopsubsection
 
-\stopsection
+    \stopsection
 
 \startsection[title=Extras]
 

@@ -1,0 +1,232 @@
+\environment math-layout
+
+\startcomponent math-framing
+
+\startchapter[title=Framing]
+
+The \type {\framed} macro is one of the core constructors in \CONTEXT\ and it's
+used all over the place. This macro is unlikely to change its behaviour and as it
+has evolved over years it comes with quite some options and some can interfere
+with the expectations one has. In general using this macro works out well but you
+need to keep an eye on using struts and alignment.
+
+\startbuffer
+\framed{$e=mc^2$}
+\stopbuffer
+
+\typebuffer
+
+The outcome of this is:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+There is a bit of offset (that you can set) but also struts are added as can be
+seen when we visualize them:
+
+\startlinecorrection \showstruts \getbuffer \stoplinecorrection
+
+These struts can be disabled:
+
+\startbuffer
+\framed[strut=no]{$e=mc^2$}
+\stopbuffer
+
+\typebuffer
+
+Now the result is more tight.
+
+\startlinecorrection \showstruts \getbuffer \stoplinecorrection
+
+These struts are the way to get a consistent look and feel and are used
+frequently in \CONTEXT. We mention these struts because they get in the way when
+we frame a display formula. Let's first look at what happens when we
+just package a formula in a box:
+
+\startbuffer
+\vbox\bgroup
+    \startformula
+        e = mc^2
+    \stopformula
+\egroup
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlinecorrection \start \showmakeup \getbuffer \stop \stoplinecorrection
+
+Now there are a few properties of displaymath that one needs to keep in mind when
+messing around with them this way. First of all display math is meant to be used
+as part of the page stream. This means that spacing above and below is adapted to
+what comes before and after. It also means that, because formulas can be numbered,
+we have some settings that relate to horizontal placement.
+
+The default vertical spacing is easy to get rid of:
+
+\startbuffer
+\vbox\bgroup
+    \startformula[packed]
+        e = mc^2
+    \stopformula
+\egroup
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection \start \showmakeup \getbuffer \stop \stoplinecorrection
+
+Another handy keyword is \type {tight}:
+
+\startbuffer
+\vbox\bgroup
+    \startformula[tight]
+        e = mc^2
+    \stopformula
+\egroup
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection \start \showmakeup \getbuffer \stop \stoplinecorrection
+
+We can combine these two:
+
+\startbuffer
+\vbox\bgroup
+    \startformula[packed,tight]
+        e = mc^2
+    \stopformula
+\egroup
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startlinecorrection \start \showmakeup \getbuffer \stop \stoplinecorrection
+
+Just in case you wonder why we need to go through these troubles: keep in mind
+that we are wrapping something (math) that normally goes in a vertical list with
+text above and below.
+
+The \type {packed} and \type {tight} options can help when we want to wrap
+a formula in a frame:
+
+\startbuffer
+\framed
+    [strut=no]
+    {
+        \startformula[packed,tight]
+            e = mc^2
+        \stopformula
+    }
+\stopbuffer
+
+\typebuffer
+
+which renders as:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+There is a dedicated math framed instance that is tuned to give better results
+and automatically switches to math mode:
+
+\startbuffer
+\mframed {
+    e = mc^2
+}
+\stopbuffer
+
+\typebuffer
+
+becomes:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Framing a formula is also supported as a option, where the full power of framed can
+be applied to the formula. We will illustrate this in detail on the next pages. For this
+we use the following sample:
+
+\typefile{math-framing-001.tex}
+
+In \in {figure} [framing-flushleft], \in [framing-middle] \in {and}
+[framing-flushright] you see some combinations. You can run this example on your
+machine and see the details.
+
+\startplacefigure[location=page,reference=framing-flushleft,title={Framed formulas flushed left.}]
+    \startcombination[2*2]
+        {\typesetfile[math-framing-001.tex][page=01,height=.45\textheight]} {\tttf right + flushleft}
+        {\typesetfile[math-framing-001.tex][page=02,height=.45\textheight]} {\tttf right + flushleft}
+        {\typesetfile[math-framing-001.tex][page=07,height=.45\textheight]} {\tttf left  + flushleft + tight}
+        {\typesetfile[math-framing-001.tex][page=08,height=.45\textheight]} {\tttf left  + flushleft + tight}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[location=page,reference=framing-middle,title={Framed formulas centered.}]
+    \startcombination[2*2]
+        {\typesetfile[math-framing-001.tex][page=03,height=.45\textheight]} {\tttf right + middle}
+        {\typesetfile[math-framing-001.tex][page=04,height=.45\textheight]} {\tttf right + middle}
+        {\typesetfile[math-framing-001.tex][page=09,height=.45\textheight]} {\tttf left  + middle + tight}
+        {\typesetfile[math-framing-001.tex][page=10,height=.45\textheight]} {\tttf left  + middle + tight}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[location=page,reference=framing-flushright,title={Framed formulas flushed right.}]
+    \startcombination[2*2]
+        {\typesetfile[math-framing-001.tex][page=05,height=.45\textheight]} {\tttf right + flushright}
+        {\typesetfile[math-framing-001.tex][page=06,height=.45\textheight]} {\tttf right + flushright}
+        {\typesetfile[math-framing-001.tex][page=11,height=.45\textheight]} {\tttf left  + flushright + tight}
+        {\typesetfile[math-framing-001.tex][page=12,height=.45\textheight]} {\tttf left  + flushright + tight}
+    \stopcombination
+\stopplacefigure
+
+With each formula class a framed variants is automatically created:
+
+\startbuffer
+\defineformula
+  [foo]
+
+\setupformulaframed
+  [foo]
+  [frame=on,
+   framecolor=red]
+
+\startfooformula[frame]
+    e=mc^2
+\stopfooformula
+\stopbuffer
+
+\typebuffer
+
+This time you get a red frame:
+
+\getbuffer
+
+You can also frame the number, as in:
+
+\startbuffer
+\setupformulaframed[framecolor=red,frame=on,offset=1ex]
+\setupformula[option=frame,color=blue]
+\setupformula[numbercommand={\inframed[framecolor=green]}]
+
+\startplaceformula
+    \startformula
+        2 + 2 = 2x
+    \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer
+
+The boxes get properly aligned:
+
+\start \showboxes \getbuffer \stop
+
+\stopchapter
+
+\stopcomponent

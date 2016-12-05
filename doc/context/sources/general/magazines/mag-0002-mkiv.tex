@@ -1,0 +1,106 @@
+% language=uk
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+%
+% comment   : Some chapters might have been published in TugBoat, the NTG Maps, the ConTeXt
+%             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
+%             to users for testing, feedback and corrections.
+
+\usemodule[mag-01]
+
+\startbuffer[abstract]
+    Subpage numbers can save you some messing around with page references. Here
+    we show some basics.
+\stopbuffer
+
+\startdocument
+  [title={Page Ranges},
+   author=Hans Hagen,
+   affiliation=PRAGMA ADE,
+   date=Februari 2003,
+   number=2 \MKIV]
+
+This is a simple example of using subpage numbers. Subpage numbers are not
+automatically kept track of, so you first need to activate them:
+
+\startbuffer
+\setupsubpagenumber
+  [way=bychapter,
+   state=start]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+After activating this mechanism, you can access the numbers as follows. The
+numbers are synchronized in during page building, which means that they are
+correct when constructing headers and footers.
+
+\startbuffer
+\setupheadertexts
+  [\firstsubpage--\lastsubpage]
+
+\setupfootertexts
+  [\pagenumber]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+There are several ways to access those numbers:
+
+\starttabulate
+\NC \type{\firstsubpage} \NC first real pagenumber in range    \NC\NR
+\NC \type{\prevsubpage}  \NC previous real pagenumber in range \NC\NR
+\NC \type{\nextsubpage}  \NC next real pagenumber in range     \NC\NR
+\NC \type{\lastsubpage}  \NC last real pagenumber in range     \NC\NR
+\stoptabulate
+
+\startsetups [sub check]
+
+  \vfill
+
+  \setupbodyfont[8pt]
+
+  \startcolor[MyBlue]
+
+  \starttabulate[|l|r|]
+  \NC \type{\firstsubpage} \NC \firstsubpage       \NC\NR
+  \NC \type{\prevsubpage}  \NC \prevsubpage        \NC\NR
+  \NC \type{\nextsubpage}  \NC \nextsubpage        \NC\NR
+  \NC \type{\lastsubpage}  \NC \lastsubpage        \NC\NR
+  \NC \type{\nofsubpages}  \NC \nofsubpages        \NC\NR
+  \TB
+  \NC \type{\lastpage}     \NC \lastpage           \NC\NR
+  \TB
+  \NC \type{\subpageno}    \NC \number \subpageno  \NC\NR
+  \NC \type{\pageno}       \NC \number \pageno     \NC\NR
+  \NC \type{\realpageno}   \NC \number \realpageno \NC\NR
+  \stoptabulate
+
+  \stopcolor
+
+  \vfill \vfill
+
+\stopsetups
+
+We will now generate a bunch of fake chapters to illustrate this feature.
+
+\setuptexttexts
+  [margin]
+  [] [\vbox to \textheight{\setups[sub check]}]
+
+\chapter{Tufte} \dorecurse{15}{\input tufte }
+\chapter{Zapf}  \dorecurse{10}{\input zapf  }
+\chapter{Knuth} \dorecurse{20}{\input knuth }
+
+\stopdocument

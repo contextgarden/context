@@ -1,0 +1,127 @@
+\environment math-layout
+
+\usemodule[fonts-features]
+
+\startcomponent math-features
+
+\startchapter[title=Features]
+
+\startsection[title=Default features]
+
+Math fonts are loaded in so called basemode, which gives them a traditional
+treatment in the engine. However, we do support features in basemode too, so
+setting them can influence what gets passed to \TEX. Also, in math mode, some
+font features (like \type {dtls} and stylistic alternates) are applied
+dynamically.
+
+The default \type {mathematics} feature set is as follows:
+
+\showfeatureset[name=mathematics]
+
+We don't discuss the exact meaning of these options here because normally you
+don't have to deal with them. If a math font demands something special, the place
+to deal with it is the related font goodie file.
+
+This feature set is the parent of two other sets: \type {mathematics-l2r} and
+\type {mathematics-r2l}:
+
+\showfeatureset[name=mathematics-l2r]
+
+This one is the same as the parent but the right|-|to|-|left variant is
+different:
+
+\showfeatureset[name=mathematics-r2l]
+
+Eventually we need size related feature sets and again we define a parent and
+direction specific ones: \type {math-text}, \type {math-script} and \type
+{math-scriptscript}.
+
+\showfeatureset[name=math-text]
+\showfeatureset[name=math-script]
+\showfeatureset[name=math-scriptscript]
+
+The left|-|to|-|right sets \type {math-*-l2r} are:
+
+\showfeatureset[name=math-text-l2r]
+\showfeatureset[name=math-script-l2r]
+\showfeatureset[name=math-scriptscript-l2r]
+
+The right|-|to|-|left sets \type {math-*-r2l} are:
+
+\showfeatureset[name=math-text-r2l]
+\showfeatureset[name=math-script-r2l]
+\showfeatureset[name=math-scriptscript-r2l]
+
+There are a few extra sets defined but these are meant for testing or virtual
+math fonts. The reason for showing these sets is to make clear that the number of
+features is minimal and that math is a real script indeed.
+
+The \type {kern} features is questionable. In traditional \TEX\ there are kerns
+indeed but in \OPENTYPE\ math kerns are not used that way because a more advanced
+kerning feature is present (and that one is currently always enabled). We used to
+set the following but these make no sense.
+
+\starttyping
+liga=yes, % (traditional) ligatures
+tlig=yes, % tex ligatures, like -- and ---
+trep=yes, % tex replacements, like the ' quote
+\stoptyping
+
+Math fonts normally have no ligatures and supporting the \TEX\ specific ones can
+actually be annoying. So, in todays \CONTEXT\ these are no longer enabled. Just
+consider the following:
+
+\startbuffer
+$- \kern0pt -   \kern 0pt \mathchar"2D$
+$- \kern0pt --  \kern 0pt \mathchar"2D \mathchar"2D$
+$- \kern0pt --- \kern 0pt \mathchar"2D \mathchar"2D \mathchar"2D$
+\stopbuffer
+
+\typebuffer
+
+The \type {-} is mapped onto a minus sign and therefore several in succession
+become multiple minus signs. The \type {\mathchar"2D} will remain the character
+with that slot in the font so there we will see a hyphen. If we would enable the
+\type {tlig} feature several such characters would be combined into an endash or
+emdash. So how do we get these than? Because getting a hyphen directly involves a
+command, the same is true for its longer relatives: \type {\endash} and \type
+{\emdash}.
+
+\startlines
+\getbuffer
+\stoplines
+
+As convenience we have defined a special \type {\mathhyphen} command. Watch the
+fact that a text hyphen in math mode is a minus in math! As comparison we also
+show the plus sign.
+
+\starttabulate[||c|c|]
+\BC command            \BC math          \BC text        \NC \NR
+\TB
+\NC \type{\mathhyphen} \NC $\mathhyphen$ \NC \mathhyphen \NC \NR
+\NC \type{\texthyphen} \NC $\texthyphen$ \NC \texthyphen \NC \NR
+\NC \type{-}           \NC $-$           \NC -           \NC \NR
+\NC \type{+}           \NC $+$           \NC +           \NC \NR
+\NC \type{\endash}     \NC $\endash$     \NC \endash     \NC \NR
+\NC \type{\emdash}     \NC $\emdash$     \NC \emdash     \NC \NR
+\stoptabulate
+
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Stylistic alternates]
+
+    {\em todo}
+
+\stopsection
+
+\startsection[title=Dotless variants]
+
+    {\em todo}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

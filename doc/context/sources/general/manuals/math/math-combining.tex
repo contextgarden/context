@@ -1,0 +1,58 @@
+\environment math-layout
+
+\startcomponent math-combining
+
+\startchapter[title=Combining formulas]
+
+Multiple formulas can be combined by wrapping them:
+
+\startbuffer
+
+\fakewords{20}{30}
+
+\startformula
+    a + b = c
+\stopformula
+
+\fakewords{20}{30}
+
+\startformulas
+    \startformula
+        a + b = c
+    \stopformula
+    \startformula
+        d - e = f
+    \stopformula
+\stopformulas
+
+\fakewords{20}{30}
+
+\startformulas
+    \startformula
+        \frac{\frac{x}{y}}{b} = c
+    \stopformula
+    \startformula
+        d - e = f
+    \stopformula
+\stopformulas
+
+\fakewords{20}{30}
+\stopbuffer
+
+\typebuffer
+
+When we bump the space around formulas to \type {big} we get this:
+
+\start
+    \setupformulas[spacebefore=big,spaceafter=big]
+    \appendtoks\showmakeup[reset]\to\everymath
+    \showboxes
+    \getbuffer
+\stop
+
+The formulas get aligned on the baselline which in turn relates to the
+math axis of the formula.
+
+\stopchapter
+
+\stopcomponent

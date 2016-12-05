@@ -1,0 +1,74 @@
+\environment math-layout
+
+\startcomponent math-numbering
+
+\startchapter[title=Numbering]
+
+Numbering equations can be a bit of a mess. Formuals can be unnumbers, numbered,
+numbered with an associated reference. Numbers can go on the while formula and on
+the rows in an alignment. Combine that with positioning left or right and left or
+righ taligned formulas and the picture gets complicated. When something turns out
+wrong, just let me know and the respective branch in the code can be adapted. Here
+are some examples:
+
+\startbuffer
+\startplaceformula[a]
+    \startformula
+        (1)
+    \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startplaceformula[b]
+    \startformula
+        \startalignment
+            \NC 1 \NC =     \NR
+            \NC 2 \NC = (2) \NR
+            \NC 3 \NC =     \NR
+        \stopalignment
+    \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startplaceformula[c]
+    \startformula
+        \startalignment
+            \NC 1 \NC = (3) \NR[x]
+            \NC 2 \NC =     \NR
+            \NC 3 \NC = (4) \NR[y]
+        \stopalignment
+    \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startplaceformula[d]
+    \startformula
+        (5)
+    \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startplaceformula[e]
+    \startformula
+        (6)
+    \stopformula
+\stopplaceformula
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopchapter
+
+\stopcomponent

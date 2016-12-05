@@ -1,0 +1,47 @@
+<math xmlns='http://www.w3c.org/mathml' version='2.0'>
+  <apply> <eq/>
+    <apply> <diff/> 
+      <bvar> <ci> x </ci> </bvar> 
+      <apply> <inverse/> 
+        <apply> <sinh/> 
+          <ci> u </ci> 
+        </apply> 
+      </apply>  
+    </apply>
+    <apply> <diff/> 
+      <bvar> <ci> x </ci> </bvar> 
+      <apply> <log/> 
+        <apply> <plus/> 
+          <ci> u </ci> 
+          <apply> <root/> 
+            <apply> <plus/> 
+              <apply> <power/> 
+                <ci> u </ci> 
+                <cn> 2 </cn> 
+              </apply> 
+              <cn> 1 </cn>  
+            </apply> 
+          </apply>
+        </apply>
+      </apply>  
+    </apply>
+    <apply> <times/> 
+      <apply> <divide/> 
+        <cn> 1 </cn>  
+        <apply> <root/> 
+          <apply> <plus/> 
+            <apply> <power/> 
+              <ci> u </ci> 
+              <cn> 2 </cn> 
+            </apply> 
+            <cn> 1 </cn>  
+          </apply> 
+        </apply>
+      </apply>
+      <apply> <diff/> 
+        <bvar> <ci> x </ci> </bvar> 
+        <ci> u </ci> 
+      </apply>  
+    </apply>
+  </apply>
+</math>

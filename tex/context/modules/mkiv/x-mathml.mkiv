@@ -2036,7 +2036,11 @@
                                         \expanded{\doifelseinset {mml:enclose:radical} {\mmlmenclosenotation}} {
                                             \sqrt{\xmlflush{#1}}
                                         } {
-                                            \xmlflush{#1}
+                                            \expanded{\doifelseinset {mml:enclose:rule} {\mmlmenclosenotation}} {
+                                                \overline{\strut\xmlflush{#1}}
+                                            } {
+                                                \xmlflush{#1}
+                                            }
                                         }
                                     }
                                 }

@@ -1,0 +1,6053 @@
+% language=uk
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+%
+% comment   : Some chapters might have been published in TugBoat, the NTG Maps, the ConTeXt
+%             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
+%             to users for testing, feedback and corrections.
+
+% \setupbackend[export=yes]
+
+\usemodule[abr-02,mathml,math-coverage,asciimath]
+
+% \enabletrackers[xml.entities]
+
+% \showframe
+
+\setupindenting
+  [medium,next,yes]
+
+\setupinteraction
+  [state=start,
+   color=,
+   style=]
+
+\placebookmarks
+  [chapter,section]
+
+% was: \doifelsemode {atpragma} { } { }
+
+\doifelsefontpresent {LucidaBrightOT.otf} {
+    \setupbodyfont[lucidaot,10pt]
+    \definefontsynonym[NiceBold][Handwriting]
+} {
+    \setupbodyfont[pagella,11pt]
+    \definefontsynonym[NiceBold][SerifBold]
+}
+
+\definefont[ChapterFont][NiceBold*default at 32pt]
+\definefont[SectionFont][NiceBold*default sa 1.2]
+\definefont[FormulaFont][NiceBold*default sa 1.0]
+
+\setuplayout
+  [topspace=15mm,
+   backspace=15mm,
+   header=10mm,
+   headerdistance=5mm,
+   footer=10mm,
+   footerdistance=5mm,
+   width=middle,
+   height=middle]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setuphead
+  [chapter]
+  [alternative=middle,
+   number=no,
+   style=ChapterFont,
+   color=darkred,
+   after={\blank[3*big]},
+   header=high,
+   footer=startofchapter]
+
+\setuphead
+  [section]
+  [command=\SectionCommand,
+   style=SectionFont,
+   textcolor=darkred,
+   after={\blank[big]}]
+
+\setuphead
+  [subsection]
+  [command=\SubSectionCommand,
+   style=SectionFont,
+   textcolor=darkred,
+   after={\blank[big]}]
+
+\unexpanded\def\SectionCommand#1#2%
+  {\darkblue<--\enspace\ifconditional\headshownumber\enspace#1\quad\fi#2\enspace-->}
+
+\unexpanded\def\SubSectionCommand#1#2%
+  {\darkblue<?\enspace\ifconditional\headshownumber#1\quad\fi#2\enspace ?>}
+
+\setuplayout
+  [style=\hw]
+
+\setuppagenumbering
+  [color=darkblue]
+
+\setupheader
+  [color=darkblue]
+
+\setupfooter
+  [color=darkblue]
+
+\setuplinewidth
+  [1pt]
+
+\setuptabulate
+  [rulecolor=darkblue]
+
+\setuptables
+  [rulecolor=darkblue]
+
+\setupfootertexts
+  [chapter]
+
+\definetext
+  [startofchapter]
+  [footer][pagenumber]
+
+\definestartstop
+  [mmlelement]
+  [style=\it]
+
+\definestartstop
+  [attvalue]
+  [style=\it]
+
+\definestartstop
+  [entity]
+  [style=\it,
+   left=\textampersand,
+   right=;]
+
+\setuplist
+  [chapter]
+  [interaction=all,
+   alternative=b,
+   aligntitle=yes,
+   textstyle=bold,
+   numberstyle=bold,
+   textcolor=darkblue,
+   numbercolor=darkblue,
+   after=\blank]
+
+\setuplist
+  [section]
+  [interaction=all,
+   alternative=b,
+   maxwidth=.8\hsize,
+   aligntitle=yes]
+
+\definetabulate
+  [directives]
+  [| T l | T l | T l | l |]
+
+\definetabulate
+  [attributes]
+  [| T l | T l | l | l |]
+
+\definetabulate
+  [mathmlattributes]
+  [| B l w(2.5cm) T CT{darkred} | T l | c | p |]
+
+\starttabulatehead[mathmlattributes]
+    \FL
+\stoptabulatehead
+
+\starttabulatetail[mathmlattributes]
+    \LL
+\stoptabulatetail
+
+\starttexdefinition unexpanded ExampleLine #1
+    \noindentation % \dontleavehmode
+    \type[color=darkblue]{#1}\quad\quad\asciimath{#1}
+    \blank[big]
+\stoptexdefinition
+
+
+\setupformulas
+  [way=bytext]
+
+% isolated content
+
+\startbuffer[derivates]
+    \showXMLfile {derivate}{pc-d-001}
+    \showXMLfile {derivate}{pc-d-002}
+    \showXMLfile {derivate}{pc-d-003}
+    \showXMLfile {derivate}{pc-d-004}
+    \showXMLfile {derivate}{pc-d-005}
+    \showXMLfile {derivate}{pc-d-006}
+    \showXMLfile {derivate}{pc-d-007}
+    \showXMLfile {derivate}{pc-d-008}
+    \showXMLfile {derivate}{pc-d-009}
+    \showXMLfile {derivate}{pc-d-010}
+    \showXMLfile {derivate}{pc-d-011}
+    \showXMLfile {derivate}{pc-d-043}
+    %showXMLfile {derivate}{pc-d-051}
+\stopbuffer
+
+\startbuffer[integrals]
+    \showXMLfile {integral}{pc-i-022}
+    \showXMLfile {integral}{pc-i-061}
+    \showXMLfile {integral}{pc-i-380}
+\stopbuffer
+
+\startbuffer[series]
+    \showXMLfile {serie}{pc-s-001}
+    \showXMLfile {serie}{pc-s-002}
+    \showXMLfile {serie}{pc-s-003}
+    \showXMLfile {serie}{wh-s-001}
+    \showXMLfile {serie}{wh-s-002}
+\stopbuffer
+
+\startbuffer[logs]
+    \showXMLfile {log}{wh-l-001}
+    \showXMLfile {log}{wh-l-002}
+    \showXMLfile {log}{wh-l-003}
+    \showXMLfile {log}{wh-l-004}
+\stopbuffer
+
+\startbuffer[goniometrics]
+    \showXMLfile {gonio}{wh-g-001}
+    \showXMLfile {gonio}{wh-g-002}
+    \showXMLfile {gonio}{wh-g-003}
+    \showXMLfile {gonio}{wh-g-004}
+    \showXMLfile {gonio}{wh-g-005}
+    \showXMLfile {gonio}{wh-g-006}
+    \showXMLfile {gonio}{wh-g-007}
+    \showXMLfile {gonio}{wh-g-008}
+    \showXMLfile {gonio}{wh-g-009}
+    \showXMLfile {gonio}{wh-g-010}
+    \showXMLfile {gonio}{wh-g-011}
+    \showXMLfile {gonio}{wh-g-012}
+    \showXMLfile {gonio}{wh-g-013}
+    \showXMLfile {gonio}{wh-g-014}
+    \showXMLfile {gonio}{wh-g-015}
+    \showXMLfile {gonio}{wh-g-016}
+\stopbuffer
+
+\startbuffer[statistics]
+    \showXMLfile {statistic}{wh-o-001}
+    \showXMLfile {statistic}{wh-o-002}
+    \showXMLfile {statistic}{wh-o-003}
+\stopbuffer
+
+\startbuffer[matrices]
+    \showXMLfile {matrix}{wh-m-001}
+    \showXMLfile {matrix}{wh-m-002}
+\stopbuffer
+
+% buffers voor de presentational MathML attributes
+
+\startbuffer[mi-mn]
+    \startmathmlattributes
+    \NC mi, mn \NC class, id, style \NC -- \NC \NC\NR
+    \NC        \NC dir              \NC -- \NC \NC\NR
+    \NC        \NC href             \NC -- \NC \NC\NR
+    \NC        \NC mathbackground   \NC -- \NC \NC\NR
+    \NC        \NC mathcolor        \NC -- \NC \NC\NR
+    \NC        \NC mathsize         \NC -- \NC \NC\NR
+    \NC        \NC mathvariant      \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mo]
+    \startmathmlattributes
+    \NC mo \NC accent           \NC -- \NC   \NC\NR
+    \NC    \NC class, id, style \NC -- \NC   \NC\NR
+    \NC    \NC dir              \NC -- \NC   \NC\NR
+    \NC    \NC fence            \NC -- \NC   \NC\NR
+    \NC    \NC form             \NC -- \NC   \NC\NR
+    \NC    \NC href             \NC -- \NC   \NC\NR
+    \NC    \NC largeop          \NC -- \NC   \NC\NR
+    \NC    \NC lspace           \NC -- \NC   \NC\NR
+    \NC    \NC mathbackground   \NC -- \NC   \NC\NR
+    \NC    \NC mathcolor        \NC -- \NC   \NC\NR
+    \NC    \NC mathsize         \NC -- \NC   \NC\NR
+    \NC    \NC mathvariant      \NC -- \NC   \NC\NR
+    \NC    \NC maxsize          \NC +  \NC If stretchy is true, this attribute specifies the maximum size of the operator. Allowed values are: \quote{infinity} or an arbitrary length. \NC\NR
+    \NC    \NC minsize          \NC -- \NC   \NC\NR
+    \NC    \NC movablelimits    \NC -- \NC   \NC\NR
+    \NC    \NC rspace           \NC -- \NC   \NC\NR
+    \NC    \NC separator        \NC -- \NC   \NC\NR
+    \NC    \NC stretchy         \NC -- \NC   \NC\NR
+    \NC    \NC symmetric        \NC -- \NC   \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mrow]
+    \startmathmlattributes
+    \NC mrow \NC class, id, style \NC -- \NC \NC\NR
+    \NC      \NC dir              \NC -- \NC \NC\NR
+    \NC      \NC href             \NC -- \NC \NC\NR
+    \NC      \NC mathbackground   \NC -- \NC \NC\NR
+    \NC      \NC mathcolor        \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[msub]
+    \startmathmlattributes
+    \NC msub \NC class, id, style \NC -- \NC \NC\NR
+    \NC      \NC href             \NC -- \NC \NC\NR
+    \NC      \NC mathbackground   \NC -- \NC \NC\NR
+    \NC      \NC mathcolor        \NC -- \NC \NC\NR
+    \NC      \NC subscriptshift   \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[msup]
+    \startmathmlattributes
+    \NC msup \NC class, id, style \NC -- \NC \NC\NR
+    \NC      \NC href             \NC -- \NC \NC\NR
+    \NC      \NC mathbackground   \NC -- \NC \NC\NR
+    \NC      \NC mathcolor        \NC -- \NC \NC\NR
+    \NC      \NC superscriptshift \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[msubsup]
+    \startmathmlattributes
+    \NC msubsup \NC class, id, style \NC -- \NC \NC\NR
+    \NC         \NC href             \NC -- \NC \NC\NR
+    \NC         \NC mathbackground   \NC -- \NC \NC\NR
+    \NC         \NC mathcolor        \NC -- \NC \NC\NR
+    \NC         \NC subscriptshift   \NC -- \NC \NC\NR
+    \NC         \NC superscriptshift \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mfrac]
+    \startmathmlattributes
+    \NC mfrac \NC bevelled         \NC +  \NC Specifies the way the fraction is displayed. If true, the fraction line is bevelled, which means that numerator and denominator are displayed side by side and separated by a slash (/). \NC\NR
+    \NC       \NC class, id, style \NC -- \NC \NC\NR
+    \NC       \NC denomalign       \NC -- \NC \NC\NR
+    \NC       \NC href             \NC -- \NC \NC\NR
+    \NC       \NC linethickness    \NC +  \NC The thickness of the horizontal fraction line. The default value is medium, but thin, thick, and other values can be set. \NC\NR
+    \NC       \NC mathbackground   \NC -- \NC \NC\NR
+    \NC       \NC mathcolor        \NC -- \NC \NC\NR
+    \NC       \NC numalign         \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mfenced]
+    \startmathmlattributes
+    \NC mfenced \NC class, id, style \NC -- \NC \NC\NR
+    \NC         \NC close            \NC +  \NC A string for the closing delimiter. The default value is \quote{)} and any white space is trimmed. \NC\NR
+    \NC         \NC href             \NC -- \NC \NC\NR
+    \NC         \NC mathbackground   \NC -- \NC \NC\NR
+    \NC         \NC mathcolor        \NC -- \NC \NC\NR
+    \NC         \NC open             \NC +  \NC A string for the opening delimiter. The default value is \quote{(} and any white space is trimmed. \NC\NR
+    \NC         \NC separators       \NC +  \NC A sequence of zero or more characters to be used for different separators, optionally divided by white space, which is ignored. The default value is \quote{,}. \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[msqrt-mroot]
+    \startmathmlattributes
+    \NC msqrt, mroot \NC class, id, style \NC -- \NC \NC\NR
+    \NC              \NC href             \NC -- \NC \NC\NR
+    \NC              \NC mathbackground   \NC -- \NC \NC\NR
+    \NC              \NC mathcolor        \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mtext]
+    \startmathmlattributes
+    \NC mtext \NC class, id, style \NC -- \NC \NC\NR
+    \NC       \NC dir              \NC -- \NC \NC\NR
+    \NC       \NC href             \NC -- \NC \NC\NR
+    \NC       \NC mathbackground   \NC -- \NC \NC\NR
+    \NC       \NC mathcolor        \NC -- \NC \NC\NR
+    \NC       \NC mathsize         \NC -- \NC \NC\NR
+    \NC       \NC mathvariant      \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mover]
+    \startmathmlattributes
+    \NC mover \NC accent           \NC -- \NC \NC\NR
+    \NC       \NC align            \NC -- \NC \NC\NR
+    \NC       \NC class, id, style \NC -- \NC \NC\NR
+    \NC       \NC href             \NC -- \NC \NC\NR
+    \NC       \NC mathbackground   \NC -- \NC \NC\NR
+    \NC       \NC mathcolor        \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[munder]
+    \startmathmlattributes
+    \NC munder \NC accentunder      \NC -- \NC \NC\NR
+    \NC        \NC align            \NC -- \NC \NC\NR
+    \NC        \NC class, id, style \NC -- \NC \NC\NR
+    \NC        \NC href             \NC -- \NC \NC\NR
+    \NC        \NC mathbackground   \NC -- \NC \NC\NR
+    \NC        \NC mathcolor        \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[munderover]
+    \startmathmlattributes
+    \NC munderover \NC accent           \NC -- \NC \NC\NR
+    \NC            \NC accentunder      \NC -- \NC \NC\NR
+    \NC            \NC align            \NC -- \NC \NC\NR
+    \NC            \NC class, id, style \NC -- \NC \NC\NR
+    \NC            \NC href             \NC -- \NC \NC\NR
+    \NC            \NC mathbackground   \NC -- \NC \NC\NR
+    \NC            \NC mathcolor        \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[ms]
+    \startmathmlattributes
+    \NC ms \NC class, id, style \NC -- \NC \NC\NR
+    \NC    \NC dir              \NC -- \NC \NC\NR
+    \NC    \NC lquote           \NC +  \NC The opening quote character (depends on dir) to enclose the content. The default value is \type{"}. \NC\NR
+    \NC    \NC href             \NC -- \NC \NC\NR
+    \NC    \NC mathbackground   \NC -- \NC \NC\NR
+    \NC    \NC mathcolor        \NC -- \NC \NC\NR
+    \NC    \NC mathsize         \NC -- \NC \NC\NR
+    \NC    \NC mathvariant      \NC -- \NC \NC\NR
+    \NC    \NC rquote           \NC +  \NC The closing quote mark (depends on dir) to enclose the content. The default value is \type{"}. \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[menclose]
+    \startmathmlattributes
+    \NC menclose \NC class, id, style \NC -- \NC \NC\NR
+    \NC          \NC href             \NC -- \NC \NC\NR
+    \NC          \NC mathbackground   \NC -- \NC \NC\NR
+    \NC          \NC mathcolor        \NC -- \NC \NC\NR
+    \NC          \NC notation         \NC +  \NC A list of notations, separated by white space, to apply to the child elements. The symbols are each drawn as if the others are not present, and therefore may overlap. Supported values are:
+                                    longdiv, actuarial, radiacal, rule ({\em private}), box downdiagonalstrike, roundedbox updiagonalstrike, circle verticalstrike horizontalstrike, right bottom horizontalstrike, etc. \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[merror]
+    \startmathmlattributes
+    \NC merror \NC class, id, style \NC -- \NC \NC\NR
+    \NC        \NC href             \NC -- \NC \NC\NR
+    \NC        \NC mathbackground   \NC -- \NC \NC\NR
+    \NC        \NC mathcolor        \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mmultiscripts]
+    \startmathmlattributes
+    \NC mmultiscripts \NC class, id, style \NC -- \NC \NC\NR
+    \NC               \NC href             \NC -- \NC \NC\NR
+    \NC               \NC mathbackground   \NC -- \NC \NC\NR
+    \NC               \NC mathcolor        \NC -- \NC \NC\NR
+    \NC               \NC subscriptshift   \NC -- \NC \NC\NR
+    \NC               \NC superscriptshift \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mspace]
+    \startmathmlattributes
+    \NC mspace \NC class, id, style \NC -- \NC \NC\NR
+    \NC        \NC depth            \NC -- \NC \NC\NR
+    \NC        \NC height           \NC -- \NC \NC\NR
+    \NC        \NC linebreak        \NC -- \NC \NC\NR
+    \NC        \NC mathbackground   \NC -- \NC \NC\NR
+    \NC        \NC spacing          \NC -- \NC The desired width of the space. \NC\NR  % AFO: bestaat attribuut echt?
+    \NC        \NC width            \NC -- \NC The desired width of the space. \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mphantom]
+    \startmathmlattributes
+    \NC mphantom \NC class, id, style \NC -- \NC \NC\NR
+    \NC          \NC mathbackground   \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mpadded]
+    \startmathmlattributes
+    \NC mpadded \NC class, id, style \NC -- \NC \NC\NR
+    \NC         \NC depth            \NC -- \NC \NC\NR
+    \NC         \NC height           \NC -- \NC \NC\NR
+    \NC         \NC href             \NC -- \NC \NC\NR
+    \NC         \NC lspace           \NC -- \NC \NC\NR
+    \NC         \NC mathbackground   \NC -- \NC \NC\NR
+    \NC         \NC mathcolor        \NC -- \NC \NC\NR
+    \NC         \NC voffset          \NC -- \NC \NC\NR
+    \NC         \NC width            \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mtable]
+    \startmathmlattributes
+    \NC mtable \NC align             \NC -- \NC \NC\NR
+    \NC        \NC alignmentscope    \NC -- \NC \NC\NR
+    \NC        \NC class, id, style  \NC -- \NC \NC\NR
+    \NC        \NC columnalign       \NC +  \NC Specifies the horizontal alignment of the cells. Multiple values separated by space are allowed and apply to the corresponding columns (e.g. \type{columnalign="left right center"}). Possible values are: left, center (default) and right. \NC\NR
+    \NC        \NC columnlines       \NC -- \NC \NC\NR
+    \NC        \NC columnspacing     \NC +  \NC Specifies the space between table columns. \NC\NR
+    \NC        \NC columnwidth       \NC -- \NC \NC\NR
+    \NC        \NC displaystyle      \NC -- \NC \NC\NR
+    \NC        \NC equalcolumns      \NC -- \NC \NC\NR
+    \NC        \NC equalrows         \NC -- \NC \NC\NR
+    \NC        \NC frame             \NC -- \NC \NC\NR
+    \NC        \NC framespacing      \NC -- \NC \NC\NR
+    \NC        \NC groupalign        \NC -- \NC \NC\NR
+    \NC        \NC href              \NC -- \NC \NC\NR
+    \NC        \NC mathbackground    \NC +  \NC The background color. \NC\NR
+    \NC        \NC mathcolor         \NC +  \NC The text color. \NC\NR
+    \NC        \NC minlabelspacing   \NC -- \NC \NC\NR
+    \NC        \NC rowalign          \NC -- \NC \NC\NR
+    \NC        \NC rowlines          \NC -- \NC \NC\NR
+    \NC        \NC rowspacing        \NC +  \NC Specifies the space between table rows. \NC\NR
+    \NC        \NC side              \NC -- \NC \NC\NR
+    \NC        \NC width             \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mtr-mlabeledtr]
+    \startmathmlattributes
+    \NC mtr, labeledtr \NC class, id, style \NC -- \NC \NC\NR
+    \NC                \NC columnalign      \NC +  \NC Overrides the horizontal alignment of cells specified by <mtable> for this row. \NC\NR
+    \NC                \NC groupalign       \NC -- \NC \NC\NR
+    \NC                \NC href             \NC -- \NC \NC\NR
+    \NC                \NC mathbackground   \NC +  \NC The background color. \NC\NR
+    \NC                \NC mathcolor        \NC +  \NC The text color. \NC\NR
+    \NC                \NC rowalign         \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mtd]
+    \startmathmlattributes
+    \NC mtd \NC class, id, style \NC -- \NC \NC\NR
+    \NC     \NC columnalign      \NC -- \NC \NC\NR
+    \NC     \NC columnspan       \NC -- \NC \NC\NR
+    \NC     \NC frame            \NC -- \NC Specifies whether the cell gets a frame. \NC\NR % AFO: wordt niet genoemd in Mozilla overview
+    \NC     \NC groupalign       \NC -- \NC \NC\NR
+    \NC     \NC href             \NC -- \NC \NC\NR
+    \NC     \NC mathbackground   \NC -- \NC \NC\NR
+    \NC     \NC mathcolor        \NC -- \NC \NC\NR
+    \NC     \NC rowalign         \NC -- \NC \NC\NR
+    \NC     \NC rowspan          \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[malignmark]
+    \startmathmlattributes
+    \NC malignmark \NC class, id, style \NC -- \NC \NC\NR
+    \NC            \NC edge             \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mglyph]
+    \startmathmlattributes
+    \NC mglyph \NC alt              \NC  + \NC This attribute defines the alternative text describing the image. \NC\NR
+    \NC        \NC class, id, style \NC -- \NC \NC\NR
+    \NC        \NC height           \NC -- \NC \NC\NR
+    \NC        \NC href             \NC -- \NC \NC\NR
+    \NC        \NC mathbackground   \NC -- \NC \NC\NR
+    \NC        \NC src              \NC -- \NC \NC\NR
+    \NC        \NC valign           \NC -- \NC \NC\NR
+    \NC        \NC width            \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+\startbuffer[mstyle]
+    \startmathmlattributes
+    \NC mstyle \NC dir                  \NC -- \NC \NC\NR
+    \NC        \NC decimalpoint         \NC -- \NC \NC\NR
+    \NC        \NC displaystyle         \NC -- \NC \NC\NR
+    \NC        \NC infixlinebreakstyle  \NC -- \NC \NC\NR
+    \NC        \NC scriptlevel          \NC +  \NC Controls mostly the font-size. The higher the scriptlevel, the smaller the font size. This attribute accepts a non-negative integer, as well as a \quote{+} or a \quote{--} sign, which increments or decrements the current value. \NC\NR
+    \NC        \NC scriptminsize        \NC -- \NC \NC\NR
+    \NC        \NC scriptsizemultiplier \NC -- \NC \NC\NR
+    \stopmathmlattributes
+\stopbuffer
+
+% some helpers
+
+\startxmlsetups xml:mmlprime
+    \xmlsetsetup {\xmldocument} {document} {xml:mmlprime:document}
+    \xmlsetsetup {\xmldocument} {textref}  {xml:mmlprime:textref}
+\stopxmlsetups
+
+\xmlregistersetup{xml:mmlprime}
+
+\startxmlsetups xml:mmlprime:document
+    \blank \start
+    \xmlflush{#1}
+    \stop \blank
+\stopxmlsetups
+
+\startxmlsetups xml:mmlprime:textref
+    \in {\xmlflush{#1}} [\xmlatt{#1}{label}]
+\stopxmlsetups
+
+% redefine to use lua and mkiv xml instead of slower mkii
+
+\startluacode
+    local gsub = string.gsub
+    local mapping = {
+        [";"] = "{{\\darkblue\\string;}}",
+        ["&"] = "{{\\ttsl\\darkblue\\string&}}", -- otherwise "et"
+        ["/"] = "{{\\darkblue\\string/}}",
+        ["<"] = "{{\\darkblue\\string<}}",
+        [">"] = "{{\\darkblue\\string>}}",
+    }
+    function document.filterxmltitlestuff(name)
+        local data = io.loaddata(name) or ""
+        data = gsub(data,"<math[^>]*>","<math>")
+        data = gsub(data,"[%s ]+"," ")
+        data = gsub(data,"(.)",mapping)
+        context(data)
+    end
+\stopluacode
+
+\starttexdefinition unexpanded showXMLfileA #1#2
+    \ignorespaces
+    \ctxlua{document.filterxmltitlestuff("#2.xml")}
+    \removeunwantedspaces
+    \space
+    \ignorespaces
+\stoptexdefinition
+
+\startluacode
+    function document.filenumber(str)
+        context(string.match(str,"([1-9][0-9]*)$"))
+    end
+\stopluacode
+
+\starttexdefinition unexpanded showXMLfileB #1#2
+    \bgroup
+        \setuplabeltext[formula=#1\space]
+        \setnumber[formula][\ctxlua{document.filenumber("#2")}]
+        \decrementnumber[formula]
+        \placeformula
+            \startformula
+                \processxmlfile{#2.xml}
+            \stopformula
+   \egroup
+   \typefile{#2.xml}
+   \page[bigpreference]
+\stoptexdefinition
+
+\startsetups showexamples
+
+    \setupformulas
+      [left=,
+       right=,
+       location=left,
+       numberstyle=FormulaFont,
+       numbercolor=darkblue]
+
+    \resetnumber[formula]
+
+    \let\showXMLfile\showXMLfileB
+
+\stopsetups
+
+\startsetups TitlePageBackground
+    \setbox\scratchbox=\vbox to \paperheight {
+        \hsize\paperwidth
+        \definedfont[NiceBold*default at 7pt]
+        \setupinterlinespace
+        \let\showXMLfile\showXMLfileA
+        \baselineskip=1\baselineskip plus 1pt
+        \getbuffer[derivates]
+        \getbuffer[integrals]
+        \getbuffer[series]
+        \getbuffer[logs]
+        \getbuffer[goniometrics]
+        \getbuffer[statistics]
+        \getbuffer[matrices]
+    }
+    \setbox\scratchbox=\vsplit\scratchbox to \paperheight
+    \vbox to \paperheight {
+        \unvbox\scratchbox
+        \vskip-.2ex
+    }
+\stopsetups
+
+\defineoverlay
+  [titlepage]
+  [\directsetup{TitlePageBackground}]
+
+\settaggedmetadata
+  [title={MathML},
+   author={Hans Hagen},
+   version={January 2001 / June 2008 / June 2011},
+   copyright={PRAGMA ADE, Hasselt, NL},
+   url={www.pragma-ade.com / www.pragma-ade.nl}]
+
+\starttext
+
+\setupbackgrounds
+  [page]
+  [background={foreground,titlepage}]
+
+\startelement[ignore]
+
+    \startstandardmakeup[footerstate=none,doublesided=no,page=]
+        \setupalign[left]
+        \definefont[BigFont][RegularBold at 108pt]
+        \definefont[MedFont][RegularBold at  48pt]
+        \vfill
+        \BigFont \darkred MathML     \par
+        \vskip6pt
+        \MedFont \darkred HANS HAGEN \par
+    \stopstandardmakeup
+
+\stopelement
+
+\setupbackgrounds
+  [page]
+  [background=]
+
+\startelement[ignore]
+
+    \startstandardmakeup[footerstate=none,doublesided=no,page=]
+        \startpacked
+        Hans Hagen \par
+        Hassel NL \par
+        \goto{www.pragma-ade.com}[url(http://www.pragma-ade.com)] \par
+        January  2001 /
+        June     2008 /
+        June     2011 /
+        February 2015\par
+        \stoppacked
+        \vfill
+      % More changes and additions can be expected when there is a definitive
+      % version of the \MATHML~3 specification and more correct testsuite. One
+      % thing we need to look into is the nesting model dealing with ()
+      % discussed in the spec.
+        \blank
+        \start
+        \starttabulate
+        \NC \color[darkblue]{copyright} \EQ PRAGMA ADE, Hasselt, NL \NC \NR
+        \NC \color[darkblue]{version}   \EQ \currentdate \NC \NR
+        \NC \color[darkblue]{renderer}  \EQ \doifmodeelse{mkiv}{version 1 / mkiv}{\doifsetupselse{mmc:apply:start}{version 2}{version 3} / mkii} \NC \NR
+        \stoptabulate
+        \stop
+    \stopstandardmakeup
+
+\stopelement
+
+\startfrontmatter
+
+\starttitle[title={Table of Contents}]
+
+\startmixedcolumns[n=3,separator=rule,rulecolor=darkblue,rulethickness=1pt,blank={line,fixed},balance=no]
+    \placelist[chapter,section]
+\stopmixedcolumns
+
+\stoptitle
+
+\startchapter[title={introduction}]
+
+It is a well known fact that \TEX\ can do a pretty good job on typesetting math.
+This is one reason why many scientific articles, papers and books are typeset
+using \TEX. However, in these days of triumphing angle brackets, coding in \TEX\
+looks more and more out of place.
+
+From the point of view of an author, coding in \TEX\ is quite natural, given that
+some time is spent on reading the manuals. This is because not only the natural
+flow of the definition suits the way mathematicians think, but also because the
+author has quite some control over the way his thoughts end up on paper. It will
+be no surprise that switching to a more restricted way of coding, which also
+demands more keystrokes, is not beforehand considered to be better.
+
+There are however circumstances that one wants to share formulas (or
+formula||like specifications) between several applications, one of which is a
+typesetting engine. In that case, a bit more work now, later saves you some
+headaches due to keeping the different source documents in sync.
+
+The moment coding math in \XML\ is discussed, those in favour stress that coding
+can be eased by using appropriate editors. Here we encounter a dilemma. For
+optimal usage, one should code in terms of content, that is, the principles that
+are expressed in a formula. Editors are not that strong in this area, and if they
+would be, editing would be not that much different from traditionally editing
+formulas: just keying in ideas using code that at first sight looks obscure. A
+more graphical oriented editor can help authors to compose formulas, but the
+underlaying coding will mainly be in terms of placing glyphs and boxes, and as a
+result the code will hardly be usable in other applications.
+
+So either we code in terms of concepts, which permits sharing code among
+applications, and poses strong limitations on the influence of authors on the
+visual appearance. Or we use an interactive editor to fine tune the appearance of
+a formula and take for granted that reuse will be minimal or suboptimal.
+
+In the following chapters we will discuss the mathematical language \MATHML\ in
+the perspective of typography. As a typesetting vehicle, we have used \CONTEXT.
+However, the principles introduced here and the examples that we provide are
+independent of \CONTEXT. For a more formal exploration we recommend the \MATHML\
+specification.
+
+This document is dedicated to all those \CONTEXT\ users who like typesetting
+math. I'm sure that my father, who was a math teacher, would have liked
+proofreading this document. His absence was compensated by Tobias Burnus, Wang
+Lei, Ton Otten, and later members of the \CONTEXT\ mailing list who carefully
+read the text, corrected the errors in my math, tested the functionality, and
+made suggestions. Any remaining errors are mine.
+
+When we started supporting \MATHML\ we were under the impression that it would be
+accepted and take of fast, but we were wrong. It toke much more than a decade for
+instance to see browsers support rendering. Being involved in typesetting
+educational content from \XML\ files, we could use this subsystem ourselves, and
+this was useful in the sense that we ran into lots of contradicting and
+suboptimal \MATHML\ code. However, the most interesting application has always
+been in the math4all project, where we went from \TEX\ math, via content \MATHML\
+and open math to presentational \MATHML. Nowadays web usage drives the coding and
+limitations in other programs (and rendering) are sometimes compensated by coding
+and our renderer then has to be able to recover nicely. Thanks to the enormous
+productivity of the main math4all author Frits Spijkers and the careful checking
+by my collegue Ton Otten, we could always keep op well. Development and support
+of the \CONTEXT\ typesetting system is mostly done without any commercial
+benefits and the amount of free time that we spend on it and especially its more
+obscure properties like \MATHML\ is compensated by flexible and tolerant users
+like them.
+
+One problem is that our own usage of \MATHML\ changes over time. Some of our
+projects demand the use of this standard but at the same time the used sources
+need to satisfy other needs, for instance rendering on the web. For some 15 years
+now the changing demands and quality have made us oscillate between (often
+suboptimal) solutions that deal with the suboptimal code that comes from
+compromises. For instance the mentioned project is now using a mixture of
+\MATHML\ and so called \ASCII math because that is the only way the enormous
+amount of math code can be rendered on the web. And even there we need to bend
+the rules, for instance to compensate for missing features or cultural
+differences. Eventually I will rewrite the rendering from scratch but I need time
+and a very good reason for that.
+
+This version of the manual is produced by \CONTEXT\ \MKIV\ and is also used as
+testcase. The version rendered at \PRAGMA\ uses the Lucida Bright fonts. These
+can be bought at \goto {www.tug.org} [url(http://{www.tug.org})] for a reasonable
+low price and are really worth the money.
+
+\startlines
+Hans Hagen
+PRAGMA ADE
+Hasselt NL
+2001 \emdash\ \currentdate[year]
+\stoplines
+
+\stopchapter
+
+\stopfrontmatter
+
+\startbodymatter
+
+\startchapter[title={What is \MATHML}]
+
+\startsection[title={backgrounds}]
+
+\MATHML\ showed up in the evolving vacuum between structural \SGML\ markup and
+presentational \HTML. Both \SGML\ and \HTML\ can be recognized by angle brackets.
+The disadvantage of \SGML\ was that it was so open ended, that general tools
+could hardly be developed. \HTML\ on the other hand was easy to use and became
+extremely popular and users as well as software vendors quickly spoiled the
+original ideas and created a mess. \SGML\ never became really popular, but thanks
+to \HTML\ people became accustomed to that kind of notation. So, when \XML\ came
+around as a more restricted cousin of \SGML, the world was kind of ready for it.
+It cannot be denied that by some clever marketing many of today's users think
+that they use something new and modern, while we are actually dealing with
+something from the early days of computing. A main benefit of \XML\ is that it
+brought the ideas behind \SGML\ (and medium neutral coding in general) to the
+users and at the same time made a major cleanup of \HTML\ possible.
+
+About the same time, \MATHML\ was defined, both to bring math to the \WWW, and to
+provide a way of coding math that will stimulate sharing the same code between
+different applications. At the end of 2000, the \MATHML\ version~2 draft became a
+recommendation. In the process of rewriting the interpreter for \CONTEXT\ \MKIV\
+mid 2008 a draft of \MATHML\ version~3 has been used.
+
+Now, imagine that we want to present a document on the internet using a format
+like \HTML, either for viewing or for being spoken. Converting text and graphics
+is, given proper source coding, seldom a problem, but converting formulas into
+some angle bracket representation is more tricky. A way out of this is \MATHML's
+presentational markup.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mi> a </mi>
+    <mo> + </mo>
+    <mi> b </mi>
+    <mo> = </mo>
+    <mi> c </mi>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer
+
+This simple formula, when coded in \TEX, looks like:
+
+\starttyping
+$$ a + b = c $$
+\stoptyping
+
+In presentational \MATHML\ we get:
+
+\typebuffer
+
+In presentational \MATHML, we use mostly begintags (\type {<mi>}) and end tags
+(\type {</mi>}). The \mmlelement {mrow} element is the basic building block of a
+formula. The \mmlelement {mi} element specifies a math identifier and \mmlelement
+{mo} is used for operators. In the process of typesetting, both are subjected to
+interpretation in order to get the best visualization.
+
+Converting \TEX\ code directly or indirectly, using printable output or even
+in||memory produced math lists, has been one of the driving forces behind
+presentational \MATHML\ and other math related \DTD's like \EUROMATH. One may
+wonder if there are sound and valid reasons for going the opposite way. You can
+imagine that a converter from \TEX\ to \MATHML\ produces \mmlelement {menclose},
+\mmlelement {mspace}, \mmlelement {mstyle} and other elements that can have many
+spacing related attributes, but I wonder if any author is willing to think in
+those quantities. Visual editors of course are good candidates for producing
+presentational \MATHML.
+
+But wouldn't it be more efficient if we could express ideas and concepts in such
+a way that they could be handled by a broad range of applications, including a
+typesetting engine? This is why, in addition to presentational \MATHML, there is
+also content \MATHML. The previous formula, when coded in such a way, looks like:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <plus/>
+      <ci> a </ci>
+      <ci> b </ci>
+    </apply>
+    <ci> c </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\typebuffer
+
+This way of defining a formula resembles the so called polish (or stackwise)
+notation. Opposite to presentational markup, here a typesetting engine has to
+find out in what order and what way the content has to be presented. This may
+seem a disadvantage, but in practice implementing content markup is not that
+complicated. The big advantage is that, once we know how to typeset a concept,
+\TEX\ can do a good job, while in presentational markup much hard coded spacing
+can spoil everything. One can of course ignore specific elements, but it is more
+safe to start from less and enhance, than to leave away something with unknown
+quantities.
+
+Instead of using hard coded operators as in presentational \MATHML, content
+markup uses empty elements like \type {<plus/>}. Many operators and functions are
+predefined but one can also define his own; in \MATHML~3 this is further extended
+by adopting \OPENMATH\ as variant.
+
+Of course the main question to be answered now is to what extent the author can
+influence the appearance of a formula defined in content markup. Content markup
+has the advantage that the results can be more consistent, but taking away all
+control is counterproductive. The \MATHML\ level~2 draft mentions that this level
+covers most of the pre university math. If so, that is a proper starting point,
+but especially educational math often has to be typeset in such ways that it
+serves its purpose. Also, (re|)|using the formulas in other applications
+(simulators and alike) is useful in an educational setting, so content markup is
+quite suitable.
+
+How do we combine the advantages of content markup with the wish of an author to
+control the visual output and at the same time get an as high as possible typeset
+result. There are several ways to accomplish this. One is to include in the
+document source both the content markup and the \TEX\ specific code.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <semantics>
+    <apply> <eq/>
+      <apply> <plus/>
+        <ci> a </ci>
+        <ci> b </ci>
+      </apply>
+    </apply>
+    <ci> c </ci>
+    <annotation encoding="TeX">a+b=c</annotation>
+  </semantics>
+</math>
+\stopbuffer
+
+\typebuffer
+
+The \mmlelement {annotation} element is one of the few that is permitted inside
+the \mmlelement {math} element. In this example, we embed pure \TEX\ code, which,
+when enabled is typeset in math mode. It will be clear that for a simple formula
+like this one, such redundant coding is not needed, but one can imagine more
+complicated formulas. Because we want to limit the amount of work, we prefer just
+content markup. \blank {\it Remark: Some characters, fillers or whatever may not
+show up. This is due to the fact that the relevant tables for \CONTEXT\ \MKIV\
+are defined stepwise. In due time most relevant symbols will be accessible.}
+
+\stopsection
+
+\startsection[title={two methods}]
+
+The best way to learn \MATHML\ is to key in formulas, so that is what we did as
+soon as we started adding \MATHML\ support to \CONTEXT. In some areas, \MATHML\
+provides much detail (many functions are represented by elements) while in other
+areas one has to fall back on the more generic function element or a full
+description. Compare the following definitions:
+
+\startbuffer[a]
+<document>
+  <math xmlns="http://www.w3c.org/mathml" version="2.0">
+    <apply> <sin/> <ci> x </ci> </apply>
+  </math>
+  <math xmlns="http://www.w3c.org/mathml" version="2.0">
+    <mrow> <mi> sin </mi> <mi> x </mi> </mrow>
+  </math>
+</document>
+\stopbuffer
+
+\typebuffer[a]
+
+We prefer the first definition because it is more structured and gives more
+control over the result. There is only one \quote {unknown} quantity, $x$, and
+from the encapsulating element \mmlelement {ci} we know that it is an identifier.
+
+\processxmlbuffer[a]
+
+In the content example, from the \mmlelement {apply} \mmlelement {sin} we can
+deduce that the following argument is an operand, either an \mmlelement {apply},
+or a \mmlelement {ci} or \mmlelement {cn}. In the presentational alternative, the
+following elements can be braces, a math identifier, a row, a sequence of
+identifiers and operators, etc. There, the look and feel is hard coded.
+
+\startbuffer[b]
+<?context-mathml-directive function reduction no ?>
+\stopbuffer
+
+\typebuffer[b]
+
+This directive, either issued in the \XML\ file, or set in the style file,
+changes the appearance of the function, but only in content markup. It is because
+of this feature, that we favour content markup.
+
+\processxmlbuffer[b,a]
+
+Does this mean that we can cover everything with content markup? The answer to
+this is still unclear. Consider the following definition.
+
+\processxmlfile {pc-i-380.xml}
+
+Here we combine several cases in one formula by using $\pm$ and $\mp$ symbols.
+Because we only have \mmlelement {plus} and \mmlelement {minus} elements, we have
+to revert to the generic function element \mmlelement {fn}. We show the complete
+definition of this formula.
+
+\typefile {pc-i-380.xml}
+
+The \MATHML\ parser and typesetting engine have to know how to handle these
+special cases, because the visualization depends on the function (or operator).
+Here both composed signs are treated like the plus and minus signs, but in other
+cases an embraced argument may be needed.
+
+\stopsection
+
+\stopchapter
+
+\startchapter[title={Presentational markup}]
+
+\startsection[title=Introduction]
+
+If a document contains presentational \MATHML, there is a good chance that the
+code is output by an editor. Here we will discuss the presentation elements that
+make sense for users when they want to manually code presentational \MATHML. In
+this chapter we show the default rendering, later we will discuss options.
+
+Although much is permitted, we advise to keep the code as simple as possible,
+because then \TEX\ can do a rather good job on interpreting and typesetting it.
+Just let \TEX\ take care of the spacing.
+
+\stopsection
+
+\startsection[title={mi, mn, mo}]
+
+Presentational markup comes down to pasting boxes together in math specific ways.
+The basic building blocks are these three character elements.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mi> x </mi> <mo> = </mo> <mn> 5 </mn>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\starttabulate[||||]
+\HL
+\NC \mmlelement {mi} \NC identifier \NC normally typeset in an italic font \NC \NR
+\NC \mmlelement {mn} \NC number     \NC normally typeset in a normal font  \NC \NR
+\NC \mmlelement {mo} \NC operator   \NC surrounded by specific spacing     \NC \NR
+\HL
+\stoptabulate
+
+Because numbers are taken from an upright font, special numbers are taken care of
+automatically. Here are some from the \MATHML\ specification:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mn> 2          </mn> <mtext>&nbsp;&nbsp;</mtext>
+    <mn> 0.123      </mn> <mtext>&nbsp;&nbsp;</mtext>
+    <mn> 0,000,000  </mn> <mtext>&nbsp;&nbsp;</mtext>
+    <mn> 2.1e10     </mn> <mtext>&nbsp;&nbsp;</mtext>
+    <mn> 0xFFeF     </mn> <mtext>&nbsp;&nbsp;</mtext>
+    <mn> MCMLXIX    </mn> <mtext>&nbsp;&nbsp;</mtext>
+    <mn> twenty one </mn> <mtext>&nbsp;&nbsp;</mtext>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Special characters can be accessed by their \UNICODE\ point or by a corresponding
+entity. For some reason there is quite some duplication in entities, but we don't
+bother too much about it because after all \UNICODE\ math (which has its own
+peculiarities) is the way to go. The specification has this somewhat strange
+formula definition:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mn> 2 </mn>
+    <mo> + </mo>
+    <mrow>
+      <mn> 3</mn>
+      <mo> &InvisibleTimes; </mo>
+      <mi> &ImaginaryI; </mi>
+    </mrow>
+  </mrow>
+  <mfrac>
+    <mn> 1 </mn>
+    <mn> 2 </mn>
+  </mfrac>
+  <mi> &pi; </mi>
+  <mi> &ExponentialE; </mi>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+And:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfrac>
+    <mo> &DifferentialD; </mo>
+    <mrow>
+      <mo> &DifferentialD; </mo>
+      <mi> x </mi>
+    </mrow>
+  </mfrac>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Visualizing the \mmlelement {mo} element involved some heuristics. For instance
+the size of fences depends on what they fence. In the following case you see how
+we can influence this. For practical pusposes we only support size~1.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mo> ( </mo> <mi> x </mi>  <mo> ) </mo>
+  </mrow>
+  <mtext> or </mtext>
+  <mrow>
+    <mo maxsize="1"> ( </mo>  <mi> x </mi>  <mo> ) </mo>
+  </mrow>
+  <mtext> or </mtext>
+  <mrow>
+    <mo maxsize="1"     > ( </mo>
+        <mfrac> <mn> 1 </mn> <mn> 2 </mn> </mfrac>
+    <mo stretchy="false"> ) </mo>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[mi-mn]
+
+\getbuffer[mo]
+
+\stopsection
+
+\startsection[title={mrow}]
+
+The previous example demonstrated the use of \mmlelement {mrow}, the element that
+is used to communicate the larger building blocks. Although this element from the
+perspective of typesetting is not always needed, by using it, the structure of
+the formula in the document source is more clear. There is some messy magic going
+on when we try to fake fenced expressions.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow> <mi> x </mi> <mo> &geq; </mo> <mn> 2 </mn> </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mi> y </mi> <mo> &gt; </mo> <mn> 4 </mn>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mo> &lt; </mo> <mi> x </mi> <mo> &gt; </mo>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mi> a </mi> <mo> &lt; </mo> <mi> b </mi> <mo> &lt; </mo> <mi> c </mi>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Spacing between a sign and the following token is taken care of automatically by
+\TEX:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mo> - </mo>
+    <mn> 1 </mn>
+    <mo> - </mo>
+    <mn> 1 </mn>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[mrow]
+
+\stopsection
+
+\startsection[title={msup, msub, msubsup}]
+
+Where in content markup super and subscript are absent and derived from the
+context, in presentational markup they are quite present.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <msup>
+    <msub> <mi> x </mi> <mn> 1 </mn> </msub>
+    <mn> 2 </mn>
+  </msup>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <msubsup>
+    <mi> x </mi>
+    <mn> 1 </mn>
+    <mn> 2 </mn>
+  </msubsup>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Watch the difference between both definitions and appearances. You can influence
+the default behaviour with processing instructions.
+
+\getbuffer[msub]
+
+\getbuffer[msup]
+
+\getbuffer[msubsup]
+
+\stopsection
+
+\startsection[title={mfrac}]
+
+Addition, subtraction and multiplication is hard coded using the \mmlelement {mo}
+element with $+$, $-$, and $\times$ (or nothing). You can use $/$ for division,
+but for more complicated formulas you have to fall back on fraction building.
+This is why \MATHML\ provides the \mmlelement {mfrac}.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfrac>
+    <mrow> <mi> x </mi> <mo> + </mo> <mn> 1 </mn> </mrow>
+    <mrow> <mi> y </mi> <mo> + </mo> <mn> 1 </mn> </mrow>
+  </mfrac>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+You can change the width of the rule, but this is generally a bad idea. For
+special purposes you can set the line thickness to zero.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfrac linethickness="0">
+    <mrow> <mi> x </mi> <mo> &geq; </mo> <mn> 2 </mn> </mrow>
+    <mrow> <mi> y </mi> <mo> &leq; </mo> <mn> 4 </mn> </mrow>
+  </mfrac>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+A different kind of rendering is also possible, as shown in the following
+example.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfrac bevelled="true">
+    <mfrac>
+      <mi> x </mi> <mn> 2 </mn>
+      <mi> y </mi> <mn> 4 </mn>
+    </mfrac>
+    <mfrac>
+      <mi> x </mi> <mn> 2 </mn>
+      <mi> y </mi> <mn> 4 </mn>
+    </mfrac>
+  </mfrac>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[mfrac]
+
+\stopsection
+
+\startsection[title={mfenced}]
+
+Braces are used to visually group sub||expressions. In presentational \MATHML\
+you can either hard code braces, or use the \mmlelement {mfenced} element to
+generate delimiters automatically. In \CONTEXT, as much as possible, the
+operators and identifiers are interpreted, and when recognized treated according
+to their nature.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfenced> <mi> a </mi> <mi> b </mi> <mn> 1 </mn> </mfenced>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The fencing symbols adapt their size to the content. Their dimensions also depend
+on the way math fonts are defined. The standard \TEX\ fonts will give the same
+height of braces around $x$ and $y$, but in other fonts the $y$ may invoke
+slightly larger ones.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfenced open="[" close=")" separators=",">
+    <mn> 0 </mn> <mn> 1 </mn>
+  </mfenced>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The separators adapt their size to the fenced content too, just like the fences.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfenced open="[" close="]" separators="|">
+    <mfrac> <mn> 1 </mn> <mi> x </mi> </mfrac>
+    <mfrac> <mn> 1 </mn> <mi> y </mi> </mfrac>
+    <mfrac> <mn> 1 </mn> <mi> z </mi> </mfrac>
+  </mfenced>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfenced>
+    <mrow> <mn> 1 </mn> <mo> + </mo> <mi> x </mi> </mrow>
+  </mfenced>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfenced open="{" close="" separators="|+-">
+    <mn> 1 </mn> <mn> 2 </mn> <mn> 3 </mn> <mn> 4 </mn>
+  </mfenced>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfenced open="a" close="e" separators="bcd">
+    <mn> 1 </mn> <mn> 2 </mn> <mn> 3 </mn> <mn> 4 </mn>
+  </mfenced>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[mfenced]
+
+\stopsection
+
+\startsection[title={msqrt, mroot}]
+
+The shape and size of roots, integrals, sums and products can depend on the size
+of the content.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <msqrt>
+    <mi> b </mi>
+  </msqrt>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mroot>
+    <mi> b </mi>
+    <mn> 2 </mn>
+  </mroot>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mroot>
+    <mfrac> <mn> 1 </mn> <mi> b </mi> </mfrac>
+    <mn> 2 </mn>
+  </mroot>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mroot>
+    <mfrac>
+      <mn> 1 </mn>
+      <mrow> <mi> a </mi> <mo> + </mo> <mi> b </mi> </mrow>
+    </mfrac>
+    <mn> 3 </mn>
+  </mroot>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[msqrt-mroot]
+
+\stopsection
+
+\startsection[title={mtext}]
+
+If you put text in a \mmlelement {mi} element, it will come out rather ugly. This
+is due to the fact that identifiers are (at least in \TEX) not subjected to the
+kerning that is normally used in text. Therefore, when you want to add some text
+to a formula, you should use the \mmlelement {mtext} element.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfrac>
+    <mi> Some Text </mi>
+    <mtext> Some Text </mtext>
+  </mfrac>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+As with all elements, leading and trailing spaces are ignored. If you really want
+a space in front or at the end, you should use one of the space tokens other than
+the ascii spacing tokens. You can also use entities like \type {&nbsp;}.
+
+\getbuffer[mtext]
+
+\stopsection
+
+\startsection[title={mover, munder, munderover}]
+
+Not all formulas are math and spacing and font rules may differ per discipline.
+The following formula reflects a chemical reaction.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mrow>
+      <mn> 2 </mn>
+      <msub> <mtext> H </mtext> <mn> 2 </mn> </msub>
+    </mrow>
+    <mo> + </mo>
+    <msub> <mtext> O </mtext> <mn> 2 </mn> </msub>
+    <munder>
+      <mo> &RightArrow; </mo>
+      <mtext> explosion </mtext>
+    </munder>
+    <mrow>
+      <mn> 2 </mn>
+      <msub> <mtext> H </mtext> <mn> 2 </mn> </msub>
+      <mtext> O </mtext>
+    </mrow>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The \mmlelement {munder}, \mmlelement {mover} and \mmlelement {munderover}
+elements can be used to put symbols and text or formulas on top of each other.
+When applicable, the symbols will stretch themselves to span the natural size of
+the text or formula.
+
+The following examples demonstrate how the relevant components of this threesome
+are defined.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mi> x </mi>
+    <munder>
+      <mo> &RightArrow; </mo>
+      <mtext> maps to </mtext>
+    </munder>
+    <mi> y </mi>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mi> x </mi>
+    <munder>
+      <mtext> maps to </mtext>
+      <mo> &RightArrow; </mo>
+    </munder>
+    <mi> y </mi>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mi> x </mi>
+    <mover>
+      <mtext> maps to </mtext>
+      <mo> &RightArrow; </mo>
+    </mover>
+    <mi> y </mi>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mi> x </mi>
+    <mover>
+      <mo> &RightArrow; </mo>
+      <mtext> maps to </mtext>
+    </mover>
+    <mi> y </mi>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <munderover>
+      <mi> &int; </mi>
+      <mn> 1 </mn>
+      <mi> &infin; </mi>
+    </munderover>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+    <mrow>
+        <mover> <mi> x </mi> <mo> &#x2C6; </mo> </mover> <mo>+</mo>
+        <mover> <mi> x </mi> <mo> &#x5E;  </mo> </mover> <mo>+</mo>
+        <mover> <mi> x </mi> <mo> &Hat;   </mo> </mover>
+    </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[munder]
+
+\getbuffer[mover]
+
+\getbuffer[munderover]
+
+\stopsection
+
+\startsection[title={ms}]
+
+This is a bit weird element. It behaves like \mmlelement {mtext} but puts quotes
+around the text.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfrac>
+    <ms> Some Text </ms>
+    <mtext> Some Text </mtext>
+  </mfrac>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+You can specify the left and right boundary characters, either directly or
+(preferably) using entities like \type {&quot;}.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <ms lquote="+" rquote="+"> A Famous Quotation </ms>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[ms]
+
+\stopsection
+
+\startsection[title={menclose}]
+
+This element is implemented but it is such a weird element that it's probably
+seldom used.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <menclose notation="longdiv"><mn>123</mn></menclose>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <menclose notation="actuarial"><mn>123</mn></menclose>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <menclose notation="radical"><mn>123</mn></menclose>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+A bit more complex example (taken from the specification) demonstrates where
+those somewhat strange rendering options are good for:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mtable columnspacing="0pt" rowspacing="0pt">
+    <mtr>
+      <mtd></mtd>
+      <mtd columnalign="right"><mn>10</mn></mtd>
+    </mtr>
+    <mtr>
+      <mtd columnalign="right"><mn>131</mn></mtd>
+      <mtd columnalign="right">
+        <menclose notation="longdiv"><mn>1413</mn></menclose>
+      </mtd>
+    </mtr>
+    <mtr>
+      <mtd></mtd>
+      <mtd columnalign="right">
+        <mrow>
+          <munder>
+            <mn>131</mn>
+            <mo>&UnderBar;</mo>
+          </munder>
+          <mphantom><mn>3</mn></mphantom>
+        </mrow>
+      </mtd>
+    </mtr>
+    <mtr>
+      <mtd></mtd>
+      <mtd columnalign="right"><mn>103</mn></mtd>
+    </mtr>
+  </mtable>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+In \MATHML~3 a few more notations showed up and to some extend we support them.
+We assume that the previously mentioned variants are always applied to the
+content first.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <menclose notation="box downdiagonalstrike">
+    <mtext>whatever</mtext>
+  </menclose>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <menclose notation="roundedbox updiagonalstrike">
+    <mtext>whatever</mtext>
+  </menclose>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <menclose notation="circle verticalstrike horizontalstrike">
+    <mtext>whatever</mtext>
+  </menclose>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <menclose notation="left top verticalstrike">
+    <mtext>whatever</mtext>
+  </menclose>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <menclose notation="right bottom horizontalstrike">
+    <mtext>whatever</mtext>
+  </menclose>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <menclose notation="radical right bottom horizontalstrike">
+    <mtext>whatever</mtext>
+  </menclose>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <menclose notation="right bottom horizontalstrike radical">
+    <mtext>whatever</mtext>
+  </menclose>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The graphics are drawn at runtime by \METAPOST. Currently we don't combine them
+into one which would be more efficient in terms of output (not so much in
+runtime). You can define additional variants; as an example we show one of the
+solutions:
+
+\startbuffer
+\startuseMPgraphic{mml:enclose:box}
+  draw OverlayBox
+    withpen pencircle scaled (ExHeight/10) ;
+\stopuseMPgraphic
+
+\defineoverlay [mml:enclose:box] [\useMPgraphic{mml:enclose:box}]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+You can roll out your own:
+
+\startbuffer
+\startuseMPgraphic{mml:enclose:mybox}
+  draw OverlayBox enlarged (ExHeight/5)
+    withpen pencircle scaled (ExHeight/10) ;
+\stopuseMPgraphic
+
+\defineoverlay [mml:enclose:mybox] [\useMPgraphic{mml:enclose:mybox}]
+\stopbuffer
+
+\getbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <menclose notation="mybox">
+    <mtext>whatever</mtext>
+  </menclose>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[menclose]
+
+\stopsection
+
+\startsection[title={merror}]
+
+There is not much chance that this element will end up in a math textbook, unless
+the typeset output of programs is part of the story.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <merror>
+    <mtext> Are you kidding? &ThickSpace; </mtext>
+    <mfrac>
+      <mrow> <mn> 1 </mn> <mo> + </mo> <mi> x </mi> </mrow>
+      <mn> 0 </mn>
+    </mfrac>
+  </merror>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[merror]
+
+\stopsection
+
+\startsection[title={mmultiscripts, mprescripts}]
+
+This element is one of the less obvious ones. The next two examples are taken
+from the specification. The \mmlelement {multiscripts} element takes an odd
+number of arguments. The second and successive child elements alternate between
+sub- and superscript. The empty element \mmlelement {none} |<|a dedicated element
+\mmlelement {mnone} would have been a better choice|>| serves as a placeholder.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mmultiscripts>
+    <mi> R </mi>
+    <mi> i </mi>
+    <none/>
+    <none/>
+    <mi> j </mi>
+    <mi> k </mi>
+    <none/>
+    <mi> l </mi>
+    <none/>
+  </mmultiscripts>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The \mmlelement {mmultiscripts} element can also be used to attach prescripts to
+a symbol. The next example demonstrates this. The empty \mmlelement {prescripts}
+element signals the start of the prescripts section.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mmultiscripts>
+    <mi> Qb </mi>
+    <mn> 4 </mn>
+    <none/>
+    <mprescripts/>
+    <mn> 427 </mn>
+    <none/>
+  </mmultiscripts>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[mmultiscripts]
+
+\stopsection
+
+\startsection[title={mspace}]
+
+Currently not all functionality of the \mmlelement {mspace} element is
+implemented. Over time we will see what support is needed and makes sense,
+especially since this command can spoil things. We only support the units that
+make sense, so units in terms of pixels |<|a rather persistent oversight in
+drafts|>| are kindly ignored.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <?context-mathml-directive mspace option test ?>
+  <mrow>
+    <mtext> use  </mtext> <mspace width="1em" />
+    <mtext> me   </mtext> <mspace width="1ex" />
+    <mtext> with </mtext> <mspace width="10pt"/>
+    <mtext> care </mtext>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+As you can see here, spaces inside a \type {mtext} matter too! The next example
+is more tight.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <?context-mathml-directive mspace option test ?>
+  <mrow>
+    <mtext>use</mtext>  <mspace width="1em" />
+    <mtext>me</mtext>   <mspace width="1ex" />
+    <mtext>with</mtext> <mspace width="10pt"/>
+    <mtext>care</mtext>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+You can also pass a sample text:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mfrac>
+     <mi> 44 </mi>
+     <mfrac>
+       <mrow>
+         <mn> 11 </mn> <mn> 22 </mn> <mn> 33 </mn>
+       </mrow>
+       <mrow>
+         <mn> 11 </mn> <mspace spacing="22"/> <mn> 33 </mn>
+       </mrow>
+     </mfrac>
+  </mfrac>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[mspace]
+
+\stopsection
+
+\startsection[title={mphantom}]
+
+A phantom element hides its content but still takes its space. A phantom element
+can contain other elements.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mtext>    who is afraid of </mtext>    <mspace width=".5em" />
+    <mphantom> phantom          </mphantom> <mspace width=".5em" />
+    <mtext>    elements         </mtext>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[mphantom]
+
+\stopsection
+
+\startsection[title={mpadded}]
+
+As with a few other elements, we first have to see some practical usage for this,
+before we could implement the functionality needed.
+
+\getbuffer[mpadded]
+
+\stopsection
+
+\startsection[title={mtable, mtr, mtd, mlabeledtr}]
+
+As soon as you want to represent a matrix or other more complicated composed
+constructs, you end up with spacing problems. This is when tables come into view.
+Because presentational elements have no deep knowledge about their content,
+tables made with presentational \MATHML\ will in most cases look worse than those
+that result from content markup.
+
+We have implemented tables on top of the normal \XML\ (\HTML) based table support
+in \CONTEXT, also known as natural tables. Depending on the needs, support for
+the \mmlelement {mtable} element will be extended.
+
+The \mmlelement {mtable} element takes a lot of attributes. When no attributes
+are given, we assume that a matrix is wanted, and typeset the content
+accordingly.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mo> ( </mo>
+    <mtable>
+      <mtr>
+        <mtd> <msub> <mi> x </mi> <mn> 1,1 </mn> </msub> </mtd>
+        <mtd> <mn> 1 </mn> </mtd>
+        <mtd> <mn> 0 </mn> </mtd>
+      </mtr>
+      <mtr>
+        <mtd> <mn> 0 </mn> </mtd>
+        <mtd> <msub> <mi> x </mi> <mn> 2,2 </mn> </msub> </mtd>
+        <mtd> <mn> 1 </mn> </mtd>
+      </mtr>
+      <mtr>
+        <mtd> <mn> 0 </mn> </mtd>
+        <mtd> <mn> 1 </mn> </mtd>
+        <mtd> <msub> <mi> x </mi> <mn> 3,3 </mn> </msub> </mtd>
+      </mtr>
+    </mtable>
+    <mo> ) </mo>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mtable columnalign="left center right">
+    <mtr>
+      <mtd frame="solid"> <mn> 100 </mn> </mtd>
+      <mtd              > <mn> 100 </mn> </mtd>
+      <mtd              > <mn> 100 </mn> </mtd>
+    </mtr>
+    <mtr>
+      <mtd              > <mn> 10  </mn> </mtd>
+      <mtd frame="solid"> <mn> 10  </mn> </mtd>
+      <mtd              > <mn> 10  </mn> </mtd>
+    </mtr>
+    <mtr>
+      <mtd              > <mn> 1   </mn> </mtd>
+      <mtd              > <mn> 1   </mn> </mtd>
+      <mtd frame="solid"> <mn> 1   </mn> </mtd>
+    </mtr>
+  </mtable>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+A special case is the labeled row \mmlelement {mlabeledtr}. This one is meant for
+numbering equations. However, in a properly formatted document there is probably
+some encapsulating structure that takes care of this. Therefore we discard the
+first child element. We show an example taken from the specification.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mtable>
+    <mlabeledtr>
+      <mtd>crap</mtd>
+      <mtd>
+        <mrow>
+          <mi>E</mi>
+          <mo>=</mo>
+          <mrow>
+            <mi>m</mi>
+            <mi>&it;</mi>
+            <msup>
+              <mi>c</mi>
+              <mn>2</mn>
+            </msup>
+          </mrow>
+        </mrow>
+      </mtd>
+    </mlabeledtr>
+  </mtable>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Although the underlying table mechanism can provide all the support needed (and
+even more), not all attributes are yet implemented. We will make a useful
+selection.
+
+\starttabulate[|l|l|]
+\HL
+\NC columnalign   \NC keyword: left center (middle) right \NC \NR
+\NC columnspacing \NC a meaningful dimension              \NC \NR
+\NC rowspacing    \NC a meaningful dimension              \NC \NR
+\NC frame         \NC keyword: none (off) solid (on)      \NC \NR
+\NC color         \NC a named color identifier            \NC \NR
+\NC background    \NC a named color identifier            \NC \NR
+\HL
+\stoptabulate
+
+We only support properly named colors as back- and foreground colors. The normal
+\CONTEXT\ color mapping mechanism can be used to remap colors. This permits
+(read: forces) a consistent usage of colors. If you use named backgrounds
+\unknown\ the sky is the limit.
+
+\getbuffer[mtable]
+
+\getbuffer[mtd]
+
+\getbuffer[mtr-mlabeledtr]
+
+\stopsection
+
+\startsection[title={mcolumn}]
+
+This element is new in \MATHML~3 and is kind of special in the sense that the
+content is analyzed. It would have made more sense just to provide some proper
+structure instead since it's intended use is rather well defined.
+
+Because it is not much fun to implement such a messy element we only support it
+partially and add what comes on our way. Here are a few examples (more or less
+taken from the reference).
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mcolumn>
+    <mn>12</mn>
+    <mrow> <mo>&times;</mo> <mn>12</mn> </mrow>
+    <mline spacing="000"/>
+    <mn>24</mn>
+    <mrow> <mn>12</mn> <mspace spacing="0"/> </mrow>
+    <mline spacing="000"/>
+    <mn>144</mn>
+  </mcolumn>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mcolumn>
+    <mn>123</mn>
+    <mrow> <mn>456</mn> <mo>+</mo> </mrow>
+    <mline spacing="000+"/>
+    <mn>579</mn>
+  </mcolumn>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mcolumn>
+    <mn>1,23</mn>
+    <mrow> <mn>4,56</mn> <mo>+</mo> </mrow>
+    <mline spacing="0,00+"/>
+    <mn>5,79</mn>
+  </mcolumn>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mcolumn>
+    <mstyle mathsize="71%">
+        <menclose notation="bottom"> <mn>10</mn> </menclose>
+    </mstyle>
+    <mn>52</mn>
+    <mrow> <mo>&minus;</mo> <mn>7</mn> </mrow>
+    <mline spacing="45"/>
+    <mn>45</mn>
+  </mcolumn>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Similar effects can be accomplished with the \mmlelement {mtable}
+element.
+
+\stopsection
+
+\startsection[title={malignmark, maligngroup}]
+
+This element is used in tables and is not yet implemented, first because I still
+have to unravel its exact usage, but second, because it is about the ugliest
+piece of \MATHML\ markup you will encounter.
+
+% AFO: http://www.w3.org/TR/2007/WD-MathML3-20071005/chapter3.html#presm.malign
+
+\getbuffer[malignmark]
+
+\stopsection
+
+\startsection[title={mglyph}]
+
+This element is for those who want to violate the ideas of general markup by
+popping in his or her own glyphs. Of course one should use entities, even if they
+have to be defined.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <mrow>
+    <mi> <mglyph fontfamily="Serif" index="65" alt="The Letter A"/></mi>
+    <mo> + </mo>
+    <mi> <mglyph fontfamily="Serif" index="66" alt="The Letter B"/></mi>
+    <mo> = </mo>
+    <mi> <mglyph fontfamily="Serif" index="67" alt="The Letter C"/></mi>
+  </mrow>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\getbuffer[mglyph]
+
+\stopsection
+
+\startsection[title={mstyle}]
+
+This element is implemented but not yet discussed since we want more control over
+its misuse.
+
+\getbuffer[mstyle]
+
+\stopsection
+
+\startsection[title={afterword}]
+
+You may have noticed that we prefer content \MATHML\ over presentational \MATHML.
+So, unless you're already tired of any math coded in angle brackets, we invite
+you to read the next chapter too.
+
+\stopsection
+
+\stopchapter
+
+\startchapter[title={Content markup}]
+
+\startsection[title={introduction}]
+
+In this chapter we will discuss the \MATHML\ elements from the point of view of
+typesetting. We will not pay attention to other rendering techniques, like speech
+generation. Some elements take attributes and those often make more sense for
+other applications than for a typesetting engine like \TEX, which has a strong
+math engine that knows how to handle math.
+
+One of the most prominent changes in \MATHML~3 is support for an \OPENMATH\ like
+coding. Here the \mmlelement {csymbol} takes the place of the empty element as
+first argument of an \mmlelement {apply}. There are more symbols in \OPENMATH\
+then we supported in the interpreter, but in due time (depending on demand) we
+will add more. At the time of writing this the draft was really a draft which
+made it hard to grasp all the implications for rendering so we probably need to
+overhaul the code sometime in the future.
+
+Another change is the usage of \mmlelement {apply} that has been delegated to
+\mmlelement {bind}. One may wonder why this hadn't happen before. For the moment
+we treat the \mmlelement {bind} as if it were an \mmlelement {apply}.
+
+\stopsection
+
+\startsection[title={apply}]
+
+If you are dealing with rather ordinary math, you will only need a subset of
+content \MATHML. For this reason we will start with the most common elements.
+When you key in \XML\ directly, you will encounter the \mmlelement {apply}
+element quite often, even in a relatively short formula like the following.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+    <apply> <minus/>
+        <cn> 1 </cn>
+    </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+In most cases the \mmlelement {apply} element is followed by a specification
+disguised as an empty element.
+
+Later we will see more complex examples but here we already show the different
+ways of encoding. First we show the traditional \MATHML~2 method:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+    <apply> <forall/>
+        <bvar> <ci>x</ci> </bvar>
+        <apply> <geq/>
+            <ci>x</ci>
+            <cn>4</cn>
+        </apply>
+    </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+This is now called \quote {pragmatic} \MATHML. Using symbols and \mmlelement
+{bind} this becomes \quote {strict} \MATHML:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="3.0">
+    <bind> <csymbol cd="quant1">forall</csymbol>
+        <bvar> <ci>x</ci> </bvar>
+        <apply> <csymbol cd="relation1">geq</csymbol>
+            <ci>x</ci>
+            <cn>4</cn>
+        </apply>
+    </bind>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={ci, cn, sep}]
+
+These elements are used to specify identifiers and numbers. Both elements can
+be made more explicit by using attributes.
+
+\startattributes
+\HL
+\NC type \NC set      \NC use a representation appropriate for sets \NC \NR
+\NC      \NC vector   \NC mark this element as vector               \NC \NR
+\NC      \NC function \NC consider this element to be a function    \NC \NR
+\NC      \NC fn       \NC idem \NC \NR
+\HL
+\stopattributes
+
+When \attvalue {set} is specified, a blackboard symbol is used when available.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <in/>
+    <ci> x </ci>
+    <ci type="set"> N </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The \attvalue {function} specification makes sense when the \mmlelement {ci}
+element is used in for instance a differential equation.
+
+\startattributes
+\HL
+\NC type \NC integer           \NC a whole number with an optional base \NC \NR
+\NC      \NC logical           \NC a boolean constant \NC \NR
+\NC      \NC rational          \NC a real number \NC \NR
+\NC      \NC complex-cartesian \NC a complex number in $x+iy$ notation \NC \NR
+\NC      \NC complex           \NC idem \NC \NR
+\NC      \NC complex-polar     \NC a complex number in polar notation \unknown \NC \NR
+\HL
+\stopattributes
+
+You're lucky when your document uses decimal notation, otherwise you will end up
+with long specs if you want to be clear in what numbers are used.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <plus/>
+      <cn type="integer" base="16"> 1A2C </cn>
+      <cn type="integer" base="16"> 0101 </cn>
+    </apply>
+    <cn type="integer" base="16"> 1B2D </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Complex numbers have two components. These are separated by the \mmlelement {sep}
+element. In the following example we see that instead of using a \mmlelement {ci}
+with set specifier, the empty element \mmlelement {complexes} can be used. We
+will see some more of those later.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <in/>
+    <cn type="complex"> 2 <sep/> 5 </cn>
+    <complexes/>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={eq, neq, gt, lt, geq, leq}]
+
+Expressions, and especially those with \mmlelement {eq} are typical for math.
+Because such expressions can be quite large, there are provisions for proper
+alignment.
+
+\starttabulate[||c||c|] % we want inline math
+\HL
+\NC lt  \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><lt/> <ci>a</ci><ci>b</ci></apply></math>} \NC
+    leq \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><leq/><ci>a</ci><ci>b</ci></apply></math>} \NC \NR
+\NC eq  \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><eq/> <ci>a</ci><ci>b</ci></apply></math>} \NC
+    neq \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><neq/><ci>a</ci><ci>b</ci></apply></math>} \NC \NR
+\NC gt  \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><gt/> <ci>a</ci><ci>b</ci></apply></math>} \NC
+    geq \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><geq/><ci>a</ci><ci>b</ci></apply></math>} \NC \NR
+\HL
+\stoptabulate
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <leq/>
+    <ci> a </ci>
+    <ci> b </ci>
+    <ci> c </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={equivalent, approx, implies}]
+
+Equivalence, approximations, and implications are handled like \mmlelement {eq}
+and alike and have their own symbols.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <equivalent/>
+    <apply> <plus/> <ci> a </ci> <ci> b </ci> </apply>
+    <apply> <plus/> <ci> b </ci> <ci> a </ci> </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+This document is typeset with \LUATEX\ built upon \TEX\ version $3.14159$, and
+given that \TEX\ is written by a mathematician, it will be no surprise that:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <approx/>
+    <cn> 3.14159 </cn>
+    <pi/>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <implies/>
+    <apply> <eq/>
+      <apply> <plus/>
+        <ci> x </ci>
+        <cn> 4 </cn>
+      </apply>
+      <cn> 9 </cn>
+    </apply>
+    <apply> <eq/>
+      <ci> x </ci>
+      <cn> 5 </cn>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={minus, plus}]
+
+Addition and subtraction are main building blocks of math so you will meet them
+often.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <minus/>
+    <cn> 37 </cn>
+    <ci> x </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+In most cases there will be more than one argument to take care of, but
+especially \mmlelement {minus} will be used with one argument too. Although \typ
+{<cn> -37 </cn>} is valid, using \mmlelement {minus} is sometimes more clear.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <minus/>
+    <cn> 37 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+You should pay attention to combinations of \mmlelement {plus} and \mmlelement
+{minus}. Opposite to presentational \MATHML, in content markup you don't think
+and code sequential.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <plus/>
+    <apply> <minus/>
+      <ci> x </ci>
+    </apply>
+    <cn> 37 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+In \MATHML~3 we can also be more vebose:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="3.0">
+    <apply> <csymbol cd="arith1">plus</csymbol>
+        <ci>a</ci>
+        <ci>x</ci>
+    </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={times}]
+
+Multiplication is another top ten element. Although \type {3p} as content of the
+\mmlelement {ci} element would have rendered the next example as well, you really
+should split off the number and mark it as \mmlelement {cn}. When this is done
+consistently, we can comfortably change the font of numbers independent of the
+font used for displaying identifiers.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <times/>
+    <cn> 3 </cn>
+    <ci> p </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+In a following chapter we will see how we can add multiplication signs between
+variables and constants.
+
+\stopsection
+
+\startsection[title={divide}]
+
+When typeset, a division is characterized by a horizontal rule. Some elements,
+like the differential element \mmlelement {diff}, generate their own division.
+
+\processxmlfile{pc-s-001.xml}
+
+This example also demonstrates how to mix \mmlelement {plus} and \mmlelement
+{minus}.
+
+\typefile{pc-s-001.xml}
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+    <apply><divide/>
+        <apply><minus/>
+            <apply><minus/><ci>b</ci></apply>
+            <apply><minus/><ci>b</ci></apply>
+            <apply><root/> <ci>a</ci></apply>
+        </apply>
+        <apply><minus/>
+            <apply><minus/><ci>b</ci><ci>b</ci></apply>
+            <apply><minus/><ci>b</ci></apply>
+            <apply><root/> <ci>a</ci></apply>
+        </apply>
+    </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={power}]
+
+In presentational \MATHML\ you think in super- and subscripts, but in content
+\MATHML\ these elements are not available. There you need to think in terms of
+\mmlelement {power}.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <plus/>
+    <apply> <power/>
+      <ci> x </ci>
+      <cn> 2 </cn>
+    </apply>
+    <apply> <power/>
+      <apply> <sin/>
+        <ci> x </ci>
+      </apply>
+      <cn> 2 </cn>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The \mmlelement {power} element is clever enough to determine where the
+superscript should go. In the case of the sinus function, by default it will go
+after the function identifier.
+
+\stopsection
+
+\startsection[title={root, degree}]
+
+If you study math related \DTD's |<|these are the formal descriptions for \SGML\
+or \XML\ element collections|>| you will notice that there are not that many
+elements that demand a special kind of typography: differential equations,
+limits, integrals and roots are the most distinctive ones.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <root/>
+      <degree> 3 </degree>
+      <ci> 64 </ci>
+    </apply>
+    <cn> 4 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Contrary to \mmlelement {power}, the \mmlelement {root} element uses a
+specialized child element to denote the degree. The positive consequence of this
+is that there cannot be a misunderstanding about what role the child element
+plays, while in for instance \mmlelement {power} you need to know that the second
+child element denotes the degree.
+
+\stopsection
+
+\startsection[title={sin, cos, tan, cot, scs, sec, \unknown}]
+
+All members of the family of goniometric functions are available as empty
+element. When needed, their argument is surrounded by braces. They all behave the
+same.
+
+\starttabulate[|||||]
+\HL
+\NC sin \NC arcsin \NC sinh \NC arcsinh \NC \NR
+\NC cos \NC arccos \NC cosh \NC arccosh \NC \NR
+\NC tan \NC arctan \NC tanh \NC arctanh \NC \NR
+\NC cot \NC arccot \NC coth \NC arccoth \NC \NR
+\NC csc \NC arccsc \NC csch \NC arccsch \NC \NR
+\NC sec \NC arcsec \NC sech \NC arcsech \NC \NR
+\HL
+\stoptabulate
+
+These functions are normally typeset in a non italic (often roman) font shape.
+
+\processxmlfile{wh-g-001.xml}
+
+By default the typesetting engine will minimize the number of braces that
+surrounds the argument of a function.
+
+\typefile{wh-g-001.xml}
+
+You can specify $\pi$ as an entity \type {&pi;} or as empty element \mmlelement
+{pi}. In many cases it is up to your taste which one you use. There are many
+symbols that are only available as entity, so in some respect there is no real
+reason to treat $\pi$ different.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <cos/>
+      <pi/>
+    </apply>
+    <apply> <minus/>
+      <cn> 1 </cn>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={log, ln, exp}]
+
+The \mmlelement {log} and \mmlelement {ln} are typeset similar to the previously
+discussed goniometric functions. The \mmlelement {exp} element is a special case
+of \mmlelement {power}. The constant $e$ can be specified with \mmlelement
+{exponentiale}.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <approx/>
+    <apply> <ln/>
+      <apply> <plus/>
+        <exponentiale/>
+        <cn> 2 </cn>
+      </apply>
+    </apply>
+    <cn> 1.55 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <exp/>
+      <cn> 2 </cn>
+    </apply>
+    <cn> 7.3890560989307 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={quotient, rem}]
+
+The result of a division can be a rational number, so $\frac{5}{4}$ is equivalent
+to $1.25$ and $1.25 \times 4$ gives~$5$. An integer division will give~$1$ with a
+remainder~$2$. Many computer languages provide a \type {div} and \type {mod}
+function, and since \MATHML\ is also meant for computation, it provides similar
+concepts, represented by the elements \mmlelement {quotient} and \mmlelement
+{rem}. The representation of \mmlelement {quotient} is rather undefined, but the
+next one is among the recommended alternatives.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <quotient/>
+    <ci> a </ci>
+    <ci> b </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={factorial}]
+
+Showing the representation of a factorial is rather dull, so we will use a few
+more elements as well as a processing instruction to illustrate the usage of
+\mmlelement {factorial}.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <?context-mathml-directive times symbol yes ?>
+  <apply> <eq/>
+    <apply> <factorial/>
+      <ci> n </ci>
+    </apply>
+    <apply> <times/>
+      <ci> n </ci>
+      <apply> <minus/> <ci> n </ci> <cn> 1 </cn> </apply>
+      <apply> <minus/> <ci> n </ci> <cn> 2 </cn> </apply>
+      <csymbol definitionUrl="cdots"/>
+      <cn> 1 </cn>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The processing instruction is responsible for the placement of the $\times$
+symbols.
+
+\stopsection
+
+\startsection[title={min, max, gcd, lcm}]
+
+These functions can handle more than two arguments. When typeset, these are
+separated by commas.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <ci> z </ci>
+    <apply> <min/>
+      <apply> <plus/>   <ci> x </ci> <ci> y </ci> </apply>
+      <apply> <times/>  <cn> 2 </cn> <ci> x </ci> </apply>
+      <apply> <divide/> <cn> 1 </cn> <ci> y </ci> </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={and, or, xor, not}]
+
+Logical expressions can be defined using these elements. The operations are
+represented by symbols and braces are applied when needed.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <and/>
+      <cn type="integer" base="2"> 1001 </cn>
+      <cn type="integer" base="2"> 0101 </cn>
+    </apply>
+    <cn type="integer" base="2"> 0001 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={set, bvar}]
+
+The appearance of a \mmlelement {set} depends on the presence of the child
+element \mmlelement {bvar}. In its simplest form, a set is represented as a list.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <neq/>
+    <set>
+      <cn> 1 </cn>
+      <cn> 4 </cn>
+      <cn> 8 </cn>
+    </set>
+    <emptyset/>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+A set can be distinguished from a vector by its curly braces. The simplest case
+is just a comma separated list. The next example demonstrates the declarative
+case. Without doubt, there will be other alternatives.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <set>
+    <bvar><ci> x </ci></bvar>
+    <condition>
+      <apply> <lt/>
+        <cn> 2 </cn>
+        <ci> x </ci>
+        <cn> 8 </cn>
+      </apply>
+    </condition>
+  </set>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={list}]
+
+This element is used in different contexts. When used as a top level element, a
+list is typeset as follows.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <list>
+    <cn> 1 </cn>
+    <cn> 1 </cn>
+    <cn> 3 </cn>
+  </list>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+When used in a context like \mmlelement {partialdiff}, the list specification
+becomes a subscript.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <partialdiff/>
+    <list>
+      <cn> 1 </cn>
+      <cn> 1 </cn>
+      <cn> 3 </cn>
+    </list>
+    <ci type="fn"> f </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The function specification in this formula (which is taken from the specs) can
+also be specified as \typ {<fn> <ci> f </ci> </fn>} (which is more clear).
+
+\stopsection
+
+\startsection[title={union, intersect, \unknown}]
+
+There is a large number of set operators, each represented by a distinctive
+symbol.
+
+\starttabulate[||c||c|] % we want in line math
+\HL
+\NC union       \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><union/>      <ci>U</ci><ci>V</ci></apply></math>} \NC
+                \NC \NC \NR
+\NC intersect   \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><intersect/>  <ci>U</ci><ci>V</ci></apply></math>} \NC
+                \NC \NC \NR
+\NC in          \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><in/>         <ci>U</ci><ci>V</ci></apply></math>} \NC
+    notin       \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><notin/>      <ci>U</ci><ci>V</ci></apply></math>} \NC \NR
+\NC subset      \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><subset/>     <ci>U</ci><ci>V</ci></apply></math>} \NC
+    notsubset   \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><notsubset/>  <ci>U</ci><ci>V</ci></apply></math>} \NC \NR
+\NC prsubset    \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><prsubset/>   <ci>U</ci><ci>V</ci></apply></math>} \NC
+    notprsubset \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><notprsubset/><ci>U</ci><ci>V</ci></apply></math>} \NC \NR
+\NC setdiff     \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><apply><setdiff/>    <ci>U</ci><ci>V</ci></apply></math>} \NC
+                \NC \NC \NR
+\HL
+\stoptabulate
+
+These operators are applied as follows:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <union/>
+    <ci> U </ci>
+    <ci> V </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={conjugate, arg, real, imaginary}]
+
+The visual representation of \mmlelement {conjugate} is a horizontal bar with a
+width matching the width of the expression.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <conjugate/>
+    <apply> <plus/>
+      <ci> x </ci>
+      <apply> <times/>
+        <cn> &ImaginaryI; </cn>
+        <ci> y </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The \mmlelement {arg}, \mmlelement {real} and \mmlelement {imaginary} elements
+trigger the following appearance.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <arg/>
+    <apply> <plus/>
+      <ci> x </ci>
+      <apply> <times/>
+        <cn> &ImaginaryI; </cn>
+        <ci> y </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <real/>
+    <apply> <plus/>
+      <ci> x </ci>
+      <apply> <times/>
+        <cn> &ImaginaryI; </cn>
+        <ci> y </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <imaginaryi/>
+    <apply> <plus/>
+      <ci> x </ci>
+      <apply> <times/>
+        <cn> &ImaginaryI; </cn>
+        <ci> y </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer
+
+\stopsection
+
+\startsection[title={abs, floor, ceiling}]
+
+There are a couple of functions that turn numbers into positive or rounded ones.
+In computer languages names are used, but in math we use special boundary
+characters.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <abs/> <cn> -5 </cn> </apply>
+    <cn> 5 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <floor/> <cn> 5.5 </cn> </apply>
+    <cn> 5 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <ceiling/> <cn> 5.5 </cn> </apply>
+    <cn> 6 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={interval}]
+
+An interval is visualized as: \xmldata {<math xmlns="http://www.w3c.org/mathml"
+version="2.0"> <interval> <cn> 1 </cn> <cn> 10 </cn> </interval> </math>}. The
+\mmlelement {interval} element is a container element and has a begin and endtag.
+You can specify the closure as attribute:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <interval closure="open-closed">
+    <ci> a </ci>
+    <ci> b </ci>
+  </interval>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The following closures are supported:
+
+\starttabulate[|||]
+\HL
+\NC open        \NC \xmldata {<math xmlns="http://www.w3c.org/mathml" version="2.0"> <interval closure="open"> <ci>
+                    a </ci> <ci> b </ci> </interval> </math>} \NC \NR
+\NC closed      \NC \xmldata {<math xmlns="http://www.w3c.org/mathml" version="2.0"> <interval closure="closed"> <ci>
+                    a </ci> <ci> b </ci> </interval> </math>} \NC \NR
+\NC open-closed \NC \xmldata {<math xmlns="http://www.w3c.org/mathml" version="2.0"> <interval closure="open-closed"> <ci>
+                    a </ci> <ci> b </ci> </interval> </math>} \NC \NR
+\NC closed-open \NC \xmldata {<math xmlns="http://www.w3c.org/mathml" version="2.0"> <interval closure="closed-open"> <ci>
+                    a </ci> <ci> b </ci> </interval> </math>} \NC \NR
+\HL
+\stoptabulate
+
+In strict \MATHML\ we use symbols instead of attributes to define the openess:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="3.0">
+    <apply> <csymbol cd="interval1">interval_oo</csymbol>
+        <ci>a</ci>
+        <ci>x</ci>
+    </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="3.0">
+    <apply> <csymbol cd="interval1">interval_cc</csymbol>
+        <ci>a</ci>
+        <ci>x</ci>
+    </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={inverse}]
+
+This operator is applied to a function. The following example demonstrates that
+this is one of the few cases (if not the only one) where the first element
+following an \mmlelement {apply} begintag is an \mmlelement {apply} itself.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply>
+    <apply> <inverse/> <sin/> </apply>
+    <ci> x </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={reln}]
+
+This element is a left||over from the first \MATHML\ specification and its usage
+is no longer advocated. Its current functionality matches the functionality of
+\mmlelement {apply}.
+
+\stopsection
+
+\startsection[title={cartesianproduct, vectorproduct, scalarproduct, outerproduct}]
+
+The context of the formula will often provide information of what kind of
+multiplication is meant, but using different symbols to represent the kind of
+product certainly helps.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <cartesianproduct/>
+    <ci> a </ci>
+    <ci> b </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+We have:
+
+\starttabulate[|||]
+\HL
+\NC cartesian \NC \xmldata {<math xmlns="http://www.w3c.org/mathml" version="2.0"> <apply> <cartesianproduct/> <ci>
+                  a </ci> <ci> b </ci> </apply> </math>} \NC \NR
+\NC vector    \NC \xmldata {<math xmlns="http://www.w3c.org/mathml" version="2.0"> <apply> <vectorproduct/> <ci>
+                  a </ci> <ci> b </ci> </apply> </math>} \NC \NR
+\NC scalar    \NC \xmldata {<math xmlns="http://www.w3c.org/mathml" version="2.0"> <apply> <scalarproduct/> <ci>
+                  a </ci> <ci> b </ci> </apply> </math>} \NC \NR
+\NC outer     \NC \xmldata {<math xmlns="http://www.w3c.org/mathml" version="2.0"> <apply> <outerproduct/> <ci>
+                  a </ci> <ci> b </ci> </apply> </math>} \NC \NR
+\HL
+\stoptabulate
+
+\stopsection
+
+\startsection[title={sum, product, limit, lowlimit, uplimit, bvar}]
+
+Sums, products and limits have a distinctive look, especially when they have
+upper and lower limits attached. Unfortunately there is no way to specify the
+$x_i$ in content \MATHML. In the next chapter we will see how we can handle that.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <sum/>
+    <bvar> <ci> i </ci> </bvar>
+    <lowlimit> <cn> 1 </cn> </lowlimit>
+    <uplimit> <ci> n </ci> </uplimit>
+    <apply> <divide/>
+      <cn> 1 </cn>
+      <ci> x </ci>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+When we omit the limits, the \mmlelement {bvar} is still typeset.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <product/>
+    <bvar>
+      <ci> i </ci>
+    </bvar>
+    <apply> <divide/>
+      <cn> 1 </cn>
+      <ci> x </ci>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+You can specify the condition under which the function is applied.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <product/>
+    <bvar>
+      <ci> x </ci>
+    </bvar>
+    <condition>
+      <apply> <in/>
+        <ci> x </ci>
+        <ci type="set"> R </ci>
+      </apply>
+    </condition>
+    <apply> <ci type="fn"> f </ci>
+      <ci> x </ci>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <limit/>
+    <bvar>
+      <ci> x </ci>
+    </bvar>
+    <lowlimit>
+      <cn> 0 </cn>
+    </lowlimit>
+    <apply> <sin/>
+      <ci> x </ci>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={int, diff, partialdiff, bvar, degree}]
+
+These elements reach a high level of abstraction. The best way to learn how to
+use them is to carefully study some examples.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <diff/>
+    <bvar> <ci> a </ci> </bvar>
+    <apply> <int/>
+      <lowlimit> <ci> p </ci> </lowlimit>
+      <uplimit>  <ci> q </ci> </uplimit>
+      <bvar> <ci> x </ci> </bvar>
+      <apply>
+        <fn> <ci> f </ci> </fn>
+        <ci> x </ci>
+        <ci> a </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The \mmlelement {bvar} element is essential, since it is used to automatically
+generate some of the components that make up the visual appearance of the
+formula. If you look at the formal specification of these elements, you will
+notice that the appearance may depend on your definition. How the formula shows
+up, depends not only on the \mmlelement {bvar} element, but also on the optional
+\mmlelement {degree} element within.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <diff/>
+    <ci> f </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <diff/>
+    <bvar>
+      <ci> x </ci>
+      <degree> <cn> 2 </cn> </degree>
+    </bvar>
+    <apply> <fn> <ci> f </ci> </fn>
+      <ci> x </ci>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <partialdiff/>
+    <bvar>
+      <degree> <cn> 2 </cn> </degree>
+      <ci> x </ci>
+    </bvar>
+    <bvar> <ci> y </ci> </bvar>
+    <bvar> <ci> x </ci> </bvar>
+    <degree> <cn> 4 </cn> </degree>
+    <ci type="fn"> f </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <partialdiff/>
+    <bvar>
+      <ci> x </ci> <degree> <ci> m </ci> </degree>
+    </bvar>
+    <bvar>
+      <ci> y </ci> <degree> <ci> n </ci> </degree>
+    </bvar>
+    <degree> <ci> k </ci> </degree>
+    <apply> <ci type="fn"> f </ci>
+      <ci> x </ci>
+      <ci> y </ci>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <partialdiff/>
+    <bvar>
+      <ci> x </ci> <degree> <ci> m </ci> </degree>
+    </bvar>
+    <bvar>
+      <ci> y </ci> <degree> <ci> n </ci> </degree>
+    </bvar>
+    <apply> <ci type="fn"> f </ci>
+      <ci> x </ci>
+      <ci> y </ci>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+When a degree is not specified, it is deduced from the context, but since this is
+not 100\% robust, you can best be complete in your specification.
+
+These examples are taken from the \MATHML\ specification. In the example document
+that comes with this manual you can find a couple more.
+
+\stopsection
+
+\startsection[title={fn}]
+
+There are a lot of predefined functions and operators. If you want to introduce a
+new one, the \mmlelement {fn} element can be used. In the following example we
+have turned the $\pm$ and $\mp$ symbols into (coupled) operators.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <times/>
+      <apply> <fn> <ci> &plusminus; </ci> </fn>
+        <ci> x </ci>
+        <cn> 1 </cn>
+      </apply>
+      <apply> <fn> <ci> &minusplus; </ci> </fn>
+        <ci> x </ci>
+        <cn> 1 </cn>
+      </apply>
+    </apply>
+    <apply> <minus/>
+      <apply> <power/>
+        <ci> x </ci>
+        <cn> 2 </cn>
+      </apply>
+      <cn> 1 </cn>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The typeset result depends on the presence of a handler, which in this case
+happens to be true.
+
+\stopsection
+
+\startsection[title={matrix, matrixrow}]
+
+A matrix is one of the building blocks of linear algebra and therefore both
+presentational and content \MATHML\ have dedicated elements for defining it.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <matrix>
+    <matrixrow> <cn> 23 </cn> <cn> 87 </cn> <ci>  c </ci> </matrixrow>
+    <matrixrow> <cn> 41 </cn> <ci>  b </ci> <cn> 33 </cn> </matrixrow>
+    <matrixrow> <ci>  a </ci> <cn> 65 </cn> <cn> 16 </cn> </matrixrow>
+  </matrix>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={vector}]
+
+We make a difference between a vector specification and a vector variable. A
+specification is presented as a list:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <vector>
+    <ci> x </ci>
+    <ci> y </ci>
+  </vector>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+When the \mmlelement {vector} element has one child element, we use a right arrow
+to identify the variable as vector.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <vectorproduct/>
+    <vector> <ci> A </ci> </vector>
+    <vector> <ci> B </ci> </vector>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={grad, curl, ident, divergence}]
+
+These elements expand into named functions, but we can imagine that in the future
+a more appropriate visualization will be provided as an option.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <neq/>
+    <apply> <grad/>       <ci> A </ci> </apply>
+    <apply> <curl/>       <ci> B </ci> </apply>
+    <apply> <ident/>      <ci> C </ci> </apply>
+    <apply> <divergence/> <ci> D </ci> </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={lambda, bvar}]
+
+The lambda specification of a function needs a \mmlelement {bvar} element. The
+visualization can be influenced with processing instructions as described in a
+later chapter.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <lambda>
+    <bvar> <ci> x </ci> </bvar>
+    <apply> <sin/>
+      <apply> <minus/>
+        <ci> x </ci>
+        <apply> <divide/>
+          <ci> x </ci>
+          <cn> 2 </cn>
+        </apply>
+      </apply>
+    </apply>
+  </lambda>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={piecewise, piece, otherwise}]
+
+There are not so many elements that deal with combinations of formulas or
+conditions. The \mmlelement {piecewise} is the only real selector available. The
+following example defines how the state of~$n$ depends on the state of~$x$.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <ci> n </ci>
+    <piecewise>
+      <piece>
+        <apply> <minus/>
+          <cn> 1 </cn>
+        </apply>
+        <apply> <lt/>
+          <ci> x </ci>
+          <cn> 0 </cn>
+        </apply>
+      </piece>
+      <piece>
+        <cn> 1 </cn>
+        <apply> <gt/>
+          <ci> x </ci>
+          <cn> 0 </cn>
+        </apply>
+      </piece>
+      <otherwise>
+        <cn> 0 </cn>
+      </otherwise>
+    </piecewise>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+We could have used a third \mmlelement {piece} instead of (optional) \mmlelement
+{otherwise}.
+
+\stopsection
+
+\startsection[title={forall, exists, condition}]
+
+Conditions are often used in combination with elements like \mmlelement {forall}.
+There are several ways to convert and combine them in formulas and environments,
+so you may expect more alternatives in the future.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <forall/>
+    <bvar> <ci> x </ci> </bvar>
+    <condition>
+      <apply> <lt/>
+        <ci> x </ci>
+        <cn> 9 </cn>
+      </apply>
+    </condition>
+    <apply> <lt/>
+      <ci> x </ci>
+      <cn> 10 </cn>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The next example is taken from the specifications with a few small changes.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <forall/>
+    <bvar> <ci> x </ci> </bvar>
+    <condition>
+      <apply> <in/>
+        <ci> x </ci>
+        <ci type="set"> N </ci>
+      </apply>
+    </condition>
+    <apply> <exists/>
+      <bvar> <ci> p </ci> </bvar>
+      <bvar> <ci> q </ci> </bvar>
+      <condition>
+        <apply> <and/>
+          <apply> <in/>
+            <ci> p </ci>
+            <ci type="set"> P </ci>
+          </apply>
+          <apply> <in/>
+            <ci> q </ci>
+            <ci type="set"> P </ci>
+          </apply>
+          <apply> <eq/>
+            <apply> <plus/> <ci> p </ci> <ci> q </ci> </apply>
+            <apply> <times/> <cn> 2 </cn> <ci> x </ci> </apply>
+          </apply>
+        </apply>
+      </condition>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={factorof, tendsto}]
+
+The \mmlelement {factorof} element is applied to its two child elements and
+contrary to most functions, the symbol is placed between the elements instead of
+in front.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <factorof/>
+    <ci> a </ci>
+    <ci> b </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The same is true for the \mmlelement {tendsto} element.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <tendsto/>
+    <ci> a </ci>
+    <ci> b </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={compose}]
+
+This is a nasty element since it has to take care of braces in special ways and
+therefore has to analyse its child elements.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <compose/>
+    <ci type="fn"> f </ci>
+    <ci type="fn"> g </ci>
+    <ci type="fn"> h </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply>
+    <apply> <compose/>
+      <fn> <ci> f </ci> </fn>
+      <fn> <ci> g </ci> </fn>
+    </apply>
+    <ci> x </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={laplacian}]
+
+A laplacian function is typeset using a $\nabla$ (nabla) symbol.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <laplacian/>
+    <ci> x </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={mean, sdev, variance, median, mode}]
+
+When statistics shows up in math text books, the \mmlelement {sum} element is
+likely to show up, probably in combination with the for statistics meaningful
+symbolic representation of variables. The mean value of a series of observations
+is defined as:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <mean/>
+      <ci> x </ci>
+    </apply>
+    <apply> <divide/>
+      <apply> <sum/>
+        <ci> x </ci>
+      </apply>
+      <ci> n </ci>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+or more beautiful:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <mean/>
+      <ci> x </ci>
+    </apply>
+    <apply> <times/>
+      <apply> <divide/>
+        <cn> 1 </cn>
+        <ci> n </ci>
+      </apply>
+      <apply> <sum/>
+        <ci> x </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Of course this definition is not that perfect, but we will present a better
+alternative in the chapter on combined markup. The definition of the standard
+deviation is more complicated:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <approx/>
+    <apply> <sdev/>
+      <ci> x </ci>
+    </apply>
+    <apply> <root/>
+      <apply> <divide/>
+        <apply> <sum/>
+          <apply> <power/>
+            <apply> <minus/>
+              <ci> x </ci>
+              <apply> <mean/>
+                <ci> x </ci>
+              </apply>
+            </apply>
+            <cn> 2 </cn>
+          </apply>
+        </apply>
+        <apply> <minus/>
+          <ci> n </ci>
+          <cn> 1 </cn>
+        </apply>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The next example demonstrates the usage of the \mmlelement {variance} in its own
+definition.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <variance/>
+      <ci> x </ci>
+    </apply>
+    <apply> <approx/>
+      <apply> <mean/>
+        <apply> <power/>
+          <apply> <minus/>
+            <ci> x </ci>
+            <apply> <mean/>
+              <ci> x </ci>
+            </apply>
+          </apply>
+          <cn> 2 </cn>
+        </apply>
+      </apply>
+      <apply> <times/>
+        <apply> <divide/>
+          <cn> 1 </cn>
+          <apply> <minus/>
+            <ci> n </ci>
+            <cn> 1 </cn>
+          </apply>
+        </apply>
+        <apply> <sum/>
+          <apply> <power/>
+            <apply> <minus/>
+              <ci> x </ci>
+              <apply> <mean/>
+                <ci> x </ci>
+              </apply>
+            </apply>
+            <cn> 2 </cn>
+          </apply>
+        </apply>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+The \mmlelement {median} and \mmlelement {mode} of a series of observations have
+no special symbols and are presented as is.
+
+\stopsection
+
+\startsection[title={moment, momentabout, degree}]
+
+Because \MATHML\ is used for a wide range of applications, there can be
+information in a definition that does not end up in print but is only used in
+some cases. This is illustrated in the next example.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <moment/>
+    <degree>
+      <cn> 3 </cn>
+    </degree>
+    <momentabout>
+      <ci> p </ci>
+    </momentabout>
+    <ci> X </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={determinant, transpose}]
+
+These two (and the following) are used to manipulate matrices, either or not in a
+symbolic way. A simple determinant or transpose looks like:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <determinant/>
+    <ci type="matrix"> A </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <transpose/>
+    <ci type="matrix"> A </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+When the \mmlelement {determinant} element is applied to a full blown matrix, the
+braces are omitted and replaced by the vertical bars.
+
+\processxmlfile{wh-m-002.xml} \typefile{wh-m-002.xml}
+
+\stopsection
+
+\startsection[title={selector}]
+
+The \mmlelement {selector} element can be used to index a matrix cell or
+variable. This element honors the braces.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <selector/>
+    <matrix>
+      <matrixrow> <cn> 1 </cn> <cn> 2 </cn> </matrixrow>
+      <matrixrow> <cn> 3 </cn> <cn> 4 </cn> </matrixrow>
+    </matrix>
+    <cn> 1 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+A more common usage of the selector is the following:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <selector/>
+    <ci> x </ci>
+    <ci> i </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+It is possible to pass a comma separated list of indices:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <selector/>
+    <ci> x </ci> <cn> 1,2 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+If you want to have a more verbose index, you can use the \mmlelement {csymbol}
+element, flagged with text encoding.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <selector/>
+    <ci> x </ci>
+    <csymbol encoding="text"> max </csymbol>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={card}]
+
+A cardinality is visualized using vertical bars.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <card/>
+      <ci> A </ci>
+    </apply>
+    <ci> 5 </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={domain, codomain, image}]
+
+The next couple of examples are taken from the \MATHML\ specification and
+demonstrate the usage of the not that spectacular domain related elements.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <domain/>
+      <fn> <ci> f </ci> </fn>
+    </apply>
+    <reals/>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+These are typically situations where the \mmlelement {fn} element may show up.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <codomain/>
+      <fn> <ci> f </ci> </fn>
+    </apply>
+    <rationals/>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+This example from the \MATHML\ specification demonstrates a typical usage of the
+\mmlelement {image} element. As with the previous two, it is applied to a
+function, in this case the predefined \mmlelement {sin}.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <image/>
+      <sin/>
+    </apply>
+    <interval>
+      <cn> -1 </cn>
+      <cn>  1 </cn>
+    </interval>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={domainofapplication}]
+
+This is another seldom used element. Actually, this element is a further
+specification of the outer level applied function.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <int/>
+    <domainofapplication>
+      <ci> C </ci>
+    </domainofapplication>
+    <ci> f </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={semantics, annotation, annotation-xml}]
+
+We will never know what Albert Einstein would have thought about \MATHML. But we
+do know for sure that coding one of his famous findings in \XML\ takes much more
+tokens that it takes in \TEX.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <semantics>
+    <apply> <eq/>
+      <ci> e </ci>
+      <apply> <times/>
+        <ci> m </ci>
+        <apply> <power/>
+          <ci> c </ci>
+          <cn> 2 </cn>
+        </apply>
+      </apply>
+    </apply>
+    <annotation encoding="tex">
+      e = m c^2
+    </annotation>
+  </semantics>
+</math>
+\stopbuffer
+
+Within a \mmlelement {semantics} element there can be many \mmlelement
+{annotation} elements. When using \CONTEXT, the elements that can be identified
+as being encoded in \TEX\ will be treated as such. Currently, the related
+\mmlelement {annotation-xml} element is ignored.
+
+\processxmlbuffer \typebuffer
+
+Another variant that we support is called \quote {calcmath} which is an efficient
+way to enter school math. The syntax resembles the one used in advanced
+calculators.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <semantics>
+    <annotation encoding="calcmath">
+      x = sqrt(sin(x) + cos(c))
+    </annotation>
+  </semantics>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={integers, reals, ...}]
+
+Sets of numbers are characterized with special (often blackboard) symbols. These
+symbols are not always available.
+
+\starttabulate[|||] % we want in line math
+\HL
+\NC integers       \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><integers/>      </math>} \NC \NR
+\NC reals          \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><reals/>         </math>} \NC \NR
+\NC rationals      \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><rationals/>     </math>} \NC \NR
+\NC naturalnumbers \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><naturalnumbers/></math>} \NC \NR
+\NC complexes      \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><complexes/>     </math>} \NC \NR
+\NC primes         \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><primes/>        </math>} \NC \NR
+\HL
+\stoptabulate
+
+\stopsection
+
+\startsection[title={pi, imaginaryi, exponentiale}]
+
+Being a greek character, $\pi$ is a distinctive character. In most math documents
+the imaginary~$i$ and exponential~$e$ are typeset as any math identifier.
+
+\starttabulate[|||] % we want in line math
+\HL
+\NC pi           \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><pi/>          </math>} \NC \NR
+\NC imaginaryi   \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><imaginaryi/>  </math>} \NC \NR
+\NC exponentiale \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><exponentiale/></math>} \NC \NR
+\HL
+\stoptabulate
+
+\stopsection
+
+\startsection[title={eulergamma, infinity, emptyset}]
+
+There are a couple of more special tokens. As with the other ones, they can be
+changed by reassigning the corresponding entities.
+
+\starttabulate[|||] % we want in line math
+\HL
+\NC eulergamma \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><eulergamma/></math>} \NC \NR
+\NC infinity   \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><infinity/>  </math>} \NC \NR
+\NC emptyset   \NC \xmldata{<math xmlns="http://www.w3c.org/mathml" version="2.0"><emptyset/>  </math>} \NC \NR
+\HL
+\stoptabulate
+
+\stopsection
+
+\startsection[title={notanumber}]
+
+Because \MATHML\ is used for more purposes than typesetting, there are a couple
+of elements that do not make much sense in print. One of these is \mmlelement
+{notanumber}, which is issued by programs as error code or string.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <divide/>
+      <ci> x </ci>
+      <cn> 0 </cn>
+    </apply>
+    <notanumber/>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={true, false}]
+
+When assigning to a boolean variable, or in boolean expressions one can use~$0$
+or~$1$ to identify the states, but if you want to be more verbose, you can use
+these elements.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <equivalent/>
+    <cn type="integer" base="2"> 1 </cn>
+    <true/>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={declare}]
+
+Reusing definitions would be a nice feature, but for the moment the formal
+specification of this element does not give us the freedom to use it the way we
+want.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <declare>
+    <ci> A </ci>
+    <vector>
+      <ci> a </ci>
+      <ci> b </ci>
+      <ci> c </ci>
+    </vector>
+  </declare>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={csymbol}]
+
+This element will be implemented as soon as we have an application for it.
+
+\stopsection
+
+\stopchapter
+
+\startchapter[title={Mixed markup}]
+
+\startsection[title={introduction}]
+
+The advantage of presentational markup is that you can build complicated formulas
+using super- and subscripts and other elements. The drawback is that the look and
+feel is rather fixed and cannot easily be adapted to the purpose that the
+document serves. Take for instance the difference between
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <log/>
+    <logbase> <cn> 2 </cn> </logbase>
+    <ci> x </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer
+
+and
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <?context-mathml-directive log location left ?>
+  <apply> <log/>
+    <logbase> <cn> 2 </cn> </logbase>
+    <ci> x </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer
+
+Both formulas were defined in content \MATHML, so no explicit super- and
+subscripts were used. In the next chapter we will see how to achieve such
+different appearances.
+
+There are situations where content \MATHML\ is not rich enough to achieve the
+desired output. This omission in content \MATHML\ forces us to fall back on
+presentational markup.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <ci> <msub> <mi> P </mi> <mi> 1 </mi> </msub> </ci>
+    <ci> <msub> <mi> P </mi> <mi> 2 </mi> </msub> </ci>
+    <apply> <approx/>
+      <cn> 1.01 </cn>
+      <cn> 1 </cn>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer
+
+Here we used presentational elements inside a content \mmlelement {ci} element.
+We could have omitted the outer \mmlelement {ci} element, but since the content
+\MATHML\ parser may base its decisions on the content elements it finds, it is
+best to keep the outer element there.
+
+\typebuffer
+
+The lack of an index element can be quite prominent. For instance, when in an
+expose about rendering we want to explore the mapping from coordinates in user
+space to those in device space, we use the following formula.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <vector>
+      <ci> <msub> <mi> D </mi> <mi> x </mi> </msub> </ci>
+      <ci> <msub> <mi> D </mi> <mi> y </mi> </msub> </ci>
+      <cn> 1 </cn>
+    </vector>
+    <apply> <times/>
+      <vector>
+        <ci> <msub> <mi> U </mi> <mi> x </mi> </msub> </ci>
+        <ci> <msub> <mi> U </mi> <mi> y </mi> </msub> </ci>
+        <cn> 1 </cn>
+      </vector>
+      <matrix>
+        <matrixrow>
+          <ci> <msub> <mi> s </mi> <mi> x </mi> </msub> </ci>
+          <ci> <msub> <mi> r </mi> <mi> x </mi> </msub> </ci>
+          <cn> 0 </cn>
+        </matrixrow>
+        <matrixrow>
+          <ci> <msub> <mi> r </mi> <mi> y </mi> </msub> </ci>
+          <ci> <msub> <mi> s </mi> <mi> y </mi> </msub> </ci>
+          <cn> 0 </cn>
+        </matrixrow>
+        <matrixrow>
+          <ci> <msub> <mi> t </mi> <mi> x </mi> </msub> </ci>
+          <ci> <msub> <mi> t </mi> <mi> y </mi> </msub> </ci>
+          <cn> 1 </cn>
+        </matrixrow>
+      </matrix>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Again, the \mmlelement {msub} element provides a way out, as in the next
+examples, which are adapted versions of formulas we used when demonstrating the
+statistics related elements.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <mean/>
+      <ci> x </ci>
+    </apply>
+    <apply> <times/>
+      <apply> <divide/>
+        <cn> 1 </cn>
+        <ci> n </ci>
+      </apply>
+      <apply> <sum/>
+        <bvar> <ci> i </ci> </bvar>
+        <ci> x </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <mean/>
+      <ci> x </ci>
+    </apply>
+    <apply> <times/>
+      <apply> <divide/>
+        <cn> 1 </cn>
+        <ci> n </ci>
+      </apply>
+      <apply> <sum/>
+        <bvar> <ci> i </ci> </bvar>
+        <lowlimit> <cn> 1 </cn> </lowlimit>
+        <uplimit> <cn> n </cn> </uplimit>
+        <ci> x </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <mean/>
+      <ci> x </ci>
+    </apply>
+    <apply> <times/>
+      <apply> <divide/>
+        <cn> 1 </cn>
+        <ci> n </ci>
+      </apply>
+      <apply> <sum/>
+        <bvar> <ci> i </ci> </bvar>
+        <lowlimit> <cn> 1 </cn> </lowlimit>
+        <uplimit> <cn> n </cn> </uplimit>
+        <ci> <msub> <mi> x </mi> <mi> i </mi> </msub> </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+You can also use a selector for indexing, so in practice we can avoid the mixed
+mode:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <vector>
+      <apply> <selector/> <ci> D </ci> <ci> x </ci> </apply>
+      <apply> <selector/> <ci> D </ci> <ci> y </ci> </apply>
+      <cn> 1 </cn>
+    </vector>
+    <apply> <times/>
+      <vector>
+        <apply> <selector/> <ci> U </ci> <ci> x </ci> </apply>
+        <apply> <selector/> <ci> U </ci> <ci> y </ci> </apply>
+        <cn> 1 </cn>
+      </vector>
+      <matrix>
+        <matrixrow>
+          <apply> <selector/> <ci> s </ci> <ci> x </ci> </apply>
+          <apply> <selector/> <ci> r </ci> <ci> x </ci> </apply>
+          <cn> 0 </cn>
+        </matrixrow>
+        <matrixrow>
+          <apply> <selector/> <ci> s </ci> <ci> y </ci> </apply>
+          <apply> <selector/> <ci> r </ci> <ci> y </ci> </apply>
+          <cn> 0 </cn>
+        </matrixrow>
+        <matrixrow>
+          <apply> <selector/> <ci> t </ci> <ci> x </ci> </apply>
+          <apply> <selector/> <ci> t </ci> <ci> y </ci> </apply>
+          <cn> 1 </cn>
+        </matrixrow>
+      </matrix>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\stopchapter
+
+\startchapter[title={Directives}]
+
+Some elements can be tuned by changing their attributes. Especially when formulas
+are defined by a team of people or when they are taken from a repository, there
+is a good chance that inconsistencies will show up.
+
+In \CONTEXT, you can influence the appearance by setting the typesetting
+parameters of (classes of) elements. You can do this either by adding processing
+instructions, or by using the \CONTEXT\ command \type {\setupMMLappearance}.
+Although the first method is more in the spirit of \XML, the second method is
+more efficient and consistent. As a processing instruction, a directive looks
+like:
+
+\starttyping
+<?context-mathml-directive element key value ?>
+\stoptyping
+
+This is equivalent to the \CONTEXT\ command:
+
+\starttyping
+\setupMMLappearance [element] [key=value]
+\stoptyping
+
+Some settings concern a group of elements, in which case a group classification
+(like \type {sign}) is used.
+
+\startsection[title={scripts}]
+
+By default, nested super- and subscripts are kind of isolated from each other. If
+you want a combined script, there is the \mmlelement {msubsup}. You can however
+force combinations with a directive.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <msup>
+    <msub> <mi> x </mi> <mn> 1 </mn> </msub>
+    <mn> 2 </mn>
+  </msup>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<?context-mathml-directive scripts alternative b ?>
+
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <msup>
+    <msub> <mi> x </mi> <mn> 1 </mn> </msub>
+    <mn> 2 </mn>
+  </msup>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={sign}]
+
+The core element of \MATHML\ is \mmlelement {apply}. Even simple formulas will
+often have more than one (nested) \mmlelement {apply}. The most robust way to
+handle nested formulas is to use braces around each sub formula. No matter how
+robust this is, when presented in print we want to use as less braces as
+possible. The next example shows addition as well as subtraction.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <plus/>
+    <cn> 7 </cn>
+    <cn> 5 </cn>
+    <apply> <minus/>
+      <cn> 3 </cn>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+In principle subtraction is adding negated numbers, so it would have been natural
+to have just an addition (\mmlelement {plus}) and negation operator. However,
+\MATHML\ provides both a \mmlelement {plus} and \mmlelement {minus} operator,
+where the latter can be used as a negation. So in fact we have:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <?context-mathml-directive sign reduction no ?>
+  <apply> <plus/>
+    <cn> 7 </cn>
+    <cn> 5 </cn>
+    <apply> <minus/>
+      <cn> 3 </cn>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer
+
+Now imagine that a teacher wants to stress this negation in the way presented
+here, using parentheses. Since all the examples shown here are typeset directly
+from the \MATHML\ source, you may expect a solution, so here it is:
+
+\typebuffer
+
+By default signs are reduced, but one can disable that at the document and|/|or
+formula level using a processing instruction at the top of the formula. There are
+of course circumstances where the parentheses cannot be left out.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <plus/>
+    <ci> a </ci>
+    <apply> <plus/> <ci> b </ci> <ci> c </ci> </apply>
+    <ci> d </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <minus/>
+    <ci> a </ci>
+    <apply> <minus/> <ci> b </ci> <ci> c </ci> </apply>
+    <ci> d </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <plus/>
+    <ci> a </ci>
+    <apply> <minus/> <ci> b </ci> <ci> c </ci> </apply>
+    <ci> d </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <minus/>
+    <ci> a </ci>
+    <apply> <plus/> <ci> b </ci> <ci> c </ci> </apply>
+    <ci> d </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Another place where parentheses are not needed is the following:
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <minus/>
+    <apply> <exp/>
+      <cn> 3 </cn>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\typebuffer
+
+This means that the interpreter of this kind of \MATHML\ has to analyze child
+elements in order to choose the right way to typeset the formula. The output will
+look like:
+
+\processxmlbuffer
+
+By default, as less braces as possible are used. As demonstrated, a special case
+is when \mmlelement {plus} and \mmlelement {minus} have one sub element to deal
+with. If you really want many braces there, you can turn off sign reduction.
+
+\startdirectives
+\HL
+\NC sign \NC reduction \NC yes \NC use as less braces as possible \NC \NR
+\NC      \NC           \NC no  \NC always use braces \NC \NR
+\HL
+\stopdirectives
+
+We will demonstrate these alternatives with an example.
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <plus/>
+    <ci> a </ci>
+    <apply> <sin/>
+      <ci> b </ci>
+    </apply>
+    <apply> <power/>
+      <ci> c </ci>
+      <cn> 5 </cn>
+    </apply>
+    <apply> <power/>
+      <apply> <sin/>
+        <ci> d </ci>
+      </apply>
+      <cn> 2 </cn>
+    </apply>
+    <ci> e </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer[a]
+
+We need quite some code to encode this formula.
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive power reduction no ?>
+\stopbuffer
+
+With power reduction turned off, we get:
+
+\processxmlbuffer[b,a]
+
+As directive we used:
+
+\typebuffer[b]
+
+The following example illustrates that we should be careful in coding such
+formulas; here the \mmlelement {power} is applied to the argument of \mmlelement
+{sin}.
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <plus/>
+    <ci> a </ci>
+    <apply> <sin/>
+      <ci> b </ci>
+    </apply>
+    <apply> <power/>
+      <ci> c </ci>
+      <cn> 5 </cn>
+    </apply>
+    <apply> <sin/>
+      <apply> <power/>
+        <ci> d </ci>
+        <cn> 2 </cn>
+      </apply>
+    </apply>
+    <ci> e </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+\stopsection
+
+\startsection[title={divide}]
+
+Divisions can be very space consuming but there is a way out: using a forward
+slash symbol. You can set the level at which this will take place. By default,
+fractions are typeset in the traditional way.
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <divide/>
+    <cn> 1 </cn>
+    <apply> <plus/>
+      <cn> 1 </cn>
+      <apply> <divide/>
+        <cn> 1 </cn>
+        <ci> x </ci>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\startbuffer[b]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <divide/>
+    <cn> 1 </cn>
+    <apply> <plus/>
+      <cn> 1 </cn>
+      <apply> <divide/>
+        <cn> 1 </cn>
+        <apply> <plus/>
+          <cn> 1 </cn>
+          <apply> <divide/>
+            <cn> 1 </cn>
+            <ci> x </ci>
+          </apply>
+        </apply>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer[a] \typebuffer[a]
+\processxmlbuffer[b] \typebuffer[b]
+
+\startbuffer[c]
+<?context-mathml-directive divide level 1 ?>
+\stopbuffer
+
+\processxmlbuffer[c,a] \processxmlbuffer[c,b] \typebuffer[c]
+
+\startbuffer[c]
+<?context-mathml-directive divide level 2 ?>
+\stopbuffer
+
+\processxmlbuffer[c,a] \processxmlbuffer[c,b] \typebuffer[c]
+
+\stopsection
+
+\startsection[title={relation}]
+
+You should keep in mind that (at least level 2) content \MATHML\ is not that rich
+in terms of presenting your ideas in a visually attractive way. On the other
+hand, because the content is highly structured, some intelligence can be applied
+when typesetting them. By default, a relation is not vertically aligned but
+typeset horizontally.
+
+If an application just needs raw formulas, definitions like the following are all
+right.
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <apply> <plus/>
+      <ci> a </ci>
+      <ci> b </ci>
+      <ci> c </ci>
+    </apply>
+    <apply> <plus/>
+      <ci> d </ci>
+      <ci> e </ci>
+    </apply>
+    <apply> <plus/>
+      <ci> f </ci>
+      <ci> g </ci>
+      <ci> h </ci>
+      <ci> i </ci>
+    </apply>
+    <cn> 123 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+The typeset result will bring no surprises:
+
+\processxmlbuffer[a]
+
+But, do we want to show a formula that way? And what happens with much longer
+formulas? You can influence the appearance with processing instructions.
+
+\startdirectives
+\HL
+\NC relation \NC align \NC no    \NC don't align relations \NC \NR
+\NC          \NC       \NC left  \NC align all relations left \NC \NR
+\NC          \NC       \NC right \NC align all relations right \NC \NR
+\NC          \NC       \NC first \NC place the leftmost relation left \NC \NR
+\NC          \NC       \NC last  \NC place the rightmost relation right \NC \NR
+\HL
+\stopdirectives
+
+The next couple of formulas demonstrate in what way the previously defined
+formula is influenced by the processing instructions.
+
+\startbuffer[b]
+<?context-mathml-directive relation align left ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive relation align right ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive relation align first ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive relation align last ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\startsection[title={base}]
+
+When in a document several number systems are used, it can make sense to mention
+the base of the number. There are several ways to identify the base.
+
+\startdirectives
+\HL
+\NC base \NC symbol \NC numbers    \NC a (decimal) number \NC \NR
+\NC      \NC        \NC characters \NC one character      \NC \NR
+\NC      \NC        \NC text       \NC a mnemonic         \NC \NR
+\NC      \NC        \NC no         \NC no symbol          \NC \NR
+\HL
+\stopdirectives
+
+By default, when specified, a base is identified as number.
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <cn type="integer" base="8"> 1427 </cn>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive base symbol numbers ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive base symbol characters ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive base symbol text ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\startsection[title={function}]
+
+There is a whole bunch of functions available as empty element, like \mmlelement
+{sin} and \mmlelement {log}. When a function is applied to a function, braces
+make not much sense and placement is therefore disabled.
+
+\startdirectives
+\HL
+\NC function \NC reduction \NC yes \NC chain functions without braces \NC \NR
+\NC          \NC           \NC no  \NC put braces around nested functions \NC \NR
+\HL
+\stopdirectives
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <sin/> <ci> x </ci> </apply>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive function reduction yes ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive function reduction no ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\startsection[title={limits}]
+
+When limits are placed on top of the limitation symbol, this generally looks
+better than when they are placed alongside. You can also influence limit
+placement per element. This feature is available for \mmlelement{int},
+\mmlelement {sum}, \mmlelement {product} and \mmlelement {limit}.
+
+\startdirectives
+\HL
+\NC limit \NC location \NC top   \NC place limits on top of the symbols \NC \NR
+\NC       \NC          \NC right \NC attached limits as super/subscripts \NC \NR
+\HL
+\stopdirectives
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <int/>
+    <bvar> <ci> x </ci> </bvar>
+    <lowlimit> <cn> 0 </cn> </lowlimit>
+    <uplimit> <cn> 1 </cn> </uplimit>
+  </apply>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive int location top ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive int location right ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\startsection[title={declare}]
+
+Currently declarations are not supposed to end up in print. By default we typeset
+a message, but you can as well completely hide declarations.
+
+\startdirectives
+\HL
+\NC declare \NC state \NC start \NC show declarations \NC \NR
+\NC         \NC       \NC stop  \NC ignore (hide) declarations \NC \NR
+\HL
+\stopdirectives
+
+\stopsection
+
+\startsection[title={lambda}]
+
+There is more than one way to visualize a lambda function. As with some other
+settings, changing the appearance can best take place at the document level.
+
+\startdirectives
+\HL
+\NC lambda \NC alternative \NC b \NC show lambda as arrow \NC \NR
+\NC        \NC             \NC a \NC show lambda as set \NC \NR
+\HL
+\stopdirectives
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <lambda>
+    <bvar> <ci> x </ci> </bvar>
+    <apply> <log/>
+      <ci> x </ci>
+    </apply>
+  </lambda>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive lambda alternative a ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive lambda alternative b ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\startsection[title={power}]
+
+Taking the power of a function looks clumsy when braces are put around the
+function. Therefore, by default, the power is applied to the function symbol
+instead of the whole function.
+
+\startdirectives
+\HL
+\NC power \NC reduction \NC yes \NC attach symbol to function symbol \NC \NR
+\NC       \NC           \NC no  \NC attach symbol to function argument \NC \NR
+\HL
+\stopdirectives
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <power/>
+    <apply> <ln/>
+      <ci> x </ci>
+    </apply>
+    <cn> 3 </cn>
+  </apply>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive power reduction yes ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive power reduction no ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\startsection[title={diff}]
+
+Covering all kind of differential formulas is not trivial. Currently we support
+two locations for the operand (function). By default the operand is placed above
+the division line.
+
+\startdirectives
+\HL
+\NC diff \NC location \NC top   \NC put the operand in the fraction \NC \NR
+\NC      \NC          \NC right \NC put the operand after the fraction \NC \NR
+\HL
+\stopdirectives
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <diff/>
+    <bvar>
+      <ci> x </ci>
+      <degree> <cn> 2 </cn> </degree>
+    </bvar>
+    <apply> <fn> <ci> f </ci> </fn>
+      <apply> <plus/>
+        <apply> <times/>
+          <cn> 2 </cn>
+          <ci> x </ci>
+        </apply>
+        <cn> 1 </cn>
+      </apply>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive diff location top ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive diff location right ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\startsection[title={vector}]
+
+Depending on the complication of a vector or on the available space, you may wish
+to typeset a vector horizontally or vertically. By default a vector is typeset
+horizontally.
+
+\startdirectives
+\HL
+\NC vector \NC direction \NC horizontal \NC put vector elements alongside \NC \NR
+\NC        \NC           \NC vertical   \NC stack vector elements \NC \NR
+\HL
+\stopdirectives
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <eq/>
+    <vector>
+      <ci> x </ci>
+      <ci> y </ci>
+      <ci> z </ci>
+    </vector>
+    <vector>
+      <cn> 1 </cn>
+      <cn> 0 </cn>
+      <cn> 1 </cn>
+    </vector>
+  </apply>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive vector direction horizontal ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive vector direction vertical ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\startsection[title={times}]
+
+Depending on the audience, a multiplication sign is implicit (absent) or
+represented by a regular times symbol or a dot.
+
+\startdirectives
+\HL
+\NC times \NC symbol \NC no  \NC don't add a symbol \NC \NR
+\NC       \NC        \NC yes \NC separate operands by a times ($\times$) \NC \NR
+\NC       \NC        \NC dot \NC separate operands by a dot ($\cdot$)\NC \NR
+\NC auto  \NC symbol \NC no  \NC don't check for succesive numbers \NC \NR
+\NC       \NC        \NC yes \NC separate succesive numbers by a times ($\times$) \NC \NR
+\NC       \NC        \NC dot \NC separate succesive numbers by a dot ($\cdot$)\NC \NR
+\HL
+\stopdirectives
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <plus/>
+    <ci> x </ci>
+    <apply> <times/>
+      <cn> 2 </cn>
+      <ci> x </ci>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive times symbol no ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive times symbol yes ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive times symbol dot ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\startsection[title={log}]
+
+The location of a logbase depends on tradition and|/|or preference, which is why
+we offer a few alternatives: as pre superscript (in the right top corner before
+the symbol) or as post subscript (in the lower left corner after the symbol).
+
+\startdirectives
+\HL
+\NC log \NC location \NC right \NC place logbase at the right top \NC \NR
+\NC     \NC          \NC left  \NC place logbase at the lower left \NC \NR
+\HL
+\stopdirectives
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <log/>
+    <logbase>
+      <ci> 3 </ci>
+    </logbase>
+    <apply> <plus/>
+      <ci> x </ci>
+      <cn> 1 </cn>
+    </apply>
+  </apply>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive log location right ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive log location left ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\startsection[title={polar}]
+
+For polar notation we provide several renderings:
+
+\startdirectives
+\HL
+\NC polar \NC alternative \NC a \NC explicit polar notation       \NC \NR
+\NC       \NC             \NC b \NC exponential power notation    \NC \NR
+\NC       \NC             \NC c \NC exponential function notation \NC \NR
+\HL
+\stopdirectives
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <cn type="polar"> 2 <sep/> <pi/> </cn>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive polar alternative a ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive polar alternative b ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive polar alternative c ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\startsection[title={e-notation}]
+
+Depending on the context, you may want to typeset the number \type {1.23e4} not
+as this sequence, but using a multiplier construct. As with the \mmlelement
+{times}, we support both multiplication symbols.
+
+\startdirectives
+\HL
+\NC enotation \NC symbol \NC no  \NC no interpretation              \NC \NR
+\NC           \NC        \NC yes \NC split exponent, using $\times$ \NC \NR
+\NC           \NC        \NC dot \NC split exponent, using $\cdot$  \NC \NR
+\HL
+\stopdirectives
+
+\startbuffer[a]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <cn type="e-notation">10<sep/>23</cn>
+</math>
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+<?context-mathml-directive enotation symbol no ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive enotation symbol yes ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\startbuffer[b]
+<?context-mathml-directive enotation symbol dot ?>
+\stopbuffer
+
+\processxmlbuffer[b,a] \typebuffer[b]
+
+\stopsection
+
+\stopchapter
+
+\startchapter[title={Typesetting modes}]
+
+Math can be typeset inline or display. In order not to widen up the text of a
+paragraph too much, inline math is typeset more cramped. Since \MATHML\ does
+provide just a general purpose \mmlelement {math} element we have to provide the
+information needed using other elements. Consider the following text.
+
+\startbuffer
+<document>
+To what extent is math supposed to reflect the truth and nothing but
+the truth? Consider the simple expression
+    <math xmlns="http://www.w3c.org/mathml" version="2.0">
+        <apply> <eq/>
+            <cn> 10 </cn>
+            <apply> <plus/>
+                <cn> 3 </cn>
+                <cn> 7 </cn>
+            </apply>
+        </apply>
+    </math>. Many readers will consider this the truth, but then,
+can we assume that the decimal notation is used?
+
+<formula>
+  <math xmlns="http://www.w3c.org/mathml" version="2.0">
+    <apply> <eq/>
+      <cn> 10 </cn>
+      <apply> <plus/>
+        <cn> 3 </cn>
+        <ci> x </ci>
+      </apply>
+    </apply>
+  </math>
+</formula>
+
+In many elementary math books, you can find expressions like the
+previous. Because in our daily life we use the decimal numbering system,
+we can safely assume that
+    <math xmlns="http://www.w3c.org/mathml" version="2.0">
+        <apply> <eq/>
+            <ci> x </ci>
+            <cn> 7 </cn>
+        </apply>
+    </math>. But, without explicitly mentioning this boundary condition,
+more solutions are correct.
+
+<formula label="octal" sublabel="a">
+  <math xmlns="http://www.w3c.org/mathml" version="2.0">
+    <apply> <eq/>
+      <cn> 10 </cn>
+      <apply> <plus/>
+        <cn> 3 </cn>
+        <cn> 5 </cn>
+      </apply>
+    </apply>
+  </math>
+</formula>
+
+In <textref label="octal">formula</textref> we see an at first sight
+wrong formula. But, if we tell you that octal numbers are used, your
+opinion may change instantly. A rather clean way out of this confusion
+is to extend the notation of numbers by explicitly mentioning the base.
+
+<subformula label="octal base" sublabel="b">
+  <math xmlns="http://www.w3c.org/mathml" version="2.0">
+    <apply> <eq/>
+      <cn type="integer" base="8"> 10 </cn>
+      <apply> <plus/>
+        <cn type="integer" base="8"> 3 </cn>
+        <cn type="integer" base="8"> 5 </cn>
+      </apply>
+    </apply>
+  </math>
+</subformula>
+
+Of course, when a whole document is in octal notation, a proper
+introduction is better than annotated numbers as used in <textref
+label="octal base">formula</textref>.
+</document>
+\stopbuffer
+
+\blank \startnarrower \processxmlbuffer \stopnarrower \blank
+
+In terms of \XML\ this can look like:
+
+\typebuffer
+
+Math that is part of the text flow is automatically handled as inline math. If
+needed you can encapsulate the code in an \mmlelement {imath} environment.
+Display math is recognized as such when it is a separate paragraph, but since
+this is more a \TEX\ feature than an \XML\ one, you should encapsulate display
+math either in a \mmlelement {dmath} element or in a \mmlelement {formula} or
+\mmlelement {subformula} element.
+
+For a while you can use attribute \type {mode} with values \type {display} or
+\type {inline}. Recent \MATHML\ specifications provide the \type {display}
+attribute with values \type {block} or \type {inline}. We support both.
+
+\stopchapter
+
+\startchapter[title={Getting started}]
+
+A comfortable way to get accustomed to \MATHML\ is to make small documents of the
+following form:
+
+\starttyping
+\usemodule[mathml]
+
+\starttext
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <cos/>
+    <ci> x </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer
+
+\stoptext
+\stoptyping
+
+As you see, we can mix \MATHML\ with normal \TEX\ code. A document like this is
+processed in the normal way using the \type {context} command. If you also want
+to see the original code, you can say:
+
+\starttyping
+\usemodule[mathml]
+
+\starttext
+
+\startbuffer
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <cos/>
+    <ci> x </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\processxmlbuffer
+
+\typebuffer
+
+\stoptext
+\stoptyping
+
+Like \TEX\ and \METAPOST\ code, buffers can contain \MATHML\ code. The advantage
+of this method is that we only have to key in the data once. It also permits you
+to experiment with processing instructions.
+
+\starttyping
+\startbuffer[mml]
+<math xmlns="http://www.w3c.org/mathml" version="2.0">
+  <apply> <log/>
+    <logbase> <cn> 3.5 </cn> </logbase>
+    <ci> x </ci>
+  </apply>
+</math>
+\stopbuffer
+
+\startbuffer[pi]
+ <?context-mathml-directive log location right ?>
+\stopbuffer
+
+\processxmlbuffer[pi,mml]
+
+\startbuffer[pi]
+ <?context-mathml-directive log location left ?>
+\stopbuffer
+
+\processxmlbuffer[pi,mml]
+\stoptyping
+
+If you like coding your documents in \TEX\ but want to experiment with \MATHML,
+combining both languages in the way demonstrated here may be an option. When you
+provide enough structure in your \TEX\ code, converting a document to \XML\ is
+then not that hard to do. Where coding directly in \XML\ is kind of annoying,
+coding \MATHML\ is less cumbersome, because you can structure your formulas
+pretty well, especially since the fragments are small so that proper indentation
+is possible.
+
+\stopchapter
+
+\startchapter[title={Bidi}]
+
+Support for bidirectional math is not entirely trivial as it demands a font that
+supports it. When they were released, the stix fonts were not that useable and
+Khaled Hosny turned them into the xits fonts that are now quite complete and
+useable in an \OPENTYPE\ and \UNICODE\ environment. He also added support for
+right to left math.
+
+Normally you will only use that in a right to left typeset document, in which
+case you have a setup like this:
+
+\starttyping
+\setuptobodyfont
+  [xitsbidi]
+
+\setupalign
+  [r2l]
+
+\setupmathematics
+  [align=r2l]
+
+\starttext
+
+Some text.
+
+\startformula \sqrt{ف^2\over 4ب} \stopformula
+
+Some more text
+
+\stoptext
+\stoptyping
+
+As \MATHML\ has no global settings you need to control it specifically. At some
+point we might decide to provide some global flags but that depends on how the
+general bidi layout machinery evolves. Here we just stick to an example:
+
+\startbuffer[test]
+<math xmlns="http://www.w3.org/1998/Math/MathML" dir="rtl">
+    <msqrt>
+        <mfrac>
+            <msup><mi>ف</mi><mn>2</mn></sup>
+            <mrow><mn>4</mn><mi>ب</mi></mrow>
+        </mfrac>
+    </msqrt>
+</math>
+\stopbuffer
+
+\typebuffer[test]
+
+\start
+    \switchtobodyfont[xitsbidi]
+    \xmlprocessbuffer{main}{test}{}
+    \par
+\stop
+
+The order of input is still rather left to right which makes sense as we're sort
+of structuring the math input.
+
+\stopchapter
+
+\startchapter[title={OpenMath}]
+
+Because \OPENMATH\ is now a subset of \MATHML\ we can to some extend also support
+this coding. We do a straightforward remapping to content \MATHML\ so any
+rendering that is supported there is also supported in the equivalent \OPENMATH\
+code.
+
+\startbuffer
+<OMOBJ xmlns="http://www.openmath.org/OpenMath" version="2.0">
+  <OMA> <OMS cd="relation1" name="eq"/>
+    <OMV name="y"/>
+    <OMA> <OMS cd="arith1" name="minus"/>
+      <OMA> <OMV name="f"/>
+        <OMV name="x"/>
+      </OMA>
+      <OMA> <OMV name="f"/>
+        <OMA> <OMS cd="arith1" name="minus"/>
+          <OMV name="x"/>
+          <OMI>1</OMI>
+        </OMA>
+      </OMA>
+    </OMA>
+  </OMA>
+</OMOBJ>
+\stopbuffer
+
+\processxmlbuffer \typebuffer
+
+Because in practice we may use a mixture of math encodings this can come in handy
+because it saves conversion of the \XML\ source.
+
+\stopchapter
+
+\startchapter[title={CalcMath}]
+
+We support two types of annotation markup: \TEX\ (\type {tex}) and what we call
+\quote {calculator math} (\type {calcmath}). The second type is also available
+directly. Inline calcmath is coded using the \mmlelement{icm} element.
+
+\startbuffer
+<document>
+  This is an inline formula <icm>sin(x^2+1/x)</icm> just to demonstrate
+  the idea of calculator math.
+</document>
+\stopbuffer
+
+\blank \noindentation \processxmlbuffer \typebuffer
+
+If one edits the \XML\ file directly this can type quite some coding. For more
+complex formulas one can revert to content \MATHML, or when interactivity is
+needed to \OPENMATH.
+
+The argument that one should use a dedicated editor for math instead is not that
+convincing for authors who have to key on lots of small snippets of math. And one
+can always transform this code in its more bloated variant. The calcmath
+converter is dedicated to Frits Spijkers, author of Dutch math schoolbooks and
+fluent in all those math encodings methods we force upon him. The code resembles
+that used in the calculators at schools and we used it in projects with computer
+aided feedback where students had to key in math. When there is demand for this
+input method we will provide more details.
+
+\stopchapter
+
+\startchapter[title={AsciiMath}]
+
+A few years back we included some basic support for \ASCIIMATH\ as a proof of
+concept not knowing that one day we were forced to fully support it in a project.
+In one of our projects \CONTEXT\ is the backend for generating math books for
+high school math. Input is \XML\ and math is coded in presentational \MATHML. We
+should say \quotation {was coded}, because in the Spring of 2014 another party in
+the project (the one responsible for the web part) converted the \MATHML\ into
+\ASCIIMATH\ on behalve of their web authoring tool.
+
+Where we would have chosen to use the \MATHML\ annotation attribute, they had
+chosen to flatten the structured \MATHML\ into less structured \ASCIIMATH. And
+there was no way back. We're talking of tens of thousands of files here.
+\footnote {Around the same time Google decided to drop native \MATHML\ support
+from Chrome so one might wonder why \MATHML\ was developed in the first place.}
+
+On the web \ASCIIMATH\ is mostly interpreted by MathJax's \JAVASCRIPT\ in
+combination with \CSS. Since we didn't want to depend on a \JAVASCRIPT\
+conversion in \CONTEXT\ we started to completely rewrite our \ASCIIMATH\ module.
+We also needed a bit more control in order to meet specific demands of the
+publisher, like formatting numbers, support for characters not in the normal
+repertoire, checking and tracing, and the speed of rendering had not to be
+affected.
+
+If you invoke the \ASCIIMATH\ module with \typ {\usemodule [asciimath]} the
+command \type {\asciimath{...}} is available for testing purposes. Within the
+curly brackets you can type an \ASCIIMATH\ expression.
+
+Normally an \ASCIIMATH\ expression in \XML|/|\HTML\ is enclosed by back-quotes:
+
+\startbuffer
+`x^2`
+\stopbuffer
+
+\typebuffer
+
+But we rather stick to the \XML\ like coding:
+
+\startbuffer
+<am>x^2</am>
+\stopbuffer
+
+\typebuffer
+
+This is equivalent to the \TEX\ command:
+
+\asciimath{x^2}
+
+The interpretation of such a formula is no problem. But let's give a few examples
+where \ASCIIMATH\ lacks structure or needs a (sometimes bizar) interpretation to
+obtain adequate rendering:
+
+\noindentation Behaviour of superscripts and subscripts depends on operator that
+preceeds a number or variable:
+
+\starttabulate
+\FL
+\NC \type{`sin^-1(x)`}          \NC \asciimath{sin^-1(x)}             \NC \NR
+\NC \type{`sin^+1(x)`}          \NC \asciimath{sin^+1(x)}             \NC \NR
+\LL
+\stoptabulate
+
+\noindentation A script can be either one character or a number made from more
+characters:
+
+\starttabulate
+\FL
+\NC \type{`int_a^b f(x)`}       \NC \asciimath{int_a^b f(x)}          \NC \NR
+\NC \type{`int_aa^bb f(x)`}     \NC \asciimath{int_aa^bb f(x)}        \NC \NR
+\NC \type{`int_1000^2000 f(x)`} \NC \asciimath{int_1000^2000 f(x)}    \NC \NR
+\LL
+\stoptabulate
+
+\noindentation Behaviour of operator depends on character, where some characters
+have special meaning:
+
+\starttabulate
+\FL
+\NC \type{`d/dx`}               \NC \asciimath{d/dx}                  \NC \NR
+\NC \type{`q/qx`}               \NC \asciimath{q/qx}                  \NC \NR
+\LL
+\stoptabulate
+
+\noindentation Behaviour of the curly brackets is somewhat peculiar because at
+times they are not used for grouping anymore:
+
+\starttabulate
+\FL
+\NC \type{`{a/b}/{d/c}`}        \NC \asciimath{{a/b}/{d/c}}           \NC \NR
+\NC \type{`{a/b}//{d/c}`}       \NC \asciimath{{a/b}//{d/c}}          \NC \NR
+\LL
+\stoptabulate
+
+\noindentation Behaviour depends on sequence of scripts (solved in \CONTEXT):
+
+\starttabulate
+\FL
+\NC \type{`int_0^1 f(x)dx`}     \NC \asciimath{int_0^1 f(x)dx}        \NC \NR
+\NC \type{`int^1_0 f(x)dx`}     \NC \asciimath{int^1 text(_)0 f(x)dx} \NC \NR
+\LL
+\stoptabulate
+
+During the development of the \ASCIIMATH\ support we used the MathJax interpretor
+as a reference since that is available on the web. At the time of writing
+documentation was limited so some trial and error was involved in writing the
+parser. As usual we started from examples. Below we give a number of those
+examples so you can familiarize yourself with \ASCIIMATH. Note that you can use
+\TEX||like math coding and even use the backslash, but be warned for unexpected
+behaviour. In a webpage backticks are used to indicate \ASCIIMATH.
+
+\startlines
+\ExampleLine{sqrt-3ax}
+\ExampleLine{sqrt(-3ax)}
+\ExampleLine{root(3)(ax)}
+\ExampleLine{x^2+y_1+z_12^3}
+\ExampleLine{sin^-1(x)}
+\ExampleLine{d/dx f(x)=lim_(h->0) (f(x+h)-f(x))/h}
+\ExampleLine{f(x)=sum_(n=0)^oo(f^((n))(a))/(n!)(x-a)^n}
+\ExampleLine{int_0^1 f(x)dx}
+\ExampleLine{int^1_0 f(x)dx}
+\ExampleLine{a//b}
+\ExampleLine{a//\alpha}
+\ExampleLine{(a/b)/(d/c)}
+\ExampleLine{((a*b))/(d/c)}
+\ExampleLine{(a/b)/(c/d)={:(ad)/(bd):}/{:(bc)/(bd):}=(ad)/(bc)=(ad)/(bc)}
+\ExampleLine{a/b//c/d=(ad)/(bd)//(bc)/(bd)=ad//bc=(ad)/(bc)}
+\ExampleLine{[[a,b],[c,d]]((n),(k))}
+\ExampleLine{1/x={(1,text{if } x!=0),(text(undefined), text(if ) x=0):}}
+\ExampleLine{<<a,b>> text{ and } [ (x,y),(u,v) ] }
+\ExampleLine{(a,b] = {x in RR | a < x <= b}}
+\ExampleLine{langle larr ; 0,4]}
+\ExampleLine{〈← ; 0,4]}
+\ExampleLine{[0 , rarr rangle}
+\ExampleLine{[0 , →〉}
+\ExampleLine{5/|CD|=8/5}
+\ExampleLine{|MD|/|CD|=|AD|/|MD|}
+\ExampleLine{x lt 4 vv x gt 1}
+\ExampleLine{x \lt 4 vv x \gt 1}
+\ExampleLine{x &lt; 4 vv x &gt; 1}     % Hans: werkt niet goed; wel op http://www.wjagray.co.uk/maths/ASCIIMathTutorial.html
+\ExampleLine{lim_(x→∞)1/x=0}
+\ExampleLine{text(D)_(f)}
+\ExampleLine{p _|_ q}
+\ExampleLine{g·g· stackrel (text(n times) ) (...·g)}
+\ExampleLine{stackrel(+)(\rightarrow)}
+\ExampleLine{stackrel(+)(rightarrow)}  % Hans: werkt niet goed; wel op http://www.wjagray.co.uk/maths/ASCIIMathTutorial.html
+\ExampleLine{((a_(11),cdots,a_(1n)),(vdots,ddots,vdots),(a_(m1),cdots,a_(mn)))}
+\stoplines
+
+Unfortunately \ASCIIMATH\ can be unpredictable which is a side effect of the fact that a
+high degree of tolerance is built in. We strongly advice to use spaces to make your
+results predictable.
+
+\startlines
+\ExampleLine{o ox x = xo}
+\ExampleLine{a ax x = xa}
+\ExampleLine{ooxx=xo}
+\ExampleLine{aaxx=xa}
+\stoplines
+
+One of the properties is that \TEX\ commands are supported, that is,. with a few
+exceptions: \type {P} and \type {S} don't produce $\P$ and $\S$. Also, don't
+confuse these symbols with the entities supported by \MATHML: in \ASCIIMATH\
+\type{circ} is circle and not a circumflex. Also, \type {&lt;}, \type {&gt;} are
+converted into \asciimath {&lt;} and \asciimath {&gt;} while \type {&amp;}
+becomes \asciimath{&amp;}. As usual with input formats that start out simple, in
+the end they become so complex that one can wonder why to use them. It is the
+usual problem of using one system for everything.
+
+The following examples are similar to the once shown elsewhere in this document.
+
+\startsubsubject[title=derivatives]
+
+\ExampleLine{(da)/(dx) = 0}
+\ExampleLine{dx/dx = 0}
+\ExampleLine{(d(au))/(dx) = a (du)/(dx)}
+\ExampleLine{(d(u+v+w))/(dx) = (du)/(dx) + (dv)/(dx) + (dw)/(dx)}
+\ExampleLine{(d(uv))/(dx) = u (du)/(dx) + v (dv)/(dx)}
+\ExampleLine{(d(uvw))/(dx) = vw(du)/(dx) + uw(dv)/(dx) + uv(dw)/(dx)}
+\ExampleLine{(d(u/v))/(dx) = (v(du)/(dx) - u(dv)/(dx) ) / (v^2) = 1/v (du)/(dx) - u/v^2 (dv)/(dx)}
+\ExampleLine{(d(u^n))/(dx) = n(u)^(n-1) (dv)/(dx)}
+\ExampleLine{(d sqrt(u))/(dx) = 1/(2 sqrt(u)) (du)/(dx) }
+\ExampleLine{(d(1/u))/(dx) = - 1/u^2 (du)/(dx)}
+\ExampleLine{(d(1/(u^n)))/(dx) = - n/u^(n+1) (du)/(dx)}
+\ExampleLine{(d log (u + sqrt(u^2+1)))/(dx) = 1/(sqrt(u^2 + 1)) (du)/(dx) }
+
+\stopsubsubject
+
+\startsubsubject[title=integral]
+
+\ExampleLine{int (1 / (x sqrt(a^2 +- x^2) ) ) dx = - 1/a log (a + sqrt(a^2 +- x^2)) / x}
+\ExampleLine{int (1 / ( a + bx^2) ) = 1 / (2 sqrt(-ab)) log (a + x sqrt(-ab) ) / (a - x sqrt(-ab) ) vv 1 / sqrt(-ab) tanh^(-1) (x sqrt (-ab)) / a}
+\ExampleLine{int ( 1 / (cos(ax) (1 +- sin(ax)) ) ) dx = ( 1 / (2a( 1 +- sin(ax) )) ) + 1 / (2a) log tan(pi/4 + (ax)/2)}
+
+\stopsubsubject
+
+\startsubsubject[title=series]
+
+\ExampleLine{1 - 1/3 + 1/5 - 1/7 + cdots = pi/4}
+\ExampleLine{1 + 1/2^2 + 1/3^2 + 1/4^2 + cdots = pi^2/6}
+\ExampleLine{1 - 1/2^2 + 1/3^2 - 1/4^2 + cdots = pi^2/12}
+\ExampleLine{AA x in RR | e^x = 1 + x + x^2/(2!) + x^3/(3!) + cdots + x^n/(n!)}
+\ExampleLine{AA x in RR | e^(text(-)x) = 1 - x + x^2/(2!) - x^3/(3!) + cdots + (text(-)1^n)x^n/(n!)}
+
+\stopsubsubject
+
+\startsubsubject[title=logs]
+
+\ExampleLine{AA a > 0 ^^ b > 0 | {:log_g:} a + {:log_g:} b}
+\ExampleLine{AA a > 0 ^^ b > 0 | {:log_g:} a/b = {:log_g:} a - {:log_g:} b}
+\ExampleLine{AA b in RR ^^ a > 0 | {:log_g:} a^b = b {:log_g:} a}
+\ExampleLine{AA a > 0 | {:log_g:} a = ({:log_p:} a) / ({:log_p:} g)}
+
+\stopsubsubject
+
+\startsubsubject[title=goniometrics]
+
+\ExampleLine{sin(x+y) = sinx cosy + cosx siny}
+\ExampleLine{sin(x-y) = sinx cosy - cosx siny}
+\ExampleLine{sin(x+y) = cosx cosy - sinx siny}
+\ExampleLine{sin(x-y) = cosx cosy + sinx siny}
+\ExampleLine{tan(x+y) = (tanx + tany) / (1 - tanx tany)}
+\ExampleLine{tan(x-y) = (tanx - tany) / (1 + tanx tany)}
+\ExampleLine{sinp + sinq = 2 sin (p+q)/2 cos (p-q)/2}
+\ExampleLine{sinp - sinq = 2 cos (p+q)/2 sin (p-q)/2}
+\ExampleLine{cosp + cosq = 2 cos (p+q)/2 cos (p-q)/2}
+\ExampleLine{2 cos alpha cos beta = cos(alpha + beta) + cos(alpha - beta)}
+\ExampleLine{-2 sin alpha cos beta = sin(alpha + beta) - sin(alpha - beta)}
+\ExampleLine{AA ∆ ABC | a / (sin alpha) + b / (sin beta) + c / (sin gamma)}
+\ExampleLine{AA ∆ ABC | {:(a^2 = b^2 + c^2 - 2bc cos alpha),(b^2 = a^2 + c^2 - 2ac cos beta),(c^2 = a^2 + b^2 - 2ab cos gamma):}}
+
+\stopsubsubject
+
+\startsubsubject[title=statistics]
+
+\ExampleLine{bar x = 1/n sum x_i}
+\ExampleLine{sigma (x) ~~ sqrt ((x_i - (bar x)^2) / (n-1) )}
+\ExampleLine{sigma (x)^2 ~~ bar ((x_i - bar x)^2) = 1/(n-1) sum (x_i - bar x)^2}
+
+\stopsubsubject
+
+\startsubsubject[title=matrices]
+
+\ExampleLine{|{:(sin alpha,cos alpha),(sin beta,cos beta):}| = sin (alpha - beta)}
+\ExampleLine{|I| = | {: (1,0),(0,1):}| = 1}
+
+\stopsubsubject
+
+\stopchapter
+
+\startchapter[title={A few examples}]
+
+\setups[showexamples]
+
+\startsection[title={derivatives}]  \getbuffer[derivates]    \stopsection
+\startsection[title={integrals}]    \getbuffer[integrals]    \stopsection
+\startsection[title={series}]       \getbuffer[series]       \stopsection
+\startsection[title={logs}]         \getbuffer[logs]         \stopsection
+\startsection[title={goniometrics}] \getbuffer[goniometrics] \stopsection
+\startsection[title={statistics}]   \getbuffer[statistics]   \stopsection
+\startsection[title={matrices}]     \getbuffer[matrices]     \stopsection
+
+\stopchapter
+
+\startchapter[title={Unicode Math}]
+
+\startsection[title={entities}]
+
+Support for \MATHML\ showed up in \CONTEXT\ by the end of second millenium. The
+first more or less complete version of this manual dates from the end of 1999. At
+that time \UNICODE\ math was no fact yet and entities were the way to get special
+symbols done. Mapping the names of symbols onto something that could be rendered
+was up to the \XML\ processors and typesetting engine.
+
+Nowadays we can use \UNICODE\ directly although it has the drawback that not all
+editing applications show the corresponding shapes. It is for this reason that
+entities will have their use for a while. In the next table we see the official
+ones. The table is actually larger, but we only show the shapes that have a math
+property in the \CONTEXT\ character database. The full list is supported and can
+be found in the following documents:
+
+\starttyping
+http://www.w3.org/2003/entities/2007/w3centities-f.ent
+http://www.w3.org/2003/entities/2007/htmlmathml-f.ent
+\stoptyping
+
+\blank \showmathentities
+
+\stopsection
+
+\startsection[title={properties}]
+
+\noindentation A different way to look at this is \UNICODE\ itself. Here's the
+list of characters that have a math related property in \CONTEXT.
+
+\blank \showmathcharacters
+
+\stopsection
+
+\startsection[title={alphabets}]
+
+Traditionally (in \TEX) one enters \ASCII\ characters to represent identifiers
+and use a font switch to get for instance a bold rendering. In \UNICODE\ it is
+more natural to use code points that represent the meaning. So, instead if
+enterinf
+
+So instead of keying in byte \type {U+0058} for a bold \type {x} one will use an
+\UTF\ sequence representing \type {U+1D431}. Because there are not than many
+editors that show all those \UNICODE\ characters it still makes sense to use
+regular latin and greek alphabets combined with directives that tell what real
+alphabet is used. For \CONTEXT\ it does not matter what approach is chosen: both
+work ok and internally characters are mapped onto the right slot. When a font
+does not provide a shape a fallback is chosen. Technically one can construct a
+complete math font by combining all kind of fonts, but this is normally not
+needed.
+
+Here we show the combinations of styles and alternatives. Not all combinations
+are present in \UNICODE. Actually, as \UNICODE\ math is rather agnostic of
+cultural determined math rendering, at some point \CONTEXT\ could provide more.
+\footnote {An example is the German handwriting style Suetterlin that is still
+used for vectors.} Also, modern \OPENTYPE\ fonts can have alternatives, for
+instance variants of script, blackboard or fraktur. This is not related to
+\UNICODE\ and it makes no sense to encode that in \MATHML, but a setup of the
+rendering.
+
+\blank \showmathalphabets
+
+\stopsection
+
+\startsection[title={scripts}]
+
+Glyphs (traditionally) come in three sizes. The script and scriptscript sizes can
+be downscaled from text size but most math fonts have additional glyphs tuned for
+smaller sizes. The next table shows some of this.
+
+\blank \showmathscripts
+
+\stopsection
+
+\startsection[title={bold}]
+
+There are two ways to look at bold math. First there are bold alphabets and bold
+symbols and these have some meaning. Then there is what we can best call boldened
+math that is used in section titles and such. The normal bold then becomes heavy.
+The next table shows (for the font used here) what bold shapes are available.
+
+\blank \showmathbold
+
+\stopsection
+
+\stopchapter
+
+\stopbodymatter
+
+\stoptext
