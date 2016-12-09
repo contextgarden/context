@@ -79,6 +79,7 @@
 		<cd:variable name='all' value='alles'/>
 		<cd:variable name='alphabetic' value='alphabetic'/>
 		<cd:variable name='always' value='immer'/>
+		<cd:variable name='anchor' value='anchor'/>
 		<cd:variable name='and' value='und'/>
 		<cd:variable name='answerarea' value='answerarea'/>
 		<cd:variable name='appendices' value='anhaenge'/>

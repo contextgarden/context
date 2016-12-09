@@ -1252,9 +1252,17 @@ function figures.done(data)
     -- somehow this fails on some of tacos files
  -- ds.xscale = ds.width /(du.width  or 1)
  -- ds.yscale = ds.height/(du.height or 1)
-    -- so we add some extra safeguards
-    ds.xscale = ds.width /(du.width  and du.width>0  and du.width  or du.xsize) or 1
-    ds.yscale = ds.height/(du.height and du.height>0 and du.height or du.ysize) or 1
+    -- du.width and du.height can be false
+    if du.width and du.height and du.width > 0 and du.height > 0 then
+        ds.xscale = ds.width /du.width
+        ds.yscale = ds.height/du.height
+    elseif du.xsize and du.ysize and du.xsize > 0 and du.ysize > 0 then
+        ds.xscale = ds.width /du.xsize
+        ds.yscale = ds.height/du.ysize
+    else
+        ds.xscale = 1
+        ds.yscale = 1
+    end
     -- sort of redundant but can be limited
     ds.page   = ds.page or du.page or dr.page
     return data

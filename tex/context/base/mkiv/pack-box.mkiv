@@ -24,10 +24,15 @@
 %D which in itself is ok, but can lead to loops due to rounding errors (happened
 %D in demo-obv).
 
-\definelayer[\v!text-2][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
-\definelayer[\v!text-1][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
-\definelayer[\v!text+1][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
-\definelayer[\v!text+2][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
+% \definelayer[\v!text-2][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
+% \definelayer[\v!text-1][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
+% \definelayer[\v!text+1][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
+% \definelayer[\v!text+2][\c!position=\v!yes,\c!region=,\c!width=\d_overlay_width,\c!height=\d_overlay_height]
+
+\definelayer[\v!text-2][\c!position=\v!yes,\c!region=,\c!width=\textwidth,\c!height=\textheight]
+\definelayer[\v!text-1][\c!position=\v!yes,\c!region=,\c!width=\textwidth,\c!height=\textheight]
+\definelayer[\v!text+1][\c!position=\v!yes,\c!region=,\c!width=\textwidth,\c!height=\textheight]
+\definelayer[\v!text+2][\c!position=\v!yes,\c!region=,\c!width=\textwidth,\c!height=\textheight]
 
 \unexpanded\def\internaltextoverlay#1% will become more generic and installable
   {\startoverlay                     % i.e. probably an overlay by itself
@@ -41,6 +46,10 @@
 \defineoverlay[\v!text+2][\internaltextoverlay{+2}]
 
 \installcorenamespace {anchor}
+
+% produces a box too
+%
+% \anchor[text-1][preset=lefttop][framed settings]{HELLO WORLD}
 
 \unexpanded\def\defineanchor
   {\doquadrupleempty\pack_anchors_define}
@@ -64,13 +73,14 @@
   {\begingroup
    \edef\currentanchor{#1}%
    \ifcsname\??anchor\currentanchor\endcsname
-     \expandafter\pack_anchor_predefined
+%      \expandafter\pack_anchor_predefined
+     \expandafter\lastnamedcs
    \else
      \expandafter\pack_anchor_notdefined
    \fi}
 
-\def\pack_anchor_predefined
-  {\csname\??anchor\currentanchor\endcsname}
+% \def\pack_anchor_predefined
+%   {\csname\??anchor\currentanchor\endcsname}
 
 \def\pack_anchor_notdefined
   {\dodoubleempty\pack_anchor_notdefined_indeed}
@@ -93,33 +103,121 @@
 \newdimen\d_pack_anchors_height
 \newdimen\d_pack_anchors_depth
 
-\definelayer[anchor] % \defineoverlay[anchor][\ruledhbox{\flushlayer[anchor]}]
+% \definelayer[anchor]
+
+% % old and no longer valid
+%
+% \def\pack_anchors_process_finish#1#2#3% brrr: we need to apply offset only once .. a bit messy
+%   {\checkpositionoverlays
+%    % for the moment we ignore the depth
+%    \setbox\b_pack_anchors\box\nextbox
+%    \d_pack_anchors_width \wd\b_pack_anchors
+%    \d_pack_anchors_height\ht\b_pack_anchors
+%    \d_pack_anchors_depth \dp\b_pack_anchors
+%    \setbox\scratchbox\emptyhbox
+%    \wd\scratchbox\d_pack_anchors_width
+%    \ht\scratchbox\d_pack_anchors_height
+%    \dp\scratchbox\d_pack_anchors_depth
+%    \setlayer
+%      [anchor]%
+%      [\c!width=\d_pack_anchors_width,%
+%       \c!height=\d_pack_anchors_height,%
+%       \c!offset=\zeropoint,%
+%       #2,#3]%
+%      {\setlayer[#1]{\box\b_pack_anchors}}% % #1 uses overlaywidth/height
+%    \framed % could be a predefined framed
+%      [#2,%
+%       \c!background=anchor,%
+%       \c!offset=\v!overlay,%
+%       \c!frame=\v!off,%
+%       #3]%
+%      {\box\scratchbox}%
+%   \endgroup}
+
+% % new and ok but not synced
+%
+% \def\pack_anchors_process_finish#1#2#3% brrr: we need to apply offset only once .. a bit messy
+%   {\checkpositionoverlays
+%    \setbox\b_pack_anchors\box\nextbox
+%    \framed % could be a predefined framed
+%     %[#2,\c!offset=\v!overlay,\c!frame=\v!off,#3]
+%      [\c!offset=\v!overlay,\c!frame=\v!off,#3]
+%      {\novrule % hm, not needed as we frame the size (but kind of default)
+%         \s!width \wd\b_pack_anchors
+%         \s!height\ht\b_pack_anchors
+%         \s!depth \dp\b_pack_anchors}%
+%    \setlayer[#1][#2,\c!position=\v!no]{\box\b_pack_anchors}% no position
+%    \endgroup}
+
+\newcount\c_pack_anchors_n
+\newtoks \t_pack_anchors_flush
+
+\unexpanded\def\pack_anchors_register#1#2%
+  {\global\advance\c_pack_anchors_n\plusone
+   \pagereference[\v!layer:\v!anchor:\number\c_pack_anchors_n]%
+   \putboxincache{\v!anchor}{\number\c_pack_anchors_n}\b_pack_anchors
+   \doglobal\appendetoks
+     \pack_anchors_flush{\number\c_pack_anchors_n}{#1}{#2}%
+   \to \t_pack_anchors_flush
+   \glet\pack_anchors_flush_all\pack_anchors_flush_all_indeed}
+
+\unexpanded\def\pack_anchors_flush#1#2#3%
+  {\doifelseboxincache{\v!anchor}{#1}
+     {\doifelsereferencefound{\v!layer:\v!anchor:#1}
+        {\ifnum\currentreferencerealpage=\realpageno\relax
+           \setlayer[#2][#3,\c!position=\v!no]{\directboxfromcache{\v!anchor}{#1}}%
+         \else
+           \donetrue
+         \fi
+         }\donetrue}%
+     \donetrue}%
+
+\unexpanded\def\pack_anchors_flush_all_indeed
+  {\donefalse
+   \the\t_pack_anchors_flush
+   \ifdone\else
+      \global\t_pack_anchors_flush\emptytoks
+      \glet\pack_anchors_flush_all\relax
+   \fi}
+
+\let\pack_anchors_flush_all\relax
+
+\appendtoks
+    \pack_anchors_flush_all
+\to \everybeforepagebody
 
 \def\pack_anchors_process_finish#1#2#3% brrr: we need to apply offset only once .. a bit messy
   {\checkpositionoverlays
-   % for the moment we ignore the depth
    \setbox\b_pack_anchors\box\nextbox
-   \d_pack_anchors_width \wd\b_pack_anchors
-   \d_pack_anchors_height\ht\b_pack_anchors
-   \d_pack_anchors_depth \dp\b_pack_anchors
-   \setbox\scratchbox\emptyhbox
-   \wd\scratchbox\d_pack_anchors_width
-   \ht\scratchbox\d_pack_anchors_height
-   \dp\scratchbox\d_pack_anchors_depth
-   \setlayer
-     [anchor]
-     [\c!width=\d_pack_anchors_width,
-      \c!height=\d_pack_anchors_height,
-      \c!offset=\zeropoint,
-      #2,#3]
-     {\setlayer[#1]{\box\b_pack_anchors}}% % #1 uses ovelaywidth/height
    \framed % could be a predefined framed
-     [\c!background=anchor,
+     [%#2,
+     %\c!background=\v!color,
+     %\c!backgroundcolor=darkblue,
       \c!offset=\v!overlay,
       \c!frame=\v!off,
       #3]
-     {\box\scratchbox}%
-  \endgroup}
+     {\pack_anchors_register{#1}{#2}%
+      \novrule % hm, not needed as we frame the size (but kind of default)
+        \s!width \wd\b_pack_anchors
+        \s!height\ht\b_pack_anchors
+        \s!depth \dp\b_pack_anchors}%
+   \endgroup}
+
+% \setlayeranchored[text-1][preset=lefttop]{HELLO WORLD} produces a simple (empty) hbox
+% synchronizes per page
+
+\unexpanded\def\setlayeranchored
+  {\begingroup
+   \dodoubleempty\pack_anchors_set_finish}
+
+\def\pack_anchors_set_finish[#1][#2]%
+  {\dowithnextbox
+     {\iffirstargument
+        \checkpositionoverlays
+        \setbox\b_pack_anchors\box\nextbox
+        \dontleavehmode\hpack{\pack_anchors_register{#1}{#2}}%
+      \fi
+      \endgroup}\hbox}
 
 % collectors
 
@@ -573,7 +671,7 @@
        \ifconditional\c_pack_boxes_t
          \paperheight  -\MPy\currentbgposition+\MPy\currentpageposition % not checked
        \else\ifconditional\c_pack_boxes_b
-         \scratchheight+\MPy\currentbgposition-\MPy\currentpageposition % not checked
+         \scratchheight+\MPy\currentbgposition-\MPy\currentpageposition + \MPh\currentbgposition % not checked (\MPh added)
        \else
          \scratchheight
        \fi\fi

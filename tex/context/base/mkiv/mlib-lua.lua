@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['mlib-lua'] = {
 -- maybe we need mplib.model, but how with instances
 
 local type, tostring, select, loadstring = type, tostring, select, loadstring
-local find, gsub = string.find, string.gsub
+local find, match, gsub = string.find, string.match, string.gsub
 
 local formatters = string.formatters
 local concat     = table.concat
@@ -62,6 +62,7 @@ end
 local f_code      = formatters["%s return mp._f_()"]
 
 local f_numeric   = formatters["%.16f"]
+local f_integer   = formatters["%i"]
 local f_pair      = formatters["(%.16f,%.16f)"]
 local f_triplet   = formatters["(%.16f,%.16f,%.16f)"]
 local f_quadruple = formatters["(%.16f,%.16f,%.16f,%.16f)"]
@@ -99,17 +100,22 @@ mp.print = mpprint
 --
 --   lua.mp("somedefdname","foo")
 
-
 table.setmetatablecall(mp,function(t,k,...) return t[k](...) end)
 
-function mp.boolean(n)
+function mp.boolean(b)
     n = n + 1
-    buffer[n] = n and "true" or "false"
+    buffer[n] = b and "true" or "false"
 end
 
-function mp.numeric(n)
+function mp.numeric(f)
     n = n + 1
-    buffer[n] = n and f_numeric(n) or "0"
+    buffer[n] = f and f_numeric(f) or "0"
+end
+
+function mp.integer(i)
+    n = n + 1
+ -- buffer[n] = i and f_integer(i) or "0"
+    buffer[n] = i or "0"
 end
 
 function mp.pair(x,y)
@@ -204,7 +210,7 @@ function mp.format(fmt,...)
     buffer[n] = formatters[fmt](...)
 end
 
-function mp.quoted(fmt,s,...)
+local function mpquoted(fmt,s,...)
     n = n + 1
     if s then
         if not find(fmt,"%%") then
@@ -217,6 +223,8 @@ function mp.quoted(fmt,s,...)
         -- something is wrong
     end
 end
+
+mp.quoted = mpquoted
 
 function mp.n(t)
     return type(t) == "table" and #t or 0
@@ -440,7 +448,7 @@ end
 
 function mp.inhash(n,key)
     local h = hashes[n]
-    mpprint(h and h[key] or false)
+    mpprint(h and h[key] and true or false)
 end
 
 function mp.tohash(n,key)
@@ -449,3 +457,47 @@ function mp.tohash(n,key)
         h[key] = true
     end
 end
+
+local modes       = tex.modes
+local systemmodes = tex.systemmodes
+
+function mp.mode(s)
+    mpprint(modes[s] and true or false)
+end
+
+function mp.systemmode(s)
+    mpprint(systemmodes[s] and true or false)
+end
+
+-- for alan's nodes:
+
+function mp.isarray(str)
+     mpprint(find(str,"%d") and true or false)
+end
+
+function mp.prefix(str)
+     mpquoted(match(str,"^(.-)[%d%[]") or str)
+end
+
+-- faster and okay as we don't have many variables but probably only
+-- basename makes sense and even then it's not called that often
+
+-- local hash  = table.setmetatableindex(function(t,k)
+--     local v = find(k,"%d") and true or false
+--     t[k] = v
+--     return v
+-- end)
+--
+-- function mp.isarray(str)
+--      mpprint(hash[str])
+-- end
+--
+-- local hash  = table.setmetatableindex(function(t,k)
+--     local v = '"' .. (match(k,"^(.-)%d") or k) .. '"'
+--     t[k] = v
+--     return v
+-- end)
+--
+-- function mp.prefix(str)
+--      mpprint(hash[str])
+-- end

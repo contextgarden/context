@@ -2507,8 +2507,8 @@ implement {
     arguments = { "string", "boolean", "boolean" }
 }
 
-local function referencerealpage(actions)
-    actions = actions or references.currentset
+local function referencerealpage()
+    local actions = references.currentset
     return not actions and 0 or actions.realpage or setreferencerealpage(actions)
 end
 

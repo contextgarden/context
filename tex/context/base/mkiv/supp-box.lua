@@ -472,6 +472,11 @@ name = tonumber(name) or name
         cache[category][name] = b or false
     end
 
+    function boxes.found(category,name)
+name = tonumber(name) or name
+        return cache[category][name] and true or false
+    end
+
     function boxes.direct(category,name,copy)
 name = tonumber(name) or name
         local c = cache[category]
@@ -575,6 +580,12 @@ name = tonumber(name) or name
         name      = "copyboxfromcache",
         arguments = { "string", "string", "integer", true },
         actions   = boxes.restore,
+    }
+
+    interfaces.implement {
+        name      = "doifelseboxincache",
+        arguments = { "string", "string" },
+        actions   = { boxes.found, doifelse },
     }
 
     interfaces.implement {

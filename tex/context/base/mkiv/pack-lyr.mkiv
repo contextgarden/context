@@ -433,6 +433,8 @@
         \smashbox\nextbox
         \vskip\dimexpr\d_pack_layers_y_position+\d_pack_layers_y_offset\relax
         \hskip\dimexpr\d_pack_layers_x_position+\d_pack_layers_x_offset\relax
+        % or maybe instead of the \vskip
+        % \raise-\dimexpr\d_pack_layers_y_position+\d_pack_layers_y_offset\relax
         \box\nextbox
         \ifvoid\layerpagebox
           % already flushed

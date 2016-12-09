@@ -473,9 +473,9 @@ enddef ;
 % String manipulation routines for MetaPost
 % It is harmless to input this file more than once.
 
-vardef isdigit primary d =
-    ("0"<=d)and(d<="9")
-enddef ;
+% vardef isdigit primary d =
+%     ("0"<=d)and(d<="9")
+% enddef ;
 
 % Number of initial characters of string s where `c <character>' is true
 

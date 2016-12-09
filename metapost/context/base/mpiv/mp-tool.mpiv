@@ -871,7 +871,7 @@ secondarydef p intersection_point q =
     begingroup
     save x_, y_ ;
     (x_,y_) = p intersectiontimes q ;
-    if x_ < 0 :
+    if x_< 0 :
         intersection_found := false ;
         center p % origin
     else :
@@ -3243,8 +3243,9 @@ enddef ;
 %D These new helpers are by Alan and are used in for instance the mp-node
 %D module.
 
-newinternal crossingoption ; crossingoption := 0 ;
-newinternal crossingscale  ; crossingscale  := 20 ;
+newinternal crossingdebug     ; crossingdebug     := 0 ;
+newinternal crossingscale     ; crossingscale     := 10 ;
+newinternal crossingnumbermax ; crossingnumbermax := 1000 ;
 
 % primary, secondary or tertiary? always hard to decide but primary makes sense
 
@@ -3262,20 +3263,20 @@ primarydef p crossingunder q =
             fi
         endfor
     elseif path p :
-        save n, m, t, a, b, c, r, bcuttings, hold ;
-        numeric n, m, t[] ;
+        save n, t, a, b, c, r, bcuttings, hold ;
+        numeric n, t[], hold ;
         path a, b, c, r, bcuttings, hold[] ;
         c := makepath(currentpen scaled crossingscale) ;
         r := if picture q : boundingbox fi q ;
-        t[0] := n := m := 0 ;
+        t[0] := n := hold := 0 ;
         a := p ;
         % The cutbefore/cutafter using c below prevents endless loops!
        %forever : % find all intersections
-        for i=1 upto 100 : % limit the number, until we can make this robust
+        for i=1 upto crossingnumbermax : % safeguard
             clearxy ; z = a intersectiontimes r ;
             if x < 0 :
-                exitif m < 1 ;
-                a := hold[m] ; m := m - 1 ;
+                exitif hold < 1 ;
+                a := hold[hold] ; hold := hold - 1 ;
                 clearxy ; z = a intersectiontimes r ;
             fi
             (t[incr n], whatever) = p intersectiontimes point x of a ;
@@ -3295,14 +3296,18 @@ primarydef p crossingunder q =
                     if length bcuttings > 0 :
                         clearxy ; z = b intersectiontimes r ;
                         if x >= 0 :
-                            hold[incr m] := b ;
+                            hold[incr hold] := b ;
                         fi
                     fi
                 fi
             fi
-            if length cuttings = 0 :
-                exitif m < 1 ;
-                a := hold[m] ; m := m - 1 ;
+            if length cuttings = 0 : % a single point: nothing cut
+                exitif hold < 1 ;
+                a := hold[hold] ; hold := hold - 1 ;
+            fi
+            if i = crossingnumbermax :
+                message("crossingunder reached maximum " & decimal i &
+                        " intersections.");
             fi
         endfor
 
@@ -3316,15 +3321,15 @@ primarydef p crossingunder q =
             % Now, n>1 !
             % t[0] is the first point of the path and t[n] is the last point
             % (or the first intersection beyond the length if cyclic)
-            m := 0 ;
+            save m ; m := 0 ;
             for i=if cycle p: 2 else: 1 fi upto n :
                 % skip the first segment if cyclic
                 % as it gets repeated (fully) at the end.
-                if crossingoption > 0 :
-                    if crossingoption = 1 :
+                if crossingdebug > 0 :
+                    if crossingdebug = 1 :
                         addto pic doublepath c shifted point t[i] of p
                         withpen currentpen withtransparency(1,.5) ;
-                    elseif crossingoption = 2 :
+                    elseif crossingdebug = 2 :
                         addto pic also
                         infotext (incr m,crossingscale/5)
                         shifted point t[i] of p ;

@@ -79,6 +79,7 @@
 		<cd:variable name='all' value='alles'/>
 		<cd:variable name='alphabetic' value='alphabetic'/>
 		<cd:variable name='always' value='altijd'/>
+		<cd:variable name='anchor' value='anker'/>
 		<cd:variable name='and' value='en'/>
 		<cd:variable name='answerarea' value='antwoordgebied'/>
 		<cd:variable name='appendices' value='bijlagen'/>

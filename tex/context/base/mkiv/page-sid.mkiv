@@ -38,7 +38,6 @@
 \newdimen       \d_page_sides_progress
 \newdimen       \d_page_sides_page_total
 \newdimen       \d_page_sides_saved_depth
-\newdimen       \d_page_sides_grid_shift
 
 \newbox         \b_page_sides_bottom
 
@@ -552,31 +551,21 @@
    \prevdepth\d_page_sides_saved_depth}
 
 \def\page_sides_place_float_normal
-  {\d_page_sides_grid_shift\zeropoint % be nice
-   \page_sides_push_float_inline\firstofoneargument}
+  {\page_sides_push_float_inline\firstofoneargument}
 
 % The following needs some more work .. consider this a quick hack. We
 % probably need an mkiv hanging grid option.
 
 \def\page_sides_place_snap_to_grid#1%
-  {\snaptogrid[\v!line,\v!offset:\the\d_page_sides_grid_shift]\hbox{#1}}
-
-% this will be a grid option in float placement:
-
-\newconstant\c_page_sides_place_grid_shift \c_page_sides_place_grid_shift\plustwo
+  {\edef\p_grid{\floatparameter\c!grid}%
+   \ifx\p_grid\empty\else
+     \snaptogrid[\p_grid]%
+   \fi
+   \hbox{#1}}
 
 \def\page_sides_place_float_grid
   {\getrawnoflines\d_page_sides_height % raw ?
    \d_page_sides_height\noflines\lineheight
-   \d_page_sides_grid_shift\the\dimexpr  \plustwo\lineheight
-     \ifcase\c_page_sides_place_grid_shift
-       -3\lineheight    % high
-     \or
-       -2.5\lineheight  % half (does not work currently)
-     \else
-       -2\lineheight    % low
-     \fi
-   \relax
    \page_sides_push_float_inline\page_sides_place_snap_to_grid}
 
 \def\page_sides_push_float_inline#1%

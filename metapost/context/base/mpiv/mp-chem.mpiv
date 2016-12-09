@@ -1381,7 +1381,7 @@ vardef chem_bw@# (suffix $) (expr f, t, r, c) = % BW
 enddef ;
 
 vardef chem_bd@# (suffix $) (expr f, t, r, c) = % BD
-    if chem_star[$] : chem_rbd#@($,f,t,r,c) ; fi
+    if chem_star[$] : chem_rbd@#($,f,t,r,c) ; fi
 enddef ;
 
 vardef chem_rbd@# (suffix $) (expr f, t, r, c) = % RBD

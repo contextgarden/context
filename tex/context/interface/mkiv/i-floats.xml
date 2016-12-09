@@ -64,6 +64,9 @@
                     <cd:constant type="grid"/>
                     <cd:constant type="normal" default="yes"/>
                 </cd:parameter>
+                <cd:parameter name="grid">
+                    <cd:constant type="cd:string"/>
+                </cd:parameter>
                 <!--
                     <cd:parameter name="topoffset">
                         <cd:constant type="cd:dimension"/>

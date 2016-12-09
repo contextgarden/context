@@ -2550,9 +2550,15 @@
    \fi
    \setstackbox{#1}{#2}}
 
+\unexpanded\def\flushbox#1#2% unwrapped
+  {\ifcsname\??stackbox#1:#2\endcsname
+     \box\lastnamedcs
+   \else
+     \emptybox
+   \fi}
+
 \unexpanded\def\restorebox#1#2% unwrapped
   {\ifcsname\??stackbox#1:#2\endcsname
-    %\copy\csname\??stackbox#1:#2\endcsname
      \copy\lastnamedcs
    \else
      \emptybox
@@ -2561,16 +2567,18 @@
 \unexpanded\def\foundbox#1#2% wrapped
   {\vpack
      {\ifcsname\??stackbox#1:#2\endcsname
-       %\copy\csname\??stackbox#1:#2\endcsname
         \copy\lastnamedcs
       \fi}}
 
-\unexpanded\def\doifelsebox#1#2#3#4%
+\unexpanded\def\doifelsebox#1#2%
   {\ifcsname\??stackbox#1:#2\endcsname
-    %\ifvoid\csname\??stackbox#1:#2\endcsname#4\else#3\fi
-     \ifvoid\lastnamedcs#4\else#3\fi
+     \ifvoid\lastnamedcs
+       \doubleexpandafter\secondoftwoarguments
+     \else
+       \doubleexpandafter\firstoftwoarguments
+     \fi
    \else
-     #4%
+     \expandafter\secondoftwoarguments
    \fi}
 
 \let\doifboxelse\doifelsebox
@@ -2622,6 +2630,7 @@
 
 \unexpanded\def\putboxincache       #1#2#3{\clf_putboxincache         {#1}{#2}#3\relax}
 \unexpanded\def\getboxfromcache     #1#2#3{\clf_getboxfromcache       {#1}{#2}#3\relax}
+\unexpanded\def\doifelseboxincache    #1#2{\clf_doifelseboxincache    {#1}{#2}}
 \unexpanded\def\copyboxfromcache    #1#2#3{\clf_copyboxfromcache      {#1}{#2}#3\relax}
 \unexpanded\def\directboxfromcache    #1#2{\clf_directboxfromcache    {#1}{#2}}
 \unexpanded\def\directcopyboxfromcache#1#2{\clf_directcopyboxfromcache{#1}{#2}}

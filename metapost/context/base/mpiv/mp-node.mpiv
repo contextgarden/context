@@ -18,20 +18,38 @@ if known context_node : endinput ; fi ;
 
 boolean context_node ; context_node := true ;
 
+% A few helpers:
+
+vardef isarray suffix a =
+    lua.mp.isarray(str a)
+enddef ;
+
+vardef prefix suffix a =
+    lua.mp.prefix(str a)
+enddef ;
+
 % returns a pair suffix if the path is unknown
 
 vardef makenode@#(suffix p)(text t) =
-    save i ; numeric i ;
+    save i, b ; numeric i ; string b ;
     for a = t :
         if unknown i : % first argument is the index
             i = a ;
-            if not picture p.pic[i] : picture p.pic[] ; fi
-            if not pair    p.pos[i] : pair    p.pos[] ; fi
+            if isarray p :
                 %
                 % note that one needs to declare "path p[] ; picture p[]pic[] ;"
                 % before calling node() if one is to use a pseudo-array for p
                 % because "picture p1.pic[] ;" is not a valid syntax!
                 %
+                % The following works, but is a bit awkward...
+                %
+                b := prefix p ;
+                if not picture p.pic[i] : scantokens("picture " & b & "[]pic[] ;") ; fi
+                if not pair    p.pos[i] : scantokens("pair    " & b & "[]pos[] ;") ; fi
+            else :
+                if not picture p.pic[i] : picture p.pic[] ; fi
+                if not pair    p.pos[i] : pair    p.pos[] ; fi
+            fi
         else :
             if known p.pic[i] :
                 addto p.pic[i] also
@@ -140,7 +158,7 @@ vardef nodeboundingpoint@#(suffix p)(expr i) =
     fi
 enddef ;
 
-% returns pair: scaled laboff direction 
+% returns pair: scaled laboff direction
 
 vardef relative@#(expr s) =
     (mfun_laboff@# scaled s)

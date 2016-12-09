@@ -12414,6 +12414,10 @@ return {
    ["pe"]="قطعی",
    ["ro"]="absolut",
   },
+  ["anchor"]={
+   ["en"]="anchor",
+   ["nl"]="anker",
+  },
   ["action"]={
    ["cs"]="akce",
    ["de"]="aktion",
