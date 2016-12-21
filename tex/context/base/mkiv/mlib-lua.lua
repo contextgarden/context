@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['mlib-lua'] = {
 -- maybe we need mplib.model, but how with instances
 
 local type, tostring, select, loadstring = type, tostring, select, loadstring
-local find, match, gsub = string.find, string.match, string.gsub
+local find, match, gsub, gmatch = string.find, string.match, string.gsub, string.gmatch
 
 local formatters = string.formatters
 local concat     = table.concat
@@ -477,6 +477,14 @@ end
 
 function mp.prefix(str)
      mpquoted(match(str,"^(.-)[%d%[]") or str)
+end
+
+function mp.dimensions(str)
+    local n = 0
+    for s in gmatch(str,"%[?%-?%d+%]?") do --todo: lpeg
+        n = n + 1
+    end
+    mpprint(n)
 end
 
 -- faster and okay as we don't have many variables but probably only

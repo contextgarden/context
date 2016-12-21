@@ -1608,7 +1608,7 @@ def nofill   text t = fill t withpostscript "collect" enddef ;
 
 % so we can do: withcolor "red"
 
-def resolvedcolor expr s =
+vardef resolvedcolor primary s =
   % lua.mp.namedcolor(s)   % conflicts with macro namedcolor
   % lua.mp.NamedColor(s)   % okay but, can also be
   % lua.mp("NamedColor",s) % which gives expansion mess

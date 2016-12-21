@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/09/16 22:26:43
+-- merge date  : 12/21/16 18:51:59
 
 do -- begin closure to overcome local limits and interference
 
@@ -1739,6 +1739,38 @@ local function flattened(t,f,depth)
   return f
 end
 table.flattened=flattened
+local function collapsed(t,f,h)
+  if f==nil then
+    f={}
+    h={}
+  end
+  for k=1,#t do
+    local v=t[k]
+    if type(v)=="table" then
+      collapsed(v,f,h)
+    elseif not h[v] then
+      f[#f+1]=v
+      h[v]=true
+    end
+  end
+  return f
+end
+local function collapsedhash(t,h)
+  if h==nil then
+    h={}
+  end
+  for k=1,#t do
+    local v=t[k]
+    if type(v)=="table" then
+      collapsedhash(v,h)
+    else
+      h[v]=true
+    end
+  end
+  return h
+end
+table.collapsed=collapsed   
+table.collapsedhash=collapsedhash
 local function unnest(t,f) 
   if not f then     
     f={}      

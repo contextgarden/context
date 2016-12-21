@@ -971,6 +971,41 @@ end
 
 table.flattened = flattened
 
+local function collapsed(t,f,h)
+    if f == nil then
+        f = { }
+        h = { }
+    end
+    for k=1,#t do
+        local v = t[k]
+        if type(v) == "table" then
+            collapsed(v,f,h)
+        elseif not h[v] then
+            f[#f+1] = v
+            h[v] = true
+        end
+    end
+    return f
+end
+
+local function collapsedhash(t,h)
+    if h == nil then
+        h = { }
+    end
+    for k=1,#t do
+        local v = t[k]
+        if type(v) == "table" then
+            collapsedhash(v,h)
+        else
+            h[v] = true
+        end
+    end
+    return h
+end
+
+table.collapsed     = collapsed     -- 20% faster than unique(collapsed(t))
+table.collapsedhash = collapsedhash
+
 local function unnest(t,f) -- only used in mk, for old times sake
     if not f then          -- and only relevant for token lists
         f = { }            -- this one can become obsolete

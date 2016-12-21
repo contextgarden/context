@@ -13,6 +13,7 @@ local tostring, tonumber = tostring, tonumber
 local format, floor, match, rep = string.format, math.floor, string.match, string.rep
 local concat, insert = table.concat, table.insert
 local lpegmatch = lpeg.match
+local floor = math.floor
 
 number       = number or { }
 local number = number
@@ -204,4 +205,26 @@ end
 
 function number.bits(n)
     return { bits(n,1) }
+end
+
+function number.bytetodecimal(b)
+    local d = floor(b * 100 / 255 + 0.5)
+    if d > 100 then
+        return 100
+    elseif d < -100 then
+        return -100
+    else
+        return d
+    end
+end
+
+function number.decimaltobyte(d)
+    local b = floor(d * 255 / 100 + 0.5)
+    if b > 255 then
+        return 255
+    elseif b < -255 then
+        return -255
+    else
+        return b
+    end
 end

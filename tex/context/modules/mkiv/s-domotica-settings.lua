@@ -12,6 +12,7 @@ moduledata.domotica.settings = moduledata.domotica.settings or { }
 -- bah, no proper wrapper around value|help
 
 moduledata.zwave = moduledata.zwave or { }
+moduledata.hue   = moduledata.hue   or { }
 
 local NC = context.NC
 local BC = context.BC
@@ -95,4 +96,70 @@ function moduledata.zwave.show_settings(pattern)
 
     end
 
+end
+
+function moduledata.hue.show_state(filename)
+
+    require("control-common")
+    require("control-hue")
+
+    local specification = domotica.hue.check(filename)
+    local instances     = specification.instances
+
+    local ctx_NC, ctx_BC, ctx_NR = context.NC, context.BC, context.NR
+
+    for i=1,#instances do
+        local known = instances[i].knowndevices
+
+        if #instances > 1 then
+            context.subject("instance %i",i)
+        end
+
+        context.starttabulate { "|l|c|c|c|c|c|l|" }
+            ctx_BC() context("light name")
+            ctx_BC() context("id")
+            ctx_BC() context("state")
+            ctx_BC() context("level")
+            ctx_BC() context("color")
+            ctx_BC() context("seen")
+            ctx_BC() context("internal")
+            ctx_BC() ctx_NR()
+            for id, entry in table.sortedhash(known.lights) do
+                if entry.used then
+                    local state    = entry.state
+                    local name     = entry.name
+                    local internal = entry.internalname
+                    ctx_NC() context(entry.name)
+                    ctx_NC() context(entry.identifier)
+                    ctx_NC() context(state.on and "on " or "off")
+                    ctx_NC() context(state.brightness or 0)
+                    ctx_NC() context(state.temperature or 0)
+                    ctx_NC() context((state.reachable or entry.reachable) and "yes" or "no ")
+                    ctx_NC() if name == internal then context(name) else context.emphasized(internal) end
+                    ctx_NC() ctx_NR()
+                end
+            end
+        context.stoptabulate()
+        context.starttabulate { "|l|c|c|c|l|" }
+        ctx_BC() context("sensor name")
+        ctx_BC() context("id")
+        ctx_BC() context("seen")
+        ctx_BC() context("battery")
+        ctx_BC() context("internal")
+        ctx_BC() ctx_NR()
+        for id, entry in table.sortedhash(known.sensors) do
+            if entry.used then
+                local state    = entry.state
+                local name     = entry.name
+                local internal = entry.internalname
+                ctx_NC() context(name)
+                ctx_NC() context(entry.identifier)
+                ctx_NC() context((state.reachable or entry.reachable) and "yes" or "no ")
+                ctx_NC() context(entry.battery or "")
+                ctx_NC() if name == internal then context(name) else context.emphasized(internal) end
+                ctx_NC() ctx_NR()
+            end
+        end
+        context.stoptabulate()
+    end
 end

@@ -18,16 +18,6 @@ if known context_node : endinput ; fi ;
 
 boolean context_node ; context_node := true ;
 
-% A few helpers:
-
-vardef isarray suffix a =
-    lua.mp.isarray(str a)
-enddef ;
-
-vardef prefix suffix a =
-    lua.mp.prefix(str a)
-enddef ;
-
 % returns a pair suffix if the path is unknown
 
 vardef makenode@#(suffix p)(text t) =

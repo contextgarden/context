@@ -296,7 +296,8 @@
 % clipping
 
 \unexpanded\def\dostartclipping#1#2#3% we can move this to lua and only set a box here
-  {\PointsToBigPoints{#2}\width
+  {\forcecolorhack
+   \PointsToBigPoints{#2}\width
    \PointsToBigPoints{#3}\height
    \meta_grab_clip_path{#1}\width\height{%
      0            0             m %

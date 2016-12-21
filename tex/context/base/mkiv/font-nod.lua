@@ -469,16 +469,16 @@ end
 
 --
 
-local threshold = 65536
+local threshold = 65536 -- 1pt
 
-local function toutf(list,result,nofresult,stopcriterium)
+local function toutf(list,result,nofresult,stopcriterium,nostrip)
     if list then
         for n in traverse_nodes(tonut(list)) do
             local c, id = isglyph(n)
             if c then
                 local components = getfield(n,"components")
                 if components then
-                    result, nofresult = toutf(components,result,nofresult)
+                    result, nofresult = toutf(components,result,nofresult,false,true)
                 elseif c > 0 then
                     local fc = fontcharacters[getfont(n)]
                     if fc then
@@ -510,20 +510,20 @@ local function toutf(list,result,nofresult,stopcriterium)
                     result[nofresult] = f_badcode(c)
                 end
             elseif id == disc_code then
-                result, nofresult = toutf(getfield(n,"replace"),result,nofresult) -- needed?
+                result, nofresult = toutf(getfield(n,"replace"),result,nofresult,false,true) -- needed?
             elseif id == hlist_code or id == vlist_code then
              -- if nofresult > 0 and result[nofresult] ~= " " then
              --     nofresult = nofresult + 1
              --     result[nofresult] = " "
              -- end
-                result, nofresult = toutf(getlist(n),result,nofresult)
+                result, nofresult = toutf(getlist(n),result,nofresult,false,true)
             elseif id == glue_code then
-                if nofresult > 0 and result[nofresult] ~= " " then
+                if nofresult > 0 and result[nofresult] ~= " " and getfield(n,"width") > threshold then
                     nofresult = nofresult + 1
                     result[nofresult] = " "
                 end
-            elseif id == kern_code and getfield(n,"kern") > threshold then
-                if nofresult > 0 and result[nofresult] ~= " " then
+            elseif id == kern_code then
+                if nofresult > 0 and result[nofresult] ~= " " and getfield(n,"kern") > threshold then
                     nofresult = nofresult + 1
                     result[nofresult] = " "
                 end
@@ -533,7 +533,7 @@ local function toutf(list,result,nofresult,stopcriterium)
             end
         end
     end
-    if nofresult > 0 and result[nofresult] == " " then
+    if not nostrip and nofresult > 0 and result[nofresult] == " " then
         result[nofresult] = nil
         nofresult = nofresult - 1
     end

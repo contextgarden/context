@@ -1389,7 +1389,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 38086, stripped down to: 22844
+-- original size: 38808, stripped down to: 23386
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2103,6 +2103,38 @@ local function flattened(t,f,depth)
   return f
 end
 table.flattened=flattened
+local function collapsed(t,f,h)
+  if f==nil then
+    f={}
+    h={}
+  end
+  for k=1,#t do
+    local v=t[k]
+    if type(v)=="table" then
+      collapsed(v,f,h)
+    elseif not h[v] then
+      f[#f+1]=v
+      h[v]=true
+    end
+  end
+  return f
+end
+local function collapsedhash(t,h)
+  if h==nil then
+    h={}
+  end
+  for k=1,#t do
+    local v=t[k]
+    if type(v)=="table" then
+      collapsedhash(v,h)
+    else
+      h[v]=true
+    end
+  end
+  return h
+end
+table.collapsed=collapsed   
+table.collapsedhash=collapsedhash
 local function unnest(t,f) 
   if not f then     
     f={}      
@@ -2743,7 +2775,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-number"] = package.loaded["l-number"] or true
 
--- original size: 5146, stripped down to: 2933
+-- original size: 5588, stripped down to: 3299
 
 if not modules then modules={} end modules ['l-number']={
   version=1.001,
@@ -2756,6 +2788,7 @@ local tostring,tonumber=tostring,tonumber
 local format,floor,match,rep=string.format,math.floor,string.match,string.rep
 local concat,insert=table.concat,table.insert
 local lpegmatch=lpeg.match
+local floor=math.floor
 number=number or {}
 local number=number
 if bit32 then 
@@ -2879,6 +2912,26 @@ local function bits(n,i,...)
 end
 function number.bits(n)
   return { bits(n,1) }
+end
+function number.bytetodecimal(b)
+  local d=floor(b*100/255+0.5)
+  if d>100 then
+    return 100
+  elseif d<-100 then
+    return -100
+  else
+    return d
+  end
+end
+function number.decimaltobyte(d)
+  local b=floor(d*255/100+0.5)
+  if b>255 then
+    return 255
+  elseif b<-255 then
+    return -255
+  else
+    return b
+  end
 end
 
 
@@ -19005,8 +19058,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 807382
--- stripped bytes    : 293400
+-- original bytes    : 808546
+-- stripped bytes    : 293656
 
 -- end library merge
 

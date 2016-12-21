@@ -23,11 +23,13 @@
 % --verycompact         : small margins, 7pt font
 %
 % --openzwave           : process openzwave xml files
+% --hue                 : process hue task file
 %
 % --pattern=spec        : files to process
 %
 % example: context --extra=domotica --openzwave ./config/fibaro/fgms.xml ./open-zwave-master/config/aeotec/zw100.xml
 % example: context --extra=domotica --openzwave --pattern="./open-zwave-master/config/**.xml"
+% example: context --extra=domotica --hue       hue-pragma-tasks.lua
 %
 % end help
 
@@ -64,7 +66,12 @@
   [\getdocumentargument{paperformat_paper}]
   [\getdocumentargument{paperformat_print}]
 
+\setuphead
+  [section]
+  [style=bold]
+
 \doifdocumentargument {openzwave} {\enablemode[openzwave]}
+\doifdocumentargument {hue}       {\enablemode[hue]}
 
 \startmode[openzwave]
 
@@ -79,17 +86,10 @@
       [section]
       [width=4em]
 
-    \setuphead
-      [section]
-      [style=bold]
-
     \setupheadertexts
 
     \setupheadertexts
       [chapter][pagenumber]
-
-    \setupheader
-      [style=bold]
 
     \starttitle[title=Zwave devices]
 
@@ -130,4 +130,38 @@
     \stoptext
 
 \stopmode
+
+\startmode[hue]
+
+    \starttext
+
+    \setupheadertexts
+
+    \startluacode
+
+    local arguments = document.arguments
+    local files     = document.files
+    local pattern   = arguments.pattern
+    local filename  = files[1]
+
+    if filename then
+        context.starttitle { title = "Hue: " .. file.nameonly(filename) }
+        filename = file.addsuffix(filename,"lua")
+        if lfs.isfile(filename) then
+            moduledata.hue.show_state(filename)
+        else
+            context("unknown file %a",filename)
+        end
+        context.stoptitle()
+    else
+        context("no files given")
+        context.stoptitle()
+    end
+
+    \stopluacode
+
+    \stoptext
+
+\stopmode
+
 

@@ -105,3 +105,19 @@ enddef ;
 def message expr t =
     if t <> "" : lua.mp.report(t) fi ;
 enddef ;
+
+% a few helpers
+
+% A few helpers:
+
+vardef isarray suffix a =
+    lua.mp.isarray(str a)
+enddef ;
+
+vardef prefix suffix a =
+    lua.mp.prefix(str a)
+enddef ;
+
+vardef dimensions suffix a =
+    lua.mp.dimensions(str a)
+enddef ;

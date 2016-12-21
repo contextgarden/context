@@ -609,7 +609,13 @@ do
     local d_value    = (double/"") * (unbalanced + d_quoted) * (double/"")
     local r_value    = reference * Carg(1) / resolve
 
-    local somevalue  = d_value + b_value + s_value + r_value
+--     local e_value    = (1-S(",}"))^0 / function(s)
+    local e_value    = Cs((left * balanced * right + (1 - S(",}")))^0) / function(s)
+        report("error in database, invalid value %a",s)
+        return "[invalid: " .. s .. "]"
+    end
+
+    local somevalue  = d_value + b_value + s_value + r_value + e_value
     local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0))
 
     local stripper   = lpegpatterns.stripper
