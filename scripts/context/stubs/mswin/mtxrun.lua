@@ -10270,7 +10270,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 57426, stripped down to: 36192
+-- original size: 57611, stripped down to: 36283
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -10412,6 +10412,7 @@ local function add_empty(spacing,namespace,tag)
     tg=tag,
     at=at,
     dt={},
+    ni=nt,
     __p__=top
   }
   dt[nt]=t
@@ -10433,6 +10434,7 @@ local function add_begin(spacing,namespace,tag)
     tg=tag,
     at=at,
     dt={},
+    ni=nt,
     __p__=stack[level]
   }
   setmetatable(top,mt)
@@ -10459,6 +10461,7 @@ local function add_end(spacing,namespace,tag)
   end
   dt=top.dt
   nt=#dt+1
+  toclose.ni=nt
   dt[nt]=toclose
   if toclose.at.xmlns then
     remove(xmlns)
@@ -10504,7 +10507,13 @@ local function add_special(what,spacing,text)
   if strip and (what=="@cm@" or what=="@dt@") then
   else
     nt=nt+1
-    dt[nt]={ special=true,ns="",tg=what,dt={ text } }
+    dt[nt]={
+      special=true,
+      ns="",
+      tg=what,
+      ni=nt,
+      dt={ text },
+    }
   end
 end
 local function set_message(txt)
@@ -11605,7 +11614,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 53892, stripped down to: 32508
+-- original size: 54794, stripped down to: 33223
 
 if not modules then modules={} end modules ['lxml-lpt']={
   version=1.001,
@@ -11696,7 +11705,6 @@ apply_axis['child']=function(list)
         if dk.tg then
           c=c+1
           collected[c]=dk
-          dk.ni=k 
           en=en+1
           dk.ei=en
         end
@@ -11715,7 +11723,6 @@ local function collect(list,collected,c)
       if dk.tg then
         c=c+1
         collected[c]=dk
-        dk.ni=k 
         en=en+1
         dk.ei=en
         c=collect(dk,collected,c)
@@ -11741,7 +11748,6 @@ local function collect(list,collected,c)
       if dk.tg then
         c=c+1
         collected[c]=dk
-        dk.ni=k 
         en=en+1
         dk.ei=en
         c=collect(dk,collected,c)
@@ -11987,6 +11993,14 @@ local function apply_expression(list,expression,order)
   end
   return collected
 end
+local function apply_selector(list,specification)
+  if xml.applyselector then
+    apply_selector=xml.applyselector
+    return apply_selector(list,specification)
+  else
+    return list
+  end
+end
 local P,V,C,Cs,Cc,Ct,R,S,Cg,Cb=lpeg.P,lpeg.V,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Ct,lpeg.R,lpeg.S,lpeg.Cg,lpeg.Cb
 local spaces=S(" \n\r\t\f")^0
 local lp_space=S(" \n\r\t\f")
@@ -12110,6 +12124,9 @@ end
 local function register_nodes(nodetest,nodes)
   return { kind="nodes",nodetest=nodetest,nodes=nodes }
 end
+local function register_selector(specification)
+  return { kind="selector",specification=specification }
+end
 local function register_expression(expression)
   local converted=lpegmatch(converter,expression)
   local runner=load(format(template_e,converted))
@@ -12150,7 +12167,7 @@ local pathparser=Ct { "patterns",
                (V("special")*spaces*P(-1)                             )+(V("initial")*spaces*V("step")*spaces*(P("/")*spaces*V("step")*spaces)^0 )
               ),
   protocol=Cg(V("letters"),"protocol")*P("://")+Cg(Cc(nil),"protocol"),
-  step=((V("shortcuts")+P("/")+V("axis"))*spaces*V("nodes")^0+V("error"))*spaces*V("expressions")^0*spaces*V("finalizer")^0,
+  step=((V("shortcuts")+V("selector")+P("/")+V("axis"))*spaces*V("nodes")^0+V("error"))*spaces*V("expressions")^0*spaces*V("finalizer")^0,
   axis=V("last_match")+V("descendant")+V("child")+V("parent")+V("self")+V("root")+V("ancestor")+V("descendant_or_self")+V("following_sibling")+V("following")+V("reverse_sibling")+V("preceding_sibling")+V("preceding")+V("ancestor_or_self")+#(1-P(-1))*Cc(register_auto_child),
   special=special_1+special_2+special_3,
   initial=(P("/")*spaces*Cc(register_initial_child))^-1,
@@ -12178,6 +12195,7 @@ local pathparser=Ct { "patterns",
   preceding_sibling=P('preceding-sibling::')*Cc(register_preceding_sibling ),
   reverse_sibling=P('reverse-sibling::')*Cc(register_reverse_sibling  ),
   last_match=P('last-match::')*Cc(register_last_match     ),
+  selector=P("{")*C((1-P("}"))^1)*P("}")/register_selector,
   nodes=(V("nodefunction")*spaces*P("(")*V("nodeset")*P(")")+V("nodetest")*V("nodeset"))/register_nodes,
   expressions=expression/register_expression,
   letters=R("az")^1,
@@ -12327,6 +12345,8 @@ do
         collected=apply_nodes(collected,pi.nodetest,pi.nodes)
       elseif kind=="expression" then
         collected=apply_expression(collected,pi.evaluator,order)
+      elseif kind=="selector" then
+        collected=apply_selector(collected,pi.specification)
       elseif kind=="finalizer" then
         collected=pi.finalizer(collected) 
         p.matched=p.matched+1
@@ -12368,6 +12388,9 @@ do
       elseif kind=="expression" then
         collected=apply_expression(collected,pi.evaluator,order)
         report_lpath("% 10i : ex : %s -> %s",(collected and #collected) or 0,pi.expression,pi.converted)
+      elseif kind=="selector" then
+        collected=apply_selector(collected,pi.specification)
+        report_lpath("% 10i : se : %s ",(collected and #collected) or 0,pi.specification)
       elseif kind=="finalizer" then
         collected=pi.finalizer(collected)
         report_lpath("% 10i : fi : %s : %s(%s)",(type(collected)=="table" and #collected) or 0,parsed.protocol or xml.defaultprotocol,pi.name,pi.arguments or "")
@@ -12399,6 +12422,8 @@ do
         collected=apply_nodes(collected,pi.nodetest,pi.nodes)
       elseif kind=="expression" then
         collected=apply_expression(collected,pi.evaluator,order)
+      elseif kind=="selector" then
+        collected=apply_selector(collected,pi.specification)
       elseif kind=="finalizer" then
         return pi.finalizer(collected)
       end
@@ -19058,8 +19083,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 808546
--- stripped bytes    : 293656
+-- original bytes    : 809633
+-- stripped bytes    : 293937
 
 -- end library merge
 

@@ -38,7 +38,7 @@
 
 \usemodule[set-11]
 
-\loadsetups[i-en-xml.xml]
+\loadsetups[i-context]
 
 % \definehspace[squad][1em plus .25em minus .25em]
 
@@ -84,18 +84,21 @@
 
 \starttexdefinition unexpanded section:chapter:number #1
     \doifmode{*sectionnumber} {
+        \bf
         \llap{<\enspace}#1\enspace>
     }
 \stoptexdefinition
 
 \starttexdefinition unexpanded section:section:number #1
     \doifmode{*sectionnumber} {
+        \bf
         \llap{<<\enspace}#1\enspace>>
     }
 \stoptexdefinition
 
 \starttexdefinition unexpanded section:subsection:number #1
     \doifmode{*sectionnumber} {
+        \bf
         \llap{<<<\enspace}#1\enspace>>>
     }
 \stoptexdefinition
@@ -1773,6 +1776,222 @@ can use the usual operators:
 
 In addition, \type {=} equals \type {==} and \type {!=} is the same as \type
 {~=}. If you mess up the expression, you quite likely get a \LUA\ error message.
+
+\stopsection
+
+
+\startsection[title={css selectors}]
+
+\startbuffer[selector-001]
+<?xml version="1.0" ?>
+
+<a>
+    <b class="one">b.one</b>
+    <b class="two">b.two</b>
+    <b class="one two">b.one.two</b>
+    <b class="three">b.three</b>
+    <b id="first">b#first</b>
+    <c>c</c>
+    <d>d e</d>
+    <e>d e</e>
+    <e>d e e</e>
+    <d>d f</d>
+    <f foo="bar">@foo = bar</f>
+    <f bar="foo">@bar = foo</f>
+    <f bar="foo1">@bar = foo1</f>
+    <f bar="foo2">@bar = foo2</f>
+    <f bar="foo3">@bar = foo3</f>
+    <f bar="foo+4">@bar = foo+4</f>
+    <g>g</g>
+    <g><gg><d>g gg d</d></gg></g>
+    <g><gg><f>g gg f</f></gg></g>
+    <g><gg><f class="one">g gg f.one</f></gg></g>
+    <g>g</g>
+    <g><gg><f class="two">g gg f.two</f></gg></g>
+    <g><gg><f class="three">g gg f.three</f></gg></g>
+    <g><f class="one">g f.one</f></g>
+    <g><f class="three">g f.three</f></g>
+    <h whatever="four five six">@whatever = four five six</h>
+</a>
+\stopbuffer
+
+\xmlloadbuffer{selector-001}{selector-001}
+
+\startxmlsetups xml:selector:demo
+    \advance\scratchcounter\plusone
+    \inleftmargin{\the\scratchcounter}\ignorespaces\xmlverbatim{#1}\par
+\stopxmlsetups
+
+\unexpanded\def\showCSSdemo#1#2%
+  {\blank
+   \textrule{\tttf#2}
+   \startlines
+   \dontcomplain
+   \tttf \obeyspaces
+   \scratchcounter\zerocount
+   \xmlcommand{#1}{#2}{xml:selector:demo}
+   \stoplines
+   \blank}
+
+The \CSS\ approach to filtering is a bit different from the path based one and is
+supported too. In fact, you can combine both methods. Depending on what you
+select, the \CSS\ one can be a little bit faster too. It has the advantage that
+one can select more in one go but at the same time looks a bit less attractive.
+This method was added just to show that it can be done but might be useful too. A
+selector is gogen between curly braces (after all \CSS\ uses them and they have no
+function yet in the parser.
+
+\starttyping
+\xmlall{#1}{{foo bar .whatever, bar foo .whatever}}
+\stoptyping
+
+The following methods are supported:
+
+\starttabulate[|T||]
+\NC element                          \NC all tags element \NC \NR
+\NC element-1 > element-2            \NC all tags element-2 with parent tag element-1 \NC \NR
+\NC element-1 + element-2            \NC all tags element-2 preceded by tag element-1 \NC \NR
+\NC element-1 ~ element-2            \NC all tags element-2 preceded by tag element-1 \NC \NR
+\NC element-1 element-2              \NC all tags element-2 inside tag element-1 \NC \NR
+\NC [attribute]                      \NC has attribute \NC \NR
+\NC [attribute=value]                \NC attribute equals value\NC \NR
+\NC [attribute\lettertilde =value]   \NC attribute contains value (space is separator) \NC \NR
+\NC [attribute\letterhat   ="value"] \NC attribute starts with value \NC \NR
+\NC [attribute\letterdollar="value"] \NC attribute ends with value \NC \NR
+\NC [attribute*="value"]             \NC attribute contains value \NC \NR
+\NC .class                           \NC has class \NC \NR
+\NC \letterhash id                   \NC has id \NC \NR
+\NC :nth-child(n)                    \NC the child at index n \NC \NR
+\NC :nth-last-child(n)               \NC the child at index n from the end \NC \NR
+\NC :first-child                     \NC the first child \NC \NR
+\NC :last-child                      \NC the last child \NC \NR
+\NC :nth-of-type(n)                  \NC the match at index n \NC \NR
+\NC :nth-last-of-type(n)             \NC the match at index n from the end \NC \NR
+\NC :first-of-type                   \NC the first match \NC \NR
+\NC :last-of-type                    \NC the last match \NC \NR
+\NC :only-of-type                    \NC the only match or nothing \NC \NR
+\NC :only-child                      \NC the only child or nothing \NC \NR
+\NC :empty                           \NC only when empty \NC \NR
+\NC :root                            \NC the whole tree \NC \NR
+\stoptabulate
+
+The next pages show some examples. For that we use the demo file:
+
+\typebuffer[selector-001]
+
+The class and id selectors often only make sense in \HTML\ like documents but they
+are supported nevertheless. They are after all just shortcuts for filtering by
+attribute. The class filtering is special in the sense that it checks for a class
+in a list of classes given in an attribute.
+
+\showCSSdemo{selector-001}{{.one}}
+\showCSSdemo{selector-001}{{.one, .two}}
+\showCSSdemo{selector-001}{{.one, .two, \letterhash first}}
+
+Attributes can be filtered by presence, value, partial value and such. Quotes are
+optional but we advice to use them.
+
+\showCSSdemo{selector-001}{{[foo], [bar=foo]}}
+\showCSSdemo{selector-001}{{[bar\lettertilde=foo]}}
+\showCSSdemo{selector-001}{{[bar\letterhat="foo"]}}
+\showCSSdemo{selector-001}{{[whatever\lettertilde="five"]}}
+
+You can of course combine the methods as in:
+
+\showCSSdemo{selector-001}{{g f .one, g f .three}}
+\showCSSdemo{selector-001}{{g > f .one, g > f .three}}
+\showCSSdemo{selector-001}{{d + e}}
+\showCSSdemo{selector-001}{{d ~ e}}
+\showCSSdemo{selector-001}{{d ~ e, g f .one, g f .three}}
+
+You can also negate the result by using \type {:not} on a simple expression:
+
+\showCSSdemo{selector-001}{{:not([whatever\lettertilde="five"])}}
+\showCSSdemo{selector-001}{{:not(d)}}
+
+The child and match selectors are also supported:
+
+\showCSSdemo{selector-001}{{a:nth-child(3)}}
+\showCSSdemo{selector-001}{{a:nth-last-child(3)}}
+\showCSSdemo{selector-001}{{g:nth-of-type(3)}}
+\showCSSdemo{selector-001}{{g:nth-last-of-type(3)}}
+\showCSSdemo{selector-001}{{a:first-child}}
+\showCSSdemo{selector-001}{{a:last-child}}
+\showCSSdemo{selector-001}{{e:first-of-type}}
+\showCSSdemo{selector-001}{{gg d:only-of-type}}
+
+Instead of numbers you can also give the \type {an} and \type {an+b} formulas
+as well as the \type {odd} and \type {even} keywords:
+
+\showCSSdemo{selector-001}{{a:nth-child(even)}}
+\showCSSdemo{selector-001}{{a:nth-child(odd)}}
+\showCSSdemo{selector-001}{{a:nth-child(3n+1)}}
+\showCSSdemo{selector-001}{{a:nth-child(2n+3)}}
+
+There are a few special cases:
+
+\showCSSdemo{selector-001}{{g:empty}}
+\showCSSdemo{selector-001}{{g:root}}
+\showCSSdemo{selector-001}{{*}}
+
+Combining the \CSS\ methods with the regular ones is possible:
+
+\showCSSdemo{selector-001}{{g gg f .one}}
+\showCSSdemo{selector-001}{g/gg/f[@class='one']}
+\showCSSdemo{selector-001}{g/{gg f .one}}
+
+\startbuffer[selector-002]
+<?xml version="1.0" ?>
+
+<document>
+    <title class="one"  >title 1</title>
+    <title class="two"  >title 2</title>
+    <title class="one"  >title 3</title>
+    <title class="three">title 4</title>
+</document>
+\stopbuffer
+
+The next examples we use this file:
+
+\typebuffer[selector-002]
+
+\xmlloadbuffer{selector-002}{selector-002}
+
+When we filter from this (not too well structured) tree we can use both
+methods to achieve the same:
+
+\showCSSdemo{selector-002}{{document title .one, document title .three}}
+
+\showCSSdemo{selector-002}{/document/title[(@class='one') or (@class='three')]}
+
+However, imagine this file:
+
+\startbuffer[selector-003]
+<?xml version="1.0" ?>
+
+<document>
+    <title    class="one">title 1</title>
+    <subtitle class="sub">title 1.1</subtitle>
+    <title    class="two">title 2</title>
+    <subtitle class="sub">title 2.1</subtitle>
+    <title    class="one">title 3</title>
+    <subtitle class="sub">title 3.1</subtitle>
+    <title    class="two">title 4</title>
+    <subtitle class="sub">title 4.1</subtitle>
+</document>
+\stopbuffer
+
+\typebuffer[selector-003]
+
+\xmlloadbuffer{selector-003}{selector-003}
+
+The next filter in easier with the \CSS\ selector methods because these accumulate
+independent (simple) expressions:
+
+\showCSSdemo{selector-003}{{document title .one + subtitle, document title .two + subtitle}}
+
+Watch how we get an output in the document order. Because we render a sequential document
+a combined filter will trigger a sorting pass.
 
 \stopsection
 
@@ -3924,6 +4143,72 @@ context.tocontext(t)
 Now we get:
 
 \ctxluabuffer
+
+\startsection[title=Pure xml]
+
+One might wonder how a \TEX\ macro package would look like when backslashes,
+dollars and percent signs would have no special meaning. In fact, it would be
+rather useless as interpreting commands are triggered by such characters. Any
+formatting or coding system needs such characters. Take \XML: angle brackets and
+ampersands are really special. So, no matter what system we use, we do have to
+deal with the (common) case where these characters need to be sees as they are.
+Normally escaping is the solution.
+
+The \CONTEXT\ interface for \XML\ suffers from this as well. You really don't
+want to know how many tricks are used for dealing with special characters and
+entities: there are several ways these travel through the system and it is
+possible to adapt and cheat. Especially roundtripped data (via tuc file) puts
+some demands on the system because when ts \XML\ can become \TEX\ and vise versa.
+The next example (derived from a mail on the list) demonstrates this:
+
+\starttyping
+\startbuffer[demo]
+<doc>
+    <pre><code>\ConTeXt\ is great</code></pre>
+
+    <pre><code>but you need to know some tricks</code></pre>
+</doc>
+\stopbuffer
+
+\startxmlsetups xml:initialize
+     \xmlsetsetup{#1}{doc|p|code}{xml:*}
+     \xmlsetsetup{#1}{pre/code}{xml:pre:code}
+\stopxmlsetups
+
+\xmlregistersetup{xml:initialize}
+
+\startxmlsetups xml:doc
+     \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:pre:code
+    no solution
+    \comment[symbol=Key, location=inmargin,color=yellow]{\xmlflush{#1}}
+    \par
+    solution one \begingroup
+        \expandUx
+        \comment[symbol=Key, location=inmargin,color=yellow]{\xmlflush{#1}}
+    \endgroup
+    \par
+    solution two
+    \comment[symbol=Key, location=inmargin,color=yellow]{\xmlpure{#1}}
+    \par
+    \xmlprettyprint{#1}{tex}
+\stopxmlsetups
+
+\xmlprocessbuffer{main}{demo}{}
+\stoptyping
+
+The first comment (an interactive feature of \PDF\ comes out as:
+
+\starttyping
+\Ux {5C}ConTeXt\Ux {5C} is great
+\stoptyping
+
+The second and third comment are okay. It's one of the reasons why we have \type
+{\xmlpure}.
+
+\stopsection
 
 \stopchapter
 

@@ -43,9 +43,11 @@ local p_utf8character   = lpegpatterns.utf8character
 
 local trace             = false  trackers.register("publications",            function(v) trace = v end)
 local trace_duplicates  = true   trackers.register("publications.duplicates", function(v) trace = v end)
+local trace_strings     = false  trackers.register("publications.strings",    function(v) trace = v end)
 
 local report            = logs.reporter("publications")
 local report_duplicates = logs.reporter("publications","duplicates")
+local report_strings    = logs.reporter("publications","strings")
 
 local allocate          = utilities.storage.allocate
 
@@ -537,8 +539,28 @@ do
         luadata[hashtag] = entries
     end
 
+    local f_invalid = formatters["<invalid: %s>"]
+
     local function resolve(s,dataset)
-        return dataset.shortcuts[s] or defaultshortcuts[s] or s -- can be number
+        local e = dataset.shortcuts[s]
+        if e then
+            if trace_strings then
+                report_strings("%a resolves to %a",s,e)
+            end
+            return e
+        end
+        e = defaultshortcuts[s]
+        if e then
+            if trace_strings then
+                report_strings("%a resolves to default %a",s,e)
+            end
+            return e
+        end
+        if tonumber(s) then
+            return s
+        end
+        report("error in database, invalid value %a",s)
+        return f_invalid(s)
     end
 
     local pattern = p_whitespace^0
@@ -600,28 +622,23 @@ do
 
     local unbalanced = (left/"") * balanced * (right/"") * P(-1)
 
-    local reference  = P("@") * C((R("az","AZ","09") + S("_:-"))^1)
+    local reference  = C((R("az","AZ","09") + S("_:-"))^1)
     local b_value    = p_left * balanced * p_right
- -- local u_value    = p_left * unbalanced * p_right -- get rid of outer { }
- -- local s_value    = (single/"") * (u_value + s_quoted) * (single/"")
- -- local d_value    = (double/"") * (u_value + d_quoted) * (double/"")
     local s_value    = (single/"") * (unbalanced + s_quoted) * (single/"")
     local d_value    = (double/"") * (unbalanced + d_quoted) * (double/"")
-    local r_value    = reference * Carg(1) / resolve
+    local r_value    = P("@") * reference * Carg(1) / resolve
+                     +          reference * Carg(1) / resolve
+    local n_value    = C(R("09")^1)
 
---     local e_value    = (1-S(",}"))^0 / function(s)
-    local e_value    = Cs((left * balanced * right + (1 - S(",}")))^0) / function(s)
-        report("error in database, invalid value %a",s)
-        return "[invalid: " .. s .. "]"
+    local e_value    = Cs((left * balanced * right + (1 - S(",}")))^0) * Carg(1) / function(s,dataset)
+        return resolve(s,dataset)
     end
 
-    local somevalue  = d_value + b_value + s_value + r_value + e_value
+    local somevalue  = d_value + b_value + s_value + r_value + n_value + e_value
     local value      = Cs((somevalue * ((spacing * hash * spacing)/"" * somevalue)^0))
 
     local stripper   = lpegpatterns.stripper
-    value            = value / function(s)
-        return lpegmatch(stripper,s)
-    end
+          value      = value / function(s) return lpegmatch(stripper,s) end
 
     local forget     = percent^1 * (1-lineending)^0
     local spacing    = spacing * forget^0 * spacing

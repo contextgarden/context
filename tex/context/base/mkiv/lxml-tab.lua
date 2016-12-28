@@ -264,6 +264,7 @@ local function add_empty(spacing, namespace, tag)
         tg = tag,
         at = at,
         dt = { },
+        ni = nt,
         __p__ = top
     }
     dt[nt] = t
@@ -285,7 +286,8 @@ local function add_begin(spacing, namespace, tag)
         rn = resolved,
         tg = tag,
         at = at,
-        dt = {},
+        dt = { },
+        ni = nt, -- preset slot
         __p__ = stack[level]
     }
     setmetatable(top, mt)
@@ -313,6 +315,7 @@ local function add_end(spacing, namespace, tag)
     end
     dt = top.dt
     nt = #dt + 1
+    toclose.ni = nt
     dt[nt] = toclose
  -- dt[0] = top -- nasty circular reference when serializing table
     if toclose.at.xmlns then
@@ -370,7 +373,13 @@ local function add_special(what, spacing, text)
         -- forget it
     else
         nt = nt + 1
-        dt[nt] = { special=true, ns="", tg=what, dt={ text } }
+        dt[nt] = {
+            special = true,
+            ns      = "",
+            tg      = what,
+            ni      = nt,
+            dt      = { text },
+        }
     end
 end
 
