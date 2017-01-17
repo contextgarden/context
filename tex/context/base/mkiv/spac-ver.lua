@@ -2077,3 +2077,16 @@ implement {
     arguments = { "string", "string" }
 }
 
+local remove_node    = nodes.remove
+local find_node_tail = nodes.tail
+
+interfaces.implement {
+    name    = "fakenextstrutline",
+    actions = function()
+        local head = texlists.page_head
+        if head then
+            local head = remove_node(head,find_node_tail(head),true)
+            texlists.page_head = head
+        end
+    end
+}

@@ -40,6 +40,10 @@
    trep=yes] % texligatures=yes,texquotes=yes
 
 \definefontfeature
+  [original] % a clone of default so we can revert
+  [default]
+
+\definefontfeature
   [smallcaps]
   [always]
   [smcp=yes,
@@ -315,6 +319,10 @@
   [quality]
   [expansion=quality,
    protrusion=quality]
+
+\definefontfeature
+  [fullprotrusion]
+  [protrusion=pure]
 
 \definefontfeature
   [slanted]

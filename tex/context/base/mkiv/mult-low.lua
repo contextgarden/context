@@ -205,12 +205,12 @@ return {
         --
         "filledhboxb", "filledhboxr", "filledhboxg", "filledhboxc", "filledhboxm", "filledhboxy", "filledhboxk",
         --
-        "scratchcounter", "globalscratchcounter",
-        "scratchdimen", "globalscratchdimen",
-        "scratchskip", "globalscratchskip",
-        "scratchmuskip", "globalscratchmuskip",
-        "scratchtoks", "globalscratchtoks",
-        "scratchbox", "globalscratchbox",
+        "scratchcounter", "globalscratchcounter", "privatescratchcounter",
+        "scratchdimen", "globalscratchdimen", "privatescratchdimen",
+        "scratchskip", "globalscratchskip", "privatescratchskip",
+        "scratchmuskip", "globalscratchmuskip", "privatescratchmuskip",
+        "scratchtoks", "globalscratchtoks", "privatescratchtoks",
+        "scratchbox", "globalscratchbox", "privatescratchbox",
         --
         "normalbaselineskip", "normallineskip", "normallineskiplimit",
         --

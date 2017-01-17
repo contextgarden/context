@@ -487,7 +487,8 @@
 \let\stopfloatcombination\relax
 
 \def\pack_combinations_start_float[#1][#2]%
-  {\dontleavehmode\vbox\bgroup
+  {\ifinsidefloat\else\dontleavehmode\fi % tricky, floatcombinations fail to align well otherwise
+   \vbox\bgroup
   %\insidecolumnstrue % trick, forces no centering, todo: proper switch/feature
    \postcenterfloatmethod\zerocount
    \forcelocalfloats
@@ -499,7 +500,7 @@
      {\appendetoks{\getlocalfloat{\recurselevel}}{}\to\scratchtoks}% brrr
    \expanded{\startcombination[#1]\the\scratchtoks}\stopcombination
    \resetlocalfloats
-  \egroup}
+   \egroup}
 
 %D \macros
 %D   {definepairedbox, setuppairedbox, placepairedbox}

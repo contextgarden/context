@@ -730,7 +730,9 @@ function metapost.graphic_base_pass(specification) -- name will change (see mlib
             report_metapost("running job %s, asked figure %a",nofruns,askedfig)
         end
         processmetapost(mpx, {
-            preamble,
+            definitions,
+            extensions,
+            inclusions,
             wrappit and do_begin_fig or "",
             do_first_run,
             no_trial_run,

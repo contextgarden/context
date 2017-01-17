@@ -45,6 +45,7 @@ local xmltext           = xml.text
 local xmltostring       = xml.tostring
 local xmlapplylpath     = xml.applylpath
 local xmlunspecialized  = xml.unspecialized
+local xmldespecialized  = xml.despecialized -- nicer in expanded xml
 local xmlprivatetoken   = xml.privatetoken
 local xmlstripelement   = xml.stripelement
 local xmlinclusion      = xml.inclusion
@@ -52,6 +53,7 @@ local xmlinclusions     = xml.inclusions
 local xmlbadinclusions  = xml.badinclusions
 local xmlcontent        = xml.content
 local xmllastmatch      = xml.lastmatch
+
 
 directives.enable("xml.path.keeplastmatch")
 
@@ -299,14 +301,6 @@ lxml.toverbatim = context.newverbosehandler {
 }
 
 -- raw flushing
-
-function lxml.startraw()
-    forceraw = true
-end
-
-function lxml.stopraw()
-    forceraw = false
-end
 
 function lxml.startraw()
     forceraw = true
@@ -911,7 +905,8 @@ local function sprint(root) -- check rawroot usage
             if forceraw then
                 rawroot = root
              -- contextsprint(ctxcatcodes,xmltostring(root)) -- goes wrong with % etc
-                root = xmlunspecialized(xmltostring(root))
+             -- root = xmlunspecialized(xmltostring(root))   -- we loose < > &
+                root = xmldespecialized(xmltostring(root))
                 lpegmatch(xmltextcapture,root) -- goes to toc
             else
                 xmlserialize(root,xmltexhandler)

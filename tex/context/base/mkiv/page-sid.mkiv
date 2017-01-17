@@ -55,8 +55,8 @@
 
 \newdimen       \d_page_sides_shift
 \newdimen       \d_page_sides_extrashift
-\newdimen       \d_page_sided_leftshift
-\newdimen       \d_page_sided_rightshift
+\newdimen       \d_page_sides_leftshift
+\newdimen       \d_page_sides_rightshift
 \newdimen       \d_page_sides_leftskip
 \newdimen       \d_page_sides_rightskip
 \newdimen       \d_page_sides_maximum
@@ -77,7 +77,7 @@
 \def\page_sides_process_float_cutspace   {\global\c_page_sides_float_type\pluseight\page_sides_handle_float}
 \def\page_sides_process_float_margin     {\global\c_page_sides_float_type\pluseight\page_sides_handle_float}
 
-\let\logsidefloat    \relax
+\let\logsidefloat\relax
 
 \newif\iftracesidefloats % public (might change)
 
@@ -287,13 +287,13 @@
 % alternative method (unsnapped)
 %
 % \def\page_sides_flush_floats_indeed
-%   {\scratchdimen\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax
+%   {\privatescratchdimen\dimexpr\d_page_sides_vsize-\d_page_sides_bottomskip-\pagetotal\relax
 %    \ifdim\parskip>\zeropoint % why this test ?
-%      \ifdim\scratchdimen>\parskip
-%        \blank[\v!nowhite,\the\scratchdimen] % better in stages
+%      \ifdim\privatescratchdimen>\parskip
+%        \blank[\v!nowhite,\the\privatescratchdimen] % better in stages
 %      \fi
 %    \else
-%        \blank[\the\scratchdimen]
+%        \blank[\the\privatescratchdimen]
 %    \fi}
 
 \def\page_sides_check_floats_after_par
@@ -363,6 +363,7 @@
 
 \def\page_sides_output_routine_yes % we need to rework this ... add pagediscards and such
   {\unvbox\normalpagebox % bah, and the discards?
+% \pagediscards
    \setbox\b_page_sides_bottom\lastbox
    \ifdim\wd\b_page_sides_bottom>\d_page_sides_hsize
      \penalty-201 % hm, i really need to write this from scatch
@@ -415,7 +416,7 @@
 %   {\ifcase\c_page_sides_float_type
 %      \vbox{#1}%
 %    \or % 1
-%      \kern\d_page_sided_leftshift
+%      \kern\d_page_sides_leftshift
 %      \kern\d_page_sides_shift
 %      \vbox{#1}%
 %      \kern-\d_page_sides_extrashift
@@ -428,7 +429,7 @@
 %      \vbox{#1}%
 %      \kern-\d_page_sides_extrashift
 %    \or % 4
-%      \kern\d_page_sided_leftshift
+%      \kern\d_page_sides_leftshift
 %      \kern\d_page_sides_shift
 %      \vbox{#1\removedepth}%
 %      \kern-\d_page_sides_extrashift
@@ -436,7 +437,7 @@
 %      \kern-\d_page_sides_extrashift
 %      \vbox{#1}%
 %      \kern\d_page_sides_shift
-%      \kern\d_page_sided_rightshift
+%      \kern\d_page_sides_rightshift
 %    \or % 6
 %      \kern-\d_page_sides_extrashift
 %      \vbox{#1}%
@@ -449,7 +450,7 @@
 %      \kern-\d_page_sides_extrashift
 %      \vbox{#1}%
 %      \kern\d_page_sides_shift
-%      \kern\d_page_sided_rightshift
+%      \kern\d_page_sides_rightshift
 %    \fi}
 %
 % The compact way:
@@ -457,9 +458,9 @@
 \def\page_sides_relocate_float#1%
   {\global\setbox\floatbox\hpack
      {\ifnum\c_page_sides_float_type=\plusfour
-        \kern\d_page_sided_leftshift
+        \kern\d_page_sides_leftshift
       \else\ifnum\c_page_sides_float_type=\plusone
-        \kern\d_page_sided_leftshift
+        \kern\d_page_sides_leftshift
       \fi\fi
       \ifnum\c_page_sides_float_type>\plusfour
         \kern-\d_page_sides_extrashift
@@ -473,27 +474,27 @@
         \kern-\d_page_sides_extrashift
       \fi
       \ifnum\c_page_sides_float_type=\pluseight
-        \kern\d_page_sided_rightshift
+        \kern\d_page_sides_rightshift
       \else\ifnum\c_page_sides_float_type=\plusfive
-        \kern\d_page_sided_rightshift
+        \kern\d_page_sides_rightshift
       \fi\fi}}
 
 \def\page_sides_apply_vertical_shift
   {\ifnum\c_page_sides_align=\plusfour
      \getnoflines{\ht\floatbox}%
-     \scratchdimen\dimexpr\noflines\lineheight-\strutdepth\relax
+     \privatescratchdimen\dimexpr\noflines\lineheight-\strutdepth\relax
      \getrawnoflines\d_page_sides_topskip
-     \advance\scratchdimen\noflines\lineheight
+     \advance\privatescratchdimen\noflines\lineheight
      % todo: maybe rounding problem here
      % \global\setbox\floatbox\hbox{\lower\lineheight\box\floatbox}%
      \global\setbox\floatbox\hpack{\lower\strutdepth\box\floatbox}%
-     \ht\floatbox\scratchdimen
+     \ht\floatbox\privatescratchdimen
      \dp\floatbox\zeropoint
    \fi
    \ifcase\c_page_sides_align \else
      \global\d_page_sides_topskip\zeropoint
    \fi
-   \scratchdimen
+   \privatescratchdimen
      \ifnum\c_page_sides_float_type<\plusfour
        \d_page_sides_topskip
      \else\ifnum\c_page_sides_float_type>\plusfive
@@ -504,26 +505,26 @@
    % the top of the box is at the previous baseline
    \ifcase\c_page_sides_align
        % 0 normal
-     \advance\scratchdimen\strutdepth  % or \openstrutdepth
+     \advance\privatescratchdimen\strutdepth  % or \openstrutdepth
    \or % 1 height
-     \advance\scratchdimen\strutdepth  % or \openstrutdepth
+     \advance\privatescratchdimen\strutdepth  % or \openstrutdepth
    \or % 2 line
    \or % 3 depth
-     \advance\scratchdimen\lineheight  % or \openlineheight
-     \advance\scratchdimen\strutdepth  % or \openstrutdepth
+     \advance\privatescratchdimen\lineheight  % or \openlineheight
+     \advance\privatescratchdimen\strutdepth  % or \openstrutdepth
    \or % 4 grid
-     \scratchdimen\zeropoint
+     \privatescratchdimen\zeropoint
    \or
-     \advance\scratchdimen\strutheight % or \openstrutheight
+     \advance\privatescratchdimen\strutheight % or \openstrutheight
    \fi
    % new
    \global\c_page_sides_lines_done\zerocount
    \ifnum\c_page_sides_n_of_lines>\zerocount
-     \advance\scratchdimen\c_page_sides_n_of_lines\lineheight
+     \advance\privatescratchdimen\c_page_sides_n_of_lines\lineheight
    \fi
    \global\setbox\floatbox\hpack % why extra box
      {\vbox
-        {\vskip\scratchdimen
+        {\vskip\privatescratchdimen
          \nointerlineskip
          \box\floatbox
          \ifnum\c_page_sides_align=\plusfive \vskip-\lineheight \fi}}%
@@ -568,6 +569,8 @@
    \d_page_sides_height\noflines\lineheight
    \page_sides_push_float_inline\page_sides_place_snap_to_grid}
 
+\let\strc_floats_mark_par_as_free\relax
+
 \def\page_sides_push_float_inline#1%
   {\begingroup
    \reseteverypar % needed !
@@ -576,6 +579,7 @@
    \page_sides_insert_info
    \relax
    \lefttoright % \textdir TLT\relax  % or \ifconditional\displaylefttoright below (more work)
+   \strc_floats_mark_par_as_free
    \ifcase\c_page_sides_float_type
      % invalid
    \or % backspace
@@ -639,7 +643,7 @@
      \global\setfalse\c_page_floats_room
    \else
      \ifdim\dimexpr\pagegoal-\d_page_sides_vsize\relax<\d_page_sides_bottomskip
-       \global\advance\d_page_sides_vsize \dimen0
+      % just weird: \global\advance\d_page_sides_vsize \dimen0
        \global\settrue\c_page_sides_short
        \page_otr_sides_push_penalties
        % why was this \global\holdinginserts\plusone
@@ -660,30 +664,34 @@
 %    \vskip-\struttotal
 %    \endgroup}
 
-\installtextracker
-  {sidefloats.anchor}
-  {\let\page_sides_anchor\page_sides_anchor_yes}
-  {\let\page_sides_anchor\page_sides_anchor_nop}
-
-\def\page_sides_anchor_yes
-  {\darkred
-   \hskip-5\emwidth
-   \vrule\s!height.05\exheight\s!depth.05\exheight\s!width10\emwidth}
-
-\def\page_sides_anchor_nop
-  {\strut}
-
-\let\page_sides_anchor\page_sides_anchor_nop
+% \installtextracker
+%   {sidefloats.anchor}
+%   {\let\page_sides_anchor\page_sides_anchor_yes}
+%   {\let\page_sides_anchor\page_sides_anchor_nop}
+%
+% \def\page_sides_anchor_yes
+%   {\darkred
+%    \hskip-5\emwidth
+%    \vrule\s!height.05\exheight\s!depth.05\exheight\s!width10\emwidth}
+%
+% \def\page_sides_anchor_nop
+%   {\strut}
+%
+% \let\page_sides_anchor\page_sides_anchor_nop
+%
+% \def\page_sides_prepare_space
+%   {\par
+%    \begingroup
+%    \reseteverypar
+%    \dontleavehmode\hpack to \zeropoint{\page_sides_anchor\hss\strut}%
+%    \vskip-\parskip
+%    \vskip-\struttotal
+%    \inhibitblank
+%    \endgroup}
 
 \def\page_sides_prepare_space
-  {\par
-   \begingroup
-   \reseteverypar
-   \dontleavehmode\hpack to \zeropoint{\page_sides_anchor\hss\strut}%
-   \vskip-\parskip
-   \vskip-\struttotal
-   \inhibitblank
-   \endgroup}
+  {\fakenextstrutline
+   \inhibitblank}
 
 \def\page_sides_handle_float#1% grid (4) is rather experimental
   {\page_sides_prepare_space
@@ -714,8 +722,8 @@
 \let\page_sides_check_floats\page_sides_check_floats_indeed
 
 \unexpanded\def\page_sides_check_floats_set
-  {\scratchdimen\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
-   \c_page_sides_n_of_hang\scratchdimen
+  {\privatescratchdimen\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
+   \c_page_sides_n_of_hang\privatescratchdimen
    \divide\c_page_sides_n_of_hang \baselineskip\relax
    \ifnum\c_page_sides_n_of_hang>\zerocount
      % new from here (needs test case, old code)
@@ -724,31 +732,31 @@
        \ifcase\c_page_sides_lines_done
          \global\c_page_sides_lines_done\c_page_sides_n_of_hang
        \else
-         \scratchcounter\c_page_sides_lines_done
-         \advance\scratchcounter-\c_page_sides_n_of_hang
-         \global\advance\c_page_sides_n_of_lines-\scratchcounter
+         \privatescratchcounter\c_page_sides_lines_done
+         \advance\privatescratchcounter-\c_page_sides_n_of_hang
+         \global\advance\c_page_sides_n_of_lines-\privatescratchcounter
        \fi
      \fi
      % hm, when do we get the parshape branch? needs testing
      \ifnum\c_page_sides_n_of_lines>\zerocount
-       \scratchtoks\emptytoks
-       \scratchcounter\c_page_sides_n_of_lines
-       \scratchdimen\dimexpr\hsize-\d_page_sides_width\relax
+       \privatescratchtoks\emptytoks
+       \privatescratchcounter\c_page_sides_n_of_lines
+       \privatescratchdimen\dimexpr\hsize-\d_page_sides_width\relax
        \dorecurse\c_page_sides_n_of_lines
-         {\appendtoks \zeropoint \hsize \to \scratchtoks}%
+         {\appendtoks \zeropoint \hsize \to \privatescratchtoks}%
        \ifnum\c_page_sides_n_of_hang>\c_page_sides_n_of_lines
          \advance\c_page_sides_n_of_hang -\c_page_sides_n_of_lines\relax
-         \advance\scratchcounter\c_page_sides_n_of_hang
+         \advance\privatescratchcounter\c_page_sides_n_of_hang
          \dorecurse\c_page_sides_n_of_hang % weird, shouldn't that be scratchcounter
            {\ifnum\c_page_sides_float_type>\plusfour
-              \appendtoks \zeropoint         \scratchdimen \to \scratchtoks
+              \appendtoks \zeropoint         \privatescratchdimen \to \privatescratchtoks
             \else
-              \appendtoks \d_page_sides_width\scratchdimen \to \scratchtoks
+              \appendtoks \d_page_sides_width\privatescratchdimen \to \privatescratchtoks
             \fi}%
        \fi
        \parshape
-         \numexpr\scratchcounter+\plusone\relax
-         \the\scratchtoks  % \scratchcounter
+         \numexpr\privatescratchcounter+\plusone\relax
+         \the\privatescratchtoks  % \privatescratchcounter
          \zeropoint \hsize % \plusone
        \relax
      \else
@@ -786,12 +794,12 @@
 
 \def\page_sides_inject_dummy_lines
   {\begingroup
-   \scratchcounter\pageshrink
-   \divide\scratchcounter \baselineskip
-   \advance\scratchcounter \plusone
+   \privatescratchcounter\pageshrink
+   \divide\privatescratchcounter \baselineskip
+   \advance\privatescratchcounter \plusone
    \parskip\zeropoint
-   \dorecurse\scratchcounter{\hpack to \hsize{}}%
-   \kern-\scratchcounter\baselineskip
+   \dorecurse\privatescratchcounter{\hpack to \hsize{}}%
+   \kern-\privatescratchcounter\baselineskip
    \penalty\zerocount
    \endgroup}
 

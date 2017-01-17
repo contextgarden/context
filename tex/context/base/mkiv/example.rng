@@ -1,0 +1,304 @@
+<?xml version="1.0" ?>
+
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+
+    <start>
+        <choice>
+            <ref name="script"/>
+            <ref name="environment"/>
+            <ref name="sequence"/>
+            <ref name="request"/>
+            <ref name="reply"/>
+        </choice>
+    </start>
+
+    <define name="script">
+        <element name="script">
+            <zeroOrMore>
+                <ref name="script"/>
+                <ref name="environment"/>
+                <ref name="sequence"/>
+                <ref name="request"/>
+                <ref name="reply"/>
+            </zeroOrMore>
+        </element>
+    </define>
+
+    <define name="environment">
+        <element name="environment">
+            <zeroOrMore>
+                <ref name="environment.content"/>
+            </zeroOrMore>
+        </element>
+    </define>
+
+    <define name="environment.content">
+        <element name="variable">
+            <ref name="content"/>
+            <attribute name="label"/>
+        </element>
+    </define>
+
+    <define name="sequence">
+        <element name="sequence">
+            <zeroOrMore>
+                <ref name="sequence.process"/>
+            </zeroOrMore>
+        </element>
+    </define>
+
+    <define name="sequence.process">
+        <element name="process">
+            <interleave>
+                <optional>
+                    <ref name="sequence.result"/>
+                </optional>
+                <ref name="sequence.command"/>
+            </interleave>
+        </element>
+    </define>
+
+    <define name="sequence.result">
+        <element name="result">
+            <ref name="content"/>
+        </element>
+    </define>
+
+    <define name="sequence.command">
+        <element name="command">
+            <ref name="content"/>
+        </element>
+    </define>
+
+    <define name="reply">
+        <element name="reply">
+            <interleave>
+            <optional>
+                    <ref name="reply.result"/>
+                </optional>
+                <optional>
+                    <ref name="status"/>
+                </optional>
+                <optional>
+                    <ref name="comment"/>
+                </optional>
+                <optional>
+                    <ref name="forwarded"/>
+                </optional>
+            </interleave>
+        </element>
+    </define>
+
+    <define name="reply.result">
+        <element name="result">
+            <text/>
+        </element>
+    </define>
+
+    <define name="request">
+        <element name="request">
+            <ref name="request.application"/>
+            <optional>
+                <ref name="request.client"/>
+            </optional>
+            <optional>
+                <ref name="request.server"/>
+            </optional>
+            <optional>
+                <ref name="request.data"/>
+            </optional>
+            <optional>
+                <zeroOrMore>
+                    <ref name="request.blob"/>
+                </zeroOrMore>
+            </optional>
+            <optional>
+                <ref name="request.results"/>
+            </optional>
+        </element>
+    </define>
+
+    <define name="request.application">
+        <element name="application">
+            <choice>
+                <ref name="request.command"/>
+                <ref name="request.action"/>
+            </choice>
+            <ref name="request.content"/>
+        </element>
+    </define>
+
+    <define name="request.client">
+        <element name="client">
+            <ref name="request.content"/>
+        </element>
+    </define>
+
+    <define name="request.server">
+        <element name="server">
+            <ref name="request.content"/>
+        </element>
+    </define>
+
+    <define name="request.content">
+        <interleave>
+            <optional>
+                <ref name="filename"/>
+            </optional>
+            <optional>
+                <ref name="archive"/>
+            </optional>
+            <optional>
+                <ref name="comment"/>
+            </optional>
+            <optional>
+                <ref name="forwarded"/>
+            </optional>
+            <optional>
+                <ref name="domain"/>
+            </optional>
+            <optional>
+                <ref name="project"/>
+            </optional>
+            <optional>
+                <ref name="usertoken"/>
+            </optional>
+        </interleave>
+    </define>
+
+    <define name="request.command">
+        <element name="command">
+            <text/>
+        </element>
+        <optional>
+            <element name="option">
+                <text/>
+            </element>
+        </optional>
+    </define>
+
+    <define name="request.action">
+        <element name="action">
+            <text/>
+        </element>
+    </define>
+
+    <define name="request.data">
+        <element name="data">
+            <choice>
+                <zeroOrMore>
+                    <ref name="data.variable"/>
+                </zeroOrMore>
+                <optional>
+                    <ref name="filename"/>
+                </optional>
+            </choice>
+        </element>
+    </define>
+
+    <define name="request.results">
+        <element name="results">
+            <zeroOrMore>
+                <ref name="request.result"/>
+            </zeroOrMore>
+        </element>
+    </define>
+
+    <define name="data.result">
+        <element name="result">
+            <attribute name="status"/>
+            <attribute name="name"/>
+        </element>
+    </define>
+
+    <define name="request.blob">
+        <element name="blob">
+            <text/>
+            <attribute name="label"/>
+        </element>
+    </define>
+
+    <define name="data.variable">
+        <element name="variable">
+            <text/>
+            <attribute name="label"/>
+        </element>
+    </define>
+
+    <define name="content">
+        <zeroOrMore>
+            <mixed>
+                <ref name="resolve"/>
+            </mixed>
+        </zeroOrMore>
+    </define>
+
+    <define name="resolve">
+        <optional>
+            <element name="resolve">
+                <empty/>
+                <attribute name="label"/>
+                <optional>
+                    <attribute name="type">
+                        <choice>
+                            <value>path</value>
+                            <value>name</value>
+                            <value>suffix</value>
+                            <value>nopath</value>
+                            <value>nosuffix</value>
+                        </choice>
+                    </attribute>
+                </optional>
+            </element>
+        </optional>
+    </define>
+
+    <define name="filename">
+        <element name="filename">
+            <text/>
+        </element>
+    </define>
+
+    <define name="archive">
+        <element name="archive">
+            <text/>
+        </element>
+    </define>
+
+    <define name="comment">
+        <element name="comment">
+            <text/>
+        </element>
+    </define>
+
+    <define name="status">
+        <element name="status">
+            <text/>
+        </element>
+    </define>
+
+    <define name="forwarded">
+        <element name="forwarded">
+            <text/>
+        </element>
+    </define>
+
+    <define name="domain">
+        <element name="domain">
+            <text/>
+        </element>
+    </define>
+
+    <define name="project">
+        <element name="project">
+            <text/>
+        </element>
+    </define>
+
+    <define name="usertoken">
+        <element name="usertoken">
+            <text/>
+        </element>
+    </define>
+
+</grammar>

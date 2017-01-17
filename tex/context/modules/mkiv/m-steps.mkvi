@@ -29,25 +29,22 @@
 \stopMPdefinitions
 
 \installcorenamespace {stepcharts}
-\installcorenamespace {steptables}
 \installcorenamespace {stepcells}
 \installcorenamespace {steptexts}
 \installcorenamespace {steplines}
 
 \installstylisticautosetuphandler \??stepcharts {STEPchart} \??stepcharts
-\installstylisticautosetuphandler \??steptables {STEPtable} \??steptables
 \installstylisticautosetuphandler \??stepcells  {STEPcell}  \??stepcells
 \installstylisticautosetuphandler \??steptexts  {STEPtext}  \??steptexts
 \installstylisticautosetuphandler \??steplines  {STEPline}  \??steplines
 
 \let\setupSTEPcharts\setupSTEPchart
-\let\setupSTEPtables\setupSTEPtable
+\let\setupSTEPtables\setupSTEPchart % one can define categories so no need
 \let\setupSTEPcells \setupSTEPcell
 \let\setupSTEPtexts \setupSTEPtext
 \let\setupSTEPlines \setupSTEPline
 
 \let\setSTEPchartsparameter\setSTEPchartparameter
-\let\setSTEPtablesparameter\setSTEPtableparameter
 \let\setSTEPcellsparameter \setSTEPcellparameter
 \let\setSTEPtextsparameter \setSTEPtextparameter
 \let\setSTEPlinesparameter \setSTEPlineparameter
@@ -56,20 +53,11 @@
 % numeric step_distance      ; step_distance        := 20pt ;
 
 \setupSTEPcharts
-  [\c!alternative=\v!horizontal,
+  [%c!alternative=\v!horizontal, % travels with stored so dealt with in lua
   %\c!offset=.15\bodyfontsize
   %\c!height=2ex
    \c!before=\blank,
    \c!after=\blank]
-
-% \setupSTEPtables
-%   [\c!before=\blank,
-%    \c!after=\blank,
-%    \c!distance=.25em,
-%    \c!voffset=1ex,
-%    \c!method=1,
-%    \c!width=4em,
-%    \c!offset=.15\bodyfontsize]
 
 \setupSTEPcells
   [\c!alternative=24,
@@ -150,10 +138,12 @@
         \setupcurrentSTEPchart[#name]%
         \def\module_steps_flush_chart{\module_steps_chart[][#name]}}
        {\edef\currentSTEPchart{#name}%
+        \setupcurrentSTEPchart[#settings]%
         \let\m_module_steps_category\currentSTEPchart
         \resetboxesincache{\??stepcharts\m_module_steps_category}%
-        \setupcurrentSTEPchart[#settings]%
-        \let\module_steps_flush_chart\relax}% settings are not stored
+        \doifelse{\STEPchartparameter\c!buffer}\v!no
+          {\def\module_steps_flush_chart{\STEPchart[#name]}}
+          {\let\module_steps_flush_chart\relax}}%
    \else
      \let\currentSTEPchart\empty
      \def\module_steps_flush_chart{\module_steps_chart[][]}%
@@ -167,7 +157,7 @@
    \checkSTEPlineparent
    \the\everySTEPchart
    \startnointerference
-   \clf_step_start_chart{\currentSTEPchart}}
+   \clf_step_start_chart{\currentSTEPchart}{\STEPchartparameter\c!alternative}}
 
 \unexpanded\def\stopSTEPchart
   {\clf_step_stop_chart
@@ -614,5 +604,54 @@
 \STEPchart[second][alternative=vertical]
 
 \page
+
+\setupSTEPchart
+  [mytable]
+  [before={\blank[2*big]},
+   after={\blank[2*big]}]
+
+\starttext
+
+\startSTEPaligntable[mytable]
+    \cells {$2c$} {$=$} {$2a+3b$}
+    \text  {with $a=5$}
+    \cells {$2c$}{$=$} {$10+3b$}
+    \text  {and $b=6$}
+    \cells {$2c$} {$=$} {$10+18$}
+    \text  {we get}
+    \cells {$2c$} {$=$} {$28$}
+    \text  {and therefore}
+    \cells {$c$} {$=$} {$28/2$}
+    \text  {which reduces to}
+    \cells {$c$} {$=$} {$14$}
+\stopSTEPaligntable
+
+\input tufte
+
+\STEPchart[mytable]
+
+\input tufte
+
+\setupSTEPchart
+  [mytable]
+  [buffer=no]
+
+\startSTEPaligntable[mytable]
+    \cells {$2c$} {$=$} {$2a+3b$}
+    \text  {with $a=5$}
+    \cells {$2c$}{$=$} {$10+3b$}
+    \text  {and $b=6$}
+    \cells {$2c$} {$=$} {$10+18$}
+    \text  {we get}
+    \cells {$2c$} {$=$} {$28$}
+    \text  {and therefore}
+    \cells {$c$} {$=$} {$28/2$}
+    \text  {which reduces to}
+    \cells {$c$} {$=$} {$14$}
+\stopSTEPaligntable
+
+\input tufte
+
+\STEPchart[mytable]
 
 \stoptext

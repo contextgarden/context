@@ -98,12 +98,24 @@
     \setuevalue{\currenttextbackground}{\groupedcommand{\starttextbackground[\currenttextbackground]}{\stoptextbackground}}%
     \setuevalue{\e!start\currenttextbackground}{\starttextbackground[\currenttextbackground]}%
     \setuevalue{\e!stop \currenttextbackground}{\stoptextbackground}%
-%     \doif{\textbackgroundparameter\c!state}\v!start\checkpositionoverlays
 \to \everydefinetextbackground
 
-% \appendtoks
-%     \doif{\textbackgroundparameter\c!state}\v!start\checkpositionoverlays
-% \to \everysetuptextbackground
+\newconstant   \c_anch_backgrounds_pos_state
+\newconditional\c_anch_backgrounds_pos_no_shape
+
+\def\anch_backgrounds_bpos
+  {\ifconditional\c_anch_backgrounds_pos_no_shape
+     \bposkind\v_anch_backgrounds_text_current\plusthree
+   \else
+     \bposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
+   \fi}
+
+\def\anch_backgrounds_epos
+  {\ifconditional\c_anch_backgrounds_pos_no_shape
+     \eposkind\v_anch_backgrounds_text_current\plusthree
+   \else
+     \eposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
+   \fi}
 
 \unexpanded\def\starttextbackground
   {\begingroup
@@ -121,6 +133,29 @@
      \anch_backgrounds_text_preset_yes
      \anch_backgrounds_text_preset_nop
    \anch_backgrounds_text_start_indeed}
+
+% ugly hack to register usage
+
+\newcount   \c_anch_backgrounds_text_count
+\newcount   \c_anch_backgrounds_text_check
+\newconstant\c_anch_backgrounds_text_state
+
+\unexpanded\def\starttextbackground
+  {\begingroup
+   \global\advance\c_anch_backgrounds_text_count\plusone
+   \advance\c_anch_backgrounds_text_level\plusone
+   \dodoubleempty\anch_backgrounds_text_start}
+
+\def\anch_backgrounds_text_level_start
+  {\c_anch_backgrounds_text_check\c_anch_backgrounds_text_count}
+
+\def\anch_backgrounds_text_level_stop
+  {\c_anch_backgrounds_text_state
+     \ifnum\c_anch_backgrounds_text_count>\c_anch_backgrounds_text_check
+       \plusone
+     \else
+       \zerocount
+     \fi}
 
 % todo \backgroundvariable\c!variant
 
@@ -199,42 +234,52 @@
 
 \unexpanded\def\starttextbackgroundmanual
   {\begingroup
+   \c_anch_backgrounds_pos_state\plusone
    \usetextbackgroundstyleandcolor\c!style\c!color
-   \bpos\v_anch_backgrounds_text_current}
+   \anch_backgrounds_bpos}
 
 \unexpanded\def\stoptextbackgroundmanual
-  {\epos\v_anch_backgrounds_text_current
+  {\anch_backgrounds_epos
    \carryoverpar\endgroup}
 
 \def\anch_backgrounds_text_start_txt
   {\ifvmode \dontleavehmode \fi
    \begingroup
+   \c_anch_backgrounds_pos_state\plusone
    \usetextbackgroundstyleandcolor\c!style\c!color
-   \bpos\v_anch_backgrounds_text_current}
+   \anch_backgrounds_bpos}
 
 \def\anch_backgrounds_text_stop_txt
-  {\epos\v_anch_backgrounds_text_current
+  {\anch_backgrounds_epos
    \carryoverpar\endgroup}
 
 \newskip\textbackgroundskip
+
+% maybe we should have a resetter for such compensation struts
+
+\def\anch_backgrounds_reset_attributes
+  {\scratchcounter\attribute\snapmethodattribute
+   \resetallattributes % \attribute\linenumberattribute \attributeunsetvalue
+   \attribute\snapmethodattribute\scratchcounter}
 
 \def\anch_backgrounds_text_start_par % beware .. background shapes
   {\endgraf % new
    \textbackgroundparameter\c!before
    \begingroup
+   \c_anch_backgrounds_pos_state\plustwo
    \begingroup
-   \resetallattributes % \attribute\linenumberattribute \attributeunsetvalue
+   \anch_backgrounds_reset_attributes
    \noindent
    \ifgridsnapping
      \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!topoffset}%
      \ifdim\textbackgroundskip>\zeropoint
        \struttedbox % not always ok (e.g. setups)
-         {\hpack{\raise\textbackgroundskip\hpack{\bpos\v_anch_backgrounds_text_current}}}%
+         {\hpack{\raise\textbackgroundskip\hpack{\anch_backgrounds_bpos}}}%
      \else
-       \bpos\v_anch_backgrounds_text_current
+       \anch_backgrounds_bpos
      \fi
    \else
-     \bpos\v_anch_backgrounds_text_current
+     \anch_backgrounds_bpos
    \fi
    \endgraf % we need a vertical nobreak - 29/06/2004
    \endgroup
@@ -277,18 +322,19 @@
    \endgroup
    \begingroup
    \forgeteverypar % NOT REALLY NEEDED, SAVES HASH/MEM
-   \resetallattributes % \attribute\linenumberattribute \attributeunsetvalue
+   \anch_backgrounds_reset_attributes
    \nobreak \noindent \strut \hfill \kern\zeropoint
+   % so far
    \spac_helpers_assign_skip\textbackgroundskip{\textbackgroundparameter\c!bottomoffset}%
    \ifgridsnapping % experimental, pascal (todo: topoffset in same way)
      \ifdim\textbackgroundskip>\zeropoint
        \struttedbox % not always ok (e.g. setups)
-         {\hpack{\lower\textbackgroundskip\hpack{\epos\v_anch_backgrounds_text_current}}}%
+         {\hpack{\lower\textbackgroundskip\hpack{\anch_backgrounds_epos}}}%
      \else
-       \epos\v_anch_backgrounds_text_current
+       \anch_backgrounds_epos
      \fi
    \else
-     \epos\v_anch_backgrounds_text_current
+     \anch_backgrounds_epos
    \fi
    \endgraf
    \carryoverpar\endgroup
@@ -302,9 +348,165 @@
      \global\let\checkpositionoverlays\relax
    \fi}
 
+% shape handling
+
+\definesystemattribute[textbackground][public]
+
+\def\page_prepare_backgrounds#1%
+  {\clf_collectbackgrounds\realpageno#1\relax}
+
+\def\anch_backgrounds_bpos
+  {\ifconditional\c_anch_backgrounds_pos_no_shape
+     \attribute\textbackgroundattribute\attributeunsetvalue
+     \bposkind\v_anch_backgrounds_text_current\plusthree
+   \else\ifnum\c_anch_backgrounds_pos_state=\plusone
+     \bposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
+     \clf_registerbackground{\v_anch_backgrounds_text_current}%
+   \else
+     \bposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
+     \attribute\textbackgroundattribute\attributeunsetvalue
+   \fi\fi}
+
+% plugs into other code
+
+\def\strc_floats_wrap_free_region
+  {\global\setbox\floatbox\hpack % we always need to wrap
+     {\ifconditional\c_strc_floats_trace_free
+        \strc_floats_show_free_region
+      \fi
+      \box\floatbox}}
+
+\startuseMPgraphic{floatfree}
+    draw_free_region(
+        \the\wd\floatbox,
+        \the\ht\floatbox,
+        \the\dp\floatbox,
+        \the\d_free_offset_left,
+        \the\d_free_offset_right,
+        \the\d_free_offset_top,
+        \the\d_free_offset_bottom
+    ) ;
+\stopuseMPgraphic
+
+\def\strc_floats_show_free_region
+  {\lower\dp\floatbox\hpack to \zeropoint {\useMPgraphic{floatfree}}}
+
+\newconditional\c_strc_floats_mark_as_free
+\newconditional\c_strc_floats_trace_free
+\newconstant   \c_free_offset_kind
+\newdimen      \d_free_offset_left
+\newdimen      \d_free_offset_right
+\newdimen      \d_free_offset_top
+\newdimen      \d_free_offset_bottom
+
+\installtextracker{floats.freeregion}
+  {\settrue \c_strc_floats_trace_free}
+  {\setfalse\c_strc_floats_trace_free}
+
+\def\strc_floats_mark_as_free#1#2#3#4#5%
+  {\c_free_offset_kind  #1%
+   \d_free_offset_left  #2%
+   \d_free_offset_right #3%
+   \d_free_offset_top   #4%
+   \d_free_offset_bottom#5%
+   \strc_floats_wrap_free_region
+   \anch_mark_tagged_box_free
+     \floatbox
+     \c_free_offset_kind
+     \d_free_offset_left
+     \d_free_offset_right
+     \d_free_offset_top
+     \d_free_offset_bottom}
+
+\ifx\strc_floats_mark_pag_as_free\relax \else
+    \writestatus{error}{wrong place for pag_as_free}\wait
+\fi
+
+\ifx\strc_floats_mark_par_as_free\relax \else
+    \writestatus{error}{wrong place for par_as_free}\wait
+\fi
+
+\def\strc_floats_mark_pag_as_free
+  {\ifpositioning
+     \ifconditional\c_strc_floats_mark_as_free
+       \strc_floats_mark_as_free
+         \plusone
+         \zeropoint
+         \zeropoint
+         \d_strc_floats_top
+         \d_strc_floats_bottom
+     \fi
+   \fi}
+
+\def\strc_floats_mark_par_as_free
+  {\ifpositioning
+     \ifconditional\c_strc_floats_mark_as_free
+       \ifcase\c_page_sides_float_type
+       \or % backspace
+         \strc_floats_mark_as_free
+           \plustwo
+           \zeropoint
+           \d_page_sides_leftskip
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % leftedge
+         \strc_floats_mark_as_free
+           \plustwo
+           \zeropoint
+           \d_page_sides_leftskip
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % leftmargin
+         \strc_floats_mark_as_free
+           \plustwo
+           \zeropoint
+           \d_page_sides_leftskip
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % leftside
+         \strc_floats_mark_as_free
+           \plustwo
+           \d_page_sides_leftskip
+           \d_strc_floats_margin
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % rightside
+         \strc_floats_mark_as_free
+           \plusthree
+           \d_strc_floats_margin
+           \d_page_sides_rightskip
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % rightmargin
+         \strc_floats_mark_as_free
+           \plusthree
+           \d_page_sides_rightskip
+           \zeropoint
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % rightedge
+         \strc_floats_mark_as_free
+           \plusthree
+           \d_page_sides_rightskip
+           \zeropoint
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \or   % cutspace
+         \strc_floats_mark_as_free
+           \plusthree
+           \d_page_sides_rightskip
+           \zeropoint
+           \d_page_sides_topskip
+           \d_page_sides_bottomskip
+       \fi
+     \fi
+   \fi}
+
+% so far
+
 \setuptextbackground
   [\c!mp=mpos:region:draw,
-   \c!method=mpos:region, % mpos:regionshape
+   \c!method=mpos:region,
    \c!state=\v!start,
    \c!location=\v!text,
    \c!leftoffset=\!!zeropoint, % 1em,
@@ -361,9 +563,13 @@
     boxlineradius := \MPvar{lineradius} ;
     boxlineoffset := \MPvar{lineoffset} ;
     %
-    def boxgridoptions = withcolor \MPvar{gridcolor} enddef ;
-    def boxlineoptions = withcolor \MPvar{linecolor} enddef ;
-    def boxfilloptions = withcolor \MPvar{fillcolor} enddef ;
+    def boxgridcolor = \MPvar{gridcolor} enddef ;
+    def boxlinecolor = \MPvar{linecolor} enddef ;
+    def boxfillcolor = \MPvar{fillcolor} enddef ;
+    %
+    def boxgridoptions = withcolor boxgridcolor enddef ;
+    def boxlineoptions = withcolor boxlinecolor enddef ;
+    def boxfilloptions = withcolor boxfillcolor enddef ;
 \stopuseMPgraphic
 
 \startuseMPgraphic{mpos:region:extra}
@@ -374,29 +580,10 @@
     setbounds currentpicture to multibox ;
 \stopuseMPgraphic
 
-% \startMPpositionmethod{mpos:region}
-%     \startMPpositiongraphic{mpos:region}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius,lineoffset}
-%         \includeMPgraphic{mpos:region:setup} ;
-%         \includeMPgraphic{mpos:region:extra} ;
-%         \MPgetmultipars{\MPvar{self}}{\MPanchorid} ;
-%         \includeMPgraphic{\MPvar{mp}} ;
-%         \includeMPgraphic{mpos:region:anchor} ;
-%     \stopMPpositiongraphic
-%     \MPpositiongraphic{mpos:region}{}%
-% \stopMPpositionmethod
-
 \startMPpositiongraphic{mpos:region}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius,lineoffset}
     \includeMPgraphic{mpos:region:setup} ;
     \includeMPgraphic{mpos:region:extra} ;
     \MPgetmultipars{\MPvar{self}}{\MPanchorid} ;
-    \includeMPgraphic{\MPvar{mp}} ;
-    \includeMPgraphic{mpos:region:anchor} ;
-\stopMPpositiongraphic
-
-\startMPpositiongraphic{mpos:regionshape}{fillcolor,filloffset,linecolor,gridcolor,linewidth,gridwidth,gridshift,lineradius,lineoffset}
-    \includeMPgraphic{mpos:region:setup} ;
-    \includeMPgraphic{mpos:region:extra} ;
-    \MPgetmultishapes{\MPvar{self}}{\MPanchorid} ;
     \includeMPgraphic{\MPvar{mp}} ;
     \includeMPgraphic{mpos:region:anchor} ;
 \stopMPpositiongraphic

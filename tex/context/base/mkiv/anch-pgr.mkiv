@@ -13,18 +13,16 @@
 
 \writestatus{loading}{ConTeXt Anchoring Macros / Grapics}
 
-%D Before we come to graphics support, we have to make sure of
-%D the reference point on the page. The next macros do so and
-%D are hooked into the page building routine.
+%D Before we come to graphics support, we have to make sure of the reference point
+%D on the page. The next macros do so and are hooked into the page building routine.
 
 \registerctxluafile{anch-pgr}{1.001}
 
 \unprotect
 
-%D A few more low level macros take care of defining and recalling
-%D actions. Actions are saved globally! The lists can become quite
-%D long because there can be lots of parameters passed on so we
-%D clean up the list afterwards.
+%D A few more low level macros take care of defining and recalling actions. Actions
+%D are saved globally! The lists can become quite long because there can be lots of
+%D parameters passed on so we clean up the list afterwards.
 
 \newtoks\everypositionaction
 \newtoks\everyinsertpositionaction
@@ -91,22 +89,15 @@
     \let\anch_positions_trace_action_yes\anch_positions_trace_action_yes_indeed
 \to \t_anch_positions_tracers
 
-%D Here the complication has to do with collecting actions
-%D for later execution. This collection is especially handy
-%D when we want to move actions to a specific layer. Such
-%D series of actions are stored in a macro that is cleaned up
-%D after each invocation.
+%D Here the complication has to do with collecting actions for later execution. This
+%D collection is especially handy when we want to move actions to a specific layer.
+%D Such series of actions are stored in a macro that is cleaned up after each
+%D invocation.
 
 \def\anch_positions_cleanup_action % not in trialtypesetting
   {\ifcsname\??positioncleanup\currentpositionaction\endcsname
      \the\everycleanpositionaction
-   % \iflocalpositioning
-   %   % erase
-   %   \expandafter\let\csname\??positioncleanup\currentpositionaction\endcsname\empty
-   % \else
-       % globalize expansion cleans up
-       \setxvalue{\??positioncleanup\currentpositionaction}{\csname\??positioncleanup\currentpositionaction\endcsname}%
-   %  \fi
+     \setxvalue{\??positioncleanup\currentpositionaction}{\csname\??positioncleanup\currentpositionaction\endcsname}%
    \fi}
 
 \def\handlepositionaction#1\with#2\on#3% ugly
@@ -124,10 +115,9 @@
    \fi
    \endgroup}
 
-%D The first version of this module implemented head and tail
-%D anchors. Currently we stick to just one anchor and derive
-%D the head and tail anchors from this one. We set these
-%D anchors before and after each page.
+%D The first version of this module implemented head and tail anchors. Currently we
+%D stick to just one anchor and derive the head and tail anchors from this one. We
+%D set these anchors before and after each page.
 
 \newdimen\c_anch_page_width
 \newdimen\c_anch_page_height
@@ -160,7 +150,7 @@
   {\begingroup
    \setbox\scratchbox\emptyhbox
    \ht\scratchbox\textheight
-   \dp\scratchbox\zeropoint
+   \dp\scratchbox\zeropoint % redundant
    \wd\scratchbox\makeupwidth
    \anch_mark_text_box\scratchbox
    \box\scratchbox
@@ -172,9 +162,8 @@
 %D \macros
 %D   {positionoverlay,startpositionoverlay}
 %D
-%D As long as we're dealing with graphics it makes much sense
-%D to use the available overlay mechanism. For this purpose, we
-%D define some dedicated overlay extensions.
+%D As long as we're dealing with graphics it makes much sense to use the available
+%D overlay mechanism. For this purpose, we define some dedicated overlay extensions.
 %D
 %D \startbuffer[sample]
 %D \defineoverlay [sample] [\positionoverlay{sample}]
@@ -213,27 +202,18 @@
 %D %\getbuffer[graphic,sample,text]
 %D \stoplinecorrection
 %D
-%D The graphic is defined in the following way, using some
-%D macros defined in an auxiliary \METAPOST\ module that is
-%D preloaded.
+%D The graphic is defined in the following way, using some macros defined in an
+%D auxiliary \METAPOST\ module that is preloaded.
 %D
 %D \typebuffer[graphic]
 
 \def\MPanchoridentifier{mpa}  % {mp-anchor}
 
-%D The rest of the definitions concerning such overlays may
-%D look complicated,
+%D The rest of the definitions concerning such overlays may look complicated,
 
 \let\currentpositionoverlay\empty
 
-%D Position actions are automatically executed when a position
-%D is set.
-
-% \newcount\localpositionnumber % incremented elsewhere
-% \newif\iflocalpositioning
-%
-% \def\textbackgroundoverlay#1{\iflocalpositioning\v!local\else\v!text\fi#1}
-% \def\MPanchornumber         {\the\iflocalpositioning\localpositionnumber\else\realpageno\fi}
+%D Position actions are automatically executed when a position is set.
 
 \def\textbackgroundoverlay#1{\v!text#1}
 \def\MPanchornumber         {\the\realpageno}
@@ -327,35 +307,8 @@
 \unexpanded\def\stoppositionoverlay
   {\let\currentpositionoverlay\empty}
 
-% needs checking if still needed
-%
-% \def\resetpositionoverlay#1%
-%   {\anch_positions_set_action{#1::\MPanchoridentifier::}{}}
-%
-% \def\handlepositionboxes#1#2#3%
-%   {\handlepositionaction\dohandlepositionboxes\with{#1}{#2}{#3}\on{#2}}
-%
-% \def\doinsertpositionboxes#1#2#3% pos tag setups
-%   {\ifnum\MPp{#1}=\realpageno\relax % can be sped up
-%      \executeifdefined{\MPoverlayposprefix#1}\gobblethreearguments{#1}{#2}{#3}% not used
-%    \fi}
-%
-% \appendtoks
-%     \let\dohandlepositionboxes\doinsertpositionboxes % was handle ?
-% \to \everyinsertpositionaction
-%
-% \def\docleanpositionboxes#1#2#3% pos tag setups
-%   {\ifnum\MPp{#1}<\realpageno \else
-%      \noexpand \dohandlepositionboxes{#1}{#2}{#3}% reinsert
-%    \fi}
-%
-% \appendtoks
-%     \let\dohandlepositionboxes\docleanpositionboxes
-% \to \everycleanpositionaction
-
-%D A position graphic is a normal (non||reused) \METAPOST\
-%D graphic, used immediately, with zero dimensions, so that a
-%D sequence of them does not harm.
+%D A position graphic is a normal (non||reused) \METAPOST\ graphic, used
+%D immediately, with zero dimensions, so that a sequence of them does not harm.
 
 \installcorenamespace{positiongraphic}
 \installcorenamespace{positionmethod}
@@ -505,8 +458,7 @@
 
 % Helpers:
 
-\def\MPgetposboxes   #1#2{\clf_fetchposboxes  {#1}{#2}\realpageno}
-\def\MPgetmultipars  #1#2{\clf_fetchmultipar  {#1}{#2}\realpageno}
-\def\MPgetmultishapes#1#2{\clf_fetchmultishape{#1}{#2}\realpageno}
+\def\MPgetposboxes #1#2{\clf_fetchposboxes{#1}{#2}\realpageno}
+\def\MPgetmultipars#1#2{\clf_fetchmultipar{#1}{#2}\realpageno}
 
 \protect \endinput

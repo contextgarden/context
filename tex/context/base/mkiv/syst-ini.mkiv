@@ -320,14 +320,15 @@
 %D    scratchtoks}
 %D
 %D We now define a few scratch registers, so that successive loads at least have
-%D some available.
+%D some available. The private ones are used in cases where we don't want to
+%D intrude on normal scratch ones.
 
-\newcount \scratchcounter  \newcount \globalscratchcounter
-\newdimen \scratchdimen    \newdimen \globalscratchdimen
-\newskip  \scratchskip     \newskip  \globalscratchskip
-\newmuskip\scratchmuskip   \newmuskip\globalscratchmuskip
-\newtoks  \scratchtoks     \newtoks  \globalscratchtoks
-\newbox   \scratchbox      \newbox   \globalscratchbox
+\newcount \scratchcounter  \newcount \globalscratchcounter  \newcount \privatescratchcounter
+\newdimen \scratchdimen    \newdimen \globalscratchdimen    \newdimen \privatescratchdimen
+\newskip  \scratchskip     \newskip  \globalscratchskip     \newskip  \privatescratchskip
+\newmuskip\scratchmuskip   \newmuskip\globalscratchmuskip   \newmuskip\privatescratchmuskip
+\newtoks  \scratchtoks     \newtoks  \globalscratchtoks     \newtoks  \privatescratchtoks
+\newbox   \scratchbox      \newbox   \globalscratchbox      \newbox   \privatescratchbox
 
 \newcount\scratchcounterone  \newcount\scratchcountertwo  \newcount\scratchcounterthree
 \newdimen  \scratchdimenone  \newdimen  \scratchdimentwo  \newdimen  \scratchdimenthree

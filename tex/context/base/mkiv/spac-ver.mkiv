@@ -527,6 +527,7 @@
 
 \unexpanded\def\spac_lines_start_correction[#1]%
   {\edef\m_spac_lines_around{#1}%
+   % todo: play with \fakenextstrutline
    \spac_lines_action_around
    \d_spac_prevdepth\prevdepth
    \spac_lines_initialize_corrections
@@ -556,7 +557,10 @@
 
 \unexpanded\def\spac_lines_stop_correction_ongrid
   {\directcheckedvspacing\v!white % \blank[\v!white]%
-   \snaptogrid\hpack{\box\scratchbox}}
+   \spac_lines_action_around
+   \snaptogrid\hpack{\box\scratchbox}%
+   \directcheckedvspacing\v!white
+   \spac_lines_action_around}
 
 \unexpanded\def\spac_lines_stop_correction_normal
   {\directcheckedvspacing\v!nowhite % \blank[\v!nowhite]%
@@ -1444,7 +1448,7 @@
 \newdimen \bodyfontstrutheight
 \newdimen \bodyfontstrutdepth
 
-\newskip  \globalbodyfontlineheight
+\newskip  \globalbodyfontlineheight % why a skip
 \newdimen \globalbodyfontstrutheight
 \newdimen \globalbodyfontstrutdepth
 
@@ -1648,6 +1652,28 @@
    \else
      \spac_grids_check_yes
    \fi\fi\fi}
+
+\unexpanded\gdef\page_layouts_calculate_overshoot
+  {\ifgridsnapping\ifcase\layoutlines
+     \getnoflines\textheight
+     \textovershoot\dimexpr\noflines\globalbodyfontlineheight-\textheight\relax
+   \fi\fi}
+
+\unexpanded\def\page_layouts_report_overshoot
+  {\page_layouts_calculate_overshoot
+   \ifdim\textovershoot>\zeropoint
+     \writestatus\m!layouts{gridmode,\space
+       noflines: \the\noflines,\space
+       textheight: \the\textheight,\space
+       textovershoot: \the\textovershoot\space
+       (maybe set number of lines instead)%
+    }%
+  \fi
+  \glet\page_layouts_report_overshoot\page_layouts_calculate_overshoot}
+
+\appendtoks
+    \page_layouts_report_overshoot
+\to \everybeforepagebody
 
 %D Visualization:
 

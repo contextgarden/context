@@ -1,4 +1,4 @@
-.TH "mtxrun" "1" "01-01-2016" "version 1.31" "ConTeXt TDS Runner Tool"
+.TH "mtxrun" "1" "01-01-2017" "version 1.31" "ConTeXt TDS Runner Tool"
 .SH NAME
 .B mtxrun
 .SH SYNOPSIS

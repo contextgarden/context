@@ -6356,7 +6356,7 @@ return {
    ["en"]="usedirectory",
    ["fr"]="utilisechemin",
    ["it"]="usacartella",
-   ["nl"]="gebruikgebied",
+   ["nl"]="gebruikpad",
    ["pe"]="استفاده‌مسیر",
    ["ro"]="folosestedirector",
   },
@@ -8075,6 +8075,10 @@ return {
    ["nl"]="hokjes",
    ["pe"]="قالبها",
    ["ro"]="frames",
+  },
+  ["freeregion"]={
+   ["en"]="freeregion",
+   ["nl"]="vrijgebied",
   },
   ["from"]={
    ["cs"]="z",

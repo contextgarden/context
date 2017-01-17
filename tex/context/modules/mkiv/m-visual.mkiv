@@ -81,7 +81,8 @@
    fr8c=darkorange]
 
 \unexpanded\def\onlyfakewords#1#2% min max / 10 40
-  {\ifvmode\noindentation\fi
+  {\dontleavehmode
+   \ifvmode\noindentation\fi
    \getrandomcount\scratchcounter{\ifcase0#1 10\else#1\fi}{\ifcase0#2 40\else#2\fi}%
    \dofakewords\scratchcounter
    } % no \par

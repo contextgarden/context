@@ -406,7 +406,7 @@ end
 -- end
 
 function mp.tt_dimensions(n)
-    local box = textexts[n]
+    local box = textexts and textexts[n]
     if box then
         -- could be made faster with nuts but not critical
         mptriplet(box.width/factor,box.height/factor,box.depth/factor)
@@ -509,3 +509,33 @@ end
 -- function mp.prefix(str)
 --      mpprint(hash[str])
 -- end
+
+local getdimen  = tex.getdimen
+local getcount  = tex.getcount
+local gettoks   = tex.gettoks
+local setdimen  = tex.setdimen
+local setcount  = tex.setcount
+local settoks   = tex.settoks
+
+local mpprint   = mp.print
+local mpquoted  = mp.quoted
+
+local factor    = number.dimenfactors.bp
+
+-- more helpers
+
+function mp.getdimen(k)   mpprint (getdimen(k)*factor) end
+function mp.getcount(k)   mpprint (getcount(k)) end
+function mp.gettoks (k)   mpquoted(gettoks (k)) end
+function mp.setdimen(k,v) setdimen(k,v/factor) end
+function mp.setcount(k,v) setcount(k,v) end
+function mp.settoks (k,v) settoks (k,v) end
+
+-- def foo = lua.mp.foo ... enddef ; % loops due to foo in suffix
+
+mp._get_dimen_ = mp.getdimen
+mp._get_count_ = mp.getcount
+mp._get_toks_  = mp.gettoks
+mp._set_dimen_ = mp.setdimen
+mp._set_count_ = mp.setcount
+mp._set_toks_  = mp.settoks

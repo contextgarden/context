@@ -92,8 +92,11 @@
 
 \newdimen\topdistance
 \newdimen\headerdistance
+\newdimen\textdistance
 \newdimen\footerdistance
 \newdimen\bottomdistance
+
+\newdimen\textovershoot % available in pagebuilder
 
 %D We need to calculate the extra distances:
 
@@ -107,6 +110,7 @@
 \newdimen\naturalrightmargindistance
 \newdimen\naturaltopdistance
 \newdimen\naturalheaderdistance
+\newdimen\naturaltextdistance
 \newdimen\naturalfooterdistance
 \newdimen\naturalbottomdistance
 
@@ -178,6 +182,7 @@
    \global\naturalrightmargindistance\layoutparameter\c!rightmargindistance
    \global\naturaltopdistance        \layoutparameter\c!topdistance
    \global\naturalheaderdistance     \layoutparameter\c!headerdistance
+   \global\naturaltextdistance       \layoutparameter\c!textdistance
    \global\naturalfooterdistance     \layoutparameter\c!footerdistance
    \global\naturalbottomdistance     \layoutparameter\c!bottomdistance
    %
@@ -192,6 +197,7 @@
    \global\rightmargindistance       \layoutdistance\rightmarginwidth\naturalrightmargindistance
    \global\topdistance               \layoutdistance\topheight       \naturaltopdistance
    \global\headerdistance            \layoutdistance\headerheight    \naturalheaderdistance
+   \global\textdistance                                              \naturaltextdistance
    \global\footerdistance            \layoutdistance\footerheight    \naturalfooterdistance
    \global\bottomdistance            \layoutdistance\bottomheight    \naturalbottomdistance
    }

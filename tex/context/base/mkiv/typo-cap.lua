@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['typo-cap'] = {
 
 local next, type = next, type
 local format, insert = string.format, table.insert
-local div, randomnumber = math.div, math.random
+local div, getrandom = math.div, utilities.randomizer.get
 
 local trace_casing = false  trackers  .register("typesetters.casing",            function(v) trace_casing = v end)
 local check_kerns  = true   directives.register("typesetters.casing.checkkerns", function(v) check_kerns  = v end)
@@ -293,7 +293,7 @@ local function none(start,attr,lastfont,n,count,where,first)
     return start, false, true
 end
 
-local function random(start,attr,lastfont,n,count,where,first)
+local function randomized(start,attr,lastfont,n,count,where,first)
     local used  = first or start
     local char  = getchar(used)
     local font  = getfont(used)
@@ -302,7 +302,7 @@ local function random(start,attr,lastfont,n,count,where,first)
     local kind  = categories[char]
     if kind == "lu" then
         while true do
-            local n = randomnumber(0x41,0x5A)
+            local n = getrandom("capital lu",0x41,0x5A)
             if tfm[n] then -- this also intercepts tables
                 setchar(used,n)
                 return start, true
@@ -310,7 +310,7 @@ local function random(start,attr,lastfont,n,count,where,first)
         end
     elseif kind == "ll" then
         while true do
-            local n = randomnumber(0x61,0x7A)
+            local n = getrandom("capital ll",0x61,0x7A)
             if tfm[n] then -- this also intercepts tables
                 setchar(used,n)
                 return start, true
@@ -327,7 +327,7 @@ register(variables.Words,  Words)             --   4
 register(variables.capital,capital)           --   5
 register(variables.Capital,Capital)           --   6
 register(variables.none,   none)              --   7 (dummy)
-register(variables.random, random)            --   8
+register(variables.random, randomized)        --   8
 register(variables.mixed,  mixed)             --   9
 register(variables.camel,  camel)             --  10
 

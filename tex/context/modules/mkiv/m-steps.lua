@@ -62,7 +62,7 @@ local chart  = nil
 local steps  = { }
 local count  = 0
 
-local function step_start_chart(name)
+local function step_start_chart(name,alternative)
     name = name or ""
     steps = table.setmetatableindex(function(t,k)
         local v = { -- could be metatable
@@ -81,8 +81,9 @@ local function step_start_chart(name)
     end)
     count = 0
     chart = {
-        steps = steps,
-        count = count,
+        steps       = steps,
+        count       = count,
+        alternative = alternative,
     }
     charts[name] = chart
 end
@@ -176,7 +177,15 @@ local function step_make_chart(settings)
     start()
     flush("step_begin_chart ;")
     --
-    local alternative = utilities.parsers.settings_to_hash(chartsettings.alternative)
+    print(chartsettings.alternative)
+    local alternative = chartsettings.alternative
+    if not alternative or alternative == "" then
+        alternative = chart.alternative
+    end
+    if not alternative or alternative == "" then
+        alternative = variables.horizontal
+    end
+    local alternative = utilities.parsers.settings_to_hash(alternative)
     local vertical    = alternative[variables.vertical]
     local align       = alternative[variables.three]
     local category    = chartsettings.category
@@ -391,7 +400,7 @@ end
 
 interfaces.implement {
     name      = "step_start_chart",
-    arguments = "string",
+    arguments = { "string", "string" },
     actions   = step_start_chart,
 }
 

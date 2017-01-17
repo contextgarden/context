@@ -293,15 +293,15 @@
 % todo line numbers and marks
 
 \unexpanded\def\page_grid_command_flush_page_column#1%
-  {\scratchcounter#1\relax
-   \clf_flushcolumnsetcolumn{\currentpagegrid}\scratchcounter
+  {\privatescratchcounter#1\relax
+   \clf_flushcolumnsetcolumn{\currentpagegrid}\privatescratchcounter
    \anch_mark_column_box\b_page_grid_column
-   \page_marks_synchronize_column\c_page_grid_first_column\c_page_grid_last_column\scratchcounter\b_page_grid_column
-   \ifnum\scratchcounter>\c_page_grid_n_of_left
-     \advance\scratchcounter-\c_page_grid_n_of_left
-     \page_lines_add_numbers_to_box\b_page_grid_column\scratchcounter\c_page_grid_n_of_right\plustwo
+   \page_marks_synchronize_column\c_page_grid_first_column\c_page_grid_last_column\privatescratchcounter\b_page_grid_column
+   \ifnum\privatescratchcounter>\c_page_grid_n_of_left
+     \advance\privatescratchcounter-\c_page_grid_n_of_left
+     \page_lines_add_numbers_to_box\b_page_grid_column\privatescratchcounter\c_page_grid_n_of_right\plustwo
    \else
-     \page_lines_add_numbers_to_box\b_page_grid_column\scratchcounter\c_page_grid_n_of_left\plustwo
+     \page_lines_add_numbers_to_box\b_page_grid_column\privatescratchcounter\c_page_grid_n_of_left\plustwo
    \fi
    \begingroup
    \edef\currentpagegrid{\currentpagegrid:#1}%

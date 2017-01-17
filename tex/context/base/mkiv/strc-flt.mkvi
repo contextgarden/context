@@ -154,12 +154,13 @@
    \c!outermargin=\zeropoint, % idem
    \c!leftmargindistance=\zeropoint,
    \c!rightmargindistance=\floatparameter\c!leftmargindistance,
-   \c!step=\v!big, % the flish side float step (big=line, medium=halfline, small=quarterline, depth=halfline with normaldepth)
+   \c!step=\v!big, % the flush side float step (big=line, medium=halfline, small=quarterline, depth=halfline with normaldepth)
    \c!ntop=2,
    \c!nbottom=0,
    \c!nlines=4, % used?
    \c!topoffset=\zeropoint,
    \c!bottomoffset=\zeropoint,
+   \c!freeregion=\v!yes,
   %\c!local=,
   %\c!bottombefore=, % e.g. \vfill
   %\c!bottomafter=,
@@ -585,9 +586,11 @@
    \edef\savedfloatlocation{\floatcaptionparameter\c!location}%
    \setexpandedfloatcaptionparameter\c!topoffset   {\floatparameter\c!topoffset}%
    \setexpandedfloatcaptionparameter\c!bottomoffset{\floatparameter\c!bottomoffset}%
+   \setexpandedfloatcaptionparameter\c!freeregion  {\floatparameter\c!freeregion}%
    \setupcurrentfloatcaption[\c!location=,\c!reference=,\c!title=,\c!marking=,\c!list=,\c!bookmark=,#settings]%
    \setexpandedfloatparameter\c!topoffset   {\floatcaptionparameter\c!topoffset}%
    \setexpandedfloatparameter\c!bottomoffset{\floatcaptionparameter\c!bottomoffset}%
+   \setexpandedfloatparameter\c!freeregion  {\floatcaptionparameter\c!freeregion}%
    \def\m_strc_floats_saved_userdata{#2}%
    \edef\floatlocation{\floatcaptionparameter\c!location}%
    \setfloatcaptionparameter\c!location{\savedfloatlocation}% not expanded
@@ -813,6 +816,8 @@
    \else
      \doifelseinset\v!local\floatlocation\settrue\setfalse\c_page_floats_center_box_local
    \fi
+   \doifelse{\floatparameter\c!freeregion}\v!yes
+     \settrue\setfalse\c_strc_floats_mark_as_free
    \doifnotcommon{\v!always,\v!here,\v!force}\floatlocation % ! ! ! ! ! !
      {\setfalse\c_page_floats_center_box_global
       \setfalse\c_page_floats_center_box_local}}
@@ -1179,8 +1184,8 @@
    \strc_floats_calculate_skip\d_page_sides_topskip   {\rootfloatparameter\c!sidespacebefore}%
    \strc_floats_calculate_skip\d_page_sides_bottomskip{\rootfloatparameter\c!sidespaceafter }%
    \global\d_strc_floats_margin     \rootfloatparameter\c!margin
-   \global\d_page_sided_leftshift   \floatparameter    \c!leftmargindistance
-   \global\d_page_sided_rightshift  \floatparameter    \c!rightmargindistance
+   \global\d_page_sides_leftshift   \floatparameter    \c!leftmargindistance
+   \global\d_page_sides_rightshift  \floatparameter    \c!rightmargindistance
    \global\c_page_floats_n_of_top   \rootfloatparameter\c!ntop
    \global\c_page_floats_n_of_bottom\rootfloatparameter\c!nbottom
    \endgroup}
@@ -1383,6 +1388,8 @@
 \def\captionminwidth {15\bodyfontsize}
 \def\captionovershoot{2\emwidth}
 
+\let\strc_floats_mark_pag_as_free\relax
+
 \def\strc_floats_set_page_variant
   {\bgroup
    \strc_floats_set_local_hsize
@@ -1426,6 +1433,7 @@
      \global\setbox\floatbox\vpack
        {\rotate[\c!rotation=\number\c_strc_floats_rotation]{\box\floatbox}}%
    \fi
+   \strc_floats_mark_pag_as_free
    \egroup}
 
 \def\strc_floats_prepare_no_caption
@@ -1670,7 +1678,7 @@
   {\strc_floats_build_box_next_right_margin_indeed\rightmargindistance}
 
 \def\strc_floats_build_box_next_left_margin
-  {\strc_floats_build_box_next_left_margin_indeed \leftmargindistance }
+  {\strc_floats_build_box_next_left_margin_indeed \leftmargindistance}
 
 \def\strc_floats_build_box_next_outer_margin
   {\doifelserightpagefloat
@@ -1886,6 +1894,8 @@
 \def\strc_floats_relocate_caption_left #1{\strc_floats_align_caption{\hbox to \d_strc_float_temp_width{#1\hss}}}
 
 \unexpanded\def\installfloatboxbuilder#1#2{\setvalue{\??floatbuilder#1}{#2}}
+
+\let\strc_floats_mark_box_as_free\relax
 
 \def\strc_floats_build_box
   {\global\setbox\floatbox\vbox % pack ? probably not

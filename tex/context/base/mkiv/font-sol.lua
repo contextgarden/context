@@ -23,7 +23,7 @@ if not modules then modules = { } end modules ['font-sol'] = { -- this was: node
 local gmatch, concat, format, remove = string.gmatch, table.concat, string.format, table.remove
 local next, tostring, tonumber = next, tostring, tonumber
 local insert, remove = table.insert, table.remove
-local random = math.random
+local getrandom = utilities.randomizer.get
 
 local utilities, logs, statistics, fonts, trackers = utilities, logs, statistics, fonts, trackers
 local interfaces, commands, attributes = interfaces, commands, attributes
@@ -706,7 +706,7 @@ end
 variants[v_random] = function(words,list,best,width,badness,line,set,listdir)
     local changed = 0
     while #words > 0 do
-        local done, c = doit(remove(words,random(1,#words)),list,best,width,badness,line,set,listdir)
+        local done, c = doit(remove(words,getrandom("solution",1,#words)),list,best,width,badness,line,set,listdir)
         changed = changed + c
         if done then
             break

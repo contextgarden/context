@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/21/16 18:51:59
+-- merge date  : 01/17/17 17:37:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -9092,8 +9092,8 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo)
     local fontheader=fontdata.fontheader   or {}
     local cffinfo=fontdata.cffinfo    or {}
     local filename=fontdata.filename
-    local weight=getname(fontdata,"weight") or cffinfo.weight or metrics.weight
-    local width=getname(fontdata,"width") or cffinfo.width or metrics.width
+    local weight=getname(fontdata,"weight") or (cffinfo and cffinfo.weight) or (metrics and metrics.weight)
+    local width=getname(fontdata,"width") or (cffinfo and cffinfo.width ) or (metrics and metrics.width )
     local fontname=getname(fontdata,"postscriptname")
     local fullname=getname(fontdata,"fullname")
     local family=getname(fontdata,"family")
@@ -18462,6 +18462,7 @@ local fontfeatures=fonthashes.features
 local otffeatures=fonts.constructors.features.otf
 local registerotffeature=otffeatures.register
 local onetimemessage=fonts.loggers.onetimemessage or function() end
+local getrandom=utilities and utilities.randomizer and utilities.randomizer.get
 otf.defaultnodealternate="none"
 local tfmdata=false
 local characters=false
@@ -18807,7 +18808,7 @@ end
 local function get_alternative_glyph(start,alternatives,value)
   local n=#alternatives
   if value=="random" then
-    local r=random(1,n)
+    local r=getrandom and getrandom("glyph",1,n) or random(1,n)
     return alternatives[r],trace_alternatives and formatters["value %a, taking %a"](value,r)
   elseif value=="first" then
     return alternatives[1],trace_alternatives and formatters["value %a, taking %a"](value,1)

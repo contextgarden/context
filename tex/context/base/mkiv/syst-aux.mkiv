@@ -3186,7 +3186,7 @@
 %D are needed:
 
 \unexpanded\def\newif#1%
-  {\scratchcounter\escapechar
+  {\privatescratchcounter\escapechar
    \escapechar\minusone
    \expandafter\expandafter\expandafter
      \redoglobal\expandafter\expandafter\expandafter
@@ -3195,7 +3195,7 @@
      \redoglobal\expandafter\expandafter\expandafter
        \edef\@if#1{false}{\let\noexpand#1\noexpand\iffalse}%
    \dodoglobal\@if#1{false}%
-   \escapechar\scratchcounter}
+   \escapechar\privatescratchcounter}
 
 %D Also new:
 
@@ -6234,23 +6234,23 @@
   {\def\m_syst_string_three{#1}%
    \ifx\m_syst_string_two\m_syst_string_three \else
      \ifx\m_syst_string_one\m_syst_string_three
-       \advance\scratchcounter\plusone
+       \advance\privatescratchcounter\plusone
      \fi
      \expandafter\syst_helpers_count_token
    \fi}
 
 \unexpanded\def\counttoken#1\in#2\to#3%
-  {\scratchcounter\zerocount
+  {\privatescratchcounter\zerocount
    \def\m_syst_string_one{#1}%
    \def\m_syst_string_two{\end}%
    \syst_helpers_count_token#2\end
-   \dodoglobal#3\scratchcounter}
+   \dodoglobal#3\privatescratchcounter}
 
 \unexpanded\def\counttokens#1\to#2%
-  {\scratchcounter\zerocount
-   \def\syst_helpers_count_token##1{\advance\scratchcounter\plusone}%
+  {\privatescratchcounter\zerocount
+   \def\syst_helpers_count_token##1{\advance\privatescratchcounter\plusone}%
    \handletokens#1\with\syst_helpers_count_token
-   \dodoglobal#2\scratchcounter}
+   \dodoglobal#2\privatescratchcounter}
 
 %D \macros
 %D   {splitofftokens}
@@ -6261,10 +6261,10 @@
 
 \unexpanded\def\splitofftokens#1\from#2\to#3% slow but hardly used
   {\ifnum#1>\zerocount
-     \scratchcounter#1\relax
+     \privatescratchcounter#1\relax
      \def\syst_helpers_split_off_tokens##1%
-       {\ifnum\scratchcounter>\zerocount
-          \advance\scratchcounter \minusone
+       {\ifnum\privatescratchcounter>\zerocount
+          \advance\privatescratchcounter \minusone
           \edef#3{#3##1}%
         \fi}%
    % \let#3\empty % #3 can be #2, so:
@@ -6460,7 +6460,7 @@
   {\afterassignment\gobblefourarguments#1=#2#3pt\relax\empty\empty\empty\empty}
 
 \unexpanded\def\freezedimensionwithunit#1#2%
-  {\setdimensionwithunit\scratchdimen#1{#2}\edef#1{\the\scratchdimen}}
+  {\setdimensionwithunit\privatescratchdimen#1{#2}\edef#1{\the\privatescratchdimen}}
 
 %D \macros
 %D   {doifsometokselse, doifsometoks}
@@ -6715,7 +6715,7 @@
 %D This is a dirty one: we simply append a unit and discard it when needed.
 
 \def\doifelsedimension#1%
-  {\afterassignment\syst_helpers_if_dimension_else\scratchdimen#1pt\relax}
+  {\afterassignment\syst_helpers_if_dimension_else\privatescratchdimen#1pt\relax}
 
 \let\doifdimensionelse\doifelsedimension
 
@@ -6861,10 +6861,10 @@
    \syst_helpers_unspaced}
 
 \unexpanded\def\unspaceargument#1\to#2%
-  {\scratchcounter\catcode\spaceasciicode
+  {\privatescratchcounter\catcode\spaceasciicode
    \catcode\spaceasciicode\ignorecatcode
    \scantextokens{\edef#2{#1}}%
-   \catcode\spaceasciicode\scratchcounter}
+   \catcode\spaceasciicode\privatescratchcounter}
 
 \unexpanded\def\unspaceafter#1#2%
   {\unspaceargument#2\to\ascii
@@ -6921,7 +6921,7 @@
 
 \def\syst_helpers_if_non_zero_positive_else#1#2\end % #3#4%
   {\ifx#1\relax
-     \ifcase\scratchcounter
+     \ifcase\privatescratchcounter
        \endgroup
        \doubleexpandafter\secondoftwoarguments
      \else
@@ -6934,7 +6934,7 @@
    \fi}
 
 \def\doifelsenonzeropositive#1%
-  {\begingroup\afterassignment\syst_helpers_if_non_zero_positive_else\scratchcounter=0#1\relax\empty\end}
+  {\begingroup\afterassignment\syst_helpers_if_non_zero_positive_else\privatescratchcounter=0#1\relax\empty\end}
 
 \let\doifnonzeropositiveelse\doifelsenonzeropositive
 

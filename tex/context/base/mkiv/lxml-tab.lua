@@ -502,15 +502,30 @@ do
         [ [[~]] ] = "&U+7E;",
     }
 
+    local privates_x = { -- for xml
+        [ [["]] ] = "&U+22;",
+        [ [[#]] ] = "&U+23;",
+        [ [[$]] ] = "&U+24;",
+        [ [[%]] ] = "&U+25;",
+        [ [[']] ] = "&U+27;",
+        [ [[\]] ] = "&U+5C;",
+        [ [[{]] ] = "&U+7B;",
+        [ [[|]] ] = "&U+7C;",
+        [ [[}]] ] = "&U+7D;",
+        [ [[~]] ] = "&U+7E;",
+    }
+
     local privates_n = { -- keeps track of defined ones
     }
 
     local escaped       = utf.remapper(privates_u,"dynamic")
     local unprivatized  = utf.remapper(privates_p,"dynamic")
     local unspecialized = utf.remapper(privates_s,"dynamic")
+    local despecialized = utf.remapper(privates_x,"dynamic")
 
     xml.unprivatized  = unprivatized
     xml.unspecialized = unspecialized
+    xml.despecialized = despecialized
     xml.escaped       = escaped
 
     local function unescaped(s)

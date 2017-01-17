@@ -128,8 +128,8 @@ local weights = Cs ( -- not extra
   + P("ultralight")
   + P("extralight")
   + P("bold")
-  + P("demi")
-  + P("semi")
+  + P("demi")  -- / "semibold"
+  + P("semi")  -- / "semibold"
   + P("light")
   + P("medium")
   + P("heavy")
@@ -140,15 +140,16 @@ local weights = Cs ( -- not extra
   + P("regular")  / "normal"
 )
 
--- numeric_weights = {
---     200 = "extralight",
---     300 = "light",
---     400 = "book",
---     500 = "medium",
---     600 = "demi",
---     700 = "bold",
---     800 = "heavy",
---     900 = "black",
+-- local weights = {
+--     [100] = "thin",
+--     [200] = "extralight",
+--     [300] = "light",
+--     [400] = "normal",
+--     [500] = "medium",
+--     [600] = "semibold", -- demi demibold
+--     [700] = "bold",
+--     [800] = "extrabold",
+--     [900] = "black",
 -- }
 
 local normalized_weights = sparse {
@@ -569,6 +570,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
  -- local compatiblename = result.compatiblename
  -- local cfffullname    = result.cfffullname
     local weight         = result.weight
+    local width          = result.width
     local italicangle    = tonumber(result.italicangle)
     local subfont        = subfont
     local rawname        = fullname or fontname or familyname
@@ -584,11 +586,12 @@ local function check_name(data,result,filename,modification,suffix,subfont)
  -- compatiblename = compatiblename and cleanname(compatiblename)
  -- cfffullname    = cfffullname    and cleanname(cfffullname)
     weight         = weight         and cleanname(weight)
+    width          = width          and cleanname(width)
     italicangle    = italicangle == 0 and nil
     -- analyze
     local a_name, a_weight, a_style, a_width, a_variant = analyzespec(fullname or fontname or familyname)
     -- check
-    local width   = a_width
+    local width   = width or a_width
     local variant = a_variant
     local style   = subfamilyname or subfamily -- can re really trust subfamilyname?
     if style then

@@ -256,3 +256,38 @@ enddef ;
 def anchor_box (expr n,x,y,w,h,d) =
     currentpicture := currentpicture shifted (-x,-y) ;
 enddef ;
+
+def draw_free_region(expr width, height, depth, loffset, roffset, toffset, boffset) =
+
+    begingroup ; save b, o, l ; path b, o, l[] ; save d ;
+
+    b := fullsquare
+        xysized(width,height+depth) ;
+    o := b
+        topenlarged    toffset
+        bottomenlarged boffset
+        leftenlarged   loffset
+        rightenlarged  roffset ;
+    d := max(PaperWidth,PaperHeight) ;
+
+    fill o withcolor .5white ;
+    fill b withcolor .7white ;
+
+    interim linecap := butt ;
+
+    l[1] := topboundary    (topboundary    o leftenlarged d rightenlarged  d) ;
+    l[2] := bottomboundary (bottomboundary o leftenlarged d rightenlarged  d) ;
+    l[3] := leftboundary   (leftboundary   o topenlarged  d bottomenlarged d) ;
+    l[4] := rightboundary  (rightboundary  o topenlarged  d bottomenlarged d) ;
+
+    for i=1 upto 4 :
+        draw l[i] withpen pencircle scaled 1bp withcolor white ;
+        draw l[i] withpen pencircle scaled 1bp dashed (evenly scaled 1bp) withcolor black ;
+    endfor ;
+
+    setbounds currentpicture to b ;
+
+    endgroup ;
+
+enddef ;
+

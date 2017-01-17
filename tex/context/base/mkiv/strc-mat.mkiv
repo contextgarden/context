@@ -638,7 +638,7 @@
    \ifdim\lastskip>\zeropoint
      % bah
    \else
-     \strc_math_obey_depth
+     \strc_math_obey_depth % somehow \fakenextstrutline doesn't work here
      \nointerlineskip
    \fi
    \ifx\p_spacebefore\v!none
@@ -731,7 +731,10 @@
    \d_strc_formulas_display_skip_right\zeropoint}
 
 \unexpanded\def\strc_formulas_start_formula_indeed[#1][#2]% setting leftskip adaption is slow !
-  {\bgroup % HERE
+  {\ifhmode
+     \par
+   \fi
+   \bgroup % HERE
    \def\currentformula{#1}%
    \dostarttaggedchained\t!formula\currentformula\??formula
    \the\everybeforedisplayformula
@@ -818,7 +821,10 @@
 %D \stoptyping
 
 \unexpanded\def\startdisplaymath
-  {\bgroup
+  {\ifhmode
+     \par
+   \fi
+   \bgroup
    \informulatrue
    \beforedisplayspace
    \setdisplaydimensions

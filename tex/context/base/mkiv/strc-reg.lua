@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 local next, type = next, type
 local format, gmatch = string.format, string.gmatch
 local equal, concat, remove = table.are_equal, table.concat, table.remove
-local lpegmatch = lpeg.match
+local lpegmatch, P, C, Ct = lpeg.match, lpeg.P, lpeg.C, lpeg.Ct
 local allocate = utilities.storage.allocate
 
 local trace_registers    = false  trackers.register("structures.registers", function(v) trace_registers = v end)
@@ -436,7 +436,13 @@ implement {
     arguments = { "string", "string" }
 }
 
-local entrysplitter = lpeg.tsplitat('+') -- & obsolete in mkiv
+
+local p_s = P("+")
+local p_e = P("&") * (1-P(";"))^0 * P(";")
+local p_r = C((p_e + (1-p_s))^0)
+
+local entrysplitter_xml = Ct(p_r * (p_s * p_r)^0) -- bah
+local entrysplitter_tex = lpeg.tsplitat('+')      -- & obsolete in mkiv
 
 local tagged = { }
 
@@ -467,6 +473,7 @@ local function preprocessentries(rawdata)
         local kt         = entries.keys
         local entryproc  = processors and processors.entry
         local pageproc   = processors and processors.page
+        local coding     = rawdata.metadata.coding
         if entryproc == "" then
             entryproc = nil
         end
@@ -478,14 +485,14 @@ local function preprocessentries(rawdata)
             if p then
                 entryproc = p
             end
-            et = lpegmatch(entrysplitter,e)
+            et = lpegmatch(coding == "xml" and entrysplitter_xml or entrysplitter_tex,e)
         end
         if not kt then
             local p, k = splitprocessor(entries.key or "")
             if p then
                 pageproc = p
             end
-            kt = lpegmatch(entrysplitter,k)
+            kt = lpegmatch(coding == "xml" and entrysplitter_xml or entrysplitter_tex,k)
         end
         --
         entries = { }

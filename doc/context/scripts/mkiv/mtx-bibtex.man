@@ -1,4 +1,4 @@
-.TH "mtx-bibtex" "1" "01-01-2016" "version 1.00" "bibtex helpers"
+.TH "mtx-bibtex" "1" "01-01-2017" "version 1.00" "bibtex helpers"
 .SH NAME
 .B mtx-bibtex
 .SH SYNOPSIS

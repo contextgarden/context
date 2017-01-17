@@ -187,6 +187,7 @@ local f_preamble = formatters [ [[
     boolean mplib ; mplib := true ;
     let dump = endinput ;
     input "%s" ;
+    randomseed:=%s;
 ]] ]
 
 local methods = {
@@ -219,8 +220,18 @@ function metapost.maketext(s,mode)
     end
 end
 
+local seed = nil
+
 function metapost.load(name,method)
     starttiming(mplib)
+    if not seed then
+        seed = job.getrandomseed()
+        if seed <= 1 then
+            seed = seed % 1000
+        elseif seed > 4095 then
+            seed = seed % 4096
+        end
+    end
     method = method and methods[method] or "scaled"
     local mpx = new_instance {
         ini_version  = true,
@@ -235,7 +246,7 @@ function metapost.load(name,method)
     if not mpx then
         result = { status = 99, error = "out of memory"}
     else
-        result = mpx:execute(f_preamble(file.addsuffix(name,"mp"))) -- addsuffix is redundant
+        result = mpx:execute(f_preamble(file.addsuffix(name,"mp"),seed)) -- addsuffix is redundant
     end
     stoptiming(mplib)
     metapost.reporterror(result)

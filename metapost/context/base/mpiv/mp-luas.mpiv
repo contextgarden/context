@@ -121,3 +121,19 @@ enddef ;
 vardef dimensions suffix a =
     lua.mp.dimensions(str a)
 enddef ;
+
+% More access
+
+def getdimen(expr k)    = lua.mp._get_dimen_(k)   enddef ;
+def getcount(expr k)    = lua.mp._get_count_(k)   enddef ;
+def gettoks (expr k)    = lua.mp._get_toks_ (k)   enddef ;
+def setdimen(expr k, v) = lua.mp._set_dimen_(k,v) enddef ;
+def setcount(expr k, v) = lua.mp._set_count_(k,v) enddef ;
+def settoks (expr k, v) = lua.mp._set_toks_ (k,v) enddef ;
+
+% vardef getdimen(expr k)   = save getdimen ; lua.mp.getdimen(k) enddef ;
+% vardef getcount(expr k)   = save getcount ; lua.mp.getcount(k) enddef ;
+% vardef gettoks (expr k)   = save gettoks  ; lua.mp.gettoks (k) enddef ;
+% vardef setdimen(expr k,v) = save setdimen ; lua.mp.setdimen(k,v) enddef ;
+% vardef setcount(expr k,v) = save setcount ; lua.mp.setcount(k,v) enddef ;
+% vardef settoks (expr k,v) = save settoks  ; lua.mp.settoks (k,v) enddef ;

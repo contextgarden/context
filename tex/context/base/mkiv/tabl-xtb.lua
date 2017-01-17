@@ -67,6 +67,7 @@ local getprev             = nuts.getprev
 local getlist             = nuts.getlist
 local getfield            = nuts.getfield
 local getbox              = nuts.getbox
+local getdimensions       = nuts.dimensions
 
 local setfield            = nuts.setfield
 local setlink             = nuts.setlink
@@ -256,9 +257,7 @@ function xtables.set_reflow_width()
     --
     drc.list = true -- we don't need to keep the content around as we're in trial mode (no: copy_node_list(tb))
     --
-    local width  = getfield(tb,"width")
-    local height = getfield(tb,"height")
-    local depth  = getfield(tb,"depth")
+    local width, height, depth = getdimensions(tb)
     --
     local widths  = data.widths
     local heights = data.heights
@@ -428,9 +427,7 @@ function xtables.set_reflow_height()
     local tb  = getbox("b_tabl_x")
     local drc = row[c]
     --
-    local width  = getfield(tb,"width")
-    local height = getfield(tb,"height")
-    local depth  = getfield(tb,"depth")
+    local width, height, depth = getdimensions(tb)
     --
     if drc.ny < 2 then
         if data.fixedrows[r] == 0 then --  and drc.dimensionstate < 2
@@ -821,7 +818,8 @@ function xtables.construct()
             end
             local list = drc.list
             if list then
-                setfield(list,"shift",getfield(list,"height") + getfield(list,"depth"))
+                local w, h, d = getdimensions(list)
+                setfield(list,"shift",h+d)
              -- list = hpack_node_list(list) -- is somehow needed
              -- setfield(list,"width",0)
              -- setfield(list,"height",0)
@@ -1168,10 +1166,8 @@ function xtables.cleanup()
     --         local cell = row[i]
     --         local list = cell.list
     --         if list then
-    --             cell.width  = getfield(list,"width")
-    --             cell.height = getfield(list,"height")
-    --             cell.depth  = getfield(list,"depth")
-    --             cell.list   = true
+    --             cell.width, cell.height, cell.depth = getdimensions(list)
+    --             cell.list = true
     --         end
     --     end
     -- end

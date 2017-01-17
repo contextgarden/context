@@ -1,4 +1,4 @@
-.TH "mtx-base" "1" "01-01-2016" "version 1.35" "ConTeXt TDS Management Tool (aka luatools)"
+.TH "mtx-base" "1" "01-01-2017" "version 1.35" "ConTeXt TDS Management Tool (aka luatools)"
 .SH NAME
 .B mtx-base
 .SH SYNOPSIS

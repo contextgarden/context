@@ -36,11 +36,12 @@
 \def\dosavepositionwhd   #1#2#3#4#5#6#7{\clf_dosavepositionwhd {#1}#2 #3 #4 #5 #6 #7\relax}
 \def\dosavepositionplus#1#2#3#4#5#6#7#8{\clf_dosavepositionplus{#1}#2 #3 #4 #5 #6 #7{#8}}
 
-\def\dosetposition            #1{\clf_dosetposition     {#1}} % {} expands
-\def\dosetpositionwhd   #1#2#3#4{\clf_dosetpositionwhd  {#1}#2 #3 #4\relax}
-\def\dosetpositionplus#1#2#3#4#5{\clf_dosetpositionplus {#1}#2 #3 #4{#5}}
-\def\dosetpositionbox       #1#2{\clf_dosetpositionbox  {#1}#2\relax}
-\def\dosetpositionstrut       #1{\clf_dosetpositionstrut{#1}}
+\def\dosetposition            #1{\clf_dosetposition         {#1}} % {} expands
+\def\dosetpositionwhd   #1#2#3#4{\clf_dosetpositionwhd      {#1}#2 #3 #4\relax}
+\def\dosetpositionplus#1#2#3#4#5{\clf_dosetpositionplus     {#1}#2 #3 #4{#5}}
+\def\dosetpositionbox       #1#2{\clf_dosetpositionbox      {#1}#2\relax}
+\def\dosetpositionstrut       #1{\clf_dosetpositionstrut    {#1}}
+\def\dosetpositionstrutkind #1#2{\clf_dosetpositionstrutkind{#1}#2\relax} % #2 = number
 
 \newbox\b_anch_position
 \newif \ifpositioning   % sort of public
@@ -205,6 +206,26 @@
       \strut
       \hss}}
 
+\unexpanded\def\setpositionstrutkind
+  {\iftrialtypesetting
+     \expandafter\anch_positions_set_strut_kind_nop
+   \else
+     \expandafter\anch_positions_set_strut_kind_yes
+   \fi}
+
+\def\anch_positions_set_strut_kind_yes#1#2%
+  {\anch_positions_initialize
+   \hbox to \zeropoint
+     {\edef\currentposition{#1}%
+      \dosetpositionstrutkind\currentposition{#2}%
+      \anch_positions_trace_left
+      \dopositionaction\currentposition
+      \strut
+      \hss}}
+
+\def\anch_positions_set_strut_kind_nop#1#2%
+  {\strut}
+
 \unexpanded\def\setpositiondataplus
   {\iftrialtypesetting
      \expandafter\gobblefivearguments
@@ -294,6 +315,21 @@
 \unexpanded\def\anch_mark_text_box#1%
   {\clf_markregionboxtagged#1{text:\the\realpageno}} % needs an hbox
 
+\newcount\c_anch_free
+
+\unexpanded\def\anch_mark_tagged_box_free#1#2#3#4#5#6% only needed when positions
+  {\ifpositioning
+     \global\advance\c_anch_free\plusone % could be done at the lua end
+     \clf_markregionboxtaggedkind
+       #1%
+       {free:\number\c_anch_free}%
+       #2\space % kind
+       #3\space % leftoffset
+       #4\space % rightoffset
+       #5\space % topoffset
+       #6\relax % bottomoffset
+   \fi}
+
 %D We can copy a position with:
 %D
 %D \starttyping
@@ -338,10 +374,12 @@
 
 \let\xypos\setpositiononly
 
-\unexpanded\def\hpos#1{\dontleavehmode\setpositionbox{#1}\hbox}
-\unexpanded\def\vpos#1{\setpositionbox{#1}\vbox}
-\unexpanded\def\bpos#1{\dontleavehmode      \setpositionstrut{b:#1}\ignorespaces}
-\unexpanded\def\epos#1{\removeunwantedspaces\setpositionstrut{e:#1}}
+\unexpanded\def\hpos      #1{\dontleavehmode\setpositionbox{#1}\hbox}
+\unexpanded\def\vpos      #1{\setpositionbox{#1}\vbox}
+\unexpanded\def\bpos      #1{\dontleavehmode\setpositionstrut{b:#1}\ignorespaces}
+\unexpanded\def\epos      #1{\removeunwantedspaces\setpositionstrut{e:#1}}
+\unexpanded\def\bposkind#1#2{\dontleavehmode\setpositionstrutkind{b:#1}{#2}\ignorespaces} % not public, used in backgrounds
+\unexpanded\def\eposkind#1#2{\removeunwantedspaces\setpositionstrutkind{e:#1}{#2}}        % not public, used in backgrounds
 
 %D When we want to calculate more complex backgrounds, we need to know what the
 %D current indentation scheme is. At the cost of many positions and memory, we

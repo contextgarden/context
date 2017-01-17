@@ -22,25 +22,29 @@ local format, match = string.format, string.match
 local next, type, tostring = next, type, tostring
 local concat = table.concat
 
-local definetable   = utilities.tables.definetable
-local accesstable   = utilities.tables.accesstable
-local migratetable  = utilities.tables.migratetable
-local serialize     = table.serialize
-local packers       = utilities.packers
-local allocate      = utilities.storage.allocate
-local mark          = utilities.storage.mark
+local definetable    = utilities.tables.definetable
+local accesstable    = utilities.tables.accesstable
+local migratetable   = utilities.tables.migratetable
+local serialize      = table.serialize
+local packers        = utilities.packers
+local allocate       = utilities.storage.allocate
+local mark           = utilities.storage.mark
 
-local implement     = interfaces.implement
+local getrandom      = utilities.randomizer.get
+local setrandomseedi = utilities.randomizer.setseedi
+local getrandomseed  = utilities.randomizer.getseed
 
-local texgetcount   = tex.getcount
+local implement      = interfaces.implement
 
-local report_passes = logs.reporter("job","passes")
+local texgetcount    = tex.getcount
 
-job                 = job or { }
-local job           = job
+local report_passes  = logs.reporter("job","passes")
 
-job.version         = 1.30
-job.packversion     = 1.02
+job                  = job or { }
+local job            = job
+
+job.version          = 1.30
+job.packversion      = 1.02
 
 -- some day we will implement loading of other jobs and then we need
 -- job.jobs
@@ -132,11 +136,11 @@ local function initializer()
     --
     rvalue = collected.randomseed
     if not rvalue then
-        rvalue = math.random()
-        math.setrandomseedi(rvalue,"initialize")
+        rvalue = getrandom("initialize")
+        setrandomseedi(rvalue)
         rmethod = "initialized"
     else
-        math.setrandomseedi(rvalue,"previous run")
+        setrandomseedi(rvalue)
         rmethod = "resumed"
     end
     tobesaved.randomseed = rvalue
@@ -167,6 +171,10 @@ end
 
 function jobvariables.restore(cs)
     return collectedmacros[cs] or tobesavedmacros[cs]
+end
+
+function job.getrandomseed()
+    return tobesaved.randomseed or getrandomseed()
 end
 
 -- checksums

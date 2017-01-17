@@ -3092,6 +3092,12 @@ return {
   },
   {
    ["category"]="lua",
+   ["filename"]="node-scn",
+   ["loading"]="always",
+   ["status"]="okay",
+  },
+  {
+   ["category"]="lua",
    ["filename"]="node-met",
    ["loading"]="always",
    ["status"]="okay",

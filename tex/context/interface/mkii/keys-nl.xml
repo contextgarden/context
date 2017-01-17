@@ -825,6 +825,7 @@
 		<cd:constant name='frameoffset' value='kaderoffset'/>
 		<cd:constant name='frameradius' value='kaderstraal'/>
 		<cd:constant name='frames' value='hokjes'/>
+		<cd:constant name='freeregion' value='vrijgebied'/>
 		<cd:constant name='from' value='van'/>
 		<cd:constant name='functioncolor' value='functioncolor'/>
 		<cd:constant name='functionstyle' value='functionstyle'/>
@@ -1960,7 +1961,7 @@
 		<cd:command name='useexternalsoundtrack' value='gebruikexterngeluidsfragment'/>
 		<cd:command name='usemodule' value='gebruikmodule'/>
 		<cd:command name='usemodules' value='gebruikmodules'/>
-		<cd:command name='usepath' value='gebruikgebied'/>
+		<cd:command name='usepath' value='gebruikpad'/>
 		<cd:command name='usereferences' value='gebruikreferenties'/>
 		<cd:command name='usespecials' value='gebruikspecials'/>
 		<cd:command name='usesymbols' value='gebruiksymbolen'/>

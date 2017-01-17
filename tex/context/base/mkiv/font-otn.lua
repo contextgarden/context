@@ -286,6 +286,8 @@ local registerotffeature = otffeatures.register
 
 local onetimemessage     = fonts.loggers.onetimemessage or function() end
 
+local getrandom          = utilities and utilities.randomizer and utilities.randomizer.get
+
 otf.defaultnodealternate = "none" -- first last
 
 -- we share some vars here, after all, we have no nested lookups and less code
@@ -682,7 +684,7 @@ end
 local function get_alternative_glyph(start,alternatives,value,trace_alternatives)
     local n = #alternatives
     if value == "random" then
-        local r = random(1,n)
+        local r = getrandom and getrandom("glyph",1,n) or random(1,n)
         return alternatives[r], trace_alternatives and formatters["value %a, taking %a"](value,r)
     elseif value == "first" then
         return alternatives[1], trace_alternatives and formatters["value %a, taking %a"](value,1)

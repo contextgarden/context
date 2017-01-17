@@ -897,7 +897,7 @@ enddef ;
 
       save_multipar (i,3,multipar) ;
 
-    elseif multi_column_first_page_hack and ((nxy[fpos]=RealPageNumber) and (nxy[tpos]>=RealPageNumber) : % and (NOfTextColumns>1)) :
+    elseif multi_column_first_page_hack and ((nxy[fpos]=RealPageNumber) and (nxy[tpos]>=RealPageNumber)) : % and (NOfTextColumns>1)) :
 
       save_multipar (i,2,multipar) ;
 

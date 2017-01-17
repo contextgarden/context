@@ -797,7 +797,7 @@ primarydef p xyscaled q = % secundarydef does not work out well
     endgroup
 enddef ;
 
-%D Some personal code that might move to another module
+%D Some personal code that might move to another module (todo: save).
 
 def set_grid(expr w, h, nx, ny) =
     boolean grid[][] ; boolean grid_full ;
@@ -2439,8 +2439,22 @@ vardef mfun_straightened(expr sign, p) =
     _q_
 enddef ;
 
+% vardef mfun_straightened(expr sign, p) =
+%     save lp, lq, q ; path q ; q := p ;
+%     lp := length(p) ;
+%     forever :
+%         q := mfun_do_straightened(sign,q) ;
+%         lq := length(q) ;
+%         exitif lp = lq ;
+%         lp := lq ;
+%     endfor ;
+%     q
+% enddef ;
+
+% can be optimized:
+
 vardef mfun_do_straightened(expr sign, p) =
-    if length(p)>2 : % was 1, but straight lines are ok
+    if length(p) > 2 : % was 1, but straight lines are ok
         save pp ; path pp ;
         pp := point 0 of p ;
         for i=1 upto length(p)-1 :
@@ -2450,10 +2464,10 @@ vardef mfun_do_straightened(expr sign, p) =
         endfor ;
         save n, ok ; numeric n ; boolean ok ;
         n := length(pp) ; ok := false ;
-        if n>2 :
-            for i=0 upto n : % evt hier ook round
+        if n > 2 :
+            for i=0 upto n :
                 if unitvector(round(point i of pp - point if i=0 : n else : i-1 fi of pp)) <>
-                        sign * unitvector(round(point if i=n : 0 else : i+1 fi of pp - point i of pp)) :
+            sign * unitvector(round(point if i=n : 0 else : i+1 fi of pp - point i of pp)) :
                     if ok :
                         --
                     else :
@@ -3362,6 +3376,27 @@ primarydef p insideof q =
         t < 0
     endgroup
 enddef ;
+
+% primarydef p insideof q =
+%     if (path q or picture q) :
+%         if (path p or picture p) :
+%             (xpart llcorner p > xpart llcorner q) and
+%             (xpart urcorner p < xpart urcorner q) and
+%             (ypart llcorner p > ypart llcorner q) and
+%             (ypart urcorner p < ypart urcorner q)
+%         elseif pair p  :
+%             (xpart p > xpart llcorner q) and
+%             (xpart p < xpart urcorner q) and
+%             (ypart p > ypart llcorner q) and
+%             (ypart p < ypart urcorner q)
+%         fi
+%     elseif (numeric p and pair q) :
+%         % range check
+%         (p >= xpart q) and (p <= ypart q)
+%     else : % maybe triplets and such
+%         false
+%     fi
+% enddef ;
 
 primarydef p outsideof q =
     not (p insideof q)

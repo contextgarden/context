@@ -6,29 +6,36 @@ if not modules then modules = { } end modules ['trac-tex'] = {
     license   = "see context related readme files"
 }
 
--- moved from trac-deb.lua
-
-local next = next
-
 local texhashtokens = tex.hashtokens
 
-local trackers = trackers
-local token    = token
-local saved    = { }
+local trackers  = trackers
+local token     = token
+local saved     = { }
+local create    = token.create
+local undefined = create("undefined").command
 
 function trackers.savehash()
     saved = texhashtokens()
+    if type(saved[1]) == "table" then
+        -- LUATEXVERSION < 1.002
+        saved = table.tohash(saved)
+    end
+    return saved
 end
 
 function trackers.dumphashtofile(filename,delta)
     local list   = { }
-    local hash   = tex.hashtokens()
+    local hash   = texhashtokens()
     local create = token.create
-    for name, token in next, hash do
+    if type(hash[1]) == "table" then
+        -- LUATEXVERSION < 1.002
+        hash = table.sortedkeys(hash)
+    end
+    for i=1,#hash do
+        local name = hash[i]
         if not delta or not saved[name] then
-            if token[2] ~= 0 then -- still old interface
-                local token = create(name)
-             -- inspect(token)
+            local token = create(name)
+            if token.command ~= undefined then
                 local category = token.cmdname
                 local dk = list[category]
                 if not dk then
@@ -59,34 +66,11 @@ function trackers.dumphashtofile(filename,delta)
     table.save(filename or tex.jobname .. "-hash.log",list)
 end
 
--- -- old token code
---
--- function trackers.dumphashtofile(filename,delta)
---     local list    = { }
---     local hash    = texhashtokens()
---     local getname = token.command_name
---     for name, token in next, hash do
---         if not delta or not saved[name] then
---             -- token: cmd, chr, csid -- combination cmd,chr determines name
---             local category = getname(token)
---             local dk = list[category]
---             if not dk then
---                 -- a bit funny names but this sorts better (easier to study)
---                 dk = { names = { }, found = 0, code = token[1] }
---                 list[category] = dk
---             end
---             dk.names[name] = { token[2], token[3] }
---             dk.found = dk.found + 1
---         end
---     end
---     table.save(filename or tex.jobname .. "-hash.log",list)
--- end
-
 local delta = nil
 
 local function dump_hash(wanteddelta)
     if delta == nil then
-        saved = saved or texhashtokens() -- no need for trackers.dump_hash
+        saved = saved or trackers.savehash()
         luatex.registerstopactions(1,function() dump_hash(nil,wanteddelta) end) -- at front
     end
     delta = wanteddelta

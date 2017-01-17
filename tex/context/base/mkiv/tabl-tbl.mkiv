@@ -2264,7 +2264,12 @@
      {\notesenabledfalse
       \d_tabl_tabulate_indent\zeropoint
       \settrialtypesetting % very important
+\anch_backgrounds_text_level_start
       \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}}%
+\anch_backgrounds_text_level_stop
+\ifcase\c_anch_backgrounds_text_state\else
+  \global\settrue\tablehaspositions
+\fi
    \ifnum\c_tabl_tabulate_nofauto>\zerocount
      % so, even if the natural size is larger, in the final run, we force the calculated width
      \d_tabl_tabulate_width\dimexpr\hsize-\wd\scratchbox-\d_tabl_tabulate_width_p-\d_tabl_tabulate_width_w\relax

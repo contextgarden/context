@@ -248,8 +248,8 @@
 \def\meta_flush_current_initializations
   {\ifconditional\c_meta_include_initializations
      \the\t_meta_initializations
-   \fi
-   \theMPrandomseed;}
+   \fi}
+ % \theMPrandomseed;}
 
 \def\meta_flush_current_inclusions
   {\the\t_meta_inclusions}
@@ -262,7 +262,7 @@
    \meta_enable_include
    \the\everyMPgraphic
    \meta_preset_definitions
-   \setMPrandomseed % this has to change
+  %\setMPrandomseed % this has to change
    \edef\p_initializations{\MPinstanceparameter\s!initializations}%
    \ifx\p_initializations\v!yes
      \settrue \c_meta_include_initializations
@@ -334,16 +334,16 @@
    \meta_process_graphic{input "#1" ;}%
    \endgroup}
 
-\newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
-
-\let\theMPrandomseed\empty
-
-\def\setMPrandomseed
-  {\ifsetMPrandomseed
-     \def\theMPrandomseed{randomseed:=\mprandomnumber;}%
-   \else
-     \let\theMPrandomseed\empty
-   \fi}
+% \newif\ifsetMPrandomseed \setMPrandomseedtrue % false by default
+%
+% \let\theMPrandomseed\empty
+%
+% \def\setMPrandomseed
+%   {\ifsetMPrandomseed
+%      \def\theMPrandomseed{randomseed:=\mprandomnumber;}%
+%    \else
+%      \let\theMPrandomseed\empty
+%    \fi}
 
 %D Calling up previously defined graphics.
 

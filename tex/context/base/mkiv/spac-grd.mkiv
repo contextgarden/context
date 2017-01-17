@@ -300,4 +300,30 @@
      \normalstartbaselinecorrection
    \fi}
 
+% This is new (and experimental) and might replace some of the above. beware it doesn't always work
+% out well, e.g. when used grouped and such (e.g. before display math doesn't work out well).
+
+\unexpanded\def\spac_fake_next_line_new
+  {\par
+   \begingroup
+   \reseteverypar
+   \dontleavehmode\hpack{\strut}\par
+   \clf_fakenextstrutline
+   \ifdim\pagetotal>\lineheight
+     \pagetotal\dimexpr\pagetotal-\lineheight\relax
+   \fi
+   \endgroup}
+
+\unexpanded\def\spac_fake_next_line_old
+  {\par
+   \begingroup
+   \reseteverypar
+   \dontleavehmode\hpack to \zeropoint{\page_sides_anchor\hss\strut}% just a tracer
+   \vskip-\parskip
+   \vskip-\struttotal
+   \endgroup}
+
+%let\fakenextstrutline\spac_fake_next_line_old
+\let\fakenextstrutline\spac_fake_next_line_new
+
 \protect \endinput

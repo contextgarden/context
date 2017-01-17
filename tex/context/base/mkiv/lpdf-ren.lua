@@ -12,6 +12,7 @@ local tostring, tonumber, next = tostring, tonumber, next
 local format, rep = string.format, string.rep
 local concat = table.concat
 local settings_to_array = utilities.parsers.settings_to_array
+local getrandom = utilities.randomizer.get
 
 local backends, lpdf, nodes, node = backends, lpdf, nodes, node
 
@@ -363,7 +364,7 @@ function codeinjections.setpagetransition(specification)
         last = 0
         return
     elseif n == v_random then
-        n = math.random(1,#pagetransitions)
+        n = getrandom("transition",1,#pagetransitions)
     else
         n = tonumber(n)
     end

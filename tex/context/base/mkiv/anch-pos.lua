@@ -17,13 +17,18 @@ more efficient.</p>
 -- maybe replace texsp by our own converter (stay at the lua end)
 -- eventually mp will have large numbers so we can use sp there too
 
-local tostring, next, rawget, setmetatable = tostring, next, rawget, setmetatable
+-- this is one of the first modules using scanners and we need to replace
+-- it by implement and friends
+
+local tostring, next, rawget, setmetatable, tonumber = tostring, next, rawget, setmetatable, tonumber
 local sort, sortedhash, sortedkeys = table.sort, table.sortedhash, table.sortedkeys
 local format, gmatch, match, find = string.format, string.gmatch, string.match, string.find
 local rawget = rawget
 local lpegmatch = lpeg.match
 local insert, remove = table.insert, table.remove
 local allocate, mark = utilities.storage.allocate, utilities.storage.mark
+
+local report            = logs.reporter("positions")
 
 local scanners          = tokens.scanners
 local scanstring        = scanners.string
@@ -57,6 +62,10 @@ local getlist           = nuts.getlist
 local setlist           = nuts.setlist
 local getbox            = nuts.getbox
 local getskip           = nuts.getskip
+local getid             = nuts.getid
+local getdimensions     = nuts.dimensions
+
+local hlist_code        = nodes.listcodes.hlist
 
 local find_tail         = nuts.tail
 
@@ -124,6 +133,7 @@ local nofregular        = 0
 jobpositions.used       = false
 
 -- todo: register subsets and count them indepently
+-- todo: categories, like par, page, ... saves find and also ordered tags then
 
 -- local function initializer()
 --     tobesaved = jobpositions.tobesaved
@@ -138,92 +148,74 @@ jobpositions.used       = false
 --             if data then
 --                 last   = data
 --                 last.p = nil -- no need for a page
---             elseif last then
+--             elseif last and not collected[region] then
 --                 collected[region] = last
 --             end
 --         end
 --     end
---     -- enhance regions with paragraphs
--- --     local sorted = sortedkeys(collected)
---     --
+--     -- enhance regions with paragraphs -- could be a list of tags instead -- there can be too many
+--     local regions = { }
+--  -- for tag, data in sortedhash(collected) do --saves a sort later on but can be huge
 --     for tag, data in next, collected do
--- --     for i=1,#sorted do
--- --         local tag    = sorted[i]
--- --         local data   = collected[tag]
---         local region = data.r
---         if region then
---             local r = collected[region]
---             if r then
---                 local paragraphs = r.paragraphs
---                 if not paragraphs then
---                     r.paragraphs = { data }
---                 else
+--         if find(tag,"^p:") then
+--             local region = data.r
+--             if region then
+--                 local paragraphs = regions[region]
+--                 if paragraphs then
+--                     local par = match(tag,"%d+")
+--                     data.par = tonumber(par)
 --                     paragraphs[#paragraphs+1] = data
+--                     nofusedregions = nofusedregions + 1
+--                 elseif r == false then
+--                     nofmissingregions = nofmissingregions + 1
+--                 else
+--                     local r = collected[region]
+--                     if r then
+--                         local par = match(tag,"%d+")
+--                         data.par = tonumber(par)
+--                         paragraphs = { data }
+--                         regions[region] = paragraphs
+--                         nofusedregions = nofusedregions + 1
+--                         r.paragraphs = paragraphs
+--                     else
+--                         nofmissingregions = nofmissingregions + 1
+--                         regions[region] = false
+--                     end
 --                 end
---                 nofusedregions = nofusedregions + 1
 --             else
---                 nofmissingregions = nofmissingregions + 1
+--                 nofregular = nofregular + 1
 --             end
---         else
---             nofregular = nofregular + 1
 --         end
 --         setmetatable(data,default)
 --     end
---     -- add metatable
---  -- for tag, data in next, collected do
---  --     setmetatable(data,default)
---  -- end
 --     -- sort this data
---     for tag, data in next, collected do
--- --     for i=1,#sorted do
--- --         local tag    = sorted[i]
--- --         local data   = collected[tag]
---         local region = data.r
---         if region then
---             local r = collected[region]
---             if r then
---                 local paragraphs = r.paragraphs
---                 if paragraphs and #paragraphs > 1 then
---                     sort(paragraphs,sorter)
---                 end
---             end
+--     for tag, paragraphs in next, regions do
+--         if paragraphs then
+--             sort(paragraphs,function(a,b) return a.par < b.par end)
 --         end
---         -- so, we can be sparse and don't need 'or 0' code
 --     end
 --     jobpositions.used = next(collected)
 -- end
 
--- todo: categories, like par, page, ... saves find and also ordered tags then
+local splitter = lpeg.splitat(":")
 
 local function initializer()
     tobesaved = jobpositions.tobesaved
     collected = jobpositions.collected
     -- add sparse regions
-    local pages = structures.pages.collected
-    if pages then
-        local last = nil
-        for p=1,#pages do
-            local region = "page:" .. p
-            local data   = collected[region]
-            if data then
-                last   = data
-                last.p = nil -- no need for a page
-            elseif last then
-                collected[region] = last
-            end
-        end
-    end
     -- enhance regions with paragraphs -- could be a list of tags instead -- there can be too many
-    local regions = { }
+    local regiondata = { }
+    local pagedata   = { }
+    local freedata   = setmetatableindex("table")
  -- for tag, data in sortedhash(collected) do --saves a sort later on but can be huge
     for tag, data in next, collected do
-        if find(tag,"^p:") then
+        local prefix, rest = lpegmatch(splitter,tag)
+        if prefix == "p" then
             local region = data.r
             if region then
-                local paragraphs = regions[region]
+                local paragraphs = regiondata[region]
                 if paragraphs then
-                    local par = match(tag,"%d+")
-                    data.par = tonumber(par)
+                    data.par = tonumber(rest) or 0
                     paragraphs[#paragraphs+1] = data
                     nofusedregions = nofusedregions + 1
                 elseif r == false then
@@ -231,32 +223,62 @@ local function initializer()
                 else
                     local r = collected[region]
                     if r then
-                        local par = match(tag,"%d+")
-                        data.par = tonumber(par)
+                        data.par = tonumber(rest) or 0
                         paragraphs = { data }
-                        regions[region] = paragraphs
+                        regiondata[region] = paragraphs
                         nofusedregions = nofusedregions + 1
                         r.paragraphs = paragraphs
                     else
                         nofmissingregions = nofmissingregions + 1
-                        regions[region] = false
+                        regiondata[region] = false
                     end
                 end
             else
                 nofregular = nofregular + 1
             end
+        elseif prefix == "page" then
+            pagedata[tonumber(rest) or 0] = data
+        elseif prefix == "free" then
+            local t = freedata[data.p or 0]
+            t[#t+1] = data
         end
         setmetatable(data,default)
     end
     -- sort this data
-    for tag, paragraphs in next, regions do
+    for tag, paragraphs in next, regiondata do
         if paragraphs then
             sort(paragraphs,function(a,b) return a.par < b.par end)
         end
     end
+    --
+    local pages = structures.pages.collected
+    if pages then
+        local last = nil
+        for p=1,#pages do
+            local region = "page:" .. p
+            local data   = pagedata[p]
+            local free   = freedata[p]
+            if free then
+                sort(free,function(a,b) return b.y < a.y end) -- order matters !
+            end
+            if data then
+                last      = data
+                last.free = free
+            elseif last then
+                local t = setmetatableindex({ free = free, p = p },last)
+                if not collected[region] then
+                    collected[region] = t
+                else
+                    -- something is wrong
+                end
+                pagedata[p] = t
+            end
+        end
+    end
+    jobpositions.page = pagedata
+    jobpositions.free = freedata
     jobpositions.used = next(collected)
 end
-
 
 job.register('job.positions.collected', tobesaved, initializer)
 
@@ -335,9 +357,6 @@ end
 local function set(name,index,val) -- ,key
     local data = enhance(val or index)
     if val then
--- if data[key] and not next(next(data)) then
---     data = data[key]
--- end
         container = tobesaved[name]
         if not container then
             tobesaved[name] = {
@@ -469,16 +488,14 @@ end
 jobpositions.b_region = b_region
 jobpositions.e_region = e_region
 
-local function setregionbox(n,tag)
+local function setregionbox(n,tag,k,lo,ro,to,bo) -- kind
     if not tag or tag == "" then
         nofregions = nofregions + 1
         tag = f_region(nofregions)
     end
     local box = getbox(n)
-    local w = getfield(box,"width")
-    local h = getfield(box,"height")
-    local d = getfield(box,"depth")
-    local x, y = getpos() -- was only y
+    local w, h, d = getdimensions(box)
+    local x, y = getpos() -- hm, makes no sense here
     tobesaved[tag] = {
      -- p = texgetcount("realpageno"), -- we copy them
         x = x ~= 0 and x or nil,       -- was true
@@ -486,17 +503,27 @@ local function setregionbox(n,tag)
         w = w ~= 0 and w or nil,
         h = h ~= 0 and h or nil,
         d = d ~= 0 and d or nil,
+        k = k ~= 0 and k or nil,
+        lo = lo ~= 0 and lo or nil,
+        ro = ro ~= 0 and ro or nil,
+        to = to ~= 0 and to or nil,
+        bo = bo ~= 0 and bo or nil,
     }
     return tag, box
 end
 
-local function markregionbox(n,tag,correct) -- correct needs checking
-    local tag, box = setregionbox(n,tag)
+local function markregionbox(n,tag,correct,...) -- correct needs checking
+    local tag, box = setregionbox(n,tag,...)
      -- todo: check if tostring is needed with formatter
     local push = new_latelua(function() b_region(tag) end)
     local pop  = new_latelua(function() e_region(correct) end)
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
     local head = getlist(box)
+ -- no :
+ -- if getid(box) ~= hlist_code then
+ --  -- report("mark region box assumes a hlist, fix this for %a",tag)
+ --     head = nuts.hpack(head)
+ -- end
     if head then
         local tail = find_tail(head)
         setlink(push,head)
@@ -528,15 +555,16 @@ local nofparagraphs = 0
 scanners.parpos = function() -- todo: relate to localpar (so this is an intermediate variant)
     nofparagraphs = nofparagraphs + 1
     texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
-    local strutbox = getbox("strutbox")
+    local box = getbox("strutbox")
+    local w, h, d = getdimensions(box)
     local t = {
         p  = true,
         c  = true,
         r  = true,
         x  = true,
         y  = true,
-        h  = getfield(strutbox,"height"), -- never 0
-        d  = getfield(strutbox,"depth"),  -- never 0
+        h  = h,
+        d  = d,
         hs = texget("hsize"),             -- never 0
     }
     local leftskip   = getfield(getskip("leftskip"),"width")
@@ -605,9 +633,7 @@ end
 scanners.dosetpositionbox = function() -- name box
     local name = scanstring()
     local box  = getbox(scaninteger())
-    local w = getfield(box,"width")
-    local h = getfield(box,"height")
-    local d = getfield(box,"depth")
+    local w, h, d = getdimensions(box)
     tobesaved[name] = {
         p = true,
         c = column,
@@ -646,10 +672,29 @@ end
 
 scanners.dosetpositionstrut = function() -- name
     local name = scanstring()
-    local strutbox = getbox("strutbox")
-    local h = getfield(strutbox,"height")
-    local d = getfield(strutbox,"depth")
+    local box  = getbox("strutbox")
+    local w, h, d = getdimensions(box)
     tobesaved[name] = {
+        p = true,
+        c = column,
+        r = true,
+        x = true,
+        y = true,
+        h = h ~= 0 and h or nil,
+        d = d ~= 0 and d or nil,
+        n = nofparagraphs > 0 and nofparagraphs or nil,
+        r2l = texgetcount("inlinelefttoright") == 1 or nil,
+    }
+    ctxnode(new_latelua_node(function() enhance(tobesaved[name]) end))
+end
+
+scanners.dosetpositionstrutkind = function() -- name
+    local name = scanstring()
+    local kind = scaninteger()
+    local box  = getbox("strutbox")
+    local w, h, d = getdimensions(box)
+    tobesaved[name] = {
+        k = kind,
         p = true,
         c = column,
         r = true,
@@ -1277,6 +1322,11 @@ end
 
 scanners.markregionboxcorrected = function() -- box tag
     markregionbox(scaninteger(),scanstring(),true)
+end
+
+scanners.markregionboxtaggedkind = function() -- box tag kind
+    markregionbox(scaninteger(),scanstring(),nil,
+        scaninteger(),scandimen(),scandimen(),scandimen(),scandimen())
 end
 
 -- statistics (at least for the moment, when testing)

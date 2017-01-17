@@ -825,6 +825,7 @@
 		<cd:constant name='frameoffset' value='frameoffset'/>
 		<cd:constant name='frameradius' value='frameradius'/>
 		<cd:constant name='frames' value='frames'/>
+		<cd:constant name='freeregion' value='freeregion'/>
 		<cd:constant name='from' value='from'/>
 		<cd:constant name='functioncolor' value='functioncolor'/>
 		<cd:constant name='functionstyle' value='functionstyle'/>
