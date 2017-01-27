@@ -393,7 +393,7 @@
 \def\strc_itemgroups_process_option#option%
   {\edef\itemgroupconstantvalue{#option}%
    \ifx\itemgroupconstantvalue\empty\else
-     \splitstring\itemgroupconstantvalue\at*\to\itemgroupfirst\and\itemgroupsecond
+     \splitatasterisk\itemgroupconstantvalue\itemgroupfirst\itemgroupsecond
      \ifx\itemgroupsecond\empty
         \let\itemgroupsecond\itemgroupfirst
         \let\itemgroupfirst\!!plusone

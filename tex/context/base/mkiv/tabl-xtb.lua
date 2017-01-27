@@ -67,7 +67,7 @@ local getprev             = nuts.getprev
 local getlist             = nuts.getlist
 local getfield            = nuts.getfield
 local getbox              = nuts.getbox
-local getdimensions       = nuts.dimensions
+local getwhd              = nuts.getwhd
 
 local setfield            = nuts.setfield
 local setlink             = nuts.setlink
@@ -257,7 +257,7 @@ function xtables.set_reflow_width()
     --
     drc.list = true -- we don't need to keep the content around as we're in trial mode (no: copy_node_list(tb))
     --
-    local width, height, depth = getdimensions(tb)
+    local width, height, depth = getwhd(tb)
     --
     local widths  = data.widths
     local heights = data.heights
@@ -427,7 +427,7 @@ function xtables.set_reflow_height()
     local tb  = getbox("b_tabl_x")
     local drc = row[c]
     --
-    local width, height, depth = getdimensions(tb)
+    local width, height, depth = getwhd(tb)
     --
     if drc.ny < 2 then
         if data.fixedrows[r] == 0 then --  and drc.dimensionstate < 2
@@ -818,7 +818,7 @@ function xtables.construct()
             end
             local list = drc.list
             if list then
-                local w, h, d = getdimensions(list)
+                local w, h, d = getwhd(list)
                 setfield(list,"shift",h+d)
              -- list = hpack_node_list(list) -- is somehow needed
              -- setfield(list,"width",0)
@@ -1166,7 +1166,7 @@ function xtables.cleanup()
     --         local cell = row[i]
     --         local list = cell.list
     --         if list then
-    --             cell.width, cell.height, cell.depth = getdimensions(list)
+    --             cell.width, cell.height, cell.depth = getwhd(list)
     --             cell.list = true
     --         end
     --     end

@@ -88,6 +88,9 @@ local enabled           = false
 local function registerbackground(name)
     local n = #data + 1
     if n > recycle then
+        -- we could also free all e: that are beyond a page but we don't always
+        -- know the page so a recycle is nicer and the s lists are kept anyway
+        -- so the amount of kept data is not that large
         n = 1
     end
     local b = jobpositions.tobesaved["b:"..name]
@@ -632,8 +635,8 @@ local function calculatemultipar(tag)
     local bn = b.n
     local p  = bn and collected[f_p_tag(bn)] -- par
     if p then
-        left  = left  + p.ls
-        right = right + p.rs
+        left  = left  + (p.ls or 0)
+        right = right + (p.rs or 0)
     end
     --
     local bp = b.p -- page

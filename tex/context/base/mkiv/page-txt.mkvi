@@ -900,16 +900,16 @@
 %D mess.
 
 \def\settextpagecontent#1#2#3% #2 and #3 will disappear / is overloaded
-  {\setbox#1\hbox to \makeupwidth % maybe \hpack
+  {\setbox#1\hpack to \makeupwidth
      {\hss                     % so don't change this
       \setlayoutcomponentattribute{\v!page:\v!text}%
-      \vbox \layoutcomponentboxattribute to \textheight
+      \vpack \layoutcomponentboxattribute to \textheight
         {\offinterlineskip
          \freezetextwidth
          \hsize\textwidth      % local variant of \sethsize  <<< in columns?
          \boxmaxdepth\maxdepth
          \noindent             % content can be < \hsize
-         \page_otr_command_package_contents#2#3}%
+         \page_otr_command_package_contents#2#3}% this will vbox
       \hss}%
    \dp#1\zeropoint}
 

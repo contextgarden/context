@@ -308,28 +308,88 @@
       \d_strc_rendering_hang_height\zeropoint
     \fi}
 
+% \def\strc_rendering_stop_placement
+%   {\n_strc_rendering_hang_lines\zerocount
+%    \ifconditional\headisdisplay
+%      \strc_rendering_initialize_line_hang
+%      % kind of special, we want to snap heads also according to local specs local
+%      \ifgridsnapping
+%        \hbox\bgroup % extra hbox will trigger global snapper on top of local
+%          \edef\p_grid{\headparameter\c!grid}%
+%          \ifconditional\headisdisplay
+%            \ifx\p_grid\empty\else
+%              \useheadstyleandcolor\c!style\c!color
+%              \setupinterlinespace
+%              \useheadstyleandcolor\c!textstyle\c!textcolor
+%              \setupinterlinespace
+%            \fi
+%          \fi
+%          \snaptogrid[\p_grid]\hbox
+%            {\hskip\dimexpr\d_strc_rendering_local_leftoffset+\headparameter\c!margin\relax\box\b_strc_rendering_head}%
+%        \egroup
+%      \else
+%        \hbox
+%          {\hskip\dimexpr\d_strc_rendering_local_leftoffset+\headparameter\c!margin\relax\box\b_strc_rendering_head}%
+%      \fi
+%      \flushnotes % new, not really needed
+%      \endgraf
+%      \ifvmode
+%        \ifnum\n_strc_rendering_hang_lines>\zerocount
+%          \dorecurse\n_strc_rendering_hang_lines{\nointerlineskip\dosomebreak\nobreak\strut\endgraf}% to be checked
+%        \fi
+%        \nointerlineskip
+%        \dosomebreak\nobreak
+%      \fi
+%      \getheadsyncs
+%    \else
+%      % somehow this goes ok even when we push in the margin probably because we gobble pars
+%      % in the process of collecting index entries etc
+%      \strut
+%      \flushnotes % new, here since we're in par mode
+%      \unhbox\b_strc_rendering_head
+%      \getheadsyncs
+%      \ifconditional\headissomewhere
+%         % nothing special
+%      \else
+%       %\hskip\headnumberdistance\s!plus\headnumberdistance\s!minus.25\dimexpr\headnumberdistance\relax
+%        \hskip\headtextdistance\relax
+%        \strc_sectioning_inject_continuous_signal
+%      \fi
+%    \fi
+%    \ifconditional\headisdisplay
+%      \ifvmode
+%        \ifgridsnapping % important, font related depth, see comment
+%          \prevdepth\strutdp
+%        \else
+%          \prevdepth\d_strc_rendering_local_depth
+%        \fi
+%      \fi
+%    \fi
+%    \egroup
+%    \egroup
+%    \ifconditional\headisdisplay
+%      \useindentnextparameter\headparameter
+%    \else
+%      \nonoindentation % recently added, was a bug
+%    \fi}
+
 \def\strc_rendering_stop_placement
   {\n_strc_rendering_hang_lines\zerocount
    \ifconditional\headisdisplay
      \strc_rendering_initialize_line_hang
      % kind of special, we want to snap heads also according to local specs local
+     \setbox\b_strc_rendering_head\hbox
+       {\hskip\dimexpr\d_strc_rendering_local_leftoffset+\headparameter\c!margin\relax
+        \box\b_strc_rendering_head}%
      \ifgridsnapping
-       \hbox\bgroup % extra hbox will trigger global snapper on top of local
-         \edef\p_grid{\headparameter\c!grid}%
-         \ifconditional\headisdisplay
-           \ifx\p_grid\empty\else
-             \useheadstyleandcolor\c!style\c!color
-             \setupinterlinespace
-             \useheadstyleandcolor\c!textstyle\c!textcolor
-             \setupinterlinespace
-           \fi
-         \fi
-         \snaptogrid[\p_grid]\hbox
-           {\hskip\dimexpr\d_strc_rendering_local_leftoffset+\headparameter\c!margin\relax\box\b_strc_rendering_head}%
-       \egroup
+       \applygridmethod
+         {\headparameter\c!grid}%
+         {\ifconditional\headisdisplay
+            \strc_rendering_initialize_style_and_color_display\c!textstyle\c!textcolor
+          \fi}%
+         {\box\b_strc_rendering_head}
      \else
-       \hbox
-         {\hskip\dimexpr\d_strc_rendering_local_leftoffset+\headparameter\c!margin\relax\box\b_strc_rendering_head}%
+       \box\b_strc_rendering_head
      \fi
      \flushnotes % new, not really needed
      \endgraf

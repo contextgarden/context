@@ -12,63 +12,63 @@ local lpegmatch = lpeg.match
 
 local report_hyphenation = logs.reporter("languages","hyphenation")
 
-local tex           = tex
-local context       = context
-local nodes         = nodes
+local tex             = tex
+local context         = context
+local nodes           = nodes
 
-local implement     = interfaces.implement
+local implement       = interfaces.implement
 
-local nodecodes     = nodes.nodecodes
+local nodecodes       = nodes.nodecodes
 
-local disc_code     = nodecodes.disc
-local hlist_code    = nodecodes.hlist
-local vlist_code    = nodecodes.vlist
-local glue_code     = nodecodes.glue
-local glyph_code    = nodecodes.glyph
+local disc_code       = nodecodes.disc
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
+local glue_code       = nodecodes.glue
+local glyph_code      = nodecodes.glyph
 
-local nuts          = nodes.nuts
-local tonut         = nuts.tonut
-local tonode        = nuts.tonode
+local nuts            = nodes.nuts
+local tonut           = nuts.tonut
+local tonode          = nuts.tonode
 
-local getfield      = nuts.getfield
-local getnext       = nuts.getnext
-local getprev       = nuts.getprev
-local getdisc       = nuts.getdisc
-local getid         = nuts.getid
-local getlist       = nuts.getlist
-local getattribute  = nuts.getattribute
-local getbox        = nuts.getbox
-local takebox       = nuts.takebox
+local getfield        = nuts.getfield
+local getnext         = nuts.getnext
+local getprev         = nuts.getprev
+local getdisc         = nuts.getdisc
+local getid           = nuts.getid
+local getlist         = nuts.getlist
+local getattribute    = nuts.getattribute
+local getbox          = nuts.getbox
+local takebox         = nuts.takebox
 
-local setfield      = nuts.setfield
-local setlink       = nuts.setlink
-local setboth       = nuts.setboth
-local setnext       = nuts.setnext
-local setbox        = nuts.setbox
-local setlist       = nuts.setlist
+local setfield        = nuts.setfield
+local setlink         = nuts.setlink
+local setboth         = nuts.setboth
+local setnext         = nuts.setnext
+local setbox          = nuts.setbox
+local setlist         = nuts.setlist
 
-local flush_node    = nuts.flush_node
-local flush_list    = nuts.flush_list
-local copy_node     = nuts.copy
-local copy_list     = nuts.copy_list
-local find_tail     = nuts.tail
-local traverse_id   = nuts.traverse_id
-local link_nodes    = nuts.linked
-local dimensions    = nuts.dimensions
-local hpack         = nuts.hpack
+local flush_node      = nuts.flush_node
+local flush_list      = nuts.flush_list
+local copy_node       = nuts.copy
+local copy_list       = nuts.copy_list
+local find_tail       = nuts.tail
+local traverse_id     = nuts.traverse_id
+local link_nodes      = nuts.linked
+local list_dimensions = nuts.dimensions
+local hpack           = nuts.hpack
 
-local listtoutf     = nodes.listtoutf
+local listtoutf       = nodes.listtoutf
 
-local nodepool      = nuts.pool
-local new_penalty   = nodepool.penalty
-local new_hlist     = nodepool.hlist
-local new_glue      = nodepool.glue
+local nodepool        = nuts.pool
+local new_penalty     = nodepool.penalty
+local new_hlist       = nodepool.hlist
+local new_glue        = nodepool.glue
 
-local setlistcolor  = nodes.tracers.colors.setlist
+local setlistcolor    = nodes.tracers.colors.setlist
 
-local texget        = tex.get
-local texgetbox     = tex.getbox
-local texsetdimen   = tex.setdimen
+local texget          = tex.get
+local texgetbox       = tex.getbox
+local texsetdimen     = tex.setdimen
 
 local function hyphenatedlist(head,usecolor)
     local current = head and tonut(head)
@@ -350,7 +350,7 @@ implement {
     arguments = "integer",
     actions   = function(n)
         local b = getbox(n)
-        local factor = texget("baselineskip").width / texget("hsize")
+        local factor = texget("baselineskip",false) / texget("hsize")
         setfield(b,"depth",0)
         setfield(b,"height",getfield(b,"width") * factor)
     end
@@ -368,7 +368,7 @@ local function getnaturaldimensions(n)
     local w, h, d = 0, 0, 0
     local l = getlist(getbox(n))
     if l then
-        w, h, d = dimensions(l)
+        w, h, d = list_dimensions(l)
     end
     texsetdimen("lastnaturalboxwd",w)
     texsetdimen("lastnaturalboxht",h)
@@ -398,7 +398,7 @@ interfaces.implement {
         local w, h, d = 0, 0, 0
         local l = getlist(getbox(n))
         if l then
-            w, h, d = dimensions(l)
+            w, h, d = list_dimensions(l)
         end
         context("\\dimexpr%i\\scaledpoint\\relax",w)
     end
@@ -464,7 +464,7 @@ do
     trackers.register("nodes.boxes",function(v) trace = v end)
 
     function boxes.save(category,name,box)
-name = tonumber(name) or name
+        name = tonumber(name) or name
         local b = takebox(box)
         if trace then
             report("category %a, name %a, %s (%s)",category,name,"save",b and "content" or "empty")
@@ -473,12 +473,12 @@ name = tonumber(name) or name
     end
 
     function boxes.found(category,name)
-name = tonumber(name) or name
+        name = tonumber(name) or name
         return cache[category][name] and true or false
     end
 
     function boxes.direct(category,name,copy)
-name = tonumber(name) or name
+        name = tonumber(name) or name
         local c = cache[category]
         local b = c[name]
         if not b then
@@ -495,7 +495,7 @@ name = tonumber(name) or name
     end
 
     function boxes.restore(category,name,box,copy)
-name = tonumber(name) or name
+        name = tonumber(name) or name
         local c = cache[category]
         local b = takebox(box)
         if b then
@@ -515,18 +515,20 @@ name = tonumber(name) or name
         texsetbox(box,b or nil)
     end
 
+    local getwhd = nodes.getwhd
+
     function boxes.dimensions(category,name)
-name = tonumber(name) or name
+        name = tonumber(name) or name
         local b = cache[category][name]
         if b then
-            return b.width, b.height, b.depth
+            return getwhd(b)
         else
             return 0, 0, 0
         end
     end
 
     function boxes.reset(category,name)
-name = tonumber(name) or name
+        name = tonumber(name) or name
         local c = cache[category]
         if name and name ~= "" then
             local b = c[name]

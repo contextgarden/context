@@ -88,13 +88,13 @@ local report_error       = logs.reporter("node-aux:error")
 local function takebox(id)
     local box = getbox(id)
     if box then
-        local copy = copy_node(box)
         local list = getlist(box)
+        setlist(box,nil)
+        local copy = copy_node(box)
         if list then
             setlist(copy,list)
-            setlist(box,nil)
         end
-        texsetbox(id,nil)
+        texsetbox(id,false)
         return copy
     end
 end

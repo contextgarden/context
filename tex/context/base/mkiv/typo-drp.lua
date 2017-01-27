@@ -35,6 +35,7 @@ local getid             = nuts.getid
 local getsubtype        = nuts.getsubtype
 local getfield          = nuts.getfield
 local getattr           = nuts.getattr
+local getwhd            = nuts.getwhd
 
 local setfield          = nuts.setfield
 local setattr           = nuts.setattr
@@ -42,6 +43,7 @@ local setlink           = nuts.setlink
 local setprev           = nuts.setprev
 local setnext           = nuts.setnext
 local setchar           = nuts.setchar
+local setwhd            = nuts.setwhd
 
 local hpack_nodes       = nuts.hpack
 
@@ -64,6 +66,7 @@ local v_first           = variables.first
 local v_last            = variables.last
 
 local texget            = tex.get
+local texset            = tex.set
 local texsetattribute   = tex.setattribute
 local unsetvalue        = attributes.unsetvalue
 
@@ -155,8 +158,8 @@ actions[v_default] = function(head,setting)
             local distance  = setting.distance or 0
             local voffset   = setting.voffset or 0
             local hoffset   = setting.hoffset or 0
-            local parindent = tex.parindent
-            local baseline  = texget("baselineskip").width
+            local parindent = texget("parindent")
+            local baseline  = texget("baselineskip",false)
             local lines     = tonumber(setting.n) or 0
             local dynamic   = setting.dynamic
             local font      = setting.font
@@ -290,12 +293,8 @@ actions[v_default] = function(head,setting)
             setprev(first)
             setnext(last)
             local dropper = hpack_nodes(first)
-            local width   = getfield(dropper,"width")
-            local height  = getfield(dropper,"height")
-            local depth   = getfield(dropper,"depth")
-            setfield(dropper,"width",0)
-            setfield(dropper,"height",0)
-            setfield(dropper,"depth",0)
+            local width, height, depth = getwhd(dropper)
+            setwhd(dropper,0,0,0)
             --
             setlink(prev,dropper)
             setlink(dropper,next)
@@ -339,8 +338,8 @@ actions[v_default] = function(head,setting)
                 if trace_initials then
                     report_initials("setting hangafter to %i and hangindent to %p",hangafter,hangindent)
                 end
-                tex.hangafter  = hangafter
-                tex.hangindent = hangindent
+                texset("hangafter",hangafter)
+                texset("hangindent",hangindent)
             end
             if indent then
                 insert_after(first,first,new_kern(-parindent))

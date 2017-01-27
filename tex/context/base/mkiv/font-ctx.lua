@@ -2243,7 +2243,7 @@ do
     local copy_node = nuts.copy
     local kern      = nuts.pool.register(nuts.pool.kern())
 
-    setattr(kern,attributes.private('fontkern'),1)
+    setattr(kern,attributes.private('fontkern'),1) -- no gain in setprop as it's shared
 
     nodes.injections.installnewkern(function(k)
         local c = copy_node(kern)

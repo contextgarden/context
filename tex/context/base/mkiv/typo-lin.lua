@@ -94,8 +94,6 @@ local setprop           = nuts.setprop
 local getprop           = nuts.rawprop -- getprop
 
 local effectiveglue     = nuts.effective_glue
-local n_is_zero_glue    = nodes.is_zero_glue
-local n_getglue         = nodes.getglue
 
 local nodepool          = nuts.pool
 local new_kern          = nodepool.kern
@@ -106,7 +104,7 @@ local new_rule          = nodepool.rule
 local new_glue          = nodepool.glue
 
 local texgetcount       = tex.getcount
-local texgetskip        = tex.getskip
+local texgetglue        = tex.getglue
 local setmetatableindex = table.setmetatableindex
 local formatters        = string.formatters
 
@@ -244,8 +242,8 @@ function paragraphs.normalize(head,islocal)
         return head, false
     end
     -- this can become a separate handler but it makes sense to integrate it here
-    local parfillleftskip = texgetskip("parfillleftskip")
-    if not n_is_zero_glue(parfillleftskip) then
+    local l_width, l_stretch, l_shrink = texgetglue("parfillleftskip")
+    if l_width ~= 0 or l_stretch ~= 0 or l_shrink ~= 0 then
         local last = nil -- a nut
         local done = false
         for line in traverse_id(hlist_code,tonut(head)) do
@@ -265,7 +263,7 @@ function paragraphs.normalize(head,islocal)
                     current = getnext(current)
                 end
                 if current then
-                    head, current = insert_before(head,current,new_glue(n_getglue(parfillleftskip)))
+                    head, current = insert_before(head,current,new_glue(l_width,l_stretch,l_shrink))
                     if head == current then
                         setlist(last,head)
                     end

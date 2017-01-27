@@ -33,7 +33,7 @@ local new_glue        = nodepool.glue
 local utfvalues       = utf.values
 
 local currentfont     = font.current
------ currentattr     = node.current_attr
+----- current_attr    = node.current_attr
 local fontparameters  = fonts.hashes.parameters
 
 local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
@@ -45,7 +45,7 @@ local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
          -- attrid = getfield(templateglyph,"attr")
         else
             fontid = currentfont()
-         -- attrid = currentattr()
+         -- attrid = current_attr()
         end
     end
     local fp = fontparameters[fontid]

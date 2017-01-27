@@ -227,9 +227,8 @@ end
 -- check why box is called before after_linebreak .. maybe make categories and
 -- call 'm less
 
-
 -- this will be split into contribute_filter for these 4 so at some point
--- thecheck can go away
+-- the check can go away
 
 function builders.buildpage_filter(groupcode)
     -- the next check saves 1% runtime on 1000 tufte pages

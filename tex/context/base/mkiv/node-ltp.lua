@@ -206,6 +206,8 @@ local getdisc              = nuts.getdisc
 local getattr              = nuts.getattr
 local getdisc              = nuts.getdisc
 local getglue              = nuts.getglue
+local getwhd               = nuts.getwhd
+local setwhd               = nuts.setwhd
 
 local isglyph              = nuts.isglyph
 
@@ -734,10 +736,11 @@ local function add_to_width(line_break_dir,checked_expansion,s) -- split into tw
     while s do
         local char, id = isglyph(s)
         if char then
+            local wd, ht, dp = getwhd(s)
             if is_rotated[line_break_dir] then -- can be shared
-                size = size + getfield(s,"height") + getfield(s,"depth")
+                size = size + ht + dp
             else
-                size = size + getfield(s,"width")
+                size = size + wd
             end
             if checked_expansion then
                 local data = checked_expansion[getfont(s)]
@@ -750,10 +753,11 @@ local function add_to_width(line_break_dir,checked_expansion,s) -- split into tw
                 end
             end
         elseif id == hlist_code or id == vlist_code then
+            local wd, ht, dp = getwhd(s)
             if is_parallel[getfield(s,"dir")][line_break_dir] then
-                size = size + getfield(s,"width")
+                size = size + wd
             else
-                size = size + getfield(s,"height") + getfield(s,"depth")
+                size = size + ht + dp
             end
         elseif id == kern_code then
             local kern = getfield(s,"kern")
@@ -817,10 +821,11 @@ local function compute_break_width(par,break_type,p) -- split in two
         if id == glyph_code then
             return -- happens often
         elseif id == glue_code then
-            local order = stretch_orders[getfield(p,"stretch_order")]
-            break_width.size   = break_width.size   - getfield(p,"width")
-            break_width[order] = break_width[order] - getfield(p,"stretch")
-            break_width.shrink = break_width.shrink - getfield(p,"shrink")
+            local wd, stretch, shrink, stretch_order = getglue(p)
+            local order = stretch_orders[stretch_order]
+            break_width.size   = break_width.size   - wd
+            break_width[order] = break_width[order] - stretch
+            break_width.shrink = break_width.shrink - shrink
         elseif id == penalty_code then
             -- do nothing
         elseif id == kern_code then
@@ -832,6 +837,12 @@ local function compute_break_width(par,break_type,p) -- split in two
             end
         elseif id == math_code then
             break_width.size = break_width.size - getfield(p,"surround")
+            -- new in luatex
+            local wd, stretch, shrink, stretch_order = getglue(p)
+            local order = stretch_orders[stretch_order]
+            break_width.size   = break_width.size   - wd
+            break_width[order] = break_width[order] - stretch
+            break_width.shrink = break_width.shrink - shrink
         else
             return
         end
@@ -1085,13 +1096,17 @@ local function initialize_line_break(head,display)
 
     local l = check_shrinkage(par,left_skip)
     local r = check_shrinkage(par,right_skip)
-    local l_order = stretch_orders[getfield(l,"stretch_order")]
-    local r_order = stretch_orders[getfield(r,"stretch_order")]
 
-    background.size     = getfield(l,"width")   + getfield(r,"width")
-    background.shrink   = getfield(l,"shrink")  + getfield(r,"shrink")
-    background[l_order] = getfield(l,"stretch")
-    background[r_order] = getfield(r,"stretch") + background[r_order]
+    local lwidth, lstretch, lshrink, lstretch_order, lshrink_order = getglue(l)
+    local rwidth, rstretch, rshrink, rstretch_order, rshrink_order = getglue(r)
+
+    local l_order = stretch_orders[lstretch_order]
+    local r_order = stretch_orders[rstretch_order]
+
+    background.size     = lwidth   + rwidth
+    background.shrink   = lshrink  + rshrink
+    background[l_order] = lstretch
+    background[r_order] = rstretch + background[r_order]
 
     -- this will move up so that we can assign the whole par table
 
@@ -1291,6 +1306,8 @@ local function post_line_break(par)
                 setfield(lastnode,"kern",0)
             elseif getid(lastnode) == math_code then
                 setfield(lastnode,"surround",0)
+                -- new in luatex
+                setglue(lastnode) -- zeros
             end
         end
         lastnode = inject_dirs_at_end_of_line(stack,lastnode,getnext(head),current_break.cur_break)
@@ -1457,6 +1474,8 @@ local function post_line_break(par)
                 elseif id == math_code then
                     -- keep the math node
                     setfield(next,"surround",0)
+                    -- new in luatex
+                    setglue(lastnode) -- zeros
                     break
                 elseif id == kern_code then
                     local subtype = getsubtype(next)
@@ -2219,10 +2238,11 @@ function constructors.methods.basic(head,d)
         while current and p_active ~= n_active do
             local char, id = isglyph(current)
             if char then
+                local wd, ht, dp = getwhd(current)
                 if is_rotated[par.line_break_dir] then
-                    active_width.size = active_width.size + getfield(current,"height") + getfield(current,"depth")
+                    active_width.size = active_width.size + ht + dp
                 else
-                    active_width.size = active_width.size + getfield(current,"width")
+                    active_width.size = active_width.size + wd
                 end
                 if checked_expansion then
                     local currentfont = getfont(current)
@@ -2242,10 +2262,11 @@ function constructors.methods.basic(head,d)
                     end
                 end
             elseif id == hlist_code or id == vlist_code then
+                local wd, ht, dp = getwhd(current)
                 if is_parallel[getfield(current,"dir")][par.line_break_dir] then
-                    active_width.size = active_width.size + getfield(current,"width")
+                    active_width.size = active_width.size + wd
                 else
-                    active_width.size = active_width.size + getfield(current,"depth") + getfield(current,"height")
+                    active_width.size = active_width.size + ht + dp
                 end
             elseif id == glue_code then
 --                 if par.auto_breaking then
@@ -2265,10 +2286,11 @@ function constructors.methods.basic(head,d)
                     end
                 end
                 check_shrinkage(par,current)
-                local order = stretch_orders[getfield(current,"stretch_order")]
-                active_width.size   = active_width.size   + getfield(current,"width")
-                active_width[order] = active_width[order] + getfield(current,"stretch")
-                active_width.shrink = active_width.shrink + getfield(current,"shrink")
+                local width, stretch, shrink, stretch_order = getglue(current)
+                local order = stretch_orders[stretch_order]
+                active_width.size   = active_width.size   + width
+                active_width[order] = active_width[order] + stretch
+                active_width.shrink = active_width.shrink + shrink
             elseif id == disc_code then
                 local subtype = getsubtype(current)
                 if subtype ~= second_disc_code then
@@ -2383,6 +2405,8 @@ function constructors.methods.basic(head,d)
                 end
                 local active_width = par.active_width
                 active_width.size = active_width.size + getfield(current,"surround")
+                -- new in luatex
+                + getfield(current,"width")
             elseif id == rule_code then
                 active_width.size = active_width.size + getfield(current,"width")
             elseif id == penalty_code then
@@ -2629,9 +2653,7 @@ end)
 -- with the glyph.
 
 local function glyph_width_height_depth(curdir,pdir,p)
-    local wd = getfield(p,"width")
-    local ht = getfield(p,"height")
-    local dp = getfield(p,"depth")
+    local wd, ht, dp = getwhd(p)
     if is_rotated[curdir] then
         if is_parallel[curdir][pdir] then
             local half = (ht + dp) / 2
@@ -2659,9 +2681,7 @@ local function glyph_width_height_depth(curdir,pdir,p)
 end
 
 local function pack_width_height_depth(curdir,pdir,p)
-    local wd = getfield(p,"width")
-    local ht = getfield(p,"height")
-    local dp = getfield(p,"depth")
+    local wd, ht, dp = getwhd(p)
     if is_rotated[curdir] then
         if is_parallel[curdir][pdir] then
             local half = (ht + dp) / 2
@@ -2913,11 +2933,10 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                     end
                 end
             elseif id == glue_code then
-                natural = natural + getfield(current,"width")
-                local op = getfield(current,"stretch_order")
-                local om = getfield(current,"shrink_order")
-                total_stretch[op] = total_stretch[op] + getfield(current,"stretch")
-                total_shrink [om] = total_shrink [om] + getfield(current,"shrink")
+                local wd, stretch, shrink, stretch_order, shrink_order = getglue(current)
+                natural = natural + wd
+                total_stretch[stretch_order] = total_stretch[stretch_order] + stretch
+                total_shrink [shrink_order]  = total_shrink[shrink_order]   + shrink
                 if getsubtype(current) >= leaders_code then
                     local leader = getleader(current)
                     local ht = getfield(leader,"height")
@@ -2941,9 +2960,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                     depth = ds
                 end
             elseif id == rule_code then
-                local wd = getfield(current,"width")
-                local ht = getfield(current,"height")
-                local dp = getfield(current,"depth")
+                local wd, ht, dp = getwhd(current)
                 natural = natural + wd
                 if ht > height then
                     height = ht
@@ -2953,6 +2970,8 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                 end
             elseif id == math_code then
                 natural = natural + getfield(current,"surround")
+                -- new in luatex
+                + getfield(current,"width")
             elseif id == unset_code then
                 local wd = getfield(current,"width")
                 local ht = getfield(current,"height")
@@ -3019,9 +3038,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
         width = width + natural
     end
 
-    setfield(hlist,"width",width)
-    setfield(hlist,"height",height)
-    setfield(hlist,"depth",depth)
+    setwhd(hlist,width,height,depth)
 
     local delta  = width - natural
     if delta == 0 then

@@ -298,7 +298,7 @@
         \typo_delimited_set_language_nop}}
 
 \def\typo_delimited_set_language_yes_b
-  {\splitstring\m_delimited_argument\at:\to\outerdelimitedlanguage\and\innerdelimitedlanguage
+  {\splitatcolon\m_delimited_argument\outerdelimitedlanguage\innerdelimitedlanguage
    \ifx\outerdelimitedlanguage\empty
      \typo_delimited_set_language_nop
    \else

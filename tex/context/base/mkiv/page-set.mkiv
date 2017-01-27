@@ -1515,7 +1515,7 @@
 
 \def\doOTRSETgotoCOLROW#1% <number>|<number>*<number>
   {\bgroup % really needed
-   \splitstring#1\at*\to\column\and\row
+   \splitatasterisk{#1}\column\row
    \bgroup
      \ifx\column\empty\else\expanded{\doOTRSETgotoCOLUMN{\column}}\fi
    \egroup

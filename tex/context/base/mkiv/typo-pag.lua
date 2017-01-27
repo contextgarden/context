@@ -35,6 +35,7 @@ local getprev             = nuts.getprev
 local getid               = nuts.getid
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
+local getwhd              = nuts.getwhd
 
 local insert_node_after   = nuts.insert_after
 local new_penalty         = nuts.pool.penalty
@@ -118,7 +119,8 @@ local function keeptogether(start,a)
             while current do
                 local id = getid(current)
                 if id == vlist_code or id == hlist_code then
-                    total = total + getfield(current,"height") + getfield(current,"depth")
+                    local wd, ht, dp = getwhd(current)
+                    total = total + ht + dp
                     if trace_keeptogether then
                         report_keeptogether("%s, index %s, total %p, threshold %p","list",a,total,threshold)
                     end

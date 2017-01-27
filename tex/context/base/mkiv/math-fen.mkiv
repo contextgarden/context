@@ -267,40 +267,40 @@
 %
 % \def\math_left
 %   {\settrue\c_math_fenced_done
-%    \edef\m_math_left{\meaning\nexttoken}%
+%    \edef\m_math_left{\normalmeaning\nexttoken}%
 %    \csname\??mathleft\ifcsname\??mathleft\m_math_left\endcsname\m_math_left\else\s!unknown\fi\endcsname}
 %
 % \def\math_right
 %   {\settrue\c_math_fenced_done
-%    \edef\m_math_right{\meaning\nexttoken}%
+%    \edef\m_math_right{\normalmeaning\nexttoken}%
 %    \csname\??mathright\ifcsname\??mathright\m_math_right\endcsname\m_math_right\else\s!unknown\fi\endcsname}
 %
 % \def\math_middle
 %   {\settrue\c_math_fenced_done
-%    \edef\m_math_middle{\meaning\nexttoken}%
+%    \edef\m_math_middle{\normalmeaning\nexttoken}%
 %    \csname\??mathmiddle\ifcsname\??mathmiddle\m_math_middle\endcsname\m_math_middle\else\s!unknown\fi\endcsname}
 %
 % \unexpanded\def\lfence#1%
 %   {\settrue\c_math_fenced_done
 %    \let\nexttoken#1%
-%    \edef\m_math_left{\meaning#1}%
+%    \edef\m_math_left{\normalmeaning#1}%
 %    \csname\??mathleft\ifcsname\??mathleft\m_math_left\endcsname\m_math_left\else\s!unknown\fi\endcsname}
 %
 % \unexpanded\def\rfence#1%
 %   {\settrue\c_math_fenced_done
 %    \let\nexttoken#1%
-%    \edef\m_math_right{\meaning#1}%
+%    \edef\m_math_right{\normalmeaning#1}%
 %    \csname\??mathright\ifcsname\??mathright\m_math_right\endcsname\m_math_right\else\s!unknown\fi\endcsname}
 %
 % \unexpanded\def\mfence#1%
 %   {\settrue\c_math_fenced_done
 %    \let\nexttoken#1%
-%    \edef\m_math_middle{\meaning#1}%
+%    \edef\m_math_middle{\normalmeaning#1}%
 %    \csname\??mathmiddle\ifcsname\??mathmiddle\m_math_middle\endcsname\m_math_middle\else\s!unknown\fi\endcsname}
 
 \unexpanded\def\installmathfencepair#1#2#3#4%
-  {\expandafter\let\csname\??mathleft \meaning#1\endcsname#2%
-   \expandafter\let\csname\??mathright\meaning#3\endcsname#4}
+  {\expandafter\let\csname\??mathleft \normalmeaning#1\endcsname#2%
+   \expandafter\let\csname\??mathright\normalmeaning#3\endcsname#4}
 
 \def\math_unknown_left  {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalleft  \nexttoken\fi}
 \def\math_unknown_right {\setfalse\c_math_fenced_done\ifconditional\c_math_fenced_unknown\normalright \nexttoken\fi}
@@ -312,7 +312,7 @@
 
 \def\math_left
   {\settrue\c_math_fenced_done
-   \ifcsname\??mathleft\meaning\nexttoken\endcsname
+   \ifcsname\??mathleft\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_left
@@ -320,7 +320,7 @@
 
 \def\math_right
   {\settrue\c_math_fenced_done
-   \ifcsname\??mathright\meaning\nexttoken\endcsname
+   \ifcsname\??mathright\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_right
@@ -328,7 +328,7 @@
 
 \def\math_middle
   {\settrue\c_math_fenced_done
-   \ifcsname\??mathmiddle\meaning\nexttoken\endcsname
+   \ifcsname\??mathmiddle\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_middle
@@ -337,7 +337,7 @@
 \unexpanded\def\lfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
-   \ifcsname\??mathleft\meaning\nexttoken\endcsname
+   \ifcsname\??mathleft\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_left
@@ -346,7 +346,7 @@
 \unexpanded\def\rfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
-   \ifcsname\??mathright\meaning\nexttoken\endcsname
+   \ifcsname\??mathright\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_right
@@ -355,7 +355,7 @@
 \unexpanded\def\mfence#1%
   {\settrue\c_math_fenced_done
    \let\nexttoken#1%
-   \ifcsname\??mathmiddle\meaning\nexttoken\endcsname
+   \ifcsname\??mathmiddle\normalmeaning\nexttoken\endcsname
      \expandafter\lastnamedcs
    \else
      \expandafter\math_unknown_middle

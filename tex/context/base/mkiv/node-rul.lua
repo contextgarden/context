@@ -49,7 +49,7 @@ local setglue            = nuts.setglue
 local traverse_id        = nuts.traverse_id
 local list_dimensions    = nuts.rangedimensions
 local hpack_nodes        = nuts.hpack
-local attribs            = nuts.current_attr
+local current_attr       = nuts.current_attr
 
 local nodecodes          = nodes.nodecodes
 local rulecodes          = nodes.rulecodes
@@ -139,7 +139,7 @@ local function userrule(t,noattributes)
     if noattributes == false or noattributes == nil then
         -- avoid fuzzy ones
     else
-        setfield(r,"attr",attribs())
+        setfield(r,"attr",current_attr())
     end
     properties[r] = t
     return tonode(r)

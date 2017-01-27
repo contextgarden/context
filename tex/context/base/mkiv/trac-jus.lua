@@ -6,43 +6,43 @@ if not modules then modules = { } end modules ['trac-jus'] = {
     license   = "see context related readme files"
 }
 
-local checkers            = typesetters.checkers or { }
-typesetters.checkers      = checkers
+local checkers        = typesetters.checkers or { }
+typesetters.checkers  = checkers
 
 ----- report_justification = logs.reporter("visualize","justification")
 
-local a_alignstate        = attributes.private("alignstate")
-local a_justification     = attributes.private("justification")
+local a_alignstate    = attributes.private("alignstate")
+local a_justification = attributes.private("justification")
 
-local nuts                = nodes.nuts
-local tonut               = nuts.tonut
+local nuts            = nodes.nuts
+local tonut           = nuts.tonut
 
-local getfield            = nuts.getfield
-local setfield            = nuts.setfield
-local getlist             = nuts.getlist
-local getattr             = nuts.getattr
-local setattr             = nuts.setattr
-local setlist             = nuts.setlist
+local getfield        = nuts.getfield
+local setfield        = nuts.setfield
+local getlist         = nuts.getlist
+local getattr         = nuts.getattr
+local setattr         = nuts.setattr
+local setlist         = nuts.setlist
 
-local traverse_id         = nuts.traverse_id
-local get_list_dimensions = nuts.dimensions
-local linked_nodes        = nuts.linked
-local copy_node           = nuts.copy
+local traverse_id     = nuts.traverse_id
+local list_dimensions = nuts.dimensions
+local linked_nodes    = nuts.linked
+local copy_node       = nuts.copy
 
-local tracedrule          = nodes.tracers.pool.nuts.rule
+local tracedrule      = nodes.tracers.pool.nuts.rule
 
-local nodepool            = nuts.pool
+local nodepool        = nuts.pool
 
-local new_hlist           = nodepool.hlist
-local new_kern            = nodepool.kern
+local new_hlist       = nodepool.hlist
+local new_kern        = nodepool.kern
 
-local hlist_code          = nodes.nodecodes.hlist
+local hlist_code      = nodes.nodecodes.hlist
 
-local texsetattribute     = tex.setattribute
-local unsetvalue          = attributes.unsetvalue
+local texsetattribute = tex.setattribute
+local unsetvalue      = attributes.unsetvalue
 
-local min_threshold = 0
-local max_threshold = 0
+local min_threshold   = 0
+local max_threshold   = 0
 
 local function set(n)
     nodes.tasks.enableaction("mvlbuilders", "typesetters.checkers.handler")
@@ -81,7 +81,7 @@ function checkers.handler(head)
             if width > 0 then
                 local list = getlist(current)
                 if list then
-                    local naturalwidth, naturalheight, naturaldepth = get_list_dimensions(list)
+                    local naturalwidth, naturalheight, naturaldepth = list_dimensions(list)
                     local delta = naturalwidth - width
                     if naturalwidth == 0 or delta == 0 then
                         -- special box

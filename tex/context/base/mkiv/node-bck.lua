@@ -33,6 +33,7 @@ local getid             = nuts.getid
 local getlist           = nuts.getlist
 local getattr           = nuts.getattr
 local getsubtype        = nuts.getsubtype
+local getwhd            = nuts.getwhd
 
 local setfield          = nuts.setfield
 local setattr           = nuts.setattr
@@ -64,7 +65,7 @@ local function add_backgrounds(head) -- rather old code .. to be redone
                     list = head
                 end
             end
-            local width = getfield(current,"width")
+            local width, height, depth = getwhd(current)
             if width > 0 then
                 local background = getattr(current,a_background)
                 if background then
@@ -72,8 +73,6 @@ local function add_backgrounds(head) -- rather old code .. to be redone
                     -- colorspace is already set so we can omit that and stick to color
                     local mode = getattr(current,a_colormodel)
                     if mode then
-                        local height = getfield(current,"height")
-                        local depth = getfield(current,"depth")
                         local skip = id == hlist_code and width or (height + depth)
                         local glue = new_glue(-skip)
                         local rule = new_rule(width,height,depth)
@@ -130,12 +129,12 @@ local function add_alignbackgrounds(head)
                 --
                 if background then
                     -- current has subtype 5 (cell)
-                    local width = getfield(current,"width")
+                    local width, height, depth = getwhd(current)
                     if width > 0 then
                         local mode = getattr(found,a_colormodel)
                         if mode then
                             local glue = new_glue(-width)
-                            local rule = new_rule(width,getfield(current,"height"),getfield(current,"depth"))
+                            local rule = new_rule(width,height,depth)
                             local color = getattr(found,a_color)
                             local transparency = getattr(found,a_transparency)
                             setattr(rule,a_colormodel,mode)

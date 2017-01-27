@@ -90,6 +90,7 @@ local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getboth             = nuts.getboth
 local getdisc             = nuts.getdisc
+local getwhd              = nuts.getwhd
 
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
@@ -370,7 +371,7 @@ local function sometext(str,layer,color,textcolor,lap) -- we can just paste verb
     end
     local info = linked_nodes(rule,kern,text)
     setlisttransparency(info,c_zero)
-    info = new_hlist(info)
+    info = hpack_nodes(info)
     local width = getfield(info,"width")
     if lap then
         info = new_hlist(linked_nodes(new_kern(-width),info))
@@ -472,7 +473,10 @@ local function user(head,current)
     return head, current
 end
 
-local m_cache = { }
+local m_cache = {
+    beginmath = { },
+    endmath   = { },
+}
 local tags    = {
     beginmath = "B",
     endmath   = "E",
@@ -480,14 +484,24 @@ local tags    = {
 
 local function math(head,current)
     local what = getsubtype(current)
-    local info = m_cache[what]
+    local tag  = mathcodes[what]
+    local skip = getfield(current,"surround") + getfield(current,"width")
+    local info = m_cache[tag][skip]
     if info then
         -- print("hit math")
     else
-        local tag = mathcodes[what]
-        info = sometext(formatters["M:%s"](tag and tags[tag] or what),usedfont,nil,c_math_d)
+        local text, width = sometext(formatters["M:%s"](tag and tags[tag] or what),usedfont,nil,c_math_d)
+        local rule = new_rule(skip,-655360/fraction,2*655360/fraction)
+        setcolor(rule,c_math_d)
+        settransparency(rule,c_math_d)
+        setattr(rule,a_layer,l_math)
+        if tag == "beginmath" then
+            info = new_hlist(linked_nodes(new_glue(-skip),rule,new_glue(-width),text))
+        else
+            info = new_hlist(linked_nodes(new_glue(-skip),rule,new_glue(-skip),text))
+        end
         setattr(info,a_layer,l_math)
-        m_cache[what] = info
+        m_cache[tag][skip] = info
     end
     head, current = insert_node_after(head,current,copy_list(info))
     return head, current
@@ -506,10 +520,8 @@ local o_cache = table.setmetatableindex(function(t,size)
 end)
 
 local function ruledbox(head,current,vertical,layer,what,simple,previous,trace_origin,parent)
-    local wd = getfield(current,"width")
+    local wd, ht, dp = getwhd(current)
     if wd ~= 0 then
-        local ht    = getfield(current,"height")
-        local dp    = getfield(current,"depth")
         local shift = getfield(current,"shift")
         local dir   = getfield(current,"dir")
 --         if dir == "LTL" or dir == "RRT" then
@@ -643,8 +655,7 @@ local function ruledglyph(head,current,previous) -- wrong for vertical glyphs
     local wd = getfield(current,"width")
  -- local wd = chardata[getfont(current)][getchar(current)].width
     if wd ~= 0 then
-        local ht  = getfield(current,"height")
-        local dp  = getfield(current,"depth")
+        local wd, ht, dp = getwhd(current)
 --         local dir = getfield(current,"dir")
 -- if dir == "LTL" or dir = "RTT" then
 --     wd, ht, dp = ht + dp, wd, 0

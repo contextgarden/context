@@ -1551,6 +1551,35 @@
 \defineinnermathhandler\v!flushright{\strc_math_box_start\plusone  }{\strc_math_box_stop}
 \defineinnermathhandler\v!normal    {\strc_math_box_start\plustwo  }{\strc_math_box_stop}
 
+%D Some inline math tweak.
+
+\appendtoks
+    \ifcase\mathnestinglevel\or
+        % 4=disable 6=only when no spaces
+        \mathsurroundskip\mathematicsparameter\c!textdistance\relax
+        \ifzeropt\mathsurroundskip
+        \ifdim\gluestretch\mathsurroundskip=\zeropoint
+            \ifdim\glueshrink\mathsurroundskip=\zeropoint
+            \mathsurroundmode\plussix
+            \else
+            \mathsurroundskip\zeropoint
+            \mathsurroundmode\plusfour
+            \fi
+        \else
+            \mathsurroundmode\plussix
+        \fi
+        \else
+        \mathsurroundmode\plussix
+        \fi
+    \else
+        \mathsurroundmode\plusfour
+        \mathsurroundskip\zeropoint
+    \fi
+\to \everymathematics
+
+\setupmathematics
+  [\c!textdistance=\zeropoint]
+
 %D For documentation, see \type {math-mkiv.tex}.
 
 \protect \endinput

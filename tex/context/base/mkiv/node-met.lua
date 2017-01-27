@@ -146,6 +146,25 @@ if not node.rangedimensions then -- LUATEXVERSION < 0.99
 
 end
 
+if not node.getwhd then
+    local getfield = node.getfield
+    function node.getwhd(n)
+        return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth")
+    end
+end
+
+if not node.setwhd then
+    local setfield = node.setfield
+    function node.setwhd(n,w,h,d)
+        setfield(n,"width",w or 0)
+        setfield(n,"height",h or 0)
+        setfield(n,"depth",d or 0)
+    end
+end
+
+nodes.getwhd = node.getwhd
+nodes.setwhd = node.setwhd
+
 nodes.effective_glue       = node.effective_glue
 nodes.getglue              = node.getglue
 nodes.setglue              = node.setglue
@@ -177,6 +196,7 @@ local n_getfield        = node.getfield
 local n_setattr         = node.setattr
 local n_getattr         = node.getattr
 local n_getdisc         = node.getdisc
+local n_getwhd          = node.getwhd
 local n_getleader       = node.getleader
 
 local n_setnext         = node.setnext or
@@ -227,9 +247,8 @@ nodes.ischar            = node.is_char
 nodes.is_glyph          = node.is_glyph
 nodes.isglyph           = node.is_glyph
 
-nodes.getbox            = node.getbox  or tex.getbox
-nodes.setbox            = node.setbox  or tex.setbox
-nodes.getskip           = node.getskip or tex.get
+nodes.getbox            = node.getbox or tex.getbox
+nodes.setbox            = node.setbox or tex.setbox
 
 local n_flush_node      = nodes.flush
 local n_copy_node       = nodes.copy
@@ -680,3 +699,39 @@ end
 
 nodes.keys   = keys       -- [id][subtype]
 nodes.fields = nodefields -- (n)
+
+-- temporary hack
+
+if LUATEXVERSION <= 1.002 then
+
+    local get   = tex.get
+    local flush = node.free
+
+    function tex.get(name,split)
+        local s = get(name)
+        if split == true then
+            if s then
+                local width         = s.width
+                local stretch       = s.stretch
+                local shrink        = s.shrink
+                local stretch_order = s.stretch_order
+                local shrink_order  = s.shrink_order
+                flush(s)
+                return width, stretch, shrink, stretch_order, shrink_order
+            else
+                return 0, 0, 0, 0, 0
+            end
+        elseif split == false then
+            if s then
+                local width = s.width
+                flush(s)
+                return width
+            else
+                return 0
+            end
+        else
+            return s
+        end
+    end
+
+end

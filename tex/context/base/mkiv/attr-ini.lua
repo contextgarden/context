@@ -130,7 +130,7 @@ function attributes.ofnode(n)
     showlist(n,n.attr)
 end
 
--- rather special
+-- rather special (can be optimized)
 
 local store = { }
 

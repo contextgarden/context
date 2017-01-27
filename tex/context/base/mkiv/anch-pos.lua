@@ -20,7 +20,7 @@ more efficient.</p>
 -- this is one of the first modules using scanners and we need to replace
 -- it by implement and friends
 
-local tostring, next, rawget, setmetatable, tonumber = tostring, next, rawget, setmetatable, tonumber
+local tostring, next, rawget, rawset, setmetatable, tonumber = tostring, next, rawget, rawset, setmetatable, tonumber
 local sort, sortedhash, sortedkeys = table.sort, table.sortedhash, table.sortedkeys
 local format, gmatch, match, find = string.format, string.gmatch, string.match, string.find
 local rawget = rawget
@@ -51,7 +51,8 @@ local texsp             = tex.sp
 
 local pdf               = pdf -- h and v are variables
 
-local setmetatableindex = table.setmetatableindex
+local setmetatableindex    = table.setmetatableindex
+local setmetatablenewindex = table.setmetatablenewindex
 
 local nuts              = nodes.nuts
 
@@ -61,9 +62,10 @@ local setlink           = nuts.setlink
 local getlist           = nuts.getlist
 local setlist           = nuts.setlist
 local getbox            = nuts.getbox
-local getskip           = nuts.getskip
 local getid             = nuts.getid
-local getdimensions     = nuts.dimensions
+local getwhd            = nuts.getwhd
+
+local n_flush_node      = nodes.flush
 
 local hlist_code        = nodes.listcodes.hlist
 
@@ -122,133 +124,30 @@ local f_region    = formatters["region:%s"]
 local f_tag_three = formatters["%s:%s:%s"]
 local f_tag_two   = formatters["%s:%s"]
 
-local function sorter(a,b)
-    return a.y > b.y
-end
+jobpositions.used = false
 
-local nofusedregions    = 0
-local nofmissingregions = 0
-local nofregular        = 0
-
-jobpositions.used       = false
-
--- todo: register subsets and count them indepently
--- todo: categories, like par, page, ... saves find and also ordered tags then
-
--- local function initializer()
---     tobesaved = jobpositions.tobesaved
---     collected = jobpositions.collected
---     -- add sparse regions
---     local pages = structures.pages.collected
---     if pages then
---         local last = nil
---         for p=1,#pages do
---             local region = "page:" .. p
---             local data   = collected[region]
---             if data then
---                 last   = data
---                 last.p = nil -- no need for a page
---             elseif last and not collected[region] then
---                 collected[region] = last
---             end
---         end
---     end
---     -- enhance regions with paragraphs -- could be a list of tags instead -- there can be too many
---     local regions = { }
---  -- for tag, data in sortedhash(collected) do --saves a sort later on but can be huge
---     for tag, data in next, collected do
---         if find(tag,"^p:") then
---             local region = data.r
---             if region then
---                 local paragraphs = regions[region]
---                 if paragraphs then
---                     local par = match(tag,"%d+")
---                     data.par = tonumber(par)
---                     paragraphs[#paragraphs+1] = data
---                     nofusedregions = nofusedregions + 1
---                 elseif r == false then
---                     nofmissingregions = nofmissingregions + 1
---                 else
---                     local r = collected[region]
---                     if r then
---                         local par = match(tag,"%d+")
---                         data.par = tonumber(par)
---                         paragraphs = { data }
---                         regions[region] = paragraphs
---                         nofusedregions = nofusedregions + 1
---                         r.paragraphs = paragraphs
---                     else
---                         nofmissingregions = nofmissingregions + 1
---                         regions[region] = false
---                     end
---                 end
---             else
---                 nofregular = nofregular + 1
---             end
---         end
---         setmetatable(data,default)
---     end
---     -- sort this data
---     for tag, paragraphs in next, regions do
---         if paragraphs then
---             sort(paragraphs,function(a,b) return a.par < b.par end)
---         end
---     end
---     jobpositions.used = next(collected)
--- end
-
-local splitter = lpeg.splitat(":")
+local nofregular  = 0
+local nofspecial  = 0
+local splitter    = lpeg.splitat(":",true)
 
 local function initializer()
     tobesaved = jobpositions.tobesaved
     collected = jobpositions.collected
-    -- add sparse regions
-    -- enhance regions with paragraphs -- could be a list of tags instead -- there can be too many
-    local regiondata = { }
-    local pagedata   = { }
-    local freedata   = setmetatableindex("table")
- -- for tag, data in sortedhash(collected) do --saves a sort later on but can be huge
+    local pagedata = { }
+    local freedata = setmetatableindex("table")
     for tag, data in next, collected do
         local prefix, rest = lpegmatch(splitter,tag)
         if prefix == "p" then
-            local region = data.r
-            if region then
-                local paragraphs = regiondata[region]
-                if paragraphs then
-                    data.par = tonumber(rest) or 0
-                    paragraphs[#paragraphs+1] = data
-                    nofusedregions = nofusedregions + 1
-                elseif r == false then
-                    nofmissingregions = nofmissingregions + 1
-                else
-                    local r = collected[region]
-                    if r then
-                        data.par = tonumber(rest) or 0
-                        paragraphs = { data }
-                        regiondata[region] = paragraphs
-                        nofusedregions = nofusedregions + 1
-                        r.paragraphs = paragraphs
-                    else
-                        nofmissingregions = nofmissingregions + 1
-                        regiondata[region] = false
-                    end
-                end
-            else
-                nofregular = nofregular + 1
-            end
+            nofregular = nofregular + 1
         elseif prefix == "page" then
+            nofregular = nofregular + 1
             pagedata[tonumber(rest) or 0] = data
         elseif prefix == "free" then
+            nofspecial = nofspecial + 1
             local t = freedata[data.p or 0]
             t[#t+1] = data
         end
         setmetatable(data,default)
-    end
-    -- sort this data
-    for tag, paragraphs in next, regiondata do
-        if paragraphs then
-            sort(paragraphs,function(a,b) return a.par < b.par end)
-        end
     end
     --
     local pages = structures.pages.collected
@@ -279,6 +178,98 @@ local function initializer()
     jobpositions.free = freedata
     jobpositions.used = next(collected)
 end
+
+-- -- we can gain a little when we group positions but then we still have to
+-- -- deal with regions and cells so we either end up with lots of extra small
+-- -- tables pointing to them and/or assembling/disassembling so in the end
+-- -- it makes no sense to do it (now) and still have such a mix
+--
+-- local splitter = lpeg.splitat(":",true)
+--
+-- local function setpos(t,k,v)
+--     local class, tag = lpegmatch(splitter,k)
+--     if tag then
+--         local c = rawget(t,class)
+--         if c then
+--             c[tonumber(tag) or tag] = v
+--         else
+--             rawset(t,class,{ [tonumber(tag) or tag] = v })
+--         end
+--     else
+--         t.default[tonumber(k) or k] = v
+--     end
+-- end
+--
+-- local function getpos(t,k)
+--     local class, tag = lpegmatch(splitter,k)
+--     if tag then
+--         local c = rawget(t,class)
+--         if c then
+--             return c[tonumber(tag) or tag]
+--         end
+--     else
+--         return c.default[tonumber(k) or k]
+--     end
+-- end
+--
+-- tobesaved.default = tobesaved.default or { }
+-- setmetatablenewindex(tobesaved,setpos)
+-- setmetatableindex   (tobesaved,getpos)
+--
+-- local function initializer()
+--     tobesaved = jobpositions.tobesaved
+--     collected = jobpositions.collected
+--
+--     tobesaved.default = tobesaved.default or { }
+--     collected.default = collected.default or { }
+--
+--     setmetatablenewindex(tobesaved,setpos)
+--     setmetatableindex   (collected,getpos)
+--     setmetatableindex   (tobesaved,getpos)
+--
+--     for class, list in next, collected do
+--         for tag, data in next, list do
+--             setmetatable(data,default)
+--             nofregular = nofregular + 1
+--         end
+--     end
+--
+--     local pagedata = collected.page or { }
+--     local freedata = setmetatableindex("table")
+--
+--     for tag, data in next, collected.free or { } do
+--         local t = freedata[data.p or 0]
+--         t[#t+1] = data
+--     end
+--
+--     --
+--     local pages = structures.pages.collected
+--     if pages then
+--         local last = nil
+--         for p=1,#pages do
+--             local data = pagedata[p]
+--             local free = freedata[p]
+--             if free then
+--                 sort(free,function(a,b) return b.y < a.y end) -- order matters !
+--             end
+--             if data then
+--                 last      = data
+--                 last.free = free
+--             elseif last then
+--                 local t = setmetatableindex({ free = free, p = p },last)
+--                 if not pagedata[p] then
+--                     pagedata[p] = t
+--                 end
+--             end
+--         end
+--     end
+--     jobpositions.page = pagedata
+--     jobpositions.free = freedata
+--     jobpositions.used = next(collected)
+-- end
+--
+-- function jobpositions.getcollected(class,tag) if tag then return collected[class..tag] else return collected[class] end end
+-- function jobpositions.gettobesaved(class,tag) if tag then return tobesaved[class..tag] else return tobesaved[class] end end
 
 job.register('job.positions.collected', tobesaved, initializer)
 
@@ -494,7 +485,7 @@ local function setregionbox(n,tag,k,lo,ro,to,bo) -- kind
         tag = f_region(nofregions)
     end
     local box = getbox(n)
-    local w, h, d = getdimensions(box)
+    local w, h, d = getwhd(box)
     local x, y = getpos() -- hm, makes no sense here
     tobesaved[tag] = {
      -- p = texgetcount("realpageno"), -- we copy them
@@ -556,7 +547,7 @@ scanners.parpos = function() -- todo: relate to localpar (so this is an intermed
     nofparagraphs = nofparagraphs + 1
     texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
     local box = getbox("strutbox")
-    local w, h, d = getdimensions(box)
+    local w, h, d = getwhd(box)
     local t = {
         p  = true,
         c  = true,
@@ -567,8 +558,8 @@ scanners.parpos = function() -- todo: relate to localpar (so this is an intermed
         d  = d,
         hs = texget("hsize"),             -- never 0
     }
-    local leftskip   = getfield(getskip("leftskip"),"width")
-    local rightskip  = getfield(getskip("rightskip"),"width")
+    local leftskip   = texget("leftskip",false)
+    local rightskip  = texget("rightskip",false)
     local hangindent = texget("hangindent")
     local hangafter  = texget("hangafter")
     local parindent  = texget("parindent")
@@ -633,7 +624,7 @@ end
 scanners.dosetpositionbox = function() -- name box
     local name = scanstring()
     local box  = getbox(scaninteger())
-    local w, h, d = getdimensions(box)
+    local w, h, d = getwhd(box)
     tobesaved[name] = {
         p = true,
         c = column,
@@ -673,7 +664,7 @@ end
 scanners.dosetpositionstrut = function() -- name
     local name = scanstring()
     local box  = getbox("strutbox")
-    local w, h, d = getdimensions(box)
+    local w, h, d = getwhd(box)
     tobesaved[name] = {
         p = true,
         c = column,
@@ -692,7 +683,7 @@ scanners.dosetpositionstrutkind = function() -- name
     local name = scanstring()
     local kind = scaninteger()
     local box  = getbox("strutbox")
-    local w, h, d = getdimensions(box)
+    local w, h, d = getwhd(box)
     tobesaved[name] = {
         k = kind,
         p = true,
@@ -875,6 +866,8 @@ function jobpositions.position(id)
         return 0, 0, 0, 0, 0, 0
     end
 end
+
+local splitter = lpeg.splitat(",")
 
 function jobpositions.extra(id,n,default) -- assume numbers
     local jpi = collected[id]
@@ -1282,6 +1275,13 @@ scanners.doifposition = function() -- name
     doif(collected[scanstring()])
 end
 
+-- local ctx_iftrue  = context.protected.cs.iftrue
+-- local ctx_iffalse = context.protected.cs.iffalse
+--
+-- scanners.ifknownposition = function() -- name
+--     (collected[scanstring()] and ctx_iftrue or ctx_iffalse)()
+-- end
+
 scanners.doifelsepositiononpage = function() -- name page -- probably always realpageno
     local c = collected[scanstring()]
     local p = scaninteger()
@@ -1331,11 +1331,20 @@ end
 
 -- statistics (at least for the moment, when testing)
 
+-- statistics.register("positions", function()
+--     local total = nofregular + nofusedregions + nofmissingregions
+--     if total > 0 then
+--         return format("%s collected, %s regulars, %s regions, %s unresolved regions",
+--             total, nofregular, nofusedregions, nofmissingregions)
+--     else
+--         return nil
+--     end
+-- end)
+
 statistics.register("positions", function()
-    local total = nofregular + nofusedregions + nofmissingregions
+    local total = nofregular + nofspecial
     if total > 0 then
-        return format("%s collected, %s regulars, %s regions, %s unresolved regions",
-            total, nofregular, nofusedregions, nofmissingregions)
+        return format("%s collected, %s regular, %s special",total,nofregular,nofspecial)
     else
         return nil
     end

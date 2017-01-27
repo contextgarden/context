@@ -77,6 +77,24 @@
 \registerctxluafile{math-fbk}{1.001}
 \registerctxluafile{math-dir}{1.001}
 
+%D A starter:
+%D
+%D \startbuffer
+%D \mathsurround    10pt
+%D \mathsurroundskip30pt
+%D x $x + \ruledhbox{$x$} + x$ x
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \start \blank \getbuffer \blank \stop
+
+\newcount\mathnestinglevel
+
+\appendtoks
+    \advance\mathnestinglevel\plusone
+\to \everymathematics
+
 %D A few compatibility helpers:
 
 \def\Umathbotaccent{\Umathaccent \s!bottom }

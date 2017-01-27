@@ -63,6 +63,7 @@ local setlist              = nuts.setlist
 local getattr              = nuts.getattr
 local setattr              = nuts.setattr
 local getsubtype           = nuts.getsubtype
+local getwhd               = nuts.getwhd
 
 local hpack_list           = nuts.hpack
 local vpack_list           = nuts.vpack
@@ -91,6 +92,7 @@ local line_code            = listcodes.line
 
 local new_rule             = nodepool.rule
 local new_kern             = nodepool.kern
+local new_hlist            = nodepool.hlist
 
 local flush_node           = nuts.flush
 
@@ -118,9 +120,7 @@ local function vlist_dimensions(start,stop) -- also needs the stretch and so
         setnext(stop,nil)
     end
     local v = vpack_list(start)
-    local w = getfield(v,"width")
-    local h = getfield(v,"height")
-    local d = getfield(v,"depth")
+    local w, h, d = getwhd(v)
     setlist(v) -- not needed
     flush_node(v)
     if temp then
@@ -129,22 +129,21 @@ local function vlist_dimensions(start,stop) -- also needs the stretch and so
     return w, h, d
 end
 
+-- not ok when vlist at mvl level
+
 local function dimensions(parent,start,stop) -- in principle we could move some to the caller
     local id = getid(start)
     if start == stop then
-        if id == hlist_code or id == vlist_code or id == glyph_code or id == rule_code then
+        if id == hlist_code or id == vlist_code or id == rule_code or id == glyph_code then
+            local sw, sh, sd = getwhd(start)
+            local pw, ph, pd = getwhd(parent)
+            local ht = sh == 0 and ph or sh -- changed
+            local dp = sd == 0 and pd or sd -- changed
             if trace_areas then
-                report_area("dimensions taken of %a",nodecodes[id])
+                report_area("dimensions taken of %a (%p,%p,%p) with parent (%p,%p,%p) -> (%p,%p,%p)",
+                    nodecodes[id],sw,sh,sd,pw,ph,pd,sw,ht,dp)
             end
-            -- hm, parent can be zero
-            local width  = getfield(start,"width")
-            local height = getfield(parent,"height")
-            local depth  = getfield(parent,"depth")
-            if height == 0 and depth == 0 then
-                height = getfield(start,"height")
-                depth  = getfield(start,"depth")
-            end
-            return width, height, depth
+            return sw, ht, dp
         else
             if trace_areas then
                 report_area("dimensions calculated of %a",nodecodes[id])
@@ -175,7 +174,8 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
                     if trace_areas then
                         report_area("dimensions taken of first line in vlist")
                     end
-                    return getfield(c,"width"), getfield(c,"height"), getfield(c,"depth"), c
+                    local w, h, d = getwhd(c)
+                    return w, h, d, c
                 else
                     if trace_areas then
                         report_area("dimensions taken of vlist (probably wrong)")
@@ -220,7 +220,8 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
                         if trace_areas then
                             report_area("dimensions taken of first line in vlist")
                         end
-                        return getfield(first,"width"), getfield(first,"height"), getfield(first,"depth"), first
+                        local w, h, d = getwhd(first)
+                        return w, h, d, first
                     else
                         if trace_areas then
                             report_area("dimensions taken of vlist (probably wrong)")
@@ -256,35 +257,39 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
             -- special case, we only treat the first line in a vlist
             local l = getlist(line)
             if trace_areas then
-                report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p, c=%S","line",
+                report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p","line",
                     reference,pardir or "---",txtdir or "---",
-                    tosequence(l,nil,true),width,height,depth,resolved)
+                    tosequence(l,nil,true),width,height,depth)
             end
             setlist(line,result)
             setlink(result,l)
             return head, last
-        else
-            if head == first then
-                if trace_areas then
-                    report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p, c=%S","head",
-                        reference,pardir or "---",txtdir or "---",
-                        tosequence(first,last,true),width,height,depth,resolved)
-                end
-                setlink(result,first)
-                return result, last
-            else
-                if trace_areas then
-                    report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p, c=%S","middle",
-                        reference,pardir or "---",txtdir or "---",
-                        tosequence(first,last,true),width,height,depth,resolved)
-                end
-                local prev = getprev(first)
-                if prev then
-                    setlink(prev,result)
-                end
-                setlink(result,first)
-                return head, last
+        elseif head == first then
+            if trace_areas then
+                report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p","head",
+                    reference,pardir or "---",txtdir or "---",
+                    tosequence(first,last,true),width,height,depth)
             end
+            setlink(result,first)
+            return result, last
+        else
+            if trace_areas then
+                report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p","middle",
+                    reference,pardir or "---",txtdir or "---",
+                    tosequence(first,last,true),width,height,depth)
+            end
+if first == last and getid(parent) == vlist_code and getid(first) == hlist_code then
+    if trace_areas then
+        -- think of a button without \dontleavehmode in the mvl
+        report_area("compensating for link in vlist")
+    end
+    setlink(result,getlist(first))
+    setlist(first,result)
+else
+            setlink(getprev(first),result)
+            setlink(result,first)
+end
+            return head, last
         end
     else
         return head, last
@@ -292,9 +297,7 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
 end
 
 local function inject_list(id,current,reference,make,stack,pardir,txtdir)
-    local width      = getfield(current,"width")
-    local height     = getfield(current,"height")
-    local depth      = getfield(current,"depth")
+    local width, height, depth = getwhd(current)
     local correction = 0
     local moveright  = false
     local first      = getlist(current)
@@ -342,12 +345,8 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
             setlist(current,result)
         elseif moveright then -- brr no prevs done
             -- result after first
-            local n = getnext(first)
-            setnext(result,n)
-            setlink(first,first)
-            if n then
-                setprev(n,result)
-            end
+            setlink(result,getnext(first))
+            setlink(first,result)
         else
             -- first after result
             setlink(result,first)
@@ -545,20 +544,16 @@ local function colorize(width,height,depth,n,reference,what,sr,offset)
         setnext(kern,rule)
         setprev(rule,kern)
         return kern
-    else
-
-if sr and sr ~= "" then
-    local text = addstring(what,sr,shift)
-    if text then
-        local kern = new_kern(-getfield(text,"width"))
-        setlink(kern,text)
-        setlink(text,rule)
-        return kern
+    elseif sr and sr ~= "" then
+        local text = addstring(what,sr,shift)
+        if text then
+            local kern = new_kern(-getfield(text,"width"))
+            setlink(kern,text)
+            setlink(text,rule)
+            return kern
+        end
     end
-end
-
-        return rule
-    end
+    return rule
 end
 
 local function justadd(what,sr,shift)
@@ -642,14 +637,16 @@ local function makereference(width,height,depth,reference) -- height and depth a
             end
             if trace_references then
                 local step = 65536
-                result = hpack_list(colorize(width,height-step,depth-step,2,reference,"reference",texts,show_references)) -- step subtracted so that we can see seperate links
-                setfield(result,"width",0)
+--                 result = hpack_list(colorize(width,height-step,depth-step,2,reference,"reference",texts,show_references)) -- step subtracted so that we can see seperate links
+--                 setfield(result,"width",0)
+result = new_hlist(colorize(width,height-step,depth-step,2,reference,"reference",texts,show_references)) -- step subtracted so that we can see seperate links
                 current = result
             elseif texts then
                 texts = justadd("reference",texts,show_references)
                 if texts then
-                    result = hpack_list(texts)
-                    setfield(result,"width",0)
+--                     result = hpack_list(texts)
+--                     setfield(result,"width",0)
+result = new_hlist(texts)
                     current = result
                 end
             end
@@ -659,10 +656,11 @@ local function makereference(width,height,depth,reference) -- height and depth a
                 result = annot
             end
             references.registerpage(n)
-            result = hpack_list(result,0)
-            setfield(result,"width",0)
-            setfield(result,"height",0)
-            setfield(result,"depth",0)
+--             result = hpack_list(result,0)
+--             setfield(result,"width",0)
+--             setfield(result,"height",0)
+--             setfield(result,"depth",0)
+result = new_hlist(result)
             if cleanupreferences then stack[reference] = nil end
             return result, resolved
         elseif trace_references then
@@ -759,8 +757,9 @@ local function makedestination(width,height,depth,reference)
                 step = 4*65536
                 width, height, depth = 5*step, 5*step, 0
             end
-            local rule = hpack_list(colorize(width,height,depth,3,reference,"destination",texts,show_destinations))
-            setfield(rule,"width",0)
+--             local rule = hpack_list(colorize(width,height,depth,3,reference,"destination",texts,show_destinations))
+--             setfield(rule,"width",0)
+local rule = new_list(colorize(width,height,depth,3,reference,"destination",texts,show_destinations))
             if not result then
                 result, current = rule, rule
             else
@@ -771,11 +770,13 @@ local function makedestination(width,height,depth,reference)
         elseif texts then
             texts = justadd("destination",texts,show_destinations)
             if texts then
-                result = hpack_list(texts)
-                if result then
-                    setfield(result,"width",0)
-                    current = result
-                end
+--                 result = hpack_list(texts)
+--                 if result then
+--                     setfield(result,"width",0)
+--                     current = result
+--                 end
+result = new_list(texts)
+current = result
             end
         end
         nofdestinations = nofdestinations + 1
@@ -791,10 +792,11 @@ local function makedestination(width,height,depth,reference)
         end
         if result then
             -- some internal error
-            result = hpack_list(result,0)
-            setfield(result,"width",0)
-            setfield(result,"height",0)
-            setfield(result,"depth",0)
+--             result = hpack_list(result,0)
+--             setfield(result,"width",0)
+--             setfield(result,"height",0)
+--             setfield(result,"depth",0)
+result = new_hlist(result)
         end
         if cleanupdestinations then stack[reference] = nil end
         return result, resolved

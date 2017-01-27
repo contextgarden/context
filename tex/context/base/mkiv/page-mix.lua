@@ -61,10 +61,12 @@ local getid               = nuts.getid
 local getlist             = nuts.getlist
 local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
-local getskip             = nuts.getskip
 local getattribute        = nuts.getattribute
+local getwhd              = nuts.getwhd
+local setwhd              = nuts.setwhd
 
 local texgetcount         = tex.getcount
+local texgetglue          = tex.getglue
 
 local theprop             = nuts.theprop
 
@@ -108,15 +110,15 @@ local forcedbreak         = -123
 
 local function collectinserts(result,nxt,nxtid)
     local inserts, currentskips, nextskips, inserttotal = { }, 0, 0, 0
-local i = result.i
-if not i then
-    i = 0
-    result.i = i
-end
+    local i = result.i
+    if not i then
+        i = 0
+        result.i = i
+    end
     while nxt do
         if nxtid == insert_code then
             i = i + 1
-result.i = i
+            result.i = i
             inserttotal = inserttotal + getfield(nxt,"height") -- height includes depth
             local s = getsubtype(nxt)
             local c = inserts[s]
@@ -124,11 +126,9 @@ result.i = i
                 report_state("insert of class %s found",s)
             end
             if not c then
-local skip  = structures.notes.check_spacing(s,i) -- before
-local width = getfield(getskip(skip),"width")
+                local width = structures.notes.check_spacing(s,i) -- before
                 c = { }
                 inserts[s] = c
---                 local width = getfield(getskip(s),"width")
                 if not result.inserts[s] then
                     currentskips = currentskips + width
                 end
@@ -256,7 +256,7 @@ local function preparesplit(specification) -- a rather large function
     slidenodes(head) -- we can have set prev's to nil to prevent backtracking
     local discarded      = { }
     local originalhead   = head
-    local originalwidth  = specification.originalwidth or getfield(list,"width")
+    local originalwidth  = specification.originalwidth  or getfield(list,"width")
     local originalheight = specification.originalheight or getfield(list,"height")
     local current        = head
     local skipped        = 0
@@ -620,7 +620,8 @@ local function preparesplit(specification) -- a rather large function
         local nxtid = nxt and getid(nxt)
         line = line + 1
         local inserts, insertskips, nextskips, inserttotal = nil, 0, 0, 0
-        local advance = getfield(current,"height")
+        local wd, ht, dp = getwhd(current)
+        local advance = ht
         local more = nxt and (nxtid == insert_code or nxtid == mark_code)
         if trace_state then
             report_state("%-8s > column %s, content: %s","line (1)",column,listtoutf(getlist(current),true,true))
@@ -661,7 +662,7 @@ local function preparesplit(specification) -- a rather large function
         else
             height = height + insertskips
         end
-        depth = getfield(current,"depth")
+        depth = dp
         skip  = 0
         if inserts then
             -- so we already collect them ... makes backtracking tricky ... alternatively
@@ -783,11 +784,9 @@ local function finalize(result)
                         local h = new_hlist()
                         t[i] = h
                         setlist(h,getfield(l,"head"))
-                        local ht = getfield(l,"height")
-                        local dp = getfield(l,"depth")
+                        local wd, ht, dp = getwhd(l)
                         -- here ht is still ht + dp !
-                        setfield(h,"height",ht)
-                        setfield(h,"depth",dp)
+                        setwhd(h,getfield(h,"width"),ht,dp)
                         setfield(l,"head",nil)
                     end
                     setprev(t[1])  -- needs checking

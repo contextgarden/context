@@ -72,10 +72,13 @@ local getbox     = nuts.getbox
 local getfield   = nuts.getfield
 local getid      = nuts.getid
 local getlist    = nuts.getlist
+local getglue    = nuts.getglue
 
 local setfield   = nuts.setfield
 local setchar    = nuts.setchar
 local setlist    = nuts.setlist
+local setwhd     = nuts.setwhd
+local setglue    = nuts.setglue
 
 local copy_nut   = nuts.copy
 local new_nut    = nuts.new
@@ -184,19 +187,6 @@ local userrule          = register_nut(new_nut("rule",rulecodes.user))   setfiel
 local hlist             = register_nut(new_nut("hlist"))                 setfield(hlist,"dir","TLT")
 local vlist             = register_nut(new_nut("vlist"))                 setfield(vlist,"dir","TLT")
 
-function nutpool.zeroglue(n)
-    if n then
-        return
-            getfield(n,"width")         == 0 and
-            getfield(n,"stretch")       == 0 and
-            getfield(n,"shrink")        == 0 and
-            getfield(n,"stretch_order") == 0 and
-            getfield(n,"shrink_order")  == 0
-    else
-        return false
-    end
-end
-
 function nutpool.glyph(fnt,chr)
     local n = copy_nut(glyph)
     if fnt then setfield(n,"font",fnt) end
@@ -250,69 +240,106 @@ function nutpool.italickern(k)
     return n
 end
 
+-- function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
+--     -- maybe setglue
+--     local s = copy_nut(glue_spec)
+--     if width and width ~= 0 then
+--         setfield(s,"width",width)
+--     end
+--     if stretch and stretch ~= 0 then
+--         setfield(s,"stretch",stretch)
+--     end
+--     if shrink and shrink ~= 0 then
+--         setfield(s,"shrink",shrink)
+--     end
+--     if stretch_order and stretch_order ~= 0 then
+--         setfield(s,"stretch_order",stretch_order)
+--     end
+--     if shrink_order and shrink_order ~= 0 then
+--         setfield(s,"shrink_order",shrink_order)
+--     end
+--     return s
+-- end
+
 function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
     -- maybe setglue
     local s = copy_nut(glue_spec)
-    if width and width ~= 0 then
-        setfield(s,"width",width)
-    end
-    if stretch and stretch ~= 0 then
-        setfield(s,"stretch",stretch)
-    end
-    if shrink and shrink ~= 0 then
-        setfield(s,"shrink",shrink)
-    end
-    if stretch_order and stretch_order ~= 0 then
-        setfield(s,"stretch_order",stretch_order)
-    end
-    if shrink_order and shrink_order ~= 0 then
-        setfield(s,"shrink_order",shrink_order)
+    if width or stretch or shrink or stretch_order or shrink_order then
+        setglue(s,width,stretch,shrink,stretch_order,shrink_order)
     end
     return s
 end
 
+-- local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)
+--     -- maybe setglue
+--     local n = copy_nut(skip)
+--     if width and width ~= 0 then
+--         setfield(n,"width",width)
+--     end
+--     if stretch and stretch ~= 0 then
+--         setfield(n,"stretch",stretch)
+--     end
+--     if shrink and shrink ~= 0 then
+--         setfield(n,"shrink",shrink)
+--     end
+--     if stretch_order and stretch_order ~= 0 then
+--         setfield(n,"stretch_order",stretch_order)
+--     end
+--     if shrink_order and shrink_order ~= 0 then
+--         setfield(n,"shrink_order",shrink_order)
+--     end
+--     return n
+-- end
+
 local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)
     -- maybe setglue
     local n = copy_nut(skip)
-    if width and width ~= 0 then
-        setfield(n,"width",width)
-    end
-    if stretch and stretch ~= 0 then
-        setfield(n,"stretch",stretch)
-    end
-    if shrink and shrink ~= 0 then
-        setfield(n,"shrink",shrink)
-    end
-    if stretch_order and stretch_order ~= 0 then
-        setfield(n,"stretch_order",stretch_order)
-    end
-    if shrink_order and shrink_order ~= 0 then
-        setfield(n,"shrink_order",shrink_order)
+    if width or stretch or shrink or stretch_order or shrink_order then
+        setglue(n,width,stretch,shrink,stretch_order,shrink_order)
     end
     return n
 end
 
+-- function nutpool.stretch(a,b)
+--     local n = copy_nut(glue)
+--     if b then
+--         setfield(n,"stretch",a)
+--         setfield(n,"stretch_order",b)
+--     else
+--         setfield(n,"stretch",1)
+--         setfield(n,"stretch_order",a or 1)
+--     end
+--     return n
+-- end
+
 function nutpool.stretch(a,b)
+    -- width stretch shrink stretch_order shrink_order
     local n = copy_nut(glue)
-    if b then
-        setfield(n,"stretch",a)
-        setfield(n,"stretch_order",b)
-    else
-        setfield(n,"stretch",1)
-        setfield(n,"stretch_order",a or 1)
+    if not b then
+        a, b = 1, a or 1
     end
+    setglue(n,0,a,0,b,0)
     return n
 end
+
+-- function nutpool.shrink(a,b)
+--     local n = copy_nut(glue)
+--     if b then
+--         setfield(n,"shrink",a)
+--         setfield(n,"shrink_order",b)
+--     else
+--         setfield(n,"shrink",1)
+--         setfield(n,"shrink_order",a or 1)
+--     end
+--     return n
+-- end
 
 function nutpool.shrink(a,b)
     local n = copy_nut(glue)
-    if b then
-        setfield(n,"shrink",a)
-        setfield(n,"shrink_order",b)
-    else
-        setfield(n,"shrink",1)
-        setfield(n,"shrink_order",a or 1)
+    if not b then
+        a, b = 1, a or 1
     end
+    setglue(n,0,0,a,0,0,b)
     return n
 end
 
@@ -320,20 +347,27 @@ function nutpool.glue(width,stretch,shrink,stretch_order,shrink_order)
     return someskip(glue,width,stretch,shrink,stretch_order,shrink_order)
 end
 
+-- function nutpool.negatedglue(glue)
+--     local n = copy_nut(glue)
+--     local width   = getfield(n,"width")
+--     local stretch = getfield(n,"stretch")
+--     local shrink  = getfield(n,"shrink")
+--     if width and width ~= 0 then
+--         setfield(n,"width",  -width)
+--     end
+--     if stretch and stretch ~= 0 then
+--         setfield(n,"stretch",-stretch)
+--     end
+--     if shrink and shrink ~= 0 then
+--         setfield(n,"shrink", -shrink)
+--     end
+--     return n
+-- end
+
 function nutpool.negatedglue(glue)
     local n = copy_nut(glue)
-    local width   = getfield(n,"width")
-    local stretch = getfield(n,"stretch")
-    local shrink  = getfield(n,"shrink")
-    if width and width ~= 0 then
-        setfield(n,"width",  -width)
-    end
-    if stretch and stretch ~= 0 then
-        setfield(n,"stretch",-stretch)
-    end
-    if shrink and shrink ~= 0 then
-        setfield(n,"shrink", -shrink)
-    end
+    local width, stretch, shrink = getglue(n)
+    setglue(n,-width,-stretch,-shrink)
     return n
 end
 
@@ -365,14 +399,8 @@ end
 
 function nutpool.rule(width,height,depth,dir) -- w/h/d == nil will let them adapt
     local n = copy_nut(rule)
-    if width then -- also 0 else adapt
-        setfield(n,"width",width)
-    end
-    if height then -- also 0 else adapt
-        setfield(n,"height",height)
-    end
-    if depth then -- also 0 else adapt
-        setfield(n,"depth",depth)
+    if width or height or depth then
+        setwhd(n,width,height,depth)
     end
     if dir then
         setfield(n,"dir",dir)
@@ -382,14 +410,8 @@ end
 
 function nutpool.emptyrule(width,height,depth,dir) -- w/h/d == nil will let them adapt
     local n = copy_nut(emptyrule)
-    if width then -- also 0 else adapt
-        setfield(n,"width",width)
-    end
-    if height then -- also 0 else adapt
-        setfield(n,"height",height)
-    end
-    if depth then -- also 0 else adapt
-        setfield(n,"depth",depth)
+    if width or height or depth then
+        setwhd(n,width,height,depth)
     end
     if dir then
         setfield(n,"dir",dir)
@@ -399,14 +421,8 @@ end
 
 function nutpool.userrule(width,height,depth,dir) -- w/h/d == nil will let them adapt
     local n = copy_nut(userrule)
-    if width then -- also 0 else adapt
-        setfield(n,"width",width)
-    end
-    if height then -- also 0 else adapt
-        setfield(n,"height",height)
-    end
-    if depth then -- also 0 else adapt
-        setfield(n,"depth",depth)
+    if width or height or depth then
+        setwhd(n,width,height,depth)
     end
     if dir then
         setfield(n,"dir",dir)
@@ -420,23 +436,7 @@ function nutpool.latelua(code)
     return n
 end
 
------ latelua_node  = register_node(new_node("whatsit",whatsitcodes.latelua))
-local latelua_nut   = register_nut (new_nut ("whatsit",whatsitcodes.latelua))
-
--- local setfield_node = nodes.setfield
--- local setfield_nut  = nuts .setfield
-
--- function nodepool.lateluafunction(f)
---     local n = copy_node(latelua_node)
---     setfield_node(n,"string",f)
---     return n
--- end
-
-function nutpool.lateluafunction(f)
-    local n = copy_nut(latelua_nut)
-    setfield(n,"string",f)
-    return n
-end
+nutpool.lateluafunction = nutpool.latelua
 
 function nutpool.leftmarginkern(glyph,width)
     local n = copy_nut(left_margin_kern)
@@ -481,14 +481,8 @@ local function new_hlist(list,width,height,depth,shift)
     if list then
         setlist(n,list)
     end
-    if width and width ~= 0 then
-        setfield(n,"width",width)
-    end
-    if height and height ~= 0 then
-        setfield(n,"height",height)
-    end
-    if depth and depth ~= 0 then
-        setfield(n,"depth",depth)
+    if width or height or depth then
+        setwhd(n,width,height,depth)
     end
     if shift and shift ~= 0 then
         setfield(n,"shift",shift)
@@ -501,14 +495,8 @@ local function new_vlist(list,width,height,depth,shift)
     if list then
         setlist(n,list)
     end
-    if width and width ~= 0 then
-        setfield(n,"width",width)
-    end
-    if height and height ~= 0 then
-        setfield(n,"height",height)
-    end
-    if depth and depth ~= 0 then
-        setfield(n,"depth",depth)
+    if width or height or depth then
+        setwhd(n,width,height,depth)
     end
     if shift and shift ~= 0 then
         setfield(n,"shift",shift)

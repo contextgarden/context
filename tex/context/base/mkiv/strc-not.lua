@@ -455,7 +455,7 @@ local report_insert = logs.reporter("pagebuilder","insert")
 local trace_insert  = false  trackers.register("pagebuilder.insert",function(v) trace_insert = v end)
 
 local texgetglue = tex.getglue
-local texsetglue = tex.setglue
+----- texsetglue = tex.setglue
 
 function notes.check_spacing(n,i)
     local gn, pn, mn = texgetglue(n)
@@ -466,8 +466,8 @@ function notes.check_spacing(n,i)
         report_insert("%s %i: %p plus %p minus %p",i > 1 and "inbetween" or "before   ",n,gi,pi,mi)
         report_insert("%s %i: %p plus %p minus %p","effective",n,gt,pt,mt)
     end
-    texsetglue(0,gt,pt,mt) -- for the moment we use skip register 0
-    return 0
+ -- texsetglue(0,gt,pt,mt) -- for the moment we use skip register 0
+    return gt, pt, mt
 end
 
 callback.register("build_page_insert", notes.check_spacing)

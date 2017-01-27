@@ -4197,9 +4197,9 @@
 %D Watch the one level expansion of the second argument.
 
 \unexpanded\def\doifelsemeaning#1#2%
-  {\edef\m_syst_string_one{\meaning#1}%
+  {\edef\m_syst_string_one{\normalmeaning#1}%
    \def \m_syst_string_two{#2}%
-   \edef\m_syst_string_two{\meaning\m_syst_string_two}%
+   \edef\m_syst_string_two{\normalmeaning\m_syst_string_two}%
    \ifx\m_syst_string_one\m_syst_string_two
      \expandafter\firstoftwoarguments
    \else
@@ -5136,6 +5136,25 @@
   {\def\syst_helpers_split_string##1#2##2#2##3##4\\%
      {\ifx##3\empty\let#3\empty\let#4\empty\else\def#3{##1}\def#4{##2}\fi}%
    \expandafter\syst_helpers_split_string#1#2#2\empty\\}
+
+%D \macros
+%D   {splitatperiod,
+%D   {splitatcomma,
+%D    splitatasterisk,
+%D    splitatcolon,
+%D    splitatcolons}
+
+\unexpanded\def\splitatperiod  #1{\normalexpanded{\syst_helpers_splitatperiod  #1}..\relax}
+\unexpanded\def\splitatcomma   #1{\normalexpanded{\syst_helpers_splitatcomma   #1},,\relax}    % not at ", "
+\unexpanded\def\splitatasterisk#1{\normalexpanded{\syst_helpers_splitatasterisk#1}**\relax}
+\unexpanded\def\splitatcolon   #1{\normalexpanded{\syst_helpers_splitatcolon   #1}::\relax}
+\unexpanded\def\splitatcolons  #1{\normalexpanded{\syst_helpers_splitatcolons  #1}::::\relax}
+
+\unexpanded\def\syst_helpers_splitatperiod    #1.#2.#3\relax#4#5{\def#4{#1}\def#5{#2}}
+\unexpanded\def\syst_helpers_splitatcomma     #1,#2,#3\relax#4#5{\def#4{#1}\def#5{#2}}
+\unexpanded\def\syst_helpers_splitatasterisk  #1*#2*#3\relax#4#5{\def#4{#1}\def#5{#2}}
+\unexpanded\def\syst_helpers_splitatcolon     #1:#2:#3\relax#4#5{\def#4{#1}\def#5{#2}}
+\unexpanded\def\syst_helpers_splitatcolons  #1::#2::#3\relax#4#5{\edef#4{#1}\edef#5{#2}}
 
 %D \macros
 %D   {removesubstring}

@@ -93,9 +93,6 @@ local direct              = node.direct
 
 local fastcopy            = table.fastcopy
 
-local texget              = tex.get
-local texgetskip          = tex.getskip
-
 local nodecodes           = nodes.nodecodes
 local hlist_code          = nodecodes.hlist
 local vlist_code          = nodecodes.vlist
@@ -119,6 +116,25 @@ nodes.tonode              = tonode
 nodes.tonut               = tonut
 
 -- getters
+
+if not direct.getwhd then
+    local getfield = direct.getfield
+    function direct.getwhd(n)
+        return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth")
+    end
+end
+
+if not direct.setwhd then
+    local setfield = direct.setfield
+    function direct.setwhd(n,w,h,d)
+        setfield(n,"width",w or 0)
+        setfield(n,"height",h or 0)
+        setfield(n,"depth",d or 0)
+    end
+end
+
+nuts.getwhd               = direct.getwhd
+nuts.setwhd               = direct.setwhd
 
 nuts.getfield             = direct.getfield
 nuts.getnext              = direct.getnext
@@ -147,14 +163,11 @@ nuts.getleader            = direct.getleader
 
 -- setters
 
-nuts.setfield             = direct.setfield
-nuts.setattr              = direct.set_attribute or setfield
+nuts.setfield              = direct.setfield
+nuts.setattr               = direct.set_attribute or setfield
 
-nuts.getbox               = direct.getbox
-nuts.setbox               = direct.setbox
-nuts.getskip              = function(s)
-    return tonut(type(s) == "number" and texgetskip(s) or texget(s))
-end
+nuts.getbox                = direct.getbox
+nuts.setbox                = direct.setbox
 
 -- helpers
 
@@ -253,6 +266,7 @@ nuts.setglue               = setglue
 nuts.is_zero_glue          = is_zero_glue
 
 nuts.getdisc               = direct.getdisc
+nuts.getwhd                = direct.getwhd
 nuts.setdisc               = direct.setdisc
 nuts.setchar               = direct.setchar
 nuts.setnext               = direct.setnext
@@ -714,42 +728,3 @@ function nuts.copy_properties(source,target,what)
     end
     return newprops -- for checking
 end
-
--- a bit special
-
-local getwidth      = { }
-local setwidth      = { }
-local getdimensions = { }
-local setdimensions = { }
-
-nodes.whatsitters = {
-    getters = { width = getwidth, dimensions = getdimensions },
-    setters = { width = setwidth, dimensions = setdimensions },
-}
-
--- obsolete
-
--- local function get_width(n,dir)
---     n = tonut(n)
---     return getfield(n,"width")
--- end
---
--- local function get_dimensions(n,dir)
---     n = tonut(n)
---     return getfield(n,"width"), getfield(n,"height"), getfield(n,"depth")
--- end
---
--- local whatcodes         = nodes.whatcodes
--- local pdfrefximage_code = whatcodes.pdfrefximage
--- local pdfrefxform_code  = whatcodes.pdfrefxform
---
--- if pdfrefxform_code then
---     getwidth     [pdfrefxform_code ] = get_width
---     getdimensions[pdfrefxform_code ] = get_dimensions
--- end
---
--- if pdfrefximage_code then
---     getwidth     [pdfrefximage_code] = get_width
---     getdimensions[pdfrefximage_code] = get_dimensions
--- end
-

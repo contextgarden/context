@@ -261,6 +261,7 @@ local getfont        = nuts.getfont
 local getsubtype     = nuts.getsubtype
 local getfield       = nuts.getfield
 local getbox         = nuts.getbox
+local getwhd         = nuts.getwhd
 
 local effective_glue = nuts.effective_glue
 
@@ -354,10 +355,9 @@ function fonts.metapost.boxtomp(n,kind)
                 end
                 dx = dx + getfield(current,"width") * fc
             elseif id == rule_code then
-                local wd = getfield(current,"width") * fc
+                local wd, ht, dp = getwhd(current)
                 if wd ~= 0 then
-                    local ht = getfield(current,"height")
-                    local dp = getfield(current,"depth")
+                    wd = wd * fc
                     if ht == signal then
                         ht = getfield(parent,"height")
                     end
@@ -381,12 +381,13 @@ function fonts.metapost.boxtomp(n,kind)
         while current do
             local id = getid(current)
             if id == hlist_code then
-                dy = dy - getfield(current,"height") * fc
+                local _, ht, dp = getwhd(current)
+                dy = dy - ht * fc
                 local list = getlist(current)
                 if list then
                     horizontal(current,list,xoffset+getfield(current,"shift")*fc,yoffset+dy)
                 end
-                dy = dy - getfield(current,"depth") * fc
+                dy = dy - ht * fc
             elseif id == vlist_code then
                 dy = dy - getfield(current,"height") * fc
                 local list = getlist(current)
@@ -399,11 +400,9 @@ function fonts.metapost.boxtomp(n,kind)
             elseif id == glue_code then
                 dy = dy - effective_glue(current,parent) * fc
             elseif id == rule_code then
-                local ht = getfield(current,"height")
-                local dp = getfield(current,"depth")
+                local wd, ht, dp = getwhd(current)
                 local hd = (ht + dp) * fc
                 if hd ~= 0  then
-                    local wd = getfield(current,"width")
                     if wd == signal then
                         wd = getfield(parent,"width") * fc
                     else
@@ -427,9 +426,7 @@ function fonts.metapost.boxtomp(n,kind)
         (getid(box) == hlist_code and horizontal or vertical)(box,list,0,0)
     end
 
-    local wd = getfield(box,"width")
-    local ht = getfield(box,"height")
-    local dp = getfield(box,"depth")
+    local wd, ht, dp = getwhd(box)
 
     result[#result+1] = f_bounds(0,-dp*fc,wd*fc,ht*fc)
 

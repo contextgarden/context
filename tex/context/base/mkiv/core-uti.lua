@@ -400,15 +400,15 @@ end)
 
 -- a sort of joke (for ctx meeting)
 
-local kg_per_watt_per_second  = 1 / 15000000
-local watts_per_core          = 50
-local speedup_by_other_engine = 1.2
-local used_wood_factor        = watts_per_core * kg_per_watt_per_second / speedup_by_other_engine
-local used_wood_factor        = (50 / 15000000) / 1.2
+-- local kg_per_watt_per_second  = 1 / 15000000
+-- local watts_per_core          = 50
+-- local speedup_by_other_engine = 1.2
+-- local used_wood_factor        = watts_per_core * kg_per_watt_per_second / speedup_by_other_engine
+-- local used_wood_factor        = (50 / 15000000) / 1.2
 
 function statistics.formatruntime(runtime)
     if not environment.initex then -- else error when testing as not counters yet
--- stoptiming(statistics) -- to be sure
+     -- stoptiming(statistics) -- to be sure
         local shipped = texgetcount('nofshipouts')
         local pages = texgetcount('realpageno')
         if pages > shipped then

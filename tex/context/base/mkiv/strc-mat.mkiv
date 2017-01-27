@@ -730,6 +730,26 @@
   {\d_strc_formulas_display_skip_left \zeropoint
    \d_strc_formulas_display_skip_right\zeropoint}
 
+\setvalue{\??formulaoption\v!line}%
+  {\ifgridsnapping
+     \setformulaparameter\c!grid{\v!math:\v!line}%
+   \fi}
+
+\setvalue{\??formulaoption\v!halfline}%
+  {\ifgridsnapping
+     \setformulaparameter\c!grid{\v!math:\v!halfline}%
+   \fi}
+
+\setvalue{\??formulaoption-\v!line}%
+  {\ifgridsnapping
+     \setformulaparameter\c!grid{\v!math:-\v!line}%
+   \fi}
+
+\setvalue{\??formulaoption-\v!halfline}%
+  {\ifgridsnapping
+     \setformulaparameter\c!grid{\v!math:-\v!halfline}%
+   \fi}
+
 \unexpanded\def\strc_formulas_start_formula_indeed[#1][#2]% setting leftskip adaption is slow !
   {\ifhmode
      \par
@@ -737,18 +757,20 @@
    \bgroup % HERE
    \def\currentformula{#1}%
    \dostarttaggedchained\t!formula\currentformula\??formula
-   \the\everybeforedisplayformula
    \setfalse\c_strc_formulas_tight
-  %\formulastrutdp\strutdepth
-  %\formulastrutht\strutheight
    \d_strc_formulas_display_skip_left   \leftskip
    \d_strc_formulas_display_skip_right  \rightskip
    \d_strc_formulas_display_width       \formulaparameter\c!width\relax
    \d_strc_formulas_display_margin_left \formulaparameter\c!leftmargin\relax
    \d_strc_formulas_display_margin_right\formulaparameter\c!rightmargin\relax
-   \edef\p_option{\formulaparameter\c!option}%
    \ifsecondargument
-     \edef\p_option{\ifx\p_option\empty\else\p_option,\fi#2}%
+     \doifelseassignment{#2}% this is new, so that we can also set the grid
+       {\setupcurrentformula[#2]%
+        \edef\p_option{\formulaparameter\c!option}}%
+       {\edef\p_option{\formulaparameter\c!option}%
+        \edef\p_option{\ifx\p_option\empty\else\p_option,\fi#2}}%
+   \else
+     \edef\p_option{\formulaparameter\c!option}
    \fi
    \ifx\p_option\empty \else
      \rawprocesscommacommand[\p_option]\strc_formulas_option
@@ -760,6 +782,7 @@
    \fi
    \let\strc_formulas_start_formula\strc_formulas_start_formula_nested
    \strc_formulas_forget_display_skips
+   \the\everybeforedisplayformula
    \csname\e!start\formulaparameter\c!alternative\v!formula\endcsname}
 
 \unexpanded\def\strc_formulas_start_formula_nested#1%
@@ -791,11 +814,16 @@
 
 % experiment:
 
-\appendtoks
-   \edef\p_grid{\formulaparameter\c!grid}%
+\def\strc_formulas_set_grid_snapping
+  {\edef\p_grid{\formulaparameter\c!grid}%
    \ifx\p_grid\empty \else
      \spac_grids_snap_value_auto\p_grid
-   \fi
+   \fi}
+
+\appendtoks
+    \ifgridsnapping
+        \strc_formulas_set_grid_snapping
+    \fi
 \to \everybeforedisplayformula
 
 % \unexpanded\def\switchtoformulabodyfont

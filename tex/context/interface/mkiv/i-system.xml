@@ -2244,6 +2244,46 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="splitatcolon" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:csname/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="splitatcomma" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:csname/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="splitatasterisk" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:csname/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="splitatcolon" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:csname/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="splitatcolons" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-text"/>
+            <cd:csname/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="removesubstring" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>

@@ -50,6 +50,8 @@ local setnext             = nuts.setnext
 local setprev             = nuts.setprev
 local setsubtype          = nuts.setsubtype
 local setbox              = nuts.setbox
+local getwhd              = nuts.getwhd
+local setwhd              = nuts.setwhd
 
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
@@ -59,7 +61,6 @@ local getsubtype          = nuts.getsubtype
 local takebox             = nuts.takebox
 local takelist            = nuts.takelist
 local splitbox            = nuts.splitbox
-local getskip             = nuts.getskip
 local getattribute        = nuts.getattribute
 local copylist            = nuts.copy_list
 
@@ -338,7 +339,7 @@ function columnsets.prepareflush(name)
         end
         local v = new_vlist(column[1])
         setfield(v,"height",height)
---         setfield(v,"depth",linedepth)
+     -- setfield(v,"depth",linedepth)
         setfield(v,"width",widths[c])
         columns[c] = v
     end
@@ -621,8 +622,9 @@ function columnsets.check(t)
     if boxwidth > 0 and boxheight > 0 then
         -- we're ok
     elseif box then
-        boxwidth  = getfield(box,"width")
-        boxheight = getfield(box,"height") + getfield(box,"depth")
+        local wd, ht, dp = getwhd(box)
+        boxwidth  = wd
+        boxheight = ht + dp
     else
         report("empty box")
         return
@@ -709,9 +711,7 @@ function columnsets.put(t)
         end
     end
     cells[c][r] = box
-    setfield(box,"height",lineheight)
-    setfield(box,"depth",linedepth)
-    setfield(box,"width",widths[c])
+    setwhd(box,widths[c],lineheight,linedepth)
     dataset.reserved_c  = false
     dataset.reserved_r  = false
     dataset.reserved_nc = false
@@ -803,7 +803,8 @@ local function checkroom(head,available,row)
     while head do
         local id = getid(head)
         if id == hlist_code or id == vlist_code or id == rule_code then -- <= rule_code
-            used = used + getfield(head,"height") + getfield(head,"depth")
+            local wd, ht, dp = getwhd(head)
+            used = used + ht + dp
             line = true
             if used > available then
                 break
@@ -989,9 +990,7 @@ function columnsets.add(name,box)
                     -- getmetatable(v).columngap = nofcolumngaps
                     properties[v] = { columngap = nofcolumngaps }
                  -- report("setting gap %a at (%i,%i)",nofcolumngaps,foundc,foundr)
-                    setfield(v,"height",lineheight)
-                    setfield(v,"depth",linedepth)
-                    setfield(v,"width",widths[currentcolumn])
+                    setwhd(v,widths[currentcolumn],lineheight,linedepth)
                     local column = cells[foundc]
                     --
                     column[foundr] = v

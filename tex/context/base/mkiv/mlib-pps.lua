@@ -23,7 +23,7 @@ local setmacro             = interfaces.setmacro
 
 ----- texgetbox            = tex.getbox
 local texsetbox            = tex.setbox
-local textakebox           = tex.takebox
+local textakebox           = tex.takebox -- or: nodes.takebox
 local copy_list            = node.copy_list
 local flush_list           = node.flush_list
 local setmetatableindex    = table.setmetatableindex
@@ -258,10 +258,10 @@ end
 
 local function stopjob()
     if top then
-        for n, tn in next, top.textexts do
-            flush_list(tn)
+        for slot, content in next, top.textexts do
+            flush_list(content)
             if trace_textexts then
-                report_textexts("freeing text %s",n)
+                report_textexts("freeing text %s",slot)
             end
         end
         if trace_runs then
@@ -284,12 +284,7 @@ local function settext(box,slot)
      -- if trace_textexts then
      --     report_textexts("getting text %s from box %s",slot,box)
      -- end
-     -- top.textexts[slot] = copy_list(texgetbox(box))
-     -- texsetbox(box,nil)
-     -- this can become
         top.textexts[slot] = textakebox(box)
-    else
-        -- weird error
     end
 end
 
@@ -300,9 +295,6 @@ local function gettext(box,slot)
      -- if trace_textexts then
      --     report_textexts("putting text %s in box %s",slot,box)
      -- end
-     -- top.textexts[slot] = nil -- no, pictures can be placed several times
-    else
-        -- weird error
     end
 end
 
@@ -744,6 +736,8 @@ function metapost.graphic_base_pass(specification) -- name will change (see mlib
     end
     context(stopjob)
 end
+
+-- we overload metapost.process here
 
 function metapost.process(mpx, data, trialrun, flusher, multipass, isextrapass, askedfig, plugmode) -- overloads
     startjob(plugmode)

@@ -70,8 +70,7 @@ local nodepool                = nodes.pool
 
 ----- pdfannotation_node      = nodepool.pdfannotation
 ----- pdfdestination_node     = nodepool.pdfdestination
------ latelua_node            = nodepool.latelua
-local latelua_function_node   = nodepool.lateluafunction -- still node ... todo
+local new_latelua             = nodepool.latelua
 
 local texgetcount             = tex.getcount
 
@@ -504,7 +503,7 @@ function nodeinjections.destination(width,height,depth,names,view)
         end
     end
     if doview then
-        return latelua_function_node(function() flushdestination(width,height,depth,names,view) end)
+        return new_latelua(function() flushdestination(width,height,depth,names,view) end)
     end
 end
 
@@ -732,7 +731,7 @@ function nodeinjections.reference(width,height,depth,prerolled)
         if trace_references then
             report_reference("link: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
         end
-        return latelua_function_node(function() finishreference(width,height,depth,prerolled) end)
+        return new_latelua(function() finishreference(width,height,depth,prerolled) end)
     end
 end
 
@@ -741,7 +740,7 @@ function nodeinjections.annotation(width,height,depth,prerolled,r)
         if trace_references then
             report_reference("special: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
         end
-        return latelua_function_node(function() finishannotation(width,height,depth,prerolled,r or false) end)
+        return new_latelua(function() finishannotation(width,height,depth,prerolled,r or false) end)
     end
 end
 

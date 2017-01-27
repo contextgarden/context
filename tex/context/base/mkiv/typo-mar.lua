@@ -75,6 +75,7 @@ local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
+local getwhd             = nuts.getwhd
 local setlist            = nuts.setlist
 local setlink            = nuts.setlink
 
@@ -93,6 +94,8 @@ local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local whatsit_code       = nodecodes.whatsit
 local userdefined_code   = whatsitcodes.userdefined
+
+local n_flush_node       = nodes.flush
 
 local nodepool           = nuts.pool
 
@@ -268,16 +271,17 @@ function margins.save(t)
         local leftmargindistance  = texgetdimen("naturalleftmargindistance")
         local rightmargindistance = texgetdimen("naturalrightmargindistance")
         local strutbox            = getbox("strutbox")
+        local _, strutht, strutdp = getwhd(strutbox)
         -- better make a new table and make t entry in t
         t.box                 = content
         t.n                   = nofsaved
         -- used later (we will clean up this natural mess later)
         -- nice is to make a special status table mechanism
-        t.strutdepth          = getfield(strutbox,"depth")
-        t.strutheight         = getfield(strutbox,"height")
-        -- beware: can be different from the applied one
-        t.leftskip            = getfield(texget("leftskip"),"width")  -- we're not in forgetall
-        t.rightskip           = getfield(texget("rightskip"),"width") -- we're not in forgetall
+        t.strutheight         = strutht
+        t.strutdepth          = strutdp
+        -- beware: can be different from the applied one (we're not in forgetall)
+        t.leftskip            = texget("leftskip",false)
+        t.rightskip           = texget("rightskip",false)
         --
         t.leftmargindistance  = leftmargindistance -- todo:layoutstatus table
         t.rightmargindistance = rightmargindistance
@@ -497,9 +501,8 @@ local function inject(parent,head,candidate)
     if not box then
         return head, nil, false -- we can have empty texts
     end
-    local width        = getfield(box,"width")
-    local height       = getfield(box,"height")
-    local depth        = getfield(box,"depth")
+    local width, height, depth
+                       = getwhd(box)
     local shift        = getfield(box,"shift")
     local stack        = candidate.stack
     local stackname    = candidate.stackname
@@ -622,8 +625,9 @@ local function inject(parent,head,candidate)
             shift = shift + voffset + delta
         end
     elseif method == v_line then
-        if getfield(parent,"depth") == 0 then
-            local delta = height - getfield(parent,"height")
+        local _, ph, pd = getwhd(parent)
+        if pd == 0 then
+            local delta = height - ph
             if trace_margindata then
                 report_margindata("top aligned by %p (no depth)",delta)
             end

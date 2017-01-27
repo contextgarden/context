@@ -905,7 +905,7 @@
    \ifzeropt\ht\oldshapebox % \ifdim\ht\oldshapebox=\zeropoint
      \setbox\newshapebox\emptyvbox
    \else
-     \setbox\newshapebox\vbox
+     \setbox\newshapebox\vbox % can be \vpack
        {\unvcopy\oldshapebox
         \setbox\newshapebox\emptybox
         \shapecounter\zerocount
@@ -915,7 +915,7 @@
 
 \ifx\originalshapebox\undefined \let\originalshapebox\oldshapebox \fi
 
-% We will turn this into a \MKIV\ variant.
+% We will turn this into a \MKIV\ variant (we can use \type {\vpack} too).
 
 \unexpanded\def\insertshapesignal
   {\hpack to \shapesignal{\strut\hss}% plus \strut
@@ -1313,8 +1313,7 @@
    \egroup}
 
 \unexpanded\def\limitatetext#1#2#3% \expanded added 2003/01/16
-  {\expanded{\beforesplitstring#2}\at,\to\leftlimit
-   \expanded{\aftersplitstring #2}\at,\to\rightlimit
+  {\splitatcomma{#2}\leftlimit\rightlimit
    \ifx\rightlimit\empty
      \normallimitatetext {#1}\leftlimit           {#3}%
    \else
@@ -1727,7 +1726,7 @@
   {\ifnum\rigidcolumns=1 % tzt ook h/d correctie
      \ifinner\ifhmode\box\else\unvbox\fi\else\unvbox\fi#1\relax
    \else
-     \vbox
+     \vbox % \vpack
        {\forgetall
         \nopenalties
         \dontcomplain
@@ -2947,6 +2946,30 @@
 \unexpanded\def\starthboxregister#1{\setbox#1\hbox\bgroup}  \let\stophboxregister\egroup
 \unexpanded\def\startvboxregister#1{\setbox#1\vbox\bgroup}  \let\stopvboxregister\egroup
 \unexpanded\def\startvtopregister#1{\setbox#1\vtop\bgroup}  \let\stopvtopregister\egroup
+
+%D For whatever third party package needs it:
+%D
+%D \starttyping
+%D \newlocalbox\BoxOne
+%D \newlocalbox\BoxTwo
+%D
+%D \setbox\BoxOne\hbox{Box One}
+%D \setbox\BoxTwo\hbox{Box Two}
+%D
+%D [\box\BoxTwo] [\box\BoxOne]
+%D \stoptyping
+
+\installcorenamespace{localbox}
+
+\unexpanded\def\newlocalbox#1%
+  {\expandafter\let\expandafter#1\csname\??localbox\string#1\endcsname
+   \ifx#1\relax
+     \syst_aux_new_localbox#1%
+   \fi}
+
+\def\syst_aux_new_localbox#1%
+  {\expandafter\newbox\csname\??localbox\string#1\endcsname
+   \newlocalbox#1}
 
 \protect \endinput
 

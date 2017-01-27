@@ -132,9 +132,9 @@ local function mark(head,current,id,color)
  --     head = insert_before(head,current,kern)
  --     setcolor(rule,color)
     else
-        local width = getfield(current,"width")
+        local width, height, depth = getWhd(current)
         local extra = fonts.hashes.xheights[getfont(current)] / 2
-        local rule  = new_rule(width,getfield(current,"height")+extra,getfield(current,"depth")+extra)
+        local rule  = new_rule(width,height+extra,depth+extra)
         local hlist = new_hlist(rule)
         head = insert_before(head,current,hlist)
         setcolor(rule,color)

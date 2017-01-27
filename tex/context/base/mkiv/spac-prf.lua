@@ -50,11 +50,13 @@ local getprev           = nuts.getprev
 local getsubtype        = nuts.getsubtype
 local getlist           = nuts.getlist
 local gettexbox         = nuts.getbox
+local getwhd            = nuts.getwhd
 
 local setfield          = nuts.setfield
 local setlink           = nuts.setlink
 local setlist           = nuts.setlist
 local setattr           = nuts.setattr
+local setwhd            = nuts.setwhd
 
 local properties        = nodes.properties.data
 local setprop           = nuts.setprop
@@ -161,9 +163,7 @@ local function getprofile(line,step)
         while current do
             local id = getid(current)
             if id == glyph_code then
-                wd = getfield(current,"width")
-                ht = getfield(current,"height")
-                dp = getfield(current,"depth")
+                wd, ht, dp = getwhd(current)
                 progress()
             elseif id == kern_code then
                 wd = getfield(current,"kern")
@@ -198,30 +198,28 @@ local function getprofile(line,step)
             elseif id == hlist_code then
                 -- we could do a nested check .. but then we need to push / pop glue
                 local shift = getfield(current,"shift")
-                wd = getfield(current,"width")
+                local w, h, d = getwhd(current)
              -- if getattr(current,a_specialcontent) then
                 if getprop(current,"specialcontent") then
                     -- like a margin note, maybe check for wd
+                    wd = w
                     ht = 0
                     dp = 0
                 else
-                    ht = getfield(current,"height") - shift
-                    dp = getfield(current,"depth")  + shift
+                    wd = w
+                    ht = h - shift
+                    dp = d + shift
                 end
                 progress()
             elseif id == vlist_code or id == unset_code then
                 local shift = getfield(current,"shift") -- todo
-                wd = getfield(current,"width")
-                ht = getfield(current,"height") -- - shift
-                dp = getfield(current,"depth")  -- + shift
+                wd, ht, dp = getwhd(current)
                 progress()
             elseif id == rule_code then
-                wd = getfield(current,"width")
-                ht = getfield(current,"height")
-                dp = getfield(current,"depth")
+                wd, ht, dp = getwhd(current)
                 progress()
             elseif id == math_code then
-                wd = getfield(current,"surround")
+                wd = getfield(current,"surround") + getfield(current,"width")
                 ht = 0
                 dp = 0
                 progress()
@@ -305,9 +303,7 @@ local function addstring(height,depth)
             dptext
         )
     )
-    setfield(text,"height",0)
-    setfield(text,"depth",0)
-    setfield(text,"width",0)
+    setwhd(text,0,0,0)
     return text
 end
 
@@ -384,9 +380,7 @@ local function addprofile(node,profile,step)
 
     local rule = hpack_nodes(head)
 
-    setfield(rule,"width", 0)
-    setfield(rule,"height",0)
-    setfield(rule,"depth", 0)
+    setwhd(rule,0,0,0)
 
  -- if texttoo then
  --

@@ -1443,6 +1443,7 @@
 
 \installcorenamespace{gridsnappers}
 \installcorenamespace{gridsnapperattributes}
+\installcorenamespace{gridsnappersets}
 
 \newskip  \bodyfontlineheight
 \newdimen \bodyfontstrutheight
@@ -1462,12 +1463,34 @@
         \attribute \snapvboxattribute \attribute\snapmethodattribute}%
    \fi}
 
-\unexpanded\def\installsnapvalues#1#2% todo: a proper define
-  {\edef\currentsnapper{#1:#2}%
-   \ifcsname\??gridsnapperattributes\currentsnapper\endcsname \else
-     \setevalue{\??gridsnapperattributes\currentsnapper}{\clf_definesnapmethod{#1}{#2}}%
+% \unexpanded\def\installsnapvalues#1#2% todo: a proper define
+%   {\edef\currentsnapper{#1:#2}%
+%    \ifcsname\??gridsnapperattributes\currentsnapper\endcsname \else
+%      \setevalue{\??gridsnapperattributes\currentsnapper}{\clf_definesnapmethod{#1}{#2}}%
+%    \fi
+%    \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
+
+\def\spac_grids_expand_snapper#1%
+  {\edef\m_spac_snapper
+     {\ifx\m_spac_snapper\empty\else\m_spac_snapper,\fi
+      \ifcsname\??gridsnappersets#1\endcsname
+        \lastnamedcs\else#1%
+      \fi}}
+
+\unexpanded\def\installsnapvalues#1#2%
+  {\let\m_spac_snapper\empty
+   \rawprocesscommacommand[#2]\spac_grids_expand_snapper
+   \edef\currentsnapper{#1:\m_spac_snapper}%
+   \ifcsname\??gridsnapperattributes\currentsnapper\endcsname
+     \scratchcounter\lastnamedcs % already defined
+   \else
+     \scratchcounter\clf_definesnapmethod{#1}{\m_spac_snapper}%
+     \setevalue{\??gridsnapperattributes\currentsnapper}{\the\scratchcounter}%
    \fi
-   \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
+   \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\the\scratchcounter\relax}%
+   \letvalue{\??gridsnappersets#1}\m_spac_snapper}
+
+\def\theexpandedsnapperset#1{\begincsname\??gridsnappersets#1\endcsname} % only for manuals
 
 \unexpanded\def\usegridparameter#1% no checking here
   {\edef\m_spac_grid_asked{#1\c!grid}%
@@ -1518,6 +1541,9 @@
 % offset:-3tp      vertical shift within box
 % bottom:lines
 % top:lines
+% box              centers a box rounded upwards (box:.5 -> tolerance)
+% min              centers a box rounded downwards
+% max              centers a box rounded upwards
 
 %D We're not downward compatible with \MKII !
 
@@ -1527,7 +1553,6 @@
 
 \definegridsnapping[\v!strict]   [\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut]
 \definegridsnapping[\v!tolerant] [\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut]
-\definegridsnapping[\v!math]     [\v!maxdepth:1.05,\v!maxheight:1.05,\v!strut] % experimental, maybe 1.1
 
 \definegridsnapping[\v!top]      [\v!minheight,\v!maxdepth,\v!strut]
 \definegridsnapping[\v!bottom]   [\v!maxheight,\v!mindepth,\v!strut]
@@ -1544,14 +1569,17 @@
 \definegridsnapping[\v!none]     [\v!none]
 \definegridsnapping[\v!line]     [\v!line]
 \definegridsnapping[\v!strut]    [\v!strut]
-\definegridsnapping[\v!box]      [\v!box] % centers a box rounded upwards (box:.5 -> tolerance)
-\definegridsnapping[\v!min]      [\v!min] % centers a box rounded downwards
-\definegridsnapping[\v!max]      [\v!max] % centers a box rounded upwards
-
-\definegridsnapping[\v!max]      [\v!maxdepth,\v!maxheight,\v!strut]
-\definegridsnapping[\v!min]      [\v!mindepth,\v!minheight,\v!strut]
+\definegridsnapping[\v!box]      [\v!box]
+\definegridsnapping[\v!min]      [\v!min]
+\definegridsnapping[\v!max]      [\v!max]
 
 \definegridsnapping[\v!middle]   [\v!maxheight,\v!maxdepth] % used in placement
+
+\definegridsnapping[\v!math]             [\v!maxdepth:1.05,\v!maxheight:1.05,\v!strut] % experimental, maybe 1.1
+\definegridsnapping[\v!math:\v!line]     [\v!math,\v!line,\v!split]
+\definegridsnapping[\v!math:\v!halfline] [\v!math,\v!halfline,\v!split]
+\definegridsnapping[\v!math:-\v!line]    [\v!math,-\v!line,\v!split]
+\definegridsnapping[\v!math:-\v!halfline][\v!math,-\v!halfline,\v!split]
 
 \unexpanded\def\synchronizelocallinespecs
   {\bodyfontlineheight \normallineheight
@@ -1652,6 +1680,51 @@
    \else
      \spac_grids_check_yes
    \fi\fi\fi}
+
+\unexpanded\def\setupgridsnapping[#1]% less overhead than setuplayout (needs testing)
+  {\setlayoutparameter\c!grid{#1}\synchronizegridsnapping}
+
+\unexpanded\def\checkgridmethod#1%
+  {\edef\p_grid{#1}%
+   \ifx\p_grid\empty
+     \let\checkedgridmethod\empty
+     \let\checkedgridscope \v!local
+   \else
+     \splitatcolon\p_grid\checkedgridscope\checkedgridmethod
+     \ifx\checkedgridmethod\empty
+       \ifx\checkedgridscope\v!local\else\ifx\checkedgridscope\v!global\else
+         \let\checkedgridmethod\checkedgridscope
+         \let\checkedgridscope \v!local
+       \fi\fi
+     \fi
+   \fi}
+
+\unexpanded\def\applygridmethod#1#2#3% content localsettings (used in head rendering)
+   {\checkgridmethod{#1}%
+    \ifx\checkedgridscope\v!global
+      \ifx\checkedgridmethod\empty \else
+        % we assume that the call is grouped because grouping here has the side
+        % effect that the eventually constructed line will get the value outside
+        % the group
+        %
+        % overkill: \setupgridsnapping[\checkedgridmethod]%
+        % maybe   : \spac_grids_snap_value_auto\checkedgridmethod
+        \spac_grids_snap_value_set\checkedgridmethod
+      \fi
+      \hbox{#3}%
+    \else
+      % the extra hbox will trigger the global snapper on top of the local and
+      % we really need that in this case (compatibility etc etc) so here we don't
+      % het an already done hit (otherwise we would not snap)
+      \hbox\bgroup
+        \ifx\checkedgridmethod\empty\else
+          \ifconditional\headisdisplay
+            #2%
+          \fi
+        \fi
+        \snaptogrid[\checkedgridmethod]\hbox{#3}%
+      \egroup
+    \fi}
 
 \unexpanded\gdef\page_layouts_calculate_overshoot
   {\ifgridsnapping\ifcase\layoutlines

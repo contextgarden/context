@@ -41,13 +41,14 @@ local getnext         = nuts.getnext
 local getprev         = nuts.getprev
 local getlist         = nuts.getlist
 local setlist         = nuts.setlist
+local getwhd          = nuts.getwhd
 local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getbox          = nuts.getbox
 
 local hpack           = nuts.hpack
 local traverse_id     = nuts.traverse_id
-local node_dimensions = nuts.dimensions
+local list_dimensions = nuts.dimensions
 local flush_node      = nuts.flush
 
 local checkformath    = false
@@ -72,22 +73,23 @@ local function doreshapeframedbox(n)
         local list = getlist(box)
         if list then
             local function check(n,repack)
+                local width, height, depth = getwhd(n)
                 if not firstheight then
-                    firstheight = getfield(n,"height")
+                    firstheight = height
                 end
-                lastdepth = getfield(n,"depth")
-                noflines = noflines + 1
-                local l = getlist(n)
+                lastdepth = depth
+                noflines  = noflines + 1
+                local l   = getlist(n)
                 if l then
                     if repack then
                         local subtype = getsubtype(n)
                         if subtype == box_code or subtype == line_code then
-                            lastlinelength = node_dimensions(l,getfield(n,"dir"))
+                            lastlinelength = list_dimensions(l,getfield(n,"dir"))
                         else
-                            lastlinelength = getfield(n,"width")
+                            lastlinelength = width
                         end
                     else
-                        lastlinelength = getfield(n,"width")
+                        lastlinelength = width
                     end
                     if lastlinelength > maxwidth then
                         maxwidth = lastlinelength
@@ -168,11 +170,12 @@ local function doanalyzeframedbox(n)
         local list = getlist(box)
         if list then
             local function check(n)
+                local width, height, depth = getwhd(n)
                 if not firstheight then
-                    firstheight = getfield(n,"height")
+                    firstheight = height
                 end
-                lastdepth = getfield(n,"depth")
-                noflines = noflines + 1
+                lastdepth = depth
+                noflines  = noflines + 1
             end
             for h in traverse_id(hlist_code,list) do
                 check(h)
@@ -210,7 +213,7 @@ local function maxboxwidth(box)
             if repack then
                 local subtype = getsubtype(n)
                 if subtype == box_code or subtype == line_code then
-                    lastlinelength = node_dimensions(l,getfield(n,"dir"))
+                    lastlinelength = list_dimensions(l,getfield(n,"dir"))
                 else
                     lastlinelength = getfield(n,"width")
                 end

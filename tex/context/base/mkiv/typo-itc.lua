@@ -117,7 +117,7 @@ end
 -- todo: clear attribute
 
 local function okay(data,current,font,prevchar,previtalic,char,what)
-    if not data then
+    if data then
         if trace_italics then
             report_italics("ignoring %p between %s italic %C and italic %C",previtalic,what,prevchar,char)
         end
@@ -278,7 +278,7 @@ local function texthandler(head)
     local previnserted    = nil
 
     local pre             = nil
-    local pretail          = nil
+    local pretail         = nil
 
     local post            = nil
     local posttail        = nil

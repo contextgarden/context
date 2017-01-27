@@ -257,7 +257,7 @@ local spaces = space^0
 local option = (
         P("single")
       + P("double")
-      + P("tripple")
+      + P("triple")
       + P("quadruple")
       + P("quintuple")
       + P("sixtuple")
@@ -296,7 +296,8 @@ local function texdefinition_two()
             optional ..
             [[\csname _do_]] ..
             csname ..
-            [[_\endcsname}\unexpanded\expandafter]] ..
+         -- [[_\endcsname}\unexpanded\expandafter]] ..
+            [[_\endcsname}\expandafter]] ..
             (global and [[\gdef]] or  [[\edef]]) ..
             [[\csname _do_]] ..
             csname ..

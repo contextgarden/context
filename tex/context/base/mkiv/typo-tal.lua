@@ -52,7 +52,7 @@ local setchar              = nuts.setchar
 local insert_node_before   = nuts.insert_before
 local insert_node_after    = nuts.insert_after
 local traverse_list_by_id  = nuts.traverse_id
-local dimensions_of_list   = nuts.dimensions
+local list_dimensions      = nuts.dimensions
 local first_glyph          = nuts.first_glyph
 
 local setglue              = nuts.setglue
@@ -381,8 +381,8 @@ function characteralign.handler(originalhead,where)
         end
     else
         entry = {
-            before = b_start and dimensions_of_list(b_start,getnext(b_stop)) or 0,
-            after  = a_start and dimensions_of_list(a_start,getnext(a_stop)) or 0,
+            before = b_start and list_dimensions(b_start,getnext(b_stop)) or 0,
+            after  = a_start and list_dimensions(a_start,getnext(a_stop)) or 0,
         }
         list[row] = entry
     end

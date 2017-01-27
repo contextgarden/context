@@ -44,7 +44,6 @@ local setattr            = nuts.setattr
 local getbox             = nuts.getbox
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
-local getdimensions      = nuts.dimensions
 local setlink            = nuts.setlink
 
 local nodecodes          = nodes.nodecodes
@@ -58,6 +57,7 @@ local flush_node         = nuts.flush_node
 local copy_node_list     = nuts.copy_list
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
+local list_dimensions    = nuts.dimensions
 
 local nodepool           = nuts.pool
 local newpenalty         = nodepool.penalty
@@ -163,9 +163,9 @@ actions[v_line] = function(head,setting)
         end
 
         local function try(extra)
-            local width = getdimensions(list,start)
+            local width = list_dimensions(list,start)
             if extra then
-                width = width + getdimensions(extra)
+                width = width + list_dimensions(extra)
             end
             if width > hsize then
                 list = prev
