@@ -27,7 +27,6 @@ local getnext          = nuts.getnext
 local getprev          = nuts.getprev
 local getsubtype       = nuts.getsubtype
 local getfield         = nuts.getfield
-local setfield         = nuts.setfield
 local getlist          = nuts.getlist
 local setlist          = nuts.setlist
 local removenode       = nuts.remove

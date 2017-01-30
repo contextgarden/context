@@ -191,13 +191,16 @@ local end_of_math        = nuts.end_of_math
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
 local remove_node        = nuts.remove
+local set_components     = nuts.set_components
+local get_components     = nuts.get_components
+local count_components   = nuts.count_components
+local copy_no_components = nuts.copy_no_components
+local copy_only_glyphs   = nuts.copy_only_glyphs
 
 local setmetatableindex  = table.setmetatableindex
 
-local zwnj               = 0x200C
-local zwj                = 0x200D
-local wildcard           = "*"
-local default            = "dflt"
+----- zwnj               = 0x200C
+----- zwj                = 0x200D
 
 local nodecodes          = nodes.nodecodes
 local glyphcodes         = nodes.glyphcodes
@@ -360,21 +363,6 @@ end
 -- However, for arabic we need to keep them around for the sake of mark placement
 -- and indices.
 
-local function copy_glyph(g) -- next and prev are untouched !
-    local components = getfield(g,"components")
-    if components then
-        setfield(g,"components")
-        local n = copy_node(g)
-        copyinjection(n,g) -- we need to preserve the lig indices
-        setfield(g,"components",components)
-        return n
-    else
-        local n = copy_node(g)
-        copyinjection(n,g) -- we need to preserve the lig indices
-        return n
-    end
-end
-
 local function flattendisk(head,disc)
     local pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
     local prev, next = getboth(disc)
@@ -439,14 +427,15 @@ local function markstoligature(head,start,stop,char)
         local next = getnext(stop)
         setprev(start)
         setnext(stop)
-        local base = copy_glyph(start)
+        local base = copy_no_components(start)
+        copyinjection(base,start)
         if head == start then
             head = base
         end
         resetinjection(base)
         setchar(base,char)
         setsubtype(base,ligature_code)
-        setfield(base,"components",start)
+        set_components(base,start)
         setlink(prev,base)
         setlink(base,next)
         return head, base
@@ -460,24 +449,6 @@ end
 -- iteration this becomes a KAF-LAM-ALEF with a SHADDA on the second and a FATHA on the
 -- third component.
 
-local function getcomponentindex(start) -- we could store this offset in the glyph (nofcomponents)
-    if getid(start) ~= glyph_code then  -- and then get rid of all components
-        return 0
-    elseif getsubtype(start) == ligature_code then
-        local i = 0
-        local components = getfield(start,"components")
-        while components do
-            i = i + getcomponentindex(components)
-            components = getnext(components)
-        end
-        return i
-    elseif not marks[getchar(start)] then
-        return 1
-    else
-        return 0
-    end
-end
-
 local a_noligature = attributes.private("noligature")
 
 local function toligature(head,start,stop,char,dataset,sequence,markflag,discfound) -- brr head
@@ -490,33 +461,23 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
         setchar(start,char)
         return head, start
     end
-    -- needs testing (side effects):
-    local components = getfield(start,"components")
-    if components then
-     -- we get a double free .. needs checking
-     -- flush_node_list(components)
-    end
     --
     local prev = getprev(start)
     local next = getnext(stop)
     local comp = start
     setprev(start)
     setnext(stop)
-    local base = copy_glyph(start)
+    local base = copy_no_components(start)
+    copyinjection(base,start)
     if start == head then
         head = base
     end
     resetinjection(base)
     setchar(base,char)
     setsubtype(base,ligature_code)
-    setfield(base,"components",comp) -- start can have components ... do we need to flush?
-    if prev then
-        setnext(prev,base)
-    end
-    if next then
-        setprev(next,base)
-    end
-    setboth(base,prev,next)
+    set_components(base,comp)
+    setlink(prev,base)
+    setlink(base,next)
     if not discfound then
         local deletemarks = markflag ~= "mark"
         local components = start
@@ -529,7 +490,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
             local char = getchar(start)
             if not marks[char] then
                 baseindex = baseindex + componentindex
-                componentindex = getcomponentindex(start)
+                componentindex = count_components(start,marks) -- getcomponentindex(start)
             elseif not deletemarks then -- quite fishy
                 setligaindex(start,baseindex + getligaindex(start,componentindex))
                 if trace_marks then
@@ -544,7 +505,6 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
             start = getnext(start)
         end
         -- we can have one accent as part of a lookup and another following
-     -- local start = components -- was wrong (component scanning was introduced when more complex ligs in devanagari was added)
         local start = getnext(current)
         while start do
             local char = ischar(start)
@@ -570,41 +530,34 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
             -- \- can give problems as there we can have a negative char but that won't match
             -- anyway
             local pre, post, replace, pretail, posttail, replacetail = getdisc(discfound,true)
-            if not replace then -- todo: signal simple hyphen
-                local prev     = getprev(base)
-                local current  = comp
-                local previous = nil
-                local copied   = nil
-                while current do
-                    if getid(current) == glyph_code then
-                        local n = copy_node(current)
-                        if copied then
-                            setlink(previous,n)
-                        else
-                            copied = n
-                        end
-                        previous = n
-                    end
-                    current = getnext(current)
-                end
-                setprev(discnext) -- also blocks funny assignments
-                setnext(discprev) -- also blocks funny assignments
+            if not replace then
+                -- maybe: signal simple hyphen
+                local prev = getprev(base)
+                -- blocks funny assignments
+                setprev(discnext)
+                setnext(discprev)
+                -- pre
                 if pre then
                     setlink(discprev,pre)
                 end
-                pre = comp
+                pre = get_components(base)
+                -- post
                 if post then
                     setlink(posttail,discnext)
                     setprev(post)
                 else
                     post = discnext
                 end
+                -- replace
+                setboth(base)
+                set_components(base,copy_only_glyphs(comp))
+                replace = base
+                -- wrapup
                 setlink(prev,discfound)
                 setlink(discfound,next)
-                setboth(base)
-                setfield(base,"components",copied)
-                setdisc(discfound,pre,post,base) -- was discretionary_code
-                base = prev -- restart
+                setdisc(discfound,pre,post,replace) -- we used to pass discretionary_code too
+                -- restart
+                base = prev
             end
         end
     end
@@ -2693,79 +2646,86 @@ end)
 
 -- fonts.hashes.sequences = sequencelists
 
-local autofeatures    = fonts.analyzers.features
-local featuretypes    = otf.tables.featuretypes
-local defaultscript   = otf.features.checkeddefaultscript
-local defaultlanguage = otf.features.checkeddefaultlanguage
+do -- overcome local limit
 
-local function initialize(sequence,script,language,enabled,autoscript,autolanguage)
-    local features = sequence.features
-    if features then
-        local order = sequence.order
-        if order then
-            local featuretype = featuretypes[sequence.type or "unknown"]
-            for i=1,#order do
-                local kind  = order[i]
-                local valid = enabled[kind]
-                if valid then
-                    local scripts   = features[kind]
-                    local languages = scripts and (
-                        scripts[script] or
-                        scripts[wildcard] or
-                        (autoscript and defaultscript(featuretype,autoscript,scripts))
-                    )
-                    local enabled = languages and (
-                        languages[language] or
-                        languages[wildcard] or
-                        (autolanguage and defaultlanguage(featuretype,autolanguage,languages))
-                    )
-                    if enabled then
-                        return { valid, autofeatures[kind] or false, sequence, kind }
+    local autofeatures    = fonts.analyzers.features
+    local featuretypes    = otf.tables.featuretypes
+    local defaultscript   = otf.features.checkeddefaultscript
+    local defaultlanguage = otf.features.checkeddefaultlanguage
+
+    local wildcard        = "*"
+    local default         = "dflt"
+
+    local function initialize(sequence,script,language,enabled,autoscript,autolanguage)
+        local features = sequence.features
+        if features then
+            local order = sequence.order
+            if order then
+                local featuretype = featuretypes[sequence.type or "unknown"]
+                for i=1,#order do
+                    local kind  = order[i]
+                    local valid = enabled[kind]
+                    if valid then
+                        local scripts   = features[kind]
+                        local languages = scripts and (
+                            scripts[script] or
+                            scripts[wildcard] or
+                            (autoscript and defaultscript(featuretype,autoscript,scripts))
+                        )
+                        local enabled = languages and (
+                            languages[language] or
+                            languages[wildcard] or
+                            (autolanguage and defaultlanguage(featuretype,autolanguage,languages))
+                        )
+                        if enabled then
+                            return { valid, autofeatures[kind] or false, sequence, kind }
+                        end
+                    end
+                end
+            else
+                -- can't happen
+            end
+        end
+        return false
+    end
+
+    function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
+        local shared       = tfmdata.shared
+        local properties   = tfmdata.properties
+        local language     = properties.language or "dflt"
+        local script       = properties.script   or "dflt"
+        local enabled      = shared.features
+        local autoscript   = enabled and enabled.autoscript
+        local autolanguage = enabled and enabled.autolanguage
+        local res = resolved[font]
+        if not res then
+            res = { }
+            resolved[font] = res
+        end
+        local rs = res[script]
+        if not rs then
+            rs = { }
+            res[script] = rs
+        end
+        local rl = rs[language]
+        if not rl then
+            rl = {
+                -- indexed but we can also add specific data by key
+            }
+            rs[language] = rl
+            local sequences = tfmdata.resources.sequences
+            if sequences then
+                for s=1,#sequences do
+                    local v = enabled and initialize(sequences[s],script,language,enabled,autoscript,autolanguage)
+                    if v then
+                        rl[#rl+1] = v
                     end
                 end
             end
-        else
-            -- can't happen
         end
+        return rl
     end
-    return false
-end
 
-function otf.dataset(tfmdata,font) -- generic variant, overloaded in context
-    local shared       = tfmdata.shared
-    local properties   = tfmdata.properties
-    local language     = properties.language or "dflt"
-    local script       = properties.script   or "dflt"
-    local enabled      = shared.features
-    local autoscript   = enabled and enabled.autoscript
-    local autolanguage = enabled and enabled.autolanguage
-    local res = resolved[font]
-    if not res then
-        res = { }
-        resolved[font] = res
-    end
-    local rs = res[script]
-    if not rs then
-        rs = { }
-        res[script] = rs
-    end
-    local rl = rs[language]
-    if not rl then
-        rl = {
-            -- indexed but we can also add specific data by key
-        }
-        rs[language] = rl
-        local sequences = tfmdata.resources.sequences
-        if sequences then
-            for s=1,#sequences do
-                local v = enabled and initialize(sequences[s],script,language,enabled,autoscript,autolanguage)
-                if v then
-                    rl[#rl+1] = v
-                end
-            end
-        end
-    end
-    return rl
 end
 
 local function report_disc(what,n)
@@ -3442,8 +3402,8 @@ local function featuresprocessor(head,font,attr)
     -- to keep track of directions anyway. Also at some point I want to play with
     -- font interactions and then we do need the full sweeps.
 
-    -- Keeping track of the headnode is needed for devanagari (I generalized it a bit
-    -- so that multiple cases are also covered.)
+    -- Keeping track of the headnode is needed for devanagari. (I generalized it a bit
+    -- so that multiple cases are also covered.) We could prepend a temp node.
 
     -- We don't goto the next node when a disc node is created so that we can then treat
     -- the pre, post and replace. It's a bit of a hack but works out ok for most cases.

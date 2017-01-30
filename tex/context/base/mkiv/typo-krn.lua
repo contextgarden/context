@@ -28,22 +28,24 @@ local flush_node         = nuts.flush_node
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local end_of_math        = nuts.end_of_math
+local use_components     = nuts.use_components
 
 local getfield           = nuts.getfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
-local getboth            = nuts.getboth
 local getid              = nuts.getid
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
 local getdisc            = nuts.getdisc
+local getglue            = nuts.getglue
 local isglyph            = nuts.isglyph
 
 local setfield           = nuts.setfield
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
+local setglue            = nuts.setglue
 local setsubtype         = nuts.setsubtype
 
 local texsetattribute    = tex.setattribute
@@ -395,31 +397,13 @@ function kerns.handler(head)
             end
             if not krn or krn == 0 then
                 bound = false
-            elseif id == glyph_code then -- we could use the subtype ligature
-                local c = getfield(start,"components")
-                if not c then
-                    -- fine
-                elseif keepligature and keepligature(start) then
+            elseif id == glyph_code then
+                if keepligature and keepligature(start) then
                     -- keep 'm
-                    c = nil
                 else
-                    while c do
-                        local s = start
-                        local t = find_node_tail(c)
-                        local p, n = getboth(s)
-                        if p then
-                            setlink(p,c)
-                        else
-                            head = c
-                        end
-                        if n then
-                            setlink(t,n)
-                        end
-                        start = c
-                        setfield(s,"components",nil)
-                        flush_node(s)
-                        c = getfield(start,"components")
-                    end
+                    -- we could use the subtype ligature but that's also a call
+                    -- todo: check tounicode and use that information to split
+                    head, start = use_components(head,start)
                 end
                 local char = getchar(start)
                 local font = getfont(start)
@@ -485,12 +469,7 @@ function kerns.handler(head)
                     languages.expand(start,pglyph and prev)
                 end
                 local pre, post, replace = getdisc(start)
-                -- we really need to reasign the fields as luatex keeps track of
-                -- the tail in a temp preceding head .. kind of messy so we might
-                -- want to come up with a better solution some day like a real
-                -- pretail etc fields in a disc node
-                --
-                -- maybe i'll merge the now split functions
+                local indeed = false
                 if pre then
                     local okay = false
                     if not prev then
@@ -502,8 +481,7 @@ function kerns.handler(head)
                     end
                     pre, okay = process_list(pre,keeptogether,krn,false,okay)
                     if okay then
-                        setfield(start,"pre",pre)
-                        done = true
+                        indeed = true
                     end
                 end
                 if post then
@@ -517,8 +495,7 @@ function kerns.handler(head)
                     end
                     post, okay = process_list(post,keeptogether,krn,false,okay)
                     if okay then
-                        setfield(start,"post",post)
-                        done = true
+                        indeed = true
                     end
                 end
                 if replace then
@@ -539,11 +516,14 @@ function kerns.handler(head)
                     end
                     replace, okay = process_list(replace,keeptogether,krn,false,okay)
                     if okay then
-                        setfield(start,"replace",replace)
-                        done = true
+                        indeed = true
                     end
                 elseif prevfont then
-                    setfield(start,"replace",new_kern(quaddata[prevfont]*krn))
+                    replace = new_kern(quaddata[prevfont]*krn)
+                    indeed  = true
+                end
+                if indeed then
+                    setdisc(start,pre,post,replace)
                     done = true
                 end
                 bound = false
@@ -554,21 +534,18 @@ function kerns.handler(head)
             elseif id == glue_code then
                 local subtype = getsubtype(start)
                 if subtype == userskip_code or subtype == xspaceskip_code or subtype == spaceskip_code then
-                    local w = getfield(start,"width")
-                    if w > 0 then
-                        local width   = w + gluefactor * w * krn
-                        local stretch = getfield(start,"stretch") * width / w
-                        local shrink  = getfield(start,"shrink")  * width / w
+                    local width, stretch, shrink, stretch_order, shrink_order = getglue(start)
+                    if width > 0 then
+                        local w = width + gluefactor * width * krn
+                        stretch = stretch * w / width
+                        shrink  = shrink  * w / width
                         if fillup then
                             stretch = 2 * stretch
                             shrink  = 2 * shrink
-                            setfield(start,"stretch_order",1)
-                            -- shrink_order ?
+                            stretch_order = 1
+                         -- shrink_order  = 1 ?
                         end
-                        setfield(start,"width",width)
-                        setfield(start,"stretch",stretch)
-                        setfield(start,"shrink", shrink)
-                        --
+                        setglue(start,w,stretch,shrink,stretch_order,shrink_order)
                         done = true
                     end
                 end

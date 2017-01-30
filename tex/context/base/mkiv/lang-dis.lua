@@ -83,7 +83,7 @@ local expanders = {
             -- todo: take existing penalty
             setdisc(d,pre,post,replace,explicit_code,tex.exhyphenpenalty)
         else
-            setfield(d,"subtype",explicit_code)
+            setsubtype(d,explicit_code)
         end
         return template
     end,

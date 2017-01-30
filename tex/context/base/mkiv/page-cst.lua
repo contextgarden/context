@@ -337,11 +337,7 @@ function columnsets.prepareflush(name)
         for r=1,nofrows-1 do
             setlink(column[r],column[r+1])
         end
-        local v = new_vlist(column[1])
-        setfield(v,"height",height)
-     -- setfield(v,"depth",linedepth)
-        setfield(v,"width",widths[c])
-        columns[c] = v
+        columns[c] = new_vlist(column[1],widths[c],height,0) -- linedepth
     end
     --
     texsetcount("c_page_grid_first_column",firstcolumn)
@@ -1237,9 +1233,7 @@ function columnsets.setarea(t)
     local column  = t.c
     local row     = t.r
     if column and row then
-        setfield(box,"height",dataset.lineheight)
-        setfield(box,"depth",dataset.linedepth)
-        setfield(box,"width",dataset.widths[column])
+        setwhd(box,dataset.widths[column],dataset.lineheight,dataset.linedepth)
         cells[column][row] = box
     end
 end

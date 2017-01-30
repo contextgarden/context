@@ -50,7 +50,6 @@ local getfont         = nuts.getfont
 local getlist         = nuts.getlist
 local isglyph         = nuts.isglyph
 
-local setfield        = nuts.setfield
 local setattr         = nuts.setattr
 local setlist         = nuts.setlist
 

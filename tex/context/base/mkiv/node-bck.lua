@@ -35,7 +35,6 @@ local getattr           = nuts.getattr
 local getsubtype        = nuts.getsubtype
 local getwhd            = nuts.getwhd
 
-local setfield          = nuts.setfield
 local setattr           = nuts.setattr
 local setlink           = nuts.setlink
 local setlist           = nuts.setlist

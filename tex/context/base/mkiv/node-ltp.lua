@@ -21,6 +21,7 @@ if not modules then modules = { } end modules ['node-par'] = {
 -- todo: check and improve protrusion
 -- todo: arabic etc (we could use pretty large scales there) .. marks and cursive
 -- todo: see: we need to check this with the latest patches to the tex kernel
+-- todo: adapt math glue spacing to new model (left/right)
 
 -- todo: optimize a bit more (less par.*)
 
@@ -2523,6 +2524,7 @@ local function short_display(target,a,font_in_short_display)
                 write(target,tex.fontidentifier(font) .. ' ')
                 font_in_short_display = font
             end
+            -- todo: instead of components the split tounicode string
             if getsubtype(a) == ligature_code then
                 font_in_short_display = short_display(target,getfield(a,"components"),font_in_short_display)
             else
@@ -2939,8 +2941,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                 total_shrink [shrink_order]  = total_shrink[shrink_order]   + shrink
                 if getsubtype(current) >= leaders_code then
                     local leader = getleader(current)
-                    local ht = getfield(leader,"height")
-                    local dp = getfield(leader,"depth")
+                    local wd, ht, dp = getwhd(leader) -- can become getwhd(current) after 1.003
                     if ht > height then
                         height = ht
                     end
@@ -2973,9 +2974,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                 -- new in luatex
                 + getfield(current,"width")
             elseif id == unset_code then
-                local wd = getfield(current,"width")
-                local ht = getfield(current,"height")
-                local dp = getfield(current,"depth")
+                local wd, ht, dp = getwhd(current)
                 local sh = getfield(current,"shift")
                 local hs = ht - sh
                 local ds = dp + sh

@@ -46,6 +46,7 @@ local setboth         = nuts.setboth
 local setnext         = nuts.setnext
 local setbox          = nuts.setbox
 local setlist         = nuts.setlist
+local setdisc         = nuts.setdisc
 
 local flush_node      = nuts.flush_node
 local flush_list      = nuts.flush_list
@@ -78,12 +79,6 @@ local function hyphenatedlist(head,usecolor)
         local prev = getprev(current)
         if id == disc_code then
             local pre, post, replace = getdisc(current)
-            if pre then
-                setfield(current,"pre",nil)
-            end
-            if post then
-                setfield(current,"post",nil)
-            end
             if not usecolor then
                 -- nothing fancy done
             elseif pre and post then
@@ -96,8 +91,8 @@ local function hyphenatedlist(head,usecolor)
             end
             if replace then
                 flush_list(replace)
-                setfield(current,"replace",nil)
             end
+            setdisc(current)
             setboth(current)
             local list = link_nodes (
                 pre and new_penalty(10000),

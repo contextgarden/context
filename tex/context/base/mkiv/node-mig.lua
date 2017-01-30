@@ -26,7 +26,6 @@ local getid         = nuts.getid
 local getlist       = nuts.getlist
 local getattr       = nuts.getattr
 
-local setfield      = nuts.setfield
 local setattr       = nuts.setattr
 local setlink       = nuts.setlink
 local setlist       = nuts.setlist

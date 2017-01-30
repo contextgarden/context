@@ -79,6 +79,7 @@ local setchar    = nuts.setchar
 local setlist    = nuts.setlist
 local setwhd     = nuts.setwhd
 local setglue    = nuts.setglue
+local setdisc    = nuts.setdisc
 
 local copy_nut   = nuts.copy
 local new_nut    = nuts.new
@@ -387,8 +388,12 @@ function nutpool.baselineskip(width,stretch,shrink)
     return someskip(baselineskip,width,stretch,shrink)
 end
 
-function nutpool.disc()
-    return copy_nut(disc)
+function nutpool.disc(pre,post,replace)
+    local d = copy_nut(disc)
+    if pre or post or replace then
+        setdisc(d,pre,post,replace)
+    end
+    return d
 end
 
 function nutpool.textdir(dir)

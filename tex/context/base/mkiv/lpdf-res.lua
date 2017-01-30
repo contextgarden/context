@@ -12,7 +12,7 @@ local implement       = interfaces.implement
 local nuts            = nodes.nuts
 local tonut           = nodes.tonut
 
-local setfield        = nuts.setfield
+local setwhd          = nuts.setwhd
 local setlist         = nuts.setlist
 
 local new_hlist       = nuts.pool.hlist
@@ -29,9 +29,7 @@ function codeinjections.restoreboxresource(index)
     local hbox = new_hlist()
     local list, wd, ht, dp = useboxresource(index)
     setlist(hbox,tonut(list))
-    setfield(hbox,"width",  wd)
-    setfield(hbox,"height", ht)
-    setfield(hbox,"depth",  dp)
+    setwhd(hbox,wd,ht,dp)
     return hbox -- so we return a nut !
 end
 

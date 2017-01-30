@@ -45,7 +45,6 @@ local getfield             = nuts.getfield
 local getattr              = nuts.getattr
 local isglyph              = nuts.isglyph
 
-local setfield             = nuts.setfield
 local setattr              = nuts.setattr
 local setchar              = nuts.setchar
 

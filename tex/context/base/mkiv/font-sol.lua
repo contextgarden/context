@@ -66,7 +66,6 @@ local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 
-local setfield           = nuts.setfield
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setnext            = nuts.setnext

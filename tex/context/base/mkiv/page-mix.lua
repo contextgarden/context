@@ -946,9 +946,7 @@ local function getsplit(result,n)
         dp = result.depth
     end
 
-    setfield(v,"width",wd)
-    setfield(v,"height",ht)
-    setfield(v,"depth",dp)
+    setwhd(v,wd,ht,dp)
 
     if trace_state then
         local id = getid(h)
@@ -962,9 +960,9 @@ local function getsplit(result,n)
     for c, list in next, r.inserts do
 
         local l = concatnodes(list)
-for i=1,#list-1 do
-    setfield(list[i],"depth",0)
-end
+        for i=1,#list-1 do
+            setfield(list[i],"depth",0)
+        end
         local b = vpack(l) -- multiple arguments, todo: fastvpack
 
      -- setbox("global",c,b)

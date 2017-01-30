@@ -63,9 +63,6 @@ end
 nodes                       = nodes or { }
 local nodes                 = nodes
 
------ gonuts                = type(node.direct) == "table"
------.gonuts                = gonuts
-
 local nodecodes             = nodes.nodecodes
 local hlist_code            = nodecodes.hlist
 local vlist_code            = nodecodes.vlist
@@ -237,9 +234,6 @@ nodes.getsubtype        = n_getsubtype
 nodes.getlist           = n_getlist
 nodes.getleader         = n_getleader
 nodes.getdisc           = n_getdisc
------.getpre            = node.getpre     or function(n) local h, _, _, t       = n_getdisc(n,true) return h, t end
------.getpost           = node.getpost    or function(n) local _, h, _, _, t    = n_getdisc(n,true) return h, t end
------.getreplace        = node.getreplace or function(n) local _, _, h, _, _, t = n_getdisc(n,true) return h, t end
 
 nodes.is_char           = node.is_char
 nodes.ischar            = node.is_char

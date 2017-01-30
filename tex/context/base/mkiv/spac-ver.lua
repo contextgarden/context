@@ -30,6 +30,8 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 
 -- todo: strip baselineskip around display math
 
+-- todo: getglue(n,false) instead of getfield
+
 local next, type, tonumber = next, type, tonumber
 local gmatch, concat = string.gmatch, table.concat
 local ceil, floor = math.ceil, math.floor
@@ -1329,13 +1331,13 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 head = forced_skip(head,current,getfield(glue_data,"width") or 0,"before",trace)
                 flush_node(glue_data)
             else
-                local w = getfield(glue_data,"width")
-                if w ~= 0 then
+                local width, stretch, shrink = getglue(glue_data)
+                if width ~= 0 then
                     if trace then
                         trace_done("flushed due to non zero " .. why,glue_data)
                     end
                     head = insert_node_before(head,current,glue_data)
-                elseif getfield(glue_data,"stretch") ~= 0 or getfield(glue_data,"shrink") ~= 0 then
+                elseif stretch ~= 0 or shrink ~= 0 then
                     if trace then
                         trace_done("flushed due to stretch/shrink in" .. why,glue_data)
                     end

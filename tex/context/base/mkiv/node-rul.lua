@@ -39,6 +39,7 @@ local setattr            = nuts.setattr
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
+local setwhd             = nuts.setwhd
 
 local flushlist          = nuts.flush_list
 local effective_glue     = nuts.effective_glue
@@ -384,7 +385,7 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     setprev(first)
     setnext(last)
     local width, height, depth = list_dimensions(parent,first,next)
-    local list = hpack_nodes(first,width,"exactly")
+    local list = hpack_nodes(first,width,"exactly") -- we can use a simple pack
     if first == head then
         head = list
     end
@@ -396,8 +397,7 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     end
     local raise = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
     setfield(list,"shift",raise)
-    setfield(list,"height",height)
-    setfield(list,"depth",depth)
+    setwhd(list,width,height,depth)
     if trace_shifted then
         report_shifted("width %p, nodes %a, text %a",width,n_tostring(first,last),n_tosequence(first,last,true))
     end

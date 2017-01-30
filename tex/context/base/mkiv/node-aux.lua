@@ -35,6 +35,7 @@ local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getattr            = nuts.getattr
 local getfield           = nuts.getfield
+local getboth            = nuts.getboth
 
 local setfield           = nuts.setfield
 local setattr            = nuts.setattr
@@ -46,6 +47,7 @@ local setprev            = nuts.setprev
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
 local flush_node         = nuts.flush
+local flush_list         = nuts.flush_list
 local hpack_nodes        = nuts.hpack
 local unset_attribute    = nuts.unset_attribute
 local first_glyph        = nuts.first_glyph
@@ -482,3 +484,144 @@ end
 --         return 0
 --     end
 -- end
+
+-- these component helpers might move to another module
+
+-- nodemode helper: here we also flatten components, no check for disc here
+
+function nuts.set_components(target,start,stop)
+    local head = getfield(target,"components")
+    if head then
+        flush_list(head)
+        head = nil
+    end
+    setprev(start)
+    if stop then
+        setnext(stop)
+    end
+    while start do
+        local c = getfield(start,"components")
+        local n = getnext(start)
+        if c then
+            local tail = find_tail(c)
+            if not head then
+                head = c
+            end
+            setlink(tail,n)
+            setfield(start,"components")
+            flush_node(start)
+        else
+            if not head then
+                head = start
+            end
+        end
+        start = n
+    end
+    setfield(target,"components",head)
+    return head
+end
+
+function nuts.get_components(target)
+    local c = getfield(target,"components")
+    setfield(target,"components")
+    return c
+end
+
+-- nodemode helper: we assume a glyph and a flat components list (basemode can
+-- have nested components)
+
+function nuts.count_components(n,marks)
+    local components = getfield(n,"components")
+    if components then
+        local i = 0
+        if marks then
+            for g in traverse_id(glyph_code,components) do
+                if not marks[getchar(g)] then
+                    i = i + 1
+                end
+            end
+        else
+            for g in traverse_id(glyph_code,components) do
+                i = i + 1
+            end
+        end
+        return i
+    else
+        return 0
+    end
+end
+
+-- nodemode helper: the next and prev pointers are untouched
+
+function nuts.copy_no_components(g)
+    local components = getfield(g,"components")
+    if components then
+        setfield(g,"components")
+        local n = copy_node(g)
+        setfield(g,"components",components)
+        return n
+    else
+        return copy_node(g)
+    end
+end
+
+function nuts.copy_only_glyphs(current)
+    local head     = nil
+    local previous = nil
+    for n in traverse_id(glyph_code,current) do
+        n = copy_node(n)
+        if head then
+            setlink(previous,n)
+        else
+            head = n
+        end
+        previous = n
+    end
+    return head
+end
+
+-- node- and basemode helper
+
+function nuts.use_components(head,current)
+    local components = getfield(current,"components")
+    if not components then
+        return head, current, current
+    end
+    local prev, next = getboth(current)
+    local first = current
+    local last  = next
+    while components do
+        local gone = current
+        local tail = find_tail(components)
+        if prev then
+            setlink(prev,components)
+        end
+        if next then
+            setlink(tail,next)
+        end
+        if first == current then
+            first = components
+        end
+        if head == current then
+            head = components
+        end
+        current = components
+        setfield(gone,"components")
+        flush_node(gone)
+        while true do
+            components = getfield(current,"components")
+            if components then
+                next = getnext(current)
+                break -- current is composed
+            end
+            if next == last then
+                last = current
+                break -- components is false
+            end
+            prev    = current
+            current = next
+            next    = getnext(current)
+        end
+    end
+    return head, first, last
+end

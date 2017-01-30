@@ -117,6 +117,15 @@ nodes.tonut               = tonut
 
 -- getters
 
+-- local g = direct.getfield
+-- local t = table.setmetatableindex("number")
+-- function direct.getfield(n,f)
+--     local nt = t[f]
+--     t[f] = nt + 1
+--     print("field",nodes.nodecodes[direct.getid(n)],f,nt)
+--     return g(n,f)
+-- end
+
 if not direct.getwhd then
     local getfield = direct.getfield
     function direct.getwhd(n)

@@ -198,6 +198,9 @@ function handlers.characters(head)
 
     local nuthead = tonut(head)
 
+    -- There is no gain in checkign for a single glyph and then havign a fast path. On the
+    -- metafun manual (with some 2500 single char lists) the difference is just noise.
+
     for n in traverse_char(nuthead) do
         local font = getfont(n)
         local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
@@ -404,7 +407,8 @@ function handlers.characters(head)
         -- skip
     elseif u == 1 then
         local font, processors = next(usedfonts)
-        local attr = a == 0 and false or 0 -- 0 is the savest way
+     -- local attr = a == 0 and false or 0 -- 0 is the savest way
+        local attr = a > 0 and 0 or false -- 0 is the savest way
         for i=1,#processors do
             local h, d = processors[i](head,font,attr)
             if d then
@@ -413,7 +417,8 @@ function handlers.characters(head)
             end
         end
     else
-        local attr = a == 0 and false or 0 -- 0 is the savest way
+     -- local attr = a == 0 and false or 0 -- 0 is the savest way
+        local attr = a > 0 and 0 or false -- 0 is the savest way
         for font, processors in next, usedfonts do
             for i=1,#processors do
                 local h, d = processors[i](head,font,attr)

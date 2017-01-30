@@ -542,11 +542,9 @@ local function ruledbox(head,current,vertical,layer,what,simple,previous,trace_o
                     -- to trigger this mechanism
                     local leader = linked_nodes(new_glue(size),new_rule(3*size,linewidth,0),new_glue(size))
                     leader = hpack_nodes(leader)
-                    baseline = new_glue(0)
+                    baseline = new_glue(0,65536,0,2,0)
                     setleader(baseline,leader)
                     setsubtype(baseline,cleaders_code)
-                    setfield(baseline,"stretch",65536)
-                    setfield(baseline,"stretch_order",2)
                     setlisttransparency(baseline,c_text)
                     b_cache.baseline = baseline
                 end

@@ -51,6 +51,7 @@ local getsubtype        = nuts.getsubtype
 local getlist           = nuts.getlist
 local gettexbox         = nuts.getbox
 local getwhd            = nuts.getwhd
+local getglue           = nuts.getglue
 
 local setfield          = nuts.setfield
 local setlink           = nuts.setlink
@@ -176,20 +177,26 @@ local function getprofile(line,step)
                     process(replace)
                 end
             elseif id == glue_code then
-                wd = getfield(current,"width")
+                local width, stretch, shrink, stretch_order, shrink_order = getglue(current)
                 if glue_sign == 1 then
-                    if getfield(current,"stretch_order") == glue_order then
-                        wd = wd + getfield(current,"stretch") * glue_set
+                    if stretch_order == glue_order then
+                        wd = width + stretch * glue_set
+                    else
+                        wd = width
                     end
                 elseif glue_sign == 2 then
-                    if getfield(current,"shrink_order") == glue_order then
-                        wd = wd - getfield(current,"shrink") * glue_set
+                    if shrink_order == glue_order then
+                        wd = width - shrink * glue_set
+                    else
+                        wd = width
                     end
+                else
+                    wd = width
                 end
                 if getsubtype(current) >= leaders_code then
                     local leader = getleader(current)
-                    ht = getfield(leader,"height")
-                    dp = getfield(leader,"depth")
+                    local w
+                    w, ht, dp = getwhd(leader) -- can become getwhd(current) after 1.003
                 else
                     ht = 0
                     dp = 0

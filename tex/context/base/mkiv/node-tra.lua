@@ -47,6 +47,7 @@ local getsubtype       = nuts.getsubtype
 local getlist          = nuts.getlist
 local getdisc          = nuts.getdisc
 local setattr          = nuts.setattr
+local getglue          = nuts.getglue
 local isglyph          = nuts.isglyph
 
 local flush_list       = nuts.flush_list
@@ -384,11 +385,10 @@ local function nodetodimen(n)
     elseif id ~= glue_code then
         return "0pt"
     end
-    local stretch_order = getfield(n,"stretch_order")
-    local shrink_order  = getfield(n,"shrink_order")
-    local stretch       = getfield(n,"stretch") / 65536
-    local shrink        = getfield(n,"shrink")  / 65536
-    local width         = getfield(n,"width")   / 65536
+    local width, stretch, shrink, stretch_order, shrink_order = getglue(n)
+    stretch = stretch / 65536
+    shrink  = shrink  / 65536
+    width   = width   / 65536
     if stretch_order ~= 0 then
         if shrink_order ~= 0 then
             return f_f_f(width,stretch,fillorders[stretch_order],shrink,fillorders[shrink_order])

@@ -167,16 +167,14 @@ end
 methods[2] = function(head,start) -- ( => (-
     local p, n = getboth(start)
     if p and n then
-        local tmp
-        head, start, tmp = remove_node(head,start)
-        head, start = insert_node_before(head,start,new_disc())
-        setfield(start,"attr",getfield(tmp,"attr"))
-        setfield(start,"replace",tmp)
-        local tmp = copy_node(tmp)
-        local hyphen = copy_node(tmp)
-        setchar(hyphen,languages.prehyphenchar(getfield(tmp,"lang")))
-        setlink(tmp,hyphen)
-        setfield(start,"post",tmp)
+        local replace
+        head, start, replace = remove_node(head,start)
+        local post   = copy_node(replace)
+        local hyphen = copy_node(post)
+        setchar(hyphen,languages.prehyphenchar(getfield(post,"lang")))
+        setlink(post,hyphen)
+        head, start = insert_node_before(head,start,new_disc(nil,post,replace))
+        setfield(start,"attr",getfield(replace,"attr"))
         insert_break(head,start,start,10000,10000)
     end
     return head, start
@@ -185,16 +183,14 @@ end
 methods[3] = function(head,start) -- ) => -)
     local p, n = getboth(start)
     if p and n then
-        local tmp
-        head, start, tmp = remove_node(head,start)
-        head, start = insert_node_before(head,start,new_disc())
+        local replace
+        head, start, replace = remove_node(head,start)
+        local pre    = copy_node(replace)
+        local hyphen = copy_node(pre)
+        setchar(hyphen,languages.prehyphenchar(getfield(pre,"lang")))
+        setlink(hyphen,pre)
+        head, start = insert_node_before(head,start,new_disc(hyphen,nil,replace)) -- so not pre !
         setfield(start,"attr",getfield(tmp,"attr"))
-        setfield(start,"replace",tmp)
-        local tmp = copy_node(tmp)
-        local hyphen = copy_node(tmp)
-        setchar(hyphen,languages.prehyphenchar(getfield(tmp,"lang")))
-        setlink(hyphen,tmp)
-        setfield(start,"pre",hyphen)
         insert_break(head,start,start,10000,10000)
     end
     return head, start

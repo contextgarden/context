@@ -201,16 +201,16 @@ nuts.setattr             = setfield
 nuts.getfont             = direct.getfont
 nuts.setfont             = direct.setfont
 nuts.getsubtype          = direct.getsubtype
-nuts.setsubtype          = direct.setsubtype or function(n,s) setfield(n,"subtype",s) end
+nuts.setsubtype          = direct.setsubtype
 nuts.getchar             = direct.getchar
 nuts.setchar             = direct.setchar
 nuts.getdisc             = direct.getdisc
 nuts.setdisc             = direct.setdisc
 nuts.setlink             = direct.setlink
 nuts.getlist             = direct.getlist
-nuts.setlist             = direct.setlist    or function(n,l) setfield(n,"list",l) end
+nuts.setlist             = direct.setlist
 nuts.getleader           = direct.getleader
-nuts.setleader           = direct.setleader  or function(n,l) setfield(n,"leader",l) end
+nuts.setleader           = direct.setleader
 
 if not direct.is_glyph then
     local getchar    = direct.getchar
@@ -312,3 +312,107 @@ end
 
 nodes.setprop = nodes.setproperty
 nodes.getprop = nodes.getproperty
+
+-- a few helpers (we need to keep 'm in sync with context) .. some day components
+-- might go so here we isolate them
+
+local setprev     = nuts.setprev
+local setnext     = nuts.setnext
+local getnext     = nuts.getnext
+local setlink     = nuts.setlink
+local getfield    = nuts.getfield
+local setfield    = nuts.setfield
+
+local find_tail   = nuts.tail
+local flush_list  = nuts.flush_list
+local flush_node  = nuts.flush_node
+local traverse_id = nuts.traverse_id
+local copy_node   = nuts.copy_node
+
+local glyph_code  = nodes.nodecodes.glyph
+
+function nuts.set_components(target,start,stop)
+    local head = getfield(target,"components")
+    if head then
+        flush_list(head)
+        head = nil
+    end
+    setprev(start)
+    if stop then
+        setnext(stop)
+    end
+    while start do
+        local c = getfield(start,"components")
+        local n = getnext(start)
+        if c then
+            local tail = find_tail(c)
+            if not head then
+                head = c
+            end
+            setlink(tail,n)
+            setfield(start,"components")
+            flush_node(start)
+        else
+            if not head then
+                head = start
+            end
+        end
+        start = n
+    end
+    setfield(target,"components",head)
+    return head
+end
+
+function nuts.get_components(target)
+    local c = getfield(target,"components")
+    setfield(target,"components")
+    return c
+end
+
+function nuts.count_components(n,marks) -- assumes flat list
+    local components = getfield(n,"components")
+    if components then
+        local i = 0
+        if marks then
+            for g in traverse_id(glyph_code,components) do
+                if not marks[getchar(g)] then
+                    i = i + 1
+                end
+            end
+        else
+            for g in traverse_id(glyph_code,components) do
+                i = i + 1
+            end
+        end
+        return i
+    else
+        return 0
+    end
+end
+
+function nuts.copy_no_components(g)
+    local components = getfield(g,"components")
+    if components then
+        setfield(g,"components")
+        local n = copy_node(g)
+        setfield(g,"components",components)
+        return n
+    else
+        return copy_node(g)
+    end
+end
+
+function nuts.copy_only_glyphs(current)
+    local head     = nil
+    local previous = nil
+    for n in traverse_id(glyph_code,current) do
+        n = copy_node(n)
+        if head then
+            setlink(previous,n)
+        else
+            head = n
+        end
+        previous = n
+    end
+    return head
+end

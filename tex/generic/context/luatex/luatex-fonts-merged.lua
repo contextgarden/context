@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/27/17 14:39:39
+-- merge date  : 01/30/17 16:08:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -4969,16 +4969,16 @@ nuts.setattr=setfield
 nuts.getfont=direct.getfont
 nuts.setfont=direct.setfont
 nuts.getsubtype=direct.getsubtype
-nuts.setsubtype=direct.setsubtype or function(n,s) setfield(n,"subtype",s) end
+nuts.setsubtype=direct.setsubtype
 nuts.getchar=direct.getchar
 nuts.setchar=direct.setchar
 nuts.getdisc=direct.getdisc
 nuts.setdisc=direct.setdisc
 nuts.setlink=direct.setlink
 nuts.getlist=direct.getlist
-nuts.setlist=direct.setlist  or function(n,l) setfield(n,"list",l) end
+nuts.setlist=direct.setlist
 nuts.getleader=direct.getleader
-nuts.setleader=direct.setleader or function(n,l) setfield(n,"leader",l) end
+nuts.setleader=direct.setleader
 if not direct.is_glyph then
   local getchar=direct.getchar
   local getid=direct.getid
@@ -5066,6 +5066,99 @@ nuts.setprop=function(n,k,v)
 end
 nodes.setprop=nodes.setproperty
 nodes.getprop=nodes.getproperty
+local setprev=nuts.setprev
+local setnext=nuts.setnext
+local getnext=nuts.getnext
+local setlink=nuts.setlink
+local getfield=nuts.getfield
+local setfield=nuts.setfield
+local find_tail=nuts.tail
+local flush_list=nuts.flush_list
+local flush_node=nuts.flush_node
+local traverse_id=nuts.traverse_id
+local copy_node=nuts.copy_node
+local glyph_code=nodes.nodecodes.glyph
+function nuts.set_components(target,start,stop)
+  local head=getfield(target,"components")
+  if head then
+    flush_list(head)
+    head=nil
+  end
+  setprev(start)
+  if stop then
+    setnext(stop)
+  end
+  while start do
+    local c=getfield(start,"components")
+    local n=getnext(start)
+    if c then
+      local tail=find_tail(c)
+      if not head then
+        head=c
+      end
+      setlink(tail,n)
+      setfield(start,"components")
+      flush_node(start)
+    else
+      if not head then
+        head=start
+      end
+    end
+    start=n
+  end
+  setfield(target,"components",head)
+  return head
+end
+function nuts.get_components(target)
+  local c=getfield(target,"components")
+  setfield(target,"components")
+  return c
+end
+function nuts.count_components(n,marks) 
+  local components=getfield(n,"components")
+  if components then
+    local i=0
+    if marks then
+      for g in traverse_id(glyph_code,components) do
+        if not marks[getchar(g)] then
+          i=i+1
+        end
+      end
+    else
+      for g in traverse_id(glyph_code,components) do
+        i=i+1
+      end
+    end
+    return i
+  else
+    return 0
+  end
+end
+function nuts.copy_no_components(g)
+  local components=getfield(g,"components")
+  if components then
+    setfield(g,"components")
+    local n=copy_node(g)
+    setfield(g,"components",components)
+    return n
+  else
+    return copy_node(g)
+  end
+end
+function nuts.copy_only_glyphs(current)
+  local head=nil
+  local previous=nil
+  for n in traverse_id(glyph_code,current) do
+    n=copy_node(n)
+    if head then
+      setlink(previous,n)
+    else
+      head=n
+    end
+    previous=n
+  end
+  return head
+end
 
 end -- closure
 
@@ -18428,11 +18521,12 @@ local end_of_math=nuts.end_of_math
 local traverse_nodes=nuts.traverse
 local traverse_id=nuts.traverse_id
 local remove_node=nuts.remove
+local set_components=nuts.set_components
+local get_components=nuts.get_components
+local count_components=nuts.count_components
+local copy_no_components=nuts.copy_no_components
+local copy_only_glyphs=nuts.copy_only_glyphs
 local setmetatableindex=table.setmetatableindex
-local zwnj=0x200C
-local zwj=0x200D
-local wildcard="*"
-local default="dflt"
 local nodecodes=nodes.nodecodes
 local glyphcodes=nodes.glyphcodes
 local disccodes=nodes.disccodes
@@ -18548,20 +18642,6 @@ local function mref(rlmode)
     return "l2r"
   end
 end
-local function copy_glyph(g) 
-  local components=getfield(g,"components")
-  if components then
-    setfield(g,"components")
-    local n=copy_node(g)
-    copyinjection(n,g) 
-    setfield(g,"components",components)
-    return n
-  else
-    local n=copy_node(g)
-    copyinjection(n,g) 
-    return n
-  end
-end
 local function flattendisk(head,disc)
   local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
   local prev,next=getboth(disc)
@@ -18622,34 +18702,18 @@ local function markstoligature(head,start,stop,char)
     local next=getnext(stop)
     setprev(start)
     setnext(stop)
-    local base=copy_glyph(start)
+    local base=copy_no_components(start)
+    copyinjection(base,start)
     if head==start then
       head=base
     end
     resetinjection(base)
     setchar(base,char)
     setsubtype(base,ligature_code)
-    setfield(base,"components",start)
+    set_components(base,start)
     setlink(prev,base)
     setlink(base,next)
     return head,base
-  end
-end
-local function getcomponentindex(start) 
-  if getid(start)~=glyph_code then 
-    return 0
-  elseif getsubtype(start)==ligature_code then
-    local i=0
-    local components=getfield(start,"components")
-    while components do
-      i=i+getcomponentindex(components)
-      components=getnext(components)
-    end
-    return i
-  elseif not marks[getchar(start)] then
-    return 1
-  else
-    return 0
   end
 end
 local a_noligature=attributes.private("noligature")
@@ -18662,29 +18726,22 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
     setchar(start,char)
     return head,start
   end
-  local components=getfield(start,"components")
-  if components then
-  end
   local prev=getprev(start)
   local next=getnext(stop)
   local comp=start
   setprev(start)
   setnext(stop)
-  local base=copy_glyph(start)
+  local base=copy_no_components(start)
+  copyinjection(base,start)
   if start==head then
     head=base
   end
   resetinjection(base)
   setchar(base,char)
   setsubtype(base,ligature_code)
-  setfield(base,"components",comp) 
-  if prev then
-    setnext(prev,base)
-  end
-  if next then
-    setprev(next,base)
-  end
-  setboth(base,prev,next)
+  set_components(base,comp)
+  setlink(prev,base)
+  setlink(base,next)
   if not discfound then
     local deletemarks=markflag~="mark"
     local components=start
@@ -18696,7 +18753,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
       local char=getchar(start)
       if not marks[char] then
         baseindex=baseindex+componentindex
-        componentindex=getcomponentindex(start)
+        componentindex=count_components(start,marks) 
       elseif not deletemarks then 
         setligaindex(start,baseindex+getligaindex(start,componentindex))
         if trace_marks then
@@ -18731,41 +18788,27 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
     local discprev,discnext=getboth(discfound)
     if discprev and discnext then
       local pre,post,replace,pretail,posttail,replacetail=getdisc(discfound,true)
-      if not replace then 
+      if not replace then
         local prev=getprev(base)
-        local current=comp
-        local previous=nil
-        local copied=nil
-        while current do
-          if getid(current)==glyph_code then
-            local n=copy_node(current)
-            if copied then
-              setlink(previous,n)
-            else
-              copied=n
-            end
-            previous=n
-          end
-          current=getnext(current)
-        end
-        setprev(discnext) 
-        setnext(discprev) 
+        setprev(discnext)
+        setnext(discprev)
         if pre then
           setlink(discprev,pre)
         end
-        pre=comp
+        pre=get_components(base)
         if post then
           setlink(posttail,discnext)
           setprev(post)
         else
           post=discnext
         end
+        setboth(base)
+        set_components(base,copy_only_glyphs(comp))
+        replace=base
         setlink(prev,discfound)
         setlink(discfound,next)
-        setboth(base)
-        setfield(base,"components",copied)
-        setdisc(discfound,pre,post,base) 
-        base=prev 
+        setdisc(discfound,pre,post,replace)
+        base=prev
       end
     end
   end
@@ -20610,75 +20653,79 @@ local sequencelists=setmetatableindex(function(t,font)
   t[font]=sequences
   return sequences
 end)
-local autofeatures=fonts.analyzers.features
-local featuretypes=otf.tables.featuretypes
-local defaultscript=otf.features.checkeddefaultscript
-local defaultlanguage=otf.features.checkeddefaultlanguage
-local function initialize(sequence,script,language,enabled,autoscript,autolanguage)
-  local features=sequence.features
-  if features then
-    local order=sequence.order
-    if order then
-      local featuretype=featuretypes[sequence.type or "unknown"]
-      for i=1,#order do
-        local kind=order[i]
-        local valid=enabled[kind]
-        if valid then
-          local scripts=features[kind]
-          local languages=scripts and (
-            scripts[script] or
-            scripts[wildcard] or
-            (autoscript and defaultscript(featuretype,autoscript,scripts))
-          )
-          local enabled=languages and (
-            languages[language] or
-            languages[wildcard] or
-            (autolanguage and defaultlanguage(featuretype,autolanguage,languages))
-          )
-          if enabled then
-            return { valid,autofeatures[kind] or false,sequence,kind }
+do 
+  local autofeatures=fonts.analyzers.features
+  local featuretypes=otf.tables.featuretypes
+  local defaultscript=otf.features.checkeddefaultscript
+  local defaultlanguage=otf.features.checkeddefaultlanguage
+  local wildcard="*"
+  local default="dflt"
+  local function initialize(sequence,script,language,enabled,autoscript,autolanguage)
+    local features=sequence.features
+    if features then
+      local order=sequence.order
+      if order then
+        local featuretype=featuretypes[sequence.type or "unknown"]
+        for i=1,#order do
+          local kind=order[i]
+          local valid=enabled[kind]
+          if valid then
+            local scripts=features[kind]
+            local languages=scripts and (
+              scripts[script] or
+              scripts[wildcard] or
+              (autoscript and defaultscript(featuretype,autoscript,scripts))
+            )
+            local enabled=languages and (
+              languages[language] or
+              languages[wildcard] or
+              (autolanguage and defaultlanguage(featuretype,autolanguage,languages))
+            )
+            if enabled then
+              return { valid,autofeatures[kind] or false,sequence,kind }
+            end
+          end
+        end
+      else
+      end
+    end
+    return false
+  end
+  function otf.dataset(tfmdata,font) 
+    local shared=tfmdata.shared
+    local properties=tfmdata.properties
+    local language=properties.language or "dflt"
+    local script=properties.script  or "dflt"
+    local enabled=shared.features
+    local autoscript=enabled and enabled.autoscript
+    local autolanguage=enabled and enabled.autolanguage
+    local res=resolved[font]
+    if not res then
+      res={}
+      resolved[font]=res
+    end
+    local rs=res[script]
+    if not rs then
+      rs={}
+      res[script]=rs
+    end
+    local rl=rs[language]
+    if not rl then
+      rl={
+      }
+      rs[language]=rl
+      local sequences=tfmdata.resources.sequences
+      if sequences then
+        for s=1,#sequences do
+          local v=enabled and initialize(sequences[s],script,language,enabled,autoscript,autolanguage)
+          if v then
+            rl[#rl+1]=v
           end
         end
       end
-    else
     end
+    return rl
   end
-  return false
-end
-function otf.dataset(tfmdata,font) 
-  local shared=tfmdata.shared
-  local properties=tfmdata.properties
-  local language=properties.language or "dflt"
-  local script=properties.script  or "dflt"
-  local enabled=shared.features
-  local autoscript=enabled and enabled.autoscript
-  local autolanguage=enabled and enabled.autolanguage
-  local res=resolved[font]
-  if not res then
-    res={}
-    resolved[font]=res
-  end
-  local rs=res[script]
-  if not rs then
-    rs={}
-    res[script]=rs
-  end
-  local rl=rs[language]
-  if not rl then
-    rl={
-    }
-    rs[language]=rl
-    local sequences=tfmdata.resources.sequences
-    if sequences then
-      for s=1,#sequences do
-        local v=enabled and initialize(sequences[s],script,language,enabled,autoscript,autolanguage)
-        if v then
-          rl[#rl+1]=v
-        end
-      end
-    end
-  end
-  return rl
 end
 local function report_disc(what,n)
   report_run("%s: %s > %s",what,n,languages.serializediscretionary(n))
