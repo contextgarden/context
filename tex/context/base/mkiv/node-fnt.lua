@@ -168,10 +168,10 @@ function handlers.characters(head)
     local basefont   = nil
     local prevfont   = nil
     local prevattr   = 0
-    local mode       = nil
     local done       = false
     local variants   = nil
     local redundant  = nil
+    local none       = false
 
     if trace_fontrun then
         run = run + 1
@@ -198,18 +198,18 @@ function handlers.characters(head)
 
     local nuthead = tonut(head)
 
-    -- There is no gain in checkign for a single glyph and then havign a fast path. On the
+    -- There is no gain in checking for a single glyph and then having a fast path. On the
     -- metafun manual (with some 2500 single char lists) the difference is just noise.
 
     for n in traverse_char(nuthead) do
         local font = getfont(n)
-        local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+        local attr = (none and prevattr) or getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
         if font ~= prevfont or attr ~= prevattr then
             prevfont = font
             prevattr = attr
-            mode     = fontmodes[font] -- we can also avoid the attr check
             variants = fontvariants[font]
-            if mode == "none" then
+            none     = fontmodes[font] == "none"
+            if none then
                 -- skip
              -- variants = false
                 protect_glyph(n)
@@ -339,18 +339,25 @@ function handlers.characters(head)
         -- ranges .. we could try to run basemode as a separate processor run but
         -- not for now (we can consider it when the new node code is tested
 
-     -- local prevfont  = nil
-     -- local prevattr  = 0
-
         for d in traverse_id(disc_code,nuthead) do
             -- we could use first_glyph, only doing replace is good enough
             local _, _, r = getdisc(d)
             if r then
+                local prevfont = nil
+                local prevattr = nil
+                local none     = false
                 for n in traverse_char(r) do
                     local font = getfont(n)
-                    local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+                    local attr = (none and prevattr) or getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
                     if font ~= prevfont or attr ~= prevattr then
-                        if attr > 0 then
+                        prevfont = font
+                        prevattr = attr
+                        none     = fontmodes[font] == "none"  -- very unlikely that we run into disc nodes in none mode
+                        if none then
+                            -- skip
+                         -- variants = false
+                            protect_glyph(n)
+                        elseif attr > 0 then
                             local used = attrfonts[font]
                             if not used then
                                 used = { }
@@ -373,11 +380,11 @@ function handlers.characters(head)
                                 end
                             end
                         end
-                        prevfont = font
-                        prevattr = attr
                     end
+                    -- we assume one font for now (and if there are more and we get into issues then
+                    -- we can always remove the break)
+                    break
                 end
-                break
             elseif expanders then
                 local subtype = getsubtype(d)
                 if subtype == discretionary_code then
@@ -419,7 +426,7 @@ function handlers.characters(head)
     else
      -- local attr = a == 0 and false or 0 -- 0 is the savest way
         local attr = a > 0 and 0 or false -- 0 is the savest way
-        for font, processors in next, usedfonts do
+        for font, processors in next, usedfonts do -- unordered
             for i=1,#processors do
                 local h, d = processors[i](head,font,attr)
                 if d then
@@ -433,7 +440,7 @@ function handlers.characters(head)
         -- skip
     elseif a == 1 then
         local font, dynamics = next(attrfonts)
-        for attribute, processors in next, dynamics do -- attr can switch in between
+        for attribute, processors in next, dynamics do -- unordered, attr can switch in between
             for i=1,#processors do
                 local h, d = processors[i](head,font,attribute)
                 if d then
@@ -444,7 +451,7 @@ function handlers.characters(head)
         end
     else
         for font, dynamics in next, attrfonts do
-            for attribute, processors in next, dynamics do -- attr can switch in between
+            for attribute, processors in next, dynamics do -- unordered, attr can switch in between
                 for i=1,#processors do
                     local h, d = processors[i](head,font,attribute)
                     if d then
@@ -481,7 +488,7 @@ function handlers.characters(head)
             local range = basefonts[i]
             local start = range[1]
             local stop  = range[2]
-            if start then
+            if start then -- and start ~= stop but that seldom happens
                 local front = nuthead == start
                 local prev, next
                 if stop then

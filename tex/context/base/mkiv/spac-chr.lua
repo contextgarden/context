@@ -92,7 +92,7 @@ local function inject_quad_space(unicode,head,current,fraction)
     end
     local glue = new_glue(fraction)
     setfield(glue,"attr",attr)
-    setfield(current,"attr",nil)
+    setfield(current,"attr",nil) -- why reset all
     setattr(glue,a_character,unicode)
     head, current = insert_node_after(head,current,glue)
     return head, current
@@ -104,7 +104,7 @@ local function inject_char_space(unicode,head,current,parent)
     local char = fontcharacters[font][parent]
     local glue = new_glue(char and char.width or fontparameters[font].space)
     setfield(glue,"attr",attr)
-    setfield(current,"attr",nil)
+    setfield(current,"attr",nil) -- why reset all
     setattr(glue,a_character,unicode)
     head, current = insert_node_after(head,current,glue)
     return head, current
@@ -115,7 +115,7 @@ local function inject_nobreak_space(unicode,head,current,space,spacestretch,spac
     local glue    = new_glue(space,spacestretch,spaceshrink)
     local penalty = new_penalty(10000)
     setfield(glue,"attr",attr)
-    setfield(current,"attr",nil)
+    setfield(current,"attr",nil) -- why reset all
     setattr(glue,a_character,unicode) -- bombs
     head, current = insert_node_after(head,current,penalty)
     if trace_nbsp then

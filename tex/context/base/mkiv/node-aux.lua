@@ -56,6 +56,7 @@ local copy_node          = nuts.copy
 local find_tail          = nuts.tail
 local insert_node_after  = nuts.insert_after
 local getbox             = nuts.getbox
+local count              = nuts.count
 
 local nodepool           = nuts.pool
 local new_glue           = nodepool.glue
@@ -533,19 +534,17 @@ end
 function nuts.count_components(n,marks)
     local components = getfield(n,"components")
     if components then
-        local i = 0
         if marks then
+            local i = 0
             for g in traverse_id(glyph_code,components) do
                 if not marks[getchar(g)] then
                     i = i + 1
                 end
             end
+            return i
         else
-            for g in traverse_id(glyph_code,components) do
-                i = i + 1
-            end
+            return count(glyph_code,components)
         end
-        return i
     else
         return 0
     end

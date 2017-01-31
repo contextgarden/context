@@ -29,12 +29,11 @@ local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getid              = nuts.getid
 local getfield           = nuts.getfield
-local getattr            = nuts.getattr
+local takeattr           = nuts.takeattr
 
 local setlink            = nuts.setlink
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
-local setattr            = nuts.setattr
 
 local hpack_node         = nuts.hpack
 local traverse_id        = nuts.traverse_id
@@ -123,9 +122,8 @@ function digits.handler(head)
     local done, current, ok = false, head, false
     while current do
         if getid(current) == glyph_code then
-            local attr = getattr(current,a_digits)
+            local attr = takeattr(current,a_digits)
             if attr and attr > 0 then
-                setattr(current,a_digits,unsetvalue)
                 local action = actions[attr%100] -- map back to low number
                 if action then
                     head, current, ok = action(head,current,attr)

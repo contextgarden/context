@@ -34,6 +34,7 @@ local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getid               = nuts.getid
 local getattr             = nuts.getattr
+local takeattr            = nuts.takeattr
 local setattr             = nuts.setattr
 local getwhd              = nuts.getwhd
 
@@ -186,10 +187,9 @@ function parbuilders.keeptogether(head)
     local current = tonut(head)
     while current do
         if getid(current) == hlist_code then
-            local a = getattr(current,a_keeptogether)
+            local a = takeattr(current,a_keeptogether)
             if a and a > 0 then
                 keeptogether(current,a)
-                setattr(current,a_keeptogether,unsetvalue)
                 cache[a] = nil
                 done = true
             end

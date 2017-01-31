@@ -6,72 +6,42 @@ if not modules then modules = { } end modules ['font-ots'] = { -- sequences
     license   = "see context related readme files",
 }
 
--- to be checked: discrun doesn't seem to do something useful now (except run the
--- check again) so if we need it again we'll do a zwnjrun or so
-
--- components will go away and be replaced by a property table which simplifies
--- code (also more efficient)
-
--- beware, on my development machine we test a slightly a more optimized version
-
--- assumptions:
---
--- cursives don't cross discretionaries
--- marks precede bases
---
--- pitfalls:
---
--- when we append to a dics field we need to set the field in order to update tail
---
--- This is a version of font-otn.lua adapted to the new font loader code. It
--- is a context version which can contain experimental code, but when we
--- have serious patches we will backport to the font-otn files. The plain
--- loader that ships with context also uses this now.
---
--- todo: looks like we have a leak somewhere (probably in ligatures)
--- todo: copy attributes to disc
--- todo: get rid of components, better use the tounicode entry if needed (at all)
---
--- we do some disc juggling where we need to keep in mind that the
--- pre, post and replace fields can have prev pointers to a nesting
--- node ... i wonder if that is still needed
---
--- not possible:
---
--- \discretionary {alpha-} {betagammadelta}
---   {\discretionary {alphabeta-} {gammadelta}
---      {\discretionary {alphabetagamma-} {delta}
---         {alphabetagammadelta}}}
-
 --[[ldx--
 <p>This module is a bit more split up that I'd like but since we also want to test
 with plain <l n='tex'/> it has to be so. This module is part of <l n='context'/>
 and discussion about improvements and functionality mostly happens on the
 <l n='context'/> mailing list.</p>
 
-<p>The specification of OpenType is kind of vague. Apart from a lack of a proper
-free specifications there's also the problem that Microsoft and Adobe
-may have their own interpretation of how and in what order to apply features.
-In general the Microsoft website has more detailed specifications and is a
-better reference. There is also some information in the FontForge help files.</p>
+<p>The specification of OpenType is (or at least a decade ago was) kind of vague.
+Apart from a lack of a proper free specifications there's also the problem that
+Microsoft and Adobe may have their own interpretation of how and in what order to
+apply features. In general the Microsoft website has more detailed specifications
+and is a better reference. There is also some information in the FontForge help
+files. In the end we rely most on the Microsoft specification.</p>
 
 <p>Because there is so much possible, fonts might contain bugs and/or be made to
 work with certain rederers. These may evolve over time which may have the side
-effect that suddenly fonts behave differently.</p>
+effect that suddenly fonts behave differently. We don't want to catch all font
+issues.</p>
 
-<p>After a lot of experiments (mostly by Taco, me and Idris) we're now at yet another
-implementation. Of course all errors are mine and of course the code can be
-improved. There are quite some optimizations going on here and processing speed
-is currently acceptable. Not all functions are implemented yet, often because I
-lack the fonts for testing. Many scripts are not yet supported either, but I will
-look into them as soon as <l n='context'/> users ask for it.</p>
+<p>After a lot of experiments (mostly by Taco, me and Idris) the first implementation
+becaus quite useful. When it did most of what we wanted, a more optimized version
+evolved. Of course all errors are mine and of course the code can be improved. There
+are quite some optimizations going on here and processing speed is currently quite
+acceptable and has been improved over time. Many complex scripts are not yet supported
+yet, but I will look into them as soon as <l n='context'/> users ask for it.</p>
 
-<p>The specification leaves room for interpretation. In case of doubt the microsoft
+<p>The specification leaves room for interpretation. In case of doubt the Microsoft
 implementation is the reference as it is the most complete one. As they deal with
 lots of scripts and fonts, Kai and Ivo did a lot of testing of the generic code and
 their suggestions help improve the code. I'm aware that not all border cases can be
 taken care of, unless we accept excessive runtime, and even then the interference
 with other mechanisms (like hyphenation) are not trivial.</p>
+
+<p>Especially discretionary handling had been improved much by Kai eigner who uses complex
+(latin) fonts. The current implementation is a compromis between his patches and my code
+and in the meantime performance is quite ok. We cannot check all border cases without
+compromising speed but so far we're okay.</p>
 
 <p>Glyphs are indexed not by unicode but in their own way. This is because there is no
 relationship with unicode at all, apart from the fact that a font might cover certain
@@ -84,33 +54,67 @@ then in the output eventually.</p>
 that different from the one produced by <l n='fontforge'/> but we uses hashes instead.
 In <l n='context'/> that table is packed (similar tables are shared) and cached on disk
 so that successive runs can use the optimized table (after loading the table is
-unpacked). The flattening code used later is a prelude to an even more compact table
-format (and as such it keeps evolving).</p>
+unpacked).</p>
 
-<p>This module is sparsely documented because it is a moving target. The table format
-of the reader changes and we experiment a lot with different methods for supporting
-features.</p>
-
-<p>As with the <l n='afm'/> code, we may decide to store more information in the
-<l n='otf'/> table.</p>
+<p>This module is sparsely documented because it is has been a moving target. The
+table format of the reader changed a bit over time and we experiment a lot with
+different methods for supporting features. By now the structures are quite stable</p>
 
 <p>Incrementing the version number will force a re-cache. We jump the number by one
-when there's a fix in the <l n='fontforge'/> library or <l n='lua'/> code that
-results in different tables.</p>
+when there's a fix in the reader or processing code that can result in different
+results.</p>
+
+<p>This code is also used outside context but in context it has to work with other
+mechanisms. Both put some constraints on the code here.</p>
+
 --ldx]]--
+
+-- Remark: We assume that cursives don't cross discretionaries which is okay because it
+-- is only used in semitic scripts.
+--
+-- Remark: We assume that marks precede base characters.
+--
+-- Remark: When complex ligatures extend into discs nodes we can get side effects. Normally
+-- this doesn't happen; ff\d{l}{l}{l} in lm works but ff\d{f}{f}{f}.
+--
+-- Todo: check if we copy attributes to disc nodes if needed.
+--
+-- Todo: it would be nice if we could get rid of components. In other places we can use
+-- the unicode properties.
+--
+-- Remark: We do some disc juggling where we need to keep in mind that the pre, post and
+-- replace fields can have prev pointers to a nesting node ... I wonder if that is still
+-- needed.
+--
+-- Remark: This is not possible:
+--
+-- \discretionary {alpha-} {betagammadelta}
+--   {\discretionary {alphabeta-} {gammadelta}
+--      {\discretionary {alphabetagamma-} {delta}
+--         {alphabetagammadelta}}}
+--
+-- Remark: Something is messed up: we have two mark / ligature indices, one at the
+-- injection end and one here ... this is based on KE's patches but there is something
+-- fishy there as I'm pretty sure that for husayni we need some connection (as it's much
+-- more complex than an average font) but I need proper examples of all cases, not of
+-- only some.
 
 local type, next, tonumber = type, next, tonumber
 local random = math.random
 local formatters = string.formatters
 local insert = table.insert
 
-local logs, trackers, nodes, attributes = logs, trackers, nodes, attributes
+local registertracker    = trackers.register
+local registerdirective  = directives.register
 
-local registertracker   = trackers.register
-local registerdirective = directives.register
+local logs               = logs
+local trackers           = trackers
+local nodes              = nodes
+local attributes         = attributes
+local fonts              = fonts
 
-local fonts = fonts
-local otf   = fonts.handlers.otf
+local otf                = fonts.handlers.otf
+local tracers            = nodes.tracers
 
 local trace_lookups      = false  registertracker("otf.lookups",      function(v) trace_lookups      = v end)
 local trace_singles      = false  registertracker("otf.singles",      function(v) trace_singles      = v end)
@@ -124,7 +128,6 @@ local trace_cursive      = false  registertracker("otf.cursive",      function(v
 local trace_preparing    = false  registertracker("otf.preparing",    function(v) trace_preparing    = v end)
 local trace_bugs         = false  registertracker("otf.bugs",         function(v) trace_bugs         = v end)
 local trace_details      = false  registertracker("otf.details",      function(v) trace_details      = v end)
------ trace_applied      = false  registertracker("otf.applied",      function(v) trace_applied      = v end)
 local trace_steps        = false  registertracker("otf.steps",        function(v) trace_steps        = v end)
 local trace_skips        = false  registertracker("otf.skips",        function(v) trace_skips        = v end)
 local trace_directions   = false  registertracker("otf.directions",   function(v) trace_directions   = v end)
@@ -137,21 +140,19 @@ local trace_testruns     = false  registertracker("otf.testruns",     function(v
 
 ----- zwnjruns           = true   registerdirective("otf.zwnjruns",     function(v) zwnjruns = v end)
 local optimizekerns      = true
-local alwaysdisc         = true   registerdirective("otf.alwaysdisc", function(v) alwaysdisc = v end)
 
-local report_direct   = logs.reporter("fonts","otf direct")
-local report_subchain = logs.reporter("fonts","otf subchain")
-local report_chain    = logs.reporter("fonts","otf chain")
-local report_process  = logs.reporter("fonts","otf process")
-local report_warning  = logs.reporter("fonts","otf warning")
-local report_run      = logs.reporter("fonts","otf run")
+local report_direct      = logs.reporter("fonts","otf direct")
+local report_subchain    = logs.reporter("fonts","otf subchain")
+local report_chain       = logs.reporter("fonts","otf chain")
+local report_process     = logs.reporter("fonts","otf process")
+local report_warning     = logs.reporter("fonts","otf warning")
+local report_run         = logs.reporter("fonts","otf run")
 
 registertracker("otf.replacements", "otf.singles,otf.multiples,otf.alternatives,otf.ligatures")
 registertracker("otf.positions","otf.marks,otf.kerns,otf.cursive")
 registertracker("otf.actions","otf.replacements,otf.positions")
 registertracker("otf.injections","nodes.injections")
-
-registertracker("*otf.sample","otf.steps,otf.actions,otf.analyzing")
+registertracker("otf.sample","otf.steps,otf.actions,otf.analyzing")
 
 local nuts               = nodes.nuts
 local tonode             = nuts.tonode
@@ -218,12 +219,6 @@ local ligature_code      = glyphcodes.ligature
 
 local privateattribute   = attributes.private
 
--- Something is messed up: we have two mark / ligature indices, one at the injection
--- end and one here ... this is based on KE's patches but there is something fishy
--- there as I'm pretty sure that for husayni we need some connection (as it's much
--- more complex than an average font) but I need proper examples of all cases, not
--- of only some.
-
 local a_state            = privateattribute('state')
 
 local injections         = nodes.injections
@@ -235,8 +230,6 @@ local resetinjection     = injections.reset
 local copyinjection      = injections.copy
 local setligaindex       = injections.setligaindex
 local getligaindex       = injections.getligaindex
-
-local cursonce           = true
 
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
@@ -251,37 +244,35 @@ local getrandom          = utilities and utilities.randomizer and utilities.rand
 
 otf.defaultnodealternate = "none" -- first last
 
--- We use a few global variables. The handler can be called nested but this assumes that the
--- same font is used. Nested calls are normally not needed (only for devanagari).
+-- We use a few semi-global variables. The handler can be called nested but this assumes
+-- that the same font is used.
 
-local tfmdata         = false
-local characters      = false
-local descriptions    = false
-local marks           = false
-local currentfont     = false
-local factor          = 0
-local threshold       = 0
-local checkmarks      = false
+local tfmdata            = false
+local characters         = false
+local descriptions       = false
+local marks              = false
+local currentfont        = false
+local factor             = 0
+local threshold          = 0
+local checkmarks         = false
 
-local sweepnode       = nil
-local sweepprev       = nil
-local sweepnext       = nil
-local sweephead       = { }
+local sweepnode          = nil
+local sweepprev          = nil
+local sweepnext          = nil
+local sweephead          = { }
 
-local notmatchpre     = { }
-local notmatchpost    = { }
-local notmatchreplace = { }
+local notmatchpre        = { }
+local notmatchpost       = { }
+local notmatchreplace    = { }
 
-local handlers        = { }
+local handlers           = { }
 
-local isspace         = injections.isspace
-local getthreshold    = injections.getthreshold
+local isspace            = injections.isspace
+local getthreshold       = injections.getthreshold
 
--- we use this for special testing and documentation
-
-local checkstep       = (nodes and nodes.tracers and nodes.tracers.steppers.check)    or function() end
-local registerstep    = (nodes and nodes.tracers and nodes.tracers.steppers.register) or function() end
-local registermessage = (nodes and nodes.tracers and nodes.tracers.steppers.message)  or function() end
+local checkstep          = (tracers and tracers.steppers.check)    or function() end
+local registerstep       = (tracers and tracers.steppers.register) or function() end
+local registermessage    = (tracers and tracers.steppers.message)  or function() end
 
 local function checkdisccontent(d)
     local pre, post, replace = getdisc(d)
@@ -1160,10 +1151,11 @@ function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,c
         reportmoresteps(dataset,sequence)
     end
     local current = start
+    local mapping = steps[1].coverage
     while current do
         local currentchar = ischar(current)
         if currentchar then
-            local replacement = steps[1].coverage[currentchar]
+            local replacement = mapping[currentchar]
             if not replacement or replacement == "" then
                 if trace_bugs then
                     logwarning("%s: no single for %s",cref(dataset,sequence,chainindex),gref(currentchar))
@@ -1235,10 +1227,11 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
     local what    = dataset[1]
     local value   = what == true and tfmdata.shared.features[kind] or what -- todo: optimize in ctx
     local current = start
+    local mapping = steps[1].coverage
     while current do
         local currentchar = ischar(current)
         if currentchar then
-            local alternatives = steps[1].coverage[currentchar]
+            local alternatives = mapping[currentchar]
             if alternatives then
                 local choice, comment = get_alternative_glyph(current,alternatives,value)
                 if choice then
@@ -2833,7 +2826,7 @@ local function kernrun(disc,k_run,font,attr,...)
     return nextstart, done
 end
 
-local function comprun(disc,c_run,...)
+local function comprun(disc,c_run,...) -- vararg faster than the whole list
     if trace_compruns then
         report_disc("comp",disc)
     end
@@ -3387,14 +3380,9 @@ local function featuresprocessor(head,font,attr)
     end
 
     local rlmode    = 0
-
     local done      = false
     local datasets  = otf.dataset(tfmdata,font,attr)
-
-    local forcedisc = alwaysdisc or not attr
-
     local dirstack  = { } -- could move outside function but we can have local runs
-
     sweephead       = { }
 
     -- We could work on sub start-stop ranges instead but I wonder if there is that
@@ -3507,26 +3495,16 @@ local function featuresprocessor(head,font,attr)
                            -- whatever glyph
                            start = getnext(start)
                         elseif id == disc_code then
-                            -- ctx: we could assume the same attr as the surrounding glyphs but then we loose
-                            -- the option to have interesting disc nodes (we gain upto 10% on extreme tests);
-                            -- if a disc would have a font field we could even be more strict (see oldstyle test
-                            -- case)
-                            local a = forcedisc or getsubtype(start) == discretionary_code or getattr(start,0) == attr
-                            if a then
-                                --     local attr = false
-                                local ok
-                                if gpossing then
-                                    start, ok = kernrun(start,k_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                                elseif typ == "gsub_ligature" then
-                                    start, ok = testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                                else
-                                    start, ok = comprun(start,c_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                                end
-                                if ok then
-                                    success = true
-                                end
+                            local ok
+                            if gpossing then
+                                start, ok = kernrun(start,k_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+                            elseif typ == "gsub_ligature" then
+                                start, ok = testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
                             else
-                                start = getnext(start)
+                                start, ok = comprun(start,c_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+                            end
+                            if ok then
+                                success = true
                             end
                         elseif id == math_code then
                             start = getnext(end_of_math(start))
@@ -3586,22 +3564,16 @@ local function featuresprocessor(head,font,attr)
                     elseif char == false then
                         start = getnext(start)
                     elseif id == disc_code then
-                        -- see comment above
-                        local a = forcedisc or getsubtype(start) == discretionary_code or getattr(start,0) == attr
-                        if a then
-                            local ok
-                            if gpossing then
-                                start, ok = kernrun(start,k_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-                            elseif typ == "gsub_ligature" then
-                                start, ok = testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-                            else
-                                start, ok = comprun(start,c_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-                            end
-                            if ok then
-                                success = true
-                            end
+                        local ok
+                        if gpossing then
+                            start, ok = kernrun(start,k_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+                        elseif typ == "gsub_ligature" then
+                            start, ok = testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
                         else
-                            start = getnext(start)
+                            start, ok = comprun(start,c_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+                        end
+                        if ok then
+                            success = true
                         end
                     elseif id == math_code then
                         start = getnext(end_of_math(start))

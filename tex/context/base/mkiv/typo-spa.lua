@@ -31,8 +31,7 @@ local tonode             = nuts.tonode
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getfont            = nuts.getfont
-local getattr            = nuts.getattr
-local setattr            = nuts.setattr
+local takeattr           = nuts.takeattr
 local isglyph            = nuts.isglyph
 
 local insert_node_before = nuts.insert_before
@@ -82,12 +81,11 @@ function spacings.handler(head)
     while start do
         local char, id = isglyph(start)
         if char then
-            local attr = getattr(start,a_spacings)
+            local attr = takeattr(start,a_spacings)
             if attr and attr > 0 then
                 local data = mapping[attr]
                 if data then
                     local map = data.characters[char]
-                    setattr(start,a_spacings,unsetvalue) -- needed?
                     if map then
                         local left = map.left
                         local right = map.right

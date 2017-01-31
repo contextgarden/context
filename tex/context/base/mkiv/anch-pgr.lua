@@ -75,6 +75,8 @@ local processranges     = nodes.processranges
 local v_yes             = interfaces.variables.yes
 local v_always          = interfaces.variables.always
 
+local unsetvalue        = attributes.unsetvalue
+
 local jobpositions      = job.positions
 
 local data              = { }
@@ -107,7 +109,7 @@ local function registerbackground(name)
         texsetattribute(a_textbackground,n)
         enabled = true
     else
-        texsetattribute(a_textbackground,attributes.unsetvalue)
+        texsetattribute(a_textbackground,unsetvalue)
     end
 end
 

@@ -51,6 +51,7 @@ local setlist         = nuts.setlist
 local hpack           = nuts.hpack
 local insert_after    = nuts.insert_after
 local takebox         = nuts.takebox
+local traverse_id     = nuts.traverse_id
 
 local nodecodes       = nodes.nodecodes
 local glyph_code      = nodecodes.glyph
@@ -259,121 +260,126 @@ function rubies.check(head)
     return tonode(head), true
 end
 
-local function attach(head,parent)
-    local current = head
-    while current do
-        local id = getid(current)
-        if id == hlist_code then
-            local a = getprop(current,"ruby")
-            if a then
-                local ruby    = rubylist[a]
-                local align   = ruby.align   or v_middle
-                local stretch = ruby.stretch or v_no
-                local hoffset = ruby.hoffset or 0
-                local voffset = ruby.voffset or 0
-                local start   = ruby.start
-                local stop    = ruby.stop
-                local text    = ruby.text
-                local rwidth  = ruby.width
-                local bwidth  = ruby.basewidth
-                local delta   = rwidth - bwidth
-                setfield(text,"width",0)
-                if voffset ~= 0 then
-                    setfield(text,"shift",voffset)
-                end
-                -- center them
-                if delta > 0 then
-                    -- ruby is wider
-                    if stretch == v_yes then
-                        setlink(text,start)
-                        while start and start ~= stop do
-                            local s = nodepool.stretch()
-                            local n = getnext(start)
-                            setlink(start,s)
-                            setlink(s,n)
-                            start = n
-                        end
-                        text = hpack(text,rwidth,"exactly")
-                    else
-                        local left  = new_kern(delta/2)
-                        local right = new_kern(delta/2)
-                        setlink(left,start)
-                        setlink(stop,right)
-                        setlink(text,left)
-                    end
-                    setlist(current,text)
-                elseif delta < 0 then
-                    -- ruby is narrower
-                    if align == v_auto then
-                        local l = true
-                        local c = getprev(current)
-                        while c do
-                            local id = getid(c)
-                            if id == glue_code or id == penalty_code or id == kern_code or (id == whatsit_code and getsubtype(current,localpar_code)) then
-                                -- go on
-                            elseif id == hlist_code and getfield(c,"width") == 0 then
-                                -- go on
-                            elseif id == whatsit_code or id == localpar_code then
-                                -- go on
-                            else
-                                l = false
-                                break
-                            end
-                            c = getprev(c)
-                        end
-                        local r = true
-                        local c = getnext(current)
-                        while c do
-                            local id = getid(c)
-                            if id == glue_code or id == penalty_code or id == kern_code then
-                                -- go on
-                            elseif id == hlist_code and getfield(c,"width") == 0 then
-                                -- go on
-                            else
-                                r = false
-                                break
-                            end
-                            c = getnext(c)
-                        end
-                        if l and not r then
-                            align = v_flushleft
-                        elseif r and not l then
-                            align = v_flushright
-                        else
-                            align = v_middle
-                        end
-                    end
-                    if align == v_flushleft then
-                        setlink(text,start)
-                        setlist(current,text)
-                    elseif align == v_flushright then
-                        local left  = new_kern(-delta)
-                        local right = new_kern(delta)
-                        setlink(left,text)
-                        setlink(text,right)
-                        setlink(right,start)
-                        setlist(current,left)
-                    else
-                        local left  = new_kern(-delta/2)
-                        local right = new_kern(delta/2)
-                        setlink(left,text)
-                        setlink(text,right)
-                        setlink(right,start)
-                        setlist(current,left)
-                    end
-                else
-                    setlink(text,start)
-                    setlist(current,text)
-                end
-                setprop(current,"ruby",false)
-                rubylist[a] = nil
-            else
-                attach(getlist(current),current)
-            end
-        elseif id == vlist_code then
-            attach(getlist(current),current)
+local attach
+
+local function whatever(current)
+    local a = getprop(current,"ruby")
+    if a then
+        local ruby    = rubylist[a]
+        local align   = ruby.align   or v_middle
+        local stretch = ruby.stretch or v_no
+        local hoffset = ruby.hoffset or 0
+        local voffset = ruby.voffset or 0
+        local start   = ruby.start
+        local stop    = ruby.stop
+        local text    = ruby.text
+        local rwidth  = ruby.width
+        local bwidth  = ruby.basewidth
+        local delta   = rwidth - bwidth
+        setfield(text,"width",0)
+        if voffset ~= 0 then
+            setfield(text,"shift",voffset)
         end
-        current = getnext(current)
+        -- center them
+        if delta > 0 then
+            -- ruby is wider
+            if stretch == v_yes then
+                setlink(text,start)
+                while start and start ~= stop do
+                    local s = nodepool.stretch()
+                    local n = getnext(start)
+                    setlink(start,s)
+                    setlink(s,n)
+                    start = n
+                end
+                text = hpack(text,rwidth,"exactly")
+            else
+                local left  = new_kern(delta/2)
+                local right = new_kern(delta/2)
+                setlink(left,start)
+                setlink(stop,right)
+                setlink(text,left)
+            end
+            setlist(current,text)
+        elseif delta < 0 then
+            -- ruby is narrower
+            if align == v_auto then
+                local l = true
+                local c = getprev(current)
+                while c do
+                    local id = getid(c)
+                    if id == glue_code or id == penalty_code or id == kern_code or (id == whatsit_code and getsubtype(current,localpar_code)) then
+                        -- go on
+                    elseif id == hlist_code and getfield(c,"width") == 0 then
+                        -- go on
+                    elseif id == whatsit_code or id == localpar_code then
+                        -- go on
+                    else
+                        l = false
+                        break
+                    end
+                    c = getprev(c)
+                end
+                local r = true
+                local c = getnext(current)
+                while c do
+                    local id = getid(c)
+                    if id == glue_code or id == penalty_code or id == kern_code then
+                        -- go on
+                    elseif id == hlist_code and getfield(c,"width") == 0 then
+                        -- go on
+                    else
+                        r = false
+                        break
+                    end
+                    c = getnext(c)
+                end
+                if l and not r then
+                    align = v_flushleft
+                elseif r and not l then
+                    align = v_flushright
+                else
+                    align = v_middle
+                end
+            end
+            if align == v_flushleft then
+                setlink(text,start)
+                setlist(current,text)
+            elseif align == v_flushright then
+                local left  = new_kern(-delta)
+                local right = new_kern(delta)
+                setlink(left,text)
+                setlink(text,right)
+                setlink(right,start)
+                setlist(current,left)
+            else
+                local left  = new_kern(-delta/2)
+                local right = new_kern(delta/2)
+                setlink(left,text)
+                setlink(text,right)
+                setlink(right,start)
+                setlist(current,left)
+            end
+        else
+            setlink(text,start)
+            setlist(current,text)
+        end
+        setprop(current,"ruby",false)
+        rubylist[a] = nil
+    else
+        local list = getlist(current)
+        if list then
+            attach(list)
+        end
+    end
+end
+
+attach = function(head)
+    for current in traverse_id(hlist_code,head) do
+        whatever(current)
+    end
+    for current in traverse_id(vlist_code,head) do
+        whatever(current)
     end
     return head, true
 end

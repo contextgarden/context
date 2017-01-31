@@ -25,7 +25,8 @@ local getfield        = nuts.getfield
 local getnext         = nuts.getnext
 local getprev         = nuts.getprev
 local getid           = nuts.getid
-local getattr         = nuts.getattr
+----- getattr         = nuts.getattr
+local takeattr        = nuts.takeattr
 local getfont         = nuts.getfont
 local getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
@@ -39,6 +40,7 @@ local copy_node       = nuts.copy
 local end_of_math     = nuts.end_of_math
 local traverse_id     = nuts.traverse_id
 local insert_after    = nuts.insert_after
+local find_attribute  = nuts.find_attribute
 
 local nodecodes       = nodes.nodecodes
 local skipcodes       = nodes.skipcodes
@@ -334,18 +336,21 @@ register(variables.camel,  camel)             --  10
 register(variables.cap,    variables.capital) -- clone
 register(variables.Cap,    variables.Capital) -- clone
 
+local xx = 0
+
 function cases.handler(head) -- not real fast but also not used on much data
+    local start    = tonut(head)
     local lastfont = { }
     local lastattr = nil
     local done     = false
-    local start    = tonut(head)
     local count    = 0
     local previd   = nil
     local prev     = nil
     while start do -- while because start can jump ahead
         local id = getid(start)
         if id == glyph_code then
-            local attr = getattr(start,a_cases)
+         -- local attr = getattr(start,a_cases)
+            local attr = takeattr(start,a_cases)
             if attr and attr > 0 and not blocked[attr] then
                 if attr ~= lastattr then
                     lastattr = attr
@@ -353,7 +358,7 @@ function cases.handler(head) -- not real fast but also not used on much data
                 else
                     count    = count + 1
                 end
-                setattr(start,a_cases,unsetvalue)
+             -- setattr(start,a_cases,unsetvalue) -- not needed
                 local n, id, m = get(attr)
                 if lastfont[n] == nil then
                     lastfont[n] = id
@@ -372,13 +377,14 @@ function cases.handler(head) -- not real fast but also not used on much data
                 end
             end
         elseif id == disc_code then
-            local attr = getattr(start,a_cases)
+         -- local attr = getattr(start,a_cases)
+            local attr = takeattr(start,a_cases)
             if attr and attr > 0 and not blocked[attr] then
                 if attr ~= lastattr then
                     lastattr = attr
                     count    = 0
                 end
-                setattr(start,a_cases,unsetvalue)
+             -- setattr(start,a_cases,unsetvalue) -- not needed
                 local n, id, m = get(attr)
                 if lastfont[n] == nil then
                     lastfont[n] = id
@@ -390,6 +396,7 @@ function cases.handler(head) -- not real fast but also not used on much data
                         local cnt = count
                         for g in traverse_id(glyph_code,replace) do
                             cnt = cnt + 1
+                            takeattr(g,a_cases)
                          -- setattr(g,a_cases,unsetvalue)
                             local _, _, quit = action(start,attr,lastfont,n,cnt,"replace",g)
                             if quit then break end
@@ -399,6 +406,7 @@ function cases.handler(head) -- not real fast but also not used on much data
                         local cnt = count
                         for g in traverse_id(glyph_code,pre) do
                             cnt = cnt + 1
+                            takeattr(g,a_cases)
                          -- setattr(g,a_cases,unsetvalue)
                             local _,  _, quit = action(start,attr,lastfont,n,cnt,"pre",g)
                             if quit then break end
@@ -408,6 +416,7 @@ function cases.handler(head) -- not real fast but also not used on much data
                         local cnt = count
                         for g in traverse_id(glyph_code,post) do
                             cnt = cnt + 1
+                            takeattr(g,a_cases)
                          -- setattr(g,a_cases,unsetvalue)
                             local _,  _, quit = action(start,attr,lastfont,n,cnt,"post",g)
                             if quit then break end
@@ -420,7 +429,7 @@ function cases.handler(head) -- not real fast but also not used on much data
             start = end_of_math(start)
             count = 0
         elseif prev_id == kern_code and getsubtype(prev) == kerning_code then
-            -- still inside a word ...nomally kerns are added later
+            -- still inside a word ...normally kerns are added later
         else
             count = 0
         end
@@ -432,6 +441,120 @@ function cases.handler(head) -- not real fast but also not used on much data
     end
     return head, done
 end
+
+-- function cases.handler(head) -- not real fast but also not used on much data
+--     local attr, start = find_attribute(tonut(head),a_cases)
+--     if not start then
+--         return head, false
+--     end
+--     local lastfont = { }
+--     local lastattr = nil
+--     local done     = false
+--     local count    = 0
+--     local previd   = nil
+--     local prev     = nil
+--     while start do
+--         while start do -- while because start can jump ahead
+--             local id = getid(start)
+--             if id == glyph_code then
+--              -- local attr = getattr(start,a_cases)
+--                 local attr = takeattr(start,a_cases)
+--                 if attr and attr > 0 and not blocked[attr] then
+--                     if attr ~= lastattr then
+--                         lastattr = attr
+--                         count    = 1
+--                     else
+--                         count    = count + 1
+--                     end
+--                  -- setattr(start,a_cases,unsetvalue) -- not needed
+--                     local n, id, m = get(attr)
+--                     if lastfont[n] == nil then
+--                         lastfont[n] = id
+--                     end
+--                     local action = actions[n] -- map back to low number
+--                     if action then
+--                         start, ok = action(start,attr,lastfont,n,count)
+--                         if ok then
+--                             done = true
+--                         end
+--                         if trace_casing then
+--                             report_casing("case trigger %a, instance %a, fontid %a, result %a",n,m,id,ok)
+--                         end
+--                     elseif trace_casing then
+--                         report_casing("unknown case trigger %a",n)
+--                     end
+--                 end
+--             elseif id == disc_code then
+--              -- local attr = getattr(start,a_cases)
+--                 local attr = takeattr(start,a_cases)
+--                 if attr and attr > 0 and not blocked[attr] then
+--                     if attr ~= lastattr then
+--                         lastattr = attr
+--                         count    = 0
+--                     end
+--                  -- setattr(start,a_cases,unsetvalue) -- not needed
+--                     local n, id, m = get(attr)
+--                     if lastfont[n] == nil then
+--                         lastfont[n] = id
+--                     end
+--                     local action = actions[n] -- map back to low number
+--                     if action then
+--                         local pre, post, replace = getdisc(start)
+--                         if replace then
+--                             local cnt = count
+--                             for g in traverse_id(glyph_code,replace) do
+--                                 cnt = cnt + 1
+--                                 takeattr(g,a_cases)
+--                              -- setattr(g,a_cases,unsetvalue)
+--                                 local _, _, quit = action(start,attr,lastfont,n,cnt,"replace",g)
+--                                 if quit then break end
+--                             end
+--                         end
+--                         if pre then
+--                             local cnt = count
+--                             for g in traverse_id(glyph_code,pre) do
+--                                 cnt = cnt + 1
+--                                 takeattr(g,a_cases)
+--                              -- setattr(g,a_cases,unsetvalue)
+--                                 local _,  _, quit = action(start,attr,lastfont,n,cnt,"pre",g)
+--                                 if quit then break end
+--                             end
+--                         end
+--                         if post then
+--                             local cnt = count
+--                             for g in traverse_id(glyph_code,post) do
+--                                 cnt = cnt + 1
+--                                 takeattr(g,a_cases)
+--                              -- setattr(g,a_cases,unsetvalue)
+--                                 local _,  _, quit = action(start,attr,lastfont,n,cnt,"post",g)
+--                                 if quit then break end
+--                             end
+--                         end
+--                     end
+--                     count = count + 1
+--                 end
+--             elseif id == math_code then
+--                 start = end_of_math(start)
+--                 count = 0
+--             elseif prev_id == kern_code and getsubtype(prev) == kerning_code then
+--                 -- still inside a word ...normally kerns are added later
+--             else
+--                 count = 0
+--                 start = getnext(start)
+--                 break
+--             end
+--             if start then
+--                 prev   = start
+--                 previd = id
+--                 start  = getnext(start)
+--             end
+--         end
+--         if start then
+--             attr, start = find_attribute(start,a_cases)
+--         end
+--     end
+--     return head, done
+-- end
 
 -- function cases.handler(head) -- let's assume head doesn't change ... no reason
 --     local done     = false

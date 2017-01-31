@@ -132,7 +132,7 @@ end
 
 if not io.fileseparator then
     if find(os.getenv("PATH"),";",1,true) then
-        io.fileseparator, io.pathseparator, os.type = "\\", ";", os.type or "mswin"
+        io.fileseparator, io.pathseparator, os.type = "\\", ";", os.type or "windows"
     else
         io.fileseparator, io.pathseparator, os.type = "/" , ":", os.type or "unix"
     end

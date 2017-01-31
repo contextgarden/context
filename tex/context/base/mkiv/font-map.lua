@@ -186,6 +186,32 @@ local function tounicode(unicode,name)
     end
 end
 
+-- no real gain on runs
+--
+-- local hash = setmetatableindex(function(t,u)
+--     local v
+--     if u < 0xD7FF or (u > 0xDFFF and u <= 0xFFFF) then
+--         v = f_single(u)
+--     else
+--         u = u - 0x10000
+--         v = f_double(floor(u/1024)+0xD800,u%1024+0xDC00)
+--     end
+--     t[u] = v
+--     return v
+-- end)
+--
+-- local function tounicode(unicode,name)
+--     if type(unicode) == "table" then
+--         local t = { }
+--         for l=1,#unicode do
+--             t[l] = hash[u]
+--         end
+--         return concat(t)
+--     else
+--         return hash[unicode]
+--     end
+-- end
+
 local function fromunicode16(str)
     if #str == 4 then
         return tonumber(str,16)

@@ -142,6 +142,16 @@ if not direct.setwhd then
     end
 end
 
+-- local hash = table.setmetatableindex("number")
+-- local ga = direct.get_attribute
+-- function direct.get_attribute(n,a)
+--     hash[a] = hash[a] + 1
+--     return ga(n,a)
+-- end
+-- function nuts.reportattr()
+--     inspect(hash)
+-- end
+
 nuts.getwhd               = direct.getwhd
 nuts.setwhd               = direct.setwhd
 
@@ -149,7 +159,7 @@ nuts.getfield             = direct.getfield
 nuts.getnext              = direct.getnext
 nuts.getprev              = direct.getprev
 nuts.getid                = direct.getid
-nuts.getattr              = direct.get_attribute or direct.has_attribute or direct.getfield
+nuts.getattr              = direct.get_attribute
 nuts.getchar              = direct.getchar
 nuts.getfont              = direct.getfont
 nuts.getsubtype           = direct.getsubtype
@@ -173,7 +183,8 @@ nuts.getleader            = direct.getleader
 -- setters
 
 nuts.setfield              = direct.setfield
-nuts.setattr               = direct.set_attribute or setfield
+nuts.setattr               = direct.set_attribute
+nuts.takeattr              = direct.unset_attribute
 
 nuts.getbox                = direct.getbox
 nuts.setbox                = direct.setbox
@@ -208,6 +219,10 @@ nuts.is_direct             = direct.is_direct
 nuts.is_nut                = direct.is_direct
 nuts.first_glyph           = direct.first_glyph
 nuts.has_glyph             = direct.has_glyph or direct.first_glyph
+nuts.count                 = direct.count
+nuts.length                = direct.length
+nuts.find_attribute        = direct.find_attribute
+nuts.unset_attribute       = direct.unset_attribute
 
 nuts.current_attr          = direct.current_attr
 nuts.has_field             = direct.has_field
@@ -353,14 +368,14 @@ function nuts.replace(head,current,new) -- no head returned if false
     end
 end
 
-local function count(stack,flat)
+local function countall(stack,flat)
     local n = 0
     while stack do
         local id = d_getid(stack)
         if not flat and id == hlist_code or id == vlist_code then
             local list = d_getlist(stack)
             if list then
-                n = n + 1 + count(list) -- self counts too
+                n = n + 1 + countall(list) -- self counts too
             else
                 n = n + 1
             end
@@ -372,7 +387,11 @@ local function count(stack,flat)
     return n
 end
 
-nuts.count = count
+nuts.countall = countall
+
+function nodes.countall(stack,flat)
+    return countall(tonut(stack),flat)
+end
 
 function nuts.append(head,current,...)
     for i=1,select("#",...) do

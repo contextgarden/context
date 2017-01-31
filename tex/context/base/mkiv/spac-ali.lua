@@ -24,8 +24,7 @@ local getprev          = nuts.getprev
 local getid            = nuts.getid
 local getlist          = nuts.getlist
 local setlist          = nuts.setlist
-local getattr          = nuts.getattr
-local setattr          = nuts.setattr
+local takeattr         = nuts.takeattr
 local getsubtype       = nuts.getsubtype
 
 local hpack_nodes      = nuts.hpack
@@ -70,7 +69,7 @@ local function handler(head,leftpage,realpageno)
         local id = getid(current)
         if id == hlist_code then
             if getsubtype(current) == line_code then
-                local a = getattr(current,a_realign)
+                local a = takeattr(current,a_realign)
                 if not a or a == 0 then
                     -- skip
                 else
@@ -101,7 +100,6 @@ local function handler(head,leftpage,realpageno)
                         done = true
                         nofrealigned = nofrealigned + 1
                     end
-                    setattr(current,a_realign,unsetvalue)
                 end
             end
             handler(getlist(current),leftpage,realpageno)

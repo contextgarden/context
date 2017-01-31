@@ -32,7 +32,8 @@ local getsubtype         = nuts.getsubtype
 local getfont            = nuts.getfont
 local getid              = nuts.getid
 local getfield           = nuts.getfield
-local getattr            = nuts.getattr
+----- getattr            = nuts.getattr
+local takeattr           = nuts.takeattr
 local isglyph            = nuts.isglyph
 
 local setfield           = nuts.setfield
@@ -250,7 +251,8 @@ function breakpoints.handler(head)
     while current do
         local char, id = isglyph(current)
         if char then
-            local a = getattr(current,a_breakpoints)
+         -- local a = getattr(current,a_breakpoints)
+            local a = takeattr(current,a_breakpoints)
             if a and a > 0 then
                 if a ~= attr then
                     local data = mapping[a]
@@ -264,7 +266,7 @@ function breakpoints.handler(head)
                 if map then
                     local cmap = map[char]
                     if cmap then
-                        setattr(current,a_breakpoints,unsetvalue) -- should not be needed
+                     -- setattr(current,a_breakpoints,unsetvalue) -- should not be needed
                         -- for now we collect but when found ok we can move the handler here
                         -- although it saves nothing in terms of performance
                         local lang = getfield(current,"lang")

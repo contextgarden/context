@@ -51,7 +51,7 @@ local getglue          = nuts.getglue
 local isglyph          = nuts.isglyph
 
 local flush_list       = nuts.flush_list
-local count_nodes      = nuts.count
+local count_nodes      = nuts.countall
 local used_nodes       = nuts.usedlist
 
 local traverse_by_id   = nuts.traverse_id

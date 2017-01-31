@@ -170,7 +170,7 @@ disableaction("processors",  "typesetters.italics.handler")
 disableaction("processors",  "languages.visualizediscretionaries")
 disableaction("processors",  "nodes.handlers.stripping")
 disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
-disableaction("processors",  "nodes.rubies.check")
+disableaction("processors",  "typesetters.rubies.check")
 disableaction("processors",  "typesetters.fontkerns.handler")
 
 disableaction("shipouts",    "typesetters.margins.finalhandler")
@@ -192,8 +192,7 @@ disableaction("shipouts",    "nodes.handlers.alignbackgrounds")
 disableaction("shipouts",    "nodes.references.handler")
 disableaction("shipouts",    "nodes.destinations.handler")
 -------------("shipouts",    "nodes.handlers.export")
-disableaction("shipouts","nodes.rubies.attach")
-
+disableaction("shipouts",    "typesetters.rubies.attach")
 
 disableaction("finalizers",  "typesetters.margins.localhandler")
 disableaction("finalizers",  "builders.paragraphs.keeptogether")

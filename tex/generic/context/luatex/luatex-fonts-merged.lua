@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/30/17 16:08:33
+-- merge date  : 02/01/17 00:43:24
 
 do -- begin closure to overcome local limits and interference
 
@@ -18448,11 +18448,15 @@ local type,next,tonumber=type,next,tonumber
 local random=math.random
 local formatters=string.formatters
 local insert=table.insert
-local logs,trackers,nodes,attributes=logs,trackers,nodes,attributes
 local registertracker=trackers.register
 local registerdirective=directives.register
+local logs=logs
+local trackers=trackers
+local nodes=nodes
+local attributes=attributes
 local fonts=fonts
 local otf=fonts.handlers.otf
+local tracers=nodes.tracers
 local trace_lookups=false registertracker("otf.lookups",function(v) trace_lookups=v end)
 local trace_singles=false registertracker("otf.singles",function(v) trace_singles=v end)
 local trace_multiples=false registertracker("otf.multiples",function(v) trace_multiples=v end)
@@ -18474,7 +18478,6 @@ local trace_discruns=false registertracker("otf.discruns",function(v) trace_disc
 local trace_compruns=false registertracker("otf.compruns",function(v) trace_compruns=v end)
 local trace_testruns=false registertracker("otf.testruns",function(v) trace_testruns=v end)
 local optimizekerns=true
-local alwaysdisc=true  registerdirective("otf.alwaysdisc",function(v) alwaysdisc=v end)
 local report_direct=logs.reporter("fonts","otf direct")
 local report_subchain=logs.reporter("fonts","otf subchain")
 local report_chain=logs.reporter("fonts","otf chain")
@@ -18485,7 +18488,7 @@ registertracker("otf.replacements","otf.singles,otf.multiples,otf.alternatives,o
 registertracker("otf.positions","otf.marks,otf.kerns,otf.cursive")
 registertracker("otf.actions","otf.replacements,otf.positions")
 registertracker("otf.injections","nodes.injections")
-registertracker("*otf.sample","otf.steps,otf.actions,otf.analyzing")
+registertracker("otf.sample","otf.steps,otf.actions,otf.analyzing")
 local nuts=nodes.nuts
 local tonode=nuts.tonode
 local tonut=nuts.tonut
@@ -18549,7 +18552,6 @@ local resetinjection=injections.reset
 local copyinjection=injections.copy
 local setligaindex=injections.setligaindex
 local getligaindex=injections.getligaindex
-local cursonce=true
 local fonthashes=fonts.hashes
 local fontdata=fonthashes.identifiers
 local fontfeatures=fonthashes.features
@@ -18576,9 +18578,9 @@ local notmatchreplace={}
 local handlers={}
 local isspace=injections.isspace
 local getthreshold=injections.getthreshold
-local checkstep=(nodes and nodes.tracers and nodes.tracers.steppers.check)  or function() end
-local registerstep=(nodes and nodes.tracers and nodes.tracers.steppers.register) or function() end
-local registermessage=(nodes and nodes.tracers and nodes.tracers.steppers.message) or function() end
+local checkstep=(tracers and tracers.steppers.check)  or function() end
+local registerstep=(tracers and tracers.steppers.register) or function() end
+local registermessage=(tracers and tracers.steppers.message) or function() end
 local function checkdisccontent(d)
   local pre,post,replace=getdisc(d)
   if pre   then for n in traverse_id(glue_code,pre)   do print("pre",nodes.idstostring(pre))   break end end
@@ -19322,10 +19324,11 @@ function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,c
     reportmoresteps(dataset,sequence)
   end
   local current=start
+  local mapping=steps[1].coverage
   while current do
     local currentchar=ischar(current)
     if currentchar then
-      local replacement=steps[1].coverage[currentchar]
+      local replacement=mapping[currentchar]
       if not replacement or replacement=="" then
         if trace_bugs then
           logwarning("%s: no single for %s",cref(dataset,sequence,chainindex),gref(currentchar))
@@ -19378,10 +19381,11 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
   local what=dataset[1]
   local value=what==true and tfmdata.shared.features[kind] or what 
   local current=start
+  local mapping=steps[1].coverage
   while current do
     local currentchar=ischar(current)
     if currentchar then
-      local alternatives=steps[1].coverage[currentchar]
+      local alternatives=mapping[currentchar]
       if alternatives then
         local choice,comment=get_alternative_glyph(current,alternatives,value)
         if choice then
@@ -20811,7 +20815,7 @@ local function kernrun(disc,k_run,font,attr,...)
   end
   return nextstart,done
 end
-local function comprun(disc,c_run,...)
+local function comprun(disc,c_run,...) 
   if trace_compruns then
     report_disc("comp",disc)
   end
@@ -21196,7 +21200,6 @@ local function featuresprocessor(head,font,attr)
   local rlmode=0
   local done=false
   local datasets=otf.dataset(tfmdata,font,attr)
-  local forcedisc=alwaysdisc or not attr
   local dirstack={} 
   sweephead={}
   for s=1,#datasets do
@@ -21289,21 +21292,16 @@ local function featuresprocessor(head,font,attr)
             elseif char==false then
               start=getnext(start)
             elseif id==disc_code then
-              local a=forcedisc or getsubtype(start)==discretionary_code or getattr(start,0)==attr
-              if a then
-                local ok
-                if gpossing then
-                  start,ok=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                elseif typ=="gsub_ligature" then
-                  start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                else
-                  start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-                end
-                if ok then
-                  success=true
-                end
+              local ok
+              if gpossing then
+                start,ok=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+              elseif typ=="gsub_ligature" then
+                start,ok=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
               else
-                start=getnext(start)
+                start,ok=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
+              end
+              if ok then
+                success=true
               end
             elseif id==math_code then
               start=getnext(end_of_math(start))
@@ -21355,21 +21353,16 @@ local function featuresprocessor(head,font,attr)
           elseif char==false then
             start=getnext(start)
           elseif id==disc_code then
-            local a=forcedisc or getsubtype(start)==discretionary_code or getattr(start,0)==attr
-            if a then
-              local ok
-              if gpossing then
-                start,ok=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-              elseif typ=="gsub_ligature" then
-                start,ok=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-              else
-                start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-              end
-              if ok then
-                success=true
-              end
+            local ok
+            if gpossing then
+              start,ok=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+            elseif typ=="gsub_ligature" then
+              start,ok=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
             else
-              start=getnext(start)
+              start,ok=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
+            end
+            if ok then
+              success=true
             end
           elseif id==math_code then
             start=getnext(end_of_math(start))

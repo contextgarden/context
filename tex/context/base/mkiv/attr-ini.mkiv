@@ -40,6 +40,7 @@
 
 \newtoks \t_attr_list_global
 \newtoks \t_attr_list_local
+\newtoks \t_attr_list_nomath
 
 \ifdefined \s!global    \else \def\s!global   {global}    \fi % for metatex % or hard check later
 \ifdefined \s!public    \else \def\s!public   {public}    \fi % for metatex % or hard check later
@@ -63,6 +64,8 @@
      \doifelseinset\s!global{#3}%
        {\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\t_attr_list_global}%
        {\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\t_attr_list_local }%
+     \doifinset\s!nomath{#3}%
+       {\appendetoks\csname\??attributecount#2\endcsname\attributeunsetvalue\to\t_attr_list_nomath}%
      % here public means 'visible' so it's not to be confused with 'public' at the lua end
      \doifinset\s!public{#3}%
        {\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
@@ -91,23 +94,27 @@
 \unexpanded\def\savecurrentattributes   #1{\clf_savecurrentattributes   {#1}}
 \unexpanded\def\restorecurrentattributes#1{\clf_restorecurrentattributes{#1}}
 
-%D For the moment we put this here (later it will move to where it's used):
+%D For the moment we put this here. The order of definition matters a bit because
+%D performance is better when we put frequently accessed attributes at the front.
+%D So, we might move more here.
 
-\definesystemattribute [state]
-\definesystemattribute [color]               [public] % global
+\definesystemattribute [state]                                  % nomath
+\definesystemattribute [color]               [public]           % global
 \definesystemattribute [colormodel]          [public,global]
-\definesystemattribute [skip]
-\definesystemattribute [penalty]
+% \definesystemattribute [skip]
+% \definesystemattribute [penalty]
 \definesystemattribute [transparency]        [public]
+\definesystemattribute [reference]           [public]
+\definesystemattribute [destination]         [public]
+\definesystemattribute [case]                [public]
+\definesystemattribute [visual]              [public,global]
+\definesystemattribute [viewerlayer]         [public]
 \definesystemattribute [background]          [public]
 \definesystemattribute [alignbackground]     [public]
 \definesystemattribute [colorintent]         [public]
 \definesystemattribute [negative]            [public]
 \definesystemattribute [effect]              [public]
-\definesystemattribute [viewerlayer]         [public]
 \definesystemattribute [layoutcomponent]     [public]
-\definesystemattribute [reference]           [public]
-\definesystemattribute [destination]         [public]
 \definesystemattribute [internal]            [public]
 \definesystemattribute [ruled]               [public]
 \definesystemattribute [shifted]             [public]

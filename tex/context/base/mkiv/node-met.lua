@@ -104,8 +104,12 @@ nodes.protrusion_skippable  = node.protrusion_skippable
 nodes.check_discretionaries = node.check_discretionaries
 nodes.write                 = node.write
 
+nodes.count                 = node.count
+nodes.length                = node.length
+
 nodes.has_attribute         = node.has_attribute
 nodes.set_attribute         = node.set_attribute
+nodes.find_attribute        = node.find_attribute
 nodes.unset_attribute       = node.unset_attribute
 
 nodes.protect_glyphs        = node.protect_glyphs
@@ -224,6 +228,7 @@ nodes.getfield          = n_getfield
 nodes.setfield          = n_setfield
 nodes.getattr           = n_getattr
 nodes.setattr           = n_setattr
+nodes.takeattr          = nodes.unset_attribute
 
 nodes.getnext           = n_getnext
 nodes.getprev           = n_getprev
@@ -305,26 +310,7 @@ function nodes.replace(head,current,new) -- no head returned if false
     end
 end
 
-local function count(stack,flat)
-    local n = 0
-    while stack do
-        local id = n_getid(stack)
-        if not flat and id == hlist_code or id == vlist_code then
-            local list = n_getlist(stack)
-            if list then
-                n = n + 1 + count(list) -- self counts too
-            else
-                n = n + 1
-            end
-        else
-            n = n + 1
-        end
-        stack = n_getnext(stack)
-    end
-    return n
-end
-
-nodes.count = count
+-- nodes.countall : see node-nut.lua
 
 function nodes.append(head,current,...)
     for i=1,select("#",...) do

@@ -43,7 +43,7 @@ local isglyph            = nuts.isglyph
 
 local setfield           = nuts.setfield
 local getattr            = nuts.getattr
-local setattr            = nuts.setattr
+local takeattr           = nuts.takeattr
 local setlink            = nuts.setlink
 local setglue            = nuts.setglue
 local setsubtype         = nuts.setsubtype
@@ -385,9 +385,8 @@ function kerns.handler(head)
         -- fontkerns don't get the attribute but they always sit between glyphs so
         -- are always valid bound .. disc nodes also somtimes don't get them
         local id   = getid(start)
-        local attr = getattr(start,a_kerns)
+        local attr = takeattr(start,a_kerns)
         if attr and attr > 0 then
-            setattr(start,a_kerns,0) -- unsetvalue)
             local krn = mapping[attr]
             if krn == v_max then
                 krn    = .25
