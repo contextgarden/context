@@ -30,6 +30,7 @@ local getdisc             = nuts.getdisc
 local getsubtype          = nuts.getsubtype
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
+local getcomponents       = nuts.getcomponents
 
 local set_attributes      = nuts.setattributes
 local traverse_nodes      = nuts.traverse
@@ -250,7 +251,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 if tag == "formulacaption" then
                     -- skip
                 elseif tag == "mstacker" then
-                    local list = getfield(start,"list")
+                    local list = getlist(start)
                     if list then
                         process(list)
                     end
@@ -260,7 +261,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     end
                     local text = start_tagged(tag)
                     setattr(start,a_tagged,text)
-                    local list = getfield(start,"list")
+                    local list = getlist(start)
                     if not list then
                         -- empty list
                     elseif not attr then
@@ -315,7 +316,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                 if id == hlist_code or id == vlist_code then
                                     runner(getlist(n),depth+1)
                                 elseif id == glyph_code then
-                                    runner(getfield(n,"components"),depth+1) -- this should not be needed
+                                    runner(getcomponents(n),depth+1) -- this should not be needed
                                 elseif id == disc_code then
                                     local pre, post, replace = getdisc(n)
                                     runner(pre,depth+1)     -- idem
@@ -335,7 +336,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     stop_tagged()
                 end
             elseif id == math_sub_code then -- normally a hbox
-                local list = getfield(start,"list")
+                local list = getlist(start)
                 if list then
                     local attr = getattr(start,a_tagged)
                     local last = attr and taglist[attr]

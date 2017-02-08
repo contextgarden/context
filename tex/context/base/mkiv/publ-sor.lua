@@ -217,6 +217,7 @@ local function sortsequence(dataset,list,sorttype)
         if type(action) == "function" then
             local valid = action(dataset,list,method)
             if valid and #valid > 0 then
+-- sorters.setlanguage(options.language,options.method)
                 sorters.sort(valid,compare)
                 return valid
             else

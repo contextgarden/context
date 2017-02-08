@@ -23,10 +23,10 @@ local getlist         = nuts.getlist
 local getattr         = nuts.getattr
 local setattr         = nuts.setattr
 local setlist         = nuts.setlist
+local findtail        = nuts.tail
 
 local traverse_id     = nuts.traverse_id
 local list_dimensions = nuts.dimensions
-local linked_nodes    = nuts.linked
 local copy_node       = nuts.copy
 
 local tracedrule      = nodes.tracers.pool.nuts.rule
@@ -86,23 +86,29 @@ function checkers.handler(head)
                     if naturalwidth == 0 or delta == 0 then
                         -- special box
                     elseif delta >= max_threshold then
-                        local rule = tracedrule(delta,naturalheight,naturaldepth,getfield(list,"glue_set") == 1 and "trace:dr" or "trace:db")
-                        setlist(current,linked_nodes(list,new_hlist(rule)))
+                        local rule = new_hlist(tracedrule(delta,naturalheight,naturaldepth,getfield(list,"glue_set") == 1 and "trace:dr" or "trace:db"))
+                        setlink(findtail(list),rule)
+                        setlist(current,list)
                     elseif delta <= min_threshold then
                         local alignstate = getattr(list,a_alignstate)
                         if alignstate == 1 then
-                            local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dc")
-                            setlist(current,linked_nodes(new_hlist(rule),list))
+                            local rule = new_hlist(tracedrule(-delta,naturalheight,naturaldepth,"trace:dc"))
+                            setlink(rule,list)
+                            setlist(current,rule)
                         elseif alignstate == 2 then
-                            local lrule = tracedrule(-delta/2,naturalheight,naturaldepth,"trace:dy")
-                            local rrule = copy_node(lrule)
-                            setlist(current,linked_nodes(new_hlist(lrule),list,new_kern(delta/2),new_hlist(rrule)))
+                            local lrule = new_hlist(tracedrule(-delta/2,naturalheight,naturaldepth,"trace:dy"))
+                            local rrule = copy_list(lrule)
+                            setlink(lrule,list)
+                            setlink(findtail(list),new_kern(delta/2),rrule)
+                            setlist(current,lrule)
                         elseif alignstate == 3 then
-                            local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dm")
-                            setlist(current,linked_nodes(list,new_kern(delta),new_hlist(rule)))
+                            local rule = new_hlist(tracedrule(-delta,naturalheight,naturaldepth,"trace:dm"))
+                            setlink(findtail(list),new_kern(delta),rule)
+                            setlist(current,list)
                         else
-                            local rule = tracedrule(-delta,naturalheight,naturaldepth,"trace:dg")
-                            setlist(current,linked_nodes(list,new_kern(delta),new_hlist(rule)))
+                            local rule = new_hlist(tracedrule(-delta,naturalheight,naturaldepth,"trace:dg"))
+                            setlink(findtail(list),new_kern(delta),rule)
+                            setlist(current,list)
                         end
                     end
                 end

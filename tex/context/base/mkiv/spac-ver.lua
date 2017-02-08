@@ -41,8 +41,6 @@ local allocate = utilities.storage.allocate
 local todimen = string.todimen
 local formatters = string.formatters
 
-local P, C, R, S, Cc, Carg = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Carg
-
 local nodes        =  nodes
 local node         =  node
 local trackers     =  trackers
@@ -138,13 +136,14 @@ local getprop             = nuts.getprop
 local setprop             = nuts.setprop
 local getglue             = nuts.getglue
 local setglue             = nuts.setglue
+local getkern             = nuts.getkern
+local getpenalty          = nuts.getpenalty
 
 local find_node_tail      = nuts.tail
 local flush_node          = nuts.flush_node
 local traverse_nodes      = nuts.traverse
 local traverse_nodes_id   = nuts.traverse_id
 local insert_node_before  = nuts.insert_before
-local insert_node_after   = nuts.insert_after
 local remove_node         = nuts.remove
 local count_nodes         = nuts.countall
 local hpack_node          = nuts.hpack
@@ -716,6 +715,8 @@ storage.register("builders/vspacing/data/skip", vspacingdata.skip, "builders.vsp
 
 do -- todo: interface.variables and properties
 
+    local P, C, R, S, Cc = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc
+
     vspacing.fixed   = false
 
     local map        = vspacingdata.map
@@ -836,11 +837,11 @@ local function nodes_to_string(head)
         local id = getid(current)
         local ty = nodecodes[id]
         if id == penalty_code then
-            t[#t+1] = formatters["%s:%s"](ty,getfield(current,"penalty"))
+            t[#t+1] = formatters["%s:%s"](ty,getpenalty(current))
         elseif id == glue_code then
             t[#t+1] = formatters["%s:%s:%p"](ty,skipcodes[getsubtype(current)],getfield(current,"width"))
         elseif id == kern_code then
-            t[#t+1] = formatters["%s:%p"](ty,getfield(current,"kern"))
+            t[#t+1] = formatters["%s:%p"](ty,getkern(current))
         else
             t[#t+1] = ty
         end
@@ -879,7 +880,7 @@ end
 
 local function trace_done(str,data)
     if getid(data) == penalty_code then
-        trace_list[#trace_list+1] = { "penalty", formatters["%s | %s"](str,getfield(data,"penalty")) }
+        trace_list[#trace_list+1] = { "penalty", formatters["%s | %s"](str,getpenalty(data)) }
     else
         trace_list[#trace_list+1] = { "glue", formatters["%s | %p"](str,getfield(data,"width")) }
     end
@@ -960,7 +961,7 @@ end
 local w, h, d = 0, 0, 0
 ----- w, h, d = 100*65536, 65536, 65536
 
-local function forced_skip(head,current,width,where,trace)
+local function forced_skip(head,current,width,where,trace) -- looks old ... we have other tricks now
     if head == current then
         if getsubtype(head) == baselineskip_code then
             width = width - (getfield(head,"width") or 0)
@@ -1059,7 +1060,7 @@ specialmethods[1] = function(pagehead,pagetail,start,penalty)
                     report_specials("  context penalty %a, higher level, continue",p)
                 end
             else
-                local p = getfield(current,"penalty")
+                local p = getpenalty(current)
                 if p < 10000 then
                     -- assume some other mechanism kicks in so we seem to have content
                     if trace_specials then
@@ -1111,7 +1112,7 @@ local function check_experimental_overlay(head,current)
             if id == glue_code then
                 skips = skips + (getfield(c,"width") or 0)
             elseif id == kern_code then
-                skips = skips + getfield(c,"kern")
+                skips = skips + getgetkern(c)
             end
             c = getnext(c)
         end
@@ -1427,15 +1428,15 @@ setprop(current,"snapper",lastsnap)
             flush("list")
             current = getnext(current)
         elseif id == penalty_code then
-         -- natural_penalty = getfield(current,"penalty")
+         -- natural_penalty = getpenalty(current)
          -- if trace then
          --     trace_done("removed penalty",current)
          -- end
          -- head, current = remove_node(head, current, true)
             current = getnext(current)
         elseif id == kern_code then
-            if snap and trace_vsnapping and getfield(current,"kern") ~= 0 then
-                report_snapper("kern of %p kept",getfield(current,"kern"))
+            if snap and trace_vsnapping and getkern(current) ~= 0 then
+                report_snapper("kern of %p kept",getkern(current))
             end
             flush("kern")
             current = getnext(current)
@@ -1797,7 +1798,7 @@ setprop(current,"snapper",lastsnap)
         if trace then
             trace_done("result",p)
         end
-        head, tail = insert_node_after(head,tail,p)
+        setlink(tail,p)
      -- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
             local props = properties[p]
             if props then
@@ -1819,7 +1820,7 @@ setprop(current,"snapper",lastsnap)
             flush_node(glue_data)
             glue_data = nil
         else
-            head, tail = insert_node_after(head,tail,glue_data)
+            setlink(tail,glue_data)
         end
         texnest[texnest.ptr].prevdepth = 0 -- appending to the list bypasses tex's prevdepth handler
     end

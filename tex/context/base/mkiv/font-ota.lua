@@ -32,7 +32,6 @@ local a_state             = attributes.private('state')
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 
-local getfield            = nuts.getfield
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getprev             = nuts.getprev

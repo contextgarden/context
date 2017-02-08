@@ -261,7 +261,7 @@ function injections.setpair(current,factor,rlmode,r2lflag,spec,injection) -- r2l
                 local i = rawget(p,injection)
                 if i then
                     if leftkern ~= 0 then
-                        i.leftkern  = (i.leftkern  or 0) + leftkern
+                        i.leftkern = (i.leftkern  or 0) + leftkern
                     end
                     if rightkern ~= 0 then
                         i.rightkern = (i.rightkern or 0) + rightkern

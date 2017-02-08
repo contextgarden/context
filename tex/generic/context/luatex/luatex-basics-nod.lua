@@ -209,8 +209,25 @@ nuts.setdisc             = direct.setdisc
 nuts.setlink             = direct.setlink
 nuts.getlist             = direct.getlist
 nuts.setlist             = direct.setlist
-nuts.getleader           = direct.getleader
-nuts.setleader           = direct.setleader
+
+nuts.getoffsets          = direct.getoffsets or
+    function(n)
+        return getfield(n,"xoffset"), getfield(n,"yoffset")
+    end
+nuts.setoffsets          = direct.setoffsets or
+    function(n,x,y)
+        if x then setfield(n,"xoffset",x) end
+        if y then setfield(n,"xoffset",y) end
+    end
+
+nuts.getleader           = direct.getleader     or function(n)   return getfield(n,"leader")       end
+nuts.setleader           = direct.setleader     or function(n,l)        setfield(n,"leader",l)     end
+nuts.getcomponents       = direct.getcomponents or function(n)   return getfield(n,"components")   end
+nuts.setcomponents       = direct.setcomponents or function(n,c)        setfield(n,"components",c) end
+nuts.getkern             = direct.getkern       or function(n)   return getfield(n,"kern")         end
+nuts.setkern             = direct.setkern       or function(n,k)        setfield(n,"kern",k)       end
+nuts.getdir              = direct.getkern       or function(n)   return getfield(n,"dir")          end
+nuts.setdir              = direct.setkern       or function(n,d)        setfield(n,"dir",d)        end
 
 if not direct.is_glyph then
     local getchar    = direct.getchar
@@ -337,68 +354,89 @@ function nuts.set_components(target,start,stop)
         flush_list(head)
         head = nil
     end
-    setprev(start)
+    if start then
+        setprev(start)
+    else
+        return nil
+    end
     if stop then
         setnext(stop)
     end
+    local tail = nil
     while start do
         local c = getfield(start,"components")
         local n = getnext(start)
         if c then
-            local tail = find_tail(c)
-            if not head then
+            if head then
+                setlink(tail,c)
+            else
                 head = c
             end
-            setlink(tail,n)
+            tail = find_tail(c)
             setfield(start,"components")
             flush_node(start)
         else
-            if not head then
+            if head then
+                setlink(tail,start)
+            else
                 head = start
             end
+            tail = start
         end
         start = n
     end
     setfield(target,"components",head)
+    -- maybe also upgrade the subtype but we don't use it anyway
     return head
 end
 
 function nuts.get_components(target)
+    return getfield(target,"components")
+end
+
+function nuts.take_components(target)
     local c = getfield(target,"components")
     setfield(target,"components")
+    -- maybe also upgrade the subtype but we don't use it anyway
     return c
 end
 
-function nuts.count_components(n,marks) -- assumes flat list
+function nuts.count_components(n,marks)
     local components = getfield(n,"components")
     if components then
-        local i = 0
         if marks then
+            local i = 0
             for g in traverse_id(glyph_code,components) do
                 if not marks[getchar(g)] then
                     i = i + 1
                 end
             end
+            return i
         else
-            for g in traverse_id(glyph_code,components) do
-                i = i + 1
-            end
+            return count(glyph_code,components)
         end
-        return i
     else
         return 0
     end
 end
 
-function nuts.copy_no_components(g)
+function nuts.copy_no_components(g,copyinjection)
     local components = getfield(g,"components")
     if components then
         setfield(g,"components")
         local n = copy_node(g)
+        if copyinjection then
+            copyinjection(n,g)
+        end
         setfield(g,"components",components)
+        -- maybe also upgrade the subtype but we don't use it anyway
         return n
     else
-        return copy_node(g)
+        local n = copy_node(g)
+        if copyinjection then
+            copyinjection(n,g)
+        end
+        return n
     end
 end
 

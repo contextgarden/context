@@ -319,11 +319,17 @@ function handlers.characters(head)
             if b > 0 then
                 for i=1,b do
                     local bi = basefonts[i]
-                    if r == bi[1] then
-                        bi[1] = n
-                    end
-                    if r == bi[2] then
-                        bi[2] = n
+                    local b1 = b[1]
+                    local b2 = b[2]
+                    if b1 == b2 then
+                        if b1 == r then
+                            b[1] = false
+                            b[2] = false
+                        end
+                    elseif b1 == r then
+                        b[1] = n
+                    elseif b2 == r then
+                        b[2] = p
                     end
                 end
             end
@@ -472,14 +478,15 @@ function handlers.characters(head)
         if (start or stop) and (start ~= stop) then
             local front = nuthead == start
             if stop then
-                start, stop = ligaturing(start,stop)
-                start, stop = kerning(start,stop)
+                start = ligaturing(start,stop)
+                start = kerning(start,stop)
             elseif start then -- safeguard
                 start = ligaturing(start)
                 start = kerning(start)
             end
-            if front then
-                head = tonode(start)
+            if front and nuthead ~= start then
+             -- nuthead = start
+                head    = tonode(start)
             end
         end
     else
@@ -490,24 +497,26 @@ function handlers.characters(head)
             local stop  = range[2]
             if start then -- and start ~= stop but that seldom happens
                 local front = nuthead == start
-                local prev, next
+                local prev  = getprev(start)
+                local next  = getnext(stop)
                 if stop then
-                    next = getnext(stop)
                     start, stop = ligaturing(start,stop)
                     start, stop = kerning(start,stop)
                 else
-                    prev  = getprev(start)
                     start = ligaturing(start)
                     start = kerning(start)
                 end
+                -- is done automatically
                 if prev then
                     setlink(prev,start)
                 end
                 if next then
                     setlink(stop,next)
                 end
+                -- till here
                 if front and nuthead ~= start then
-                    head = tonode(nuthead)
+                    nuthead = start
+                    head    = tonode(start)
                 end
             end
         end

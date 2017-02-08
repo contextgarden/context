@@ -52,6 +52,7 @@ local getlist           = nuts.getlist
 local gettexbox         = nuts.getbox
 local getwhd            = nuts.getwhd
 local getglue           = nuts.getglue
+local getkern           = nuts.getkern
 
 local setfield          = nuts.setfield
 local setlink           = nuts.setlink
@@ -167,7 +168,7 @@ local function getprofile(line,step)
                 wd, ht, dp = getwhd(current)
                 progress()
             elseif id == kern_code then
-                wd = getfield(current,"kern")
+                wd = getkern(current)
                 ht = 0
                 dp = 0
                 progress()
@@ -226,7 +227,7 @@ local function getprofile(line,step)
                 wd, ht, dp = getwhd(current)
                 progress()
             elseif id == math_code then
-                wd = getfield(current,"surround") + getfield(current,"width")
+                wd = getkern(current) + getfield(current,"width") -- surround
                 ht = 0
                 dp = 0
                 progress()
@@ -302,14 +303,12 @@ local function addstring(height,depth)
     local dptext   = typesetters.tohpack(depth,infofont)
     setfield(httext,"shift",- 1.2 * exheight)
     setfield(dptext,"shift",  0.6 * exheight)
-    local text = nuts.hpack(
-        nuts.linked(
-            new_kern(-getfield(httext,"width")-emwidth),
-            httext,
-            new_kern(-getfield(dptext,"width")),
-            dptext
-        )
-    )
+    local text = hpack_nodes(setlink(
+        new_kern(-getfield(httext,"width")-emwidth),
+        httext,
+        new_kern(-getfield(dptext,"width")),
+        dptext
+    ))
     setwhd(text,0,0,0)
     return text
 end

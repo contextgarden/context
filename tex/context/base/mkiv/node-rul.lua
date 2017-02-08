@@ -40,6 +40,7 @@ local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local setwhd             = nuts.setwhd
+local setdir             = nuts.setdir
 
 local flushlist          = nuts.flush_list
 local effective_glue     = nuts.effective_glue
@@ -445,7 +446,7 @@ local function linefiller(current,data,width,location)
             ca        = ca,
             ta        = ta,
             option    = location,
-            direction = getfield(current,"dir"),
+            direction = getdir(current),
         })
     else
         local linefiller = new_rule(width,height,depth)

@@ -17,7 +17,7 @@ if not modules then modules = { } end modules ['anch-pgr'] = {
 -- will discuss this issue.
 
 local abs, div, floor, round = math.abs, math.div, math.floor, math.round
-local concat, sort, copy = table.concat, table.sort, table.copy
+local concat = table.concat
 local splitter = lpeg.splitat(":")
 local lpegmatch = lpeg.match
 
@@ -46,7 +46,7 @@ local f_tag_two         = formatters["%s:%s"]
 local f_point           = formatters["%p"]
 local f_pair            = formatters["(%p,%p)"]
 local f_path            = formatters["%--t--cycle"]
-local f_pair_i          = formatters["(%i,%i)"]
+local f_pair_i          = formatters["(%r,%r)"] -- rounded
 
 graphics                = graphics or { }
 local backgrounds       = { }

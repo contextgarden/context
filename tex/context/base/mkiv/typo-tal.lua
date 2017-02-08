@@ -41,7 +41,6 @@ local getprev              = nuts.getprev
 local getid                = nuts.getid
 local getfont              = nuts.getfont
 local getchar              = nuts.getchar
-local getfield             = nuts.getfield
 local getattr              = nuts.getattr
 local isglyph              = nuts.isglyph
 

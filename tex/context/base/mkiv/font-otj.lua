@@ -16,12 +16,9 @@ if not modules then modules = { } end modules ['font-otj'] = {
 -- cleaner to have an identification pass here. Also, I need to keep tracing in mind so
 -- being too clever here is dangerous.
 
--- The subtype test is not needed as there will be no (new) properties set, given that we
--- reset the properties.
-
 -- As we have a rawget on properties we don't need one on injections.
 
--- The use_advance code is just a test and is meant for testing and manuals. There is no
+-- The use_advance code was just a test and is meant for testing and manuals. There is no
 -- performance (or whatever) gain and using kerns is somewhat cleaner (at least for now).
 
 -- Maybe: subtype fontkern when pure kerns.
@@ -37,10 +34,6 @@ local trace_injections  = false  registertracker("fonts.injections",         fun
 local trace_marks       = false  registertracker("fonts.injections.marks",   function(v) trace_marks      = v end)
 local trace_cursive     = false  registertracker("fonts.injections.cursive", function(v) trace_cursive    = v end)
 local trace_spaces      = false  registertracker("fonts.injections.spaces",  function(v) trace_spaces  = v end)
-
--- use_advance is just an experiment: it makes copying glyphs (instead of new_glyph) dangerous
-
-local use_advance       = false  directives.register("fonts.injections.advance", function(v) use_advance = v end)
 
 local report_injections = logs.reporter("fonts","injections")
 local report_spaces     = logs.reporter("fonts","spaces")
@@ -80,14 +73,16 @@ local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
 local getfont            = nuts.getfont
-local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
+local getoffsets         = nuts.getoffsets
 local getboth            = nuts.getboth
-
-local ischar             = nuts.is_char
-
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
+local setoffsets         = nuts.setoffsets
+local ischar             = nuts.is_char
+local getkern            = nuts.getkern
+local setkern            = nuts.setkern
+local setlink            = nuts.setlink
 
 local traverse_id        = nuts.traverse_id
 local traverse_char      = nuts.traverse_char
@@ -137,7 +132,7 @@ end
 --             if tp then
 --                 tp.injections = si
 --             else
---                 propertydata[target] = {
+--                 properties[target] = {
 --                     injections = si,
 --                 }
 --             end
@@ -169,7 +164,7 @@ function injections.copy(target,source)
             if tp then
                 tp.injections = si
             else
-                propertydata[target] = {
+                properties[target] = {
                     injections = si,
                 }
             end
@@ -527,11 +522,12 @@ local function show_result(head)
     while current do
         local id = getid(current)
         if id == glyph_code then
-            report_injections("char: %C, width %p, xoffset %p, yoffset %p",
-                getchar(current),getfield(current,"width"),getfield(current,"xoffset"),getfield(current,"yoffset"))
+            local w = getfield(current,"width")
+            local x, y = getoffsets(current)
+            report_injections("char: %C, width %p, xoffset %p, yoffset %p",getchar(current),w,x,y)
             skipping = false
         elseif id == kern_code then
-            report_injections("kern: %p",getfield(current,"kern"))
+            report_injections("kern: %p",getkern(current))
             skipping = false
         elseif not skipping then
             report_injections()
@@ -566,74 +562,63 @@ local function inject_kerns_only(head,where)
     local posttail    = nil -- saves a lookup
     local replacetail = nil -- saves a lookup
     while current do
-        local id   = getid(current)
         local next = getnext(current)
-        if id == glyph_code then
-            if getsubtype(current) < 256 then
-                local p = rawget(properties,current)
-                if p then
-                 -- local i = rawget(p,"injections")
-                    local i = p.injections
-                    if i then
-                        -- left|glyph|right
-                        local leftkern = i.leftkern
-                        if leftkern and leftkern ~= 0 then
-                            if use_advance then
-                                setfield(current,"xoffset",leftkern)
-                                setfield(current,"xadvance",leftkern)
-                            else
-                                insert_node_before(head,current,newkern(leftkern))
+        local char, id = ischar(current)
+        if char then
+            local p = rawget(properties,current)
+            if p then
+             -- local i = rawget(p,"injections")
+                local i = p.injections
+                if i then
+                    -- left|glyph|right
+                    local leftkern = i.leftkern
+                    if leftkern and leftkern ~= 0 then
+                        insert_node_before(head,current,newkern(leftkern))
+                    end
+                end
+                if prevdisc then
+                    local done = false
+                    if post then
+                     -- local i = rawget(p,"postinjections")
+                        local i = p.postinjections
+                        if i then
+                            local leftkern = i.leftkern
+                            if leftkern and leftkern ~= 0 then
+                                setlink(posttail,newkern(leftkern))
+                                done = true
                             end
                         end
                     end
-                    if prevdisc then
-                        local done = false
-                        if post then
-                         -- local i = rawget(p,"postinjections")
-                            local i = p.postinjections
-                            if i then
-                                local leftkern = i.leftkern
-                                if leftkern and leftkern ~= 0 then
-                                    if use_advance then
-                                        setfield(post,"xadvance",leftkern)
-                                    else
-                                        insert_node_after(post,posttail,newkern(leftkern))
-                                        done = true
-                                    end
-                                end
+                    if replace then
+                     -- local i = rawget(p,"replaceinjections")
+                        local i = p.replaceinjections
+                        if i then
+                            local leftkern = i.leftkern
+                            if leftkern and leftkern ~= 0 then
+                                setlink(replacetail,newkern(leftkern))
+                                done = true
                             end
                         end
-                        if replace then
-                         -- local i = rawget(p,"replaceinjections")
-                            local i = p.replaceinjections
-                            if i then
-                                local leftkern = i.leftkern
-                                if leftkern and leftkern ~= 0 then
-                                    if use_advance then
-                                        setfield(replace,"xadvance",leftkern)
-                                    else
-                                        insert_node_after(replace,replacetail,newkern(leftkern))
-                                        done = true
-                                    end
-                                end
-                            end
-                        else
-                         -- local i = rawget(p,"emptyinjections")
-                            local i = p.emptyinjections
-                            if i then
-                                -- glyph|disc|glyph (special case)
-                                local leftkern = i.leftkern
-                                if leftkern and leftkern ~= 0 then
-                                    setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
-                                end
+                    else
+                     -- local i = rawget(p,"emptyinjections")
+                        local i = p.emptyinjections
+                        if i then
+                            -- glyph|disc|glyph (special case)
+                            local leftkern = i.leftkern
+                            if leftkern and leftkern ~= 0 then
+                                setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
                             end
                         end
-                        if done then
-                            setdisc(prevdisc,pre,post,replace)
-                        end
+                    end
+                    if done then
+                        setdisc(prevdisc,pre,post,replace)
                     end
                 end
             end
+            prevdisc  = nil
+            prevglyph = current
+        elseif char == false then
+            -- other font
             prevdisc  = nil
             prevglyph = current
         elseif id == disc_code then
@@ -649,13 +634,8 @@ local function inject_kerns_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                if use_advance then
-                                    setfield(pre,"xoffset",leftkern)
-                                    setfield(pre,"xadvance",leftkern)
-                                else
-                                    pre  = insert_node_before(pre,n,newkern(leftkern))
-                                    done = true
-                                end
+                                pre  = insert_node_before(pre,n,newkern(leftkern))
+                                done = true
                             end
                         end
                     end
@@ -671,13 +651,8 @@ local function inject_kerns_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                if use_advance then
-                                    setfield(post,"xoffset",leftkern)
-                                    setfield(post,"xadvance",leftkern)
-                                else
-                                    post = insert_node_before(post,n,newkern(leftkern))
-                                    done = true
-                                end
+                                post = insert_node_before(post,n,newkern(leftkern))
+                                done = true
                             end
                         end
                     end
@@ -693,13 +668,8 @@ local function inject_kerns_only(head,where)
                         if i then
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
-                                if use_advance then
-                                    setfield(replace,"xoffset",leftkern)
-                                    setfield(replace,"xadvance",leftkern)
-                                else
-                                    replace = insert_node_before(replace,n,newkern(leftkern))
-                                    done    = true
-                                end
+                                replace = insert_node_before(replace,n,newkern(leftkern))
+                                done    = true
                             end
                         end
                     end
@@ -743,85 +713,86 @@ local function inject_pairs_only(head,where)
     local posttail    = nil -- saves a lookup
     local replacetail = nil -- saves a lookup
     while current do
-        local id   = getid(current)
         local next = getnext(current)
-        if id == glyph_code then
-            if getsubtype(current) < 256 then
-                local p = rawget(properties,current)
-                if p then
-                 -- local i = rawget(p,"injections")
-                    local i = p.injections
+        local char, id = ischar(current)
+        if char then
+            local p = rawget(properties,current)
+            if p then
+             -- local i = rawget(p,"injections")
+                local i = p.injections
+                if i then
+                    -- left|glyph|right
+                    local yoffset = i.yoffset
+                    if yoffset and yoffset ~= 0 then
+                        setoffsets(current,false,yoffset)
+                    end
+                    local leftkern = i.leftkern
+                    if leftkern and leftkern ~= 0 then
+                        head = insert_node_before(head,current,newkern(leftkern))
+                    end
+                    local rightkern = i.rightkern
+                    if rightkern and rightkern ~= 0 then
+                        insert_node_after(head,current,newkern(rightkern))
+                    end
+                else
+                 -- local i = rawget(p,"emptyinjections")
+                    local i = p.emptyinjections
                     if i then
-                        -- left|glyph|right
-                        local yoffset = i.yoffset
-                        if yoffset and yoffset ~= 0 then
-                            setfield(current,"yoffset",yoffset)
-                        end
-                        local leftkern = i.leftkern
-                        if leftkern and leftkern ~= 0 then
-                            head = insert_node_before(head,current,newkern(leftkern))
-                        end
+                        -- glyph|disc|glyph (special case)
+-- is this okay?
                         local rightkern = i.rightkern
                         if rightkern and rightkern ~= 0 then
-                            insert_node_after(head,current,newkern(rightkern))
-                        end
-                    else
-                     -- local i = rawget(p,"emptyinjections")
-                        local i = p.emptyinjections
-                        if i then
-                            -- glyph|disc|glyph (special case)
--- is this okay?
-                            local rightkern = i.rightkern
-                            if rightkern and rightkern ~= 0 then
-                                if next and getid(next) == disc_code then
-                                    if replace then
-                                        -- error, we expect an empty one
-                                    else
-                                        setfield(next,"replace",newkern(rightkern)) -- maybe also leftkern
-                                    end
+                            if next and getid(next) == disc_code then
+                                if replace then
+                                    -- error, we expect an empty one
+                                else
+                                    setfield(next,"replace",newkern(rightkern)) -- maybe also leftkern
                                 end
                             end
-                        end
-                    end
-                    if prevdisc then
-                        local done = false
-                        if post then
-                         -- local i = rawget(p,"postinjections")
-                            local i = p.postinjections
-                            if i then
-                                local leftkern = i.leftkern
-                                if leftkern and leftkern ~= 0 then
-                                    insert_node_after(post,posttail,newkern(leftkern))
-                                    done = true
-                                end
-                            end
-                        end
-                        if replace then
-                         -- local i = rawget(p,"replaceinjections")
-                            local i = p.replaceinjections
-                            if i then
-                                local leftkern = i.leftkern
-                                if leftkern and leftkern ~= 0 then
-                                    insert_node_after(replace,replacetail,newkern(leftkern))
-                                    done = true
-                                end
-                            end
-                        else
-                            local i = p.emptyinjections
-                            if i then
--- new .. okay?
-                                local leftkern = i.leftkern
-                                if leftkern and leftkern ~= 0 then
-                                    setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
-                                end
-                            end
-                        end
-                        if done then
-                            setdisc(prevdisc,pre,post,replace)
                         end
                     end
                 end
+                if prevdisc then
+                    local done = false
+                    if post then
+                     -- local i = rawget(p,"postinjections")
+                        local i = p.postinjections
+                        if i then
+                            local leftkern = i.leftkern
+                            if leftkern and leftkern ~= 0 then
+                                setlink(posttail,newkern(leftkern))
+                                done = true
+                            end
+                        end
+                    end
+                    if replace then
+                     -- local i = rawget(p,"replaceinjections")
+                        local i = p.replaceinjections
+                        if i then
+                            local leftkern = i.leftkern
+                            if leftkern and leftkern ~= 0 then
+                                setlink(replacetail,newkern(leftkern))
+                                done = true
+                            end
+                        end
+                    else
+                        local i = p.emptyinjections
+                        if i then
+                            -- new .. okay?
+                            local leftkern = i.leftkern
+                            if leftkern and leftkern ~= 0 then
+                                setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
+                            end
+                        end
+                    end
+                    if done then
+                        setdisc(prevdisc,pre,post,replace)
+                    end
+                end
             end
+            prevdisc  = nil
+            prevglyph = current
+        elseif char == false then
             prevdisc  = nil
             prevglyph = current
         elseif id == disc_code then
@@ -837,7 +808,7 @@ local function inject_pairs_only(head,where)
                         if i then
                             local yoffset = i.yoffset
                             if yoffset and yoffset ~= 0 then
-                                setfield(n,"yoffset",yoffset)
+                                setoffsets(n,false,yoffset)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
@@ -863,7 +834,7 @@ local function inject_pairs_only(head,where)
                         if i then
                             local yoffset = i.yoffset
                             if yoffset and yoffset ~= 0 then
-                                setfield(n,"yoffset",yoffset)
+                                setoffsets(n,false,yoffset)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
@@ -889,7 +860,7 @@ local function inject_pairs_only(head,where)
                         if i then
                             local yoffset = i.yoffset
                             if yoffset and yoffset ~= 0 then
-                                setfield(n,"yoffset",yoffset)
+                                setoffsets(n,false,yoffset)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
@@ -958,30 +929,9 @@ local function inject_pairs_only(head,where)
     return tonode(head), true
 end
 
--- local function showoffset(n,flag)
---     local ox = getfield(n,"xoffset")
---     local oy = getfield(n,"yoffset")
---     if flag then
---         if ox == 0 then
---             setcolor(n,oy == 0 and "darkgray" or "darkgreen")
---         else
---             setcolor(n,oy == 0 and "darkblue" or "darkred")
---         end
---     else
---         if ox == 0 then
---             setcolor(n,oy == 0 and "gray" or "green")
---         else
---             setcolor(n,oy == 0 and "blue" or "red")
---         end
---     end
--- end
-
 local function showoffset(n,flag)
-    local o = getfield(n,"xoffset")
-    if o == 0 then
-        o = getfield(n,"yoffset")
-    end
-    if o ~= 0 then
+    local x, y = getoffsets(n)
+    if x ~= 0 or y ~= 0 then
         setcolor(n,flag and "darkred" or "darkgreen")
     else
         resetcolor(n)
@@ -1021,7 +971,8 @@ local function inject_everything(head,where)
     -- move out
     --
     local function processmark(p,n,pn) -- p = basenode
-        local px = getfield(p,"xoffset")
+        local px, py = getoffsets(p)
+        local nx, ny = getoffsets(n)
         local ox = 0
         local rightkern = nil
         local pp = rawget(properties,p)
@@ -1084,165 +1035,166 @@ local function inject_everything(head,where)
                 end
             end
         end
-        local oy = getfield(n,"yoffset") + getfield(p,"yoffset") + pn.marky
-        setfield(n,"xoffset",ox)
-        setfield(n,"yoffset",oy)
+        local oy = ny + py + pn.marky
+        setoffsets(n,ox,oy)
         if trace_marks then
             showoffset(n,true)
         end
     end
     -- todo: marks in disc
     while current do
-        local id   = getid(current)
         local next = getnext(current)
-        if id == glyph_code then
-            if getsubtype(current) < 256 then
-                local p = rawget(properties,current)
-                if p then
-                 -- local i = rawget(p,"injections")
-                    local i = p.injections
-                    if i then
-                        local pm = i.markbasenode
-                        if pm then
-                            nofmarks = nofmarks + 1
-                            marks[nofmarks] = current
-                        else
-                            local yoffset = i.yoffset
-                            if yoffset and yoffset ~= 0 then
-                                setfield(current,"yoffset",yoffset)
-                            end
-                            if hascursives then
-                                local cursivex = i.cursivex
-                                if cursivex then
-                                    if cursiveanchor then
-                                        if cursivex ~= 0 then
-                                            i.leftkern = (i.leftkern or 0) + cursivex
-                                        end
-                                        if maxc == 0 then
-                                            minc = 1
-                                            maxc = 1
-                                            glyphs[1] = cursiveanchor
-                                        else
-                                            maxc = maxc + 1
-                                            glyphs[maxc] = cursiveanchor
-                                        end
-                                        properties[cursiveanchor].cursivedy = i.cursivey -- cursiveprops
-                                        last = current
-                                    else
-                                        maxc = 0
+        local char, id = ischar(current)
+        if char then
+            local p = rawget(properties,current)
+            if p then
+             -- local i = rawget(p,"injections")
+                local i = p.injections
+                if i then
+                    local pm = i.markbasenode
+                    if pm then
+                        nofmarks = nofmarks + 1
+                        marks[nofmarks] = current
+                    else
+                        local yoffset = i.yoffset
+                        if yoffset and yoffset ~= 0 then
+                            setoffsets(current,false,yoffset)
+                        end
+                        if hascursives then
+                            local cursivex = i.cursivex
+                            if cursivex then
+                                if cursiveanchor then
+                                    if cursivex ~= 0 then
+                                        i.leftkern = (i.leftkern or 0) + cursivex
                                     end
-                                elseif maxc > 0 then
-                                    local ny = getfield(current,"yoffset")
+                                    if maxc == 0 then
+                                        minc = 1
+                                        maxc = 1
+                                        glyphs[1] = cursiveanchor
+                                    else
+                                        maxc = maxc + 1
+                                        glyphs[maxc] = cursiveanchor
+                                    end
+                                    properties[cursiveanchor].cursivedy = i.cursivey -- cursiveprops
+                                    last = current
+                                else
+                                    maxc = 0
+                                end
+                            elseif maxc > 0 then
+                                local nx, ny = getoffsets(current)
+                                for i=maxc,minc,-1 do
+                                    local ti = glyphs[i]
+                                    ny = ny + properties[ti].cursivedy
+                                    setoffsets(ti,false,ny) -- why not add ?
+                                    if trace_cursive then
+                                        showoffset(ti)
+                                    end
+                                end
+                                maxc = 0
+                                cursiveanchor = nil
+                            end
+                            if i.cursiveanchor then
+                                cursiveanchor = current -- no need for both now
+                            else
+                                if maxc > 0 then
+                                    local nx, ny = getoffsets(current)
                                     for i=maxc,minc,-1 do
                                         local ti = glyphs[i]
                                         ny = ny + properties[ti].cursivedy
-                                        setfield(ti,"yoffset",ny) -- why not add ?
+                                        setoffsets(ti,false,ny) -- why not add ?
                                         if trace_cursive then
                                             showoffset(ti)
                                         end
                                     end
                                     maxc = 0
-                                    cursiveanchor = nil
                                 end
-                                if i.cursiveanchor then
-                                    cursiveanchor = current -- no need for both now
-                                else
-                                    if maxc > 0 then
-                                        local ny = getfield(current,"yoffset")
-                                        for i=maxc,minc,-1 do
-                                            local ti = glyphs[i]
-                                            ny = ny + properties[ti].cursivedy
-                                            setfield(ti,"yoffset",ny) -- why not add ?
-                                            if trace_cursive then
-                                                showoffset(ti)
-                                            end
-                                        end
-                                        maxc = 0
-                                    end
-                                    cursiveanchor = nil
-                                end
-                            end
-                            -- left|glyph|right
-                            local leftkern = i.leftkern
-                            if leftkern and leftkern ~= 0 then
-                                insert_node_before(head,current,newkern(leftkern))
-                            end
-                            local rightkern = i.rightkern
-                            if rightkern and rightkern ~= 0 then
-                                insert_node_after(head,current,newkern(rightkern))
+                                cursiveanchor = nil
                             end
                         end
-                    else
-                     -- local i = rawget(p,"emptyinjections")
-                        local i = p.emptyinjections
-                        if i then
-                            -- glyph|disc|glyph (special case)
-                            -- okay?
-                            local rightkern = i.rightkern
-                            if rightkern and rightkern ~= 0 then
-                                if next and getid(next) == disc_code then
-                                    if replace then
-                                        -- error, we expect an empty one
-                                    else
-                                        setfield(next,"replace",newkern(rightkern)) -- maybe also leftkern
-                                    end
-                                end
-                            end
+                        -- left|glyph|right
+                        local leftkern = i.leftkern
+                        if leftkern and leftkern ~= 0 then
+                            insert_node_before(head,current,newkern(leftkern))
                         end
-                    end
-                    if prevdisc then
-                        if p then
-                            local done = false
-                            if post then
-                             -- local i = rawget(p,"postinjections")
-                                local i = p.postinjections
-                                if i then
-                                    local leftkern = i.leftkern
-                                    if leftkern and leftkern ~= 0 then
-                                        insert_node_after(post,posttail,newkern(leftkern))
-                                        done = true
-                                    end
-                                end
-                            end
-                            if replace then
-                             -- local i = rawget(p,"replaceinjections")
-                                local i = p.replaceinjections
-                                if i then
-                                    local leftkern = i.leftkern
-                                    if leftkern and leftkern ~= 0 then
-                                        insert_node_after(replace,replacetail,newkern(leftkern))
-                                        done = true
-                                    end
-                                end
-                            else
-                             -- local i = rawget(p,"emptyinjections")
-                                local i = p.emptyinjections
-                                if i then
-                                    local leftkern = i.leftkern
-                                    if leftkern and leftkern ~= 0 then
-                                        setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
-                                    end
-                                end
-                            end
-                            if done then
-                                setdisc(prevdisc,pre,post,replace)
-                            end
+                        local rightkern = i.rightkern
+                        if rightkern and rightkern ~= 0 then
+                            insert_node_after(head,current,newkern(rightkern))
                         end
                     end
                 else
-                    -- cursive
-                    if hascursives and maxc > 0 then
-                        local ny = getfield(current,"yoffset")
-                        for i=maxc,minc,-1 do
-                            local ti = glyphs[i]
-                            ny = ny + properties[ti].cursivedy
-                            setfield(ti,"yoffset",getfield(ti,"yoffset") + ny) -- can be mark
+                 -- local i = rawget(p,"emptyinjections")
+                    local i = p.emptyinjections
+                    if i then
+                        -- glyph|disc|glyph (special case)
+                        -- okay?
+                        local rightkern = i.rightkern
+                        if rightkern and rightkern ~= 0 then
+                            if next and getid(next) == disc_code then
+                                if replace then
+                                    -- error, we expect an empty one
+                                else
+                                    setfield(next,"replace",newkern(rightkern)) -- maybe also leftkern
+                                end
+                            end
                         end
-                        maxc = 0
-                        cursiveanchor = nil
                     end
                 end
+                if prevdisc then
+                    if p then
+                        local done = false
+                        if post then
+                         -- local i = rawget(p,"postinjections")
+                            local i = p.postinjections
+                            if i then
+                                local leftkern = i.leftkern
+                                if leftkern and leftkern ~= 0 then
+                                    setlink(posttail,newkern(leftkern))
+                                    done = true
+                                end
+                            end
+                        end
+                        if replace then
+                         -- local i = rawget(p,"replaceinjections")
+                            local i = p.replaceinjections
+                            if i then
+                                local leftkern = i.leftkern
+                                if leftkern and leftkern ~= 0 then
+                                    setlink(replacetail,newkern(leftkern))
+                                    done = true
+                                end
+                            end
+                        else
+                         -- local i = rawget(p,"emptyinjections")
+                            local i = p.emptyinjections
+                            if i then
+                                local leftkern = i.leftkern
+                                if leftkern and leftkern ~= 0 then
+                                    setfield(prev,"replace",newkern(leftkern)) -- maybe also leftkern
+                                end
+                            end
+                        end
+                        if done then
+                            setdisc(prevdisc,pre,post,replace)
+                        end
+                    end
+                end
+            else
+                -- cursive
+                if hascursives and maxc > 0 then
+                    local nx, ny = getoffsets(current)
+                    for i=maxc,minc,-1 do
+                        local ti = glyphs[i]
+                        ny = ny + properties[ti].cursivedy
+                        local xi, yi = getoffsets(ti)
+                        setoffsets(ti,xi,yi + ny) -- can be mark, we could use properties
+                    end
+                    maxc = 0
+                    cursiveanchor = nil
+                end
             end
+            prevdisc  = nil
+            prevglyph = current
+        elseif char == false then
             prevdisc  = nil
             prevglyph = current
         elseif id == disc_code then
@@ -1258,7 +1210,7 @@ local function inject_everything(head,where)
                         if i then
                             local yoffset = i.yoffset
                             if yoffset and yoffset ~= 0 then
-                                setfield(n,"yoffset",yoffset)
+                                setoffsets(n,false,yoffset)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
@@ -1290,7 +1242,7 @@ local function inject_everything(head,where)
                         if i then
                             local yoffset = i.yoffset
                             if yoffset and yoffset ~= 0 then
-                                setfield(n,"yoffset",yoffset)
+                                setoffsets(n,false,yoffset)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
@@ -1322,7 +1274,7 @@ local function inject_everything(head,where)
                         if i then
                             local yoffset = i.yoffset
                             if yoffset and yoffset ~= 0 then
-                                setfield(n,"yoffset",yoffset)
+                                setoffsets(n,false,yoffset)
                             end
                             local leftkern = i.leftkern
                             if leftkern and leftkern ~= 0 then
@@ -1390,11 +1342,11 @@ local function inject_everything(head,where)
     end
     -- cursive
     if hascursives and maxc > 0 then
-        local ny = getfield(last,"yoffset")
+        local nx, ny = getoffsets(last)
         for i=maxc,minc,-1 do
             local ti = glyphs[i]
             ny = ny + properties[ti].cursivedy
-            setfield(ti,"yoffset",ny) -- why not add ?
+            setoffsets(ti,false,ny) -- why not add ?
             if trace_cursive then
                 showoffset(ti)
             end
@@ -1470,8 +1422,8 @@ end
 
 injections.getthreshold = getthreshold
 
-function injections.isspace(n,threshold)
-    if getid(n) == glue_code then
+function injections.isspace(n,threshold,id)
+    if (id or getid(n)) == glue_code then
         local w = getfield(n,"width")
         if threshold and w > threshold then -- was >=
             return 32

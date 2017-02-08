@@ -42,11 +42,53 @@ local function resettiming(instance)
     timers[instance or "notimer"] = { timing = 0, loadtime = 0 }
 end
 
+local ticks   = clock
+local seconds = function(n) return n or 0 end
+
+-- local okay, ffi = pcall(require,"ffi")
+--
+-- if ffi and os.type == "windows" then
+--
+--     local okay, kernel = pcall(ffi.load,"kernel32")
+--
+--     if kernel then
+--
+--         local tonumber = ffi.number or tonumber
+--
+--         ffi.cdef[[
+--             int QueryPerformanceFrequency(int64_t *lpFrequency);
+--             int QueryPerformanceCounter(int64_t *lpPerformanceCount);
+--         ]]
+--
+--         local target = ffi.new("__int64[1]")
+--
+--         ticks = function()
+--             if kernel.QueryPerformanceCounter(target) == 1 then
+--                 return tonumber(target[0])
+--             else
+--                 return 0
+--             end
+--         end
+--
+--         local target = ffi.new("__int64[1]")
+--
+--         seconds = function(ticks)
+--             if kernel.QueryPerformanceFrequency(target) == 1 then
+--                 return ticks / tonumber(target[0])
+--             else
+--                 return 0
+--             end
+--         end
+--
+--     end
+--
+-- end
+
 local function starttiming(instance)
     local timer = timers[instance or "notimer"]
     local it = timer.timing or 0
     if it == 0 then
-        timer.starttime = clock()
+        timer.starttime = ticks()
         if not timer.loadtime then
             timer.loadtime = 0
         end
@@ -62,7 +104,7 @@ local function stoptiming(instance)
     else
         local starttime = timer.starttime
         if starttime and starttime > 0 then
-            local stoptime  = clock()
+            local stoptime  = ticks()
             local loadtime  = stoptime - starttime
             timer.stoptime  = stoptime
             timer.loadtime  = timer.loadtime + loadtime
@@ -79,7 +121,7 @@ local function elapsed(instance)
         return instance or 0
     else
         local timer = timers[instance or "notimer"]
-        return timer and timer.loadtime or 0
+        return timer and seconds(timer.loadtime) or 0
     end
 end
 

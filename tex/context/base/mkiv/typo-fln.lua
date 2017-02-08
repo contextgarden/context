@@ -45,6 +45,7 @@ local getbox             = nuts.getbox
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
 local setlink            = nuts.setlink
+local setfont            = nuts.setfont
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
@@ -131,7 +132,7 @@ actions[v_line] = function(head,setting)
             if dynamic > 0 then
                 setattr(g,0,dynamic)
             end
-            setfield(g,"font",font)
+            setfont(g,font)
         end
     end
 
@@ -207,7 +208,7 @@ actions[v_line] = function(head,setting)
         if dynamic > 0 then
             setattr(start,0,dynamic)
         end
-        setfield(start,"font",font)
+        setfont(start,font)
         if ca and ca > 0 then
             setattr(start,a_colormodel,ma == 0 and 1 or ma)
             setattr(start,a_color,ca)
@@ -311,7 +312,7 @@ actions[v_word] = function(head,setting)
             if dynamic > 0 then
                 setattr(start,0,dynamic)
             end
-            setfield(start,"font",font)
+            setfont(start,font)
         elseif id == disc_code then
             -- continue
         elseif id == kern_code then -- todo: fontkern

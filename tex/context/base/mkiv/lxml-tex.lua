@@ -53,7 +53,8 @@ local xmlinclusions     = xml.inclusions
 local xmlbadinclusions  = xml.badinclusions
 local xmlcontent        = xml.content
 local xmllastmatch      = xml.lastmatch
-
+local xmlpushmatch      = xml.pushmatch
+local xmlpopmatch       = xml.popmatch
 
 directives.enable("xml.path.keeplastmatch")
 
@@ -1942,6 +1943,9 @@ function lxml.lastmatch()
         all(collected)
     end
 end
+
+lxml.pushmatch = xmlpushmatch
+lxml.popmatch  = xmlpopmatch
 
 function lxml.snippet(id,i)
     local e = getid(id)

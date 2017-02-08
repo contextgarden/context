@@ -961,13 +961,13 @@ local rightparent  = (P")")
 local value        = C((leftparent * (1-rightparent)^0 * rightparent + (1-space))^1)
 local dimension    = C((space/"" + P(1))^1)
 local rest         = C(P(1)^0)
-local scale_none   =               Cc(0)
-local scale_at     = P("at")     * Cc(1) * spaces * dimension -- dimension
-local scale_sa     = P("sa")     * Cc(2) * spaces * dimension -- number
-local scale_mo     = P("mo")     * Cc(3) * spaces * dimension -- number
-local scale_scaled = P("scaled") * Cc(4) * spaces * dimension -- number
-local scale_ht     = P("ht")     * Cc(5) * spaces * dimension -- dimension
-local scale_cp     = P("cp")     * Cc(6) * spaces * dimension -- dimension
+local scale_none   =                     Cc(0)
+local scale_at     = (P("at") +P("@")) * Cc(1) * spaces * dimension -- dimension
+local scale_sa     = P("sa")           * Cc(2) * spaces * dimension -- number
+local scale_mo     = P("mo")           * Cc(3) * spaces * dimension -- number
+local scale_scaled = P("scaled")       * Cc(4) * spaces * dimension -- number
+local scale_ht     = P("ht")           * Cc(5) * spaces * dimension -- dimension
+local scale_cp     = P("cp")           * Cc(6) * spaces * dimension -- dimension
 
 local specialscale = { [5] = "ht", [6] = "cp" }
 

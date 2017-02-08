@@ -1270,3 +1270,35 @@ function utf.chrlen(u) -- u is number
         (u < 0xFC and 5) or
         (u < 0xFE and 6) or 0
 end
+
+-- hashing saves a little but not that much in practice
+--
+-- local utf32 = table.setmetatableindex(function(t,k) local v = toutf32(k) t[k] = v return v end)
+
+local extract = bit32.extract
+local char    = string.char
+
+function unicode.toutf32string(n)
+    if n <= 0xFF then
+        return
+            char(n) ..
+            "\000\000\000"
+    elseif n <= 0xFFFF then
+        return
+            char(extract(n, 0,8)) ..
+            char(extract(n, 8,8)) ..
+            "\000\000"
+    elseif n <= 0xFFFFFF then
+        return
+            char(extract(n, 0,8)) ..
+            char(extract(n, 8,8)) ..
+            char(extract(n,16,8)) ..
+            "\000"
+    else
+        return
+            char(extract(n, 0,8)) ..
+            char(extract(n, 8,8)) ..
+            char(extract(n,16,8)) ..
+            char(extract(n,24,8))
+    end
+end

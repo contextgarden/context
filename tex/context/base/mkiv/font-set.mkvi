@@ -137,7 +137,7 @@
 \unexpanded\def\font_preloads_fourth_stage
   {\begingroup
    %ifzeropt\fontcharwd\font\number`!\relax
-   \setbox\scratchbox\hbox{c o n t e x t}%
+   \setbox\scratchbox\hpack{\tf c o n t e x t}%
    \ifzeropt\wd\scratchbox
      \writeline
      \writestatus\m!fonts{!! No bodyfont has been defined and no defaults have been}%

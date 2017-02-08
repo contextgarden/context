@@ -518,8 +518,6 @@
 
 %D Tricky stuff:
 
-\newdimen\lastlinewidth
-
 \abovedisplayskip      \zeropoint
 \abovedisplayshortskip \zeropoint % evt. 0pt minus 3pt
 \belowdisplayskip      \zeropoint
@@ -528,6 +526,8 @@
 \predisplaypenalty     \zerocount
 \postdisplaypenalty    \zerocount % -5000 goes wrong, see penalty at \section
 \mathdisplayskipmode   \plusthree %  because align also adds
+
+% \predisplaygapfactor \zerocount % default is 2000
 
 \unexpanded\def\strc_formulas_forget_display_skips
   {\mathdisplayskipmode  \plusthree

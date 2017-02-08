@@ -67,10 +67,12 @@ local getlist             = nuts.getlist
 local getattr             = nuts.getattr
 local getfield            = nuts.getfield
 local getprop             = nuts.getprop
+local getdir              = nuts.getdir
 
 local setfield            = nuts.setfield
 local setprop             = nuts.setprop
 local setchar             = nuts.setchar
+local setdir              = nuts.setdir
 
 local properties          = nodes.properties
 
@@ -288,7 +290,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             setmetatable(t,mt_space)
             current = getnext(current)
         elseif id == dir_code then
-            local dir = getfield(current,"dir")
+            local dir = getdir(current)
             if dir == "+TLT" then
                 t = { }
                 setmetatable(t,mt_lre)
@@ -412,7 +414,7 @@ end
 local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for localpar)
     local id = getid(head)
     if id == localpar_code then
-        if getfield(head,"dir") == "TRT" then
+        if getdir(head) == "TRT" then
             return 1, "TRT", true
         else
             return 0, "TLT", true
@@ -930,7 +932,7 @@ local function apply_to_list(list,size,head,pardir)
                 setcolor(current,direction,false,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
-            setfield(current,"dir",pardir) -- is this really needed?
+            setdir(current,pardir) -- is this really needed?
         elseif id == glue_code then
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue

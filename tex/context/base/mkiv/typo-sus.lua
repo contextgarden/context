@@ -48,6 +48,8 @@ local getfield        = nuts.getfield
 local getattr         = nuts.getattr
 local getfont         = nuts.getfont
 local getlist         = nuts.getlist
+local getkern         = nuts.getkern
+local getpenalty      = nuts.getpenalty
 local isglyph         = nuts.isglyph
 
 local setattr         = nuts.setattr
@@ -77,7 +79,7 @@ local function special(n)
     if n then
         local id = getid(n)
         if id == kern_code then
-            local kern = getfield(n,"kern")
+            local kern = getkern(n)
             return kern < threshold
         elseif id == penalty_code then
             return true
@@ -124,7 +126,7 @@ local function mark(head,current,id,color)
         head = insert_before(head,current,kern)
         setcolor(rule,color)
  -- elseif id == kern_code then
- --     local width = getfield(current,"kern")
+ --     local width = getkern(current)
  --     local rule  = new_rule(width)
  --     local kern  = new_kern(-width)
  --     head = insert_before(head,current,rule)
@@ -231,7 +233,7 @@ function typesetters.marksuspects(head)
                     local prev = getprev(current)
                     local prid = prev and getid(prev)
                     local done = false
-                    if prid == penalty_code and getfield(prev,"penalty") == 10000 then
+                    if prid == penalty_code and getpenalty(prev) == 10000 then
                         done = 8 -- orange
                     else
                         done = 5 -- darkmagenta

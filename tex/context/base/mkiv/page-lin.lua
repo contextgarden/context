@@ -72,6 +72,7 @@ local setattr            = nuts.setattr
 local getlist            = nuts.getlist
 local getbox             = nuts.getbox
 local getfield           = nuts.getfield
+----- getdir             = nuts.getdir
 
 local setprop            = nuts.setprop
 local getprop            = nuts.getprop
@@ -480,7 +481,7 @@ function boxed.stage_two(n,m)
             local li = current_list[i]
             local n, m, ti = li[1], li[2], t[i]
             if ti then
-             -- local d = getfield(n,"dir")
+             -- local d = getdir(n)
              -- local l = getlist(n)
              -- if d == "TRT" then
              --     local w = getfield(n,"width")

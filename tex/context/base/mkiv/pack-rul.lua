@@ -45,6 +45,7 @@ local getwhd          = nuts.getwhd
 local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getbox          = nuts.getbox
+local getdir          = nuts.getdir
 
 local hpack           = nuts.hpack
 local traverse_id     = nuts.traverse_id
@@ -84,7 +85,7 @@ local function doreshapeframedbox(n)
                     if repack then
                         local subtype = getsubtype(n)
                         if subtype == box_code or subtype == line_code then
-                            lastlinelength = list_dimensions(l,getfield(n,"dir"))
+                            lastlinelength = list_dimensions(l,getdir(n))
                         else
                             lastlinelength = width
                         end
@@ -122,7 +123,7 @@ local function doreshapeframedbox(n)
                         if l then
                             local subtype = getsubtype(h)
                             if subtype == box_code or subtype == line_code then
-                                local p = hpack(l,maxwidth,'exactly',getfield(h,"dir")) -- multiple return value
+                                local p = hpack(l,maxwidth,'exactly',getdir(h)) -- multiple return value
                                 setfield(h,"glue_set",getfield(p,"glue_set"))
                                 setfield(h,"glue_order",getfield(p,"glue_order"))
                                 setfield(h,"glue_sign",getfield(p,"glue_sign"))
@@ -213,7 +214,7 @@ local function maxboxwidth(box)
             if repack then
                 local subtype = getsubtype(n)
                 if subtype == box_code or subtype == line_code then
-                    lastlinelength = list_dimensions(l,getfield(n,"dir"))
+                    lastlinelength = list_dimensions(l,getdir(n))
                 else
                     lastlinelength = getfield(n,"width")
                 end
@@ -238,6 +239,6 @@ nodes.maxboxwidth = maxboxwidth
 
 implement {
     name      = "themaxboxwidth",
-    actions   = function(n) context("%isp",maxboxwidth(getbox(n))) end,
+    actions   = function(n) context("%rsp",maxboxwidth(getbox(n))) end, -- r = rounded
     arguments = "integer"
 }

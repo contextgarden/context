@@ -1,5 +1,19 @@
 % language=uk
 
+% todo:
+
+% \starttext
+%     \setupbodyfont[cambria]
+%     \setupmathematics[kernpairs=yes]
+%     $abcd$ % 𝑎𝑏
+% \stoptext
+%
+% kernpairs = {
+%     [0x1D44E] = {
+%         [0x1D44F] = 1000, -- 𝑎𝑏 demo
+%     }
+% },
+
 \startcomponent fonts-math
 
 \environment fonts-environment
@@ -1021,12 +1035,12 @@ combined with kerns.
 
 In \CONTEXT\ we set the value to 1 which means that the factors for super- and
 subscript are set via math parameters (or constants in the font). We use a
-default of \type {{0,750}} so we don't shift the superscript and the subscript we
+default of \type {{0,800}} so we don't shift the superscript and the subscript we
 shift less than the italic correction. This is driven by a feature but you can
 change the values before loading a font, for instance with:
 
 \starttyping
-\adaptfontfeature[*math*][mathnolimitsmode={100,800}]
+\adaptfontfeature[*math*][mathnolimitsmode={100,700}]
 \stoptyping
 
 The defaults come out as:
@@ -1040,6 +1054,37 @@ The defaults come out as:
     {\ruledhbox to .15\hsize{\hss\showglyphs\switchtobodyfont[cambria, 20pt]$\displaystyle\int\nolimits^0_1$\hss}} {\tttf cambria}
 \stopcombination
 \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Kerning]
+
+Math kerns in \OPENTYPE\ are quite advanced and use a staircase model left
+and|/|or right of characters. However, hardly any math font implements them
+(extensively). Therefore we provide a way to fine tune your fonts to your
+preferences. You can test this mechanism by patching \type {cambria-math.lfg} by
+adding this to the mathematics subtable:
+
+\starttyping
+kernpairs = {
+    [0x1D44E] = {
+        [0x1D44F] = 1000, -- 𝑎𝑏 demo
+    }
+}
+\stoptyping
+
+After that, the next example should work:
+
+\starttyping
+\starttext
+    \setupbodyfont[cambria]
+    \setupmathematics[kernpairs=yes]
+    $abcd$
+\stoptext
+\stoptyping
+
+There should be a gap between the $𝑎$ and $𝑏$. It is not shown here because I
+don't want to mess up my goodie file.
 
 \stopsection
 

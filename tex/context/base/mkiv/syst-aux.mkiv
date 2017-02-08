@@ -7021,7 +7021,7 @@
 \unexpanded\def\retestfeature % timer support is new per 10/5/2005
   {\bgroup
    \ifcase\interactionmode\let\wait\relax\fi
-   \writestatus\m!system{starting feature test}\wait
+   \writestatus\m!system{starting feature test (n=\number\c_syst_helpers_test_feature_m)}\wait
    \resettimer
    \c_syst_helpers_test_feature_n\zerocount
    \syst_helpers_test_feature_step

@@ -288,17 +288,18 @@ local function whatever(current)
                 while start and start ~= stop do
                     local s = nodepool.stretch()
                     local n = getnext(start)
-                    setlink(start,s)
-                    setlink(s,n)
+                    setlink(start,s,n)
                     start = n
                 end
                 text = hpack(text,rwidth,"exactly")
             else
                 local left  = new_kern(delta/2)
                 local right = new_kern(delta/2)
-                setlink(left,start)
+--                 setlink(left,start)
+--                 setlink(stop,right)
+--                 setlink(text,left)
+                setlink(text,left,start)
                 setlink(stop,right)
-                setlink(text,left)
             end
             setlist(current,text)
         elseif delta < 0 then
@@ -348,16 +349,18 @@ local function whatever(current)
             elseif align == v_flushright then
                 local left  = new_kern(-delta)
                 local right = new_kern(delta)
-                setlink(left,text)
-                setlink(text,right)
-                setlink(right,start)
-                setlist(current,left)
+--                 setlink(left,text)
+--                 setlink(text,right)
+--                 setlink(right,start)
+                    setlink(left,text,right,start)
+                    setlist(current,left)
             else
                 local left  = new_kern(-delta/2)
                 local right = new_kern(delta/2)
-                setlink(left,text)
-                setlink(text,right)
-                setlink(right,start)
+--                 setlink(left,text)
+--                 setlink(text,right)
+--                 setlink(right,start)
+                setlink(left,text,right,start)
                 setlist(current,left)
             end
         else

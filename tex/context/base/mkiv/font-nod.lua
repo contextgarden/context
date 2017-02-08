@@ -64,6 +64,9 @@ local getchar          = nuts.getchar
 local getlist          = nuts.getlist
 local getdisc          = nuts.getdisc
 local isglyph          = nuts.isglyph
+local getcomponents    = nuts.getcomponents
+local getkern          = nuts.getkern
+local getdir           = nuts.getdir
 
 local setfield         = nuts.setfield
 local setbox           = nuts.setbox
@@ -388,7 +391,7 @@ function step_tracers.codes(i,command,space)
         if id == glyph_code then
             showchar(c)
         elseif id == dir_code or id == localpar_code then
-            context("[%s]",getfield(c,"dir"))
+            context("[%s]",getdir(c))
         elseif id == disc_code then
             local pre, post, replace = getdisc(c)
             if pre or post or replace then
@@ -476,7 +479,7 @@ local function toutf(list,result,nofresult,stopcriterium,nostrip)
         for n in traverse_nodes(tonut(list)) do
             local c, id = isglyph(n)
             if c then
-                local components = getfield(n,"components")
+                local components = getcomponents(n)
                 if components then
                     result, nofresult = toutf(components,result,nofresult,false,true)
                 elseif c > 0 then
@@ -523,7 +526,7 @@ local function toutf(list,result,nofresult,stopcriterium,nostrip)
                     result[nofresult] = " "
                 end
             elseif id == kern_code then
-                if nofresult > 0 and result[nofresult] ~= " " and getfield(n,"kern") > threshold then
+                if nofresult > 0 and result[nofresult] ~= " " and getkern(n) > threshold then
                     nofresult = nofresult + 1
                     result[nofresult] = " "
                 end

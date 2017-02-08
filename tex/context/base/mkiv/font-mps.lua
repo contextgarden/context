@@ -262,6 +262,7 @@ local getsubtype     = nuts.getsubtype
 local getfield       = nuts.getfield
 local getbox         = nuts.getbox
 local getwhd         = nuts.getwhd
+local getkern        = nuts.getkern
 
 local effective_glue = nuts.effective_glue
 
@@ -339,7 +340,7 @@ function fonts.metapost.boxtomp(n,kind)
                     dx = dx + horizontal(parent,replace,xoffset+dx,yoffset)
                 end
             elseif id == kern_code then
-                dx = dx + getfield(current,"kern") * fc
+                dx = dx + getkern(current) * fc
             elseif id == glue_code then
                 dx = dx + effective_glue(current,parent) * fc
             elseif id == hlist_code then
@@ -389,14 +390,15 @@ function fonts.metapost.boxtomp(n,kind)
                 end
                 dy = dy - ht * fc
             elseif id == vlist_code then
-                dy = dy - getfield(current,"height") * fc
+                local wd, ht, dp = getwhd(current)
+                dy = dy - ht * fc
                 local list = getlist(current)
                 if list then
                     vertical(current,list,xoffset+getfield(current,"shift")*fc,yoffset+dy)
                 end
-                dy = dy - getfield(current,"depth") * fc
+                dy = dy - dp * fc
             elseif id == kern_code then
-                dy = dy - getfield(current,"kern") * fc
+                dy = dy - getkern(current) * fc
             elseif id == glue_code then
                 dy = dy - effective_glue(current,parent) * fc
             elseif id == rule_code then

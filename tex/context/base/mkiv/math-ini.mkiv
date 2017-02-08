@@ -118,6 +118,7 @@
 \definesystemattribute[mathcategory]   [public]
 \definesystemattribute[mathmode]       [public]
 \definesystemattribute[mathitalics]    [public]
+\definesystemattribute[mathkernpairs]  [public]
 \definesystemattribute[mathbidi]       [public]
 \definesystemattribute[mathdomain]     [public]
 
@@ -1356,6 +1357,31 @@
 %     \c_math_italics_attribute\attributeunsetvalue
 %     \csname\??mathitalics\mathematicsparameter\s!italics\endcsname
 % \to \everyswitchmathematics % only in mathematics
+
+%D Math kerns (experiment)
+
+\installcorenamespace{mathkernpairs}
+
+\setnewconstant\c_math_kernpairs_attribute\attributeunsetvalue % no real need for an extra constant
+
+\def\math_kernpairs_initialize
+  {\ifnum\c_math_kernpairs_attribute=\attributeunsetvalue \else
+     \clf_initializemathkernpairs % one time
+     \global\let\math_kernpairs_initialize\relax
+   \fi}
+
+\appendtoks
+    \edef\p_kernpairs{\mathematicsparameter\s!kernpairs}%
+    \c_math_kernpairs_attribute\ifx\p_kernpairs\v!yes\plusone\else\attributeunsetvalue\fi\relax
+\to \everyswitchmathematics % only in mathematics
+
+\appendtoks
+    \math_kernpairs_initialize
+    \attribute\mathkernpairsattribute\c_math_kernpairs_attribute
+\to \everymathematics
+
+\setupmathematics
+  [\s!kernpairs=\v!no]
 
 %D \macros
 %D   {enablemathpunctuation,disablemathpunctuation}

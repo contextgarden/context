@@ -205,6 +205,14 @@ function sandbox.enable()
             sort(skip)
             report("not overloaded redefined : %s",concat(skip," | "))
         end
+        --
+        if jit then
+            ffi = require("ffi")
+        end
+        for k, v in next, ffi do
+            ffi[k] = nil
+        end
+        --
         initializers = nil
         finalizers   = nil
         originals    = nil

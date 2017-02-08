@@ -451,13 +451,15 @@ end
 
 -- for the moment here but better in some builder modules
 
+-- gets register "n" and location "i" (where 1 is before)
+
 local report_insert = logs.reporter("pagebuilder","insert")
 local trace_insert  = false  trackers.register("pagebuilder.insert",function(v) trace_insert = v end)
 
 local texgetglue = tex.getglue
------ texsetglue = tex.setglue
+local texsetglue = tex.setglue
 
-function notes.check_spacing(n,i)
+local function check_spacing(n,i)
     local gn, pn, mn = texgetglue(n)
     local gi, pi, mi = texgetglue(i > 1 and "s_strc_notes_inbetween" or "s_strc_notes_before")
     local gt, pt, mt = gn+gi, pn+pi, mn+mi
@@ -466,8 +468,13 @@ function notes.check_spacing(n,i)
         report_insert("%s %i: %p plus %p minus %p",i > 1 and "inbetween" or "before   ",n,gi,pi,mi)
         report_insert("%s %i: %p plus %p minus %p","effective",n,gt,pt,mt)
     end
- -- texsetglue(0,gt,pt,mt) -- for the moment we use skip register 0
     return gt, pt, mt
 end
 
-callback.register("build_page_insert", notes.check_spacing)
+notes.check_spacing = check_spacing
+
+callback.register("build_page_insert", function(n,i)
+    local gt, pt, mt = check_spacing(n,i)
+    texsetglue(0,gt,pt,mt) -- for the moment we use skip register 0
+    return 0
+end)

@@ -200,64 +200,80 @@ local n_getdisc         = node.getdisc
 local n_getwhd          = node.getwhd
 local n_getleader       = node.getleader
 
-local n_setnext         = node.setnext or
+local n_setnext         = node.setnext or -- always
     function(c,next)
         setfield(c,"next",n)
     end
-local n_setprev         = node.setprev or
+local n_setprev         = node.setprev or -- always
     function(c,prev)
         setfield(c,"prev",p)
     end
-local n_setlink         = node.setlink or
-    function(c1,c2)
-        if c1 then setfield(c1,"next",c2) end
-        if c2 then setfield(c2,"prev",c1) end
+local n_setlink         = node.setlink or -- always
+--     function(c1,c2)
+--         if c1 then setfield(c1,"next",c2) end
+--         if c2 then setfield(c2,"prev",c1) end
+--     end
+    function(...)
+        -- not that fast but not used often anyway
+        local h = nil
+        for i=1,select("#",...) do
+            local n = (select(i,...))
+            if not n then
+                -- go on
+            elseif h then
+                setfield(h,"next",n)
+                setfield(n,"prev",h)
+            else
+                h = n
+            end
+        end
+        return h
     end
-local n_setboth         = node.setboth or
+local n_setboth         = node.setboth or -- always
     function(c,p,n)
         setfield(c,"prev",p)
         setfield(c,"next",n)
     end
 
-node.setnext            = n_setnext
-node.setprev            = n_setprev
-node.setlink            = n_setlink
-node.setboth            = n_setboth
+node.setnext          = n_setnext
+node.setprev          = n_setprev
+node.setlink          = n_setlink
+node.setboth          = n_setboth
 
-nodes.getfield          = n_getfield
-nodes.setfield          = n_setfield
-nodes.getattr           = n_getattr
-nodes.setattr           = n_setattr
-nodes.takeattr          = nodes.unset_attribute
+nodes.getfield        = n_getfield
+nodes.setfield        = n_setfield
+nodes.getattr         = n_getattr
+nodes.setattr         = n_setattr
+nodes.takeattr        = nodes.unset_attribute
 
-nodes.getnext           = n_getnext
-nodes.getprev           = n_getprev
-nodes.getid             = n_getid
-nodes.getchar           = n_getchar
-nodes.getfont           = n_getfont
-nodes.getsubtype        = n_getsubtype
-nodes.getlist           = n_getlist
-nodes.getleader         = n_getleader
-nodes.getdisc           = n_getdisc
+nodes.getnext         = n_getnext
+nodes.getprev         = n_getprev
+nodes.getid           = n_getid
+nodes.getchar         = n_getchar
+nodes.getfont         = n_getfont
+nodes.getsubtype      = n_getsubtype
+nodes.getlist         = n_getlist
+nodes.getleader       = n_getleader
+nodes.getdisc         = n_getdisc
 
-nodes.is_char           = node.is_char
-nodes.ischar            = node.is_char
+nodes.is_char         = node.is_char
+nodes.ischar          = node.is_char
 
-nodes.is_glyph          = node.is_glyph
-nodes.isglyph           = node.is_glyph
+nodes.is_glyph        = node.is_glyph
+nodes.isglyph         = node.is_glyph
 
-nodes.getbox            = node.getbox or tex.getbox
-nodes.setbox            = node.setbox or tex.setbox
+nodes.getbox          = node.getbox or tex.getbox
+nodes.setbox          = node.setbox or tex.setbox
 
-local n_flush_node      = nodes.flush
-local n_copy_node       = nodes.copy
-local n_copy_list       = nodes.copy_list
-local n_find_tail       = nodes.tail
-local n_insert_after    = nodes.insert_after
-local n_insert_before   = nodes.insert_before
-local n_slide           = nodes.slide
+local n_flush_node    = nodes.flush
+local n_copy_node     = nodes.copy
+local n_copy_list     = nodes.copy_list
+local n_find_tail     = nodes.tail
+local n_insert_after  = nodes.insert_after
+local n_insert_before = nodes.insert_before
+local n_slide         = nodes.slide
 
-local n_remove_node     = node.remove -- not yet nodes.remove
+local n_remove_node   = node.remove -- not yet nodes.remove
 
 local function remove(head,current,free_too)
     local t = current

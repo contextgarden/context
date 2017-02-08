@@ -64,6 +64,8 @@ local getbox              = nuts.getbox
 local getattribute        = nuts.getattribute
 local getwhd              = nuts.getwhd
 local setwhd              = nuts.setwhd
+local getkern             = nuts.getkern
+local getpenalty          = nuts.getpenalty
 
 local texgetcount         = tex.getcount
 local texgetglue          = tex.getglue
@@ -176,7 +178,7 @@ local function discardtopglue(current,discarded)
             discarded[#discarded+1] = current
             current = getnext(current)
         elseif id == penalty_code then
-            if getfield(current,"penalty") == forcedbreak then
+            if getpenalty(current) == forcedbreak then
                 discarded[#discarded+1] = current
                 current = getnext(current)
                 while current and getid(current) == glue_code do
@@ -210,7 +212,7 @@ local function stripbottomglue(results,discarded)
             end
             local id = getid(t)
             if id == penalty_code then
-                if getfield(t,"penalty") == forcedbreak then
+                if getpenalty(t) == forcedbreak then
                     break
                 else
                     discarded[#discarded+1] = t
@@ -515,7 +517,7 @@ local function preparesplit(specification) -- a rather large function
     end
 
     local function process_kern(current,nxt)
-        local advance = getfield(current,"kern")
+        local advance = getkern(current)
         if advance ~= 0 then
             local state, skipped = checked(advance,"kern")
             if trace_state then
@@ -569,7 +571,7 @@ local function preparesplit(specification) -- a rather large function
     -- [chapter] [penalty] [section] [penalty] [first line]
 
     local function process_penalty(current,nxt)
-        local penalty = getfield(current,"penalty")
+        local penalty = getpenalty(current)
         if penalty == 0 then
             unlock(penalty)
         elseif penalty == forcedbreak then

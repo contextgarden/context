@@ -37,6 +37,8 @@ local getattr             = nuts.getattr
 local takeattr            = nuts.takeattr
 local setattr             = nuts.setattr
 local getwhd              = nuts.getwhd
+local getkern             = nuts.getkern
+local setpenalty          = nuts.setpenalty
 
 local insert_node_after   = nuts.insert_after
 local new_penalty         = nuts.pool.penalty
@@ -127,7 +129,7 @@ local function keeptogether(start,a)
                     end
                     if total <= threshold then
                         if getid(previous) == penalty_code then
-                            setfield(previous,"penalty",10000)
+                            setpenalty(previous,10000)
                         else
                             insert_node_after(head,previous,new_penalty(10000))
                         end
@@ -142,7 +144,7 @@ local function keeptogether(start,a)
                     end
                     if total <= threshold then
                         if getid(previous) == penalty_code then
-                            setfield(previous,"penalty",10000)
+                            setpenalty(previous,10000)
                         else
                             insert_node_after(head,previous,new_penalty(10000))
                         end
@@ -150,13 +152,13 @@ local function keeptogether(start,a)
                         break
                     end
                 elseif id == kern_code then
-                    total = total + getfield(current,"kern")
+                    total = total + getkern(current)
                     if trace_keeptogether then
                         report_keeptogether("%s, index %s, total %s, threshold %s","kern",a,total,threshold)
                     end
                     if total <= threshold then
                         if getid(previous) == penalty_code then
-                            setfield(previous,"penalty",10000)
+                            setpenalty(previous,10000)
                         else
                             insert_node_after(head,previous,new_penalty(10000))
                         end
@@ -166,9 +168,9 @@ local function keeptogether(start,a)
                 elseif id == penalty_code then
                     if total <= threshold then
                         if getid(previous) == penalty_code then
-                            setfield(previous,"penalty",10000)
+                            setpenalty(previous,10000)
                         end
-                        setfield(current,"penalty",10000)
+                        setpenalty(current,10000)
                     else
                         break
                     end

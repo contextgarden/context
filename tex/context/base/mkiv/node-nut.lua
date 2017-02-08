@@ -115,7 +115,17 @@ nuts.tonut                = tonut
 nodes.tonode              = tonode
 nodes.tonut               = tonut
 
--- getters
+-- local sl = direct.setlink
+-- direct.setlink = function(a,b,...)
+--     if not b then
+--         print(tonode(a),"NOTHING")
+--     elseif not a then
+--         print("NOTHING",tonode(b))
+--     else
+--         print(a,b)
+--     end
+--     return sl(a,b,...)
+-- end
 
 -- local g = direct.getfield
 -- local t = table.setmetatableindex("number")
@@ -142,6 +152,48 @@ if not direct.setwhd then
     end
 end
 
+if not direct.getcomponents then
+
+    local getfield   = direct.getfield
+    local setfield   = direct.setfield
+    local setsubtype = direct.setsubtype
+
+    function direct.getcomponents(n)   return getfield(n,"components")   end
+    function direct.setcomponents(n,c)        setfield(n,"components",c) end
+    function direct.getkern(n)         return getfield(n,"kern")         end
+    function direct.getpenalty(n)      return getfield(n,"penalty")      end
+    function direct.setpenalty(n,p)           setfield(n,"penalty",p)    end
+    function direct.getdir(n)          return getfield(n,"dir")          end
+    function direct.setdir(n,p)               setfield(n,"dir",p)        end
+
+    function direct.setkern(n,k,s)
+        setfield(n,"kern",k)
+        if s then
+            setsubtype(n,s)
+        end
+    end
+
+    function direct.setfont(n,f,c)
+        setfield(n,"font",f)
+        if c then
+            setfield(n,"char",f)
+        end
+    end
+
+    function direct.getoffsets(n)
+        return getfield(n,"xoffset"), getfield(n,"yoffset")
+    end
+
+    function direct.setoffsets(n,x,y)
+        if x then
+            setfield(n,"xoffset",x)
+        end
+        if y then
+            setfield(n,"yoffset",y)
+        end
+    end
+end
+
 -- local hash = table.setmetatableindex("number")
 -- local ga = direct.get_attribute
 -- function direct.get_attribute(n,a)
@@ -165,6 +217,11 @@ nuts.getfont              = direct.getfont
 nuts.getsubtype           = direct.getsubtype
 nuts.getlist              = direct.getlist -- only hlist and vlist !
 nuts.getleader            = direct.getleader
+nuts.getcomponents        = direct.getcomponents
+nuts.getoffsets           = direct.getoffsets
+nuts.getkern              = direct.getkern
+nuts.getdir               = direct.getdir
+nuts.getpenalty           = direct.getpenalty
 
 -- local function track(name)
 --     local n = 0
@@ -272,7 +329,7 @@ if not direct.rangedimensions then -- LUATEXVERSION < 0.99
     function direct.rangedimensions(parent,first,last)
         return dimensions(
             getfield(parent,"glue_set"), getfield(parent,"glue_sign"), getfield(parent,"glue_order"),
-            first, last or find_tail(first), getfield(parent,"dir")
+            first, last or find_tail(first), getdir(parent)
         )
     end
 
@@ -293,6 +350,7 @@ nuts.getdisc               = direct.getdisc
 nuts.getwhd                = direct.getwhd
 nuts.setdisc               = direct.setdisc
 nuts.setchar               = direct.setchar
+nuts.setfont               = direct.setfont
 nuts.setnext               = direct.setnext
 nuts.setprev               = direct.setprev
 nuts.setboth               = direct.setboth
@@ -301,6 +359,11 @@ nuts.setlink               = direct.setlink
 nuts.setlist               = direct.setlist
 nuts.setleader             = direct.setleader
 nuts.setsubtype            = direct.setsubtype
+nuts.setcomponents         = direct.setcomponents
+nuts.setoffsets            = direct.setoffsets
+nuts.setkern               = direct.setkern
+nuts.setdir                = direct.setdir
+nuts.setpenalty            = direct.setpenalty
 
 nuts.is_char               = direct.is_char
 nuts.ischar                = direct.is_char
@@ -337,6 +400,11 @@ local function remove(head,current,free_too)
     return head, current, t
 end
 
+-- alias
+
+nuts.getsurround = nuts.getkern
+nuts.setsurround = nuts.setkern
+
 -- bad: we can have prev's being glue_spec
 
 nuts.remove = remove
@@ -350,11 +418,14 @@ function nuts.replace(head,current,new) -- no head returned if false
         head, current, new = false, head, current
     end
     local prev, next = d_getboth(current)
-    if next then
-        d_setlink(new,next)
-    end
-    if prev then
-        d_setlink(prev,new)
+--     if next then
+--         d_setlink(new,next)
+--     end
+--     if prev then
+--         d_setlink(prev,new)
+--     end
+    if prev or next then
+        d_setlink(prev,new,next)
     end
     if head then
         if head == current then
@@ -407,7 +478,7 @@ function nuts.prepend(head,current,...)
     return head, current
 end
 
-function nuts.linked(...)
+function nuts.linked(...) -- slides !
     local head, last
     for i=1,select("#",...) do
         local next = select(i,...)

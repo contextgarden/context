@@ -1557,11 +1557,13 @@ if context then
     local getcount = tex.getcount
 
     hyphenators.methods  = methods
-    hyphenators.optimize = false
+    local optimize       = false
+
+    directives.register("hyphenator.optimize", function(v) optimize = v end)
 
     function hyphenators.handler(head,groupcode)
         if usedmethod then
-            if groupcode == "hbox" and hyphenators.optimize then
+            if optimize and (groupcode == "hbox" or groupcode == "adjusted_hbox") then
                 if getcount("hyphenstate") > 0 then
                     forced = false
                     return usedmethod(head)

@@ -43,6 +43,8 @@ local setattr             = nuts.setattr
 local setfield            = nuts.setfield
 local setdisc             = nuts.setdisc
 local isglyph             = nuts.isglyph
+local setkern             = nuts.setkern
+local getkern             = nuts.getkern
 
 local insert_node_after   = nuts.insert_after
 local delete_node         = nuts.delete
@@ -195,7 +197,7 @@ local function domath(head,current, done)
                             else
                                 a = a + 100
                             end
-                            local i = getfield(kern,"kern")
+                            local i = getkern(kern)
                             local f = getfont(glyph)
                             local c = getchar(glyph)
                             if getfield(next,"height") < 1.25*exheights[f] then
@@ -207,7 +209,7 @@ local function domath(head,current, done)
                                     if trace_italics then
                                         report_italics("%s italic between math %C and punctuation %C","removing",i,c,char)
                                     end
-                                    setfield(kern,"kern",0) -- or maybe a small value or half the ic
+                                    setkern(kern,0) -- or maybe a small value or half the ic
                                     done = true
                                 end
                             elseif i == 0 then
@@ -218,7 +220,7 @@ local function domath(head,current, done)
                                         report_italics("%s italic %p between math %C and punctuation %C","ignoring",i,c,char)
                                     end
                                 else
-                                    setfield(kern,"kern",i)
+                                    setkern(kern,i)
                                     if trace_italics then
                                         report_italics("%s italic %p between math %C and punctuation %C","setting",i,c,char)
                                     end

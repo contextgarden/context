@@ -46,7 +46,8 @@ local getattr            = nuts.getattr
 local takeattr           = nuts.takeattr
 local setlink            = nuts.setlink
 local setglue            = nuts.setglue
-local setsubtype         = nuts.setsubtype
+local getkern            = nuts.getkern
+local setkern            = nuts.setkern
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
@@ -106,10 +107,6 @@ local kerns              = typesetters.kerns
 local report             = logs.reporter("kerns")
 local trace_ligatures    = false  trackers.register("typesetters.kerns.ligatures",       function(v) trace_ligatures   = v end)
 local trace_ligatures_d  = false  trackers.register("typesetters.kerns.ligatures.detail",function(v) trace_ligatures_d = v end)
-
--- use_advance is just an experiment: it makes copying glyphs (instead of new_glyph) dangerous
-
-local use_advance        = false  directives.register("typesetters.kerns.advance", function(v) use_advance = v end)
 
 kerns.mapping            = kerns.mapping or { }
 kerns.factors            = kerns.factors or { }
@@ -234,8 +231,7 @@ local function inject_begin(boundary,prev,keeptogether,krn,ok) -- prev is a glyp
             end
             if inject then
                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                setsubtype(boundary,userkern_code)
-                setfield(boundary,"kern",getfield(boundary,"kern") + quaddata[getfont(prev)]*krn)
+                setkern(boundary,getkern(boundary) + quaddata[getfont(prev)]*krn,userkern_code)
                 return boundary, true
             end
         end
@@ -271,8 +267,7 @@ local function inject_end(boundary,next,keeptogether,krn,ok)
             end
             if inject then
                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                setsubtype(tail,userkern_code)
-                setfield(tail,"kern",getfield(tail,"kern") + quaddata[getfont(next)]*krn)
+                setkern(tail,getkern(tail) + quaddata[getfont(next)]*krn,userkern_code)
                 return boundary, true
             end
         end
@@ -286,7 +281,7 @@ local function inject_end(boundary,next,keeptogether,krn,ok)
                 local data  = chardata[font][nextchar]
                 local kerns = data and data.kerns
                 local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
-                insert_node_after(boundary,tail,new_kern(kern))
+                setlink(tail,new_kern(kern))
                 return boundary, true
             end
         end
@@ -322,8 +317,7 @@ local function process_list(head,keeptogether,krn,font,okay)
                         end
                         if inject then
                             -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                            setsubtype(prev,userkern_code)
-                            setfield(prev,"kern",getfield(prev,"kern") + kern)
+                            setkern(prev,getkern(prev) + kern,userkern_code)
                             okay = true
                         end
                     end
@@ -421,8 +415,7 @@ function kerns.handler(head)
                         end
                         if inject then
                             -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                            setsubtype(prev,userkern_code)
-                            setfield(prev,"kern",getfield(prev,"kern") + quaddata[font]*krn)
+                            setkern(prev,getkern(prev) + quaddata[font]*krn,userkern_code)
                             done = true
                         end
                     end
@@ -434,11 +427,7 @@ function kerns.handler(head)
                             local data  = chardata[font][prevchar]
                             local kerns = data and data.kerns
                             local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
-                            if not fillup and use_advance then
-                                setfield(prev,"xadvance",getfield(prev,"xadvance") + kern)
-                            else
-                                insert_node_before(head,start,kern_injector(fillup,kern))
-                            end
+                            insert_node_before(head,start,kern_injector(fillup,kern))
                             done = true
                         end
                     else

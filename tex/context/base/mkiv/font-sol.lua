@@ -65,6 +65,7 @@ local getattr            = nuts.getattr
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
+local getdir             = nuts.getdir
 
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
@@ -424,7 +425,7 @@ function splitters.split(head)
             if start then
                 flush()
             end
-            rlmode = getfield(current,"dir")
+            rlmode = getdir(current)
         else
             if start then
                 flush()
@@ -756,7 +757,7 @@ function splitters.optimize(head)
     for current in traverse_ids(hlist_code,tonut(head)) do
         line = line + 1
         local sign  = getfield(current,"glue_sign")
-        local dir   = getfield(current,"dir")
+        local dir   = getdir(current)
         local width = getfield(current,"width")
         local list  = getlist(current)
         if not encapsulate and getid(list) == glyph_code then

@@ -24,7 +24,7 @@ local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 
 local setfield           = nuts.setfield
-local setchar            = nuts.setchar
+local setfont            = nuts.setfont
 
 local traverse_id        = nuts.traverse_id
 local traverse_char      = nuts.traverse_char
@@ -272,8 +272,7 @@ function collections.process(head) -- this way we keep feature processing
                         char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or ""
                     )
                 end
-                setfield(n,"font",newfont)
-                setchar(n,newchar)
+                setfont(n,newfont,newchar)
                 done = true
             else
                 if trace_collecting then
@@ -281,7 +280,7 @@ function collections.process(head) -- this way we keep feature processing
                         font,vect,char,not chardata[vect][char] and " (missing)" or ""
                     )
                 end
-                setfield(n,"font",vect)
+                setfont(n,vect)
                 done = true
             end
         end

@@ -3213,8 +3213,108 @@ visualizer to show the steps. Some are shown more than once as part of a set.
 \xmllshow{child::something/child::whatever/self::whatever}
 
 There is also \type {last-match::} that starts with the last found set of nodes.
-This can save some runtime when you do lots of tests combined with a same check
-afterwards.
+This can save some run time when you do lots of tests combined with a same check
+afterwards. There is however one pitfall: you never know what is done with that
+last match in the setup that gets called nested. Take the following example:
+
+\starttyping
+\startbuffer[test]
+<something>
+    <crap> <crapa> <crapb> <crapc> <crapd>
+        <crape>
+            done 1
+        </crape>
+    </crapd>  </crapc> </crapb>  </crapa>
+    <crap> <crapa> <crapb> <crapc> <crapd>
+        <crape>
+            done 2
+        </crape>
+    </crapd>  </crapc> </crapb>  </crapa>
+    <crap> <crapa> <crapb> <crapc> <crapd>
+        <crape>
+            done 3
+        </crape>
+    </crapd>  </crapc> </crapb>  </crapa>
+</something>
+\stopbuffer
+\stoptyping
+
+One way to filter the content is this:
+
+\starttyping
+\xmldoif {#1} {/crap/crapa/crapb/crapc/crapd/crape} {
+    some action
+}
+\stoptyping
+
+It is not unlikely that you will do something like this:
+
+\starttyping
+\xmlfirst {#1} {/crap/crapa/crapb/crapc/crapd/crape} {
+    \xmlfirst{#1}{/crap/crapa/crapb/crapc/crapd/crape}
+}
+\stoptyping
+
+This means that the path is resolved twice but that can be avoided as
+follows:
+
+\starttyping
+\xmldoif{#1}{/crap/crapa/crapb/crapc/crapd/crape}{
+    \xmlfirst{#1}{last-match::}
+}
+\stoptyping
+
+But the next is now guaranteed to work:
+
+\starttyping
+\xmldoif{#1}{/crap/crapa/crapb/crapc/crapd/crape}{
+    \xmlfirst{#1}{last-match::}
+    \xmllast{#1}{last-match::}
+}
+\stoptyping
+
+Because the first one can have done some lookup the last match can be replaced
+and the second call will give unexpected results. You can overcome this with:
+
+\starttyping
+\xmldoif{#1}{/crap/crapa/crapb/crapc/crapd/crape}{
+    \xmlpushmatch
+    \xmlfirst{#1}{last-match::}
+    \xmlpopmatch
+}
+\stoptyping
+
+Does it pay off? Here are some timings of a 10.000 times text and lookup
+like the previous (on a decent Januari 2016 laptop):
+
+\starttabulate[|r|l|]
+\NC 0.239 \NC \type {\xmldoif {...} {...}}                                     \NC \NR
+\NC 0.292 \NC \type {\xmlfirst {...} {...}}                                    \NC \NR
+\NC 0.538 \NC \type {\xmldoif {...} {...} + \xmlfirst {...} {...}}             \NC \NR
+\NC 0.338 \NC \type {\xmldoif {...} {...} + \xmlfirst {...} {last-match::}}    \NC \NR
+\NC 0.349 \NC \type {+ \xmldoif {...} {...} + \xmlfirst {...} {last-match::}-} \NC \NR
+\stoptabulate
+
+So, pushing and popping (the last row) is a bit slower than not doing that but it
+is still much faster than not using \type {last-match::} at all. As a shortcut
+you can use \type {=}, as in:
+
+\starttyping
+\xmlfirst{#1}{=}
+\stoptyping
+
+You can even do this:
+
+\starttyping
+\xmlall{#1}{last-match::/text()}
+\stoptyping
+
+or
+
+\starttyping
+\xmlall{#1}{=/text()}
+\stoptyping
+
 
 \stopsection
 

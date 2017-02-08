@@ -29,6 +29,8 @@ local copy             = table.copy
 local insert           = table.insert
 local remove           = table.remove
 
+local context          = context
+
 local matrix      = { }
 moduledata.matrix = matrix
 
@@ -67,27 +69,58 @@ end
 
 -- todo: define a matrix at the tex end so that we have more control
 
-local fences_p = {
-    left  = "\\left(\\,",
-    right = "\\,\\right)",
+local fences = {
+    parentheses = { left = "\\left(\\,", right = "\\,\\right)" },
+    brackets    = { left = "\\left[\\,", right = "\\,\\right]" },
+    bars        = { left = "\\left|\\,", right = "\\,\\right|" },
 }
 
-local fences_b = {
-    left  = "\\left[\\,",
-    right = "\\,\\right]",
-}
+-- one can add more fences
+
+fences.bar         = fences.bars
+fences.parenthesis = fences.parentheses
+fences.bracket     = fences.brackets
+
+-- one can set the template
+
+matrix.template    = "%0.3F"
 
 function matrix.typeset(m,options)
-    local options = settings_to_hash(options or "")
-    context.startmatrix(options.determinant and fences_b or fences_p)
-        for i=1, #m do
-            local mi = m[i]
-            for j=1,#mi do
-                context.NC(mi[j])
-            end
-            context.NR()
+    if type(m) == "table" then
+        local options  = settings_to_hash(options or "")
+        local whatever = options.determinant == "yes" and fences.bars or fences.parentheses
+        if options.fences then
+            whatever = fences[options.fences] or whatever
+        elseif options.determinant then
+            whatever = fences.brackets
+         -- whatever = fences.bars
         end
-    context.stopmatrix()
+        local template = options.template or matrix.template
+        if template == "yes" then
+            template = matrix.template
+        elseif template == "no" then
+            template = false
+        elseif tonumber(template) then
+            template = "%0." .. template .. "F"
+        end
+        context.startmatrix(whatever)
+            for i=1, #m do
+                local mi = m[i]
+                for j=1,#mi do
+                    context.NC()
+                    local n = mi[j]
+                    if template and tonumber(n) then
+                        context(template,n)
+                    else
+                        context(mi[j])
+                    end
+                end
+                context.NR()
+            end
+        context.stopmatrix()
+    elseif m then
+        context(m)
+    end
 end
 
 -- interchange two rows (i-th, j-th)
@@ -151,7 +184,7 @@ function matrix.inner(u,v)
     end
     local nv = #v
     if nv ~= nu then
-        return 0
+       return "error: size mismatch"
     end
     local result = 0
     for i=1,nu do
@@ -163,8 +196,8 @@ end
 -- product of two matrices
 
 function matrix.product(m1,m2)
-    local product = { }
     if #m1[1] == #m2 then
+        local product = { }
         for i=1,#m1 do
             local m1i  = m1[i]
             local mrow = { }
@@ -177,8 +210,10 @@ function matrix.product(m1,m2)
             end
             product[i] = mrow
         end
+        return product
+    else
+        return "error: size mismatch"
     end
-    return product
 end
 
 local function uppertri(m,sign)
@@ -225,7 +260,7 @@ function matrix.determinant(m)
         end
         return s*d
     else
-        return 0
+        return "error: not a square matrix"
     end
 end
 
@@ -295,7 +330,7 @@ matrix.rowEchelon = rowechelon
 
 --  solve the linear equation m X = c
 
-local function solve(m,c) 
+local function solve(m,c)
     local n = #m
     if n ~= #c then
         return copy(m)
@@ -393,14 +428,14 @@ moduledata.matrix.typeset(moduledata.matrix.multiply(document.DemoMatrixA, 2, 3)
 
 \stopsubject
 
-\startsubject[title={Row 2 + $3 \times r_4$}]
+\startsubject[title={Row 2 + $4 \times r_3$}]
 
 \startluacode
 moduledata.matrix.typeset(document.DemoMatrixA)
 context.blank()
 moduledata.matrix.sumrow(document.DemoMatrixA, 2, 3, 4)
 context.blank()
-moduledata.matrix.typeset(document.DemoMatrixA)
+moduledata.matrix.typeset(document.DemoMatrixA,{ fences = "bars" } )
 \stopluacode
 
 \stopsubject
@@ -445,7 +480,7 @@ local m = {
     { 0, 0,  2 },
     { 2, 2, -6 },
 }
-context(moduledata.matrix.determinant(m))
+context(moduledata.matrix.determinant(m, "determinant=yes" ))
 \stopluacode
 
 \stopsubject
@@ -461,7 +496,8 @@ local m = {
 }
 
 moduledata.matrix.typeset(m)
-moduledata.matrix.typeset(moduledata.matrix.rowechelon(m,1))
+context.blank()
+moduledata.matrix.typeset(moduledata.matrix.rowechelon(m,1), { determinant = "yes" })
 \stopluacode
 
 \stopsubject
@@ -479,6 +515,14 @@ local m = {
 local c = { 5, 2, 6, 8 }
 
 moduledata.matrix.typeset(moduledata.matrix.solve(m,c))
+context.blank()
+moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = 6 })
+context.blank()
+moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = "no" })
+context.blank()
+moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = "%0.3f" })
+context.blank()
+moduledata.matrix.typeset(moduledata.matrix.solve(m,c), { template = "%0.4F" })
 \stopluacode
 
 \stopsubject

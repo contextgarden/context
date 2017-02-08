@@ -58,6 +58,7 @@ local getlist            = nuts.getlist
 local getfield           = nuts.getfield
 local getattr            = nuts.getattr
 local getprop            = nuts.getprop
+local getdir            = nuts.getdir
 local isglyph            = nuts.isglyph -- or ischar
 
 local setfield           = nuts.setfield
@@ -312,7 +313,7 @@ local function process(start)
             elseif id == kern_code then
                 setprop(current,"direction",'k')
             elseif id == dir_code then
-                local dir = getfield(current,"dir")
+                local dir = getdir(current)
                 if dir == "+TRT" then
                     autodir = -1
                 elseif dir == "+TLT" then
@@ -329,7 +330,7 @@ local function process(start)
                 textdir = autodir
                 setprop(current,"direction",true)
             elseif id == localpar_code then
-                local dir = getfield(current,"dir")
+                local dir = getdir(current)
                 if dir == 'TRT' then
                     autodir = -1
                 elseif dir == 'TLT' then

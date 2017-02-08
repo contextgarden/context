@@ -64,6 +64,7 @@ local getattr              = nuts.getattr
 local setattr              = nuts.setattr
 local getsubtype           = nuts.getsubtype
 local getwhd               = nuts.getwhd
+local getdir               = nuts.getdir
 
 local hpack_list           = nuts.hpack
 local vpack_list           = nuts.vpack
@@ -286,8 +287,9 @@ if first == last and getid(parent) == vlist_code and getid(first) == hlist_code 
     setlink(result,getlist(first))
     setlist(first,result)
 else
-            setlink(getprev(first),result)
-            setlink(result,first)
+--             setlink(getprev(first),result)
+--             setlink(result,first)
+            setlink(getprev(first),result,first)
 end
             return head, last
         end
@@ -345,8 +347,9 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
             setlist(current,result)
         elseif moveright then -- brr no prevs done
             -- result after first
-            setlink(result,getnext(first))
-            setlink(first,result)
+--             setlink(result,getnext(first))
+--             setlink(first,result)
+            setlink(first,result,getnext(first))
         else
             -- first after result
             setlink(result,first)
@@ -405,9 +408,9 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
                     done[r] = done[r] - 1
                 end
             elseif id == dir_code then
-                txtdir = getfield(current,"dir")
+                txtdir = getdir(current)
             elseif id == localpar_code then
-                pardir = getfield(current,"dir")
+                pardir = getdir(current)
             elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
                 --
             else
@@ -457,9 +460,9 @@ local function inject_area(head,attribute,make,stack,done,parent,pardir,txtdir) 
                     end
                 end
             elseif id == dir_code then
-                txtdir = getfield(current,"dir")
+                txtdir = getdir(current)
             elseif id == localpar_code then
-                pardir = getfield(current,"dir")
+                pardir = getdir(current)
             else
                 local r = getattr(current,attribute)
                 if r and not done[r] then
@@ -502,7 +505,7 @@ local function addstring(what,str,shift) --todo make a pluggable helper (in font
             local text = typesetters.tohpack(str,infofont)
             local rule = new_rule(emwidth/5,4*exheight,3*exheight)
             setfield(text,"shift",shift)
-            return hpack_list(nuts.linked(text,rule))
+            return hpack_list(setlink(text,rule))
         end
     end
 end
@@ -548,8 +551,9 @@ local function colorize(width,height,depth,n,reference,what,sr,offset)
         local text = addstring(what,sr,shift)
         if text then
             local kern = new_kern(-getfield(text,"width"))
-            setlink(kern,text)
-            setlink(text,rule)
+--             setlink(kern,text)
+--             setlink(text,rule)
+            setlink(kern,text,rule)
             return kern
         end
     end
@@ -561,8 +565,9 @@ local function justadd(what,sr,shift)
         local text = addstring(what,sr,shift)
         if text then
             local kern = new_kern(-getfield(text,"width"))
-            setlink(kern,text)
-            setlink(text,rule)
+--             setlink(kern,text)
+--             setlink(text,rule)
+            setlink(kern,text,rule)
             return kern
         end
     end

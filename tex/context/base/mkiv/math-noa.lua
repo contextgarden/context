@@ -56,6 +56,7 @@ local trace_goodies        = false  registertracker("math.goodies",     function
 local trace_variants       = false  registertracker("math.variants",    function(v) trace_variants    = v end)
 local trace_alternates     = false  registertracker("math.alternates",  function(v) trace_alternates  = v end)
 local trace_italics        = false  registertracker("math.italics",     function(v) trace_italics     = v end)
+local trace_kernpairs      = false  registertracker("math.kernpairs",   function(v) trace_kernpairs   = v end)
 local trace_domains        = false  registertracker("math.domains",     function(v) trace_domains     = v end)
 local trace_families       = false  registertracker("math.families",    function(v) trace_families    = v end)
 local trace_fences         = false  registertracker("math.fences",      function(v) trace_fences      = v end)
@@ -71,6 +72,7 @@ local report_goodies       = logreporter("mathematics","goodies")
 local report_variants      = logreporter("mathematics","variants")
 local report_alternates    = logreporter("mathematics","alternates")
 local report_italics       = logreporter("mathematics","italics")
+local report_kernpairs     = logreporter("mathematics","kernpairs")
 local report_domains       = logreporter("mathematics","domains")
 local report_families      = logreporter("mathematics","families")
 local report_fences        = logreporter("mathematics","fences")
@@ -101,6 +103,7 @@ local getsubtype           = nuts.getsubtype
 local getchar              = nuts.getchar
 local getfont              = nuts.getfont
 local getattr              = nuts.getattr
+local getlist              = nuts.getlist
 
 local flush_node           = nuts.flush
 local new_node             = nuts.new -- todo: pool: math_noad math_sub
@@ -175,6 +178,9 @@ local right_fence_code     = fencecodes.right
 -- this initial stuff is tricky as we can have removed and new nodes with the same address
 -- the only way out is a free-per-page list of nodes (not bad anyway)
 
+-- local gf = getfield local gt = setmetatableindex("number") getfield = function(n,f) gt[f] = gt[f] + 1 return gf(n,f) end mathematics.GETFIELD = gt
+-- local sf = getfield local st = setmetatableindex("number") setfield = function(n,f) st[f] = st[f] + 1 return sf(n,f) end mathematics.SETFIELD = st
+
 local function process(start,what,n,parent)
     if n then
         n = n + 1
@@ -229,7 +235,7 @@ local function process(start,what,n,parent)
         elseif id == math_char or id == math_textchar or id == math_delim then
             break
         elseif id == math_box or id == math_sub then
-            local noad = getfield(start,"list")         if noad then process(noad,what,n,start) end -- list (not getlist !)
+            local noad = getlist(start)                 if noad then process(noad,what,n,start) end -- list (not getlist !)
         elseif id == math_fraction then
             local noad = getfield(start,"num")          if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"denom")        if noad then process(noad,what,n,start) end -- list
@@ -274,7 +280,7 @@ local function processnested(current,what,n)
         noad = getfield(current,"sup")          if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"sub")          if noad then process(noad,what,n,current) end -- list
     elseif id == math_box or id == math_sub then
-        noad = getfield(current,"list")         if noad then process(noad,what,n,current) end -- list (not getlist !)
+        noad = getlist(current)                 if noad then process(noad,what,n,current) end -- list (not getlist !)
     elseif id == math_fraction then
         noad = getfield(current,"num")          if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"denom")        if noad then process(noad,what,n,current) end -- list
@@ -310,7 +316,7 @@ local function processstep(current,process,n,id)
         noad = getfield(current,"sup")          if noad then process(noad,n,current) end -- list
         noad = getfield(current,"sub")          if noad then process(noad,n,current) end -- list
     elseif id == math_box or id == math_sub then
-        noad = getfield(current,"list")         if noad then process(noad,n,current) end -- list (not getlist !)
+        noad = getlist(current)                 if noad then process(noad,n,current) end -- list (not getlist !)
     elseif id == math_fraction then
         noad = getfield(current,"num")          if noad then process(noad,n,current) end -- list
         noad = getfield(current,"denom")        if noad then process(noad,n,current) end -- list
@@ -737,8 +743,7 @@ local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
                 flush_node(current)
                 middle[current] = nil
                 -- replace_node
-                setlink(prev,fence)
-                setlink(fence,next)
+                setlink(prev,fence,next)
                 prev    = fence
                 current = next
             else
@@ -951,7 +956,7 @@ local function replace(pointer,what,n,parent)
             setfield(pointer,"sup",getfield(start_super,"nucleus"))
         else
             local list = new_node(math_sub) -- todo attr
-            setfield(list,"list",start_super)
+            setlist(list,start_super)
             setfield(pointer,"sup",list)
         end
         if mode == "super" then
@@ -964,7 +969,7 @@ local function replace(pointer,what,n,parent)
             setfield(pointer,"sub",getfield(start_sub,"nucleus"))
         else
             local list = new_node(math_sub) -- todo attr
-            setfield(list,"list",start_sub)
+            setlist(list,start_sub)
             setfield(pointer,"sub",list)
         end
         if mode == "sub" then
@@ -1237,7 +1242,7 @@ local c_negative_d = "trace:dr"
 local function insert_kern(current,kern)
     local sub  = new_node(math_sub)  -- todo: pool
     local noad = new_node(math_noad) -- todo: pool
-    setfield(sub,"list",kern)
+    setlist(sub,kern)
     setnext(kern,noad)
     setfield(noad,"nucleus",current)
     return sub
@@ -1392,6 +1397,80 @@ implement {
     name      = "resetmathitalics",
     actions   = mathematics.resetitalics
 }
+
+do
+
+    -- math kerns (experiment) in goodies:
+    --
+    -- mathematics = {
+    --     kernpairs = {
+    --         [0x1D44E] = {
+    --             [0x1D44F] = 400, -- 𝑎𝑏
+    --         }
+    --     },
+    -- }
+
+    local a_kernpairs = privateattribute("mathkernpairs")
+    local kernpairs   = { }
+
+    local function enable()
+        tasks.enableaction("math", "noads.handlers.kernpairs")
+        if trace_kernpairs then
+            report_kernpairs("enabling math kern pairs")
+        end
+        enable = false
+    end
+
+    implement {
+        name      = "initializemathkernpairs",
+        actions   = enable,
+        onlyonce  = true,
+    }
+
+    local hash = setmetatableindex(function(t,font)
+        local g = fontdata[font].goodies
+        local m = g and g[1].mathematics
+        local k = m and m.kernpairs
+        t[font] = k
+        return k
+    end)
+
+    kernpairs[math_char] = function(pointer,what,n,parent)
+        if getattr(pointer,a_kernpairs) == 1 then
+            local font = getfont(pointer)
+            local list = hash[font]
+            if list then
+                local first = getchar(pointer)
+                local found = list[first]
+                if found then
+                    local next = getnext(parent)
+                    if next and getid(next) == math_noad then
+                        pointer = getfield(next,"nucleus")
+                        if pointer then
+                            if getfont(pointer) == font then
+                                local second = getchar(pointer)
+                                local kern   = found[second]
+                                if kern then
+                                    kern = kern * fonts.hashes.parameters[font].hfactor
+                                    if trace_kernpairs then
+                                        report_kernpairs("adding %p kerning between %C and %C",kern,first,second)
+                                    end
+                                    setlink(parent,new_kern(kern),getnext(parent))
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    function handlers.kernpairs(head,style,penalties)
+        processnoads(head,kernpairs,"kernpairs")
+        return true
+    end
+
+end
 
 -- primes and such
 

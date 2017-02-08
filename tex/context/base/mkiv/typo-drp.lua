@@ -42,8 +42,11 @@ local setattr           = nuts.setattr
 local setlink           = nuts.setlink
 local setprev           = nuts.setprev
 local setnext           = nuts.setnext
+local setfont           = nuts.setfont
 local setchar           = nuts.setchar
 local setwhd            = nuts.setwhd
+local setkern           = nuts.setkern
+local setoffsets        = nuts.setoffsets
 
 local hpack_nodes       = nuts.hpack
 
@@ -250,11 +253,11 @@ actions[v_default] = function(head,setting)
             while true do
                 local id = getid(current)
                 if id == kern_code then
-                    setfield(current,"kern",0)
+                    setkern(current,0)
                 elseif id == glyph_code then
                     local next = getnext(current)
                     if font then
-                        setfield(current,"font",font)
+                        setfont(current,font)
                     end
                     if dynamic > 0 then
                         setattr(current,0,dynamic)
@@ -316,8 +319,7 @@ actions[v_default] = function(head,setting)
             --
             local hoffset = width + hoffset + distance + (indent and parindent or 0)
             for current in traverse_id(glyph_code,first) do
-                setfield(current,"xoffset",- hoffset )
-                setfield(current,"yoffset",- voffset) -- no longer - height here
+                setoffsets(current,-hoffset,-voffset) -- no longer - height here
                 if current == last then
                     break
                 end

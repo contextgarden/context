@@ -1138,8 +1138,9 @@ function handlers.devanagari_reorder_matras(head,start) -- no leak
                 -- can be optimzied
                 local startnext = getnext(start)
                 head = remove_node(head,start)
-                setlink(start,next)
-                setlink(current,start)
+--                 setlink(start,next)
+--                 setlink(current,start)
+                setlink(current,start,next)
                 start = startnext
                 break
             end
@@ -1197,8 +1198,9 @@ function handlers.devanagari_reorder_reph(head,start)
                 end
                 startnext = getnext(start)
                 head = remove_node(head,start)
-                setlink(start,next)
-                setlink(current,start)
+--                 setlink(start,next)
+--                 setlink(current,start)
+                setlink(current,start,next)
                 start = startnext
                 startattr = getprop(start,a_syllabe)
                 break
@@ -1216,9 +1218,10 @@ function handlers.devanagari_reorder_reph(head,start)
                 if getprop(current,a_state) == s_pstf then -- post-base
                     startnext = getnext(start)
                     head = remove_node(head,start)
-                    local prev = getprev(current)
-                    setlink(prev,start)
-                    setlink(start,current)
+--                     local prev = getprev(current)
+--                     setlink(prev,start)
+--                     setlink(start,current)
+                    setlink(getprev(current),start,current)
                     start = startnext
                     startattr = getprop(start,a_syllabe)
                     break
@@ -1250,9 +1253,10 @@ function handlers.devanagari_reorder_reph(head,start)
         if c then
             startnext = getnext(start)
             head = remove_node(head,start)
-            local prev = getprev(c)
-            setlink(prev,start)
-            setlink(start,c)
+--             local prev = getprev(c)
+--             setlink(prev,start)
+--             setlink(start,c)
+            setlink(getprev(c),start,c)
             -- end
             start = startnext
             startattr = getprop(start,a_syllabe)
@@ -1274,9 +1278,10 @@ function handlers.devanagari_reorder_reph(head,start)
         if start ~= current then
             startnext = getnext(start)
             head = remove_node(head,start)
-            local next = getnext(current)
-            setlink(start,next)
-            setlink(current,start)
+--             local next = getnext(current)
+--             setlink(start,next)
+--             setlink(current,start)
+            setlink(current,start,getnext(current))
             start = startnext
         end
     end
@@ -1318,8 +1323,9 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
                 end
                 startnext = getnext(start)
                 removenode(start,start)
-                setlink(start,next)
-                setlink(current,start)
+--                 setlink(start,next)
+--                 setlink(current,start)
+                setlink(current,start,next)
                 start = startnext
                 break
             end
@@ -1337,9 +1343,10 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
                 if not consonant[char] and getprop(current,a_state) then -- main
                     startnext = getnext(start)
                     removenode(start,start)
-                    local prev = getprev(current)
-                    setlink(prev,start)
-                    setlink(start,current)
+--                     local prev = getprev(current)
+--                     setlink(prev,start)
+--                     setlink(start,current)
+                    setlink(getprev(current),start,current)
                     start = startnext
                     break
                 end
@@ -1690,9 +1697,10 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                     end
                     start = current
                 end
-                local prev = getprev(halfpos)
-                setlink(prev,current)
-                setlink(current,halfpos)
+--                 local prev = getprev(halfpos)
+--                 setlink(prev,current)
+--                 setlink(current,halfpos)
+                setlink(getprev(halfpos),current,halfpos)
                 halfpos = current
             elseif above_mark[char] then    -- After main consonant
                 target = basepos
@@ -1721,9 +1729,10 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
                     if current == stop then
                         stop = prev
                     end
-                    local next = getnext(target)
-                    setlink(current,next)
-                    setlink(target,current)
+--                     local next = getnext(target)
+--                     setlink(current,next)
+--                     setlink(target,current)
+                    setlink(target,current,getnext(target))
                 end
             end
         end
@@ -1750,8 +1759,9 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces) -- maybe do a pa
             if stop == next then
                 stop = current
             end
-            local prev = getprev(c)
-            setlink(prev,next)
+--             local prev = getprev(c)
+--             setlink(prev,next)
+            setlink(getprev(c),next)
             local nextnext = getnext(next)
             setnext(current,nextnext)
             local nextnextnext = getnext(nextnext)

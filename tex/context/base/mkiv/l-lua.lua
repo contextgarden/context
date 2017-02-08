@@ -199,3 +199,15 @@ if flush then
 
 end
 
+-- new
+
+if ffi and (ffi.os == "" or ffi.arch == "") then
+    ffi = nil
+    if ffi.number then
+        -- luatex
+    else
+        -- luajittex
+        ffi.number = tonumber
+    end
+end
+

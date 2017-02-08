@@ -23,7 +23,7 @@ if not modules then modules = { } end modules ['font-otl'] = {
 
 -- todo: less tounicodes
 
-local gmatch, find, match, lower, strip = string.gmatch, string.find, string.match, string.lower, string.strip
+local lower = string.lower
 local type, next, tonumber, tostring, unpack = type, next, tonumber, tostring, unpack
 local abs = math.abs
 local derivetable = table.derive
@@ -127,26 +127,26 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         hash = hash .. "-" .. sub
     end
     hash = containers.cleanname(hash)
-    local featurefiles
-    if featurefile then
-        featurefiles = { }
-        for s in gmatch(featurefile,"[^,]+") do
-            local name = resolvers.findfile(file.addsuffix(s,'fea'),'fea') or ""
-            if name == "" then
-                report_otf("loading error, no featurefile %a",s)
-            else
-                local attr = lfs.attributes(name)
-                featurefiles[#featurefiles+1] = {
-                    name = name,
-                    size = attr and attr.size or 0,
-                    time = attr and attr.modification or 0,
-                }
-            end
-        end
-        if #featurefiles == 0 then
-            featurefiles = nil
-        end
-    end
+ -- local featurefiles
+ -- if featurefile then
+ --     featurefiles = { }
+ --     for s in gmatch(featurefile,"[^,]+") do
+ --         local name = resolvers.findfile(file.addsuffix(s,'fea'),'fea') or ""
+ --         if name == "" then
+ --             report_otf("loading error, no featurefile %a",s)
+ --         else
+ --             local attr = lfs.attributes(name)
+ --             featurefiles[#featurefiles+1] = {
+ --                 name = name,
+ --                 size = attr and attr.size or 0,
+ --                 time = attr and attr.modification or 0,
+ --             }
+ --         end
+ --     end
+ --     if #featurefiles == 0 then
+ --         featurefiles = nil
+ --     end
+ -- end
     local data = containers.read(otf.cache,hash)
     local reload = not data or data.size ~= size or data.time ~= time or data.tableversion ~= otfreaders.tableversion
     if forceload then
@@ -252,6 +252,21 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
         end
         --
         data.metadata.math = data.resources.mathconstants
+        --
+        -- delayed tables (experiment)
+        --
+        local classes = data.resources.classes
+        if not classes then
+            local descriptions = data.descriptions
+            classes = setmetatableindex(function(t,k)
+                local d = descriptions[k]
+                local v = (d and d.class or "base") or false
+                t[k] = v
+                return v
+            end)
+            data.resources.classes = classes
+        end
+        --
     end
 
     return data

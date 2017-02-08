@@ -1699,13 +1699,7 @@ do
                             rule.lookups = nil
                         else
                             -- we can have holes in rlookups
-                         -- for index, lookupid in sortedhash(rlookups) do
                             local length = #rlookups
---                             for index in next, rlookups do
---                                 if index > length then
---                                     length = index
---                                 end
---                             end
                             for index=1,length do
                                 local lookupid = rlookups[index]
                                 if lookupid then
@@ -1733,6 +1727,7 @@ do
                                                 sublookuplist[nofsublookups] = copy(h) -- we repack later
                                                 sublookuphash[lookupid] = nofsublookups
                                                 sublookupcheck[lookupid] = 1
+                                                h = nofsublookups
                                             else
                                                 report_issue(i,what,sequence,"missing")
                                                 rule.lookups = nil

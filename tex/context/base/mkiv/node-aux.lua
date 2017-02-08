@@ -36,6 +36,7 @@ local getchar            = nuts.getchar
 local getattr            = nuts.getattr
 local getfield           = nuts.getfield
 local getboth            = nuts.getboth
+local getcomponents      = nuts.getcomponents
 
 local setfield           = nuts.setfield
 local setattr            = nuts.setattr
@@ -43,6 +44,7 @@ local setlink            = nuts.setlink
 local setlist            = nuts.setlist
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
+local setcomponents      = nuts.setcomponents
 
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
@@ -54,7 +56,6 @@ local first_glyph        = nuts.first_glyph
 local copy_node          = nuts.copy
 ----- copy_node_list     = nuts.copy_list
 local find_tail          = nuts.tail
-local insert_node_after  = nuts.insert_after
 local getbox             = nuts.getbox
 local count              = nuts.count
 
@@ -348,7 +349,7 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph) -- moved from blob-
             setfield(n,"attr",attr)
         end
         if head then
-            insert_node_after(head,tail,n)
+            setlink(tail,n)
         else
             head = n
         end
@@ -491,40 +492,55 @@ end
 -- nodemode helper: here we also flatten components, no check for disc here
 
 function nuts.set_components(target,start,stop)
-    local head = getfield(target,"components")
+    local head = getcomponents(target)
     if head then
         flush_list(head)
         head = nil
     end
-    setprev(start)
+    if start then
+        setprev(start)
+    else
+        return nil
+    end
     if stop then
         setnext(stop)
     end
+    local tail = nil
     while start do
-        local c = getfield(start,"components")
+        local c = getcomponents(start)
         local n = getnext(start)
         if c then
-            local tail = find_tail(c)
-            if not head then
+            if head then
+                setlink(tail,c)
+            else
                 head = c
             end
-            setlink(tail,n)
-            setfield(start,"components")
+            tail = find_tail(c)
+            setcomponents(start)
             flush_node(start)
         else
-            if not head then
+            if head then
+                setlink(tail,start)
+            else
                 head = start
             end
+            tail = start
         end
         start = n
     end
-    setfield(target,"components",head)
+    setcomponents(target,head)
+    -- maybe also upgrade the subtype but we don't use it anyway
     return head
 end
 
 function nuts.get_components(target)
-    local c = getfield(target,"components")
-    setfield(target,"components")
+    return getcomponents(target)
+end
+
+function nuts.take_components(target)
+    local c = getcomponents(target)
+    setcomponents(target)
+    -- maybe also upgrade the subtype but we don't use it anyway
     return c
 end
 
@@ -532,7 +548,7 @@ end
 -- have nested components)
 
 function nuts.count_components(n,marks)
-    local components = getfield(n,"components")
+    local components = getcomponents(n)
     if components then
         if marks then
             local i = 0
@@ -552,15 +568,23 @@ end
 
 -- nodemode helper: the next and prev pointers are untouched
 
-function nuts.copy_no_components(g)
-    local components = getfield(g,"components")
+function nuts.copy_no_components(g,copyinjection)
+    local components = getcomponents(g)
     if components then
-        setfield(g,"components")
+        setcomponents(g)
         local n = copy_node(g)
-        setfield(g,"components",components)
+        if copyinjection then
+            copyinjection(n,g)
+        end
+        setcomponents(g,components)
+        -- maybe also upgrade the subtype but we don't use it anyway
         return n
     else
-        return copy_node(g)
+        local n = copy_node(g)
+        if copyinjection then
+            copyinjection(n,g)
+        end
+        return n
     end
 end
 
@@ -582,7 +606,7 @@ end
 -- node- and basemode helper
 
 function nuts.use_components(head,current)
-    local components = getfield(current,"components")
+    local components = getcomponents(current)
     if not components then
         return head, current, current
     end
@@ -605,10 +629,10 @@ function nuts.use_components(head,current)
             head = components
         end
         current = components
-        setfield(gone,"components")
+        setcomponents(gone)
         flush_node(gone)
         while true do
-            components = getfield(current,"components")
+            components = getcomponents(current)
             if components then
                 next = getnext(current)
                 break -- current is composed

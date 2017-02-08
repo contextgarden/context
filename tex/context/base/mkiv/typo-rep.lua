@@ -131,8 +131,8 @@ end
 
 -- why not in task-ini?
 
-tasks.appendaction("processors","fonts","nodes.handlers.stripping",nil,"nodes.handlers.characters")
-tasks.disableaction("processors","nodes.handlers.stripping")
+-- tasks.appendaction("processors","fonts","nodes.handlers.stripping",nil,"nodes.handlers.characters")
+-- tasks.disableaction("processors","nodes.handlers.stripping")
 
 -- interface
 

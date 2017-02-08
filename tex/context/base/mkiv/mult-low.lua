@@ -401,6 +401,7 @@ return {
         "cldprocessfile", "cldloadfile", "cldcontext", "cldcommand",
         --
         "carryoverpar",
+        "lastlinewidth",
         --
         "assumelongusagecs",
         --

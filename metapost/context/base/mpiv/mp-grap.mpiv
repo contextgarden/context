@@ -1260,7 +1260,6 @@ def plotsymbol(expr n, f) text t =
             fg := if known graph_foreground : graph_foreground else : black fi ;
             save p ; path p ; p = graph_shape[n] scaled graph_shapesize ;
             draw p withcolor bg withpen currentpen scaled 2 ; % halo
-            currentpen := currentpen scaled .5 ;
             if cycle p :
                 fill p withcolor
                     if known f :

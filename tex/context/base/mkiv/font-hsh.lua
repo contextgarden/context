@@ -31,6 +31,7 @@ local xheights      = hashes.xheights     or allocate()
 local csnames       = hashes.csnames      or allocate() -- namedata
 local features      = hashes.features     or allocate()
 local marks         = hashes.marks        or allocate()
+local classes       = hashes.classes      or allocate()
 local italics       = hashes.italics      or allocate()
 local lastmathids   = hashes.lastmathids  or allocate()
 local dynamics      = hashes.dynamics     or allocate()
@@ -51,6 +52,7 @@ hashes.xheights     = xheights              hashes.exheights = xheights
 hashes.csnames      = csnames
 hashes.features     = features
 hashes.marks        = marks
+hashes.classes      = classes
 hashes.italics      = italics
 hashes.lastmathids  = lastmathids
 hashes.dynamics     = dynamics
@@ -212,9 +214,20 @@ setmetatableindex(marks, function(t,k)
         return marks[currentfont()]
     else
         local resources = identifiers[k].resources or { }
-        local marks = resources.marks or { }
+        local marks     = resources.marks or { }
         t[k] = marks
         return marks
+    end
+end)
+
+setmetatableindex(classes, function(t,k)
+    if k == true then
+        return classes[currentfont()]
+    else
+        local resources = identifiers[k].resources or { }
+        local classes   = resources.classes or { }
+        t[k] = classes
+        return classes
     end
 end)
 

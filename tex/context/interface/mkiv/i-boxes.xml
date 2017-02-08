@@ -444,7 +444,7 @@
             <cd:content/>
         </cd:arguments>
     </cd:command>
-    
+
     <cd:command name="limitatelines" file="supp-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
@@ -1034,6 +1034,9 @@
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
+    </cd:command>
+
+    <cd:command name="lastlinewidth" file="supp-box.mkiv">
     </cd:command>
 
 </cd:interface>

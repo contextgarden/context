@@ -64,7 +64,6 @@ local tonut              = nuts.tonut
 local hpack_nodes        = nuts.hpack
 local traverse_id        = nuts.traverse_id
 local flush_node_list    = nuts.flush_list
-local linked_nodes       = nuts.linked
 
 local getfield           = nuts.getfield
 local setfield           = nuts.setfield
@@ -486,10 +485,9 @@ local function markovershoot(current) -- todo: alleen als offset > line
     v_anchors = v_anchors + 1
     cache[v_anchors] = fastcopy(stacked)
     local anchor = setanchor(v_anchors)
- -- local list = hpack_nodes(linked_nodes(anchor,getlist(current))) -- not ok, we need to retain width
-    local list = hpack_nodes(linked_nodes(anchor,getlist(current)),getfield(current,"width"),"exactly")--
- -- why not:
- -- local list = linked_nodes(anchor,getlist(current))
+ -- local list = hpack_nodes(setlink(anchor,getlist(current))) -- not ok, we need to retain width
+ -- local list = setlink(anchor,getlist(current)) -- why not this ... better play safe
+    local list = hpack_nodes(setlink(anchor,getlist(current)),getfield(current,"width"),"exactly")--
     if trace_marginstack then
         report_margindata("marking anchor %a",v_anchors)
     end

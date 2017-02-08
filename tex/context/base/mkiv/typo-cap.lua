@@ -35,6 +35,7 @@ local getdisc         = nuts.getdisc
 local setfield        = nuts.setfield
 local setattr         = nuts.setattr
 local setchar         = nuts.setchar
+local setfont         = nuts.setfont
 
 local copy_node       = nuts.copy
 local end_of_math     = nuts.end_of_math
@@ -216,7 +217,7 @@ end
 --     elseif dc == char then
 --         local lfa = lastfont[n]
 --         if lfa then
---             setfield(first,"font",lfa)
+--             setfontfirst,lfa)
 --             return start, true, true
 --         else
 --             return start, false, true
@@ -239,7 +240,7 @@ local function mixed(start,attr,lastfont,n,count,where,first)
     elseif dc == char then
         local lfa = lastfont[n]
         if lfa then
-            setfield(used,"font",lfa)
+            setfont(used,lfa)
             return start, true, true
         else
             return start, false, true
@@ -276,7 +277,7 @@ local function Capital(start,attr,lastfont,n,count,where,first,once) -- 3
         if lfa then
             local dc = uccodes[getchar(used)]
             if dc then
-                setfield(used,"font",lfa)
+                setfont(used,lfa)
             end
         end
     end

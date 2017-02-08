@@ -52,6 +52,8 @@ local setsubtype          = nuts.setsubtype
 local setbox              = nuts.setbox
 local getwhd              = nuts.getwhd
 local setwhd              = nuts.setwhd
+local getkern             = nuts.getkern
+local getpenalty          = nuts.getpenalty
 
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
@@ -772,7 +774,7 @@ end
 --             end
 --             used = used + getfield(head,"width")
 --         elseif id == kern_code then
---             used = used +  getfield(head,"kern")
+--             used = used +  getkern(head)
 --         elseif id == penalty_code then
 --         end
 --         if used > available then
@@ -814,13 +816,13 @@ local function checkroom(head,available,row)
                 break
             end
         elseif id == kern_code then
-            used = used +  getfield(head,"kern")
+            used = used +  getkern(head)
             if used > available then
                 break
             end
         elseif id == penalty_code then
             -- not good enough ... we need to look bakck too
-            if getfield(head,"penalty") >= 10000 then
+            if getpenalty(head) >= 10000 then
                 line = false
             else
                 break
@@ -860,7 +862,7 @@ end
 --         elseif id == glue_code then
 --             hd = getfield(head,"width")
 --         elseif id == kern_code then
---             hd = getfield(head,"kern")
+--             hd = getkern(head)
 --         elseif id == penalty_code then
 --         end
 --         if used + hd > available then

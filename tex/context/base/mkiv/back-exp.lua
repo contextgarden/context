@@ -124,6 +124,8 @@ local getfield          = nuts.getfield
 local getattr           = nuts.getattr
 local setattr           = nuts.setattr -- maybe use properties
 local isglyph           = nuts.isglyph
+local getcomponents     = nuts.getcomponents
+local getkern           = nuts.getkern
 
 local traverse_id       = nuts.traverse_id
 local traverse_nodes    = nuts.traverse
@@ -542,27 +544,6 @@ local function makebreaknode(attributes) -- maybe no fulltag
      -- attribute  = 0, -- not needed
      -- parnumber  = 0,
     }
-end
-
-local function ignorebreaks(di,element,n,fulltag)
-    local data = di.data
-    for i=1,#data do
-        local d = data[i]
-        if d.content == " " then
-            d.content = ""
-        end
-    end
-end
-
-local function ignorespaces(di,element,n,fulltag)
-    local data = di.data
-    for i=1,#data do
-        local d = data[i]
-        local c = d.content
-        if type(c) == "string" then
-            d.content = lpegmatch(p_stripper,c)
-        end
-    end
 end
 
 do
@@ -1719,6 +1700,27 @@ do
         end
     end
 
+    local function ignorebreaks(di,element,n,fulltag)
+        local data = di.data
+        for i=1,#data do
+            local d = data[i]
+            if d.content == " " then
+                d.content = ""
+            end
+        end
+    end
+
+    local function ignorespaces(di,element,n,fulltag)
+        local data = di.data
+        for i=1,#data do
+            local d = data[i]
+            local c = d.content
+            if type(c) == "string" then
+                d.content = lpegmatch(p_stripper,c)
+            end
+        end
+    end
+
     extras.registerpages     = ignorebreaks
     extras.registerseparator = ignorespaces
 
@@ -2549,7 +2551,7 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
              -- report_export("skipping character: %C (no attribute)",n.char)
             else
                 -- we could add tonunicodes for ligatures (todo)
-                local components = getfield(n,"components")
+                local components = getcomponents(n)
                 if components and (not characterdata[c] or overloads[c]) then -- we loose data
                     collectresults(components,nil,at) -- this assumes that components have the same attribute as the glyph ... we should be more tolerant (see math)
                 else
@@ -2807,7 +2809,7 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
                 end
             end
         elseif id == kern_code then
-            local kern = getfield(n,"kern")
+            local kern = getkern(n)
             if kern > 0 then
                 local limit = threshold
                 if p and getid(p) == glyph_code then

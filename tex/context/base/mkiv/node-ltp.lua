@@ -140,7 +140,7 @@ local sub, formatters = string.sub, string.formatters
 local round, floor = math.round, math.floor
 local insert, remove = table.insert, table.remove
 
-local fonts, nodes, node = fonts, nodes, node
+-- local fonts, nodes, node = fonts, nodes, node -- too many locals
 
 local trace_basic         = false  trackers.register("builders.paragraphs.basic",       function(v) trace_basic       = v end)
 local trace_lastlinefit   = false  trackers.register("builders.paragraphs.lastlinefit", function(v) trace_lastlinefit = v end)
@@ -208,7 +208,10 @@ local getattr              = nuts.getattr
 local getdisc              = nuts.getdisc
 local getglue              = nuts.getglue
 local getwhd               = nuts.getwhd
-local setwhd               = nuts.setwhd
+local getcomponents        = nuts.getcomponents
+local getkern              = nuts.getkern
+local getpenalty           = nuts.getpenalty
+local getdir               = nuts.getdir
 
 local isglyph              = nuts.isglyph
 
@@ -221,6 +224,9 @@ local setprev              = nuts.setprev
 local setdisc              = nuts.setdisc
 local setsubtype           = nuts.setsubtype
 local setglue              = nuts.setglue
+local setwhd               = nuts.setwhd
+local setkern              = nuts.setkern
+local setdir               = nuts.setdir
 
 local slide_node_list      = nuts.slide -- get rid of this, probably ok > 78.2
 local find_tail            = nuts.tail
@@ -353,12 +359,12 @@ local function checked_line_dir(stack,current)
         local n = stack.n + 1
         stack.n = n
         stack[n] = current
-        return getfield(current,"dir")
+        return getdir(current)
     elseif n > 0 then
         local n = stack.n
         local dirnode = stack[n]
         dirstack.n = n - 1
-        return getfield(dirnode,"dir")
+        return getdir(dirnode)
     else
         report_parbuilders("warning: missing pop node (%a)",1) -- in line ...
     end
@@ -375,7 +381,7 @@ local function inject_dirs_at_end_of_line(stack,current,start,stop)
     while start and start ~= stop do
         local id = getid(start)
         if id == dir_code then
-            if not dir_pops[getfield(start,"dir")] then -- weird, what is this #
+            if not dir_pops[getdir(start)] then -- weird, what is this #
                 n = n + 1
                 stack[n] = start
             elseif n > 0 then
@@ -387,7 +393,7 @@ local function inject_dirs_at_end_of_line(stack,current,start,stop)
         start = getnext(start)
     end
     for i=n,1,-1 do
-        h, current = insert_node_after(current,current,new_dir(dir_negations[getfield(stack[i],"dir")]))
+        h, current = insert_node_after(current,current,new_dir(dir_negations[getdir(stack[i])]))
     end
     stack.n = n
     return current
@@ -755,13 +761,13 @@ local function add_to_width(line_break_dir,checked_expansion,s) -- split into tw
             end
         elseif id == hlist_code or id == vlist_code then
             local wd, ht, dp = getwhd(s)
-            if is_parallel[getfield(s,"dir")][line_break_dir] then
+            if is_parallel[getdir(s)][line_break_dir] then
                 size = size + wd
             else
                 size = size + ht + dp
             end
         elseif id == kern_code then
-            local kern = getfield(s,"kern")
+            local kern = getkern(s)
             if kern ~= 0 then
                 if checked_expansion and expand_kerns and (getsubtype(s) == kerning_code or getattr(a_fontkern)) then
                     local stretch, shrink = kern_stretch_shrink(s,kern)
@@ -832,12 +838,12 @@ local function compute_break_width(par,break_type,p) -- split in two
         elseif id == kern_code then
             local s = getsubtype(p)
             if s == userkern_code or s == italickern_code then
-                break_width.size = break_width.size - getfield(p,"kern")
+                break_width.size = break_width.size - getkern(p)
             else
                 return
             end
         elseif id == math_code then
-            break_width.size = break_width.size - getfield(p,"surround")
+            break_width.size = break_width.size - getkern(p) -- surround
             -- new in luatex
             local wd, stretch, shrink, stretch_order = getglue(p)
             local order = stretch_orders[stretch_order]
@@ -1304,9 +1310,9 @@ local function post_line_break(par)
                 setdisc(lastnode) -- nil, nil, nil
                 disc_break = true
             elseif id == kern_code then
-                setfield(lastnode,"kern",0)
+                setkern(lastnode,0)
             elseif getid(lastnode) == math_code then
-                setfield(lastnode,"surround",0)
+                setkern(lastnode,0) -- surround
                 -- new in luatex
                 setglue(lastnode) -- zeros
             end
@@ -1474,7 +1480,7 @@ local function post_line_break(par)
                     break
                 elseif id == math_code then
                     -- keep the math node
-                    setfield(next,"surround",0)
+                    setkern(next,0) -- surround
                     -- new in luatex
                     setglue(lastnode) -- zeros
                     break
@@ -2264,7 +2270,7 @@ function constructors.methods.basic(head,d)
                 end
             elseif id == hlist_code or id == vlist_code then
                 local wd, ht, dp = getwhd(current)
-                if is_parallel[getfield(current,"dir")][par.line_break_dir] then
+                if is_parallel[getdir(current)][par.line_break_dir] then
                     active_width.size = active_width.size + wd
                 else
                     active_width.size = active_width.size + ht + dp
@@ -2299,7 +2305,7 @@ function constructors.methods.basic(head,d)
                     if second_pass or subtype <= automatic_disc_code then
                         local actual_pen = subtype == automatic_disc_code and par.ex_hyphen_penalty or par.hyphen_penalty
                         -- 0.81 :
-                        -- local actual_pen = getfield(current,"penalty")
+                        -- local actual_pen = getpenalty(current)
                         --
                         local pre, post, replace = getdisc(current)
                         if not pre then    --  trivial pre-break
@@ -2378,9 +2384,9 @@ function constructors.methods.basic(head,d)
                         p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
                     end
                     local active_width = par.active_width
-                    active_width.size = active_width.size + getfield(current,"kern")
+                    active_width.size = active_width.size + getkern(current)
                 else
-                    local kern = getfield(current,"kern")
+                    local kern = getkern(current)
                     if kern ~= 0 then
                         active_width.size = active_width.size + kern
                         if checked_expansion and expand_kerns and (getsubtype(current) == kerning_code or getattr(current,a_fontkern)) then
@@ -2405,13 +2411,13 @@ function constructors.methods.basic(head,d)
                     p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
                 end
                 local active_width = par.active_width
-                active_width.size = active_width.size + getfield(current,"surround")
+                active_width.size = active_width.size + getkern(current) -- surround
                 -- new in luatex
                 + getfield(current,"width")
             elseif id == rule_code then
                 active_width.size = active_width.size + getfield(current,"width")
             elseif id == penalty_code then
-                p_active, n_active = try_break(getfield(current,"penalty"), unhyphenated_code, par, first_p, current, checked_expansion)
+                p_active, n_active = try_break(getpenalty(current), unhyphenated_code, par, first_p, current, checked_expansion)
             elseif id == dir_code then
                 par.line_break_dir = checked_line_dir(dirstack) or par.line_break_dir
             elseif id == localpar_code then
@@ -2526,7 +2532,7 @@ local function short_display(target,a,font_in_short_display)
             end
             -- todo: instead of components the split tounicode string
             if getsubtype(a) == ligature_code then
-                font_in_short_display = short_display(target,getfield(a,"components"),font_in_short_display)
+                font_in_short_display = short_display(target,getcomponents(a),font_in_short_display)
             else
                 write(target,utfchar(char))
             end
@@ -2717,10 +2723,8 @@ end
 --     local hlist             = new_hlist()
 --
 --     setlist(hlist,head)
---     setfield(hlist,"dir",direction or tex.textdir)
---     setfield(hlist,"width",width)
---     setfield(hlist,"height",height)
---     setfield(hlist,"depth",depth)
+--     setdir(hlist,direction or tex.textdir)
+--     setwhd(hlist,width,height,depth)
 --
 --     if delta == 0 then
 --
@@ -2791,9 +2795,9 @@ end
 --                     current.expansion_factor = font_expand_ratio * stretch
 --                 end
 --             elseif id == kern_code then
---                 local kern = getfield(current,"kern")
+--                 local kern = getkern(current)
 --                 if kern ~= 0 and getsubtype(current) == kerning_code then
---                     setfield(current,"kern",font_expand_ratio * kern)
+--                     setkern(current,font_expand_ratio * kern)
 --                 end
 --             end
 --             current = getnext(current)
@@ -2814,9 +2818,9 @@ end
 --                     current.expansion_factor = font_expand_ratio * shrink
 --                 end
 --             elseif id == kern_code then
---                 local kern = getfield(current,"kern")
+--                 local kern = getkern(current)
 --                 if kern ~= 0 and getsubtype(current) == kerning_code then
---                     setfield(current,"kern",font_expand_ratio * kern)
+--                     setkern(current,font_expand_ratio * kern)
 --                 end
 --             end
 --             current = getnext(current)
@@ -2832,7 +2836,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
 
     local hlist = new_hlist()
 
-    setfield(hlist,"dir",direction)
+    setdir(hlist,direction)
 
     if head == nil then
         setfield(hlist,"width",width)
@@ -2910,10 +2914,10 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                     depth = dp
                 end
             elseif id == kern_code then
-                local kern = getfield(current,"kern")
+                local kern = getkern(current)
                 if kern == 0 then
                     -- no kern
-                elseif getsubtype(current) == kerning_code then -- check getfield(p,"kern")
+                elseif getsubtype(current) == kerning_code then -- check getkern(p)
                     if cal_expand_ratio then
                         local stretch, shrink = kern_stretch_shrink(current,kern)
                         font_stretch = font_stretch + stretch
@@ -2951,7 +2955,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                 end
             elseif id == hlist_code or id == vlist_code then
                 local sh = getfield(current,"shift")
-                local wd, ht, dp = pack_width_height_depth(hpack_dir,getfield(current,"dir") or hpack_dir,current) -- added: or pack_dir
+                local wd, ht, dp = pack_width_height_depth(hpack_dir,getdir(current) or hpack_dir,current) -- added: or pack_dir
                 local hs, ds = ht - sh, dp + sh
                 natural = natural + wd
                 if hs > height then
@@ -2970,7 +2974,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                     depth = dp
                 end
             elseif id == math_code then
-                natural = natural + getfield(current,"surround")
+                natural = natural + getkern(current) -- surround
                 -- new in luatex
                 + getfield(current,"width")
             elseif id == unset_code then
@@ -3072,7 +3076,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                     end
                     e = font_expand_ratio * data.glyphstretch / 1000
                 else
-                    local kern = getfield(g,"kern")
+                    local kern = getkern(g)
                     local stretch, shrink = kern_stretch_shrink(g,kern)
                     e = font_expand_ratio * stretch / 1000
                 end
@@ -3129,7 +3133,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                     end
                     e = font_expand_ratio * data.glyphshrink / 1000
                 else
-                    local kern = getfield(g,"kern")
+                    local kern = getkern(g)
                     local stretch, shrink = kern_stretch_shrink(g,kern)
                     e = font_expand_ratio * shrink / 1000
                 end
@@ -3157,7 +3161,7 @@ local function hpack(head,width,method,direction,firstline,line) -- fast version
                 local overfullrule = tex.overfullrule
                 if fuzz > hfuzz and overfullrule > 0 then
                     -- weird, is always called and no rules shows up
-                    setfield(slide_node_list(list),"next",new_rule(overfullrule,nil,nil,getfield(hlist,"dir"))) -- todo: find_tail
+                    setnext(slide_node_list(list),new_rule(overfullrule,nil,nil,getdir(hlist))) -- todo: find_tail
                 end
                 diagnostics.overfull_hbox(hlist,line,-delta)
             end

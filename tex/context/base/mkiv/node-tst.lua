@@ -32,6 +32,8 @@ local getprev                    = nuts.getprev
 local getid                      = nuts.getid
 local getchar                    = nuts.getchar
 local getsubtype                 = nuts.getsubtype
+local getkern                    = nuts.getkern
+local getpenalty                 = nuts.getpenalty
 
 local find_node_tail             = nuts.tail
 
@@ -75,7 +77,7 @@ function nuts.somespace(n,all)
             return (all or ((getfield(n,"width") or 0) ~= 0)) and glue_code -- temp: or 0
          -- return (all or (getfield(n,"width") ~= 0)) and glue_code
         elseif id == kern_code then
-            return (all or (getfield(n,"kern") ~= 0)) and kern
+            return (all or (getkern(n) ~= 0)) and kern
         elseif id == glyph_code then
             local category = chardata[getchar(n)].category
          -- maybe more category checks are needed
@@ -90,7 +92,7 @@ function nuts.somepenalty(n,value)
         local id = getid(n)
         if id == penalty_code then
             if value then
-                return getfield(n,"penalty") == value
+                return getpenalty(n) == value
             else
                 return true
             end

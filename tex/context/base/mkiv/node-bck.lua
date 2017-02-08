@@ -84,11 +84,12 @@ local function add_backgrounds(head) -- rather old code .. to be redone
                         if transparency then
                             setattr(rule,a_transparency,transparency)
                         end
-                        setlink(rule,glue)
-                        if list then
-                            setlink(glue,list)
-                        end
-                        setlist(current,rule)
+--                         setlink(rule,glue)
+--                         if list then
+--                             setlink(glue,list)
+--                         end
+--                         setlist(current,rule)
+                        setlist(current,rule,glue,list)
                     end
                 end
             end

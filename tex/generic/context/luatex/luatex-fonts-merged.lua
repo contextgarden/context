@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/01/17 00:43:24
+-- merge date  : 02/08/17 23:46:07
 
 do -- begin closure to overcome local limits and interference
 
@@ -107,6 +107,13 @@ if flush then
   local exec=os.exec  if exec  then function os.exec  (...) flush() return exec  (...) end end
   local spawn=os.spawn  if spawn  then function os.spawn (...) flush() return spawn (...) end end
   local popen=io.popen  if popen  then function io.popen (...) flush() return popen (...) end end
+end
+if ffi and (ffi.os=="" or ffi.arch=="") then
+  ffi=nil
+  if ffi.number then
+  else
+    ffi.number=tonumber
+  end
 end
 
 end -- closure
@@ -3491,6 +3498,23 @@ function utf.chrlen(u)
     (u<0xFC and 5) or
     (u<0xFE and 6) or 0
 end
+local extract=bit32.extract
+local char=string.char
+function unicode.toutf32string(n)
+  if n<=0xFF then
+    return
+      char(n).."\000\000\000"
+  elseif n<=0xFFFF then
+    return
+      char(extract(n,0,8))..char(extract(n,8,8)).."\000\000"
+  elseif n<=0xFFFFFF then
+    return
+      char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8)).."\000"
+  else
+    return
+      char(extract(n,0,8))..char(extract(n,8,8))..char(extract(n,16,8))..char(extract(n,24,8))
+  end
+end
 
 end -- closure
 
@@ -4296,6 +4320,14 @@ function files.readinteger2(f)
     return n
   end
 end
+  function files.readinteger2(f)
+    local a,b=byte(f:read(2),1,2)
+    if a>=0x80 then
+      return 0x100*a+b-0x10000
+    else
+      return 0x100*a+b
+    end
+  end
 function files.readinteger2le(f)
   local b,a=byte(f:read(2),1,2)
   local n=0x100*a+b
@@ -4348,6 +4380,14 @@ function files.readinteger4(f)
     return n
   end
 end
+  function files.readinteger4(f)
+    local a,b,c,d=byte(f:read(4),1,4)
+    if a>=0x80 then
+      return 0x1000000*a+0x10000*b+0x100*c+d-0x100000000
+    else
+      return 0x1000000*a+0x10000*b+0x100*c+d
+    end
+  end
 function files.readinteger4le(f)
   local d,c,b,a=byte(f:read(4),1,4)
   local n=0x1000000*a+0x10000*b+0x100*c+d
@@ -4977,8 +5017,23 @@ nuts.setdisc=direct.setdisc
 nuts.setlink=direct.setlink
 nuts.getlist=direct.getlist
 nuts.setlist=direct.setlist
-nuts.getleader=direct.getleader
-nuts.setleader=direct.setleader
+nuts.getoffsets=direct.getoffsets or
+  function(n)
+    return getfield(n,"xoffset"),getfield(n,"yoffset")
+  end
+nuts.setoffsets=direct.setoffsets or
+  function(n,x,y)
+    if x then setfield(n,"xoffset",x) end
+    if y then setfield(n,"xoffset",y) end
+  end
+nuts.getleader=direct.getleader   or function(n)  return getfield(n,"leader")    end
+nuts.setleader=direct.setleader   or function(n,l)    setfield(n,"leader",l)   end
+nuts.getcomponents=direct.getcomponents or function(n)  return getfield(n,"components")  end
+nuts.setcomponents=direct.setcomponents or function(n,c)    setfield(n,"components",c) end
+nuts.getkern=direct.getkern    or function(n)  return getfield(n,"kern")     end
+nuts.setkern=direct.setkern    or function(n,k)    setfield(n,"kern",k)    end
+nuts.getdir=direct.getkern    or function(n)  return getfield(n,"dir")     end
+nuts.setdir=direct.setkern    or function(n,d)    setfield(n,"dir",d)    end
 if not direct.is_glyph then
   local getchar=direct.getchar
   local getid=direct.getid
@@ -5084,25 +5139,34 @@ function nuts.set_components(target,start,stop)
     flush_list(head)
     head=nil
   end
-  setprev(start)
+  if start then
+    setprev(start)
+  else
+    return nil
+  end
   if stop then
     setnext(stop)
   end
+  local tail=nil
   while start do
     local c=getfield(start,"components")
     local n=getnext(start)
     if c then
-      local tail=find_tail(c)
-      if not head then
+      if head then
+        setlink(tail,c)
+      else
         head=c
       end
-      setlink(tail,n)
+      tail=find_tail(c)
       setfield(start,"components")
       flush_node(start)
     else
-      if not head then
+      if head then
+        setlink(tail,start)
+      else
         head=start
       end
+      tail=start
     end
     start=n
   end
@@ -5110,39 +5174,47 @@ function nuts.set_components(target,start,stop)
   return head
 end
 function nuts.get_components(target)
+  return getfield(target,"components")
+end
+function nuts.take_components(target)
   local c=getfield(target,"components")
   setfield(target,"components")
   return c
 end
-function nuts.count_components(n,marks) 
+function nuts.count_components(n,marks)
   local components=getfield(n,"components")
   if components then
-    local i=0
     if marks then
+      local i=0
       for g in traverse_id(glyph_code,components) do
         if not marks[getchar(g)] then
           i=i+1
         end
       end
+      return i
     else
-      for g in traverse_id(glyph_code,components) do
-        i=i+1
-      end
+      return count(glyph_code,components)
     end
-    return i
   else
     return 0
   end
 end
-function nuts.copy_no_components(g)
+function nuts.copy_no_components(g,copyinjection)
   local components=getfield(g,"components")
   if components then
     setfield(g,"components")
     local n=copy_node(g)
+    if copyinjection then
+      copyinjection(n,g)
+    end
     setfield(g,"components",components)
     return n
   else
-    return copy_node(g)
+    local n=copy_node(g)
+    if copyinjection then
+      copyinjection(n,g)
+    end
+    return n
   end
 end
 function nuts.copy_only_glyphs(current)
@@ -12978,6 +13050,7 @@ do
                         sublookuplist[nofsublookups]=copy(h) 
                         sublookuphash[lookupid]=nofsublookups
                         sublookupcheck[lookupid]=1
+                        h=nofsublookups
                       else
                         report_issue(i,what,sequence,"missing")
                         rule.lookups=nil
@@ -15693,7 +15766,7 @@ if not modules then modules={} end modules ['font-otl']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files",
 }
-local gmatch,find,match,lower,strip=string.gmatch,string.find,string.match,string.lower,string.strip
+local lower=string.lower
 local type,next,tonumber,tostring,unpack=type,next,tonumber,tostring,unpack
 local abs=math.abs
 local derivetable=table.derive
@@ -15760,26 +15833,6 @@ function otf.load(filename,sub,featurefile)
     hash=hash.."-"..sub
   end
   hash=containers.cleanname(hash)
-  local featurefiles
-  if featurefile then
-    featurefiles={}
-    for s in gmatch(featurefile,"[^,]+") do
-      local name=resolvers.findfile(file.addsuffix(s,'fea'),'fea') or ""
-      if name=="" then
-        report_otf("loading error, no featurefile %a",s)
-      else
-        local attr=lfs.attributes(name)
-        featurefiles[#featurefiles+1]={
-          name=name,
-          size=attr and attr.size or 0,
-          time=attr and attr.modification or 0,
-        }
-      end
-    end
-    if #featurefiles==0 then
-      featurefiles=nil
-    end
-  end
   local data=containers.read(otf.cache,hash)
   local reload=not data or data.size~=size or data.time~=time or data.tableversion~=otfreaders.tableversion
   if forceload then
@@ -15846,6 +15899,17 @@ function otf.load(filename,sub,featurefile)
       applyruntimefixes(filename,data)
     end
     data.metadata.math=data.resources.mathconstants
+    local classes=data.resources.classes
+    if not classes then
+      local descriptions=data.descriptions
+      classes=setmetatableindex(function(t,k)
+        local d=descriptions[k]
+        local v=(d and d.class or "base") or false
+        t[k]=v
+        return v
+      end)
+      data.resources.classes=classes
+    end
   end
   return data
 end
@@ -16724,7 +16788,6 @@ local trace_injections=false registertracker("fonts.injections",function(v) trac
 local trace_marks=false registertracker("fonts.injections.marks",function(v) trace_marks=v end)
 local trace_cursive=false registertracker("fonts.injections.cursive",function(v) trace_cursive=v end)
 local trace_spaces=false registertracker("fonts.injections.spaces",function(v) trace_spaces=v end)
-local use_advance=false directives.register("fonts.injections.advance",function(v) use_advance=v end)
 local report_injections=logs.reporter("fonts","injections")
 local report_spaces=logs.reporter("fonts","spaces")
 local attributes,nodes,node=attributes,nodes,node
@@ -16752,12 +16815,16 @@ local getnext=nuts.getnext
 local getprev=nuts.getprev
 local getid=nuts.getid
 local getfont=nuts.getfont
-local getsubtype=nuts.getsubtype
 local getchar=nuts.getchar
+local getoffsets=nuts.getoffsets
 local getboth=nuts.getboth
-local ischar=nuts.is_char
 local getdisc=nuts.getdisc
 local setdisc=nuts.setdisc
+local setoffsets=nuts.setoffsets
+local ischar=nuts.is_char
+local getkern=nuts.getkern
+local setkern=nuts.setkern
+local setlink=nuts.setlink
 local traverse_id=nuts.traverse_id
 local traverse_char=nuts.traverse_char
 local insert_node_before=nuts.insert_before
@@ -16799,7 +16866,7 @@ function injections.copy(target,source)
       if tp then
         tp.injections=si
       else
-        propertydata[target]={
+        properties[target]={
           injections=si,
         }
       end
@@ -17128,11 +17195,12 @@ local function show_result(head)
   while current do
     local id=getid(current)
     if id==glyph_code then
-      report_injections("char: %C, width %p, xoffset %p, yoffset %p",
-        getchar(current),getfield(current,"width"),getfield(current,"xoffset"),getfield(current,"yoffset"))
+      local w=getfield(current,"width")
+      local x,y=getoffsets(current)
+      report_injections("char: %C, width %p, xoffset %p, yoffset %p",getchar(current),w,x,y)
       skipping=false
     elseif id==kern_code then
-      report_injections("kern: %p",getfield(current,"kern"))
+      report_injections("kern: %p",getkern(current))
       skipping=false
     elseif not skipping then
       report_injections()
@@ -17158,68 +17226,56 @@ local function inject_kerns_only(head,where)
   local posttail=nil 
   local replacetail=nil 
   while current do
-    local id=getid(current)
     local next=getnext(current)
-    if id==glyph_code then
-      if getsubtype(current)<256 then
-        local p=rawget(properties,current)
-        if p then
-          local i=p.injections
-          if i then
-            local leftkern=i.leftkern
-            if leftkern and leftkern~=0 then
-              if use_advance then
-                setfield(current,"xoffset",leftkern)
-                setfield(current,"xadvance",leftkern)
-              else
-                insert_node_before(head,current,newkern(leftkern))
+    local char,id=ischar(current)
+    if char then
+      local p=rawget(properties,current)
+      if p then
+        local i=p.injections
+        if i then
+          local leftkern=i.leftkern
+          if leftkern and leftkern~=0 then
+            insert_node_before(head,current,newkern(leftkern))
+          end
+        end
+        if prevdisc then
+          local done=false
+          if post then
+            local i=p.postinjections
+            if i then
+              local leftkern=i.leftkern
+              if leftkern and leftkern~=0 then
+                setlink(posttail,newkern(leftkern))
+                done=true
               end
             end
           end
-          if prevdisc then
-            local done=false
-            if post then
-              local i=p.postinjections
-              if i then
-                local leftkern=i.leftkern
-                if leftkern and leftkern~=0 then
-                  if use_advance then
-                    setfield(post,"xadvance",leftkern)
-                  else
-                    insert_node_after(post,posttail,newkern(leftkern))
-                    done=true
-                  end
-                end
+          if replace then
+            local i=p.replaceinjections
+            if i then
+              local leftkern=i.leftkern
+              if leftkern and leftkern~=0 then
+                setlink(replacetail,newkern(leftkern))
+                done=true
               end
             end
-            if replace then
-              local i=p.replaceinjections
-              if i then
-                local leftkern=i.leftkern
-                if leftkern and leftkern~=0 then
-                  if use_advance then
-                    setfield(replace,"xadvance",leftkern)
-                  else
-                    insert_node_after(replace,replacetail,newkern(leftkern))
-                    done=true
-                  end
-                end
-              end
-            else
-              local i=p.emptyinjections
-              if i then
-                local leftkern=i.leftkern
-                if leftkern and leftkern~=0 then
-                  setfield(prev,"replace",newkern(leftkern)) 
-                end
+          else
+            local i=p.emptyinjections
+            if i then
+              local leftkern=i.leftkern
+              if leftkern and leftkern~=0 then
+                setfield(prev,"replace",newkern(leftkern)) 
               end
             end
-            if done then
-              setdisc(prevdisc,pre,post,replace)
-            end
+          end
+          if done then
+            setdisc(prevdisc,pre,post,replace)
           end
         end
       end
+      prevdisc=nil
+      prevglyph=current
+    elseif char==false then
       prevdisc=nil
       prevglyph=current
     elseif id==disc_code then
@@ -17233,13 +17289,8 @@ local function inject_kerns_only(head,where)
             if i then
               local leftkern=i.leftkern
               if leftkern and leftkern~=0 then
-                if use_advance then
-                  setfield(pre,"xoffset",leftkern)
-                  setfield(pre,"xadvance",leftkern)
-                else
-                  pre=insert_node_before(pre,n,newkern(leftkern))
-                  done=true
-                end
+                pre=insert_node_before(pre,n,newkern(leftkern))
+                done=true
               end
             end
           end
@@ -17253,13 +17304,8 @@ local function inject_kerns_only(head,where)
             if i then
               local leftkern=i.leftkern
               if leftkern and leftkern~=0 then
-                if use_advance then
-                  setfield(post,"xoffset",leftkern)
-                  setfield(post,"xadvance",leftkern)
-                else
-                  post=insert_node_before(post,n,newkern(leftkern))
-                  done=true
-                end
+                post=insert_node_before(post,n,newkern(leftkern))
+                done=true
               end
             end
           end
@@ -17273,13 +17319,8 @@ local function inject_kerns_only(head,where)
             if i then
               local leftkern=i.leftkern
               if leftkern and leftkern~=0 then
-                if use_advance then
-                  setfield(replace,"xoffset",leftkern)
-                  setfield(replace,"xadvance",leftkern)
-                else
-                  replace=insert_node_before(replace,n,newkern(leftkern))
-                  done=true
-                end
+                replace=insert_node_before(replace,n,newkern(leftkern))
+                done=true
               end
             end
           end
@@ -17321,76 +17362,77 @@ local function inject_pairs_only(head,where)
   local posttail=nil 
   local replacetail=nil 
   while current do
-    local id=getid(current)
     local next=getnext(current)
-    if id==glyph_code then
-      if getsubtype(current)<256 then
-        local p=rawget(properties,current)
-        if p then
-          local i=p.injections
+    local char,id=ischar(current)
+    if char then
+      local p=rawget(properties,current)
+      if p then
+        local i=p.injections
+        if i then
+          local yoffset=i.yoffset
+          if yoffset and yoffset~=0 then
+            setoffsets(current,false,yoffset)
+          end
+          local leftkern=i.leftkern
+          if leftkern and leftkern~=0 then
+            head=insert_node_before(head,current,newkern(leftkern))
+          end
+          local rightkern=i.rightkern
+          if rightkern and rightkern~=0 then
+            insert_node_after(head,current,newkern(rightkern))
+          end
+        else
+          local i=p.emptyinjections
           if i then
-            local yoffset=i.yoffset
-            if yoffset and yoffset~=0 then
-              setfield(current,"yoffset",yoffset)
-            end
-            local leftkern=i.leftkern
-            if leftkern and leftkern~=0 then
-              head=insert_node_before(head,current,newkern(leftkern))
-            end
             local rightkern=i.rightkern
             if rightkern and rightkern~=0 then
-              insert_node_after(head,current,newkern(rightkern))
+              if next and getid(next)==disc_code then
+                if replace then
+                else
+                  setfield(next,"replace",newkern(rightkern)) 
+                end
+              end
+            end
+          end
+        end
+        if prevdisc then
+          local done=false
+          if post then
+            local i=p.postinjections
+            if i then
+              local leftkern=i.leftkern
+              if leftkern and leftkern~=0 then
+                setlink(posttail,newkern(leftkern))
+                done=true
+              end
+            end
+          end
+          if replace then
+            local i=p.replaceinjections
+            if i then
+              local leftkern=i.leftkern
+              if leftkern and leftkern~=0 then
+                setlink(replacetail,newkern(leftkern))
+                done=true
+              end
             end
           else
             local i=p.emptyinjections
             if i then
-              local rightkern=i.rightkern
-              if rightkern and rightkern~=0 then
-                if next and getid(next)==disc_code then
-                  if replace then
-                  else
-                    setfield(next,"replace",newkern(rightkern)) 
-                  end
-                end
+              local leftkern=i.leftkern
+              if leftkern and leftkern~=0 then
+                setfield(prev,"replace",newkern(leftkern)) 
               end
             end
           end
-          if prevdisc then
-            local done=false
-            if post then
-              local i=p.postinjections
-              if i then
-                local leftkern=i.leftkern
-                if leftkern and leftkern~=0 then
-                  insert_node_after(post,posttail,newkern(leftkern))
-                  done=true
-                end
-              end
-            end
-            if replace then
-              local i=p.replaceinjections
-              if i then
-                local leftkern=i.leftkern
-                if leftkern and leftkern~=0 then
-                  insert_node_after(replace,replacetail,newkern(leftkern))
-                  done=true
-                end
-              end
-            else
-              local i=p.emptyinjections
-              if i then
-                local leftkern=i.leftkern
-                if leftkern and leftkern~=0 then
-                  setfield(prev,"replace",newkern(leftkern)) 
-                end
-              end
-            end
-            if done then
-              setdisc(prevdisc,pre,post,replace)
-            end
+          if done then
+            setdisc(prevdisc,pre,post,replace)
           end
         end
       end
+      prevdisc=nil
+      prevglyph=current
+    elseif char==false then
       prevdisc=nil
       prevglyph=current
     elseif id==disc_code then
@@ -17404,7 +17446,7 @@ local function inject_pairs_only(head,where)
             if i then
               local yoffset=i.yoffset
               if yoffset and yoffset~=0 then
-                setfield(n,"yoffset",yoffset)
+                setoffsets(n,false,yoffset)
               end
               local leftkern=i.leftkern
               if leftkern and leftkern~=0 then
@@ -17428,7 +17470,7 @@ local function inject_pairs_only(head,where)
             if i then
               local yoffset=i.yoffset
               if yoffset and yoffset~=0 then
-                setfield(n,"yoffset",yoffset)
+                setoffsets(n,false,yoffset)
               end
               local leftkern=i.leftkern
               if leftkern and leftkern~=0 then
@@ -17452,7 +17494,7 @@ local function inject_pairs_only(head,where)
             if i then
               local yoffset=i.yoffset
               if yoffset and yoffset~=0 then
-                setfield(n,"yoffset",yoffset)
+                setoffsets(n,false,yoffset)
               end
               local leftkern=i.leftkern
               if leftkern and leftkern~=0 then
@@ -17516,11 +17558,8 @@ local function inject_pairs_only(head,where)
   return tonode(head),true
 end
 local function showoffset(n,flag)
-  local o=getfield(n,"xoffset")
-  if o==0 then
-    o=getfield(n,"yoffset")
-  end
-  if o~=0 then
+  local x,y=getoffsets(n)
+  if x~=0 or y~=0 then
     setcolor(n,flag and "darkred" or "darkgreen")
   else
     resetcolor(n)
@@ -17554,7 +17593,8 @@ local function inject_everything(head,where)
   local marks={}
   local nofmarks=0
   local function processmark(p,n,pn) 
-    local px=getfield(p,"xoffset")
+    local px,py=getoffsets(p)
+    local nx,ny=getoffsets(n)
     local ox=0
     local rightkern=nil
     local pp=rawget(properties,p)
@@ -17593,154 +17633,155 @@ local function inject_everything(head,where)
         end
       end
     end
-    local oy=getfield(n,"yoffset")+getfield(p,"yoffset")+pn.marky
-    setfield(n,"xoffset",ox)
-    setfield(n,"yoffset",oy)
+    local oy=ny+py+pn.marky
+    setoffsets(n,ox,oy)
     if trace_marks then
       showoffset(n,true)
     end
   end
   while current do
-    local id=getid(current)
     local next=getnext(current)
-    if id==glyph_code then
-      if getsubtype(current)<256 then
-        local p=rawget(properties,current)
-        if p then
-          local i=p.injections
-          if i then
-            local pm=i.markbasenode
-            if pm then
-              nofmarks=nofmarks+1
-              marks[nofmarks]=current
-            else
-              local yoffset=i.yoffset
-              if yoffset and yoffset~=0 then
-                setfield(current,"yoffset",yoffset)
-              end
-              if hascursives then
-                local cursivex=i.cursivex
-                if cursivex then
-                  if cursiveanchor then
-                    if cursivex~=0 then
-                      i.leftkern=(i.leftkern or 0)+cursivex
-                    end
-                    if maxc==0 then
-                      minc=1
-                      maxc=1
-                      glyphs[1]=cursiveanchor
-                    else
-                      maxc=maxc+1
-                      glyphs[maxc]=cursiveanchor
-                    end
-                    properties[cursiveanchor].cursivedy=i.cursivey 
-                    last=current
-                  else
-                    maxc=0
+    local char,id=ischar(current)
+    if char then
+      local p=rawget(properties,current)
+      if p then
+        local i=p.injections
+        if i then
+          local pm=i.markbasenode
+          if pm then
+            nofmarks=nofmarks+1
+            marks[nofmarks]=current
+          else
+            local yoffset=i.yoffset
+            if yoffset and yoffset~=0 then
+              setoffsets(current,false,yoffset)
+            end
+            if hascursives then
+              local cursivex=i.cursivex
+              if cursivex then
+                if cursiveanchor then
+                  if cursivex~=0 then
+                    i.leftkern=(i.leftkern or 0)+cursivex
                   end
-                elseif maxc>0 then
-                  local ny=getfield(current,"yoffset")
+                  if maxc==0 then
+                    minc=1
+                    maxc=1
+                    glyphs[1]=cursiveanchor
+                  else
+                    maxc=maxc+1
+                    glyphs[maxc]=cursiveanchor
+                  end
+                  properties[cursiveanchor].cursivedy=i.cursivey 
+                  last=current
+                else
+                  maxc=0
+                end
+              elseif maxc>0 then
+                local nx,ny=getoffsets(current)
+                for i=maxc,minc,-1 do
+                  local ti=glyphs[i]
+                  ny=ny+properties[ti].cursivedy
+                  setoffsets(ti,false,ny) 
+                  if trace_cursive then
+                    showoffset(ti)
+                  end
+                end
+                maxc=0
+                cursiveanchor=nil
+              end
+              if i.cursiveanchor then
+                cursiveanchor=current 
+              else
+                if maxc>0 then
+                  local nx,ny=getoffsets(current)
                   for i=maxc,minc,-1 do
                     local ti=glyphs[i]
                     ny=ny+properties[ti].cursivedy
-                    setfield(ti,"yoffset",ny) 
+                    setoffsets(ti,false,ny) 
                     if trace_cursive then
                       showoffset(ti)
                     end
                   end
                   maxc=0
-                  cursiveanchor=nil
                 end
-                if i.cursiveanchor then
-                  cursiveanchor=current 
-                else
-                  if maxc>0 then
-                    local ny=getfield(current,"yoffset")
-                    for i=maxc,minc,-1 do
-                      local ti=glyphs[i]
-                      ny=ny+properties[ti].cursivedy
-                      setfield(ti,"yoffset",ny) 
-                      if trace_cursive then
-                        showoffset(ti)
-                      end
-                    end
-                    maxc=0
-                  end
-                  cursiveanchor=nil
-                end
-              end
-              local leftkern=i.leftkern
-              if leftkern and leftkern~=0 then
-                insert_node_before(head,current,newkern(leftkern))
-              end
-              local rightkern=i.rightkern
-              if rightkern and rightkern~=0 then
-                insert_node_after(head,current,newkern(rightkern))
+                cursiveanchor=nil
               end
             end
-          else
-            local i=p.emptyinjections
-            if i then
-              local rightkern=i.rightkern
-              if rightkern and rightkern~=0 then
-                if next and getid(next)==disc_code then
-                  if replace then
-                  else
-                    setfield(next,"replace",newkern(rightkern)) 
-                  end
-                end
-              end
+            local leftkern=i.leftkern
+            if leftkern and leftkern~=0 then
+              insert_node_before(head,current,newkern(leftkern))
             end
-          end
-          if prevdisc then
-            if p then
-              local done=false
-              if post then
-                local i=p.postinjections
-                if i then
-                  local leftkern=i.leftkern
-                  if leftkern and leftkern~=0 then
-                    insert_node_after(post,posttail,newkern(leftkern))
-                    done=true
-                  end
-                end
-              end
-              if replace then
-                local i=p.replaceinjections
-                if i then
-                  local leftkern=i.leftkern
-                  if leftkern and leftkern~=0 then
-                    insert_node_after(replace,replacetail,newkern(leftkern))
-                    done=true
-                  end
-                end
-              else
-                local i=p.emptyinjections
-                if i then
-                  local leftkern=i.leftkern
-                  if leftkern and leftkern~=0 then
-                    setfield(prev,"replace",newkern(leftkern)) 
-                  end
-                end
-              end
-              if done then
-                setdisc(prevdisc,pre,post,replace)
-              end
+            local rightkern=i.rightkern
+            if rightkern and rightkern~=0 then
+              insert_node_after(head,current,newkern(rightkern))
             end
           end
         else
-          if hascursives and maxc>0 then
-            local ny=getfield(current,"yoffset")
-            for i=maxc,minc,-1 do
-              local ti=glyphs[i]
-              ny=ny+properties[ti].cursivedy
-              setfield(ti,"yoffset",getfield(ti,"yoffset")+ny) 
+          local i=p.emptyinjections
+          if i then
+            local rightkern=i.rightkern
+            if rightkern and rightkern~=0 then
+              if next and getid(next)==disc_code then
+                if replace then
+                else
+                  setfield(next,"replace",newkern(rightkern)) 
+                end
+              end
             end
-            maxc=0
-            cursiveanchor=nil
           end
         end
+        if prevdisc then
+          if p then
+            local done=false
+            if post then
+              local i=p.postinjections
+              if i then
+                local leftkern=i.leftkern
+                if leftkern and leftkern~=0 then
+                  setlink(posttail,newkern(leftkern))
+                  done=true
+                end
+              end
+            end
+            if replace then
+              local i=p.replaceinjections
+              if i then
+                local leftkern=i.leftkern
+                if leftkern and leftkern~=0 then
+                  setlink(replacetail,newkern(leftkern))
+                  done=true
+                end
+              end
+            else
+              local i=p.emptyinjections
+              if i then
+                local leftkern=i.leftkern
+                if leftkern and leftkern~=0 then
+                  setfield(prev,"replace",newkern(leftkern)) 
+                end
+              end
+            end
+            if done then
+              setdisc(prevdisc,pre,post,replace)
+            end
+          end
+        end
+      else
+        if hascursives and maxc>0 then
+          local nx,ny=getoffsets(current)
+          for i=maxc,minc,-1 do
+            local ti=glyphs[i]
+            ny=ny+properties[ti].cursivedy
+            local xi,yi=getoffsets(ti)
+            setoffsets(ti,xi,yi+ny) 
+          end
+          maxc=0
+          cursiveanchor=nil
+        end
       end
+      prevdisc=nil
+      prevglyph=current
+    elseif char==false then
       prevdisc=nil
       prevglyph=current
     elseif id==disc_code then
@@ -17754,7 +17795,7 @@ local function inject_everything(head,where)
             if i then
               local yoffset=i.yoffset
               if yoffset and yoffset~=0 then
-                setfield(n,"yoffset",yoffset)
+                setoffsets(n,false,yoffset)
               end
               local leftkern=i.leftkern
               if leftkern and leftkern~=0 then
@@ -17784,7 +17825,7 @@ local function inject_everything(head,where)
             if i then
               local yoffset=i.yoffset
               if yoffset and yoffset~=0 then
-                setfield(n,"yoffset",yoffset)
+                setoffsets(n,false,yoffset)
               end
               local leftkern=i.leftkern
               if leftkern and leftkern~=0 then
@@ -17814,7 +17855,7 @@ local function inject_everything(head,where)
             if i then
               local yoffset=i.yoffset
               if yoffset and yoffset~=0 then
-                setfield(n,"yoffset",yoffset)
+                setoffsets(n,false,yoffset)
               end
               local leftkern=i.leftkern
               if leftkern and leftkern~=0 then
@@ -17877,11 +17918,11 @@ local function inject_everything(head,where)
     current=next
   end
   if hascursives and maxc>0 then
-    local ny=getfield(last,"yoffset")
+    local nx,ny=getoffsets(last)
     for i=maxc,minc,-1 do
       local ti=glyphs[i]
       ny=ny+properties[ti].cursivedy
-      setfield(ti,"yoffset",ny) 
+      setoffsets(ti,false,ny) 
       if trace_cursive then
         showoffset(ti)
       end
@@ -17938,8 +17979,8 @@ else
   end
 end
 injections.getthreshold=getthreshold
-function injections.isspace(n,threshold)
-  if getid(n)==glue_code then
+function injections.isspace(n,threshold,id)
+  if (id or getid(n))==glue_code then
     local w=getfield(n,"width")
     if threshold and w>threshold then 
       return 32
@@ -18075,7 +18116,6 @@ analyzers.methods=methods
 local a_state=attributes.private('state')
 local nuts=nodes.nuts
 local tonut=nuts.tonut
-local getfield=nuts.getfield
 local getnext=nuts.getnext
 local getprev=nuts.getprev
 local getprev=nuts.getprev
@@ -18513,6 +18553,9 @@ local setchar=nuts.setchar
 local getdisc=nuts.getdisc
 local setdisc=nuts.setdisc
 local setlink=nuts.setlink
+local getcomponents=nuts.getcomponents
+local setcomponents=nuts.setcomponents
+local getdir=nuts.getdir
 local ischar=nuts.is_char
 local insert_node_after=nuts.insert_after
 local copy_node=nuts.copy
@@ -18525,7 +18568,7 @@ local traverse_nodes=nuts.traverse
 local traverse_id=nuts.traverse_id
 local remove_node=nuts.remove
 local set_components=nuts.set_components
-local get_components=nuts.get_components
+local take_components=nuts.take_components
 local count_components=nuts.count_components
 local copy_no_components=nuts.copy_no_components
 local copy_only_glyphs=nuts.copy_only_glyphs
@@ -18543,6 +18586,7 @@ local discretionary_code=disccodes.discretionary
 local ligature_code=glyphcodes.ligature
 local privateattribute=attributes.private
 local a_state=privateattribute('state')
+local a_noligature=privateattribute("noligature")
 local injections=nodes.injections
 local setmark=injections.setmark
 local setcursive=injections.setcursive
@@ -18564,6 +18608,7 @@ local tfmdata=false
 local characters=false
 local descriptions=false
 local marks=false
+local classes=false
 local currentfont=false
 local factor=0
 local threshold=0
@@ -18696,6 +18741,29 @@ local function appenddisc(disc,list)
   end
   setdisc(disc,pre,post,replace)
 end
+local function take_components(base)
+  return getcomponents(base)
+end
+local function set_components(base,start)
+  setcomponents(base,start)
+end
+local function count_components(start,marks)
+  if getid(start)~=glyph_code then
+    return 0
+  elseif getsubtype(start)==ligature_code then
+    local i=0
+    local components=getcomponents(start)
+    while components do
+      i=i+count_components(components,marks)
+      components=getnext(components)
+    end
+    return i
+  elseif not marks[getchar(start)] then
+    return 1
+  else
+    return 0
+  end
+end
 local function markstoligature(head,start,stop,char)
   if start==stop and getchar(start)==char then
     return head,start
@@ -18704,8 +18772,7 @@ local function markstoligature(head,start,stop,char)
     local next=getnext(stop)
     setprev(start)
     setnext(stop)
-    local base=copy_no_components(start)
-    copyinjection(base,start)
+    local base=copy_no_components(start,copyinjection)
     if head==start then
       head=base
     end
@@ -18713,12 +18780,10 @@ local function markstoligature(head,start,stop,char)
     setchar(base,char)
     setsubtype(base,ligature_code)
     set_components(base,start)
-    setlink(prev,base)
-    setlink(base,next)
+    setlink(prev,base,next)
     return head,base
   end
 end
-local a_noligature=attributes.private("noligature")
 local function toligature(head,start,stop,char,dataset,sequence,markflag,discfound) 
   if getattr(start,a_noligature)==1 then
     return head,start
@@ -18733,8 +18798,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
   local comp=start
   setprev(start)
   setnext(stop)
-  local base=copy_no_components(start)
-  copyinjection(base,start)
+  local base=copy_no_components(start,copyinjection)
   if start==head then
     head=base
   end
@@ -18742,8 +18806,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
   setchar(base,char)
   setsubtype(base,ligature_code)
   set_components(base,comp)
-  setlink(prev,base)
-  setlink(base,next)
+  setlink(prev,base,next)
   if not discfound then
     local deletemarks=markflag~="mark"
     local components=start
@@ -18755,7 +18818,7 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
       local char=getchar(start)
       if not marks[char] then
         baseindex=baseindex+componentindex
-        componentindex=count_components(start,marks) 
+        componentindex=count_components(start,marks)
       elseif not deletemarks then 
         setligaindex(start,baseindex+getligaindex(start,componentindex))
         if trace_marks then
@@ -18792,24 +18855,26 @@ local function toligature(head,start,stop,char,dataset,sequence,markflag,discfou
       local pre,post,replace,pretail,posttail,replacetail=getdisc(discfound,true)
       if not replace then
         local prev=getprev(base)
-        setprev(discnext)
-        setnext(discprev)
+        local comp=take_components(base)
+        local copied=copy_only_glyphs(comp)
         if pre then
           setlink(discprev,pre)
+        else
+          setnext(discprev) 
         end
-        pre=get_components(base)
+        pre=comp
         if post then
           setlink(posttail,discnext)
           setprev(post)
         else
           post=discnext
+          setprev(discnext) 
         end
+        setlink(prev,discfound,next)
         setboth(base)
-        set_components(base,copy_only_glyphs(comp))
+        set_components(base,copied)
         replace=base
-        setlink(prev,discfound)
-        setlink(discfound,next)
-        setdisc(discfound,pre,post,replace)
+        setdisc(discfound,pre,post,replace) 
         base=prev
       end
     end
@@ -19829,8 +19894,7 @@ local function checked(head)
         current=next
       else
         local prev,next=getboth(current)
-        setlink(prev,kern)
-        setlink(kern,next)
+        setlink(prev,kern,next)
         flush_node(current)
         current=next
       end
@@ -19859,7 +19923,6 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
   local sweepnode=sweepnode
   local sweeptype=sweeptype
   local sweepoverflow=false
-  local checkdisc=getprev(head) 
   local keepdisc=not sweepnode
   local lookaheaddisc=nil
   local backtrackdisc=nil
@@ -20029,46 +20092,45 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
         break
       end
     end
-    setprev(lookaheaddisc,cprev)
-    if cprev then
-      setnext(cprev,lookaheaddisc)
+    if (cf~=lookaheaddisc) then
+      setlink(cprev,lookaheaddisc)
+      setprev(cf)
+      setnext(cl)
+      if startishead then
+        head=lookaheaddisc
+      end
+      local pre,post,replace=getdisc(lookaheaddisc)
+      local new=copy_node_list(cf)
+      local cnew=new
+      for i=1,insertedmarks do
+        cnew=getnext(cnew)
+      end
+      local clast=cnew
+      for i=f,l do
+        clast=getnext(clast)
+      end
+      if not notmatchpre[lookaheaddisc] then
+        cf,start,ok=chainproc(cf,start,last,dataset,sequence,chainlookup,rlmode,k)
+      end
+      if not notmatchreplace[lookaheaddisc] then
+        new,cnew,ok=chainproc(new,cnew,clast,dataset,sequence,chainlookup,rlmode,k)
+      end
+      if pre then
+				setlink(find_node_tail(cf),pre)
+      end
+      if replace then
+        local tail=find_node_tail(new)
+        setlink(tail,replace)
+      end
+      if hasglue then
+        setdiscchecked(lookaheaddisc,cf,post,new)
+      else
+        setdisc(lookaheaddisc,cf,post,new)
+      end
+      start=getprev(lookaheaddisc)
+      sweephead[cf]=getnext(clast)
+      sweephead[new]=getnext(last)
     end
-    setprev(cf)
-    setnext(cl)
-    if startishead then
-      head=lookaheaddisc
-    end
-    local pre,post,replace=getdisc(lookaheaddisc)
-    local new=copy_node_list(cf)
-    local cnew=new
-    for i=1,insertedmarks do
-      cnew=getnext(cnew)
-    end
-    local clast=cnew
-    for i=f,l do
-      clast=getnext(clast)
-    end
-    if not notmatchpre[lookaheaddisc] then
-      cf,start,ok=chainproc(cf,start,last,dataset,sequence,chainlookup,rlmode,k)
-    end
-    if not notmatchreplace[lookaheaddisc] then
-      new,cnew,ok=chainproc(new,cnew,clast,dataset,sequence,chainlookup,rlmode,k)
-    end
-    if pre then
-      setlink(cl,pre)
-    end
-    if replace then
-      local tail=find_node_tail(new)
-      setlink(tail,replace)
-    end
-    if hasglue then
-      setdiscchecked(lookaheaddisc,cf,post,new)
-    else
-      setdisc(lookaheaddisc,cf,post,new)
-    end
-    start=getprev(lookaheaddisc)
-    sweephead[cf]=getnext(clast)
-    sweephead[new]=getnext(last)
   elseif backtrackdisc then
     local cf=getnext(backtrackdisc)
     local cl=start
@@ -20135,7 +20197,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
   local sweeptype=sweeptype
   local currentfont=currentfont
   local diskseen=false
-  local checkdisc=getprev(head)
+  local checkdisc=sweeptype and getprev(head)
   local flags=sequence.flags or noflags
   local done=false
   local skipmark=flags[1]
@@ -20143,6 +20205,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
   local skipbase=flags[3]
   local markclass=sequence.markclass
   local skipped=false
+  local startprev,
+     startnext=getboth(start)
   for k=1,#contexts do 
     local match=true
     local current=start
@@ -20154,7 +20218,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
     if s==1 then
       local char=ischar(current,currentfont)
       if char then
-        match=seq[1][char]
+        if not seq[1][char] then
+          match=false
+        end
       end
     else
       local f=ck[4]
@@ -20163,7 +20229,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
       if size>1 then
         local discfound=nil
         local n=f+1
-        last=getnext(last) 
+        last=startnext 
         while n<=l do
           if not last and (sweeptype=="post" or sweeptype=="replace") then
             last=getnext(sweepnode)
@@ -20172,9 +20238,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
           if last then
             local char,id=ischar(last,currentfont)
             if char then
-              local ccd=descriptions[char]
-              if ccd then
-                local class=ccd.class or "base"
+              local class=classes[char]
+              if class then
                 if class==skipmark or class==skipligature or class==skipbase or (markclass and class=="mark" and not markclass[char]) then
                   skipped=true
                   if trace_skips then
@@ -20189,7 +20254,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                 else
                   if discfound then
                     notmatchreplace[discfound]=true
-                    match=not notmatchpre[discfound]
+                    if notmatchpre[discfound] then
+                      match=false
+                    end
                   else
                     match=false
                   end
@@ -20198,7 +20265,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
               else
                 if discfound then
                   notmatchreplace[discfound]=true
-                  match=not notmatchpre[discfound]
+                  if notmatchpre[discfound] then
+                    match=false
+                  end
                 else
                   match=false
                 end
@@ -20207,7 +20276,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             elseif char==false then
               if discfound then
                 notmatchreplace[discfound]=true
-                match=not notmatchpre[discfound]
+                if notmatchpre[discfound] then
+                  match=false
+                end
               else
                 match=false
               end
@@ -20249,11 +20320,15 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                     end
                   else
                     notmatchreplace[last]=true
-                    match=not notmatchpre[last]
+                    if notmatchpre[last] then
+                      match=false
+                    end
                     break
                   end
                 end
-                match=not notmatchpre[last]
+                if notmatchpre[last] then
+                  match=false
+                end
               end
               last=getnext(last)
             else
@@ -20267,8 +20342,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
         end
       end
       if match and f>1 then
-        local prev=getprev(start)
-        if prev then
+        if startprev then
+          local prev=startprev
           if prev==checkdisc and (sweeptype=="pre" or sweeptype=="replace") then
             prev=getprev(sweepnode)
           end
@@ -20279,24 +20354,25 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
               if prev then
                 local char,id=ischar(prev,currentfont)
                 if char then
-                  local ccd=descriptions[char]
-                  if ccd then
-                    local class=ccd.class
+                  local class=classes[char]
+                  if class then
                     if class==skipmark or class==skipligature or class==skipbase or (markclass and class=="mark" and not markclass[char]) then
                       skipped=true
                       if trace_skips then
                         show_skip(dataset,sequence,char,ck,class)
                       end
-                      prev=getprev(prev) 
+                      prev=getprev(prev)
                     elseif seq[n][char] then
-                      if n>1 then 
-                        prev=getprev(prev) 
+                      if n>1 then
+                        prev=getprev(prev)
                       end
                       n=n-1
                     else
                       if discfound then
                         notmatchreplace[discfound]=true
-                        match=not notmatchpost[discfound]
+                        if notmatchpost[discfound] then
+                          match=false
+                        end
                       else
                         match=false
                       end
@@ -20305,7 +20381,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                   else
                     if discfound then
                       notmatchreplace[discfound]=true
-                      match=not notmatchpost[discfound]
+                      if notmatchpost[discfound] then
+                        match=false
+                      end
                     else
                       match=false
                     end
@@ -20314,7 +20392,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                 elseif char==false then
                   if discfound then
                     notmatchreplace[discfound]=true
-                    match=not notmatchpost[discfound]
+                    if notmatchpost[discfound] then
+                      match=false
+                    end
                   else
                     match=false
                   end
@@ -20365,7 +20445,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                           end
                         else
                           notmatchreplace[prev]=true
-                          match=not notmatchpost[prev]
+                          if notmatchpost[prev] then
+                            match=false
+                          end
                           break
                         end
                       end
@@ -20375,7 +20457,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                     end
                   end
                   prev=getprev(prev)
-                elseif seq[n][32] and isspace(prev,threshold) then
+                elseif seq[n][32] and id==glue_code and isspace(prev,threshold,id) then
                   n=n-1
                   prev=getprev(prev)
                 else
@@ -20408,9 +20490,8 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             if current then
               local char,id=ischar(current,currentfont)
               if char then
-                local ccd=descriptions[char]
-                if ccd then
-                  local class=ccd.class
+                local class=classes[char]
+                if class then
                   if class==skipmark or class==skipligature or class==skipbase or (markclass and class=="mark" and not markclass[char]) then
                     skipped=true
                     if trace_skips then
@@ -20425,7 +20506,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                   else
                     if discfound then
                       notmatchreplace[discfound]=true
-                      match=not notmatchpre[discfound]
+                      if notmatchpre[discfound] then
+                        match=false
+                      end
                     else
                       match=false
                     end
@@ -20434,7 +20517,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                 else
                   if discfound then
                     notmatchreplace[discfound]=true
-                    match=not notmatchpre[discfound]
+                    if notmatchpre[discfound] then
+                      match=false
+                    end
                   else
                     match=false
                   end
@@ -20443,7 +20528,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
               elseif char==false then
                 if discfound then
                   notmatchreplace[discfound]=true
-                  match=not notmatchpre[discfound]
+                  if notmatchpre[discfound] then
+                    match=false
+                  end
                 else
                   match=false
                 end
@@ -20485,7 +20572,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                       end
                     else
                       notmatchreplace[current]=true
-                      match=notmatchpre[current]
+                      if not notmatchpre[current] then
+                        match=false
+                      end
                       break
                     end
                   end
@@ -20495,7 +20584,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                 else
                 end
                 current=getnext(current)
-              elseif seq[n][32] and isspace(current,threshold) then
+              elseif seq[n][32] and id==glue_code and isspace(current,threshold,id) then
                 n=n+1
                 current=getnext(current)
               else
@@ -20547,11 +20636,10 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
           local i=1
           while start do
             if skipped then
-              while start do 
+              while start do
                 local char=getchar(start)
-                local ccd=descriptions[char]
-                if ccd then
-                  local class=ccd.class or "base"
+                local class=classes[char]
+                if class then
                   if class==skipmark or class==skipligature or class==skipbase or (markclass and class=="mark" and not markclass[char]) then
                     start=getnext(start)
                   else
@@ -20810,8 +20898,7 @@ local function kernrun(disc,k_run,font,attr,...)
     if k_run(prevmarks,"emptyinjections",next,font,attr,...) then
       done=true
     end
-    setlink(prev,disc)
-    setlink(disc,next)
+    setlink(prev,disc,next)
   end
   return nextstart,done
 end
@@ -21135,7 +21222,7 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
   end
 end
 local function txtdirstate(start,stack,top,rlparmode)
-  local dir=getfield(start,"dir")
+  local dir=getdir(start)
   local new=1
   if dir=="+TRT" then
     top=top+1
@@ -21158,7 +21245,7 @@ local function txtdirstate(start,stack,top,rlparmode)
   return getnext(start),top,new
 end
 local function pardirstate(start)
-  local dir=getfield(start,"dir")
+  local dir=getdir(start)
   local new=0
   if dir=="TLT" then
     new=1
@@ -21182,9 +21269,11 @@ local function featuresprocessor(head,font,attr)
   if nesting==1 then
     currentfont=font
     tfmdata=fontdata[font]
-    descriptions=tfmdata.descriptions
-    characters=tfmdata.characters
-    marks=tfmdata.resources.marks
+    descriptions=tfmdata.descriptions 
+    characters=tfmdata.characters  
+ local resources=tfmdata.resources
+    marks=resources.marks
+    classes=resources.classes
     threshold,
     factor=getthreshold(font)
     checkmarks=tfmdata.properties.checkmarks
@@ -21268,12 +21357,14 @@ local function featuresprocessor(head,font,attr)
           while start do
             local char,id=ischar(start,font)
             if char then
-              local a=attr and getattr(start,0)
-              if a then
-                a=(a==attr) and (not attribute or getprop(start,a_state)==attribute)
-              else
-                a=not attribute or getprop(start,a_state)==attribute
-              end
+local a 
+if attr then
+  if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
+    a=true
+  end
+elseif not attribute or getprop(start,a_state)==attribute then
+  a=true
+end
               if a then
                 local lookupmatch=lookupcache[char]
                 if lookupmatch then
@@ -21318,12 +21409,14 @@ local function featuresprocessor(head,font,attr)
         while start do
           local char,id=ischar(start,font)
           if char then
-            local a=attr and getattr(start,0)
-            if a then
-              a=(a==attr) and (not attribute or getprop(start,a_state)==attribute)
-            else
-              a=not attribute or getprop(start,a_state)==attribute
-            end
+local a 
+if attr then
+  if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
+    a=true
+  end
+elseif not attribute or getprop(start,a_state)==attribute then
+  a=true
+end
             if a then
               for i=1,nofsteps do
                 local step=steps[i]
@@ -22461,8 +22554,7 @@ function handlers.devanagari_reorder_matras(head,start)
         end
         local startnext=getnext(start)
         head=remove_node(head,start)
-        setlink(start,next)
-        setlink(current,start)
+        setlink(current,start,next)
         start=startnext
         break
       end
@@ -22493,8 +22585,7 @@ function handlers.devanagari_reorder_reph(head,start)
         end
         startnext=getnext(start)
         head=remove_node(head,start)
-        setlink(start,next)
-        setlink(current,start)
+        setlink(current,start,next)
         start=startnext
         startattr=getprop(start,a_syllabe)
         break
@@ -22512,9 +22603,7 @@ function handlers.devanagari_reorder_reph(head,start)
         if getprop(current,a_state)==s_pstf then 
           startnext=getnext(start)
           head=remove_node(head,start)
-          local prev=getprev(current)
-          setlink(prev,start)
-          setlink(start,current)
+          setlink(getprev(current),start,current)
           start=startnext
           startattr=getprop(start,a_syllabe)
           break
@@ -22542,9 +22631,7 @@ function handlers.devanagari_reorder_reph(head,start)
     if c then
       startnext=getnext(start)
       head=remove_node(head,start)
-      local prev=getprev(c)
-      setlink(prev,start)
-      setlink(start,c)
+      setlink(getprev(c),start,c)
       start=startnext
       startattr=getprop(start,a_syllabe)
     end
@@ -22564,9 +22651,7 @@ function handlers.devanagari_reorder_reph(head,start)
     if start~=current then
       startnext=getnext(start)
       head=remove_node(head,start)
-      local next=getnext(current)
-      setlink(start,next)
-      setlink(current,start)
+      setlink(current,start,getnext(current))
       start=startnext
     end
   end
@@ -22594,8 +22679,7 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
         end
         startnext=getnext(start)
         removenode(start,start)
-        setlink(start,next)
-        setlink(current,start)
+        setlink(current,start,next)
         start=startnext
         break
       end
@@ -22613,9 +22697,7 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
         if not consonant[char] and getprop(current,a_state) then 
           startnext=getnext(start)
           removenode(start,start)
-          local prev=getprev(current)
-          setlink(prev,start)
-          setlink(start,current)
+          setlink(getprev(current),start,current)
           start=startnext
           break
         end
@@ -22907,9 +22989,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces)
           end
           start=current
         end
-        local prev=getprev(halfpos)
-        setlink(prev,current)
-        setlink(current,halfpos)
+        setlink(getprev(halfpos),current,halfpos)
         halfpos=current
       elseif above_mark[char] then  
         target=basepos
@@ -22938,9 +23018,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces)
           if current==stop then
             stop=prev
           end
-          local next=getnext(target)
-          setlink(current,next)
-          setlink(target,current)
+          setlink(target,current,getnext(target))
         end
       end
     end
@@ -22964,8 +23042,7 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces)
       if stop==next then
         stop=current
       end
-      local prev=getprev(c)
-      setlink(prev,next)
+      setlink(getprev(c),next)
       local nextnext=getnext(next)
       setnext(current,nextnext)
       local nextnextnext=getnext(nextnext)

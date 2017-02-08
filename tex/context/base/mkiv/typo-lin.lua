@@ -89,6 +89,10 @@ local getprev           = nuts.getprev
 local getboth           = nuts.getboth
 local getfield          = nuts.getfield
 local setfield          = nuts.setfield
+local setlink           = nuts.setlink
+local setkern           = nuts.setkern
+local getkern           = nuts.getkern
+local getdir            = nuts.getdir
 
 local setprop           = nuts.setprop
 local getprop           = nuts.rawprop -- getprop
@@ -136,7 +140,7 @@ local function finalize(prop,key) -- delayed calculations
     local hsize    = prop.hsize
     local width    = prop.width
     local shift    = getfield(line,"shift") -- dangerous as it can be vertical as well
-    local reverse  = getfield(line,"dir") == "TRT" or false
+    local reverse  = getdir(line) == "TRT" or false
     local pack     = new_hlist()
     local head     = getlist(line)
     local delta    = 0
@@ -355,11 +359,13 @@ local function addanchortoline(n,anchor)
         local anchor = tonut(anchor)
         local where  = line.where
         if trace_anchors then
-            local rule1 = new_rule(65536/2,4*65536,4*65536)
-            local rule2 = new_rule(8*65536,65536/4,65536/4)
-            local kern1 = new_kern(-65536/4)
-            local kern2 = new_kern(-65536/4-4*65536)
-            anchor = new_hlist(nuts.link { anchor, kern1, rule1, kern2, rule2 })
+            anchor = new_hlist(setlink(
+                anchor,
+                new_kern(-65536/4),
+                new_rule(65536/2,4*65536,4*65536),
+                new_kern(-65536/4-4*65536),
+                new_rule(8*65536,65536/4,65536/4)
+            ))
             setfield(anchor,"width",0)
         end
         if where.tail then
@@ -393,10 +399,10 @@ function paragraphs.moveinline(n,blob,dx,dy)
             if dx ~= 0 then
                 local prev, next = getboth(blob)
                 if prev and getid(prev) == kern_code then
-                    setfield(prev,"kern",getfield(prev,"kern") + dx)
+                    setkern(prev,getkern(prev) + dx)
                 end
                 if next and getid(next) == kern_code then
-                    setfield(next,"kern",getfield(next,"kern") - dx)
+                    setfkern(next,getkern(next) - dx)
                 end
             end
             if dy ~= 0 then

@@ -44,6 +44,11 @@ return {
     mathematics = {
         parameters = {
             DisplayOperatorMinHeight = FixDisplayOperatorMinHeight,
-        }
-    }
+        },
+     -- kernpairs = { -- \setupmathematics[kernpairs=yes]
+     --     [0x1D44E] = {
+     --         [0x1D44F] = 1000, -- 𝑎𝑏 demo
+     --     }
+     -- },
+    },
 }

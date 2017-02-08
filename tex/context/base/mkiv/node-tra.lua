@@ -49,6 +49,8 @@ local getdisc          = nuts.getdisc
 local setattr          = nuts.setattr
 local getglue          = nuts.getglue
 local isglyph          = nuts.isglyph
+local getcomponents    = nuts.getcomponents
+local getdir           = nuts.getdir
 
 local flush_list       = nuts.flush_list
 local count_nodes      = nuts.countall
@@ -122,6 +124,7 @@ function nodes.handlers.checkforleaks(sparse)
 end
 
 local f_sequence = formatters["U+%04X:%s"]
+local f_subrange = formatters["[[ %s ][ %s ][ %s ]]"]
 
 local function tosequence(start,stop,compact)
     if start then
@@ -132,7 +135,7 @@ local function tosequence(start,stop,compact)
             local c, id = isglyph(start)
             if c then
                 if compact then
-                    local components = getfield(start,"components")
+                    local components = getcomponents(start)
                     if components then
                         t[#t+1] = tosequence(components,nil,compact)
                     else
@@ -141,6 +144,9 @@ local function tosequence(start,stop,compact)
                 else
                     t[#t+1] = f_sequence(c,utfchar(c))
                 end
+            elseif id == disc_code then
+                local pre, post, replace = getdisc(start)
+                t[#t+1] = f_subrange(pre and tosequence(pre),post and tosequence(post),replace and tosequence(replace))
             elseif id == rule_code then
                 if compact then
                     t[#t+1] = "|"
@@ -148,7 +154,7 @@ local function tosequence(start,stop,compact)
                     t[#t+1] = nodecodes[id]
                 end
             elseif id == dir_code or id == localpar_code then
-                t[#t+1] = "[" .. getfield(start,"dir") .. "]"
+                t[#t+1] = "[" .. getdir(start) .. "]"
             elseif compact then
                 t[#t+1] = "[]"
             else

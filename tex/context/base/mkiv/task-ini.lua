@@ -108,6 +108,7 @@ appendaction("math",         "normalizers", "noads.handlers.resize",    nil, "no
 appendaction("math",         "normalizers", "noads.handlers.alternates",nil, "nohead")           -- always on
 appendaction("math",         "normalizers", "noads.handlers.tags",      nil, "nohead")           -- disabled
 appendaction("math",         "normalizers", "noads.handlers.italics",   nil, "nohead")           -- disabled
+appendaction("math",         "normalizers", "noads.handlers.kernpairs", nil, "nohead")           -- disabled
 appendaction("math",         "normalizers", "noads.handlers.classes",   nil, "nohead")           -- disabled
 
 appendaction("math",         "builders",    "builders.kernel.mlist_to_hlist")                    -- always on
@@ -204,6 +205,7 @@ disableaction("finalizers",  "nodes.linefillers.handler")
 disableaction("math",        "noads.handlers.showtree")
 disableaction("math",        "noads.handlers.tags")
 disableaction("math",        "noads.handlers.italics")
+disableaction("math",        "noads.handlers.kernpairs")
 disableaction("math",        "noads.handlers.domains")
 disableaction("math",        "noads.handlers.classes")
 disableaction("math",        "noads.handlers.autofences")

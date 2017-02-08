@@ -820,36 +820,38 @@ local pathparser = Ct { "patterns", -- can be made a bit faster by moving some p
                          + V("s_parent")
                          + V("s_self")
                          + V("s_root")
-                         + V("s_ancestor"),
+                         + V("s_ancestor")
+                         + V("s_lastmatch"),
 
     shortcuts            = V("shortcuts_a") * (spaces * "/" * spaces * V("shortcuts_a"))^0,
 
     s_descendant_or_self = (P("***/") + P("/"))  * Cc(register_descendant_or_self), --- *** is a bonus
     s_descendant         = P("**")               * Cc(register_descendant),
-    s_child              = P("*") * no_nextcolon * Cc(register_child     ),
-    s_parent             = P("..")               * Cc(register_parent    ),
-    s_self               = P("." )               * Cc(register_self      ),
-    s_root               = P("^^")               * Cc(register_root      ),
-    s_ancestor           = P("^")                * Cc(register_ancestor  ),
+    s_child              = P("*") * no_nextcolon * Cc(register_child),
+    s_parent             = P("..")               * Cc(register_parent),
+    s_self               = P("." )               * Cc(register_self),
+    s_root               = P("^^")               * Cc(register_root),
+    s_ancestor           = P("^")                * Cc(register_ancestor),
+    s_lastmatch          = P("=")                * Cc(register_last_match),
 
     -- we can speed this up when needed but we cache anyway so ...
 
-    descendant           = P("descendant::")         * Cc(register_descendant         ),
-    child                = P("child::")              * Cc(register_child              ),
-    parent               = P("parent::")             * Cc(register_parent             ),
-    self                 = P("self::")               * Cc(register_self               ),
-    root                 = P('root::')               * Cc(register_root               ),
-    ancestor             = P('ancestor::')           * Cc(register_ancestor           ),
-    descendant_or_self   = P('descendant-or-self::') * Cc(register_descendant_or_self ),
-    ancestor_or_self     = P('ancestor-or-self::')   * Cc(register_ancestor_or_self   ),
- -- attribute            = P('attribute::')          * Cc(register_attribute          ),
- -- namespace            = P('namespace::')          * Cc(register_namespace          ),
-    following            = P('following::')          * Cc(register_following          ),
-    following_sibling    = P('following-sibling::')  * Cc(register_following_sibling  ),
-    preceding            = P('preceding::')          * Cc(register_preceding          ),
-    preceding_sibling    = P('preceding-sibling::')  * Cc(register_preceding_sibling  ),
-    reverse_sibling      = P('reverse-sibling::')    * Cc(register_reverse_sibling    ),
-    last_match           = P('last-match::')         * Cc(register_last_match         ),
+    descendant           = P("descendant::")         * Cc(register_descendant),
+    child                = P("child::")              * Cc(register_child),
+    parent               = P("parent::")             * Cc(register_parent),
+    self                 = P("self::")               * Cc(register_self),
+    root                 = P('root::')               * Cc(register_root),
+    ancestor             = P('ancestor::')           * Cc(register_ancestor),
+    descendant_or_self   = P('descendant-or-self::') * Cc(register_descendant_or_self),
+    ancestor_or_self     = P('ancestor-or-self::')   * Cc(register_ancestor_or_self),
+ -- attribute            = P('attribute::')          * Cc(register_attribute),
+ -- namespace            = P('namespace::')          * Cc(register_namespace),
+    following            = P('following::')          * Cc(register_following),
+    following_sibling    = P('following-sibling::')  * Cc(register_following_sibling),
+    preceding            = P('preceding::')          * Cc(register_preceding),
+    preceding_sibling    = P('preceding-sibling::')  * Cc(register_preceding_sibling),
+    reverse_sibling      = P('reverse-sibling::')    * Cc(register_reverse_sibling),
+    last_match           = P('last-match::')         * Cc(register_last_match),
 
     selector             = P("{") * C((1-P("}"))^1) * P("}") / register_selector,
 
@@ -1195,6 +1197,16 @@ do
 
     function xml.lastmatch()
         return lastmatch
+    end
+
+    local stack  = { }
+
+    function xml.pushmatch()
+        insert(stack,lastmatch)
+    end
+
+    function xml.popmatch()
+        lastmatch = remove(stack)
     end
 
 end
