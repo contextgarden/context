@@ -1947,7 +1947,7 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
                     replace = getnext(replace)
                 end
                 last    = current
-                current = getnext(c)
+                current = getnext(current)
             else
                 head, current = flattendisk(head,current)
             end
@@ -2010,7 +2010,7 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
                         lookaheaddisc = current
                     end
                     -- we assume a simple text only replace (we could use nuts.count)
-                    local replace = getfield(c,"replace")
+                    local replace = getfield(current,"replace")
                     while replace and i < s do
                         if getid(replace) == glyph_code then
                             i = i + 1
@@ -2093,57 +2093,43 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
                 break
             end
         end
-
-        -- the test is needed for now ... this might be a bug
-        --
-        -- \lefthyphenmin1 \righthyphenmin1
-        -- \definefontfeature[whatever][mode=node,ccmp=yes]
-        -- \definedfont[file:Junicode.ttf(0)*whatever at 8pt]
-        -- \hyphenation{hi-jkop}hijkop \par
-
-        if (cf ~= lookaheaddisc) then
-
-            setlink(cprev,lookaheaddisc)
-
-            setprev(cf)
-            setnext(cl)
-            if startishead then
-                head = lookaheaddisc
-            end
-            local pre, post, replace = getdisc(lookaheaddisc)
-            local new  = copy_node_list(cf)
-            local cnew = new
-            for i=1,insertedmarks do
-                cnew = getnext(cnew)
-            end
-            local clast = cnew
-            for i=f,l do
-                clast = getnext(clast)
-            end
-            if not notmatchpre[lookaheaddisc] then
-                cf, start, ok = chainproc(cf,start,last,dataset,sequence,chainlookup,rlmode,k)
-            end
-            if not notmatchreplace[lookaheaddisc] then
-                new, cnew, ok = chainproc(new,cnew,clast,dataset,sequence,chainlookup,rlmode,k)
-            end
-            if pre then
-             -- setlink(cl,pre)
-				setlink(find_node_tail(cf),pre)
-            end
-            if replace then
-                local tail = find_node_tail(new)
-                setlink(tail,replace)
-            end
-            if hasglue then
-                setdiscchecked(lookaheaddisc,cf,post,new)
-            else
-                setdisc(lookaheaddisc,cf,post,new)
-            end
-            start          = getprev(lookaheaddisc)
-            sweephead[cf]  = getnext(clast)
-            sweephead[new] = getnext(last)
-
+        setlink(cprev,lookaheaddisc)
+        setprev(cf)
+        setnext(cl)
+        if startishead then
+            head = lookaheaddisc
         end
+        local pre, post, replace = getdisc(lookaheaddisc)
+        local new  = copy_node_list(cf)
+        local cnew = new
+        for i=1,insertedmarks do
+            cnew = getnext(cnew)
+        end
+        local clast = cnew
+        for i=f,l do
+            clast = getnext(clast)
+        end
+        if not notmatchpre[lookaheaddisc] then
+            cf, start, ok = chainproc(cf,start,last,dataset,sequence,chainlookup,rlmode,k)
+        end
+        if not notmatchreplace[lookaheaddisc] then
+            new, cnew, ok = chainproc(new,cnew,clast,dataset,sequence,chainlookup,rlmode,k)
+        end
+        if pre then
+            setlink(find_node_tail(cf),pre)
+        end
+        if replace then
+            local tail = find_node_tail(new)
+            setlink(tail,replace)
+        end
+        if hasglue then
+            setdiscchecked(lookaheaddisc,cf,post,new)
+        else
+            setdisc(lookaheaddisc,cf,post,new)
+        end
+        start          = getprev(lookaheaddisc)
+        sweephead[cf]  = getnext(clast)
+        sweephead[new] = getnext(last)
 
     elseif backtrackdisc then
 
@@ -3198,6 +3184,7 @@ end
 --  1{2{\oldstyle\discretionary{3}{4}{5}}6}7\par
 --  1{2\discretionary{3{\oldstyle3}}{{\oldstyle4}4}{5{\oldstyle5}5}6}7\par
 
+
 local nesting = 0
 
 local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
@@ -3212,7 +3199,11 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
     while start do
         local char = ischar(start,font)
         if char then
-            local a = attr and getattr(start,0)
+--             local a = attr and getattr(start,0)
+local a -- happens often so no assignment is faster
+if attr then
+    a = getattr(start,0)
+end
             if not a or (a == attr) then
                 local lookupmatch = lookupcache[char]
                 if lookupmatch then
@@ -3246,12 +3237,17 @@ local function t_run_single(start,stop,font,attr,lookupcache)
     while start ~= stop do
         local char = ischar(start,font)
         if char then
-            local a = attr and getattr(start,0)
+--             local a = attr and getattr(start,0)
+local a -- happens often so no assignment is faster
+if attr then
+    a = getattr(start,0)
+end
+            local startnext = getnext(start)
             if not a or (a == attr) then
                 local lookupmatch = lookupcache[char]
                 if lookupmatch then -- hm, hyphens can match (tlig) so we need to really check
                     -- if we need more than ligatures we can outline the code and use functions
-                    local s = getnext(start)
+                    local s = startnext
                     local l = nil
                     local d = 0
                     while s do
@@ -3275,7 +3271,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
             else
                 -- go on can be a mixed one
             end
-            start = getnext(start)
+            start = starttnext
         else
             break
         end
@@ -3300,7 +3296,11 @@ end
 -- end
 
 local function k_run_single(sub,injection,last,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-    local a = attr and getattr(sub,0)
+--     local a = attr and getattr(sub,0)
+local a -- happens often so no assignment is faster
+if attr then
+    a = getattr(sub,0)
+end
     if not a or (a == attr) then
         for n in traverse_nodes(sub) do -- only gpos
             if n == last then
@@ -3332,7 +3332,11 @@ local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlm
     while start do
         local char = ischar(start,font)
         if char then
-            local a = attr and getattr(start,0)
+--             local a = attr and getattr(start,0)
+local a -- happens often so no assignment is faster
+if attr then
+    a = getattr(start,0)
+end
             if not a or (a == attr) then
                 for i=1,nofsteps do
                     local step        = steps[i]
@@ -3380,7 +3384,12 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
     while start ~= stop do
         local char = ischar(start,font)
         if char then
-            local a = attr and getattr(start,0)
+--             local a = attr and getattr(start,0)
+local a -- happens often so no assignment is faster
+if attr then
+    a = getattr(start,0)
+end
+            local startnext = getnext(start)
             if not a or (a == attr) then
                 for i=1,nofsteps do
                     local step = steps[i]
@@ -3389,7 +3398,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
                         local lookupmatch = lookupcache[char]
                         if lookupmatch then
                             -- if we need more than ligatures we can outline the code and use functions
-                            local s = getnext(start)
+                            local s = startnext
                             local l = nil
                             local d = 0
                             while s do
@@ -3417,7 +3426,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
             else
                 -- go on can be a mixed one
             end
-            start = getnext(start)
+            start = startnext
         else
             break
         end
@@ -3451,7 +3460,11 @@ end
 -- end
 
 local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-    local a = attr and getattr(sub,0)
+--     local a = attr and getattr(sub,0)
+local a -- happens often so no assignment is faster
+if attr then
+    a = getattr(sub,0)
+end
     if not a or (a == attr) then
         for n in traverse_nodes(sub) do -- only gpos
             if n == last then
@@ -3613,7 +3626,11 @@ local function featuresprocessor(head,font,attr)
             while start do
                 local char = ischar(start,font)
                 if char then
-                    local a = attr and getattr(start,0)
+--                     local a = attr and getattr(start,0)
+local a -- happens often so no assignment is faster
+if attr then
+    a = getattr(start,0)
+end
                     if not a or (a == attr) then
                         for i=1,nofsteps do
                             local step = steps[i]
@@ -3716,7 +3733,6 @@ end
                 end
 
             else
-
                 while start do
                     local char, id = ischar(start,font)
                     if char then

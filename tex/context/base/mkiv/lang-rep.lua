@@ -58,6 +58,7 @@ local setlink            = nuts.setlink
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
 local setchar            = nuts.setchar
+local setattrlist        = nuts.setattrlist
 
 local insert_node_before = nuts.insert_before
 local remove_node        = nuts.remove
@@ -238,7 +239,7 @@ function replacements.handler(head)
                                     end
                                     -- todo: also set attr
                                     local new = new_disc(pre,post,replace)
-                                    setfield(new,"attr",getfield(last,"attr"))
+                                    setattrlist(new,last)
                                     head, current = insert_after(head,current,new)
                                 elseif method == "noligature" then
                                     -- not that efficient to copy but ok for testing

@@ -33,11 +33,14 @@ local getfont            = nuts.getfont
 local getid              = nuts.getid
 local getfield           = nuts.getfield
 ----- getattr            = nuts.getattr
+local getattrlist        = nuts.getattrlist
 local takeattr           = nuts.takeattr
+local getlang            = nuts.getlang
 local isglyph            = nuts.isglyph
 
 local setfield           = nuts.setfield
 local setattr            = nuts.setattr
+local setattrlist        = nuts.setattrlist
 local setlink            = nuts.setlink
 local setchar            = nuts.setchar
 local setdisc            = nuts.setdisc
@@ -110,19 +113,21 @@ end
 
 -- todo: use boundaries
 
-local function withattribute(n,a)
-    setfield(n,"attr",a)
-    return n
-end
-
 local function insert_break(head,start,stop,before,after,kern)
-    local a = getfield(start,"attr")
     if not kern then
-        insert_node_before(head,start,withattribute(new_penalty(before),a))
-        insert_node_before(head,start,withattribute(new_glue(0),a))
+        local p = new_penalty(before)
+        local g = new_glue()
+        setattrlist(p,start)
+        setattrlist(g,start)
+        insert_node_before(head,start,p)
+        insert_node_before(head,start,g)
     end
-    insert_node_after(head,stop,withattribute(new_glue(0),a))
-    insert_node_after(head,stop,withattribute(new_penalty(after),a))
+    local p = new_penalty(after)
+    local g = new_glue()
+    setattrlist(p,start)
+    setattrlist(g,start)
+    insert_node_after(head,stop,g)
+    insert_node_after(head,stop,p)
 end
 
 methods[1] = function(head,start,stop,settings,kern)
@@ -143,14 +148,8 @@ methods[6] = function(head,start,stop,settings,kern)
             local l = new_wordboundary()
             local d = new_disc()
             local r = new_wordboundary()
-            local a = getfield(start,"attr")
-         -- setfield(l,"attr",a)
-            setfield(d,"attr",a) -- otherwise basemode is forces and we crash
-         -- setfield(r,"attr",a)
-            setlink(p,l)
-            setlink(l,d)
-            setlink(d,r)
-            setlink(r,n)
+            setattrlist(d,start) -- otherwise basemode is forced and we crash
+            setlink(p,l,d,r,n)
             if start == stop then
                 setboth(start)
                 setdisc(d,start,nil,copy_node(start))
@@ -172,10 +171,10 @@ methods[2] = function(head,start) -- ( => (-
         head, start, replace = remove_node(head,start)
         local post   = copy_node(replace)
         local hyphen = copy_node(post)
-        setchar(hyphen,languages.prehyphenchar(getfield(post,"lang")))
+        setchar(hyphen,languages.prehyphenchar(getlang(post)))
         setlink(post,hyphen)
         head, start = insert_node_before(head,start,new_disc(nil,post,replace))
-        setfield(start,"attr",getfield(replace,"attr"))
+        setattrlist(start,replace)
         insert_break(head,start,start,10000,10000)
     end
     return head, start
@@ -188,10 +187,10 @@ methods[3] = function(head,start) -- ) => -)
         head, start, replace = remove_node(head,start)
         local pre    = copy_node(replace)
         local hyphen = copy_node(pre)
-        setchar(hyphen,languages.prehyphenchar(getfield(pre,"lang")))
+        setchar(hyphen,languages.prehyphenchar(getlang(pre)))
         setlink(hyphen,pre)
         head, start = insert_node_before(head,start,new_disc(hyphen,nil,replace)) -- so not pre !
-        setfield(start,"attr",getfield(tmp,"attr"))
+        setattrlist(start,tmp)
         insert_break(head,start,start,10000,10000)
     end
     return head, start
@@ -203,7 +202,7 @@ methods[4] = function(head,start) -- - => - - -
         local tmp
         head, start, tmp = remove_node(head,start)
         head, start = insert_node_before(head,start,new_disc())
-        setfield(start,"attr",getfield(tmp,"attr"))
+        setattrlist(start,tmp)
         setdisc(start,copy_node(tmp),copy_node(tmp),tmp)
         insert_break(head,start,start,10000,10000)
     end
@@ -215,11 +214,11 @@ methods[5] = function(head,start,stop,settings) -- x => p q r
     if p and n then
         local tmp
         head, start, tmp = remove_node(head,start)
-        head, start = insert_node_before(head,start,new_disc())
-        local attr = getfield(tmp,"attr")
-        local font = getfont(tmp)
-        local left = settings.left
-        local right = settings.right
+        head, start  = insert_node_before(head,start,new_disc())
+        local attr   = getattrlist(tmp)
+        local font   = getfont(tmp)
+        local left   = settings.left
+        local right  = settings.right
         local middle = settings.middle
         if left then
              left = tonodes(tostring(left),font,attr)
@@ -231,7 +230,7 @@ methods[5] = function(head,start,stop,settings) -- x => p q r
             middle = tonodes(tostring(middle),font,attr)
         end
         setdisc(start,left,right,middle)
-        setfield(start,"attr",attr) -- todo: critical only -- just a copy will do
+        setattrlist(start,attr)
         flush_node(tmp)
         insert_break(head,start,start,10000,10000)
     end
@@ -269,7 +268,7 @@ function breakpoints.handler(head)
                      -- setattr(current,a_breakpoints,unsetvalue) -- should not be needed
                         -- for now we collect but when found ok we can move the handler here
                         -- although it saves nothing in terms of performance
-                        local lang = getfield(current,"lang")
+                        local lang = getlang(current)
                         local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
                         if smap then
                             local skip  = smap.skip
@@ -326,7 +325,7 @@ function breakpoints.handler(head)
         local stop  = data[2]
         local cmap  = data[3]
         local smap  = data[4]
---         local lang  = getfield(start,"lang")
+--         local lang  = getlang(start)
 --         -- we do a sanity check for language
 --         local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
 --         if smap then

@@ -40,6 +40,8 @@ local getchar             = nuts.getchar
 local getdisc             = nuts.getdisc
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
+local getattrlist         = nuts.getattrlist
+local setattrlist         = nuts.setattrlist
 local setfield            = nuts.setfield
 local setdisc             = nuts.setdisc
 local isglyph             = nuts.isglyph
@@ -151,9 +153,9 @@ end
 local function correction_kern(kern,n)
     local k = new_correction_kern(kern)
     if n then
-        local a = getfield(n,"attr")
+        local a = getattrlist(n)
         if a then -- maybe not
-            setfield(k,"attr",a) -- can be a marked content (border case)
+            setattrlist(k,a) -- can be a marked content (border case)
         end
     end
     return k
@@ -162,9 +164,9 @@ end
 local function correction_glue(glue,n)
     local g = new_correction_glue(glue)
     if n then
-        local a = getfield(n,"attr")
+        local a = getattrlist(n)
         if a then -- maybe not
-            setfield(g,"attr",a) -- can be a marked content (border case)
+            setattrlist(g,a) -- can be a marked content (border case)
         end
     end
     return g

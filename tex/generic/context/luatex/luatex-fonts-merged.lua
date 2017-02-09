@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/08/17 23:46:07
+-- merge date  : 02/09/17 21:37:28
 
 do -- begin closure to overcome local limits and interference
 
@@ -19956,7 +19956,7 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
           replace=getnext(replace)
         end
         last=current
-        current=getnext(c)
+        current=getnext(current)
       else
         head,current=flattendisk(head,current)
       end
@@ -20014,7 +20014,7 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
           if notmatchpre[current]~=notmatchreplace[current] then
             lookaheaddisc=current
           end
-          local replace=getfield(c,"replace")
+          local replace=getfield(current,"replace")
           while replace and i<s do
             if getid(replace)==glyph_code then
               i=i+1
@@ -20092,45 +20092,43 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
         break
       end
     end
-    if (cf~=lookaheaddisc) then
-      setlink(cprev,lookaheaddisc)
-      setprev(cf)
-      setnext(cl)
-      if startishead then
-        head=lookaheaddisc
-      end
-      local pre,post,replace=getdisc(lookaheaddisc)
-      local new=copy_node_list(cf)
-      local cnew=new
-      for i=1,insertedmarks do
-        cnew=getnext(cnew)
-      end
-      local clast=cnew
-      for i=f,l do
-        clast=getnext(clast)
-      end
-      if not notmatchpre[lookaheaddisc] then
-        cf,start,ok=chainproc(cf,start,last,dataset,sequence,chainlookup,rlmode,k)
-      end
-      if not notmatchreplace[lookaheaddisc] then
-        new,cnew,ok=chainproc(new,cnew,clast,dataset,sequence,chainlookup,rlmode,k)
-      end
-      if pre then
-				setlink(find_node_tail(cf),pre)
-      end
-      if replace then
-        local tail=find_node_tail(new)
-        setlink(tail,replace)
-      end
-      if hasglue then
-        setdiscchecked(lookaheaddisc,cf,post,new)
-      else
-        setdisc(lookaheaddisc,cf,post,new)
-      end
-      start=getprev(lookaheaddisc)
-      sweephead[cf]=getnext(clast)
-      sweephead[new]=getnext(last)
+    setlink(cprev,lookaheaddisc)
+    setprev(cf)
+    setnext(cl)
+    if startishead then
+      head=lookaheaddisc
     end
+    local pre,post,replace=getdisc(lookaheaddisc)
+    local new=copy_node_list(cf)
+    local cnew=new
+    for i=1,insertedmarks do
+      cnew=getnext(cnew)
+    end
+    local clast=cnew
+    for i=f,l do
+      clast=getnext(clast)
+    end
+    if not notmatchpre[lookaheaddisc] then
+      cf,start,ok=chainproc(cf,start,last,dataset,sequence,chainlookup,rlmode,k)
+    end
+    if not notmatchreplace[lookaheaddisc] then
+      new,cnew,ok=chainproc(new,cnew,clast,dataset,sequence,chainlookup,rlmode,k)
+    end
+    if pre then
+      setlink(find_node_tail(cf),pre)
+    end
+    if replace then
+      local tail=find_node_tail(new)
+      setlink(tail,replace)
+    end
+    if hasglue then
+      setdiscchecked(lookaheaddisc,cf,post,new)
+    else
+      setdisc(lookaheaddisc,cf,post,new)
+    end
+    start=getprev(lookaheaddisc)
+    sweephead[cf]=getnext(clast)
+    sweephead[new]=getnext(last)
   elseif backtrackdisc then
     local cf=getnext(backtrackdisc)
     local cl=start
@@ -21016,7 +21014,10 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
   while start do
     local char=ischar(start,font)
     if char then
-      local a=attr and getattr(start,0)
+local a 
+if attr then
+  a=getattr(start,0)
+end
       if not a or (a==attr) then
         local lookupmatch=lookupcache[char]
         if lookupmatch then
@@ -21046,11 +21047,15 @@ local function t_run_single(start,stop,font,attr,lookupcache)
   while start~=stop do
     local char=ischar(start,font)
     if char then
-      local a=attr and getattr(start,0)
+local a 
+if attr then
+  a=getattr(start,0)
+end
+      local startnext=getnext(start)
       if not a or (a==attr) then
         local lookupmatch=lookupcache[char]
         if lookupmatch then
-          local s=getnext(start)
+          local s=startnext
           local l=nil
           local d=0
           while s do
@@ -21073,14 +21078,17 @@ local function t_run_single(start,stop,font,attr,lookupcache)
         end
       else
       end
-      start=getnext(start)
+      start=starttnext
     else
       break
     end
   end
 end
 local function k_run_single(sub,injection,last,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-  local a=attr and getattr(sub,0)
+local a 
+if attr then
+  a=getattr(sub,0)
+end
   if not a or (a==attr) then
     for n in traverse_nodes(sub) do 
       if n==last then
@@ -21111,7 +21119,10 @@ local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlm
   while start do
     local char=ischar(start,font)
     if char then
-      local a=attr and getattr(start,0)
+local a 
+if attr then
+  a=getattr(start,0)
+end
       if not a or (a==attr) then
         for i=1,nofsteps do
           local step=steps[i]
@@ -21152,7 +21163,11 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
   while start~=stop do
     local char=ischar(start,font)
     if char then
-      local a=attr and getattr(start,0)
+local a 
+if attr then
+  a=getattr(start,0)
+end
+      local startnext=getnext(start)
       if not a or (a==attr) then
         for i=1,nofsteps do
           local step=steps[i]
@@ -21160,7 +21175,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
           if lookupcache then
             local lookupmatch=lookupcache[char]
             if lookupmatch then
-              local s=getnext(start)
+              local s=startnext
               local l=nil
               local d=0
               while s do
@@ -21187,14 +21202,17 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
         end
       else
       end
-      start=getnext(start)
+      start=startnext
     else
       break
     end
   end
 end
 local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-  local a=attr and getattr(sub,0)
+local a 
+if attr then
+  a=getattr(sub,0)
+end
   if not a or (a==attr) then
     for n in traverse_nodes(sub) do 
       if n==last then
@@ -21316,7 +21334,10 @@ local function featuresprocessor(head,font,attr)
       while start do
         local char=ischar(start,font)
         if char then
-          local a=attr and getattr(start,0)
+local a 
+if attr then
+  a=getattr(start,0)
+end
           if not a or (a==attr) then
             for i=1,nofsteps do
               local step=steps[i]
@@ -22554,7 +22575,8 @@ function handlers.devanagari_reorder_matras(head,start)
         end
         local startnext=getnext(start)
         head=remove_node(head,start)
-        setlink(current,start,next)
+        setlink(start,next)
+        setlink(current,start)
         start=startnext
         break
       end
@@ -22585,7 +22607,8 @@ function handlers.devanagari_reorder_reph(head,start)
         end
         startnext=getnext(start)
         head=remove_node(head,start)
-        setlink(current,start,next)
+        setlink(start,next)
+        setlink(current,start)
         start=startnext
         startattr=getprop(start,a_syllabe)
         break
@@ -22603,7 +22626,8 @@ function handlers.devanagari_reorder_reph(head,start)
         if getprop(current,a_state)==s_pstf then 
           startnext=getnext(start)
           head=remove_node(head,start)
-          setlink(getprev(current),start,current)
+          setlink(getprev(current),start)
+          setlink(start,current)
           start=startnext
           startattr=getprop(start,a_syllabe)
           break
@@ -22631,7 +22655,8 @@ function handlers.devanagari_reorder_reph(head,start)
     if c then
       startnext=getnext(start)
       head=remove_node(head,start)
-      setlink(getprev(c),start,c)
+      setlink(getprev(c),start)
+      setlink(start,c)
       start=startnext
       startattr=getprop(start,a_syllabe)
     end
@@ -22651,7 +22676,8 @@ function handlers.devanagari_reorder_reph(head,start)
     if start~=current then
       startnext=getnext(start)
       head=remove_node(head,start)
-      setlink(current,start,getnext(current))
+      setlink(start,getnext(current))
+      setlink(current,start)
       start=startnext
     end
   end
@@ -22679,7 +22705,8 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
         end
         startnext=getnext(start)
         removenode(start,start)
-        setlink(current,start,next)
+        setlink(start,next)
+        setlink(current,start)
         start=startnext
         break
       end
@@ -22697,7 +22724,8 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
         if not consonant[char] and getprop(current,a_state) then 
           startnext=getnext(start)
           removenode(start,start)
-          setlink(getprev(current),start,current)
+          setlink(getprev(current),start)
+          setlink(start,current)
           start=startnext
           break
         end
@@ -22989,7 +23017,8 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces)
           end
           start=current
         end
-        setlink(getprev(halfpos),current,halfpos)
+        setlink(getprev(halfpos),current)
+        setlink(current,halfpos)
         halfpos=current
       elseif above_mark[char] then  
         target=basepos
@@ -23018,7 +23047,8 @@ local function dev2_reorder(head,start,stop,font,attr,nbspaces)
           if current==stop then
             stop=prev
           end
-          setlink(target,current,getnext(target))
+          setlink(current,getnext(target))
+          setlink(target,current)
         end
       end
     end

@@ -816,7 +816,7 @@ local function checkroom(head,available,row)
                 break
             end
         elseif id == kern_code then
-            used = used +  getkern(head)
+            used = used + getkern(head)
             if used > available then
                 break
             end

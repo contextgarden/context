@@ -41,6 +41,7 @@ local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local setwhd             = nuts.setwhd
 local setdir             = nuts.setdir
+local setattrlist        = nuts.setattrlist
 
 local flushlist          = nuts.flush_list
 local effective_glue     = nuts.effective_glue
@@ -141,7 +142,7 @@ local function userrule(t,noattributes)
     if noattributes == false or noattributes == nil then
         -- avoid fuzzy ones
     else
-        setfield(r,"attr",current_attr())
+        setattrlist(r,current_attr())
     end
     properties[r] = t
     return tonode(r)

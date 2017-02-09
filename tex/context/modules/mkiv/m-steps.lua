@@ -177,7 +177,6 @@ local function step_make_chart(settings)
     start()
     flush("step_begin_chart ;")
     --
-    print(chartsettings.alternative)
     local alternative = chartsettings.alternative
     if not alternative or alternative == "" then
         alternative = chart.alternative

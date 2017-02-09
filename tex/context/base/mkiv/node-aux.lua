@@ -45,6 +45,7 @@ local setlist            = nuts.setlist
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
 local setcomponents      = nuts.setcomponents
+local setattrlist        = nuts.setattrlist
 
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
@@ -345,8 +346,7 @@ local function tonodes(str,fnt,attr) -- (str,template_glyph) -- moved from blob-
             n = new_glyph(fnt,s)
         end
         if attr then -- normally false when template
-         -- setfield(n,"attr",copy_node_list(attr))
-            setfield(n,"attr",attr)
+            setattrlist(n,attr)
         end
         if head then
             setlink(tail,n)

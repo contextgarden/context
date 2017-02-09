@@ -38,6 +38,7 @@ local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
 local setattr         = nuts.setattr
+local getlang         = nuts.getlang
 local isglyph         = nuts.isglyph
 
 local traverse_nodes  = nuts.traverse
@@ -161,7 +162,7 @@ local function mark_words(head,whenfound) -- can be optimized and shared
     while current do
         local code, id = isglyph(current)
         if code then
-            local a = getfield(current,"lang")
+            local a = getlang(current)
             if a then
                 if a ~= language then
                     if s > 0 then

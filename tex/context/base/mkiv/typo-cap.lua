@@ -217,7 +217,7 @@ end
 --     elseif dc == char then
 --         local lfa = lastfont[n]
 --         if lfa then
---             setfontfirst,lfa)
+--             setfont(first,lfa)
 --             return start, true, true
 --         else
 --             return start, false, true
@@ -336,8 +336,6 @@ register(variables.camel,  camel)             --  10
 
 register(variables.cap,    variables.capital) -- clone
 register(variables.Cap,    variables.Capital) -- clone
-
-local xx = 0
 
 function cases.handler(head) -- not real fast but also not used on much data
     local start    = tonut(head)

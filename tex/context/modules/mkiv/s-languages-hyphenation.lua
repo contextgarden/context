@@ -39,6 +39,8 @@ local getdisc           = nuts.getdisc
 local getattr           = nuts.getattr
 local getfont           = nuts.getfont
 local getfield          = nuts.getfield
+local getlang           = nuts.getlang
+local setlang           = nuts.setlang
 local setlink           = nuts.setlink
 local setdisc           = nuts.setdisc
 local setfield          = nuts.setfield
@@ -129,7 +131,7 @@ local function getlanguage(head,l,left,right)
     local t = { }
     for n in traverse_by_id(glyph_code,tonut(head)) do
         t[n] = {
-            getfield(n,"lang"),
+            getlang(n),
             getfield(n,"left"),
             getfield(n,"right"),
         }
@@ -148,7 +150,7 @@ function moduledata.languages.hyphenation.showhyphens(head)
         -- somehow assigning -1 fails
         for n in traverse_by_id(glyph_code,tonut(head)) do
             cached[n] = {
-                getfield(n,"lang"),
+                getlang(n),
                 getfield(n,"left"),
                 getfield(n,"right")
             }
@@ -161,7 +163,7 @@ function moduledata.languages.hyphenation.showhyphens(head)
             local lmin = s.lefthyphenmin
             local rmin = s.righthyphenmin
             for n in next, cached do
-                setfield(n,"lang",l)
+                setlang(n,l)
                 setfield(n,"left",lmin)
                 setfield(n,"right",rmin)
             end
@@ -173,7 +175,7 @@ function moduledata.languages.hyphenation.showhyphens(head)
             mark(head,marked[i],1/16,l/2,l/4,"hyphenation:"..(colorbytag and tags[i] or i))
         end
         for n, d in next, cached do
-            setfield(n,"lang",d[1])
+            setlang(n,d[1])
             setfield(n,"left",d[2])
             setfield(n,"right",d[3])
         end

@@ -178,8 +178,8 @@ local right_fence_code     = fencecodes.right
 -- this initial stuff is tricky as we can have removed and new nodes with the same address
 -- the only way out is a free-per-page list of nodes (not bad anyway)
 
--- local gf = getfield local gt = setmetatableindex("number") getfield = function(n,f) gt[f] = gt[f] + 1 return gf(n,f) end mathematics.GETFIELD = gt
--- local sf = getfield local st = setmetatableindex("number") setfield = function(n,f) st[f] = st[f] + 1 return sf(n,f) end mathematics.SETFIELD = st
+-- local gf = getfield local gt = setmetatableindex("number") getfield = function(n,f)   gt[f] = gt[f] + 1 return gf(n,f)   end mathematics.GETFIELD = gt
+-- local sf = setfield local st = setmetatableindex("number") setfield = function(n,f,v) st[f] = st[f] + 1        sf(n,f,v) end mathematics.SETFIELD = st
 
 local function process(start,what,n,parent)
     if n then
@@ -710,7 +710,7 @@ local function makefence(what,char)
     local f = new_node(math_fence)
     if char then
         local sym = getfield(char,"nucleus")
-        local chr = getfield(sym,"char")
+        local chr = getchar(sym)
         local fam = getfield(sym,"fam")
         if chr == dummyfencechar then
             chr = 0

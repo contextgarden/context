@@ -78,6 +78,8 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
 -- ins       : when hyphenationbounds 2 or 3
 -- adjust    : when hyphenationbounds 2 or 3
 
+-- todo: maybe subtypes (because they have subtle meanings in the line breaking)
+
 local type, rawset, tonumber, next = type, rawset, tonumber, next
 
 local P, R, S, Cg, Cf, Ct, Cc, C, Carg, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.Cg, lpeg.Cf, lpeg.Ct, lpeg.Cc, lpeg.C, lpeg.Carg, lpeg.Cs
@@ -652,9 +654,11 @@ if context then
     local getprev            = nuts.getprev
     local getsubtype         = nuts.getsubtype
     local getlist            = nuts.getlist
+    local getlang            = nuts.getlang
+    local getattrlist        = nuts.getattrlist
+    local setattrlist        = nuts.setattrlist
     local isglyph            = nuts.isglyph
 
-    local setfield           = nuts.setfield
     local setchar            = nuts.setchar
     local setdisc            = nuts.setdisc
 
@@ -993,6 +997,8 @@ if context then
         [nodecodes.math]   = true,
     }
 
+ -- local gf = getfield local gt = setmetatableindex("number") getfield = function(n,f)   gt[f] = gt[f] + 1 return gf(n,f)   end languages.GETFIELD = gt
+
     function traditional.hyphenate(head)
 
         local first         = tonut(head)
@@ -1045,7 +1051,7 @@ if context then
 
         local function insertpenalty()
             local p = new_penalty(interwordpenalty)
-            setfield(p,"attr",getfield(last,"attr"))
+            setattrlist(p,last)
             if trace_visualize then
                 nuts.setvisual(p,"penalty")
             end
@@ -1233,7 +1239,7 @@ if context then
 
             local current = start
 
-            local attributes = getfield(start,"attr") -- todo: just copy the last disc .. faster
+            local attrnode = start -- will be different, just the first char
 
             for i=1,rsize do
                 local r = result[i]
@@ -1248,8 +1254,8 @@ if context then
                         post = serialize(true,leftchar)
                     end
                     setdisc(disc,pre,post,nil,discretionary_code,hyphenpenalty)
-                    if attributes then
-                        setfield(disc,"attr",attributes)
+                    if attrnode then
+                        setattrlist(disc,attrnode)
                     end
                     -- could be a replace as well
                     insert_before(first,current,disc)
@@ -1282,8 +1288,8 @@ if context then
                         end
                     end
                     setdisc(disc,pre,post,replace,discretionary_code,hyphenpenalty)
-                    if attributes then
-                        setfield(disc,"attr",attributes)
+                    if attrnode then
+                        setattrlist(disc,attrnode)
                     end
                     insert_before(first,current,disc)
                 else
@@ -1303,7 +1309,7 @@ if context then
 
         end
 
-        local function inject(leftchar,rightchar,code,attributes)
+        local function inject(leftchar,rightchar,code,attrnode)
             if first ~= current then
                 local disc = new_disc()
                 first, current, glyph = remove_node(first,current)
@@ -1322,8 +1328,8 @@ if context then
                 pre = copy_node(glyph)
                 setchar(pre,rightchar and rightchar > 0 and rightchar or code)
                 setdisc(disc,pre,post,replace,discretionary_code,hyphenpenalty)
-                if attributes then
-                    setfield(disc,"attr",attributes)
+                if attrnode then
+                    setattrlist(disc,attrnode)
                 end
             end
             return current
@@ -1343,9 +1349,10 @@ if context then
         while current and current ~= last do -- and current
             local code, id = isglyph(current)
             if code then
-                local lang = getfield(current,"lang")
+                local lang = getlang(current)
                 if lang ~= language then
                     if dictionary and size > charmin and leftmin + rightmin <= size then
+                        -- only german has many words starting with an uppercase character
                         if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
                             -- skip
                         else
@@ -1411,9 +1418,9 @@ if context then
                         -- maybe also a strict mode here: no hyphenation before hyphenchars and skip
                         -- the next set (but then, strict is an option)
                         if code == exhyphenchar then
-                            current = inject(leftexchar,rightexchar,code,getfield(current,"attr"))
+                            current = inject(leftexchar,rightexchar,code,current)
                         elseif hyphenchars and hyphenchars[code] then
-                            current = inject(leftchar,rightchar,code,getfield(current,"attr"))
+                            current = inject(leftchar,rightchar,code,current)
                         end
                     end
                 else

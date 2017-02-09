@@ -23,6 +23,8 @@ local format   = string.format -- no formatters yet
 local concat   = table.concat
 local sort     = table.sort
 local gmatch   = string.gmatch
+local gsub     = string.gsub
+local requiem  = require
 
 sandbox            = { }
 local sandboxed    = false
@@ -34,6 +36,7 @@ local originals    = { }
 local comments     = { }
 local trace        = false
 local logger       = false
+local blocked      = { }
 
 -- this comes real early, so that we can still alias
 
@@ -155,6 +158,35 @@ function sandbox.finalizer(f)
     end
 end
 
+function require(name)
+    local n = gsub(name,"^.*[\\/]","")
+    local n = gsub(n,"[%.].*$","")
+    local b = blocked[n]
+    if b then
+        if trace then
+            report("using blocked: %s",n)
+        end
+        return b
+    else
+        if trace then
+            report("requiring: %s",name)
+        end
+        return requiem(name)
+    end
+end
+
+function blockrequire(name,lib)
+    if trace then
+        report("preventing reload of: %s",name)
+    end
+    blocked[name] = lib or _G[name]
+end
+
+if jit or not ffi then
+    local ok
+    ok, ffi = pcall(require,"ffi")
+end
+
 function sandbox.enable()
     if not sandboxed then
         for i=1,#initializers do
@@ -189,28 +221,45 @@ function sandbox.enable()
         end
         if #cyes > 0 then
             sort(cyes)
-            report("    overloaded known     : %s",concat(cyes," | "))
+            report("overloaded known: %s",concat(cyes," | "))
         end
         if nyes > 0 then
-            report("    overloaded unknown   : %s",nyes)
+            report("overloaded unknown: %s",nyes)
         end
         if #cnot > 0 then
             sort(cnot)
-            report("not overloaded known     : %s",concat(cnot," | "))
+            report("not overloaded known: %s",concat(cnot," | "))
         end
         if nnot > 0 then
-            report("not overloaded unknown   : %s",nnot)
+            report("not overloaded unknown: %s",nnot)
         end
         if #skip > 0 then
             sort(skip)
-            report("not overloaded redefined : %s",concat(skip," | "))
+            report("not overloaded redefined: %s",concat(skip," | "))
         end
         --
-        if jit then
-            ffi = require("ffi")
-        end
-        for k, v in next, ffi do
-            ffi[k] = nil
+        if ffi then
+         -- for k, v in next, ffi do
+         --     if k ~= "gc" then
+         --         local t = type(v)
+         --         if t == "function" then
+         --             ffi[k] = function() report("accessing ffi.%s",k) end
+         --         elseif t == "number" then
+         --             ffi[k] = 0
+         --         elseif t == "string" then
+         --             ffi[k] = ""
+         --         elseif t == "table" then
+         --             ffi[k] = { }
+         --         else
+         --             ffi[k] = false
+         --         end
+         --     end
+         -- end
+            for k, v in next, ffi do
+                if k ~= "gc" then
+                    ffi[k] = nil
+                end
+            end
         end
         --
         initializers = nil
@@ -219,6 +268,13 @@ function sandbox.enable()
         sandboxed    = true
     end
 end
+
+blockrequire("lfs",lfs)
+blockrequire("io",io)
+blockrequire("os",os)
+blockrequire("ffi",ffi)
+
+-- require = register(require,"require")
 
 -- we sandbox some of the built-in functions now:
 

@@ -67,11 +67,12 @@ local getattr             = nuts.getattr
 local getfield            = nuts.getfield
 local getprop             = nuts.getprop
 local getdir              = nuts.getdir
-local setdir              = nuts.setdir
 
 local setfield            = nuts.setfield
 local setprop             = nuts.setprop
 local setchar             = nuts.setchar
+local setdir              = nuts.setdir
+local setattrlist         = nuts.setattrlist
 
 local remove_node         = nuts.remove
 local insert_node_after   = nuts.insert_after
@@ -902,7 +903,7 @@ local function apply_to_list(list,size,head,pardir)
                 -- insert the last enddir before \parfillskip glue
                 local d = new_textdir(enddir)
                 setprop(d,"directions",true)
-             -- setfield(d,"attr",getfield(current,"attr"))
+             -- setattrlist(d,current)
                 head = insert_node_before(head,current,d)
                 enddir = false
                 done = true
@@ -912,7 +913,7 @@ local function apply_to_list(list,size,head,pardir)
                 -- localpar should always be the 1st node
                 local d = new_textdir(begindir)
                 setprop(d,"directions",true)
-             -- setfield(d,"attr",getfield(current,"attr"))
+             -- setattrlist(d,current)
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
                 done = true
@@ -921,7 +922,7 @@ local function apply_to_list(list,size,head,pardir)
         if begindir then
             local d = new_textdir(begindir)
             setprop(d,"directions",true)
-         -- setfield(d,"attr",getfield(current,"attr"))
+         -- setattrlist(d,current)
             head = insert_node_before(head,current,d)
             done = true
         end
@@ -935,7 +936,7 @@ local function apply_to_list(list,size,head,pardir)
         if enddir then
             local d = new_textdir(enddir)
             setprop(d,"directions",true)
-         -- setfield(d,"attr",getfield(current,"attr"))
+         -- setattrlist(d,current)
             head, current = insert_node_after(head,current,d)
             done = true
         end

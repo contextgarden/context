@@ -18,6 +18,7 @@ local tonut           = nuts.tonut
 local setfield        = nuts.setfield
 local setlink         = nuts.setlink
 local setchar         = nuts.setchar
+----- setattrlist     = nuts.setattrlist
 
 local getfield        = nuts.getfield
 local getfont         = nuts.getfont
@@ -42,7 +43,7 @@ local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
     if not fontid then
         if templateglyph then
             fontid = getfont(templateglyph)
-         -- attrid = getfield(templateglyph,"attr")
+         -- attrid = setattrlist(templateglyph)
         else
             fontid = currentfont()
          -- attrid = current_attr()
@@ -74,10 +75,10 @@ local function tonodes(str,fontid,spacing,templateglyph) -- quick and dirty
         if not next then
             -- nothing
         elseif not head then
--- setfield(next,"attr",attrid)
+         -- setattrlist(next,attrid)
             head = next
         else
--- setfield(next,"attr",attrid)
+         -- setattrlist(next,attrid)
             setlink(prev,next)
         end
         prev = next

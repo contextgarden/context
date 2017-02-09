@@ -73,6 +73,7 @@ local setfield            = nuts.setfield
 local setprop             = nuts.setprop
 local setchar             = nuts.setchar
 local setdir              = nuts.setdir
+local setattrlist         = nuts.setattrlist
 
 local properties          = nodes.properties
 
@@ -938,7 +939,7 @@ local function apply_to_list(list,size,head,pardir)
                 -- insert the last enddir before \parfillskip glue
                 local d = new_textdir(enddir)
                 local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
-             -- setfield(d,"attr",getfield(current,"attr"))
+             -- setattrlist(d,current)
                 head = insert_node_before(head,current,d)
                 enddir = false
                 done = true
@@ -948,7 +949,7 @@ local function apply_to_list(list,size,head,pardir)
                 -- localpar should always be the 1st node
                 local d = new_textdir(begindir)
                 local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
-             -- setfield(d,"attr",getfield(current,"attr"))
+             -- setattrlist(d,current)
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
                 done = true
@@ -957,7 +958,7 @@ local function apply_to_list(list,size,head,pardir)
         if begindir then
             local d = new_textdir(begindir)
             local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
-         -- setfield(d,"attr",getfield(current,"attr"))
+         -- setattrlist(d,current)
             head = insert_node_before(head,current,d)
             done = true
         end
@@ -971,7 +972,7 @@ local function apply_to_list(list,size,head,pardir)
         if enddir then
             local d = new_textdir(enddir)
             local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
-         -- setfield(d,"attr",getfield(current,"attr"))
+         -- setattrlist(d,current)
             head, current = insert_node_after(head,current,d)
             done = true
         end

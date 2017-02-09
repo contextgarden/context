@@ -29,6 +29,7 @@ local getchar            = nuts.getchar
 local setchar            = nuts.setchar
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
+local getlang            = nuts.setlang
 local isglyph            = nuts.isglyph
 
 local copy_node          = nuts.copy
@@ -141,7 +142,7 @@ local expanders = {
                 end
             end
             if template then
-                local language = template and getfield(template,"lang")
+                local language = template and getlang(template)
                 local data     = getlanguagedata(language)
                 local prechar  = data.prehyphenchar
                 local postchar = data.posthyphenchar

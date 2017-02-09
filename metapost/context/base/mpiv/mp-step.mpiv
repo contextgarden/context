@@ -425,24 +425,36 @@ def step_end_chart =
         if bbwidth(text_t) > 0 :
             if bbwidth(cell_t) > 0 :
                 alternative := if known line_top_shapes[i] : line_top_shapes[i] else : 1 fi ;
-                if (alternative = 1) or (alternative = 2) : drawarrow else : draw fi
-                    midtopboundary cell_t
-                        shifted (if i > 1 : line_offset else : 0 fi, cell_line_width) {up}  ..
-                    midbottomboundary text_t
-                        shifted (0,-line_distance) ..
-                    {down} midtopboundary next_t
-                        shifted (if i < nofcells - 1 : -line_offset else : 0 fi,cell_line_width)
-                if (alternative = 2) or (alternative = 4) :
-                    dashed evenly scaled (
-                        if known line_top_lines [i] : line_top_lines [i] else : line_line_width fi
-                    )
-                fi
-                    withpen pencircle scaled
-                        if known line_top_lines [i] : line_top_lines [i] else : line_line_width fi
-                    withcolor
-                        if known line_top_colors[i] : line_top_colors[i] else : line_line_color fi
-                ;
-            else :
+                if alternative <> 0 :
+                    if (alternative = 1) or (alternative = 2) or (alternative = 5) or (alternative = 6) :
+                        drawarrow
+                    elseif (alternative = 3) or (alternative = 7):
+                        drawdblarrow
+                    else :
+                        draw
+                    fi
+                        if (alternative = 2) or (alternative = 6) :
+                            reverse
+                        fi
+                            (
+                                midtopboundary cell_t
+                                    shifted (if i > 1 : line_offset else : 0 fi, cell_line_width) {up}  ..
+                                midbottomboundary text_t
+                                    shifted (0,-line_distance) ..
+                                {down} midtopboundary next_t
+                                    shifted (if i < nofcells - 1 : -line_offset else : 0 fi,cell_line_width)
+                            )
+                        withpen pencircle scaled
+                            if known line_top_lines [i] : line_top_lines [i] else : line_line_width fi
+                        withcolor
+                            if known line_top_colors[i] : line_top_colors[i] else : line_line_color fi
+                    if (alternative >= 5) and (alternative <= 8) :
+                        dashed evenly scaled (
+                            if known line_top_lines [i] : line_top_lines [i] else : line_line_width fi
+                        )
+                    fi
+                    ;
+                fi ;
             fi ;
         fi ;
         if bbwidth(text_b) > 0 :
@@ -452,24 +464,36 @@ def step_end_chart =
             fi ;
             if bbwidth(cell_b) > 0 :
                 alternative := if known line_bot_shapes[i] : line_bot_shapes[i] else : 1 fi ;
-                if (alternative = 1) or (alternative = 2) : drawarrow else : draw fi
-                    midbottomboundary cell_b
-                        shifted (if i > 1 : line_offset else : 0 fi, -cell_line_width) {down}  ..
-                    midtopboundary text_b
-                        shifted (0, line_distance) ..
-                    {up} midbottomboundary next_b
-                        shifted (if i < nofcells - 1 : -line_offset else : 0 fi,-cell_line_width)
-                if (alternative = 2) or (alternative = 4) :
-                    dashed evenly scaled (
-                        if known line_top_lines [i] : line_top_lines [i] else : line_line_width fi
-                    )
-                fi
-                    withpen pencircle scaled
-                        if known line_bot_lines [i] : line_bot_lines [i] else : line_line_width fi
-                    withcolor
-                        if known line_bot_colors[i] : line_bot_colors[i] else : line_line_color fi
-                ;
-            else :
+                if alternative <> 0 :
+                    if (alternative = 1) or (alternative = 2) or (alternative = 5) or (alternative = 6) :
+                        drawarrow
+                    elseif (alternative = 3) or (alternative = 7):
+                        drawdblarrow
+                    else :
+                        draw
+                    fi
+                        if (alternative = 2) or (alternative = 6) :
+                            reverse
+                        fi
+                            (
+                                midbottomboundary cell_b
+                                    shifted (if i > 1 : line_offset else : 0 fi, -cell_line_width) {down}  ..
+                                midtopboundary text_b
+                                    shifted (0, line_distance) ..
+                                {up} midbottomboundary next_b
+                                    shifted (if i < nofcells - 1 : -line_offset else : 0 fi,-cell_line_width)
+                            )
+                        withpen pencircle scaled
+                            if known line_bot_lines [i] : line_bot_lines [i] else : line_line_width fi
+                        withcolor
+                            if known line_bot_colors[i] : line_bot_colors[i] else : line_line_color fi
+                    if (alternative >= 5) and (alternative <= 8) :
+                        dashed evenly scaled (
+                            if known line_top_lines [i] : line_top_lines [i] else : line_line_width fi
+                        )
+                    fi
+                    ;
+                fi ;
             fi ;
         fi ;
     endfor ;

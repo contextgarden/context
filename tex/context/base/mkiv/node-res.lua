@@ -236,7 +236,9 @@ end
 
 function nutpool.fontkern(k)
     local n = copy_nut(fontkern)
-    setkern(n,k)
+    if k and k ~= 0 then 
+        setkern(n,k)
+    end
     return n
 end
 
@@ -322,7 +324,9 @@ end
 
 function nutpool.textdir(dir)
     local t = copy_nut(textdir)
-    setdir(t,dir)
+    if dir then 
+        setdir(t,dir)
+    end
     return t
 end
 

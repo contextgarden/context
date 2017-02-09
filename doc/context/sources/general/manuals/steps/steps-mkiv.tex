@@ -141,6 +141,94 @@ These align around the mid element \type {c2}.
 
 \stopsection
 
+\startsection[title=Lines]
+
+You can draw lines normally or dashes and with or without arrows in both
+directions. This is controlled by the \type {alternative} option of \type
+{\setupSTEPaligntable}. As an example we use this table:
+
+\startbuffer[table]
+\startSTEPaligntable
+    \cells {$2c$} {$=$} {$2a+3b$}
+    \text  {with $a=5$}
+    \cells {$2c$}{$=$} {$10+3b$}
+    \text  {and $b=6$}
+    \cells {$2c$} {$=$} {$10+18$}
+    \text  {we get}
+\stopSTEPaligntable
+\stopbuffer
+
+\typebuffer[table]
+
+Next we show the (currently) 9 alternatives. The zero alternative draws no lines
+so there we can make the distance smaller.
+
+\startbuffer
+\setupSTEPlines
+  [alternative=0,
+   width=.5em]
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \getbuffer[table] \stoplinecorrection
+
+\startbuffer
+\setupSTEPlines
+  [alternative=1]
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \getbuffer[table] \stoplinecorrection
+
+\startbuffer
+\setupSTEPlines
+  [alternative=2]
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \getbuffer[table] \stoplinecorrection
+
+\startbuffer
+\setupSTEPlines
+  [alternative=3]
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \getbuffer[table] \stoplinecorrection
+
+\startbuffer
+\setupSTEPlines
+  [alternative=4]
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \getbuffer[table] \stoplinecorrection
+
+\startbuffer
+\setupSTEPlines
+  [alternative=5]
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \getbuffer[table] \stoplinecorrection
+
+\startbuffer
+\setupSTEPlines
+  [alternative=6]
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \getbuffer[table] \stoplinecorrection
+
+\startbuffer
+\setupSTEPlines
+  [alternative=7]
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \getbuffer[table] \stoplinecorrection
+
+\startbuffer
+\setupSTEPlines
+  [alternative=8]
+\stopbuffer
+
+\typebuffer \startlinecorrection \getbuffer \getbuffer[table] \stoplinecorrection
+
+\stopsection
+
 \startsection[title=Usage]
 
 The step chart module is loaded with:

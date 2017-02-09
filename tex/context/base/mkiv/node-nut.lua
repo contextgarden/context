@@ -115,26 +115,7 @@ nuts.tonut                = tonut
 nodes.tonode              = tonode
 nodes.tonut               = tonut
 
--- local sl = direct.setlink
--- direct.setlink = function(a,b,...)
---     if not b then
---         print(tonode(a),"NOTHING")
---     elseif not a then
---         print("NOTHING",tonode(b))
---     else
---         print(a,b)
---     end
---     return sl(a,b,...)
--- end
-
--- local g = direct.getfield
--- local t = table.setmetatableindex("number")
--- function direct.getfield(n,f)
---     local nt = t[f]
---     t[f] = nt + 1
---     print("field",nodes.nodecodes[direct.getid(n)],f,nt)
---     return g(n,f)
--- end
+-- getters
 
 if not direct.getwhd then
     local getfield = direct.getfield
@@ -158,6 +139,8 @@ if not direct.getcomponents then
     local setfield   = direct.setfield
     local setsubtype = direct.setsubtype
 
+    local attributelist_code = nodecodes.attributelist
+
     function direct.getcomponents(n)   return getfield(n,"components")   end
     function direct.setcomponents(n,c)        setfield(n,"components",c) end
     function direct.getkern(n)         return getfield(n,"kern")         end
@@ -165,6 +148,16 @@ if not direct.getcomponents then
     function direct.setpenalty(n,p)           setfield(n,"penalty",p)    end
     function direct.getdir(n)          return getfield(n,"dir")          end
     function direct.setdir(n,p)               setfield(n,"dir",p)        end
+    function direct.getlanguage(n)     return getfield(n,"lang")         end
+    function direct.setlanguage(n,l)   return setfield(n,"lang",l)       end
+    function direct.getattributelist(n)       getfield(n,"attr")         end
+
+    function direct.setattributelist(n,a)
+        if a and type(a) ~= attributelist_code then
+            a = getfield(a,"attr")
+        end
+        setfield(n,"attr",a)
+    end
 
     function direct.setkern(n,k,s)
         setfield(n,"kern",k)
@@ -204,25 +197,6 @@ end
 --     inspect(hash)
 -- end
 
-nuts.getwhd               = direct.getwhd
-nuts.setwhd               = direct.setwhd
-
-nuts.getfield             = direct.getfield
-nuts.getnext              = direct.getnext
-nuts.getprev              = direct.getprev
-nuts.getid                = direct.getid
-nuts.getattr              = direct.get_attribute
-nuts.getchar              = direct.getchar
-nuts.getfont              = direct.getfont
-nuts.getsubtype           = direct.getsubtype
-nuts.getlist              = direct.getlist -- only hlist and vlist !
-nuts.getleader            = direct.getleader
-nuts.getcomponents        = direct.getcomponents
-nuts.getoffsets           = direct.getoffsets
-nuts.getkern              = direct.getkern
-nuts.getdir               = direct.getdir
-nuts.getpenalty           = direct.getpenalty
-
 -- local function track(name)
 --     local n = 0
 --     local f = nuts[name]
@@ -238,13 +212,6 @@ nuts.getpenalty           = direct.getpenalty
 -- track("getfield")
 
 -- setters
-
-nuts.setfield              = direct.setfield
-nuts.setattr               = direct.set_attribute
-nuts.takeattr              = direct.unset_attribute
-
-nuts.getbox                = direct.getbox
-nuts.setbox                = direct.setbox
 
 -- helpers
 
@@ -324,6 +291,7 @@ if not direct.rangedimensions then -- LUATEXVERSION < 0.99
 
     local dimensions = direct.dimensions
     local getfield   = direct.getfield
+    local getdir     = direct.getdir
     local find_tail  = direct.tail
 
     function direct.rangedimensions(parent,first,last)
@@ -337,33 +305,82 @@ if not direct.rangedimensions then -- LUATEXVERSION < 0.99
 
 end
 
-local getglue              = direct.getglue
-local setglue              = direct.setglue
-local is_zero_glue         = direct.is_zero_glue
+nuts.getfield              = direct.getfield
+nuts.setfield              = direct.setfield
 
+nuts.getnext               = direct.getnext
+nuts.setnext               = direct.setnext
+
+nuts.getid                 = direct.getid
+
+nuts.getprev               = direct.getprev
+nuts.setprev               = direct.setprev
+
+nuts.getattr               = direct.get_attribute
+nuts.setattr               = direct.set_attribute
+nuts.takeattr              = direct.unset_attribute -- ?
+
+nuts.is_zero_glue          = direct.is_zero_glue
 nuts.effective_glue        = direct.effective_glue
-nuts.getglue               = getglue
-nuts.setglue               = setglue
-nuts.is_zero_glue          = is_zero_glue
+
+nuts.getglue               = direct.getglue
+nuts.setglue               = direct.setglue
 
 nuts.getdisc               = direct.getdisc
-nuts.getwhd                = direct.getwhd
 nuts.setdisc               = direct.setdisc
+nuts.getdiscretionary      = direct.getdisc
+nuts.setdiscretionary      = direct.setdisc
+
+nuts.getwhd                = direct.getwhd
+nuts.setwhd                = direct.setwhd
+
+nuts.getchar               = direct.getchar
 nuts.setchar               = direct.setchar
+
+nuts.getfont               = direct.getfont
 nuts.setfont               = direct.setfont
-nuts.setnext               = direct.setnext
-nuts.setprev               = direct.setprev
-nuts.setboth               = direct.setboth
+
 nuts.getboth               = direct.getboth
+nuts.setboth               = direct.setboth
+
 nuts.setlink               = direct.setlink
+
+nuts.getlist               = direct.getlist -- only hlist and vlist !
 nuts.setlist               = direct.setlist
+
+nuts.getleader             = direct.getleader
 nuts.setleader             = direct.setleader
+
+nuts.getsubtype           = direct.getsubtype
 nuts.setsubtype            = direct.setsubtype
+
+nuts.getcomponents         = direct.getcomponents
 nuts.setcomponents         = direct.setcomponents
+
+nuts.getlang               = direct.getlang
+nuts.setlang               = direct.setlang
+nuts.getlanguage           = direct.getlang
+nuts.setlanguage           = direct.setlang
+
+nuts.getattrlist           = direct.getattributelist
+nuts.setattrlist           = direct.setattributelist
+nuts.getattributelist      = direct.getattributelist
+nuts.setattributelist      = direct.setattributelist
+
+nuts.getoffsets            = direct.getoffsets
 nuts.setoffsets            = direct.setoffsets
+
+nuts.getkern               = direct.getkern
 nuts.setkern               = direct.setkern
+
+nuts.getdir                = direct.getdir
 nuts.setdir                = direct.setdir
+
+nuts.getpenalty            = direct.getpenalty
 nuts.setpenalty            = direct.setpenalty
+
+nuts.getbox                = direct.getbox
+nuts.setbox                = direct.setbox
 
 nuts.is_char               = direct.is_char
 nuts.ischar                = direct.is_char

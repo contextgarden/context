@@ -1112,7 +1112,7 @@ local function check_experimental_overlay(head,current)
             if id == glue_code then
                 skips = skips + (getfield(c,"width") or 0)
             elseif id == kern_code then
-                skips = skips + getgetkern(c)
+                skips = skips + getkern(c)
             end
             c = getnext(c)
         end
