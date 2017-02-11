@@ -83,6 +83,8 @@ local ischar             = nuts.is_char
 local getkern            = nuts.getkern
 local setkern            = nuts.setkern
 local setlink            = nuts.setlink
+local setwidth           = nuts.setwidth
+local getwidth           = nuts.getwidth
 
 local traverse_id        = nuts.traverse_id
 local traverse_char      = nuts.traverse_char
@@ -522,7 +524,7 @@ local function show_result(head)
     while current do
         local id = getid(current)
         if id == glyph_code then
-            local w = getfield(current,"width")
+            local w = getwidth(current)
             local x, y = getoffsets(current)
             report_injections("char: %C, width %p, xoffset %p, yoffset %p",getchar(current),w,x,y)
             skipping = false
@@ -990,7 +992,7 @@ local function inject_everything(head,where)
              -- report_injections("r2l case 1: %p",ox)
             else
                 -- kern(x) glyph(p) kern(w-x) mark(n)
-             -- ox = px - getfield(p,"width") + pn.markx - pp.leftkern
+             -- ox = px - getwidth(p) + pn.markx - pp.leftkern
                 --
                 -- According to Kai we don't need to handle leftkern here but I'm
                 -- pretty sure I've run into a case where it was needed so maybe
@@ -1013,12 +1015,12 @@ local function inject_everything(head,where)
          --     ox = px - pn.markx
          --  -- report_injections("r2l case 3: %p",ox)
          -- else
-         --  -- ox = px - getfield(p,"width") + pn.markx
+         --  -- ox = px - getwidth(p) + pn.markx
                 ox = px - pn.markx
              -- report_injections("l2r case 3: %p",ox)
          -- end
             if pn.checkmark then
-                local wn = getfield(n,"width") -- in arial marks have widths
+                local wn = getwidth(n) -- in arial marks have widths
                 if wn ~= 0 then
                     wn = wn/2
                     if trace_injections then
@@ -1424,7 +1426,7 @@ injections.getthreshold = getthreshold
 
 function injections.isspace(n,threshold,id)
     if (id or getid(n)) == glue_code then
-        local w = getfield(n,"width")
+        local w = getwidth(n)
         if threshold and w > threshold then -- was >=
             return 32
         end
@@ -1483,32 +1485,32 @@ local function injectspaces(head)
             end
         end
         if leftkern then
-            local old = getfield(n,"width")
+            local old = getwidth(n)
             if old > threshold then
                 if rightkern then
                     local new = old + (leftkern + rightkern) * factor
                     if trace_spaces then
                         report_spaces("%C [%p -> %p] %C",prevchar,old,new,nextchar)
                     end
-                    setfield(n,"width",new)
+                    setwidth(n,new)
                     leftkern  = false
                 else
                     local new = old + leftkern * factor
                     if trace_spaces then
                         report_spaces("%C [%p -> %p]",prevchar,old,new)
                     end
-                    setfield(n,"width",new)
+                    setwidth(n,new)
                 end
             end
             leftkern  = false
         elseif rightkern then
-            local old = getfield(n,"width")
+            local old = getwidth(n)
             if old > threshold then
                 local new = old + rightkern * factor
                 if trace_spaces then
                     report_spaces("[%p -> %p] %C",nextchar,old,new)
                 end
-                setfield(n,"width",new)
+                setwidth(n,new)
             end
             rightkern = false
         end

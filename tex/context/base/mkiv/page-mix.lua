@@ -47,14 +47,17 @@ local flushnode           = nuts.flush
 local concatnodes         = nuts.concat
 local slidenodes          = nuts.slide -- ok here as we mess with prev links intermediately
 
-local getfield            = nuts.getfield
 local setfield            = nuts.setfield
 local setlink             = nuts.setlink
 local setlist             = nuts.setlist
 local setnext             = nuts.setnext
 local setprev             = nuts.setprev
 local setbox              = nuts.setbox
+local setwhd              = nuts.setwhd
+local setheight           = nuts.setheight
+local setdepth            = nuts.setdepth
 
+local getfield            = nuts.getfield
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
 local getid               = nuts.getid
@@ -63,9 +66,11 @@ local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
 local getattribute        = nuts.getattribute
 local getwhd              = nuts.getwhd
-local setwhd              = nuts.setwhd
 local getkern             = nuts.getkern
 local getpenalty          = nuts.getpenalty
+local getwidth            = nuts.getwidth
+local getheight           = nuts.getheight
+local getdepth            = nuts.getdepth
 
 local texgetcount         = tex.getcount
 local texgetglue          = tex.getglue
@@ -121,7 +126,7 @@ local function collectinserts(result,nxt,nxtid)
         if nxtid == insert_code then
             i = i + 1
             result.i = i
-            inserttotal = inserttotal + getfield(nxt,"height") -- height includes depth
+            inserttotal = inserttotal + getheight(nxt) -- height includes depth
             local s = getsubtype(nxt)
             local c = inserts[s]
             if trace_detail then
@@ -174,7 +179,7 @@ local function discardtopglue(current,discarded)
     while current do
         local id = getid(current)
         if id == glue_code then
-            size = size + getfield(current,"width")
+            size = size + getwidth(current)
             discarded[#discarded+1] = current
             current = getnext(current)
         elseif id == penalty_code then
@@ -182,7 +187,7 @@ local function discardtopglue(current,discarded)
                 discarded[#discarded+1] = current
                 current = getnext(current)
                 while current and getid(current) == glue_code do
-                    size = size + getfield(current,"width")
+                    size = size + getwidth(current)
                     discarded[#discarded+1] = current
                     current = getnext(current)
                 end
@@ -221,7 +226,7 @@ local function stripbottomglue(results,discarded)
                 end
             elseif id == glue_code then
                 discarded[#discarded+1] = t
-                local width = getfield(t,"width")
+                local width = getwidth(t)
                 if trace_state then
                     report_state("columns %s, discarded bottom glue %p",i,width)
                 end
@@ -258,8 +263,8 @@ local function preparesplit(specification) -- a rather large function
     slidenodes(head) -- we can have set prev's to nil to prevent backtracking
     local discarded      = { }
     local originalhead   = head
-    local originalwidth  = specification.originalwidth  or getfield(list,"width")
-    local originalheight = specification.originalheight or getfield(list,"height")
+    local originalwidth  = specification.originalwidth  or getwidth(list)
+    local originalheight = specification.originalheight or getheight(list)
     local current        = head
     local skipped        = 0
     local height         = 0
@@ -482,7 +487,7 @@ local function preparesplit(specification) -- a rather large function
     head = current
 
     local function process_skip(current,nxt)
-        local advance = getfield(current,"width")
+        local advance = getwidth(current)
         if advance ~= 0 then
             local state, skipped = checked(advance,"glue")
             if trace_state then
@@ -540,7 +545,7 @@ local function preparesplit(specification) -- a rather large function
 
     local function process_rule(current,nxt)
         -- simple variant of h|vlist
-        local advance = getfield(current,"height") -- + getfield(current,"depth")
+        local advance = getheight(current) -- + getdepth(current)
         if advance ~= 0 then
             local state, skipped = checked(advance,"rule")
             if trace_state then
@@ -558,7 +563,7 @@ local function preparesplit(specification) -- a rather large function
          -- else
          --     height = height + currentskips
          -- end
-            depth = getfield(current,"depth")
+            depth = getdepth(current)
             skip  = 0
         end
         lastcontent = current
@@ -785,11 +790,11 @@ local function finalize(result)
                         local l = list[i]
                         local h = new_hlist()
                         t[i] = h
-                        setlist(h,getfield(l,"head"))
+                        setlist(h,getlist(l))
                         local wd, ht, dp = getwhd(l)
                         -- here ht is still ht + dp !
-                        setwhd(h,getfield(h,"width"),ht,dp)
-                        setfield(l,"head",nil)
+                        setwhd(h,getwidth(h),ht,dp)
+                        setlist(l)
                     end
                     setprev(t[1])  -- needs checking
                     setnext(t[#t]) -- needs checking
@@ -963,7 +968,7 @@ local function getsplit(result,n)
 
         local l = concatnodes(list)
         for i=1,#list-1 do
-            setfield(list[i],"depth",0)
+            setdepth(list[i],0)
         end
         local b = vpack(l) -- multiple arguments, todo: fastvpack
 

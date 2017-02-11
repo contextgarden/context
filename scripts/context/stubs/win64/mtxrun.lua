@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 4933, stripped down to: 2746
+-- original size: 6885, stripped down to: 2843
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -162,9 +162,14 @@ if flush then
   local spawn=os.spawn  if spawn  then function os.spawn (...) flush() return spawn (...) end end
   local popen=io.popen  if popen  then function io.popen (...) flush() return popen (...) end end
 end
-if ffi and (ffi.os=="" or ffi.arch=="") then
-  ffi=nil
-  if ffi.number then
+if ffi and ffi.number then
+else
+  local okay
+  okay,ffi=pcall(require,"ffi")
+  if not ffi then
+  elseif ffi.os=="" or ffi.arch=="" then
+    ffi=nil
+  elseif ffi.number then
   else
     ffi.number=tonumber
   end
@@ -19147,8 +19152,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 812922
--- stripped bytes    : 295640
+-- original bytes    : 814874
+-- stripped bytes    : 297495
 
 -- end library merge
 

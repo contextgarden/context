@@ -39,6 +39,7 @@ local getlist         = nuts.getlist
 local getattribute    = nuts.getattribute
 local getbox          = nuts.getbox
 local getdir          = nuts.getdir
+local getwidth        = nuts.getwidth
 local takebox         = nuts.takebox
 
 local setfield        = nuts.setfield
@@ -48,6 +49,9 @@ local setnext         = nuts.setnext
 local setbox          = nuts.setbox
 local setlist         = nuts.setlist
 local setdisc         = nuts.setdisc
+local setwidth        = nuts.setwidth
+local setheight       = nuts.setheight
+local setdepth        = nuts.setdepth
 
 local flush_node      = nuts.flush_node
 local flush_list      = nuts.flush_list
@@ -355,8 +359,8 @@ implement {
     actions   = function(n)
         local b = getbox(n)
         local factor = texget("baselineskip",false) / texget("hsize")
-        setfield(b,"depth",0)
-        setfield(b,"height",getfield(b,"width") * factor)
+        setdepth(b,0)
+        setheight(b,getwidth(b) * factor)
     end
 }
 

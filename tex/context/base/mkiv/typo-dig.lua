@@ -28,6 +28,7 @@ local getprev            = nuts.getprev
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getid              = nuts.getid
+local getwidth           = nuts.getwidth
 local getfield           = nuts.getfield
 local takeattr           = nuts.takeattr
 
@@ -103,7 +104,7 @@ actions[1] = function(head,start,attr)
     local char = getchar(start)
     local unic = chardata[font][char].unicode or char
     if charbase[unic].category == "nd" then -- ignore unic tables
-        local oldwidth = getfield(start,"width")
+        local oldwidth = getwidth(start)
         local newwidth = getdigitwidth(font)
         if newwidth ~= oldwidth then
             if trace_digits then

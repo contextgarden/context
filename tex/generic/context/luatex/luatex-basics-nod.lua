@@ -171,6 +171,8 @@ nodes.mlist_to_hlist       = node.mlist_to_hlist
 -- we can go nuts (e.g. experimental); this split permits us us keep code
 -- used elsewhere stable but at the same time play around in context
 
+-- much of this will go away
+
 local direct             = node.direct
 local nuts               = { }
 nodes.nuts               = nuts
@@ -220,14 +222,20 @@ nuts.setoffsets          = direct.setoffsets or
         if y then setfield(n,"xoffset",y) end
     end
 
-nuts.getleader           = direct.getleader     or function(n)   return getfield(n,"leader")       end
-nuts.setleader           = direct.setleader     or function(n,l)        setfield(n,"leader",l)     end
-nuts.getcomponents       = direct.getcomponents or function(n)   return getfield(n,"components")   end
-nuts.setcomponents       = direct.setcomponents or function(n,c)        setfield(n,"components",c) end
-nuts.getkern             = direct.getkern       or function(n)   return getfield(n,"kern")         end
-nuts.setkern             = direct.setkern       or function(n,k)        setfield(n,"kern",k)       end
-nuts.getdir              = direct.getkern       or function(n)   return getfield(n,"dir")          end
-nuts.setdir              = direct.setkern       or function(n,d)        setfield(n,"dir",d)        end
+nuts.getleader     = direct.getleader     or function(n)   return getfield(n,"leader")       end
+nuts.setleader     = direct.setleader     or function(n,l)        setfield(n,"leader",l)     end
+nuts.getcomponents = direct.getcomponents or function(n)   return getfield(n,"components")   end
+nuts.setcomponents = direct.setcomponents or function(n,c)        setfield(n,"components",c) end
+nuts.getkern       = direct.getkern       or function(n)   return getfield(n,"kern")         end
+nuts.setkern       = direct.setkern       or function(n,k)        setfield(n,"kern",k)       end
+nuts.getdir        = direct.getkern       or function(n)   return getfield(n,"dir")          end
+nuts.setdir        = direct.setkern       or function(n,d)        setfield(n,"dir",d)        end
+nuts.getwidth      = direct.getwidth      or function(n)   return getfield(n,"width")        end
+nuts.setwidth      = direct.setwidth      or function(n,w) return setfield(n,"width",w)      end
+nuts.getheight     = direct.getheight     or function(n)   return getfield(n,"height")       end
+nuts.setheight     = direct.setheight     or function(n,h) return setfield(n,"height",h)     end
+nuts.getdepth      = direct.getdepth      or function(n)   return getfield(n,"depth")        end
+nuts.setdepth      = direct.setdepth      or function(n,d) return setfield(n,"depth",d)      end
 
 if not direct.is_glyph then
     local getchar    = direct.getchar

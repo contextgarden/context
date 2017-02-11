@@ -31,6 +31,7 @@ local getsubtype          = nuts.getsubtype
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local getcomponents       = nuts.getcomponents
+local getwidth            = nuts.getwidth
 
 local set_attributes      = nuts.setattributes
 local traverse_nodes      = nuts.traverse
@@ -527,7 +528,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     processsubsup(start)
                 end
             elseif id == glue_code then
-             -- setattr(start,a_tagged,start_tagged("mspace",{ width = getfield(start,"width") }))
+             -- setattr(start,a_tagged,start_tagged("mspace",{ width = getwidth(start) }))
                 setattr(start,a_tagged,start_tagged("mspace"))
                 stop_tagged()
             else

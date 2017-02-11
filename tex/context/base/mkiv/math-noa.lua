@@ -88,6 +88,7 @@ local nutstring            = nuts.tostring
 
 local setfield             = nuts.setfield
 local setlink              = nuts.setlink
+local setlist              = nuts.setlist
 local setnext              = nuts.setnext
 local setprev              = nuts.setprev
 local setchar              = nuts.setchar
@@ -104,6 +105,14 @@ local getchar              = nuts.getchar
 local getfont              = nuts.getfont
 local getattr              = nuts.getattr
 local getlist              = nuts.getlist
+
+local getnucleus           = nuts.getnucleus
+local getsub               = nuts.getsub
+local getsup               = nuts.getsup
+
+local setnucleus           = nuts.setnucleus
+local setsub               = nuts.setsub
+local setsup               = nuts.setsup
 
 local flush_node           = nuts.flush
 local new_node             = nuts.new -- todo: pool: math_noad math_sub
@@ -229,9 +238,9 @@ local function process(start,what,n,parent)
             end
         elseif id == math_noad then
             -- single characters are like this
-            local noad = getfield(start,"nucleus")      if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sup")          if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sub")          if noad then process(noad,what,n,start) end -- list
+            local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
         elseif id == math_char or id == math_textchar or id == math_delim then
             break
         elseif id == math_box or id == math_sub then
@@ -249,15 +258,15 @@ local function process(start,what,n,parent)
         elseif id == math_fence then
             local noad = getfield(start,"delim")        if noad then process(noad,what,n,start) end -- delimiter
         elseif id == math_radical then
-            local noad = getfield(start,"nucleus")      if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sup")          if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sub")          if noad then process(noad,what,n,start) end -- list
+            local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"left")         if noad then process(noad,what,n,start) end -- delimiter
                   noad = getfield(start,"degree")       if noad then process(noad,what,n,start) end -- list
         elseif id == math_accent then
-            local noad = getfield(start,"nucleus")      if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sup")          if noad then process(noad,what,n,start) end -- list
-                  noad = getfield(start,"sub")          if noad then process(noad,what,n,start) end -- list
+            local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"accent")       if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"bot_accent")   if noad then process(noad,what,n,start) end -- list
      -- elseif id == math_style then
@@ -276,9 +285,9 @@ local function processnested(current,what,n)
     local noad = nil
     local id   = getid(current)
     if id == math_noad then
-        noad = getfield(current,"nucleus")      if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,what,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
     elseif id == math_box or id == math_sub then
         noad = getlist(current)                 if noad then process(noad,what,n,current) end -- list (not getlist !)
     elseif id == math_fraction then
@@ -294,15 +303,15 @@ local function processnested(current,what,n)
     elseif id == math_fence then
         noad = getfield(current,"delim")        if noad then process(noad,what,n,current) end -- delimiter
     elseif id == math_radical then
-        noad = getfield(current,"nucleus")      if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,what,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"left")         if noad then process(noad,what,n,current) end -- delimiter
         noad = getfield(current,"degree")       if noad then process(noad,what,n,current) end -- list
     elseif id == math_accent then
-        noad = getfield(current,"nucleus")      if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,what,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,what,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"accent")       if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"bot_accent")   if noad then process(noad,what,n,current) end -- list
     end
@@ -312,9 +321,9 @@ local function processstep(current,process,n,id)
     local noad = nil
     local id   = id or getid(current)
     if id == math_noad then
-        noad = getfield(current,"nucleus")      if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,n,current) end -- list
     elseif id == math_box or id == math_sub then
         noad = getlist(current)                 if noad then process(noad,n,current) end -- list (not getlist !)
     elseif id == math_fraction then
@@ -330,15 +339,15 @@ local function processstep(current,process,n,id)
     elseif id == math_fence then
         noad = getfield(current,"delim")        if noad then process(noad,n,current) end -- delimiter
     elseif id == math_radical then
-        noad = getfield(current,"nucleus")      if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,n,current) end -- list
         noad = getfield(current,"left")         if noad then process(noad,n,current) end -- delimiter
         noad = getfield(current,"degree")       if noad then process(noad,n,current) end -- list
     elseif id == math_accent then
-        noad = getfield(current,"nucleus")      if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sup")          if noad then process(noad,n,current) end -- list
-        noad = getfield(current,"sub")          if noad then process(noad,n,current) end -- list
+        noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
+        noad = getsup    (current)              if noad then process(noad,n,current) end -- list
+        noad = getsub    (current)              if noad then process(noad,n,current) end -- list
         noad = getfield(current,"accent")       if noad then process(noad,n,current) end -- list
         noad = getfield(current,"bot_accent")   if noad then process(noad,n,current) end -- list
     end
@@ -709,7 +718,7 @@ local function makefence(what,char)
     local d = new_node(math_delim)
     local f = new_node(math_fence)
     if char then
-        local sym = getfield(char,"nucleus")
+        local sym = getnucleus(char)
         local chr = getchar(sym)
         local fam = getfield(sym,"fam")
         if chr == dummyfencechar then
@@ -726,9 +735,9 @@ end
 
 local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
     local list = new_node(math_sub)
-    setfield(list,"head",f_o)
+    setlist(list,f_o)
     setsubtype(noad,noad_inner)
-    setfield(noad,"nucleus",list)
+    setnucleus(noad,list)
     setlink(f_o,o_next)
     setlink(c_prev,f_c)
     if middle and next(middle) then
@@ -739,7 +748,7 @@ local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
             if m then
                 local next  = getnext(current)
                 local fence = makefence(middle_fence_code,current)
-                setfield(current,"nucleus",nil)
+                setnucleus(current)
                 flush_node(current)
                 middle[current] = nil
                 -- replace_node
@@ -763,7 +772,7 @@ local function convert_both(open,close,middle)
         local f_o = makefence(left_fence_code,open)
         local f_c = makefence(right_fence_code,close)
         makelist(open,f_o,o_next,c_prev,f_c,middle)
-        setfield(close,"nucleus",nil)
+        setnucleus(close)
         flush_node(close)
         if c_next then
             setprev(c_next,open)
@@ -909,8 +918,8 @@ local function replace(pointer,what,n,parent)
     local start_super, stop_super, start_sub, stop_sub
     local mode = "unset"
     while next and getid(next) == math_noad do
-        local nextnucleus = getfield(next,"nucleus")
-        if nextnucleus and getid(nextnucleus) == math_char and not getfield(next,"sub") and not getfield(next,"sup") then
+        local nextnucleus = getnucleus(next)
+        if nextnucleus and getid(nextnucleus) == math_char and not getsub(next) and not getsup(next) then
             local char = getchar(nextnucleus)
             local s = superscripts[char]
             if s then
@@ -953,11 +962,11 @@ local function replace(pointer,what,n,parent)
     end
     if start_super then
         if start_super == stop_super then
-            setfield(pointer,"sup",getfield(start_super,"nucleus"))
+            setsup(pointer,getnucleus(start_super))
         else
             local list = new_node(math_sub) -- todo attr
             setlist(list,start_super)
-            setfield(pointer,"sup",list)
+            setsup(pointer,list)
         end
         if mode == "super" then
             setnext(pointer,getnext(stop_super))
@@ -966,11 +975,11 @@ local function replace(pointer,what,n,parent)
     end
     if start_sub then
         if start_sub == stop_sub then
-            setfield(pointer,"sub",getfield(start_sub,"nucleus"))
+            setsub(pointer,getnucleus(start_sub))
         else
             local list = new_node(math_sub) -- todo attr
             setlist(list,start_sub)
-            setfield(pointer,"sub",list)
+            setsub(pointer,list)
         end
         if mode == "sub" then
             setnext(pointer,getnext(stop_sub))
@@ -1244,7 +1253,7 @@ local function insert_kern(current,kern)
     local noad = new_node(math_noad) -- todo: pool
     setlist(sub,kern)
     setnext(kern,noad)
-    setfield(noad,"nucleus",current)
+    setnucleus(noad,current)
     return sub
 end
 
@@ -1445,7 +1454,7 @@ do
                 if found then
                     local next = getnext(parent)
                     if next and getid(next) == math_noad then
-                        pointer = getfield(next,"nucleus")
+                        pointer = getnucleus(next)
                         if pointer then
                             if getfont(pointer) == font then
                                 local second = getchar(pointer)
@@ -1516,30 +1525,30 @@ local validpair = {
 local function movesubscript(parent,current_nucleus,current_char)
     local prev = getprev(parent)
     if prev and getid(prev) == math_noad then
-        if not getfield(prev,"sup") and not getfield(prev,"sub") then
+        if not getsup(prev) and not getsub(prev) then
             -- {f} {'}_n => f_n^'
             setchar(current_nucleus,movesub[current_char or getchar(current_nucleus)])
-            local nucleus = getfield(parent,"nucleus")
-            local sub     = getfield(parent,"sub")
-            local sup     = getfield(parent,"sup")
-            setfield(prev,"sup",nucleus)
-            setfield(prev,"sub",sub)
+            local nucleus = getnucleus(parent)
+            local sub     = getsub(parent)
+            local sup     = getsup(parent)
+            setsup(prev,nucleus)
+            setsub(prev,sub)
             local dummy = copy_node(nucleus)
             setchar(dummy,0)
-            setfield(parent,"nucleus",dummy)
-            setfield(parent,"sub",nil)
+            setnucleus(parent,dummy)
+            setsub(parent)
             if trace_collapsing then
                 report_collapsing("fixing subscript")
             end
-        elseif not getfield(prev,"sup") then
+        elseif not getsup(prev) then
             -- {f} {'}_n => f_n^'
             setchar(current_nucleus,movesub[current_char or getchar(current_nucleus)])
-            local nucleus = getfield(parent,"nucleus")
-            local sup     = getfield(parent,"sup")
-            setfield(prev,"sup",nucleus)
+            local nucleus = getnucleus(parent)
+            local sup     = getsup(parent)
+            setsup(prev,nucleus)
             local dummy = copy_node(nucleus)
             setchar(dummy,0)
-            setfield(parent,"nucleus",dummy)
+            setnucleus(parent,dummy)
             if trace_collapsing then
                 report_collapsing("fixing subscript")
             end
@@ -1550,16 +1559,16 @@ end
 local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to turn in on and off
     if parent then
         if validpair[getsubtype(parent)] then
-            local current_nucleus = getfield(parent,"nucleus")
+            local current_nucleus = getnucleus(parent)
             if getid(current_nucleus) == math_char then
                 local current_char = getchar(current_nucleus)
-                if not getfield(parent,"sub") and not getfield(parent,"sup") then
+                if not getsub(parent) and not getsup(parent) then
                     local mathpair = mathpairs[current_char]
                     if mathpair then
                         local next_noad = getnext(parent)
                         if next_noad and getid(next_noad) == math_noad then
                             if validpair[getsubtype(next_noad)] then
-                                local next_nucleus = getfield(next_noad,"nucleus")
+                                local next_nucleus = getnucleus(next_noad)
                                 local next_char    = getchar(next_nucleus)
                                 if getid(next_nucleus) == math_char then
                                     local newchar = mathpair[next_char]
@@ -1577,10 +1586,10 @@ local function collapsepair(pointer,what,n,parent,nested) -- todo: switch to tur
                                             else
                                                 setnext(parent)
                                             end
-                                            setfield(parent,"sup",getfield(next_noad,"sup"))
-                                            setfield(parent,"sub",getfield(next_noad,"sub"))
-                                            setfield(next_noad,"sup",nil)
-                                            setfield(next_noad,"sub",nil)
+                                            setsup(parent,getsup(next_noad))
+                                            setsub(parent,getsub(next_noad))
+                                            setsup(next_noad)
+                                            setsub(next_noad)
                                             flush_node(next_noad)
                                             collapsepair(pointer,what,n,parent,true)
                                          -- if not nested and movesub[current_char] then
@@ -1639,7 +1648,7 @@ variants[math_char] = function(pointer,what,n,parent) -- also set export value
     if selector then
         local next = getnext(parent)
         if next and getid(next) == math_noad then
-            local nucleus = getfield(next,"nucleus")
+            local nucleus = getnucleus(next)
             if nucleus and getid(nucleus) == math_char and getchar(nucleus) == selector then
                 local variant
                 local tfmdata = fontdata[getfont(pointer)]

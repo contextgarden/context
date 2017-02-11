@@ -190,6 +190,7 @@ local setlink            = nuts.setlink
 local getcomponents      = nuts.getcomponents
 local setcomponents      = nuts.setcomponents
 local getdir             = nuts.getdir
+local getwidth           = nuts.getwidth
 
 local ischar             = nuts.is_char
 
@@ -243,9 +244,8 @@ local copyinjection      = injections.copy
 local setligaindex       = injections.setligaindex
 local getligaindex       = injections.getligaindex
 
-local fonthashes         = fonts.hashes
-local fontdata           = fonthashes.identifiers
-local fontfeatures       = fonthashes.features
+local fontdata           = fonts.hashes.identifiers
+local fontfeatures       = fonts.hashes.features
 
 local otffeatures        = fonts.constructors.features.otf
 local registerotffeature = otffeatures.register
@@ -1865,7 +1865,7 @@ local function checked(head)
     local current = head
     while current do
         if getid(current) == glue_code then
-            local kern = new_kern(getfield(current,"width"))
+            local kern = new_kern(getwidth(current))
             if head == current then
                 local next = getnext(current)
                 if next then

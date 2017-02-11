@@ -93,6 +93,9 @@ local setlink           = nuts.setlink
 local setkern           = nuts.setkern
 local getkern           = nuts.getkern
 local getdir            = nuts.getdir
+local getshift          = nuts.getshift
+local setshift          = nuts.setshift
+local getwidth          = nuts.getwidth
 
 local setprop           = nuts.setprop
 local getprop           = nuts.rawprop -- getprop
@@ -139,7 +142,7 @@ local function finalize(prop,key) -- delayed calculations
     local line     = prop.line
     local hsize    = prop.hsize
     local width    = prop.width
-    local shift    = getfield(line,"shift") -- dangerous as it can be vertical as well
+    local shift    = getshift(line) -- dangerous as it can be vertical as well
     local reverse  = getdir(line) == "TRT" or false
     local pack     = new_hlist()
     local head     = getlist(line)
@@ -172,7 +175,7 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
     local head      = oldhead
     local leftskip  = nil
     local rightskip = nil
-    local width     = getfield(line,"width")
+    local width     = getwidth(line)
     local hsize     = islocal and width or tex.hsize
     local lskip     = 0
     local rskip     = 0
@@ -183,7 +186,7 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
         local subtype = getsubtype(head)
         if subtype == leftskip_code then
             leftskip = head
-            lskip    = getfield(head,"width") or 0
+            lskip    = getwidth(head) or 0
         end
         current = getnext(head)
         id      = getid(current)
@@ -198,7 +201,7 @@ local function normalize(line,islocal) -- assumes prestine lines, nothing pre/ap
     if id == glue_code then
         if getsubtype(current) == rightskip_code then
             rightskip  = tail
-            rskip      = getfield(current,"width") or 0
+            rskip      = getwidth(current) or 0
             current    = getprev(tail)
             id         = getid(current)
         end
@@ -366,7 +369,7 @@ local function addanchortoline(n,anchor)
                 new_kern(-65536/4-4*65536),
                 new_rule(8*65536,65536/4,65536/4)
             ))
-            setfield(anchor,"width",0)
+            setwidth(anchor,0)
         end
         if where.tail then
             local head = where.head
@@ -402,12 +405,12 @@ function paragraphs.moveinline(n,blob,dx,dy)
                     setkern(prev,getkern(prev) + dx)
                 end
                 if next and getid(next) == kern_code then
-                    setfkern(next,getkern(next) - dx)
+                    setkern(next,getkern(next) - dx)
                 end
             end
             if dy ~= 0 then
                 if getid(blob) == hlist_code then
-                    setfield(blob,"shift",getfield(blob,"shift") + dy)
+                    setshift(blob,getshift(blob) + dy)
                 end
             end
         else

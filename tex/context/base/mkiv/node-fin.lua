@@ -26,6 +26,7 @@ local getid              = nuts.getid
 local getlist            = nuts.getlist
 local getleader          = nuts.getleader
 local getattr            = nuts.getattr
+local getwidth           = nuts.getwidth
 
 local setlist            = nuts.setlist
 local setleader          = nuts.setleader
@@ -222,7 +223,7 @@ local function process(namespace,attribute,head,inheritance,default) -- one attr
                 -- end nested --
             end
         elseif id == rule_code then
-            check = getfield(stack,"width") ~= 0
+            check = getwidth(stack) ~= 0
         end
         -- much faster this way than using a check() and nested() function
         if check then
@@ -349,7 +350,7 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
                 -- end nested
             end
         elseif id == rule_code then
-            check = getfield(stack,"width") ~= 0
+            check = getwidth(stack) ~= 0
         end
 
         if check then
@@ -480,7 +481,7 @@ local function stacked(namespace,attribute,head,default) -- no triggering, no in
                 end
             end
         elseif id == rule_code then
-            check = getfield(stack,"width") ~= 0
+            check = getwidth(stack) ~= 0
         end
 
         if check then
@@ -574,7 +575,7 @@ local function stacker(namespace,attribute,head,default) -- no triggering, no in
                 done = done or ok
             end
         elseif id == rule_code then
-            check = getfield(current,"width") ~= 0
+            check = getwidth(current) ~= 0
         end
 
         if check then

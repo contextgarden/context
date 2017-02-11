@@ -144,6 +144,14 @@ if not direct.getcomponents then
     function direct.getcomponents(n)   return getfield(n,"components")   end
     function direct.setcomponents(n,c)        setfield(n,"components",c) end
     function direct.getkern(n)         return getfield(n,"kern")         end
+    function direct.getwidth(n)        return getfield(n,"width")        end
+    function direct.setwidth(n,w)      return setfield(n,"width",w)      end
+    function direct.getheight(n)       return getfield(n,"height")       end
+    function direct.setheight(n,h)     return setfield(n,"height",h)     end
+    function direct.getdepth(n)        return getfield(n,"depth")        end
+    function direct.setdepth(n,d)      return setfield(n,"depth",d)      end
+    function direct.getshift(n)        return getfield(n,"shift")        end
+    function direct.setshift(n,s)      return setfield(n,"shift",s)      end
     function direct.getpenalty(n)      return getfield(n,"penalty")      end
     function direct.setpenalty(n,p)           setfield(n,"penalty",p)    end
     function direct.getdir(n)          return getfield(n,"dir")          end
@@ -151,6 +159,13 @@ if not direct.getcomponents then
     function direct.getlanguage(n)     return getfield(n,"lang")         end
     function direct.setlanguage(n,l)   return setfield(n,"lang",l)       end
     function direct.getattributelist(n)       getfield(n,"attr")         end
+
+    function direct.getnucleus(n)      return getfield(n,"nucleus")      end
+    function direct.setnucleus(n,p)    return setfield(n,"nucleus",p)    end
+    function direct.getsup(n)          return getfield(n,"sup")          end
+    function direct.setsup(n,p)        return setfield(n,"sup",p)        end
+    function direct.getsub(n)          return getfield(n,"sub")          end
+    function direct.setsub(n,p)        return setfield(n,"sub",p)        end
 
     function direct.setattributelist(n,a)
         if a and type(a) ~= attributelist_code then
@@ -333,29 +348,41 @@ nuts.setdiscretionary      = direct.setdisc
 
 nuts.getwhd                = direct.getwhd
 nuts.setwhd                = direct.setwhd
+nuts.getwidth              = direct.getwidth
+nuts.setwidth              = direct.setwidth
+nuts.getheight             = direct.getheight
+nuts.setheight             = direct.setheight
+nuts.getdepth              = direct.getdepth
+nuts.setdepth              = direct.setdepth
+nuts.getshift              = direct.getshift
+nuts.setshift              = direct.setshift
+
+nuts.getnucleus            = direct.getnucleus
+nuts.setnucleus            = direct.setnucleus
+nuts.getsup                = direct.getsup
+nuts.setsup                = direct.setsup
+nuts.getsub                = direct.getsub
+nuts.setsub                = direct.setsub
 
 nuts.getchar               = direct.getchar
 nuts.setchar               = direct.setchar
-
 nuts.getfont               = direct.getfont
 nuts.setfont               = direct.setfont
 
 nuts.getboth               = direct.getboth
 nuts.setboth               = direct.setboth
-
 nuts.setlink               = direct.setlink
+nuts.setsplit              = direct.setsplit
 
 nuts.getlist               = direct.getlist -- only hlist and vlist !
 nuts.setlist               = direct.setlist
-
 nuts.getleader             = direct.getleader
 nuts.setleader             = direct.setleader
-
-nuts.getsubtype           = direct.getsubtype
-nuts.setsubtype            = direct.setsubtype
-
 nuts.getcomponents         = direct.getcomponents
 nuts.setcomponents         = direct.setcomponents
+
+nuts.getsubtype            = direct.getsubtype
+nuts.setsubtype            = direct.setsubtype
 
 nuts.getlang               = direct.getlang
 nuts.setlang               = direct.setlang

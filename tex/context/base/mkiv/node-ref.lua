@@ -60,11 +60,15 @@ local getprev              = nuts.getprev
 local getid                = nuts.getid
 local getlist              = nuts.getlist
 local setlist              = nuts.setlist
+local getwidth             = nuts.getwidth
+local setwidth             = nuts.setwidth
+local getheight            = nuts.getheight
 local getattr              = nuts.getattr
 local setattr              = nuts.setattr
 local getsubtype           = nuts.getsubtype
 local getwhd               = nuts.getwhd
 local getdir               = nuts.getdir
+local setshift             = nuts.setshift
 
 local hpack_list           = nuts.hpack
 local vpack_list           = nuts.vpack
@@ -213,7 +217,7 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
                         report_area("dimensions taken of vlist")
                     end
                     local w, h, d = vlist_dimensions(first,last,parent)
-                    local ht = getfield(first,"height")
+                    local ht = getheight(first)
                     return w, ht, d + h - ht, first
                 else
                  -- return hlist_dimensions(start,stop,parent)
@@ -504,7 +508,7 @@ local function addstring(what,str,shift) --todo make a pluggable helper (in font
             end
             local text = typesetters.tohpack(str,infofont)
             local rule = new_rule(emwidth/5,4*exheight,3*exheight)
-            setfield(text,"shift",shift)
+            setshift(text,shift)
             return hpack_list(setlink(text,rule))
         end
     end
@@ -543,14 +547,14 @@ local function colorize(width,height,depth,n,reference,what,sr,offset)
     setattr(rule,a_transparency,u_transparency)
     if width < 0 then
         local kern = new_kern(width)
-        setfield(rule,"width",-width)
+        setwidth(rule,-width)
         setnext(kern,rule)
         setprev(rule,kern)
         return kern
     elseif sr and sr ~= "" then
         local text = addstring(what,sr,shift)
         if text then
-            local kern = new_kern(-getfield(text,"width"))
+            local kern = new_kern(-getwidth(text))
          -- setlink(kern,text)
          -- setlink(text,rule)
             setlink(kern,text,rule)
@@ -564,7 +568,7 @@ local function justadd(what,sr,shift,current) -- needs testing
     if sr and sr ~= "" then
         local text = addstring(what,sr,shift)
         if text then
-            local kern = new_kern(-getfield(text,"width"))
+            local kern = new_kern(-getwidth(text))
             setlink(kern,text,current)
             return new_hlist(kern)
         end
@@ -777,12 +781,7 @@ local function makedestination(width,height,depth,reference)
             current = find_node_tail(annot)
         end
         if result then
-            -- some internal error
---             result = hpack_list(result,0)
---             setfield(result,"width",0)
---             setfield(result,"height",0)
---             setfield(result,"depth",0)
-result = new_hlist(result)
+            result = new_hlist(result)
         end
         if cleanupdestinations then stack[reference] = nil end
         return result, resolved

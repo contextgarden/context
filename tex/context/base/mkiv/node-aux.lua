@@ -37,6 +37,8 @@ local getattr            = nuts.getattr
 local getfield           = nuts.getfield
 local getboth            = nuts.getboth
 local getcomponents      = nuts.getcomponents
+local getwidth           = nuts.setwidth
+local setwidth           = nuts.setwidth
 
 local setfield           = nuts.setfield
 local setattr            = nuts.setattr
@@ -451,9 +453,9 @@ end
 
 local function rehpack(n,width)
     local head = getlist(n)
-    local size = width or getfield(n,"width")
+    local size = width or getwidth(n)
     local temp = hpack_nodes(head,size,"exactly")
-    setfield(n,"width",     size)
+    setwidth(n,size)
     setfield(n,"glue_set",  getfield(temp,"glue_set"))
     setfield(n,"glue_sign", getfield(temp,"glue_sign"))
     setfield(n,"glue_order",getfield(temp,"glue_order"))

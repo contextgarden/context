@@ -53,12 +53,20 @@ local gettexbox         = nuts.getbox
 local getwhd            = nuts.getwhd
 local getglue           = nuts.getglue
 local getkern           = nuts.getkern
+local getshift          = nuts.getshift
+local getwidth          = nuts.getwidth
+local getheight         = nuts.getheight
+local getdepth          = nuts.getdepth
 
 local setfield          = nuts.setfield
 local setlink           = nuts.setlink
 local setlist           = nuts.setlist
 local setattr           = nuts.setattr
 local setwhd            = nuts.setwhd
+local setshift          = nuts.setshift
+local setwidth          = nuts.setwidth
+local setheight         = nuts.setheight
+local setdepth          = nuts.setdepth
 
 local properties        = nodes.properties.data
 local setprop           = nuts.setprop
@@ -119,7 +127,7 @@ local function getprofile(line,step)
     local step     = step or 65536 -- * 2 -- 2pt
     local margin   = step / 4
     local min      = 0
-    local max      = ceiling(getfield(line,"width")/step) + 1
+    local max      = ceiling(getwidth(line)/step) + 1
 
     for i=min,max do
         heights[i] = 0
@@ -205,7 +213,7 @@ local function getprofile(line,step)
                 progress()
             elseif id == hlist_code then
                 -- we could do a nested check .. but then we need to push / pop glue
-                local shift = getfield(current,"shift")
+                local shift = getshift(current)
                 local w, h, d = getwhd(current)
              -- if getattr(current,a_specialcontent) then
                 if getprop(current,"specialcontent") then
@@ -220,19 +228,19 @@ local function getprofile(line,step)
                 end
                 progress()
             elseif id == vlist_code or id == unset_code then
-                local shift = getfield(current,"shift") -- todo
+                local shift = getshift(current) -- todo
                 wd, ht, dp = getwhd(current)
                 progress()
             elseif id == rule_code then
                 wd, ht, dp = getwhd(current)
                 progress()
             elseif id == math_code then
-                wd = getkern(current) + getfield(current,"width") -- surround
+                wd = getkern(current) + getwidth(current) -- surround
                 ht = 0
                 dp = 0
                 progress()
             elseif id == marginkern_code then
-                wd = getfield(current,"width")
+                wd = getwidth(current)
                 ht = 0
                 dp = 0
                 progress()
@@ -301,12 +309,12 @@ local function addstring(height,depth)
     local dptext   = depth
     local httext   = typesetters.tohpack(height,infofont)
     local dptext   = typesetters.tohpack(depth,infofont)
-    setfield(httext,"shift",- 1.2 * exheight)
-    setfield(dptext,"shift",  0.6 * exheight)
+    setshift(httext,- 1.2 * exheight)
+    setshift(dptext,  0.6 * exheight)
     local text = hpack_nodes(setlink(
-        new_kern(-getfield(httext,"width")-emwidth),
+        new_kern(-getwidth(httext)-emwidth),
         httext,
-        new_kern(-getfield(dptext,"width")),
+        new_kern(-getwidth(dptext)),
         dptext
     ))
     setwhd(text,0,0,0)
@@ -391,8 +399,8 @@ local function addprofile(node,profile,step)
  -- if texttoo then
  --
  --     local text = addstring(
- --         formatters["%0.4f"](getfield(rule,"height")/65536),
- --         formatters["%0.4f"](getfield(rule,"depth") /65536)
+ --         formatters["%0.4f"](getheight(rule)/65536),
+ --         formatters["%0.4f"](getdepth(rule) /65536)
  --     )
  --
  --     setlink(text,rule)
@@ -481,8 +489,8 @@ methods[v_strict] = function(top,bot,t_profile,b_profile,specification)
     local strutdp    = specification.depth  or texdimen.strutdp
     local lineheight = strutht + strutdp
 
-    local depth      = getfield(top,"depth")
-    local height     = getfield(bot,"height")
+    local depth      = getdepth(top)
+    local height     = getheight(bot)
     local total      = depth + height
     local distance   = specification.distance or 0
     local delta      = lineheight - total
@@ -517,8 +525,8 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
     local strutdp    = specification.depth  or texdimen.strutdp
     local lineheight = strutht + strutdp
 
-    local depth      = getfield(top,"depth")
-    local height     = getfield(bot,"height")
+    local depth      = getdepth(top)
+    local height     = getheight(bot)
     local total      = depth + height
     local distance   = specification.distance or 0
     local delta      = lineheight - total
@@ -530,8 +538,8 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
         -- no distance (yet)
 
         if delta < lineheight then
-            setfield(top,"depth",strutdp)
-            setfield(bot,"height",strutht)
+            setdepth(top,strutdp)
+            setheight(bot,strutht)
             return true
         end
 
@@ -542,13 +550,13 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
             depth = depth - lineheight
             dp = dp + lineheight
         end
-        setfield(top,"depth",dp)
+        setdepth(top,dp)
         local ht = strutht
         while height > lineheight - strutht do
             height = height - lineheight
             ht = ht + lineheight
         end
-        setfield(bot,"height",ht)
+        setheight(bot,ht)
         local lines = floor(delta/lineheight)
         if lines > 0 then
             inject(top,bot,-lines * lineheight)
@@ -559,17 +567,17 @@ methods[v_fixed] = function(top,bot,t_profile,b_profile,specification)
     end
 
     if total < lineheight then
-        setfield(top,"depth",strutdp)
-        setfield(bot,"height",strutht)
+        setdepth(top,strutdp)
+        setheight(bot,strutht)
         return true
     end
 
     if depth < strutdp then
-        setfield(top,"depth",strutdp)
+        setdepth(top,strutdp)
         total = total - depth + strutdp
     end
     if height < strutht then
-        setfield(bot,"height",strutht)
+        setheight(bot,strutht)
         total = total - height + strutht
     end
 
@@ -669,7 +677,7 @@ local function profilelist(line,mvl)
                     end
                     break
                 elseif id == glue_code then
-                    local wd = getfield(current,"width")
+                    local wd = getwidth(current)
                     if not wd or wd == 0 then
                         -- go on
                     else
@@ -743,7 +751,7 @@ local function profilelist(line,mvl)
                 if top then
                     local subtype = getsubtype(current)
                  -- if subtype == lineskip_code or subtype == baselineskip_code then
-                        local wd   = getfield(current,"width")
+                        local wd   = getwidth(current)
                         if wd > 0 then
                             distance = wd
                             lastglue = current
@@ -848,7 +856,7 @@ function profiling.profilebox(specification)
             local subtype = getsubtype(current)
             if subtype == lineskip_code or subtype == baselineskip_code then
                 if top then
-                    local wd   = getfield(current,"width")
+                    local wd   = getwidth(current)
                     if wd > 0 then
                         distance = wd
                         lastglue = current

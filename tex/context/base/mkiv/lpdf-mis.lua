@@ -442,10 +442,10 @@ local function documentspecification()
     addtocatalog("Version", pdfconstant(format("1.%s",pdf.getminorversion())))
 end
 
--- temp hack: the mediabox is not under our control and has a precision of 4 digits
+-- temp hack: the mediabox is not under our control and has a precision of 5 digits
 
 local factor  = number.dimenfactors.bp
-local f_value = formatters["%0.4F"]
+local f_value = formatters["%0.5F"]
 
 local function boxvalue(n) -- we could share them
     return pdfverbose(f_value(factor * n))

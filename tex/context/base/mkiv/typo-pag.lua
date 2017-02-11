@@ -39,6 +39,8 @@ local setattr             = nuts.setattr
 local getwhd              = nuts.getwhd
 local getkern             = nuts.getkern
 local setpenalty          = nuts.setpenalty
+local getwidth            = nuts.getwidth
+local getdepth            = nuts.getdepth
 
 local insert_node_after   = nuts.insert_after
 local new_penalty         = nuts.pool.penalty
@@ -113,7 +115,7 @@ local function keeptogether(start,a)
         if a then
             local current = getnext(start)
             local previous = start
-            local total = getfield(previous,"depth")
+            local total = getdepth(previous)
             local slack = specification.slack
             local threshold = specification.depth - slack
             if trace_keeptogether then
@@ -138,7 +140,7 @@ local function keeptogether(start,a)
                     end
                 elseif id == glue_code then
                     -- hm, breakpoint, maybe turn this into kern
-                    total = total + getfield(current,"width")
+                    total = total + getwidth(current)
                     if trace_keeptogether then
                         report_keeptogether("%s, index %s, total %p, threshold %p","glue",a,total,threshold)
                     end

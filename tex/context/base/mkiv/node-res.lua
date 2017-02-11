@@ -84,6 +84,8 @@ local setfont    = nuts.setfont
 local setkern    = nuts.setkern
 local setpenalty = nuts.setpenalty
 local setdir     = nuts.setdir
+local setshift   = nuts.setshift
+local setwidth   = nuts.setwidth
 
 local copy_nut   = nuts.copy
 local new_nut    = nuts.new
@@ -236,7 +238,7 @@ end
 
 function nutpool.fontkern(k)
     local n = copy_nut(fontkern)
-    if k and k ~= 0 then 
+    if k and k ~= 0 then
         setkern(n,k)
     end
     return n
@@ -324,7 +326,7 @@ end
 
 function nutpool.textdir(dir)
     local t = copy_nut(textdir)
-    if dir then 
+    if dir then
         setdir(t,dir)
     end
     return t
@@ -381,7 +383,7 @@ function nutpool.leftmarginkern(glyph,width)
         setfield(n,"glyph",glyph)
     end
     if width and width ~= 0 then
-        setfield(n,"width",width)
+        setwidth(n,width)
     end
     return n
 end
@@ -396,7 +398,7 @@ function nutpool.rightmarginkern(glyph,width)
         setfield(n,"glyph",glyph)
     end
     if width and width ~= 0 then
-        setfield(n,"width",width)
+        setwidth(n,width)
     end
     return n
 end
@@ -418,7 +420,7 @@ local function new_hlist(list,width,height,depth,shift)
         setwhd(n,width,height,depth)
     end
     if shift and shift ~= 0 then
-        setfield(n,"shift",shift)
+        setshift(n,shift)
     end
     return n
 end
@@ -432,7 +434,7 @@ local function new_vlist(list,width,height,depth,shift)
         setwhd(n,width,height,depth)
     end
     if shift and shift ~= 0 then
-        setfield(n,"shift",shift)
+        setshift(n,shift)
     end
     return n
 end

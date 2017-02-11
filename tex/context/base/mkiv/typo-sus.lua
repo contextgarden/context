@@ -50,6 +50,7 @@ local getfont         = nuts.getfont
 local getlist         = nuts.getlist
 local getkern         = nuts.getkern
 local getpenalty      = nuts.getpenalty
+local getwidth        = nuts.getwidth
 local isglyph         = nuts.isglyph
 
 local setattr         = nuts.setattr
@@ -79,16 +80,13 @@ local function special(n)
     if n then
         local id = getid(n)
         if id == kern_code then
-            local kern = getkern(n)
-            return kern < threshold
+            return getkern(n) < threshold
         elseif id == penalty_code then
             return true
         elseif id == glue_code then
-            local width = getfield(n,"width")
-            return width < threshold
+            return getwidth(n) < threshold
         elseif id == hlist_code then
-            local width = getfield(n,"width")
-            return width < threshold
+            return getwidth(n) < threshold
         end
     else
         return false
@@ -119,7 +117,7 @@ local function mark(head,current,id,color)
     if id == glue_code then
         -- the glue can have stretch and/or shrink so the rule can overlap with the
         -- following glyph .. no big deal as that one then sits on top of the rule
-        local width = getfield(current,"width")
+        local width = getwidth(current)
         local rule  = new_rule(width)
         local kern  = new_kern(-width)
         head = insert_before(head,current,rule)

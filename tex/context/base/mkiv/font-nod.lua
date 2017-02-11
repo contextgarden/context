@@ -67,6 +67,7 @@ local isglyph          = nuts.isglyph
 local getcomponents    = nuts.getcomponents
 local getkern          = nuts.getkern
 local getdir           = nuts.getdir
+local getwidth         = nuts.getwidth
 
 local setfield         = nuts.setfield
 local setbox           = nuts.setbox
@@ -521,7 +522,7 @@ local function toutf(list,result,nofresult,stopcriterium,nostrip)
              -- end
                 result, nofresult = toutf(getlist(n),result,nofresult,false,true)
             elseif id == glue_code then
-                if nofresult > 0 and result[nofresult] ~= " " and getfield(n,"width") > threshold then
+                if nofresult > 0 and result[nofresult] ~= " " and getwidth(n) > threshold then
                     nofresult = nofresult + 1
                     result[nofresult] = " "
                 end

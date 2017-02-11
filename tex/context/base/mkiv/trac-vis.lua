@@ -76,6 +76,8 @@ local setlist             = nuts.setlist
 local setleader           = nuts.setleader
 local setsubtype          = nuts.setsubtype
 local setattr             = nuts.setattr
+local setwidth            = nuts.setwidth
+local setshift            = nuts.setshift
 
 local getfield            = nuts.getfield
 local getid               = nuts.getid
@@ -94,6 +96,8 @@ local getwhd              = nuts.getwhd
 local getkern             = nuts.getkern
 local getpenalty          = nuts.getpenalty
 local getdir              = nuts.getdir
+local getwidth            = nuts.getwidth
+local getshift            = nuts.getshift
 
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
@@ -368,7 +372,7 @@ local c_discretionary_d = "trace:do"
 
 local function sometext(str,layer,color,textcolor,lap) -- we can just paste verbatim together .. no typesteting needed
     local text = hpack_string(str,usedfont)
-    local size = getfield(text,"width")
+    local size = getwidth(text)
     local rule = new_rule(size,2*exheight,exheight/2)
     local kern = new_kern(-size)
     if color then
@@ -380,7 +384,7 @@ local function sometext(str,layer,color,textcolor,lap) -- we can just paste verb
     local info = setlink(rule,kern,text)
     setlisttransparency(info,c_zero)
     info = hpack_nodes(info)
-    local width = getfield(info,"width")
+    local width = getwidth(info)
     if lap then
         info = new_hlist(setlink(new_kern(-width),info))
     else
@@ -419,7 +423,7 @@ local fontkern do
             end
             setlisttransparency(list,c_text_d)
             settransparency(rule,c_text_d)
-            setfield(text,"shift",-5 * exheight)
+            setshift(text,-5 * exheight)
             info = new_hlist(setlink(rule,text))
             setattr(info,a_layer,l_fontkern)
             f_cache[kern] = info
@@ -513,7 +517,7 @@ local math do
     math = function(head,current)
         local what = getsubtype(current)
         local tag  = mathcodes[what]
-        local skip = getkern(current) + getfield(current,"width") -- surround
+        local skip = getkern(current) + getwidth(current) -- surround
         local info = m_cache[tag][skip]
         if info then
             -- print("hit math")
@@ -555,7 +559,7 @@ local ruledbox do
     ruledbox = function(head,current,vertical,layer,what,simple,previous,trace_origin,parent)
         local wd, ht, dp = getwhd(current)
         if wd ~= 0 then
-            local shift = getfield(current,"shift")
+            local shift = getshift(current)
             local dir   = getdir(current)
     --         if dir == "LTL" or dir == "RRT" then
     --             wd, ht, dp = ht + dp, wd, 0
@@ -599,7 +603,7 @@ local ruledbox do
                 this = b_cache[what]
                 if not this then
                     local text = hpack_string(what,usedfont)
-                    this = setlink(new_kern(-getfield(text,"width")),text)
+                    this = setlink(new_kern(-getwidth(text)),text)
                     setlisttransparency(this,c_text)
                     this = new_hlist(this)
                     b_cache[what] = this
@@ -629,16 +633,16 @@ local ruledbox do
                     local origin = o_cache[size]
                     origin = copy_list(origin)
                     if getid(parent) == vlist_code then
-                        setfield(origin,"shift",-shift)
+                        setshift(origin,-shift)
                         info = setlink(current,new_kern(-size),origin,new_kern(-size-dp),info)
                     else
                         -- todo .. i need an example
                         info = setlink(current,dp ~= 0 and new_kern(-dp) or nil,info)
                     end
-                    setfield(current,"shift",0)
+                    setshift(current,0)
                 else
                     info = setlink(current,new_dp ~= 0 and new_kern(-dp) or nil,info)
-                    setfield(current,"shift",0)
+                    setshift(current,0)
                 end
                 info = new_vlist(info,wd,ht,dp,shift)
             else
@@ -651,13 +655,13 @@ local ruledbox do
                     if getid(parent) == vlist_code then
                         info = setlink(current,new_kern(-wd-size-shift),origin,new_kern(-size+shift),info)
                     else
-                        setfield(origin,"shift",-shift)
+                        setshift(origin,-shift)
                         info = setlink(current,new_kern(-wd-size),origin,new_kern(-size),info)
                     end
-                    setfield(current,"shift",0)
+                    setshift(current,0)
                 else
                     info = setlink(current,new_kern(-wd),info)
-                    setfield(current,"shift",0)
+                    setshift(current,0)
                 end
                 info = new_hlist(info,wd,ht,dp,shift)
             end
@@ -687,7 +691,7 @@ end
 local ruledglyph do
 
     ruledglyph = function(head,current,previous) -- wrong for vertical glyphs
-        local wd = getfield(current,"width")
+        local wd = getwidth(current)
      -- local wd = chardata[getfont(current)][getchar(current)].width
         if wd ~= 0 then
             local wd, ht, dp = getwhd(current)
@@ -727,7 +731,7 @@ local ruledglyph do
             setattr(info,a_layer,l_glyph)
             local info = setlink(current,new_kern(-wd),info)
             info = hpack_nodes(info)
-            setfield(info,"width",wd)
+            setwidth(info,wd)
             if next then
                 setlink(info,next)
             end
@@ -921,7 +925,7 @@ local ruledpenalty do
         if vertical then
             info = vpack_nodes(info)
         elseif raisepenalties then
-            setfield(info,"shift",-65536*4)
+            setshift(info,-65536*4)
         end
         head, current = insert_node_before(head,current,info)
         return head, getnext(current)

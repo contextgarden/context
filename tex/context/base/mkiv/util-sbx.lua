@@ -30,10 +30,12 @@ local sandbox        = sandbox
 local validroots     = { }
 local validrunners   = { }
 local validbinaries  = { }
+local validlibraries = false
 local validators     = { }
 local p_validroot    = nil
 local finalized      = nil
 local norunners      = false
+local nolibraries    = false
 local trace          = false
 local p_split        = lpeg.tsplitat(" ") -- more spaces?
 
@@ -106,6 +108,18 @@ local function registerbinary(name)
         report("binaries are already finalized")
     elseif type(name) == "string" and name ~= "" then
         validbinaries[name] = true
+    end
+end
+
+local function registerlibrary(name)
+    if finalized then
+        report("libraries are already finalized")
+    elseif type(name) == "string" and name ~= "" then
+        if not validlibraries then
+            validlibraries = { [name] = true }
+        else
+            validlibraries[name] = true
+        end
     end
 end
 
@@ -210,10 +224,11 @@ end
 
 -- end of validators
 
-sandbox.registerroot   = registerroot
-sandbox.registerrunner = registerrunner
-sandbox.registerbinary = registerbinary
-sandbox.validfilename  = validfilename
+sandbox.registerroot    = registerroot
+sandbox.registerrunner  = registerrunner
+sandbox.registerbinary  = registerbinary
+sandbox.registerlibrary = registerlibrary
+sandbox.validfilename   = validfilename
 
 local function filehandlerone(action,one,...)
     local checkedone = validfilename(one)
@@ -349,6 +364,45 @@ local execute = sandbox.original(os.execute)
 
 function sandbox.run(name,specification)
     return runhandler(execute,name,specification)
+end
+
+function sandbox.disablelibraries()
+    nolibraries = true
+end
+
+if ffi then
+
+    function sandbox.disablelibraries()
+        nolibraries = true
+        for k, v in next, ffi do
+            if k ~= "gc" then
+                ffi[k] = nil
+            end
+        end
+    end
+
+    local load = ffi.load
+
+    if load then
+
+        function ffi.load(name,...)
+            if nolibraries then
+                -- all blocked
+                return nil
+            elseif validlibraries == false then
+                -- all permitted
+                return load(name,...)
+            elseif validlibraries[name] then
+                -- 'name' permitted
+                return load(name,...)
+            else
+                -- 'name' not permitted
+                return nil
+            end
+        end
+
+    end
+
 end
 
 -------------------

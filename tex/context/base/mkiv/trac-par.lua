@@ -21,6 +21,7 @@ local getnext       = nuts.getnext
 local getlist       = nuts.getlist
 local getfont       = nuts.getfont
 local getchar       = nuts.getchar
+local getwidth      = nuts.getwidth
 
 local nodecodes     = nodes.nodecodes
 local hlist_code    = nodecodes.hlist
@@ -98,7 +99,7 @@ local function colorize(n)
                     if trace_verbose then
                         length = length + 1
                         list[length] = utfchar(getchar(n))
-                        width = width + getfield(n,"width") -- no kerning yet
+                        width = width + getwidth(n) -- no kerning yet
                     end
                 end
             end

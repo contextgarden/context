@@ -126,6 +126,7 @@ local setattr           = nuts.setattr -- maybe use properties
 local isglyph           = nuts.isglyph
 local getcomponents     = nuts.getcomponents
 local getkern           = nuts.getkern
+local getwidth          = nuts.getwidth
 
 local traverse_id       = nuts.traverse_id
 local traverse_nodes    = nuts.traverse
@@ -2701,7 +2702,7 @@ local function collectresults(head,list,pat,pap) -- is last used (we also have c
             else
                 local subtype = getsubtype(n)
                 if subtype == userskip_code then
-                    if getfield(n,"width") > threshold then
+                    if getwidth(n) > threshold then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
                             local a = getattr(n,a_tagged) or pat
                             if a == last then

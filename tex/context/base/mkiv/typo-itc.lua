@@ -47,6 +47,7 @@ local setdisc             = nuts.setdisc
 local isglyph             = nuts.isglyph
 local setkern             = nuts.setkern
 local getkern             = nuts.getkern
+local getheight           = nuts.getheight
 
 local insert_node_after   = nuts.insert_after
 local delete_node         = nuts.delete
@@ -128,7 +129,7 @@ local function okay(data,current,font,prevchar,previtalic,char,what)
         return false
     end
     if threshold then
-        local ht = getfield(current,"height")
+        local ht = getheight(current)
         local ex = exheights[font]
         local th = threshold * ex
         if ht <= th then
@@ -202,7 +203,7 @@ local function domath(head,current, done)
                             local i = getkern(kern)
                             local f = getfont(glyph)
                             local c = getchar(glyph)
-                            if getfield(next,"height") < 1.25*exheights[f] then
+                            if getheight(next) < 1.25*exheights[f] then
                                 if i == 0 then
                                     if trace_italics then
                                         report_italics("%s italic %p between math %C and punctuation %C","ignoring",i,c,char)

@@ -31,6 +31,7 @@ local getchar            = nuts.getchar
 local getid              = nuts.getid
 local getattr            = nuts.getattr
 local getsubtype         = nuts.getsubtype
+local getwidth           = nuts.getwidth
 local getfield           = nuts.getfield
 
 local setchar            = nuts.setchar
@@ -958,7 +959,7 @@ local function process(head,first,last)
                                 local subtype = getsubtype(first)
                                 if subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code then
                                     -- for the moment no distinction possible between space and userskip
-                                    local w = getfield(first,"width")
+                                    local w = getwidth(first)
                                     local s = spacedata[getfont(p)]
                                     if w == s then -- could be option
                                         if trace_details then

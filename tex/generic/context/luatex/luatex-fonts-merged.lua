@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/09/17 21:37:28
+-- merge date  : 02/11/17 13:26:44
 
 do -- begin closure to overcome local limits and interference
 
@@ -108,9 +108,14 @@ if flush then
   local spawn=os.spawn  if spawn  then function os.spawn (...) flush() return spawn (...) end end
   local popen=io.popen  if popen  then function io.popen (...) flush() return popen (...) end end
 end
-if ffi and (ffi.os=="" or ffi.arch=="") then
-  ffi=nil
-  if ffi.number then
+if ffi and ffi.number then
+else
+  local okay
+  okay,ffi=pcall(require,"ffi")
+  if not ffi then
+  elseif ffi.os=="" or ffi.arch=="" then
+    ffi=nil
+  elseif ffi.number then
   else
     ffi.number=tonumber
   end
@@ -5034,6 +5039,12 @@ nuts.getkern=direct.getkern    or function(n)  return getfield(n,"kern")     end
 nuts.setkern=direct.setkern    or function(n,k)    setfield(n,"kern",k)    end
 nuts.getdir=direct.getkern    or function(n)  return getfield(n,"dir")     end
 nuts.setdir=direct.setkern    or function(n,d)    setfield(n,"dir",d)    end
+nuts.getwidth=direct.getwidth   or function(n)  return getfield(n,"width")    end
+nuts.setwidth=direct.setwidth   or function(n,w) return setfield(n,"width",w)   end
+nuts.getheight=direct.getheight   or function(n)  return getfield(n,"height")    end
+nuts.setheight=direct.setheight   or function(n,h) return setfield(n,"height",h)   end
+nuts.getdepth=direct.getdepth   or function(n)  return getfield(n,"depth")    end
+nuts.setdepth=direct.setdepth   or function(n,d) return setfield(n,"depth",d)   end
 if not direct.is_glyph then
   local getchar=direct.getchar
   local getid=direct.getid
@@ -16825,6 +16836,8 @@ local ischar=nuts.is_char
 local getkern=nuts.getkern
 local setkern=nuts.setkern
 local setlink=nuts.setlink
+local setwidth=nuts.setwidth
+local getwidth=nuts.getwidth
 local traverse_id=nuts.traverse_id
 local traverse_char=nuts.traverse_char
 local insert_node_before=nuts.insert_before
@@ -17195,7 +17208,7 @@ local function show_result(head)
   while current do
     local id=getid(current)
     if id==glyph_code then
-      local w=getfield(current,"width")
+      local w=getwidth(current)
       local x,y=getoffsets(current)
       report_injections("char: %C, width %p, xoffset %p, yoffset %p",getchar(current),w,x,y)
       skipping=false
@@ -17622,7 +17635,7 @@ local function inject_everything(head,where)
     else
         ox=px-pn.markx
       if pn.checkmark then
-        local wn=getfield(n,"width") 
+        local wn=getwidth(n) 
         if wn~=0 then
           wn=wn/2
           if trace_injections then
@@ -17981,7 +17994,7 @@ end
 injections.getthreshold=getthreshold
 function injections.isspace(n,threshold,id)
   if (id or getid(n))==glue_code then
-    local w=getfield(n,"width")
+    local w=getwidth(n)
     if threshold and w>threshold then 
       return 32
     end
@@ -18035,32 +18048,32 @@ local function injectspaces(head)
       end
     end
     if leftkern then
-      local old=getfield(n,"width")
+      local old=getwidth(n)
       if old>threshold then
         if rightkern then
           local new=old+(leftkern+rightkern)*factor
           if trace_spaces then
             report_spaces("%C [%p -> %p] %C",prevchar,old,new,nextchar)
           end
-          setfield(n,"width",new)
+          setwidth(n,new)
           leftkern=false
         else
           local new=old+leftkern*factor
           if trace_spaces then
             report_spaces("%C [%p -> %p]",prevchar,old,new)
           end
-          setfield(n,"width",new)
+          setwidth(n,new)
         end
       end
       leftkern=false
     elseif rightkern then
-      local old=getfield(n,"width")
+      local old=getwidth(n)
       if old>threshold then
         local new=old+rightkern*factor
         if trace_spaces then
           report_spaces("[%p -> %p] %C",nextchar,old,new)
         end
-        setfield(n,"width",new)
+        setwidth(n,new)
       end
       rightkern=false
     end
@@ -18556,6 +18569,7 @@ local setlink=nuts.setlink
 local getcomponents=nuts.getcomponents
 local setcomponents=nuts.setcomponents
 local getdir=nuts.getdir
+local getwidth=nuts.getwidth
 local ischar=nuts.is_char
 local insert_node_after=nuts.insert_after
 local copy_node=nuts.copy
@@ -18596,9 +18610,8 @@ local resetinjection=injections.reset
 local copyinjection=injections.copy
 local setligaindex=injections.setligaindex
 local getligaindex=injections.getligaindex
-local fonthashes=fonts.hashes
-local fontdata=fonthashes.identifiers
-local fontfeatures=fonthashes.features
+local fontdata=fonts.hashes.identifiers
+local fontfeatures=fonts.hashes.features
 local otffeatures=fonts.constructors.features.otf
 local registerotffeature=otffeatures.register
 local onetimemessage=fonts.loggers.onetimemessage or function() end
@@ -19883,7 +19896,7 @@ local function checked(head)
   local current=head
   while current do
     if getid(current)==glue_code then
-      local kern=new_kern(getfield(current,"width"))
+      local kern=new_kern(getwidth(current))
       if head==current then
         local next=getnext(current)
         if next then

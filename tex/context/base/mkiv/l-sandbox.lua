@@ -8,8 +8,8 @@ if not modules then modules = { } end modules ['l-sandbox'] = {
 
 -- We use string instead of function variables, so 'io.open' instead of io.open. That
 -- way we can still intercept repetetive overloads. One complication is that when we use
--- sandboxed function sin helpers in the sanbox checkers, we can get a recursion loop
--- so for that vreason we need to keep originals around till we enable the sandbox.
+-- sandboxed functions in helpers in the sanbox checkers, we can get a recursion loop
+-- so for that reason we need to keep originals around till we enable the sandbox.
 
 -- if sandbox then return end
 
@@ -238,29 +238,30 @@ function sandbox.enable()
             report("not overloaded redefined: %s",concat(skip," | "))
         end
         --
-        if ffi then
-         -- for k, v in next, ffi do
-         --     if k ~= "gc" then
-         --         local t = type(v)
-         --         if t == "function" then
-         --             ffi[k] = function() report("accessing ffi.%s",k) end
-         --         elseif t == "number" then
-         --             ffi[k] = 0
-         --         elseif t == "string" then
-         --             ffi[k] = ""
-         --         elseif t == "table" then
-         --             ffi[k] = { }
-         --         else
-         --             ffi[k] = false
-         --         end
-         --     end
-         -- end
-            for k, v in next, ffi do
-                if k ~= "gc" then
-                    ffi[k] = nil
-                end
-            end
-        end
+     -- if ffi then
+     --     report("disabling ffi")
+     --  -- for k, v in next, ffi do
+     --  --     if k ~= "gc" then
+     --  --         local t = type(v)
+     --  --         if t == "function" then
+     --  --             ffi[k] = function() report("accessing ffi.%s",k) end
+     --  --         elseif t == "number" then
+     --  --             ffi[k] = 0
+     --  --         elseif t == "string" then
+     --  --             ffi[k] = ""
+     --  --         elseif t == "table" then
+     --  --             ffi[k] = { }
+     --  --         else
+     --  --             ffi[k] = false
+     --  --         end
+     --  --     end
+     --  -- end
+     --     for k, v in next, ffi do
+     --         if k ~= "gc" then
+     --             ffi[k] = nil
+     --         end
+     --     end
+     -- end
         --
         initializers = nil
         finalizers   = nil

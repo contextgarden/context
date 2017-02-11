@@ -23,6 +23,7 @@ local getlist         = nuts.getlist
 local getattr         = nuts.getattr
 local setattr         = nuts.setattr
 local setlist         = nuts.setlist
+local getwidth        = nuts.getwidth
 local findtail        = nuts.tail
 
 local traverse_id     = nuts.traverse_id
@@ -77,7 +78,7 @@ function checkers.handler(head)
     for current in traverse_id(hlist_code,tonut(head)) do
         if getattr(current,a_justification) == 1 then
             setattr(current,a_justification,0) -- kind of reset
-            local width = getfield(current,"width")
+            local width = getwidth(current)
             if width > 0 then
                 local list = getlist(current)
                 if list then

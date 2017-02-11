@@ -66,6 +66,7 @@ local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getdir             = nuts.getdir
+local getwidth           = nuts.getwidth
 
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
@@ -758,7 +759,7 @@ function splitters.optimize(head)
         line = line + 1
         local sign  = getfield(current,"glue_sign")
         local dir   = getdir(current)
-        local width = getfield(current,"width")
+        local width = getwidth(current)
         local list  = getlist(current)
         if not encapsulate and getid(list) == glyph_code then
             -- nasty .. we always assume a prev being there .. future luatex will always have a leftskip set

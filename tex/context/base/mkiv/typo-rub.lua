@@ -48,6 +48,10 @@ local setprev         = nuts.setprev
 local setlink         = nuts.setlink
 local getlist         = nuts.getlist
 local setlist         = nuts.setlist
+local setshift        = nuts.setshift
+local getwidth        = nuts.getwidth
+local setwidth        = nuts.setwidth
+
 local hpack           = nuts.hpack
 local insert_after    = nuts.insert_after
 local takebox         = nuts.takebox
@@ -174,7 +178,7 @@ do
         local r = takebox(n)
         rubylist[nofrubies] = setmetatableindex({
             text      = r,
-            width     = getfield(r,"width"),
+            width     = getwidth(r),
             basewidth = 0,
             start     = false,
             stop      = false,
@@ -211,7 +215,7 @@ function rubies.check(head)
                 setlink(prev,h)
             end
             setlink(h,next)
-            local bwidth = getfield(h,"width")
+            local bwidth = getwidth(h)
             local rwidth = r.width
             r.basewidth  = bwidth
             r.start      = start
@@ -219,7 +223,7 @@ function rubies.check(head)
             setprop(h,"ruby",found)
             if rwidth > bwidth then
                 -- ruby is wider
-                setfield(h,"width",rwidth)
+                setwidth(h,rwidth)
             end
         end
     end
@@ -276,9 +280,9 @@ local function whatever(current)
         local rwidth  = ruby.width
         local bwidth  = ruby.basewidth
         local delta   = rwidth - bwidth
-        setfield(text,"width",0)
+        setwidth(text,0)
         if voffset ~= 0 then
-            setfield(text,"shift",voffset)
+            setshift(text,voffset)
         end
         -- center them
         if delta > 0 then
@@ -311,7 +315,7 @@ local function whatever(current)
                     local id = getid(c)
                     if id == glue_code or id == penalty_code or id == kern_code or (id == whatsit_code and getsubtype(current,localpar_code)) then
                         -- go on
-                    elseif id == hlist_code and getfield(c,"width") == 0 then
+                    elseif id == hlist_code and getwidth(c) == 0 then
                         -- go on
                     elseif id == whatsit_code or id == localpar_code then
                         -- go on
@@ -327,7 +331,7 @@ local function whatever(current)
                     local id = getid(c)
                     if id == glue_code or id == penalty_code or id == kern_code then
                         -- go on
-                    elseif id == hlist_code and getfield(c,"width") == 0 then
+                    elseif id == hlist_code and getwidth(c) == 0 then
                         -- go on
                     else
                         r = false

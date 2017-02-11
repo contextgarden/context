@@ -72,6 +72,7 @@ local getwhd              = nuts.getwhd
 local setfield            = nuts.setfield
 local setlink             = nuts.setlink
 local setdir              = nuts.setdir
+local setshift            = nuts.setshift
 
 local copy_node_list      = nuts.copy_list
 local hpack_node_list     = nuts.hpack
@@ -820,11 +821,9 @@ function xtables.construct()
             local list = drc.list
             if list then
                 local w, h, d = getwhd(list)
-                setfield(list,"shift",h+d)
+                setshift(list,h+d)
              -- list = hpack_node_list(list) -- is somehow needed
-             -- setfield(list,"width",0)
-             -- setfield(list,"height",0)
-             -- setfield(list,"depth",0)
+             -- setwhd(list,0,0,0)
                 -- faster:
                 local h = new_hlist(list)
                 list = h

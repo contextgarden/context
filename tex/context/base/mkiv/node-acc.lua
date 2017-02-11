@@ -27,6 +27,8 @@ local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setchar            = nuts.setchar
 local setsubtype         = nuts.setsubtype
+local getwidth           = nuts.getwidth
+local setwidth           = nuts.setwidth
 
 ----- traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
@@ -64,7 +66,7 @@ local function injectspaces(head)
                 local a = getattr(n,a_characters)
                 setchar(g,32)
                 setlink(p,g,n)
-                setfield(n,"width",getfield(n,"width") - getfield(g,"width"))
+                setwidth(n,getwidth(n) - getwidth(g))
                 if a then
                     setattr(g,a_characters,a)
                 end

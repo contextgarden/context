@@ -73,6 +73,9 @@ local getlist            = nuts.getlist
 local getbox             = nuts.getbox
 local getfield           = nuts.getfield
 ----- getdir             = nuts.getdir
+----- getwidth           = nuts.getwidth
+local getheight          = nuts.getheight
+local getdepth           = nuts.getdepth
 
 local setprop            = nuts.setprop
 local getprop            = nuts.getprop
@@ -387,7 +390,7 @@ function boxed.stage_one(n,nested)
             local subtype = getsubtype(n)
             if subtype ~= line_code then
                 -- go on
-            elseif getfield(n,"height") == 0 and getfield(n,"depth") == 0 then
+            elseif getheight(n) == 0 and getdepth(n) == 0 then
                 -- skip funny hlists -- todo: check line subtype
             else
                 local a = lineisnumbered(n)
@@ -484,7 +487,7 @@ function boxed.stage_two(n,m)
              -- local d = getdir(n)
              -- local l = getlist(n)
              -- if d == "TRT" then
-             --     local w = getfield(n,"width")
+             --     local w = getwidth(n)
              --     ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
              -- end
              -- setnext(ti,l)

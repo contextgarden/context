@@ -147,7 +147,6 @@ local trace_lastlinefit   = false  trackers.register("builders.paragraphs.lastli
 local trace_adjusting     = false  trackers.register("builders.paragraphs.adjusting",   function(v) trace_adjusting   = v end)
 local trace_protruding    = false  trackers.register("builders.paragraphs.protruding",  function(v) trace_protruding  = v end)
 local trace_expansion     = false  trackers.register("builders.paragraphs.expansion",   function(v) trace_expansion   = v end)
-local trace_quality       = false  trackers.register("builders.paragraphs.quality",     function(v) trace_quality     = v end)
 
 local report_parbuilders  = logs.reporter("nodes","parbuilders")
 ----- report_hpackers     = logs.reporter("nodes","hpackers")
@@ -212,6 +211,10 @@ local getcomponents        = nuts.getcomponents
 local getkern              = nuts.getkern
 local getpenalty           = nuts.getpenalty
 local getdir               = nuts.getdir
+local getshift             = nuts.getshift
+local getwidth             = nuts.getwidth
+local getheight            = nuts.getheight
+local getdepth             = nuts.getdepth
 
 local isglyph              = nuts.isglyph
 
@@ -227,6 +230,10 @@ local setglue              = nuts.setglue
 local setwhd               = nuts.setwhd
 local setkern              = nuts.setkern
 local setdir               = nuts.setdir
+local setshift             = nuts.setshift
+local setwidth             = nuts.setwidth
+----- getheight            = nuts.getheight
+----- getdepth             = nuts.getdepth
 
 local slide_node_list      = nuts.slide -- get rid of this, probably ok > 78.2
 local find_tail            = nuts.tail
@@ -239,8 +246,6 @@ local replace_node         = nuts.replace
 local insert_node_after    = nuts.insert_after
 local insert_node_before   = nuts.insert_before
 local is_zero_glue         = nuts.is_zero_glue
-
-local setnodecolor         = nodes.tracers.colors.set
 
 local nodepool             = nuts.pool
 
@@ -783,7 +788,7 @@ local function add_to_width(line_break_dir,checked_expansion,s) -- split into tw
                 size = size + kern
             end
         elseif id == rule_code then
-            size = size + getfield(s,"width")
+            size = size + getwidth(s)
         elseif trace_unsupported then
             report_parbuilders("unsupported node at location %a",6)
         end
@@ -866,7 +871,7 @@ local function append_to_vlist(par, b)
     if prev_depth > ignore_depth then
         if is_hlist then
             local width, stretch, shrink, stretch_order, shrink_order = getglue(par.baseline_skip)
-            local delta = width - prev_depth - getfield(b,"height") -- deficiency of space between baselines
+            local delta = width - prev_depth - getheight(b) -- deficiency of space between baselines
             local skip = nil
             if delta < par.line_skip_limit then
                 width, stretch, shrink, stretch_order, shrink_order = getglue(par.lineskip)
@@ -889,7 +894,7 @@ local function append_to_vlist(par, b)
         par.head_field = b
     end
     if is_hlist then
-        local pd = getfield(b,"depth")
+        local pd = getdepth(b)
         par.prev_depth = pd
         texnest[texnest.ptr].prevdepth = pd
     end
@@ -1405,21 +1410,21 @@ local function post_line_break(par)
         local adjust_head     = texlists.adjust_head
         local pre_adjust_head = texlists.pre_adjust_head
         --
-        setfield(finished_line,"shift",cur_indent)
+        setshift(finished_line,cur_indent)
      --
      -- -- this is gone:
      --
      -- if par.each_line_height ~= ignored_dimen then
-     --     setfield(finished_line,"height",par.each_line_height)
+     --     setheight(finished_line,par.each_line_height)
      -- end
      -- if par.each_line_depth ~= ignored_dimen then
-     --     setfield(finished_line,"depth",par.each_line_depth)
+     --     setdepth(finished_line,par.each_line_depth)
      -- end
      -- if par.first_line_height ~= ignored_dimen and (current_line == par.first_line + 1) then
-     --     setfield(finished_line,"height",par.first_line_height)
+     --     setheight(finished_line,par.first_line_height)
      -- end
      -- if par.last_line_depth ~= ignored_dimen and current_line + 1 == par.best_line then
-     --     setfield(finished_line,"depth",par.last_line_depth)
+     --     setdepth(finished_line,par.last_line_depth)
      -- end
      --
         if texlists.pre_adjust_head ~= pre_adjust_head then
@@ -1526,7 +1531,7 @@ local function wrap_up(par)
             par.do_last_line_fit = false
         else
             local glue = par.final_par_glue
-            setfield(glue,"width",getfield(glue,"width") + active_short - active_glue)
+            setwidth(glue,getwidth(glue) + active_short - active_glue)
             setfield(glue,"stretch",0)
             if trace_lastlinefit then
                 report_parbuilders("applying last line fit, short %a, glue %p",active_short,active_glue)
@@ -2413,9 +2418,9 @@ function constructors.methods.basic(head,d)
                 local active_width = par.active_width
                 active_width.size = active_width.size + getkern(current) -- surround
                 -- new in luatex
-                + getfield(current,"width")
+                + getwidth(current)
             elseif id == rule_code then
-                active_width.size = active_width.size + getfield(current,"width")
+                active_width.size = active_width.size + getwidth(current)
             elseif id == penalty_code then
                 p_active, n_active = try_break(getpenalty(current), unhyphenated_code, par, first_p, current, checked_expansion)
             elseif id == dir_code then
@@ -2499,145 +2504,190 @@ end
 
 -- standard tex logging .. will be adapted ..
 
-local function write_esc(cs)
-    local esc = tex.escapechar
-    if esc then
-        write("log",utfchar(esc),cs)
-    else
-        write("log",cs)
+do
+
+    local function write_esc(cs)
+        local esc = tex.escapechar
+        if esc then
+            write("log",utfchar(esc),cs)
+        else
+            write("log",cs)
+        end
     end
-end
 
-function diagnostics.start()
-end
+    function diagnostics.start()
+    end
 
-function diagnostics.stop()
-    write_nl("log",'')
-end
+    function diagnostics.stop()
+        write_nl("log",'')
+    end
 
-function diagnostics.current_pass(par,what)
-    write_nl("log",formatters["@%s"](what))
-end
+    function diagnostics.current_pass(par,what)
+        write_nl("log",formatters["@%s"](what))
+    end
 
-local verbose = false -- true
+    local verbose = false -- true
 
-local function short_display(target,a,font_in_short_display)
-    while a do
-        local char, id = isglyph(a)
-        if char then
-            local font = getfont(a)
-            if font ~= font_in_short_display then
-                write(target,tex.fontidentifier(font) .. ' ')
-                font_in_short_display = font
-            end
-            -- todo: instead of components the split tounicode string
-            if getsubtype(a) == ligature_code then
-                font_in_short_display = short_display(target,getcomponents(a),font_in_short_display)
-            else
-                write(target,utfchar(char))
-            end
-        elseif id == disc_code then
-            local pre, post, replace = getdisc(a)
-            font_in_short_display = short_display(target,pre,font_in_short_display)
-            font_in_short_display = short_display(target,post,font_in_short_display)
-        elseif verbose then
-            write(target,formatters["[%s]"](nodecodes[id]))
-        elseif id == rule_code then
-            write(target,"|")
-        elseif id == glue_code then
-            write(target," ")
-        elseif id == kern_code then
-            local s = getsubtype(a)
-            if s == userkern_code or s == italickern_code or getattr(a,a_fontkern) then
-                if verbose then
-                    write(target,"[|]")
-             -- else
-             --     write(target,"")
+    local function short_display(target,a,font_in_short_display)
+        while a do
+            local char, id = isglyph(a)
+            if char then
+                local font = getfont(a)
+                if font ~= font_in_short_display then
+                    write(target,tex.fontidentifier(font) .. ' ')
+                    font_in_short_display = font
                 end
+                -- todo: instead of components the split tounicode string
+                if getsubtype(a) == ligature_code then
+                    font_in_short_display = short_display(target,getcomponents(a),font_in_short_display)
+                else
+                    write(target,utfchar(char))
+                end
+            elseif id == disc_code then
+                local pre, post, replace = getdisc(a)
+                font_in_short_display = short_display(target,pre,font_in_short_display)
+                font_in_short_display = short_display(target,post,font_in_short_display)
+            elseif verbose then
+                write(target,formatters["[%s]"](nodecodes[id]))
+            elseif id == rule_code then
+                write(target,"|")
+            elseif id == glue_code then
+                write(target," ")
+            elseif id == kern_code then
+                local s = getsubtype(a)
+                if s == userkern_code or s == italickern_code or getattr(a,a_fontkern) then
+                    if verbose then
+                        write(target,"[|]")
+                 -- else
+                 --     write(target,"")
+                    end
+                else
+                    write(target,"[]")
+                end
+            elseif id == math_code then
+                write(target,"$")
             else
                 write(target,"[]")
             end
-        elseif id == math_code then
-            write(target,"$")
-        else
-            write(target,"[]")
+            a = getnext(a)
         end
-        a = getnext(a)
+        return font_in_short_display
     end
-    return font_in_short_display
-end
 
-diagnostics.short_display = short_display
+    diagnostics.short_display = short_display
 
-function diagnostics.break_node(par, q, fit_class, break_type, current) -- %d ?
-    local passive = par.passive
-    local typ_ind = break_type == hyphenated_code and '-' or ""
-    if par.do_last_line_fit then
-        local s = number.toscaled(q.active_short)
-        local g = number.toscaled(q.active_glue)
-        if current then
-            write_nl("log",formatters["@@%d: line %d.%d%s t=%s s=%s g=%s"](
-                passive.serial or 0,q.line_number-1,fit_class,typ_ind,q.total_demerits,s,g))
+    function diagnostics.break_node(par, q, fit_class, break_type, current) -- %d ?
+        local passive = par.passive
+        local typ_ind = break_type == hyphenated_code and '-' or ""
+        if par.do_last_line_fit then
+            local s = number.toscaled(q.active_short)
+            local g = number.toscaled(q.active_glue)
+            if current then
+                write_nl("log",formatters["@@%d: line %d.%d%s t=%s s=%s g=%s"](
+                    passive.serial or 0,q.line_number-1,fit_class,typ_ind,q.total_demerits,s,g))
+            else
+                write_nl("log",formatters["@@%d: line %d.%d%s t=%s s=%s a=%s"](
+                    passive.serial or 0,q.line_number-1,fit_class,typ_ind,q.total_demerits,s,g))
+            end
         else
-            write_nl("log",formatters["@@%d: line %d.%d%s t=%s s=%s a=%s"](
-                passive.serial or 0,q.line_number-1,fit_class,typ_ind,q.total_demerits,s,g))
+            write_nl("log",formatters["@@%d: line %d.%d%s t=%s"](
+                passive.serial or 0,q.line_number-1,fit_class,typ_ind,q.total_demerits))
         end
-    else
-        write_nl("log",formatters["@@%d: line %d.%d%s t=%s"](
-            passive.serial or 0,q.line_number-1,fit_class,typ_ind,q.total_demerits))
-    end
-    if not passive.prev_break then
-        write("log"," -> @0")
-    else
-        write("log",formatters[" -> @%d"](passive.prev_break.serial or 0))
-    end
-end
-
-function diagnostics.feasible_break(par, current, r, b, pi, d, artificial_demerits)
-    local printed_node = par.printed_node
-    if printed_node ~= current then
-        write_nl("log","")
-        if not current then
-            par.font_in_short_display = short_display("log",getnext(printed_node),par.font_in_short_display)
+        if not passive.prev_break then
+            write("log"," -> @0")
         else
-            local save_link = getnext(current)
-            setnext(current)
+            write("log",formatters[" -> @%d"](passive.prev_break.serial or 0))
+        end
+    end
+
+    function diagnostics.feasible_break(par, current, r, b, pi, d, artificial_demerits)
+        local printed_node = par.printed_node
+        if printed_node ~= current then
             write_nl("log","")
-            par.font_in_short_display = short_display("log",getnext(printed_node),par.font_in_short_display)
-            setnext(current,save_link)
+            if not current then
+                par.font_in_short_display = short_display("log",getnext(printed_node),par.font_in_short_display)
+            else
+                local save_link = getnext(current)
+                setnext(current)
+                write_nl("log","")
+                par.font_in_short_display = short_display("log",getnext(printed_node),par.font_in_short_display)
+                setnext(current,save_link)
+            end
+            par.printed_node = current
         end
-        par.printed_node = current
-    end
-    write_nl("log","@")
-    if not current then
-        write_esc("par")
-    else
-        local id = getid(current)
-        if id == glue_code then
-            -- print nothing
-        elseif id == penalty_code then
-            write_esc("penalty")
-        elseif id == disc_code then
-            write_esc("discretionary")
-        elseif id == kern_code then
-            write_esc("kern")
-        elseif id == math_code then
-            write_esc("math")
+        write_nl("log","@")
+        if not current then
+            write_esc("par")
         else
-            write_esc("unknown")
+            local id = getid(current)
+            if id == glue_code then
+                -- print nothing
+            elseif id == penalty_code then
+                write_esc("penalty")
+            elseif id == disc_code then
+                write_esc("discretionary")
+            elseif id == kern_code then
+                write_esc("kern")
+            elseif id == math_code then
+                write_esc("math")
+            else
+                write_esc("unknown")
+            end
         end
+        local via, badness, demerits = 0, '*', '*'
+        if r.break_node then
+            via = r.break_node.serial or 0
+        end
+        if b <= infinite_badness then
+            badness = tonumber(d)
+        end
+        if not artificial_demerits then
+            demerits = tonumber(d)
+        end
+        write("log",formatters[" via @%d b=%s p=%s d=%s"](via,badness,pi,demerits))
     end
-    local via, badness, demerits = 0, '*', '*'
-    if r.break_node then
-        via = r.break_node.serial or 0
+
+    --
+
+    local function common_message(hlist,line,str)
+        write_nl("")
+        if status.output_active then -- unset
+            write(str," has occurred while \\output is active")
+        else
+            write(str)
+        end
+        local fileline = status.linenumber
+        if line > 0 then
+            write(formatters[" in paragraph at lines %s--%s"](fileline,"--",fileline+line-1))
+        elseif line < 0 then
+            write(formatters[" in alignment at lines "](fileline,"--",fileline-line-1))
+        else
+            write(formatters[" detected at line %s"](fileline))
+        end
+        write_nl("")
+        diagnostics.short_display(getlist(hlist),false)
+        write_nl("")
+     -- diagnostics.start()
+     -- show_box(getlist(hlist))
+     -- diagnostics.stop()
     end
-    if b <= infinite_badness then
-        badness = tonumber(d)
+
+    function diagnostics.overfull_hbox(hlist,line,d)
+        common_message(hlist,line,formatters["Overfull \\hbox (%spt too wide)"](number.toscaled(d)))
     end
-    if not artificial_demerits then
-        demerits = tonumber(d)
+
+    function diagnostics.bad_hbox(hlist,line,b)
+        common_message(hlist,line,formatters["Tight \\hbox (badness %i)"](b))
     end
-    write("log",formatters[" via @%d b=%s p=%s d=%s"](via,badness,pi,demerits))
+
+    function diagnostics.underfull_hbox(hlist,line,b)
+        common_message(hlist,line,formatters["Underfull \\hbox (badness %i)"](b))
+    end
+
+    function diagnostics.loose_hbox(hlist,line,b)
+        common_message(hlist,line,formatters["Loose \\hbox (badness %i)"](b))
+    end
+
 end
 
 -- reporting --
@@ -2648,569 +2698,536 @@ statistics.register("alternative parbuilders", function()
     end
 end)
 
--- actually scaling kerns is not such a good idea and it will become
--- configureable
+do
 
--- This is no way a replacement for the built in (fast) packer
--- it's just an alternative for special (testing) purposes.
---
--- We could use two hpacks: one to be used in the par builder
--- and one to be used for other purposes. The one in the par
--- builder is much more simple as it does not need the expansion
--- code but only need to register the effective expansion factor
--- with the glyph.
+    -- actually scaling kerns is not such a good idea and it will become
+    -- configureable
 
-local function glyph_width_height_depth(curdir,pdir,p)
-    local wd, ht, dp = getwhd(p)
-    if is_rotated[curdir] then
-        if is_parallel[curdir][pdir] then
-            local half = (ht + dp) / 2
-            return wd, half, half
+    -- This is no way a replacement for the built in (fast) packer
+    -- it's just an alternative for special (testing) purposes.
+    --
+    -- We could use two hpacks: one to be used in the par builder
+    -- and one to be used for other purposes. The one in the par
+    -- builder is much more simple as it does not need the expansion
+    -- code but only need to register the effective expansion factor
+    -- with the glyph.
+
+    local setnodecolor = nodes.tracers.colors.set
+
+    local function glyph_width_height_depth(curdir,pdir,p)
+        local wd, ht, dp = getwhd(p)
+        if is_rotated[curdir] then
+            if is_parallel[curdir][pdir] then
+                local half = (ht + dp) / 2
+                return wd, half, half
+            else
+                local half = wd / 2
+                return ht + dp, half, half
+            end
+        elseif is_rotated[pdir] then
+            if is_parallel[curdir][pdir] then
+                local half = (ht + dp) / 2
+                return wd, half, half
+            else
+                return ht + dp, wd, 0 -- weird
+            end
         else
-            local half = wd / 2
-            return ht + dp, half, half
+            if glyphdir_is_equal[curdir][pdir] then
+                return wd, ht, dp
+            elseif is_opposite[curdir][pdir] then
+                return wd, dp, ht
+            else -- can this happen?
+                return ht + dp, wd, 0
+            end
         end
-    elseif is_rotated[pdir] then
-        if is_parallel[curdir][pdir] then
-            local half = (ht + dp) / 2
-            return wd, half, half
+    end
+
+    local function pack_width_height_depth(curdir,pdir,p)
+        local wd, ht, dp = getwhd(p)
+        if is_rotated[curdir] then
+            if is_parallel[curdir][pdir] then
+                local half = (ht + dp) / 2
+                return wd, half, half
+            else -- can this happen?
+                local half = wd / 2
+                return ht + dp, half, half
+            end
         else
-            return ht + dp, wd, 0 -- weird
-        end
-    else
-        if glyphdir_is_equal[curdir][pdir] then
-            return wd, ht, dp
-        elseif is_opposite[curdir][pdir] then
-            return wd, dp, ht
-        else -- can this happen?
-            return ht + dp, wd, 0
+            if pardir_is_equal[curdir][pdir] then
+                return wd, ht, dp
+            elseif is_opposite[curdir][pdir] then
+                return wd, dp, ht
+            else -- weird dimensions, can this happen?
+                return ht + dp, wd, 0
+            end
         end
     end
-end
 
-local function pack_width_height_depth(curdir,pdir,p)
-    local wd, ht, dp = getwhd(p)
-    if is_rotated[curdir] then
-        if is_parallel[curdir][pdir] then
-            local half = (ht + dp) / 2
-            return wd, half, half
-        else -- can this happen?
-            local half = wd / 2
-            return ht + dp, half, half
+    -- local function xpack(head,width,method,direction,analysis)
+    --
+    --     -- inspect(analysis)
+    --
+    --     local expansion         = method == "cal_expand_ratio"
+    --     local natural           = analysis.size
+    --     local font_stretch      = analysis.adjust_stretch
+    --     local font_shrink       = analysis.adjust_shrink
+    --     local font_expand_ratio = 0
+    --     local delta             = width - natural
+    --
+    --     local hlist             = new_hlist()
+    --
+    --     setlist(hlist,head)
+    --     setdir(hlist,direction or tex.textdir)
+    --     setwhd(hlist,width,height,depth)
+    --
+    --     if delta == 0 then
+    --
+    --         setfield(hlist,"glue_sign",0)
+    --         setfield(hlist,"glue_order",0)
+    --         setfield(hlist,"glue_set",0)
+    --
+    --     else
+    --
+    --         local order = analysis.filll ~= 0 and fillcodes.filll or
+    --                       analysis.fill  ~= 0 and fillcodes.fill  or
+    --                       analysis.fil   ~= 0 and fillcodes.fil   or
+    --                       analysis.fi    ~= 0 and fillcodes.fi    or 0
+    --
+    --         if delta > 0 then
+    --
+    --             if expansion and order == 0 and font_stretch > 0 then
+    --                 font_expand_ratio = (delta/font_stretch) * 1000
+    --             else
+    --                 local stretch = analysis.stretch
+    --                 if stretch ~= 0 then
+    --                     setfield(hlist,"glue_sign",1) -- stretch
+    --                     setfield(hlist,"glue_order",order)
+    --                     setfield(hlist,"glue_set",delta/stretch)
+    --                 else
+    --                     setfield(hlist,"glue_sign",0) -- nothing
+    --                     setfield(hlist,"glue_order",order)
+    --                     setfield(hlist,"glue_set",0)
+    --                 end
+    --             end
+    --
+    --         else
+    --
+    --             if expansion and order == 0 and font_shrink > 0 then
+    --                 font_expand_ratio = (delta/font_shrink) * 1000
+    --             else
+    --                 local shrink = analysis.shrink
+    --                 if shrink ~= 0 then
+    --                     setfield(hlist,"glue_sign",2) -- shrink
+    --                     setfield(hlist,"glue_order",order)
+    --                     setfield(hlist,"glue_set",-delta/stretch)
+    --                 else
+    --                     setfield(hlist,"glue_sign",0) -- nothing
+    --                     setfield(hlist,"glue_order",order)
+    --                     setfield(hlist,"glue_set",0)
+    --                 end
+    --             end
+    --
+    --         end
+    --
+    --     end
+    --
+    --     if not expansion or font_expand_ratio == 0 then
+    --         -- nothing
+    --     elseif font_expand_ratio > 0 then
+    --         if font_expand_ratio > 1000 then
+    --             font_expand_ratio = 1000
+    --         end
+    --         local current = head
+    --         while current do
+    --             local id = getid(current)
+    --             if id == glyph_code then
+    --                 local stretch, shrink = char_stretch_shrink(current) -- get only one
+    --                 if stretch then
+    --                     if trace_expansion then
+    --                         setnodecolor(g,"hz:positive")
+    --                     end
+    --                     current.expansion_factor = font_expand_ratio * stretch
+    --                 end
+    --             elseif id == kern_code then
+    --                 local kern = getkern(current)
+    --                 if kern ~= 0 and getsubtype(current) == kerning_code then
+    --                     setkern(current,font_expand_ratio * kern)
+    --                 end
+    --             end
+    --             current = getnext(current)
+    --         end
+    --     elseif font_expand_ratio < 0 then
+    --         if font_expand_ratio < -1000 then
+    --             font_expand_ratio = -1000
+    --         end
+    --         local current = head
+    --         while current do
+    --             local id = getid(current)
+    --             if id == glyph_code then
+    --                 local stretch, shrink = char_stretch_shrink(current) -- get only one
+    --                 if shrink then
+    --                     if trace_expansion then
+    --                         setnodecolor(g,"hz:negative")
+    --                     end
+    --                     current.expansion_factor = font_expand_ratio * shrink
+    --                 end
+    --             elseif id == kern_code then
+    --                 local kern = getkern(current)
+    --                 if kern ~= 0 and getsubtype(current) == kerning_code then
+    --                     setkern(current,font_expand_ratio * kern)
+    --                 end
+    --             end
+    --             current = getnext(current)
+    --         end
+    --     end
+    --     return hlist, 0
+    -- end
+
+    local function hpack(head,width,method,direction,firstline,line) -- fast version when head = nil
+
+        -- we can pass the adjust_width and adjust_height so that we don't need to recalculate them but
+        -- with the glue mess it's less trivial as we lack detail .. challenge
+
+        local hlist = new_hlist()
+
+        setdir(hlist,direction)
+
+        if head == nil then
+            setwidth(hlist,width)
+            return hlist, 0
+        else
+            setlist(hlist,head)
         end
-    else
-        if pardir_is_equal[curdir][pdir] then
-            return wd, ht, dp
-        elseif is_opposite[curdir][pdir] then
-            return wd, dp, ht
-        else -- weird dimensions, can this happen?
-            return ht + dp, wd, 0
+
+        local cal_expand_ratio  = method == "cal_expand_ratio" or method == "subst_ex_font"
+
+        direction               = direction or tex.textdir
+
+        local line              = 0
+
+        local height            = 0
+        local depth             = 0
+        local natural           = 0
+        local font_stretch      = 0
+        local font_shrink       = 0
+        local font_expand_ratio = 0
+        local last_badness      = 0
+        local expansion_stack   = cal_expand_ratio and { } -- todo: optionally pass this
+        local expansion_index   = 0
+        local total_stretch     = { [0] = 0, 0, 0, 0, 0 }
+        local total_shrink      = { [0] = 0, 0, 0, 0, 0 }
+
+        local hpack_dir         = direction
+
+        local adjust_head       = texlists.adjust_head
+        local pre_adjust_head   = texlists.pre_adjust_head
+        local adjust_tail       = adjust_head and slide_node_list(adjust_head) -- todo: find_tail
+        local pre_adjust_tail   = pre_adjust_head and slide_node_list(pre_adjust_head) -- todo: find_tail
+
+        new_dir_stack(hpack_dir)
+
+        local checked_expansion = false
+
+        if cal_expand_ratio then
+            checked_expansion = { }
+            setmetatableindex(checked_expansion,check_expand_lines)
         end
-    end
-end
 
--- local function xpack(head,width,method,direction,analysis)
---
---     -- inspect(analysis)
---
---     local expansion         = method == "cal_expand_ratio"
---     local natural           = analysis.size
---     local font_stretch      = analysis.adjust_stretch
---     local font_shrink       = analysis.adjust_shrink
---     local font_expand_ratio = 0
---     local delta             = width - natural
---
---     local hlist             = new_hlist()
---
---     setlist(hlist,head)
---     setdir(hlist,direction or tex.textdir)
---     setwhd(hlist,width,height,depth)
---
---     if delta == 0 then
---
---         setfield(hlist,"glue_sign",0)
---         setfield(hlist,"glue_order",0)
---         setfield(hlist,"glue_set",0)
---
---     else
---
---         local order = analysis.filll ~= 0 and fillcodes.filll or
---                       analysis.fill  ~= 0 and fillcodes.fill  or
---                       analysis.fil   ~= 0 and fillcodes.fil   or
---                       analysis.fi    ~= 0 and fillcodes.fi    or 0
---
---         if delta > 0 then
---
---             if expansion and order == 0 and font_stretch > 0 then
---                 font_expand_ratio = (delta/font_stretch) * 1000
---             else
---                 local stretch = analysis.stretch
---                 if stretch ~= 0 then
---                     setfield(hlist,"glue_sign",1) -- stretch
---                     setfield(hlist,"glue_order",order)
---                     setfield(hlist,"glue_set",delta/stretch)
---                 else
---                     setfield(hlist,"glue_sign",0) -- nothing
---                     setfield(hlist,"glue_order",order)
---                     setfield(hlist,"glue_set",0)
---                 end
---             end
---
---         else
---
---             if expansion and order == 0 and font_shrink > 0 then
---                 font_expand_ratio = (delta/font_shrink) * 1000
---             else
---                 local shrink = analysis.shrink
---                 if shrink ~= 0 then
---                     setfield(hlist,"glue_sign",2) -- shrink
---                     setfield(hlist,"glue_order",order)
---                     setfield(hlist,"glue_set",-delta/stretch)
---                 else
---                     setfield(hlist,"glue_sign",0) -- nothing
---                     setfield(hlist,"glue_order",order)
---                     setfield(hlist,"glue_set",0)
---                 end
---             end
---
---         end
---
---     end
---
---     if not expansion or font_expand_ratio == 0 then
---         -- nothing
---     elseif font_expand_ratio > 0 then
---         if font_expand_ratio > 1000 then
---             font_expand_ratio = 1000
---         end
---         local current = head
---         while current do
---             local id = getid(current)
---             if id == glyph_code then
---                 local stretch, shrink = char_stretch_shrink(current) -- get only one
---                 if stretch then
---                     if trace_expansion then
---                         setnodecolor(g,"hz:positive")
---                     end
---                     current.expansion_factor = font_expand_ratio * stretch
---                 end
---             elseif id == kern_code then
---                 local kern = getkern(current)
---                 if kern ~= 0 and getsubtype(current) == kerning_code then
---                     setkern(current,font_expand_ratio * kern)
---                 end
---             end
---             current = getnext(current)
---         end
---     elseif font_expand_ratio < 0 then
---         if font_expand_ratio < -1000 then
---             font_expand_ratio = -1000
---         end
---         local current = head
---         while current do
---             local id = getid(current)
---             if id == glyph_code then
---                 local stretch, shrink = char_stretch_shrink(current) -- get only one
---                 if shrink then
---                     if trace_expansion then
---                         setnodecolor(g,"hz:negative")
---                     end
---                     current.expansion_factor = font_expand_ratio * shrink
---                 end
---             elseif id == kern_code then
---                 local kern = getkern(current)
---                 if kern ~= 0 and getsubtype(current) == kerning_code then
---                     setkern(current,font_expand_ratio * kern)
---                 end
---             end
---             current = getnext(current)
---         end
---     end
---     return hlist, 0
--- end
+        -- this one also needs to check the font, so in the end indeed we might end up with two variants
 
-local function hpack(head,width,method,direction,firstline,line) -- fast version when head = nil
+        local fontexps, lastfont
 
-    -- we can pass the adjust_width and adjust_height so that we don't need to recalculate them but
-    -- with the glue mess it's less trivial as we lack detail .. challenge
+        local function process(current) -- called nested in disc replace
 
-    local hlist = new_hlist()
-
-    setdir(hlist,direction)
-
-    if head == nil then
-        setfield(hlist,"width",width)
-        return hlist, 0
-    else
-        setlist(hlist,head)
-    end
-
-    local cal_expand_ratio  = method == "cal_expand_ratio" or method == "subst_ex_font"
-
-    direction               = direction or tex.textdir
-
-    local line              = 0
-
-    local height            = 0
-    local depth             = 0
-    local natural           = 0
-    local font_stretch      = 0
-    local font_shrink       = 0
-    local font_expand_ratio = 0
-    local last_badness      = 0
-    local expansion_stack   = cal_expand_ratio and { } -- todo: optionally pass this
-    local expansion_index   = 0
-    local total_stretch     = { [0] = 0, 0, 0, 0, 0 }
-    local total_shrink      = { [0] = 0, 0, 0, 0, 0 }
-
-    local hpack_dir         = direction
-
-    local adjust_head       = texlists.adjust_head
-    local pre_adjust_head   = texlists.pre_adjust_head
-    local adjust_tail       = adjust_head and slide_node_list(adjust_head) -- todo: find_tail
-    local pre_adjust_tail   = pre_adjust_head and slide_node_list(pre_adjust_head) -- todo: find_tail
-
-    new_dir_stack(hpack_dir)
-
-    local checked_expansion = false
-
-    if cal_expand_ratio then
-        checked_expansion = { }
-        setmetatableindex(checked_expansion,check_expand_lines)
-    end
-
-    -- this one also needs to check the font, so in the end indeed we might end up with two variants
-
-    local fontexps, lastfont
-
-    local function process(current) -- called nested in disc replace
-
-        while current do
-            local char, id = isglyph(current)
-            if char then
-                if cal_expand_ratio then
-                    local currentfont = getfont(current)
-                    if currentfont ~= lastfont then
-                        fontexps = checked_expansion[currentfont] -- a bit redundant for the par line packer
-                        lastfont = currentfont
-                    end
-                    if fontexps then
-                        local expansion = fontexps[char]
-                        if expansion then
-                            font_stretch = font_stretch + expansion.glyphstretch
-                            font_shrink  = font_shrink  + expansion.glyphshrink
-                            expansion_index = expansion_index + 1
-                            expansion_stack[expansion_index] = current
+            while current do
+                local char, id = isglyph(current)
+                if char then
+                    if cal_expand_ratio then
+                        local currentfont = getfont(current)
+                        if currentfont ~= lastfont then
+                            fontexps = checked_expansion[currentfont] -- a bit redundant for the par line packer
+                            lastfont = currentfont
+                        end
+                        if fontexps then
+                            local expansion = fontexps[char]
+                            if expansion then
+                                font_stretch = font_stretch + expansion.glyphstretch
+                                font_shrink  = font_shrink  + expansion.glyphshrink
+                                expansion_index = expansion_index + 1
+                                expansion_stack[expansion_index] = current
+                            end
                         end
                     end
-                end
-                -- use inline
-                local wd, ht, dp = glyph_width_height_depth(hpack_dir,"TLT",current) -- was TRT ?
-                natural = natural + wd
-                if ht > height then
-                    height = ht
-                end
-                if dp > depth then
-                    depth = dp
-                end
-            elseif id == kern_code then
-                local kern = getkern(current)
-                if kern == 0 then
-                    -- no kern
-                elseif getsubtype(current) == kerning_code then -- check getkern(p)
-                    if cal_expand_ratio then
-                        local stretch, shrink = kern_stretch_shrink(current,kern)
-                        font_stretch = font_stretch + stretch
-                        font_shrink  = font_shrink + shrink
-                        expansion_index = expansion_index + 1
-                        expansion_stack[expansion_index] = current
-                    end
-                    natural = natural + kern
-                else
-                    natural = natural + kern
-                end
-            elseif id == disc_code then
-                local subtype = getsubtype(current)
-                if subtype ~= second_disc_code then
-                    -- todo : local stretch, shrink = char_stretch_shrink(s)
-                    local replace = getfield(current,"replace")
-                    if replace then
-                        process(replace)
-                    end
-                end
-            elseif id == glue_code then
-                local wd, stretch, shrink, stretch_order, shrink_order = getglue(current)
-                natural = natural + wd
-                total_stretch[stretch_order] = total_stretch[stretch_order] + stretch
-                total_shrink [shrink_order]  = total_shrink[shrink_order]   + shrink
-                if getsubtype(current) >= leaders_code then
-                    local leader = getleader(current)
-                    local wd, ht, dp = getwhd(leader) -- can become getwhd(current) after 1.003
+                    -- use inline
+                    local wd, ht, dp = glyph_width_height_depth(hpack_dir,"TLT",current) -- was TRT ?
+                    natural = natural + wd
                     if ht > height then
                         height = ht
                     end
                     if dp > depth then
                         depth = dp
                     end
+                elseif id == kern_code then
+                    local kern = getkern(current)
+                    if kern == 0 then
+                        -- no kern
+                    elseif getsubtype(current) == kerning_code then -- check getkern(p)
+                        if cal_expand_ratio then
+                            local stretch, shrink = kern_stretch_shrink(current,kern)
+                            font_stretch = font_stretch + stretch
+                            font_shrink  = font_shrink + shrink
+                            expansion_index = expansion_index + 1
+                            expansion_stack[expansion_index] = current
+                        end
+                        natural = natural + kern
+                    else
+                        natural = natural + kern
+                    end
+                elseif id == disc_code then
+                    local subtype = getsubtype(current)
+                    if subtype ~= second_disc_code then
+                        -- todo : local stretch, shrink = char_stretch_shrink(s)
+                        local replace = getfield(current,"replace")
+                        if replace then
+                            process(replace)
+                        end
+                    end
+                elseif id == glue_code then
+                    local wd, stretch, shrink, stretch_order, shrink_order = getglue(current)
+                    natural = natural + wd
+                    total_stretch[stretch_order] = total_stretch[stretch_order] + stretch
+                    total_shrink [shrink_order]  = total_shrink[shrink_order]   + shrink
+                    if getsubtype(current) >= leaders_code then
+                        local leader = getleader(current)
+                        local wd, ht, dp = getwhd(leader) -- can become getwhd(current) after 1.003
+                        if ht > height then
+                            height = ht
+                        end
+                        if dp > depth then
+                            depth = dp
+                        end
+                    end
+                elseif id == hlist_code or id == vlist_code then
+                    local sh = getshift(current)
+                    local wd, ht, dp = pack_width_height_depth(hpack_dir,getdir(current) or hpack_dir,current) -- added: or pack_dir
+                    local hs, ds = ht - sh, dp + sh
+                    natural = natural + wd
+                    if hs > height then
+                        height = hs
+                    end
+                    if ds > depth then
+                        depth = ds
+                    end
+                elseif id == rule_code then
+                    local wd, ht, dp = getwhd(current)
+                    natural = natural + wd
+                    if ht > height then
+                        height = ht
+                    end
+                    if dp > depth then
+                        depth = dp
+                    end
+                elseif id == math_code then
+                    natural = natural + getkern(current) -- surround
+                    -- new in luatex
+                    + getwidth(current)
+                elseif id == unset_code then
+                    local wd, ht, dp = getwhd(current)
+                    local sh = getshift(current)
+                    local hs = ht - sh
+                    local ds = dp + sh
+                    natural = natural + wd
+                    if hs > height then
+                        height = hs
+                    end
+                    if ds > depth then
+                        depth = ds
+                    end
+                elseif id == ins_code or id == mark_code then
+                    local prev, next = getboth(current)
+                    if adjust_tail then -- todo
+                        setlink(prev,next)
+                        setlink(adjust_tail,current)
+                        setnext(current)
+                        adjust_tail = current
+                    else
+                        adjust_head = current
+                        adjust_tail = current
+                        setboth(current)
+                    end
+                elseif id == adjust_code then
+                    local list = getlist(current)
+                    if adjust_tail then
+                        setnext(adjust_tail,list)
+                    else
+                        adjust_head = list
+                    end
+                    adjust_tail = slide_node_list(list) -- find_tail(list)
+                elseif id == dir_code then
+                    hpack_dir = checked_line_dir(stack,current) or hpack_dir
+                elseif id == marginkern_code then
+                    local width = getwidth(current)
+                    if cal_expand_ratio then
+                        -- is this ok?
+                        local glyph = getfield(current,"glyph")
+                        local char_pw = getsubtype(current) == leftmargin_code and left_pw or right_pw
+                        font_stretch = font_stretch - width - char_pw(glyph)
+                        font_shrink  = font_shrink  - width - char_pw(glyph)
+                        expansion_index = expansion_index + 1
+                        expansion_stack[expansion_index] = glyph
+                    end
+                    natural = natural + width
                 end
-            elseif id == hlist_code or id == vlist_code then
-                local sh = getfield(current,"shift")
-                local wd, ht, dp = pack_width_height_depth(hpack_dir,getdir(current) or hpack_dir,current) -- added: or pack_dir
-                local hs, ds = ht - sh, dp + sh
-                natural = natural + wd
-                if hs > height then
-                    height = hs
-                end
-                if ds > depth then
-                    depth = ds
-                end
-            elseif id == rule_code then
-                local wd, ht, dp = getwhd(current)
-                natural = natural + wd
-                if ht > height then
-                    height = ht
-                end
-                if dp > depth then
-                    depth = dp
-                end
-            elseif id == math_code then
-                natural = natural + getkern(current) -- surround
-                -- new in luatex
-                + getfield(current,"width")
-            elseif id == unset_code then
-                local wd, ht, dp = getwhd(current)
-                local sh = getfield(current,"shift")
-                local hs = ht - sh
-                local ds = dp + sh
-                natural = natural + wd
-                if hs > height then
-                    height = hs
-                end
-                if ds > depth then
-                    depth = ds
-                end
-            elseif id == ins_code or id == mark_code then
-                local prev, next = getboth(current)
-                if adjust_tail then -- todo
-                    setlink(prev,next)
-                    setlink(adjust_tail,current)
-                    setnext(current)
-                    adjust_tail = current
-                else
-                    adjust_head = current
-                    adjust_tail = current
-                    setboth(current)
-                end
-            elseif id == adjust_code then
-                local list = getlist(current)
-                if adjust_tail then
-                    setnext(adjust_tail,list)
-                else
-                    adjust_head = list
-                end
-                adjust_tail = slide_node_list(list) -- find_tail(list)
-            elseif id == dir_code then
-                hpack_dir = checked_line_dir(stack,current) or hpack_dir
-            elseif id == marginkern_code then
-                local width = getfield(current,"width")
-                if cal_expand_ratio then
-                    -- is this ok?
-                    local glyph = getfield(current,"glyph")
-                    local char_pw = getsubtype(current) == leftmargin_code and left_pw or right_pw
-                    font_stretch = font_stretch - width - char_pw(glyph)
-                    font_shrink  = font_shrink  - width - char_pw(glyph)
-                    expansion_index = expansion_index + 1
-                    expansion_stack[expansion_index] = glyph
-                end
-                natural = natural + width
+                current = getnext(current)
             end
-            current = getnext(current)
+
         end
 
-    end
+        process(head)
 
-    process(head)
-
-    if adjust_tail then
-        adjust_tail.next = nil -- todo
-    end
-    if pre_adjust_tail then
-        pre_adjust_tail.next = nil -- todo
-    end
-    if method == "additional" then
-        width = width + natural
-    end
-
-    setwhd(hlist,width,height,depth)
-
-    local delta  = width - natural
-    if delta == 0 then
-        setfield(hlist,"glue_sign",0)
-        setfield(hlist,"glue_order",0)
-        setfield(hlist,"glue_set",0)
-    elseif delta > 0 then
-        -- natural width smaller than requested width
-        local order = (total_stretch[4] ~= 0 and 4 or total_stretch[3] ~= 0 and 3) or
-                      (total_stretch[2] ~= 0 and 2 or total_stretch[1] ~= 0 and 1) or 0
-        if cal_expand_ratio and order == 0 and font_stretch > 0 then -- check sign of font_stretch
-            font_expand_ratio = delta/font_stretch
-
-            if font_expand_ratio > 1 then
-                font_expand_ratio = 1
-            end
-
-            local fontexps, lastfont
-            for i=1,expansion_index do
-                local g    = expansion_stack[i]
-                local e    = 0
-                local char = isglyph(g)
-                if char then
-                    local currentfont = getfont(g)
-                    if currentfont ~= lastfont then
-                        fontexps = expansions[currentfont]
-                        lastfont = currentfont
-                    end
-                    local data = fontexps[char]
-                    if trace_expansion then
-                        setnodecolor(g,"hz:positive")
-                    end
-                    e = font_expand_ratio * data.glyphstretch / 1000
-                else
-                    local kern = getkern(g)
-                    local stretch, shrink = kern_stretch_shrink(g,kern)
-                    e = font_expand_ratio * stretch / 1000
-                end
-                setfield(g,"expansion_factor",e)
-            end
+        if adjust_tail then
+            adjust_tail.next = nil -- todo
         end
-        local tso = total_stretch[order]
-        if tso ~= 0 then
-            setfield(hlist,"glue_sign",1)
-            setfield(hlist,"glue_order",order)
-            setfield(hlist,"glue_set",delta/tso)
-        else
+        if pre_adjust_tail then
+            pre_adjust_tail.next = nil -- todo
+        end
+        if method == "additional" then
+            width = width + natural
+        end
+
+        setwhd(hlist,width,height,depth)
+
+        local delta  = width - natural
+        if delta == 0 then
             setfield(hlist,"glue_sign",0)
-            setfield(hlist,"glue_order",order)
+            setfield(hlist,"glue_order",0)
             setfield(hlist,"glue_set",0)
-        end
-        if font_expand_ratio ~= 0 then
-            -- todo
-        elseif order == 0 then -- and getlist(hlist) then
-            last_badness = calculate_badness(delta,total_stretch[0])
-            if last_badness > tex.hbadness then
-                if last_badness > 100 then
-                    diagnostics.underfull_hbox(hlist,line,last_badness)
-                else
-                    diagnostics.loose_hbox(hlist,line,last_badness)
+        elseif delta > 0 then
+            -- natural width smaller than requested width
+            local order = (total_stretch[4] ~= 0 and 4 or total_stretch[3] ~= 0 and 3) or
+                          (total_stretch[2] ~= 0 and 2 or total_stretch[1] ~= 0 and 1) or 0
+            if cal_expand_ratio and order == 0 and font_stretch > 0 then -- check sign of font_stretch
+                font_expand_ratio = delta/font_stretch
+
+                if font_expand_ratio > 1 then
+                    font_expand_ratio = 1
+                end
+
+                local fontexps, lastfont
+                for i=1,expansion_index do
+                    local g    = expansion_stack[i]
+                    local e    = 0
+                    local char = isglyph(g)
+                    if char then
+                        local currentfont = getfont(g)
+                        if currentfont ~= lastfont then
+                            fontexps = expansions[currentfont]
+                            lastfont = currentfont
+                        end
+                        local data = fontexps[char]
+                        if trace_expansion then
+                            setnodecolor(g,"hz:positive")
+                        end
+                        e = font_expand_ratio * data.glyphstretch / 1000
+                    else
+                        local kern = getkern(g)
+                        local stretch, shrink = kern_stretch_shrink(g,kern)
+                        e = font_expand_ratio * stretch / 1000
+                    end
+                    setfield(g,"expansion_factor",e)
                 end
             end
-        end
-    else
-        -- natural width larger than requested width
-        local order = total_shrink[4] ~= 0 and 4 or total_shrink[3] ~= 0 and 3
-                   or total_shrink[2] ~= 0 and 2 or total_shrink[1] ~= 0 and 1 or 0
-        if cal_expand_ratio and order == 0 and font_shrink > 0 then -- check sign of font_shrink
-            font_expand_ratio = delta/font_shrink
-
-            if font_expand_ratio < 1 then
-                font_expand_ratio = -1
+            local tso = total_stretch[order]
+            if tso ~= 0 then
+                setfield(hlist,"glue_sign",1)
+                setfield(hlist,"glue_order",order)
+                setfield(hlist,"glue_set",delta/tso)
+            else
+                setfield(hlist,"glue_sign",0)
+                setfield(hlist,"glue_order",order)
+                setfield(hlist,"glue_set",0)
             end
-
-            local fontexps, lastfont
-            for i=1,expansion_index do
-                local g    = expansion_stack[i]
-                local e    = 0
-                local char = isglyph(g)
-                if char then
-                    local currentfont = getfont(g)
-                    if currentfont ~= lastfont then
-                        fontexps = expansions[currentfont]
-                        lastfont = currentfont
+            if font_expand_ratio ~= 0 then
+                -- todo
+            elseif order == 0 then -- and getlist(hlist) then
+                last_badness = calculate_badness(delta,total_stretch[0])
+                if last_badness > tex.hbadness then
+                    if last_badness > 100 then
+                        diagnostics.underfull_hbox(hlist,line,last_badness)
+                    else
+                        diagnostics.loose_hbox(hlist,line,last_badness)
                     end
-                    local data = fontexps[char]
-                    if trace_expansion then
-                        setnodecolor(g,"hz:negative")
-                    end
-                    e = font_expand_ratio * data.glyphshrink / 1000
-                else
-                    local kern = getkern(g)
-                    local stretch, shrink = kern_stretch_shrink(g,kern)
-                    e = font_expand_ratio * shrink / 1000
                 end
-                setfield(g,"expansion_factor",e)
             end
-        end
-        local tso = total_shrink[order]
-        if tso ~= 0 then
-            setfield(hlist,"glue_sign",2)
-            setfield(hlist,"glue_order",order)
-            setfield(hlist,"glue_set",-delta/tso)
         else
-            setfield(hlist,"glue_sign",0)
-            setfield(hlist,"glue_order",order)
-            setfield(hlist,"glue_set",0)
-        end
-        if font_expand_ratio ~= 0 then
-            -- todo
-        elseif tso < -delta and order == 0 then -- and getlist(hlist) then
-            last_badness = 1000000
-            setfield(hlist,"glue_set",1)
-            local fuzz = - delta - total_shrink[0]
-            local hfuzz = tex.hfuzz
-            if fuzz > hfuzz or tex.hbadness < 100 then
-                local overfullrule = tex.overfullrule
-                if fuzz > hfuzz and overfullrule > 0 then
-                    -- weird, is always called and no rules shows up
-                    setnext(slide_node_list(list),new_rule(overfullrule,nil,nil,getdir(hlist))) -- todo: find_tail
+            -- natural width larger than requested width
+            local order = total_shrink[4] ~= 0 and 4 or total_shrink[3] ~= 0 and 3
+                       or total_shrink[2] ~= 0 and 2 or total_shrink[1] ~= 0 and 1 or 0
+            if cal_expand_ratio and order == 0 and font_shrink > 0 then -- check sign of font_shrink
+                font_expand_ratio = delta/font_shrink
+
+                if font_expand_ratio < 1 then
+                    font_expand_ratio = -1
                 end
-                diagnostics.overfull_hbox(hlist,line,-delta)
+
+                local fontexps, lastfont
+                for i=1,expansion_index do
+                    local g    = expansion_stack[i]
+                    local e    = 0
+                    local char = isglyph(g)
+                    if char then
+                        local currentfont = getfont(g)
+                        if currentfont ~= lastfont then
+                            fontexps = expansions[currentfont]
+                            lastfont = currentfont
+                        end
+                        local data = fontexps[char]
+                        if trace_expansion then
+                            setnodecolor(g,"hz:negative")
+                        end
+                        e = font_expand_ratio * data.glyphshrink / 1000
+                    else
+                        local kern = getkern(g)
+                        local stretch, shrink = kern_stretch_shrink(g,kern)
+                        e = font_expand_ratio * shrink / 1000
+                    end
+                    setfield(g,"expansion_factor",e)
+                end
             end
-        elseif order == 0 and getlist(hlist) and last_badness > tex.hbadness then
-            diagnostics.bad_hbox(hlist,line,last_badness)
+            local tso = total_shrink[order]
+            if tso ~= 0 then
+                setfield(hlist,"glue_sign",2)
+                setfield(hlist,"glue_order",order)
+                setfield(hlist,"glue_set",-delta/tso)
+            else
+                setfield(hlist,"glue_sign",0)
+                setfield(hlist,"glue_order",order)
+                setfield(hlist,"glue_set",0)
+            end
+            if font_expand_ratio ~= 0 then
+                -- todo
+            elseif tso < -delta and order == 0 then -- and getlist(hlist) then
+                last_badness = 1000000
+                setfield(hlist,"glue_set",1)
+                local fuzz = - delta - total_shrink[0]
+                local hfuzz = tex.hfuzz
+                if fuzz > hfuzz or tex.hbadness < 100 then
+                    local overfullrule = tex.overfullrule
+                    if fuzz > hfuzz and overfullrule > 0 then
+                        -- weird, is always called and no rules shows up
+                        setnext(slide_node_list(list),new_rule(overfullrule,nil,nil,getdir(hlist))) -- todo: find_tail
+                    end
+                    diagnostics.overfull_hbox(hlist,line,-delta)
+                end
+            elseif order == 0 and getlist(hlist) and last_badness > tex.hbadness then
+                diagnostics.bad_hbox(hlist,line,last_badness)
+            end
         end
+        return hlist, last_badness
     end
-    return hlist, last_badness
-end
 
-xpack_nodes = hpack -- comment this for old fashioned expansion (we need to fix float mess)
+    xpack_nodes = hpack -- comment this for old fashioned expansion (we need to fix float mess)
 
-constructors.methods.hpack = hpack
+    constructors.methods.hpack = hpack
 
-local function common_message(hlist,line,str)
-    write_nl("")
-    if status.output_active then -- unset
-        write(str," has occurred while \\output is active")
-    else
-        write(str)
-    end
-    local fileline = status.linenumber
-    if line > 0 then
-        write(formatters[" in paragraph at lines %s--%s"](fileline,"--",fileline+line-1))
-    elseif line < 0 then
-        write(formatters[" in alignment at lines "](fileline,"--",fileline-line-1))
-    else
-        write(formatters[" detected at line %s"](fileline))
-    end
-    write_nl("")
-    diagnostics.short_display(getlist(hlist),false)
-    write_nl("")
- -- diagnostics.start()
- -- show_box(getlist(hlist))
- -- diagnostics.stop()
-end
-
-function diagnostics.overfull_hbox(hlist,line,d)
-    common_message(hlist,line,formatters["Overfull \\hbox (%spt too wide)"](number.toscaled(d)))
-end
-
-function diagnostics.bad_hbox(hlist,line,b)
-    common_message(hlist,line,formatters["Tight \\hbox (badness %i)"](b))
-end
-
-function diagnostics.underfull_hbox(hlist,line,b)
-    common_message(hlist,line,formatters["Underfull \\hbox (badness %i)"](b))
-end
-
-function diagnostics.loose_hbox(hlist,line,b)
-    common_message(hlist,line,formatters["Loose \\hbox (badness %i)"](b))
 end

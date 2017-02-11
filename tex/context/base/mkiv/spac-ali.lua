@@ -27,6 +27,7 @@ local setlist          = nuts.setlist
 local setlink          = nuts.setlink
 local takeattr         = nuts.takeattr
 local getsubtype       = nuts.getsubtype
+local getwidth         = nuts.getwidth
 local findtail         = nuts.tail
 
 local hpack_nodes      = nuts.hpack
@@ -88,14 +89,14 @@ local function handler(head,leftpage,realpageno)
                         if action == 1 then
                             local head = getlist(current)
                             setlink(findtail(head),new_stretch(3)) -- append
-                            setlist(current,hpack_nodes(head,getfield(current,"width"),"exactly"))
+                            setlist(current,hpack_nodes(head,getwidth(current),"exactly"))
                             if trace_realign then
                                 report_realign("flushing left, align %a, page %a, realpage %a",align,pageno,realpageno)
                             end
                         elseif action == 2 then
                             local list = getlist(current)
                             local head = setlink(new_stretch(3),list) -- prepend
-                            setlist(current,hpack_nodes(head,getfield(current,"width"),"exactly"))
+                            setlist(current,hpack_nodes(head,getwidth(current),"exactly"))
                             if trace_realign then
                                 report_realign("flushing right. align %a, page %a, realpage %a",align,pageno,realpageno)
                             end

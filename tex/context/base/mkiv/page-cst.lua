@@ -54,6 +54,8 @@ local getwhd              = nuts.getwhd
 local setwhd              = nuts.setwhd
 local getkern             = nuts.getkern
 local getpenalty          = nuts.getpenalty
+local getwidth            = nuts.getwidth
+local getheight           = nuts.getheight
 
 local getnext             = nuts.getnext
 local getprev             = nuts.getprev
@@ -772,7 +774,7 @@ end
 --             if line then
 --                 break
 --             end
---             used = used + getfield(head,"width")
+--             used = used + getwidth(head)
 --         elseif id == kern_code then
 --             used = used +  getkern(head)
 --         elseif id == penalty_code then
@@ -811,7 +813,7 @@ local function checkroom(head,available,row)
             if line then
                 break
             end
-            used = used + getfield(head,"width")
+            used = used + getwidth(head)
             if used > available then
                 break
             end
@@ -860,7 +862,7 @@ end
 --         if id == hlist_code or id == vlist_code or id == rule_code then -- <= rule_code
 --             hd = getfield(head,"height") + getfield(head,"depth")
 --         elseif id == glue_code then
---             hd = getfield(head,"width")
+--             hd = getwidth(head)
 --         elseif id == kern_code then
 --             hd = getkern(head)
 --         elseif id == penalty_code then
@@ -917,7 +919,7 @@ local function findslice(dataset,head,available,column,row)
         attempts = attempts + 1
         texsetbox("scratchbox",tonode(new_vlist(copy)))
         local done = splitbox("scratchbox",usedsize,"additional")
-        local used = getfield(done,"height")
+        local used = getheight(done)
         local rest = takebox("scratchbox")
         if used > (usedsize+slack) then
             if trace_detail then
@@ -941,7 +943,7 @@ local function findslice(dataset,head,available,column,row)
             texsetbox("scratchbox",tonode(new_vlist(head)))
             done  = splitbox("scratchbox",usedsize,"additional")
             rest  = takebox("scratchbox")
-            used  = getfield(done,"height")
+            used  = getheight(done)
             if attempts > 1 then
                 used = available
             end

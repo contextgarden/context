@@ -42,6 +42,9 @@ local getlist            = nuts.getlist
 local setwhd             = nuts.setwhd
 local setdir             = nuts.setdir
 local setattrlist        = nuts.setattrlist
+local setshift           = nuts.setshift
+local getwidth           = nuts.getwidth
+local setwidth           = nuts.setwidth
 
 local flushlist          = nuts.flush_list
 local effective_glue     = nuts.effective_glue
@@ -398,7 +401,7 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
         setlink(list,next)
     end
     local raise = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
-    setfield(list,"shift",raise)
+    setshift(list,raise)
     setwhd(list,width,height,depth)
     if trace_shifted then
         report_shifted("width %p, nodes %a, text %a",width,n_tostring(first,last),n_tosequence(first,last,true))
@@ -525,16 +528,16 @@ function nodes.linefillers.handler(head)
                                 head = getnext(head)
                             end
                             if head then
-                                local indentation = iskip and getfield(iskip,"width") or 0
-                                local leftfixed   = lskip and getfield(lskip,"width") or 0
+                                local indentation = iskip and getwidth(iskip) or 0
+                                local leftfixed   = lskip and getwidth(lskip) or 0
                                 local lefttotal   = lskip and effective_glue(lskip,current) or 0
                                 local width = lefttotal - (leftlocal and leftfixed or 0) + indentation - distance
                                 if width > threshold then
                                     if iskip then
-                                        setfield(iskip,"width",0)
+                                        setwidth(iskip,0)
                                     end
                                     if lskip then
-                                        setglue(lskip,leftlocal and getfield(lskip,"width") or nil)
+                                        setglue(lskip,leftlocal and getwidth(lskip) or nil)
                                         if distance > 0 then
                                             insert_node_after(list,lskip,new_kern(distance))
                                         end
@@ -565,9 +568,9 @@ function nodes.linefillers.handler(head)
                                 tail = getprev(tail)
                             end
                             if tail then
-                                local rightfixed = rskip and getfield(rskip,"width") or 0
+                                local rightfixed = rskip and getwidth(rskip) or 0
                                 local righttotal = rskip and effective_glue(rskip,current) or 0
-                                local parfixed   = pskip and getfield(pskip,"width") or 0
+                                local parfixed   = pskip and getwidth(pskip) or 0
                                 local partotal   = pskip and effective_glue(pskip,current) or 0
                                 local width = righttotal - (rightlocal and rightfixed or 0) + partotal - distance
                                 if width > threshold then
@@ -575,7 +578,7 @@ function nodes.linefillers.handler(head)
                                         setglue(pskip)
                                     end
                                     if rskip then
-                                        setglue(rskip,rightlocal and getfield(rskip,"width") or nil)
+                                        setglue(rskip,rightlocal and getwidth(rskip) or nil)
                                         if distance > 0 then
                                             insert_node_before(list,rskip,new_kern(distance))
                                         end

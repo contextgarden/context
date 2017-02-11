@@ -11,8 +11,6 @@ if not modules then modules = { } end modules ['pack-rul'] = {
 --ldx]]--
 
 -- we need to be careful with display math as it uses shifts
--- challenge: adapt glue_set
--- setfield(h,"glue_set", getfield(h,"glue_set") * getfield(h,"width")/maxwidth -- interesting ... doesn't matter much
 
 -- \framed[align={lohi,middle}]{$x$}
 -- \framed[align={lohi,middle}]{$ $}
@@ -46,6 +44,9 @@ local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getbox          = nuts.getbox
 local getdir          = nuts.getdir
+local setshift        = nuts.setshift
+local setwidth        = nuts.setwidth
+local getwidth        = nuts.getwidth
 
 local hpack           = nuts.hpack
 local traverse_id     = nuts.traverse_id
@@ -69,7 +70,7 @@ local function doreshapeframedbox(n)
     local maxwidth       = 0
     local totalwidth     = 0
     local averagewidth   = 0
-    local boxwidth       = getfield(box,"width")
+    local boxwidth       = getwidth(box)
     if boxwidth ~= 0 then -- and h.subtype == vlist_code
         local list = getlist(box)
         if list then
@@ -132,25 +133,25 @@ local function doreshapeframedbox(n)
                             elseif checkformath and subtype == equation_code then
                              -- display formulas use a shift
                                 if nofnonzero == 1 then
-                                    setfield(h,"shift",0)
+                                    setshift(h,0)
                                 end
                             end
-                            setfield(h,"width",maxwidth)
+                            setwidth(h,maxwidth)
                         end
                     end
                 end
              -- if vdone then
              --     for v in traverse_id(vlist_code,list) do
-             --         local width = getfield(n,"width")
+             --         local width = getwidth(n)
              --         if width > maxwidth then
-             --             setfield(v,"width",maxwidth)
+             --             setwidth(v,maxwidth)
              --         end
              --     end
              -- end
-                setfield(box,"width",maxwidth)
+                setwidth(box,maxwidth)
                 averagewidth = noflines > 0 and totalwidth/noflines or 0
             else -- e.g. empty math {$ $} or \hbox{} or ...
-                setfield(box,"width",0)
+                setwidth(box,0)
             end
         end
     end
@@ -167,7 +168,7 @@ local function doanalyzeframedbox(n)
     local noflines    = 0
     local firstheight = nil
     local lastdepth   = nil
-    if getfield(box,"width") ~= 0 then
+    if getwidth(box) ~= 0 then
         local list = getlist(box)
         if list then
             local function check(n)
@@ -195,7 +196,7 @@ implement { name = "doreshapeframedbox", actions = doreshapeframedbox, arguments
 implement { name = "doanalyzeframedbox", actions = doanalyzeframedbox, arguments = "integer" }
 
 local function maxboxwidth(box)
-    local boxwidth = getfield(box,"width")
+    local boxwidth = getwidth(box)
     if boxwidth == 0 then
         return 0
     end
@@ -216,10 +217,10 @@ local function maxboxwidth(box)
                 if subtype == box_code or subtype == line_code then
                     lastlinelength = list_dimensions(l,getdir(n))
                 else
-                    lastlinelength = getfield(n,"width")
+                    lastlinelength = getwidth(n)
                 end
             else
-                lastlinelength = getfield(n,"width")
+                lastlinelength = getwidth(n)
             end
             if lastlinelength > maxwidth then
                 maxwidth = lastlinelength

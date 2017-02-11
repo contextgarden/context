@@ -10,21 +10,25 @@ if not sandbox then require("l-sandbox") require("util-sbx") end -- for testing
 
 local type = type
 
-local executers      = resolvers.executers or { }
-resolvers.executers  = executers
+local executers        = resolvers.executers or { }
+resolvers.executers    = executers
 
-local disablerunners = sandbox.disablerunners
-local registerbinary = sandbox.registerbinary
-local registerroot   = sandbox.registerroot
+local disablerunners   = sandbox.disablerunners
+local disablelibraries = sandbox.disablelibraries
+local registerbinary   = sandbox.registerbinary
+local registerlibrary  = sandbox.registerlibrary
+local registerroot     = sandbox.registerroot
 
-local lpegmatch      = lpeg.match
+local lpegmatch        = lpeg.match
 
-local sc_splitter    = lpeg.tsplitat(";")
-local cm_splitter    = lpeg.tsplitat(",")
+local sc_splitter      = lpeg.tsplitat(";")
+local cm_splitter      = lpeg.tsplitat(",")
 
 local execution_mode  directives.register("system.executionmode", function(v) execution_mode = v end)
 local execution_list  directives.register("system.executionlist", function(v) execution_list = v end)
 local root_list       directives.register("system.rootlist",      function(v) root_list      = v end)
+local library_mode    directives.register("system.librarymode",   function(v) library_mode   = v end)
+local library_list    directives.register("system.librarylist",   function(v) library_list   = v end)
 
 sandbox.initializer(function()
     if execution_mode == "none" then
@@ -62,6 +66,30 @@ sandbox.finalizer(function()
         disablerunners()
     end
 end)
+
+sandbox.initializer(function()
+    if library_mode == "none" then
+        -- will be done later
+    elseif library_mode == "list" then
+        if type(library_list) == "string" then
+            library_list = lpegmatch(cm_splitter,library_list)
+        end
+        if type(library_list) == "table" then
+            for i=1,#library_list do
+                registerlibrary(library_list[i])
+            end
+        end
+    else
+        -- whatever else we have configured
+    end
+end)
+
+sandbox.finalizer(function()
+    if library_mode == "none" then
+        disablelibraries()
+    end
+end)
+
 
 -- Let's prevent abuse of these libraries (built-in support still works).
 

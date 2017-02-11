@@ -51,6 +51,7 @@ local getglue          = nuts.getglue
 local isglyph          = nuts.isglyph
 local getcomponents    = nuts.getcomponents
 local getdir           = nuts.getdir
+local getwidth         = nuts.getwidth
 
 local flush_list       = nuts.flush_list
 local count_nodes      = nuts.countall
@@ -317,7 +318,7 @@ local function listtoutf(h,joiner,textonly,last,nodisc)
             end
         elseif textonly then
             if id == glue_code then
-                if getfield(h,"width") > 0 then
+                if getwidth(h) > 0 then
                     w[#w+1] = " "
                 end
             elseif id == hlist_code or id == vlist_code then
@@ -382,7 +383,7 @@ local function nodetodimen(n)
     n = tonut(n)
     local id = getid(n)
     if id == kern_code then
-        local width = getfield(n,"width")
+        local width = getwidth(n)
         if width == 0 then
             return "0pt"
         else
