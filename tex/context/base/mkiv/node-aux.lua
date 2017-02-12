@@ -650,3 +650,13 @@ function nuts.use_components(head,current)
     end
     return head, first, last
 end
+
+-- function nuts.current_tail()
+--     local whatever = texnest[texnest.ptr]
+--     if whatever then
+--         local tail = whatever.tail
+--         if tail then
+--             return tonut(tail)
+--         end
+--     end
+-- end

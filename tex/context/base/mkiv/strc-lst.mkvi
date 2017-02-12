@@ -145,7 +145,7 @@
   {\endgroup}
 
 \unexpanded\def\strc_lists_inject_enhance#listindex#internal%
-  {\normalexpanded{\ctxlatecommand{enhancelist(#listindex)}}}
+  {\normalexpanded{\ctxlatecommand{enhancelist(\number#listindex)}}}
 
 \unexpanded\def\strc_lists_inject_yes[#settings][#userdata]% can be used directly
   {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped (use \let...
@@ -153,7 +153,7 @@
    \setnextinternalreference
    \scratchcounter\clf_addtolist
         references {
-            internal \nextinternalreference
+            internal \locationcount
           % block    {\currentsectionblock}
           % section  structures.sections.currentid()
           % location {\p_location}
@@ -167,12 +167,12 @@
         userdata {\detokenize\expandafter{\normalexpanded{#userdata}}}
    \relax
    \edef\currentlistnumber{\the\scratchcounter}%
-\setxvalue{\??listlocations\currentlist}{\nextinternalreference}%
+\setxvalue{\??listlocations\currentlist}{\the\locationcount}%
    \ifx\p_location\v!here
      % this branch injects nodes !
-     \strc_lists_inject_enhance{\currentlistnumber}{\nextinternalreference}%
+     \strc_lists_inject_enhance{\currentlistnumber}{\the\locationcount}%
      \clf_setinternalreference
-        internal \nextinternalreference
+        internal \locationcount
         view     {\interactionparameter\c!focus}%
      \relax % this will change
      \xdef\currentstructurelistattribute{\the\lastdestinationattribute}%

@@ -82,24 +82,24 @@
 
 \def\headreferenceattributes
   {\iflocation
-   % \ctxlua{structures.lists.taglocation(\nextinternalreference)}% maybe ... tags entry as used
+   % \ctxlua{structures.lists.taglocation(\the\locationcount)}% maybe ... tags entry as used
      attr \destinationattribute \currentstructureattribute
      attr \referenceattribute   \currentstructurereferenceattribute
-   % attr \internalattribute    \nextinternalreference
+   % attr \internalattribute    \locationcount
    \fi}
 
 \def\setinlineheadreferenceattributes
   {\ifconditional\headisdisplay \else \iflocation
      \attribute\destinationattribute\currentstructureattribute
      \attribute\referenceattribute  \currentstructurereferenceattribute
-   % \attribute\internalattribute   \nextinternalreference
+   % \attribute\internalattribute   \locationcount
    \fi \fi}
 
 \def\docheckheadreference
   {\edef\currentheadinteraction{\headparameter\c!interaction}%
    \ifx\currentheadinteraction\v!list
      % setuphead[<section>][interaction=list,...]
-     \strc_references_get_simple_reference{*\nextinternalreference}%
+     \strc_references_get_simple_reference{*\the\locationcount}%
      \let\currentstructurereferenceattribute\currentreferenceattribute
    \else\ifx\currentheadinteraction\v!reference
      % setuphead[<section>][interaction=reference,...] start<section>[backreference=abc,...]

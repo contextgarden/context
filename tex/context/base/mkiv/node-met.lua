@@ -64,8 +64,6 @@ nodes                       = nodes or { }
 local nodes                 = nodes
 
 local nodecodes             = nodes.nodecodes
-local hlist_code            = nodecodes.hlist
-local vlist_code            = nodecodes.vlist
 
 nodes.tostring              = node.tostring or tostring
 nodes.copy                  = node.copy
@@ -197,7 +195,6 @@ local n_getfield        = node.getfield
 local n_setattr         = node.setattr
 local n_getattr         = node.getattr
 local n_getdisc         = node.getdisc
-local n_getwhd          = node.getwhd
 local n_getleader       = node.getleader
 
 local n_setnext         = node.setnext or -- always

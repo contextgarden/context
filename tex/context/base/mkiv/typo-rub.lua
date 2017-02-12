@@ -75,7 +75,6 @@ local kerncodes       = nodes.kerncodes
 local font_code       = kerncodes.font
 
 local nodepool        = nuts.pool
-local new_hlist       = nodepool.hlist
 local new_kern        = nodepool.kern
 
 local setprop         = nuts.setprop

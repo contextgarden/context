@@ -23,10 +23,10 @@
   {\clf_setinternalreference
      prefix    {\currentstructurereferenceprefix}%
      reference {\currentstructurereference}
-     internal  \nextinternalreference
+     internal  \locationcount
      view      {\interactionparameter\c!focus}%
    \relax
    \xdef\currentstructureattribute  {\the\lastdestinationattribute}%
-   \xdef\currentstructuresynchronize{\strc_lists_inject_enhance{#1}{\nextinternalreference}}}
+   \xdef\currentstructuresynchronize{\strc_lists_inject_enhance{#1}{\the\locationcount}}}
 
 \protect \endinput

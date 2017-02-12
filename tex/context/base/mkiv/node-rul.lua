@@ -64,15 +64,9 @@ local listcodes          = nodes.listcodes
 local kerncodes          = nodes.kerncodes
 
 local glyph_code         = nodecodes.glyph
-local disc_code          = nodecodes.disc
-local rule_code          = nodecodes.rule
-local boundary_code      = nodecodes.boundary
 local localpar_code      = nodecodes.localpar
 local dir_code           = nodecodes.dir
-local math_code          = nodecodes.math
 local glue_code          = nodecodes.glue
-local penalty_code       = nodecodes.penalty
-local kern_code          = nodecodes.kern
 local hlist_code         = nodecodes.hlist
 
 local indent_code        = listcodes.indent
@@ -109,13 +103,10 @@ local v_left             = variables.left
 local v_right            = variables.right
 local v_local            = variables["local"]
 local v_yes              = variables.yes
-local v_all              = variables.all
 local v_foreground       = variables.foreground
 
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
-local fontunicodes       = fonthashes.unicodes
-local fontcharacters     = fonthashes.characters
 local fontresources      = fonthashes.resources
 
 local dimenfactor        = fonts.helpers.dimenfactor
@@ -476,6 +467,7 @@ local function find_attr(head,attr)
 end
 
 function nodes.linefillers.handler(head)
+-- local current = tonut(head) -- when we hook into the contributers
     for current in traverse_id(hlist_code,tonut(head)) do
         if getsubtype(current) == line_code then
             local list = getlist(current)

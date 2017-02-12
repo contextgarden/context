@@ -545,7 +545,7 @@
    \clf_setdestinationattribute
         {%
             references {%
-                  internal  \nextinternalreference
+                  internal  \locationcount
                 % block     {\currentsectionblock}% move to lua
                   view      {\interactionparameter\c!focus}%
                   prefix    {\currentstructurecomponentreferenceprefix}%
@@ -621,7 +621,7 @@
       \fi
       }
       references {
-          internal  \nextinternalreference
+          internal  \locationcount
         % block     {\currentsectionblock}
           reference {\currentstructurecomponentreference}
           prefix    {\currentstructurecomponentreferenceprefix}
@@ -670,10 +670,10 @@
    \relax
    \xdef\m_strc_counters_last_registered_index{\the\scratchcounter}%
    \clf_setinternalreference
-     internal \nextinternalreference
+     internal \locationcount
    \relax
    \xdef\m_strc_counters_last_registered_attribute  {\the\lastdestinationattribute}%
-   \xdef\m_strc_counters_last_registered_synchronize{\strc_lists_inject_enhance{\m_strc_counters_last_registered_index}{\nextinternalreference}}}
+   \xdef\m_strc_counters_last_registered_synchronize{\strc_lists_inject_enhance{\m_strc_counters_last_registered_index}{\the\locationcount}}}
 
 \let\m_strc_counters_last_registered_index      \relax
 \let\m_strc_counters_last_registered_attribute  \relax

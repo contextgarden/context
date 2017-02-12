@@ -30,12 +30,16 @@ local setchar            = nuts.setchar
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
 local getlang            = nuts.setlang
+local getboth            = nuts.getboth
+local setlist            = nuts.setlist
+local setlink            = nuts.setlink
 local isglyph            = nuts.isglyph
 
 local copy_node          = nuts.copy
 local remove_node        = nuts.remove
 local traverse_id        = nuts.traverse_id
 local flush_list         = nuts.flush_list
+local flush_node         = nuts.flush_node
 
 local nodecodes          = nodes.nodecodes
 local disccodes          = nodes.disccodes
@@ -238,3 +242,46 @@ function languages.serializediscretionary(d) -- will move to tracer
     )
 end
 
+-- --
+
+local wiped = 0
+
+local function wipe(head,delayed)
+    local p, n = getboth(delayed)
+    local _, _, h, _, _, t = getdisc(delayed,true)
+    if p or n then
+        if h then
+            setlink(p,h)
+            setlink(t,n)
+            setfield(delayed,"replace")
+        else
+            setlink(p,n)
+        end
+    end
+    if head == delayed then
+        head = h
+    end
+    wiped = wiped + 1
+    flush_node(delayed)
+    return head
+end
+
+function languages.flatten(head)
+    local nuthead = tonut(head)
+    local delayed = nil
+    for d in traverse_id(disc_code,nuthead) do
+        if delayed then
+            nuthead = wipe(nuthead,delayed)
+        end
+        delayed = d
+    end
+    if delayed then
+        return tonode(wipe(nuthead,delayed)), true
+    else
+        return head, false
+    end
+end
+
+function languages.nofflattened()
+    return wiped -- handy for testing
+end

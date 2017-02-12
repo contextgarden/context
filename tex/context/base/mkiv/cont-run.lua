@@ -90,7 +90,7 @@ local function logsandbox(details)
     end
 end
 
-local ioopen = sandbox.original(io.open)
+local ioopen = sandbox.original(io.open) -- dummy call
 
 local function logsandboxfiles(name,what,asked,okay)
     -- we're only interested in permitted access

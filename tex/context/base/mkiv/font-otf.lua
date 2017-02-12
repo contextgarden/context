@@ -24,7 +24,6 @@ local gmatch, gsub, find, match, lower, strip = string.gmatch, string.gsub, stri
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local abs = math.abs
 local reversed, concat, insert, remove, sortedkeys = table.reversed, table.concat, table.insert, table.remove, table.sortedkeys
-local ioflush = io.flush
 local fastcopy, tohash, derivetable, copy = table.fastcopy, table.tohash, table.derive, table.copy
 local formatters = string.formatters
 local P, R, S, C, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.match

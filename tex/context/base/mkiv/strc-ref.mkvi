@@ -219,7 +219,7 @@
        \clf_setdestinationattribute
             {%
                 references {%
-                    internal  \nextinternalreference
+                    internal  \locationcount
                   % block     {\currentsectionblock}%
                     view      {\interactionparameter\c!focus}%
                 \ifx\referenceprefix\empty\else
@@ -281,7 +281,7 @@
        \clf_setdestinationattribute
             {%
                 references {%
-                    internal  \nextinternalreference
+                    internal  \locationcount
                  %  block     {\currentsectionblock}%
                     view      {\interactionparameter\c!focus}%
                 \ifx\referenceprefix\empty\else
@@ -310,7 +310,7 @@
      \clf_setdestinationattribute
         {%
             references {%
-                internal  \nextinternalreference
+                internal  \locationcount
               % block     {\currentsectionblock}%
                 view      {\interactionparameter\c!focus}%
             \ifx\referenceprefix\empty\else
@@ -401,7 +401,7 @@
                 prefix    {\referenceprefix}%
             \fi
                 reference {#label}%
-                internal  \nextinternalreference
+                internal  \locationcount
             }%
             metadata {%
                 kind {\s!page}%
@@ -424,7 +424,7 @@
             references {%
                 view      {\interactionparameter\c!focus}%
                 reference {#label}%
-                internal  \nextinternalreference
+                internal  \locationcount
             }%
             metadata {%
                 kind {\s!page}%
@@ -847,7 +847,7 @@
 \letvalue{\??savedinternalreference\s!default}\!!zerocount
 
 \unexpanded\def\storeinternalreference#1#2%
-  {\setxvalue{\??savedinternalreference\currentstructurename}{#2}}
+  {\setxvalue{\??savedinternalreference\currentstructurename}{\number#2}}
 
 \newconditional\preferpagereferences
 

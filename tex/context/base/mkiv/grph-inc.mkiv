@@ -316,7 +316,7 @@
    \edef\p_reference{\externalfigureparameter\c!reference}%
    %
    \dostarttagged\t!image\empty
-   \clf_figure_push
+   \clf_figure_push {
         name       {\p_grph_include_name}%
         label      {\ifx\p_label\empty\p_grph_include_label\else\p_label\fi}%
         page       {\externalfigureparameter\c!page}%
@@ -343,7 +343,7 @@
     \ifx\p_height\empty \else
         height     \dimexpr\p_height\relax
     \fi
-   \relax
+   }%\relax
    \clf_figure_identify
    \relax
    \ifconditional\c_grph_include_test_only

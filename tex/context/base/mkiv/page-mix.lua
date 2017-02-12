@@ -72,9 +72,6 @@ local getwidth            = nuts.getwidth
 local getheight           = nuts.getheight
 local getdepth            = nuts.getdepth
 
-local texgetcount         = tex.getcount
-local texgetglue          = tex.getglue
-
 local theprop             = nuts.theprop
 
 local nodepool            = nuts.pool

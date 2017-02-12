@@ -55,7 +55,6 @@ graphics.backgrounds    = backgrounds
 -- -- --
 
 local texsetattribute   = tex.setattribute
-local texgetcount       = tex.getcount
 local pdfgetpos         = pdf.getpos  -- why not a generic name !
 
 local a_textbackground  = attributes.private("textbackground")
@@ -71,9 +70,6 @@ local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
 
 local processranges     = nodes.processranges
-
-local v_yes             = interfaces.variables.yes
-local v_always          = interfaces.variables.always
 
 local unsetvalue        = attributes.unsetvalue
 

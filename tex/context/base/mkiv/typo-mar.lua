@@ -99,8 +99,6 @@ local vlist_code         = nodecodes.vlist
 local whatsit_code       = nodecodes.whatsit
 local userdefined_code   = whatsitcodes.userdefined
 
-local n_flush_node       = nodes.flush
-
 local nodepool           = nuts.pool
 
 local new_usernumber     = nodepool.usernumber
@@ -949,14 +947,6 @@ end
 
 -- Somehow the vbox builder (in combinations) gets pretty confused and decides to
 -- go horizontal. So this needs more testing.
-
-prependaction("finalizers",  "lists",       "typesetters.margins.localhandler")
-prependaction("mvlbuilders", "normalizers", "typesetters.margins.globalhandler")
-prependaction("shipouts",    "normalizers", "typesetters.margins.finalhandler")
-
-disableaction("finalizers",  "typesetters.margins.localhandler")
-disableaction("mvlbuilders", "typesetters.margins.globalhandler")
-disableaction("shipouts",    "typesetters.margins.finalhandler")
 
 enablelocal = function()
     enableaction("finalizers", "typesetters.margins.localhandler")

@@ -107,7 +107,6 @@ local insert_node_before  = nuts.insert_before
 local insert_node_after   = nuts.insert_after
 local traverse_nodes      = nuts.traverse
 local apply_to_nodes      = nuts.apply
-local find_tail           = nuts.tail
 
 local effectiveglue       = nuts.effective_glue
 

@@ -18,9 +18,9 @@ local formatters                 = string.formatters
 local settings_to_array          = utilities.parsers.settings_to_array
 local settings_to_hash           = utilities.parsers.settings_to_hash
 local allocate                   = utilities.storage.allocate
-                                 
+
 local v_default                  = interfaces.variables.default
-                                 
+
 local implement                  = interfaces.implement
 
 local fonts                      = fonts
@@ -49,7 +49,7 @@ local extras                     = selectfont.extras
 local alternatives               = selectfont.alternatives
 local presets                    = selectfont.presets
 local defaults                   = selectfont.defaults
-                                 
+
 local ctx_definefontsynonym      = context.definefontsynonym
 local ctx_resetfontfallback      = context.resetfontfallback
 local ctx_startfontclass         = context.startfontclass
@@ -70,7 +70,6 @@ local report_selectfont   = logs.reporter("selectfont")
 local report_files        = logs.reporter("selectfont","files")
 local report_features     = logs.reporter("selectfont","features")
 local report_goodies      = logs.reporter("selectfont","goodies")
-local report_alternatives = logs.reporter("selectfont","alternatives")
 local report_typescript   = logs.reporter("selectfont","typescripts")
 
 defaults["rm"] = { features = { ["sc"] = "*,f:smallcaps" } }

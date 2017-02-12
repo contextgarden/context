@@ -65,9 +65,7 @@ local getbox            = nuts.getbox
 local getid             = nuts.getid
 local getwhd            = nuts.getwhd
 
-local n_flush_node      = nodes.flush
-
-local hlist_code        = nodes.listcodes.hlist
+----- hlist_code        = nodes.listcodes.hlist
 
 local find_tail         = nuts.tail
 

@@ -91,9 +91,6 @@ local copy_nut   = nuts.copy
 local new_nut    = nuts.new
 local flush_nut  = nuts.flush
 
-local copy_node  = nodes.copy
-local new_node   = nodes.new
-
 -- at some point we could have a dual set (the overhead of tonut is not much larger than
 -- metatable associations at the lua/c end esp if we also take assignments into account
 

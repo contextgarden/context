@@ -28,7 +28,6 @@ local findtail        = nuts.tail
 
 local traverse_id     = nuts.traverse_id
 local list_dimensions = nuts.dimensions
-local copy_node       = nuts.copy
 
 local tracedrule      = nodes.tracers.pool.nuts.rule
 

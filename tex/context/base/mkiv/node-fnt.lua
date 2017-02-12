@@ -157,46 +157,62 @@ end
 
 fonts.setdiscexpansion(true)
 
+local function start_trace(head)
+    run = run + 1
+    report_fonts()
+    report_fonts("checking node list, run %s",run)
+    report_fonts()
+    local n = tonut(head)
+    while n do
+        local char, id = isglyph(n)
+        if char then
+            local font = getfont(n)
+            local attr = getattr(n,0) or 0
+            report_fonts("font %03i, dynamic %03i, glyph %C",font,attr,char)
+        elseif id == disc_code then
+            report_fonts("[disc] %s",nodes.listtoutf(n,true,false,n))
+        elseif id == boundary_code then
+            report_fonts("[boundary] %i:%i",getsubtype(n),getfield(n,"value"))
+        else
+            report_fonts("[%s]",nodecodes[id])
+        end
+        n = getnext(n)
+    end
+end
+
+local function stop_trace(u,usedfonts,a,attrfonts,b,basefonts,r,redundant,e,expanders)
+    report_fonts()
+    report_fonts("statics : %s",u > 0 and concat(keys(usedfonts)," ") or "none")
+    report_fonts("dynamics: %s",a > 0 and concat(keys(attrfonts)," ") or "none")
+    report_fonts("built-in: %s",b > 0 and b or "none")
+    report_fonts("removed : %s",r > 0 and r or "none")
+if expanders then
+    report_fonts("expanded: %s",e > 0 and e or "none")
+end
+    report_fonts()
+end
+
 function handlers.characters(head)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)
 
-    local usedfonts  = { }
-    local attrfonts  = { }
-    local basefonts  = { }
-    local a, u, b, r = 0, 0, 0, 0
-    local basefont   = nil
-    local prevfont   = nil
-    local prevattr   = 0
-    local done       = false
-    local variants   = nil
-    local redundant  = nil
-    local none       = false
+    local usedfonts = { }
+    local attrfonts = { }
+    local basefonts = { }
+    local basefont  = nil
+    local prevfont  = nil
+    local prevattr  = 0
+    local done      = false
+    local variants  = nil
+    local redundant = nil
+    local none      = false
+    local nuthead   = tonut(head)
+
+    local a, u, b, r, e = 0, 0, 0, 0, 0
 
     if trace_fontrun then
-        run = run + 1
-        report_fonts()
-        report_fonts("checking node list, run %s",run)
-        report_fonts()
-        local n = tonut(head)
-        while n do
-            local char, id = isglyph(n)
-            if char then
-                local font = getfont(n)
-                local attr = getattr(n,0) or 0
-                report_fonts("font %03i, dynamic %03i, glyph %C",font,attr,char)
-            elseif id == disc_code then
-                report_fonts("[disc] %s",nodes.listtoutf(n,true,false,n))
-            elseif id == boundary_code then
-                report_fonts("[boundary] %i:%i",getsubtype(n),getfield(n,"value"))
-            else
-                report_fonts("[%s]",nodecodes[id])
-            end
-            n = getnext(n)
-        end
+        start_trace(head)
     end
-
-    local nuthead = tonut(head)
 
     -- There is no gain in checking for a single glyph and then having a fast path. On the
     -- metafun manual (with some 2500 single char lists) the difference is just noise.
@@ -337,8 +353,6 @@ function handlers.characters(head)
         end
     end
 
-    local e = 0
-
     if force_discrun then
 
         -- basefont is not supported in disc only runs ... it would mean a lot of
@@ -405,16 +419,9 @@ function handlers.characters(head)
     end
 
     if trace_fontrun then
-        report_fonts()
-        report_fonts("statics : %s",u > 0 and concat(keys(usedfonts)," ") or "none")
-        report_fonts("dynamics: %s",a > 0 and concat(keys(attrfonts)," ") or "none")
-        report_fonts("built-in: %s",b > 0 and b or "none")
-        report_fonts("removed : %s",redundant and #redundant > 0 and #redundant or "none")
-    if expanders then
-        report_fonts("expanded: %s",e > 0 and e or "none")
+        stop_trace(u,usedfonts,a,attrfonts,b,basefonts,r,redundant,e,expanders)
     end
-        report_fonts()
-    end
+
     -- in context we always have at least 2 processors
     if u == 0 then
         -- skip
@@ -425,7 +432,9 @@ function handlers.characters(head)
         for i=1,#processors do
             local h, d = processors[i](head,font,attr)
             if d then
-                head = h or head
+                if h then
+                    head = h
+                end
                 done = true
             end
         end
@@ -436,7 +445,9 @@ function handlers.characters(head)
             for i=1,#processors do
                 local h, d = processors[i](head,font,attr)
                 if d then
-                    head = h or head
+                    if h then
+                        head = h
+                    end
                     done = true
                 end
             end
@@ -450,7 +461,9 @@ function handlers.characters(head)
             for i=1,#processors do
                 local h, d = processors[i](head,font,attribute)
                 if d then
-                    head = h or head
+                    if h then
+                        head = h
+                    end
                     done = true
                 end
             end
@@ -461,7 +474,9 @@ function handlers.characters(head)
                 for i=1,#processors do
                     local h, d = processors[i](head,font,attribute)
                     if d then
-                        head = h or head
+                        if h then
+                            head = h
+                        end
                         done = true
                     end
                 end

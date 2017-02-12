@@ -366,6 +366,7 @@ tasks.new {
 tasks.new {
     name      = "shipouts",
     arguments = 0,
+ -- nostate   = true, -- maybe but only for main ones so little gain
     processor = nodeprocessor,
     sequence  = {
         "before",      -- for users
@@ -418,3 +419,15 @@ tasks.new {
 --         "after",       -- for users
 --     }
 -- }
+
+tasks.new {
+    name      = "contributers",
+    arguments = 1,
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- for users
+        "normalizers",
+        "after",       -- for users
+    }
+}
+

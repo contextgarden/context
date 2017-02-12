@@ -113,7 +113,6 @@ local formatters = string.formatters
 local insert = table.insert
 
 local registertracker    = trackers.register
-local registerdirective  = directives.register
 
 local logs               = logs
 local trackers           = trackers
@@ -146,7 +145,6 @@ local trace_discruns     = false  registertracker("otf.discruns",     function(v
 local trace_compruns     = false  registertracker("otf.compruns",     function(v) trace_compruns     = v end)
 local trace_testruns     = false  registertracker("otf.testruns",     function(v) trace_testruns     = v end)
 
------ zwnjruns           = true   registerdirective("otf.zwnjruns",     function(v) zwnjruns = v end)
 local optimizekerns      = true
 
 local report_direct      = logs.reporter("fonts","otf direct")
@@ -203,7 +201,6 @@ local flush_node         = nuts.flush_node
 local end_of_math        = nuts.end_of_math
 local traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
-local remove_node        = nuts.remove
 local set_components     = nuts.set_components
 local take_components    = nuts.take_components
 local count_components   = nuts.count_components
@@ -957,7 +954,6 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
         return head, start, false
     else
         local prev = start
-        local done = false
         while snext do
             local nextchar = ischar(snext,currentfont)
             if nextchar then
@@ -977,8 +973,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
                             if trace_kerns then
                                 logprocess("%s: shifting single %s by %p",pref(dataset,sequence),gref(nextchar),k)
                             end
-                            done = true
-                            break
+                            return head, start, true
                         end
                     end
                     if a and #a > 0 then
@@ -995,15 +990,13 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
                             logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p) as %s",pref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h,injection or "injections")
                         end
                     end
-                    done = true
-                    break
+                    return head, start, true
                 elseif krn ~= 0 then
                     local k = setkern(snext,factor,rlmode,krn,injection)
                     if trace_kerns then
                         logprocess("%s: inserting kern %p between %s and %s as %s",pref(dataset,sequence),k,gref(getchar(prev)),gref(nextchar),injection or "injections")
                     end
-                    done = true
-                    break
+                    return head, start, true
                 else -- can't happen
                     break
                 end
@@ -1011,7 +1004,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,step,i,inje
                 break
             end
         end
-        return head, start, done
+        return head, start, false
     end
 end
 
@@ -1174,7 +1167,6 @@ function handlers.gpos_mark2mark(head,start,dataset,sequence,markanchors,rlmode)
 end
 
 function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,step,i) -- to be checked
-    local done = false
     local startchar = getchar(start)
     if marks[startchar] then
         if trace_cursive then
@@ -1182,7 +1174,7 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,st
         end
     else
         local nxt = getnext(start)
-        while not done and nxt do
+        while nxt do
             local nextchar = ischar(nxt,currentfont)
             if not nextchar then
                 break
@@ -1200,7 +1192,7 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,st
                             if trace_cursive then
                                 logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
                             end
-                            done = true
+                            return head, start, true
                         end
                     end
                 end
@@ -1208,7 +1200,7 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,st
             end
         end
     end
-    return head, start, done
+    return head, start, false
 end
 
 --[[ldx--
@@ -1528,7 +1520,6 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
         local kerns     = step.coverage[startchar] -- always 1 step
         if kerns then
             local prev = start
-            local done = false
             while snext do
                 local nextchar = ischar(snext,currentfont)
                 if not nextchar then
@@ -1550,8 +1541,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                             if trace_kerns then
                                 logprocess("%s: shifting single %s by %p",cref(dataset,sequence),gref(startchar),k)
                             end
-                            done = true
-                            break
+                            return head, start, true
                         end
                     end
                     if a and #a > 0 then
@@ -1568,20 +1558,17 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                             logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
                         end
                     end
-                    done = true
-                    break
+                    return head, start, true
                 elseif krn ~= 0 then
                     local k = setkern(snext,factor,rlmode,krn)
                     if trace_kerns then
                         logprocess("%s: inserting kern %s between %s and %s",cref(dataset,sequence),k,gref(getchar(prev)),gref(nextchar))
                     end
-                    done = true
-                    break
+                    return head, start, true
                 else
                     break
                 end
             end
-            return head, start, done
         end
     end
     return head, start, false
@@ -1780,14 +1767,13 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
     local startchar   = getchar(start)
     local exitanchors = steps[1].coverage[startchar] -- always 1 step
     if exitanchors then
-        local done = false
         if marks[startchar] then
             if trace_cursive then
                 logprocess("%s: ignoring cursive for mark %s",pref(dataset,sequence),gref(startchar))
             end
         else
             local nxt = getnext(start)
-            while not done and nxt do
+            while nxt do
                 local nextchar = ischar(nxt,currentfont)
                 if not nextchar then
                     break
@@ -1805,8 +1791,7 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
                                 if trace_cursive then
                                     logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
                                 end
-                                done = true
-                                break
+                                return head, start, true
                             end
                         end
                     elseif trace_bugs then
@@ -1816,13 +1801,10 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
                 end
             end
         end
-        return head, start, done
-    else
-        if trace_cursive and trace_details then
-            logprocess("%s, cursive %s is already done",pref(dataset,sequence),gref(getchar(start)),alreadydone)
-        end
-        return head, start, false
+    elseif trace_cursive and trace_details then
+        logprocess("%s, cursive %s is already done",pref(dataset,sequence),gref(getchar(start)),alreadydone)
     end
+    return head, start, false
 end
 
 -- what pointer to return, spec says stop
@@ -3278,23 +3260,6 @@ end
     end
 end
 
--- local function d_run_single(prev,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
---     local a = attr and getattr(prev,0)
---     if not a or (a == attr) then
---         local char = ischar(prev) -- can be disc
---         if char then
---             local lookupmatch = lookupcache[char]
---             if lookupmatch then
---                 local h, d, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
---                 if ok then
---                     done = true
---                     success = true
---                 end
---             end
---         end
---     end
--- end
-
 local function k_run_single(sub,injection,last,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
 --     local a = attr and getattr(sub,0)
 local a -- happens often so no assignment is faster
@@ -3432,32 +3397,6 @@ end
         end
     end
 end
-
--- local function d_run_multiple(prev,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
---     local a = attr and getattr(prev,0)
---     if not a or (a == attr) then
---         local char = ischar(prev) -- can be disc
---         if char then
---             for i=1,nofsteps do
---                 local step        = steps[i]
---                 local lookupcache = step.coverage
---                 if lookupcache then
---                     local lookupmatch = lookupcache[char]
---                     if lookupmatch then
---                         -- we could move all code inline but that makes things even more unreadable
---                         local h, d, ok = handler(head,prev,dataset,sequence,lookupmatch,rlmode,step,i)
---                         if ok then
---                             done = true
---                             break
---                         end
---                     end
---                 else
---                     report_missing_coverage(dataset,sequence)
---                 end
---             end
---         end
---     end
--- end
 
 local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
 --     local a = attr and getattr(sub,0)
@@ -3605,7 +3544,6 @@ local function featuresprocessor(head,font,attr)
         local sequence     = dataset[3] -- sequences[s] -- also dataset[5]
         local rlparmode    = 0
         local topstack     = 0
-        local success      = false
         local typ          = sequence.type
         local gpossing     = typ == "gpos_single" or typ == "gpos_pair" -- store in dataset
         local handler      = handlers[typ]
@@ -3615,7 +3553,7 @@ local function featuresprocessor(head,font,attr)
             -- this permits injection, watch the different arguments
             local h, d, ok = handler(head,head,dataset,sequence,nil,nil,nil,0,font,attr)
             if ok then
-                success = true
+                done = true
                 if h then
                     head = h
                 end
@@ -3642,7 +3580,7 @@ end
                                     local ok
                                     head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
                                     if ok then
-                                        success = true
+                                        done = true
                                         break
                                     end
                                 end
@@ -3692,7 +3630,7 @@ end
                                     local ok
                                     head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
                                     if ok then
-                                        success = true
+                                        done = true
                                  -- elseif gpossing and zwnjruns and char == zwnj then
                                  --     discrun(start,d_run,font,attr,lookupcache)
                                     end
@@ -3718,7 +3656,7 @@ end
                                 start, ok = comprun(start,c_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
                             end
                             if ok then
-                                success = true
+                                done = true
                             end
                         elseif id == math_code then
                             start = getnext(end_of_math(start))
@@ -3761,7 +3699,7 @@ end
                                         local ok
                                         head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,i)
                                         if ok then
-                                            success = true
+                                            done = true
                                             break
                                         elseif not start then
                                             -- don't ask why ... shouldn't happen
@@ -3794,7 +3732,7 @@ end
                             start, ok = comprun(start,c_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
                         end
                         if ok then
-                            success = true
+                            done = true
                         end
                     elseif id == math_code then
                         start = getnext(end_of_math(start))
@@ -3809,9 +3747,6 @@ end
             end
         end
 
-        if success then
-            done = true
-        end
         if trace_steps then -- ?
             registerstep(head)
         end

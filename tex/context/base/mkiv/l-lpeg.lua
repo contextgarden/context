@@ -839,28 +839,48 @@ end
 local p_false = P(false)
 local p_true  = P(true)
 
-local function make(t)
-    local function making(t)
-        local p    = p_false
-        local keys = sortedkeys(t)
-        for i=1,#keys do
-            local k = keys[i]
-            if k ~= "" then
-                local v = t[k]
-                if v == true then
-                    p = p + P(k) * p_true
-                elseif v == false then
-                    -- can't happen
-                else
-                    p = p + P(k) * making(v)
-                end
-            end
-        end
-        if t[""] then
-            p = p + p_true
-        end
-        return p
-    end
+-- local function making(t)
+--     local p    = p_false
+--     local keys = sortedkeys(t)
+--     for i=1,#keys do
+--         local k = keys[i]
+--         if k ~= "" then
+--             local v = t[k]
+--             if v == true then
+--                 p = p + P(k) * p_true
+--             elseif v == false then
+--                 -- can't happen
+--             else
+--                 p = p + P(k) * making(v)
+--             end
+--         end
+--     end
+--     if t[""] then
+--         p = p + p_true
+--     end
+--     return p
+-- end
+
+-- local function make(t)
+--     local p    = p_false
+--     local keys = sortedkeys(t)
+--     for i=1,#keys do
+--         local k = keys[i]
+--         if k ~= "" then
+--             local v = t[k]
+--             if v == true then
+--                 p = p + P(k) * p_true
+--             elseif v == false then
+--                 -- can't happen
+--             else
+--                 p = p + P(k) * making(v)
+--             end
+--         end
+--     end
+--     return p
+-- end
+
+local function make(t,rest)
     local p    = p_false
     local keys = sortedkeys(t)
     for i=1,#keys do
@@ -872,9 +892,12 @@ local function make(t)
             elseif v == false then
                 -- can't happen
             else
-                p = p + P(k) * making(v)
+                p = p + P(k) * make(v,v[""])
             end
         end
+    end
+    if rest then
+        p = p + p_true
     end
     return p
 end
@@ -990,21 +1013,21 @@ end
 -- local t = { "a", "abc", "ac", "abe", "abxyz", "xy", "bef","aa" }
 -- local p = lpeg.Cs((lpeg.utfchartabletopattern(t)/string.upper + 1)^1)
 
--- inspect(lpegmatch(p,"a"))
--- inspect(lpegmatch(p,"aa"))
--- inspect(lpegmatch(p,"aaaa"))
--- inspect(lpegmatch(p,"ac"))
--- inspect(lpegmatch(p,"bc"))
--- inspect(lpegmatch(p,"zzbczz"))
--- inspect(lpegmatch(p,"zzabezz"))
--- inspect(lpegmatch(p,"ab"))
--- inspect(lpegmatch(p,"abc"))
--- inspect(lpegmatch(p,"abe"))
--- inspect(lpegmatch(p,"xa"))
--- inspect(lpegmatch(p,"bx"))
--- inspect(lpegmatch(p,"bax"))
--- inspect(lpegmatch(p,"abxyz"))
--- inspect(lpegmatch(p,"foobarbefcrap"))
+-- inspect(lpegmatch(p,"a")=="A")
+-- inspect(lpegmatch(p,"aa")=="AA")
+-- inspect(lpegmatch(p,"aaaa")=="AAAA")
+-- inspect(lpegmatch(p,"ac")=="AC")
+-- inspect(lpegmatch(p,"bc")=="bc")
+-- inspect(lpegmatch(p,"zzbczz")=="zzbczz")
+-- inspect(lpegmatch(p,"zzabezz")=="zzABEzz")
+-- inspect(lpegmatch(p,"ab")=="Ab")
+-- inspect(lpegmatch(p,"abc")=="ABC")
+-- inspect(lpegmatch(p,"abe")=="ABE")
+-- inspect(lpegmatch(p,"xa")=="xA")
+-- inspect(lpegmatch(p,"bx")=="bx")
+-- inspect(lpegmatch(p,"bax")=="bAx")
+-- inspect(lpegmatch(p,"abxyz")=="ABXYZ")
+-- inspect(lpegmatch(p,"foobarbefcrap")=="foobArBEFcrAp")
 
 -- local t = { ["^"] = 1, ["^^"] = 2, ["^^^"] = 3, ["^^^^"] = 4 }
 -- local p = lpeg.Cs((lpeg.utfchartabletopattern(t)/t + 1)^1)

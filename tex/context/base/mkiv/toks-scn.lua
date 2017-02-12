@@ -153,8 +153,25 @@ tokens.converters = {
     toglue    = "todimen",
 }
 
+-- We could just pickup a keyword but then we really need to make sure
+-- that no number follows it when that is the assignment and adding
+-- an optional = defeats the gain in speed. Currently we have sources
+-- with no spaces (\startcontextdefinitioncode ...) so it fails there.
+--
+-- Another drawback is that we then need to use { } instead of ending
+-- with \relax (as we can do now) but that is no big deal. It's just
+-- that I then need to check the TeX end. More pain than gain and a bit
+-- risky too.
+
 local f_if       = formatters[    "  if scankeyword('%s') then data['%s'] = scan%s()"]
 local f_elseif   = formatters["  elseif scankeyword('%s') then data['%s'] = scan%s()"]
+
+----- f_if       = formatters["  local key = scanword() if key == '' then break elseif key == '%s' then data['%s'] = scan%s()"]
+----- f_elseif   = formatters["  elseif key == '%s' then data['%s'] = scan%s()"]
+
+----- f_if_x     = formatters[    "  if not data['%s'] and scankeyword('%s') then data['%s'] = scan%s()"]
+----- f_elseif_x = formatters["  elseif not data['%s'] and scankeyword('%s') then data['%s'] = scan%s()"]
+
 local f_local    = formatters["local scan%s = scanners.%s"]
 local f_scan     = formatters["scan%s()"]
 local f_shortcut = formatters["local %s = scanners.converters.%s"]
@@ -162,6 +179,11 @@ local f_shortcut = formatters["local %s = scanners.converters.%s"]
 local f_if_c     = formatters[    "  if scankeyword('%s') then data['%s'] = %s(scan%s())"]
 local f_elseif_c = formatters["  elseif scankeyword('%s') then data['%s'] = %s(scan%s())"]
 local f_scan_c   = formatters["%s(scan%s())"]
+
+-- see above
+--
+----- f_if_c     = formatters["  local key = scanword() if key == '' then break elseif key == '%s' then data['%s'] = %s(scan%s())"]
+----- f_elseif_c = formatters["  elseif k == '%s' then data['%s'] = %s(scan%s())"]
 
 local f_any      = formatters["  else local key = scanword() if key then data[key] = scan%s() else break end end"]
 local f_any_c    = formatters["  else local key = scanword() if key then data[key] = %s(scan%s()) else break end end"]
@@ -269,6 +291,7 @@ function tokens.compile(specification)
                     else
                         m = m + 1
                         r[m] = (m > 1 and f_elseif   or f_if  )(t1,t1,t2)
+                     -- r[m] = (m > 1 and f_elseif_x or f_if_x)(t1,t1,t1,t2)
                     end
                 end
             end
@@ -291,9 +314,9 @@ function tokens.compile(specification)
             end
             tokens._action = a
             for i=1,#a do
-                code    = f_action_f(i,code)
---                 f[#f+1] = f_action_s(i,i)
-n = n + 1 f[n] = f_action_s(i,i)
+                code = f_action_f(i,code)
+                n    = n + 1
+                f[n] = f_action_s(i,i)
             end
             code = f_simple(f,code)
         else
@@ -309,9 +332,9 @@ n = n + 1 f[n] = f_action_s(i,i)
             if a then
                 tokens._action = a
                 for i=1,#a do
-                    code    = f_action_f(i,code)
---                     f[#f+1] = f_action_s(i,i)
-n = n + 1 f[n] = f_action_s(i,i)
+                    code = f_action_f(i,code)
+                    n    = n + 1
+                    f[n] = f_action_s(i,i)
                 end
             end
             code = f_table(f,ti,code)
@@ -319,9 +342,9 @@ n = n + 1 f[n] = f_action_s(i,i)
             code = f_scan(ti)
             tokens._action = a
             for i=1,#a do
-                code    = f_action_f(i,code)
---                 f[#f+1] = f_action_s(i,i)
-n = n + 1 f[n] = f_action_s(i,i)
+                code = f_action_f(i,code)
+                n    = n + 1
+                f[n] = f_action_s(i,i)
             end
             code = f_simple(f,code)
         else
@@ -367,9 +390,9 @@ n = n + 1 f[n] = f_action_s(i,i)
         if a then
             tokens._action = a
             for i=1,#a do
-                code    = f_action_f(i,code)
---                 f[#f+1] = f_action_s(i,i)
-n = n + 1 f[n] = f_action_s(i,i)
+                code = f_action_f(i,code)
+                n    = n + 1
+                f[n] = f_action_s(i,i)
             end
         end
         code = f_sequence(c,f,p,code)

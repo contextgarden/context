@@ -16,7 +16,6 @@ local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash  = utilities.parsers.settings_to_hash
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
-local replacetemplate   = utilities.templates.replace
 
 local codeinjections    = backends.codeinjections
 local nodeinjections    = backends.nodeinjections
@@ -34,7 +33,6 @@ local converters        = figures.converters
 local programs          = figures.programs
 
 local runprogram        = programs.run
-local makeuptions       = programs.makeoptions
 
 do -- eps | ps
 
@@ -144,29 +142,29 @@ do -- eps | ps
 
 end
 
-do -- pdf
-
-    local pdfconverter = converters.pdf
-
-    -- programs.pdftoeps = {
-    --     command  = "pdftops",
-    --     argument = [[-eps "%oldname%" "%newname%"]],
-    -- }
-    --
-    -- pdfconverter.stripped = function(oldname,newname)
-    --     local pdftoeps = programs.pdftoeps -- can be changed
-    --     local epstopdf = programs.epstopdf -- can be changed
-    --     local presets  = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
-    --     local level    = codeinjections.getformatoption("pdf_level") or "1.3"
-    --     local tmpname  = newname .. ".tmp"
-    --     runprogram(pdftoeps.command, pdftoeps.argument, { oldname = oldname, newname = tmpname, presets = presets, level = level })
-    --     runprogram(epstopdf.command, epstopdf.argument, { oldname = tmpname, newname = newname, presets = presets, level = level })
-    --     os.remove(tmpname)
-    -- end
-    --
-    -- figures.registersuffix("stripped","pdf")
-
-end
+-- do -- pdf
+--
+--     local pdfconverter = converters.pdf
+--
+--     programs.pdftoeps = {
+--         command  = "pdftops",
+--         argument = [[-eps "%oldname%" "%newname%"]],
+--     }
+--
+--     pdfconverter.stripped = function(oldname,newname)
+--         local pdftoeps = programs.pdftoeps -- can be changed
+--         local epstopdf = programs.epstopdf -- can be changed
+--         local presets  = epstopdf.resolutions[resolution or ""] or epstopdf.resolutions.high
+--         local level    = codeinjections.getformatoption("pdf_level") or "1.3"
+--         local tmpname  = newname .. ".tmp"
+--         runprogram(pdftoeps.command, pdftoeps.argument, { oldname = oldname, newname = tmpname, presets = presets, level = level })
+--         runprogram(epstopdf.command, epstopdf.argument, { oldname = tmpname, newname = newname, presets = presets, level = level })
+--         os.remove(tmpname)
+--     end
+--
+--     figures.registersuffix("stripped","pdf")
+--
+-- end
 
 do -- svg
 

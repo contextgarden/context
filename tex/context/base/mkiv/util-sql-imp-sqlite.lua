@@ -26,7 +26,6 @@ local methods            = sql.methods
 local validspecification = helpers.validspecification
 local preparetemplate    = helpers.preparetemplate
 local splitdata          = helpers.splitdata
-local replacetemplate    = utilities.templates.replace
 local serialize          = sql.serialize
 local deserialize        = sql.deserialize
 local getserver          = sql.getserver

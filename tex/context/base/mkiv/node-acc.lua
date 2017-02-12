@@ -32,8 +32,7 @@ local setwidth           = nuts.setwidth
 
 ----- traverse_nodes     = nuts.traverse
 local traverse_id        = nuts.traverse_id
-local copy_node          = nuts.copy
-local flush_node_list    = nuts.flush_list
+----- copy_node          = nuts.copy
 local insert_after       = nuts.insert_after
 local copy_no_components = nuts.copy_no_components
 

@@ -122,6 +122,9 @@ appendaction("finalizers",   "lists",       "builders.paragraphs.keeptogether")
 ------------("finalizers",   "lists",       "nodes.handlers.graphicvadjust")                     -- todo
 appendaction("finalizers",   "fonts",       "builders.paragraphs.solutions.splitters.optimize")  -- experimental
 appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
+
+-- the next can also be in contributers normalizers (when we remove the loop in the handler)
+
 appendaction("finalizers",   "lists",       "nodes.linefillers.handler")
 
 -- still experimental

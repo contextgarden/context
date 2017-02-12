@@ -176,11 +176,11 @@
      \globallet\currentstructurecoding\s!tex
    \fi
    \setnextinternalreference
-   \storeinternalreference\currentstructurename\nextinternalreference %
+   \storeinternalreference\currentstructurename{\the\locationcount}%
    \strc_sectioning_set_reference_prefix
    \clf_setsectionentry
         references {
-            internal      \nextinternalreference\space
+            internal      \locationcount
           % block         {\currentsectionblock}
             prefix        {\currentstructurereferenceprefix}
             reference     {\currentstructurereference}
@@ -225,7 +225,7 @@
         numberdata {
           % block         {\currentsectionblock}
         \ifx\currentstructureshownumber\v!no
-            hidenumber    \space true\space
+            hidenumber    \space true\space % space needed for parser
         \fi
             separatorset  {\structureparameter\c!sectionseparatorset}
             conversionset {\structureparameter\c!sectionconversionset}
@@ -445,7 +445,7 @@
     \clf_registersection {\currenthead} {
         coupling {\currentsectionheadcoupling}
         section  {\currentsectionheadsection}
-        level    \currentsectionlevel
+        level    \space \currentsectionlevel \space % space needed for parser
         parent   {\currentheadparent}
     }%
     \endgroup

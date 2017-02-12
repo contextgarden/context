@@ -293,12 +293,19 @@ sequencers.compile = compile
 
 -- todo: use sequencer (can have arguments and returnvalues etc now)
 
-local template_yes = [[
+local template_yes_state = [[
 %s
 return function(head%s)
   local ok, done = false, false
 %s
   return head, done
+end]]
+
+local template_yes_nostate = [[
+%s
+return function(head%s)
+%s
+  return head, true
 end]]
 
 local template_nop = [[
@@ -308,6 +315,7 @@ end]]
 
 function sequencers.nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug into tostring
     local list, order, kind, gskip, askip = t.list, t.order, t.kind, t.gskip, t.askip
+    local nostate = t.nostate
     local vars, calls, args, n = { }, { }, nil, 0
     if nofarguments == 0 then
         args = ""
@@ -335,18 +343,24 @@ function sequencers.nodeprocessor(t,nofarguments) -- todo: handle 'kind' in plug
                     n = n + 1
                     vars[n] = formatters["local %s = %s"](localized,action)
                     -- only difference with tostring is kind and rets (why no return)
-                    if kind[action] == "nohead" then
-                        calls[n] = formatters["        ok = %s(head%s) done = done or ok"](localized,args)
+                    if nostate then
+                        if kind[action] == "nohead" then
+                            calls[n] = formatters["         %s(head%s)"](localized,args)
+                        else
+                            calls[n] = formatters["  head = %s(head%s)"](localized,args)
+                        end
                     else
-                        calls[n] = formatters["  head, ok = %s(head%s) done = done or ok"](localized,args)
+                        if kind[action] == "nohead" then
+                            calls[n] = formatters["        ok = %s(head%s) if ok then done = true end"](localized,args)
+                        else
+                            calls[n] = formatters["  head, ok = %s(head%s) if ok then done = true end"](localized,args)
+                        end
                     end
--- local s = " print('" .. tostring(group) .. " " .. tostring(action) .. " : ' .. tostring(head)) "
--- calls[n] = s .. calls[n] .. s
                 end
             end
         end
     end
-    local processor = #calls > 0 and formatters[template_yes](concat(vars,"\n"),args,concat(calls,"\n")) or template_nop
+    local processor = #calls > 0 and formatters[nostate and template_yes_nostate or template_yes_state](concat(vars,"\n"),args,concat(calls,"\n")) or template_nop
 -- print(processor)
     return processor
 end

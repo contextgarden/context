@@ -971,8 +971,8 @@
             catcodes \catcodetable
         }
         references {
-            internal  \nextinternalreference
-            order     \nextinternalorderreference
+            internal  \locationcount
+            order     \locationorder
             reference {\currentconstructionreference}
             prefix    {\currentconstructionreferenceprefix}
           % block     {\currentsectionblock}
@@ -1016,7 +1016,7 @@
      \clf_setinternalreference
        prefix    {\referenceprefix}%
        reference {\currentconstructionreference}%
-       internal  \nextinternalreference
+       internal  \locationcount
        view      {\interactionparameter\c!focus}%
      \relax
      \normalexpanded{%

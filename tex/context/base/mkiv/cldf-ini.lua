@@ -100,7 +100,7 @@ local flushdirect       = texprint    -- lines
 
 local report_context    = logs.reporter("cld","tex")
 local report_cld        = logs.reporter("cld","stack")
-local report_template   = logs.reporter("cld","template")
+----- report_template   = logs.reporter("cld","template")
 
 local processlines      = true -- experiments.register("context.processlines", function(v) processlines = v end)
 

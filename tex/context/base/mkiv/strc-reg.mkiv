@@ -298,7 +298,7 @@
         userdata {\detokenize\expandafter{\normalexpanded{#3}}}
    }%
    \clf_setinternalreference
-      internal \nextinternalreference
+      internal \locationcount
       view     {\interactionparameter\c!focus}%
    \relax % this will change
    \ifx\currentregisterownnumber\v!yes
@@ -337,7 +337,7 @@
    }%
    % overlap with the above
  % \clf_setinternalreference
- %    internal \nextinternalreference
+ %    internal \locationcount
  %    view     {\interactionparameter\c!focus}%
    \relax % this will change
    \xdef\currentregistersynchronize{\ctxlatecommand{enhanceregister("\currentregister",\currentregisternumber)}}%
@@ -524,7 +524,7 @@
      }%
    }}%
    \clf_setinternalreference
-      internal \nextinternalreference
+      internal \locationcount
       view     {\interactionparameter\c!focus}%
    \relax % this will change
    \dostarttagged\t!registerlocation\currentregister
