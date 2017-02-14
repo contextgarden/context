@@ -31,6 +31,8 @@ local setnodecolor  = nodes.tracers.colors.set
 local parameters    = fonts.hashes.parameters
 local basepoints    = number.basepoints
 
+local setaction     = nodes.tasks.setaction
+
 -- definecolor[hz:positive] [r=0.6]
 -- definecolor[hz:negative] [g=0.6]
 -- definecolor[hz:zero]     [b=0.6]
@@ -127,17 +129,8 @@ function builders.paragraphs.expansion.trace(head)
     return head
 end
 
-local tasks = nodes.tasks
-
--- tasks.prependaction("shipouts","normalizers","builders.paragraphs.expansion.trace")
--- tasks.disableaction("shipouts","builders.paragraphs.expansion.trace")
-
 local function set(v)
-    if v then
-        tasks.enableaction("shipouts","builders.paragraphs.expansion.trace")
-    else
-        tasks.disableaction("shipouts","builders.paragraphs.expansion.trace")
-    end
+    setaction("shipouts","builders.paragraphs.expansion.trace",v)
 end
 
 trackers.register("builders.paragraphs.expansion.verbose",set)

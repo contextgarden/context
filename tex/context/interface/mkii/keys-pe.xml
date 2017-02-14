@@ -215,6 +215,7 @@
 		<cd:variable name='formulas' value='فرمولها'/>
 		<cd:variable name='forward' value='به‌جلو'/>
 		<cd:variable name='four' value='چهار'/>
+		<cd:variable name='fractions' value='fractions'/>
 		<cd:variable name='frame' value='قالب'/>
 		<cd:variable name='framedtext' value='متن‌قالبی'/>
 		<cd:variable name='friday' value='جمعه'/>

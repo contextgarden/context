@@ -70,9 +70,12 @@ directives.register("system.callbacks.permitoverloads", function(v)
     end
 end)
 
-sandbox.initializer(function()
-    block_overloads = true
-end)
+sandbox.initializer {
+    category = "functions",
+    action   = function()
+        block_overloads = true
+    end
+}
 
 if not list then -- otherwise counters get reset
 

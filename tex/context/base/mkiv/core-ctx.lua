@@ -266,7 +266,12 @@ function ctxrunner.load(ctxname)
                 for i=1,#runners do
                     local command = runners[i]
                     report_prepfiles("command: %s",command)
+                    --
+                    -- remark: we don't use sandbox.registerrunner here as we cannot predict what
+                    -- gets done here, so just:
+                    --
                     local result = os.execute(command) or 0
+                    --
                  -- if result > 0 then
                  --     report_prepfiles("error, return code: %s",result)
                  -- end

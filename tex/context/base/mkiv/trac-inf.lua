@@ -179,10 +179,13 @@ function statistics.show()
             local total, indirect = status.callbacks or 0, status.indirect_callbacks or 0
             return format("%s direct, %s indirect, %s total", total-indirect, indirect, total)
         end)
-        if jit then
-            local jitstatus = { jit.status() }
-            if jitstatus[1] then
-                register("luajit options", concat(jitstatus," ",2))
+        if TEXENGINE == "luajittex" and JITSUPPORTED then
+            local jitstatus = jit.status
+            if jitstatus then
+                local jitstatus = { jitstatus() }
+                if jitstatus[1] then
+                    register("luajit options", concat(jitstatus," ",2))
+                end
             end
         end
         -- so far

@@ -229,7 +229,6 @@ luatex.registerstopactions(function()
     end
 end)
 
-
 local function pdfnametree(destinations)
     local slices = { }
     local sorted = table.sortedkeys(destinations)

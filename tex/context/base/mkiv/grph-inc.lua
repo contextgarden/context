@@ -1631,13 +1631,15 @@ includers.cld = includers.nongeneric
 
 setmetatableindex(converters,"table")
 
+-- We keep this helper because it has been around for a while and therefore it can
+-- be a depedency in an existing workflow.
+
 function programs.makeoptions(options)
     local to = type(options)
     return (to == "table" and concat(options," ")) or (to == "string" and options) or ""
 end
 
 function programs.run(binary,argument,variables)
-    -- move this check to the runner code
     local found = nil
     if type(binary) == "table" then
         for i=1,#binary do

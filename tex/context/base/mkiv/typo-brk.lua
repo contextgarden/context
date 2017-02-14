@@ -63,7 +63,7 @@ local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
 local nodepool           = nuts.pool
-local tasks              = nodes.tasks
+local enableaction       = nodes.tasks.enableaction
 
 local v_reset            = interfaces.variables.reset
 local v_yes              = interfaces.variables.yes
@@ -447,17 +447,13 @@ function breakpoints.set(n)
                 if trace_breakpoints then
                     report_breakpoints("enabling breakpoints handler")
                 end
-                tasks.enableaction("processors","typesetters.breakpoints.handler")
+                enableaction("processors","typesetters.breakpoints.handler")
             end
             n = n.number
         end
     end
     texsetattribute(a_breakpoints,n)
 end
-
--- function breakpoints.enable()
---     tasks.enableaction("processors","typesetters.breakpoints.handler")
--- end
 
 -- interface
 

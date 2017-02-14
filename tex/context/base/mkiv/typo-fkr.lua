@@ -23,6 +23,8 @@ local getkernpair   = fonts.handlers.otf.getkern
 local insert_before = nuts.insert_before
 local new_kern      = nuts.pool.fontkern
 
+local enableaction  = nodes.tasks.enableaction
+
 local a_extrakern   = attributes.private("extrafontkern")
 
 -- 0=none 1=min 2=max 3=mixed
@@ -112,7 +114,7 @@ if context then
 
     local function setextrafontkerns(str)
         if not enabled then
-            nodes.tasks.enableaction("processors","typesetters.fontkerns.handler")
+            enableaction("processors","typesetters.fontkerns.handler")
             enabled = true
         end
         setattribute(a_extrakern,values[str] or unsetvalue)

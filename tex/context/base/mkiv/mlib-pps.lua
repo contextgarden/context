@@ -13,9 +13,11 @@ local insert, remove, concat = table.insert, table.remove, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
 local lpegmatch, tsplitat, tsplitter = lpeg.match, lpeg.tsplitat, lpeg.tsplitter
 local formatters = string.formatters
+local exists, savedata = io.exists, io.savedata
 
-local mplib, metapost, lpdf, context = mplib, metapost, lpdf, context
-
+local mplib                = mplib
+local metapost             = metapost
+local lpdf                 = lpdf
 local context              = context
 
 local implement            = interfaces.implement
@@ -761,11 +763,33 @@ implement {
     arguments = "string"
 }
 
+local pdftompy = sandbox.registerrunner {
+    name     = "mpy:pstoedit",
+    program  = "pstoedit",
+    template = "-ssp -dt -f mpost %pdffile% %mpyfile%",
+    checkers = {
+        pdffile = "writable",
+        mpyfile = "readable",
+    },
+    reporter = report_metapost,
+}
+
+local textopdf = sandbox.registerrunner {
+    name     = "mpy:context",
+    program  = "context",
+    template = "--once %runmode% %texfile%",
+    checkers = {
+        runmode = "string",
+        texfile = "readable",
+    },
+    reporter = report_metapost,
+}
+
 function makempy.processgraphics(graphics)
     if #graphics == 0 then
         return
     end
-    if mpyfilename and io.exists(mpyfilename) then
+    if mpyfilename and exists(mpyfilename) then
         report_metapost("using file: %s",mpyfilename)
         return
     end
@@ -775,16 +799,17 @@ function makempy.processgraphics(graphics)
     local mpyfile = file.replacesuffix(mpofile,"mpy")
     local pdffile = file.replacesuffix(mpofile,"pdf")
     local texfile = file.replacesuffix(mpofile,"tex")
-    io.savedata(texfile, { start, preamble, metapost.tex.get(), concat(graphics,"\n"), stop }, "\n")
-    local command = format("context --once %s %s", (tex.interactionmode == 0 and "--batchmode") or "", texfile)
-    os.execute(command)
-    if io.exists(pdffile) then
-        command = format("pstoedit -ssp -dt -f mpost %s %s", pdffile, mpyfile)
-        logs.newline()
-        report_metapost("running: %s",command)
-        logs.newline()
-        os.execute(command)
-        if io.exists(mpyfile) then
+    savedata(texfile, { start, preamble, metapost.tex.get(), concat(graphics,"\n"), stop }, "\n")
+    textopdf {
+        runmode = tex.interactionmode == 0 and "--batchmode" or "",
+        texfile = texfile,
+    }
+    if exists(pdffile) then
+        pdftompy {
+            pdffile = pdffile,
+            mpyfile = mpyfile,
+        }
+        if exists(mpyfile) then
             local result, r = { }, 0
             local data = io.loaddata(mpyfile)
             if data and #data > 0 then
@@ -792,7 +817,7 @@ function makempy.processgraphics(graphics)
                     r = r + 1
                     result[r] = formatters["begingraphictextfig%sendgraphictextfig ;\n"](figure)
                 end
-                io.savedata(mpyfile,concat(result,""))
+                savedata(mpyfile,concat(result,""))
             end
         end
     end

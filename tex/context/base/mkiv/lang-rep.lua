@@ -72,6 +72,8 @@ local new_disc           = nodepool.disc
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
+local enableaction       = nodes.tasks.enableaction
+
 local v_reset            = interfaces.variables.reset
 
 local implement          = interfaces.implement
@@ -313,7 +315,7 @@ function replacements.set(n)
     else
         n = lists[n].attribute
         if not enabled then
-            nodes.tasks.enableaction("processors","languages.replacements.handler")
+            enableaction("processors","languages.replacements.handler")
             if trace_replacements then
                 report_replacement("enabling replacement handler")
             end

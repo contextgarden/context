@@ -142,20 +142,24 @@ function sandbox.overload(func,overload,comment)
     return func
 end
 
-function sandbox.initializer(f)
-    if not sandboxed then
-        initializers[#initializers+1] = f
+local function whatever(specification,what,target)
+    if type(specification) ~= "table" then
+        report("%s needs a specification",what)
+    elseif type(specification.category) ~= "string" or type(specification.action) ~= "function" then
+        report("%s needs a category and action",what)
+    elseif not sandboxed then
+        target[#target+1] = specification
     elseif trace then
-        report("already enabled, discarding initializer")
+        report("already enabled, discarding %s",what)
     end
 end
 
-function sandbox.finalizer(f)
-    if not sandboxed then
-        finalizers[#finalizers+1] = f
-    elseif trace then
-        report("already enabled, discarding finalizer")
-    end
+function sandbox.initializer(specification)
+    whatever(specification,"initializer",initializers)
+end
+
+function sandbox.finalizer(specification)
+    whatever(specification,"finalizer",finalizers)
 end
 
 function require(name)
@@ -182,7 +186,7 @@ function blockrequire(name,lib)
     blocked[name] = lib or _G[name]
 end
 
-if jit or not ffi then
+if TEXENGINE == "luajittex" or not ffi then
     local ok
     ok, ffi = pcall(require,"ffi")
 end
@@ -190,10 +194,10 @@ end
 function sandbox.enable()
     if not sandboxed then
         for i=1,#initializers do
-            initializers[i]()
+            initializers[i].action()
         end
         for i=1,#finalizers do
-            finalizers[i]()
+            finalizers[i].action()
         end
         local nnot = 0
         local nyes = 0

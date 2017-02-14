@@ -41,12 +41,14 @@ local hlist_code      = nodes.nodecodes.hlist
 local texsetattribute = tex.setattribute
 local unsetvalue      = attributes.unsetvalue
 
+local enableaction    = nodes.tasks.enableaction
+
 local min_threshold   = 0
 local max_threshold   = 0
 
 local function set(n)
-    nodes.tasks.enableaction("mvlbuilders", "typesetters.checkers.handler")
-    nodes.tasks.enableaction("vboxbuilders","typesetters.checkers.handler")
+    enableaction("mvlbuilders", "typesetters.checkers.handler")
+    enableaction("vboxbuilders","typesetters.checkers.handler")
     texsetattribute(a_justification,n or 1)
     function typesetters.checkers.set(n)
         texsetattribute(a_justification,n or 1)

@@ -30,72 +30,91 @@ local root_list       directives.register("system.rootlist",      function(v) ro
 local library_mode    directives.register("system.librarymode",   function(v) library_mode   = v end)
 local library_list    directives.register("system.librarylist",   function(v) library_list   = v end)
 
-sandbox.initializer(function()
-    if execution_mode == "none" then
-        -- will be done later
-    elseif execution_mode == "list" then
-        if type(execution_list) == "string" then
-            execution_list = lpegmatch(cm_splitter,execution_list)
+sandbox.initializer {
+    category = "binaries",
+    action   = function()
+        if execution_mode == "none" then
+            -- will be done later
+        elseif execution_mode == "list" then
+            if type(execution_list) == "string" then
+                execution_list = lpegmatch(cm_splitter,execution_list)
+            end
+            if type(execution_list) == "table" then
+                for i=1,#execution_list do
+                    registerbinary(execution_list[i])
+                end
+            end
+        else
+            registerbinary(true) -- all
         end
-        if type(execution_list) == "table" then
-            for i=1,#execution_list do
-                registerbinary(execution_list[i])
+    end
+}
+
+sandbox.finalizer {
+    category = "binaries",
+    action   = function()
+        if execution_mode == "none" then
+            disablerunners()
+        end
+    end
+}
+
+sandbox.initializer {
+    category = "libraries",
+    action   = function()
+        if library_mode == "none" then
+            -- will be done later
+        elseif library_mode == "list" then
+            if type(library_list) == "string" then
+                library_list = lpegmatch(cm_splitter,library_list)
+            end
+            if type(library_list) == "table" then
+                for i=1,#library_list do
+                    registerlibrary(library_list[i])
+                end
+            end
+        else
+            registerlibrary(true) -- all
+        end
+    end
+}
+
+sandbox.finalizer {
+    category = "libraries",
+    action   = function()
+        if library_mode == "none" then
+            disablelibraries()
+        end
+    end
+}
+
+-- A bit of file system protection.
+
+sandbox.initializer{
+    category = "files",
+    action   = function ()
+        if type(root_list) == "string" then
+            root_list = lpegmatch(sc_splitter,root_list)
+        end
+        if type(root_list) == "table" then
+            for i=1,#root_list do
+                local entry = root_list[i]
+                if entry ~= "" then
+                    registerroot(entry)
+                end
             end
         end
-    else
-        -- whatever else we have configured
     end
-end)
-
-sandbox.initializer(function()
-    if type(root_list) == "string" then
-        root_list = lpegmatch(sc_splitter,root_list)
-    end
-    if type(root_list) == "table" then
-        for i=1,#root_list do
-            local entry = root_list[i]
-            if entry ~= "" then
-                registerroot(entry)
-            end
-        end
-    end
-end)
-
-sandbox.finalizer(function()
-    if execution_mode == "none" then
-        disablerunners()
-    end
-end)
-
-sandbox.initializer(function()
-    if library_mode == "none" then
-        -- will be done later
-    elseif library_mode == "list" then
-        if type(library_list) == "string" then
-            library_list = lpegmatch(cm_splitter,library_list)
-        end
-        if type(library_list) == "table" then
-            for i=1,#library_list do
-                registerlibrary(library_list[i])
-            end
-        end
-    else
-        -- whatever else we have configured
-    end
-end)
-
-sandbox.finalizer(function()
-    if library_mode == "none" then
-        disablelibraries()
-    end
-end)
-
+}
 
 -- Let's prevent abuse of these libraries (built-in support still works).
 
-sandbox.finalizer(function()
-    mplib      = nil
-    epdf       = nil
-    zip        = nil
-    fontloader = nil
-end)
+sandbox.finalizer {
+    category = "functions",
+    action   = function()
+        mplib      = nil
+        epdf       = nil
+        zip        = nil
+        fontloader = nil
+    end
+}

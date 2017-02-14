@@ -30,6 +30,20 @@ local sequencers    = utilities.sequencers
 local compile       = sequencers.compile
 local nodeprocessor = sequencers.nodeprocessor
 
+local newsequencer  = sequencers.new
+
+local appendgroup   = sequencers.appendgroup
+----- prependgroup  = sequencers.prependgroup
+----- replacegroup  = sequencers.replacegroup
+local enablegroup   = sequencers.enablegroup
+local disablegroup  = sequencers.disablegroup
+
+local appendaction  = sequencers.appendaction
+local prependaction = sequencers.prependaction
+local replaceaction = sequencers.replaceaction
+local enableaction  = sequencers.enableaction
+local disableaction = sequencers.disableaction
+
 local frozengroups  = "no"
 
 function tasks.freeze(kind)
@@ -41,7 +55,7 @@ function tasks.new(specification) -- was: name,arguments,list
     local arguments = specification.arguments or 0
     local sequence  = specification.sequence
     if name and sequence then
-        local tasklist = sequencers.new {
+        local tasklist = newsequencer {
             -- we can move more to the sequencer now .. todo
         }
         tasksdata[name] = {
@@ -53,7 +67,7 @@ function tasks.new(specification) -- was: name,arguments,list
             processor = specification.processor or nodeprocessor
         }
         for l=1,#sequence do
-            sequencers.appendgroup(tasklist,sequence[l])
+            appendgroup(tasklist,sequence[l])
         end
     end
 end
@@ -104,7 +118,7 @@ end
 function tasks.enableaction(name,action)
     local data = valid(name)
     if data then
-        sequencers.enableaction(data.list,action)
+        enableaction(data.list,action)
         data.runner = false
     end
 end
@@ -112,7 +126,7 @@ end
 function tasks.disableaction(name,action)
     local data = valid(name)
     if data then
-        sequencers.disableaction(data.list,action)
+        disableaction(data.list,action)
         data.runner = false
     end
 end
@@ -120,23 +134,30 @@ end
 function tasks.replaceaction(name,group,oldaction,newaction)
     local data = valid(name)
     if data then
-        sequencers.replaceaction(data.list,group,oldaction,newaction)
+        replaceaction(data.list,group,oldaction,newaction)
         data.runner = false
     end
 end
 
-function tasks.setaction(name,action,value)
-    if value then
-        tasks.enableaction(name,action)
-    else
-        tasks.disableaction(name,action)
+do
+
+    local enableaction  = tasks.enableaction
+    local disableaction = tasks.disableaction
+
+    function tasks.setaction(name,action,value)
+        if value then
+            enableaction(name,action)
+        else
+            disableaction(name,action)
+        end
     end
+
 end
 
 function tasks.enablegroup(name,group)
     local data = validgroup(name,"enable group")
     if data then
-        sequencers.enablegroup(data.list,group)
+        enablegroup(data.list,group)
         data.runner = false
     end
 end
@@ -144,7 +165,7 @@ end
 function tasks.disablegroup(name,group)
     local data = validgroup(name,"disable group")
     if data then
-        sequencers.disablegroup(data.list,group)
+        disablegroup(data.list,group)
         data.runner = false
     end
 end
@@ -152,7 +173,7 @@ end
 function tasks.appendaction(name,group,action,where,kind)
     local data = validgroup(name,"append action")
     if data then
-        sequencers.appendaction(data.list,group,action,where,kind)
+        appendaction(data.list,group,action,where,kind)
         data.runner = false
     end
 end
@@ -160,7 +181,7 @@ end
 function tasks.prependaction(name,group,action,where,kind)
     local data = validgroup(name,"prepend action")
     if data then
-        sequencers.prependaction(data.list,group,action,where,kind)
+        prependaction(data.list,group,action,where,kind)
         data.runner = false
     end
 end
@@ -168,7 +189,7 @@ end
 function tasks.removeaction(name,group,action)
     local data = validgroup(name,"remove action")
     if data then
-        sequencers.removeaction(data.list,group,action)
+        removeaction(data.list,group,action)
         data.runner = false
     end
 end

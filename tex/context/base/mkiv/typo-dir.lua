@@ -44,7 +44,7 @@ local hasbit                = number.hasbit
 local texsetattribute       = tex.setattribute
 local unsetvalue            = attributes.unsetvalue
 
-local tasks                 = nodes.tasks
+local enableaction          = nodes.tasks.enableaction
 local tracers               = nodes.tracers
 local setcolor              = tracers.colors.set
 local resetcolor            = tracers.colors.reset
@@ -180,16 +180,12 @@ statistics.register("text directions", function()
     end
 end)
 
--- function directions.enable()
---     tasks.enableaction("processors","directions.handler")
--- end
-
 function directions.set(n) -- todo: names and numbers
     if not enabled then
         if trace_textdirections then
             report_textdirections("enabling directions handler")
         end
-        tasks.enableaction("processors","typesetters.directions.handler")
+        enableaction("processors","typesetters.directions.handler")
         enabled = true
     end
     if not n or n == 0 then

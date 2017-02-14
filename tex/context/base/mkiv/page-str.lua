@@ -28,6 +28,8 @@ local vpack_node_list   = nodes.vpack
 
 local settings_to_array = utilities.parsers.settings_to_array
 
+local enableaction      = nodes.tasks.enableaction
+
 local texgetdimen       = tex.getdimen
 local texgetbox         = tex.getbox
 
@@ -233,7 +235,7 @@ tasks.appendaction("mvlbuilders", "normalizers", "streams.collect")
 tasks.disableaction("mvlbuilders", "streams.collect")
 
 function streams.initialize()
-    tasks.enableaction ("mvlbuilders", "streams.collect")
+    enableaction("mvlbuilders","streams.collect")
     function streams.initialize() end
 end
 
@@ -241,8 +243,8 @@ end
 -- todo: better names, enable etc
 
 implement {
-    name    = "initializestream",
-    actions = streams.initialize,
+    name     = "initializestream",
+    actions  = streams.initialize,
     onlyonce = true,
 }
 

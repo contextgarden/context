@@ -119,7 +119,7 @@ end
 local execute = os.execute
 local iopopen = io.popen
 
-function os.resultof(command)
+local function resultof(command)
     local handle = iopopen(command,"r") -- already has flush
     if handle then
         local result = handle:read("*all") or ""
@@ -128,6 +128,12 @@ function os.resultof(command)
     else
         return ""
     end
+end
+
+os.resultof = resultof
+
+function os.pipeto(command)
+    return iopopen(command,"w") -- already has flush
 end
 
 if not io.fileseparator then
@@ -203,17 +209,17 @@ end })
 
 local name, platform = os.name or "linux", os.getenv("MTX_PLATFORM") or ""
 
-local function guess()
-    local architecture = os.resultof("uname -m") or ""
-    if architecture ~= "" then
-        return architecture
-    end
-    architecture = os.getenv("HOSTTYPE") or ""
-    if architecture ~= "" then
-        return architecture
-    end
-    return os.resultof("echo $HOSTTYPE") or ""
-end
+-- local function guess()
+--     local architecture = resultof("uname -m") or ""
+--     if architecture ~= "" then
+--         return architecture
+--     end
+--     architecture = os.getenv("HOSTTYPE") or ""
+--     if architecture ~= "" then
+--         return architecture
+--     end
+--     return resultof("echo $HOSTTYPE") or ""
+-- end
 
 -- os.bits = 32 | 64
 
@@ -245,7 +251,7 @@ elseif name == "linux" then
 
     function resolvers.platform(t,k)
         -- we sometimes have HOSTTYPE set so let's check that first
-        local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
+        local platform, architecture = "", os.getenv("HOSTTYPE") or resultof("uname -m") or ""
         if find(architecture,"x86_64",1,true) then
             platform = "linux-64"
         elseif find(architecture,"ppc",1,true) then
@@ -273,9 +279,9 @@ elseif name == "macosx" then
     function resolvers.platform(t,k)
      -- local platform, architecture = "", os.getenv("HOSTTYPE") or ""
      -- if architecture == "" then
-     --     architecture = os.resultof("echo $HOSTTYPE") or ""
+     --     architecture = resultof("echo $HOSTTYPE") or ""
      -- end
-        local platform, architecture = "", os.resultof("echo $HOSTTYPE") or ""
+        local platform, architecture = "", resultof("echo $HOSTTYPE") or ""
         if architecture == "" then
          -- print("\nI have no clue what kind of OSX you're running so let's assume an 32 bit intel.\n")
             platform = "osx-intel"
@@ -294,7 +300,7 @@ elseif name == "macosx" then
 elseif name == "sunos" then
 
     function resolvers.platform(t,k)
-        local platform, architecture = "", os.resultof("uname -m") or ""
+        local platform, architecture = "", resultof("uname -m") or ""
         if find(architecture,"sparc",1,true) then
             platform = "solaris-sparc"
         else -- if architecture == 'i86pc'
@@ -308,7 +314,7 @@ elseif name == "sunos" then
 elseif name == "freebsd" then
 
     function resolvers.platform(t,k)
-        local platform, architecture = "", os.resultof("uname -m") or ""
+        local platform, architecture = "", resultof("uname -m") or ""
         if find(architecture,"amd64",1,true) then
             platform = "freebsd-amd64"
         else
@@ -323,7 +329,7 @@ elseif name == "kfreebsd" then
 
     function resolvers.platform(t,k)
         -- we sometimes have HOSTTYPE set so let's check that first
-        local platform, architecture = "", os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
+        local platform, architecture = "", os.getenv("HOSTTYPE") or resultof("uname -m") or ""
         if find(architecture,"x86_64",1,true) then
             platform = "kfreebsd-amd64"
         else

@@ -676,16 +676,27 @@
 \definefontfeature[f:oldstyle] [onum=yes]
 \definefontfeature[f:tabular]  [tnum=yes]
 \definefontfeature[f:superiors][sups=yes]
+\definefontfeature[f:fractions][frac=yes]
 \definefontfeature[f:kern]     [kern=yes]
 \definefontfeature[f:kerns]    [kern=yes]
 
 \definealternativestyle [\v!smallcaps] [\setsmallcaps] [\setsmallcaps]
 \definealternativestyle [\v!oldstyle]  [\setoldstyle ] [\setoldstyle ]
+\definealternativestyle [\v!fractions] [\setfractions\resetbreakpoints] [\setfractions\resetbreakpoints]
 
 \unexpanded\def\setsmallcaps{\doaddfeature{f:smallcaps}}
 \unexpanded\def\setoldstyle {\doaddfeature{f:oldstyle}}
 \unexpanded\def\settabular  {\doaddfeature{f:tabular}}
 \unexpanded\def\setsuperiors{\doaddfeature{f:superiors}}
+\unexpanded\def\setfractions{\doaddfeature{f:fractions}}
+
+% \unexpanded\def\frc#1#2%
+%   {\dontleavehmode
+%    \begingroup
+%    \addff{frac}%
+%    \resetbreakpoints
+%    #1/#2%
+%    \endgroup}
 
 %D \macros
 %D   {tinyfont}

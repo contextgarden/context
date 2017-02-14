@@ -13,6 +13,9 @@ local nodes              = nodes
 local tasks              = nodes.tasks
 local nuts               = nodes.nuts
 
+local enableaction       = tasks.enableaction
+local setaction          = tasks.setaction
+
 local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
@@ -219,7 +222,7 @@ function languages.showdiscretionaries(v)
         setattribute(a_visualize,unsetvalue)
     else -- also nil
         if not enabled then
-            nodes.tasks.enableaction("processors","languages.visualizediscretionaries")
+            enableaction("processors","languages.visualizediscretionaries")
             enabled = true
         end
         setattribute(a_visualize,1)
@@ -285,3 +288,28 @@ end
 function languages.nofflattened()
     return wiped -- handy for testing
 end
+
+-- experiment
+
+local flatten = languages.flatten
+local getlist = nodes.getlist
+
+function nodes.handlers.flattenline(head)
+    local list = getlist(head)
+    if list then
+        flatten(list)
+    end
+    return head
+end
+
+function nodes.handlers.flatten(head,where)
+    if head and (where == "box" or where == "adjusted_hbox") then
+        return flatten(head)
+    end
+    return true
+end
+
+directives.register("hyphenator.flatten",function(v)
+    setaction("processors","nodes.handlers.flatten",v)
+    setaction("contributers","nodes.handlers.flattenline",v)
+end)

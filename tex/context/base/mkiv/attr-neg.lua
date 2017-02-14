@@ -16,7 +16,7 @@ local commands, context, interfaces = commands, context, interfaces
 local tex = tex
 
 local states            = attributes.states
-local tasks             = nodes.tasks
+local enableaction      = nodes.tasks.enableaction
 local nodeinjections    = backends.nodeinjections
 local texsetattribute   = tex.setattribute
 local variables         = interfaces.variables
@@ -79,7 +79,7 @@ local function register(stamp)
 end
 
 local function enable()
-    tasks.enableaction("shipouts","attributes.negatives.handler")
+    enableaction("shipouts","attributes.negatives.handler")
 end
 
 negatives.register = register

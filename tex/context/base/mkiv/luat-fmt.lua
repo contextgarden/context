@@ -51,6 +51,33 @@ end
 -- The silent option is Taco. It's a bit of a hack because we cannot yet mess
 -- with directives. In fact, I could probably clean up the maker a bit by now.
 
+local template = [[--ini %primaryflags% --lua="%luafile%" "%texfile%" %secondaryflags% %dump% %redirect%]]
+local checkers = {
+    primaryflags   = "string",
+    secondaryflags = "string",
+    luafile        = "readable", -- "cache"
+    texfile        = "readable", -- "cache"
+    redirect       = "string",
+    dump           = "string",
+}
+
+local runners = {
+    luatex = sandbox.registerrunner {
+        name     = "make luatex format",
+        program  = "luatex",
+        template = template,
+        checkers = checkers,
+        reporter = report_format,
+    },
+    luajittex = sandbox.registerrunner {
+        name     = "make luajittex format",
+        program  = "luajittex",
+        template = template,
+        checkers = checkers,
+        reporter = report_format,
+    },
+}
+
 function environment.make_format(name,arguments)
     local engine = environment.ownmain or "luatex"
     local silent = environment.arguments.silent
@@ -116,13 +143,20 @@ function environment.make_format(name,arguments)
         return
     end
     -- generate format
-    local dump    = os.platform=="unix" and "\\\\dump" or "\\dump"
-    local command = format("%s --ini %s --lua=%s %s %s %s",
-        engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),secondaryflags(),dump)
-    if silent then
+    local specification = {
+        primaryflags   = primaryflags(),
+        secondaryflags = secondaryflags(),
+        luafile        = usedluastub,
+        texfile        = fulltexsourcename,
+        dump           = os.platform == "unix" and "\\\\dump" or "\\dump",
+    }
+    local runner = runners[engine]
+    if not runner then
+        report_format("format %a cannot be generated, no runner available for engine %a",name,engine)
+    elseif silent then
         statistics.starttiming()
-        local command = format("%s > temp.log",command)
-        local result  = os.execute(command)
+        specification.redirect = "> temp.log"
+        local result  = makeformat(specification)
         local runtime = statistics.stoptiming()
         if result ~= 0 then
             print(format("%s silent make > fatal error when making format %q",engine,name)) -- we use a basic print
@@ -131,8 +165,7 @@ function environment.make_format(name,arguments)
         end
         os.remove("temp.log")
     else
-        report_format("running command: %s\n",command)
-        os.execute(command)
+        makeformat(specification)
     end
     -- remove related mem files
     local pattern = file.removesuffix(file.basename(usedluastub)).."-*.mem"

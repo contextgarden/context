@@ -32,7 +32,7 @@ local cleanupdestinations  = true
 local transparencies       = attributes.transparencies
 local colors               = attributes.colors
 local references           = structures.references
-local tasks                = nodes.tasks
+local enableaction         = nodes.tasks.enableaction
 
 local trace_references     = false  trackers.register("nodes.references",        function(v) trace_references   = v end)
 local trace_destinations   = false  trackers.register("nodes.destinations",      function(v) trace_destinations = v end)
@@ -917,8 +917,8 @@ statistics.register("interactive elements", function()
 end)
 
 function references.enableinteraction()
-    tasks.enableaction("shipouts","nodes.references.handler")
-    tasks.enableaction("shipouts","nodes.destinations.handler")
+    enableaction("shipouts","nodes.references.handler")
+    enableaction("shipouts","nodes.destinations.handler")
     function references.enableinteraction() end
 end
 

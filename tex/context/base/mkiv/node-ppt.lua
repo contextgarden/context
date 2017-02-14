@@ -101,8 +101,7 @@ local actions = { } properties.actions = actions
 
 table.setmetatableindex(actions,function(t,k)
     report("unknown property action %a",k)
-    local v = function() end
-    return v
+    return function() end
 end)
 
 local f_delayed   = formatters["return function(target,head,where,propdata,parent) %s end"]
@@ -313,7 +312,7 @@ local anchored = {
 }
 
 table.setmetatableindex(anchored,function(t,k)
-    v = anchored[v_after]
+    local v = anchored[v_after]
     t[k] = v
     return v
 end)

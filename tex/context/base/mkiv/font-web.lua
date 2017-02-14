@@ -12,6 +12,9 @@ if not modules then modules = { } end modules ['font-otr'] = {
 -- and in a tex environment one can as well store the ttf/otf files in the tex tree. So,
 -- eventually we might even remove this code when version 1 is obsolete.
 
+local ioopen         = io.open
+local replacesuffix  = file.replacesuffix
+
 local readers        = fonts and fonts.handlers.otf.readers
 
 local streamreader   = readers and readers.streamreader or utilities.files
@@ -44,10 +47,22 @@ local infotags = {
 
 local report = logs.reporter("fonts","woff")
 
+local runner = sandbox.registerrunner {
+    name     = "woff2otf",
+    method   = "execute",
+    program  = "woff2_decompress",
+    template = "%inputfile% %outputfile%",
+    reporter = report,
+    checkers = {
+        inputfile  = "readable",
+        outputfile = "writable",
+    }
+}
+
 local function woff2otf(inpname,outname,infoonly)
 
-    local outname = outname or file.replacesuffix(inpname,"otf")
-    local inp     = io.open(inpname,"rb")
+    local outname = outname or replacesuffix(inpname,"otf")
+    local inp     = ioopen(inpname,"rb")
 
     if not inp then
         report("invalid input file %a",inpname)
@@ -73,7 +88,12 @@ local function woff2otf(inpname,outname,infoonly)
     if signature == "wOF2" then
         inp:close()
         if false then
-            os.execute("woff2_decompress " .. inpname .. " " .. outname)
+            if runner then
+                runner {
+                    inputfile  = inpname,
+                    outputfile = outname,
+                }
+            end
             return outname, flavor
         else
             report("skipping version 2 file %a",inpname)
@@ -81,7 +101,7 @@ local function woff2otf(inpname,outname,infoonly)
         end
     end
 
-    local out = io.open(outname,"wb")
+    local out = ioopen(outname,"wb")
 
     if not out then
         inp:close()

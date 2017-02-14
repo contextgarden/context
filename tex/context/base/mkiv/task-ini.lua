@@ -56,6 +56,7 @@ appendaction("processors",   "fonts",       "builders.kernel.ligaturing")       
 appendaction("processors",   "fonts",       "builders.kernel.kerning")                           -- always on (could be selective: if only node mode)
 appendaction("processors",   "fonts",       "nodes.handlers.stripping")                          -- disabled (might move)
 ------------("processors",   "fonts",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
+appendaction("processors",   "fonts",       "nodes.handlers.flatten")
 
 appendaction("processors",   "lists",       "typesetters.rubies.check")                          -- disabled (maybe someplace else)
 appendaction("processors",   "lists",       "typesetters.characteralign.handler")                -- disabled (we need to to this after otf appliance)
@@ -65,8 +66,9 @@ appendaction("processors",   "lists",       "typesetters.digits.handler")       
 appendaction("processors",   "lists",       "typesetters.italics.handler")                       -- disabled (after otf/kern handling)
 appendaction("processors",   "lists",       "languages.visualizediscretionaries")                -- disabled
 
--- appendaction("processors",   "lists",       "typesetters.initials.handler")                   -- disabled
+appendaction ("processors",  "after",       "typesetters.marksuspects")
 
+appendaction("shipouts",     "normalizers", "typesetters.showsuspects")
 appendaction("shipouts",     "normalizers", "typesetters.margins.finalhandler")                  -- disabled
 ------------("shipouts",     "normalizers", "nodes.handlers.cleanuppage")                        -- disabled
 appendaction("shipouts",     "normalizers", "builders.paragraphs.expansion.trace")               -- disabled
@@ -127,6 +129,8 @@ appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
 
 appendaction("finalizers",   "lists",       "nodes.linefillers.handler")
 
+appendaction("contributers", "normalizers", "nodes.handlers.flattenline")
+
 -- still experimental
 
 appendaction("mvlbuilders",  "normalizers", "typesetters.margins.globalhandler")                 -- disabled
@@ -176,7 +180,10 @@ disableaction("processors",  "nodes.handlers.stripping")
 disableaction("processors",  "builders.paragraphs.solutions.splitters.split")
 disableaction("processors",  "typesetters.rubies.check")
 disableaction("processors",  "typesetters.fontkerns.handler")
+disableaction("processors",  "nodes.handlers.flatten")
+disableaction("processors",  "typesetters.marksuspects")
 
+disableaction("shipouts",    "typesetters.showsuspects")
 disableaction("shipouts",    "typesetters.margins.finalhandler")
 disableaction("shipouts",    "builders.paragraphs.expansion.trace")
 disableaction("shipouts",    "typesetters.alignments.handler")
@@ -204,6 +211,8 @@ disableaction("finalizers",  "builders.paragraphs.solutions.splitters.optimize")
 -------------("finalizers",  "nodes.handlers.graphicvadjust") -- sort of obsolete
 disableaction("finalizers",  "builders.paragraphs.tag")
 disableaction("finalizers",  "nodes.linefillers.handler")
+
+disableaction("contributers","nodes.handlers.flattenline")
 
 disableaction("math",        "noads.handlers.showtree")
 disableaction("math",        "noads.handlers.tags")

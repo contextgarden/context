@@ -21,7 +21,10 @@ typesetters.firstlines   = typesetters.firstlines or { }
 local firstlines         = typesetters.firstlines
 
 local nodes              = nodes
+
 local tasks              = nodes.tasks
+local enableaction       = tasks.enableaction
+local disableaction      = tasks.disableaction
 
 local context            = context
 local implement          = interfaces.implement
@@ -88,7 +91,7 @@ local settings           = nil
 
 function firstlines.set(specification)
     settings = specification or { }
-    tasks.enableaction("processors","typesetters.firstlines.handler")
+    enableaction("processors","typesetters.firstlines.handler")
     if trace_firstlines then
         report_firstlines("enabling firstlines")
     end
@@ -346,7 +349,7 @@ function firstlines.handler(head)
     end
     if attr then
         -- here as we can process nested boxes first so we need to keep state
-        tasks.disableaction("processors","typesetters.firstlines.handler")
+        disableaction("processors","typesetters.firstlines.handler")
      -- texsetattribute(attribute,unsetvalue)
         local alternative = settings.alternative or v_default
         local action = actions[alternative] or actions[v_default]

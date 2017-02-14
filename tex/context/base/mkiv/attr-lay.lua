@@ -62,7 +62,8 @@ viewerlayers.supported  = true
 viewerlayers.hasorder   = true
 
 local states            = attributes.states
-local tasks             = nodes.tasks
+local enableaction      = nodes.tasks.enableaction
+local disableaction     = nodes.tasks.disableaction
 local nodeinjections    = backends.nodeinjections
 local codeinjections    = backends.codeinjections
 
@@ -146,12 +147,12 @@ local stack, enabled, global = { }, false, false
 function viewerlayers.enable(value)
     if value == false or not viewerlayers.supported then
         if enabled then
-            tasks.disableaction("shipouts","attributes.viewerlayers.handler")
+            disableaction("shipouts","attributes.viewerlayers.handler")
         end
         enabled = false
     else
         if not enabled then
-            tasks.enableaction("shipouts","attributes.viewerlayers.handler")
+            enableaction("shipouts","attributes.viewerlayers.handler")
         end
         enabled = true
     end

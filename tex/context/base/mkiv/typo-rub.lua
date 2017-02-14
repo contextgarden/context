@@ -80,6 +80,8 @@ local new_kern        = nodepool.kern
 local setprop         = nuts.setprop
 local getprop         = nuts.getprop
 
+local enableaction    = nodes.tasks.enableaction
+
 local nofrubies       = 0
 local rubylist        = { }
 
@@ -97,8 +99,8 @@ do
     local splitter = lpeg.tsplitat("|")
 
     local function enable()
-        nodes.tasks.enableaction("processors","typesetters.rubies.check")
-        nodes.tasks.enableaction("shipouts",  "typesetters.rubies.attach")
+        enableaction("processors","typesetters.rubies.check")
+        enableaction("shipouts",  "typesetters.rubies.attach")
         enable = false
     end
 

@@ -151,6 +151,8 @@ noads.handlers             = noads.handlers   or { }
 local handlers             = noads.handlers
 
 local tasks                = nodes.tasks
+local enableaction         = tasks.enableaction
+local setaction            = tasks.setaction
 
 local nodecodes            = nodes.nodecodes
 local noadcodes            = nodes.noadcodes
@@ -891,7 +893,7 @@ implement {
     name     = "enableautofences",
     onlyonce = true,
     actions  = function()
-        tasks.enableaction("math","noads.handlers.autofences")
+        enableaction("math","noads.handlers.autofences")
         enabled = true
     end
 }
@@ -1355,7 +1357,7 @@ end
 local enable
 
 enable = function()
-    tasks.enableaction("math", "noads.handlers.italics")
+    enableaction("math", "noads.handlers.italics")
     if trace_italics then
         report_italics("enabling math italics")
     end
@@ -1423,7 +1425,7 @@ do
     local kernpairs   = { }
 
     local function enable()
-        tasks.enableaction("math", "noads.handlers.kernpairs")
+        enableaction("math", "noads.handlers.kernpairs")
         if trace_kernpairs then
             report_kernpairs("enabling math kern pairs")
         end
@@ -1718,7 +1720,7 @@ function handlers.classes(head,style,penalties)
 end
 
 registertracker("math.classes",function(v)
-    tasks.setaction("math","noads.handlers.classes",v)
+    setaction("math","noads.handlers.classes",v)
 end)
 
 -- experimental
@@ -1764,7 +1766,7 @@ do
     local enable
 
     enable = function()
-        tasks.enableaction("math", "noads.handlers.domains")
+        enableaction("math", "noads.handlers.domains")
         if trace_domains then
             report_domains("enabling math domains")
         end
@@ -1887,7 +1889,7 @@ function handlers.showtree(head,style,penalties)
 end
 
 registertracker("math.showtree",function(v)
-    tasks.setaction("math","noads.handlers.showtree",v)
+    setaction("math","noads.handlers.showtree",v)
 end)
 
 -- also for me
@@ -1901,7 +1903,7 @@ end
 
 registertracker("math.makeup",function(v)
     visual = v
-    tasks.setaction("math","noads.handlers.makeup",v)
+    setaction("math","noads.handlers.makeup",v)
 end)
 
 -- the normal builder

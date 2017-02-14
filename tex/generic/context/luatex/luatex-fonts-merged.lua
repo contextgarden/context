@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/12/17 20:14:35
+-- merge date  : 02/14/17 20:06:51
 
 do -- begin closure to overcome local limits and interference
 
@@ -18726,12 +18726,12 @@ local function appenddisc(disc,list)
   if post then
     setlink(posttail,posthead)
   else
-    post=phead
+    post=posthead
   end
   if replace then
     setlink(replacetail,replacehead)
   else
-    replace=rhead
+    replace=replacehead
   end
   setdisc(disc,pre,post,replace)
 end
@@ -19889,7 +19889,85 @@ local function setdiscchecked(d,pre,post,replace)
   if replace then replace=checked(replace) end
   setdisc(d,pre,post,replace)
 end
-local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,ck,chainproc)
+local noflags={ false,false,false,false }
+local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
+  local size=ck[5]-ck[4]+1
+  local flags=sequence.flags or noflags
+  local done=false
+  local skipmark=flags[1]
+  local chainlookups=ck[6]
+  if chainlookups then
+    local nofchainlookups=#chainlookups
+    if size==1 then
+      local chainlookup=chainlookups[1]
+      local chainkind=chainlookup.type
+      local chainproc=chainprocs[chainkind]
+      if chainproc then
+        local ok
+        head,start,ok=chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,1)
+        if ok then
+          done=true
+        end
+      else
+        logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
+      end
+     else
+      local i=1
+      while start do
+        if skipped then
+          while start do
+            local char=getchar(start)
+            local class=classes[char]
+            if class then
+              if class==skipmark or class==skipligature or class==skipbase or (markclass and class=="mark" and not markclass[char]) then
+                start=getnext(start)
+              else
+                break
+              end
+            else
+              break
+            end
+          end
+        end
+        local chainlookup=chainlookups[i]
+        if chainlookup then
+          local chainkind=chainlookup.type
+          local chainproc=chainprocs[chainkind]
+          if chainproc then
+            local ok,n
+            head,start,ok,n=chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,i)
+            if ok then
+              done=true
+              if n and n>1 and i+n>nofchainlookups then
+                break
+              end
+            end
+          else
+            logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
+          end
+        end
+        i=i+1
+        if i>size or not start then
+          break
+        elseif start then
+          start=getnext(start)
+        end
+      end
+    end
+  else
+    local replacements=ck[7]
+    if replacements then
+      head,start,done=reversesub(head,start,last,dataset,sequence,replacements,rlmode)
+    else
+      done=true
+      if trace_contexts then
+        logprocess("%s: skipping match",cref(dataset,sequence))
+      end
+    end
+  end
+  return head,start,done
+end
+local function chaindisk(head,start,dataset,sequence,rlmode,ck,skipped)
   if not start then
     return head,start,false
   end
@@ -19924,18 +20002,22 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
     elseif id==disc_code then
       if keepdisc then
         keepdisc=false
-        if notmatchpre[current]~=notmatchreplace[current] then
-          lookaheaddisc=current
-        end
+        lookaheaddisc=current
         local replace=getfield(current,"replace")
-        while replace and i<=l do
-          if getid(replace)==glyph_code then
-            i=i+1
+        if not replace then
+          sweepoverflow=true
+          sweepnode=current
+          current=getnext(current)
+        else
+          while replace and i<=l do
+            if getid(replace)==glyph_code then
+              i=i+1
+            end
+            replace=getnext(replace)
           end
-          replace=getnext(replace)
+          current=getnext(replace)
         end
         last=current
-        current=getnext(current)
       else
         head,current=flattendisk(head,current)
       end
@@ -20054,7 +20136,7 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
       end
     end
   end
-  local ok=false
+  local done=false
   if lookaheaddisc then
     local cf=start
     local cl=getprev(lookaheaddisc)
@@ -20080,25 +20162,35 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
     local pre,post,replace=getdisc(lookaheaddisc)
     local new=copy_node_list(cf)
     local cnew=new
-    for i=1,insertedmarks do
-      cnew=getnext(cnew)
-    end
-    local clast=cnew
-    for i=f,l do
-      clast=getnext(clast)
-    end
-    if not notmatchpre[lookaheaddisc] then
-      cf,start,ok=chainproc(cf,start,last,dataset,sequence,chainlookup,rlmode,k)
-    end
-    if not notmatchreplace[lookaheaddisc] then
-      new,cnew,ok=chainproc(new,cnew,clast,dataset,sequence,chainlookup,rlmode,k)
-    end
     if pre then
       setlink(find_node_tail(cf),pre)
     end
     if replace then
       local tail=find_node_tail(new)
       setlink(tail,replace)
+    end
+    for i=1,insertedmarks do
+      cnew=getnext(cnew)
+    end
+    cl=start
+    local clast=cnew
+    for i=f,l do
+      cl=getnext(cl)
+      clast=getnext(clast)
+    end
+    if not notmatchpre[lookaheaddisc] then
+      local ok=false
+      cf,start,ok=chainrun(cf,start,cl,dataset,sequence,rlmode,ck,skipped)
+      if ok then
+        done=true
+      end
+    end
+    if not notmatchreplace[lookaheaddisc] then
+      local ok=false
+      new,cnew,ok=chainrun(new,cnew,clast,dataset,sequence,rlmode,ck,skipped)
+      if ok then
+        done=true
+      end
     end
     if hasglue then
       setdiscchecked(lookaheaddisc,cf,post,new)
@@ -20107,7 +20199,7 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
     end
     start=getprev(lookaheaddisc)
     sweephead[cf]=getnext(clast)
-    sweephead[new]=getnext(last)
+    sweephead[new]=getnext(cl)
   elseif backtrackdisc then
     local cf=getnext(backtrackdisc)
     local cl=start
@@ -20140,10 +20232,18 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
       clast=getnext(clast)
     end
     if not notmatchpost[backtrackdisc] then
-      cf,start,ok=chainproc(cf,start,last,dataset,sequence,chainlookup,rlmode,k)
+      local ok=false
+      cf,start,ok=chainrun(cf,start,last,dataset,sequence,rlmode,ck,skipped)
+      if ok then
+        done=true
+      end
     end
     if not notmatchreplace[backtrackdisc] then
-      new,cnew,ok=chainproc(new,cnew,clast,dataset,sequence,chainlookup,rlmode,k)
+      local ok=false
+      new,cnew,ok=chainrun(new,cnew,clast,dataset,sequence,rlmode,ck,skipped)
+      if ok then
+        done=true
+      end
     end
     if post then
       setlink(posttail,cf)
@@ -20164,11 +20264,24 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
     sweephead[post]=getnext(clast)
     sweephead[replace]=getnext(last)
   else
-    head,start,ok=chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,k)
+    local ok=false
+    head,start,ok=chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
+    if ok then
+      done=true
+    end
   end
-  return head,start,ok
+  return head,start,done
 end
-local noflags={ false,false,false,false }
+local function chaintrac(head,start,dataset,sequence,rlmode,ck,skipped)
+  local rule=ck[1]
+  local lookuptype=ck[8] or ck[2]
+  local nofseq=#ck[3]
+  local first=ck[4]
+  local last=ck[5]
+  local char=getchar(start)
+  logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %a",
+    cref(dataset,sequence),rule,gref(char),first-1,last-first+1,nofseq-last,lookuptype)
+end
 local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
   local sweepnode=sweepnode
   local sweeptype=sweeptype
@@ -20579,93 +20692,13 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
       end
     end
     if match then
-      local diskchain=diskseen or sweepnode
       if trace_contexts then
-        local rule=ck[1]
-        local lookuptype=ck[8] or ck[2]
-        local first=ck[4]
-        local last=ck[5]
-        local char=getchar(start)
-        logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %a",
-          cref(dataset,sequence),rule,gref(char),first-1,last-first+1,s-last,lookuptype)
+        chaintrac(head,start,dataset,sequence,rlmode,ck,skipped)
       end
-      local chainlookups=ck[6]
-      if chainlookups then
-        local nofchainlookups=#chainlookups
-        if size==1 then
-          local chainlookup=chainlookups[1]
-          local chainkind=chainlookup.type
-          local chainproc=chainprocs[chainkind]
-          if chainproc then
-            local ok
-            if diskchain then
-              head,start,ok=chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,1,ck,chainproc)
-            else
-              head,start,ok=chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,1)
-            end
-            if ok then
-              done=true
-            end
-          else
-            logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
-          end
-         else
-          local i=1
-          while start do
-            if skipped then
-              while start do
-                local char=getchar(start)
-                local class=classes[char]
-                if class then
-                  if class==skipmark or class==skipligature or class==skipbase or (markclass and class=="mark" and not markclass[char]) then
-                    start=getnext(start)
-                  else
-                    break
-                  end
-                else
-                  break
-                end
-              end
-            end
-            local chainlookup=chainlookups[i]
-            if chainlookup then
-              local chainkind=chainlookup.type
-              local chainproc=chainprocs[chainkind]
-              if chainproc then
-                local ok,n
-                if diskchain then
-                  head,start,ok=chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,i,ck,chainproc)
-                else
-                  head,start,ok,n=chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,i)
-                end
-                if ok then
-                  done=true
-                  if n and n>1 and i+n>nofchainlookups then
-                    break
-                  end
-                end
-              else
-                logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
-              end
-            end
-            i=i+1
-            if i>size or not start then
-              break
-            elseif start then
-              start=getnext(start)
-            end
-          end
-        end
+      if diskseen or sweepnode then
+        head,start,done=chaindisk(head,start,dataset,sequence,rlmode,ck,skipped)
       else
-        local replacements=ck[7]
-        if replacements then
-          head,start,done=reversesub(head,start,last,dataset,sequence,replacements,rlmode)
-        else
-          done=true
-          if trace_contexts then
-            logprocess("%s: skipping match",cref(dataset,sequence))
-          end
-        end
+        head,start,done=chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
       end
       if done then
         break 
@@ -20993,10 +21026,10 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
   while start do
     local char=ischar(start,font)
     if char then
-local a 
-if attr then
-  a=getattr(start,0)
-end
+      local a 
+      if attr then
+        a=getattr(start,0)
+      end
       if not a or (a==attr) then
         local lookupmatch=lookupcache[char]
         if lookupmatch then
@@ -21026,10 +21059,10 @@ local function t_run_single(start,stop,font,attr,lookupcache)
   while start~=stop do
     local char=ischar(start,font)
     if char then
-local a 
-if attr then
-  a=getattr(start,0)
-end
+      local a 
+      if attr then
+        a=getattr(start,0)
+      end
       local startnext=getnext(start)
       if not a or (a==attr) then
         local lookupmatch=lookupcache[char]
@@ -21064,10 +21097,10 @@ end
   end
 end
 local function k_run_single(sub,injection,last,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
-local a 
-if attr then
-  a=getattr(sub,0)
-end
+  local a 
+  if attr then
+    a=getattr(sub,0)
+  end
   if not a or (a==attr) then
     for n in traverse_nodes(sub) do 
       if n==last then
@@ -21098,10 +21131,10 @@ local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlm
   while start do
     local char=ischar(start,font)
     if char then
-local a 
-if attr then
-  a=getattr(start,0)
-end
+      local a 
+      if attr then
+        a=getattr(start,0)
+      end
       if not a or (a==attr) then
         for i=1,nofsteps do
           local step=steps[i]
@@ -21142,10 +21175,10 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
   while start~=stop do
     local char=ischar(start,font)
     if char then
-local a 
-if attr then
-  a=getattr(start,0)
-end
+      local a 
+      if attr then
+        a=getattr(start,0)
+      end
       local startnext=getnext(start)
       if not a or (a==attr) then
         for i=1,nofsteps do
@@ -21188,10 +21221,10 @@ end
   end
 end
 local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
-local a 
-if attr then
-  a=getattr(sub,0)
-end
+  local a 
+  if attr then
+    a=getattr(sub,0)
+  end
   if not a or (a==attr) then
     for n in traverse_nodes(sub) do 
       if n==last then
@@ -21312,10 +21345,10 @@ local function featuresprocessor(head,font,attr)
       while start do
         local char=ischar(start,font)
         if char then
-local a 
-if attr then
-  a=getattr(start,0)
-end
+          local a 
+          if attr then
+            a=getattr(start,0)
+          end
           if not a or (a==attr) then
             for i=1,nofsteps do
               local step=steps[i]
@@ -21356,14 +21389,14 @@ end
           while start do
             local char,id=ischar(start,font)
             if char then
-local a 
-if attr then
-  if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
-    a=true
-  end
-elseif not attribute or getprop(start,a_state)==attribute then
-  a=true
-end
+              local a 
+              if attr then
+                if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
+                  a=true
+                end
+              elseif not attribute or getprop(start,a_state)==attribute then
+                a=true
+              end
               if a then
                 local lookupmatch=lookupcache[char]
                 if lookupmatch then
@@ -21408,14 +21441,14 @@ end
         while start do
           local char,id=ischar(start,font)
           if char then
-local a 
-if attr then
-  if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
-    a=true
-  end
-elseif not attribute or getprop(start,a_state)==attribute then
-  a=true
-end
+            local a 
+            if attr then
+              if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
+                a=true
+              end
+            elseif not attribute or getprop(start,a_state)==attribute then
+              a=true
+            end
             if a then
               for i=1,nofsteps do
                 local step=steps[i]
@@ -23852,42 +23885,56 @@ do
       return entry.data
     end
   end
+  local runner=sandbox.registerrunner {
+    name="otfsvg",
+    program="inkscape",
+    method="pipeto",
+    template="--shell > temp-otf-svg-shape.log",
+    reporter=report_svg,
+  }
   function otfsvg.topdf(svgshapes)
-    local inkscape=io.popen("inkscape --shell > temp-otf-svg-shape.log","w")
     local pdfshapes={}
-    local nofshapes=#svgshapes
-    local f_svgfile=formatters["temp-otf-svg-shape-%i.svg"]
-    local f_pdffile=formatters["temp-otf-svg-shape-%i.pdf"]
-    local f_convert=formatters["%s --export-pdf=%s\n"]
-    local filterglyph=otfsvg.filterglyph
-    report_svg("processing %i svg containers",nofshapes)
-    statistics.starttiming()
-    for i=1,nofshapes do
-      local entry=svgshapes[i]
-      for index=entry.first,entry.last do
-        local data=filterglyph(entry,index)
-        if data and data~="" then
-          local svgfile=f_svgfile(index)
-          local pdffile=f_pdffile(index)
-          savedata(svgfile,data)
-          inkscape:write(f_convert(svgfile,pdffile))
-          pdfshapes[index]=true
+    local inkscape=runner()
+    if inkscape then
+      local nofshapes=#svgshapes
+      local f_svgfile=formatters["temp-otf-svg-shape-%i.svg"]
+      local f_pdffile=formatters["temp-otf-svg-shape-%i.pdf"]
+      local f_convert=formatters["%s --export-pdf=%s\n"]
+      local filterglyph=otfsvg.filterglyph
+      local nofdone=0
+      report_svg("processing %i svg containers",nofshapes)
+      statistics.starttiming()
+      for i=1,nofshapes do
+        local entry=svgshapes[i]
+        for index=entry.first,entry.last do
+          local data=filterglyph(entry,index)
+          if data and data~="" then
+            local svgfile=f_svgfile(index)
+            local pdffile=f_pdffile(index)
+            savedata(svgfile,data)
+            inkscape:write(f_convert(svgfile,pdffile))
+            pdfshapes[index]=true
+            nofdone=nofdone+1
+            if nofdone%100==0 then
+              report_svg("%i shapes processed",nofdone)
+            end
+          end
         end
       end
-    end
-    inkscape:write("quit\n")
-    inkscape:close()
-    report_svg("processing %i pdf results",nofshapes)
-    for index in next,pdfshapes do
-      local svgfile=f_svgfile(index)
-      local pdffile=f_pdffile(index)
-      pdfshapes[index]=loaddata(pdffile)
-      remove(svgfile)
-      remove(pdffile)
-    end
-    statistics.stoptiming()
-    if statistics.elapsedseconds then
-      report_svg("svg conversion time %s",statistics.elapsedseconds())
+      inkscape:write("quit\n")
+      inkscape:close()
+      report_svg("processing %i pdf results",nofshapes)
+      for index in next,pdfshapes do
+        local svgfile=f_svgfile(index)
+        local pdffile=f_pdffile(index)
+        pdfshapes[index]=loaddata(pdffile)
+        remove(svgfile)
+        remove(pdffile)
+      end
+      statistics.stoptiming()
+      if statistics.elapsedseconds then
+        report_svg("svg conversion time %s",statistics.elapsedseconds())
+      end
     end
     return pdfshapes
   end

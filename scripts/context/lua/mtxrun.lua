@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 6885, stripped down to: 2843
+-- original size: 6883, stripped down to: 2843
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -3009,7 +3009,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 16392, stripped down to: 9736
+-- original size: 16520, stripped down to: 9519
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -3085,7 +3085,7 @@ if not os.__getenv__ then
 end
 local execute=os.execute
 local iopopen=io.popen
-function os.resultof(command)
+local function resultof(command)
   local handle=iopopen(command,"r") 
   if handle then
     local result=handle:read("*all") or ""
@@ -3094,6 +3094,10 @@ function os.resultof(command)
   else
     return ""
   end
+end
+os.resultof=resultof
+function os.pipeto(command)
+  return iopopen(command,"w") 
 end
 if not io.fileseparator then
   if find(os.getenv("PATH"),";",1,true) then
@@ -3140,17 +3144,6 @@ setmetatable(os,{ __index=function(t,k)
   return r and r(t,k) or nil 
 end })
 local name,platform=os.name or "linux",os.getenv("MTX_PLATFORM") or ""
-local function guess()
-  local architecture=os.resultof("uname -m") or ""
-  if architecture~="" then
-    return architecture
-  end
-  architecture=os.getenv("HOSTTYPE") or ""
-  if architecture~="" then
-    return architecture
-  end
-  return os.resultof("echo $HOSTTYPE") or ""
-end
 if platform~="" then
   os.platform=platform
 elseif os.type=="windows" then
@@ -3167,7 +3160,7 @@ elseif os.type=="windows" then
   end
 elseif name=="linux" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
+    local platform,architecture="",os.getenv("HOSTTYPE") or resultof("uname -m") or ""
     if find(architecture,"x86_64",1,true) then
       platform="linux-64"
     elseif find(architecture,"ppc",1,true) then
@@ -3181,7 +3174,7 @@ elseif name=="linux" then
   end
 elseif name=="macosx" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.resultof("echo $HOSTTYPE") or ""
+    local platform,architecture="",resultof("echo $HOSTTYPE") or ""
     if architecture=="" then
       platform="osx-intel"
     elseif find(architecture,"i386",1,true) then
@@ -3197,7 +3190,7 @@ elseif name=="macosx" then
   end
 elseif name=="sunos" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.resultof("uname -m") or ""
+    local platform,architecture="",resultof("uname -m") or ""
     if find(architecture,"sparc",1,true) then
       platform="solaris-sparc"
     else 
@@ -3209,7 +3202,7 @@ elseif name=="sunos" then
   end
 elseif name=="freebsd" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.resultof("uname -m") or ""
+    local platform,architecture="",resultof("uname -m") or ""
     if find(architecture,"amd64",1,true) then
       platform="freebsd-amd64"
     else
@@ -3221,7 +3214,7 @@ elseif name=="freebsd" then
   end
 elseif name=="kfreebsd" then
   function resolvers.platform(t,k)
-    local platform,architecture="",os.getenv("HOSTTYPE") or os.resultof("uname -m") or ""
+    local platform,architecture="",os.getenv("HOSTTYPE") or resultof("uname -m") or ""
     if find(architecture,"x86_64",1,true) then
       platform="kfreebsd-amd64"
     else
@@ -9062,7 +9055,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 8177, stripped down to: 5596
+-- original size: 8320, stripped down to: 5709
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -9179,10 +9172,13 @@ function statistics.show()
       local total,indirect=status.callbacks or 0,status.indirect_callbacks or 0
       return format("%s direct, %s indirect, %s total",total-indirect,indirect,total)
     end)
-    if jit then
-      local jitstatus={ jit.status() }
-      if jitstatus[1] then
-        register("luajit options",concat(jitstatus," ",2))
+    if TEXENGINE=="luajittex" and JITSUPPORTED then
+      local jitstatus=jit.status
+      if jitstatus then
+        local jitstatus={ jitstatus() }
+        if jitstatus[1] then
+          register("luajit options",concat(jitstatus," ",2))
+        end
       end
     end
     register("lua properties",function()
@@ -18187,7 +18183,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
--- original size: 6779, stripped down to: 5444
+-- original size: 6871, stripped down to: 5622
 
 if not modules then modules={} end modules ['data-sch']={
   version=1.001,
@@ -18233,11 +18229,21 @@ function resolvers.schemes.cleanname(specification)
   end
   return hash
 end
-local cached,loaded,reused,thresholds,handlers={},{},{},{},{}
-local function runcurl(name,cachename) 
-  local command="curl --silent --insecure --create-dirs --output "..cachename.." "..name
-  os.execute(command)
-end
+local cached={}
+local loaded={}
+local reused={}
+local thresholds={}
+local handlers={}
+local runner=sandbox.registerrunner {
+  name="curl resolver",
+  method="execute",
+  program="curl",
+  template="--silent -- insecure --create-dirs --output %cachename% %original%",
+  checkers={
+    cachename="cache",
+    original="url",
+  }
+}
 local function fetch(specification)
   local original=specification.original
   local scheme=specification.scheme
@@ -18259,7 +18265,10 @@ local function fetch(specification)
           report_schemes("fetching %a, protocol %a, method %a",original,scheme,"curl")
         end
         logs.flush()
-        runcurl(original,cachename)
+        runner {
+          original=original,
+          cachename=cachename,
+        }
       end
     end
     if io.exists(cachename) then
@@ -18967,7 +18976,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 7413, stripped down to: 6012
+-- original size: 8391, stripped down to: 6761
 
 if not modules then modules={} end modules ['luat-fmt']={
   version=1.001,
@@ -19014,6 +19023,31 @@ local function secondaryflags()
   end
   return concat(flags," ")
 end
+local template=[[--ini %primaryflags% --lua="%luafile%" "%texfile%" %secondaryflags% %dump% %redirect%]]
+local checkers={
+  primaryflags="string",
+  secondaryflags="string",
+  luafile="readable",
+  texfile="readable",
+  redirect="string",
+  dump="string",
+}
+local runners={
+  luatex=sandbox.registerrunner {
+    name="make luatex format",
+    program="luatex",
+    template=template,
+    checkers=checkers,
+    reporter=report_format,
+  },
+  luajittex=sandbox.registerrunner {
+    name="make luajittex format",
+    program="luajittex",
+    template=template,
+    checkers=checkers,
+    reporter=report_format,
+  },
+}
 function environment.make_format(name,arguments)
   local engine=environment.ownmain or "luatex"
   local silent=environment.arguments.silent
@@ -19072,13 +19106,20 @@ function environment.make_format(name,arguments)
     lfs.chdir(olddir)
     return
   end
-  local dump=os.platform=="unix" and "\\\\dump" or "\\dump"
-  local command=format("%s --ini %s --lua=%s %s %s %s",
-    engine,primaryflags(),quoted(usedluastub),quoted(fulltexsourcename),secondaryflags(),dump)
-  if silent then
+  local specification={
+    primaryflags=primaryflags(),
+    secondaryflags=secondaryflags(),
+    luafile=usedluastub,
+    texfile=fulltexsourcename,
+    dump=os.platform=="unix" and "\\\\dump" or "\\dump",
+  }
+  local runner=runners[engine]
+  if not runner then
+    report_format("format %a cannot be generated, no runner available for engine %a",name,engine)
+  elseif silent then
     statistics.starttiming()
-    local command=format("%s > temp.log",command)
-    local result=os.execute(command)
+    specification.redirect="> temp.log"
+    local result=makeformat(specification)
     local runtime=statistics.stoptiming()
     if result~=0 then
       print(format("%s silent make > fatal error when making format %q",engine,name)) 
@@ -19087,8 +19128,7 @@ function environment.make_format(name,arguments)
     end
     os.remove("temp.log")
   else
-    report_format("running command: %s\n",command)
-    os.execute(command)
+    makeformat(specification)
   end
   local pattern=file.removesuffix(file.basename(usedluastub)).."-*.mem"
   local mp=dir.glob(pattern)
@@ -19135,8 +19175,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 815529
--- stripped bytes    : 298494
+-- original bytes    : 816868
+-- stripped bytes    : 299010
 
 -- end library merge
 

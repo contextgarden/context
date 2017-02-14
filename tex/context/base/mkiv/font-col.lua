@@ -35,6 +35,9 @@ local trace_collecting   = false  trackers.register("fonts.collecting", function
 
 local report_fonts       = logs.reporter("fonts","collections")
 
+local enableaction       = nodes.tasks.enableaction
+local disableaction      = nodes.tasks.disableaction
+
 local collections        = fonts.collections or { }
 fonts.collections        = collections
 
@@ -60,12 +63,12 @@ local function checkenabled()
     -- a bit ugly but nicer than a fuzzy state while defining math
     if next(vectors) then
         if not enabled then
-            nodes.tasks.enableaction("processors","fonts.collections.process")
+            enableaction("processors","fonts.collections.process")
             enabled = true
         end
     else
         if enabled then
-            nodes.tasks.disableaction("processors","fonts.collections.process")
+            disableaction("processors","fonts.collections.process")
             enabled = false
         end
     end

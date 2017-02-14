@@ -19,6 +19,9 @@ local context        = context
 local scanners       = tokens.scanners
 local scannumber     = scanners.number
 local scankeyword    = scanners.keyword
+local scandimen      = scanners.dimen
+local scancount      = scanners.count
+local scanstring     = scanners.string
 
 local scanners       = interfaces.scanners
 local implement      = interfaces.implement
@@ -178,3 +181,136 @@ implement {
         pdf.setobjcompresslevel(o)
     end
 }
+
+local report = logs.reporter("backend","pdftex primitives")
+local trace  = false
+
+scanners.pdfannot = function()
+    if scankeyword("reserveobjectnum") then
+        report("\\pdfannot reserveobjectnum is not (yet) supported")
+     -- if trace then
+     --     report()
+     --     report("\\pdfannot: reserved number (not supported yet)")
+     --     report()
+     -- end
+    else
+        local width  = false
+        local height = false
+        local depth  = false
+        local data   = false
+        local object = false
+        local attr   = false
+        --
+        if scankeyword("useobjnum") then
+            object = scancount()
+            report("\\pdfannot useobjectnum is not (yet) supported")
+        end
+        while true do
+            if scankeyword("width") then
+                width = scandimen()
+            elseif scankeyword("height") then
+                height = scandimen()
+            elseif scankeyword("depth") then
+                depth = scandimen()
+            else
+                break
+            end
+        end
+        if scankeyword("attr") then
+            attr = scanstring()
+        end
+        data = scanstring()
+        --
+        -- less strict variant:
+        --
+     -- while true do
+     --     if scankeyword("width") then
+     --         width = scandimen()
+     --     elseif scankeyword("height") then
+     --         height = scandimen()
+     --      elseif scankeyword("depth") then
+     --         depth = scandimen()
+     --     elseif scankeyword("useobjnum") then
+     --         object = scancount()
+     --     elseif scankeyword("attr") then
+     --         attr = scanstring()
+     --     else
+     --         data = scanstring()
+     --         break
+     --     end
+     -- end
+        --
+     -- if trace then
+     --     report()
+     --     report("\\pdfannot:")
+     --     report()
+     --     report("  object: %s",object or "<unset> (not supported yet)")
+     --     report("  width : %p",width  or "<unset>")
+     --     report("  height: %p",height or "<unset>")
+     --     report("  depth : %p",depth  or "<unset>")
+     --     report("  attr  : %s",attr   or "<unset>")
+     --     report("  data  : %s",data   or "<unset>")
+     --     report()
+     -- end
+        context(backends.nodeinjections.annotation(width or 0,height or 0,depth or 0,data or ""))
+    end
+end
+
+scanners.pdfdest = function()
+    local name   = false
+    local zoom   = false
+    local view   = false
+    local width  = false
+    local height = false
+    local depth  = false
+    if scankeyword("num") then
+        report("\\pdfdest num is not (yet) supported")
+    elseif scankeyword("name") then
+        name = scanstring()
+    end
+    if scankeyword("xyz") then
+        view = "xyz"
+        if scankeyword("zoom") then
+            report("\\pdfdest zoom is ignored")
+            zoom = scancount()
+        end
+    elseif scankeyword("fitbh") then
+        view = "fitbh"
+    elseif scankeyword("fitbv") then
+        view = "fitbv"
+    elseif scankeyword("fitb") then
+        view = "fitb"
+    elseif scankeyword("fith") then
+        view = "fith"
+    elseif scankeyword("fitv") then
+        view = "fitv"
+    elseif scankeyword("fitr") then
+        view = "fitr"
+        while true do
+            if scankeyword("width") then
+                width = scandimen()
+            elseif scankeyword("height") then
+                height = scandimen()
+            elseif scankeyword("depth") then
+                depth = scandimen()
+            else
+                break
+            end
+        end
+    elseif scankeyword("fit") then
+        view = "fit"
+    end
+ -- if trace then
+ --     report()
+ --     report("\\pdfdest:")
+ --     report()
+ --     report("  name  : %s",name   or "<unset>")
+ --     report("  view  : %s",view   or "<unset>")
+ --     report("  zoom  : %s",zoom   or "<unset> (not supported)")
+ --     report("  width : %p",width  or "<unset>")
+ --     report("  height: %p",height or "<unset>")
+ --     report("  depth : %p",depth  or "<unset>")
+ --     report()
+ -- end
+    context(backends.nodeinjections.destination(width or 0,height or 0,depth or 0,{ name or "" },view or "fit"))
+end

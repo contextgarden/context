@@ -47,10 +47,12 @@ local report_transparencies = logs.reporter("transparencies","support")
 -- nb. too many "0 g"s
 
 local states          = attributes.states
-local tasks           = nodes.tasks
 local nodeinjections  = backends.nodeinjections
 local registrations   = backends.registrations
 local unsetvalue      = attributes.unsetvalue
+
+local enableaction    = nodes.tasks.enableaction
+local setaction       = nodes.tasks.setaction
 
 local registerstorage = storage.register
 local formatters      = string.formatters
@@ -170,9 +172,9 @@ end
 -- http://en.wikipedia.org/wiki/HSI_color_space
 -- http://nl.wikipedia.org/wiki/HSV_(kleurruimte)
 
--- 	h /= 60;			// sector 0 to 5
+-- 	h /= 60;        // sector 0 to 5
 -- 	i = floor( h );
--- 	f = h - i;			// factorial part of h
+-- 	f = h - i;      // factorial part of h
 
 local function hsvtorgb(h,s,v)
     if s > 1 then
@@ -437,11 +439,7 @@ attributes.colors.handler = nodes.installattributehandler {
 }
 
 function colors.enable(value)
-    if value == false or not colors.supported then
-        tasks.disableaction("shipouts","attributes.colors.handler")
-    else
-        tasks.enableaction("shipouts","attributes.colors.handler")
-    end
+    setaction("shipouts","attributes.colors.handler",not (value == false or not colors.supported))
 end
 
 function colors.forcesupport(value) -- can move to attr-div
@@ -547,11 +545,7 @@ attributes.transparencies.handler = nodes.installattributehandler {
 }
 
 function transparencies.enable(value) -- nil is enable
-    if value == false or not transparencies.supported then
-        tasks.disableaction("shipouts","attributes.transparencies.handler")
-    else
-        tasks.enableaction("shipouts","attributes.transparencies.handler")
-    end
+    setaction("shipouts","attributes.transparencies.handler",not (value == false or not transparencies.supported))
 end
 
 function transparencies.forcesupport(value) -- can move to attr-div
@@ -610,7 +604,7 @@ colorintents.handler = nodes.installattributehandler {
 }
 
 function colorintents.enable()
-    tasks.enableaction("shipouts","attributes.colorintents.handler")
+    enableaction("shipouts","attributes.colorintents.handler")
 end
 
 -- interface

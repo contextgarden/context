@@ -14,7 +14,8 @@ local next, type, tonumber = next, type, tonumber
 local nodes              = nodes
 local fonts              = fonts
 
-local tasks              = nodes.tasks
+local enableaction       = nodes.tasks.enableaction
+
 local nuts               = nodes.nuts
 local nodepool           = nuts.pool
 
@@ -582,7 +583,7 @@ function kerns.set(factor)
     end
     if factor == v_max or factor ~= 0 then
         if not enabled then
-            tasks.enableaction("processors","typesetters.kerns.handler")
+            enableaction("processors","typesetters.kerns.handler")
             enabled = true
         end
         local a = factors[factor]

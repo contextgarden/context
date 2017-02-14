@@ -74,6 +74,8 @@ local a_suspect       = attributes.private('suspect')
 local texsetattribute = tex.setattribute
 local enabled         = false
 
+local enableaction    = nodes.tasks.enableaction
+
 local threshold       = 65536 / 4
 
 local function special(n)
@@ -291,19 +293,13 @@ function typesetters.showsuspects(head)
     end
 end
 
-nodes.tasks.appendaction ("processors","after",      "typesetters.marksuspects")
-nodes.tasks.prependaction("shipouts",  "normalizers","typesetters.showsuspects")
-
-nodes.tasks.disableaction("processors","typesetters.marksuspects")
-nodes.tasks.disableaction("shipouts",  "typesetters.showsuspects")
-
 -- or maybe a directive
 
 trackers.register("typesetters.suspects",function(v)
     texsetattribute(a_suspecting,v and 1 or unsetvalue)
     if v and not enabled then
-        nodes.tasks.enableaction("processors","typesetters.marksuspects")
-        nodes.tasks.enableaction("shipouts",  "typesetters.showsuspects")
+        enableaction("processors","typesetters.marksuspects")
+        enableaction("shipouts",  "typesetters.showsuspects")
         enabled = true
     end
 end)

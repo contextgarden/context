@@ -26,6 +26,8 @@ local getsubtype        = nuts.getsubtype
 local getpenalty        = nuts.getpenalty
 local remove            = nuts.remove
 
+local enableaction      = nodes.tasks.enableaction
+
 local wrappers          = { }
 typesetters.wrappers    = wrappers
 
@@ -71,6 +73,6 @@ interfaces.implement {
     name     = "enablecrlf",
     onlyonce = true,
     actions  = function()
-        nodes.tasks.enableaction("processors","typesetters.wrappers.handler")
+        enableaction("processors","typesetters.wrappers.handler")
     end
 }

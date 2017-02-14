@@ -1063,6 +1063,8 @@
 
     <cd:command name="settabular" file="font-pre.mkiv"/>
 
+    <cd:command name="setfractions" file="font-pre.mkiv"/>
+
     <cd:command name="setsuperiors" file="font-pre.mkiv"/>
 
     <cd:command name="tinyfont" file="font-pre.mkiv"/>

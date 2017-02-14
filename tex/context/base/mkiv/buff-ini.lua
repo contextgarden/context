@@ -12,6 +12,7 @@ local sub, format = string.sub, string.format
 local splitlines, validstring, replacenewlines = string.splitlines, string.valid, string.replacenewlines
 local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
 local utfchar  = utf.char
+local nameonly = file.nameonly
 local totable  = string.totable
 
 local trace_run         = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
@@ -486,6 +487,17 @@ implement {
 local oldhashes = nil
 local newhashes = nil
 
+local runner = sandbox.registerrunner {
+    name     = "run buffer",
+    program  = "context",
+    method   = "execute",
+    template = "--purgeall " .. (jit and "--jit" or "") .. " %filename%",
+    reporter = report_typeset,
+    checkers = {
+        filename = "readable",
+    }
+}
+
 local function runbuffer(name,encapsulate)
     if not oldhashes then
         oldhashes = job.datasets.getdata("typeset buffers","hashes") or { }
@@ -513,7 +525,7 @@ local function runbuffer(name,encapsulate)
     end
     --
     local hash = md5.hex(content)
-    local tag  = formatters["%s-t-b-%s"](tex.jobname,hash)
+    local tag  = formatters["%s-t-b-%s"](nameonly(tex.jobname),hash) -- make sure we run on the local path
     --
     local filename   = addsuffix(tag,"tmp")
     local resultname = addsuffix(tag,"pdf")
@@ -525,9 +537,8 @@ local function runbuffer(name,encapsulate)
             report_typeset("changes in %a, processing forced",name)
         end
         io.savedata(filename,content)
-        local command = formatters["context --purgeall %s %s"](jit and "--jit" or "",filename)
-        report_typeset("running: %s\n",command)
-        os.execute(command)
+        report_typeset("processing saved buffer %a\n",filename)
+        runner { filename = filename }
     end
     newhashes[hash] = (newhashes[hash] or 0) + 1
     report_typeset("no changes in %a, processing skipped",name)

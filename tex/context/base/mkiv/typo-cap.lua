@@ -54,7 +54,7 @@ local math_code       = nodecodes.math
 
 local kerning_code    = kerncodes.kerning
 
-local tasks           = nodes.tasks
+local enableaction    = nodes.tasks.enableaction
 
 local newkern         = nuts.pool.kern
 
@@ -583,7 +583,7 @@ function cases.set(n,id)
         n = registered[n] or tonumber(n)
         if n then
             if not enabled then
-                tasks.enableaction("processors","typesetters.cases.handler")
+                enableaction("processors","typesetters.cases.handler")
                 if trace_casing then
                     report_casing("enabling case handler")
                 end

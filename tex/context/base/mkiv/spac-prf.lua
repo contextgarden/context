@@ -96,6 +96,8 @@ local v_strict          = variables.strict
 local setcolor          = nodes.tracers.colors.set
 local settransparency   = nodes.tracers.transparencies.set
 
+local enableaction      = nodes.tasks.enableaction
+
 local profiling         = { }
 builders.profiling      = profiling
 
@@ -795,9 +797,9 @@ local enabled = false
 
 function profiling.set(specification)
     if not enabled then
-        nodes.tasks.enableaction("mvlbuilders", "builders.profiling.pagehandler")
+        enableaction("mvlbuilders", "builders.profiling.pagehandler")
      -- too expensive so we expect that this happens explicitly, we keep for reference:
-     -- nodes.tasks.enableaction("vboxbuilders","builders.profiling.vboxhandler")
+     -- enableaction("vboxbuilders","builders.profiling.vboxhandler")
         enabled = true
     end
     local n = #specifications + 1

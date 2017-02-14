@@ -161,14 +161,13 @@ if sandboxing then
 
     -- Nicer would be if we could just disable write 18 and keep os.execute
     -- which in fact we can do by defining write18 as macro instead of
-    -- primitive ... todo.
+    -- primitive ... todo ... well, it has been done now.
 
     -- We block some potential escapes from protection.
 
     context [[
         \let\primitive      \relax
         \let\normalprimitive\relax
-        \let\normalwrite    \relax
     ]]
 
 end

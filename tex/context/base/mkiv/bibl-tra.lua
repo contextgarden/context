@@ -21,7 +21,9 @@ end
 -- end of hack
 
 
-local match, gmatch, format, concat, sort = string.match, string.gmatch, string.format, table.concat, table.sort
+local gmatch, format = string.gmatch, string.format
+local sort = table.sort
+local savedata = io.savedata
 
 bibtex       = bibtex or { }
 local bibtex = bibtex
@@ -61,10 +63,31 @@ local template = [[
 \bibdata{%s}
 ]]
 
-local bibtexbin = environment.arguments.mlbibtex and "mlbibcontext" or "bibtex"
+local runners = {
+    bibtex = sandbox.registerrunner {
+        name     = "bibtex",
+        method   = "execute",
+        program  = "bibtex",
+        template = [["%filename%"]],
+        checkers = {
+            filename = "readable",
+        }
+    },
+    mlbibtex = sandbox.registerrunner {
+        name     = "mlbibtex",
+        method   = "execute",
+        program  = "mlbibcontext",
+        template = [["%filename%"]],
+        checkers = {
+            filename = "readable",
+        }
+    }
+}
+
+local runner = environment.arguments.mlbibtex and runners.mlbibtex or runners.bibtex
 
 directives.register("publications.usemlbibtex", function(v)
-    bibtexbin = v and "mlbibcontext" or "bibtex"
+    runner = v and runners.mlbibtex or runners.bibtex
 end)
 
 function hacks.process(settings)
@@ -74,11 +97,11 @@ function hacks.process(settings)
     if database ~= "" then
         local targetfile = file.addsuffix(jobname,"aux")
         interfaces.showmessage("publications",3,targetfile)
-        io.savedata(targetfile,format(template,style,database))
+        savedata(targetfile,format(template,style,database))
         if trace_bibtex then
             report_tex("processing bibtex file %a using %a",jobname,bibtexbin)
         end
-        os.execute(format("%s %q",bibtexbin,jobname))
+        runner { filename = jobname }
         -- purge 'm
     end
 end

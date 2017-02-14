@@ -8,29 +8,45 @@ if not modules then modules = { } end modules ['data-crl'] = {
 
 -- this one is replaced by data-sch.lua --
 
-local gsub = string.gsub
+local gsub   = string.gsub
+local exists = io.exists
 
 local resolvers = resolvers
+local finders   = resolvers.finders
+local openers   = resolvers.openers
+local loaders   = resolvers.loaders
 
-local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
+local setfirstwritablefile = caches.setfirstwritablefile
 
-resolvers.curl = resolvers.curl or { }
-local curl     = resolvers.curl
+local curl     = resolvers.curl or { }
+resolvers.curl = curl
+local cached   = { }
 
-local cached = { }
+local runner = sandbox.registerrunner {
+    name     = "curl resolver",
+    method   = "execute",
+    program  = "curl",
+    template = "--silent -- insecure --create-dirs --output %cachename% %original%",
+    checkers = {
+        cachename = "cache",
+        original  = "url",
+    }
+}
 
 local function runcurl(specification)
     local original  = specification.original
  -- local scheme    = specification.scheme
     local cleanname = gsub(original,"[^%a%d%.]+","-")
-    local cachename = caches.setfirstwritablefile(cleanname,"curl")
+    local cachename = setfirstwritablefile(cleanname,"curl")
     if not cached[original] then
-        if not io.exists(cachename) then
+        if not exists(cachename) then
             cached[original] = cachename
-            local command = "curl --silent --create-dirs --output " .. cachename .. " " .. original
-            os.execute(command)
+            runner {
+                cachename = cachename,
+                original  = original,
+            }
         end
-        if io.exists(cachename) then
+        if exists(cachename) then
             cached[original] = cachename
         else
             cached[original] = ""

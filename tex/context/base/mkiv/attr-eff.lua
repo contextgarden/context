@@ -10,7 +10,7 @@ local attributes, nodes, backends, utilities = attributes, nodes, backends, util
 local tex = tex
 
 local states            = attributes.states
-local tasks             = nodes.tasks
+local enableaction      = nodes.tasks.enableaction
 local nodeinjections    = backends.nodeinjections
 local texsetattribute   = tex.setattribute
 local allocate          = utilities.storage.allocate
@@ -97,7 +97,7 @@ local enabled = false
 
 local function enable()
     if not enabled then
-        tasks.enableaction("shipouts","attributes.effects.handler")
+        enableaction("shipouts","attributes.effects.handler")
         enabled = true
     end
 end

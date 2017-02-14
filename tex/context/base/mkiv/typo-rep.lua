@@ -18,7 +18,7 @@ local trace_stripping = false  trackers.register("nodes.stripping",  function(v)
 local report_stripping = logs.reporter("fonts","stripping")
 
 local nodes           = nodes
-local tasks           = nodes.tasks
+local enableaction    = nodes.tasks.enableaction
 
 local nuts            = nodes.nuts
 local tonut           = nuts.tonut
@@ -119,7 +119,7 @@ function stripping.set(n) -- number or 'reset'
         if n then
             if not enabled then
                 if initialize then initialize() end
-                tasks.enableaction("processors","nodes.handlers.stripping")
+                enableaction("processors","nodes.handlers.stripping")
                 enabled = true
             end
         else
@@ -128,11 +128,6 @@ function stripping.set(n) -- number or 'reset'
     end
     texsetattribute(a_stripping,n)
 end
-
--- why not in task-ini?
-
--- tasks.appendaction("processors","fonts","nodes.handlers.stripping",nil,"nodes.handlers.characters")
--- tasks.disableaction("processors","nodes.handlers.stripping")
 
 -- interface
 

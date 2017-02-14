@@ -41,7 +41,7 @@ local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 
 local nodecodes          = nodes.nodecodes
-local tasks              = nodes.tasks
+local enableaction       = nodes.tasks.enableaction
 
 local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
@@ -160,7 +160,7 @@ function directions.setmath(n)
         if trace_directions then
             report_directions("enabling directions handler")
         end
-        tasks.enableaction("math","typesetters.directions.processmath")
+        enableaction("math","typesetters.directions.processmath")
         enabled = true
     end
 end

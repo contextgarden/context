@@ -261,77 +261,57 @@ do
 
     end
 
- -- function otfsvg.topdf(svgshapes)
- --     local svgfile     = "temp-otf-svg-shape.svg"
- --     local pdffile     = "temp-otf-svg-shape.pdf"
- --     local command     = "inkscape " .. svgfile .. " --export-pdf=" .. pdffile
- --     local testrun     = false
- --     local pdfshapes   = { }
- --     local nofshapes   = #svgshapes
- --     local filterglyph = otfsvg.filterglyph
- --     report_svg("processing %i svg containers",nofshapes)
- --     statistics.starttiming()
- --     for i=1,nofshapes do
- --         local entry = svgshapes[i]
- --         for index=entry.first,entry.last do
- --             local data = filterglyph(entry,index)
- --             savedata(svgfile,tostring(data))
- --             if data and data ~= "" then
- --                 report_svg("processing svg shape of glyph %i in container %i",index,i)
- --                 os.execute(command)
- --                 pdfshapes[index] = loaddata(pdffile)
- --             end
- --         end
- --         if testrun and i > testrun then
- --             report_svg("quiting test run")
- --             break
- --         end
- --     end
- --     remove(svgfile)
- --     statistics.stoptiming()
- --     report_svg("conversion time: %0.3f",statistics.elapsedtime())
- --     return pdfshapes
- -- end
+    local runner = sandbox.registerrunner {
+        name     = "otfsvg",
+        program  = "inkscape",
+        method   = "pipeto",
+        template = "--shell > temp-otf-svg-shape.log",
+        reporter = report_svg,
+    }
 
     function otfsvg.topdf(svgshapes)
-        local inkscape    = io.popen("inkscape --shell > temp-otf-svg-shape.log","w")
-        local pdfshapes   = { }
-        local nofshapes   = #svgshapes
-        local f_svgfile   = formatters["temp-otf-svg-shape-%i.svg"]
-        local f_pdffile   = formatters["temp-otf-svg-shape-%i.pdf"]
-        local f_convert   = formatters["%s --export-pdf=%s\n"]
-        local filterglyph = otfsvg.filterglyph
-        report_svg("processing %i svg containers",nofshapes)
-        statistics.starttiming()
-        for i=1,nofshapes do
-            local entry = svgshapes[i]
-            for index=entry.first,entry.last do
-                local data = filterglyph(entry,index)
-                if data and data ~= "" then
-                    local svgfile = f_svgfile(index)
-                    local pdffile = f_pdffile(index)
-                    savedata(svgfile,data)
-                    inkscape:write(f_convert(svgfile,pdffile))
-                    pdfshapes[index] = true
+        local pdfshapes = { }
+        local inkscape  = runner()
+        if inkscape then
+            local nofshapes   = #svgshapes
+            local f_svgfile   = formatters["temp-otf-svg-shape-%i.svg"]
+            local f_pdffile   = formatters["temp-otf-svg-shape-%i.pdf"]
+            local f_convert   = formatters["%s --export-pdf=%s\n"]
+            local filterglyph = otfsvg.filterglyph
+            local nofdone     = 0
+            report_svg("processing %i svg containers",nofshapes)
+            statistics.starttiming()
+            for i=1,nofshapes do
+                local entry = svgshapes[i]
+                for index=entry.first,entry.last do
+                    local data = filterglyph(entry,index)
+                    if data and data ~= "" then
+                        local svgfile = f_svgfile(index)
+                        local pdffile = f_pdffile(index)
+                        savedata(svgfile,data)
+                        inkscape:write(f_convert(svgfile,pdffile))
+                        pdfshapes[index] = true
+                        nofdone = nofdone + 1
+                        if nofdone % 100 == 0 then
+                            report_svg("%i shapes processed",nofdone)
+                        end
+                    end
                 end
             end
-        end
-        inkscape:write("quit\n")
-     -- while inkscape:read("*a") do
-     --     os.sleep(0.1)
-     -- end
-        inkscape:close()
-        report_svg("processing %i pdf results",nofshapes)
-        for index in next, pdfshapes do
-            local svgfile = f_svgfile(index)
-            local pdffile = f_pdffile(index)
-            pdfshapes[index] = loaddata(pdffile)
-            remove(svgfile)
-            remove(pdffile)
-        end
-        statistics.stoptiming()
-        if statistics.elapsedseconds then
-            report_svg("svg conversion time %s",statistics.elapsedseconds())
+            inkscape:write("quit\n")
+            inkscape:close()
+            report_svg("processing %i pdf results",nofshapes)
+            for index in next, pdfshapes do
+                local svgfile = f_svgfile(index)
+                local pdffile = f_pdffile(index)
+                pdfshapes[index] = loaddata(pdffile)
+                remove(svgfile)
+                remove(pdffile)
+            end
+            statistics.stoptiming()
+            if statistics.elapsedseconds then
+                report_svg("svg conversion time %s",statistics.elapsedseconds())
+            end
         end
         return pdfshapes
     end

@@ -42,6 +42,16 @@ end
 
 job.register('job.files.collected', tobesaved, initializer)
 
+local runner = sandbox.registerrunner {
+    name     = "hashed context run",
+    program  = "context",
+    template = [[%options% "%filename%"]],
+    checkers = {
+        options  = "string",
+        filename = "readable",
+    }
+}
+
 function jobfiles.run(name,action)
     local usedname    = addsuffix(name,inputsuffix) -- we assume tex if not set
     local oldchecksum = collected[usedname]
@@ -55,7 +65,10 @@ function jobfiles.run(name,action)
         if ta == "function" then
             action(name)
         elseif ta == "string" and action ~= "" then
+            -- can be anything but we assume it gets checked by the sandbox
             os.execute(action)
+        elseif ta == "table" then
+            runner(action)
         else
             report_run("processing file, no action given for processing %a",name)
         end
@@ -79,7 +92,7 @@ function jobfiles.context(name,options)
     else
         local result = replacesuffix(name,resultsuffix)
         if not done[result] then
-            jobfiles.run(name,"context ".. (options or "") .. " " .. name)
+            jobfiles.run(name, { options = options, filename = name })
             done[result] = true
         end
         return result

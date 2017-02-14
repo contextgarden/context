@@ -152,6 +152,8 @@ local bit                 = number.bit
 local setbit              = number.setbit
 local clearbit            = number.clearbit
 
+local enableaction        = nodes.tasks.enableaction
+
 local trace_hbox
 local trace_vbox
 local trace_vtop
@@ -242,7 +244,7 @@ local function enable()
     l_italic        = layers.italic
     l_origin        = layers.origin
     l_discretionary = layers.discretionary
-    nodes.tasks.enableaction("shipouts","nodes.visualizers.handler")
+    enableaction("shipouts","nodes.visualizers.handler")
     report_visualize("enabled")
     enabled = true
     tex.setcount("global","c_syst_visualizers_state",1) -- so that we can optimize at the tex end

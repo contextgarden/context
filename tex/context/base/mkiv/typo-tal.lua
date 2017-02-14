@@ -62,6 +62,8 @@ local tracers              = nodes.tracers
 local setcolor             = tracers.colors.set
 local tracedrule           = tracers.pool.nuts.rule
 
+local enableaction         = nodes.tasks.enableaction
+
 local characteralign       = { }
 typesetters.characteralign = characteralign
 
@@ -100,7 +102,7 @@ local validsigns = {
 
 local function setcharacteralign(column,separator)
     if not enabled then
-        nodes.tasks.enableaction("processors","typesetters.characteralign.handler")
+        enableaction("processors","typesetters.characteralign.handler")
         enabled = true
     end
     if not datasets then

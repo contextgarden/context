@@ -48,7 +48,7 @@ local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 
 local nodepool           = nuts.pool
-local tasks              = nodes.tasks
+local enableaction       = nodes.tasks.enableaction
 
 local new_glue           = nodepool.glue
 
@@ -150,7 +150,7 @@ function digits.set(n) -- number or 'reset'
         n = tonumber(n)
         if n then
             if not enabled then
-                tasks.enableaction("processors","typesetters.digits.handler")
+                enableaction("processors","typesetters.digits.handler")
                 if trace_digits then
                     report_digits("enabling digit handler")
                 end

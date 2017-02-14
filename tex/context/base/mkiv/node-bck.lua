@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['node-bck'] = {
 
 local attributes, nodes, node = attributes, nodes, node
 
-local tasks             = nodes.tasks
+local enableaction      = nodes.tasks.enableaction
 
 local nodecodes         = nodes.nodecodes
 local listcodes         = nodes.listcodes
@@ -172,21 +172,16 @@ end
 nodes.handlers.backgrounds      = function(head) local head, done = add_backgrounds     (tonut(head)) return tonode(head), done end
 nodes.handlers.alignbackgrounds = function(head) local head, done = add_alignbackgrounds(tonut(head)) return tonode(head), done end
 
--- elsewhere: needs checking
-
--- tasks.appendaction("shipouts","normalizers","nodes.handlers.backgrounds")
--- tasks.appendaction("shipouts","normalizers","nodes.handlers.alignbackgrounds")
-
 interfaces.implement {
     name      = "enablebackgroundboxes",
     onlyonce  = true,
-    actions   = nodes.tasks.enableaction,
+    actions   = enableaction,
     arguments = { "'shipouts'", "'nodes.handlers.backgrounds'" }
 }
 
 interfaces.implement {
     name      = "enablebackgroundalign",
     onlyonce  = true,
-    actions   = nodes.tasks.enableaction,
+    actions   = enableaction,
     arguments = { "'shipouts'", "'nodes.handlers.alignbackgrounds'" }
 }

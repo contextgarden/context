@@ -14,8 +14,6 @@ local report_spacing = logs.reporter("typesetting","spacing")
 
 local nodes, fonts, node = nodes, fonts, node
 
-local tasks              = nodes.tasks
-
 local fonthashes         = fonts.hashes
 local quaddata           = fonthashes.quads
 
@@ -48,6 +46,8 @@ local math_code          = nodecodes.math
 
 local somespace          = nodes.somespace
 local somepenalty        = nodes.somepenalty
+
+local enableaction       = nodes.tasks.enableaction
 
 typesetters              = typesetters or { }
 local typesetters        = typesetters
@@ -208,7 +208,7 @@ function spacings.set(name)
         local data = numbers[name]
         if data then
             if not enabled then
-                tasks.enableaction("processors","typesetters.spacings.handler")
+                enableaction("processors","typesetters.spacings.handler")
                 enabled = true
             end
             n = data.number or unsetvalue

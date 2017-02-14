@@ -178,6 +178,8 @@ local function datafetched(specification)
     if trace_sql then
         local t = osclock()
         report_state("command: %s",command)
+        -- for now we don't use sandbox.registerrunners as this module is
+        -- also used outside context
         local okay = os.execute(command)
         report_state("fetchtime: %.3f sec, return code: %i",osclock()-t,okay) -- not okay under linux
         return okay == 0

@@ -23,7 +23,7 @@ local glue_code           = nodecodes.glue
 local disc_code           = nodecodes.disc
 local math_code           = nodecodes.math
 
-local tasks               = nodes.tasks
+local enableaction        = nodes.tasks.enableaction
 
 local nuts                = nodes.nuts
 local nodepool            = nuts.pool
@@ -598,7 +598,7 @@ function italics.handler(head)
 end
 
 enabletext = function()
-    tasks.enableaction("processors","typesetters.italics.handler")
+    enableaction("processors","typesetters.italics.handler")
     if trace_italics then
         report_italics("enabling text/text italics")
     end
@@ -607,7 +607,7 @@ enabletext = function()
 end
 
 enablemath = function()
-    tasks.enableaction("processors","typesetters.italics.handler")
+    enableaction("processors","typesetters.italics.handler")
     if trace_italics then
         report_italics("enabling math/text italics")
     end

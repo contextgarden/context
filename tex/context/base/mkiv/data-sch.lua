@@ -61,12 +61,21 @@ function resolvers.schemes.cleanname(specification)
     return hash
 end
 
-local cached, loaded, reused, thresholds, handlers = { }, { }, { }, { }, { }
-
-local function runcurl(name,cachename) -- we use sockets instead or the curl library when possible
-    local command = "curl --silent --insecure --create-dirs --output " .. cachename .. " " .. name
-    os.execute(command)
-end
+local cached     = { }
+local loaded     = { }
+local reused     = { }
+local thresholds = { }
+local handlers   = { }
+local runner     = sandbox.registerrunner {
+    name     = "curl resolver",
+    method   = "execute",
+    program  = "curl",
+    template = "--silent -- insecure --create-dirs --output %cachename% %original%",
+    checkers = {
+        cachename = "cache",
+        original  = "url",
+    }
+}
 
 local function fetch(specification)
     local original  = specification.original
@@ -89,7 +98,10 @@ local function fetch(specification)
                     report_schemes("fetching %a, protocol %a, method %a",original,scheme,"curl")
                 end
                 logs.flush()
-                runcurl(original,cachename)
+                runner {
+                    original  = original,
+                    cachename = cachename,
+                }
             end
         end
         if io.exists(cachename) then
@@ -183,10 +195,6 @@ end)
 ----- http        = require("socket.http")
 local httprequest = http.request
 local toquery     = url.toquery
-
--- local function httprequest(url)
---     return os.resultof(format("curl --silent %q", url))
--- end
 
 local function fetchstring(url,data)
     local q = data and toquery(data)

@@ -215,6 +215,7 @@
 		<cd:variable name='formulas' value='formules'/>
 		<cd:variable name='forward' value='vooruit'/>
 		<cd:variable name='four' value='vier'/>
+		<cd:variable name='fractions' value='fractions'/>
 		<cd:variable name='frame' value='kader'/>
 		<cd:variable name='framedtext' value='kadertekst'/>
 		<cd:variable name='friday' value='vrijdag'/>

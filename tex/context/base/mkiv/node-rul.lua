@@ -19,8 +19,9 @@ if not modules then modules = { } end modules ['node-rul'] = {
 
 local attributes         = attributes
 local nodes              = nodes
-local tasks              = nodes.tasks
 local properties         = nodes.properties
+
+local enableaction       = nodes.tasks.enableaction
 
 local nuts               = nodes.nuts
 local tonode             = nuts.tonode
@@ -346,13 +347,8 @@ rules.handler = function(head)
 end
 
 function rules.enable()
-    tasks.enableaction("shipouts","nodes.rules.handler")
+    enableaction("shipouts","nodes.rules.handler")
 end
-
--- elsewhere:
---
--- tasks.appendaction ("shipouts", "normalizers", "nodes.rules.handler")
--- tasks.disableaction("shipouts",                "nodes.rules.handler") -- only kick in when used
 
 local trace_shifted = false  trackers.register("nodes.shifting", function(v) trace_shifted = v end)
 
@@ -405,7 +401,7 @@ local process = nodes.processwords
 nodes.shifts.handler = function(head) return process(a_shifted,data,flush_shifted,head) end
 
 function nodes.shifts.enable()
-    tasks.enableaction("shipouts","nodes.shifts.handler")
+    enableaction("shipouts","nodes.shifts.handler")
 end
 
 -- linefillers
@@ -597,7 +593,7 @@ local enable = false
 function nodes.linefillers.enable()
     if not enable then
     -- we could now nil it
-        tasks.enableaction("finalizers","nodes.linefillers.handler")
+        enableaction("finalizers","nodes.linefillers.handler")
         enable = true
     end
 end

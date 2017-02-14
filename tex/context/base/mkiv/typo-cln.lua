@@ -24,7 +24,8 @@ local cleaners        = typesetters.cleaners
 local variables       = interfaces.variables
 
 local nodecodes       = nodes.nodecodes
-local tasks           = nodes.tasks
+
+local enableaction    = nodes.tasks.enableaction
 
 local texsetattribute = tex.setattribute
 
@@ -91,7 +92,7 @@ function cleaners.set(n)
         texsetattribute(a_cleaner,unsetvalue)
     else
         if not enabled then
-            tasks.enableaction("processors","typesetters.cleaners.handler")
+            enableaction("processors","typesetters.cleaners.handler")
             if trace_cleaners then
                 report_cleaners("enabling cleaners")
             end

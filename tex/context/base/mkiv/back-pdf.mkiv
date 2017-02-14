@@ -52,31 +52,37 @@
 %D These are no-ops and don't even intercept what comes next. Maybe some day
 %D I'll write a parser that maps onto \CONTEXT.
 
-\let\pdfcolorstack           \relax
-\let\pdfcolorstackinit       \relax
-\let\pdfannot                \relax
-\let\pdfstartlink            \relax
-\let\pdfendlink              \relax
-\let\pdfoutline              \relax
-\let\pdfdest                 \relax
-\let\pdfthread               \relax
-\let\pdfstartthread          \relax
-\let\pdfendthread            \relax
-\let\pdffontattr             \relax
-\let\pdfglyphtounicode       \relax
+\unexpanded\def\unsupportedpdfprimitive#1%
+  {\writestatus{error}{the primitive \string#1\space is not supported}}
+
+\unexpanded\def\pdfcolorstack    {\unsupportedpdfprimitive\pdfcolorstack}
+\unexpanded\def\pdfcolorstackinit{\unsupportedpdfprimitive\pdfcolorstackinit}
+%unexpanded\def\pdfannot         {\unsupportedpdfprimitive\pdfannot}
+\unexpanded\def\pdfstartlink     {\unsupportedpdfprimitive\pdfstartlink}
+\unexpanded\def\pdfendlink       {\unsupportedpdfprimitive\pdfendlink}
+\unexpanded\def\pdfoutline       {\unsupportedpdfprimitive\pdfoutline}
+%unexpanded\def\pdfdest          {\unsupportedpdfprimitive\pdfdest}
+\unexpanded\def\pdfthread        {\unsupportedpdfprimitive\pdfthread}
+\unexpanded\def\pdfstartthread   {\unsupportedpdfprimitive\pdfstartthread}
+\unexpanded\def\pdfendthread     {\unsupportedpdfprimitive\pdfendthread}
+\unexpanded\def\pdffontattr      {\unsupportedpdfprimitive\pdffontattr}
+\unexpanded\def\pdfglyphtounicode{\unsupportedpdfprimitive\pdfglyphtounicode}
+
+\unexpanded\def\pdfannot{\clf_pdfannot}
+\unexpanded\def\pdfdest {\clf_pdfdest}
 
 %D Here we do intercept (silently) what gets passed. One should use the
 %D \CONTEXT\ interfaces instead.
 
-\let\pdfcatalog         \relax  \newtoks \pdfcatalog
-\let\pdfinfo            \relax  \newtoks \pdfinfo
-\let\pdfnames           \relax  \newtoks \pdfnames
-\let\pdftrailer         \relax  \newtoks \pdftrailer
-\let\pdfpageresources   \relax  \newtoks \pdfpageresources
-\let\pdfpageattr        \relax  \newtoks \pdfpageattr
-\let\pdfpagesattr       \relax  \newtoks \pdfpagesattr
-\let\pdfxformattr       \relax  \newtoks \pdfxformattr
-\let\pdfxformresources  \relax  \newtoks \pdfxformresources
+\let\pdfcatalog       \relax  \newtoks\pdfcatalog
+\let\pdfinfo          \relax  \newtoks\pdfinfo
+\let\pdfnames         \relax  \newtoks\pdfnames
+\let\pdftrailer       \relax  \newtoks\pdftrailer
+\let\pdfpageresources \relax  \newtoks\pdfpageresources
+\let\pdfpageattr      \relax  \newtoks\pdfpageattr
+\let\pdfpagesattr     \relax  \newtoks\pdfpagesattr
+\let\pdfxformattr     \relax  \newtoks\pdfxformattr
+\let\pdfxformresources\relax  \newtoks\pdfxformresources
 
 %D We use the \LUA\ interface (which then permits more control over
 %D possible pdf/x extensions).
@@ -588,3 +594,14 @@
 % \stoptext
 
 \protect \endinput
+
+% \chapter{FIRST}
+%
+% \goto{bar}[bar]
+%
+% HERE \pdfannot width 20pt height 20pt depth 20pt {/Subtype /Link /Dest (bar) /Border [1 1 1] /F 4}\par
+% HERE \pdfannot width 20pt height 20pt depth 20pt {/Subtype /Link /Dest (foo) /Border [1 1 1] /F 4}\par
+%
+% \chapter[bar]{SECOND}
+%
+% THERE \pdfdest name {foo} \par

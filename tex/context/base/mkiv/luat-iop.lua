@@ -9,16 +9,19 @@ if not modules then modules = { } end modules ['luat-iop'] = {
 local cleanedpathlist = resolvers.cleanedpathlist
 local registerroot    = sandbox.registerroot
 
-sandbox.initializer(function()
-    local function register(str,mode)
-        local trees = cleanedpathlist(str)
-        for i=1,#trees do
-            registerroot(trees[i],mode)
+sandbox.initializer {
+    category = "files",
+    action   = function()
+        local function register(str,mode)
+            local trees = cleanedpathlist(str)
+            for i=1,#trees do
+                registerroot(trees[i],mode)
+            end
         end
+        register("TEXMF","read")
+        register("TEXINPUTS","read")
+        register("MPINPUTS","read")
+     -- register("TEXMFCACHE","write")
+        registerroot(".","write")
     end
-    register("TEXMF","read")
-    register("TEXINPUTS","read")
-    register("MPINPUTS","read")
- -- register("TEXMFCACHE","write")
-    registerroot(".","write")
-end)
+}

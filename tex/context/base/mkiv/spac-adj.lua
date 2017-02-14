@@ -8,15 +8,17 @@ if not modules then modules = { } end modules ['spac-adj'] = {
 
 -- sort of obsolete code
 
-local a_vadjust   = attributes.private('graphicvadjust')
+local a_vadjust    = attributes.private('graphicvadjust')
 
-local nodecodes   = nodes.nodecodes
+local nodecodes    = nodes.nodecodes
 
-local hlist_code  = nodecodes.hlist
-local vlist_code  = nodecodes.vlist
+local hlist_code   = nodecodes.hlist
+local vlist_code   = nodecodes.vlist
 
-local remove_node = nodes.remove
-local hpack_node  = node.hpack
+local remove_node  = nodes.remove
+local hpack_node   = node.hpack
+
+local enableaction = nodes.tasks.enableaction
 
 function nodes.handlers.graphicvadjust(head,groupcode) -- we can make an actionchain for mvl only
     if groupcode == "" then -- mvl only
@@ -60,6 +62,6 @@ interfaces.implement {
     name     = "enablegraphicvadjust",
     onlyonce = true,
     actions  = function()
-        nodes.tasks.enableaction("finalizers","nodes.handlers.graphicvadjust")
+        enableaction("finalizers","nodes.handlers.graphicvadjust")
     end
 }

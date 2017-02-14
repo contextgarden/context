@@ -22,7 +22,10 @@ local initials          = typesetters.paragraphs or { }
 typesetters.initials    = initials or { }
 
 local nodes             = nodes
+
 local tasks             = nodes.tasks
+local enableaction      = tasks.enableaction
+local disableaction     = tasks.disableaction
 
 local nuts              = nodes.nuts
 local tonut             = nuts.tonut
@@ -94,7 +97,7 @@ local settings          = nil
 function initials.set(specification)
     settings = specification or { }
     settings.enabled = true
-    tasks.enableaction("processors","typesetters.initials.handler")
+    enableaction("processors","typesetters.initials.handler")
     if trace_initials then
         report_initials("enabling initials")
     end
@@ -368,7 +371,7 @@ function initials.handler(head)
     end
     if attr then
         -- here as we can process nested boxes first so we need to keep state
-        tasks.disableaction("processors","typesetters.initials.handler")
+        disableaction("processors","typesetters.initials.handler")
      -- texsetattribute(attribute,unsetvalue)
         local alternative = settings.alternative or v_default
         local action = actions[alternative] or actions[v_default]

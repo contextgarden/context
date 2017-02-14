@@ -46,7 +46,7 @@ local traverse_ids    = nuts.traverse_id
 
 local wordsdata       = words.data
 local chardata        = characters.data
-local tasks           = nodes.tasks
+local enableaction    = nodes.tasks.enableaction
 
 local unsetvalue      = attributes.unsetvalue
 
@@ -235,7 +235,7 @@ function words.enable(settings)
     if e then
         e(settings)
     end
-    tasks.enableaction("processors","languages.words.check")
+    enableaction("processors","languages.words.check")
     enabled = true
 end
 

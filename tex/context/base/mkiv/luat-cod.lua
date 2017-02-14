@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['luat-cod'] = {
     license   = "see context related readme files"
 }
 
-local type, loadfile = type, loadfile
+local type, loadfile, tonumber = type, loadfile, tonumber
 local match, gsub, find, format = string.match, string.gsub, string.find, string.format
 
 local texconfig, lua = texconfig, lua
@@ -96,7 +96,29 @@ local targetpath = "."
 -- environment.jobname = tex.jobname
 -- environment.version = tostring(tex.toks.contextversiontoks)
 
-environment.initex  = tex.formatname == ""
+if LUATEXVERION == nil then
+    LUATEXVERSION = status.luatex_version/100
+                  + tonumber(status.luatex_revision)/1000
+end
+
+if LUATEXENGINE == nil then
+    LUATEXENGINE  = status.luatex_engine and string.lower(status.luatex_engine)
+                 or (find(status.banner,"LuajitTeX") and "luajittex" or "luatex")
+end
+
+if JITSUPPORTED == nil then
+    JITSUPPORTED  = LUATEXENGINE == "luajittex" or jit
+end
+
+if INITEXMODE == nil then
+    INITEXMODE    = status.ini_version
+end
+
+environment.initex        = INITEXMODE
+environment.initexmode    = INITEXMODE
+environment.luatexversion = LUATEXVERSION
+environment.luatexengine  = LUATEXENGINE
+environment.jitsupported  = JITSUPPORTED
 
 if not environment.luafilechunk then
 

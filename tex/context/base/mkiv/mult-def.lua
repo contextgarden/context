@@ -15238,6 +15238,9 @@ return {
   ["oldstyle"]={
    ["en"]="oldstyle",
   },
+  ["fractions"]={
+   ["en"]="fractions",
+  },
   ["on"]={
    ["cs"]="zap",
    ["de"]="an",

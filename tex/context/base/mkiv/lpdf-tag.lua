@@ -24,7 +24,7 @@ local nodes               = nodes
 local nodeinjections      = backends.pdf.nodeinjections
 local codeinjections      = backends.pdf.codeinjections
 
-local tasks               = nodes.tasks
+local enableaction        = nodes.tasks.enableaction
 
 local pdfdictionary       = lpdf.dictionary
 local pdfarray            = lpdf.array
@@ -602,9 +602,9 @@ end
 
 function codeinjections.enabletags(tg,lb)
     structures.tags.handler = nodeinjections.addtags
-    tasks.enableaction("shipouts","structures.tags.handler")
-    tasks.enableaction("shipouts","nodes.handlers.accessibility")
-    tasks.enableaction("math","noads.handlers.tags")
+    enableaction("shipouts","structures.tags.handler")
+    enableaction("shipouts","nodes.handlers.accessibility")
+    enableaction("math","noads.handlers.tags")
     -- maybe also textblock
     if trace_tags then
         report_tags("enabling structure tags")

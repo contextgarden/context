@@ -38,10 +38,12 @@ their suggestions help improve the code. I'm aware that not all border cases can
 taken care of, unless we accept excessive runtime, and even then the interference
 with other mechanisms (like hyphenation) are not trivial.</p>
 
-<p>Especially discretionary handling had been improved much by Kai eigner who uses complex
+<p>Especially discretionary handling has been improved much by Kai Eigner who uses complex
 (latin) fonts. The current implementation is a compromis between his patches and my code
 and in the meantime performance is quite ok. We cannot check all border cases without
-compromising speed but so far we're okay.</p>
+compromising speed but so far we're okay. Given good test cases we can probably improve
+it here and there. Especially chain lookups are non trivial with discretionaries but
+things got much better over time thanks to Kai.</p>
 
 <p>Glyphs are indexed not by unicode but in their own way. This is because there is no
 relationship with unicode at all, apart from the fact that a font might cover certain
@@ -415,12 +417,12 @@ local function appenddisc(disc,list)
     if post then
         setlink(posttail,posthead)
     else
-        post = phead
+        post = posthead
     end
     if replace then
         setlink(replacetail,replacehead)
     else
-        replace = rhead
+        replace = replacehead
     end
     setdisc(disc,pre,post,replace)
 end
@@ -1876,7 +1878,107 @@ local function setdiscchecked(d,pre,post,replace)
     setdisc(d,pre,post,replace)
 end
 
-local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,ck,chainproc)
+local noflags = { false, false, false, false }
+
+local function chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
+
+    local size         = ck[5] - ck[4] + 1
+    local flags        = sequence.flags or noflags
+    local done         = false
+    local skipmark     = flags[1]
+    local chainlookups = ck[6]
+
+    -- current match
+    if chainlookups then
+        local nofchainlookups = #chainlookups
+        -- Lookups can be like { 1, false, 3 } or { false, 2 } or basically anything and
+        -- #lookups can be less than #current
+        if size == 1 then
+         -- if nofchainlookups > size then
+         --     -- bad rules
+         -- end
+            local chainlookup = chainlookups[1]
+            local chainkind   = chainlookup.type
+            local chainproc   = chainprocs[chainkind]
+            if chainproc then
+                local ok
+                head, start, ok = chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,1)
+                if ok then
+                    done = true
+                end
+            else
+                logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
+            end
+         else
+            -- See LookupType 5: Contextual Substitution Subtable. Now it becomes messy. The
+            -- easiest case is where #current maps on #lookups i.e. one-to-one. But what if
+            -- we have a ligature. Cf the spec we then need to advance one character but we
+            -- really need to test it as there are fonts out there that are fuzzy and have
+            -- too many lookups:
+            --
+            -- U+1105 U+119E U+1105 U+119E : sourcehansansklight: script=hang ccmp=yes
+            --
+            local i = 1
+            while start do
+                if skipped then
+                    while start do
+                        local char  = getchar(start)
+                        local class = classes[char]
+                        if class then
+                            if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
+                                start = getnext(start)
+                            else
+                                break
+                            end
+                        else
+                            break
+                        end
+                    end
+                end
+                local chainlookup = chainlookups[i]
+                if chainlookup then
+                    local chainkind = chainlookup.type
+                    local chainproc = chainprocs[chainkind]
+                    if chainproc then
+                        local ok, n
+                        head, start, ok, n = chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,i)
+                        -- messy since last can be changed !
+                        if ok then
+                            done = true
+                            if n and n > 1 and i + n > nofchainlookups then
+                                -- this is a safeguard, we just ignore the rest of the lookups
+                                break
+                            end
+                        end
+                    else
+                        -- actually an error
+                        logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
+                    end
+                end
+                i = i + 1
+                if i > size or not start then
+                    break
+                elseif start then
+                    start = getnext(start)
+                end
+            end
+        end
+    else
+        -- todo: needs checking for holes in the replacements
+        local replacements = ck[7]
+        if replacements then
+            head, start, done = reversesub(head,start,last,dataset,sequence,replacements,rlmode)
+        else
+            done = true
+            if trace_contexts then
+                logprocess("%s: skipping match",cref(dataset,sequence))
+            end
+        end
+    end
+    return head, start, done
+end
+
+local function chaindisk(head,start,dataset,sequence,rlmode,ck,skipped)
 
     if not start then
         return head, start, false
@@ -1916,20 +2018,23 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
             hasglue = true
         elseif id == disc_code then
             if keepdisc then
-                keepdisc = false
-                if notmatchpre[current] ~= notmatchreplace[current] then
-                    lookaheaddisc = current
-                end
-                -- we assume a simple text only replace (we could use nuts.count)
+                keepdisc      = false
+                lookaheaddisc = current
                 local replace = getfield(current,"replace")
-                while replace and i <= l do
-                    if getid(replace) == glyph_code then
-                        i = i + 1
+                if not replace then
+                    sweepoverflow = true
+                    sweepnode     = current
+                    current       = getnext(current)
+                else
+                    while replace and i <= l do
+                        if getid(replace) == glyph_code then
+                            i = i + 1
+                        end
+                        replace = getnext(replace)
                     end
-                    replace = getnext(replace)
+                    current = getnext(replace)
                 end
-                last    = current
-                current = getnext(current)
+                last = current
             else
                 head, current = flattendisk(head,current)
             end
@@ -2056,7 +2161,8 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
         end
     end
 
-    local ok = false
+    local done = false
+
     if lookaheaddisc then
 
         local cf            = start
@@ -2084,25 +2190,35 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
         local pre, post, replace = getdisc(lookaheaddisc)
         local new  = copy_node_list(cf)
         local cnew = new
-        for i=1,insertedmarks do
-            cnew = getnext(cnew)
-        end
-        local clast = cnew
-        for i=f,l do
-            clast = getnext(clast)
-        end
-        if not notmatchpre[lookaheaddisc] then
-            cf, start, ok = chainproc(cf,start,last,dataset,sequence,chainlookup,rlmode,k)
-        end
-        if not notmatchreplace[lookaheaddisc] then
-            new, cnew, ok = chainproc(new,cnew,clast,dataset,sequence,chainlookup,rlmode,k)
-        end
         if pre then
             setlink(find_node_tail(cf),pre)
         end
         if replace then
             local tail = find_node_tail(new)
             setlink(tail,replace)
+        end
+        for i=1,insertedmarks do
+            cnew = getnext(cnew)
+        end
+        cl = start
+        local clast = cnew
+        for i=f,l do
+            cl    = getnext(cl)
+            clast = getnext(clast)
+        end
+        if not notmatchpre[lookaheaddisc] then
+            local ok = false
+            cf, start, ok = chainrun(cf,start,cl,dataset,sequence,rlmode,ck,skipped)
+            if ok then
+                done = true
+            end
+        end
+        if not notmatchreplace[lookaheaddisc] then
+            local ok = false
+            new, cnew, ok = chainrun(new,cnew,clast,dataset,sequence,rlmode,ck,skipped)
+            if ok then
+                done = true
+            end
         end
         if hasglue then
             setdiscchecked(lookaheaddisc,cf,post,new)
@@ -2111,7 +2227,7 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
         end
         start          = getprev(lookaheaddisc)
         sweephead[cf]  = getnext(clast)
-        sweephead[new] = getnext(last)
+        sweephead[new] = getnext(cl)
 
     elseif backtrackdisc then
 
@@ -2147,10 +2263,18 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
             clast = getnext(clast)
         end
         if not notmatchpost[backtrackdisc] then
-            cf, start, ok = chainproc(cf,start,last,dataset,sequence,chainlookup,rlmode,k)
+            local ok = false
+            cf, start, ok = chainrun(cf,start,last,dataset,sequence,rlmode,ck,skipped)
+            if ok then
+                done = true
+            end
         end
         if not notmatchreplace[backtrackdisc] then
-            new, cnew, ok = chainproc(new,cnew,clast,dataset,sequence,chainlookup,rlmode,k)
+            local ok = false
+            new, cnew, ok = chainrun(new,cnew,clast,dataset,sequence,rlmode,ck,skipped)
+            if ok then
+                done = true
+            end
         end
         if post then
             setlink(posttail,cf)
@@ -2173,14 +2297,27 @@ local function chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,k,c
 
     else
 
-        head, start, ok = chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,k)
+        local ok = false
+        head, start, ok = chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
+        if ok then
+            done = true
+        end
 
     end
 
-    return head, start, ok
+    return head, start, done
 end
 
-local noflags = { false, false, false, false }
+local function chaintrac(head,start,dataset,sequence,rlmode,ck,skipped)
+    local rule       = ck[1]
+    local lookuptype = ck[8] or ck[2]
+    local nofseq     = #ck[3]
+    local first      = ck[4]
+    local last       = ck[5]
+    local char       = getchar(start)
+    logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %a",
+        cref(dataset,sequence),rule,gref(char),first-1,last-first+1,nofseq-last,lookuptype)
+end
 
 local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
     local sweepnode    = sweepnode
@@ -2616,111 +2753,13 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             end
         end
         if match then
-            -- Can lookups be of a different type?
-            local diskchain = diskseen or sweepnode
             if trace_contexts then
-                local rule       = ck[1]
-                local lookuptype = ck[8] or ck[2]
-                local first      = ck[4]
-                local last       = ck[5]
-                local char       = getchar(start)
-                logwarning("%s: rule %s matches at char %s for (%s,%s,%s) chars, lookuptype %a",
-                    cref(dataset,sequence),rule,gref(char),first-1,last-first+1,s-last,lookuptype)
+                chaintrac(head,start,dataset,sequence,rlmode,ck,skipped)
             end
-            local chainlookups = ck[6]
-            if chainlookups then
-                local nofchainlookups = #chainlookups
-                -- Lookups can be like { 1, false, 3 } or { false, 2 } or basically anything and
-                -- #lookups can be less than #current
-                if size == 1 then
-                 -- if nofchainlookups > size then
-                 --     -- bad rules
-                 -- end
-                    local chainlookup = chainlookups[1]
-                    local chainkind   = chainlookup.type
-                    local chainproc   = chainprocs[chainkind]
-                    if chainproc then
-                        local ok
-                        if diskchain then
-                            head, start, ok = chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,1,ck,chainproc)
-                        else
-                            head, start, ok = chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,1)
-                        end
-                        if ok then
-                            done = true
-                        end
-                    else
-                        logprocess("%s: %s is not yet supported (1)",cref(dataset,sequence),chainkind)
-                    end
-                 else
-                    -- See LookupType 5: Contextual Substitution Subtable. Now it becomes messy. The
-                    -- easiest case is where #current maps on #lookups i.e. one-to-one. But what if
-                    -- we have a ligature. Cf the spec we then need to advance one character but we
-                    -- really need to test it as there are fonts out there that are fuzzy and have
-                    -- too many lookups:
-                    --
-                    -- U+1105 U+119E U+1105 U+119E : sourcehansansklight: script=hang ccmp=yes
-                    --
-                    local i = 1
-                    while start do
-                        if skipped then
-                            while start do
-                                local char  = getchar(start)
-                                local class = classes[char]
-                                if class then
-                                    if class == skipmark or class == skipligature or class == skipbase or (markclass and class == "mark" and not markclass[char]) then
-                                        start = getnext(start)
-                                    else
-                                        break
-                                    end
-                                else
-                                    break
-                                end
-                            end
-                        end
-                        local chainlookup = chainlookups[i]
-                        if chainlookup then
-                            local chainkind = chainlookup.type
-                            local chainproc = chainprocs[chainkind]
-                            if chainproc then
-                                local ok, n
-                                if diskchain then
-                                    head, start, ok    = chaindisk(head,start,last,dataset,sequence,chainlookup,rlmode,i,ck,chainproc)
-                                else
-                                    head, start, ok, n = chainproc(head,start,last,dataset,sequence,chainlookup,rlmode,i)
-                                end
-                                -- messy since last can be changed !
-                                if ok then
-                                    done = true
-                                    if n and n > 1 and i + n > nofchainlookups then
-                                        -- this is a safeguard, we just ignore the rest of the lookups
-                                        break
-                                    end
-                                end
-                            else
-                                -- actually an error
-                                logprocess("%s: %s is not yet supported (2)",cref(dataset,sequence),chainkind)
-                            end
-                        end
-                        i = i + 1
-                        if i > size or not start then
-                            break
-                        elseif start then
-                            start = getnext(start)
-                        end
-                    end
-                end
+            if diskseen or sweepnode then
+                head, start, done = chaindisk(head,start,dataset,sequence,rlmode,ck,skipped)
             else
-                -- todo: needs checking for holes in the replacements
-                local replacements = ck[7]
-                if replacements then
-                    head, start, done = reversesub(head,start,last,dataset,sequence,replacements,rlmode)
-                else
-                    done = true
-                    if trace_contexts then
-                        logprocess("%s: skipping match",cref(dataset,sequence))
-                    end
-                end
+                head, start, done = chainrun(head,start,last,dataset,sequence,rlmode,ck,skipped)
             end
             if done then
                 break -- out of contexts (new, needs checking)
@@ -3106,41 +3145,6 @@ local function testrun(disc,t_run,c_run,...)
     end
 end
 
--- A discrun happens when we have a zwnj. We're gpossing so it is unlikely that
--- there has been a match changing the character. Now, as we check again here
--- the question is: why do we do this ... needs checking as drun seems useless
--- ... maybe that code can go away
-
--- local function discrun(disc,drun,krun)
---     local prev, next = getboth(disc)
---     if trace_discruns then
---        report_disc("disc",disc)
---     end
---     if next and prev then
---         setnext(prev,next)
---      -- setprev(next,prev)
---         drun(prev)
---         setnext(prev,disc)
---      -- setprev(next,disc)
---     end
---     --
---     if krun then -- currently always false
---         local pre = getfield(disc,"pre")
---         if not pre then
---             -- go on
---         elseif prev then
---             local nest = getprev(pre)
---             setlink(prev,pre)
---             krun(prev,"preinjections")
---             setprev(pre,nest)
---             setnext(prev,disc)
---         else
---             krun(pre,"preinjections")
---         end
---     end
---     return next
--- end
-
 -- We can make some assumptions with respect to discretionaries. First of all it is very
 -- unlikely that some of the analysis related attributes applies. Then we can also assume
 -- that the ConTeXt specific dynamic attribute is different, although we do use explicit
@@ -3181,11 +3185,10 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
     while start do
         local char = ischar(start,font)
         if char then
---             local a = attr and getattr(start,0)
-local a -- happens often so no assignment is faster
-if attr then
-    a = getattr(start,0)
-end
+            local a -- happens often so no assignment is faster
+            if attr then
+                a = getattr(start,0)
+            end
             if not a or (a == attr) then
                 local lookupmatch = lookupcache[char]
                 if lookupmatch then
@@ -3219,11 +3222,10 @@ local function t_run_single(start,stop,font,attr,lookupcache)
     while start ~= stop do
         local char = ischar(start,font)
         if char then
---             local a = attr and getattr(start,0)
-local a -- happens often so no assignment is faster
-if attr then
-    a = getattr(start,0)
-end
+            local a -- happens often so no assignment is faster
+            if attr then
+                a = getattr(start,0)
+            end
             local startnext = getnext(start)
             if not a or (a == attr) then
                 local lookupmatch = lookupcache[char]
@@ -3261,11 +3263,10 @@ end
 end
 
 local function k_run_single(sub,injection,last,font,attr,lookupcache,step,dataset,sequence,rlmode,handler)
---     local a = attr and getattr(sub,0)
-local a -- happens often so no assignment is faster
-if attr then
-    a = getattr(sub,0)
-end
+    local a -- happens often so no assignment is faster
+    if attr then
+        a = getattr(sub,0)
+    end
     if not a or (a == attr) then
         for n in traverse_nodes(sub) do -- only gpos
             if n == last then
@@ -3297,11 +3298,10 @@ local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlm
     while start do
         local char = ischar(start,font)
         if char then
---             local a = attr and getattr(start,0)
-local a -- happens often so no assignment is faster
-if attr then
-    a = getattr(start,0)
-end
+            local a -- happens often so no assignment is faster
+            if attr then
+                a = getattr(start,0)
+            end
             if not a or (a == attr) then
                 for i=1,nofsteps do
                     local step        = steps[i]
@@ -3349,11 +3349,10 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
     while start ~= stop do
         local char = ischar(start,font)
         if char then
---             local a = attr and getattr(start,0)
-local a -- happens often so no assignment is faster
-if attr then
-    a = getattr(start,0)
-end
+            local a -- happens often so no assignment is faster
+            if attr then
+                a = getattr(start,0)
+            end
             local startnext = getnext(start)
             if not a or (a == attr) then
                 for i=1,nofsteps do
@@ -3399,11 +3398,10 @@ end
 end
 
 local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,dataset,sequence,rlmode,handler)
---     local a = attr and getattr(sub,0)
-local a -- happens often so no assignment is faster
-if attr then
-    a = getattr(sub,0)
-end
+    local a -- happens often so no assignment is faster
+    if attr then
+        a = getattr(sub,0)
+    end
     if not a or (a == attr) then
         for n in traverse_nodes(sub) do -- only gpos
             if n == last then
@@ -3564,11 +3562,10 @@ local function featuresprocessor(head,font,attr)
             while start do
                 local char = ischar(start,font)
                 if char then
---                     local a = attr and getattr(start,0)
-local a -- happens often so no assignment is faster
-if attr then
-    a = getattr(start,0)
-end
+                    local a -- happens often so no assignment is faster
+                    if attr then
+                        a = getattr(start,0)
+                    end
                     if not a or (a == attr) then
                         for i=1,nofsteps do
                             local step = steps[i]
@@ -3610,20 +3607,20 @@ end
                     while start do
                         local char, id = ischar(start,font)
                         if char then
---                             local a = attr and getattr(start,0)
---                             if a then
---                                 a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
---                             else
---                                 a = not attribute or getprop(start,a_state) == attribute
---                             end
-local a -- happens often so no assignment is faster
-if attr then
-    if getattr(start,0) == attr and (not attribute or getprop(start,a_state) == attribute) then
-        a = true
-    end
-elseif not attribute or getprop(start,a_state) == attribute then
-    a = true
-end
+                         -- local a = attr and getattr(start,0)
+                         -- if a then
+                         --     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
+                         -- else
+                         --     a = not attribute or getprop(start,a_state) == attribute
+                         -- end
+                            local a -- happens often so no assignment is faster
+                            if attr then
+                                if getattr(start,0) == attr and (not attribute or getprop(start,a_state) == attribute) then
+                                    a = true
+                                end
+                            elseif not attribute or getprop(start,a_state) == attribute then
+                                a = true
+                            end
                             if a then
                                 local lookupmatch = lookupcache[char]
                                 if lookupmatch then
@@ -3631,11 +3628,7 @@ end
                                     head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,step,1)
                                     if ok then
                                         done = true
-                                 -- elseif gpossing and zwnjruns and char == zwnj then
-                                 --     discrun(start,d_run,font,attr,lookupcache)
                                     end
-                             -- elseif gpossing and zwnjruns and char == zwnj then
-                             --     discrun(start,d_run,font,attr,lookupcache)
                                 end
                                 if start then
                                     start = getnext(start)
@@ -3674,20 +3667,20 @@ end
                 while start do
                     local char, id = ischar(start,font)
                     if char then
---                         local a = attr and getattr(start,0)
---                         if a then
---                             a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
---                         else
---                             a = not attribute or getprop(start,a_state) == attribute
---                         end
-local a -- happens often so no assignment is faster
-if attr then
-    if getattr(start,0) == attr and (not attribute or getprop(start,a_state) == attribute) then
-        a = true
-    end
-elseif not attribute or getprop(start,a_state) == attribute then
-    a = true
-end
+                     -- local a = attr and getattr(start,0)
+                     -- if a then
+                     --     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
+                     -- else
+                     --     a = not attribute or getprop(start,a_state) == attribute
+                     -- end
+                        local a -- happens often so no assignment is faster
+                        if attr then
+                            if getattr(start,0) == attr and (not attribute or getprop(start,a_state) == attribute) then
+                                a = true
+                            end
+                        elseif not attribute or getprop(start,a_state) == attribute then
+                            a = true
+                        end
                         if a then
                             for i=1,nofsteps do
                                 local step        = steps[i]
@@ -3704,11 +3697,7 @@ end
                                         elseif not start then
                                             -- don't ask why ... shouldn't happen
                                             break
-                                     -- elseif gpossing and zwnjruns and char == zwnj then
-                                     --     discrun(start,d_run,font,attr,steps,nofsteps)
                                         end
-                                 -- elseif gpossing and zwnjruns and char == zwnj then
-                                 --     discrun(start,d_run,font,attr,steps,nofsteps)
                                     end
                                 else
                                     report_missing_coverage(dataset,sequence)

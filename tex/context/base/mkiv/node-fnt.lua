@@ -335,17 +335,17 @@ function handlers.characters(head)
             if b > 0 then
                 for i=1,b do
                     local bi = basefonts[i]
-                    local b1 = b[1]
-                    local b2 = b[2]
+                    local b1 = bi[1]
+                    local b2 = bi[2]
                     if b1 == b2 then
                         if b1 == r then
-                            b[1] = false
-                            b[2] = false
+                            bi[1] = false
+                            bi[2] = false
                         end
                     elseif b1 == r then
-                        b[1] = n
+                        bi[1] = n
                     elseif b2 == r then
-                        b[2] = p
+                        bi[2] = p
                     end
                 end
             end

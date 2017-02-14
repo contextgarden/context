@@ -48,6 +48,8 @@ local new_penalty         = nuts.pool.penalty
 local trace_keeptogether  = false
 local report_keeptogether = logs.reporter("parbuilders","keeptogether")
 
+local enableaction        = nodes.tasks.enableaction
+
 local cache               = { }
 local last                = 0
 local enabled             = false
@@ -62,7 +64,7 @@ function parbuilders.registertogether(line,specification) -- might change
         return
     end
     if not enabled then
-        nodes.tasks.enableaction("finalizers","builders.paragraphs.keeptogether")
+        enableaction("finalizers","builders.paragraphs.keeptogether")
     end
     local a = getattr(line,a_keeptogether)
     local c = a and cache[a]
