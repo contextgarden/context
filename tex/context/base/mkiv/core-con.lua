@@ -81,6 +81,14 @@ local counters = allocate {
         0x0074, 0x0075, 0x0076, 0x0077, 0x0078,
         0x0079, 0x007A
     },
+    ['russian'] = {
+        0x0430, 0x0431, 0x0432, 0x0433, 0x0434,
+        0x0435, 0x0436, 0x0437, 0x0438, 0x043a,
+        0x043b, 0x043c, 0x043d, 0x043e, 0x043f,
+        0x0440, 0x0441, 0x0442, 0x0443, 0x0444,
+        0x0445, 0x0446, 0x0447, 0x0448, 0x0449,
+        0x044d, 0x044e, 0x044f
+    },
     ['greek'] = { -- this should be the lowercase table
      -- 0x0391, 0x0392, 0x0393, 0x0394, 0x0395,
      -- 0x0396, 0x0397, 0x0398, 0x0399, 0x039A,
@@ -153,6 +161,7 @@ counters['gr']                        = counters['greek']
 counters['g']                         = counters['greek']
 counters['sl']                        = counters['slovenian']
 counters['es']                        = counters['spanish']
+counters['ru']                        = counters['russian']
 counters['kr']                        = counters['korean']
 counters['kr-p']                      = counters['korean-parenthesis']
 counters['kr-c']                      = counters['korean-circle']
@@ -172,6 +181,7 @@ counters['koreancirclenumerals']      = counters['korean-circle']
 
 counters['sloveniannumerals']         = counters['slovenian']
 counters['spanishnumerals']           = counters['spanish']
+counters['russiannumerals']           = counters['russian']
 
 local decimals = allocate {
     ['arabic'] = {
@@ -589,23 +599,29 @@ converters['A']  = converters.Characters
 converters['AK'] = converters.Characters -- obsolete
 converters['KA'] = converters.Characters -- obsolete
 
-function converters.spanishnumerals(n) return alphabetic(n,"es") end
-function converters.Spanishnumerals(n) return Alphabetic(n,"es") end
-function converters.sloviannumerals(n) return alphabetic(n,"sl") end
-function converters.Sloviannumerals(n) return Alphabetic(n,"sl") end
+function converters.spanishnumerals  (n) return alphabetic(n,"es") end
+function converters.Spanishnumerals  (n) return Alphabetic(n,"es") end
+function converters.sloveniannumerals(n) return alphabetic(n,"sl") end
+function converters.Sloveniannumerals(n) return Alphabetic(n,"sl") end
+function converters.russiannumerals  (n) return alphabetic(n,"ru") end
+function converters.Russiannumerals  (n) return Alphabetic(n,"ru") end
 
 converters['alphabetic:es'] = converters.spanishnumerals
 converters['alphabetic:sl'] = converters.sloveniannumerals
+converters['alphabetic:ru'] = converters.russiannumerals
 
 converters['Alphabetic:es'] = converters.Spanishnumerals
 converters['Alphabetic:sl'] = converters.Sloveniannumerals
+converters['Alphabetic:ru'] = converters.Russiannumerals
 
 -- bonus
 
 converters['a:es']  = converters.spanishnumerals
 converters['a:sl']  = converters.sloveniannumerals
+converters['a:ru']  = converters.russiannumerals
 converters['A:es']  = converters.Spanishnumerals
 converters['A:sl']  = converters.Sloveniannumerals
+converters['A:ru']  = converters.Russiannumerals
 
 -- end of bonus
 

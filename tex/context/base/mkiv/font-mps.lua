@@ -392,7 +392,7 @@ function fonts.metapost.boxtomp(n,kind)
                 if list then
                     horizontal(current,list,xoffset+getshift(current)*fc,yoffset+dy)
                 end
-                dy = dy - ht * fc
+                dy = dy - dp * fc
             elseif id == vlist_code then
                 local wd, ht, dp = getwhd(current)
                 dy = dy - ht * fc

@@ -117,34 +117,6 @@ nodes.kerning               = node.kerning
 nodes.ligaturing            = node.ligaturing
 nodes.mlist_to_hlist        = node.mlist_to_hlist
 
-if LUATEXVERSION < 0.97 then
-
-    local getglue = node.getglue
-
-    function node.is_zero_glue(n)
-        local width, stretch, shrink = getglue(n)
-        return width == 0 and stretch == 0 and shrink == 0
-    end
-
-end
-
-if not node.rangedimensions then -- LUATEXVERSION < 0.99
-
-    local dimensions = node.dimensions
-    local getfield   = node.getfield
-    local find_tail  = node.tail
-
-    function node.rangedimensions(parent,first,last)
-        return dimensions(
-            getfield(parent,"glue_set"), getfield(parent,"glue_sign"), getfield(parent,"glue_order"),
-            first, last or find_tail(first), getfield(parent,"dir")
-        )
-    end
-
-    nodes.rangedimensions = node.rangedimensions
-
-end
-
 if not node.getwhd then
     local getfield = node.getfield
     function node.getwhd(n)

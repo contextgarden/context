@@ -261,13 +261,22 @@ do
 
     end
 
-    local runner = sandbox.registerrunner {
+    local runner = sandbox and sandbox.registerrunner {
         name     = "otfsvg",
         program  = "inkscape",
         method   = "pipeto",
         template = "--shell > temp-otf-svg-shape.log",
         reporter = report_svg,
     }
+
+    if notrunner then
+        --
+        -- poor mans variant for generic:
+        --
+        runner = function()
+            return io.open("inkscape --shell > temp-otf-svg-shape.log","w")
+        end
+    end
 
     function otfsvg.topdf(svgshapes)
         local pdfshapes = { }

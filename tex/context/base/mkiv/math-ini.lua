@@ -189,32 +189,16 @@ local escapes = characters.filters.utf.private.escapes
 
 -- not that many so no need to reuse tables
 
-local setmathcharacter
-
-if LUATEXVERSION > 0.98 then
-    setmathcharacter = function(class,family,slot,unicode,mset,dset)
-        if mset and codes[class] then -- regular codes < 7
-            setmathcode("global",slot,class,family,unicode)
-            mset = false
-        end
-        if dset and class == open_class or class == close_class or class == middle_class then
-            setdelcode("global",slot,family,unicode,0,0)
-            dset = false
-        end
-        return mset, dset
+local setmathcharacter = function(class,family,slot,unicode,mset,dset)
+    if mset and codes[class] then -- regular codes < 7
+        setmathcode("global",slot,class,family,unicode)
+        mset = false
     end
-else
-    setmathcharacter = function(class,family,slot,unicode,mset,dset)
-        if mset and codes[class] then -- regular codes < 7
-            setmathcode("global",slot,{class,family,unicode})
-            mset = false
-        end
-        if dset and class == open_class or class == close_class or class == middle_class then
-            setdelcode("global",slot,{family,unicode,0,0})
-            dset = false
-        end
-        return mset, dset
+    if dset and class == open_class or class == close_class or class == middle_class then
+        setdelcode("global",slot,family,unicode,0,0)
+        dset = false
     end
+    return mset, dset
 end
 
 local f_accent    = formatters[ [[\ugdef\%s{\Umathaccent 0 "%X "%X }]] ]

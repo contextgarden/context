@@ -187,8 +187,8 @@ local setchar            = nuts.setchar
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
 local setlink            = nuts.setlink
-local getcomponents      = nuts.getcomponents
-local setcomponents      = nuts.setcomponents
+local getcomponents      = nuts.getcomponents -- the original one, not yet node-aux
+local setcomponents      = nuts.setcomponents -- the original one, not yet node-aux
 local getdir             = nuts.getdir
 local getwidth           = nuts.getwidth
 
@@ -429,13 +429,9 @@ end
 
 -- start is a mark and we need to keep that one
 
-local function take_components(base)
-    return getcomponents(base)
-end
-
-local function set_components(base,start)
-    setcomponents(base,start)
-end
+local take_components = getcomponents -- we overload here (for now)
+local set_components  = setcomponents -- we overload here (for now)
+----- get_components  = getcomponents -- we overload here (for now)
 
 local function count_components(start,marks)
     if getid(start) ~= glyph_code then

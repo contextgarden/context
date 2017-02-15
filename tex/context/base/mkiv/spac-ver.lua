@@ -1100,7 +1100,7 @@ local function check_experimental_overlay(head,current)
         local skips = 0
         --
         -- We deal with this at the tex end .. we don't see spacing .. enabling this code
-        -- is probably harmless btu then we need to test it.
+        -- is probably harmless but then we need to test it.
         --
         local c = getnext(p)
         while c and c ~= n do
@@ -1236,7 +1236,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
             local p = getprop(n,"snapper")
             if p then
                 local extra = p.extra
-                if extra < 0 then
+                if extra and extra < 0 then -- hm, extra can be unset ... needs checking
                     local h = p.ch -- getheight(n)
                     -- maybe an extra check
                  -- if h - extra < g then
@@ -1397,16 +1397,15 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                             end
                         else
                             local h, d, ch, cd, lines, extra = snap_hlist("mvl",current,sv,false,false)
-lastsnap = {
-    ht = h,
-    dp = d,
-    ch = ch,
-    cd = cd,
-    extra = extra,
-    current = current,
-}
-setprop(current,"snapper",lastsnap)
-
+                            lastsnap = {
+                                ht = h,
+                                dp = d,
+                                ch = ch,
+                                cd = cd,
+                                extra = extra,
+                                current = current,
+                            }
+                            setprop(current,"snapper",lastsnap)
                             if trace_vsnapping then
                                 report_snapper("mvl %a snapped from (%p,%p) to (%p,%p) using method %a (%s) for %a (%s lines): %s",
                                     nodecodes[id],h,d,ch,cd,sv.name,sv.specification,where,lines,listtoutf(list))
@@ -1815,8 +1814,10 @@ setprop(current,"snapper",lastsnap)
             head, tail = forced_skip(head,tail,getwidth(glue_data),"after",trace)
             flush_node(glue_data)
             glue_data = nil
-        else
+        elseif tail then
             setlink(tail,glue_data)
+        else
+            head = glue_data
         end
         texnest[texnest.ptr].prevdepth = 0 -- appending to the list bypasses tex's prevdepth handler
     end

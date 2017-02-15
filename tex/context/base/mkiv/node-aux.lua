@@ -37,7 +37,7 @@ local getattr            = nuts.getattr
 local getfield           = nuts.getfield
 local getboth            = nuts.getboth
 local getcomponents      = nuts.getcomponents
-local getwidth           = nuts.setwidth
+local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 
 local setfield           = nuts.setfield
@@ -538,6 +538,8 @@ end
 function nuts.get_components(target)
     return getcomponents(target)
 end
+
+nuts.get_components = getcomponents
 
 function nuts.take_components(target)
     local c = getcomponents(target)

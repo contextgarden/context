@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/14/17 20:06:51
+-- merge date  : 02/15/17 20:12:00
 
 do -- begin closure to overcome local limits and interference
 
@@ -5121,6 +5121,8 @@ local getnext=nuts.getnext
 local setlink=nuts.setlink
 local getfield=nuts.getfield
 local setfield=nuts.setfield
+local getcomponents=nuts.getcomponents
+local setcomponents=nuts.setcomponents
 local find_tail=nuts.tail
 local flush_list=nuts.flush_list
 local flush_node=nuts.flush_node
@@ -5128,7 +5130,7 @@ local traverse_id=nuts.traverse_id
 local copy_node=nuts.copy_node
 local glyph_code=nodes.nodecodes.glyph
 function nuts.set_components(target,start,stop)
-  local head=getfield(target,"components")
+  local head=getcomponents(target)
   if head then
     flush_list(head)
     head=nil
@@ -5143,7 +5145,7 @@ function nuts.set_components(target,start,stop)
   end
   local tail=nil
   while start do
-    local c=getfield(start,"components")
+    local c=getcomponents(start)
     local n=getnext(start)
     if c then
       if head then
@@ -5152,7 +5154,7 @@ function nuts.set_components(target,start,stop)
         head=c
       end
       tail=find_tail(c)
-      setfield(start,"components")
+      setcomponents(start)
       flush_node(start)
     else
       if head then
@@ -5164,19 +5166,17 @@ function nuts.set_components(target,start,stop)
     end
     start=n
   end
-  setfield(target,"components",head)
+  setcomponents(target,head)
   return head
 end
-function nuts.get_components(target)
-  return getfield(target,"components")
-end
+nuts.get_components=nuts.getcomponents
 function nuts.take_components(target)
-  local c=getfield(target,"components")
-  setfield(target,"components")
+  local c=getcomponents(target)
+  setcomponents(target)
   return c
 end
 function nuts.count_components(n,marks)
-  local components=getfield(n,"components")
+  local components=getcomponents(n)
   if components then
     if marks then
       local i=0
@@ -5194,14 +5194,14 @@ function nuts.count_components(n,marks)
   end
 end
 function nuts.copy_no_components(g,copyinjection)
-  local components=getfield(g,"components")
+  local components=getcomponents(g)
   if components then
-    setfield(g,"components")
+    setcomponents(g)
     local n=copy_node(g)
     if copyinjection then
       copyinjection(n,g)
     end
-    setfield(g,"components",components)
+    setcomponents(g,components)
     return n
   else
     local n=copy_node(g)
@@ -18548,8 +18548,8 @@ local setchar=nuts.setchar
 local getdisc=nuts.getdisc
 local setdisc=nuts.setdisc
 local setlink=nuts.setlink
-local getcomponents=nuts.getcomponents
-local setcomponents=nuts.setcomponents
+local getcomponents=nuts.getcomponents 
+local setcomponents=nuts.setcomponents 
 local getdir=nuts.getdir
 local getwidth=nuts.getwidth
 local ischar=nuts.is_char
@@ -18735,12 +18735,8 @@ local function appenddisc(disc,list)
   end
   setdisc(disc,pre,post,replace)
 end
-local function take_components(base)
-  return getcomponents(base)
-end
-local function set_components(base,start)
-  setcomponents(base,start)
-end
+local take_components=getcomponents 
+local set_components=setcomponents
 local function count_components(start,marks)
   if getid(start)~=glyph_code then
     return 0
@@ -23885,13 +23881,18 @@ do
       return entry.data
     end
   end
-  local runner=sandbox.registerrunner {
+  local runner=sandbox and sandbox.registerrunner {
     name="otfsvg",
     program="inkscape",
     method="pipeto",
     template="--shell > temp-otf-svg-shape.log",
     reporter=report_svg,
   }
+  if notrunner then
+    runner=function()
+      return io.open("inkscape --shell > temp-otf-svg-shape.log","w")
+    end
+  end
   function otfsvg.topdf(svgshapes)
     local pdfshapes={}
     local inkscape=runner()

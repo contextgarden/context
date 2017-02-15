@@ -238,7 +238,9 @@
 
 \def\math_m_yes_text[#1]%
   {\begingroup
-   \edef\currentmathematics{#1}% check for valid
+   \doifassignmentelse{#1}%
+     {\setupcurrentmathematics[#1]}%
+     {\edef\currentmathematics{#1}}% check for valid
    \edef\p_openup{\mathematicsparameter\c!openup}%
    \ifx\p_openup\v!yes
      \expandafter\math_m_yes_text_openedup

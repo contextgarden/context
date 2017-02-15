@@ -23,11 +23,13 @@ local getlist         = nuts.getlist
 local getattr         = nuts.getattr
 local setattr         = nuts.setattr
 local setlist         = nuts.setlist
+local setlink         = nuts.setlink
 local getwidth        = nuts.getwidth
 local findtail        = nuts.tail
 
 local traverse_id     = nuts.traverse_id
 local list_dimensions = nuts.dimensions
+local copy_list       = nuts.copy_list
 
 local tracedrule      = nodes.tracers.pool.nuts.rule
 

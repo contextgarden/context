@@ -739,6 +739,9 @@
 \def\spanishnumerals  #1{\clf_alphabetic\numexpr#1\relax{es}}
 \def\spanishNumerals  #1{\clf_Alphabetic\numexpr#1\relax{es}}
 
+\def\russiannumerals  #1{\clf_alphabetic\numexpr#1\relax{ru}}
+\def\russianNumerals  #1{\clf_Alphabetic\numexpr#1\relax{ru}}
+
 %defineconversion [\s!sl] [character]  [\sloveniannumerals]
 %defineconversion [\s!sl] [Character]  [\slovenianNumerals]
 %defineconversion [\s!sl] [characters] [\sloveniannumerals]
@@ -765,11 +768,27 @@
 \defineconversion [\s!es] [AK]         [\smallcapped\spanishnumerals]
 \defineconversion [\s!es] [KA]         [\smallcapped\spanishnumerals]
 
+%defineconversion [\s!ru] [character]  [\russiannumerals]
+%defineconversion [\s!ru] [Character]  [\russianNumerals]
+%defineconversion [\s!ru] [characters] [\russiannumerals]
+%defineconversion [\s!ru] [Characters] [\russianNumerals]
+
+\defineconversion [\s!ru] [alphabetic] [\russiannumerals]
+\defineconversion [\s!ru] [Alphabetic] [\russianNumerals]
+
+\defineconversion [\s!ru] [a]          [\russiannumerals]
+\defineconversion [\s!ru] [A]          [\russianNumerals]
+\defineconversion [\s!ru] [AK]         [\smallcapped\russiannumerals]
+\defineconversion [\s!ru] [KA]         [\smallcapped\russiannumerals]
+
 \defineconversion [sloveniannumerals]  [\sloveniannumerals]
 \defineconversion [slovenianNumerals]  [\slovenianNumerals]
 
 \defineconversion [spanishnumerals]    [\spanishnumerals]
 \defineconversion [spanishNumerals]    [\spanishNumerals]
+
+\defineconversion [russiannumerals]    [\russiannumerals]
+\defineconversion [russianNumerals]    [\russianNumerals]
 
 %D In case a font has no greek (WS):
 

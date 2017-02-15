@@ -107,7 +107,7 @@ local insert_node_before  = nuts.insert_before
 local insert_node_after   = nuts.insert_after
 local traverse_nodes      = nuts.traverse
 local apply_to_nodes      = nuts.apply
-
+local find_tail           = nuts.tail
 local effectiveglue       = nuts.effective_glue
 
 local hpack_string        = nuts.typesetters.tohpack
@@ -562,9 +562,9 @@ local ruledbox do
         if wd ~= 0 then
             local shift = getshift(current)
             local dir   = getdir(current)
-    --         if dir == "LTL" or dir == "RRT" then
-    --             wd, ht, dp = ht + dp, wd, 0
-    --         end
+         -- if dir == "LTL" or dir == "RRT" then
+         --     wd, ht, dp = ht + dp, wd, 0
+         -- end
             local next = getnext(current)
             local prev = previous
          -- local prev = getprev(current) -- prev can be wrong in math mode < 0.78.3
@@ -574,7 +574,7 @@ local ruledbox do
             local baseline, baseskip
             if dp ~= 0 and ht ~= 0 then
                 if wd > 20*linewidth then
-                    baseline = b_cache.baseline
+                    baseline = b_cache[size]
                     if not baseline then
                         -- due to an optimized leader color/transparency we need to set the glue node in order
                         -- to trigger this mechanism
@@ -584,15 +584,10 @@ local ruledbox do
                         setleader(baseline,leader)
                         setsubtype(baseline,cleaders_code)
                         setlisttransparency(baseline,c_text)
-                        b_cache.baseline = baseline
+                        baseline = hpack_nodes(baseline,wd-size)
+                        b_cache[size] = baseline
                     end
                     baseline = copy_list(baseline)
-                    baseline = hpack_nodes(baseline,wd-size)
-                    -- or new_hlist, set head and also:
-                    -- baseline.width = wd
-                    -- baseline.glue_set = wd/65536
-                    -- baseline.glue_order = 2
-                    -- baseline.glue_sign = 1
                     baseskip = new_kern(-wd+linewidth)
                 else
                     baseline = new_rule(wd-size,linewidth,0)
@@ -617,11 +612,10 @@ local ruledbox do
                 new_rule(wd-size,-dp+linewidth,dp),
                 new_rule(linewidth,ht,dp),
                 new_kern(-wd+linewidth),
-                new_rule(wd-size,ht,-ht+linewidth)
+                new_rule(wd-size,ht,-ht+linewidth),
+                baseskip,
+                baseskip and baseline or nil
             )
-            if baseskip then
-                info = setlink(info,baseskip,baseline) -- could be in previous linked
-            end
             setlisttransparency(info,c_text)
             info = new_hlist(info)
             --

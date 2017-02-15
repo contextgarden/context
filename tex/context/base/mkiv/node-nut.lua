@@ -200,7 +200,13 @@ if not direct.getcomponents then
             setfield(n,"yoffset",y)
         end
     end
+
 end
+
+-- if LUATEXVERSION < 1.004 then
+--     local gc = direct.getcomponents
+--     getcomponents = function(n) local c = gc(n) return c ~= 0 and c or nil end
+-- end
 
 -- local hash = table.setmetatableindex("number")
 -- local ga = direct.get_attribute
@@ -288,35 +294,6 @@ if not direct.mlist_to_hlist then -- needed
     function nuts.mlist_to_hlist(head)
         return tonode(n_mlist_to_hlist(tonut(head)))
     end
-
-end
-
-if LUATEXVERSION < 0.97 then
-
-    local getglue = direct.getglue
-
-    function direct.is_zero_glue(n)
-        local width, stretch, shrink = getglue(n)
-        return width == 0 and stretch == 0 and shrink == 0
-    end
-
-end
-
-if not direct.rangedimensions then -- LUATEXVERSION < 0.99
-
-    local dimensions = direct.dimensions
-    local getfield   = direct.getfield
-    local getdir     = direct.getdir
-    local find_tail  = direct.tail
-
-    function direct.rangedimensions(parent,first,last)
-        return dimensions(
-            getfield(parent,"glue_set"), getfield(parent,"glue_sign"), getfield(parent,"glue_order"),
-            first, last or find_tail(first), getdir(parent)
-        )
-    end
-
-    nuts.rangedimensions = direct.rangedimensions
 
 end
 

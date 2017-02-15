@@ -404,7 +404,11 @@
         \setexpandednoteparameter\s!insert{\namednoteparameter\currentnoteparent\s!insert}%
         \definenotation[\currentnote][\currentnoteparent][\c!type=\v!note]%
     \fi
-    \clf_definenote{\currentnote}{insert}\currentnoteinsertionnumber\relax
+    \clf_definenote
+      {\currentnote}%
+      {insert}%
+      \currentnoteinsertionnumber
+    \relax
 \to \everydefinenote
 
 % maybe we will share this at some point:

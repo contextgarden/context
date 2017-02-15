@@ -118,15 +118,16 @@ local getnext           = nuts.getnext
 local getsubtype        = nuts.getsubtype
 local getfont           = nuts.getfont
 local getdisc           = nuts.getdisc
+local getcomponents     = nuts.getcomponents
 local getlist           = nuts.getlist
 local getid             = nuts.getid
 local getfield          = nuts.getfield
 local getattr           = nuts.getattr
 local setattr           = nuts.setattr -- maybe use properties
 local isglyph           = nuts.isglyph
-local getcomponents     = nuts.getcomponents
 local getkern           = nuts.getkern
 local getwidth          = nuts.getwidth
+
 
 local traverse_id       = nuts.traverse_id
 local traverse_nodes    = nuts.traverse

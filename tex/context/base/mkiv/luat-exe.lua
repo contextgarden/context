@@ -8,6 +8,11 @@ if not modules then modules = { } end modules ['luat-exe'] = {
 
 if not sandbox then require("l-sandbox") require("util-sbx") end -- for testing
 
+-- Ok, as usual, after finishing some code, I rewarded myself with searching youtube for
+-- new music ... this time I ran into the swedisch group 'wintergatan' (search for: marble
+-- machine) ... mechanical computers are so much more fun than the ones needed for running
+-- the code below. Nice videos (and shows) too ...
+
 local type = type
 
 local executers        = resolvers.executers or { }

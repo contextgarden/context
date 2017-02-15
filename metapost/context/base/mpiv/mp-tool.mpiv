@@ -1327,7 +1327,7 @@ enddef ;
 
 def resetarrows =
     hide (
-        ahlength  :=  4 ;
+        ahlength  := 4 ;
         ahangle   := 45 ;
         ahvariant := 0 ;
         ahdimple  := 1/5 ;
@@ -1558,21 +1558,17 @@ extra_beginfig := extra_beginfig & " linecap  := rounded ; " ; % restores
 boolean autoarrows ; autoarrows := false ;
 numeric ahfactor   ; ahfactor   := 2.5 ;
 
-def set_ahlength (text t) =
+def set_ahlength (text t) = % called to often
   % ahlength := (ahfactor*pen_size(_op_ t)) ; % _op_ added
   % problem: _op_ can contain color so a no-go, we could apply the transform
   % but i need to figure out the best way (fakepicture and take components).
     ahlength := (ahfactor*pen_size(t)) ;
 enddef ;
 
-% vardef pen_size (text t) =
-%     save p ; picture p ; p := nullpicture ;
-%     addto p doublepath (top origin -- bot origin) t ;
-%     (ypart urcorner p - ypart lrcorner p)
-% enddef ;
-
 vardef pen_size (text t) =
-    (ypart top origin - ypart bot origin)
+    save p ; picture p ; p := nullpicture ;
+    addto p doublepath (top origin -- bot origin) t ;
+    (ypart urcorner p - ypart lrcorner p)
 enddef ;
 
 %D The next two macros are adapted versions of plain
@@ -1661,18 +1657,34 @@ enddef ;
 def mfun_draw_arrow_nothing text t =
 enddef ;
 
-def mfun_with_arrow_path (text t) =
+% The path is shortened so that the arrow head extends it to the original
+% length. In case of a double arrow the path gets shortened twice.
+
+def mfun_draw_arrow_path text t =
     if autoarrows :
         set_ahlength(t) ;
     fi
-    t
+    draw arrowpath mfun_arrow_path t ;
+    fillup arrowhead mfun_arrow_path t ;
     endgroup ;
 enddef ;
 
-def mfun_with_arrow_picture (text t) =
+def mfun_draw_arrow_path_double text t =
     if autoarrows :
         set_ahlength(t) ;
     fi
+    draw arrowpath (reverse arrowpath mfun_arrow_path) t ;
+    fillup arrowhead mfun_arrow_path t ;
+    fillup arrowhead reverse mfun_arrow_path t ;
+    endgroup ;
+enddef ;
+
+% The picture variant is not treating each path but only the first and
+% last path. This can be somewhat counterintuitive but is needed for Alan's
+% macros. So here the last and in case of a double path first paths in a
+% picture get the shortening.
+
+def mfun_with_arrow_picture (text t) =
     mfun_arrow_count := 0 ;
     mfun_arrow_snippets := stroked_paths(mfun_arrow_picture) ;
     for i within mfun_arrow_picture :
@@ -1682,33 +1694,12 @@ def mfun_with_arrow_picture (text t) =
             t
         fi ;
     endfor ;
-    endgroup ;
 enddef ;
-
-% The path is shortened so that the arrow head extends it to the original
-% length. In case of a double arrow the path gets shortened twice.
-
-def mfun_draw_arrow_path text t =
-    mfun_with_arrow_path (
-        draw arrowpath mfun_arrow_path t ;
-        fillup arrowhead mfun_arrow_path t ;
-    ) ;
-enddef ;
-
-def mfun_draw_arrow_path_double text t =
-    mfun_with_arrow_path (
-        draw arrowpath (reverse arrowpath mfun_arrow_path) t ;
-        fillup arrowhead mfun_arrow_path t ;
-        fillup arrowhead reverse mfun_arrow_path t ;
-    ) ;
-enddef ;
-
-% The picture variant is not treating each path but only the first and
-% last path. This can be somewhat counterintuitive but is needed for Alan's
-% macros. So here the last and in case of a double path first paths in a
-% picture get the shortening.
 
 def mfun_draw_arrow_picture text t =
+    if autoarrows :
+        set_ahlength(t) ;
+    fi
     mfun_with_arrow_picture (
         if mfun_arrow_count = mfun_arrow_snippets :
             draw arrowpath mfun_arrow_path mfun_decoration_i i t ;
@@ -1717,9 +1708,13 @@ def mfun_draw_arrow_picture text t =
             draw mfun_arrow_path mfun_decoration_i i t ;
         fi ;
     )
+    endgroup ;
 enddef ;
 
 def mfun_draw_arrow_picture_double text t =
+    if autoarrows :
+        set_ahlength(t) ;
+    fi
     mfun_with_arrow_picture (
         draw
             if mfun_arrow_count = 1 :
@@ -1736,6 +1731,7 @@ def mfun_draw_arrow_picture_double text t =
             fillup arrowhead mfun_arrow_path mfun_decoration_i i t ;
         fi
     )
+    endgroup ;
 enddef ;
 
 %D Handy too ......

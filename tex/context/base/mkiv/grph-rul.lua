@@ -17,7 +17,6 @@ local pdfprint       = pdf.print
 
 local current_attr   = nodes.current_attr
 local setfield       = nodes.setfield
-local setattrlist    = nodes.setattrlist
 
 local getattribute   = tex.getattribute
 
@@ -176,11 +175,12 @@ interfaces.implement {
         { "name",   "string" },
     } } ,
     actions = function(t)
+        -- no nuts !
         local rule = userrule(t)
         local ma = getattribute(a_colormodel) or 1
         local ca = getattribute(a_color)
         local ta = getattribute(a_transparency)
-        setattrlist(rule,current_attr())
+        setfield(rule,"attr",current_attr())
         if t.type == "mp" then
             t.ma = ma
             t.ca = ca
@@ -217,7 +217,7 @@ interfaces.implement {
             type   = "mp",
             name   = t.name,
         }
-        setattrlist(rule,current_attr())
+        setfield(rule,"attr",current_attr())
         context(rule)
     end
 }

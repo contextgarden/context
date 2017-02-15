@@ -40,14 +40,15 @@ local getsubtype         = nuts.getsubtype
 local getchar            = nuts.getchar
 local getdisc            = nuts.getdisc
 local getglue            = nuts.getglue
+local getkern            = nuts.getkern
 local isglyph            = nuts.isglyph
 
 local setfield           = nuts.setfield
 local getattr            = nuts.getattr
 local takeattr           = nuts.takeattr
 local setlink            = nuts.setlink
+local setdisc            = nuts.setdisc
 local setglue            = nuts.setglue
-local getkern            = nuts.getkern
 local setkern            = nuts.setkern
 
 local texsetattribute    = tex.setattribute

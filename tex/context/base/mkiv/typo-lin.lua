@@ -96,6 +96,7 @@ local getdir            = nuts.getdir
 local getshift          = nuts.getshift
 local setshift          = nuts.setshift
 local getwidth          = nuts.getwidth
+local setwidth          = nuts.setwidth
 
 local setprop           = nuts.setprop
 local getprop           = nuts.rawprop -- getprop

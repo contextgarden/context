@@ -341,23 +341,25 @@ nodes.getprop = nodes.getproperty
 -- a few helpers (we need to keep 'm in sync with context) .. some day components
 -- might go so here we isolate them
 
-local setprev     = nuts.setprev
-local setnext     = nuts.setnext
-local getnext     = nuts.getnext
-local setlink     = nuts.setlink
-local getfield    = nuts.getfield
-local setfield    = nuts.setfield
+local setprev       = nuts.setprev
+local setnext       = nuts.setnext
+local getnext       = nuts.getnext
+local setlink       = nuts.setlink
+local getfield      = nuts.getfield
+local setfield      = nuts.setfield
+local getcomponents = nuts.getcomponents
+local setcomponents = nuts.setcomponents
 
-local find_tail   = nuts.tail
-local flush_list  = nuts.flush_list
-local flush_node  = nuts.flush_node
-local traverse_id = nuts.traverse_id
-local copy_node   = nuts.copy_node
+local find_tail     = nuts.tail
+local flush_list    = nuts.flush_list
+local flush_node    = nuts.flush_node
+local traverse_id   = nuts.traverse_id
+local copy_node     = nuts.copy_node
 
-local glyph_code  = nodes.nodecodes.glyph
+local glyph_code    = nodes.nodecodes.glyph
 
 function nuts.set_components(target,start,stop)
-    local head = getfield(target,"components")
+    local head = getcomponents(target)
     if head then
         flush_list(head)
         head = nil
@@ -372,7 +374,7 @@ function nuts.set_components(target,start,stop)
     end
     local tail = nil
     while start do
-        local c = getfield(start,"components")
+        local c = getcomponents(start)
         local n = getnext(start)
         if c then
             if head then
@@ -381,7 +383,7 @@ function nuts.set_components(target,start,stop)
                 head = c
             end
             tail = find_tail(c)
-            setfield(start,"components")
+            setcomponents(start)
             flush_node(start)
         else
             if head then
@@ -393,24 +395,22 @@ function nuts.set_components(target,start,stop)
         end
         start = n
     end
-    setfield(target,"components",head)
+    setcomponents(target,head)
     -- maybe also upgrade the subtype but we don't use it anyway
     return head
 end
 
-function nuts.get_components(target)
-    return getfield(target,"components")
-end
+nuts.get_components = nuts.getcomponents
 
 function nuts.take_components(target)
-    local c = getfield(target,"components")
-    setfield(target,"components")
+    local c = getcomponents(target)
+    setcomponents(target)
     -- maybe also upgrade the subtype but we don't use it anyway
     return c
 end
 
 function nuts.count_components(n,marks)
-    local components = getfield(n,"components")
+    local components = getcomponents(n)
     if components then
         if marks then
             local i = 0
@@ -429,14 +429,14 @@ function nuts.count_components(n,marks)
 end
 
 function nuts.copy_no_components(g,copyinjection)
-    local components = getfield(g,"components")
+    local components = getcomponents(g)
     if components then
-        setfield(g,"components")
+        setcomponents(g)
         local n = copy_node(g)
         if copyinjection then
             copyinjection(n,g)
         end
-        setfield(g,"components",components)
+        setcomponents(g,components)
         -- maybe also upgrade the subtype but we don't use it anyway
         return n
     else

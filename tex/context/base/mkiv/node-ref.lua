@@ -755,7 +755,7 @@ local function makedestination(width,height,depth,reference)
                 step = 4*65536
                 width, height, depth = 5*step, 5*step, 0
             end
-            local rule = new_list(colorize(width,height,depth,3,reference,"destination",texts,show_destinations))
+            local rule = new_hlist(colorize(width,height,depth,3,reference,"destination",texts,show_destinations))
             if not result then
                 result, current = rule, rule
             else

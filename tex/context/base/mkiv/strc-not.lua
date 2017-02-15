@@ -26,8 +26,11 @@ local counterspecials  = counters.specials
 local texgetcount      = tex.getcount
 local texgetbox        = tex.getbox
 
+-- todo: allocate
+
 notes.states           = notes.states or { }
 lists.enhancers        = lists.enhancers or { }
+notes.numbers          = notes.numbers or { }
 
 storage.register("structures/notes/states", notes.states, "structures.notes.states")
 
@@ -143,6 +146,8 @@ end
 notes.setstate        = setstate
 notes.getstate        = getstate
 
+
+
 implement {
     name      = "setnotestate",
     actions   = setstate,
@@ -157,6 +162,7 @@ implement {
 
 function notes.define(tag,kind,number)
     local state = setstate(tag,kind)
+    notes.numbers[number] = state
     state.number = number
 end
 
@@ -453,6 +459,9 @@ end
 
 -- gets register "n" and location "i" (where 1 is before)
 
+-- this is an experiment, we will make a more general handler instead
+-- of the current note one
+
 local report_insert = logs.reporter("pagebuilder","insert")
 local trace_insert  = false  trackers.register("pagebuilder.insert",function(v) trace_insert = v end)
 
@@ -462,7 +471,7 @@ local texsetglue = tex.setglue
 local function check_spacing(n,i)
     local gn, pn, mn = texgetglue(n)
     local gi, pi, mi = texgetglue(i > 1 and "s_strc_notes_inbetween" or "s_strc_notes_before")
-    local gt, pt, mt = gn+gi, pn+pi, mn+mi
+    local gi, pi, mi = gn+gi, pn+pi, mn+mi
     if trace_insert then
         report_insert("%s %i: %p plus %p minus %p","always   ",n,gn,pn,mn)
         report_insert("%s %i: %p plus %p minus %p",i > 1 and "inbetween" or "before   ",n,gi,pi,mi)
@@ -474,7 +483,13 @@ end
 notes.check_spacing = check_spacing
 
 callback.register("build_page_insert", function(n,i)
-    local gt, pt, mt = check_spacing(n,i)
-    texsetglue(0,gt,pt,mt) -- for the moment we use skip register 0
-    return 0
+    local state = notes.numbers[n]
+    if state then
+        -- only notes, kind of hardcoded .. bah
+        local gt, pt, mt = check_spacing(n,i)
+        texsetglue(0,gt,pt,mt) -- for the moment we use skip register 0
+        return 0
+    else
+        return n
+    end
 end)
