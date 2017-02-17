@@ -186,9 +186,16 @@ local function validfilename(name,what)
 end
 
 local function readable(name,finalized)
-    if platform == "windows" then
-        name = lower(name) -- we assume ascii names
-    end
+--     if platform == "windows" then -- yes or no
+--         name = lower(name) -- we assume ascii names
+--     end
+    return validfilename(name,"r")
+end
+
+local function normalizedreadable(name,finalized)
+--     if platform == "windows" then -- yes or no
+--         name = lower(name) -- we assume ascii names
+--     end
     local valid = validfilename(name,"r")
     if valid then
         return normalized(valid)
@@ -196,18 +203,27 @@ local function readable(name,finalized)
 end
 
 local function writeable(name,finalized)
-    if platform == "windows" then
-        name = lower(name) -- we assume ascii names
-    end
+--     if platform == "windows" then
+--         name = lower(name) -- we assume ascii names
+--     end
+    return validfilename(name,"w")
+end
+
+local function normalizedwriteable(name,finalized)
+--     if platform == "windows" then
+--         name = lower(name) -- we assume ascii names
+--     end
     local valid = validfilename(name,"w")
     if valid then
         return normalized(valid)
     end
 end
 
-validators.writeable = writeable
-validators.readable  = readable
-validators.filename  = readable
+validators.readable            = readable
+validators.writeable           = normalizedwriteable
+validators.normalizedreadable  = normalizedreadable
+validators.normalizedwriteable = writeable
+validators.filename            = readable
 
 table.setmetatableindex(validators,function(t,k)
     if k then
@@ -384,7 +400,7 @@ function sandbox.registerrunner(specification)
     end
     local name = specification.name
     if type(name) ~= "string" then
-        report("invalid name, string expected")
+        report("invalid name, string expected",name)
         return
     end
     if validrunners[name] then

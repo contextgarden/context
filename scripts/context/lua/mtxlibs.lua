@@ -68,6 +68,7 @@ local owntree = ownpath
 local ownlibs = {
 
     "l-lua.lua",
+    "l-sandbox.lua",
     "l-package.lua",
     "l-lpeg.lua",
     "l-function.lua",
@@ -103,6 +104,7 @@ local ownlibs = {
 
     "util-mrg.lua",
     "util-tpl.lua",
+    "util-sbx.lua",
 
     "util-env.lua",
  -- "luat-env.lua",  -- not relevant outside context

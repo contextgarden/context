@@ -137,3 +137,26 @@ def settoks (expr k, v) = lua.mp._set_toks_ (k,v) enddef ;
 % vardef setdimen(expr k,v) = save setdimen ; lua.mp.setdimen(k,v) enddef ;
 % vardef setcount(expr k,v) = save setcount ; lua.mp.setcount(k,v) enddef ;
 % vardef settoks (expr k,v) = save settoks  ; lua.mp.settoks (k,v) enddef ;
+
+vardef positionpath  (expr name) = lua.mp.positionpath  (name) enddef ;
+vardef positioncurve (expr name) = lua.mp.positioncurve (name) enddef ;
+vardef positionxy    (expr name) = lua.mp.positionxy    (name) enddef ;
+vardef positionpxy   (expr name) = lua.mp.positionpxy   (name) enddef ;
+vardef positionwhd   (expr name) = lua.mp.positionwhd   (name) enddef ;
+vardef positionpage  (expr name) = lua.mp.positionpage  (name) enddef ;
+vardef positionregion(expr name) = lua.mp.positionregion(name) enddef ;
+vardef positionbox   (expr name) = lua.mp.positionbox   (name) enddef ;
+vardef positionanchor            = lua.mp.positionanchor()     enddef ;
+
+let wdpart = redpart ;
+let htpart = greenpart ;
+let dppart = bluepart ;
+
+vardef positioninregion =
+    currentpicture := currentpicture shifted - positionxy(positionanchor) ;
+enddef ;
+
+vardef positionatanchor(expr name) =
+    currentpicture := currentpicture shifted - positionxy(name) ;
+enddef ;
+

@@ -118,7 +118,6 @@ local setmetatableindex  = table.setmetatableindex
 
 local striprange         = nodes.striprange
 local processwords       = nodes.processwords
-local processranges      = nodes.processranges
 
 --
 

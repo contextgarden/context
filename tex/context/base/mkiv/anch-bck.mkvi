@@ -588,6 +588,19 @@
     \includeMPgraphic{mpos:region:anchor} ;
 \stopMPpositiongraphic
 
+%D For old times sake:
+
+\startMPpositiongraphic{mpos:box}{fillcolor,linecolor,linewidth}
+    string tag; tag := "\MPvar{self}" ;
+    path box ; box := positionbox(tag) ;
+
+    box := box enlarged  \MPvar{filloffset} ;
+    fill box withcolor \MPvar{fillcolor} ;
+    draw box withcolor \MPvar{linecolor} withpen pencircle scaled \MPvar{linewidth} ;
+
+    positioninregion;
+\stopMPpositiongraphic
+
 \startMPpositionmethod{mpos:region}
     \MPpositiongraphic{mpos:region}{}%
 \stopMPpositionmethod

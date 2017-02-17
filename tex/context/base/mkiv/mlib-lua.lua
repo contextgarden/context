@@ -202,7 +202,7 @@ end
 
 local replacer = lpeg.replacer("@","%%")
 
-function mp.format(fmt,...)
+function mp.fprint(fmt,...)
     n = n + 1
     if not find(fmt,"%%") then
         fmt = lpegmatch(replacer,fmt)
@@ -539,3 +539,95 @@ mp._get_toks_  = mp.gettoks
 mp._set_dimen_ = mp.setdimen
 mp._set_count_ = mp.setcount
 mp._set_toks_  = mp.settoks
+
+-- position fun
+
+do
+
+    local mprint      = mp.print
+    local fprint      = mp.fprint
+    local qprint      = mp.quoted
+    local getwhd      = job.positions.whd
+    local getxy       = job.positions.xy
+    local getposition = job.positions.position
+    local getpage     = job.positions.page
+    local getregion   = job.positions.region
+    local getmacro    = tokens.getters.macro
+
+    function mp.positionpath(name)
+        local w, h, d = getwhd(name)
+        if w then
+            fprint("((%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle)",0,-d,w,-d,w,h,0,h)
+        else
+            mprint("(origin--cycle)")
+        end
+    end
+
+    function mp.positioncurve(name)
+        local w, h, d = getwhd(name)
+        if w then
+            fprint("((%p,%p)..(%p,%p)..(%p,%p)..(%p,%p)..cycle)",0,-d,w,-d,w,h,0,h)
+        else
+            mprint("(origin--cycle)")
+        end
+    end
+
+    function mp.positionbox(name)
+        local p, x, y, w, h, d = getposition(name)
+        if p then
+            fprint("((%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle)",x,y-d,x+w,y-d,x+w,y+h,x,y+h)
+        else
+            mprint("(%p,%p)",x,y)
+        end
+    end
+
+    function mp.positionxy(name)
+        local x, y = getxy(name)
+        if x then
+            fprint("(%p,%p)",x,y)
+        else
+            mprint("origin")
+        end
+    end
+
+    function mp.positionpage(name)
+        local p = getpage(name)
+        if p then
+            fprint("%p",p)
+        else
+            mprint("0")
+        end
+    end
+
+    function mp.positionregion(name)
+        local r = getregion(name)
+        if r then
+            qprint(r)
+        else
+            qprint("unknown")
+        end
+    end
+
+    function mp.positionwhd(name)
+        local w, h, d = getwhd(name)
+        if w then
+            fprint("(%p,%p,%p)",w,h,d)
+        else
+            mprint("(0,0,0)")
+        end
+    end
+
+    function mp.positionpxy(name)
+        local p, x, y = getposition(name)
+        if p then
+            fprint("(%p,%p,%p)",p,x,y)
+        else
+            mprint("(0,0,0)")
+        end
+    end
+
+    function mp.positionanchor()
+        qprint(getmacro("MPanchorid"))
+    end
+
+end

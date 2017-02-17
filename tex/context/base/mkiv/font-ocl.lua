@@ -269,7 +269,7 @@ do
         reporter = report_svg,
     }
 
-    if notrunner then
+    if not runner then
         --
         -- poor mans variant for generic:
         --

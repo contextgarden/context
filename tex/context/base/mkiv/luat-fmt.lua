@@ -51,7 +51,8 @@ end
 -- The silent option is Taco. It's a bit of a hack because we cannot yet mess
 -- with directives. In fact, I could probably clean up the maker a bit by now.
 
-local template = [[--ini %primaryflags% --lua="%luafile%" "%texfile%" %secondaryflags% %dump% %redirect%]]
+local template = [[--ini %primaryflags% --lua=%luafile% %texfile% %secondaryflags% %dump% %redirect%]]
+
 local checkers = {
     primaryflags   = "string",
     secondaryflags = "string",
@@ -146,8 +147,8 @@ function environment.make_format(name,arguments)
     local specification = {
         primaryflags   = primaryflags(),
         secondaryflags = secondaryflags(),
-        luafile        = usedluastub,
-        texfile        = fulltexsourcename,
+        luafile        = quoted(usedluastub),
+        texfile        = quoted(fulltexsourcename),
         dump           = os.platform == "unix" and "\\\\dump" or "\\dump",
     }
     local runner = runners[engine]
@@ -156,7 +157,7 @@ function environment.make_format(name,arguments)
     elseif silent then
         statistics.starttiming()
         specification.redirect = "> temp.log"
-        local result  = makeformat(specification)
+        local result  = runner(specification)
         local runtime = statistics.stoptiming()
         if result ~= 0 then
             print(format("%s silent make > fatal error when making format %q",engine,name)) -- we use a basic print
@@ -165,7 +166,7 @@ function environment.make_format(name,arguments)
         end
         os.remove("temp.log")
     else
-        makeformat(specification)
+        runner(specification)
     end
     -- remove related mem files
     local pattern = file.removesuffix(file.basename(usedluastub)).."-*.mem"
@@ -180,6 +181,33 @@ function environment.make_format(name,arguments)
     end
     lfs.chdir(olddir)
 end
+
+local template = [[%flags% --fmt=%fmtfile% --lua=%luafile% %texfile% %more%]]
+
+local checkers = {
+    flags    = "string",
+    more     = "string",
+    fmtfile  = "readable", -- "cache"
+    luafile  = "readable", -- "cache"
+    texfile  = "readable", -- "cache"
+}
+
+local runners = {
+    luatex = sandbox.registerrunner {
+        name     = "run luatex format",
+        program  = "luatex",
+        template = template,
+        checkers = checkers,
+        reporter = report_format,
+    },
+    luajittex = sandbox.registerrunner {
+        name     = "run luajittex format",
+        program  = "luajittex",
+        template = template,
+        checkers = checkers,
+        reporter = report_format,
+    },
+}
 
 function environment.run_format(name,data,more)
     if name and name ~= "" then
@@ -202,9 +230,18 @@ function environment.run_format(name,data,more)
                 report_format("using format name %a",fmtname)
                 report_format("no luc/lua file with name %a",barename)
             else
-                local command = format("%s %s --fmt=%s --lua=%s %s %s",engine,primaryflags(),quoted(barename),quoted(luaname),quoted(data),more ~= "" and quoted(more) or "")
-                report_format("running command: %s",command)
-                os.execute(command)
+                local runner = runners[engine]
+                if not runner then
+                    report_format("format %a cannot be run, no runner available for engine %a",name,engine)
+                else
+                    runner {
+                        flags   = primaryflags(),
+                        fmtfile = quoted(barename),
+                        luafile = quoted(luaname),
+                        texfile = quoted(data),
+                        more    = more,
+                    }
+                end
             end
         end
     end

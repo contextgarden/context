@@ -781,6 +781,13 @@ function jobpositions.depth(id)
     return jpi and jpi.d
 end
 
+function jobpositions.whd(id)
+    local jpi = collected[id]
+    if jpi then
+        return jpi.h, jpi.h, jpi.d
+    end
+end
+
 function jobpositions.leftskip(id)
     local jpi = collected[id]
     return jpi and jpi.ls

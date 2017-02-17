@@ -180,6 +180,275 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["l-sandbox"] = package.loaded["l-sandbox"] or true
+
+-- original size: 10855, stripped down to: 6942
+
+if not modules then modules={} end modules ['l-sandbox']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+local global=_G
+local next=next
+local unpack=unpack or table.unpack
+local type=type
+local tprint=texio.write_nl or print
+local tostring=tostring
+local format=string.format 
+local concat=table.concat
+local sort=table.sort
+local gmatch=string.gmatch
+local gsub=string.gsub
+local requiem=require
+sandbox={}
+local sandboxed=false
+local overloads={}
+local skiploads={}
+local initializers={}
+local finalizers={}
+local originals={}
+local comments={}
+local trace=false
+local logger=false
+local blocked={}
+local function report(...)
+  tprint("sandbox         ! "..format(...)) 
+end
+sandbox.report=report
+function sandbox.setreporter(r)
+  report=r
+  sandbox.report=r
+end
+function sandbox.settrace(v)
+  trace=v
+end
+function sandbox.setlogger(l)
+  logger=type(l)=="function" and l or false
+end
+local function register(func,overload,comment)
+  if type(func)=="function" then
+    if type(overload)=="string" then
+      comment=overload
+      overload=nil
+    end
+    local function f(...)
+      if sandboxed then
+        local overload=overloads[f]
+        if overload then
+          if logger then
+            local result={ overload(func,...) }
+            logger {
+              comment=comments[f] or tostring(f),
+              arguments={... },
+              result=result[1] and true or false,
+            }
+            return unpack(result)
+          else
+            return overload(func,...)
+          end
+        else
+        end
+      else
+        return func(...)
+      end
+    end
+    if comment then
+      comments[f]=comment
+      if trace then
+        report("registering function: %s",comment)
+      end
+    end
+    overloads[f]=overload or false
+    originals[f]=func
+    return f
+  end
+end
+local function redefine(func,comment)
+  if type(func)=="function" then
+    skiploads[func]=comment or comments[func] or "unknown"
+    if overloads[func]==false then
+      overloads[func]=nil 
+    end
+  end
+end
+sandbox.register=register
+sandbox.redefine=redefine
+function sandbox.original(func)
+  return originals and originals[func] or func
+end
+function sandbox.overload(func,overload,comment)
+  comment=comment or comments[func] or "?"
+  if type(func)~="function" then
+    if trace then
+      report("overloading unknown function: %s",comment)
+    end
+  elseif type(overload)~="function" then
+    if trace then
+      report("overloading function with bad overload: %s",comment)
+    end
+  elseif overloads[func]==nil then
+    if trace then
+      report("function is not registered: %s",comment)
+    end
+  elseif skiploads[func] then
+    if trace then
+      report("function is not skipped: %s",comment)
+    end
+  else
+    if trace then
+      report("overloading function: %s",comment)
+    end
+    overloads[func]=overload
+  end
+  return func
+end
+local function whatever(specification,what,target)
+  if type(specification)~="table" then
+    report("%s needs a specification",what)
+  elseif type(specification.category)~="string" or type(specification.action)~="function" then
+    report("%s needs a category and action",what)
+  elseif not sandboxed then
+    target[#target+1]=specification
+  elseif trace then
+    report("already enabled, discarding %s",what)
+  end
+end
+function sandbox.initializer(specification)
+  whatever(specification,"initializer",initializers)
+end
+function sandbox.finalizer(specification)
+  whatever(specification,"finalizer",finalizers)
+end
+function require(name)
+  local n=gsub(name,"^.*[\\/]","")
+  local n=gsub(n,"[%.].*$","")
+  local b=blocked[n]
+  if b then
+    if trace then
+      report("using blocked: %s",n)
+    end
+    return b
+  else
+    if trace then
+      report("requiring: %s",name)
+    end
+    return requiem(name)
+  end
+end
+function blockrequire(name,lib)
+  if trace then
+    report("preventing reload of: %s",name)
+  end
+  blocked[name]=lib or _G[name]
+end
+if TEXENGINE=="luajittex" or not ffi then
+  local ok
+  ok,ffi=pcall(require,"ffi")
+end
+function sandbox.enable()
+  if not sandboxed then
+    for i=1,#initializers do
+      initializers[i].action()
+    end
+    for i=1,#finalizers do
+      finalizers[i].action()
+    end
+    local nnot=0
+    local nyes=0
+    local cnot={}
+    local cyes={}
+    local skip={}
+    for k,v in next,overloads do
+      local c=comments[k]
+      if v then
+        if c then
+          cyes[#cyes+1]=c
+        else 
+          nyes=nyes+1
+        end
+      else
+        if c then
+          cnot[#cnot+1]=c
+        else 
+          nnot=nnot+1
+        end
+      end
+    end
+    for k,v in next,skiploads do
+      skip[#skip+1]=v
+    end
+    if #cyes>0 then
+      sort(cyes)
+      report("overloaded known: %s",concat(cyes," | "))
+    end
+    if nyes>0 then
+      report("overloaded unknown: %s",nyes)
+    end
+    if #cnot>0 then
+      sort(cnot)
+      report("not overloaded known: %s",concat(cnot," | "))
+    end
+    if nnot>0 then
+      report("not overloaded unknown: %s",nnot)
+    end
+    if #skip>0 then
+      sort(skip)
+      report("not overloaded redefined: %s",concat(skip," | "))
+    end
+    initializers=nil
+    finalizers=nil
+    originals=nil
+    sandboxed=true
+  end
+end
+blockrequire("lfs",lfs)
+blockrequire("io",io)
+blockrequire("os",os)
+blockrequire("ffi",ffi)
+local function supported(library)
+  local l=_G[library]
+  return l
+end
+loadfile=register(loadfile,"loadfile")
+if supported("io") then
+  io.open=register(io.open,"io.open")
+  io.popen=register(io.popen,"io.popen") 
+  io.lines=register(io.lines,"io.lines")
+  io.output=register(io.output,"io.output")
+  io.input=register(io.input,"io.input")
+end
+if supported("os") then
+  os.execute=register(os.execute,"os.execute")
+  os.spawn=register(os.spawn,"os.spawn")
+  os.exec=register(os.exec,"os.exec")
+  os.rename=register(os.rename,"os.rename")
+  os.remove=register(os.remove,"os.remove")
+end
+if supported("lfs") then
+  lfs.chdir=register(lfs.chdir,"lfs.chdir")
+  lfs.mkdir=register(lfs.mkdir,"lfs.mkdir")
+  lfs.rmdir=register(lfs.rmdir,"lfs.rmdir")
+  lfs.isfile=register(lfs.isfile,"lfs.isfile")
+  lfs.isdir=register(lfs.isdir,"lfs.isdir")
+  lfs.attributes=register(lfs.attributes,"lfs.attributes")
+  lfs.dir=register(lfs.dir,"lfs.dir")
+  lfs.lock_dir=register(lfs.lock_dir,"lfs.lock_dir")
+  lfs.touch=register(lfs.touch,"lfs.touch")
+  lfs.link=register(lfs.link,"lfs.link")
+  lfs.setmode=register(lfs.setmode,"lfs.setmode")
+  lfs.readlink=register(lfs.readlink,"lfs.readlink")
+  lfs.shortname=register(lfs.shortname,"lfs.shortname")
+  lfs.symlinkattributes=register(lfs.symlinkattributes,"lfs.symlinkattributes")
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
 -- original size: 10949, stripped down to: 8037
@@ -9632,6 +9901,644 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
+
+-- original size: 7313, stripped down to: 4076
+
+if not modules then modules={} end modules ['util-tpl']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+utilities.templates=utilities.templates or {}
+local templates=utilities.templates
+local trace_template=false trackers.register("templates.trace",function(v) trace_template=v end)
+local report_template=logs.reporter("template")
+local tostring=tostring
+local format,sub,byte=string.format,string.sub,string.byte
+local P,C,R,Cs,Cc,Carg,lpegmatch,lpegpatterns=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Cc,lpeg.Carg,lpeg.match,lpeg.patterns
+local replacer
+local function replacekey(k,t,how,recursive)
+  local v=t[k]
+  if not v then
+    if trace_template then
+      report_template("unknown key %a",k)
+    end
+    return ""
+  else
+    v=tostring(v)
+    if trace_template then
+      report_template("setting key %a to value %a",k,v)
+    end
+    if recursive then
+      return lpegmatch(replacer,v,1,t,how,recursive)
+    else
+      return v
+    end
+  end
+end
+local sqlescape=lpeg.replacer {
+  { "'","''"  },
+  { "\\","\\\\" },
+  { "\r\n","\\n" },
+  { "\r","\\n" },
+}
+local sqlquoted=Cs(Cc("'")*sqlescape*Cc("'"))
+lpegpatterns.sqlescape=sqlescape
+lpegpatterns.sqlquoted=sqlquoted
+local luaescape=lpegpatterns.luaescape
+local escapers={
+  lua=function(s)
+    return lpegmatch(luaescape,s)
+  end,
+  sql=function(s)
+    return lpegmatch(sqlescape,s)
+  end,
+}
+local quotedescapers={
+  lua=function(s)
+    return format("%q",s)
+  end,
+  sql=function(s)
+    return lpegmatch(sqlquoted,s)
+  end,
+}
+local luaescaper=escapers.lua
+local quotedluaescaper=quotedescapers.lua
+local function replacekeyunquoted(s,t,how,recurse) 
+  if how==false then
+    return replacekey(s,t,how,recurse)
+  else
+    local escaper=how and escapers[how] or luaescaper
+    return escaper(replacekey(s,t,how,recurse))
+  end
+end
+local function replacekeyquoted(s,t,how,recurse) 
+  if how==false then
+    return replacekey(s,t,how,recurse)
+  else
+    local escaper=how and quotedescapers[how] or quotedluaescaper
+    return escaper(replacekey(s,t,how,recurse))
+  end
+end
+local function replaceoptional(l,m,r,t,how,recurse)
+  local v=t[l]
+  return v and v~="" and lpegmatch(replacer,r,1,t,how or "lua",recurse or false) or ""
+end
+local single=P("%") 
+local double=P("%%") 
+local lquoted=P("%[") 
+local rquoted=P("]%") 
+local lquotedq=P("%(") 
+local rquotedq=P(")%") 
+local escape=double/'%%'
+local nosingle=single/''
+local nodouble=double/''
+local nolquoted=lquoted/''
+local norquoted=rquoted/''
+local nolquotedq=lquotedq/''
+local norquotedq=rquotedq/''
+local noloptional=P("%?")/''
+local noroptional=P("?%")/''
+local nomoptional=P(":")/''
+local args=Carg(1)*Carg(2)*Carg(3)
+local key=nosingle*((C((1-nosingle  )^1)*args)/replacekey    )*nosingle
+local quoted=nolquotedq*((C((1-norquotedq )^1)*args)/replacekeyquoted )*norquotedq
+local unquoted=nolquoted*((C((1-norquoted )^1)*args)/replacekeyunquoted)*norquoted
+local optional=noloptional*((C((1-nomoptional)^1)*nomoptional*C((1-noroptional)^1)*args)/replaceoptional)*noroptional
+local any=P(1)
+   replacer=Cs((unquoted+quoted+escape+optional+key+any)^0)
+local function replace(str,mapping,how,recurse)
+  if mapping and str then
+    return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
+  else
+    return str
+  end
+end
+templates.replace=replace
+function templates.replacer(str,how,recurse) 
+  return function(mapping)
+    return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
+  end
+end
+function templates.load(filename,mapping,how,recurse)
+  local data=io.loaddata(filename) or ""
+  if mapping and next(mapping) then
+    return replace(data,mapping,how,recurse)
+  else
+    return data
+  end
+end
+function templates.resolve(t,mapping,how,recurse)
+  if not mapping then
+    mapping=t
+  end
+  for k,v in next,t do
+    t[k]=replace(v,mapping,how,recurse)
+  end
+  return t
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-sbx"] = package.loaded["util-sbx"] or true
+
+-- original size: 20222, stripped down to: 13792
+
+if not modules then modules={} end modules ['util-sbx']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+if not sandbox then require("l-sandbox") end 
+local next,type=next,type
+local replace=utilities.templates.replace
+local collapsepath=file.collapsepath
+local expandname=dir.expandname
+local sortedhash=table.sortedhash
+local lpegmatch=lpeg.match
+local platform=os.type
+local P,S,C=lpeg.P,lpeg.S,lpeg.C
+local gsub=string.gsub
+local lower=string.lower
+local find=string.find
+local concat=string.concat
+local unquoted=string.unquoted
+local optionalquoted=string.optionalquoted
+local basename=file.basename
+local sandbox=sandbox
+local validroots={}
+local validrunners={}
+local validbinaries=true 
+local validlibraries=true 
+local validators={}
+local finalized=nil
+local trace=false
+local p_validroot=nil
+local p_split=lpeg.firstofsplit(" ")
+local report=logs.reporter("sandbox")
+trackers.register("sandbox",function(v) trace=v end) 
+sandbox.setreporter(report)
+sandbox.finalizer {
+  category="files",
+  action=function()
+    finalized=true
+  end
+}
+local function registerroot(root,what) 
+  if finalized then
+    report("roots are already finalized")
+  else
+    root=collapsepath(expandname(root))
+    if platform=="windows" then
+      root=lower(root) 
+    end
+    validroots[root]=what=="write" or false
+  end
+end
+sandbox.finalizer {
+  category="files",
+  action=function() 
+    if p_validroot then
+      report("roots are already initialized")
+    else
+      sandbox.registerroot(".","write")
+      for name in sortedhash(validroots) do
+        if p_validroot then
+          p_validroot=P(name)+p_validroot
+        else
+          p_validroot=P(name)
+        end
+      end
+      p_validroot=p_validroot/validroots
+    end
+  end
+}
+local function registerbinary(name)
+  if finalized then
+    report("binaries are already finalized")
+  elseif type(name)=="string" and name~="" then
+    if not validbinaries then
+      return
+    end
+    if validbinaries==true then
+      validbinaries={ [name]=true }
+    else
+      validbinaries[name]=true
+    end
+  elseif name==true then
+    validbinaries={}
+  end
+end
+local function registerlibrary(name)
+  if finalized then
+    report("libraries are already finalized")
+  elseif type(name)=="string" and name~="" then
+    if not validlibraries then
+      return
+    end
+    if validlibraries==true then
+      validlibraries={ [name]=true }
+    else
+      validlibraries[name]=true
+    end
+  elseif name==true then
+    validlibraries={}
+  end
+end
+local p_write=S("wa")    p_write=(1-p_write)^0*p_write
+local p_path=S("\\/~$%:") p_path=(1-p_path )^0*p_path 
+local function normalized(name) 
+  if platform=="windows" then
+    name=gsub(name,"/","\\")
+  end
+  return name
+end
+function sandbox.possiblepath(name)
+  return lpegmatch(p_path,name) and true or false
+end
+local filenamelogger=false
+function sandbox.setfilenamelogger(l)
+  filenamelogger=type(l)=="function" and l or false
+end
+local function validfilename(name,what)
+  if p_validroot and type(name)=="string" and lpegmatch(p_path,name) then
+    local asked=collapsepath(expandname(name))
+    if platform=="windows" then
+      asked=lower(asked) 
+    end
+    local okay=lpegmatch(p_validroot,asked)
+    if okay==true then
+      if filenamelogger then
+        filenamelogger(name,"w",asked,true)
+      end
+      return name
+    elseif okay==false then
+      if not what then
+        if filenamelogger then
+          filenamelogger(name,"r",asked,true)
+        end
+        return name
+      elseif lpegmatch(p_write,what) then
+        if filenamelogger then
+          filenamelogger(name,"w",asked,false)
+        end
+        return 
+      else
+        if filenamelogger then
+          filenamelogger(name,"r",asked,true)
+        end
+        return name
+      end
+    else
+      if filenamelogger then
+        filenamelogger(name,"*",name,false)
+      end
+    end
+  else
+    return name
+  end
+end
+local function readable(name,finalized)
+  return validfilename(name,"r")
+end
+local function normalizedreadable(name,finalized)
+  local valid=validfilename(name,"r")
+  if valid then
+    return normalized(valid)
+  end
+end
+local function writeable(name,finalized)
+  return validfilename(name,"w")
+end
+local function normalizedwriteable(name,finalized)
+  local valid=validfilename(name,"w")
+  if valid then
+    return normalized(valid)
+  end
+end
+validators.readable=readable
+validators.writeable=normalizedwriteable
+validators.normalizedreadable=normalizedreadable
+validators.normalizedwriteable=writeable
+validators.filename=readable
+table.setmetatableindex(validators,function(t,k)
+  if k then
+    t[k]=readable
+  end
+  return readable
+end)
+function validators.string(s,finalized)
+  if finalized and suspicious(s) then
+    return ""
+  else
+    return s
+  end
+end
+function validators.cache(s)
+  if finalized then
+    return basename(s)
+  else
+    return s
+  end
+end
+function validators.url(s)
+  if finalized and find("^file:") then
+    return ""
+  else
+    return s
+  end
+end
+local function filehandlerone(action,one,...)
+  local checkedone=validfilename(one)
+  if checkedone then
+    return action(one,...)
+  else
+  end
+end
+local function filehandlertwo(action,one,two,...)
+  local checkedone=validfilename(one)
+  if checkedone then
+    local checkedtwo=validfilename(two)
+    if checkedtwo then
+      return action(one,two,...)
+    else
+    end
+  else
+  end
+end
+local function iohandler(action,one,...)
+  if type(one)=="string" then
+    local checkedone=validfilename(one)
+    if checkedone then
+      return action(one,...)
+    end
+  elseif one then
+    return action(one,...)
+  else
+    return action()
+  end
+end
+local osexecute=sandbox.original(os.execute)
+local iopopen=sandbox.original(io.popen)
+local reported={}
+local function validcommand(name,program,template,checkers,defaults,variables,reporter,strict)
+  if validbinaries~=false and (validbinaries==true or validbinaries[program]) then
+    if variables then
+      for variable,value in next,variables do
+        local checker=validators[checkers[variable]]
+        if checker then
+          value=checker(unquoted(value),strict)
+          if value then
+            variables[variable]=optionalquoted(value)
+          else
+            report("variable %a with value %a fails the check",variable,value)
+            return
+          end
+        else
+          report("variable %a has no checker",variable)
+          return
+        end
+      end
+      for variable,default in next,defaults do
+        local value=variables[variable]
+        if not value or value=="" then
+          local checker=validators[checkers[variable]]
+          if checker then
+            default=checker(unquoted(default),strict)
+            if default then
+              variables[variable]=optionalquoted(default)
+            else
+              report("variable %a with default %a fails the check",variable,default)
+              return
+            end
+          end
+        end
+      end
+    end
+    local command=program.." "..replace(template,variables)
+    if reporter then
+      reporter("executing runner %a: %s",name,command)
+    elseif trace then
+      report("executing runner %a: %s",name,command)
+    end
+    return command
+  elseif not reported[name] then
+    report("executing program %a of runner %a is not permitted",program,name)
+    reported[name]=true
+  end
+end
+local runners={
+  resultof=function(...)
+    local command=validcommand(...)
+    if command then
+      local handle=iopopen(command,"r") 
+      if handle then
+        local result=handle:read("*all") or ""
+        handle:close()
+        return result
+      end
+    end
+  end,
+  execute=function(...)
+    local command=validcommand(...)
+    if command then
+      return osexecute(command)
+    end
+  end,
+  pipeto=function(...)
+    local command=validcommand(...)
+    if command then
+      return iopopen(command,"w") 
+    end
+  end,
+}
+function sandbox.registerrunner(specification)
+  if type(specification)=="string" then
+    local wrapped=validrunners[specification]
+    inspect(table.sortedkeys(validrunners))
+    if wrapped then
+      return wrapped
+    else
+      report("unknown predefined runner %a",specification)
+      return
+    end
+  end
+  if type(specification)~="table" then
+    report("specification should be a table (or string)")
+    return
+  end
+  local name=specification.name
+  if type(name)~="string" then
+    report("invalid name, string expected",name)
+    return
+  end
+  if validrunners[name] then
+    report("invalid name, runner %a already defined")
+    return
+  end
+  local program=specification.program
+  if type(program)=="string" then
+  elseif type(program)=="table" then
+    program=program[platform] or program.default or program.unix
+  end
+  if type(program)~="string" or program=="" then
+    report("invalid runner %a specified for platform %a",name,platform)
+    return
+  end
+  local template=specification.template
+  if not template then
+    report("missing template for runner %a",name)
+    return
+  end
+  local method=specification.method  or "execute"
+  local checkers=specification.checkers or {}
+  local defaults=specification.defaults or {}
+  local runner=runners[method]
+  if runner then
+    local finalized=finalized 
+    local wrapped=function(variables)
+      return runner(name,program,template,checkers,defaults,variables,specification.reporter,finalized)
+    end
+    validrunners[name]=wrapped
+    return wrapped
+  else
+    validrunners[name]=nil
+    report("invalid method for runner %a",name)
+  end
+end
+local function suspicious(str)
+  return (find(str,"[/\\]") or find(command,"%.%.")) and true or false
+end
+local function binaryrunner(action,command,...)
+  if validbinaries==false then
+    report("no binaries permitted, ignoring command: %s",command)
+    return
+  end
+  if type(command)~="string" then
+    report("command should be a string")
+    return
+  end
+  local program=lpegmatch(p_split,command)
+  if not program or program=="" then
+    report("unable to filter binary from command: %s",command)
+    return
+  end
+  if validbinaries==true then
+  elseif not validbinaries[program] then
+    report("binary not permitted, ignoring command: %s",command)
+    return
+  elseif suspicious(command) then
+    report("/ \\ or .. found, ignoring command (use sandbox.registerrunner): %s",command)
+    return
+  end
+  return action(command,...)
+end
+local function dummyrunner(action,command,...)
+  if type(command)=="table" then
+    command=concat(command," ",command[0] and 0 or 1)
+  end
+  report("ignoring command: %s",command)
+end
+sandbox.filehandlerone=filehandlerone
+sandbox.filehandlertwo=filehandlertwo
+sandbox.iohandler=iohandler
+function sandbox.disablerunners()
+  validbinaries=false
+end
+function sandbox.disablelibraries()
+  validlibraries=false
+end
+if ffi then
+  function sandbox.disablelibraries()
+    validlibraries=false
+    for k,v in next,ffi do
+      if k~="gc" then
+        ffi[k]=nil
+      end
+    end
+  end
+  local load=ffi.load
+  if load then
+    local reported={}
+    function ffi.load(name,...)
+      if validlibraries==false then
+      elseif validlibraries==true then
+        return load(name,...)
+      elseif validlibraries[name] then
+        return load(name,...)
+      else
+      end
+      if not reported[name] then
+        report("using library %a is not permitted",name)
+        reported[name]=true
+      end
+      return nil
+    end
+  end
+end
+local overload=sandbox.overload
+local register=sandbox.register
+  overload(loadfile,filehandlerone,"loadfile") 
+if io then
+  overload(io.open,filehandlerone,"io.open")
+  overload(io.popen,binaryrunner,"io.popen")
+  overload(io.input,iohandler,"io.input")
+  overload(io.output,iohandler,"io.output")
+  overload(io.lines,filehandlerone,"io.lines")
+end
+if os then
+  overload(os.execute,binaryrunner,"os.execute")
+  overload(os.spawn,dummyrunner,"os.spawn")
+  overload(os.exec,dummyrunner,"os.exec")
+  overload(os.resultof,binaryrunner,"os.resultof")
+  overload(os.pipeto,binaryrunner,"os.pipeto")
+  overload(os.rename,filehandlertwo,"os.rename")
+  overload(os.remove,filehandlerone,"os.remove")
+end
+if lfs then
+  overload(lfs.chdir,filehandlerone,"lfs.chdir")
+  overload(lfs.mkdir,filehandlerone,"lfs.mkdir")
+  overload(lfs.rmdir,filehandlerone,"lfs.rmdir")
+  overload(lfs.isfile,filehandlerone,"lfs.isfile")
+  overload(lfs.isdir,filehandlerone,"lfs.isdir")
+  overload(lfs.attributes,filehandlerone,"lfs.attributes")
+  overload(lfs.dir,filehandlerone,"lfs.dir")
+  overload(lfs.lock_dir,filehandlerone,"lfs.lock_dir")
+  overload(lfs.touch,filehandlerone,"lfs.touch")
+  overload(lfs.link,filehandlertwo,"lfs.link")
+  overload(lfs.setmode,filehandlerone,"lfs.setmode")
+  overload(lfs.readlink,filehandlerone,"lfs.readlink")
+  overload(lfs.shortname,filehandlerone,"lfs.shortname")
+  overload(lfs.symlinkattributes,filehandlerone,"lfs.symlinkattributes")
+end
+if zip then
+  zip.open=register(zip.open,filehandlerone,"zip.open")
+end
+if fontloader then
+  fontloader.open=register(fontloader.open,filehandlerone,"fontloader.open")
+  fontloader.info=register(fontloader.info,filehandlerone,"fontloader.info")
+end
+if epdf then
+  epdf.open=register(epdf.open,filehandlerone,"epdf.open")
+end
+sandbox.registerroot=registerroot
+sandbox.registerbinary=registerbinary
+sandbox.registerlibrary=registerlibrary
+sandbox.validfilename=validfilename
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
 package.loaded["util-mrg"] = package.loaded["util-mrg"] or true
 
 -- original size: 7985, stripped down to: 6153
@@ -9802,151 +10709,6 @@ function merger.selfmerge(name,libs,list,target)
 end
 function merger.selfclean(name)
   self_save(name,self_swap(self_load(name),self_nothing()))
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
-
--- original size: 7313, stripped down to: 4076
-
-if not modules then modules={} end modules ['util-tpl']={
-  version=1.001,
-  comment="companion to luat-lib.mkiv",
-  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
-  copyright="PRAGMA ADE / ConTeXt Development Team",
-  license="see context related readme files"
-}
-utilities.templates=utilities.templates or {}
-local templates=utilities.templates
-local trace_template=false trackers.register("templates.trace",function(v) trace_template=v end)
-local report_template=logs.reporter("template")
-local tostring=tostring
-local format,sub,byte=string.format,string.sub,string.byte
-local P,C,R,Cs,Cc,Carg,lpegmatch,lpegpatterns=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Cc,lpeg.Carg,lpeg.match,lpeg.patterns
-local replacer
-local function replacekey(k,t,how,recursive)
-  local v=t[k]
-  if not v then
-    if trace_template then
-      report_template("unknown key %a",k)
-    end
-    return ""
-  else
-    v=tostring(v)
-    if trace_template then
-      report_template("setting key %a to value %a",k,v)
-    end
-    if recursive then
-      return lpegmatch(replacer,v,1,t,how,recursive)
-    else
-      return v
-    end
-  end
-end
-local sqlescape=lpeg.replacer {
-  { "'","''"  },
-  { "\\","\\\\" },
-  { "\r\n","\\n" },
-  { "\r","\\n" },
-}
-local sqlquoted=Cs(Cc("'")*sqlescape*Cc("'"))
-lpegpatterns.sqlescape=sqlescape
-lpegpatterns.sqlquoted=sqlquoted
-local luaescape=lpegpatterns.luaescape
-local escapers={
-  lua=function(s)
-    return lpegmatch(luaescape,s)
-  end,
-  sql=function(s)
-    return lpegmatch(sqlescape,s)
-  end,
-}
-local quotedescapers={
-  lua=function(s)
-    return format("%q",s)
-  end,
-  sql=function(s)
-    return lpegmatch(sqlquoted,s)
-  end,
-}
-local luaescaper=escapers.lua
-local quotedluaescaper=quotedescapers.lua
-local function replacekeyunquoted(s,t,how,recurse) 
-  if how==false then
-    return replacekey(s,t,how,recurse)
-  else
-    local escaper=how and escapers[how] or luaescaper
-    return escaper(replacekey(s,t,how,recurse))
-  end
-end
-local function replacekeyquoted(s,t,how,recurse) 
-  if how==false then
-    return replacekey(s,t,how,recurse)
-  else
-    local escaper=how and quotedescapers[how] or quotedluaescaper
-    return escaper(replacekey(s,t,how,recurse))
-  end
-end
-local function replaceoptional(l,m,r,t,how,recurse)
-  local v=t[l]
-  return v and v~="" and lpegmatch(replacer,r,1,t,how or "lua",recurse or false) or ""
-end
-local single=P("%") 
-local double=P("%%") 
-local lquoted=P("%[") 
-local rquoted=P("]%") 
-local lquotedq=P("%(") 
-local rquotedq=P(")%") 
-local escape=double/'%%'
-local nosingle=single/''
-local nodouble=double/''
-local nolquoted=lquoted/''
-local norquoted=rquoted/''
-local nolquotedq=lquotedq/''
-local norquotedq=rquotedq/''
-local noloptional=P("%?")/''
-local noroptional=P("?%")/''
-local nomoptional=P(":")/''
-local args=Carg(1)*Carg(2)*Carg(3)
-local key=nosingle*((C((1-nosingle  )^1)*args)/replacekey    )*nosingle
-local quoted=nolquotedq*((C((1-norquotedq )^1)*args)/replacekeyquoted )*norquotedq
-local unquoted=nolquoted*((C((1-norquoted )^1)*args)/replacekeyunquoted)*norquoted
-local optional=noloptional*((C((1-nomoptional)^1)*nomoptional*C((1-noroptional)^1)*args)/replaceoptional)*noroptional
-local any=P(1)
-   replacer=Cs((unquoted+quoted+escape+optional+key+any)^0)
-local function replace(str,mapping,how,recurse)
-  if mapping and str then
-    return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
-  else
-    return str
-  end
-end
-templates.replace=replace
-function templates.replacer(str,how,recurse) 
-  return function(mapping)
-    return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
-  end
-end
-function templates.load(filename,mapping,how,recurse)
-  local data=io.loaddata(filename) or ""
-  if mapping and next(mapping) then
-    return replace(data,mapping,how,recurse)
-  else
-    return data
-  end
-end
-function templates.resolve(t,mapping,how,recurse)
-  if not mapping then
-    mapping=t
-  end
-  for k,v in next,t do
-    t[k]=replace(v,mapping,how,recurse)
-  end
-  return t
 end
 
 
@@ -18976,7 +19738,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 8391, stripped down to: 6761
+-- original size: 9392, stripped down to: 7485
 
 if not modules then modules={} end modules ['luat-fmt']={
   version=1.001,
@@ -19023,7 +19785,7 @@ local function secondaryflags()
   end
   return concat(flags," ")
 end
-local template=[[--ini %primaryflags% --lua="%luafile%" "%texfile%" %secondaryflags% %dump% %redirect%]]
+local template=[[--ini %primaryflags% --lua=%luafile% %texfile% %secondaryflags% %dump% %redirect%]]
 local checkers={
   primaryflags="string",
   secondaryflags="string",
@@ -19109,8 +19871,8 @@ function environment.make_format(name,arguments)
   local specification={
     primaryflags=primaryflags(),
     secondaryflags=secondaryflags(),
-    luafile=usedluastub,
-    texfile=fulltexsourcename,
+    luafile=quoted(usedluastub),
+    texfile=quoted(fulltexsourcename),
     dump=os.platform=="unix" and "\\\\dump" or "\\dump",
   }
   local runner=runners[engine]
@@ -19119,7 +19881,7 @@ function environment.make_format(name,arguments)
   elseif silent then
     statistics.starttiming()
     specification.redirect="> temp.log"
-    local result=makeformat(specification)
+    local result=runner(specification)
     local runtime=statistics.stoptiming()
     if result~=0 then
       print(format("%s silent make > fatal error when making format %q",engine,name)) 
@@ -19128,7 +19890,7 @@ function environment.make_format(name,arguments)
     end
     os.remove("temp.log")
   else
-    makeformat(specification)
+    runner(specification)
   end
   local pattern=file.removesuffix(file.basename(usedluastub)).."-*.mem"
   local mp=dir.glob(pattern)
@@ -19141,6 +19903,30 @@ function environment.make_format(name,arguments)
   end
   lfs.chdir(olddir)
 end
+local template=[[%flags% --fmt=%fmtfile% --lua=%luafile% %texfile% %more%]]
+local checkers={
+  flags="string",
+  more="string",
+  fmtfile="readable",
+  luafile="readable",
+  texfile="readable",
+}
+local runners={
+  luatex=sandbox.registerrunner {
+    name="run luatex format",
+    program="luatex",
+    template=template,
+    checkers=checkers,
+    reporter=report_format,
+  },
+  luajittex=sandbox.registerrunner {
+    name="run luajittex format",
+    program="luajittex",
+    template=template,
+    checkers=checkers,
+    reporter=report_format,
+  },
+}
 function environment.run_format(name,data,more)
   if name and name~="" then
     local engine=environment.ownmain or "luatex"
@@ -19162,9 +19948,18 @@ function environment.run_format(name,data,more)
         report_format("using format name %a",fmtname)
         report_format("no luc/lua file with name %a",barename)
       else
-        local command=format("%s %s --fmt=%s --lua=%s %s %s",engine,primaryflags(),quoted(barename),quoted(luaname),quoted(data),more~="" and quoted(more) or "")
-        report_format("running command: %s",command)
-        os.execute(command)
+        local runner=runners[engine]
+        if not runner then
+          report_format("format %a cannot be run, no runner available for engine %a",name,engine)
+        else
+          runner {
+            flags=primaryflags(),
+            fmtfile=quoted(barename),
+            luafile=quoted(luaname),
+            texfile=quoted(data),
+            more=more,
+          }
+        end
       end
     end
   end
@@ -19173,10 +19968,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-mrg.lua util-tpl.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 816868
--- stripped bytes    : 299010
+-- original bytes    : 848946
+-- stripped bytes    : 309630
 
 -- end library merge
 
@@ -19200,6 +19995,7 @@ local owntree = environment and environment.ownpath or ownpath
 local ownlibs = { -- order can be made better
 
     'l-lua.lua',
+    'l-sandbox.lua',
     'l-package.lua',
     'l-lpeg.lua',
     'l-function.lua',
@@ -19233,8 +20029,9 @@ local ownlibs = { -- order can be made better
     'util-lua.lua', -- indeed here?
     'util-deb.lua',
 
-    'util-mrg.lua',
     'util-tpl.lua',
+    'util-sbx.lua',
+    'util-mrg.lua',
 
     'util-env.lua',
     'luat-env.lua', -- can come before inf (as in mkiv)

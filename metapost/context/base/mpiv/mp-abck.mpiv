@@ -257,6 +257,11 @@ def anchor_box (expr n,x,y,w,h,d) =
     currentpicture := currentpicture shifted (-x,-y) ;
 enddef ;
 
+def draw_box = % for old times sake
+    draw pxy        boxlineoptions withpen pencircle scaled boxlinewidth ;
+    draw lxy -- rxy boxlineoptions withpen pencircle scaled boxgridwidth ;
+enddef ;
+
 def draw_free_region(expr width, height, depth, loffset, roffset, toffset, boffset) =
 
     begingroup ; save b, o, l ; path b, o, l[] ; save d ;

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/15/17 20:12:00
+-- merge date  : 02/17/17 13:41:40
 
 do -- begin closure to overcome local limits and interference
 
@@ -23888,7 +23888,7 @@ do
     template="--shell > temp-otf-svg-shape.log",
     reporter=report_svg,
   }
-  if notrunner then
+  if not runner then
     runner=function()
       return io.open("inkscape --shell > temp-otf-svg-shape.log","w")
     end

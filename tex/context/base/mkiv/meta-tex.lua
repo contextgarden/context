@@ -241,7 +241,7 @@ local f_exptext = formatters[ [[textext("\mathematics{%s\times10^{%s}}")]] ]
 
 local mpprint   = mp.print
 
-function mp.format(fmt,str)
+function mp.format(fmt,str) -- bah, this overloads mp.format in mlib-lua.lua
     fmt = lpegmatch(cleaner,fmt)
     mpprint(f_textext(formatters[fmt](metapost.untagvariable(str,false))))
 end
