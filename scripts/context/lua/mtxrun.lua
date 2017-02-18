@@ -56,7 +56,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 6883, stripped down to: 2843
+-- original size: 5347, stripped down to: 2946
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -162,17 +162,15 @@ if flush then
   local spawn=os.spawn  if spawn  then function os.spawn (...) flush() return spawn (...) end end
   local popen=io.popen  if popen  then function io.popen (...) flush() return popen (...) end end
 end
-if ffi and ffi.number then
-else
-  local okay
-  okay,ffi=pcall(require,"ffi")
-  if not ffi then
-  elseif ffi.os=="" or ffi.arch=="" then
-    ffi=nil
-  elseif ffi.number then
-  else
-    ffi.number=tonumber
-  end
+FFISUPPORTED=type(ffi)=="table" and ffi.os~="" and ffi.arch~="" and ffi.load
+if not FFISUPPORTED then
+  local okay;okay,ffi=pcall(require,"ffi")
+  FFISUPPORTED=type(ffi)=="table" and ffi.os~="" and ffi.arch~="" and ffi.load
+end
+if not FFISUPPORTED then
+  ffi=nil
+elseif not ffi.number then
+  ffi.number=tonumber
 end
 
 
@@ -182,7 +180,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-sandbox"] = package.loaded["l-sandbox"] or true
 
--- original size: 10855, stripped down to: 6942
+-- original size: 9979, stripped down to: 6901
 
 if not modules then modules={} end modules ['l-sandbox']={
   version=1.001,
@@ -326,7 +324,9 @@ function require(name)
   local n=gsub(name,"^.*[\\/]","")
   local n=gsub(n,"[%.].*$","")
   local b=blocked[n]
-  if b then
+  if b==false then
+    return nil 
+  elseif b then
     if trace then
       report("using blocked: %s",n)
     end
@@ -342,11 +342,7 @@ function blockrequire(name,lib)
   if trace then
     report("preventing reload of: %s",name)
   end
-  blocked[name]=lib or _G[name]
-end
-if TEXENGINE=="luajittex" or not ffi then
-  local ok
-  ok,ffi=pcall(require,"ffi")
+  blocked[name]=lib or _G[name] or false
 end
 function sandbox.enable()
   if not sandboxed then
@@ -9324,7 +9320,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 8320, stripped down to: 5709
+-- original size: 8290, stripped down to: 5709
 
 if not modules then modules={} end modules ['trac-inf']={
   version=1.001,
@@ -10048,7 +10044,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sbx"] = package.loaded["util-sbx"] or true
 
--- original size: 20222, stripped down to: 13792
+-- original size: 20239, stripped down to: 13809
 
 if not modules then modules={} end modules ['util-sbx']={
   version=1.001,
@@ -10456,7 +10452,7 @@ end
 function sandbox.disablelibraries()
   validlibraries=false
 end
-if ffi then
+if FFISUPPORTED and ffi then
   function sandbox.disablelibraries()
     validlibraries=false
     for k,v in next,ffi do
@@ -19970,8 +19966,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 848946
--- stripped bytes    : 309630
+-- original bytes    : 846521
+-- stripped bytes    : 307126
 
 -- end library merge
 

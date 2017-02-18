@@ -166,7 +166,9 @@ function require(name)
     local n = gsub(name,"^.*[\\/]","")
     local n = gsub(n,"[%.].*$","")
     local b = blocked[n]
-    if b then
+    if b == false then
+        return nil -- e.g. ffi
+    elseif b then
         if trace then
             report("using blocked: %s",n)
         end
@@ -183,12 +185,7 @@ function blockrequire(name,lib)
     if trace then
         report("preventing reload of: %s",name)
     end
-    blocked[name] = lib or _G[name]
-end
-
-if TEXENGINE == "luajittex" or not ffi then
-    local ok
-    ok, ffi = pcall(require,"ffi")
+    blocked[name] = lib or _G[name] or false
 end
 
 function sandbox.enable()
@@ -241,31 +238,6 @@ function sandbox.enable()
             sort(skip)
             report("not overloaded redefined: %s",concat(skip," | "))
         end
-        --
-     -- if ffi then
-     --     report("disabling ffi")
-     --  -- for k, v in next, ffi do
-     --  --     if k ~= "gc" then
-     --  --         local t = type(v)
-     --  --         if t == "function" then
-     --  --             ffi[k] = function() report("accessing ffi.%s",k) end
-     --  --         elseif t == "number" then
-     --  --             ffi[k] = 0
-     --  --         elseif t == "string" then
-     --  --             ffi[k] = ""
-     --  --         elseif t == "table" then
-     --  --             ffi[k] = { }
-     --  --         else
-     --  --             ffi[k] = false
-     --  --         end
-     --  --     end
-     --  -- end
-     --     for k, v in next, ffi do
-     --         if k ~= "gc" then
-     --             ffi[k] = nil
-     --         end
-     --     end
-     -- end
         --
         initializers = nil
         finalizers   = nil

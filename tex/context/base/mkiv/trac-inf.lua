@@ -45,9 +45,7 @@ end
 local ticks   = clock
 local seconds = function(n) return n or 0 end
 
--- local okay, ffi = pcall(require,"ffi")
---
--- if ffi and os.type == "windows" then
+-- if FFISUPPORTED and ffi and os.type == "windows" then
 --
 --     local okay, kernel = pcall(ffi.load,"kernel32")
 --

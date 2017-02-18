@@ -201,83 +201,22 @@ end
 
 -- new
 
-if ffi and ffi.number then
-    -- already loaded
-else
-    local okay
+FFISUPPORTED = type(ffi) == "table" and ffi.os ~= "" and ffi.arch ~= "" and ffi.load
 
-    okay, ffi = pcall(require,"ffi")
+if not FFISUPPORTED then
 
-    if not ffi then
-        -- an old version
-    elseif ffi.os == "" or ffi.arch == "" then
-        -- no ffi support
-        ffi = nil
-    elseif ffi.number then
-        -- luatex
-    else
-        -- luajittex
-        ffi.number = tonumber
-    end
+    -- Maybe we should check for LUATEXENGINE but that's also a bti tricky as we still
+    -- can have a weird ffi library laying around. Checking for presence of 'jit' is
+    -- also not robust. So for now we hope for the best.
+
+    local okay ; okay, ffi = pcall(require,"ffi")
+
+    FFISUPPORTED = type(ffi) == "table" and ffi.os ~= "" and ffi.arch ~= "" and ffi.load
+
 end
 
--- done differently in context
---
--- if ffi then
---     local load    = ffi.load
---     local select  = select
---     local type    = type
---     local next    = next
---     local sort    = table.sort
---     local gmatch  = string.gmatch
---     local okay    = true
---     local control = { }
---     function ffi.load(name,...)
---         if okay == true or okay[name] then
---             return load(name,...)
---         else
---             return nil
---         end
---     end
---     function control.permit(...)
---         if okay == true then
---             okay = { }
---         end
---         for i=1,select("#",...) do
---             local n = select(i,...)
---             local t = type(n)
---             if t == "table" then
---                 for i=1,#n do
---                     control.permit(n[i])
---                 end
---             elseif t == "string" then
---                 for s in gmatch(n,"[^,%s]+") do
---                     okay[n] = true
---                 end
---             end
---         end
---     end
---     function control.freeze(none)
---         control.permit = function() end
---         control.freeze = function() end
---         if none then
---             okay = { }
---         end
---     end
---     function control.permitted(name)
---         if okay == true then
---             return true
---         elseif type(name) == "string" then
---             return okay[name] or false
---         else
---             -- no helpers yet
---             local t = { }
---             for k, v in next, okay do
---                 t[#t+1] = k
---             end
---             sort(t)
---             return t
---         end
---     end
---     ffi.control = control
--- end
+if not FFISUPPORTED then
+    ffi = nil
+elseif not ffi.number then
+    ffi.number = tonumber
+end

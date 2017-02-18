@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/17/17 13:41:40
+-- merge date  : 02/18/17 11:47:12
 
 do -- begin closure to overcome local limits and interference
 
@@ -108,17 +108,15 @@ if flush then
   local spawn=os.spawn  if spawn  then function os.spawn (...) flush() return spawn (...) end end
   local popen=io.popen  if popen  then function io.popen (...) flush() return popen (...) end end
 end
-if ffi and ffi.number then
-else
-  local okay
-  okay,ffi=pcall(require,"ffi")
-  if not ffi then
-  elseif ffi.os=="" or ffi.arch=="" then
-    ffi=nil
-  elseif ffi.number then
-  else
-    ffi.number=tonumber
-  end
+FFISUPPORTED=type(ffi)=="table" and ffi.os~="" and ffi.arch~="" and ffi.load
+if not FFISUPPORTED then
+  local okay;okay,ffi=pcall(require,"ffi")
+  FFISUPPORTED=type(ffi)=="table" and ffi.os~="" and ffi.arch~="" and ffi.load
+end
+if not FFISUPPORTED then
+  ffi=nil
+elseif not ffi.number then
+  ffi.number=tonumber
 end
 
 end -- closure

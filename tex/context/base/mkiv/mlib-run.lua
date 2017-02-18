@@ -240,6 +240,7 @@ function metapost.load(name,method)
         script_error = metapost.scripterror,
         make_text    = metapost.maketext,
         extensions   = 1,
+     -- random_seed  = seed,
     }
     report_metapost("initializing number mode %a",method)
     local result

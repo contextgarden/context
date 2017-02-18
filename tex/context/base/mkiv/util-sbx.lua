@@ -530,7 +530,7 @@ function sandbox.disablelibraries()
     validlibraries = false
 end
 
-if ffi then
+if FFISUPPORTED and ffi then
 
     function sandbox.disablelibraries()
         validlibraries = false
