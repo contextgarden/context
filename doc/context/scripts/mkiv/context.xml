@@ -4,7 +4,7 @@
     <metadata>
         <entry name="name">mtx-context</entry>
         <entry name="detail">ConTeXt Process Management</entry>
-        <entry name="version">0.62</entry>
+        <entry name="version">1.00</entry>
         <entry name="comment">external helpinfo file</entry>
     </metadata>
     <flags>

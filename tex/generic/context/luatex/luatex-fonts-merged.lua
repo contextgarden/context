@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/18/17 11:47:12
+-- merge date  : 02/19/17 17:14:56
 
 do -- begin closure to overcome local limits and interference
 
@@ -27185,6 +27185,43 @@ otffeatures.register {
   initializers={
     base=ignore,
     node=ignore,
+  }
+}
+local setmetatableindex=table.setmetatableindex
+local function additalictowidth(tfmdata,key,value)
+  local characters=tfmdata.characters
+  local resources=tfmdata.resources
+  local additions={}
+  local private=resources.private
+  for unicode,old_c in next,characters do
+    local oldwidth=old_c.width
+    local olditalic=old_c.italic
+    if olditalic and olditalic~=0 then
+      private=private+1
+      local new_c={
+        width=oldwidth+olditalic,
+        height=old_c.height,
+        depth=old_c.depth,
+        commands={
+          { "slot",1,private },
+          { "right",olditalic },
+        },
+      }
+      setmetatableindex(new_c,old_c)
+      characters[unicode]=new_c
+      additions[private]=old_c
+    end
+  end
+  for k,v in next,additions do
+    characters[k]=v
+  end
+  resources.private=private
+end
+otffeatures.register {
+  name="italicwidths",
+  description="add italic to width",
+  manipulators={
+    base=additalictowidth,
   }
 }
 

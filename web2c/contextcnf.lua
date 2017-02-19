@@ -144,8 +144,8 @@ return {
             ["luatex.maxprintline"]      = " 10000", --    79
             ["luatex.maxstrings"]        = "500000", -- 15000 -- obsolete
             ["luatex.paramsize"]         =  "25000", --    60
-            ["luatex.savesize"]          =  "50000", --  4000
-            ["luatex.stacksize"]         =  "10000", --   300
+            ["luatex.savesize"]          = "100000", --  4000
+            ["luatex.stacksize"]         = "100000", --   300
 
             -- A few process related variables come next.
 
@@ -155,17 +155,33 @@ return {
             ["system.compile.cleanup"]   = "no",    -- remove tma files
             ["system.compile.strip"]     = "yes",   -- strip tmc files
 
-            -- The io modes are similar to the traditional ones. Possible values
-            -- are all, paranoid and restricted.
+            -- sandboxing (these only kick in when --sandbox is given) .. the examples
+            -- below are just that, examples, as sandboxing is off by default ... when
+            -- turned on, restrictions kick in, and programs registered at runtime have
+            -- (even) more restrictions than already registered ones
 
-         -- ["system.outputmode"]        = "restricted",
-         -- ["system.inputmode"]         = "any",
-
-            -- The following variable is under consideration. We do have protection
-            -- mechanims but it's not enabled by default.
-
-            ["system.commandmode"]       = "any", -- any none list
-            ["system.commandlist"]       = "mtxrun, convert, inkscape, gs, imagemagick, curl, bibtex, pstoedit",
+         -- ["system.rootlist"]          = { "/data" }, -- { { "/data", "read" }, ... }
+         --
+         -- ["system.executionmode"]     = "list", -- none | list | all
+         -- ["system.executionlist"]     = {
+         --     "context",
+         --     "bibtex", "mlbibcontext",
+         --     "curl",
+         --     "gswin64c", "gswin32c", "gs",
+         --     "gm", "graphicmagick", "imagemagick",
+         --     "pdftops",
+         --     "pstoedit",
+         --     "inkscape",
+         --     "woff2_decompress",
+         --     "hb-shape",
+         -- },
+         --
+         -- ["system.librarymode"]       = "list", -- none | list | all
+         -- ["system.librarylist"]       = {
+         --     "mysql",
+         --     "sqlite3",
+         --     "libharfbuzz", "libharfbuzz-0",
+         -- }
 
             -- The mplib library support mechanisms have their own
             -- configuration. Normally these variables can be left as

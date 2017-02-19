@@ -556,10 +556,10 @@ local textitalics_specification = {
 registerotffeature(textitalics_specification)
 registerafmfeature(textitalics_specification)
 
-local function initializemathitalics(tfmdata,value) -- yes no delay
-    tfmdata.properties.mathitalics = toboolean(value)
-end
-
+-- local function initializemathitalics(tfmdata,value) -- yes no delay
+--     tfmdata.properties.mathitalics = toboolean(value)
+-- end
+--
 -- local mathitalics_specification = {
 --     name         = "mathitalics",
 --     description  = "use alternative math italic correction",
@@ -1238,6 +1238,50 @@ do
         initializers = {
             base = initialize,
             node = initialize,
+        }
+    }
+
+end
+
+do -- another hack for a crappy font
+
+    local function additalictowidth(tfmdata,key,value)
+        local characters = tfmdata.characters
+        local resources  = tfmdata.resources
+        local additions  = { }
+        local private    = resources.private
+        for unicode, old_c in next, characters do
+            -- maybe check for math
+            local oldwidth  = old_c.width
+            local olditalic = old_c.italic
+            if olditalic and olditalic ~= 0 then
+                private = private + 1
+                local new_c = {
+                    width    = oldwidth + olditalic,
+                    height   = old_c.height,
+                    depth    = old_c.depth,
+                    commands = {
+                        { "slot", 1, private },
+                        { "right", olditalic },
+                    },
+                }
+                setmetatableindex(new_c,old_c)
+                characters[unicode] = new_c
+                additions[private]  = old_c
+            end
+        end
+        for k, v in next, additions do
+            characters[k] = v
+        end
+        resources.private = private
+    end
+
+    registerotffeature {
+        name        = "italicwidths",
+        description = "add italic to width",
+        manipulators = {
+            base = additalictowidth,
+         -- node = additalictowidth, -- only makes sense for math
         }
     }
 

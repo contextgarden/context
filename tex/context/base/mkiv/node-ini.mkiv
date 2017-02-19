@@ -35,7 +35,12 @@
 \registerctxluafile{node-acc}{1.001} % experimental
 %registerctxluafile{node-prp}{1.001} % makes no sense (yet)
 \registerctxluafile{node-ppt}{1.001}
-\registerctxluafile{node-scn}{1.001}
+
+\doifelsefile {node-scn-new.lua} {
+    \registerctxluafile{node-scn-new}{1.001}
+} {
+    \registerctxluafile{node-scn}{1.001}
+}
 
 \newcount\c_node_tracers_show_box % box number
 

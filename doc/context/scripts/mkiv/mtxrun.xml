@@ -3,7 +3,7 @@
  <metadata>
   <entry name="name">mtxrun</entry>
   <entry name="detail">ConTeXt TDS Runner Tool</entry>
-  <entry name="version">1.31</entry>
+  <entry name="version">1.32</entry>
  </metadata>
  <flags>
   <category name="basic">

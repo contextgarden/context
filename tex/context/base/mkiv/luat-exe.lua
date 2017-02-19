@@ -103,10 +103,7 @@ sandbox.initializer{
         end
         if type(root_list) == "table" then
             for i=1,#root_list do
-                local entry = root_list[i]
-                if entry ~= "" then
-                    registerroot(entry)
-                end
+                registerroot(root_list[i])
             end
         end
     end

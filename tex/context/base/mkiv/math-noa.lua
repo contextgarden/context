@@ -1235,9 +1235,9 @@ end
 -- and text. Also, for a while in context we had to deal with a mix of virtual math fonts and
 -- real ones.
 
--- in opentype the italic correction of a limop is added to the width and luatex does some juggling
--- that we want to avoid but we need to do something here (in fact, we could better fix the width of
--- the character
+-- in opentype the italic correction of a limop is added to the width and luatex does
+-- some juggling that we want to avoid but we need to do something here (in fact, we could
+-- better fix the width of the character
 
 local a_mathitalics = privateattribute("mathitalics")
 
@@ -1332,7 +1332,8 @@ italics[math_char] = function(pointer,what,n,parent)
         if correction and correction ~= 0 then
             local next_noad = getnext(parent)
             if not next_noad then
-                if n == 1 then -- only at the outer level .. will become an option (always,endonly,none)
+                if n == 1 then
+                    -- only at the outer level .. will become an option (always,endonly,none)
                     if trace_italics then
                         report_italics("method %a, flagging italic correction %p between %C and end math",method,correction,char)
                     end

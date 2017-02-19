@@ -294,6 +294,22 @@ and right. Keep in mind that this feature blocks colored text.
 
 \stopsection
 
+\startsection[title=Math italics]
+
+In the traditional \TEX\ fonts the width of a glyph was not the real width because
+one had to add the italic correction to it. The engine then juggles a bit with
+these properties. If you run into fonts that are designed this way, you can do this:
+
+\starttyping
+\definefontfeature[mathextra][italicwidths=yes] % fix latin modern
+\stoptyping
+
+This might make \type {$\left|V\right| = \left|W\right|$} look better for such
+fonts. Of course there can be side effects because these fonts assume a
+traditional engine.
+
+\stopsection
+
 \startsection[title=Slanting]
 
 This features (as well as the one described in the next section) are seldom used

@@ -34,7 +34,7 @@ local formatters    = string.formatters
 
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 0.63",
+    banner   = "ConTeXt Process Management 1.00",
  -- helpinfo = helpinfo, -- table with { category_a = text_1, category_b = text_2 } or helpstring or xml_blob
     helpinfo = "mtx-context.xml",
 }

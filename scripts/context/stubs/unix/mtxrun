@@ -10044,7 +10044,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sbx"] = package.loaded["util-sbx"] or true
 
--- original size: 20239, stripped down to: 13809
+-- original size: 20617, stripped down to: 13963
 
 if not modules then modules={} end modules ['util-sbx']={
   version=1.001,
@@ -10092,11 +10092,18 @@ local function registerroot(root,what)
   if finalized then
     report("roots are already finalized")
   else
-    root=collapsepath(expandname(root))
-    if platform=="windows" then
-      root=lower(root) 
+    if type(root)=="table" then
+      root,what=root[1],root[2]
     end
-    validroots[root]=what=="write" or false
+    if type(root)=="string" and root~="" then
+      root=collapsepath(expandname(root))
+      if what=="r" or what=="ro" or what=="readable" then
+        what="read"
+      elseif what=="w" or what=="wo" or what=="writable" then
+        what="write"
+      end
+      validroots[root]=what=="write" or false
+    end
   end
 end
 sandbox.finalizer {
@@ -10167,9 +10174,6 @@ end
 local function validfilename(name,what)
   if p_validroot and type(name)=="string" and lpegmatch(p_path,name) then
     local asked=collapsepath(expandname(name))
-    if platform=="windows" then
-      asked=lower(asked) 
-    end
     local okay=lpegmatch(p_validroot,asked)
     if okay==true then
       if filenamelogger then
@@ -10193,10 +10197,8 @@ local function validfilename(name,what)
         end
         return name
       end
-    else
-      if filenamelogger then
-        filenamelogger(name,"*",name,false)
-      end
+    elseif filenamelogger then
+      filenamelogger(name,"*",name,false)
     end
   else
     return name
@@ -10714,7 +10716,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 8284, stripped down to: 5176
+-- original size: 9028, stripped down to: 5176
 
 if not modules then modules={} end modules ['util-env']={
   version=1.001,
@@ -16463,7 +16465,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 67192, stripped down to: 46380
+-- original size: 67524, stripped down to: 46632
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -16517,6 +16519,7 @@ resolvers.configbanner=""
 resolvers.homedir=environment.homedir
 resolvers.criticalvars=allocate { "SELFAUTOLOC","SELFAUTODIR","SELFAUTOPARENT","TEXMFCNF","TEXMF","TEXOS" }
 resolvers.luacnfname="texmfcnf.lua"
+resolvers.luacnffallback="contextcnf.lua"
 resolvers.luacnfstate="unknown"
 if environment.default_texmfcnf then
   resolvers.luacnfspec="home:texmf/web2c;"..environment.default_texmfcnf 
@@ -16705,22 +16708,28 @@ local function identify_configuration_files()
     end
     reportcriticalvariables(cnfspec)
     local cnfpaths=expandedpathfromlist(resolvers.splitpath(cnfspec))
-    local luacnfname=resolvers.luacnfname
-    for i=1,#cnfpaths do
-      local filepath=cnfpaths[i]
-      local filename=collapsepath(filejoin(filepath,luacnfname))
-      local realname=resolveprefix(filename)
-      if trace_locating then
-        local fullpath=gsub(resolveprefix(collapsepath(filepath)),"//","/")
-        local weirdpath=find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c",1,true)
-        report_resolving("looking for %a on %s path %a from specification %a",luacnfname,weirdpath and "weird" or "given",fullpath,filepath)
-      end
-      if isfile(realname) then
-        specification[#specification+1]=filename 
+    local function locatecnf(luacnfname,kind)
+      for i=1,#cnfpaths do
+        local filepath=cnfpaths[i]
+        local filename=collapsepath(filejoin(filepath,luacnfname))
+        local realname=resolveprefix(filename)
         if trace_locating then
-          report_resolving("found configuration file %a",realname)
+          local fullpath=gsub(resolveprefix(collapsepath(filepath)),"//","/")
+          local weirdpath=find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c",1,true)
+          report_resolving("looking for %s %a on %s path %a from specification %a",
+            kind,luacnfname,weirdpath and "weird" or "given",fullpath,filepath)
+        end
+        if isfile(realname) then
+          specification[#specification+1]=filename 
+          if trace_locating then
+            report_resolving("found %s configuration file %a",kind,realname)
+          end
         end
       end
+    end
+    locatecnf(resolvers.luacnfname,"regular")
+    if #specification==0 then
+      locatecnf(resolvers.luacnffallback,"fallback")
     end
     if trace_locating then
       report_resolving()
@@ -19966,8 +19975,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 846521
--- stripped bytes    : 307126
+-- original bytes    : 847975
+-- stripped bytes    : 308174
 
 -- end library merge
 
@@ -20199,7 +20208,7 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtxrun</entry>
   <entry name="detail">ConTeXt TDS Runner Tool</entry>
-  <entry name="version">1.31</entry>
+  <entry name="version">1.32</entry>
  </metadata>
  <flags>
   <category name="basic">
@@ -20279,7 +20288,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtxrun",
-    banner   = "ConTeXt TDS Runner Tool 1.31",
+    banner   = "ConTeXt TDS Runner Tool 1.32",
     helpinfo = helpinfo,
 }
 

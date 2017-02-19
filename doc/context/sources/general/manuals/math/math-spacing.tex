@@ -373,6 +373,25 @@ an integral are moved right and left half of the italic correction.
 
 \stopsection
 
+\startsection[title=Bad fonts]
+
+There might be fonts out there where the italic correction is supposed to be
+added to the width of a glyph. In that case the following trick can be tried:
+
+\starttyping
+\definefontfeature[mathextra][italicwidths=yes] % fix latin modern
+\stoptyping
+
+in which case the following might look better:
+
+\starttyping
+$\left|V\right| = \left|W\right|$
+\stoptyping
+
+Of course better is to fix the font.
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

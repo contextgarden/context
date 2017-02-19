@@ -69,12 +69,13 @@ local initializesetter       = utilities.setters.initialize
 
 local ostype, osname, osenv, ossetenv, osgetenv = os.type, os.name, os.env, os.setenv, os.getenv
 
-resolvers.cacheversion  = "1.100"
-resolvers.configbanner  = ""
-resolvers.homedir       = environment.homedir
-resolvers.criticalvars  = allocate { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARENT", "TEXMFCNF", "TEXMF", "TEXOS" }
-resolvers.luacnfname    = "texmfcnf.lua"
-resolvers.luacnfstate   = "unknown"
+resolvers.cacheversion   = "1.100"
+resolvers.configbanner   = ""
+resolvers.homedir        = environment.homedir
+resolvers.criticalvars   = allocate { "SELFAUTOLOC", "SELFAUTODIR", "SELFAUTOPARENT", "TEXMFCNF", "TEXMF", "TEXOS" }
+resolvers.luacnfname     = "texmfcnf.lua"
+resolvers.luacnffallback = "contextcnf.lua"
+resolvers.luacnfstate    = "unknown"
 
 -- The web2c tex binaries as well as kpse have built in paths for the configuration
 -- files and there can be a depressing truckload of them. This is actually the weak
@@ -376,23 +377,31 @@ local function identify_configuration_files()
         end
         reportcriticalvariables(cnfspec)
         local cnfpaths = expandedpathfromlist(resolvers.splitpath(cnfspec))
-        local luacnfname = resolvers.luacnfname
-        for i=1,#cnfpaths do
-            local filepath = cnfpaths[i]
-            local filename = collapsepath(filejoin(filepath,luacnfname))
-            local realname = resolveprefix(filename) -- can still have "//" ... needs checking
-            -- todo: environment.skipweirdcnfpaths directive
-            if trace_locating then
-                local fullpath  = gsub(resolveprefix(collapsepath(filepath)),"//","/")
-                local weirdpath = find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c",1,true)
-                report_resolving("looking for %a on %s path %a from specification %a",luacnfname,weirdpath and "weird" or "given",fullpath,filepath)
-            end
-            if isfile(realname) then
-                specification[#specification+1] = filename -- unresolved as we use it in matching, relocatable
+
+        local function locatecnf(luacnfname,kind)
+            for i=1,#cnfpaths do
+                local filepath = cnfpaths[i]
+                local filename = collapsepath(filejoin(filepath,luacnfname))
+                local realname = resolveprefix(filename) -- can still have "//" ... needs checking
+                -- todo: environment.skipweirdcnfpaths directive
                 if trace_locating then
-                    report_resolving("found configuration file %a",realname)
+                    local fullpath  = gsub(resolveprefix(collapsepath(filepath)),"//","/")
+                    local weirdpath = find(fullpath,"/texmf.+/texmf") or not find(fullpath,"/web2c",1,true)
+                    report_resolving("looking for %s %a on %s path %a from specification %a",
+                        kind,luacnfname,weirdpath and "weird" or "given",fullpath,filepath)
+                end
+                if isfile(realname) then
+                    specification[#specification+1] = filename -- unresolved as we use it in matching, relocatable
+                    if trace_locating then
+                        report_resolving("found %s configuration file %a",kind,realname)
+                    end
                 end
             end
+        end
+
+        locatecnf(resolvers.luacnfname,"regular")
+        if #specification == 0 then
+            locatecnf(resolvers.luacnffallback,"fallback")
         end
         if trace_locating then
             report_resolving()

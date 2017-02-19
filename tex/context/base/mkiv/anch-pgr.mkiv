@@ -16,7 +16,11 @@
 %D Before we come to graphics support, we have to make sure of the reference point
 %D on the page. The next macros do so and are hooked into the page building routine.
 
-\registerctxluafile{anch-pgr}{1.001}
+\doifelsefile {anch-pgr-new.lua} {
+    \registerctxluafile{anch-pgr-new}{1.001}
+} {
+    \registerctxluafile{anch-pgr}{1.001}
+}
 
 \unprotect
 

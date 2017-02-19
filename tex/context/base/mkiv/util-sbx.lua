@@ -58,12 +58,22 @@ local function registerroot(root,what) -- what == read|write
     if finalized then
         report("roots are already finalized")
     else
-        root = collapsepath(expandname(root))
-        if platform == "windows" then
-            root = lower(root) -- we assume ascii names
+        if type(root) == "table" then
+            root, what = root[1], root[2]
         end
-        -- true: read & write | false: read
-        validroots[root] = what == "write" or false
+        if type(root) == "string" and root ~= "" then
+            root = collapsepath(expandname(root))
+         -- if platform == "windows" then
+         --     root = lower(root) -- we assume ascii names
+         -- end
+            if what == "r" or what == "ro" or what == "readable" then
+                what = "read"
+            elseif what == "w" or what == "wo" or what == "writable" then
+                what = "write"
+            end
+            -- true: read & write | false: read
+            validroots[root] = what == "write" or false
+        end
     end
 end
 
@@ -146,9 +156,9 @@ end
 local function validfilename(name,what)
     if p_validroot and type(name) == "string" and lpegmatch(p_path,name) then
         local asked = collapsepath(expandname(name))
-        if platform == "windows" then
-            asked = lower(asked) -- we assume ascii names
-        end
+     -- if platform == "windows" then
+     --     asked = lower(asked) -- we assume ascii names
+     -- end
         local okay = lpegmatch(p_validroot,asked)
         if okay == true then
             -- read and write access
@@ -175,10 +185,8 @@ local function validfilename(name,what)
                 end
                 return name
             end
-        else
-            if filenamelogger then
-                filenamelogger(name,"*",name,false)
-            end
+        elseif filenamelogger then
+            filenamelogger(name,"*",name,false)
         end
     else
         return name
