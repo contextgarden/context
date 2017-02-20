@@ -216,6 +216,7 @@ implement {
             { "definitions" },
             { "figure" },
             { "method" },
+            { "namespace" },
         }
     }
 }
@@ -305,6 +306,7 @@ implement {
             { "useextensions" },
             { "inclusions" },
             { "method" },
+            { "namespace" },
         },
     }
 }

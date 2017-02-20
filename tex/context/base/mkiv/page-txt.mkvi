@@ -846,9 +846,9 @@
   \smashbox\b_page_layouts_element
   \box\b_page_layouts_element}
 
-\ifdefined\page_prepare_backgrounds\else
-    \let\page_prepare_backgrounds\gobbleoneargument
-\fi
+% \ifdefined\page_prepare_backgrounds\else
+%     \let\page_prepare_backgrounds\gobbleoneargument
+% \fi
 
 \def\page_insert_body#1#2%
   {\setbox\b_page_layouts_element\vpack
@@ -858,7 +858,7 @@
       \swapmargins
       \vskip\dimexpr\headerheight+\headerdistance+\textdistance\relax
       \dontleavehmode
-      \page_prepare_backgrounds{#2}%
+     %\page_prepare_backgrounds{#2}%
       \hbox to \makeupwidth
         {\begingroup
            \swapmargins

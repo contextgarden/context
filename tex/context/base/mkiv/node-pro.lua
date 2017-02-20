@@ -202,8 +202,8 @@ do
     local texnest    = tex.nest
 
     local getlist    = nodes.getlist
-    local getsubtype = nodes.getsubtype
     local setlist    = nodes.setlist
+    local getsubtype = nodes.getsubtype
 
     local line_code  = nodes.listcodes.line
 
@@ -213,11 +213,14 @@ do
         if groupcode == "box" then -- "pre_box"
             local whatever = texnest[texnest.ptr]
             if whatever then
-                local tail = whatever.tail
-                if tail and getsubtype(tail) == line_code then
-                    local okay, done = actions(tail,groupcode)
-                    if okay and okay ~= tail then
-                        setlist(tail,okay)
+                local line = whatever.tail
+                if line and getsubtype(line) == line_code then
+                    local head = getlist(line)
+                    if head then
+                        local okay, done = actions(head,groupcode,line)
+                        if okay and okay ~= head then
+                            setlist(line,okay)
+                        end
                     end
                 end
             end

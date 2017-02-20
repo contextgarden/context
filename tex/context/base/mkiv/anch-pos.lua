@@ -269,7 +269,54 @@ end
 -- function jobpositions.getcollected(class,tag) if tag then return collected[class..tag] else return collected[class] end end
 -- function jobpositions.gettobesaved(class,tag) if tag then return tobesaved[class..tag] else return tobesaved[class] end end
 
-job.register('job.positions.collected', tobesaved, initializer)
+local function finalizer()
+    -- We make the (possible extensive) shape lists sparse working
+    -- from the end. We could also drop entries here that have l and
+    -- r the same which saves testing later on.
+    for k, v in next, tobesaved do
+        local s = v.s
+        if s then
+            for p, data in next, s do
+                local n = #data
+                if n > 1 then
+                    local ph = data[1][2]
+                    local pd = data[1][3]
+                    local xl = data[1][4]
+                    local xr = data[1][5]
+                    for i=2,n do
+                        local di = data[i]
+                        local h = di[2]
+                        local d = di[3]
+                        local l = di[4]
+                        local r = di[5]
+                        if r == xr then
+                            di[5] = nil
+                            if l == xl then
+                                di[4] = nil
+                                if d == pd then
+                                    di[3] = nil
+                                    if h == ph then
+                                        di[2] = nil
+                                    else
+                                        ph = h
+                                    end
+                                else
+                                    pd, ph = d, h
+                                end
+                            else
+                                ph, pd, xl = h, d, l
+                            end
+                        else
+                            ph, pd, xl, xr = h, d, l, r
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+job.register('job.positions.collected', tobesaved, initializer, finalizer)
 
 local regions    = { }
 local nofregions = 0

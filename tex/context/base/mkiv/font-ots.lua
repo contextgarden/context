@@ -3064,6 +3064,83 @@ local function comprun(disc,c_run,...) -- vararg faster than the whole list
     return getnext(disc), renewed
 end
 
+-- local function testrun(disc,t_run,c_run,...)
+--     if trace_testruns then
+--         report_disc("test",disc)
+--     end
+--     local prev, next = getboth(disc)
+--     if not next then
+--         -- weird discretionary
+--         return
+--     end
+--     local pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
+--     local done = false
+--     if replace and prev then
+--         -- this is a bit strange as we only do replace here and not post
+--         -- anyway, we only look ahead ... the idea is that we discard a
+--         -- disc when there is a ligature crossing the replace boundary
+--         setlink(replacetail,next)
+--         local ok, overflow = t_run(replace,next,...)
+--         if ok and overflow then
+--             -- so, we can have crossed the boundary
+--             setfield(disc,"replace")
+--             setlink(prev,replace)
+--          -- setlink(replacetail,next)
+--             setboth(disc)
+--             flush_node_list(disc)
+--             return replace, true -- restart .. tricky !
+--         else
+--             -- we stay inside the disc
+--             setnext(replacetail)
+--             setprev(next,disc)
+--         end
+--      -- pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
+--     end
+--     --
+--     -- like comprun
+--     --
+--     local renewed = false
+--     --
+--     if pre then
+--         sweepnode = disc
+--         sweeptype = "pre"
+--         local new, ok = c_run(pre,...)
+--         if ok then
+--             pre     = new
+--             renewed = true
+--         end
+--     end
+--     --
+--     if post then
+--         sweepnode = disc
+--         sweeptype = "post"
+--         local new, ok = c_run(post,...)
+--         if ok then
+--             post    = new
+--             renewed = true
+--         end
+--     end
+--     --
+--     if replace then
+--         sweepnode = disc
+--         sweeptype = "replace"
+--         local new, ok = c_run(replace,...)
+--         if ok then
+--             replace = new
+--             renewed = true
+--         end
+--     end
+--     --
+--     sweepnode = nil
+--     sweeptype = nil
+--     if renewed then
+--         setdisc(disc,pre,post,replace)
+--         return next, true
+--     else
+--         return next, done
+--     end
+-- end
+
 local function testrun(disc,t_run,c_run,...)
     if trace_testruns then
         report_disc("test",disc)
@@ -3075,23 +3152,59 @@ local function testrun(disc,t_run,c_run,...)
     end
     local pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
     local done = false
-    if replace and prev then
-        -- this is a bit strange as we only do replace here and not post
-        -- anyway, we only look ahead ... the idea is that we discard a
-        -- disc when there is a ligature crossing the replace boundary
-        setlink(replacetail,next)
-        local ok, overflow = t_run(replace,next,...)
-        if ok and overflow then
-            -- so, we can have crossed the boundary
-            setfield(disc,"replace")
-            setlink(prev,replace)
-         -- setlink(replacetail,next)
-            setboth(disc)
-            flush_node_list(disc)
-            return replace, true -- restart .. tricky !
+    if (post or replace) and prev then
+        if post then
+            setlink(posttail,next)
+        else
+            post = next
+        end
+        if replace then
+            setlink(replacetail,next)
+        else
+            replace = next
+        end
+        local d_post    = t_run(post,next,...)
+        local d_replace = t_run(replace,next,...)
+        if (d_post and d_post > 0) or (d_replace and d_replace > 0) then
+            local d = d_replace or d_post
+            if d_post and d < d_post then
+                d = d_post
+            end
+            local head, tail = getnext(disc), disc
+            for i=1,d do
+                tail = getnext(tail)
+                if getid(tail) == disc_code then
+                    head, tail = flattendisk(head,tail)
+                end
+            end
+            local next = getnext(tail)
+            setnext(tail)
+            setprev(head)
+            local new  = copy_node_list(head)
+            if posttail then
+                setlink(posttail,head)
+            else
+                post = head
+            end
+            if replacetail then
+                setlink(replacetail,new)
+            else
+                replace = new
+            end
+            setlink(disc,next)
         else
             -- we stay inside the disc
+            if posttail then
+                setnext(posttail)
+            else
+                post = nil
+            end
             setnext(replacetail)
+            if replacetail then
+                setnext(replacetail)
+            else
+                replace = nil
+            end
             setprev(next,disc)
         end
      -- pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
@@ -3214,7 +3327,52 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
     return head, done
 end
 
+-- local function t_run_single(start,stop,font,attr,lookupcache)
+--     while start ~= stop do
+--         local char = ischar(start,font)
+--         if char then
+--             local a -- happens often so no assignment is faster
+--             if attr then
+--                 a = getattr(start,0)
+--             end
+--             local startnext = getnext(start)
+--             if not a or (a == attr) then
+--                 local lookupmatch = lookupcache[char]
+--                 if lookupmatch then -- hm, hyphens can match (tlig) so we need to really check
+--                     -- if we need more than ligatures we can outline the code and use functions
+--                     local s = startnext
+--                     local l = nil
+--                     local d = 0
+--                     while s do
+--                         if s == stop then
+--                             d = 1
+--                         elseif d > 0 then
+--                             d = d + 1
+--                         end
+--                         local lg = lookupmatch[getchar(s)]
+--                         if lg then
+--                             l = lg
+--                             s = getnext(s)
+--                         else
+--                             break
+--                         end
+--                     end
+--                     if l and l.ligature then
+--                         return true, d > 1
+--                     end
+--                 end
+--             else
+--                 -- go on can be a mixed one
+--             end
+--             start = starttnext
+--         else
+--             break
+--         end
+--     end
+-- end
+
 local function t_run_single(start,stop,font,attr,lookupcache)
+    local lastd = nil
     while start ~= stop do
         local char = ischar(start,font)
         if char then
@@ -3227,31 +3385,61 @@ local function t_run_single(start,stop,font,attr,lookupcache)
                 local lookupmatch = lookupcache[char]
                 if lookupmatch then -- hm, hyphens can match (tlig) so we need to really check
                     -- if we need more than ligatures we can outline the code and use functions
-                    local s = startnext
+                    local s     = startnext
+                    local ss    = nil
+                    local sstop = s == stop
+                    if not s then
+                        s = ss
+                        ss = nil
+                    end
+                    while getid(s) == disc_code do
+                        ss = getnext(s)
+                        s  = getfield(s,"replace")
+                        if not s then
+                            s = ss
+                            ss = nil
+                        end
+                    end
                     local l = nil
                     local d = 0
                     while s do
-                        if s == stop then
-                            d = 1
-                        elseif d > 0 then
-                            d = d + 1
-                        end
                         local lg = lookupmatch[getchar(s)]
                         if lg then
+                            if sstop then
+                                d = 1
+                            elseif d > 0 then
+                                d = d + 1
+                            end
                             l = lg
                             s = getnext(s)
+                            sstop = s == stop
+                            if not s then
+                                s  = ss
+                                ss = nil
+                            end
+                            while getid(s) == disc_code do
+                                ss = getnext(s)
+                                s  = getfield(s,"replace")
+                                if not s then
+                                    s  = ss
+                                    ss = nil
+                                end
+                            end
                         else
                             break
                         end
                     end
                     if l and l.ligature then
-                        return true, d > 1
+                        lastd = d
                     end
                 end
             else
                 -- go on can be a mixed one
             end
-            start = starttnext
+            if lastd then
+                return lastd
+            end
+            start = startnext
         else
             break
         end
@@ -3341,7 +3529,60 @@ local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlm
     return head, done
 end
 
+-- local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
+--     while start ~= stop do
+--         local char = ischar(start,font)
+--         if char then
+--             local a -- happens often so no assignment is faster
+--             if attr then
+--                 a = getattr(start,0)
+--             end
+--             local startnext = getnext(start)
+--             if not a or (a == attr) then
+--                 for i=1,nofsteps do
+--                     local step = steps[i]
+--                     local lookupcache = step.coverage
+--                     if lookupcache then
+--                         local lookupmatch = lookupcache[char]
+--                         if lookupmatch then
+--                             -- if we need more than ligatures we can outline the code and use functions
+--                             local s = startnext
+--                             local l = nil
+--                             local d = 0
+--                             while s do
+--                                 if s == stop then
+--                                     d = 1
+--                                 elseif d > 0 then
+--                                     d = d + 1
+--                                 end
+--                                 local lg = lookupmatch[getchar(s)]
+--                                 if lg then
+--                                     l = lg
+--                                     s = getnext(s)
+--                                 else
+--                                     break
+--                                 end
+--                             end
+--                             if l and l.ligature then
+--                                 return true, d > 1
+--                             end
+--                         end
+--                     else
+--                         report_missing_coverage(dataset,sequence)
+--                     end
+--                 end
+--             else
+--                 -- go on can be a mixed one
+--             end
+--             start = startnext
+--         else
+--             break
+--         end
+--     end
+-- end
+
 local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
+    local lastd = nil
     while start ~= stop do
         local char = ischar(start,font)
         if char then
@@ -3358,25 +3599,52 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
                         local lookupmatch = lookupcache[char]
                         if lookupmatch then
                             -- if we need more than ligatures we can outline the code and use functions
-                            local s = startnext
+                            local s     = startnext
+                            local ss    = nil
+                            local sstop = s == stop
+                            if not s then
+                                s  = ss
+                                ss = nil
+                            end
+                            while getid(s) == disc_code do
+                                ss = getnext(s)
+                                s  = getfield(s,"replace")
+                                if not s then
+                                    s  = ss
+                                    ss = nil
+                                end
+                            end
                             local l = nil
                             local d = 0
                             while s do
-                                if s == stop then
-                                    d = 1
-                                elseif d > 0 then
-                                    d = d + 1
-                                end
                                 local lg = lookupmatch[getchar(s)]
                                 if lg then
+                                    if sstop then
+                                        d = 1
+                                    elseif d > 0 then
+                                        d = d + 1
+                                    end
                                     l = lg
                                     s = getnext(s)
+                                    sstop = s == stop
+                                    if not s then
+                                        s  = ss
+                                        ss = nil
+                                    end
+                                    while getid(s) == disc_code do
+                                        ss = getnext(s)
+                                        s  = getfield(s,"replace")
+                                        if not s then
+                                            s  = ss
+                                            ss = nil
+                                        end
+                                    end
                                 else
                                     break
                                 end
                             end
                             if l and l.ligature then
-                                return true, d > 1
+                                lastd = d
                             end
                         end
                     else
@@ -3385,6 +3653,9 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
                 end
             else
                 -- go on can be a mixed one
+            end
+            if lastd then
+                return lastd
             end
             start = startnext
         else

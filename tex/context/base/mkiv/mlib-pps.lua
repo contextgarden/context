@@ -647,6 +647,7 @@ function metapost.graphic_base_pass(specification) -- name will change (see mlib
     local inclusions      = specification.inclusions or ""
     local initializations = specification.initializations or ""
     local askedfig        = specification.figure -- no default else no wrapper
+    metapost.namespace    = specification.namespace or ""
     --
     local askedfig, wrappit = checkaskedfig(askedfig)
     --

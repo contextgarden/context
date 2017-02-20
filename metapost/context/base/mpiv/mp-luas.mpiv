@@ -160,3 +160,6 @@ vardef positionatanchor(expr name) =
     currentpicture := currentpicture shifted - positionxy(name) ;
 enddef ;
 
+
+vardef texvar(expr name) = lua.mp.texvar(name) enddef ;
+vardef texstr(expr name) = lua.mp.texstr(name) enddef ;

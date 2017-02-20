@@ -294,13 +294,7 @@ end
 local flatten = languages.flatten
 local getlist = nodes.getlist
 
-function nodes.handlers.flattenline(head)
-    local list = getlist(head)
-    if list then
-        flatten(list)
-    end
-    return head
-end
+nodes.handlers.flattenline = flatten
 
 function nodes.handlers.flatten(head,where)
     if head and (where == "box" or where == "adjusted_hbox") then

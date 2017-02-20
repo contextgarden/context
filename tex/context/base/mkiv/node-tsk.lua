@@ -443,7 +443,7 @@ tasks.new {
 
 tasks.new {
     name      = "contributers",
-    arguments = 1,
+    arguments = 2, -- [head] where parent
     processor = nodeprocessor,
     sequence  = {
         "before",      -- for users

@@ -170,12 +170,16 @@ local n_getdisc         = node.getdisc
 local n_getleader       = node.getleader
 
 local n_setnext         = node.setnext or -- always
-    function(c,next)
+    function(c,n)
         setfield(c,"next",n)
     end
 local n_setprev         = node.setprev or -- always
-    function(c,prev)
+    function(c,p)
         setfield(c,"prev",p)
+    end
+local n_setlist         = node.setlist or -- always
+    function(c,l)
+        setfield(c,"list",l)
     end
 local n_setlink         = node.setlink or -- always
 --     function(c1,c2)
@@ -204,10 +208,11 @@ local n_setboth         = node.setboth or -- always
         setfield(c,"next",n)
     end
 
-node.setnext          = n_setnext
-node.setprev          = n_setprev
-node.setlink          = n_setlink
-node.setboth          = n_setboth
+nodes.setnext         = n_setnext
+nodes.setprev         = n_setprev
+nodes.setlink         = n_setlink
+nodes.setboth         = n_setboth
+nodes.setlist         = n_setlist
 
 nodes.getfield        = n_getfield
 nodes.setfield        = n_setfield

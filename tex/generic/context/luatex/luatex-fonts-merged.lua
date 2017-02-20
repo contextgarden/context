@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/19/17 17:14:56
+-- merge date  : 02/20/17 17:55:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -20956,17 +20956,58 @@ local function testrun(disc,t_run,c_run,...)
   end
   local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
   local done=false
-  if replace and prev then
-    setlink(replacetail,next)
-    local ok,overflow=t_run(replace,next,...)
-    if ok and overflow then
-      setfield(disc,"replace")
-      setlink(prev,replace)
-      setboth(disc)
-      flush_node_list(disc)
-      return replace,true 
+  if (post or replace) and prev then
+    if post then
+      setlink(posttail,next)
     else
+      post=next
+    end
+    if replace then
+      setlink(replacetail,next)
+    else
+      replace=next
+    end
+    local d_post=t_run(post,next,...)
+    local d_replace=t_run(replace,next,...)
+    if (d_post and d_post>0) or (d_replace and d_replace>0) then
+      local d=d_replace or d_post
+      if d_post and d<d_post then
+        d=d_post
+      end
+      local head,tail=getnext(disc),disc
+      for i=1,d do
+        tail=getnext(tail)
+        if getid(tail)==disc_code then
+          head,tail=flattendisk(head,tail)
+        end
+      end
+      local next=getnext(tail)
+      setnext(tail)
+      setprev(head)
+      local new=copy_node_list(head)
+      if posttail then
+        setlink(posttail,head)
+      else
+        post=head
+      end
+      if replacetail then
+        setlink(replacetail,new)
+      else
+        replace=new
+      end
+      setlink(disc,next)
+    else
+      if posttail then
+        setnext(posttail)
+      else
+        post=nil
+      end
       setnext(replacetail)
+      if replacetail then
+        setnext(replacetail)
+      else
+        replace=nil
+      end
       setprev(next,disc)
     end
   end
@@ -21050,6 +21091,7 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
   return head,done
 end
 local function t_run_single(start,stop,font,attr,lookupcache)
+  local lastd=nil
   while start~=stop do
     local char=ischar(start,font)
     if char then
@@ -21062,29 +21104,59 @@ local function t_run_single(start,stop,font,attr,lookupcache)
         local lookupmatch=lookupcache[char]
         if lookupmatch then
           local s=startnext
+          local ss=nil
+          local sstop=s==stop
+          if not s then
+            s=ss
+            ss=nil
+          end
+          while getid(s)==disc_code do
+            ss=getnext(s)
+            s=getfield(s,"replace")
+            if not s then
+              s=ss
+              ss=nil
+            end
+          end
           local l=nil
           local d=0
           while s do
-            if s==stop then
-              d=1
-            elseif d>0 then
-              d=d+1
-            end
             local lg=lookupmatch[getchar(s)]
             if lg then
+              if sstop then
+                d=1
+              elseif d>0 then
+                d=d+1
+              end
               l=lg
               s=getnext(s)
+              sstop=s==stop
+              if not s then
+                s=ss
+                ss=nil
+              end
+              while getid(s)==disc_code do
+                ss=getnext(s)
+                s=getfield(s,"replace")
+                if not s then
+                  s=ss
+                  ss=nil
+                end
+              end
             else
               break
             end
           end
           if l and l.ligature then
-            return true,d>1
+            lastd=d
           end
         end
       else
       end
-      start=starttnext
+      if lastd then
+        return lastd
+      end
+      start=startnext
     else
       break
     end
@@ -21166,6 +21238,7 @@ local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlm
   return head,done
 end
 local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
+  local lastd=nil
   while start~=stop do
     local char=ischar(start,font)
     if char then
@@ -21182,24 +21255,51 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
             local lookupmatch=lookupcache[char]
             if lookupmatch then
               local s=startnext
+              local ss=nil
+              local sstop=s==stop
+              if not s then
+                s=ss
+                ss=nil
+              end
+              while getid(s)==disc_code do
+                ss=getnext(s)
+                s=getfield(s,"replace")
+                if not s then
+                  s=ss
+                  ss=nil
+                end
+              end
               local l=nil
               local d=0
               while s do
-                if s==stop then
-                  d=1
-                elseif d>0 then
-                  d=d+1
-                end
                 local lg=lookupmatch[getchar(s)]
                 if lg then
+                  if sstop then
+                    d=1
+                  elseif d>0 then
+                    d=d+1
+                  end
                   l=lg
                   s=getnext(s)
+                  sstop=s==stop
+                  if not s then
+                    s=ss
+                    ss=nil
+                  end
+                  while getid(s)==disc_code do
+                    ss=getnext(s)
+                    s=getfield(s,"replace")
+                    if not s then
+                      s=ss
+                      ss=nil
+                    end
+                  end
                 else
                   break
                 end
               end
               if l and l.ligature then
-                return true,d>1
+                lastd=d
               end
             end
           else
@@ -21207,6 +21307,9 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
           end
         end
       else
+      end
+      if lastd then
+        return lastd
       end
       start=startnext
     else

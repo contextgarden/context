@@ -631,3 +631,19 @@ do
     end
 
 end
+
+do
+
+    local mprint   = mp.print
+    local qprint   = mp.quoted
+    local getmacro = tokens.getters.macro
+
+    function mp.texvar(name)
+        mprint(getmacro(metapost.namespace .. name))
+    end
+
+    function mp.texstr(name)
+        qprint(getmacro(metapost.namespace .. name))
+    end
+
+end

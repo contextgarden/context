@@ -368,6 +368,17 @@ local function fixedprofile(current)
     return profiling and profiling.fixedprofile(current)
 end
 
+-- local function onlyoneentry(t)
+--     local n = 1
+--     for k, v in next, t do
+--         if n > 1 then
+--             return false
+--         end
+--         n = n + 1
+--     end
+--     return true
+-- end
+
 local function snap_hlist(where,current,method,height,depth) -- method[v_strut] is default
     if fixedprofile(current) then
         return
@@ -429,6 +440,7 @@ local function snap_hlist(where,current,method,height,depth) -- method[v_strut] 
         t[#t+1] = formatters["hlist: wd %p ht %p (used %p) dp %p (used %p)"](wd,ht,h,dp,d)
         t[#t+1] = formatters["fractions: hfraction %s dfraction %s bfraction %s tlines %s blines %s"](hr,dr,br,tlines,blines)
     end
+
     if method[v_box] then
         local br = 1 - br
         if br < 0 then
@@ -440,20 +452,38 @@ local function snap_hlist(where,current,method,height,depth) -- method[v_strut] 
         local x = n * snaphtdp - h - d
         plusht = h + x / 2
         plusdp = d + x / 2
+        if t then
+            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_box,plusht,plusdp)
+        end
     elseif method[v_max] then
         local n = ceiled((h+d)/snaphtdp)
         local x = n * snaphtdp - h - d
         plusht = h + x / 2
         plusdp = d + x / 2
+        if t then
+            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_max,plusht,plusdp)
+        end
     elseif method[v_min] then
-        local n = floored((h+d)/snaphtdp)
-        local x = n * snaphtdp - h - d
-        plusht = h + x / 2
-        plusdp = d + x / 2
+        -- we catch a lone min
+        if method.specification ~= v_min then
+            local n = floored((h+d)/snaphtdp)
+            local x = n * snaphtdp - h - d
+            plusht = h + x / 2
+            plusdp = d + x / 2
+            if plusht < 0 then
+                plusht = 0
+            end
+            if plusdp < 0 then
+                plusdp = 0
+            end
+        end
+        if t then
+            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_min,plusht,plusdp)
+        end
     elseif method[v_none] then
         plusht, plusdp = 0, 0
         if t then
-            t[#t+1] = "none: plusht 0pt plusdp 0pt"
+            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_none,0,0)
         end
     end
     -- for now, we actually need to tag a box and then check at several points if something ended up
@@ -463,7 +493,7 @@ local function snap_hlist(where,current,method,height,depth) -- method[v_strut] 
         plusht = plusht + extra
         plusdp = plusdp + extra
         if t then
-            t[#t+1] = formatters["halfline: plusht %p plusdp %p"](plusht,plusdp)
+            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_halfline,plusht,plusdp)
         end
     end
     if method[v_line] then -- extra line
@@ -471,7 +501,7 @@ local function snap_hlist(where,current,method,height,depth) -- method[v_strut] 
         plusht = plusht + extra
         plusdp = plusdp + extra
         if t then
-            t[#t+1] = formatters["line: plusht %p plusdp %p"](plusht,plusdp)
+            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_line,plusht,plusdp)
         end
     end
     if method[v_halfline_m] then -- extra halfline
@@ -479,7 +509,7 @@ local function snap_hlist(where,current,method,height,depth) -- method[v_strut] 
         plusht = plusht + extra
         plusdp = plusdp + extra
         if t then
-            t[#t+1] = formatters["-halfline: plusht %p plusdp %p"](plusht,plusdp)
+            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_halfline_m,plusht,plusdp)
         end
     end
     if method[v_line_m] then -- extra line
@@ -487,7 +517,7 @@ local function snap_hlist(where,current,method,height,depth) -- method[v_strut] 
         plusht = plusht + extra
         plusdp = plusdp + extra
         if t then
-            t[#t+1] = formatters["-line: plusht %p plusdp %p"](plusht,plusdp)
+            t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_line_m,plusht,plusdp)
         end
     end
     if method[v_first] then
@@ -606,7 +636,6 @@ local function snap_hlist(where,current,method,height,depth) -- method[v_strut] 
             t[#t+1] = formatters["bottom depth: %p"](cd)
         end
     end
-
     local offset = method[v_offset]
     if offset then
         -- we need to set the attr
@@ -640,9 +669,9 @@ local function snap_hlist(where,current,method,height,depth) -- method[v_strut] 
     if t then
         local original = (h+d)/snaphtdp
         local whatever = (ch+cd)/(texgetdimen("globalbodyfontstrutheight") + texgetdimen("globalbodyfontstrutdepth"))
-        t[#t+1] = formatters["final lines: %s -> %s (%s)"](original,lines,whatever)
+        t[#t+1] = formatters["final lines : %p -> %p (%p)"](original,lines,whatever)
         t[#t+1] = formatters["final height: %p -> %p"](h,ch)
-        t[#t+1] = formatters["final depth: %p -> %p"](d,cd)
+        t[#t+1] = formatters["final depth : %p -> %p"](d,cd)
     end
 -- todo:
 --

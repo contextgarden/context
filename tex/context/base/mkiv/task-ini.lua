@@ -130,6 +130,7 @@ appendaction("finalizers",   "lists",       "builders.paragraphs.tag")
 appendaction("finalizers",   "lists",       "nodes.linefillers.handler")
 
 appendaction("contributers", "normalizers", "nodes.handlers.flattenline")
+appendaction("contributers", "normalizers", "nodes.handlers.textbackgrounds")
 
 -- still experimental
 
@@ -213,6 +214,7 @@ disableaction("finalizers",  "builders.paragraphs.tag")
 disableaction("finalizers",  "nodes.linefillers.handler")
 
 disableaction("contributers","nodes.handlers.flattenline")
+disableaction("contributers","nodes.handlers.textbackgrounds")
 
 disableaction("math",        "noads.handlers.showtree")
 disableaction("math",        "noads.handlers.tags")

@@ -238,9 +238,11 @@ nodes.processwords = function(attribute,data,flush,head,parent) -- we have hlist
     return tonode(head), done
 end
 
---
+-- works on lines !
 
-local function processranges(attribute,flush,head,parent)
+-- todo: stack because skip can change when nested
+
+local function processranges(attribute,flush,head,parent,depth,skip)
     local n = head
     if n then
         local f, l, a
@@ -249,7 +251,8 @@ local function processranges(attribute,flush,head,parent)
             local id = getid(n)
             if id == glyph_code or id == rule_code then
                 local aa = getattr(n,attribute)
-                if aa and aa ~= skip then
+--                 if aa and (not skip or aa ~= skip) then
+                if aa then
                     if aa == a then
                         if not f then
                             f = n
@@ -257,13 +260,13 @@ local function processranges(attribute,flush,head,parent)
                         l = n
                     else
                         if f then
-                            head, done = flush(head,f,l,a,parent), true
+                            head, done = flush(head,f,l,a,parent,depth), true
                         end
                         f, l, a = n, n, aa
                     end
                 else
                     if f then
-                        head, done = flush(head,f,l,a,parent), true
+                        head, done = flush(head,f,l,a,parent,depth), true
                     end
                     f, l, a = nil, nil, nil
                 end
@@ -281,18 +284,35 @@ local function processranges(attribute,flush,head,parent)
             elseif id == glue_code then
                 -- todo: leaders
             elseif id == hlist_code or id == vlist_code then
-                if f then
-                    l = n
+                local aa = getattr(n,attribute)
+--                 if aa and (not skip or aa ~= skip) then
+                if aa then
+                    if aa == a then
+                        if not f then
+                            f = n
+                        end
+                        l = n
+                    else
+                        if f then
+                            head, done = flush(head,f,l,a,parent,depth), true
+                        end
+                        f, l, a = n, n, aa
+                    end
+                else
+                    if f then
+                        head, done = flush(head,f,l,a,parent,depth), true
+                    end
+                    f, l, a = nil, nil, nil
                 end
                 local list = getlist(n)
                 if list then
-                    setlist(n,(processranges(attribute,flush,list,n,aa)))
+                    setlist(n,(processranges(attribute,flush,list,n,depth+1,aa)))
                 end
             end
             n = getnext(n)
         end
         if f then
-            head, done = flush(head,f,l,a,parent), true
+            head, done = flush(head,f,l,a,parent,depth), true
         end
         return head, done
     else
@@ -305,7 +325,6 @@ nodes.processranges = function(attribute,flush,head,parent) -- we have hlistdir 
     if parent then
         parent = tonut(parent)
     end
-    local head, done = processranges(attribute,flush,head,parent)
+    local head, done = processranges(attribute,flush,head,parent,0)
     return tonode(head), done
 end
-

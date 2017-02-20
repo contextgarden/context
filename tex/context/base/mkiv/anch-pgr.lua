@@ -16,8 +16,8 @@ if not modules then modules = { } end modules ['anch-pgr'] = {
 -- been replaced. Background code is still not perfect, but some day ... the details manual
 -- will discuss this issue.
 
-local abs, div, floor, round = math.abs, math.div, math.floor, math.round
-local concat = table.concat
+local abs, div, floor, round, min, max = math.abs, math.div, math.floor, math.round, math.min, math.max
+local sort, concat = table.sort, table.concat
 local splitter = lpeg.splitat(":")
 local lpegmatch = lpeg.match
 
@@ -34,8 +34,9 @@ local report_graphics   = logs.reporter("backgrounds")
 local report_shapes     = logs.reporter("backgrounds","shapes")
 local report_free       = logs.reporter("backgrounds","free")
 
-local trace_shapes      = false  trackers.register("backgrounds.shapes",     function(v) trace_shapes = v end)
-local trace_free        = false  trackers.register("backgrounds.shapes.free",function(v) trace_free   = v end)
+local trace_shapes      = false  trackers.register("backgrounds.shapes",       function(v) trace_shapes = v end)
+local trace_ranges      = false  trackers.register("backgrounds.shapes.ranges",function(v) trace_ranges = v end)
+local trace_free        = false  trackers.register("backgrounds.shapes.free",  function(v) trace_free   = v end)
 
 local f_b_tag           = formatters["b:%s"]
 local f_e_tag           = formatters["e:%s"]
@@ -60,11 +61,23 @@ local pdfgetpos         = pdf.getpos  -- why not a generic name !
 local a_textbackground  = attributes.private("textbackground")
 
 local nuts              = nodes.nuts
+local tonut             = nodes.tonut
+local tonode            = nodes.tonode
 
 local new_latelua       = nuts.pool.latelua
+local new_rule          = nuts.pool.rule
+local new_kern          = nuts.pool.kern
+local new_hlist         = nuts.pool.hlist
 
 local getbox            = nuts.getbox
-local getlist           = nuts.getlist
+local getid             = nuts.getid
+----- getlist           = nuts.getlist
+local setlink           = nuts.setlink
+local getheight         = nuts.getheight
+local getdepth          = nuts.getdepth
+
+local nodecodes         = nodes.nodecodes
+local localpar_code     = nodecodes.localpar
 
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
@@ -82,6 +95,76 @@ local enabled           = false
 
 -- Freeing the data is somewhat tricky as we can have backgrounds spanning
 -- many pages but for an arbitrary background shape that is not so common.
+
+local function check(a,index,depth,d,where,ht,dp)
+    -- this is not yet r2l ready
+    local w = d.shapes[realpage]
+    local x, y = pdfgetpos()
+    if trace_ranges then
+        report_shapes("attribute %i, index %i, depth %i, location %s, position (%p,%p)",
+            a,index,depth,where,x,y)
+    end
+    local n = #w
+    if d.index ~= index then
+        n = n + 1
+        d.index = index
+        d.depth = depth
+--                 w[n] = { x, x, y, ht, dp }
+        w[n] = { y, ht, dp, x, x }
+    else
+        local wn = w[n]
+        local wh = wn[2]
+        local wd = wn[3]
+        if depth < d.depth then
+            local wy = wn[1]
+            wn[1] = y
+            d.depth = depth
+            local dy = wy - y
+            wh = wh - dy
+            wd = wd - dy
+        end
+        if where == "r" then
+            if x > wn[5] then
+                wn[5] = x
+            end
+        else
+            if x < wn[4] then
+                wn[4] = x
+            end
+        end
+        if ht > wh then
+            wn[2] = ht
+        end
+        if dp > wd then
+            wn[3] = dp
+        end
+    end
+ -- inspect(w)
+end
+
+local index = 0
+
+local function flush(head,f,l,a,parent,depth)
+    local d = data[a]
+    if d then
+        local ix = index
+        local ht = getheight(parent)
+        local dp = getdepth(parent)
+        local ln = new_latelua(function() check(a,ix,depth,d,"l",ht,dp) end)
+        local rn = new_latelua(function() check(a,ix,depth,d,"r",ht,dp) end)
+        if trace_ranges then
+            ln = new_hlist(setlink(new_rule(65536,65536*4,0),new_kern(-65536),ln))
+            rn = new_hlist(setlink(new_rule(65536,0,65536*4),new_kern(-65536),rn))
+        end
+        if getid(f) == localpar_code then -- we need to clean this mess
+            insert_after(head,f,ln)
+        else
+            head, f = insert_before(head,f,ln)
+        end
+        insert_after(head,l,rn)
+    end
+    return head, true
+end
 
 local function registerbackground(name)
     local n = #data + 1
@@ -101,69 +184,40 @@ local function registerbackground(name)
             n      = n,
             shapes = s,
             count  = 0,
+            sindex = 0,
         }
         texsetattribute(a_textbackground,n)
-        enabled = true
+        if not enabled then
+            nodes.tasks.enableaction("contributers", "nodes.handlers.textbackgrounds")
+            enabled = true
+        end
     else
         texsetattribute(a_textbackground,unsetvalue)
     end
 end
 
-local function check(d,where)
-    -- this is not yet r2l ready
-    local w = d.shapes[realpage]
-    local x, y = pdfgetpos()
-    local n = #w
-    if n == 0 then
-        w[n+1]  = { x, x, y }
-    elseif where == "r" then
-        local w0 = w[n]
-        if n > 2 then
-            local w2 = w[n-2]
-            if w2[2] == x then
-                local w1 = w[n-1]
-                if w1[2] == x then
-                    local xx = w1[1]
-                    if w2[1] == xx and xx == w0[1] then
-                        w1[3] = w0[3]
-                        w[n]  = nil
-                        return
-                    end
-                end
-            end
-        end
-        w0[2] = x
-    elseif w[n][3] == y then
-         -- we have another one in the same line
-      -- w[n][2] = x
-    else
-        w[n+1]  = { x, x, y }
-    end
-end
+-- local function collectbackgrounds(r,n)
+--     if enabled then
+--         local parent = getbox(n)
+--         local head   = getlist(parent)
+--         realpage     = r
+--         processranges(a_textbackground,flush,head) -- ,parent)
+--     end
+-- end
+--
+-- interfaces.implement {
+--     name      = "collectbackgrounds",
+--     actions   = collectbackgrounds,
+--     arguments = { "integer", "integer" }
+-- }
 
-local function flush(head,f,l,a,parent)
-    local d = data[a]
-    if d then
-        head, f = insert_before(head,f,new_latelua(function() check(d,"l") end))
-        head, l = insert_after (head,l,new_latelua(function() check(d,"r") end))
-    end
-    return head, true
+nodes.handlers.textbackgrounds = function(head,where,parent) -- we have hlistdir and local dir
+    -- todo enable action in register
+    head = tonut(head)
+    index = index + 1
+    local head, done = processranges(a_textbackground,flush,head,parent)
+    return tonode(head), done
 end
-
-local function collectbackgrounds(r,n)
-    if enabled then
-        local parent = getbox(n)
-        local head   = getlist(parent)
-        realpage     = r
-        processranges(a_textbackground,flush,head) -- ,parent)
-    end
-end
-
-interfaces.implement {
-    name      = "collectbackgrounds",
-    actions   = collectbackgrounds,
-    arguments = { "integer", "integer" }
-}
 
 interfaces.implement {
     name      = "registerbackground",
@@ -210,7 +264,7 @@ local function finish(t)
     if tm < 2 then
         return
     end
-    if trace_shapes then
+    if trace_ranges then
         report_shapes("initial list: %s",topairs(t,tm))
     end
     -- remove similar points
@@ -391,40 +445,86 @@ local function shape(kind,b,p,realpage,xmin,xmax,ymin,ymax,fh,ld)
     local pl = nil -- previous left x
     local pr = nil -- previous right x
     local n  = 0
+    local xl = nil
+    local xr = nil
+    local mh = ph -- min
+    local md = pd -- min
     for i=1,ns do
         local si = s[i]
-        local xl = si[1]
-        local xr = si[2]
-        local y  = si[3]
-        local xm = xl + (xr - xl)/2 -- midpoint should be in region
-        if xm >= xmin and xm <= xmax and y >= ymin and y <= ymax then
-            local h = y + ph
-            local d = y - pd
-            if pl then
-                n = n + 1
-                ls[n] = { pl, h }
-                rs[n] = { pr, h }
+        local y  = si[1]
+        local ll = si[4] -- can be sparse
+        if ll then
+            xl = ll
+            local rr = si[5] -- can be sparse
+            if rr then
+                xr = rr
             end
-            n = n + 1
-            ls[n] = { xl, h }
-            rs[n] = { xr, h }
-            n = n + 1
-            ls[n] = { xl, d }
-            rs[n] = { xr, d }
         end
-        pl, pr = xl, xr
+        if trace_ranges then
+            report_shapes("original  : [%02i]  xl=%p  xr=%p  y=%p",i,xl,xr,y)
+        end
+        if xl ~= xr then -- could be catched in the finalizer
+            local xm = xl + (xr - xl)/2 -- midpoint should be in region
+            if xm >= xmin and xm <= xmax and y >= ymin and y <= ymax then
+                local ht = si[2] -- can be sparse
+                if ht then
+                    ph = ht
+                    local dp = si[3] -- can be sparse
+                    if dp then
+                        pd = dp
+                    end
+                end
+                local h = y + (ph < mh and mh or ph)
+                local d = y - (pd < md and md or pd)
+                if pl then
+                    n = n + 1
+                    ls[n] = { pl, h }
+                    rs[n] = { pr, h }
+                    if trace_ranges then
+                        report_shapes("paragraph : [%02i]  xl=%p  xr=%p  y=%p",i,pl,pr,h)
+                    end
+                end
+                n = n + 1
+                ls[n] = { xl, h }
+                rs[n] = { xr, h }
+                if trace_ranges then
+                    report_shapes("height    : [%02i]  xl=%p  xr=%p  y=%p",i,xl,xr,h)
+                end
+                n = n + 1
+                ls[n] = { xl, d }
+                rs[n] = { xr, d }
+                if trace_ranges then
+                    report_shapes("depth     : [%02i]  xl=%p  xr=%p  y=%p",i,xl,xr,d)
+                end
+            end
+            pl, pr = xl, xr
+        else
+            if trace_ranges then
+                report_shapes("ignored   : [%02i]  xl=%p  xr=%p  y=%p",i,xl,xr,y)
+            end
+        end
     end
     --
     if true and n > 0 then
         -- use height of b and depth of e, maybe check for weird border
         -- cases here
         if fh then
-            ls[1][2] = fh
-            rs[1][2] = fh
+            local lsf, rsf = ls[1], rs[1]
+            if lsf[2] < fh then
+                lsf[2] = fh
+            end
+            if rsf[2] < fh then
+                rsf[2] = fh
+            end
         end
         if fd then
-            ls[n][2] = fd
-            rs[n][2] = fd
+            local lsl, rsl = ls[n], rs[n]
+            if lsl[2] > fd then
+                lsl[2] = fd
+            end
+            if rsl[2] > fd then
+                rsl[2] = fd
+            end
         end
     end
     --
