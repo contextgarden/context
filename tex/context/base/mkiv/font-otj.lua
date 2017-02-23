@@ -25,7 +25,7 @@ if not modules then modules = { } end modules ['font-otj'] = {
 
 if not nodes.properties then return end
 
-local next, rawget = next, rawget
+local next, rawget, tonumber = next, rawget, tonumber
 local fastcopy = table.fastcopy
 
 local registertracker = trackers.register

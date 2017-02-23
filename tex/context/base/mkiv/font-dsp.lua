@@ -72,6 +72,7 @@ local streamreader      = readers.streamreader
 local setposition       = streamreader.setposition
 local getposition       = streamreader.getposition
 local skipshort         = streamreader.skipshort
+local skipbytes         = streamreader.skip
 local readushort        = streamreader.readcardinal2  -- 16-bit unsigned integer
 local readulong         = streamreader.readcardinal4  -- 24-bit unsigned integer
 local readshort         = streamreader.readinteger2   -- 16-bit   signed integer
@@ -79,6 +80,9 @@ local readfword         = readshort
 local readstring        = streamreader.readstring
 local readtag           = streamreader.readtag
 local readbytes         = streamreader.readbytes
+local readfixed         = streamreader.readfixed4
+local read2dot14        = streamreader.read2dot14
+local readinteger       = streamreader.readinteger1
 
 local gsubhandlers      = { }
 local gposhandlers      = { }
@@ -2434,3 +2438,213 @@ function readers.svg(f,fontdata,specification)
         fontdata.hascolor = true
     end
 end
+
+-- This next few are work in progress. I have no fonts that have these tables so it's a
+-- gamble. I'll pick up this thread some day (if needed at all). See font-tst.tex for a
+-- possible test. Something for a rainy day and a stack of fresh cd's.
+
+function readers.fvar(f,fontdata,specification)
+    local datatable = fontdata.tables.fvar
+    if datatable then
+        local tableoffset = datatable.offset
+        setposition(f,tableoffset)
+        local majorversion = readushort(f) -- 1
+        local minorversion = readushort(f) -- 0
+        if majorversion ~= 1 and minorversion ~= 0 then
+            report("table version %a.%a of %a is not supported (yet), maybe font %s is bad",
+                majorversion,minorversion,"fvar",fontdata.filename)
+            return
+        end
+        local offsettoaxis    = tableoffset + readushort(f)
+        local nofsizepairs    = readushort(f) -- 2 count/size pairs
+        -- pair 1
+        local nofaxis         = readushort(f)
+        local sizeofaxis      = readushort(f)
+        -- pair 2
+        local nofinstances    = readushort(f)
+        local sizeofinstances = readushort(f)
+        --
+        local extras    = fontdata.extras
+        local axis      = { }
+        local instances = { }
+        --
+        setposition(f,offsettoaxis)
+        --
+        local function readtuple(f)
+            local t = { }
+            for i=1,nofaxis do
+                t[i] = readfixed(f)
+            end
+            return t
+        end
+        --
+        for i=1,nofaxis do
+            axis[i] = {
+                tag     = readtag(f),   -- ital opsz slnt wdth wght
+                minimum = readfixed(f), -- we get weird values from a test font ... to be checked
+                default = readfixed(f), -- idem
+                maximum = readfixed(f), -- idem
+                flags   = readushort(f),
+                nameid  = extras[readushort(f)],
+            }
+            local n = sizeofaxis - 20
+            if n > 0 then
+                skipbytes(f,n)
+            elseif n < 0 then
+                -- error
+            end
+        end
+        --
+        for i=1,nofinstances do
+            local subfamid = readushort(f)
+            local flags    = readushort(f)
+            local tuple    = readtuple(f)
+            local psnameid = false
+            local nofbytes = 2 + 2 + #tuple * 2
+            if nofbytes < sizeofinstances then
+                psnameid = readushort(f)
+                nofbytes = nofbytes + 2
+            end
+            instances[i] = {
+                subfamily = extras[subfamid],
+                flags     = flags,
+                tuple     = tuple,
+                psname    = extras[psnameid] or nil,
+            }
+            if nofbytes > 0 then
+                skipbytes(f,nofbytes)
+            end
+        end
+        --
+        fontdata.variable = {
+            axis      = axis,
+            instances = instances,
+        }
+    end
+end
+
+-- function readers.gvar(f,fontdata,specification)
+-- end
+
+-- function readers.hvar(f,fontdata,specification)
+-- end
+
+-- function readers.vvar(f,fontdata,specification)
+-- end
+
+-- We don't need all these dimensions so we only mention those that make
+-- sense. Mapping to some function makes most sense.
+
+local tags = {
+    hasc = "", -- horizontal ascender         OS/2.sTypoAscender
+    hdsc = "", -- horizontal descender        OS/2.sTypoDescender
+ -- hlgp = "", -- horizontal line gap         OS/2.sTypoLineGap
+ -- hcla = "", -- horizontal clipping ascent  OS/2.usWinAscent
+ -- hcld = "", -- horizontal clipping descent OS/2.usWinDescent
+    vasc = "", -- vertical ascender           vhea.ascent
+    vdsc = "", -- vertical descender          vhea.descent
+    vlgp = "", -- vertical line gap           vhea.lineGap
+    xhgt = "", -- x height                    OS/2.sxHeight
+    cpht = "", -- cap height                  OS/2.sCapHeight
+ -- sbxs = "", -- subscript em x size         OS/2.ySubscriptXSize
+ -- sbys = "", -- subscript em y size         OS/2.ySubscriptYSize
+ -- sbxo = "", -- subscript em x offset       OS/2.ySubscriptXOffset
+ -- sbyo = "", -- subscript em y offset       OS/2.ySubscriptYOffset
+ -- spxs = "", -- superscript em x size       OS/2.ySuperscriptXSize
+ -- spys = "", -- superscript em y size       OS/2.ySuperscriptYSize
+ -- spxo = "", -- superscript em x offset     OS/2.ySuperscriptXOffset
+ -- spyo = "", -- superscript em y offset     OS/2.ySuperscriptYOffset
+ -- strs = "", -- strikeout size              OS/2.yStrikeoutSize
+ -- stro = "", -- strikeout offset            OS/2.yStrikeoutPosition
+ -- unds = "", -- underline size              post.underlineThickness
+ -- undo = "", -- underline offset            post.underlinePosition
+}
+
+function readers.mvar(f,fontdata,specification)
+    local datatable = fontdata.tables.mvar
+    if datatable then
+        local tableoffset = datatable.offset
+        setposition(f,tableoffset)
+        local majorversion = readushort(f) -- 1
+        local minorversion = readushort(f) -- 0
+        if majorversion ~= 1 and minorversion ~= 0 then
+            report("table version %a.%a of %a is not supported (yet), maybe font %s is bad",
+                majorversion,minorversion,"fvar",fontdata.filename)
+            return
+        end
+        --
+        local nofaxis       = readushort(f)
+        local recordsize    = readushort(f)
+        local nofrecords    = readushort(f)
+        local offsettostore = tableoffset + readushort(f)
+        local records       = { }
+        local dimensions    = { }
+        local store         = { }
+        local regions       = { }
+        --
+        for i=1,nofrecords do
+            local tag = readtag(f)
+            if tags[tag] then
+                dimensions[tag] = {
+                    outer = readushort(f),
+                    inner = readushort(f),
+                }
+            else
+                skipshort(f,2)
+            end
+        end
+        --
+        setposition(f,offsettostore)
+        local nofaxis    = readushort(f)
+        local nofregions = readushort(f)
+        for i=1,nofregions do
+            local t = { }
+            for i=1,nofaxis do
+                t[i] = {
+                    start = read2dot14(f),
+                    peak  = read2dot14(f),
+                    stop  = read2dot14(f),
+                }
+            end
+            regions[i] = t
+        end
+        --
+        local format  = readushort(f) -- 1
+        local offset  = offsettostore + readulong(f)
+        local nofdata = readushort(f)
+        local data    = { }
+        for i=1,nofdata do
+           data[i] = readulong(f) + offset
+        end
+        for i=1,nofdata do
+           local offset = data[i]
+           setposition(f,offset)
+           local nofdeltas  = readushort(f)
+           local nofshort   = readushort(f)
+           local nofregions = readushort(f)
+           local deltas     = { }
+           local regions    = { }
+           local length     = nofshort + nofregions
+           for i=1,nofregions do
+               regions[i] = readushort(f)
+           end
+           for i=1,nofdeltas do
+               local t = { }
+               for i=1,nofshort do
+                   t[i] = readushort(f)
+               end
+               for i=1,nofregions do
+                   t[nofshort+i] = readinteger(f)
+               end
+               deltas[i] = t
+           end
+           data[i] = {
+               regions = regions,
+               deltas  = deltas,
+           }
+        end
+    end
+end
+
+-- function readers.vorg(f,fontdata,specification)
+-- end

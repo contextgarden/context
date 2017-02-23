@@ -5632,7 +5632,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 36650, stripped down to: 19963
+-- original size: 37582, stripped down to: 20676
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -5871,6 +5871,27 @@ function number.sparseexponent(f,n)
   end
   return tostring(n)
 end
+local hf={}
+local hs={}
+setmetatable(hf,{ __index=function(t,k)
+  local v="%."..k.."f"
+  t[k]=v
+  return v
+end } )
+setmetatable(hs,{ __index=function(t,k)
+  local v="%"..k.."s"
+  t[k]=v
+  return v
+end } )
+function number.formattedfloat(n,b,a)
+  local s=format(hf[a],n)
+  local l=(b or 0)+(a or 0)+1
+  if #s<l then
+    return format(hs[l],s)
+  else
+    return s
+  end
+end
 local template=[[
 %s
 %s
@@ -5898,6 +5919,7 @@ local autodouble=string.autodouble
 local sequenced=table.sequenced
 local formattednumber=number.formatted
 local sparseexponent=number.sparseexponent
+local formattedfloat=number.formattedfloat
     ]]
 else
   environment={
@@ -5921,6 +5943,7 @@ else
     sequenced=table.sequenced,
     formattednumber=number.formatted,
     sparseexponent=number.sparseexponent,
+    formattedfloat=number.formattedfloat
   }
 end
 local arguments={ "a1" } 
@@ -5931,6 +5954,7 @@ setmetatable(arguments,{ __index=function(t,k)
   end
 })
 local prefix_any=C((S("+- .")+R("09"))^0)
+local prefix_sub=(C((S("+-")+R("09"))^0)+Cc(0))*P(".")*(C((S("+-")+R("09"))^0)+Cc(0))
 local prefix_tab=P("{")*C((1-P("}"))^0)*P("}")+C((1-R("az","AZ","09","%%"))^0)
 local format_s=function(f)
   n=n+1
@@ -5980,6 +6004,10 @@ local format_F=function(f)
   else
     return format("format((a%s %% 1 == 0) and '%%i' or '%%%sf',a%s)",n,f,n)
   end
+end
+local format_k=function(b,a) 
+  n=n+1
+  return format("formattedfloat(a%s,%i,%i)",n,b or 0,a or 0)
 end
 local format_g=function(f)
   n=n+1
@@ -6189,7 +6217,8 @@ local builder=Cs { "start",
 +V("s")+V("q")+V("i")+V("d")+V("f")+V("F")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
 +V("c")+V("C")+V("S") 
 +V("Q") 
-+V("N")
++V("N") 
++V("k")
 +V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("b")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w") 
 +V("W") 
 +V("a") 
@@ -6216,6 +6245,7 @@ local builder=Cs { "start",
   ["S"]=(prefix_any*P("S"))/format_S,
   ["Q"]=(prefix_any*P("Q"))/format_S,
   ["N"]=(prefix_any*P("N"))/format_N,
+  ["k"]=(prefix_sub*P("k"))/format_k,
   ["c"]=(prefix_any*P("c"))/format_c,
   ["C"]=(prefix_any*P("C"))/format_C,
   ["r"]=(prefix_any*P("r"))/format_r,
@@ -7012,7 +7042,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 6316, stripped down to: 4866
+-- original size: 6362, stripped down to: 4907
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -7098,6 +7128,7 @@ end
 files.readcardinal1=files.readbyte 
 files.readcardinal=files.readcardinal1
 files.readinteger=files.readinteger1
+files.readsignedbyte=files.readinteger1
 function files.readcardinal2(f)
   local a,b=byte(f:read(2),1,2)
   return 0x100*a+b
@@ -9795,7 +9826,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 4030, stripped down to: 2718
+-- original size: 8473, stripped down to: 6211
 
 if not modules then modules={} end modules ['util-deb']={
   version=1.001,
@@ -9805,75 +9836,219 @@ if not modules then modules={} end modules ['util-deb']={
   license="see context related readme files"
 }
 local debug=require "debug"
-local getinfo=debug.getinfo
+local getinfo,sethook=debug.getinfo,debug.sethook
 local type,next,tostring=type,next,tostring
-local format,find=string.format,string.find
-local is_boolean=string.is_boolean
+local format,find,sub,gsub=string.format,string.find,string.sub,string.gsub
+local insert,remove,sort=table.insert,table.remove,table.sort
 utilities=utilities or {}
 local debugger=utilities.debugger or {}
 utilities.debugger=debugger
-local counters={}
-local names={}
 local report=logs.reporter("debugger")
-local function hook()
-  local f=getinfo(2) 
+local ticks=os.gettimeofday or os.clock
+local seconds=function(n) return n or 0 end
+local overhead=0
+local dummycalls=10*1000
+local nesting=0
+local names={}
+local function initialize()
+  if FFISUPPORTED and ffi then
+    if os.type=="windows" then
+      local okay,kernel=pcall(ffi.load,"kernel32")
+      if kernel then
+        local tonumber=ffi.number or tonumber
+ffi.cdef[[
+int QueryPerformanceFrequency(int64_t *lpFrequency);
+int QueryPerformanceCounter(int64_t *lpPerformanceCount);
+]]
+        local target=ffi.new("__int64[1]")
+        ticks=function()
+          if kernel.QueryPerformanceCounter(target)==1 then
+            return tonumber(target[0])
+          else
+            return 0
+          end
+        end
+        local target=ffi.new("__int64[1]")
+        seconds=function(ticks)
+          if kernel.QueryPerformanceFrequency(target)==1 then
+            return ticks/tonumber(target[0])
+          else
+            return 0
+          end
+        end
+      end
+    elseif os.type=="unix" then
+      local C=ffi.C
+      local tonumber=ffi.number or tonumber
+ffi.cdef [[
+struct timespec { long sec; long nsec; };
+int clock_gettime(int timerid, struct timespec *t);
+   ]]
+      local target=ffi.new("timespec[?]",1)
+      function ticks()
+        C.clock_gettime(2,target)
+        return tonumber(target[0].sec*1000000000+target[0].nsec)
+      end
+      seconds=function(ticks)
+        return ticks/1000000000
+      end
+    end
+  end
+  initialize=false
+end
+table.setmetatableindex(names,function(t,name)
+  local v=table.setmetatableindex(function(t,source)
+    local v=table.setmetatableindex(function(t,line)
+      local v={ total=0,count=0 }
+      t[line]=v
+      return v
+    end)
+    t[source]=v
+    return v
+  end)
+  t[name]=v
+  return v
+end)
+local function hook(where)
+  local f=getinfo(2,"nSl")
   if f then
-    local n="unknown"
-    if f.what=="C" then
-      n=f.name or '<anonymous>'
-      if not names[n] then
-        names[n]=format("%42s",n)
+    local source=f.short_src
+    if not source then
+      return
+    end
+    local line=f.linedefined or 0
+    local name=f.name
+    if not name then
+      local what=f.what
+      if what=="C" then
+        name="<anonymous>"
+      else
+        name=f.namewhat or what or "<unknown>"
+      end
+    end
+    local data=names[name][source][line]
+    if where=="call" then
+      data.count=data.count+1
+      insert(data,ticks())
+    elseif where=="return" then
+      local t=remove(data)
+      if t then
+        data.total=data.total+ticks()-t
+      end
+    end
+  end
+end
+function debugger.showstats(printer)
+  local printer=printer or report
+  local calls=0
+  local functions=0
+  local dataset={}
+  local length=0
+  local wholetime=0
+  for name,sources in next,names do
+    for source,lines in next,sources do
+      for line,data in next,lines do
+        if #name>length then
+          length=#name
+        end
+        local total=data.total
+        local count=data.count
+        local real=total
+        if real>0 then
+          real=total-(count*overhead/dummycalls)
+          if real<0 then
+            real=0
+          end
+          wholetime=wholetime+real
+        end
+        if line<0 then
+          line=0
+        end
+        dataset[#dataset+1]={ real,total,count,name,source,line }
+      end
+    end
+  end
+  sort(dataset,function(a,b)
+    if a[1]==b[1] then
+      if a[2]==b[2] then
+        if a[3]==b[3] then
+          if a[4]==b[4] then
+            if a[5]==b[5] then
+              return a[6]<b[6]
+            else
+              return a[5]<b[5]
+            end
+          else
+            return a[4]<b[4]
+          end
+        else
+          return b[3]<a[3]
+        end
+      else
+        return b[2]<a[2]
       end
     else
-      n=f.name or f.namewhat or f.what
-      if not n or n=="" then
-        n="?"
-      end
-      if not names[n] then
-        names[n]=format("%42s : % 5i : %s",n,f.linedefined or 0,f.short_src or "unknown source")
-      end
+      return b[1]<a[1]
     end
-    counters[n]=(counters[n] or 0)+1
+  end)
+  if length>50 then
+    length=50
   end
-end
-function debugger.showstats(printer,threshold) 
-  printer=printer or report
-  threshold=threshold or 0
-  local total,grandtotal,functions=0,0,0
-  local dataset={}
-  for name,count in next,counters do
-    dataset[#dataset+1]={ name,count }
-  end
-  table.sort(dataset,function(a,b) return a[2]==b[2] and b[1]>a[1] or a[2]>b[2] end)
+  local fmt=string.formatters["%4.9k  %4.9k  %3.3k  %8i  %-"..length.."s  %4i  %s"]
   for i=1,#dataset do
-    local d=dataset[i]
-    local name=d[1]
-    local count=d[2]
-    if count>threshold and not find(name,"for generator") then 
-      printer(format("%8i  %s\n",count,names[name]))
-      total=total+count
-    end
-    grandtotal=grandtotal+count
+    local data=dataset[i]
+    local real=data[1]
+    local total=data[2]
+    local count=data[3]
+    local name=data[4]
+    local source=data[5]
+    local line=data[6]
+    local percent=real/wholetime
+    calls=calls+count
     functions=functions+1
+    name=gsub(name,"%s+"," ")
+    if #name>length then
+      name=sub(name,1,length)
+    end
+    printer(fmt(seconds(total),seconds(real),percent,count,name,line,source))
   end
-  printer("\n")
-  printer(format("functions  : % 10i\n",functions))
-  printer(format("total      : % 10i\n",total))
-  printer(format("grand total: % 10i\n",grandtotal))
-  printer(format("threshold  : % 10i\n",threshold))
+  printer("")
+  printer(format("functions : %i",functions))
+  printer(format("calls     : %i",calls))
+  printer(format("overhead  : %f",seconds(overhead/1000)))
 end
-function debugger.savestats(filename,threshold)
+function debugger.savestats(filename)
   local f=io.open(filename,'w')
   if f then
-    debugger.showstats(function(str) f:write(str) end,threshold)
+    debugger.showstats(function(str) f:write(str,"\n") end)
     f:close()
   end
 end
 function debugger.enable()
-  debug.sethook(hook,"c")
+  if nesting==0 then
+    running=true
+    if initialize then
+      initialize()
+    end
+    sethook(hook,"cr")
+    local function dummy() end
+    local t=ticks()
+    for i=1,dummycalls do
+      dummy()
+    end
+    overhead=ticks()-t
+  end
+  if nesting>0 then
+    nesting=nesting+1
+  end
 end
 function debugger.disable()
-  debug.sethook()
+  if nesting>0 then
+    nesting=nesting-1
+  end
+  if nesting==0 then
+    sethook()
+  end
 end
 local function showtraceback(rep) 
   local level=2 
@@ -10716,7 +10891,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 9028, stripped down to: 5176
+-- original size: 9552, stripped down to: 5176
 
 if not modules then modules={} end modules ['util-env']={
   version=1.001,
@@ -15055,7 +15230,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-ini"] = package.loaded["data-ini"] or true
 
--- original size: 11444, stripped down to: 7830
+-- original size: 11459, stripped down to: 7680
 
 if not modules then modules={} end modules ['data-ini']={
   version=1.001,
@@ -15200,11 +15375,6 @@ if not texroot or texroot=="" then
   ossetenv('TEXROOT',texroot)
 end
 environment.texroot=file.collapsepath(texroot)
-if type(profiler)=="table" and not jit then
-  directives.register("system.profile",function()
-    profiler.start("luatex-profile.log")
-  end)
-end
 local prefixes=utilities.storage.allocate()
 resolvers.prefixes=prefixes
 local resolved={}
@@ -19454,7 +19624,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 11846, stripped down to: 6059
+-- original size: 13648, stripped down to: 7455
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -19463,35 +19633,51 @@ if not modules then modules={} end modules ['util-lib']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files",
 }
-local gsub,find=string.gsub,string.find
-local pathpart,nameonly,joinfile=file.pathpart,file.nameonly,file.join
-local findfile,findfiles=resolvers and resolvers.findfile,resolvers and resolvers.findfiles
-local loaded=package.loaded
-local report_swiglib=logs.reporter("swiglib")
-local trace_swiglib=false trackers.register("resolvers.swiglib",function(v) trace_swiglib=v end)
+local type=type
+local next=next
+local pcall=pcall
+local gsub=string.gsub
+local find=string.find
+local sort=table.sort
+local pathpart=file.pathpart
+local nameonly=file.nameonly
+local joinfile=file.join
+local removesuffix=file.removesuffix
+local findfile=resolvers.findfile
+local findfiles=resolvers.findfiles
+local expandpaths=resolvers.expandedpathlistfromvariable
+local qualifiedpath=file.is_qualified_path
+local isfile=lfs.isfile
 local done=false
-local function requireswiglib(required,version)
-  local trace_swiglib=trace_swiglib or package.helpers.trace
-  local library=loaded[required]
-  if library==nil then
-    if trace_swiglib then
-      report_swiglib("requiring library %a with version %a",required,version or "any")
+local function locate(required,version,trace,report,action)
+  if type(required)~="string" then
+    report("provide a proper library name")
+    return
+  end
+  if trace then
+    report("requiring library %a with version %a",required,version or "any")
+  end
+  local found_library=nil
+  if qualifiedpath(required) then
+    if isfile(required) then
+      found_library=required
     end
+  else
     local required_full=gsub(required,"%.","/") 
     local required_path=pathpart(required_full)
     local required_base=nameonly(required_full)
     local required_name=required_base.."."..os.libsuffix
     local version=type(version)=="string" and version~="" and version or false
     local engine=environment.ownmain or false
-    if trace_swiglib and not done then
-      local list=resolvers.expandedpathlistfromvariable("lib") 
+    if trace and not done then
+      local list=expandpaths("lib") 
       for i=1,#list do
-        report_swiglib("tds path %i: %s",i,list[i])
+        report("tds path %i: %s",i,list[i])
       end
     end
     local function found(locate,asked_library,how,...)
-      if trace_swiglib then
-        report_swiglib("checking %s: %a",how,asked_library)
+      if trace then
+        report("checking %s: %a",how,asked_library)
       end
       return locate(asked_library,...)
     end
@@ -19499,45 +19685,45 @@ local function requireswiglib(required,version)
       local found=nil
       if version then
         local asked_library=joinfile(required_path,version,required_name)
-        if trace_swiglib then
-          report_swiglib("checking %s: %a","with version",asked_library)
+        if trace then
+          report("checking %s: %a","with version",asked_library)
         end
         found=locate(asked_library,...)
       end
       if not found or found=="" then
         local asked_library=joinfile(required_path,required_name)
-        if trace_swiglib then
-          report_swiglib("checking %s: %a","with version",asked_library)
+        if trace then
+          report("checking %s: %a","with version",asked_library)
         end
         found=locate(asked_library,...)
       end
       return found and found~="" and found or false
     end
     local function attempt(checkpattern)
-      if trace_swiglib then
-        report_swiglib("checking tds lib paths strictly")
+      if trace then
+        report("checking tds lib paths strictly")
       end
       local found=findfile and check(findfile,"lib")
       if found and (not checkpattern or find(found,checkpattern)) then
         return found
       end
-      if trace_swiglib then
-        report_swiglib("checking tds lib paths with wildcard")
+      if trace then
+        report("checking tds lib paths with wildcard")
       end
       local asked_library=joinfile(required_path,".*",required_name)
-      if trace_swiglib then
-        report_swiglib("checking %s: %a","latest version",asked_library)
+      if trace then
+        report("checking %s: %a","latest version",asked_library)
       end
       local list=findfiles(asked_library,"lib",true)
       if list and #list>0 then
-        table.sort(list)
+        sort(list)
         local found=list[#list]
         if found and (not checkpattern or find(found,checkpattern)) then
           return found
         end
       end
-      if trace_swiglib then
-        report_swiglib("checking lib paths")
+      if trace then
+        report("checking lib paths")
       end
       package.extralibpath(environment.ownpath)
       local paths=package.libpaths()
@@ -19549,89 +19735,132 @@ local function requireswiglib(required,version)
       end
       return false
     end
-    local found_library=nil
     if engine then
-      if trace_swiglib then
-        report_swiglib("attemp 1, engine %a",engine)
+      if trace then
+        report("attemp 1, engine %a",engine)
       end
       found_library=attempt("/"..engine.."/")
       if not found_library then
-        if trace_swiglib then
-          report_swiglib("attemp 2, no engine",asked_library)
+        if trace then
+          report("attemp 2, no engine",asked_library)
         end
         found_library=attempt()
       end
     else
       found_library=attempt()
     end
-    if not found_library then
-      if trace_swiglib then
-        report_swiglib("not found: %a",required)
-      end
+  end
+  if not found_library then
+    if trace then
+      report("not found: %a",required)
+    end
+    library=false
+  else
+    if trace then
+      report("found: %a",found_library)
+    end
+    local message,result=action(found_library,required_base)
+    if result then
+      library=result
+    else
       library=false
-    else
-      local path=pathpart(found_library)
-      local base=nameonly(found_library)
-      dir.push(path)
-      if trace_swiglib then
-        report_swiglib("found: %a",found_library)
-      end
-      local message=nil
-      local opener="luaopen_"..required_base
-      library,message=package.loadlib(found_library,opener)
-      local libtype=type(library)
-      if libtype=="function" then
-        library=library()
-      else
-        report_swiglib("load error: %a returns %a, message %a, library %a",opener,libtype,(string.gsub(message or "no message","[%s]+$","")),found_library or "no library")
-        library=false
-      end
-      dir.pop()
+      report("load error: message %a, library %a",tostring(message),found_library or "no library")
     end
-    if not library then
-      report_swiglib("unknown: %a",required)
-    elseif trace_swiglib then
-      report_swiglib("stored: %a",required)
-    end
-    loaded[required]=library
-  else
-    report_swiglib("reused: %a",required)
   end
-  return library
-end
-local savedrequire=require
-function require(name,version)
-  if find(name,"^swiglib%.") then
-    return requireswiglib(name,version)
-  else
-    return savedrequire(name)
-  end
-end
-local swiglibs={}
-local initializer="core"
-function swiglib(name,version)
-  local library=swiglibs[name]
   if not library then
-    statistics.starttiming(swiglibs)
-    if trace_swiglib then
-      report_swiglib("loading %a",name)
-    end
-    if not find(name,"%."..initializer.."$") then
-      fullname="swiglib."..name.."."..initializer
-    else
-      fullname="swiglib."..name
-    end
-    library=requireswiglib(fullname,version)
-    swiglibs[name]=library
-    statistics.stoptiming(swiglibs)
+    report("unknown: %a",required)
+  elseif trace then
+    report("stored: %a",required)
   end
   return library
 end
-statistics.register("used swiglibs",function()
-  if next(swiglibs) then
-    return string.format("%s, initial load time %s seconds",table.concat(table.sortedkeys(swiglibs)," "),statistics.elapsedtime(swiglibs))
+do
+  local report_swiglib=logs.reporter("swiglib")
+  local trace_swiglib=false
+  local savedrequire=require
+  local loadedlibs={}
+  trackers.register("resolvers.swiglib",function(v) trace_swiglib=v end)
+  function requireswiglib(required,version)
+    local library=loadedlibs[library]
+    if library==nil then
+      local trace_swiglib=trace_swiglib or package.helpers.trace
+      library=locate(required,version,trace_swiglib,report_swiglib,function(name,base)
+        dir.push(pathpart(name))
+        local opener="luaopen_"..base
+        local library,message=package.loadlib(name,opener)
+        local libtype=type(library)
+        if libtype=="function" then
+          library=library()
+          message=true
+        else
+          report_swiglib("load error: %a returns %a, message %a, library %a",opener,libtype,(string.gsub(message or "no message","[%s]+$","")),found_library or "no library")
+          library=false
+        end
+        dir.pop()
+        return message,library
+      end)
+      loadedlibs[required]=library or false
+    end
+    return library
   end
-end)
+  function require(name,version)
+    if find(name,"^swiglib%.") then
+      return requireswiglib(name,version)
+    else
+      return savedrequire(name)
+    end
+  end
+  local swiglibs={}
+  local initializer="core"
+  function swiglib(name,version)
+    local library=swiglibs[name]
+    if not library then
+      statistics.starttiming(swiglibs)
+      if trace_swiglib then
+        report_swiglib("loading %a",name)
+      end
+      if not find(name,"%."..initializer.."$") then
+        fullname="swiglib."..name.."."..initializer
+      else
+        fullname="swiglib."..name
+      end
+      library=requireswiglib(fullname,version)
+      swiglibs[name]=library
+      statistics.stoptiming(swiglibs)
+    end
+    return library
+  end
+  statistics.register("used swiglibs",function()
+    if next(swiglibs) then
+      return string.format("%s, initial load time %s seconds",table.concat(table.sortedkeys(swiglibs)," "),statistics.elapsedtime(swiglibs))
+    end
+  end)
+end
+if FFISUPPORTED and ffi and ffi.load then
+  local report_ffilib=logs.reporter("ffilib")
+  local trace_ffilib=false
+  local savedffiload=ffi.load
+  trackers.register("resolvers.ffilib",function(v) trace_ffilib=v end)
+  function ffilib(required,version)
+    return locate(required,version,trace_ffilib,report_ffilib,function(name)
+      local message,library=pcall(savedffiload,removesuffix(name))
+      if type(library)=="userdata" then
+        return message,library
+      else
+        return message,false
+      end
+    end)
+  end
+  function ffi.load(name)
+    local library=ffilib(name)
+    if type(library)=="userdata" then
+      return library
+    else
+      report_ffilib("trying to load %a using normal loader",name)
+      return savedffiload(name)
+    end
+  end
+end
 
 
 end -- of closure
@@ -19975,8 +20204,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 847975
--- stripped bytes    : 308174
+-- original bytes    : 855737
+-- stripped bytes    : 310443
 
 -- end library merge
 

@@ -65,11 +65,9 @@ if not modules then modules = { } end modules ['font-otr'] = {
 --     require("char-ini")
 -- end
 
-local next, type, unpack = next, type, unpack
-local byte, lower, char, strip, gsub = string.byte, string.lower, string.char, string.strip, string.gsub
-local bittest = bit32.btest
-local concat, remove, unpack, fastcopy = table.concat, table.remov, table.unpack, table.fastcopy
-local floor, abs, sqrt, round = math.floor, math.abs, math.sqrt, math.round
+local next, type = next, type
+local byte, lower, char, gsub = string.byte, string.lower, string.char, string.gsub
+local floor, round = math.floor, math.round
 local P, R, S, C, Cs, Cc, Ct, Carg, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.Ct, lpeg.Carg, lpeg.Cmt
 local lpegmatch = lpeg.match
 
@@ -120,7 +118,7 @@ local readoffset        = readushort
 local read2dot14        = streamreader.read2dot14     -- 16-bit signed fixed number with the low 14 bits of fraction (2.14) (F2DOT14)
 
 function streamreader.readtag(f)
-    return lower(strip(readstring(f,4)))
+    return lower(stripstring(readstring(f,4)))
 end
 
 -- date represented in number of seconds since 12:00 midnight, January 1, 1904. The value is represented as a
@@ -174,6 +172,7 @@ local reservednames = { [0] =
     "wwssubfamily",
     "lightbackgroundpalette",
     "darkbackgroundpalette",
+    "variationspostscriptnameprefix",
 }
 
 -- more at: https://www.microsoft.com/typography/otspec/name.htm
@@ -747,7 +746,8 @@ function readers.name(f,fontdata,specification)
                         local encoding = encodings[encoding]
                         local language = languages[language]
                         if encoding and language then
-                            local name = reservednames[readushort(f)]
+                            local index = readushort(f)
+                            local name  = reservednames[index]
                             if name then
                                 namelist[#namelist+1] = {
                                     platform = platform,
@@ -758,7 +758,14 @@ function readers.name(f,fontdata,specification)
                                     offset   = start + readushort(f),
                                 }
                             else
-                                skipshort(f,2)
+namelist[#namelist+1] = {
+    platform = platform,
+    encoding = encoding,
+    language = language,
+    length   = readushort(f),
+    offset   = start + readushort(f),
+}
+--                                 skipshort(f,2)
                             end
                         else
                             skipshort(f,3)
@@ -783,8 +790,9 @@ function readers.name(f,fontdata,specification)
         --
         -- we need to choose one we like, for instance an unicode one
         --
-        local names = { }
-        local done  = { }
+        local names  = { }
+        local done   = { }
+        local extras = { }
         --
         -- there is quite some logic in ff ... hard to follow so we start simple
         -- and extend when we run into it (todo: proper reverse hash) .. we're only
@@ -795,7 +803,7 @@ function readers.name(f,fontdata,specification)
             for i=1,#namelist do
                 local name    = namelist[i]
                 local nametag = name.name
-                if not done[nametag] then
+                if not done[nametag or i] then
                     local encoding = name.encoding
                     local language = name.language
                     if (not e or encoding == e) and (not l or language == l) then
@@ -808,13 +816,16 @@ function readers.name(f,fontdata,specification)
                         if decoder then
                             content = decoder(content)
                         end
-                        names[nametag] = {
-                            content  = content,
-                            platform = platform,
-                            encoding = encoding,
-                            language = language,
-                        }
-                        done[nametag] = true
+                        if nametag then
+                            names[nametag] = {
+                                content  = content,
+                                platform = platform,
+                                encoding = encoding,
+                                language = language,
+                            }
+                        end
+                        extras[i-1] = content
+                        done[nametag or i] = true
                     end
                 end
             end
@@ -827,7 +838,8 @@ function readers.name(f,fontdata,specification)
         filter("macintosh")
         filter("unicode")
         --
-        fontdata.names = names
+        fontdata.names  = names
+        fontdata.extras = extras
         --
         if specification.platformnames then
             local collected = { }
@@ -1288,7 +1300,8 @@ local sequence = {
 local supported = {  }
 
 for i=1,#sequence do
-    local sp, se, sf = unpack(sequence[i])
+    local si = sequence[i]
+    local sp, se, sf = si[1], si[2], si[3]
     local p = supported[sp]
     if not p then
         p = { }
@@ -1704,7 +1717,8 @@ function readers.cmap(f,fontdata,specification)
             --
             local ok = false
             for i=1,#sequence do
-                local sp, se, sf = unpack(sequence[i])
+                local si = sequence[i]
+                local sp, se, sf = si[1], si[2], si[3]
                 if checkcmap(f,fontdata,records,sp,se,sf) > 0 then
                     ok = true
                 end
@@ -2000,7 +2014,6 @@ local function readdata(f,offset,specification)
         end
     end
     --
-    --
     readers["os/2"](f,fontdata,specification)
     readers["head"](f,fontdata,specification)
     readers["maxp"](f,fontdata,specification)
@@ -2022,6 +2035,12 @@ local function readdata(f,offset,specification)
     readers["gsub"](f,fontdata,specification)
     readers["gpos"](f,fontdata,specification)
     readers["math"](f,fontdata,specification)
+    --
+ -- readers["fvar"](f,fontdata,specification)
+ -- readers["hvar"](f,fontdata,specification)
+ -- readers["vvar"](f,fontdata,specification)
+ -- readers["mvar"](f,fontdata,specification)
+ -- readers["vorg"](f,fontdata,specification)
     --
     fontdata.locations    = nil
     fontdata.tables       = nil

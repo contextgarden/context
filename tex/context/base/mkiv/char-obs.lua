@@ -1,0 +1,269 @@
+------------------------
+----- char-ini.lua -----
+------------------------
+
+-- local template_a = "\\startextendcatcodetable{%s}\\chardef\\l=11\\chardef\\a=13\\let\\c\\catcode%s\\let\\a\\undefined\\let\\l\\undefined\\let\\c\\undefined\\stopextendcatcodetable"
+-- local template_b = "\\chardef\\l=11\\chardef\\a=13\\let\\c\\catcode%s\\let\\a\\undefined\\let\\l\\undefined\\let\\c\\undefined"
+--
+-- function characters.define(tobelettered, tobeactivated) -- catcodetables
+--     local lettered, activated, l, a = { }, { }, 0, 0
+--     for u, chr in next, data do
+--         -- we can use a macro instead of direct settings
+--         local fallback = chr.fallback
+--         if fallback then
+--         --  texprint(format("{\\catcode %s=13\\unexpanded\\gdef %s{\\checkedchar{%s}{%s}}}",u,utfchar(u),u,fallback))
+--             texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\checkedchar{",u,"}{",fallback,"}}}") -- no texprint
+--             a = a + 1
+--             activated[a] = "\\c"..u.."\\a"
+--         else
+--             local contextname = chr.contextname
+--             local category = chr.category
+--             if contextname then
+--                 if is_character[category] then
+--                  -- by this time, we're still in normal catcode mode
+--                  -- subtle: not "\\",contextname but "\\"..contextname
+--                     if chr.unicodeslot < 128 then
+--                         texprint(ctxcatcodes,format("\\chardef\\%s=%s",contextname,u))
+--                     else
+--                         texprint(ctxcatcodes,format("\\let\\%s=%s",contextname,utfchar(u)))
+--                         if is_letter[category] then
+--                             l = l + 1
+--                             lettered[l] = "\\c"..u.."\\l"
+--                         end
+--                     end
+--                 elseif is_command[category] then
+--                     -- this might change: contextcommand ipv contextname
+--                 --  texprint(format("{\\catcode %s=13\\unexpanded\\gdef %s{\\%s}}",u,utfchar(u),contextname))
+--                     texsprint("{\\catcode",u,"=13\\unexpanded\\gdef ",utfchar(u),"{\\"..contextname,"}}") -- no texprint
+--                     a = a + 1
+--                     activated[a] = "\\c"..u.."\\a"
+--                 end
+--             elseif is_letter[category] then
+--                 if u >= 128 and u <= 65536 then -- catch private mess
+--                     l = l + 1
+--                     lettered[l] = "\\c"..u.."\\l"
+--                 end
+--             end
+--         end
+--         local range = chr.range
+--         if range then
+--             l = l + 1
+--             lettered[l] = format('\\dofastrecurse{"%05X}{"%05X}{1}{\\c\\fastrecursecounter\\l}',range.first,range.last)
+--         end
+--     end
+--  -- if false then
+--     l = l + 1
+--     lettered[l] = "\\c"..0x200C.."\\l" -- non-joiner
+--     l = l + 1
+--     lettered[l] = "\\c"..0x200D.."\\l" -- joiner
+--  -- fi
+--     if tobelettered then
+--         lettered = concat(lettered)
+--         if true then
+--             texsprint(ctxcatcodes,format(template_b,lettered)) -- global
+--         else
+--             for l=1,#tobelettered do
+--                 texsprint(ctxcatcodes,format(template_a,tobelettered[l],lettered))
+--             end
+--         end
+--     end
+--     if tobeactivated then
+--         activated = concat(activated)
+--         for a=1,#tobeactivated do
+--             texsprint(ctxcatcodes,format(template_a,tobeactivated[a],activated))
+--         end
+--     end
+-- end
+--
+-- function characters.setcodes()
+--     for code, chr in next, data do
+--         local cc = chr.category
+--         if cc == 'll' or cc == 'lu' or cc == 'lt' then
+--             local lc, uc = chr.lccode, chr.uccode
+--             if not lc then chr.lccode, lc = code, code end
+--             if not uc then chr.uccode, uc = code, code end
+--             texsprint(ctxcatcodes,format("\\setcclcuc{%i}{%i}{%i}",code,lc,uc))
+--         end
+--         if cc == "lu" then
+--             texprint(ctxcatcodes,"\\sfcode ",code,"999 ")
+--         end
+--         if cc == "lo" then
+--             local range = chr.range
+--             if range then
+--                 texsprint(ctxcatcodes,format('\\dofastrecurse{"%05X}{"%05X}{1}{\\setcclcucself\\fastrecursecounter}',range.first,range.last))
+--             end
+--         end
+--     end
+-- end
+
+-- --[[ldx--
+-- <p>The next variant has lazy token collecting, on a 140 page mk.tex this saves
+-- about .25 seconds, which is understandable because we have no graphemes and
+-- not collecting tokens is not only faster but also saves garbage collecting.
+-- </p>
+-- --ldx]]--
+--
+-- function utffilters.collapse(str,filename)   -- we can make high a seperate pass (never needed with collapse)
+--     if skippable[filesuffix(filename)] then
+--         return str
+--  -- elseif find(filename,"^virtual://") then
+--  --     return str
+--  -- else
+--  --  -- print("\n"..filename)
+--     end
+--     if str and str ~= "" then
+--         local nstr = #str
+--         if nstr > 1 then
+--             if initialize then -- saves a call
+--                 initialize()
+--             end
+--             local tokens, t, first, done, n = { }, 0, false, false, 0
+--             for second in utfcharacters(str) do
+--                 if done then
+--                     if first then
+--                         if second == " " then
+--                             t = t + 1
+--                             tokens[t] = first
+--                             first = second
+--                         else
+--                          -- local crs = high[second]
+--                          -- if crs then
+--                          --     t = t + 1
+--                          --     tokens[t] = first
+--                          --     first = crs
+--                          -- else
+--                                 local cgf = graphemes[first]
+--                                 if cgf and cgf[second] then
+--                                     first = cgf[second]
+--                                 else
+--                                     t = t + 1
+--                                     tokens[t] = first
+--                                     first = second
+--                                 end
+--                          -- end
+--                         end
+--                     elseif second == " " then
+--                         first = second
+--                     else
+--                      -- local crs = high[second]
+--                      -- if crs then
+--                      --     first = crs
+--                      -- else
+--                             first = second
+--                      -- end
+--                     end
+--                 elseif second == " " then
+--                     first = nil
+--                     n = n + 1
+--                 else
+--                  -- local crs = high[second]
+--                  -- if crs then
+--                  --     for s in utfcharacters(str) do
+--                  --         if n == 1 then
+--                  --             break
+--                  --         else
+--                  --             t = t + 1
+--                  --             tokens[t] = s
+--                  --             n = n - 1
+--                  --         end
+--                  --     end
+--                  --     if first then
+--                  --         t = t + 1
+--                  --         tokens[t] = first
+--                  --     end
+--                  --     first = crs
+--                  --     done = true
+--                  -- else
+--                         local cgf = graphemes[first]
+--                         if cgf and cgf[second] then
+--                             for s in utfcharacters(str) do
+--                                 if n == 1 then
+--                                     break
+--                                 else
+--                                     t = t + 1
+--                                     tokens[t] = s
+--                                     n = n - 1
+--                                 end
+--                             end
+--                             first = cgf[second]
+--                             done = true
+--                         else
+--                             first = second
+--                             n = n + 1
+--                         end
+--                  -- end
+--                 end
+--             end
+--             if done then
+--                 if first then
+--                     t = t + 1
+--                     tokens[t] = first
+--                 end
+--                 return concat(tokens) -- seldom called
+--             end
+--         elseif nstr > 0 then
+--             return high[str] or str -- this will go from here
+--         end
+--     end
+--     return str
+-- end
+
+-- function utffilters.decompose(str)
+--     if str and str ~= "" then
+--         local nstr = #str
+--         if nstr > 1 then
+--          -- if initialize then -- saves a call
+--          --     initialize()
+--          -- end
+--             local tokens, t, done, n = { }, 0, false, 0
+--             for s in utfcharacters(str) do
+--                 local dec = decomposed[s]
+--                 if dec then
+--                     if not done then
+--                         if n > 0 then
+--                             for s in utfcharacters(str) do
+--                                 if n == 0 then
+--                                     break
+--                                 else
+--                                     t = t + 1
+--                                     tokens[t] = s
+--                                     n = n - 1
+--                                 end
+--                             end
+--                         end
+--                         done = true
+--                     end
+--                     t = t + 1
+--                     tokens[t] = dec
+--                 elseif done then
+--                     t = t + 1
+--                     tokens[t] = s
+--                 else
+--                     n = n + 1
+--                 end
+--             end
+--             if done then
+--                 return concat(tokens) -- seldom called
+--             end
+--         end
+--     end
+--     return str
+-- end
+
+-- local replacer = nil
+-- local finder   = nil
+--
+-- function utffilters.decompose(str) -- 3 to 4 times faster than the above
+--     if not replacer then
+--         if initialize then
+--             initialize()
+--         end
+--         local tree = utfchartabletopattern(decomposed)
+--         finder   = lpeg.finder(tree,false,true)
+--         replacer = lpeg.replacer(tree,decomposed,false,true)
+--     end
+--     if str and str ~= "" and #str > 1 and lpegmatch(finder,str) then
+--         return lpegmatch(replacer,str)
+--     end
+--     return str
+-- end

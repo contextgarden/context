@@ -12,87 +12,236 @@ if not modules then modules = { } end modules ['util-deb'] = {
 
 local debug = require "debug"
 
-local getinfo = debug.getinfo
+local getinfo, sethook = debug.getinfo, debug.sethook
 local type, next, tostring = type, next, tostring
-local format, find = string.format, string.find
-local is_boolean = string.is_boolean
+local format, find, sub, gsub = string.format, string.find, string.sub, string.gsub
+local insert, remove, sort = table.insert, table.remove, table.sort
 
 utilities          = utilities or { }
 local debugger     = utilities.debugger or { }
 utilities.debugger = debugger
 
-local counters     = { }
-local names        = { }
-
 local report       = logs.reporter("debugger")
 
--- one
+local ticks        = os.gettimeofday or os.clock
+local seconds      = function(n) return n or 0 end
+local overhead     = 0
+local dummycalls   = 10*1000
+local nesting      = 0
+local names        = { }
 
-local function hook()
-    local f = getinfo(2) -- "nS"
+local function initialize()
+
+    if FFISUPPORTED and ffi then
+
+        if os.type == "windows" then
+            local okay, kernel = pcall(ffi.load,"kernel32")
+            if kernel then
+                local tonumber = ffi.number or tonumber
+ffi.cdef[[
+int QueryPerformanceFrequency(int64_t *lpFrequency);
+int QueryPerformanceCounter(int64_t *lpPerformanceCount);
+]]
+                local target = ffi.new("__int64[1]")
+                ticks = function()
+                    if kernel.QueryPerformanceCounter(target) == 1 then
+                        return tonumber(target[0])
+                    else
+                        return 0
+                    end
+                end
+                local target = ffi.new("__int64[1]")
+                seconds = function(ticks)
+                    if kernel.QueryPerformanceFrequency(target) == 1 then
+                        return ticks / tonumber(target[0])
+                    else
+                        return 0
+                    end
+                end
+            end
+        elseif os.type == "unix" then
+            local C        = ffi.C
+            local tonumber = ffi.number or tonumber
+            -- 1 = CLOCK_MONOTONIC
+            -- 2 = CLOCK_PROCESS_CPUTIME_ID
+ffi.cdef [[
+struct timespec { long sec; long nsec; };
+int clock_gettime(int timerid, struct timespec *t);
+   ]]
+            local target = ffi.new("timespec[?]",1)
+            function ticks()
+                C.clock_gettime(2,target)
+                return tonumber(target[0].sec*1000000000 + target[0].nsec)
+            end
+            seconds = function(ticks)
+                return ticks/1000000000
+            end
+
+        end
+    end
+
+    initialize = false
+
+end
+
+table.setmetatableindex(names,function(t,name)
+    local v = table.setmetatableindex(function(t,source)
+        local v = table.setmetatableindex(function(t,line)
+            local v = { total = 0, count = 0 }
+            t[line] = v
+            return v
+        end)
+        t[source] = v
+        return v
+    end)
+    t[name] = v
+    return v
+end)
+
+local function hook(where)
+    local f = getinfo(2,"nSl")
     if f then
-        local n = "unknown"
-        if f.what == "C" then
-            n = f.name or '<anonymous>'
-            if not names[n] then
-                names[n] = format("%42s",n)
+        local source = f.short_src
+        if not source then
+            return
+        end
+        local line = f.linedefined or 0
+        local name = f.name
+        if not name then
+            local what = f.what
+            if what == "C" then
+                name = "<anonymous>"
+            else
+                name = f.namewhat or what or "<unknown>"
+            end
+        end
+        local data = names[name][source][line]
+        if where == "call" then
+            data.count = data.count + 1
+            insert(data,ticks())
+        elseif where == "return" then
+            local t = remove(data)
+            if t then
+                data.total = data.total + ticks() - t
+            end
+        end
+    end
+end
+
+function debugger.showstats(printer)
+    local printer   = printer or report
+    local calls     = 0
+    local functions = 0
+    local dataset   = { }
+    local length    = 0
+    local wholetime = 0
+    for name, sources in next, names do
+        for source, lines in next, sources do
+            for line, data in next, lines do
+                if #name > length then
+                    length = #name
+                end
+                local total = data.total
+                local count = data.count
+                local real  = total
+                if real > 0 then
+                    real = total - (count * overhead / dummycalls)
+                    if real < 0 then
+                        real = 0
+                    end
+                    wholetime = wholetime + real
+                end
+                if line < 0 then
+                    line = 0
+                end
+                dataset[#dataset+1] = { real, total, count, name, source, line }
+            end
+        end
+    end
+    sort(dataset,function(a,b)
+        if a[1] == b[1] then
+            if a[2] == b[2] then
+                if a[3] == b[3] then
+                    if a[4] == b[4] then
+                        if a[5] == b[5] then
+                            return a[6] < b[6]
+                        else
+                            return a[5] < b[5]
+                        end
+                    else
+                        return a[4] < b[4]
+                    end
+                else
+                    return b[3] < a[3]
+                end
+            else
+                return b[2] < a[2]
             end
         else
-            -- source short_src linedefined what name namewhat nups func
-            n = f.name or f.namewhat or f.what
-            if not n or n == "" then
-                n = "?"
-            end
-            if not names[n] then
-                names[n] = format("%42s : % 5i : %s",n,f.linedefined or 0,f.short_src or "unknown source")
-            end
+            return b[1] < a[1]
         end
-        counters[n] = (counters[n] or 0) + 1
+    end)
+    if length > 50 then
+        length = 50
     end
-end
-
-function debugger.showstats(printer,threshold) -- hm, something has changed, rubish now
-    printer   = printer or report
-    threshold = threshold or 0
-    local total, grandtotal, functions = 0, 0, 0
-    local dataset = { }
-    for name, count in next, counters do
-        dataset[#dataset+1] = { name, count }
-    end
-    table.sort(dataset,function(a,b) return a[2] == b[2] and b[1] > a[1] or a[2] > b[2] end)
+    local fmt = string.formatters["%4.9k  %4.9k  %3.3k  %8i  %-" .. length .. "s  %4i  %s"]
     for i=1,#dataset do
-        local d = dataset[i]
-        local name  = d[1]
-        local count = d[2]
-        if count > threshold and not find(name,"for generator") then -- move up
-            printer(format("%8i  %s\n", count, names[name]))
-            total = total + count
-        end
-        grandtotal = grandtotal + count
+        local data    = dataset[i]
+        local real    = data[1]
+        local total   = data[2]
+        local count   = data[3]
+        local name    = data[4]
+        local source  = data[5]
+        local line    = data[6]
+        local percent = real / wholetime
+        calls     = calls + count
         functions = functions + 1
+        name = gsub(name,"%s+"," ")
+        if #name > length then
+            name = sub(name,1,length)
+        end
+        printer(fmt(seconds(total),seconds(real),percent,count,name,line,source))
     end
-    printer("\n")
-    printer(format("functions  : % 10i\n", functions))
-    printer(format("total      : % 10i\n", total))
-    printer(format("grand total: % 10i\n", grandtotal))
-    printer(format("threshold  : % 10i\n", threshold))
+    printer("")
+    printer(format("functions : %i", functions))
+    printer(format("calls     : %i", calls))
+    printer(format("overhead  : %f", seconds(overhead/1000)))
 end
 
-function debugger.savestats(filename,threshold)
+function debugger.savestats(filename)
     local f = io.open(filename,'w')
     if f then
-        debugger.showstats(function(str) f:write(str) end,threshold)
+        debugger.showstats(function(str) f:write(str,"\n") end)
         f:close()
     end
 end
 
 function debugger.enable()
-    debug.sethook(hook,"c")
+    if nesting == 0 then
+        running = true
+        if initialize then
+            initialize()
+        end
+        sethook(hook,"cr")
+        local function dummy() end
+        local t = ticks()
+        for i=1,dummycalls do
+            dummy()
+        end
+        overhead = ticks() - t
+    end
+    if nesting > 0 then
+        nesting = nesting + 1
+    end
 end
 
 function debugger.disable()
-    debug.sethook()
- -- counters[debug.getinfo(2,"f").func] = nil
+    if nesting > 0 then
+        nesting = nesting - 1
+    end
+    if nesting == 0 then
+        sethook()
+    end
 end
 
 -- debugger.enable()

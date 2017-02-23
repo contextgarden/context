@@ -90,8 +90,6 @@ local jobpositions = {
 
 job.positions = jobpositions
 
-_plib_ = jobpositions -- might go
-
 local default = { -- not r and paragraphs etc
     __index = {
         x   = 0,     -- x position baseline

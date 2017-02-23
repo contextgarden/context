@@ -101,9 +101,10 @@ function files.readinteger1(f)  -- one byte
     end
 end
 
-files.readcardinal1 = files.readbyte  -- one byte
-files.readcardinal  = files.readcardinal1
-files.readinteger   = files.readinteger1
+files.readcardinal1  = files.readbyte  -- one byte
+files.readcardinal   = files.readcardinal1
+files.readinteger    = files.readinteger1
+files.readsignedbyte = files.readinteger1
 
 function files.readcardinal2(f)
     local a, b = byte(f:read(2),1,2)

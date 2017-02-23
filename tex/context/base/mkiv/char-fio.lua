@@ -42,18 +42,19 @@ local reporting = "no"
 -- per line by default
 
 local enforced = {
-    ["characters.filters.utf.reorder"]   = true,
     ["characters.filters.utf.collapse"]  = true,
     ["characters.filters.utf.decompose"] = true,
+    ["characters.filters.utf.reorder"]   = false,
 }
 
 function utffilters.enable()
+    -- only used one time (normally)
     for k, v in next, enforced do
         if v then
             if reporting == "yes" then
                 report("%a enabled",k)
             end
-            enableaction(textfileactions,v)
+            enableaction(textfileactions,k)
         else
             if reporting == "yes" then
                 report("%a not enabled",k)

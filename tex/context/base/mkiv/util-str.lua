@@ -449,6 +449,31 @@ function number.sparseexponent(f,n)
     return tostring(n)
 end
 
+local hf = { }
+local hs = { }
+
+setmetatable(hf, { __index = function(t,k)
+    local v = "%." .. k .. "f"
+    t[k] = v
+    return v
+end } )
+
+setmetatable(hs, { __index = function(t,k)
+    local v = "%" .. k .. "s"
+    t[k] = v
+    return v
+end } )
+
+function number.formattedfloat(n,b,a)
+    local s = format(hf[a],n)
+    local l = (b or 0) + (a or 0) + 1
+    if #s < l then
+        return format(hs[l],s)
+    else
+        return s
+    end
+end
+
 local template = [[
 %s
 %s
@@ -479,6 +504,7 @@ local autodouble=string.autodouble
 local sequenced=table.sequenced
 local formattednumber=number.formatted
 local sparseexponent=number.sparseexponent
+local formattedfloat=number.formattedfloat
     ]]
 
 else
@@ -504,6 +530,7 @@ else
         sequenced       = table.sequenced,
         formattednumber = number.formatted,
         sparseexponent  = number.sparseexponent,
+        formattedfloat  = number.formattedfloat
     }
 
 end
@@ -521,6 +548,9 @@ setmetatable(arguments, { __index =
 })
 
 local prefix_any = C((S("+- .") + R("09"))^0)
+local prefix_sub = (C((S("+-") + R("09"))^0) + Cc(0))
+                 * P(".")
+                 * (C((S("+-") + R("09"))^0) + Cc(0))
 local prefix_tab = P("{") * C((1-P("}"))^0) * P("}") + C((1-R("az","AZ","09","%%"))^0)
 
 -- we've split all cases as then we can optimize them (let's omit the fuzzy u)
@@ -592,6 +622,11 @@ local format_F = function(f) -- beware, no cast to number
     else
         return format("format((a%s %% 1 == 0) and '%%i' or '%%%sf',a%s)",n,f,n)
     end
+end
+
+local format_k = function(b,a) -- slow
+    n = n + 1
+    return format("formattedfloat(a%s,%i,%i)",n,b or 0, a or 0)
 end
 
 local format_g = function(f)
@@ -855,6 +890,7 @@ local builder = Cs { "start",
               + V("S") -- new
               + V("Q") -- new
               + V("N") -- new
+              + V("k") -- new
               --
               + V("r")
               + V("h") + V("H") + V("u") + V("U")
@@ -894,6 +930,7 @@ local builder = Cs { "start",
     ["S"] = (prefix_any * P("S")) / format_S, -- %S => %s (tostring)
     ["Q"] = (prefix_any * P("Q")) / format_S, -- %Q => %q (tostring)
     ["N"] = (prefix_any * P("N")) / format_N, -- %N => tonumber (strips leading zeros)
+    ["k"] = (prefix_sub * P("k")) / format_k, -- %k => like f but with n.m
     ["c"] = (prefix_any * P("c")) / format_c, -- %c => utf character (extension to regular)
     ["C"] = (prefix_any * P("C")) / format_C, -- %c => U+.... utf character
     --

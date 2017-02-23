@@ -1984,6 +1984,33 @@ do
         arguments = { "string", "string" }
     }
 
+    local function identical(a,b)
+        local na, nb = #a, #b
+        if na ~= nb then
+            return false
+        end
+        if na > 0 then
+            for i=1,na do
+                if not identical(a[i],b[i]) then
+                    return false
+                end
+            end
+            return true
+        end
+        local ha, hb = a.hash, b.hash
+        if ha then
+            return ha == hb
+        end
+        for k, v in next, a do
+            if k == "original" or k == "snippets" then
+                -- skip diagnostic info
+            elseif v ~= b[k] then
+                return false
+            end
+        end
+        return true
+    end
+
     function lists.sameasprevious(dataset,i,name,order,method)
         local rendering = renderings[dataset]
         local list      = rendering.list
@@ -2030,7 +2057,7 @@ do
                 if c_casted and c_casted == p_casted then
                     sameentry = true
                 elseif type(c_casted) == "table" and type(p_casted) == "table" then
-                    sameentry = table.identical(c_casted,p_casted)
+                    sameentry = identical(c_casted,p_casted)
                 end
             end
             if trace_detail then

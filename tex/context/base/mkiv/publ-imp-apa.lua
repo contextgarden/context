@@ -191,7 +191,7 @@ categories.inbook = {
     optional = {
         "withauthor", "translator",
         "subtitle", "type", "file",
-        "booktitle",
+        "booktitle", "subbooktitle",
         -- APA ignores this: "chapter",
         "editionset", "series",
         "month",
@@ -217,6 +217,7 @@ categories.incollection = {
     optional = {
         "withauthor", "translator",
         "subtitle", "type", "file",
+        "subbooktitle",
         "editionset", "series",
         -- APA ignores this: "chapter",
         "month",

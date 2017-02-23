@@ -327,7 +327,7 @@ local function selective(namespace,attribute,head,inheritance,default) -- two at
         if id == glyph_code then
             check = true
         elseif id == disc_code then
-            check = true -- notneeded when we flatten replace
+            check = true -- not needed when we flatten replace
         elseif id == glue_code then
             leader = getleader(stack)
             if leader then

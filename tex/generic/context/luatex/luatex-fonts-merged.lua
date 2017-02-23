@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/20/17 17:55:09
+-- merge date  : 02/23/17 18:37:07
 
 do -- begin closure to overcome local limits and interference
 
@@ -3743,6 +3743,27 @@ function number.sparseexponent(f,n)
   end
   return tostring(n)
 end
+local hf={}
+local hs={}
+setmetatable(hf,{ __index=function(t,k)
+  local v="%."..k.."f"
+  t[k]=v
+  return v
+end } )
+setmetatable(hs,{ __index=function(t,k)
+  local v="%"..k.."s"
+  t[k]=v
+  return v
+end } )
+function number.formattedfloat(n,b,a)
+  local s=format(hf[a],n)
+  local l=(b or 0)+(a or 0)+1
+  if #s<l then
+    return format(hs[l],s)
+  else
+    return s
+  end
+end
 local template=[[
 %s
 %s
@@ -3770,6 +3791,7 @@ local autodouble=string.autodouble
 local sequenced=table.sequenced
 local formattednumber=number.formatted
 local sparseexponent=number.sparseexponent
+local formattedfloat=number.formattedfloat
     ]]
 else
   environment={
@@ -3793,6 +3815,7 @@ else
     sequenced=table.sequenced,
     formattednumber=number.formatted,
     sparseexponent=number.sparseexponent,
+    formattedfloat=number.formattedfloat
   }
 end
 local arguments={ "a1" } 
@@ -3803,6 +3826,7 @@ setmetatable(arguments,{ __index=function(t,k)
   end
 })
 local prefix_any=C((S("+- .")+R("09"))^0)
+local prefix_sub=(C((S("+-")+R("09"))^0)+Cc(0))*P(".")*(C((S("+-")+R("09"))^0)+Cc(0))
 local prefix_tab=P("{")*C((1-P("}"))^0)*P("}")+C((1-R("az","AZ","09","%%"))^0)
 local format_s=function(f)
   n=n+1
@@ -3852,6 +3876,10 @@ local format_F=function(f)
   else
     return format("format((a%s %% 1 == 0) and '%%i' or '%%%sf',a%s)",n,f,n)
   end
+end
+local format_k=function(b,a) 
+  n=n+1
+  return format("formattedfloat(a%s,%i,%i)",n,b or 0,a or 0)
 end
 local format_g=function(f)
   n=n+1
@@ -4061,7 +4089,8 @@ local builder=Cs { "start",
 +V("s")+V("q")+V("i")+V("d")+V("f")+V("F")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
 +V("c")+V("C")+V("S") 
 +V("Q") 
-+V("N")
++V("N") 
++V("k")
 +V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("b")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w") 
 +V("W") 
 +V("a") 
@@ -4088,6 +4117,7 @@ local builder=Cs { "start",
   ["S"]=(prefix_any*P("S"))/format_S,
   ["Q"]=(prefix_any*P("Q"))/format_S,
   ["N"]=(prefix_any*P("N"))/format_N,
+  ["k"]=(prefix_sub*P("k"))/format_k,
   ["c"]=(prefix_any*P("c"))/format_c,
   ["C"]=(prefix_any*P("C"))/format_C,
   ["r"]=(prefix_any*P("r"))/format_r,
@@ -4289,6 +4319,7 @@ end
 files.readcardinal1=files.readbyte 
 files.readcardinal=files.readcardinal1
 files.readinteger=files.readinteger1
+files.readsignedbyte=files.readinteger1
 function files.readcardinal2(f)
   local a,b=byte(f:read(2),1,2)
   return 0x100*a+b
@@ -8038,11 +8069,9 @@ if not modules then modules={} end modules ['font-otr']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local next,type,unpack=next,type,unpack
-local byte,lower,char,strip,gsub=string.byte,string.lower,string.char,string.strip,string.gsub
-local bittest=bit32.btest
-local concat,remove,unpack,fastcopy=table.concat,table.remov,table.unpack,table.fastcopy
-local floor,abs,sqrt,round=math.floor,math.abs,math.sqrt,math.round
+local next,type=next,type
+local byte,lower,char,gsub=string.byte,string.lower,string.char,string.gsub
+local floor,round=math.floor,math.round
 local P,R,S,C,Cs,Cc,Ct,Carg,Cmt=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg.Ct,lpeg.Carg,lpeg.Cmt
 local lpegmatch=lpeg.match
 local setmetatableindex=table.setmetatableindex
@@ -8082,7 +8111,7 @@ local readufword=readushort
 local readoffset=readushort
 local read2dot14=streamreader.read2dot14   
 function streamreader.readtag(f)
-  return lower(strip(readstring(f,4)))
+  return lower(stripstring(readstring(f,4)))
 end
 local function readlongdatetime(f)
   local a,b,c,d,e,f,g,h=readbytes(f,8)
@@ -8123,6 +8152,7 @@ local reservednames={ [0]="copyright",
   "wwssubfamily",
   "lightbackgroundpalette",
   "darkbackgroundpalette",
+  "variationspostscriptnameprefix",
 }
 local platforms={ [0]="unicode",
   "macintosh",
@@ -8323,7 +8353,8 @@ function readers.name(f,fontdata,specification)
             local encoding=encodings[encoding]
             local language=languages[language]
             if encoding and language then
-              local name=reservednames[readushort(f)]
+              local index=readushort(f)
+              local name=reservednames[index]
               if name then
                 namelist[#namelist+1]={
                   platform=platform,
@@ -8334,7 +8365,13 @@ function readers.name(f,fontdata,specification)
                   offset=start+readushort(f),
                 }
               else
-                skipshort(f,2)
+namelist[#namelist+1]={
+  platform=platform,
+  encoding=encoding,
+  language=language,
+  length=readushort(f),
+  offset=start+readushort(f),
+}
               end
             else
               skipshort(f,3)
@@ -8351,12 +8388,13 @@ function readers.name(f,fontdata,specification)
     end
     local names={}
     local done={}
+    local extras={}
     local function filter(platform,e,l)
       local namelist=namelists[platform]
       for i=1,#namelist do
         local name=namelist[i]
         local nametag=name.name
-        if not done[nametag] then
+        if not done[nametag or i] then
           local encoding=name.encoding
           local language=name.language
           if (not e or encoding==e) and (not l or language==l) then
@@ -8369,13 +8407,16 @@ function readers.name(f,fontdata,specification)
             if decoder then
               content=decoder(content)
             end
-            names[nametag]={
-              content=content,
-              platform=platform,
-              encoding=encoding,
-              language=language,
-            }
-            done[nametag]=true
+            if nametag then
+              names[nametag]={
+                content=content,
+                platform=platform,
+                encoding=encoding,
+                language=language,
+              }
+            end
+            extras[i-1]=content
+            done[nametag or i]=true
           end
         end
       end
@@ -8386,6 +8427,7 @@ function readers.name(f,fontdata,specification)
     filter("macintosh")
     filter("unicode")
     fontdata.names=names
+    fontdata.extras=extras
     if specification.platformnames then
       local collected={}
       for platform,namelist in next,namelists do
@@ -8760,7 +8802,8 @@ local sequence={
 }
 local supported={}
 for i=1,#sequence do
-  local sp,se,sf=unpack(sequence[i])
+  local si=sequence[i]
+  local sp,se,sf=si[1],si[2],si[3]
   local p=supported[sp]
   if not p then
     p={}
@@ -9136,7 +9179,8 @@ function readers.cmap(f,fontdata,specification)
       end
       local ok=false
       for i=1,#sequence do
-        local sp,se,sf=unpack(sequence[i])
+        local si=sequence[i]
+        local sp,se,sf=si[1],si[2],si[3]
         if checkcmap(f,fontdata,records,sp,se,sf)>0 then
           ok=true
         end
@@ -11595,6 +11639,7 @@ local streamreader=readers.streamreader
 local setposition=streamreader.setposition
 local getposition=streamreader.getposition
 local skipshort=streamreader.skipshort
+local skipbytes=streamreader.skip
 local readushort=streamreader.readcardinal2 
 local readulong=streamreader.readcardinal4 
 local readshort=streamreader.readinteger2  
@@ -11602,6 +11647,9 @@ local readfword=readshort
 local readstring=streamreader.readstring
 local readtag=streamreader.readtag
 local readbytes=streamreader.readbytes
+local readfixed=streamreader.readfixed4
+local read2dot14=streamreader.read2dot14
+local readinteger=streamreader.readinteger1
 local gsubhandlers={}
 local gposhandlers={}
 local lookupidoffset=-1  
@@ -13699,6 +13747,166 @@ function readers.svg(f,fontdata,specification)
       fontdata.svgshapes=entries
     end
     fontdata.hascolor=true
+  end
+end
+function readers.fvar(f,fontdata,specification)
+  local datatable=fontdata.tables.fvar
+  if datatable then
+    local tableoffset=datatable.offset
+    setposition(f,tableoffset)
+    local majorversion=readushort(f) 
+    local minorversion=readushort(f) 
+    if majorversion~=1 and minorversion~=0 then
+      report("table version %a.%a of %a is not supported (yet), maybe font %s is bad",
+        majorversion,minorversion,"fvar",fontdata.filename)
+      return
+    end
+    local offsettoaxis=tableoffset+readushort(f)
+    local nofsizepairs=readushort(f)
+    local nofaxis=readushort(f)
+    local sizeofaxis=readushort(f)
+    local nofinstances=readushort(f)
+    local sizeofinstances=readushort(f)
+    local extras=fontdata.extras
+    local axis={}
+    local instances={}
+    setposition(f,offsettoaxis)
+    local function readtuple(f)
+      local t={}
+      for i=1,nofaxis do
+        t[i]=readfixed(f)
+      end
+      return t
+    end
+    for i=1,nofaxis do
+      axis[i]={
+        tag=readtag(f),
+        minimum=readfixed(f),
+        default=readfixed(f),
+        maximum=readfixed(f),
+        flags=readushort(f),
+        nameid=extras[readushort(f)],
+      }
+      local n=sizeofaxis-20
+      if n>0 then
+        skipbytes(f,n)
+      elseif n<0 then
+      end
+    end
+    for i=1,nofinstances do
+      local subfamid=readushort(f)
+      local flags=readushort(f)
+      local tuple=readtuple(f)
+      local psnameid=false
+      local nofbytes=2+2+#tuple*2
+      if nofbytes<sizeofinstances then
+        psnameid=readushort(f)
+        nofbytes=nofbytes+2
+      end
+      instances[i]={
+        subfamily=extras[subfamid],
+        flags=flags,
+        tuple=tuple,
+        psname=extras[psnameid] or nil,
+      }
+      if nofbytes>0 then
+        skipbytes(f,nofbytes)
+      end
+    end
+    fontdata.variable={
+      axis=axis,
+      instances=instances,
+    }
+  end
+end
+local tags={
+  hasc="",
+  hdsc="",
+  vasc="",
+  vdsc="",
+  vlgp="",
+  xhgt="",
+  cpht="",
+}
+function readers.mvar(f,fontdata,specification)
+  local datatable=fontdata.tables.mvar
+  if datatable then
+    local tableoffset=datatable.offset
+    setposition(f,tableoffset)
+    local majorversion=readushort(f) 
+    local minorversion=readushort(f) 
+    if majorversion~=1 and minorversion~=0 then
+      report("table version %a.%a of %a is not supported (yet), maybe font %s is bad",
+        majorversion,minorversion,"fvar",fontdata.filename)
+      return
+    end
+    local nofaxis=readushort(f)
+    local recordsize=readushort(f)
+    local nofrecords=readushort(f)
+    local offsettostore=tableoffset+readushort(f)
+    local records={}
+    local dimensions={}
+    local store={}
+    local regions={}
+    for i=1,nofrecords do
+      local tag=readtag(f)
+      if tags[tag] then
+        dimensions[tag]={
+          outer=readushort(f),
+          inner=readushort(f),
+        }
+      else
+        skipshort(f,2)
+      end
+    end
+    setposition(f,offsettostore)
+    local nofaxis=readushort(f)
+    local nofregions=readushort(f)
+    for i=1,nofregions do
+      local t={}
+      for i=1,nofaxis do
+        t[i]={
+          start=read2dot14(f),
+          peak=read2dot14(f),
+          stop=read2dot14(f),
+        }
+      end
+      regions[i]=t
+    end
+    local format=readushort(f) 
+    local offset=offsettostore+readulong(f)
+    local nofdata=readushort(f)
+    local data={}
+    for i=1,nofdata do
+      data[i]=readulong(f)+offset
+    end
+    for i=1,nofdata do
+      local offset=data[i]
+      setposition(f,offset)
+      local nofdeltas=readushort(f)
+      local nofshort=readushort(f)
+      local nofregions=readushort(f)
+      local deltas={}
+      local regions={}
+      local length=nofshort+nofregions
+      for i=1,nofregions do
+        regions[i]=readushort(f)
+      end
+      for i=1,nofdeltas do
+        local t={}
+        for i=1,nofshort do
+          t[i]=readushort(f)
+        end
+        for i=1,nofregions do
+          t[nofshort+i]=readinteger(f)
+        end
+        deltas[i]=t
+      end
+      data[i]={
+        regions=regions,
+        deltas=deltas,
+      }
+    end
   end
 end
 
@@ -16773,7 +16981,7 @@ if not modules then modules={} end modules ['font-otj']={
   license="see context related readme files",
 }
 if not nodes.properties then return end
-local next,rawget=next,rawget
+local next,rawget,tonumber=next,rawget,tonumber
 local fastcopy=table.fastcopy
 local registertracker=trackers.register
 local trace_injections=false registertracker("fonts.injections",function(v) trace_injections=v end)
@@ -18490,7 +18698,6 @@ local attributes=attributes
 local fonts=fonts
 local otf=fonts.handlers.otf
 local tracers=nodes.tracers
-local trace_lookups=false registertracker("otf.lookups",function(v) trace_lookups=v end)
 local trace_singles=false registertracker("otf.singles",function(v) trace_singles=v end)
 local trace_multiples=false registertracker("otf.multiples",function(v) trace_multiples=v end)
 local trace_alternatives=false registertracker("otf.alternatives",function(v) trace_alternatives=v end)
@@ -18905,7 +19112,9 @@ local function multiple_glyphs(head,start,multiple,ignoremarks,what)
 end
 local function get_alternative_glyph(start,alternatives,value)
   local n=#alternatives
-  if value=="random" then
+  if n==1 then
+    return alternatives[1],trace_alternatives and "1 (only one present)"
+  elseif value=="random" then
     local r=getrandom and getrandom("glyph",1,n) or random(1,n)
     return alternatives[r],trace_alternatives and formatters["value %a, taking %a"](value,r)
   elseif value=="first" then
@@ -20311,7 +20520,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
       local l=ck[5]
       size=l-f+1
       if size>1 then
-        local discfound=nil
+        local discfound 
         local n=f+1
         last=startnext 
         while n<=l do
@@ -20432,7 +20641,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             prev=getprev(sweepnode)
           end
           if prev then
-            local discfound=nil
+            local discfound 
             local n=f-1
             while n>=1 do
               if prev then
@@ -20541,7 +20750,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                     end
                   end
                   prev=getprev(prev)
-                elseif seq[n][32] and id==glue_code and isspace(prev,threshold,id) then
+                elseif id==glue_code and seq[n][32] and isspace(prev,threshold,id) then
                   n=n-1
                   prev=getprev(prev)
                 else
@@ -20562,13 +20771,11 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
       end
       if match and s>l then
         local current=last and getnext(last)
-        if not current then
-          if sweeptype=="post" or sweeptype=="replace" then
-            current=getnext(sweepnode)
-          end
+        if not current and (sweeptype=="post" or sweeptype=="replace") then
+          current=getnext(sweepnode)
         end
         if current then
-          local discfound=nil
+          local discfound
           local n=l+1
           while n<=s do
             if current then
@@ -20668,7 +20875,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                 else
                 end
                 current=getnext(current)
-              elseif seq[n][32] and id==glue_code and isspace(current,threshold,id) then
+              elseif id==glue_code and seq[n][32] and isspace(current,threshold,id) then
                 n=n+1
                 current=getnext(current)
               else
@@ -21511,6 +21718,8 @@ local function featuresprocessor(head,font,attr)
               end
             elseif char==false then
               start=getnext(start)
+            elseif id==glue_code then
+              start=getnext(start)
             elseif id==disc_code then
               local ok
               if gpossing then
@@ -21573,6 +21782,8 @@ local function featuresprocessor(head,font,attr)
               start=getnext(start)
             end
           elseif char==false then
+            start=getnext(start)
+          elseif id==glue_code then
             start=getnext(start)
           elseif id==disc_code then
             local ok
@@ -24278,13 +24489,15 @@ local function addfeature(data,feature,specifications)
   local coveractions=coverup.actions
   local stepkey=coverup.stepkey
   local register=coverup.register
-  local function prepare_substitution(list,featuretype)
+  local function prepare_substitution(list,featuretype,nocheck)
     local coverage={}
     local cover=coveractions[featuretype]
     for code,replacement in next,list do
       local unicode=tounicode(code)
       local description=descriptions[unicode]
-      if description then
+      if not nocheck and not description then
+        skip=skip+1
+      else
         if type(replacement)=="table" then
           replacement=replacement[1]
         end
@@ -24295,19 +24508,17 @@ local function addfeature(data,feature,specifications)
         else
           skip=skip+1
         end
-      else
-        skip=skip+1
       end
     end
     return coverage
   end
-  local function prepare_alternate(list,featuretype)
+  local function prepare_alternate(list,featuretype,nocheck)
     local coverage={}
     local cover=coveractions[featuretype]
     for code,replacement in next,list do
       local unicode=tounicode(code)
       local description=descriptions[unicode]
-      if not description then
+      if not nocheck and not description then
         skip=skip+1
       elseif type(replacement)=="table" then
         local r={}
@@ -24329,13 +24540,13 @@ local function addfeature(data,feature,specifications)
     end
     return coverage
   end
-  local function prepare_multiple(list,featuretype)
+  local function prepare_multiple(list,featuretype,nocheck)
     local coverage={}
     local cover=coveractions[featuretype]
     for code,replacement in next,list do
       local unicode=tounicode(code)
       local description=descriptions[unicode]
-      if not description then
+      if not nocheck and not description then
         skip=skip+1
       elseif type(replacement)=="table" then
         local r,n={},0
@@ -24364,13 +24575,15 @@ local function addfeature(data,feature,specifications)
     end
     return coverage
   end
-  local function prepare_ligature(list,featuretype)
+  local function prepare_ligature(list,featuretype,nocheck)
     local coverage={}
     local cover=coveractions[featuretype]
     for code,ligature in next,list do
       local unicode=tounicode(code)
       local description=descriptions[unicode]
-      if description then
+      if not nocheck and not description then
+        skip=skip+1
+      else
         if type(ligature)=="string" then
           ligature={ lpegmatch(splitter,ligature) }
         end
@@ -24391,8 +24604,6 @@ local function addfeature(data,feature,specifications)
         else
           skip=skip+1
         end
-      else
-        skip=skip+1
       end
     end
     return coverage
@@ -24620,6 +24831,7 @@ local function addfeature(data,feature,specifications)
       local askedsteps=specification.steps or specification.subtables or { specification.data } or {}
       local featuretype=normalized[specification.type or "substitution"] or "substitution"
       local featureflags=specification.flags or noflags
+      local nocheck=specification.nocheck
       local featureorder=specification.order or { feature }
       local featurechain=(featuretype=="chainsubstitution" or featuretype=="chainposition") and 1 or 0
       local nofsteps=0
@@ -24640,13 +24852,13 @@ local function addfeature(data,feature,specifications)
             local coverage=nil
             local format=nil
             if featuretype=="substitution" then
-              coverage=prepare_substitution(list,featuretype)
+              coverage=prepare_substitution(list,featuretype,nocheck)
             elseif featuretype=="ligature" then
-              coverage=prepare_ligature(list,featuretype)
+              coverage=prepare_ligature(list,featuretype,nocheck)
             elseif featuretype=="alternate" then
-              coverage=prepare_alternate(list,featuretype)
+              coverage=prepare_alternate(list,featuretype,nocheck)
             elseif featuretype=="multiple" then
-              coverage=prepare_multiple(list,featuretype)
+              coverage=prepare_multiple(list,featuretype,nocheck)
             elseif featuretype=="kern" then
               format="kern"
               coverage=prepare_kern(list,featuretype)
@@ -24673,16 +24885,16 @@ local function addfeature(data,feature,specifications)
         local format=nil
         if featuretype=="substitution" then
           category="gsub"
-          coverage=prepare_substitution(list,featuretype)
+          coverage=prepare_substitution(list,featuretype,nocheck)
         elseif featuretype=="ligature" then
           category="gsub"
-          coverage=prepare_ligature(list,featuretype)
+          coverage=prepare_ligature(list,featuretype,nocheck)
         elseif featuretype=="alternate" then
           category="gsub"
-          coverage=prepare_alternate(list,featuretype)
+          coverage=prepare_alternate(list,featuretype,nocheck)
         elseif featuretype=="multiple" then
           category="gsub"
-          coverage=prepare_multiple(list,featuretype)
+          coverage=prepare_multiple(list,featuretype,nocheck)
         elseif featuretype=="kern" then
           category="gpos"
           format="kern"
@@ -27328,6 +27540,2076 @@ otffeatures.register {
   }
 }
 
+end -- closure
+
+do -- begin closure to overcome local limits and interference
+
+
+fonts.handlers.otf.addfeature {
+ ["dataset"]={
+ {
+  ["data"]={
+  ["À"]={ "A","̀" },
+  ["Á"]={ "A","́" },
+  ["Â"]={ "A","̂" },
+  ["Ã"]={ "A","̃" },
+  ["Ä"]={ "A","̈" },
+  ["Å"]={ "A","̊" },
+  ["Ç"]={ "C","̧" },
+  ["È"]={ "E","̀" },
+  ["É"]={ "E","́" },
+  ["Ê"]={ "E","̂" },
+  ["Ë"]={ "E","̈" },
+  ["Ì"]={ "I","̀" },
+  ["Í"]={ "I","́" },
+  ["Î"]={ "I","̂" },
+  ["Ï"]={ "I","̈" },
+  ["Ñ"]={ "N","̃" },
+  ["Ò"]={ "O","̀" },
+  ["Ó"]={ "O","́" },
+  ["Ô"]={ "O","̂" },
+  ["Õ"]={ "O","̃" },
+  ["Ö"]={ "O","̈" },
+  ["Ù"]={ "U","̀" },
+  ["Ú"]={ "U","́" },
+  ["Û"]={ "U","̂" },
+  ["Ü"]={ "U","̈" },
+  ["Ý"]={ "Y","́" },
+  ["à"]={ "a","̀" },
+  ["á"]={ "a","́" },
+  ["â"]={ "a","̂" },
+  ["ã"]={ "a","̃" },
+  ["ä"]={ "a","̈" },
+  ["å"]={ "a","̊" },
+  ["ç"]={ "c","̧" },
+  ["è"]={ "e","̀" },
+  ["é"]={ "e","́" },
+  ["ê"]={ "e","̂" },
+  ["ë"]={ "e","̈" },
+  ["ì"]={ "i","̀" },
+  ["í"]={ "i","́" },
+  ["î"]={ "i","̂" },
+  ["ï"]={ "i","̈" },
+  ["ñ"]={ "n","̃" },
+  ["ò"]={ "o","̀" },
+  ["ó"]={ "o","́" },
+  ["ô"]={ "o","̂" },
+  ["õ"]={ "o","̃" },
+  ["ö"]={ "o","̈" },
+  ["ù"]={ "u","̀" },
+  ["ú"]={ "u","́" },
+  ["û"]={ "u","̂" },
+  ["ü"]={ "u","̈" },
+  ["ý"]={ "y","́" },
+  ["ÿ"]={ "y","̈" },
+  ["Ā"]={ "A","̄" },
+  ["ā"]={ "a","̄" },
+  ["Ă"]={ "A","̆" },
+  ["ă"]={ "a","̆" },
+  ["Ą"]={ "A","̨" },
+  ["ą"]={ "a","̨" },
+  ["Ć"]={ "C","́" },
+  ["ć"]={ "c","́" },
+  ["Ĉ"]={ "C","̂" },
+  ["ĉ"]={ "c","̂" },
+  ["Ċ"]={ "C","̇" },
+  ["ċ"]={ "c","̇" },
+  ["Č"]={ "C","̌" },
+  ["č"]={ "c","̌" },
+  ["Ď"]={ "D","̌" },
+  ["ď"]={ "d","̌" },
+  ["Ē"]={ "E","̄" },
+  ["ē"]={ "e","̄" },
+  ["Ĕ"]={ "E","̆" },
+  ["ĕ"]={ "e","̆" },
+  ["Ė"]={ "E","̇" },
+  ["ė"]={ "e","̇" },
+  ["Ę"]={ "E","̨" },
+  ["ę"]={ "e","̨" },
+  ["Ě"]={ "E","̌" },
+  ["ě"]={ "e","̌" },
+  ["Ĝ"]={ "G","̂" },
+  ["ĝ"]={ "g","̂" },
+  ["Ğ"]={ "G","̆" },
+  ["ğ"]={ "g","̆" },
+  ["Ġ"]={ "G","̇" },
+  ["ġ"]={ "g","̇" },
+  ["Ģ"]={ "G","̧" },
+  ["ģ"]={ "g","̧" },
+  ["Ĥ"]={ "H","̂" },
+  ["ĥ"]={ "h","̂" },
+  ["Ĩ"]={ "I","̃" },
+  ["ĩ"]={ "i","̃" },
+  ["Ī"]={ "I","̄" },
+  ["ī"]={ "i","̄" },
+  ["Ĭ"]={ "I","̆" },
+  ["ĭ"]={ "i","̆" },
+  ["Į"]={ "I","̨" },
+  ["į"]={ "i","̨" },
+  ["İ"]={ "I","̇" },
+  ["Ĵ"]={ "J","̂" },
+  ["ĵ"]={ "j","̂" },
+  ["Ķ"]={ "K","̧" },
+  ["ķ"]={ "k","̧" },
+  ["Ĺ"]={ "L","́" },
+  ["ĺ"]={ "l","́" },
+  ["Ļ"]={ "L","̧" },
+  ["ļ"]={ "l","̧" },
+  ["Ľ"]={ "L","̌" },
+  ["ľ"]={ "l","̌" },
+  ["Ń"]={ "N","́" },
+  ["ń"]={ "n","́" },
+  ["Ņ"]={ "N","̧" },
+  ["ņ"]={ "n","̧" },
+  ["Ň"]={ "N","̌" },
+  ["ň"]={ "n","̌" },
+  ["Ō"]={ "O","̄" },
+  ["ō"]={ "o","̄" },
+  ["Ŏ"]={ "O","̆" },
+  ["ŏ"]={ "o","̆" },
+  ["Ő"]={ "O","̋" },
+  ["ő"]={ "o","̋" },
+  ["Ŕ"]={ "R","́" },
+  ["ŕ"]={ "r","́" },
+  ["Ŗ"]={ "R","̧" },
+  ["ŗ"]={ "r","̧" },
+  ["Ř"]={ "R","̌" },
+  ["ř"]={ "r","̌" },
+  ["Ś"]={ "S","́" },
+  ["ś"]={ "s","́" },
+  ["Ŝ"]={ "S","̂" },
+  ["ŝ"]={ "s","̂" },
+  ["Ş"]={ "S","̧" },
+  ["ş"]={ "s","̧" },
+  ["Š"]={ "S","̌" },
+  ["š"]={ "s","̌" },
+  ["Ţ"]={ "T","̧" },
+  ["ţ"]={ "t","̧" },
+  ["Ť"]={ "T","̌" },
+  ["ť"]={ "t","̌" },
+  ["Ũ"]={ "U","̃" },
+  ["ũ"]={ "u","̃" },
+  ["Ū"]={ "U","̄" },
+  ["ū"]={ "u","̄" },
+  ["Ŭ"]={ "U","̆" },
+  ["ŭ"]={ "u","̆" },
+  ["Ů"]={ "U","̊" },
+  ["ů"]={ "u","̊" },
+  ["Ű"]={ "U","̋" },
+  ["ű"]={ "u","̋" },
+  ["Ų"]={ "U","̨" },
+  ["ų"]={ "u","̨" },
+  ["Ŵ"]={ "W","̂" },
+  ["ŵ"]={ "w","̂" },
+  ["Ŷ"]={ "Y","̂" },
+  ["ŷ"]={ "y","̂" },
+  ["Ÿ"]={ "Y","̈" },
+  ["Ź"]={ "Z","́" },
+  ["ź"]={ "z","́" },
+  ["Ż"]={ "Z","̇" },
+  ["ż"]={ "z","̇" },
+  ["Ž"]={ "Z","̌" },
+  ["ž"]={ "z","̌" },
+  ["Ơ"]={ "O","̛" },
+  ["ơ"]={ "o","̛" },
+  ["Ư"]={ "U","̛" },
+  ["ư"]={ "u","̛" },
+  ["Ǎ"]={ "A","̌" },
+  ["ǎ"]={ "a","̌" },
+  ["Ǐ"]={ "I","̌" },
+  ["ǐ"]={ "i","̌" },
+  ["Ǒ"]={ "O","̌" },
+  ["ǒ"]={ "o","̌" },
+  ["Ǔ"]={ "U","̌" },
+  ["ǔ"]={ "u","̌" },
+  ["Ǖ"]={ "Ü","̄" },
+  ["ǖ"]={ "ü","̄" },
+  ["Ǘ"]={ "Ü","́" },
+  ["ǘ"]={ "ü","́" },
+  ["Ǚ"]={ "Ü","̌" },
+  ["ǚ"]={ "ü","̌" },
+  ["Ǜ"]={ "Ü","̀" },
+  ["ǜ"]={ "ü","̀" },
+  ["Ǟ"]={ "Ä","̄" },
+  ["ǟ"]={ "ä","̄" },
+  ["Ǡ"]={ "Ȧ","̄" },
+  ["ǡ"]={ "ȧ","̄" },
+  ["Ǣ"]={ "Æ","̄" },
+  ["ǣ"]={ "æ","̄" },
+  ["Ǧ"]={ "G","̌" },
+  ["ǧ"]={ "g","̌" },
+  ["Ǩ"]={ "K","̌" },
+  ["ǩ"]={ "k","̌" },
+  ["Ǫ"]={ "O","̨" },
+  ["ǫ"]={ "o","̨" },
+  ["Ǭ"]={ "Ǫ","̄" },
+  ["ǭ"]={ "ǫ","̄" },
+  ["Ǯ"]={ "Ʒ","̌" },
+  ["ǯ"]={ "ʒ","̌" },
+  ["ǰ"]={ "j","̌" },
+  ["Ǵ"]={ "G","́" },
+  ["ǵ"]={ "g","́" },
+  ["Ǹ"]={ "N","̀" },
+  ["ǹ"]={ "n","̀" },
+  ["Ǻ"]={ "Å","́" },
+  ["ǻ"]={ "å","́" },
+  ["Ǽ"]={ "Æ","́" },
+  ["ǽ"]={ "æ","́" },
+  ["Ǿ"]={ "Ø","́" },
+  ["ǿ"]={ "ø","́" },
+  ["Ȁ"]={ "A","̏" },
+  ["ȁ"]={ "a","̏" },
+  ["Ȃ"]={ "A","̑" },
+  ["ȃ"]={ "a","̑" },
+  ["Ȅ"]={ "E","̏" },
+  ["ȅ"]={ "e","̏" },
+  ["Ȇ"]={ "E","̑" },
+  ["ȇ"]={ "e","̑" },
+  ["Ȉ"]={ "I","̏" },
+  ["ȉ"]={ "i","̏" },
+  ["Ȋ"]={ "I","̑" },
+  ["ȋ"]={ "i","̑" },
+  ["Ȍ"]={ "O","̏" },
+  ["ȍ"]={ "o","̏" },
+  ["Ȏ"]={ "O","̑" },
+  ["ȏ"]={ "o","̑" },
+  ["Ȑ"]={ "R","̏" },
+  ["ȑ"]={ "r","̏" },
+  ["Ȓ"]={ "R","̑" },
+  ["ȓ"]={ "r","̑" },
+  ["Ȕ"]={ "U","̏" },
+  ["ȕ"]={ "u","̏" },
+  ["Ȗ"]={ "U","̑" },
+  ["ȗ"]={ "u","̑" },
+  ["Ș"]={ "S","̦" },
+  ["ș"]={ "s","̦" },
+  ["Ț"]={ "T","̦" },
+  ["ț"]={ "t","̦" },
+  ["Ȟ"]={ "H","̌" },
+  ["ȟ"]={ "h","̌" },
+  ["Ȧ"]={ "A","̇" },
+  ["ȧ"]={ "a","̇" },
+  ["Ȩ"]={ "E","̧" },
+  ["ȩ"]={ "e","̧" },
+  ["Ȫ"]={ "Ö","̄" },
+  ["ȫ"]={ "ö","̄" },
+  ["Ȭ"]={ "Õ","̄" },
+  ["ȭ"]={ "õ","̄" },
+  ["Ȯ"]={ "O","̇" },
+  ["ȯ"]={ "o","̇" },
+  ["Ȱ"]={ "Ȯ","̄" },
+  ["ȱ"]={ "ȯ","̄" },
+  ["Ȳ"]={ "Y","̄" },
+  ["ȳ"]={ "y","̄" },
+  ["̈́"]={ "̈","́" },
+  ["΅"]={ "¨","́" },
+  ["Ά"]={ "Α","́" },
+  ["Έ"]={ "Ε","́" },
+  ["Ή"]={ "Η","́" },
+  ["Ί"]={ "Ι","́" },
+  ["Ό"]={ "Ο","́" },
+  ["Ύ"]={ "Υ","́" },
+  ["Ώ"]={ "Ω","́" },
+  ["ΐ"]={ "ϊ","́" },
+  ["Ϊ"]={ "Ι","̈" },
+  ["Ϋ"]={ "Υ","̈" },
+  ["ά"]={ "α","́" },
+  ["έ"]={ "ε","́" },
+  ["ή"]={ "η","́" },
+  ["ί"]={ "ι","́" },
+  ["ΰ"]={ "ϋ","́" },
+  ["ϊ"]={ "ι","̈" },
+  ["ϋ"]={ "υ","̈" },
+  ["ό"]={ "ο","́" },
+  ["ύ"]={ "υ","́" },
+  ["ώ"]={ "ω","́" },
+  ["ϓ"]={ "ϒ","́" },
+  ["ϔ"]={ "ϒ","̈" },
+  ["Ѐ"]={ "Е","̀" },
+  ["Ё"]={ "Е","̈" },
+  ["Ѓ"]={ "Г","́" },
+  ["Ї"]={ "І","̈" },
+  ["Ќ"]={ "К","́" },
+  ["Ѝ"]={ "И","̀" },
+  ["Ў"]={ "У","̆" },
+  ["Й"]={ "И","̆" },
+  ["й"]={ "и","̆" },
+  ["ѐ"]={ "е","̀" },
+  ["ё"]={ "е","̈" },
+  ["ѓ"]={ "г","́" },
+  ["ї"]={ "і","̈" },
+  ["ќ"]={ "к","́" },
+  ["ѝ"]={ "и","̀" },
+  ["ў"]={ "у","̆" },
+  ["Ѷ"]={ "Ѵ","̏" },
+  ["ѷ"]={ "ѵ","̏" },
+  ["Ӂ"]={ "Ж","̆" },
+  ["ӂ"]={ "ж","̆" },
+  ["Ӑ"]={ "А","̆" },
+  ["ӑ"]={ "а","̆" },
+  ["Ӓ"]={ "А","̈" },
+  ["ӓ"]={ "а","̈" },
+  ["Ӗ"]={ "Е","̆" },
+  ["ӗ"]={ "е","̆" },
+  ["Ӛ"]={ "Ә","̈" },
+  ["ӛ"]={ "ә","̈" },
+  ["Ӝ"]={ "Ж","̈" },
+  ["ӝ"]={ "ж","̈" },
+  ["Ӟ"]={ "З","̈" },
+  ["ӟ"]={ "з","̈" },
+  ["Ӣ"]={ "И","̄" },
+  ["ӣ"]={ "и","̄" },
+  ["Ӥ"]={ "И","̈" },
+  ["ӥ"]={ "и","̈" },
+  ["Ӧ"]={ "О","̈" },
+  ["ӧ"]={ "о","̈" },
+  ["Ӫ"]={ "Ө","̈" },
+  ["ӫ"]={ "ө","̈" },
+  ["Ӭ"]={ "Э","̈" },
+  ["ӭ"]={ "э","̈" },
+  ["Ӯ"]={ "У","̄" },
+  ["ӯ"]={ "у","̄" },
+  ["Ӱ"]={ "У","̈" },
+  ["ӱ"]={ "у","̈" },
+  ["Ӳ"]={ "У","̋" },
+  ["ӳ"]={ "у","̋" },
+  ["Ӵ"]={ "Ч","̈" },
+  ["ӵ"]={ "ч","̈" },
+  ["Ӹ"]={ "Ы","̈" },
+  ["ӹ"]={ "ы","̈" },
+  ["آ"]={ "ا","ٓ" },
+  ["أ"]={ "ا","ٔ" },
+  ["ؤ"]={ "و","ٔ" },
+  ["إ"]={ "ا","ٕ" },
+  ["ئ"]={ "ي","ٔ" },
+  ["ۀ"]={ "ە","ٔ" },
+  ["ۂ"]={ "ہ","ٔ" },
+  ["ۓ"]={ "ے","ٔ" },
+  ["ऩ"]={ "न","़" },
+  ["ऱ"]={ "र","़" },
+  ["ऴ"]={ "ळ","़" },
+  ["क़"]={ "क","़" },
+  ["ख़"]={ "ख","़" },
+  ["ग़"]={ "ग","़" },
+  ["ज़"]={ "ज","़" },
+  ["ड़"]={ "ड","़" },
+  ["ढ़"]={ "ढ","़" },
+  ["फ़"]={ "फ","़" },
+  ["य़"]={ "य","़" },
+  ["ো"]={ "ে","া" },
+  ["ৌ"]={ "ে","ৗ" },
+  ["ড়"]={ "ড","়" },
+  ["ঢ়"]={ "ঢ","়" },
+  ["য়"]={ "য","়" },
+  ["ਲ਼"]={ "ਲ","਼" },
+  ["ਸ਼"]={ "ਸ","਼" },
+  ["ਖ਼"]={ "ਖ","਼" },
+  ["ਗ਼"]={ "ਗ","਼" },
+  ["ਜ਼"]={ "ਜ","਼" },
+  ["ਫ਼"]={ "ਫ","਼" },
+  ["ୈ"]={ "େ","ୖ" },
+  ["ୋ"]={ "େ","ା" },
+  ["ୌ"]={ "େ","ୗ" },
+  ["ଡ଼"]={ "ଡ","଼" },
+  ["ଢ଼"]={ "ଢ","଼" },
+  ["ஔ"]={ "ஒ","ௗ" },
+  ["ொ"]={ "ெ","ா" },
+  ["ோ"]={ "ே","ா" },
+  ["ௌ"]={ "ெ","ௗ" },
+  ["ై"]={ "ె","ౖ" },
+  ["ೀ"]={ "ಿ","ೕ" },
+  ["ೇ"]={ "ೆ","ೕ" },
+  ["ೈ"]={ "ೆ","ೖ" },
+  ["ೊ"]={ "ೆ","ೂ" },
+  ["ೋ"]={ "ೊ","ೕ" },
+  ["ൊ"]={ "െ","ാ" },
+  ["ോ"]={ "േ","ാ" },
+  ["ൌ"]={ "െ","ൗ" },
+  ["ේ"]={ "ෙ","්" },
+  ["ො"]={ "ෙ","ා" },
+  ["ෝ"]={ "ො","්" },
+  ["ෞ"]={ "ෙ","ෟ" },
+  ["གྷ"]={ "ག","ྷ" },
+  ["ཌྷ"]={ "ཌ","ྷ" },
+  ["དྷ"]={ "ད","ྷ" },
+  ["བྷ"]={ "བ","ྷ" },
+  ["ཛྷ"]={ "ཛ","ྷ" },
+  ["ཀྵ"]={ "ཀ","ྵ" },
+  ["ཱི"]={ "ཱ","ི" },
+  ["ཱུ"]={ "ཱ","ུ" },
+  ["ྲྀ"]={ "ྲ","ྀ" },
+  ["ླྀ"]={ "ླ","ྀ" },
+  ["ཱྀ"]={ "ཱ","ྀ" },
+  ["ྒྷ"]={ "ྒ","ྷ" },
+  ["ྜྷ"]={ "ྜ","ྷ" },
+  ["ྡྷ"]={ "ྡ","ྷ" },
+  ["ྦྷ"]={ "ྦ","ྷ" },
+  ["ྫྷ"]={ "ྫ","ྷ" },
+  ["ྐྵ"]={ "ྐ","ྵ" },
+  ["ဦ"]={ "ဥ","ီ" },
+  ["ᬆ"]={ "ᬅ","ᬵ" },
+  ["ᬈ"]={ "ᬇ","ᬵ" },
+  ["ᬊ"]={ "ᬉ","ᬵ" },
+  ["ᬌ"]={ "ᬋ","ᬵ" },
+  ["ᬎ"]={ "ᬍ","ᬵ" },
+  ["ᬒ"]={ "ᬑ","ᬵ" },
+  ["ᬻ"]={ "ᬺ","ᬵ" },
+  ["ᬽ"]={ "ᬼ","ᬵ" },
+  ["ᭀ"]={ "ᬾ","ᬵ" },
+  ["ᭁ"]={ "ᬿ","ᬵ" },
+  ["ᭃ"]={ "ᭂ","ᬵ" },
+  ["Ḁ"]={ "A","̥" },
+  ["ḁ"]={ "a","̥" },
+  ["Ḃ"]={ "B","̇" },
+  ["ḃ"]={ "b","̇" },
+  ["Ḅ"]={ "B","̣" },
+  ["ḅ"]={ "b","̣" },
+  ["Ḇ"]={ "B","̱" },
+  ["ḇ"]={ "b","̱" },
+  ["Ḉ"]={ "Ç","́" },
+  ["ḉ"]={ "ç","́" },
+  ["Ḋ"]={ "D","̇" },
+  ["ḋ"]={ "d","̇" },
+  ["Ḍ"]={ "D","̣" },
+  ["ḍ"]={ "d","̣" },
+  ["Ḏ"]={ "D","̱" },
+  ["ḏ"]={ "d","̱" },
+  ["Ḑ"]={ "D","̧" },
+  ["ḑ"]={ "d","̧" },
+  ["Ḓ"]={ "D","̭" },
+  ["ḓ"]={ "d","̭" },
+  ["Ḕ"]={ "Ē","̀" },
+  ["ḕ"]={ "ē","̀" },
+  ["Ḗ"]={ "Ē","́" },
+  ["ḗ"]={ "ē","́" },
+  ["Ḙ"]={ "E","̭" },
+  ["ḙ"]={ "e","̭" },
+  ["Ḛ"]={ "E","̰" },
+  ["ḛ"]={ "e","̰" },
+  ["Ḝ"]={ "Ȩ","̆" },
+  ["ḝ"]={ "ȩ","̆" },
+  ["Ḟ"]={ "F","̇" },
+  ["ḟ"]={ "f","̇" },
+  ["Ḡ"]={ "G","̄" },
+  ["ḡ"]={ "g","̄" },
+  ["Ḣ"]={ "H","̇" },
+  ["ḣ"]={ "h","̇" },
+  ["Ḥ"]={ "H","̣" },
+  ["ḥ"]={ "h","̣" },
+  ["Ḧ"]={ "H","̈" },
+  ["ḧ"]={ "h","̈" },
+  ["Ḩ"]={ "H","̧" },
+  ["ḩ"]={ "h","̧" },
+  ["Ḫ"]={ "H","̮" },
+  ["ḫ"]={ "h","̮" },
+  ["Ḭ"]={ "I","̰" },
+  ["ḭ"]={ "i","̰" },
+  ["Ḯ"]={ "Ï","́" },
+  ["ḯ"]={ "ï","́" },
+  ["Ḱ"]={ "K","́" },
+  ["ḱ"]={ "k","́" },
+  ["Ḳ"]={ "K","̣" },
+  ["ḳ"]={ "k","̣" },
+  ["Ḵ"]={ "K","̱" },
+  ["ḵ"]={ "k","̱" },
+  ["Ḷ"]={ "L","̣" },
+  ["ḷ"]={ "l","̣" },
+  ["Ḹ"]={ "Ḷ","̄" },
+  ["ḹ"]={ "ḷ","̄" },
+  ["Ḻ"]={ "L","̱" },
+  ["ḻ"]={ "l","̱" },
+  ["Ḽ"]={ "L","̭" },
+  ["ḽ"]={ "l","̭" },
+  ["Ḿ"]={ "M","́" },
+  ["ḿ"]={ "m","́" },
+  ["Ṁ"]={ "M","̇" },
+  ["ṁ"]={ "m","̇" },
+  ["Ṃ"]={ "M","̣" },
+  ["ṃ"]={ "m","̣" },
+  ["Ṅ"]={ "N","̇" },
+  ["ṅ"]={ "n","̇" },
+  ["Ṇ"]={ "N","̣" },
+  ["ṇ"]={ "n","̣" },
+  ["Ṉ"]={ "N","̱" },
+  ["ṉ"]={ "n","̱" },
+  ["Ṋ"]={ "N","̭" },
+  ["ṋ"]={ "n","̭" },
+  ["Ṍ"]={ "Õ","́" },
+  ["ṍ"]={ "õ","́" },
+  ["Ṏ"]={ "Õ","̈" },
+  ["ṏ"]={ "õ","̈" },
+  ["Ṑ"]={ "Ō","̀" },
+  ["ṑ"]={ "ō","̀" },
+  ["Ṓ"]={ "Ō","́" },
+  ["ṓ"]={ "ō","́" },
+  ["Ṕ"]={ "P","́" },
+  ["ṕ"]={ "p","́" },
+  ["Ṗ"]={ "P","̇" },
+  ["ṗ"]={ "p","̇" },
+  ["Ṙ"]={ "R","̇" },
+  ["ṙ"]={ "r","̇" },
+  ["Ṛ"]={ "R","̣" },
+  ["ṛ"]={ "r","̣" },
+  ["Ṝ"]={ "Ṛ","̄" },
+  ["ṝ"]={ "ṛ","̄" },
+  ["Ṟ"]={ "R","̱" },
+  ["ṟ"]={ "r","̱" },
+  ["Ṡ"]={ "S","̇" },
+  ["ṡ"]={ "s","̇" },
+  ["Ṣ"]={ "S","̣" },
+  ["ṣ"]={ "s","̣" },
+  ["Ṥ"]={ "Ś","̇" },
+  ["ṥ"]={ "ś","̇" },
+  ["Ṧ"]={ "Š","̇" },
+  ["ṧ"]={ "š","̇" },
+  ["Ṩ"]={ "Ṣ","̇" },
+  ["ṩ"]={ "ṣ","̇" },
+  ["Ṫ"]={ "T","̇" },
+  ["ṫ"]={ "t","̇" },
+  ["Ṭ"]={ "T","̣" },
+  ["ṭ"]={ "t","̣" },
+  ["Ṯ"]={ "T","̱" },
+  ["ṯ"]={ "t","̱" },
+  ["Ṱ"]={ "T","̭" },
+  ["ṱ"]={ "t","̭" },
+  ["Ṳ"]={ "U","̤" },
+  ["ṳ"]={ "u","̤" },
+  ["Ṵ"]={ "U","̰" },
+  ["ṵ"]={ "u","̰" },
+  ["Ṷ"]={ "U","̭" },
+  ["ṷ"]={ "u","̭" },
+  ["Ṹ"]={ "Ũ","́" },
+  ["ṹ"]={ "ũ","́" },
+  ["Ṻ"]={ "Ū","̈" },
+  ["ṻ"]={ "ū","̈" },
+  ["Ṽ"]={ "V","̃" },
+  ["ṽ"]={ "v","̃" },
+  ["Ṿ"]={ "V","̣" },
+  ["ṿ"]={ "v","̣" },
+  ["Ẁ"]={ "W","̀" },
+  ["ẁ"]={ "w","̀" },
+  ["Ẃ"]={ "W","́" },
+  ["ẃ"]={ "w","́" },
+  ["Ẅ"]={ "W","̈" },
+  ["ẅ"]={ "w","̈" },
+  ["Ẇ"]={ "W","̇" },
+  ["ẇ"]={ "w","̇" },
+  ["Ẉ"]={ "W","̣" },
+  ["ẉ"]={ "w","̣" },
+  ["Ẋ"]={ "X","̇" },
+  ["ẋ"]={ "x","̇" },
+  ["Ẍ"]={ "X","̈" },
+  ["ẍ"]={ "x","̈" },
+  ["Ẏ"]={ "Y","̇" },
+  ["ẏ"]={ "y","̇" },
+  ["Ẑ"]={ "Z","̂" },
+  ["ẑ"]={ "z","̂" },
+  ["Ẓ"]={ "Z","̣" },
+  ["ẓ"]={ "z","̣" },
+  ["Ẕ"]={ "Z","̱" },
+  ["ẕ"]={ "z","̱" },
+  ["ẖ"]={ "h","̱" },
+  ["ẗ"]={ "t","̈" },
+  ["ẘ"]={ "w","̊" },
+  ["ẙ"]={ "y","̊" },
+  ["ẛ"]={ "ſ","̇" },
+  ["Ạ"]={ "A","̣" },
+  ["ạ"]={ "a","̣" },
+  ["Ả"]={ "A","̉" },
+  ["ả"]={ "a","̉" },
+  ["Ấ"]={ "Â","́" },
+  ["ấ"]={ "â","́" },
+  ["Ầ"]={ "Â","̀" },
+  ["ầ"]={ "â","̀" },
+  ["Ẩ"]={ "Â","̉" },
+  ["ẩ"]={ "â","̉" },
+  ["Ẫ"]={ "Â","̃" },
+  ["ẫ"]={ "â","̃" },
+  ["Ậ"]={ "Ạ","̂" },
+  ["ậ"]={ "ạ","̂" },
+  ["Ắ"]={ "Ă","́" },
+  ["ắ"]={ "ă","́" },
+  ["Ằ"]={ "Ă","̀" },
+  ["ằ"]={ "ă","̀" },
+  ["Ẳ"]={ "Ă","̉" },
+  ["ẳ"]={ "ă","̉" },
+  ["Ẵ"]={ "Ă","̃" },
+  ["ẵ"]={ "ă","̃" },
+  ["Ặ"]={ "Ạ","̆" },
+  ["ặ"]={ "ạ","̆" },
+  ["Ẹ"]={ "E","̣" },
+  ["ẹ"]={ "e","̣" },
+  ["Ẻ"]={ "E","̉" },
+  ["ẻ"]={ "e","̉" },
+  ["Ẽ"]={ "E","̃" },
+  ["ẽ"]={ "e","̃" },
+  ["Ế"]={ "Ê","́" },
+  ["ế"]={ "ê","́" },
+  ["Ề"]={ "Ê","̀" },
+  ["ề"]={ "ê","̀" },
+  ["Ể"]={ "Ê","̉" },
+  ["ể"]={ "ê","̉" },
+  ["Ễ"]={ "Ê","̃" },
+  ["ễ"]={ "ê","̃" },
+  ["Ệ"]={ "Ẹ","̂" },
+  ["ệ"]={ "ẹ","̂" },
+  ["Ỉ"]={ "I","̉" },
+  ["ỉ"]={ "i","̉" },
+  ["Ị"]={ "I","̣" },
+  ["ị"]={ "i","̣" },
+  ["Ọ"]={ "O","̣" },
+  ["ọ"]={ "o","̣" },
+  ["Ỏ"]={ "O","̉" },
+  ["ỏ"]={ "o","̉" },
+  ["Ố"]={ "Ô","́" },
+  ["ố"]={ "ô","́" },
+  ["Ồ"]={ "Ô","̀" },
+  ["ồ"]={ "ô","̀" },
+  ["Ổ"]={ "Ô","̉" },
+  ["ổ"]={ "ô","̉" },
+  ["Ỗ"]={ "Ô","̃" },
+  ["ỗ"]={ "ô","̃" },
+  ["Ộ"]={ "Ọ","̂" },
+  ["ộ"]={ "ọ","̂" },
+  ["Ớ"]={ "Ơ","́" },
+  ["ớ"]={ "ơ","́" },
+  ["Ờ"]={ "Ơ","̀" },
+  ["ờ"]={ "ơ","̀" },
+  ["Ở"]={ "Ơ","̉" },
+  ["ở"]={ "ơ","̉" },
+  ["Ỡ"]={ "Ơ","̃" },
+  ["ỡ"]={ "ơ","̃" },
+  ["Ợ"]={ "Ơ","̣" },
+  ["ợ"]={ "ơ","̣" },
+  ["Ụ"]={ "U","̣" },
+  ["ụ"]={ "u","̣" },
+  ["Ủ"]={ "U","̉" },
+  ["ủ"]={ "u","̉" },
+  ["Ứ"]={ "Ư","́" },
+  ["ứ"]={ "ư","́" },
+  ["Ừ"]={ "Ư","̀" },
+  ["ừ"]={ "ư","̀" },
+  ["Ử"]={ "Ư","̉" },
+  ["ử"]={ "ư","̉" },
+  ["Ữ"]={ "Ư","̃" },
+  ["ữ"]={ "ư","̃" },
+  ["Ự"]={ "Ư","̣" },
+  ["ự"]={ "ư","̣" },
+  ["Ỳ"]={ "Y","̀" },
+  ["ỳ"]={ "y","̀" },
+  ["Ỵ"]={ "Y","̣" },
+  ["ỵ"]={ "y","̣" },
+  ["Ỷ"]={ "Y","̉" },
+  ["ỷ"]={ "y","̉" },
+  ["Ỹ"]={ "Y","̃" },
+  ["ỹ"]={ "y","̃" },
+  ["ἀ"]={ "α","̓" },
+  ["ἁ"]={ "α","̔" },
+  ["ἂ"]={ "ἀ","̀" },
+  ["ἃ"]={ "ἁ","̀" },
+  ["ἄ"]={ "ἀ","́" },
+  ["ἅ"]={ "ἁ","́" },
+  ["ἆ"]={ "ἀ","͂" },
+  ["ἇ"]={ "ἁ","͂" },
+  ["Ἀ"]={ "Α","̓" },
+  ["Ἁ"]={ "Α","̔" },
+  ["Ἂ"]={ "Ἀ","̀" },
+  ["Ἃ"]={ "Ἁ","̀" },
+  ["Ἄ"]={ "Ἀ","́" },
+  ["Ἅ"]={ "Ἁ","́" },
+  ["Ἆ"]={ "Ἀ","͂" },
+  ["Ἇ"]={ "Ἁ","͂" },
+  ["ἐ"]={ "ε","̓" },
+  ["ἑ"]={ "ε","̔" },
+  ["ἒ"]={ "ἐ","̀" },
+  ["ἓ"]={ "ἑ","̀" },
+  ["ἔ"]={ "ἐ","́" },
+  ["ἕ"]={ "ἑ","́" },
+  ["Ἐ"]={ "Ε","̓" },
+  ["Ἑ"]={ "Ε","̔" },
+  ["Ἒ"]={ "Ἐ","̀" },
+  ["Ἓ"]={ "Ἑ","̀" },
+  ["Ἔ"]={ "Ἐ","́" },
+  ["Ἕ"]={ "Ἑ","́" },
+  ["ἠ"]={ "η","̓" },
+  ["ἡ"]={ "η","̔" },
+  ["ἢ"]={ "ἠ","̀" },
+  ["ἣ"]={ "ἡ","̀" },
+  ["ἤ"]={ "ἠ","́" },
+  ["ἥ"]={ "ἡ","́" },
+  ["ἦ"]={ "ἠ","͂" },
+  ["ἧ"]={ "ἡ","͂" },
+  ["Ἠ"]={ "Η","̓" },
+  ["Ἡ"]={ "Η","̔" },
+  ["Ἢ"]={ "Ἠ","̀" },
+  ["Ἣ"]={ "Ἡ","̀" },
+  ["Ἤ"]={ "Ἠ","́" },
+  ["Ἥ"]={ "Ἡ","́" },
+  ["Ἦ"]={ "Ἠ","͂" },
+  ["Ἧ"]={ "Ἡ","͂" },
+  ["ἰ"]={ "ι","̓" },
+  ["ἱ"]={ "ι","̔" },
+  ["ἲ"]={ "ἰ","̀" },
+  ["ἳ"]={ "ἱ","̀" },
+  ["ἴ"]={ "ἰ","́" },
+  ["ἵ"]={ "ἱ","́" },
+  ["ἶ"]={ "ἰ","͂" },
+  ["ἷ"]={ "ἱ","͂" },
+  ["Ἰ"]={ "Ι","̓" },
+  ["Ἱ"]={ "Ι","̔" },
+  ["Ἲ"]={ "Ἰ","̀" },
+  ["Ἳ"]={ "Ἱ","̀" },
+  ["Ἴ"]={ "Ἰ","́" },
+  ["Ἵ"]={ "Ἱ","́" },
+  ["Ἶ"]={ "Ἰ","͂" },
+  ["Ἷ"]={ "Ἱ","͂" },
+  ["ὀ"]={ "ο","̓" },
+  ["ὁ"]={ "ο","̔" },
+  ["ὂ"]={ "ὀ","̀" },
+  ["ὃ"]={ "ὁ","̀" },
+  ["ὄ"]={ "ὀ","́" },
+  ["ὅ"]={ "ὁ","́" },
+  ["Ὀ"]={ "Ο","̓" },
+  ["Ὁ"]={ "Ο","̔" },
+  ["Ὂ"]={ "Ὀ","̀" },
+  ["Ὃ"]={ "Ὁ","̀" },
+  ["Ὄ"]={ "Ὀ","́" },
+  ["Ὅ"]={ "Ὁ","́" },
+  ["ὐ"]={ "υ","̓" },
+  ["ὑ"]={ "υ","̔" },
+  ["ὒ"]={ "ὐ","̀" },
+  ["ὓ"]={ "ὑ","̀" },
+  ["ὔ"]={ "ὐ","́" },
+  ["ὕ"]={ "ὑ","́" },
+  ["ὖ"]={ "ὐ","͂" },
+  ["ὗ"]={ "ὑ","͂" },
+  ["Ὑ"]={ "Υ","̔" },
+  ["Ὓ"]={ "Ὑ","̀" },
+  ["Ὕ"]={ "Ὑ","́" },
+  ["Ὗ"]={ "Ὑ","͂" },
+  ["ὠ"]={ "ω","̓" },
+  ["ὡ"]={ "ω","̔" },
+  ["ὢ"]={ "ὠ","̀" },
+  ["ὣ"]={ "ὡ","̀" },
+  ["ὤ"]={ "ὠ","́" },
+  ["ὥ"]={ "ὡ","́" },
+  ["ὦ"]={ "ὠ","͂" },
+  ["ὧ"]={ "ὡ","͂" },
+  ["Ὠ"]={ "Ω","̓" },
+  ["Ὡ"]={ "Ω","̔" },
+  ["Ὢ"]={ "Ὠ","̀" },
+  ["Ὣ"]={ "Ὡ","̀" },
+  ["Ὤ"]={ "Ὠ","́" },
+  ["Ὥ"]={ "Ὡ","́" },
+  ["Ὦ"]={ "Ὠ","͂" },
+  ["Ὧ"]={ "Ὡ","͂" },
+  ["ὰ"]={ "α","̀" },
+  ["ὲ"]={ "ε","̀" },
+  ["ὴ"]={ "η","̀" },
+  ["ὶ"]={ "ι","̀" },
+  ["ὸ"]={ "ο","̀" },
+  ["ὺ"]={ "υ","̀" },
+  ["ὼ"]={ "ω","̀" },
+  ["ᾀ"]={ "ἀ","ͅ" },
+  ["ᾁ"]={ "ἁ","ͅ" },
+  ["ᾂ"]={ "ἂ","ͅ" },
+  ["ᾃ"]={ "ἃ","ͅ" },
+  ["ᾄ"]={ "ἄ","ͅ" },
+  ["ᾅ"]={ "ἅ","ͅ" },
+  ["ᾆ"]={ "ἆ","ͅ" },
+  ["ᾇ"]={ "ἇ","ͅ" },
+  ["ᾈ"]={ "Ἀ","ͅ" },
+  ["ᾉ"]={ "Ἁ","ͅ" },
+  ["ᾊ"]={ "Ἂ","ͅ" },
+  ["ᾋ"]={ "Ἃ","ͅ" },
+  ["ᾌ"]={ "Ἄ","ͅ" },
+  ["ᾍ"]={ "Ἅ","ͅ" },
+  ["ᾎ"]={ "Ἆ","ͅ" },
+  ["ᾏ"]={ "Ἇ","ͅ" },
+  ["ᾐ"]={ "ἠ","ͅ" },
+  ["ᾑ"]={ "ἡ","ͅ" },
+  ["ᾒ"]={ "ἢ","ͅ" },
+  ["ᾓ"]={ "ἣ","ͅ" },
+  ["ᾔ"]={ "ἤ","ͅ" },
+  ["ᾕ"]={ "ἥ","ͅ" },
+  ["ᾖ"]={ "ἦ","ͅ" },
+  ["ᾗ"]={ "ἧ","ͅ" },
+  ["ᾘ"]={ "Ἠ","ͅ" },
+  ["ᾙ"]={ "Ἡ","ͅ" },
+  ["ᾚ"]={ "Ἢ","ͅ" },
+  ["ᾛ"]={ "Ἣ","ͅ" },
+  ["ᾜ"]={ "Ἤ","ͅ" },
+  ["ᾝ"]={ "Ἥ","ͅ" },
+  ["ᾞ"]={ "Ἦ","ͅ" },
+  ["ᾟ"]={ "Ἧ","ͅ" },
+  ["ᾠ"]={ "ὠ","ͅ" },
+  ["ᾡ"]={ "ὡ","ͅ" },
+  ["ᾢ"]={ "ὢ","ͅ" },
+  ["ᾣ"]={ "ὣ","ͅ" },
+  ["ᾤ"]={ "ὤ","ͅ" },
+  ["ᾥ"]={ "ὥ","ͅ" },
+  ["ᾦ"]={ "ὦ","ͅ" },
+  ["ᾧ"]={ "ὧ","ͅ" },
+  ["ᾨ"]={ "Ὠ","ͅ" },
+  ["ᾩ"]={ "Ὡ","ͅ" },
+  ["ᾪ"]={ "Ὢ","ͅ" },
+  ["ᾫ"]={ "Ὣ","ͅ" },
+  ["ᾬ"]={ "Ὤ","ͅ" },
+  ["ᾭ"]={ "Ὥ","ͅ" },
+  ["ᾮ"]={ "Ὦ","ͅ" },
+  ["ᾯ"]={ "Ὧ","ͅ" },
+  ["ᾰ"]={ "α","̆" },
+  ["ᾱ"]={ "α","̄" },
+  ["ᾲ"]={ "ὰ","ͅ" },
+  ["ᾳ"]={ "α","ͅ" },
+  ["ᾴ"]={ "ά","ͅ" },
+  ["ᾶ"]={ "α","͂" },
+  ["ᾷ"]={ "ᾶ","ͅ" },
+  ["Ᾰ"]={ "Α","̆" },
+  ["Ᾱ"]={ "Α","̄" },
+  ["Ὰ"]={ "Α","̀" },
+  ["ᾼ"]={ "Α","ͅ" },
+  ["῁"]={ "¨","͂" },
+  ["ῂ"]={ "ὴ","ͅ" },
+  ["ῃ"]={ "η","ͅ" },
+  ["ῄ"]={ "ή","ͅ" },
+  ["ῆ"]={ "η","͂" },
+  ["ῇ"]={ "ῆ","ͅ" },
+  ["Ὲ"]={ "Ε","̀" },
+  ["Ὴ"]={ "Η","̀" },
+  ["ῌ"]={ "Η","ͅ" },
+  ["῍"]={ "᾿","̀" },
+  ["῎"]={ "᾿","́" },
+  ["῏"]={ "᾿","͂" },
+  ["ῐ"]={ "ι","̆" },
+  ["ῑ"]={ "ι","̄" },
+  ["ῒ"]={ "ϊ","̀" },
+  ["ῖ"]={ "ι","͂" },
+  ["ῗ"]={ "ϊ","͂" },
+  ["Ῐ"]={ "Ι","̆" },
+  ["Ῑ"]={ "Ι","̄" },
+  ["Ὶ"]={ "Ι","̀" },
+  ["῝"]={ "῾","̀" },
+  ["῞"]={ "῾","́" },
+  ["῟"]={ "῾","͂" },
+  ["ῠ"]={ "υ","̆" },
+  ["ῡ"]={ "υ","̄" },
+  ["ῢ"]={ "ϋ","̀" },
+  ["ῤ"]={ "ρ","̓" },
+  ["ῥ"]={ "ρ","̔" },
+  ["ῦ"]={ "υ","͂" },
+  ["ῧ"]={ "ϋ","͂" },
+  ["Ῠ"]={ "Υ","̆" },
+  ["Ῡ"]={ "Υ","̄" },
+  ["Ὺ"]={ "Υ","̀" },
+  ["Ῥ"]={ "Ρ","̔" },
+  ["῭"]={ "¨","̀" },
+  ["ῲ"]={ "ὼ","ͅ" },
+  ["ῳ"]={ "ω","ͅ" },
+  ["ῴ"]={ "ώ","ͅ" },
+  ["ῶ"]={ "ω","͂" },
+  ["ῷ"]={ "ῶ","ͅ" },
+  ["Ὸ"]={ "Ο","̀" },
+  ["Ὼ"]={ "Ω","̀" },
+  ["ῼ"]={ "Ω","ͅ" },
+  ["↚"]={ "←","̸" },
+  ["↛"]={ "→","̸" },
+  ["↮"]={ "↔","̸" },
+  ["⇍"]={ "⇐","̸" },
+  ["⇎"]={ "⇔","̸" },
+  ["⇏"]={ "⇒","̸" },
+  ["∄"]={ "∃","̸" },
+  ["∉"]={ "∈","̸" },
+  ["∌"]={ "∋","̸" },
+  ["∤"]={ "∣","̸" },
+  ["∦"]={ "∥","̸" },
+  ["≁"]={ "∼","̸" },
+  ["≄"]={ "≃","̸" },
+  ["≇"]={ "≅","̸" },
+  ["≉"]={ "≈","̸" },
+  ["≠"]={ "=","̸" },
+  ["≢"]={ "≡","̸" },
+  ["≭"]={ "≍","̸" },
+  ["≮"]={ "<","̸" },
+  ["≯"]={ ">","̸" },
+  ["≰"]={ "≤","̸" },
+  ["≱"]={ "≥","̸" },
+  ["≴"]={ "≲","̸" },
+  ["≵"]={ "≳","̸" },
+  ["≸"]={ "≶","̸" },
+  ["≹"]={ "≷","̸" },
+  ["⊀"]={ "≺","̸" },
+  ["⊁"]={ "≻","̸" },
+  ["⊄"]={ "⊂","̸" },
+  ["⊅"]={ "⊃","̸" },
+  ["⊈"]={ "⊆","̸" },
+  ["⊉"]={ "⊇","̸" },
+  ["⊬"]={ "⊢","̸" },
+  ["⊭"]={ "⊨","̸" },
+  ["⊮"]={ "⊩","̸" },
+  ["⊯"]={ "⊫","̸" },
+  ["⋠"]={ "≼","̸" },
+  ["⋡"]={ "≽","̸" },
+  ["⋢"]={ "⊑","̸" },
+  ["⋣"]={ "⊒","̸" },
+  ["⋪"]={ "⊲","̸" },
+  ["⋫"]={ "⊳","̸" },
+  ["⋬"]={ "⊴","̸" },
+  ["⋭"]={ "⊵","̸" },
+  ["⫝̸"]={ "⫝","̸" },
+  ["が"]={ "か","゙" },
+  ["ぎ"]={ "き","゙" },
+  ["ぐ"]={ "く","゙" },
+  ["げ"]={ "け","゙" },
+  ["ご"]={ "こ","゙" },
+  ["ざ"]={ "さ","゙" },
+  ["じ"]={ "し","゙" },
+  ["ず"]={ "す","゙" },
+  ["ぜ"]={ "せ","゙" },
+  ["ぞ"]={ "そ","゙" },
+  ["だ"]={ "た","゙" },
+  ["ぢ"]={ "ち","゙" },
+  ["づ"]={ "つ","゙" },
+  ["で"]={ "て","゙" },
+  ["ど"]={ "と","゙" },
+  ["ば"]={ "は","゙" },
+  ["ぱ"]={ "は","゚" },
+  ["び"]={ "ひ","゙" },
+  ["ぴ"]={ "ひ","゚" },
+  ["ぶ"]={ "ふ","゙" },
+  ["ぷ"]={ "ふ","゚" },
+  ["べ"]={ "へ","゙" },
+  ["ぺ"]={ "へ","゚" },
+  ["ぼ"]={ "ほ","゙" },
+  ["ぽ"]={ "ほ","゚" },
+  ["ゔ"]={ "う","゙" },
+  ["ゞ"]={ "ゝ","゙" },
+  ["ガ"]={ "カ","゙" },
+  ["ギ"]={ "キ","゙" },
+  ["グ"]={ "ク","゙" },
+  ["ゲ"]={ "ケ","゙" },
+  ["ゴ"]={ "コ","゙" },
+  ["ザ"]={ "サ","゙" },
+  ["ジ"]={ "シ","゙" },
+  ["ズ"]={ "ス","゙" },
+  ["ゼ"]={ "セ","゙" },
+  ["ゾ"]={ "ソ","゙" },
+  ["ダ"]={ "タ","゙" },
+  ["ヂ"]={ "チ","゙" },
+  ["ヅ"]={ "ツ","゙" },
+  ["デ"]={ "テ","゙" },
+  ["ド"]={ "ト","゙" },
+  ["バ"]={ "ハ","゙" },
+  ["パ"]={ "ハ","゚" },
+  ["ビ"]={ "ヒ","゙" },
+  ["ピ"]={ "ヒ","゚" },
+  ["ブ"]={ "フ","゙" },
+  ["プ"]={ "フ","゚" },
+  ["ベ"]={ "ヘ","゙" },
+  ["ペ"]={ "ヘ","゚" },
+  ["ボ"]={ "ホ","゙" },
+  ["ポ"]={ "ホ","゚" },
+  ["ヴ"]={ "ウ","゙" },
+  ["ヷ"]={ "ワ","゙" },
+  ["ヸ"]={ "ヰ","゙" },
+  ["ヹ"]={ "ヱ","゙" },
+  ["ヺ"]={ "ヲ","゙" },
+  ["ヾ"]={ "ヽ","゙" },
+  ["יִ"]={ "י","ִ" },
+  ["ײַ"]={ "ײ","ַ" },
+  ["שׁ"]={ "ש","ׁ" },
+  ["שׂ"]={ "ש","ׂ" },
+  ["שּׁ"]={ "שּ","ׁ" },
+  ["שּׂ"]={ "שּ","ׂ" },
+  ["אַ"]={ "א","ַ" },
+  ["אָ"]={ "א","ָ" },
+  ["אּ"]={ "א","ּ" },
+  ["בּ"]={ "ב","ּ" },
+  ["גּ"]={ "ג","ּ" },
+  ["דּ"]={ "ד","ּ" },
+  ["הּ"]={ "ה","ּ" },
+  ["וּ"]={ "ו","ּ" },
+  ["זּ"]={ "ז","ּ" },
+  ["טּ"]={ "ט","ּ" },
+  ["יּ"]={ "י","ּ" },
+  ["ךּ"]={ "ך","ּ" },
+  ["כּ"]={ "כ","ּ" },
+  ["לּ"]={ "ל","ּ" },
+  ["מּ"]={ "מ","ּ" },
+  ["נּ"]={ "נ","ּ" },
+  ["סּ"]={ "ס","ּ" },
+  ["ףּ"]={ "ף","ּ" },
+  ["פּ"]={ "פ","ּ" },
+  ["צּ"]={ "צ","ּ" },
+  ["קּ"]={ "ק","ּ" },
+  ["רּ"]={ "ר","ּ" },
+  ["שּ"]={ "ש","ּ" },
+  ["תּ"]={ "ת","ּ" },
+  ["וֹ"]={ "ו","ֹ" },
+  ["בֿ"]={ "ב","ֿ" },
+  ["כֿ"]={ "כ","ֿ" },
+  ["פֿ"]={ "פ","ֿ" },
+  ["𑂚"]={ "𑂙","𑂺" },
+  ["𑂜"]={ "𑂛","𑂺" },
+  ["𑂫"]={ "𑂥","𑂺" },
+  ["𑄮"]={ "𑄱","𑄧" },
+  ["𑄯"]={ "𑄲","𑄧" },
+  ["𑍋"]={ "𑍇","𑌾" },
+  ["𑍌"]={ "𑍇","𑍗" },
+  ["𑒻"]={ "𑒹","𑒺" },
+  ["𑒼"]={ "𑒹","𑒰" },
+  ["𑒾"]={ "𑒹","𑒽" },
+  ["𑖺"]={ "𑖸","𑖯" },
+  ["𑖻"]={ "𑖹","𑖯" },
+  ["𝅗𝅥"]={ "𝅗","𝅥" },
+  ["𝅘𝅥"]={ "𝅘","𝅥" },
+  ["𝅘𝅥𝅮"]={ "𝅘𝅥","𝅮" },
+  ["𝅘𝅥𝅯"]={ "𝅘𝅥","𝅯" },
+  ["𝅘𝅥𝅰"]={ "𝅘𝅥","𝅰" },
+  ["𝅘𝅥𝅱"]={ "𝅘𝅥","𝅱" },
+  ["𝅘𝅥𝅲"]={ "𝅘𝅥","𝅲" },
+  ["𝆹𝅥"]={ "𝆹","𝅥" },
+  ["𝆺𝅥"]={ "𝆺","𝅥" },
+  ["𝆹𝅥𝅮"]={ "𝆹𝅥","𝅮" },
+  ["𝆺𝅥𝅮"]={ "𝆺𝅥","𝅮" },
+  ["𝆹𝅥𝅯"]={ "𝆹𝅥","𝅯" },
+  ["𝆺𝅥𝅯"]={ "𝆺𝅥","𝅯" },
+  },
+ },
+ {
+  ["data"]={
+  ["À"]={ "A","̀" },
+  ["Á"]={ "A","́" },
+  ["Â"]={ "A","̂" },
+  ["Ã"]={ "A","̃" },
+  ["Ä"]={ "A","̈" },
+  ["Å"]={ "A","̊" },
+  ["Ç"]={ "C","̧" },
+  ["È"]={ "E","̀" },
+  ["É"]={ "E","́" },
+  ["Ê"]={ "E","̂" },
+  ["Ë"]={ "E","̈" },
+  ["Ì"]={ "I","̀" },
+  ["Í"]={ "I","́" },
+  ["Î"]={ "I","̂" },
+  ["Ï"]={ "I","̈" },
+  ["Ñ"]={ "N","̃" },
+  ["Ò"]={ "O","̀" },
+  ["Ó"]={ "O","́" },
+  ["Ô"]={ "O","̂" },
+  ["Õ"]={ "O","̃" },
+  ["Ö"]={ "O","̈" },
+  ["Ù"]={ "U","̀" },
+  ["Ú"]={ "U","́" },
+  ["Û"]={ "U","̂" },
+  ["Ü"]={ "U","̈" },
+  ["Ý"]={ "Y","́" },
+  ["à"]={ "a","̀" },
+  ["á"]={ "a","́" },
+  ["â"]={ "a","̂" },
+  ["ã"]={ "a","̃" },
+  ["ä"]={ "a","̈" },
+  ["å"]={ "a","̊" },
+  ["ç"]={ "c","̧" },
+  ["è"]={ "e","̀" },
+  ["é"]={ "e","́" },
+  ["ê"]={ "e","̂" },
+  ["ë"]={ "e","̈" },
+  ["ì"]={ "i","̀" },
+  ["í"]={ "i","́" },
+  ["î"]={ "i","̂" },
+  ["ï"]={ "i","̈" },
+  ["ñ"]={ "n","̃" },
+  ["ò"]={ "o","̀" },
+  ["ó"]={ "o","́" },
+  ["ô"]={ "o","̂" },
+  ["õ"]={ "o","̃" },
+  ["ö"]={ "o","̈" },
+  ["ù"]={ "u","̀" },
+  ["ú"]={ "u","́" },
+  ["û"]={ "u","̂" },
+  ["ü"]={ "u","̈" },
+  ["ý"]={ "y","́" },
+  ["ÿ"]={ "y","̈" },
+  ["Ā"]={ "A","̄" },
+  ["ā"]={ "a","̄" },
+  ["Ă"]={ "A","̆" },
+  ["ă"]={ "a","̆" },
+  ["Ą"]={ "A","̨" },
+  ["ą"]={ "a","̨" },
+  ["Ć"]={ "C","́" },
+  ["ć"]={ "c","́" },
+  ["Ĉ"]={ "C","̂" },
+  ["ĉ"]={ "c","̂" },
+  ["Ċ"]={ "C","̇" },
+  ["ċ"]={ "c","̇" },
+  ["Č"]={ "C","̌" },
+  ["č"]={ "c","̌" },
+  ["Ď"]={ "D","̌" },
+  ["ď"]={ "d","̌" },
+  ["Ē"]={ "E","̄" },
+  ["ē"]={ "e","̄" },
+  ["Ĕ"]={ "E","̆" },
+  ["ĕ"]={ "e","̆" },
+  ["Ė"]={ "E","̇" },
+  ["ė"]={ "e","̇" },
+  ["Ę"]={ "E","̨" },
+  ["ę"]={ "e","̨" },
+  ["Ě"]={ "E","̌" },
+  ["ě"]={ "e","̌" },
+  ["Ĝ"]={ "G","̂" },
+  ["ĝ"]={ "g","̂" },
+  ["Ğ"]={ "G","̆" },
+  ["ğ"]={ "g","̆" },
+  ["Ġ"]={ "G","̇" },
+  ["ġ"]={ "g","̇" },
+  ["Ģ"]={ "G","̧" },
+  ["ģ"]={ "g","̧" },
+  ["Ĥ"]={ "H","̂" },
+  ["ĥ"]={ "h","̂" },
+  ["Ĩ"]={ "I","̃" },
+  ["ĩ"]={ "i","̃" },
+  ["Ī"]={ "I","̄" },
+  ["ī"]={ "i","̄" },
+  ["Ĭ"]={ "I","̆" },
+  ["ĭ"]={ "i","̆" },
+  ["Į"]={ "I","̨" },
+  ["į"]={ "i","̨" },
+  ["İ"]={ "I","̇" },
+  ["Ĵ"]={ "J","̂" },
+  ["ĵ"]={ "j","̂" },
+  ["Ķ"]={ "K","̧" },
+  ["ķ"]={ "k","̧" },
+  ["Ĺ"]={ "L","́" },
+  ["ĺ"]={ "l","́" },
+  ["Ļ"]={ "L","̧" },
+  ["ļ"]={ "l","̧" },
+  ["Ľ"]={ "L","̌" },
+  ["ľ"]={ "l","̌" },
+  ["Ń"]={ "N","́" },
+  ["ń"]={ "n","́" },
+  ["Ņ"]={ "N","̧" },
+  ["ņ"]={ "n","̧" },
+  ["Ň"]={ "N","̌" },
+  ["ň"]={ "n","̌" },
+  ["Ō"]={ "O","̄" },
+  ["ō"]={ "o","̄" },
+  ["Ŏ"]={ "O","̆" },
+  ["ŏ"]={ "o","̆" },
+  ["Ő"]={ "O","̋" },
+  ["ő"]={ "o","̋" },
+  ["Ŕ"]={ "R","́" },
+  ["ŕ"]={ "r","́" },
+  ["Ŗ"]={ "R","̧" },
+  ["ŗ"]={ "r","̧" },
+  ["Ř"]={ "R","̌" },
+  ["ř"]={ "r","̌" },
+  ["Ś"]={ "S","́" },
+  ["ś"]={ "s","́" },
+  ["Ŝ"]={ "S","̂" },
+  ["ŝ"]={ "s","̂" },
+  ["Ş"]={ "S","̧" },
+  ["ş"]={ "s","̧" },
+  ["Š"]={ "S","̌" },
+  ["š"]={ "s","̌" },
+  ["Ţ"]={ "T","̧" },
+  ["ţ"]={ "t","̧" },
+  ["Ť"]={ "T","̌" },
+  ["ť"]={ "t","̌" },
+  ["Ũ"]={ "U","̃" },
+  ["ũ"]={ "u","̃" },
+  ["Ū"]={ "U","̄" },
+  ["ū"]={ "u","̄" },
+  ["Ŭ"]={ "U","̆" },
+  ["ŭ"]={ "u","̆" },
+  ["Ů"]={ "U","̊" },
+  ["ů"]={ "u","̊" },
+  ["Ű"]={ "U","̋" },
+  ["ű"]={ "u","̋" },
+  ["Ų"]={ "U","̨" },
+  ["ų"]={ "u","̨" },
+  ["Ŵ"]={ "W","̂" },
+  ["ŵ"]={ "w","̂" },
+  ["Ŷ"]={ "Y","̂" },
+  ["ŷ"]={ "y","̂" },
+  ["Ÿ"]={ "Y","̈" },
+  ["Ź"]={ "Z","́" },
+  ["ź"]={ "z","́" },
+  ["Ż"]={ "Z","̇" },
+  ["ż"]={ "z","̇" },
+  ["Ž"]={ "Z","̌" },
+  ["ž"]={ "z","̌" },
+  ["Ơ"]={ "O","̛" },
+  ["ơ"]={ "o","̛" },
+  ["Ư"]={ "U","̛" },
+  ["ư"]={ "u","̛" },
+  ["Ǎ"]={ "A","̌" },
+  ["ǎ"]={ "a","̌" },
+  ["Ǐ"]={ "I","̌" },
+  ["ǐ"]={ "i","̌" },
+  ["Ǒ"]={ "O","̌" },
+  ["ǒ"]={ "o","̌" },
+  ["Ǔ"]={ "U","̌" },
+  ["ǔ"]={ "u","̌" },
+  ["Ǖ"]={ "Ü","̄" },
+  ["ǖ"]={ "ü","̄" },
+  ["Ǘ"]={ "Ü","́" },
+  ["ǘ"]={ "ü","́" },
+  ["Ǚ"]={ "Ü","̌" },
+  ["ǚ"]={ "ü","̌" },
+  ["Ǜ"]={ "Ü","̀" },
+  ["ǜ"]={ "ü","̀" },
+  ["Ǟ"]={ "Ä","̄" },
+  ["ǟ"]={ "ä","̄" },
+  ["Ǡ"]={ "Ȧ","̄" },
+  ["ǡ"]={ "ȧ","̄" },
+  ["Ǣ"]={ "Æ","̄" },
+  ["ǣ"]={ "æ","̄" },
+  ["Ǧ"]={ "G","̌" },
+  ["ǧ"]={ "g","̌" },
+  ["Ǩ"]={ "K","̌" },
+  ["ǩ"]={ "k","̌" },
+  ["Ǫ"]={ "O","̨" },
+  ["ǫ"]={ "o","̨" },
+  ["Ǭ"]={ "Ǫ","̄" },
+  ["ǭ"]={ "ǫ","̄" },
+  ["Ǯ"]={ "Ʒ","̌" },
+  ["ǯ"]={ "ʒ","̌" },
+  ["ǰ"]={ "j","̌" },
+  ["Ǵ"]={ "G","́" },
+  ["ǵ"]={ "g","́" },
+  ["Ǹ"]={ "N","̀" },
+  ["ǹ"]={ "n","̀" },
+  ["Ǻ"]={ "Å","́" },
+  ["ǻ"]={ "å","́" },
+  ["Ǽ"]={ "Æ","́" },
+  ["ǽ"]={ "æ","́" },
+  ["Ǿ"]={ "Ø","́" },
+  ["ǿ"]={ "ø","́" },
+  ["Ȁ"]={ "A","̏" },
+  ["ȁ"]={ "a","̏" },
+  ["Ȃ"]={ "A","̑" },
+  ["ȃ"]={ "a","̑" },
+  ["Ȅ"]={ "E","̏" },
+  ["ȅ"]={ "e","̏" },
+  ["Ȇ"]={ "E","̑" },
+  ["ȇ"]={ "e","̑" },
+  ["Ȉ"]={ "I","̏" },
+  ["ȉ"]={ "i","̏" },
+  ["Ȋ"]={ "I","̑" },
+  ["ȋ"]={ "i","̑" },
+  ["Ȍ"]={ "O","̏" },
+  ["ȍ"]={ "o","̏" },
+  ["Ȏ"]={ "O","̑" },
+  ["ȏ"]={ "o","̑" },
+  ["Ȑ"]={ "R","̏" },
+  ["ȑ"]={ "r","̏" },
+  ["Ȓ"]={ "R","̑" },
+  ["ȓ"]={ "r","̑" },
+  ["Ȕ"]={ "U","̏" },
+  ["ȕ"]={ "u","̏" },
+  ["Ȗ"]={ "U","̑" },
+  ["ȗ"]={ "u","̑" },
+  ["Ș"]={ "S","̦" },
+  ["ș"]={ "s","̦" },
+  ["Ț"]={ "T","̦" },
+  ["ț"]={ "t","̦" },
+  ["Ȟ"]={ "H","̌" },
+  ["ȟ"]={ "h","̌" },
+  ["Ȧ"]={ "A","̇" },
+  ["ȧ"]={ "a","̇" },
+  ["Ȩ"]={ "E","̧" },
+  ["ȩ"]={ "e","̧" },
+  ["Ȫ"]={ "Ö","̄" },
+  ["ȫ"]={ "ö","̄" },
+  ["Ȭ"]={ "Õ","̄" },
+  ["ȭ"]={ "õ","̄" },
+  ["Ȯ"]={ "O","̇" },
+  ["ȯ"]={ "o","̇" },
+  ["Ȱ"]={ "Ȯ","̄" },
+  ["ȱ"]={ "ȯ","̄" },
+  ["Ȳ"]={ "Y","̄" },
+  ["ȳ"]={ "y","̄" },
+  ["̈́"]={ "̈","́" },
+  ["΅"]={ "¨","́" },
+  ["Ά"]={ "Α","́" },
+  ["Έ"]={ "Ε","́" },
+  ["Ή"]={ "Η","́" },
+  ["Ί"]={ "Ι","́" },
+  ["Ό"]={ "Ο","́" },
+  ["Ύ"]={ "Υ","́" },
+  ["Ώ"]={ "Ω","́" },
+  ["ΐ"]={ "ϊ","́" },
+  ["Ϊ"]={ "Ι","̈" },
+  ["Ϋ"]={ "Υ","̈" },
+  ["ά"]={ "α","́" },
+  ["έ"]={ "ε","́" },
+  ["ή"]={ "η","́" },
+  ["ί"]={ "ι","́" },
+  ["ΰ"]={ "ϋ","́" },
+  ["ϊ"]={ "ι","̈" },
+  ["ϋ"]={ "υ","̈" },
+  ["ό"]={ "ο","́" },
+  ["ύ"]={ "υ","́" },
+  ["ώ"]={ "ω","́" },
+  ["ϓ"]={ "ϒ","́" },
+  ["ϔ"]={ "ϒ","̈" },
+  ["Ѐ"]={ "Е","̀" },
+  ["Ё"]={ "Е","̈" },
+  ["Ѓ"]={ "Г","́" },
+  ["Ї"]={ "І","̈" },
+  ["Ќ"]={ "К","́" },
+  ["Ѝ"]={ "И","̀" },
+  ["Ў"]={ "У","̆" },
+  ["Й"]={ "И","̆" },
+  ["й"]={ "и","̆" },
+  ["ѐ"]={ "е","̀" },
+  ["ё"]={ "е","̈" },
+  ["ѓ"]={ "г","́" },
+  ["ї"]={ "і","̈" },
+  ["ќ"]={ "к","́" },
+  ["ѝ"]={ "и","̀" },
+  ["ў"]={ "у","̆" },
+  ["Ѷ"]={ "Ѵ","̏" },
+  ["ѷ"]={ "ѵ","̏" },
+  ["Ӂ"]={ "Ж","̆" },
+  ["ӂ"]={ "ж","̆" },
+  ["Ӑ"]={ "А","̆" },
+  ["ӑ"]={ "а","̆" },
+  ["Ӓ"]={ "А","̈" },
+  ["ӓ"]={ "а","̈" },
+  ["Ӗ"]={ "Е","̆" },
+  ["ӗ"]={ "е","̆" },
+  ["Ӛ"]={ "Ә","̈" },
+  ["ӛ"]={ "ә","̈" },
+  ["Ӝ"]={ "Ж","̈" },
+  ["ӝ"]={ "ж","̈" },
+  ["Ӟ"]={ "З","̈" },
+  ["ӟ"]={ "з","̈" },
+  ["Ӣ"]={ "И","̄" },
+  ["ӣ"]={ "и","̄" },
+  ["Ӥ"]={ "И","̈" },
+  ["ӥ"]={ "и","̈" },
+  ["Ӧ"]={ "О","̈" },
+  ["ӧ"]={ "о","̈" },
+  ["Ӫ"]={ "Ө","̈" },
+  ["ӫ"]={ "ө","̈" },
+  ["Ӭ"]={ "Э","̈" },
+  ["ӭ"]={ "э","̈" },
+  ["Ӯ"]={ "У","̄" },
+  ["ӯ"]={ "у","̄" },
+  ["Ӱ"]={ "У","̈" },
+  ["ӱ"]={ "у","̈" },
+  ["Ӳ"]={ "У","̋" },
+  ["ӳ"]={ "у","̋" },
+  ["Ӵ"]={ "Ч","̈" },
+  ["ӵ"]={ "ч","̈" },
+  ["Ӹ"]={ "Ы","̈" },
+  ["ӹ"]={ "ы","̈" },
+  ["آ"]={ "ا","ٓ" },
+  ["أ"]={ "ا","ٔ" },
+  ["ؤ"]={ "و","ٔ" },
+  ["إ"]={ "ا","ٕ" },
+  ["ئ"]={ "ي","ٔ" },
+  ["ۀ"]={ "ە","ٔ" },
+  ["ۂ"]={ "ہ","ٔ" },
+  ["ۓ"]={ "ے","ٔ" },
+  ["ऩ"]={ "न","़" },
+  ["ऱ"]={ "र","़" },
+  ["ऴ"]={ "ळ","़" },
+  ["क़"]={ "क","़" },
+  ["ख़"]={ "ख","़" },
+  ["ग़"]={ "ग","़" },
+  ["ज़"]={ "ज","़" },
+  ["ड़"]={ "ड","़" },
+  ["ढ़"]={ "ढ","़" },
+  ["फ़"]={ "फ","़" },
+  ["य़"]={ "य","़" },
+  ["ো"]={ "ে","া" },
+  ["ৌ"]={ "ে","ৗ" },
+  ["ড়"]={ "ড","়" },
+  ["ঢ়"]={ "ঢ","়" },
+  ["য়"]={ "য","়" },
+  ["ਲ਼"]={ "ਲ","਼" },
+  ["ਸ਼"]={ "ਸ","਼" },
+  ["ਖ਼"]={ "ਖ","਼" },
+  ["ਗ਼"]={ "ਗ","਼" },
+  ["ਜ਼"]={ "ਜ","਼" },
+  ["ਫ਼"]={ "ਫ","਼" },
+  ["ୈ"]={ "େ","ୖ" },
+  ["ୋ"]={ "େ","ା" },
+  ["ୌ"]={ "େ","ୗ" },
+  ["ଡ଼"]={ "ଡ","଼" },
+  ["ଢ଼"]={ "ଢ","଼" },
+  ["ஔ"]={ "ஒ","ௗ" },
+  ["ொ"]={ "ெ","ா" },
+  ["ோ"]={ "ே","ா" },
+  ["ௌ"]={ "ெ","ௗ" },
+  ["ై"]={ "ె","ౖ" },
+  ["ೀ"]={ "ಿ","ೕ" },
+  ["ೇ"]={ "ೆ","ೕ" },
+  ["ೈ"]={ "ೆ","ೖ" },
+  ["ೊ"]={ "ೆ","ೂ" },
+  ["ೋ"]={ "ೊ","ೕ" },
+  ["ൊ"]={ "െ","ാ" },
+  ["ോ"]={ "േ","ാ" },
+  ["ൌ"]={ "െ","ൗ" },
+  ["ේ"]={ "ෙ","්" },
+  ["ො"]={ "ෙ","ා" },
+  ["ෝ"]={ "ො","්" },
+  ["ෞ"]={ "ෙ","ෟ" },
+  ["གྷ"]={ "ག","ྷ" },
+  ["ཌྷ"]={ "ཌ","ྷ" },
+  ["དྷ"]={ "ད","ྷ" },
+  ["བྷ"]={ "བ","ྷ" },
+  ["ཛྷ"]={ "ཛ","ྷ" },
+  ["ཀྵ"]={ "ཀ","ྵ" },
+  ["ཱི"]={ "ཱ","ི" },
+  ["ཱུ"]={ "ཱ","ུ" },
+  ["ྲྀ"]={ "ྲ","ྀ" },
+  ["ླྀ"]={ "ླ","ྀ" },
+  ["ཱྀ"]={ "ཱ","ྀ" },
+  ["ྒྷ"]={ "ྒ","ྷ" },
+  ["ྜྷ"]={ "ྜ","ྷ" },
+  ["ྡྷ"]={ "ྡ","ྷ" },
+  ["ྦྷ"]={ "ྦ","ྷ" },
+  ["ྫྷ"]={ "ྫ","ྷ" },
+  ["ྐྵ"]={ "ྐ","ྵ" },
+  ["ဦ"]={ "ဥ","ီ" },
+  ["ᬆ"]={ "ᬅ","ᬵ" },
+  ["ᬈ"]={ "ᬇ","ᬵ" },
+  ["ᬊ"]={ "ᬉ","ᬵ" },
+  ["ᬌ"]={ "ᬋ","ᬵ" },
+  ["ᬎ"]={ "ᬍ","ᬵ" },
+  ["ᬒ"]={ "ᬑ","ᬵ" },
+  ["ᬻ"]={ "ᬺ","ᬵ" },
+  ["ᬽ"]={ "ᬼ","ᬵ" },
+  ["ᭀ"]={ "ᬾ","ᬵ" },
+  ["ᭁ"]={ "ᬿ","ᬵ" },
+  ["ᭃ"]={ "ᭂ","ᬵ" },
+  ["Ḁ"]={ "A","̥" },
+  ["ḁ"]={ "a","̥" },
+  ["Ḃ"]={ "B","̇" },
+  ["ḃ"]={ "b","̇" },
+  ["Ḅ"]={ "B","̣" },
+  ["ḅ"]={ "b","̣" },
+  ["Ḇ"]={ "B","̱" },
+  ["ḇ"]={ "b","̱" },
+  ["Ḉ"]={ "Ç","́" },
+  ["ḉ"]={ "ç","́" },
+  ["Ḋ"]={ "D","̇" },
+  ["ḋ"]={ "d","̇" },
+  ["Ḍ"]={ "D","̣" },
+  ["ḍ"]={ "d","̣" },
+  ["Ḏ"]={ "D","̱" },
+  ["ḏ"]={ "d","̱" },
+  ["Ḑ"]={ "D","̧" },
+  ["ḑ"]={ "d","̧" },
+  ["Ḓ"]={ "D","̭" },
+  ["ḓ"]={ "d","̭" },
+  ["Ḕ"]={ "Ē","̀" },
+  ["ḕ"]={ "ē","̀" },
+  ["Ḗ"]={ "Ē","́" },
+  ["ḗ"]={ "ē","́" },
+  ["Ḙ"]={ "E","̭" },
+  ["ḙ"]={ "e","̭" },
+  ["Ḛ"]={ "E","̰" },
+  ["ḛ"]={ "e","̰" },
+  ["Ḝ"]={ "Ȩ","̆" },
+  ["ḝ"]={ "ȩ","̆" },
+  ["Ḟ"]={ "F","̇" },
+  ["ḟ"]={ "f","̇" },
+  ["Ḡ"]={ "G","̄" },
+  ["ḡ"]={ "g","̄" },
+  ["Ḣ"]={ "H","̇" },
+  ["ḣ"]={ "h","̇" },
+  ["Ḥ"]={ "H","̣" },
+  ["ḥ"]={ "h","̣" },
+  ["Ḧ"]={ "H","̈" },
+  ["ḧ"]={ "h","̈" },
+  ["Ḩ"]={ "H","̧" },
+  ["ḩ"]={ "h","̧" },
+  ["Ḫ"]={ "H","̮" },
+  ["ḫ"]={ "h","̮" },
+  ["Ḭ"]={ "I","̰" },
+  ["ḭ"]={ "i","̰" },
+  ["Ḯ"]={ "Ï","́" },
+  ["ḯ"]={ "ï","́" },
+  ["Ḱ"]={ "K","́" },
+  ["ḱ"]={ "k","́" },
+  ["Ḳ"]={ "K","̣" },
+  ["ḳ"]={ "k","̣" },
+  ["Ḵ"]={ "K","̱" },
+  ["ḵ"]={ "k","̱" },
+  ["Ḷ"]={ "L","̣" },
+  ["ḷ"]={ "l","̣" },
+  ["Ḹ"]={ "Ḷ","̄" },
+  ["ḹ"]={ "ḷ","̄" },
+  ["Ḻ"]={ "L","̱" },
+  ["ḻ"]={ "l","̱" },
+  ["Ḽ"]={ "L","̭" },
+  ["ḽ"]={ "l","̭" },
+  ["Ḿ"]={ "M","́" },
+  ["ḿ"]={ "m","́" },
+  ["Ṁ"]={ "M","̇" },
+  ["ṁ"]={ "m","̇" },
+  ["Ṃ"]={ "M","̣" },
+  ["ṃ"]={ "m","̣" },
+  ["Ṅ"]={ "N","̇" },
+  ["ṅ"]={ "n","̇" },
+  ["Ṇ"]={ "N","̣" },
+  ["ṇ"]={ "n","̣" },
+  ["Ṉ"]={ "N","̱" },
+  ["ṉ"]={ "n","̱" },
+  ["Ṋ"]={ "N","̭" },
+  ["ṋ"]={ "n","̭" },
+  ["Ṍ"]={ "Õ","́" },
+  ["ṍ"]={ "õ","́" },
+  ["Ṏ"]={ "Õ","̈" },
+  ["ṏ"]={ "õ","̈" },
+  ["Ṑ"]={ "Ō","̀" },
+  ["ṑ"]={ "ō","̀" },
+  ["Ṓ"]={ "Ō","́" },
+  ["ṓ"]={ "ō","́" },
+  ["Ṕ"]={ "P","́" },
+  ["ṕ"]={ "p","́" },
+  ["Ṗ"]={ "P","̇" },
+  ["ṗ"]={ "p","̇" },
+  ["Ṙ"]={ "R","̇" },
+  ["ṙ"]={ "r","̇" },
+  ["Ṛ"]={ "R","̣" },
+  ["ṛ"]={ "r","̣" },
+  ["Ṝ"]={ "Ṛ","̄" },
+  ["ṝ"]={ "ṛ","̄" },
+  ["Ṟ"]={ "R","̱" },
+  ["ṟ"]={ "r","̱" },
+  ["Ṡ"]={ "S","̇" },
+  ["ṡ"]={ "s","̇" },
+  ["Ṣ"]={ "S","̣" },
+  ["ṣ"]={ "s","̣" },
+  ["Ṥ"]={ "Ś","̇" },
+  ["ṥ"]={ "ś","̇" },
+  ["Ṧ"]={ "Š","̇" },
+  ["ṧ"]={ "š","̇" },
+  ["Ṩ"]={ "Ṣ","̇" },
+  ["ṩ"]={ "ṣ","̇" },
+  ["Ṫ"]={ "T","̇" },
+  ["ṫ"]={ "t","̇" },
+  ["Ṭ"]={ "T","̣" },
+  ["ṭ"]={ "t","̣" },
+  ["Ṯ"]={ "T","̱" },
+  ["ṯ"]={ "t","̱" },
+  ["Ṱ"]={ "T","̭" },
+  ["ṱ"]={ "t","̭" },
+  ["Ṳ"]={ "U","̤" },
+  ["ṳ"]={ "u","̤" },
+  ["Ṵ"]={ "U","̰" },
+  ["ṵ"]={ "u","̰" },
+  ["Ṷ"]={ "U","̭" },
+  ["ṷ"]={ "u","̭" },
+  ["Ṹ"]={ "Ũ","́" },
+  ["ṹ"]={ "ũ","́" },
+  ["Ṻ"]={ "Ū","̈" },
+  ["ṻ"]={ "ū","̈" },
+  ["Ṽ"]={ "V","̃" },
+  ["ṽ"]={ "v","̃" },
+  ["Ṿ"]={ "V","̣" },
+  ["ṿ"]={ "v","̣" },
+  ["Ẁ"]={ "W","̀" },
+  ["ẁ"]={ "w","̀" },
+  ["Ẃ"]={ "W","́" },
+  ["ẃ"]={ "w","́" },
+  ["Ẅ"]={ "W","̈" },
+  ["ẅ"]={ "w","̈" },
+  ["Ẇ"]={ "W","̇" },
+  ["ẇ"]={ "w","̇" },
+  ["Ẉ"]={ "W","̣" },
+  ["ẉ"]={ "w","̣" },
+  ["Ẋ"]={ "X","̇" },
+  ["ẋ"]={ "x","̇" },
+  ["Ẍ"]={ "X","̈" },
+  ["ẍ"]={ "x","̈" },
+  ["Ẏ"]={ "Y","̇" },
+  ["ẏ"]={ "y","̇" },
+  ["Ẑ"]={ "Z","̂" },
+  ["ẑ"]={ "z","̂" },
+  ["Ẓ"]={ "Z","̣" },
+  ["ẓ"]={ "z","̣" },
+  ["Ẕ"]={ "Z","̱" },
+  ["ẕ"]={ "z","̱" },
+  ["ẖ"]={ "h","̱" },
+  ["ẗ"]={ "t","̈" },
+  ["ẘ"]={ "w","̊" },
+  ["ẙ"]={ "y","̊" },
+  ["ẛ"]={ "ſ","̇" },
+  ["Ạ"]={ "A","̣" },
+  ["ạ"]={ "a","̣" },
+  ["Ả"]={ "A","̉" },
+  ["ả"]={ "a","̉" },
+  ["Ấ"]={ "Â","́" },
+  ["ấ"]={ "â","́" },
+  ["Ầ"]={ "Â","̀" },
+  ["ầ"]={ "â","̀" },
+  ["Ẩ"]={ "Â","̉" },
+  ["ẩ"]={ "â","̉" },
+  ["Ẫ"]={ "Â","̃" },
+  ["ẫ"]={ "â","̃" },
+  ["Ậ"]={ "Ạ","̂" },
+  ["ậ"]={ "ạ","̂" },
+  ["Ắ"]={ "Ă","́" },
+  ["ắ"]={ "ă","́" },
+  ["Ằ"]={ "Ă","̀" },
+  ["ằ"]={ "ă","̀" },
+  ["Ẳ"]={ "Ă","̉" },
+  ["ẳ"]={ "ă","̉" },
+  ["Ẵ"]={ "Ă","̃" },
+  ["ẵ"]={ "ă","̃" },
+  ["Ặ"]={ "Ạ","̆" },
+  ["ặ"]={ "ạ","̆" },
+  ["Ẹ"]={ "E","̣" },
+  ["ẹ"]={ "e","̣" },
+  ["Ẻ"]={ "E","̉" },
+  ["ẻ"]={ "e","̉" },
+  ["Ẽ"]={ "E","̃" },
+  ["ẽ"]={ "e","̃" },
+  ["Ế"]={ "Ê","́" },
+  ["ế"]={ "ê","́" },
+  ["Ề"]={ "Ê","̀" },
+  ["ề"]={ "ê","̀" },
+  ["Ể"]={ "Ê","̉" },
+  ["ể"]={ "ê","̉" },
+  ["Ễ"]={ "Ê","̃" },
+  ["ễ"]={ "ê","̃" },
+  ["Ệ"]={ "Ẹ","̂" },
+  ["ệ"]={ "ẹ","̂" },
+  ["Ỉ"]={ "I","̉" },
+  ["ỉ"]={ "i","̉" },
+  ["Ị"]={ "I","̣" },
+  ["ị"]={ "i","̣" },
+  ["Ọ"]={ "O","̣" },
+  ["ọ"]={ "o","̣" },
+  ["Ỏ"]={ "O","̉" },
+  ["ỏ"]={ "o","̉" },
+  ["Ố"]={ "Ô","́" },
+  ["ố"]={ "ô","́" },
+  ["Ồ"]={ "Ô","̀" },
+  ["ồ"]={ "ô","̀" },
+  ["Ổ"]={ "Ô","̉" },
+  ["ổ"]={ "ô","̉" },
+  ["Ỗ"]={ "Ô","̃" },
+  ["ỗ"]={ "ô","̃" },
+  ["Ộ"]={ "Ọ","̂" },
+  ["ộ"]={ "ọ","̂" },
+  ["Ớ"]={ "Ơ","́" },
+  ["ớ"]={ "ơ","́" },
+  ["Ờ"]={ "Ơ","̀" },
+  ["ờ"]={ "ơ","̀" },
+  ["Ở"]={ "Ơ","̉" },
+  ["ở"]={ "ơ","̉" },
+  ["Ỡ"]={ "Ơ","̃" },
+  ["ỡ"]={ "ơ","̃" },
+  ["Ợ"]={ "Ơ","̣" },
+  ["ợ"]={ "ơ","̣" },
+  ["Ụ"]={ "U","̣" },
+  ["ụ"]={ "u","̣" },
+  ["Ủ"]={ "U","̉" },
+  ["ủ"]={ "u","̉" },
+  ["Ứ"]={ "Ư","́" },
+  ["ứ"]={ "ư","́" },
+  ["Ừ"]={ "Ư","̀" },
+  ["ừ"]={ "ư","̀" },
+  ["Ử"]={ "Ư","̉" },
+  ["ử"]={ "ư","̉" },
+  ["Ữ"]={ "Ư","̃" },
+  ["ữ"]={ "ư","̃" },
+  ["Ự"]={ "Ư","̣" },
+  ["ự"]={ "ư","̣" },
+  ["Ỳ"]={ "Y","̀" },
+  ["ỳ"]={ "y","̀" },
+  ["Ỵ"]={ "Y","̣" },
+  ["ỵ"]={ "y","̣" },
+  ["Ỷ"]={ "Y","̉" },
+  ["ỷ"]={ "y","̉" },
+  ["Ỹ"]={ "Y","̃" },
+  ["ỹ"]={ "y","̃" },
+  ["ἀ"]={ "α","̓" },
+  ["ἁ"]={ "α","̔" },
+  ["ἂ"]={ "ἀ","̀" },
+  ["ἃ"]={ "ἁ","̀" },
+  ["ἄ"]={ "ἀ","́" },
+  ["ἅ"]={ "ἁ","́" },
+  ["ἆ"]={ "ἀ","͂" },
+  ["ἇ"]={ "ἁ","͂" },
+  ["Ἀ"]={ "Α","̓" },
+  ["Ἁ"]={ "Α","̔" },
+  ["Ἂ"]={ "Ἀ","̀" },
+  ["Ἃ"]={ "Ἁ","̀" },
+  ["Ἄ"]={ "Ἀ","́" },
+  ["Ἅ"]={ "Ἁ","́" },
+  ["Ἆ"]={ "Ἀ","͂" },
+  ["Ἇ"]={ "Ἁ","͂" },
+  ["ἐ"]={ "ε","̓" },
+  ["ἑ"]={ "ε","̔" },
+  ["ἒ"]={ "ἐ","̀" },
+  ["ἓ"]={ "ἑ","̀" },
+  ["ἔ"]={ "ἐ","́" },
+  ["ἕ"]={ "ἑ","́" },
+  ["Ἐ"]={ "Ε","̓" },
+  ["Ἑ"]={ "Ε","̔" },
+  ["Ἒ"]={ "Ἐ","̀" },
+  ["Ἓ"]={ "Ἑ","̀" },
+  ["Ἔ"]={ "Ἐ","́" },
+  ["Ἕ"]={ "Ἑ","́" },
+  ["ἠ"]={ "η","̓" },
+  ["ἡ"]={ "η","̔" },
+  ["ἢ"]={ "ἠ","̀" },
+  ["ἣ"]={ "ἡ","̀" },
+  ["ἤ"]={ "ἠ","́" },
+  ["ἥ"]={ "ἡ","́" },
+  ["ἦ"]={ "ἠ","͂" },
+  ["ἧ"]={ "ἡ","͂" },
+  ["Ἠ"]={ "Η","̓" },
+  ["Ἡ"]={ "Η","̔" },
+  ["Ἢ"]={ "Ἠ","̀" },
+  ["Ἣ"]={ "Ἡ","̀" },
+  ["Ἤ"]={ "Ἠ","́" },
+  ["Ἥ"]={ "Ἡ","́" },
+  ["Ἦ"]={ "Ἠ","͂" },
+  ["Ἧ"]={ "Ἡ","͂" },
+  ["ἰ"]={ "ι","̓" },
+  ["ἱ"]={ "ι","̔" },
+  ["ἲ"]={ "ἰ","̀" },
+  ["ἳ"]={ "ἱ","̀" },
+  ["ἴ"]={ "ἰ","́" },
+  ["ἵ"]={ "ἱ","́" },
+  ["ἶ"]={ "ἰ","͂" },
+  ["ἷ"]={ "ἱ","͂" },
+  ["Ἰ"]={ "Ι","̓" },
+  ["Ἱ"]={ "Ι","̔" },
+  ["Ἲ"]={ "Ἰ","̀" },
+  ["Ἳ"]={ "Ἱ","̀" },
+  ["Ἴ"]={ "Ἰ","́" },
+  ["Ἵ"]={ "Ἱ","́" },
+  ["Ἶ"]={ "Ἰ","͂" },
+  ["Ἷ"]={ "Ἱ","͂" },
+  ["ὀ"]={ "ο","̓" },
+  ["ὁ"]={ "ο","̔" },
+  ["ὂ"]={ "ὀ","̀" },
+  ["ὃ"]={ "ὁ","̀" },
+  ["ὄ"]={ "ὀ","́" },
+  ["ὅ"]={ "ὁ","́" },
+  ["Ὀ"]={ "Ο","̓" },
+  ["Ὁ"]={ "Ο","̔" },
+  ["Ὂ"]={ "Ὀ","̀" },
+  ["Ὃ"]={ "Ὁ","̀" },
+  ["Ὄ"]={ "Ὀ","́" },
+  ["Ὅ"]={ "Ὁ","́" },
+  ["ὐ"]={ "υ","̓" },
+  ["ὑ"]={ "υ","̔" },
+  ["ὒ"]={ "ὐ","̀" },
+  ["ὓ"]={ "ὑ","̀" },
+  ["ὔ"]={ "ὐ","́" },
+  ["ὕ"]={ "ὑ","́" },
+  ["ὖ"]={ "ὐ","͂" },
+  ["ὗ"]={ "ὑ","͂" },
+  ["Ὑ"]={ "Υ","̔" },
+  ["Ὓ"]={ "Ὑ","̀" },
+  ["Ὕ"]={ "Ὑ","́" },
+  ["Ὗ"]={ "Ὑ","͂" },
+  ["ὠ"]={ "ω","̓" },
+  ["ὡ"]={ "ω","̔" },
+  ["ὢ"]={ "ὠ","̀" },
+  ["ὣ"]={ "ὡ","̀" },
+  ["ὤ"]={ "ὠ","́" },
+  ["ὥ"]={ "ὡ","́" },
+  ["ὦ"]={ "ὠ","͂" },
+  ["ὧ"]={ "ὡ","͂" },
+  ["Ὠ"]={ "Ω","̓" },
+  ["Ὡ"]={ "Ω","̔" },
+  ["Ὢ"]={ "Ὠ","̀" },
+  ["Ὣ"]={ "Ὡ","̀" },
+  ["Ὤ"]={ "Ὠ","́" },
+  ["Ὥ"]={ "Ὡ","́" },
+  ["Ὦ"]={ "Ὠ","͂" },
+  ["Ὧ"]={ "Ὡ","͂" },
+  ["ὰ"]={ "α","̀" },
+  ["ὲ"]={ "ε","̀" },
+  ["ὴ"]={ "η","̀" },
+  ["ὶ"]={ "ι","̀" },
+  ["ὸ"]={ "ο","̀" },
+  ["ὺ"]={ "υ","̀" },
+  ["ὼ"]={ "ω","̀" },
+  ["ᾀ"]={ "ἀ","ͅ" },
+  ["ᾁ"]={ "ἁ","ͅ" },
+  ["ᾂ"]={ "ἂ","ͅ" },
+  ["ᾃ"]={ "ἃ","ͅ" },
+  ["ᾄ"]={ "ἄ","ͅ" },
+  ["ᾅ"]={ "ἅ","ͅ" },
+  ["ᾆ"]={ "ἆ","ͅ" },
+  ["ᾇ"]={ "ἇ","ͅ" },
+  ["ᾈ"]={ "Ἀ","ͅ" },
+  ["ᾉ"]={ "Ἁ","ͅ" },
+  ["ᾊ"]={ "Ἂ","ͅ" },
+  ["ᾋ"]={ "Ἃ","ͅ" },
+  ["ᾌ"]={ "Ἄ","ͅ" },
+  ["ᾍ"]={ "Ἅ","ͅ" },
+  ["ᾎ"]={ "Ἆ","ͅ" },
+  ["ᾏ"]={ "Ἇ","ͅ" },
+  ["ᾐ"]={ "ἠ","ͅ" },
+  ["ᾑ"]={ "ἡ","ͅ" },
+  ["ᾒ"]={ "ἢ","ͅ" },
+  ["ᾓ"]={ "ἣ","ͅ" },
+  ["ᾔ"]={ "ἤ","ͅ" },
+  ["ᾕ"]={ "ἥ","ͅ" },
+  ["ᾖ"]={ "ἦ","ͅ" },
+  ["ᾗ"]={ "ἧ","ͅ" },
+  ["ᾘ"]={ "Ἠ","ͅ" },
+  ["ᾙ"]={ "Ἡ","ͅ" },
+  ["ᾚ"]={ "Ἢ","ͅ" },
+  ["ᾛ"]={ "Ἣ","ͅ" },
+  ["ᾜ"]={ "Ἤ","ͅ" },
+  ["ᾝ"]={ "Ἥ","ͅ" },
+  ["ᾞ"]={ "Ἦ","ͅ" },
+  ["ᾟ"]={ "Ἧ","ͅ" },
+  ["ᾠ"]={ "ὠ","ͅ" },
+  ["ᾡ"]={ "ὡ","ͅ" },
+  ["ᾢ"]={ "ὢ","ͅ" },
+  ["ᾣ"]={ "ὣ","ͅ" },
+  ["ᾤ"]={ "ὤ","ͅ" },
+  ["ᾥ"]={ "ὥ","ͅ" },
+  ["ᾦ"]={ "ὦ","ͅ" },
+  ["ᾧ"]={ "ὧ","ͅ" },
+  ["ᾨ"]={ "Ὠ","ͅ" },
+  ["ᾩ"]={ "Ὡ","ͅ" },
+  ["ᾪ"]={ "Ὢ","ͅ" },
+  ["ᾫ"]={ "Ὣ","ͅ" },
+  ["ᾬ"]={ "Ὤ","ͅ" },
+  ["ᾭ"]={ "Ὥ","ͅ" },
+  ["ᾮ"]={ "Ὦ","ͅ" },
+  ["ᾯ"]={ "Ὧ","ͅ" },
+  ["ᾰ"]={ "α","̆" },
+  ["ᾱ"]={ "α","̄" },
+  ["ᾲ"]={ "ὰ","ͅ" },
+  ["ᾳ"]={ "α","ͅ" },
+  ["ᾴ"]={ "ά","ͅ" },
+  ["ᾶ"]={ "α","͂" },
+  ["ᾷ"]={ "ᾶ","ͅ" },
+  ["Ᾰ"]={ "Α","̆" },
+  ["Ᾱ"]={ "Α","̄" },
+  ["Ὰ"]={ "Α","̀" },
+  ["ᾼ"]={ "Α","ͅ" },
+  ["῁"]={ "¨","͂" },
+  ["ῂ"]={ "ὴ","ͅ" },
+  ["ῃ"]={ "η","ͅ" },
+  ["ῄ"]={ "ή","ͅ" },
+  ["ῆ"]={ "η","͂" },
+  ["ῇ"]={ "ῆ","ͅ" },
+  ["Ὲ"]={ "Ε","̀" },
+  ["Ὴ"]={ "Η","̀" },
+  ["ῌ"]={ "Η","ͅ" },
+  ["῍"]={ "᾿","̀" },
+  ["῎"]={ "᾿","́" },
+  ["῏"]={ "᾿","͂" },
+  ["ῐ"]={ "ι","̆" },
+  ["ῑ"]={ "ι","̄" },
+  ["ῒ"]={ "ϊ","̀" },
+  ["ῖ"]={ "ι","͂" },
+  ["ῗ"]={ "ϊ","͂" },
+  ["Ῐ"]={ "Ι","̆" },
+  ["Ῑ"]={ "Ι","̄" },
+  ["Ὶ"]={ "Ι","̀" },
+  ["῝"]={ "῾","̀" },
+  ["῞"]={ "῾","́" },
+  ["῟"]={ "῾","͂" },
+  ["ῠ"]={ "υ","̆" },
+  ["ῡ"]={ "υ","̄" },
+  ["ῢ"]={ "ϋ","̀" },
+  ["ῤ"]={ "ρ","̓" },
+  ["ῥ"]={ "ρ","̔" },
+  ["ῦ"]={ "υ","͂" },
+  ["ῧ"]={ "ϋ","͂" },
+  ["Ῠ"]={ "Υ","̆" },
+  ["Ῡ"]={ "Υ","̄" },
+  ["Ὺ"]={ "Υ","̀" },
+  ["Ῥ"]={ "Ρ","̔" },
+  ["῭"]={ "¨","̀" },
+  ["ῲ"]={ "ὼ","ͅ" },
+  ["ῳ"]={ "ω","ͅ" },
+  ["ῴ"]={ "ώ","ͅ" },
+  ["ῶ"]={ "ω","͂" },
+  ["ῷ"]={ "ῶ","ͅ" },
+  ["Ὸ"]={ "Ο","̀" },
+  ["Ὼ"]={ "Ω","̀" },
+  ["ῼ"]={ "Ω","ͅ" },
+  ["↚"]={ "←","̸" },
+  ["↛"]={ "→","̸" },
+  ["↮"]={ "↔","̸" },
+  ["⇍"]={ "⇐","̸" },
+  ["⇎"]={ "⇔","̸" },
+  ["⇏"]={ "⇒","̸" },
+  ["∄"]={ "∃","̸" },
+  ["∉"]={ "∈","̸" },
+  ["∌"]={ "∋","̸" },
+  ["∤"]={ "∣","̸" },
+  ["∦"]={ "∥","̸" },
+  ["≁"]={ "∼","̸" },
+  ["≄"]={ "≃","̸" },
+  ["≇"]={ "≅","̸" },
+  ["≉"]={ "≈","̸" },
+  ["≠"]={ "=","̸" },
+  ["≢"]={ "≡","̸" },
+  ["≭"]={ "≍","̸" },
+  ["≮"]={ "<","̸" },
+  ["≯"]={ ">","̸" },
+  ["≰"]={ "≤","̸" },
+  ["≱"]={ "≥","̸" },
+  ["≴"]={ "≲","̸" },
+  ["≵"]={ "≳","̸" },
+  ["≸"]={ "≶","̸" },
+  ["≹"]={ "≷","̸" },
+  ["⊀"]={ "≺","̸" },
+  ["⊁"]={ "≻","̸" },
+  ["⊄"]={ "⊂","̸" },
+  ["⊅"]={ "⊃","̸" },
+  ["⊈"]={ "⊆","̸" },
+  ["⊉"]={ "⊇","̸" },
+  ["⊬"]={ "⊢","̸" },
+  ["⊭"]={ "⊨","̸" },
+  ["⊮"]={ "⊩","̸" },
+  ["⊯"]={ "⊫","̸" },
+  ["⋠"]={ "≼","̸" },
+  ["⋡"]={ "≽","̸" },
+  ["⋢"]={ "⊑","̸" },
+  ["⋣"]={ "⊒","̸" },
+  ["⋪"]={ "⊲","̸" },
+  ["⋫"]={ "⊳","̸" },
+  ["⋬"]={ "⊴","̸" },
+  ["⋭"]={ "⊵","̸" },
+  ["⫝̸"]={ "⫝","̸" },
+  ["が"]={ "か","゙" },
+  ["ぎ"]={ "き","゙" },
+  ["ぐ"]={ "く","゙" },
+  ["げ"]={ "け","゙" },
+  ["ご"]={ "こ","゙" },
+  ["ざ"]={ "さ","゙" },
+  ["じ"]={ "し","゙" },
+  ["ず"]={ "す","゙" },
+  ["ぜ"]={ "せ","゙" },
+  ["ぞ"]={ "そ","゙" },
+  ["だ"]={ "た","゙" },
+  ["ぢ"]={ "ち","゙" },
+  ["づ"]={ "つ","゙" },
+  ["で"]={ "て","゙" },
+  ["ど"]={ "と","゙" },
+  ["ば"]={ "は","゙" },
+  ["ぱ"]={ "は","゚" },
+  ["び"]={ "ひ","゙" },
+  ["ぴ"]={ "ひ","゚" },
+  ["ぶ"]={ "ふ","゙" },
+  ["ぷ"]={ "ふ","゚" },
+  ["べ"]={ "へ","゙" },
+  ["ぺ"]={ "へ","゚" },
+  ["ぼ"]={ "ほ","゙" },
+  ["ぽ"]={ "ほ","゚" },
+  ["ゔ"]={ "う","゙" },
+  ["ゞ"]={ "ゝ","゙" },
+  ["ガ"]={ "カ","゙" },
+  ["ギ"]={ "キ","゙" },
+  ["グ"]={ "ク","゙" },
+  ["ゲ"]={ "ケ","゙" },
+  ["ゴ"]={ "コ","゙" },
+  ["ザ"]={ "サ","゙" },
+  ["ジ"]={ "シ","゙" },
+  ["ズ"]={ "ス","゙" },
+  ["ゼ"]={ "セ","゙" },
+  ["ゾ"]={ "ソ","゙" },
+  ["ダ"]={ "タ","゙" },
+  ["ヂ"]={ "チ","゙" },
+  ["ヅ"]={ "ツ","゙" },
+  ["デ"]={ "テ","゙" },
+  ["ド"]={ "ト","゙" },
+  ["バ"]={ "ハ","゙" },
+  ["パ"]={ "ハ","゚" },
+  ["ビ"]={ "ヒ","゙" },
+  ["ピ"]={ "ヒ","゚" },
+  ["ブ"]={ "フ","゙" },
+  ["プ"]={ "フ","゚" },
+  ["ベ"]={ "ヘ","゙" },
+  ["ペ"]={ "ヘ","゚" },
+  ["ボ"]={ "ホ","゙" },
+  ["ポ"]={ "ホ","゚" },
+  ["ヴ"]={ "ウ","゙" },
+  ["ヷ"]={ "ワ","゙" },
+  ["ヸ"]={ "ヰ","゙" },
+  ["ヹ"]={ "ヱ","゙" },
+  ["ヺ"]={ "ヲ","゙" },
+  ["ヾ"]={ "ヽ","゙" },
+  ["יִ"]={ "י","ִ" },
+  ["ײַ"]={ "ײ","ַ" },
+  ["שׁ"]={ "ש","ׁ" },
+  ["שׂ"]={ "ש","ׂ" },
+  ["שּׁ"]={ "שּ","ׁ" },
+  ["שּׂ"]={ "שּ","ׂ" },
+  ["אַ"]={ "א","ַ" },
+  ["אָ"]={ "א","ָ" },
+  ["אּ"]={ "א","ּ" },
+  ["בּ"]={ "ב","ּ" },
+  ["גּ"]={ "ג","ּ" },
+  ["דּ"]={ "ד","ּ" },
+  ["הּ"]={ "ה","ּ" },
+  ["וּ"]={ "ו","ּ" },
+  ["זּ"]={ "ז","ּ" },
+  ["טּ"]={ "ט","ּ" },
+  ["יּ"]={ "י","ּ" },
+  ["ךּ"]={ "ך","ּ" },
+  ["כּ"]={ "כ","ּ" },
+  ["לּ"]={ "ל","ּ" },
+  ["מּ"]={ "מ","ּ" },
+  ["נּ"]={ "נ","ּ" },
+  ["סּ"]={ "ס","ּ" },
+  ["ףּ"]={ "ף","ּ" },
+  ["פּ"]={ "פ","ּ" },
+  ["צּ"]={ "צ","ּ" },
+  ["קּ"]={ "ק","ּ" },
+  ["רּ"]={ "ר","ּ" },
+  ["שּ"]={ "ש","ּ" },
+  ["תּ"]={ "ת","ּ" },
+  ["וֹ"]={ "ו","ֹ" },
+  ["בֿ"]={ "ב","ֿ" },
+  ["כֿ"]={ "כ","ֿ" },
+  ["פֿ"]={ "פ","ֿ" },
+  ["𑂚"]={ "𑂙","𑂺" },
+  ["𑂜"]={ "𑂛","𑂺" },
+  ["𑂫"]={ "𑂥","𑂺" },
+  ["𑄮"]={ "𑄱","𑄧" },
+  ["𑄯"]={ "𑄲","𑄧" },
+  ["𑍋"]={ "𑍇","𑌾" },
+  ["𑍌"]={ "𑍇","𑍗" },
+  ["𑒻"]={ "𑒹","𑒺" },
+  ["𑒼"]={ "𑒹","𑒰" },
+  ["𑒾"]={ "𑒹","𑒽" },
+  ["𑖺"]={ "𑖸","𑖯" },
+  ["𑖻"]={ "𑖹","𑖯" },
+  ["𝅗𝅥"]={ "𝅗","𝅥" },
+  ["𝅘𝅥"]={ "𝅘","𝅥" },
+  ["𝅘𝅥𝅮"]={ "𝅘𝅥","𝅮" },
+  ["𝅘𝅥𝅯"]={ "𝅘𝅥","𝅯" },
+  ["𝅘𝅥𝅰"]={ "𝅘𝅥","𝅰" },
+  ["𝅘𝅥𝅱"]={ "𝅘𝅥","𝅱" },
+  ["𝅘𝅥𝅲"]={ "𝅘𝅥","𝅲" },
+  ["𝆹𝅥"]={ "𝆹","𝅥" },
+  ["𝆺𝅥"]={ "𝆺","𝅥" },
+  ["𝆹𝅥𝅮"]={ "𝆹𝅥","𝅮" },
+  ["𝆺𝅥𝅮"]={ "𝆺𝅥","𝅮" },
+  ["𝆹𝅥𝅯"]={ "𝆹𝅥","𝅯" },
+  ["𝆺𝅥𝅯"]={ "𝆺𝅥","𝅯" },
+  },
+ },
+ },
+ ["name"]="collapse",
+ ["prepend"]=true,
+ ["type"]="ligature",
+}
 end -- closure
 
 do -- begin closure to overcome local limits and interference

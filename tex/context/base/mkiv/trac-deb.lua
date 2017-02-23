@@ -372,3 +372,15 @@ implement { name = "disableexperiments", actions = experiments.disable, argument
 implement { name = "showdebuginfo",      actions = lmx.showdebuginfo }
 implement { name = "overloaderror",      actions = lmx.overloaderror }
 implement { name = "showlogcategories",  actions = logs.show }
+
+directives.register("system.profile",function()
+    luatex.registerstopactions(function()
+        debugger.disable()
+        debugger.savestats("luatex-profile.log")
+        report_nl()
+        logs.report("system","profiler stopped, log saved in %a","luatex-profile.log")
+        report_nl()
+    end)
+    logs.report("system","profiler started")
+    debugger.enable()
+end)

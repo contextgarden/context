@@ -31,15 +31,23 @@ end
 --         setlocale(nil,nil)
 --     end
 --
---     function os.pushlocale(...)
+--     function os.pushlocale(l,...)
 --         insert(stack, {
---             collate  = setlocale("collate"),
---             ctype    = setlocale("ctype"),
---             monetary = setlocale("monetary"),
---             numeric  = setlocale("numeric"),
---             time     = setlocale("time"),
+--             collate  = setlocale(nil,"collate"),
+--             ctype    = setlocale(nil,"ctype"),
+--             monetary = setlocale(nil,"monetary"),
+--             numeric  = setlocale(nil,"numeric"),
+--             time     = setlocale(nil,"time"),
 --         })
---         setlocale(...)
+--         if l then
+--             setlocale(l,...)
+--         else
+--             setlocale(status.lc_collate ,"collate"),
+--             setlocale(status.lc_ctype   ,"ctype"),
+--             setlocale(status.lc_monetary,"monetary"),
+--             setlocale(status.lc_numeric ,"numeric"),
+--             setlocale(status.lc_time    ,"time"),
+--         end
 --     end
 --
 --     function os.poplocale(...)
@@ -50,6 +58,12 @@ end
 --             resetlocale()
 --         end
 --     end
+--
+--     function os.setlocale()
+--         -- no way you can mess with it, use push/pop
+--     end
+--
+--     setlocale(nil,nil) -- setlocale("all","C")
 --
 -- end
 

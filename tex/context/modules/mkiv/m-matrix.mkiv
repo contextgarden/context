@@ -28,6 +28,7 @@ local formatters       = string.formatters
 local copy             = table.copy
 local insert           = table.insert
 local remove           = table.remove
+local random           = math.random
 
 local context          = context
 
@@ -92,8 +93,8 @@ function matrix.typeset(m,options)
         if options.fences then
             whatever = fences[options.fences] or whatever
         elseif options.determinant then
-            whatever = fences.brackets
-         -- whatever = fences.bars
+         -- whatever = fences.brackets
+            whatever = fences.bars
         end
         local template = options.template or matrix.template
         if template == "yes" then
@@ -125,9 +126,63 @@ end
 
 -- interchange two rows (i-th, j-th)
 
-function matrix.swap(t,i,j)
-    t[i], t[j] = t[j], t[i]
+-- function matrix.swaprows(t,i,j)
+--     if i <= #t and j <= #t then
+--         t[i], t[j] = t[j], t[i]
+--         return t
+--     else
+--         return "error: out of bound"
+--     end
+-- end
+
+function matrix.swaprows(t,i,j)
+    local ti = t[i]
+    if not ti then
+        return "error: no row i"
+    end
+    local tj = t[j]
+    if not tj then
+        return "error: no row j"
+    end
+    t[i], t[j] = tj, ti
+    return t
 end
+
+-- interchange two columns (i-th, j-th)
+
+-- function matrix.swapcolumns(t, i, j)
+--     if i <= #t[1] and j <= #t[1] then
+--         for k = 1, #t do
+--             t[k][i], t[k][j] = t[k][j], t[k][i]
+--         end
+--         return t
+--     else
+--         return "error: out of bound"
+--     end
+-- end
+
+function matrix.swapcolumns(t, i, j)
+    local t1 = t[1]
+    if not t1 then
+        return "error: no rows"
+    end
+    local n = #t1
+    if i <= n then
+        return "error: no row i"
+    end
+    if j <= n then
+        return "error: no row j"
+    end
+    for k = 1, #t do
+        local tk = t[k]
+        tk[i], tk[j] = tk[j], tk[i]
+    end
+    return t
+end
+
+matrix.swapC = matrix.swapcolumns
+matrix.swapR = matrix.swaprows
+matrix.swap  = matrix.swaprows
 
 -- replace i-th row with factor * (i-th row)
 
@@ -251,7 +306,7 @@ end
 
 matrix.uppertri = uppertri
 
-function matrix.determinant(m)
+local function determinant(m)
     if #m == #m[1] then
         local d = 1
         local t, s = uppertri(m,1)
@@ -263,6 +318,8 @@ function matrix.determinant(m)
         return "error: not a square matrix"
     end
 end
+
+matrix.determinant = determinant
 
 local function rowechelon(m,r)
     local temp = copy(m)
@@ -327,6 +384,99 @@ end
 
 matrix.rowechelon = rowechelon
 matrix.rowEchelon = rowechelon
+
+-- make matrices until its determinant is not 0
+
+function matrix.make(n,m,low,high)
+    if not n then
+        n = 10
+    end
+    if not m then
+        m = 10
+    end
+    if not low then
+        low = 0
+    end
+    if not high then
+        high = 100
+    end
+    local t = { }  -- make an empty n1 x n2 array
+    local again = true
+    for i=1,n do
+        t[i] = { }
+    end
+    while true do
+        for i=1,n do
+            local ti = t[i]
+            for j=1,m do
+                ti[j] = random(low,high)
+            end
+        end
+        if n ~= m or determinant(t,1) ~= 0 then
+            return t
+        end
+    end
+end
+
+-- extract submatrix by using
+
+local function submatrix(t,i,j)
+    local rows    = #t
+    local columns = #t[1]
+    local sign    = 1 -- not used
+    if i <= rows and j <= columns then
+        local c = copy(t)
+        remove(c,i)
+        for k=1,rows-1 do
+            remove(c[k],j)
+        end
+        return c
+    else
+        return "error: out of bound"
+    end
+end
+
+matrix.submatrix = submatrix
+
+-- calculating determinant using Laplace Expansion
+
+function matrix.laplace(t) -- not sure if this is the most effient but
+    local factors = { 1 }  -- it's not used for number crunching anyway
+    local data    = copy(t)
+    local det     = 0
+    while #data > 0 do
+        local mat = { }
+        local siz = #data[1]
+        if siz == 0 then
+            return "error: no determinant"
+        elseif siz == 1 then
+            det = data[1][1]
+            return det
+        end
+        for i=1,siz do
+            mat[i] = data[1]
+            remove(data,1)
+        end
+        local factor = remove(factors,1)
+        local m1 = mat[1]
+        if siz == 2 then
+            local m2 = mat[2]
+            det = det + factor * (m1[1]*m2[2] - m1[2]*m2[1])
+        else
+            for j=1,#m1 do
+                local m1j = m1[j]
+                if m1j ~= 0 then
+                    insert(factors, (-1)^(j+1) * factor * m1j)
+                    local m = submatrix(mat,1,j)
+                    for k, v in next, m do
+                         insert(data,v)
+                    end
+                end
+            end
+        end
+    end
+    return det
+end
 
 --  solve the linear equation m X = c
 

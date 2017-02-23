@@ -70,9 +70,8 @@ function texconfig.init()
             "epdf", "fontloader", "kpse", "mplib",
         },
         obsolete = {
-            "fontforge", -- can be filled by luat-log
+            "fontloader", -- can be filled by luat-log
             "kpse",
-            "token",
         },
         functions = {
             "assert", "pcall", "xpcall", "error", "collectgarbage",

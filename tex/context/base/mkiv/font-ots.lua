@@ -125,7 +125,6 @@ local fonts              = fonts
 local otf                = fonts.handlers.otf
 local tracers            = nodes.tracers
 
-local trace_lookups      = false  registertracker("otf.lookups",      function(v) trace_lookups      = v end)
 local trace_singles      = false  registertracker("otf.singles",      function(v) trace_singles      = v end)
 local trace_multiples    = false  registertracker("otf.multiples",    function(v) trace_multiples    = v end)
 local trace_alternatives = false  registertracker("otf.alternatives", function(v) trace_alternatives = v end)
@@ -738,7 +737,11 @@ end
 
 local function get_alternative_glyph(start,alternatives,value)
     local n = #alternatives
-    if value == "random" then
+    if n == 1 then
+        -- we could actually change that into a gsub and save some memory in the
+        -- font loader but it makes tracing more messy
+        return alternatives[1], trace_alternatives and "1 (only one present)"
+    elseif value == "random" then
         local r = getrandom and getrandom("glyph",1,n) or random(1,n)
         return alternatives[r], trace_alternatives and formatters["value %a, taking %a"](value,r)
     elseif value == "first" then
@@ -2356,7 +2359,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             size = l - f + 1
             if size > 1 then
                 -- before/current/after | before/current | current/after
-                local discfound = nil
+                local discfound -- = nil
                 local n = f + 1
              -- last = getnext(last) -- the second in current (first already matched)
                 last = startnext -- the second in current (first already matched)
@@ -2485,7 +2488,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                      -- sweeptype = nil
                     end
                     if prev then
-                        local discfound = nil
+                        local discfound -- = nil
                         local n = f - 1
                         while n >= 1 do
                             if prev then
@@ -2597,7 +2600,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                     end
                                     -- maybe only if match
                                     prev = getprev(prev)
-                                elseif seq[n][32] and id == glue_code and isspace(prev,threshold,id) then
+                                elseif id == glue_code and seq[n][32] and isspace(prev,threshold,id) then
                                     n = n - 1
                                     prev = getprev(prev)
                                 else
@@ -2619,14 +2622,12 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
             -- after
             if match and s > l then
                 local current = last and getnext(last)
-                if not current then
-                    if sweeptype == "post" or sweeptype == "replace" then
-                        current   = getnext(sweepnode)
-                     -- sweeptype = nil
-                    end
+                if not current and (sweeptype == "post" or sweeptype == "replace") then
+                    current   = getnext(sweepnode)
+                 -- sweeptype = nil
                 end
                 if current then
-                    local discfound = nil
+                    local discfound -- = nil
                     -- removed optimization for s-l == 1, we have to deal with marks anyway
                     local n = l + 1
                     while n <= s do
@@ -2731,7 +2732,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode)
                                 end
                                 -- maybe only if match
                                 current = getnext(current)
-                            elseif seq[n][32] and id == glue_code and isspace(current,threshold,id) then
+                            elseif id == glue_code and seq[n][32] and isspace(current,threshold,id) then
                                 n = n + 1
                                 current = getnext(current)
                             else
@@ -2910,6 +2911,14 @@ do -- overcome local limit
 
 end
 
+-- Functions like kernrun, comprun etc evolved over time and in the end look rather
+-- complex. It's a bit of a compromis between extensive copying and creating subruns.
+-- The logic has been improved a lot by Kai and Ivo who use complex fonts which
+-- really helped to identify border cases on the one hand and get insight in the diverse
+-- ways fonts implement features (not always that consistent and efficient). At the same
+-- time I tried to keep the code relatively efficient so that the overhead in runtime
+-- stays acceptable.
+
 local function report_disc(what,n)
     report_run("%s: %s > %s",what,n,languages.serializediscretionary(n))
 end
@@ -3014,7 +3023,7 @@ local function kernrun(disc,k_run,font,attr,...)
     return nextstart, done
 end
 
--- fonts like ebgaramond do ligatuires this way (less efficient than e.g. dejavu which
+-- fonts like ebgaramond do ligatures this way (less efficient than e.g. dejavu which
 -- will do the testrun variant)
 
 local function comprun(disc,c_run,...) -- vararg faster than the whole list
@@ -3741,6 +3750,14 @@ otf.helpers             = otf.helpers or { }
 otf.helpers.txtdirstate = txtdirstate
 otf.helpers.pardirstate = pardirstate
 
+-- This is the main loop. We run over the node list dealing with a specific font. The
+-- attribute is a context specific thing. We could work on sub start-stop ranges instead
+-- but I wonder if there is that much speed gain (experiments showed that it made not
+-- much sense) and we need to keep track of directions anyway. Also at some point I
+-- want to play with font interactions and then we do need the full sweeps. Apart from
+-- optimizations the principles of processing the features hasn't changed much since
+-- the beginning.
+
 local function featuresprocessor(head,font,attr)
 
     local sequences = sequencelists[font] -- temp hack
@@ -3790,11 +3807,6 @@ local function featuresprocessor(head,font,attr)
     local datasets  = otf.dataset(tfmdata,font,attr)
     local dirstack  = { } -- could move outside function but we can have local runs
     sweephead       = { }
-
-    -- We could work on sub start-stop ranges instead but I wonder if there is that
-    -- much speed gain (experiments showed that it made not much sense) and we need
-    -- to keep track of directions anyway. Also at some point I want to play with
-    -- font interactions and then we do need the full sweeps.
 
     -- Keeping track of the headnode is needed for devanagari. (I generalized it a bit
     -- so that multiple cases are also covered.) We could prepend a temp node.
@@ -3906,6 +3918,9 @@ local function featuresprocessor(head,font,attr)
                         elseif char == false then
                            -- whatever glyph
                            start = getnext(start)
+                        elseif id == glue_code then
+                            -- happens often
+                           start = getnext(start)
                         elseif id == disc_code then
                             local ok
                             if gpossing then
@@ -3977,6 +3992,10 @@ local function featuresprocessor(head,font,attr)
                             start = getnext(start)
                         end
                     elseif char == false then
+                       -- whatever glyph
+                        start = getnext(start)
+                    elseif id == glue_code then
+                        -- happens often
                         start = getnext(start)
                     elseif id == disc_code then
                         local ok

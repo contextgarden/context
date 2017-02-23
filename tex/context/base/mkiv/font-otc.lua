@@ -195,13 +195,15 @@ local function addfeature(data,feature,specifications)
     local stepkey      = coverup.stepkey
     local register     = coverup.register
 
-    local function prepare_substitution(list,featuretype)
+    local function prepare_substitution(list,featuretype,nocheck)
         local coverage = { }
         local cover    = coveractions[featuretype]
         for code, replacement in next, list do
             local unicode     = tounicode(code)
             local description = descriptions[unicode]
-            if description then
+            if not nocheck and not description then
+                skip = skip + 1
+            else
                 if type(replacement) == "table" then
                     replacement = replacement[1]
                 end
@@ -212,20 +214,18 @@ local function addfeature(data,feature,specifications)
                 else
                     skip = skip + 1
                 end
-            else
-                skip = skip + 1
             end
         end
         return coverage
     end
 
-    local function prepare_alternate(list,featuretype)
+    local function prepare_alternate(list,featuretype,nocheck)
         local coverage = { }
         local cover    = coveractions[featuretype]
         for code, replacement in next, list do
             local unicode     = tounicode(code)
             local description = descriptions[unicode]
-            if not description then
+            if not nocheck and not description then
                 skip = skip + 1
             elseif type(replacement) == "table" then
                 local r = { }
@@ -248,13 +248,13 @@ local function addfeature(data,feature,specifications)
         return coverage
     end
 
-    local function prepare_multiple(list,featuretype)
+    local function prepare_multiple(list,featuretype,nocheck)
         local coverage = { }
         local cover    = coveractions[featuretype]
         for code, replacement in next, list do
             local unicode     = tounicode(code)
             local description = descriptions[unicode]
-            if not description then
+            if not nocheck and not description then
                 skip = skip + 1
             elseif type(replacement) == "table" then
                 local r, n = { }, 0
@@ -284,13 +284,15 @@ local function addfeature(data,feature,specifications)
         return coverage
     end
 
-    local function prepare_ligature(list,featuretype)
+    local function prepare_ligature(list,featuretype,nocheck)
         local coverage = { }
         local cover    = coveractions[featuretype]
         for code, ligature in next, list do
             local unicode     = tounicode(code)
             local description = descriptions[unicode]
-            if description then
+            if not nocheck and not description then
+                skip = skip + 1
+            else
                 if type(ligature) == "string" then
                     ligature = { lpegmatch(splitter,ligature) }
                 end
@@ -311,8 +313,6 @@ local function addfeature(data,feature,specifications)
                 else
                     skip = skip + 1
                 end
-            else
-                skip = skip + 1
             end
         end
         return coverage
@@ -552,6 +552,7 @@ local function addfeature(data,feature,specifications)
             local askedsteps    = specification.steps or specification.subtables or { specification.data } or { }
             local featuretype   = normalized[specification.type or "substitution"] or "substitution"
             local featureflags  = specification.flags or noflags
+            local nocheck       = specification.nocheck
             local featureorder  = specification.order or { feature }
             local featurechain  = (featuretype == "chainsubstitution" or featuretype == "chainposition") and 1 or 0
             local nofsteps      = 0
@@ -572,13 +573,13 @@ local function addfeature(data,feature,specifications)
                         local coverage = nil
                         local format   = nil
                         if featuretype == "substitution" then
-                            coverage = prepare_substitution(list,featuretype)
+                            coverage = prepare_substitution(list,featuretype,nocheck)
                         elseif featuretype == "ligature" then
-                            coverage = prepare_ligature(list,featuretype)
+                            coverage = prepare_ligature(list,featuretype,nocheck)
                         elseif featuretype == "alternate" then
-                            coverage = prepare_alternate(list,featuretype)
+                            coverage = prepare_alternate(list,featuretype,nocheck)
                         elseif featuretype == "multiple" then
-                            coverage = prepare_multiple(list,featuretype)
+                            coverage = prepare_multiple(list,featuretype,nocheck)
                         elseif featuretype == "kern" then
                             format   = "kern"
                             coverage = prepare_kern(list,featuretype)
@@ -605,16 +606,16 @@ local function addfeature(data,feature,specifications)
                 local format   = nil
                 if featuretype == "substitution" then
                     category = "gsub"
-                    coverage = prepare_substitution(list,featuretype)
+                    coverage = prepare_substitution(list,featuretype,nocheck)
                 elseif featuretype == "ligature" then
                     category = "gsub"
-                    coverage = prepare_ligature(list,featuretype)
+                    coverage = prepare_ligature(list,featuretype,nocheck)
                 elseif featuretype == "alternate" then
                     category = "gsub"
-                    coverage = prepare_alternate(list,featuretype)
+                    coverage = prepare_alternate(list,featuretype,nocheck)
                 elseif featuretype == "multiple" then
                     category = "gsub"
-                    coverage = prepare_multiple(list,featuretype)
+                    coverage = prepare_multiple(list,featuretype,nocheck)
                 elseif featuretype == "kern" then
                     category = "gpos"
                     format   = "kern"

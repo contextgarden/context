@@ -6,9 +6,6 @@ if not modules then modules = { } end modules ['util-lib'] = {
     license   = "see context related readme files",
 }
 
--- This is experimental code for Hans and Luigi. Don't depend on it! There
--- will be a plain variant.
-
 --[[
 
 The problem with library bindings is manyfold. They are of course platform
@@ -73,29 +70,41 @@ and then without.
 
 ]]--
 
--- seems to be clua in recent texlive
+local type          = type
+local next          = next
+local pcall         = pcall
+local gsub          = string.gsub
+local find          = string.find
+local sort          = table.sort
+local pathpart      = file.pathpart
+local nameonly      = file.nameonly
+local joinfile      = file.join
+local removesuffix  = file.removesuffix
+local findfile      = resolvers.findfile
+local findfiles     = resolvers.findfiles
+local expandpaths   = resolvers.expandedpathlistfromvariable
+local qualifiedpath = file.is_qualified_path
+local isfile        = lfs.isfile
 
-local gsub, find = string.gsub, string.find
-local pathpart, nameonly, joinfile = file.pathpart, file.nameonly, file.join
-local findfile, findfiles = resolvers and resolvers.findfile, resolvers and resolvers.findfiles
-
-local loaded         = package.loaded
-
-local report_swiglib = logs.reporter("swiglib")
-local trace_swiglib  = false  trackers.register("resolvers.swiglib", function(v) trace_swiglib = v end)
+local done = false
 
 -- We can check if there are more that one component, and if not, we can
 -- append 'core'.
 
-local done = false
-
-local function requireswiglib(required,version)
-    local trace_swiglib = trace_swiglib or package.helpers.trace
-    local library = loaded[required]
-    if library == nil then
-        if trace_swiglib then
-            report_swiglib("requiring library %a with version %a",required,version or "any")
+local function locate(required,version,trace,report,action)
+    if type(required) ~= "string" then
+        report("provide a proper library name")
+        return
+    end
+    if trace then
+        report("requiring library %a with version %a",required,version or "any")
+    end
+    local found_library = nil
+    if qualifiedpath(required) then
+        if isfile(required) then
+            found_library = required
         end
+    else
         -- initialize a few variables
         local required_full = gsub(required,"%.","/") -- package.helpers.lualibfile
         local required_path = pathpart(required_full)
@@ -104,16 +113,16 @@ local function requireswiglib(required,version)
         local version       = type(version) == "string" and version ~= "" and version or false
         local engine        = environment.ownmain or false
         --
-        if trace_swiglib and not done then
-            local list = resolvers.expandedpathlistfromvariable("lib") -- fresh, no reuse
+        if trace and not done then
+            local list = expandpaths("lib") -- fresh, no reuse
             for i=1,#list do
-               report_swiglib("tds path %i: %s",i,list[i])
+               report("tds path %i: %s",i,list[i])
             end
         end
         -- helpers
         local function found(locate,asked_library,how,...)
-            if trace_swiglib then
-                report_swiglib("checking %s: %a",how,asked_library)
+            if trace then
+                report("checking %s: %a",how,asked_library)
             end
             return locate(asked_library,...)
         end
@@ -121,15 +130,15 @@ local function requireswiglib(required,version)
             local found = nil
             if version then
                 local asked_library = joinfile(required_path,version,required_name)
-                if trace_swiglib then
-                    report_swiglib("checking %s: %a","with version",asked_library)
+                if trace then
+                    report("checking %s: %a","with version",asked_library)
                 end
                 found = locate(asked_library,...)
             end
             if not found or found == "" then
                 local asked_library = joinfile(required_path,required_name)
-                if trace_swiglib then
-                    report_swiglib("checking %s: %a","with version",asked_library)
+                if trace then
+                    report("checking %s: %a","with version",asked_library)
                 end
                 found = locate(asked_library,...)
             end
@@ -140,32 +149,32 @@ local function requireswiglib(required,version)
         -- match anyway.
         local function attempt(checkpattern)
             -- check cnf spec using name and version
-            if trace_swiglib then
-                report_swiglib("checking tds lib paths strictly")
+            if trace then
+                report("checking tds lib paths strictly")
             end
             local found = findfile and check(findfile,"lib")
             if found and (not checkpattern or find(found,checkpattern)) then
                 return found
             end
             -- check cnf spec using wildcard
-            if trace_swiglib then
-                report_swiglib("checking tds lib paths with wildcard")
+            if trace then
+                report("checking tds lib paths with wildcard")
             end
             local asked_library = joinfile(required_path,".*",required_name)
-            if trace_swiglib then
-                report_swiglib("checking %s: %a","latest version",asked_library)
+            if trace then
+                report("checking %s: %a","latest version",asked_library)
             end
             local list = findfiles(asked_library,"lib",true)
             if list and #list > 0 then
-                table.sort(list)
+                sort(list)
                 local found = list[#list]
                 if found and (not checkpattern or find(found,checkpattern)) then
                     return found
                 end
             end
             -- Check lib paths using name and version.
-            if trace_swiglib then
-                report_swiglib("checking lib paths")
+            if trace then
+                report("checking lib paths")
             end
             package.extralibpath(environment.ownpath)
             local paths = package.libpaths()
@@ -177,58 +186,79 @@ local function requireswiglib(required,version)
             end
             return false
         end
-        local found_library = nil
         if engine then
-            if trace_swiglib then
-                report_swiglib("attemp 1, engine %a",engine)
+            if trace then
+                report("attemp 1, engine %a",engine)
             end
             found_library = attempt("/"..engine.."/")
             if not found_library then
-                if trace_swiglib then
-                    report_swiglib("attemp 2, no engine",asked_library)
+                if trace then
+                    report("attemp 2, no engine",asked_library)
                 end
                 found_library = attempt()
             end
         else
             found_library = attempt()
         end
-        -- load and initialize when found
-        if not found_library then
-            if trace_swiglib then
-                report_swiglib("not found: %a",required)
-            end
-            library = false
-        else
-            local path = pathpart(found_library)
-            local base = nameonly(found_library)
-            dir.push(path)
-            if trace_swiglib then
-                report_swiglib("found: %a",found_library)
-            end
-            local message = nil
-            local opener  = "luaopen_" .. required_base
-            library, message = package.loadlib(found_library,opener)
-            local libtype = type(library)
-            if libtype == "function" then
-                library = library()
-            else
-                report_swiglib("load error: %a returns %a, message %a, library %a",opener,libtype,(string.gsub(message or "no message","[%s]+$","")),found_library or "no library")
-                library = false
-            end
-            dir.pop()
+    end
+    -- load and initialize when found
+    if not found_library then
+        if trace then
+            report("not found: %a",required)
         end
-        -- cache result
-        if not library then
-            report_swiglib("unknown: %a",required)
-        elseif trace_swiglib then
-            report_swiglib("stored: %a",required)
-        end
-        loaded[required] = library
+        library = false
     else
-        report_swiglib("reused: %a",required)
+        if trace then
+            report("found: %a",found_library)
+        end
+        local message, result = action(found_library,required_base)
+        if result then
+            library = result
+        else
+            library = false
+            report("load error: message %a, library %a",tostring(message),found_library or "no library")
+        end
+    end
+    if not library then
+        report("unknown: %a",required)
+    elseif trace then
+        report("stored: %a",required)
     end
     return library
 end
+
+do
+
+    local report_swiglib = logs.reporter("swiglib")
+    local trace_swiglib  = false
+    local savedrequire   = require
+    local loadedlibs     = { }
+
+    trackers.register("resolvers.swiglib", function(v) trace_swiglib = v end)
+
+    function requireswiglib(required,version)
+        local library = loadedlibs[library]
+        if library == nil then
+            local trace_swiglib = trace_swiglib or package.helpers.trace
+            library = locate(required,version,trace_swiglib,report_swiglib,function(name,base)
+                dir.push(pathpart(name))
+                local opener  = "luaopen_" .. base
+                local library, message = package.loadlib(name,opener)
+                local libtype = type(library)
+                if libtype == "function" then
+                    library = library()
+                    message = true
+                else
+                    report_swiglib("load error: %a returns %a, message %a, library %a",opener,libtype,(string.gsub(message or "no message","[%s]+$","")),found_library or "no library")
+                    library = false
+                end
+                dir.pop()
+                return message, library
+            end)
+            loadedlibs[required] = library or false
+        end
+        return library
+    end
 
 --[[
 
@@ -237,15 +267,13 @@ we could put the specific loader in the global namespace.
 
 ]]--
 
-local savedrequire = require
-
-function require(name,version)
-    if find(name,"^swiglib%.") then
-        return requireswiglib(name,version)
-    else
-        return savedrequire(name)
+    function require(name,version)
+        if find(name,"^swiglib%.") then
+            return requireswiglib(name,version)
+        else
+            return savedrequire(name)
+        end
     end
-end
 
 --[[
 
@@ -255,43 +283,87 @@ recommended loader.
 
 ]]--
 
-local swiglibs    = { }
-local initializer = "core"
+    local swiglibs    = { }
+    local initializer = "core"
 
-function swiglib(name,version)
-    local library = swiglibs[name]
-    if not library then
-        statistics.starttiming(swiglibs)
-        if trace_swiglib then
-            report_swiglib("loading %a",name)
+    function swiglib(name,version)
+        local library = swiglibs[name]
+        if not library then
+            statistics.starttiming(swiglibs)
+            if trace_swiglib then
+                report_swiglib("loading %a",name)
+            end
+            if not find(name,"%." .. initializer .. "$") then
+                fullname = "swiglib." .. name .. "." .. initializer
+            else
+                fullname = "swiglib." .. name
+            end
+            library = requireswiglib(fullname,version)
+            swiglibs[name] = library
+            statistics.stoptiming(swiglibs)
         end
-        if not find(name,"%." .. initializer .. "$") then
-            fullname = "swiglib." .. name .. "." .. initializer
-        else
-            fullname = "swiglib." .. name
-        end
-        library = requireswiglib(fullname,version)
-        swiglibs[name] = library
-        statistics.stoptiming(swiglibs)
+        return library
     end
-    return library
+
+    statistics.register("used swiglibs", function()
+        if next(swiglibs) then
+            return string.format("%s, initial load time %s seconds",table.concat(table.sortedkeys(swiglibs)," "),statistics.elapsedtime(swiglibs))
+        end
+    end)
+
 end
 
-statistics.register("used swiglibs", function()
-    if next(swiglibs) then
-        return string.format("%s, initial load time %s seconds",table.concat(table.sortedkeys(swiglibs)," "),statistics.elapsedtime(swiglibs))
-    end
-end)
+if FFISUPPORTED and ffi and ffi.load then
 
 --[[
 
-So, we now have:
+We use the same lookup logic for ffi loading.
+
+]]--
+
+    local report_ffilib = logs.reporter("ffilib")
+    local trace_ffilib  = false
+    local savedffiload  = ffi.load
+
+    trackers.register("resolvers.ffilib", function(v) trace_ffilib = v end)
+
+    function ffilib(required,version)
+        return locate(required,version,trace_ffilib,report_ffilib,function(name)
+            local message, library = pcall(savedffiload,removesuffix(name))
+            if type(library) == "userdata" then
+                return message, library
+            else
+                return message, false
+            end
+        end)
+    end
+
+    function ffi.load(name)
+        local library = ffilib(name)
+        if type(library) == "userdata" then
+            return library
+        else
+            report_ffilib("trying to load %a using normal loader",name)
+            return savedffiload(name)
+        end
+    end
+
+end
+
+--[[
+
+-- So, we now have:
+
+trackers.enable("resolvers.ffilib")
+trackers.enable("resolvers.swiglib")
 
 local gm = require("swiglib.gmwand.core")
 local gm = swiglib("gmwand.core")
 local sq = swiglib("mysql.core")
 local sq = swiglib("mysql.core","5.6")
 
-Watch out, the last one is less explicit and lacks the swiglib prefix.
+ffilib("libmysql","5.6.14")
+
+-- Watch out, the last one is less explicit and lacks the swiglib prefix.
 
 ]]--
