@@ -309,7 +309,7 @@
   {\strc_lists_complete_indeed[#tag][#tag][#settings]}
 
 \def\strc_lists_complete_indeed[#singular][#plural][#settings]%
-  {\normalexpanded{\startnamedsection[\v!title][\c!title=\headtext{#plural},\c!reference=#singular]}%
+  {\normalexpanded{\startnamedsection[\v!title][\c!title=\headtext{#plural},\c!reference=#singular]}% {} around ref ?
    \strc_lists_place[#singular][#settings]%
    \stopnamedsection}
 
@@ -350,7 +350,7 @@
    \endgroup}
 
 \def\strc_lists_combined_complete[#tag][#settings]%
-  {\normalexpanded{\startnamedsection[\v!title][\c!title={\headtext{#tag}},\c!reference=#tag]}%
+  {\normalexpanded{\startnamedsection[\v!title][\c!title={\headtext{#tag}},\c!reference=#tag]}% {} around ref ?
    \strc_lists_combined_place[#tag][#settings]%
    \stopnamedsection}
 

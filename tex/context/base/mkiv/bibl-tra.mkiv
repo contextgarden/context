@@ -959,10 +959,10 @@
      {#1}%
      {\getparameters[LO][\c!alternative=,\c!extras=,#1]%
       \edef\@@currentalternative{\LOalternative}%
-	  \ifx\@@currentalternative\empty
+      \ifx\@@currentalternative\empty
         \edef\@@currentalternative{\@@citedefault}%
       \fi
-	  \ifx\LOextras\empty
+      \ifx\LOextras\empty
         \setupcite[\@@currentalternative][#1]%
       \else
         \expandafter\ifx\csname \??pv \@@currentalternative\c!right\endcsname\relax

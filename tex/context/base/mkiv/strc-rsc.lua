@@ -125,6 +125,10 @@ references.splitcomponent    = splitcomponent
 -- inspect(splitprefix([[component:::inner]]))
 -- inspect(splitprefix([[component:inner]]))
 
+-- inspect(splitreference([[name(foo)]]))
+-- inspect(splitreference([[name{foo}]]))
+-- inspect(splitreference([[xx::name(foo, bar and me)]]))
+
 -- inspect(splitreference([[ ]]))
 -- inspect(splitreference([[ inner ]]))
 -- inspect(splitreference([[ special ( operation { argument, argument } ) ]]))

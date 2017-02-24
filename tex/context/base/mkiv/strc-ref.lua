@@ -896,6 +896,26 @@ local function resolve(prefix,reference,args,set) -- we start with prefix,refere
                 if var then
                     var.reference = ri
                     local vo, vi = var.outer, var.inner
+                    -- we catch this here .. it's a way to pass references with commas
+                    if vi == "name" then
+                        local arguments = var.arguments
+                        if arguments then
+                            vi            = arguments
+                            var.inner     = arguments
+                            var.reference = arguments
+                            var.arguments = nil
+                        end
+                    elseif var.special == "name" then
+                        local operation = var.operation
+                        if operation then
+                            vi            = operation
+                            var.inner     = operation
+                            var.reference = operation
+                            var.operation = nil
+                            var.special   = nil
+                        end
+                    end
+                    -- end of catch
                     if not vo and vi then
                         -- to be checked
                         d = defined[prefix][vi] or defined[""][vi]
