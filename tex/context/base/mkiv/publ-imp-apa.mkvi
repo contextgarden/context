@@ -792,7 +792,7 @@
 % #author may be author(set) or editor
 
 \starttexdefinition unexpanded btx:apa:author-or-editor #author
-    \btxdoif {#author} {
+    \btxdoifelse {#author} {
         \btxflush{#author}
         \doifelse {\btxfoundname{#author}} {editor} {
             \btxleftparenthesis
@@ -842,6 +842,8 @@
             \btxflush{withauthor}
             \btxrightparenthesis
         }
+    } {
+        \texdefinition{btx:apa:title}
     }
 \stoptexdefinition
 

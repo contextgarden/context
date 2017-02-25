@@ -296,6 +296,8 @@
         <cd:constant type="page"/>
         <cd:constant type="leftpage"/>
         <cd:constant type="rightpage"/>
+        <cd:constant type="header"/>
+        <cd:constant type="footer"/>
         <cd:constant type="somewhere"/>
         <cd:constant type="effective"/>
     </cd:define>

@@ -96,6 +96,12 @@ local expanders = {
         return template
     end,
     [automatic_code] = function(d,template)
+        -- the penalty has been determined by the mode (currently we force 1):
+        --
+        -- 0 : exhyphenpenalty
+        -- 1 : hyphenpenalty
+        -- 2 : automatichyphenpenalty
+        --
         -- following a - : the pre and post chars are already appended and set
         -- so we have pre=preex and post=postex .. however, the previous
         -- hyphen is already injected ... downside: the font handler sees this

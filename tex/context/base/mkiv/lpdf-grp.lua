@@ -49,7 +49,9 @@ local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,
         local bounds = pdfarray()
         local encode = pdfarray()
         for i=1,steps do
-            bounds[i]     = fractions[i] or 1
+            if i < steps then
+                bounds[i] = fractions[i] or 1
+            end
             encode[2*i-1] = 0
             encode[2*i]   = 1
             list  [i]     = pdfdictionary {

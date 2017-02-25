@@ -471,7 +471,7 @@ local texsetglue = tex.setglue
 local function check_spacing(n,i)
     local gn, pn, mn = texgetglue(n)
     local gi, pi, mi = texgetglue(i > 1 and "s_strc_notes_inbetween" or "s_strc_notes_before")
-    local gi, pi, mi = gn+gi, pn+pi, mn+mi
+    local gt, pt, mt = gn+gi, pn+pi, mn+mi
     if trace_insert then
         report_insert("%s %i: %p plus %p minus %p","always   ",n,gn,pn,mn)
         report_insert("%s %i: %p plus %p minus %p",i > 1 and "inbetween" or "before   ",n,gi,pi,mi)
