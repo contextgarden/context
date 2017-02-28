@@ -83,6 +83,12 @@ function files.readbytes(f,n)
     return byte(f:read(n),1,n)
 end
 
+function files.readbytetable(f,n)
+ -- return { byte(f:read(n),1,n) }
+    local s = f:read(n or 1)
+    return { byte(s,1,#s) } -- best use the real length
+end
+
 function files.readchar(f)
     return f:read(1)
 end
@@ -183,24 +189,24 @@ function files.readcardinal4le(f)
     return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
 end
 
+-- function files.readinteger4(f)
+--     local a, b, c, d = byte(f:read(4),1,4)
+--     local n = 0x1000000 * a + 0x10000 * b + 0x100 * c + d
+--     if n >= 0x8000000 then
+--      -- return n - 0xFFFFFFFF - 1
+--         return n - 0x100000000
+--     else
+--         return n
+--     end
+-- end
 function files.readinteger4(f)
     local a, b, c, d = byte(f:read(4),1,4)
-    local n = 0x1000000 * a + 0x10000 * b + 0x100 * c + d
-    if n >= 0x8000000 then
-     -- return n - 0xFFFFFFFF - 1
-        return n - 0x100000000
+    if a >= 0x80 then
+        return 0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000
     else
-        return n
+        return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
     end
 end
-    function files.readinteger4(f)
-        local a, b, c, d = byte(f:read(4),1,4)
-        if a >= 0x80 then
-            return 0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000
-        else
-            return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
-        end
-    end
 function files.readinteger4le(f)
     local d, c, b, a = byte(f:read(4),1,4)
     local n = 0x1000000 * a + 0x10000 * b + 0x100 * c + d
@@ -214,13 +220,12 @@ end
 
 function files.readfixed4(f)
     local a, b, c, d = byte(f:read(4),1,4)
-    local n = 0x100 * a + b
-    if n >= 0x8000 then
-     -- return n - 0xFFFF - 1 + (0x100 * c + d)/0xFFFF
-        return n - 0x10000    + (0x100 * c + d)/0xFFFF
+    if a >= 0x80 then
+        return (0x1000000 * a + 0x10000 * b + 0x100 * c + d - 0x100000000)/65536.0
     else
-        return n              + (0x100 * c + d)/0xFFFF
+        return (0x1000000 * a + 0x10000 * b + 0x100 * c + d)/65536.0
     end
+
 end
 
 if extract then
@@ -276,3 +281,38 @@ function files.writebyte(f,b)
     f:write(char(b))
 end
 
+if fio and fio.readcardinal1 then
+
+    files.readcardinal1  = fio.readcardinal1
+    files.readcardinal2  = fio.readcardinal2
+    files.readcardinal3  = fio.readcardinal3
+    files.readcardinal4  = fio.readcardinal4
+    files.readinteger1   = fio.readinteger1
+    files.readinteger2   = fio.readinteger2
+    files.readinteger3   = fio.readinteger3
+    files.readinteger4   = fio.readinteger4
+    files.readfixed4     = fio.readfixed4
+    files.read2dot14     = fio.read2dot14
+    files.setposition    = fio.setposition
+    files.getposition    = fio.getposition
+
+    files.readbyte       = files.readcardinel1
+    files.readsignedbyte = files.readinteger1
+    files.readcardinal   = files.readcardinal1
+    files.readinteger    = files.readinteger1
+
+    local skipposition   = fio.skipposition
+    files.skipposition   = skipposition
+
+    files.readbytes      = fio.readbytes
+    files.readbytetable  = fio.readbytetable
+
+    function files.skipshort(f,n)
+        skipposition(f,2*(n or 1))
+    end
+
+    function files.skiplong(f,n)
+        skipposition(f,4*(n or 1))
+    end
+
+end

@@ -506,8 +506,8 @@ end
 local math do
 
     local m_cache = {
-        b_cache = caches["bmath"],
-        e_cache = caches["emath"],
+        beginmath = caches["bmath"],
+        endmath   = caches["emath"],
     }
 
     local tags    = {

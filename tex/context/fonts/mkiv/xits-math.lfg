@@ -27,6 +27,11 @@ return {
      -- italics = {
      --     ["xits-math"] = italics,
      -- },
+     -- kernpairs = {
+     --     [0x1D44A] = { -- 𝑊
+     --         [0x1D434] = -200, -- 𝐴
+     --     },
+     -- },
         alternates = {
             calligraphic = { feature = 'ss01', value = 1, comment = "Mathematical Calligraphic Alphabet" },
             greekssup    = { feature = 'ss02', value = 1, comment = "Mathematical Greek Sans Serif Alphabet" },

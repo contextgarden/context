@@ -769,7 +769,7 @@ function scripts.context.run(ctxdata,filename)
                 end
                 --
                 if a_profile then
-                    directives[#directives+1] = "system.profile"
+                    directives[#directives+1] = format("system.profile=%s",tonumber(a_profile) or 0)
                 end
                 --
                 if a_synctex then
@@ -790,6 +790,7 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.forcedruns = multipass_forcedruns and multipass_forcedruns > 0 and multipass_forcedruns or nil
                     c_flags.currentrun = currentrun
                     c_flags.noarrange  = a_noarrange or a_arrange or nil
+                    c_flags.profile    = a_profile and (tonumber(a_profile) or 0) or nil
                     --
                     local command = luatex_command(l_flags,c_flags,mainfile,a_engine)
                     --
@@ -1740,10 +1741,10 @@ do
 end
 
 if getargument("once") then
-    multipass_nofruns    = 1
+    multipass_nofruns = 1
 else
     if getargument("runs") then
-        multipass_nofruns    = tonumber(getargument("runs")) or nil
+        multipass_nofruns = tonumber(getargument("runs")) or nil
     end
     multipass_forcedruns = tonumber(getargument("forcedruns")) or nil
 end

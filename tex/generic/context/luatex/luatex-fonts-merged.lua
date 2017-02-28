@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/25/17 16:24:36
+-- merge date  : 02/28/17 22:41:58
 
 do -- begin closure to overcome local limits and interference
 
@@ -4302,6 +4302,10 @@ end
 function files.readbytes(f,n)
   return byte(f:read(n),1,n)
 end
+function files.readbytetable(f,n)
+  local s=f:read(n or 1)
+  return { byte(s,1,#s) } 
+end
 function files.readchar(f)
   return f:read(1)
 end
@@ -4390,21 +4394,12 @@ function files.readcardinal4le(f)
 end
 function files.readinteger4(f)
   local a,b,c,d=byte(f:read(4),1,4)
-  local n=0x1000000*a+0x10000*b+0x100*c+d
-  if n>=0x8000000 then
-    return n-0x100000000
+  if a>=0x80 then
+    return 0x1000000*a+0x10000*b+0x100*c+d-0x100000000
   else
-    return n
+    return 0x1000000*a+0x10000*b+0x100*c+d
   end
 end
-  function files.readinteger4(f)
-    local a,b,c,d=byte(f:read(4),1,4)
-    if a>=0x80 then
-      return 0x1000000*a+0x10000*b+0x100*c+d-0x100000000
-    else
-      return 0x1000000*a+0x10000*b+0x100*c+d
-    end
-  end
 function files.readinteger4le(f)
   local d,c,b,a=byte(f:read(4),1,4)
   local n=0x1000000*a+0x10000*b+0x100*c+d
@@ -4416,11 +4411,10 @@ function files.readinteger4le(f)
 end
 function files.readfixed4(f)
   local a,b,c,d=byte(f:read(4),1,4)
-  local n=0x100*a+b
-  if n>=0x8000 then
-    return n-0x10000+(0x100*c+d)/0xFFFF
+  if a>=0x80 then
+    return (0x1000000*a+0x10000*b+0x100*c+d-0x100000000)/65536.0
   else
-    return n+(0x100*c+d)/0xFFFF
+    return (0x1000000*a+0x10000*b+0x100*c+d)/65536.0
   end
 end
 if extract then
@@ -4464,6 +4458,34 @@ function files.writestring(f,s)
 end
 function files.writebyte(f,b)
   f:write(char(b))
+end
+if fio and fio.readcardinal1 then
+  files.readcardinal1=fio.readcardinal1
+  files.readcardinal2=fio.readcardinal2
+  files.readcardinal3=fio.readcardinal3
+  files.readcardinal4=fio.readcardinal4
+  files.readinteger1=fio.readinteger1
+  files.readinteger2=fio.readinteger2
+  files.readinteger3=fio.readinteger3
+  files.readinteger4=fio.readinteger4
+  files.readfixed4=fio.readfixed4
+  files.read2dot14=fio.read2dot14
+  files.setposition=fio.setposition
+  files.getposition=fio.getposition
+  files.readbyte=files.readcardinel1
+  files.readsignedbyte=files.readinteger1
+  files.readcardinal=files.readcardinal1
+  files.readinteger=files.readinteger1
+  local skipposition=fio.skipposition
+  files.skipposition=skipposition
+  files.readbytes=fio.readbytes
+  files.readbytetable=fio.readbytetable
+  function files.skipshort(f,n)
+    skipposition(f,2*(n or 1))
+  end
+  function files.skiplong(f,n)
+    skipposition(f,4*(n or 1))
+  end
 end
 
 end -- closure
@@ -8106,10 +8128,10 @@ local readulong=streamreader.readcardinal4
 local readshort=streamreader.readinteger2  
 local readlong=streamreader.readinteger4  
 local readfixed=streamreader.readfixed4
+local read2dot14=streamreader.read2dot14   
 local readfword=readshort          
 local readufword=readushort         
 local readoffset=readushort
-local read2dot14=streamreader.read2dot14   
 function streamreader.readtag(f)
   return lower(stripstring(readstring(f,4)))
 end
@@ -9421,12 +9443,18 @@ local function prepareglyps(fontdata)
   fontdata.glyphs=glyphs
   fontdata.mapping={}
 end
+local function readtable(tag,f,fontdata,specification)
+  local reader=readers[tag]
+  if reader then
+    reader(f,fontdata,specification)
+  end
+end
 local function readdata(f,offset,specification)
   local fontdata=loadtables(f,specification,offset)
   if specification.glyphs then
     prepareglyps(fontdata)
   end
-  readers["name"](f,fontdata,specification)
+  readtable("name",f,fontdata,specification)
   local askedname=specification.askedname
   if askedname then
     local fullname=getname(fontdata,"fullname") or ""
@@ -9436,27 +9464,27 @@ local function readdata(f,offset,specification)
       return 
     end
   end
-  readers["os/2"](f,fontdata,specification)
-  readers["head"](f,fontdata,specification)
-  readers["maxp"](f,fontdata,specification)
-  readers["hhea"](f,fontdata,specification)
-  readers["vhea"](f,fontdata,specification)
-  readers["hmtx"](f,fontdata,specification)
-  readers["vmtx"](f,fontdata,specification)
-  readers["vorg"](f,fontdata,specification)
-  readers["post"](f,fontdata,specification)
-  readers["cff" ](f,fontdata,specification)
-  readers["cmap"](f,fontdata,specification)
-  readers["loca"](f,fontdata,specification)
-  readers["glyf"](f,fontdata,specification)
-  readers["colr"](f,fontdata,specification)
-  readers["cpal"](f,fontdata,specification)
-  readers["svg" ](f,fontdata,specification)
-  readers["kern"](f,fontdata,specification)
-  readers["gdef"](f,fontdata,specification)
-  readers["gsub"](f,fontdata,specification)
-  readers["gpos"](f,fontdata,specification)
-  readers["math"](f,fontdata,specification)
+  readtable("os/2",f,fontdata,specification)
+  readtable("head",f,fontdata,specification)
+  readtable("maxp",f,fontdata,specification)
+  readtable("hhea",f,fontdata,specification)
+  readtable("vhea",f,fontdata,specification)
+  readtable("hmtx",f,fontdata,specification)
+  readtable("vmtx",f,fontdata,specification)
+  readtable("vorg",f,fontdata,specification)
+  readtable("post",f,fontdata,specification)
+  readtable("cff",f,fontdata,specification)
+  readtable("cmap",f,fontdata,specification)
+  readtable("loca",f,fontdata,specification)
+  readtable("glyf",f,fontdata,specification)
+  readtable("colr",f,fontdata,specification)
+  readtable("cpal",f,fontdata,specification)
+  readtable("svg",f,fontdata,specification)
+  readtable("kern",f,fontdata,specification)
+  readtable("gdef",f,fontdata,specification)
+  readtable("gsub",f,fontdata,specification)
+  readtable("gpos",f,fontdata,specification)
+  readtable("math",f,fontdata,specification)
   fontdata.locations=nil
   fontdata.tables=nil
   fontdata.cidmaps=nil
@@ -9725,13 +9753,12 @@ if not modules then modules={} end modules ['font-cff']={
 local next,type,tonumber=next,type,tonumber
 local byte=string.byte
 local concat,remove=table.concat,table.remove
-local floor,abs,round,ceil=math.floor,math.abs,math.round,math.ceil
+local floor,abs,round,ceil,min,max=math.floor,math.abs,math.round,math.ceil,math.min,math.max
 local P,C,R,S,C,Cs,Ct=lpeg.P,lpeg.C,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Ct
 local lpegmatch=lpeg.match
 local formatters=string.formatters
 local readers=fonts.handlers.otf.readers
 local streamreader=readers.streamreader
-local readbytes=streamreader.readbytes
 local readstring=streamreader.readstring
 local readbyte=streamreader.readcardinal1 
 local readushort=streamreader.readcardinal2 
@@ -9739,6 +9766,7 @@ local readuint=streamreader.readcardinal3
 local readulong=streamreader.readcardinal4 
 local setposition=streamreader.setposition
 local getposition=streamreader.getposition
+local readbytetable=streamreader.readbytetable
 local setmetatableindex=table.setmetatableindex
 local trace_charstrings=false trackers.register("fonts.cff.charstrings",function(v) trace_charstrings=v end)
 local report=logs.reporter("otf reader","cff")
@@ -10140,14 +10168,14 @@ do
       report("%w%-10s : %s",depth*2,where,tostring(value))
     end
   end
-  local function moveto(x,y)
+  local function moveto()
     if keepcurve then
       r=r+1
       result[r]={ x,y,"m" }
     end
     if checked then
-      if x<xmin then xmin=x elseif x>xmax then xmax=x end
-      if y<ymin then ymin=y elseif y>ymax then ymax=y end
+      if x>xmax then xmax=x elseif x<xmin then xmin=x end
+      if y>ymax then ymax=y elseif y<ymin then ymin=y end
     else
       xmin=x
       ymin=y
@@ -10156,20 +10184,88 @@ do
       checked=true
     end
   end
-  local function lineto(x,y)
+  local function xmoveto() 
+    if keepcurve then
+      r=r+1
+      result[r]={ x,y,"m" }
+    end
+    if not checked then
+      xmin=x
+      ymin=y
+      xmax=x
+      ymax=y
+      checked=true
+    elseif x>xmax then
+      xmax=x
+    elseif x<xmin then
+      xmin=x
+    end
+  end
+  local function ymoveto() 
+    if keepcurve then
+      r=r+1
+      result[r]={ x,y,"m" }
+    end
+    if not checked then
+      xmin=x
+      ymin=y
+      xmax=x
+      ymax=y
+      checked=true
+    elseif y>ymax then
+      ymax=y
+    elseif y<ymin then
+      ymin=y
+    end
+  end
+  local function lineto() 
     if keepcurve then
       r=r+1
       result[r]={ x,y,"l" }
     end
     if checked then
-      if x<xmin then xmin=x elseif x>xmax then xmax=x end
-      if y<ymin then ymin=y elseif y>ymax then ymax=y end
+      if x>xmax then xmax=x elseif x<xmin then xmin=x end
+      if y>ymax then ymax=y elseif y<ymin then ymin=y end
     else
       xmin=x
       ymin=y
       xmax=x
       ymax=y
       checked=true
+    end
+  end
+  local function xlineto() 
+    if keepcurve then
+      r=r+1
+      result[r]={ x,y,"l" }
+    end
+    if not checked then
+      xmin=x
+      ymin=y
+      xmax=x
+      ymax=y
+      checked=true
+    elseif x>xmax then
+      xmax=x
+    elseif x<xmin then
+      xmin=x
+    end
+  end
+  local function ylineto() 
+    if keepcurve then
+      r=r+1
+      result[r]={ x,y,"l" }
+    end
+    if not checked then
+      xmin=x
+      ymin=y
+      xmax=x
+      ymax=y
+      checked=true
+    elseif y>ymax then
+      ymax=y
+    elseif y<ymin then
+      ymin=y
     end
   end
   local function curveto(x1,y1,x2,y2,x3,y3)
@@ -10178,8 +10274,8 @@ do
       result[r]={ x1,y1,x2,y2,x3,y3,"c" }
     end
     if checked then
-      if x1<xmin then xmin=x1 elseif x1>xmax then xmax=x1 end
-      if y1<ymin then ymin=y1 elseif y1>ymax then ymax=y1 end
+      if x1>xmax then xmax=x1 elseif x1<xmin then xmin=x1 end
+      if y1>ymax then ymax=y1 elseif y1<ymin then ymin=y1 end
     else
       xmin=x1
       ymin=y1
@@ -10187,10 +10283,10 @@ do
       ymax=y1
       checked=true
     end
-    if x2<xmin then xmin=x2 elseif x2>xmax then xmax=x2 end
-    if y2<ymin then ymin=y2 elseif y2>ymax then ymax=y2 end
-    if x3<xmin then xmin=x3 elseif x3>xmax then xmax=x3 end
-    if y3<ymin then ymin=y3 elseif y3>ymax then ymax=y3 end
+    if x2>xmax then xmax=x2 elseif x2<xmin then xmin=x2 end
+    if y2>ymax then ymax=y2 elseif y2<ymin then ymin=y2 end
+    if x3>xmax then xmax=x3 elseif x3<xmin then xmin=x3 end
+    if y3>ymax then ymax=y3 elseif y3<ymin then ymin=y3 end
   end
   local function rmoveto()
     if top>2 then
@@ -10209,7 +10305,7 @@ do
     x=x+stack[top-1] 
     y=y+stack[top]  
     top=0
-    moveto(x,y)
+    moveto()
   end
   local function hmoveto()
     if top>1 then
@@ -10227,7 +10323,7 @@ do
     end
     x=x+stack[top] 
     top=0
-    moveto(x,y)
+    xmoveto()
   end
   local function vmoveto()
     if top>1 then
@@ -10245,7 +10341,7 @@ do
     end
     y=y+stack[top] 
     top=0
-    moveto(x,y)
+    ymoveto()
   end
   local function rlineto()
     if trace_charstrings then
@@ -10254,20 +10350,7 @@ do
     for i=1,top,2 do
       x=x+stack[i]  
       y=y+stack[i+1] 
-      lineto(x,y)
-    end
-    top=0
-  end
-  local function xlineto(swap) 
-    for i=1,top do
-      if swap then
-        x=x+stack[i]
-        swap=false
-      else
-        y=y+stack[i]
-        swap=true
-      end
-      lineto(x,y)
+      lineto()
     end
     top=0
   end
@@ -10275,13 +10358,47 @@ do
     if trace_charstrings then
       showstate("hlineto")
     end
-    xlineto(true)
+    if top==1 then
+      x=x+stack[1]
+      xlineto()
+    else
+      local swap=true
+      for i=1,top do
+        if swap then
+          x=x+stack[i]
+          xlineto()
+          swap=false
+        else
+          y=y+stack[i]
+          ylineto()
+          swap=true
+        end
+      end
+    end
+    top=0
   end
   local function vlineto() 
     if trace_charstrings then
       showstate("vlineto")
     end
-    xlineto(false)
+    if top==1 then
+      y=y+stack[1]
+      ylineto()
+    else
+      local swap=false
+      for i=1,top do
+        if swap then
+          x=x+stack[i]
+          xlineto()
+          swap=false
+        else
+          y=y+stack[i]
+          ylineto()
+          swap=true
+        end
+      end
+    end
+    top=0
   end
   local function rrcurveto()
     if trace_charstrings then
@@ -10292,8 +10409,8 @@ do
       local ay=y+stack[i+1] 
       local bx=ax+stack[i+2] 
       local by=ay+stack[i+3] 
-      x=bx+stack[i+4] 
-      y=by+stack[i+5] 
+      x=bx+stack[i+4]    
+      y=by+stack[i+5]    
       curveto(ax,ay,bx,by,x,y)
     end
     top=0
@@ -10304,15 +10421,15 @@ do
     end
     local s=1
     if top%2~=0 then
-      y=y+stack[1] 
+      y=y+stack[1]      
       s=2
     end
     for i=s,top,4 do
-      local ax=x+stack[i] 
+      local ax=x+stack[i]  
       local ay=y
       local bx=ax+stack[i+1] 
       local by=ay+stack[i+2] 
-      x=bx+stack[i+3] 
+      x=bx+stack[i+3]    
       y=by
       curveto(ax,ay,bx,by,x,y)
     end
@@ -10325,16 +10442,16 @@ do
     local s=1
     local d=0
     if top%2~=0 then
-      d=stack[1] 
+      d=stack[1]        
       s=2
     end
     for i=s,top,4 do
       local ax=x+d
-      local ay=y+stack[i] 
+      local ay=y+stack[i]  
       local bx=ax+stack[i+1] 
       local by=ay+stack[i+2] 
       x=bx
-      y=by+stack[i+3] 
+      y=by+stack[i+3]    
       curveto(ax,ay,bx,by,x,y)
       d=0
     end
@@ -10345,7 +10462,6 @@ do
     if last then
       top=top-1
     end
-    local sw=swap
     for i=1,top,4 do
       local ax,ay,bx,by
       if swap then
@@ -10404,7 +10520,7 @@ do
     end
     x=x+stack[top-1] 
     y=y+stack[top]  
-    lineto(x,y)
+    lineto()
     top=0
   end
   local function rlinecurve()
@@ -10415,7 +10531,7 @@ do
       for i=1,top-6,2 do
         x=x+stack[i]
         y=y+stack[i+1]
-        lineto(x,y)
+        lineto()
       end
     end
     local ax=x+stack[top-5]
@@ -10451,7 +10567,7 @@ do
     if trace_charstrings then
       showstate("hflex")
     end
-    local ax=x+stack[1]  
+    local ax=x+stack[1] 
     local ay=y
     local bx=ax+stack[2] 
     local by=ay+stack[3] 
@@ -10688,8 +10804,8 @@ do
     [036]=hflex1,
     [037]=flex1,
   }
-  local p_bytes=Ct((P(1)/byte)^0)
-  local function call(scope,list,bias,process)
+  local process
+  local function call(scope,list,bias) 
     depth=depth+1
     if top==0 then
       showstate(formatters["unknown %s call"](scope))
@@ -10702,10 +10818,6 @@ do
       end
       local tab=list[index]
       if tab then
-        if type(tab)=="string" then
-          tab=lpegmatch(p_bytes,tab)
-          list[index]=tab
-        end
         process(tab)
       else
         showstate(formatters["unknown %s call %i"](scope,index))
@@ -10714,7 +10826,7 @@ do
     end
     depth=depth-1
   end
-  local function process(tab)
+  process=function(tab)
     local i=1
     local n=#tab
     while i<=n do
@@ -10725,11 +10837,11 @@ do
         i=i+1
       elseif t>=247 and t<=250 then
         top=top+1
-        stack[top]=(t-247)*256+tab[i+1]+108
+        stack[top]=t*256-63124+tab[i+1]
         i=i+2
       elseif t>=251 and t<=254 then
         top=top+1
-        stack[top]=-(t-251)*256-tab[i+1]-108
+        stack[top]=-t*256+64148-tab[i+1]
         i=i+2
       elseif t==28 then
         top=top+1
@@ -10755,9 +10867,9 @@ do
         end
         return
       elseif t==10 then
-        call("local",locals,localbias,process)
+        call("local",locals,localbias) 
         i=i+1
-       elseif t==14 then 
+      elseif t==14 then 
         if width then
         elseif top>0 then
           width=stack[1]
@@ -10772,7 +10884,7 @@ do
         end
         return
       elseif t==29 then
-        call("global",globals,globalbias,process)
+        call("global",globals,globalbias) 
         i=i+1
       elseif t==12 then
         i=i+1
@@ -10833,9 +10945,7 @@ do
     local defaultwidth=private.data.defaultwidthx or 0
     for i=1,#charstrings do
       local tab=charstrings[i]
-      if type(tab)=="string" then
-        tab=lpegmatch(p_bytes,tab)
-      end
+        tab={ byte(tab,1,#tab) }
       local index=i-1
       x=0
       y=0
@@ -10861,14 +10971,7 @@ do
         width=nominalwidth+width
       end
       local glyph=glyphs[index] 
-      if not glyph then
-        glyphs[index]={
-          segments=doshapes~=false and result or nil,
-          boundingbox=boundingbox,
-          width=width,
-          name=charset[index],
-        }
-      else
+      if glyph then
         glyph.segments=doshapes~=false and result or nil
         glyph.boundingbox=boundingbox
         if not glyph.width then
@@ -10877,6 +10980,19 @@ do
         if charset and not glyph.name then
           glyph.name=charset[index]
         end
+      elseif doshapes then
+        glyphs[index]={
+          segments=result,
+          boundingbox=boundingbox,
+          width=width,
+          name=charset[index],
+        }
+      else
+        glyphs[index]={
+          boundingbox=boundingbox,
+          width=width,
+          name=charset[index],
+        }
       end
       if trace_charstrings then
         report("width: %s",tostring(width))
@@ -10896,9 +11012,7 @@ do
     globalbias,localbias=setbias(globals,locals)
     local nominalwidth=private and private.data.nominalwidthx or 0
     local defaultwidth=private and private.data.defaultwidthx or 0
-    if type(tab)=="string" then
-      tab=lpegmatch(p_bytes,tab)
-    end
+      tab={ byte(tab,1,#tab) }
     x=0
     y=0
     width=false
@@ -10924,14 +11038,7 @@ do
     end
     index=index-1
     local glyph=glyphs[index] 
-    if not glyph then
-      glyphs[index]={
-        segments=doshapes~=false and result or nil,
-        boundingbox=boundingbox,
-        width=width,
-        name=charset[index],
-      }
-    else
+    if glyph then
       glyph.segments=doshapes~=false and result or nil
       glyph.boundingbox=boundingbox
       if not glyph.width then
@@ -10940,6 +11047,19 @@ do
       if charset and not glyph.name then
         glyph.name=charset[index]
       end
+    elseif doshapes then
+      glyphs[index]={
+        segments=result,
+        boundingbox=boundingbox,
+        width=width,
+        name=charset[index],
+      }
+    else
+      glyphs[index]={
+        boundingbox=boundingbox,
+        width=width,
+        name=charset[index],
+      }
     end
     if trace_charstrings then
       report("width: %s",tostring(width))
@@ -10955,7 +11075,7 @@ end
 local function readglobals(f,data)
   local routines=readlengths(f)
   for i=1,#routines do
-    routines[i]=readstring(f,routines[i])
+    routines[i]=readbytetable(f,routines[i])
   end
   data.routines=routines
 end
@@ -11013,7 +11133,7 @@ local function readlocals(f,data,dictionary)
       setposition(f,header.offset+private.offset+subroutineoffset)
       local subroutines=readlengths(f)
       for i=1,#subroutines do
-        subroutines[i]=readstring(f,subroutines[i])
+        subroutines[i]=readbytetable(f,subroutines[i])
       end
       dictionary.subroutines=subroutines
       private.data.subroutines=nil
@@ -11131,6 +11251,7 @@ local function readfdselect(f,data,glyphs,doshapes,version)
     end
     for i=1,#charstrings do
       parsecharstring(data,dictionaries[fdindex[i]+1],charstrings[i],glyphs,i,doshapes,version)
+charstrings[i]=nil
     end
     resetcharstrings()
   end
@@ -11638,18 +11759,18 @@ local readers=fonts.handlers.otf.readers
 local streamreader=readers.streamreader
 local setposition=streamreader.setposition
 local getposition=streamreader.getposition
-local skipshort=streamreader.skipshort
-local skipbytes=streamreader.skip
 local readushort=streamreader.readcardinal2 
 local readulong=streamreader.readcardinal4 
+local readinteger=streamreader.readinteger1
 local readshort=streamreader.readinteger2  
-local readfword=readshort
 local readstring=streamreader.readstring
 local readtag=streamreader.readtag
 local readbytes=streamreader.readbytes
 local readfixed=streamreader.readfixed4
 local read2dot14=streamreader.read2dot14
-local readinteger=streamreader.readinteger1
+local skipshort=streamreader.skipshort
+local skipbytes=streamreader.skip
+local readfword=readshort
 local gsubhandlers={}
 local gposhandlers={}
 local lookupidoffset=-1  
@@ -13168,57 +13289,61 @@ do
       report("ignoring global kern table using gpos kern feature")
       return
     end
-    report("adding global kern table as gpos feature %a",name)
     setposition(f,datatable.offset)
     local version=readushort(f)
     local noftables=readushort(f)
-    local kerns=setmetatableindex("table")
-    for i=1,noftables do
-      local version=readushort(f)
-      local length=readushort(f)
-      local coverage=readushort(f)
-      local format=bit32.rshift(coverage,8) 
-      if format==0 then
-        local nofpairs=readushort(f)
-        local searchrange=readushort(f)
-        local entryselector=readushort(f)
-        local rangeshift=readushort(f)
-        for i=1,nofpairs do
-          kerns[readushort(f)][readushort(f)]=readfword(f)
+    if noftables>1 then
+      report("adding global kern table as gpos feature %a",name)
+      local kerns=setmetatableindex("table")
+      for i=1,noftables do
+        local version=readushort(f)
+        local length=readushort(f)
+        local coverage=readushort(f)
+        local format=bit32.rshift(coverage,8) 
+        if format==0 then
+          local nofpairs=readushort(f)
+          local searchrange=readushort(f)
+          local entryselector=readushort(f)
+          local rangeshift=readushort(f)
+          for i=1,nofpairs do
+            kerns[readushort(f)][readushort(f)]=readfword(f)
+          end
+        elseif format==2 then
+        else
         end
-      elseif format==2 then
-      else
       end
-    end
-    local feature={ dflt={ dflt=true } }
-    if not features then
-      fontdata.features={ gpos={ [name]=feature } }
-    elseif not gposfeatures then
-      fontdata.features.gpos={ [name]=feature }
-    else
-      gposfeatures[name]=feature
-    end
-    local sequences=fontdata.sequences
-    if not sequences then
-      sequences={}
-      fontdata.sequences=sequences
-    end
-    local nofsequences=#sequences+1
-    sequences[nofsequences]={
-      index=nofsequences,
-      name=name,
-      steps={
-        {
-          coverage=kerns,
-          format="kern",
+      local feature={ dflt={ dflt=true } }
+      if not features then
+        fontdata.features={ gpos={ [name]=feature } }
+      elseif not gposfeatures then
+        fontdata.features.gpos={ [name]=feature }
+      else
+        gposfeatures[name]=feature
+      end
+      local sequences=fontdata.sequences
+      if not sequences then
+        sequences={}
+        fontdata.sequences=sequences
+      end
+      local nofsequences=#sequences+1
+      sequences[nofsequences]={
+        index=nofsequences,
+        name=name,
+        steps={
+          {
+            coverage=kerns,
+            format="kern",
+          },
         },
-      },
-      nofsteps=1,
-      type="gpos_pair",
-      flags={ false,false,false,false },
-      order={ name },
-      features={ [name]=feature },
-    }
+        nofsteps=1,
+        type="gpos_pair",
+        flags={ false,false,false,false },
+        order={ name },
+        features={ [name]=feature },
+      }
+    else
+      report("ignoring empty kern table of feature %a",name)
+    end
   end
   function readers.gsub(f,fontdata,specification)
     if specification.details then
@@ -21594,7 +21719,7 @@ end
 otf.helpers=otf.helpers or {}
 otf.helpers.txtdirstate=txtdirstate
 otf.helpers.pardirstate=pardirstate
-local function featuresprocessor(head,font,attr)
+local function featuresprocessor(head,font,attr,direction)
   local sequences=sequencelists[font] 
   if not sequencelists then
     return head,false
@@ -21620,7 +21745,7 @@ local function featuresprocessor(head,font,attr)
   if trace_steps then
     checkstep(head)
   end
-  local rlmode=0
+  local initialrl=direction=="TRT" and -1 or 0
   local done=false
   local datasets=otf.dataset(tfmdata,font,attr)
   local dirstack={} 
@@ -21629,7 +21754,7 @@ local function featuresprocessor(head,font,attr)
     local dataset=datasets[s]
     local attribute=dataset[2]
     local sequence=dataset[3] 
-    local rlparmode=0
+    local rlparmode=initialrl
     local topstack=0
     local typ=sequence.type
     local gpossing=typ=="gpos_single" or typ=="gpos_pair" 
@@ -21646,6 +21771,7 @@ local function featuresprocessor(head,font,attr)
       end
     elseif typ=="gsub_reversecontextchain" then
       local start=find_node_tail(head)
+      local rlmode=0 
       while start do
         local char=ischar(start,font)
         if char then
@@ -21682,8 +21808,8 @@ local function featuresprocessor(head,font,attr)
         end
       end
     else
-      local start=head 
-      rlmode=0 
+      local start=head
+      local rlmode=initialrl
       if nofsteps==1 then 
         local step=steps[1]
         local lookupcache=step.coverage

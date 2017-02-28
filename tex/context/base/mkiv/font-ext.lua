@@ -292,12 +292,11 @@ vectors['quality'] = table.merged(
     vectors['alpha']
 )
 
--- As this is experimental code, users should not depend on it. The
--- implications are still discussed on the ConTeXt Dev List and we're
--- not sure yet what exactly the spec is (the next code is tested with
--- a gyre font patched by / fea file made by Khaled Hosny). The double
--- trick should not be needed it proper hanging punctuation is used in
--- which case values < 1 can be used.
+-- As this is experimental code, users should not depend on it. The implications are still
+-- discussed on the ConTeXt Dev List and we're not sure yet what exactly the spec is (the
+-- next code is tested with a gyre font patched by / fea file made by Khaled Hosny). The
+-- double trick should not be needed it proper hanging punctuation is used in which case
+-- values < 1 can be used.
 --
 -- preferred (in context, usine vectors):
 --
@@ -345,17 +344,23 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
         if validlookups then
             for i=1,#lookuplist do
                 local lookup = lookuplist[i]
-                local data = lookuphash[lookup]
-                if data then
+                local steps  = lookup.steps
+                if steps then
                     if trace_protrusion then
-                        report_protrusions("setting left using lfbd lookup %a",lookuptags[lookup])
+                        report_protrusions("setting left using lfbd")
                     end
-                    for k, v in next, data do
-                    --  local p = - v[3] / descriptions[k].width-- or 1 ~= 0 too but the same
-                        local p = - (v[1] / 1000) * factor * left
-                        characters[k].left_protruding = p
-                        if trace_protrusion then
-                            report_protrusions("lfbd -> %s -> %C -> %0.03f (% t)",lookuptags[lookup],k,p,v)
+                    for i=1,#steps do
+                        local step     = steps[i]
+                        local coverage = step.coverage
+                        if coverage then
+                            for k, v in next, coverage do
+                            --  local p = - v[3] / descriptions[k].width-- or 1 ~= 0 too but the same
+                                local p = - (v[1] / 1000) * factor * left
+                                characters[k].left_protruding = p
+                                if trace_protrusion then
+                                    report_protrusions("lfbd -> %C -> %p",k,p)
+                                end
+                            end
                         end
                     end
                     done = true
@@ -368,17 +373,23 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
         if validlookups then
             for i=1,#lookuplist do
                 local lookup = lookuplist[i]
-                local data = lookuphash[lookup]
-                if data then
+                local steps  = lookup.steps
+                if steps then
                     if trace_protrusion then
-                        report_protrusions("setting right using rtbd lookup %a",lookuptags[lookup])
+                        report_protrusions("setting right using rtbd")
                     end
-                    for k, v in next, data do
-                    --  local p = v[3] / descriptions[k].width -- or 3
-                        local p = (v[1] / 1000) * factor * right
-                        characters[k].right_protruding = p
-                        if trace_protrusion then
-                            report_protrusions("rtbd -> %s -> %C -> %0.03f (% t)",lookuptags[lookup],k,p,v)
+                    for i=1,#steps do
+                        local step     = steps[i]
+                        local coverage = step.coverage
+                        if coverage then
+                            for k, v in next, coverage do
+                            --  local p = v[3] / descriptions[k].width -- or 3
+                                local p = (v[1] / 1000) * factor * right
+                                characters[k].right_protruding = p
+                                if trace_protrusion then
+                                    report_protrusions("rtbd -> %C -> %p",k,p)
+                                end
+                            end
                         end
                     end
                 end
@@ -397,10 +408,9 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
     end
 end
 
--- The opbd test is just there because it was discussed on the
--- context development list. However, the mentioned fxlbi.otf font
--- only has some kerns for digits. So, consider this feature not
--- supported till we have a proper test font.
+-- The opbd test is just there because it was discussed on the context development list. However,
+-- the mentioned fxlbi.otf font only has some kerns for digits. So, consider this feature not supported
+-- till we have a proper test font.
 
 local function initializeprotrusion(tfmdata,value)
     if value then

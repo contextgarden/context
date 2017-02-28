@@ -71,18 +71,18 @@ local streamreader      = readers.streamreader
 
 local setposition       = streamreader.setposition
 local getposition       = streamreader.getposition
-local skipshort         = streamreader.skipshort
-local skipbytes         = streamreader.skip
 local readushort        = streamreader.readcardinal2  -- 16-bit unsigned integer
 local readulong         = streamreader.readcardinal4  -- 24-bit unsigned integer
+local readinteger       = streamreader.readinteger1
 local readshort         = streamreader.readinteger2   -- 16-bit   signed integer
-local readfword         = readshort
 local readstring        = streamreader.readstring
 local readtag           = streamreader.readtag
 local readbytes         = streamreader.readbytes
 local readfixed         = streamreader.readfixed4
 local read2dot14        = streamreader.read2dot14
-local readinteger       = streamreader.readinteger1
+local skipshort         = streamreader.skipshort
+local skipbytes         = streamreader.skip
+local readfword         = readshort
 
 local gsubhandlers      = { }
 local gposhandlers      = { }
@@ -1820,61 +1820,65 @@ do
             report("ignoring global kern table using gpos kern feature")
             return
         end
-        report("adding global kern table as gpos feature %a",name)
         setposition(f,datatable.offset)
         local version   = readushort(f)
         local noftables = readushort(f)
-        local kerns     = setmetatableindex("table")
-        for i=1,noftables do
-            local version  = readushort(f)
-            local length   = readushort(f)
-            local coverage = readushort(f)
-            -- bit 8-15 of coverage: format 0 or 2
-            local format   = bit32.rshift(coverage,8) -- is this ok?
-            if format == 0 then
-                local nofpairs      = readushort(f)
-                local searchrange   = readushort(f)
-                local entryselector = readushort(f)
-                local rangeshift    = readushort(f)
-                for i=1,nofpairs do
-                    kerns[readushort(f)][readushort(f)] = readfword(f)
+        if noftables > 1 then
+            report("adding global kern table as gpos feature %a",name)
+            local kerns = setmetatableindex("table")
+            for i=1,noftables do
+                local version  = readushort(f)
+                local length   = readushort(f)
+                local coverage = readushort(f)
+                -- bit 8-15 of coverage: format 0 or 2
+                local format   = bit32.rshift(coverage,8) -- is this ok?
+                if format == 0 then
+                    local nofpairs      = readushort(f)
+                    local searchrange   = readushort(f)
+                    local entryselector = readushort(f)
+                    local rangeshift    = readushort(f)
+                    for i=1,nofpairs do
+                        kerns[readushort(f)][readushort(f)] = readfword(f)
+                    end
+                elseif format == 2 then
+                    -- apple specific so let's ignore it
+                else
+                    -- not supported by ms
                 end
-            elseif format == 2 then
-                -- apple specific so let's ignore it
-            else
-                -- not supported by ms
             end
-        end
-        local feature = { dflt = { dflt = true } }
-        if not features then
-            fontdata.features = { gpos = { [name] = feature } }
-        elseif not gposfeatures then
-            fontdata.features.gpos = { [name] = feature }
-        else
-            gposfeatures[name] = feature
-        end
-        local sequences = fontdata.sequences
-        if not sequences then
-            sequences = { }
-            fontdata.sequences = sequences
-        end
-        local nofsequences = #sequences + 1
-        sequences[nofsequences] = {
-            index     = nofsequences,
-            name      = name,
-            steps     = {
-                {
-                    coverage = kerns,
-                    format   = "kern",
+            local feature = { dflt = { dflt = true } }
+            if not features then
+                fontdata.features = { gpos = { [name] = feature } }
+            elseif not gposfeatures then
+                fontdata.features.gpos = { [name] = feature }
+            else
+                gposfeatures[name] = feature
+            end
+            local sequences = fontdata.sequences
+            if not sequences then
+                sequences = { }
+                fontdata.sequences = sequences
+            end
+            local nofsequences = #sequences + 1
+            sequences[nofsequences] = {
+                index     = nofsequences,
+                name      = name,
+                steps     = {
+                    {
+                        coverage = kerns,
+                        format   = "kern",
+                    },
                 },
-            },
-            nofsteps  = 1,
-            type      = "gpos_pair",
-         -- type      = "gpos_single", -- maybe better
-            flags     = { false, false, false, false },
-            order     = { name },
-            features  = { [name] = feature },
-        }
+                nofsteps  = 1,
+                type      = "gpos_pair",
+             -- type      = "gpos_single", -- maybe better
+                flags     = { false, false, false, false },
+                order     = { name },
+                features  = { [name] = feature },
+            }
+        else
+            report("ignoring empty kern table of feature %a",name)
+        end
     end
 
     function readers.gsub(f,fontdata,specification)

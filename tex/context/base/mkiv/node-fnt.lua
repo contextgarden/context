@@ -192,7 +192,7 @@ end
     report_fonts()
 end
 
-function handlers.characters(head)
+function handlers.characters(head,groupcode,size,packtype,direction)
     -- either next or not, but definitely no already processed list
     starttiming(nodes)
 
@@ -430,7 +430,7 @@ function handlers.characters(head)
      -- local attr = a == 0 and false or 0 -- 0 is the savest way
         local attr = a > 0 and 0 or false -- 0 is the savest way
         for i=1,#processors do
-            local h, d = processors[i](head,font,attr)
+            local h, d = processors[i](head,font,attr,direction)
             if d then
                 if h then
                     head = h
@@ -443,7 +443,7 @@ function handlers.characters(head)
         local attr = a > 0 and 0 or false -- 0 is the savest way
         for font, processors in next, usedfonts do -- unordered
             for i=1,#processors do
-                local h, d = processors[i](head,font,attr)
+                local h, d = processors[i](head,font,attr,direction)
                 if d then
                     if h then
                         head = h
@@ -459,7 +459,7 @@ function handlers.characters(head)
         local font, dynamics = next(attrfonts)
         for attribute, processors in next, dynamics do -- unordered, attr can switch in between
             for i=1,#processors do
-                local h, d = processors[i](head,font,attribute)
+                local h, d = processors[i](head,font,attribute,direction)
                 if d then
                     if h then
                         head = h
@@ -472,7 +472,7 @@ function handlers.characters(head)
         for font, dynamics in next, attrfonts do
             for attribute, processors in next, dynamics do -- unordered, attr can switch in between
                 for i=1,#processors do
-                    local h, d = processors[i](head,font,attribute)
+                    local h, d = processors[i](head,font,attribute,direction)
                     if d then
                         if h then
                             head = h

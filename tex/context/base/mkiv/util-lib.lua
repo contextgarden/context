@@ -327,15 +327,21 @@ We use the same lookup logic for ffi loading.
 
     trackers.register("resolvers.ffilib", function(v) trace_ffilib = v end)
 
+    local function locateindeed(name)
+        local message, library = pcall(savedffiload,removesuffix(name))
+        if type(library) == "userdata" then
+            return library
+        else
+            return false
+        end
+    end
+
     function ffilib(required,version)
-        return locate(required,version,trace_ffilib,report_ffilib,function(name)
-            local message, library = pcall(savedffiload,removesuffix(name))
-            if type(library) == "userdata" then
-                return message, library
-            else
-                return message, false
-            end
-        end)
+        if version == "system" then
+            return locateindeed(name)
+        else
+            return locate(required,version,trace_ffilib,report_ffilib,locateindeed)
+        end
     end
 
     function ffi.load(name)

@@ -3274,7 +3274,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 16520, stripped down to: 9519
+-- original size: 16834, stripped down to: 9513
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -3610,7 +3610,7 @@ if not os.sleep then
   end
 end
 local function isleapyear(year)
-  return (year%400==0) or ((year%100~=0) and (year%4==0))
+  return (year%4==0) and (year%100~=0 or year%400==0)
 end
 os.isleapyear=isleapyear
 local days={ 31,28,31,30,31,30,31,31,30,31,30,31 }
@@ -7042,7 +7042,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 6362, stripped down to: 4907
+-- original size: 7597, stripped down to: 5761
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -7110,6 +7110,10 @@ function files.readbyte(f)
 end
 function files.readbytes(f,n)
   return byte(f:read(n),1,n)
+end
+function files.readbytetable(f,n)
+  local s=f:read(n or 1)
+  return { byte(s,1,#s) } 
 end
 function files.readchar(f)
   return f:read(1)
@@ -7199,21 +7203,12 @@ function files.readcardinal4le(f)
 end
 function files.readinteger4(f)
   local a,b,c,d=byte(f:read(4),1,4)
-  local n=0x1000000*a+0x10000*b+0x100*c+d
-  if n>=0x8000000 then
-    return n-0x100000000
+  if a>=0x80 then
+    return 0x1000000*a+0x10000*b+0x100*c+d-0x100000000
   else
-    return n
+    return 0x1000000*a+0x10000*b+0x100*c+d
   end
 end
-  function files.readinteger4(f)
-    local a,b,c,d=byte(f:read(4),1,4)
-    if a>=0x80 then
-      return 0x1000000*a+0x10000*b+0x100*c+d-0x100000000
-    else
-      return 0x1000000*a+0x10000*b+0x100*c+d
-    end
-  end
 function files.readinteger4le(f)
   local d,c,b,a=byte(f:read(4),1,4)
   local n=0x1000000*a+0x10000*b+0x100*c+d
@@ -7225,11 +7220,10 @@ function files.readinteger4le(f)
 end
 function files.readfixed4(f)
   local a,b,c,d=byte(f:read(4),1,4)
-  local n=0x100*a+b
-  if n>=0x8000 then
-    return n-0x10000+(0x100*c+d)/0xFFFF
+  if a>=0x80 then
+    return (0x1000000*a+0x10000*b+0x100*c+d-0x100000000)/65536.0
   else
-    return n+(0x100*c+d)/0xFFFF
+    return (0x1000000*a+0x10000*b+0x100*c+d)/65536.0
   end
 end
 if extract then
@@ -7274,6 +7268,34 @@ end
 function files.writebyte(f,b)
   f:write(char(b))
 end
+if fio and fio.readcardinal1 then
+  files.readcardinal1=fio.readcardinal1
+  files.readcardinal2=fio.readcardinal2
+  files.readcardinal3=fio.readcardinal3
+  files.readcardinal4=fio.readcardinal4
+  files.readinteger1=fio.readinteger1
+  files.readinteger2=fio.readinteger2
+  files.readinteger3=fio.readinteger3
+  files.readinteger4=fio.readinteger4
+  files.readfixed4=fio.readfixed4
+  files.read2dot14=fio.read2dot14
+  files.setposition=fio.setposition
+  files.getposition=fio.getposition
+  files.readbyte=files.readcardinel1
+  files.readsignedbyte=files.readinteger1
+  files.readcardinal=files.readcardinal1
+  files.readinteger=files.readinteger1
+  local skipposition=fio.skipposition
+  files.skipposition=skipposition
+  files.readbytes=fio.readbytes
+  files.readbytetable=fio.readbytetable
+  function files.skipshort(f,n)
+    skipposition(f,2*(n or 1))
+  end
+  function files.skiplong(f,n)
+    skipposition(f,4*(n or 1))
+  end
+end
 
 
 end -- of closure
@@ -7282,7 +7304,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 4360, stripped down to: 3409
+-- original size: 4492, stripped down to: 3522
 
 if not modules then modules={} end modules ['util-sac']={
   version=1.001,
@@ -7349,6 +7371,12 @@ function streams.readbytes(f,n)
   local j=i+n
   f[2]=j
   return byte(f[1],i,j-1)
+end
+function streams.readbytetable(f,n)
+  local i=f[2]
+  local j=i+n
+  f[2]=j
+  return { byte(f[1],i,j-1) }
 end
 function streams.skipbytes(f,n)
   f[2]=f[2]+n
@@ -9826,7 +9854,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 8473, stripped down to: 6211
+-- original size: 9211, stripped down to: 6727
 
 if not modules then modules={} end modules ['util-deb']={
   version=1.001,
@@ -9837,9 +9865,10 @@ if not modules then modules={} end modules ['util-deb']={
 }
 local debug=require "debug"
 local getinfo,sethook=debug.getinfo,debug.sethook
-local type,next,tostring=type,next,tostring
+local type,next,tostring,tonumber=type,next,tostring,tonumber
 local format,find,sub,gsub=string.format,string.find,string.sub,string.gsub
 local insert,remove,sort=table.insert,table.remove,table.sort
+local setmetatableindex=table.setmetatableindex
 utilities=utilities or {}
 local debugger=utilities.debugger or {}
 utilities.debugger=debugger
@@ -9850,55 +9879,62 @@ local overhead=0
 local dummycalls=10*1000
 local nesting=0
 local names={}
-local function initialize()
-  if FFISUPPORTED and ffi then
-    if os.type=="windows" then
-      local okay,kernel=pcall(ffi.load,"kernel32")
-      if kernel then
-        local tonumber=ffi.number or tonumber
-ffi.cdef[[
-int QueryPerformanceFrequency(int64_t *lpFrequency);
-int QueryPerformanceCounter(int64_t *lpPerformanceCount);
-]]
-        local target=ffi.new("__int64[1]")
-        ticks=function()
-          if kernel.QueryPerformanceCounter(target)==1 then
-            return tonumber(target[0])
-          else
-            return 0
-          end
-        end
-        local target=ffi.new("__int64[1]")
-        seconds=function(ticks)
-          if kernel.QueryPerformanceFrequency(target)==1 then
-            return ticks/tonumber(target[0])
-          else
-            return 0
-          end
-        end
-      end
-    elseif os.type=="unix" then
-      local C=ffi.C
+local initialize=false
+if not (FFISUPPORTED and ffi) then
+elseif os.type=="windows" then
+  initialize=function()
+    local kernel=ffilib("kernel32","system") 
+    if kernel then
       local tonumber=ffi.number or tonumber
-ffi.cdef [[
-struct timespec { long sec; long nsec; };
-int clock_gettime(int timerid, struct timespec *t);
-   ]]
-      local target=ffi.new("timespec[?]",1)
-      function ticks()
-        C.clock_gettime(2,target)
-        return tonumber(target[0].sec*1000000000+target[0].nsec)
+      ffi.cdef[[
+                int QueryPerformanceFrequency(int64_t *lpFrequency);
+                int QueryPerformanceCounter(int64_t *lpPerformanceCount);
+            ]]
+      local target=ffi.new("__int64[1]")
+      ticks=function()
+        if kernel.QueryPerformanceCounter(target)==1 then
+          return tonumber(target[0])
+        else
+          return 0
+        end
       end
+      local target=ffi.new("__int64[1]")
       seconds=function(ticks)
-        return ticks/1000000000
+        if kernel.QueryPerformanceFrequency(target)==1 then
+          return ticks/tonumber(target[0])
+        else
+          return 0
+        end
       end
     end
+    initialize=false
   end
-  initialize=false
+elseif os.type=="unix" then
+  initialize=function()
+    local C=ffi.C
+    local tonumber=ffi.number or tonumber
+    ffi.cdef [[
+            /* what a mess */
+            typedef int clk_id_t;
+            typedef enum { CLOCK_REALTIME, CLOCK_MONOTONIC, CLOCK_PROCESS_CPUTIME_ID } clk_id;
+            typedef struct timespec { long sec; long nsec; } ctx_timespec;
+            int clock_gettime(clk_id_t timerid, struct timespec *t);
+        ]]
+    local target=ffi.new("ctx_timespec[?]",1)
+    local clock=C.CLOCK_PROCESS_CPUTIME_ID
+    ticks=function ()
+      C.clock_gettime(clock,target)
+      return tonumber(target[0].sec*1000000000+target[0].nsec)
+    end
+    seconds=function(ticks)
+      return ticks/1000000000
+    end
+    initialize=false
+  end
 end
-table.setmetatableindex(names,function(t,name)
-  local v=table.setmetatableindex(function(t,source)
-    local v=table.setmetatableindex(function(t,line)
+setmetatableindex(names,function(t,name)
+  local v=setmetatableindex(function(t,source)
+    local v=setmetatableindex(function(t,line)
       local v={ total=0,count=0 }
       t[line]=v
       return v
@@ -9938,33 +9974,36 @@ local function hook(where)
     end
   end
 end
-function debugger.showstats(printer)
+function debugger.showstats(printer,threshold)
   local printer=printer or report
   local calls=0
   local functions=0
   local dataset={}
   local length=0
   local wholetime=0
+  local threshold=threshold or 0
   for name,sources in next,names do
     for source,lines in next,sources do
       for line,data in next,lines do
-        if #name>length then
-          length=#name
-        end
-        local total=data.total
         local count=data.count
-        local real=total
-        if real>0 then
-          real=total-(count*overhead/dummycalls)
-          if real<0 then
-            real=0
+        if count>threshold then
+          if #name>length then
+            length=#name
           end
-          wholetime=wholetime+real
+          local total=data.total
+          local real=total
+          if real>0 then
+            real=total-(count*overhead/dummycalls)
+            if real<0 then
+              real=0
+            end
+            wholetime=wholetime+real
+          end
+          if line<0 then
+            line=0
+          end
+          dataset[#dataset+1]={ real,total,count,name,source,line }
         end
-        if line<0 then
-          line=0
-        end
-        dataset[#dataset+1]={ real,total,count,name,source,line }
       end
     end
   end
@@ -10017,10 +10056,10 @@ function debugger.showstats(printer)
   printer(format("calls     : %i",calls))
   printer(format("overhead  : %f",seconds(overhead/1000)))
 end
-function debugger.savestats(filename)
+function debugger.savestats(filename,threshold)
   local f=io.open(filename,'w')
   if f then
-    debugger.showstats(function(str) f:write(str,"\n") end)
+    debugger.showstats(function(str) f:write(str,"\n") end,threshold)
     f:close()
   end
 end
@@ -19624,7 +19663,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 13648, stripped down to: 7455
+-- original size: 13748, stripped down to: 7544
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -19841,15 +19880,20 @@ if FFISUPPORTED and ffi and ffi.load then
   local trace_ffilib=false
   local savedffiload=ffi.load
   trackers.register("resolvers.ffilib",function(v) trace_ffilib=v end)
+  local function locateindeed(name)
+    local message,library=pcall(savedffiload,removesuffix(name))
+    if type(library)=="userdata" then
+      return library
+    else
+      return false
+    end
+  end
   function ffilib(required,version)
-    return locate(required,version,trace_ffilib,report_ffilib,function(name)
-      local message,library=pcall(savedffiload,removesuffix(name))
-      if type(library)=="userdata" then
-        return message,library
-      else
-        return message,false
-      end
-    end)
+    if version=="system" then
+      return locateindeed(name)
+    else
+      return locate(required,version,trace_ffilib,report_ffilib,locateindeed)
+    end
   end
   function ffi.load(name)
     local library=ffilib(name)
@@ -20204,8 +20248,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 855737
--- stripped bytes    : 310443
+-- original bytes    : 858256
+-- stripped bytes    : 311396
 
 -- end library merge
 

@@ -82,6 +82,13 @@ function streams.readbytes(f,n)
     return byte(f[1],i,j-1)
 end
 
+function streams.readbytetable(f,n)
+    local i = f[2]
+    local j = i + n
+    f[2] = j
+    return { byte(f[1],i,j-1) }
+end
+
 function streams.skipbytes(f,n)
     f[2] = f[2] + n
 end

@@ -23,7 +23,7 @@ if not modules then modules = { } end modules ['font-cff'] = {
 local next, type, tonumber = next, type, tonumber
 local byte = string.byte
 local concat, remove = table.concat, table.remove
-local floor, abs, round, ceil = math.floor, math.abs, math.round, math.ceil
+local floor, abs, round, ceil, min, max = math.floor, math.abs, math.round, math.ceil, math.min, math.max
 local P, C, R, S, C, Cs, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct
 local lpegmatch = lpeg.match
 local formatters = string.formatters
@@ -31,14 +31,14 @@ local formatters = string.formatters
 local readers           = fonts.handlers.otf.readers
 local streamreader      = readers.streamreader
 
-local readbytes         = streamreader.readbytes
 local readstring        = streamreader.readstring
 local readbyte          = streamreader.readcardinal1  --  8-bit unsigned integer
 local readushort        = streamreader.readcardinal2  -- 16-bit unsigned integer
 local readuint          = streamreader.readcardinal3  -- 24-bit unsigned integer
-local readulong         = streamreader.readcardinal4  -- 24-bit unsigned integer
+local readulong         = streamreader.readcardinal4  -- 32-bit unsigned integer
 local setposition       = streamreader.setposition
 local getposition       = streamreader.getposition
+local readbytetable     = streamreader.readbytetable
 
 local setmetatableindex = table.setmetatableindex
 
@@ -611,16 +611,17 @@ do
 
     -- All these indirect calls make this run slower but it's cleaner this way
     -- and we cache the result. As we moved the boundingbox code inline we gain
-    -- some back.
+    -- some back. I inlined some of then and a bit speed can be gained by more
+    -- inlining but not that much.
 
-    local function moveto(x,y)
+    local function moveto()
         if keepcurve then
             r = r + 1
             result[r] = { x, y, "m" }
         end
         if checked then
-            if x < xmin then xmin = x elseif x > xmax then xmax = x end
-            if y < ymin then ymin = y elseif y > ymax then ymax = y end
+            if x > xmax then xmax = x elseif x < xmin then xmin = x end
+            if y > ymax then ymax = y elseif y < ymin then ymin = y end
         else
             xmin = x
             ymin = y
@@ -630,20 +631,92 @@ do
         end
     end
 
-    local function lineto(x,y)
+    local function xmoveto() -- slight speedup
+        if keepcurve then
+            r = r + 1
+            result[r] = { x, y, "m" }
+        end
+        if not checked then
+            xmin = x
+            ymin = y
+            xmax = x
+            ymax = y
+            checked = true
+        elseif x > xmax then
+            xmax = x
+        elseif x < xmin then
+            xmin = x
+        end
+    end
+
+    local function ymoveto() -- slight speedup
+        if keepcurve then
+            r = r + 1
+            result[r] = { x, y, "m" }
+        end
+        if not checked then
+            xmin = x
+            ymin = y
+            xmax = x
+            ymax = y
+            checked = true
+        elseif y > ymax then
+            ymax = y
+        elseif y < ymin then
+            ymin = y
+        end
+    end
+
+    local function lineto() -- we could inline
         if keepcurve then
             r = r + 1
             result[r] = { x, y, "l" }
         end
         if checked then
-            if x < xmin then xmin = x elseif x > xmax then xmax = x end
-            if y < ymin then ymin = y elseif y > ymax then ymax = y end
+            if x > xmax then xmax = x elseif x < xmin then xmin = x end
+            if y > ymax then ymax = y elseif y < ymin then ymin = y end
         else
             xmin = x
             ymin = y
             xmax = x
             ymax = y
             checked = true
+        end
+    end
+
+    local function xlineto() -- slight speedup
+        if keepcurve then
+            r = r + 1
+            result[r] = { x, y, "l" }
+        end
+        if not checked then
+            xmin = x
+            ymin = y
+            xmax = x
+            ymax = y
+            checked = true
+        elseif x > xmax then
+            xmax = x
+        elseif x < xmin then
+            xmin = x
+        end
+    end
+
+    local function ylineto() -- slight speedup
+        if keepcurve then
+            r = r + 1
+            result[r] = { x, y, "l" }
+        end
+        if not checked then
+            xmin = x
+            ymin = y
+            xmax = x
+            ymax = y
+            checked = true
+        elseif y > ymax then
+            ymax = y
+        elseif y < ymin then
+            ymin = y
         end
     end
 
@@ -653,8 +726,8 @@ do
             result[r] = { x1, y1, x2, y2, x3, y3, "c" }
         end
         if checked then
-            if x1 < xmin then xmin = x1 elseif x1 > xmax then xmax = x1 end
-            if y1 < ymin then ymin = y1 elseif y1 > ymax then ymax = y1 end
+            if x1 > xmax then xmax = x1 elseif x1 < xmin then xmin = x1 end
+            if y1 > ymax then ymax = y1 elseif y1 < ymin then ymin = y1 end
         else
             xmin = x1
             ymin = y1
@@ -662,10 +735,10 @@ do
             ymax = y1
             checked = true
         end
-        if x2 < xmin then xmin = x2 elseif x2 > xmax then xmax = x2 end
-        if y2 < ymin then ymin = y2 elseif y2 > ymax then ymax = y2 end
-        if x3 < xmin then xmin = x3 elseif x3 > xmax then xmax = x3 end
-        if y3 < ymin then ymin = y3 elseif y3 > ymax then ymax = y3 end
+        if x2 > xmax then xmax = x2 elseif x2 < xmin then xmin = x2 end
+        if y2 > ymax then ymax = y2 elseif y2 < ymin then ymin = y2 end
+        if x3 > xmax then xmax = x3 elseif x3 < xmin then xmin = x3 end
+        if y3 > ymax then ymax = y3 elseif y3 < ymin then ymin = y3 end
     end
 
     local function rmoveto()
@@ -685,7 +758,7 @@ do
         x = x + stack[top-1] -- dx1
         y = y + stack[top]   -- dy1
         top = 0
-        moveto(x,y)
+        moveto()
     end
 
     local function hmoveto()
@@ -704,7 +777,7 @@ do
         end
         x = x + stack[top] -- dx1
         top = 0
-        moveto(x,y)
+        xmoveto()
     end
 
     local function vmoveto()
@@ -723,7 +796,7 @@ do
         end
         y = y + stack[top] -- dy1
         top = 0
-        moveto(x,y)
+        ymoveto()
     end
 
     local function rlineto()
@@ -733,21 +806,7 @@ do
         for i=1,top,2 do
             x = x + stack[i]   -- dxa
             y = y + stack[i+1] -- dya
-            lineto(x,y)
-        end
-        top = 0
-    end
-
-    local function xlineto(swap) -- x (y,x)+ | (x,y)+
-        for i=1,top do
-            if swap then
-                x = x + stack[i]
-                swap = false
-            else
-                y = y + stack[i]
-                swap = true
-            end
-            lineto(x,y)
+            lineto()
         end
         top = 0
     end
@@ -756,14 +815,48 @@ do
         if trace_charstrings then
             showstate("hlineto")
         end
-        xlineto(true)
+        if top == 1 then
+            x = x + stack[1]
+            xlineto()
+        else
+            local swap = true
+            for i=1,top do
+                if swap then
+                    x = x + stack[i]
+                    xlineto()
+                    swap = false
+                else
+                    y = y + stack[i]
+                    ylineto()
+                    swap = true
+                end
+            end
+        end
+        top = 0
     end
 
     local function vlineto() -- y (x,y)+ | (y,x)+
         if trace_charstrings then
             showstate("vlineto")
         end
-        xlineto(false)
+        if top == 1 then
+            y = y + stack[1]
+            ylineto()
+        else
+            local swap = false
+            for i=1,top do
+                if swap then
+                    x = x + stack[i]
+                    xlineto()
+                    swap = false
+                else
+                    y = y + stack[i]
+                    ylineto()
+                    swap = true
+                end
+            end
+        end
+        top = 0
     end
 
     local function rrcurveto()
@@ -775,8 +868,8 @@ do
             local ay = y  + stack[i+1] -- dya
             local bx = ax + stack[i+2] -- dxb
             local by = ay + stack[i+3] -- dyb
-            x = bx + stack[i+4] -- dxc
-            y = by + stack[i+5] -- dyc
+            x = bx + stack[i+4]        -- dxc
+            y = by + stack[i+5]        -- dyc
             curveto(ax,ay,bx,by,x,y)
         end
         top = 0
@@ -788,15 +881,15 @@ do
         end
         local s = 1
         if top % 2 ~= 0 then
-            y = y + stack[1] -- dy1
+            y = y + stack[1]           -- dy1
             s = 2
         end
         for i=s,top,4 do
-            local ax = x + stack[i] -- dxa
+            local ax = x + stack[i]    -- dxa
             local ay = y
             local bx = ax + stack[i+1] -- dxb
             local by = ay + stack[i+2] -- dyb
-            x = bx + stack[i+3] -- dxc
+            x = bx + stack[i+3]        -- dxc
             y = by
             curveto(ax,ay,bx,by,x,y)
         end
@@ -810,16 +903,16 @@ do
         local s = 1
         local d = 0
         if top % 2 ~= 0 then
-            d = stack[1] -- dx1
+            d = stack[1]               -- dx1
             s = 2
         end
         for i=s,top,4 do
             local ax = x + d
-            local ay = y + stack[i] -- dya
+            local ay = y + stack[i]    -- dya
             local bx = ax + stack[i+1] -- dxb
             local by = ay + stack[i+2] -- dyb
             x = bx
-            y = by + stack[i+3] -- dyc
+            y = by + stack[i+3]        -- dyc
             curveto(ax,ay,bx,by,x,y)
             d = 0
         end
@@ -831,7 +924,6 @@ do
         if last then
             top = top - 1
         end
-        local sw = swap
         for i=1,top,4 do
             local ax, ay, bx, by
             if swap then
@@ -893,7 +985,7 @@ do
         end
         x = x + stack[top-1] -- dxc
         y = y + stack[top]   -- dyc
-        lineto(x,y)
+        lineto()
         top = 0
     end
 
@@ -905,7 +997,7 @@ do
             for i=1,top-6,2 do
                 x = x + stack[i]
                 y = y + stack[i+1]
-                lineto(x,y)
+                lineto()
             end
         end
         local ax = x  + stack[top-5]
@@ -945,7 +1037,7 @@ do
         if trace_charstrings then
             showstate("hflex")
         end
-        local ax = x  + stack[1]   -- dx1
+        local ax = x  + stack[1] -- dx1
         local ay = y
         local bx = ax + stack[2] -- dx2
         local by = ay + stack[3] -- dy2
@@ -956,7 +1048,7 @@ do
         local dy = by
         local ex = dx + stack[6] -- dx5
         local ey = y
-        x  = ex + stack[7]       -- dx6
+        x = ex + stack[7]        -- dx6
         curveto(dx,dy,ex,ey,x,y)
         top = 0
     end
@@ -976,7 +1068,7 @@ do
         local dy = by
         local ex = dx + stack[7] -- dx5
         local ey = dy + stack[8] -- dy5
-        x  = ex + stack[9]       -- dx6
+        x = ex + stack[9]        -- dx6
         curveto(dx,dy,ex,ey,x,y)
         top = 0
     end
@@ -1218,9 +1310,9 @@ do
         [037] = flex1,
     }
 
-    local p_bytes = Ct((P(1)/byte)^0)
+    local process
 
-    local function call(scope,list,bias,process)
+    local function call(scope,list,bias) -- ,process)
         depth = depth + 1
         if top == 0 then
             showstate(formatters["unknown %s call"](scope))
@@ -1233,10 +1325,10 @@ do
             end
             local tab = list[index]
             if tab then
-                if type(tab) == "string" then
-                    tab = lpegmatch(p_bytes,tab)
-                    list[index] = tab
-                end
+--                 if type(tab) == "string" then
+--                     tab = { byte(tab,1,#tab) }
+--                     list[index] = tab
+--                 end
                 process(tab)
             else
                 showstate(formatters["unknown %s call %i"](scope,index))
@@ -1246,7 +1338,10 @@ do
         depth = depth - 1
     end
 
-    local function process(tab)
+    -- precompiling and reuse is much slower than redoing the calls
+
+--     local function process(tab)
+    process = function(tab)
         local i = 1
         local n = #tab
         while i <= n do
@@ -1259,12 +1354,16 @@ do
             elseif t >= 247 and t <= 250 then
                 -- +108 .. +1131
                 top = top + 1
-                stack[top] = (t-247)*256 + tab[i+1] + 108
+             -- stack[top] = (t-247)*256 + tab[i+1] + 108
+             -- stack[top] = t*256 - 247*256 + tab[i+1] + 108
+                stack[top] = t*256 - 63124 + tab[i+1]
                 i = i + 2
             elseif t >= 251 and t <= 254 then
                 -- -1131 .. -108
                 top = top + 1
-                stack[top] = -(t-251)*256 - tab[i+1] - 108
+             -- stack[top] = -(t-251)*256 - tab[i+1] - 108
+             -- stack[top] = -t*256 + 251*256 - tab[i+1] - 108
+                stack[top] = -t*256 + 64148 - tab[i+1]
                 i = i + 2
             elseif t == 28 then
                 -- -32768 .. +32767 : b1<<8 | b2
@@ -1285,15 +1384,15 @@ do
                     stack[top] = n              + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
                 end
                 i = i + 5
-           elseif t == 11 then
+            elseif t == 11 then
                 if trace_charstrings then
                     showstate("return")
                 end
                 return
             elseif t == 10 then
-                call("local",locals,localbias,process)
+                call("local",locals,localbias) -- ,process)
                 i = i + 1
-             elseif t == 14 then -- endchar
+            elseif t == 14 then -- endchar
                 if width then
                     -- okay
                 elseif top > 0 then
@@ -1309,7 +1408,7 @@ do
                 end
                 return
             elseif t == 29 then
-                call("global",globals,globalbias,process)
+                call("global",globals,globalbias) -- ,process)
                 i = i + 1
             elseif t == 12 then
                 i = i + 1
@@ -1356,7 +1455,7 @@ do
  --         if y < ymin then ymin = y end
  --         if y > ymax then ymax = y end
  --         -- we now have a reasonable start so we could
- --         -- simplyfy the next checks
+ --         -- simplify the next checks
  --         for i=1,nofsegments do
  --             local s = segments[i]
  --             local x = s[1]
@@ -1415,9 +1514,9 @@ do
 
         for i=1,#charstrings do
             local tab = charstrings[i]
-            if type(tab) == "string" then
-                tab = lpegmatch(p_bytes,tab)
-            end
+--             if type(tab) == "string" then -- no real need as wel nil charstrings[i] at the end
+                tab = { byte(tab,1,#tab) }
+--             end
             local index = i - 1
             x       = 0
             y       = 0
@@ -1425,7 +1524,7 @@ do
             r       = 0
             top     = 0
             stems   = 0
-            result  = { }
+            result  = { } -- we could reuse it when only boundingbox calculations are needed
             --
             xmin    = 0
             xmax    = 0
@@ -1450,15 +1549,7 @@ do
             --
          -- trace_charstrings = index == 3078 -- todo: make tracker
             local glyph = glyphs[index] -- can be autodefined in otr
-            if not glyph then
-                glyphs[index] = {
-                    segments    = doshapes ~= false and result or nil, -- optional
-                    boundingbox = boundingbox,
-                    width       = width,
-                    name        = charset[index],
-                 -- sidebearing = 0,
-                }
-            else
+            if glyph then
                 glyph.segments    = doshapes ~= false and result or nil
                 glyph.boundingbox = boundingbox
                 if not glyph.width then
@@ -1468,12 +1559,26 @@ do
                     glyph.name = charset[index]
                 end
              -- glyph.sidebearing = 0 -- todo
+            elseif doshapes then
+                glyphs[index] = {
+                    segments    = result,
+                    boundingbox = boundingbox,
+                    width       = width,
+                    name        = charset[index],
+                 -- sidebearing = 0,
+                }
+            else
+                glyphs[index] = {
+                    boundingbox = boundingbox,
+                    width       = width,
+                    name        = charset[index],
+                }
             end
             if trace_charstrings then
                 report("width: %s",tostring(width))
                 report("boundingbox: % t",boundingbox)
             end
-            charstrings[i] = nil -- free memory
+            charstrings[i] = nil -- free memory (what if used more often?)
         end
         return glyphs
     end
@@ -1491,9 +1596,10 @@ do
         local nominalwidth = private and private.data.nominalwidthx or 0
         local defaultwidth = private and private.data.defaultwidthx or 0
         --
-        if type(tab) == "string" then
-            tab = lpegmatch(p_bytes,tab)
-        end
+--         if type(tab) == "string" then
+            -- a helper is not much faster but might be nicer for the stack
+            tab = { byte(tab,1,#tab) }
+--         end
         --
         x         = 0
         y         = 0
@@ -1527,15 +1633,7 @@ do
         index = index - 1
         --
         local glyph = glyphs[index] -- can be autodefined in otr
-        if not glyph then
-            glyphs[index] = {
-                segments    = doshapes ~= false and result or nil, -- optional
-                boundingbox = boundingbox,
-                width       = width,
-                name        = charset[index],
-             -- sidebearing = 0,
-            }
-        else
+        if glyph then
             glyph.segments    = doshapes ~= false and result or nil
             glyph.boundingbox = boundingbox
             if not glyph.width then
@@ -1545,6 +1643,20 @@ do
                 glyph.name = charset[index]
             end
          -- glyph.sidebearing = 0 -- todo
+        elseif doshapes then
+            glyphs[index] = {
+                segments    = result,
+                boundingbox = boundingbox,
+                width       = width,
+                name        = charset[index],
+             -- sidebearing = 0,
+            }
+        else
+            glyphs[index] = {
+                boundingbox = boundingbox,
+                width       = width,
+                name        = charset[index],
+            }
         end
         --
         if trace_charstrings then
@@ -1564,7 +1676,7 @@ end
 local function readglobals(f,data)
     local routines = readlengths(f)
     for i=1,#routines do
-        routines[i] = readstring(f,routines[i])
+        routines[i] = readbytetable(f,routines[i])
     end
     data.routines = routines
 end
@@ -1627,7 +1739,7 @@ local function readlocals(f,data,dictionary)
             setposition(f,header.offset+private.offset+subroutineoffset)
             local subroutines = readlengths(f)
             for i=1,#subroutines do
-                subroutines[i] = readstring(f,subroutines[i])
+                subroutines[i] = readbytetable(f,subroutines[i])
             end
             dictionary.subroutines = subroutines
             private.data.subroutines = nil
@@ -1757,6 +1869,7 @@ local function readfdselect(f,data,glyphs,doshapes,version)
         end
         for i=1,#charstrings do
             parsecharstring(data,dictionaries[fdindex[i]+1],charstrings[i],glyphs,i,doshapes,version)
+charstrings[i] = nil
         end
         resetcharstrings()
     end

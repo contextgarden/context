@@ -213,7 +213,8 @@
    \global\advance\d_page_floats_inserted_top\dimexpr\ht\floatbox+\dp\floatbox+\s_page_one_between_top_insert\relax}
 
 \def\page_one_insert_top_float % maybe remember last beforeskip
-  {\insert\namedinsertionnumber\s!topfloat\bgroup
+  {\floatingpenalty\zerocount
+   \insert\namedinsertionnumber\s!topfloat\bgroup
      \forgetall
      \ifconditional\c_page_one_top_of_insert
        \ifconditional\c_page_one_correct_top_insert
@@ -284,6 +285,7 @@
      \page_floats_get
      \global\advance\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
      \ifdim\d_page_floats_inserted_bottom<\pagegoal\relax
+       \floatingpenalty\zerocount
        \insert\namedinsertionnumber\s!bottomfloat\bgroup
          \forgetall
          \blank[\rootfloatparameter\c!spacebefore]%
@@ -570,6 +572,7 @@
 
 \def\page_one_place_float_bottom_indeed
   {\global\advance\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
+   \floatingpenalty\zerocount
    \insert\namedinsertionnumber\s!bottomfloat\bgroup
      \forgetall
      \blank[\rootfloatparameter\c!spacebefore]%

@@ -13,9 +13,10 @@ if not modules then modules = { } end modules ['util-deb'] = {
 local debug = require "debug"
 
 local getinfo, sethook = debug.getinfo, debug.sethook
-local type, next, tostring = type, next, tostring
+local type, next, tostring, tonumber = type, next, tostring, tonumber
 local format, find, sub, gsub = string.format, string.find, string.sub, string.gsub
 local insert, remove, sort = table.insert, table.remove, table.sort
+local setmetatableindex = table.setmetatableindex
 
 utilities          = utilities or { }
 local debugger     = utilities.debugger or { }
@@ -30,63 +31,73 @@ local dummycalls   = 10*1000
 local nesting      = 0
 local names        = { }
 
-local function initialize()
+local initialize = false
 
-    if FFISUPPORTED and ffi then
+if not (FFISUPPORTED and ffi) then
 
-        if os.type == "windows" then
-            local okay, kernel = pcall(ffi.load,"kernel32")
-            if kernel then
-                local tonumber = ffi.number or tonumber
-ffi.cdef[[
-int QueryPerformanceFrequency(int64_t *lpFrequency);
-int QueryPerformanceCounter(int64_t *lpPerformanceCount);
-]]
-                local target = ffi.new("__int64[1]")
-                ticks = function()
-                    if kernel.QueryPerformanceCounter(target) == 1 then
-                        return tonumber(target[0])
-                    else
-                        return 0
-                    end
-                end
-                local target = ffi.new("__int64[1]")
-                seconds = function(ticks)
-                    if kernel.QueryPerformanceFrequency(target) == 1 then
-                        return ticks / tonumber(target[0])
-                    else
-                        return 0
-                    end
-                end
-            end
-        elseif os.type == "unix" then
-            local C        = ffi.C
+    -- we have no precise timer
+
+elseif os.type == "windows" then
+
+    initialize = function()
+        local kernel = ffilib("kernel32","system") -- no checking
+        if kernel then
             local tonumber = ffi.number or tonumber
-            -- 1 = CLOCK_MONOTONIC
-            -- 2 = CLOCK_PROCESS_CPUTIME_ID
-ffi.cdef [[
-struct timespec { long sec; long nsec; };
-int clock_gettime(int timerid, struct timespec *t);
-   ]]
-            local target = ffi.new("timespec[?]",1)
-            function ticks()
-                C.clock_gettime(2,target)
-                return tonumber(target[0].sec*1000000000 + target[0].nsec)
+            ffi.cdef[[
+                int QueryPerformanceFrequency(int64_t *lpFrequency);
+                int QueryPerformanceCounter(int64_t *lpPerformanceCount);
+            ]]
+            local target = ffi.new("__int64[1]")
+            ticks = function()
+                if kernel.QueryPerformanceCounter(target) == 1 then
+                    return tonumber(target[0])
+                else
+                    return 0
+                end
             end
+            local target = ffi.new("__int64[1]")
             seconds = function(ticks)
-                return ticks/1000000000
+                if kernel.QueryPerformanceFrequency(target) == 1 then
+                    return ticks / tonumber(target[0])
+                else
+                    return 0
+                end
             end
-
         end
+        initialize = false
     end
 
-    initialize = false
+elseif os.type == "unix" then
+
+    -- for the values: echo '#include <time.h>' > foo.h; gcc -dM -E foo.h
+
+    initialize = function()
+        local C        = ffi.C
+        local tonumber = ffi.number or tonumber
+        ffi.cdef [[
+            /* what a mess */
+            typedef int clk_id_t;
+            typedef enum { CLOCK_REALTIME, CLOCK_MONOTONIC, CLOCK_PROCESS_CPUTIME_ID } clk_id;
+            typedef struct timespec { long sec; long nsec; } ctx_timespec;
+            int clock_gettime(clk_id_t timerid, struct timespec *t);
+        ]]
+        local target = ffi.new("ctx_timespec[?]",1)
+        local clock  = C.CLOCK_PROCESS_CPUTIME_ID
+        ticks = function ()
+            C.clock_gettime(clock,target)
+            return tonumber(target[0].sec*1000000000 + target[0].nsec)
+        end
+        seconds = function(ticks)
+            return ticks/1000000000
+        end
+        initialize = false
+    end
 
 end
 
-table.setmetatableindex(names,function(t,name)
-    local v = table.setmetatableindex(function(t,source)
-        local v = table.setmetatableindex(function(t,line)
+setmetatableindex(names,function(t,name)
+    local v = setmetatableindex(function(t,source)
+        local v = setmetatableindex(function(t,line)
             local v = { total = 0, count = 0 }
             t[line] = v
             return v
@@ -128,33 +139,39 @@ local function hook(where)
     end
 end
 
-function debugger.showstats(printer)
+function debugger.showstats(printer,threshold)
     local printer   = printer or report
     local calls     = 0
     local functions = 0
     local dataset   = { }
     local length    = 0
     local wholetime = 0
+    local threshold = threshold or 0
     for name, sources in next, names do
         for source, lines in next, sources do
             for line, data in next, lines do
-                if #name > length then
-                    length = #name
-                end
-                local total = data.total
                 local count = data.count
-                local real  = total
-                if real > 0 then
-                    real = total - (count * overhead / dummycalls)
-                    if real < 0 then
-                        real = 0
+                if count > threshold then
+                    if #name > length then
+                        length = #name
                     end
-                    wholetime = wholetime + real
+                    local total = data.total
+                    local real  = total
+                    if real > 0 then
+                        real = total - (count * overhead / dummycalls)
+                        if real < 0 then
+                            real = 0
+                        end
+                        wholetime = wholetime + real
+                    end
+                    if line < 0 then
+                        line = 0
+                    end
+                 -- if name = "a" then
+                 --     -- weird name
+                 -- end
+                    dataset[#dataset+1] = { real, total, count, name, source, line }
                 end
-                if line < 0 then
-                    line = 0
-                end
-                dataset[#dataset+1] = { real, total, count, name, source, line }
             end
         end
     end
@@ -206,12 +223,14 @@ function debugger.showstats(printer)
     printer(format("functions : %i", functions))
     printer(format("calls     : %i", calls))
     printer(format("overhead  : %f", seconds(overhead/1000)))
+
+ -- table.save("luatex-profile.lua",names)
 end
 
-function debugger.savestats(filename)
+function debugger.savestats(filename,threshold)
     local f = io.open(filename,'w')
     if f then
-        debugger.showstats(function(str) f:write(str,"\n") end)
+        debugger.showstats(function(str) f:write(str,"\n") end,threshold)
         f:close()
     end
 end

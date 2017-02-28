@@ -326,16 +326,20 @@ end
 
 directives.register("system.showerror", lmx.overloaderror)
 
-local debugger = utilities.debugger
-
-local function trace_calls(n)
-    debugger.enable()
-    luatex.registerstopactions(function()
-        debugger.disable()
-        debugger.savestats(tex.jobname .. "-luacalls.log",tonumber(n))
-    end)
-    trace_calls = function() end
-end
+-- local debugger = utilities.debugger
+--
+-- local function trace_calls(n)
+--     debugger.enable()
+--     luatex.registerstopactions(function()
+--         debugger.disable()
+--         debugger.savestats(tex.jobname .. "-luacalls.log",tonumber(n))
+--     end)
+--     trace_calls = function() end
+-- end
+--
+-- directives.register("system.tracecalls", function(n)
+--     trace_calls(n)
+-- end) -- indirect is needed for nilling
 
 local editor = [[scite "-open:%filename%" -goto:%linenumber%]]
 
@@ -354,8 +358,6 @@ callback.register("call_edit",function(filename,linenumber)
     end
 end)
 
-directives.register("system.tracecalls", function(n) trace_calls(n) end) -- indirect is needed for nilling
-
 implement { name = "showtrackers",       actions = trackers.show }
 implement { name = "enabletrackers",     actions = trackers.enable,     arguments = "string" }
 implement { name = "disabletrackers",    actions = trackers.disable,    arguments = "string" }
@@ -373,10 +375,12 @@ implement { name = "showdebuginfo",      actions = lmx.showdebuginfo }
 implement { name = "overloaderror",      actions = lmx.overloaderror }
 implement { name = "showlogcategories",  actions = logs.show }
 
-directives.register("system.profile",function()
+local debugger = utilities.debugger
+
+directives.register("system.profile",function(n)
     luatex.registerstopactions(function()
         debugger.disable()
-        debugger.savestats("luatex-profile.log")
+        debugger.savestats("luatex-profile.log",tonumber(n) or 0)
         report_nl()
         logs.report("system","profiler stopped, log saved in %a","luatex-profile.log")
         report_nl()

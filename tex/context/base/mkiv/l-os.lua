@@ -508,8 +508,10 @@ end
 
 -- These are moved from core-con.lua (as I needed them elsewhere).
 
-local function isleapyear(year)
-    return (year % 400 == 0) or ((year % 100 ~= 0) and (year % 4 == 0))
+local function isleapyear(year) -- timed for bram's cs practicum
+ -- return (year % 400 == 0) or (year % 100 ~= 0 and year % 4 == 0) -- 3:4:1600:1900 = 9.9 : 8.2 : 5.0 :  6.8 (29.9)
+    return (year % 4 == 0) and (year % 100 ~= 0 or year % 400 == 0) -- 3:4:1600:1900 = 5.1 : 6.5 : 8.1 : 10.2 (29.9)
+ -- return (year % 4 == 0) and (year % 400 == 0 or year % 100 ~= 0) -- 3:4:1600:1900 = 5.2 : 8.5 : 6.8 : 10.1 (30.6)
 end
 
 os.isleapyear = isleapyear

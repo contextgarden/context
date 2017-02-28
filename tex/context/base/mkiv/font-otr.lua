@@ -107,15 +107,15 @@ local readstring        = streamreader.readstring
 local readbyte          = streamreader.readcardinal1  --  8-bit unsigned integer
 local readushort        = streamreader.readcardinal2  -- 16-bit unsigned integer
 local readuint          = streamreader.readcardinal3  -- 24-bit unsigned integer
-local readulong         = streamreader.readcardinal4  -- 24-bit unsigned integer
+local readulong         = streamreader.readcardinal4  -- 32-bit unsigned integer
 ----- readchar          = streamreader.readinteger1   --  8-bit   signed integer
 local readshort         = streamreader.readinteger2   -- 16-bit   signed integer
-local readlong          = streamreader.readinteger4   -- 24-bit unsigned integer
+local readlong          = streamreader.readinteger4   -- 32-bit unsigned integer
 local readfixed         = streamreader.readfixed4
+local read2dot14        = streamreader.read2dot14     -- 16-bit signed fixed number with the low 14 bits of fraction (2.14) (F2DOT14)
 local readfword         = readshort                   -- 16-bit   signed integer that describes a quantity in FUnits
 local readufword        = readushort                  -- 16-bit unsigned integer that describes a quantity in FUnits
 local readoffset        = readushort
-local read2dot14        = streamreader.read2dot14     -- 16-bit signed fixed number with the low 14 bits of fraction (2.14) (F2DOT14)
 
 function streamreader.readtag(f)
     return lower(stripstring(readstring(f,4)))
@@ -1996,13 +1996,22 @@ local function prepareglyps(fontdata)
     fontdata.mapping = { }
 end
 
+local function readtable(tag,f,fontdata,specification)
+    local reader = readers[tag]
+    if reader then
+     -- local t = os.clock()
+        reader(f,fontdata,specification)
+     -- report("reading table %a took %0.4f seconds",tag,os.clock()-t)
+    end
+end
+
 local function readdata(f,offset,specification)
     local fontdata = loadtables(f,specification,offset)
     if specification.glyphs then
         prepareglyps(fontdata)
     end
     --
-    readers["name"](f,fontdata,specification)
+    readtable("name",f,fontdata,specification)
     --
     local askedname = specification.askedname
     if askedname then
@@ -2014,33 +2023,35 @@ local function readdata(f,offset,specification)
         end
     end
     --
-    readers["os/2"](f,fontdata,specification)
-    readers["head"](f,fontdata,specification)
-    readers["maxp"](f,fontdata,specification)
-    readers["hhea"](f,fontdata,specification)
-    readers["vhea"](f,fontdata,specification)
-    readers["hmtx"](f,fontdata,specification)
-    readers["vmtx"](f,fontdata,specification)
-    readers["vorg"](f,fontdata,specification)
-    readers["post"](f,fontdata,specification)
-    readers["cff" ](f,fontdata,specification)
-    readers["cmap"](f,fontdata,specification)
-    readers["loca"](f,fontdata,specification)
-    readers["glyf"](f,fontdata,specification)
-    readers["colr"](f,fontdata,specification)
-    readers["cpal"](f,fontdata,specification)
-    readers["svg" ](f,fontdata,specification)
-    readers["kern"](f,fontdata,specification)
-    readers["gdef"](f,fontdata,specification)
-    readers["gsub"](f,fontdata,specification)
-    readers["gpos"](f,fontdata,specification)
-    readers["math"](f,fontdata,specification)
+    readtable("os/2",f,fontdata,specification)
+    readtable("head",f,fontdata,specification)
+    readtable("maxp",f,fontdata,specification)
+    readtable("hhea",f,fontdata,specification)
+    readtable("vhea",f,fontdata,specification)
+    readtable("hmtx",f,fontdata,specification)
+    readtable("vmtx",f,fontdata,specification)
+    readtable("vorg",f,fontdata,specification)
+    readtable("post",f,fontdata,specification)
+    readtable("cff" ,f,fontdata,specification)
+    readtable("cmap",f,fontdata,specification)
+    readtable("loca",f,fontdata,specification)
+    readtable("glyf",f,fontdata,specification)
+    readtable("colr",f,fontdata,specification)
+    readtable("cpal",f,fontdata,specification)
+    readtable("svg" ,f,fontdata,specification)
+    readtable("kern",f,fontdata,specification)
+    readtable("gdef",f,fontdata,specification)
+    readtable("gsub",f,fontdata,specification)
+    readtable("gpos",f,fontdata,specification)
+    readtable("math",f,fontdata,specification)
     --
- -- readers["fvar"](f,fontdata,specification)
- -- readers["hvar"](f,fontdata,specification)
- -- readers["vvar"](f,fontdata,specification)
- -- readers["mvar"](f,fontdata,specification)
- -- readers["vorg"](f,fontdata,specification)
+    -- there are no proper fonts yet:
+    --
+ -- readtable("fvar",f,fontdata,specification) -- probably
+ -- readtable("hvar",f,fontdata,specification)
+ -- readtable("vvar",f,fontdata,specification)
+ -- readtable("mvar",f,fontdata,specification) -- probably
+ -- readtable("vorg",f,fontdata,specification)
     --
     fontdata.locations    = nil
     fontdata.tables       = nil

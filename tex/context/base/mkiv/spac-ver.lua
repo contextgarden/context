@@ -1289,7 +1289,7 @@ local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also 
                 local p = getprop(pagetail,"snapper")
                 if p then
                     local e = p.extra
-                    if e < 0 then
+                    if e and e < 0 then
                         local t = texget("pagetotal")
                         if t > 0 then
                             local g = texget("pagegoal") -- 1073741823 is signal

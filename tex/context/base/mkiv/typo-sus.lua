@@ -51,6 +51,7 @@ local getlist         = nuts.getlist
 local getkern         = nuts.getkern
 local getpenalty      = nuts.getpenalty
 local getwidth        = nuts.getwidth
+local getwhd          = nuts.getwhd
 local isglyph         = nuts.isglyph
 
 local setattr         = nuts.setattr
@@ -133,7 +134,7 @@ local function mark(head,current,id,color)
  --     head = insert_before(head,current,kern)
  --     setcolor(rule,color)
     else
-        local width, height, depth = getWhd(current)
+        local width, height, depth = getwhd(current)
         local extra = fonts.hashes.xheights[getfont(current)] / 2
         local rule  = new_rule(width,height+extra,depth+extra)
         local hlist = new_hlist(rule)

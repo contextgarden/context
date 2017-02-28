@@ -3758,7 +3758,7 @@ otf.helpers.pardirstate = pardirstate
 -- optimizations the principles of processing the features hasn't changed much since
 -- the beginning.
 
-local function featuresprocessor(head,font,attr)
+local function featuresprocessor(head,font,attr,direction)
 
     local sequences = sequencelists[font] -- temp hack
 
@@ -3802,7 +3802,8 @@ local function featuresprocessor(head,font,attr)
         checkstep(head)
     end
 
-    local rlmode    = 0
+    local initialrl = direction == "TRT" and -1 or 0
+
     local done      = false
     local datasets  = otf.dataset(tfmdata,font,attr)
     local dirstack  = { } -- could move outside function but we can have local runs
@@ -3819,7 +3820,7 @@ local function featuresprocessor(head,font,attr)
         ----- featurevalue = dataset[1] -- todo: pass to function instead of using a global
         local attribute    = dataset[2]
         local sequence     = dataset[3] -- sequences[s] -- also dataset[5]
-        local rlparmode    = 0
+        local rlparmode    = initialrl
         local topstack     = 0
         local typ          = sequence.type
         local gpossing     = typ == "gpos_single" or typ == "gpos_pair" -- store in dataset
@@ -3837,7 +3838,8 @@ local function featuresprocessor(head,font,attr)
             end
         elseif typ == "gsub_reversecontextchain" then
             -- this is a limited case, no special treatments like 'init' etc
-            local start = find_node_tail(head)
+            local start  = find_node_tail(head)
+            local rlmode = 0 -- how important is this .. do we need to check for dir?
             while start do
                 local char = ischar(start,font)
                 if char then
@@ -3875,8 +3877,8 @@ local function featuresprocessor(head,font,attr)
                 end
             end
         else
-            local start = head -- local ?
-            rlmode = 0 -- to be checked ?
+            local start  = head
+            local rlmode = initialrl
             if nofsteps == 1 then -- happens often
                 local step = steps[1]
                 local lookupcache = step.coverage

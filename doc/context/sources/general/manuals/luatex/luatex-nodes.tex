@@ -301,10 +301,14 @@ a \type {userskip} with subtype zero).
 
 \starttabulate[|lT|l|p|]
 \NC \rmbf field  \NC \bf type \NC \bf explanation \NC \NR
-\NC subtype      \NC number   \NC not used \NC \NR
+\NC subtype      \NC number   \NC \showsubtypes{penalty} \NC \NR
 \NC attr         \NC node     \NC list of attributes \NC \NR
 \NC penalty      \NC number   \NC the penalty value \NC \NR
 \stoptabulate
+
+The subtypes are just informative and \TEX\ itself doesn't use them. When you
+run into an \type {linebreakpenalty} you need to keep in mind that it's a
+accumulation of \type {club}, \type{widow} and other relevant penalties.
 
 \subsubsection[glyphnodes]{glyph nodes}
 

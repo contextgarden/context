@@ -1366,10 +1366,24 @@
    \inheritmaintextcolor % but we do want to obey the textcolor
 \to \everybeforenoteinsert
 
+% \def\strc_notes_set_penalties
+%  {\doif{\noteparameter\c!scope}\v!page{\floatingpenalty\maxdimen}% experiment
+%  %\interlinepenalty\maxdimen % todo
+%   \penalty\currentnotepenalty}
+
+\def\strc_notes_set_penalties
+  {% stored in insert node
+   \floatingpenalty \currentnotepenalty
+   % used when typesetting
+   \interlinepenalty\plushundred % plain value
+   % used when we need to split in columns
+   \ifnum\noteparameter\c!n>\plusone
+     \penalty\zerocount % otherwise no split in columns, maybe just always (tex just adds it to accumulated)
+   \fi}
+
+
 \appendtoks
-  \doif{\noteparameter\c!scope}\v!page{\floatingpenalty\maxdimen}% experiment
-  \penalty\currentnotepenalty
- %\interlinepenalty\maxdimen % todo
+  \strc_notes_set_penalties
   \forgetall
   \strc_notes_set_bodyfont
   \redoconvertfont % to undo \undo calls in in headings etc
