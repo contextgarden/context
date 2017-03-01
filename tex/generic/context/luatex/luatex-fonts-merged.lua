@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/28/17 22:41:58
+-- merge date  : 03/01/17 21:46:15
 
 do -- begin closure to overcome local limits and interference
 
@@ -2059,44 +2059,30 @@ if string.find(os.getenv("PATH"),";",1,true) then
 else
   io.fileseparator,io.pathseparator="/",":"
 end
-local function readall(f)
-  return f:read("*all")
-end
+local large=2^24    
+local medium=large/16 
+local small=medium/8
 local function readall(f)
   local size=f:seek("end")
-  if size==0 then
-    return ""
-  end
-  f:seek("set",0)
-  if size<1024*1024 then
-    return f:read('*all')
+  if size>0 then
+    f:seek("set",0)
+    return f:read(size)
   else
-    local step
-    if size>16*1024*1024 then
-      step=16*1024*1024
-    else
-      step=floor(size/(1024*1024))*1024*1024/8
-    end
-    local data={}
-    while true do
-      local r=f:read(step)
-      if not r then
-        return concat(data)
-      else
-        data[#data+1]=r
-      end
-    end
+    return ""
   end
 end
 io.readall=readall
 function io.loaddata(filename,textmode) 
   local f=open(filename,(textmode and 'r') or 'rb')
   if f then
-    local data=readall(f)
-    f:close()
-    if #data>0 then
-      return data
+    local size=f:seek("end")
+    local data=nil
+    if size>0 then
+      f:seek("set",0)
+      data=f:read(size)
     end
+    f:close()
+    return data
   end
 end
 function io.copydata(source,target,action)
@@ -2105,37 +2091,14 @@ function io.copydata(source,target,action)
     local g=open(target,"wb")
     if g then
       local size=f:seek("end")
-      if size==0 then
-      else
+      if size>0 then
         f:seek("set",0)
-        if size<1024*1024 then
-          local data=f:read('*all')
-          if action then
-            data=action(data)
-          end
-          if data then
-            g:write(data)
-          end
-        else
-          local step
-          if size>16*1024*1024 then
-            step=16*1024*1024
-          else
-            step=floor(size/(1024*1024))*1024*1024/8
-          end
-          while true do
-            local data=f:read(step)
-            if data then
-              if action then
-                data=action(data)
-              end
-              if data then
-                g:write(data)
-              end
-            else
-              break
-            end
-          end
+        local data=f:read(size)
+        if action then
+          data=action(data)
+        end
+        if data then
+          g:write(data)
         end
       end
       g:close()
@@ -2161,29 +2124,59 @@ function io.savedata(filename,data,joiner)
     return false
   end
 end
-function io.loadlines(filename,n) 
-  local f=open(filename,'r')
-  if not f then
-  elseif n then
-    local lines={}
-    for i=1,n do
-      local line=f:read("*lines")
-      if line then
-        lines[#lines+1]=line
-      else
-        break
+if fio.readline then
+  local readline=fio.readline
+  function io.loadlines(filename,n) 
+    local f=open(filename,'r')
+    if not f then
+    elseif n then
+      local lines={}
+      for i=1,n do
+        local line=readline(f)
+        if line then
+          lines[i]=line
+        else
+          break
+        end
+      end
+      f:close()
+      lines=concat(lines,"\n")
+      if #lines>0 then
+        return lines
+      end
+    else
+      local line=readline(f)
+      f:close()
+      if line and #line>0 then
+        return line
       end
     end
-    f:close()
-    lines=concat(lines,"\n")
-    if #lines>0 then
-      return lines
-    end
-  else
-    local line=f:read("*line") or ""
-    f:close()
-    if #line>0 then
-      return line
+  end
+else
+  function io.loadlines(filename,n) 
+    local f=open(filename,'r')
+    if not f then
+    elseif n then
+      local lines={}
+      for i=1,n do
+        local line=f:read("*lines")
+        if line then
+          lines[i]=line
+        else
+          break
+        end
+      end
+      f:close()
+      lines=concat(lines,"\n")
+      if #lines>0 then
+        return lines
+      end
+    else
+      local line=f:read("*line") or ""
+      f:close()
+      if #line>0 then
+        return line
+      end
     end
   end
 end
@@ -2344,7 +2337,7 @@ function io.ask(question,default,options)
     end
   end
 end
-local function readnumber(f,n,m)
+local function readnumber(f,n,m) 
   if m then
     f:seek("set",n)
     n=m
@@ -2353,31 +2346,31 @@ local function readnumber(f,n,m)
     return byte(f:read(1))
   elseif n==2 then
     local a,b=byte(f:read(2),1,2)
-    return 256*a+b
+    return 0x100*a+b
   elseif n==3 then
     local a,b,c=byte(f:read(3),1,3)
-    return 256*256*a+256*b+c
+    return 0x10000*a+0x100*b+c
   elseif n==4 then
     local a,b,c,d=byte(f:read(4),1,4)
-    return 256*256*256*a+256*256*b+256*c+d
+    return 0x1000000*a+0x10000*b+0x100*c+d
   elseif n==8 then
     local a,b=readnumber(f,4),readnumber(f,4)
-    return 256*a+b
+    return 0x100*a+b
   elseif n==12 then
     local a,b,c=readnumber(f,4),readnumber(f,4),readnumber(f,4)
-    return 256*256*a+256*b+c
+    return 0x10000*a+0x100*b+c
   elseif n==-2 then
     local b,a=byte(f:read(2),1,2)
-    return 256*a+b
+    return 0x100*a+b
   elseif n==-3 then
     local c,b,a=byte(f:read(3),1,3)
-    return 256*256*a+256*b+c
+    return 0x10000*a+0x100*b+c
   elseif n==-4 then
     local d,c,b,a=byte(f:read(4),1,4)
-    return 256*256*256*a+256*256*b+256*c+d
+    return 0x1000000*a+0x10000*b+0x100*c+d
   elseif n==-8 then
     local h,g,f,e,d,c,b,a=byte(f:read(8),1,8)
-    return 256*256*256*256*256*256*256*a+256*256*256*256*256*256*b+256*256*256*256*256*c+256*256*256*256*d+256*256*256*e+256*256*f+256*g+h
+    return 0x100000000000000*a+0x1000000000000*b+0x10000000000*c+0x100000000*d+0x1000000*e+0x10000*f+0x100*g+h
   else
     return 0
   end
@@ -10289,15 +10282,15 @@ do
     if y3>ymax then ymax=y3 elseif y3<ymin then ymin=y3 end
   end
   local function rmoveto()
-    if top>2 then
-      if not width then
+    if not width then
+      if top>2 then
         width=stack[1]
         if trace_charstrings then
           showvalue("width",width)
         end
+      else
+        width=true
       end
-    elseif not width then
-      width=true
     end
     if trace_charstrings then
       showstate("rmoveto")
@@ -10308,15 +10301,15 @@ do
     moveto()
   end
   local function hmoveto()
-    if top>1 then
-      if not width then
+    if not width then
+      if top>1 then
         width=stack[1]
         if trace_charstrings then
           showvalue("width",width)
         end
+      else
+        width=true
       end
-    elseif not width then
-      width=true
     end
     if trace_charstrings then
       showstate("hmoveto")
@@ -10326,15 +10319,15 @@ do
     xmoveto()
   end
   local function vmoveto()
-    if top>1 then
-      if not width then
+    if not width then
+      if top>1 then
         width=stack[1]
         if trace_charstrings then
           showvalue("width",width)
         end
+      else
+        width=true
       end
-    elseif not width then
-      width=true
     end
     if trace_charstrings then
       showstate("vmoveto")
@@ -10831,36 +10824,38 @@ do
     local n=#tab
     while i<=n do
       local t=tab[i]
-      if t>=32 and t<=246 then
-        top=top+1
-        stack[top]=t-139
-        i=i+1
-      elseif t>=247 and t<=250 then
-        top=top+1
-        stack[top]=t*256-63124+tab[i+1]
-        i=i+2
-      elseif t>=251 and t<=254 then
-        top=top+1
-        stack[top]=-t*256+64148-tab[i+1]
-        i=i+2
+      if t>=32 then
+        if t<=246 then
+          top=top+1
+          stack[top]=t-139
+          i=i+1
+        elseif t<=250 then
+          top=top+1
+          stack[top]=t*256-63124+tab[i+1]
+          i=i+2
+        elseif t<=254 then
+          top=top+1
+          stack[top]=-t*256+64148-tab[i+1]
+          i=i+2
+        else
+          local n=0x100*tab[i+1]+tab[i+2]
+          top=top+1
+          if n>=0x8000 then
+            stack[top]=n-0x10000+(0x100*tab[i+3]+tab[i+4])/0xFFFF
+          else
+            stack[top]=n+(0x100*tab[i+3]+tab[i+4])/0xFFFF
+          end
+          i=i+5
+        end
       elseif t==28 then
         top=top+1
         local n=0x100*tab[i+1]+tab[i+2]
         if n>=0x8000 then
-          stack[top]=n-0xFFFF-1
+          stack[top]=n-0x10000
         else
           stack[top]=n
         end
         i=i+3
-      elseif t==255 then
-        local n=0x100*tab[i+1]+tab[i+2]
-        top=top+1
-        if n>=0x8000 then
-          stack[top]=n-0xFFFF-1+(0x100*tab[i+3]+tab[i+4])/0xFFFF
-        else
-          stack[top]=n+(0x100*tab[i+3]+tab[i+4])/0xFFFF
-        end
-        i=i+5
       elseif t==11 then
         if trace_charstrings then
           showstate("return")
@@ -25282,8 +25277,8 @@ do
   end
   local setroutine=function(str,position,index,size)
     local forward=position+tonumber(size)
-    local stream=sub(str,position+1,forward)
-    routines[index]=decrypt(stream,4330,4)
+    local stream=decrypt(sub(str,position+1,forward),4330,4)
+    routines[index]={ byte(stream,1,#stream) }
     return forward
   end
   local setvector=function(str,position,name,size)

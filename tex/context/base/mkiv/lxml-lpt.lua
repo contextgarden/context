@@ -177,7 +177,7 @@ apply_axis['child'] = function(list)
                 if dk.tg then
                     c = c + 1
                     collected[c] = dk
---                     dk.ni = k -- refresh
+                    dk.ni = k -- refresh
                     en = en + 1
                     dk.ei = en
                 end
@@ -197,7 +197,7 @@ local function collect(list,collected,c)
             if dk.tg then
                 c = c + 1
                 collected[c] = dk
---                 dk.ni = k -- refresh
+                dk.ni = k -- refresh
                 en = en + 1
                 dk.ei = en
                 c = collect(dk,collected,c)
@@ -225,7 +225,7 @@ local function collect(list,collected,c)
             if dk.tg then
                 c = c + 1
                 collected[c] = dk
---                 dk.ni = k -- refresh
+                dk.ni = k -- refresh
                 en = en + 1
                 dk.ei = en
                 c = collect(dk,collected,c)

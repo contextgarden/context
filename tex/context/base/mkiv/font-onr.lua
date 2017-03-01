@@ -105,8 +105,8 @@ do
 
     local setroutine = function(str,position,index,size)
         local forward = position + tonumber(size)
-        local stream  = sub(str,position+1,forward)
-        routines[index] = decrypt(stream,4330,4)
+        local stream  = decrypt(sub(str,position+1,forward),4330,4)
+        routines[index] = { byte(stream,1,#stream) }
         return forward
     end
 

@@ -742,15 +742,15 @@ do
     end
 
     local function rmoveto()
-        if top > 2 then
-            if not width then
+        if not width then
+            if top > 2 then
                 width = stack[1]
                 if trace_charstrings then
                     showvalue("width",width)
                 end
+            else
+                width = true
             end
-        elseif not width then
-            width = true
         end
         if trace_charstrings then
             showstate("rmoveto")
@@ -762,15 +762,15 @@ do
     end
 
     local function hmoveto()
-        if top > 1 then
-            if not width then
+        if not width then
+            if top > 1 then
                 width = stack[1]
                 if trace_charstrings then
                     showvalue("width",width)
                 end
+            else
+                width = true
             end
-        elseif not width then
-            width = true
         end
         if trace_charstrings then
             showstate("hmoveto")
@@ -781,15 +781,15 @@ do
     end
 
     local function vmoveto()
-        if top > 1 then
-            if not width then
+        if not width then
+            if top > 1 then
                 width = stack[1]
                 if trace_charstrings then
                     showvalue("width",width)
                 end
+            else
+                width = true
             end
-        elseif not width then
-            width = true
         end
         if trace_charstrings then
             showstate("vmoveto")
@@ -1340,50 +1340,53 @@ do
 
     -- precompiling and reuse is much slower than redoing the calls
 
---     local function process(tab)
     process = function(tab)
         local i = 1
         local n = #tab
         while i <= n do
             local t = tab[i]
-            if t >= 32 and t <= 246 then
-                -- -107 .. +107
-                top = top + 1
-                stack[top] = t - 139
-                i = i + 1
-            elseif t >= 247 and t <= 250 then
-                -- +108 .. +1131
-                top = top + 1
-             -- stack[top] = (t-247)*256 + tab[i+1] + 108
-             -- stack[top] = t*256 - 247*256 + tab[i+1] + 108
-                stack[top] = t*256 - 63124 + tab[i+1]
-                i = i + 2
-            elseif t >= 251 and t <= 254 then
-                -- -1131 .. -108
-                top = top + 1
-             -- stack[top] = -(t-251)*256 - tab[i+1] - 108
-             -- stack[top] = -t*256 + 251*256 - tab[i+1] - 108
-                stack[top] = -t*256 + 64148 - tab[i+1]
-                i = i + 2
+            if t >= 32 then
+                if t <= 246 then
+                    -- -107 .. +107
+                    top = top + 1
+                    stack[top] = t - 139
+                    i = i + 1
+                elseif t <= 250 then
+                    -- +108 .. +1131
+                    top = top + 1
+                 -- stack[top] = (t-247)*256 + tab[i+1] + 108
+                 -- stack[top] = t*256 - 247*256 + tab[i+1] + 108
+                    stack[top] = t*256 - 63124 + tab[i+1]
+                    i = i + 2
+                elseif t <= 254 then
+                    -- -1131 .. -108
+                    top = top + 1
+                 -- stack[top] = -(t-251)*256 - tab[i+1] - 108
+                 -- stack[top] = -t*256 + 251*256 - tab[i+1] - 108
+                    stack[top] = -t*256 + 64148 - tab[i+1]
+                    i = i + 2
+                else
+                    local n = 0x100 * tab[i+1] + tab[i+2]
+                    top = top + 1
+                    if n  >= 0x8000 then
+                     -- stack[top] = n - 0xFFFF - 1 + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
+                        stack[top] = n - 0x10000 + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
+                    else
+                        stack[top] = n           + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
+                    end
+                    i = i + 5
+                end
             elseif t == 28 then
                 -- -32768 .. +32767 : b1<<8 | b2
                 top = top + 1
                 local n = 0x100 * tab[i+1] + tab[i+2]
                 if n  >= 0x8000 then
-                    stack[top] = n - 0xFFFF - 1
+                 -- stack[top] = n - 0xFFFF - 1
+                    stack[top] = n - 0x10000
                 else
                     stack[top] = n
                 end
                 i = i + 3
-            elseif t == 255 then
-                local n = 0x100 * tab[i+1] + tab[i+2]
-                top = top + 1
-                if n  >= 0x8000 then
-                    stack[top] = n - 0xFFFF - 1 + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
-                else
-                    stack[top] = n              + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
-                end
-                i = i + 5
             elseif t == 11 then
                 if trace_charstrings then
                     showstate("return")

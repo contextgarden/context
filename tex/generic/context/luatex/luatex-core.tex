@@ -1,0 +1,30 @@
+\starttext
+
+\startluacode
+
+    local report = logs.reporter("core")
+
+    report("kpse used        : %i",status.kpse_used)
+    report("shell escape     : %i",status.shell_escape)
+    report("shell restricted : %i",status.shell_restricted)
+    report("safer option     : %i",status.safer_option)
+
+    if false then
+
+        for l in io.open("luatex-core.lua"):lines() do
+            print(l)
+        end
+
+        for l in io.lines("luatex-core.lua") do
+            print(l)
+        end
+
+    end
+
+\stopluacode
+
+\startTEXpage[foregroundstyle=mono,offset=10pt]
+    LUATEXCOREVERSION: \cldcontext{LUATEXCOREVERSION}
+\stopTEXpage
+
+\stoptext
