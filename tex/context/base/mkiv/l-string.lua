@@ -212,3 +212,24 @@ end
 
 string.quote   = string.quoted
 string.unquote = string.unquoted
+
+-- new
+
+if not string.bytetable then
+
+    local limit = 5000 -- we can go to 8000 in luajit and much higher in lua if needed
+
+    function string.bytetable(str)
+        local n = #str
+        if n > limit then
+            local t = { byte(str,1,limit) }
+            for i=limit+1,n do
+                t[i] = byte(str,i)
+            end
+            return t
+        else
+            return { byte(str,1,n) }
+        end
+    end
+
+end

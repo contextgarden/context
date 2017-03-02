@@ -486,7 +486,7 @@ local reserved = table.tohash { -- intercept a language inconvenience: no reserv
     'NaN', 'goto',
 }
 
--- local function simple_table(t)
+-- local function is_simple_table(t)
 --     if #t > 0 then
 --         local n = 0
 --         for _,v in next, t do
@@ -520,29 +520,62 @@ local reserved = table.tohash { -- intercept a language inconvenience: no reserv
 --     return nil
 -- end
 
-local function simple_table(t)
+-- local function is_simple_table(t)
+--     local nt = #t
+--     if nt > 0 then
+--         local n = 0
+--         for _,v in next, t do
+--             n = n + 1
+--          -- if type(v) == "table" then
+--          --     return nil
+--          -- end
+--         end
+--         if n == nt then
+--             local tt = { }
+--             for i=1,nt do
+--                 local v = t[i]
+--                 local tv = type(v)
+--                 if tv == "number" then
+--                     if hexify then
+--                         tt[i] = format("0x%X",v)
+--                     else
+--                         tt[i] = tostring(v) -- tostring not needed
+--                     end
+--                 elseif tv == "string" then
+--                     tt[i] = format("%q",v)
+--                 elseif tv == "boolean" then
+--                     tt[i] = v and "true" or "false"
+--                 else
+--                     return nil
+--                 end
+--             end
+--             return tt
+--         end
+--     end
+--     return nil
+-- end
+
+local function is_simple_table(t) -- also used in util-tab so maybe public
     local nt = #t
     if nt > 0 then
         local n = 0
-        for _,v in next, t do
+        for _, v in next, t do
             n = n + 1
-         -- if type(v) == "table" then
-         --     return nil
-         -- end
+            if type(v) == "table" then
+                return nil
+            end
         end
+     -- local haszero = t[0]
+        local haszero = rawget(t,0) -- don't trigger meta
         if n == nt then
             local tt = { }
             for i=1,nt do
                 local v = t[i]
                 local tv = type(v)
                 if tv == "number" then
-                    if hexify then
-                        tt[i] = format("0x%X",v)
-                    else
-                        tt[i] = tostring(v) -- tostring not needed
-                    end
+                    tt[i] = v -- not needed tostring(v)
                 elseif tv == "string" then
-                    tt[i] = format("%q",v)
+                    tt[i] = format("%q",v) -- f_string(v)
                 elseif tv == "boolean" then
                     tt[i] = v and "true" or "false"
                 else
@@ -550,10 +583,29 @@ local function simple_table(t)
                 end
             end
             return tt
+        elseif haszero and (n == nt + 1) then
+            local tt = { }
+            for i=0,nt do
+                local v = t[i]
+                local tv = type(v)
+                if tv == "number" then
+                    tt[i+1] = v -- not needed tostring(v)
+                elseif tv == "string" then
+                    tt[i+1] = format("%q",v) -- f_string(v)
+                elseif tv == "boolean" then
+                    tt[i+1] = v and "true" or "false"
+                else
+                    return nil
+                end
+            end
+            tt[1] = "[0] = " .. tt[1]
+            return tt
         end
     end
     return nil
 end
+
+table.is_simple_table = is_simple_table
 
 -- Because this is a core function of mkiv I moved some function calls
 -- inline.
@@ -637,7 +689,7 @@ local function do_serialize(root,name,depth,level,indexed)
                     if next(v) == nil then
                         handle(format("%s {},",depth))
                     elseif inline then -- and #t > 0
-                        local st = simple_table(v)
+                        local st = is_simple_table(v)
                         if st then
                             handle(format("%s { %s },",depth,concat(st,", ")))
                         else
@@ -723,7 +775,7 @@ local function do_serialize(root,name,depth,level,indexed)
                         handle(format("%s [%q]={},",depth,k))
                     end
                 elseif inline then
-                    local st = simple_table(v)
+                    local st = is_simple_table(v)
                     if st then
                         if tk == "number" then
                             if hexify then

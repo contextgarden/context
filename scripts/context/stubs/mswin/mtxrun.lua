@@ -1543,7 +1543,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 5863, stripped down to: 2937
+-- original size: 6296, stripped down to: 3225
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -1641,6 +1641,21 @@ function string.tformat(fmt,...)
 end
 string.quote=string.quoted
 string.unquote=string.unquoted
+if not string.bytetable then
+  local limit=5000 
+  function string.bytetable(str)
+    local n=#str
+    if n>limit then
+      local t={ byte(str,1,limit) }
+      for i=limit+1,n do
+        t[i]=byte(str,i)
+      end
+      return t
+    else
+      return { byte(str,1,n) }
+    end
+  end
+end
 
 
 end -- of closure
@@ -1649,7 +1664,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 37480, stripped down to: 22506
+-- original size: 39197, stripped down to: 22960
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -1982,26 +1997,26 @@ local reserved=table.tohash {
   'in','local','nil','not','or','repeat','return','then','true','until','while',
   'NaN','goto',
 }
-local function simple_table(t)
+local function is_simple_table(t) 
   local nt=#t
   if nt>0 then
     local n=0
     for _,v in next,t do
       n=n+1
+      if type(v)=="table" then
+        return nil
+      end
     end
+    local haszero=rawget(t,0) 
     if n==nt then
       local tt={}
       for i=1,nt do
         local v=t[i]
         local tv=type(v)
         if tv=="number" then
-          if hexify then
-            tt[i]=format("0x%X",v)
-          else
-            tt[i]=tostring(v) 
-          end
+          tt[i]=v 
         elseif tv=="string" then
-          tt[i]=format("%q",v)
+          tt[i]=format("%q",v) 
         elseif tv=="boolean" then
           tt[i]=v and "true" or "false"
         else
@@ -2009,10 +2024,28 @@ local function simple_table(t)
         end
       end
       return tt
+    elseif haszero and (n==nt+1) then
+      local tt={}
+      for i=0,nt do
+        local v=t[i]
+        local tv=type(v)
+        if tv=="number" then
+          tt[i+1]=v 
+        elseif tv=="string" then
+          tt[i+1]=format("%q",v) 
+        elseif tv=="boolean" then
+          tt[i+1]=v and "true" or "false"
+        else
+          return nil
+        end
+      end
+      tt[1]="[0] = "..tt[1]
+      return tt
     end
   end
   return nil
 end
+table.is_simple_table=is_simple_table
 local propername=patterns.propername 
 local function dummy() end
 local function do_serialize(root,name,depth,level,indexed)
@@ -2074,7 +2107,7 @@ local function do_serialize(root,name,depth,level,indexed)
           if next(v)==nil then
             handle(format("%s {},",depth))
           elseif inline then 
-            local st=simple_table(v)
+            local st=is_simple_table(v)
             if st then
               handle(format("%s { %s },",depth,concat(st,", ")))
             else
@@ -2157,7 +2190,7 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s [%q]={},",depth,k))
           end
         elseif inline then
-          local st=simple_table(v)
+          local st=is_simple_table(v)
           if st then
             if tk=="number" then
               if hexify then
@@ -2675,7 +2708,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-io"] = package.loaded["l-io"] or true
 
--- original size: 11782, stripped down to: 6953
+-- original size: 11790, stripped down to: 6961
 
 if not modules then modules={} end modules ['l-io']={
   version=1.001,
@@ -2760,7 +2793,7 @@ function io.savedata(filename,data,joiner)
     return false
   end
 end
-if fio.readline then
+if fio and fio.readline then
   local readline=fio.readline
   function io.loadlines(filename,n) 
     local f=open(filename,'r')
@@ -6359,7 +6392,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 28471, stripped down to: 18176
+-- original size: 27407, stripped down to: 17116
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -6796,6 +6829,7 @@ local f_table_entry=formatters["[%q]={"]
 local f_table_finish=formatters["}"]
 local spaces=utilities.strings.newrepeater(" ")
 local original_serialize=table.serialize
+local is_simple_table=table.is_simple_table
 local function serialize(root,name,specification)
   if type(specification)=="table" then
     return original_serialize(root,name,specification) 
@@ -6803,54 +6837,6 @@ local function serialize(root,name,specification)
   local t  
   local n=1
   local unknown=false
-  local function simple_table(t)
-    local nt=#t
-    if nt>0 then
-      local n=0
-      for _,v in next,t do
-        n=n+1
-        if type(v)=="table" then
-          return nil
-        end
-      end
-      local haszero=rawget(t,0) 
-      if n==nt then
-        local tt={}
-        for i=1,nt do
-          local v=t[i]
-          local tv=type(v)
-          if tv=="number" then
-            tt[i]=v 
-          elseif tv=="string" then
-            tt[i]=format("%q",v) 
-          elseif tv=="boolean" then
-            tt[i]=v and "true" or "false"
-          else
-            return nil
-          end
-        end
-        return tt
-      elseif haszero and (n==nt+1) then
-        local tt={}
-        for i=0,nt do
-          local v=t[i]
-          local tv=type(v)
-          if tv=="number" then
-            tt[i+1]=v 
-          elseif tv=="string" then
-            tt[i+1]=format("%q",v) 
-          elseif tv=="boolean" then
-            tt[i+1]=v and "true" or "false"
-          else
-            return nil
-          end
-        end
-        tt[1]="[0] = "..tt[1]
-        return tt
-      end
-    end
-    return nil
-  end
   local function do_serialize(root,name,depth,level,indexed)
     if level>0 then
       n=n+1
@@ -6898,7 +6884,7 @@ local function serialize(root,name,specification)
             if next(v)==nil then 
               n=n+1 t[n]=f_val_not(depth)
             else
-              local st=simple_table(v)
+              local st=is_simple_table(v)
               if st then
                 n=n+1 t[n]=f_val_seq(depth,st)
               else
@@ -6942,7 +6928,7 @@ local function serialize(root,name,specification)
               n=n+1 t[n]=f_key_str_value_not(depth,tostring(k))
             end
           else
-            local st=simple_table(v)
+            local st=is_simple_table(v)
             if not st then
               do_serialize(v,k,depth,level+1)
             elseif tk=="number" then
@@ -7006,7 +6992,7 @@ local function serialize(root,name,specification)
       root._w_h_a_t_e_v_e_r_=nil
     end
     if next(root)~=nil then
-      local st=simple_table(root)
+      local st=is_simple_table(root)
       if st then
         return t[1]..f_fin_seq(st) 
       else
@@ -7035,7 +7021,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 7279, stripped down to: 5562
+-- original size: 7427, stripped down to: 5702
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -7211,6 +7197,14 @@ function files.readinteger4le(f)
     return n
   end
 end
+function files.readfixed2(f)
+  local a,b=byte(f:read(2),1,2)
+  if a>=0x80 then
+    return (0x100*a+b-0x10000)/256.0
+  else
+    return (0x100*a+b)/256.0
+  end
+end
 function files.readfixed4(f)
   local a,b,c,d=byte(f:read(4),1,4)
   if a>=0x80 then
@@ -7220,17 +7214,12 @@ function files.readfixed4(f)
   end
 end
 if extract then
+  local extract=bit32.extract
+  local band=bit32.band
   function files.read2dot14(f)
     local a,b=byte(f:read(2),1,2)
     local n=0x100*a+b
-    local m=extract(n,0,30)
-    if n>0x7FFF then
-      n=extract(n,30,2)
-      return m/0x4000-4
-    else
-      n=extract(n,30,2)
-      return n+m/0x4000
-    end
+    return extract(n,14,2)+(band(n,0x3FFF)/16384.0)
   end
 end
 function files.skipshort(f,n)
@@ -7270,11 +7259,12 @@ if fio and fio.readcardinal1 then
   files.readinteger2=fio.readinteger2
   files.readinteger3=fio.readinteger3
   files.readinteger4=fio.readinteger4
+  files.readfixed2=fio.readfixed2
   files.readfixed4=fio.readfixed4
   files.read2dot14=fio.read2dot14
   files.setposition=fio.setposition
   files.getposition=fio.getposition
-  files.readbyte=files.readcardinel1
+  files.readbyte=files.readcardinal1
   files.readsignedbyte=files.readinteger1
   files.readcardinal=files.readcardinal1
   files.readinteger=files.readinteger1
@@ -7297,7 +7287,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 4417, stripped down to: 3372
+-- original size: 4330, stripped down to: 3316
 
 if not modules then modules={} end modules ['util-sac']={
   version=1.001,
@@ -7456,20 +7446,15 @@ function streams.readfixed4(f)
   end
 end
 if extract then
+  local extract=bit32.extract
+  local band=bit32.band
   function streams.read2dot14(f)
     local i=f[2]
     local j=i+1
     f[2]=j+1
     local a,b=byte(f[1],i,j)
     local n=0x100*a+b
-    local m=extract(n,0,30)
-    if n>0x7FFF then
-      n=extract(n,30,2)
-      return m/0x4000-4
-    else
-      n=extract(n,30,2)
-      return n+m/0x4000
-    end
+    return extract(n,14,2)+(band(n,0x3FFF)/16384.0)
   end
 end
 function streams.skipshort(f,n)
@@ -20243,8 +20228,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 834931
--- stripped bytes    : 302955
+-- original bytes    : 836086
+-- stripped bytes    : 304336
 
 -- end library merge
 

@@ -190,20 +190,17 @@ end
 
 if extract then
 
+
+    local extract = bit32.extract
+    local band    = bit32.band
+
     function streams.read2dot14(f)
         local i = f[2]
         local j = i + 1
         f[2] = j + 1
         local a, b = byte(f[1],i,j)
         local n = 0x100 * a + b
-        local m = extract(n,0,30)
-        if n > 0x7FFF then
-            n = extract(n,30,2)
-            return m/0x4000 - 4
-        else
-            n = extract(n,30,2)
-            return n + m/0x4000
-        end
+        return extract(n,14,2) + (band(n,0x3FFF) / 16384.0)
     end
 
 end

@@ -153,7 +153,7 @@ if utilities and utilities.merger and utilities.merger.compact then
     local s = utilities.merger.compact(d) -- no comments and less spaces
 
  -- t[#t+1] = format('/*\n\n%s\n\n*/',d)
-    t[#t+1] = 'static int load_luatex_core_lua (lua_State * L)'
+    t[#t+1] = 'int load_luatex_core_lua (lua_State * L)'
     t[#t+1] = '{'
     t[#t+1] = '  /* generated from and by luatex-core.lua */'
     t[#t+1] = '  static unsigned char luatex_core_lua[] = {'

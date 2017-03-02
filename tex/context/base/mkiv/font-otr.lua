@@ -2047,11 +2047,11 @@ local function readdata(f,offset,specification)
     --
     -- there are no proper fonts yet:
     --
- -- readtable("fvar",f,fontdata,specification) -- probably
- -- readtable("hvar",f,fontdata,specification)
- -- readtable("vvar",f,fontdata,specification)
- -- readtable("mvar",f,fontdata,specification) -- probably
- -- readtable("vorg",f,fontdata,specification)
+    readtable("fvar",f,fontdata,specification) -- probably
+    readtable("hvar",f,fontdata,specification)
+    readtable("vvar",f,fontdata,specification)
+    readtable("mvar",f,fontdata,specification) -- probably
+    readtable("vorg",f,fontdata,specification)
     --
     fontdata.locations    = nil
     fontdata.tables       = nil
@@ -2141,6 +2141,7 @@ local function loadfont(specification,n)
             glyphs      = true,
             shapes      = true,
             kerns       = true,
+            variable    = true,
             globalkerns = true,
             lookups     = true,
             -- true or number:
@@ -2207,6 +2208,7 @@ function readers.loadfont(filename,n)
         glyphs      = true,
         shapes      = false,
         lookups     = true,
+        variable    = true,
      -- kerns       = true,
      -- globalkerns = true, -- only for testing, e.g. cambria has different gpos and kern
         subfont     = n,
@@ -2245,6 +2247,7 @@ function readers.loadfont(filename,n)
                 mathconstants = fontdata.mathconstants,
                 colorpalettes = fontdata.colorpalettes,
                 svgshapes     = fontdata.svgshapes,
+                variable      = fontdata.variable,
             },
         }
     end

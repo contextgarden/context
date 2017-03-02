@@ -21,12 +21,13 @@ if not modules then modules = { } end modules ['font-cff'] = {
 -- flush is nicer.
 
 local next, type, tonumber = next, type, tonumber
-local byte = string.byte
+local byte, gmatch = string.byte, string.gmatch
 local concat, remove = table.concat, table.remove
 local floor, abs, round, ceil, min, max = math.floor, math.abs, math.round, math.ceil, math.min, math.max
 local P, C, R, S, C, Cs, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct
 local lpegmatch = lpeg.match
 local formatters = string.formatters
+local bytetable = string.bytetable
 
 local readers           = fonts.handlers.otf.readers
 local streamreader      = readers.streamreader
@@ -1325,10 +1326,6 @@ do
             end
             local tab = list[index]
             if tab then
---                 if type(tab) == "string" then
---                     tab = { byte(tab,1,#tab) }
---                     list[index] = tab
---                 end
                 process(tab)
             else
                 showstate(formatters["unknown %s call %i"](scope,index))
@@ -1516,10 +1513,7 @@ do
         local defaultwidth = private.data.defaultwidthx or 0
 
         for i=1,#charstrings do
-            local tab = charstrings[i]
---             if type(tab) == "string" then -- no real need as wel nil charstrings[i] at the end
-                tab = { byte(tab,1,#tab) }
---             end
+            local tab   = bytetable(charstrings[i])
             local index = i - 1
             x       = 0
             y       = 0
@@ -1599,10 +1593,7 @@ do
         local nominalwidth = private and private.data.nominalwidthx or 0
         local defaultwidth = private and private.data.defaultwidthx or 0
         --
---         if type(tab) == "string" then
-            -- a helper is not much faster but might be nicer for the stack
-            tab = { byte(tab,1,#tab) }
---         end
+        tab = bytetable(tab)
         --
         x         = 0
         y         = 0
@@ -1872,14 +1863,14 @@ local function readfdselect(f,data,glyphs,doshapes,version)
         end
         for i=1,#charstrings do
             parsecharstring(data,dictionaries[fdindex[i]+1],charstrings[i],glyphs,i,doshapes,version)
-charstrings[i] = nil
+            charstrings[i] = nil
         end
         resetcharstrings()
     end
 end
 
 function readers.cff(f,fontdata,specification)
---     if specification.glyphs then
+ -- if specification.glyphs then
     if specification.details then
         local datatable = fontdata.tables.cff
         if datatable then

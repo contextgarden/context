@@ -169,7 +169,7 @@ end
 
 -- ffi.readline
 
-if fio.readline then
+if fio and fio.readline then
 
     local readline = fio.readline
 

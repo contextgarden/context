@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/01/17 21:46:15
+-- merge date  : 03/02/17 22:23:29
 
 do -- begin closure to overcome local limits and interference
 
@@ -1015,6 +1015,21 @@ function string.tformat(fmt,...)
 end
 string.quote=string.quoted
 string.unquote=string.unquoted
+if not string.bytetable then
+  local limit=5000 
+  function string.bytetable(str)
+    local n=#str
+    if n>limit then
+      local t={ byte(str,1,limit) }
+      for i=limit+1,n do
+        t[i]=byte(str,i)
+      end
+      return t
+    else
+      return { byte(str,1,n) }
+    end
+  end
+end
 
 end -- closure
 
@@ -1351,26 +1366,26 @@ local reserved=table.tohash {
   'in','local','nil','not','or','repeat','return','then','true','until','while',
   'NaN','goto',
 }
-local function simple_table(t)
+local function is_simple_table(t) 
   local nt=#t
   if nt>0 then
     local n=0
     for _,v in next,t do
       n=n+1
+      if type(v)=="table" then
+        return nil
+      end
     end
+    local haszero=rawget(t,0) 
     if n==nt then
       local tt={}
       for i=1,nt do
         local v=t[i]
         local tv=type(v)
         if tv=="number" then
-          if hexify then
-            tt[i]=format("0x%X",v)
-          else
-            tt[i]=tostring(v) 
-          end
+          tt[i]=v 
         elseif tv=="string" then
-          tt[i]=format("%q",v)
+          tt[i]=format("%q",v) 
         elseif tv=="boolean" then
           tt[i]=v and "true" or "false"
         else
@@ -1378,10 +1393,28 @@ local function simple_table(t)
         end
       end
       return tt
+    elseif haszero and (n==nt+1) then
+      local tt={}
+      for i=0,nt do
+        local v=t[i]
+        local tv=type(v)
+        if tv=="number" then
+          tt[i+1]=v 
+        elseif tv=="string" then
+          tt[i+1]=format("%q",v) 
+        elseif tv=="boolean" then
+          tt[i+1]=v and "true" or "false"
+        else
+          return nil
+        end
+      end
+      tt[1]="[0] = "..tt[1]
+      return tt
     end
   end
   return nil
 end
+table.is_simple_table=is_simple_table
 local propername=patterns.propername 
 local function dummy() end
 local function do_serialize(root,name,depth,level,indexed)
@@ -1443,7 +1476,7 @@ local function do_serialize(root,name,depth,level,indexed)
           if next(v)==nil then
             handle(format("%s {},",depth))
           elseif inline then 
-            local st=simple_table(v)
+            local st=is_simple_table(v)
             if st then
               handle(format("%s { %s },",depth,concat(st,", ")))
             else
@@ -1526,7 +1559,7 @@ local function do_serialize(root,name,depth,level,indexed)
             handle(format("%s [%q]={},",depth,k))
           end
         elseif inline then
-          local st=simple_table(v)
+          local st=is_simple_table(v)
           if st then
             if tk=="number" then
               if hexify then
@@ -2124,7 +2157,7 @@ function io.savedata(filename,data,joiner)
     return false
   end
 end
-if fio.readline then
+if fio and fio.readline then
   local readline=fio.readline
   function io.loadlines(filename,n) 
     local f=open(filename,'r')
@@ -4402,6 +4435,14 @@ function files.readinteger4le(f)
     return n
   end
 end
+function files.readfixed2(f)
+  local a,b=byte(f:read(2),1,2)
+  if a>=0x80 then
+    return (0x100*a+b-0x10000)/256.0
+  else
+    return (0x100*a+b)/256.0
+  end
+end
 function files.readfixed4(f)
   local a,b,c,d=byte(f:read(4),1,4)
   if a>=0x80 then
@@ -4411,17 +4452,12 @@ function files.readfixed4(f)
   end
 end
 if extract then
+  local extract=bit32.extract
+  local band=bit32.band
   function files.read2dot14(f)
     local a,b=byte(f:read(2),1,2)
     local n=0x100*a+b
-    local m=extract(n,0,30)
-    if n>0x7FFF then
-      n=extract(n,30,2)
-      return m/0x4000-4
-    else
-      n=extract(n,30,2)
-      return n+m/0x4000
-    end
+    return extract(n,14,2)+(band(n,0x3FFF)/16384.0)
   end
 end
 function files.skipshort(f,n)
@@ -4461,11 +4497,12 @@ if fio and fio.readcardinal1 then
   files.readinteger2=fio.readinteger2
   files.readinteger3=fio.readinteger3
   files.readinteger4=fio.readinteger4
+  files.readfixed2=fio.readfixed2
   files.readfixed4=fio.readfixed4
   files.read2dot14=fio.read2dot14
   files.setposition=fio.setposition
   files.getposition=fio.getposition
-  files.readbyte=files.readcardinel1
+  files.readbyte=files.readcardinal1
   files.readsignedbyte=files.readinteger1
   files.readcardinal=files.readcardinal1
   files.readinteger=files.readinteger1
@@ -9478,6 +9515,11 @@ local function readdata(f,offset,specification)
   readtable("gsub",f,fontdata,specification)
   readtable("gpos",f,fontdata,specification)
   readtable("math",f,fontdata,specification)
+  readtable("fvar",f,fontdata,specification) 
+  readtable("hvar",f,fontdata,specification)
+  readtable("vvar",f,fontdata,specification)
+  readtable("mvar",f,fontdata,specification) 
+  readtable("vorg",f,fontdata,specification)
   fontdata.locations=nil
   fontdata.tables=nil
   fontdata.cidmaps=nil
@@ -9563,6 +9605,7 @@ local function loadfont(specification,n)
       glyphs=true,
       shapes=true,
       kerns=true,
+      variable=true,
       globalkerns=true,
       lookups=true,
       subfont=n or true,
@@ -9620,6 +9663,7 @@ function readers.loadfont(filename,n)
     glyphs=true,
     shapes=false,
     lookups=true,
+    variable=true,
     subfont=n,
   }
   if fontdata then
@@ -9654,6 +9698,7 @@ function readers.loadfont(filename,n)
         mathconstants=fontdata.mathconstants,
         colorpalettes=fontdata.colorpalettes,
         svgshapes=fontdata.svgshapes,
+        variable=fontdata.variable,
       },
     }
   end
@@ -9744,12 +9789,13 @@ if not modules then modules={} end modules ['font-cff']={
   license="see context related readme files"
 }
 local next,type,tonumber=next,type,tonumber
-local byte=string.byte
+local byte,gmatch=string.byte,string.gmatch
 local concat,remove=table.concat,table.remove
 local floor,abs,round,ceil,min,max=math.floor,math.abs,math.round,math.ceil,math.min,math.max
 local P,C,R,S,C,Cs,Ct=lpeg.P,lpeg.C,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Ct
 local lpegmatch=lpeg.match
 local formatters=string.formatters
+local bytetable=string.bytetable
 local readers=fonts.handlers.otf.readers
 local streamreader=readers.streamreader
 local readstring=streamreader.readstring
@@ -10939,8 +10985,7 @@ do
     local nominalwidth=private.data.nominalwidthx or 0
     local defaultwidth=private.data.defaultwidthx or 0
     for i=1,#charstrings do
-      local tab=charstrings[i]
-        tab={ byte(tab,1,#tab) }
+      local tab=bytetable(charstrings[i])
       local index=i-1
       x=0
       y=0
@@ -11007,7 +11052,7 @@ do
     globalbias,localbias=setbias(globals,locals)
     local nominalwidth=private and private.data.nominalwidthx or 0
     local defaultwidth=private and private.data.defaultwidthx or 0
-      tab={ byte(tab,1,#tab) }
+    tab=bytetable(tab)
     x=0
     y=0
     width=false
@@ -11246,7 +11291,7 @@ local function readfdselect(f,data,glyphs,doshapes,version)
     end
     for i=1,#charstrings do
       parsecharstring(data,dictionaries[fdindex[i]+1],charstrings[i],glyphs,i,doshapes,version)
-charstrings[i]=nil
+      charstrings[i]=nil
     end
     resetcharstrings()
   end
@@ -11737,6 +11782,9 @@ if not modules then modules={} end modules ['font-dsp']={
 }
 local next,type=next,type
 local bittest=bit32.btest
+local band=bit32.band
+local bor=bit32.bor
+local lshift=bit32.lshift
 local rshift=bit32.rshift
 local concat=table.concat
 local lower=string.lower
@@ -11766,6 +11814,8 @@ local read2dot14=streamreader.read2dot14
 local skipshort=streamreader.skipshort
 local skipbytes=streamreader.skip
 local readfword=readshort
+local readbytetable=streamreader.readbytetable
+local readbyte=streamreader.readbyte
 local gsubhandlers={}
 local gposhandlers={}
 local lookupidoffset=-1  
@@ -13867,166 +13917,6 @@ function readers.svg(f,fontdata,specification)
       fontdata.svgshapes=entries
     end
     fontdata.hascolor=true
-  end
-end
-function readers.fvar(f,fontdata,specification)
-  local datatable=fontdata.tables.fvar
-  if datatable then
-    local tableoffset=datatable.offset
-    setposition(f,tableoffset)
-    local majorversion=readushort(f) 
-    local minorversion=readushort(f) 
-    if majorversion~=1 and minorversion~=0 then
-      report("table version %a.%a of %a is not supported (yet), maybe font %s is bad",
-        majorversion,minorversion,"fvar",fontdata.filename)
-      return
-    end
-    local offsettoaxis=tableoffset+readushort(f)
-    local nofsizepairs=readushort(f)
-    local nofaxis=readushort(f)
-    local sizeofaxis=readushort(f)
-    local nofinstances=readushort(f)
-    local sizeofinstances=readushort(f)
-    local extras=fontdata.extras
-    local axis={}
-    local instances={}
-    setposition(f,offsettoaxis)
-    local function readtuple(f)
-      local t={}
-      for i=1,nofaxis do
-        t[i]=readfixed(f)
-      end
-      return t
-    end
-    for i=1,nofaxis do
-      axis[i]={
-        tag=readtag(f),
-        minimum=readfixed(f),
-        default=readfixed(f),
-        maximum=readfixed(f),
-        flags=readushort(f),
-        nameid=extras[readushort(f)],
-      }
-      local n=sizeofaxis-20
-      if n>0 then
-        skipbytes(f,n)
-      elseif n<0 then
-      end
-    end
-    for i=1,nofinstances do
-      local subfamid=readushort(f)
-      local flags=readushort(f)
-      local tuple=readtuple(f)
-      local psnameid=false
-      local nofbytes=2+2+#tuple*2
-      if nofbytes<sizeofinstances then
-        psnameid=readushort(f)
-        nofbytes=nofbytes+2
-      end
-      instances[i]={
-        subfamily=extras[subfamid],
-        flags=flags,
-        tuple=tuple,
-        psname=extras[psnameid] or nil,
-      }
-      if nofbytes>0 then
-        skipbytes(f,nofbytes)
-      end
-    end
-    fontdata.variable={
-      axis=axis,
-      instances=instances,
-    }
-  end
-end
-local tags={
-  hasc="",
-  hdsc="",
-  vasc="",
-  vdsc="",
-  vlgp="",
-  xhgt="",
-  cpht="",
-}
-function readers.mvar(f,fontdata,specification)
-  local datatable=fontdata.tables.mvar
-  if datatable then
-    local tableoffset=datatable.offset
-    setposition(f,tableoffset)
-    local majorversion=readushort(f) 
-    local minorversion=readushort(f) 
-    if majorversion~=1 and minorversion~=0 then
-      report("table version %a.%a of %a is not supported (yet), maybe font %s is bad",
-        majorversion,minorversion,"fvar",fontdata.filename)
-      return
-    end
-    local nofaxis=readushort(f)
-    local recordsize=readushort(f)
-    local nofrecords=readushort(f)
-    local offsettostore=tableoffset+readushort(f)
-    local records={}
-    local dimensions={}
-    local store={}
-    local regions={}
-    for i=1,nofrecords do
-      local tag=readtag(f)
-      if tags[tag] then
-        dimensions[tag]={
-          outer=readushort(f),
-          inner=readushort(f),
-        }
-      else
-        skipshort(f,2)
-      end
-    end
-    setposition(f,offsettostore)
-    local nofaxis=readushort(f)
-    local nofregions=readushort(f)
-    for i=1,nofregions do
-      local t={}
-      for i=1,nofaxis do
-        t[i]={
-          start=read2dot14(f),
-          peak=read2dot14(f),
-          stop=read2dot14(f),
-        }
-      end
-      regions[i]=t
-    end
-    local format=readushort(f) 
-    local offset=offsettostore+readulong(f)
-    local nofdata=readushort(f)
-    local data={}
-    for i=1,nofdata do
-      data[i]=readulong(f)+offset
-    end
-    for i=1,nofdata do
-      local offset=data[i]
-      setposition(f,offset)
-      local nofdeltas=readushort(f)
-      local nofshort=readushort(f)
-      local nofregions=readushort(f)
-      local deltas={}
-      local regions={}
-      local length=nofshort+nofregions
-      for i=1,nofregions do
-        regions[i]=readushort(f)
-      end
-      for i=1,nofdeltas do
-        local t={}
-        for i=1,nofshort do
-          t[i]=readushort(f)
-        end
-        for i=1,nofregions do
-          t[nofshort+i]=readinteger(f)
-        end
-        deltas[i]=t
-      end
-      data[i]={
-        regions=regions,
-        deltas=deltas,
-      }
-    end
   end
 end
 

@@ -218,6 +218,15 @@ function files.readinteger4le(f)
     end
 end
 
+function files.readfixed2(f)
+    local a, b = byte(f:read(2),1,2)
+    if a >= 0x80 then
+        return (0x100 * a + b - 0x10000)/256.0
+    else
+        return (0x100 * a + b)/256.0
+    end
+end
+
 function files.readfixed4(f)
     local a, b, c, d = byte(f:read(4),1,4)
     if a >= 0x80 then
@@ -230,17 +239,13 @@ end
 
 if extract then
 
+    local extract = bit32.extract
+    local band    = bit32.band
+
     function files.read2dot14(f)
         local a, b = byte(f:read(2),1,2)
         local n = 0x100 * a + b
-        local m = extract(n,0,30)
-        if n > 0x7FFF then
-            n = extract(n,30,2)
-            return m/0x4000 - 4
-        else
-            n = extract(n,30,2)
-            return n + m/0x4000
-        end
+        return extract(n,14,2) + (band(n,0x3FFF) / 16384.0)
     end
 
 end
@@ -291,12 +296,13 @@ if fio and fio.readcardinal1 then
     files.readinteger2   = fio.readinteger2
     files.readinteger3   = fio.readinteger3
     files.readinteger4   = fio.readinteger4
+    files.readfixed2     = fio.readfixed2
     files.readfixed4     = fio.readfixed4
     files.read2dot14     = fio.read2dot14
     files.setposition    = fio.setposition
     files.getposition    = fio.getposition
 
-    files.readbyte       = files.readcardinel1
+    files.readbyte       = files.readcardinal1
     files.readsignedbyte = files.readinteger1
     files.readcardinal   = files.readcardinal1
     files.readinteger    = files.readinteger1
