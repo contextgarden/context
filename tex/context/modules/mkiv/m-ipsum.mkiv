@@ -127,6 +127,7 @@ end
 
 \startsetups[handler:action:ipsum]
    \useipsumstyleandcolor\c!style\c!color
+   % hm, also changes dates
    \uselanguageparameter\ipsumparameter
    \ctxlua{moduledata.ipsum.typeset {
       alternative = "\ipsumparameter\c!alternative",

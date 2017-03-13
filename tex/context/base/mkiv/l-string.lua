@@ -72,6 +72,7 @@ end
 local stripper     = patterns.stripper
 local fullstripper = patterns.fullstripper
 local collapser    = patterns.collapser
+local nospacer     = patterns.nospacer
 local longtostring = patterns.longtostring
 
 function string.strip(str)
@@ -84,6 +85,10 @@ end
 
 function string.collapsespaces(str)
     return str and lpegmatch(collapser,str) or ""
+end
+
+function string.nospaces(str)
+    return str and lpegmatch(nospacer,str) or ""
 end
 
 function string.longtostring(str)

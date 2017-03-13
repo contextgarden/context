@@ -1188,15 +1188,17 @@ end
 
 do
 
-    local f_actual_text_one   = formatters["BT /Span << /ActualText <feff%04x> >> BDC %s EMC ET"]
-    local f_actual_text_two   = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC %s EMC ET"]
-    local f_actual_text_one_b = formatters["BT /Span << /ActualText <feff%04x> >> BDC"]
-    local f_actual_text_two_b = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC"]
-    local f_actual_text_b     = formatters["BT /Span << /ActualText <feff%s> >> BDC"]
-    local s_actual_text_e     = "EMC ET"
-    local f_actual_text_b_not = formatters["/Span << /ActualText <feff%s> >> BDC"]
-    local s_actual_text_e_not = "EMC"
-    local f_actual_text       = formatters["/Span <</ActualText %s >> BDC"]
+    local f_actual_text_one       = formatters["BT /Span << /ActualText <feff%04x> >> BDC %s EMC ET"]
+    local f_actual_text_two       = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC %s EMC ET"]
+    local f_actual_text_one_b     = formatters["BT /Span << /ActualText <feff%04x> >> BDC"]
+    local f_actual_text_two_b     = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC"]
+    local f_actual_text_b         = formatters["BT /Span << /ActualText <feff%s> >> BDC"]
+    local s_actual_text_e         = "EMC ET"
+    local f_actual_text_b_not     = formatters["/Span << /ActualText <feff%s> >> BDC"]
+    local f_actual_text_one_b_not = formatters["/Span << /ActualText <feff%04x> >> BDC"]
+    local f_actual_text_two_b_not = formatters["/Span << /ActualText <feff%04x%04x> >> BDC"]
+    local s_actual_text_e_not     = "EMC"
+    local f_actual_text           = formatters["/Span <</ActualText %s >> BDC"]
 
     local context   = context
     local pdfdirect = nodes.pool.pdfdirect
@@ -1226,7 +1228,13 @@ do
     end
 
     function codeinjections.startunicodetoactualtextdirect(unicode)
-        return f_actual_text_b_not(unicode)
+        if type(unicode) == "string" then
+            return f_actual_text_b_not(unicode)
+        elseif unicode < 0x10000 then
+            return f_actual_text_one_b_not(unicode)
+        else
+            return f_actual_text_two_b_not(unicode/1024+0xD800,unicode%1024+0xDC00)
+        end
     end
 
     function codeinjections.stopunicodetoactualtextdirect()

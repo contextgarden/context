@@ -93,31 +93,16 @@ registerdirective("fonts.otf.loader.force",         function(v) forceload     = 
 registerdirective("fonts.otf.loader.syncspace",     function(v) syncspace     = v end)
 registerdirective("fonts.otf.loader.forcenotdef",   function(v) forcenotdef   = v end)
 
--- local function load_featurefile(raw,featurefile)
---     if featurefile and featurefile ~= "" then
---         if trace_loading then
---             report_otf("using featurefile %a", featurefile)
---         end
---         -- TODO: apply_featurefile(raw, featurefile)
---     end
--- end
-
 -- otfenhancers.patch("before","migrate metadata","cambria",function() end)
 
 registerotfenhancer("check extra features", function() end) -- placeholder
 
-function otf.load(filename,sub,featurefile) -- second argument (format) is gone !
-    --
-    local featurefile = nil -- not supported (yet)
-    --
+function otf.load(filename,sub,instance)
     local base = file.basename(file.removesuffix(filename))
-    local name = file.removesuffix(base)
+    local name = file.removesuffix(base) -- already no suffix
     local attr = lfs.attributes(filename)
     local size = attr and attr.size or 0
     local time = attr and attr.modification or 0
-    if featurefile then
-        name = name .. "@" .. file.removesuffix(file.basename(featurefile))
-    end
     -- sub can be number of string
     if sub == "" then
         sub = false
@@ -126,69 +111,22 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
     if sub then
         hash = hash .. "-" .. sub
     end
+    if instance then
+        hash = hash .. "-" .. instance
+    end
     hash = containers.cleanname(hash)
- -- local featurefiles
- -- if featurefile then
- --     featurefiles = { }
- --     for s in gmatch(featurefile,"[^,]+") do
- --         local name = resolvers.findfile(file.addsuffix(s,'fea'),'fea') or ""
- --         if name == "" then
- --             report_otf("loading error, no featurefile %a",s)
- --         else
- --             local attr = lfs.attributes(name)
- --             featurefiles[#featurefiles+1] = {
- --                 name = name,
- --                 size = attr and attr.size or 0,
- --                 time = attr and attr.modification or 0,
- --             }
- --         end
- --     end
- --     if #featurefiles == 0 then
- --         featurefiles = nil
- --     end
- -- end
     local data = containers.read(otf.cache,hash)
     local reload = not data or data.size ~= size or data.time ~= time or data.tableversion ~= otfreaders.tableversion
     if forceload then
         report_otf("forced reload of %a due to hard coded flag",filename)
         reload = true
     end
- -- if not reload then
- --     local featuredata = data.featuredata
- --     if featurefiles then
- --         if not featuredata or #featuredata ~= #featurefiles then
- --             reload = true
- --         else
- --             for i=1,#featurefiles do
- --                 local fi, fd = featurefiles[i], featuredata[i]
- --                 if fi.name ~= fd.name or fi.size ~= fd.size or fi.time ~= fd.time then
- --                     reload = true
- --                     break
- --                 end
- --             end
- --         end
- --     elseif featuredata then
- --         reload = true
- --     end
- --     if reload then
- --        report_otf("loading: forced reload due to changed featurefile specification %a",featurefile)
- --     end
- --  end
      if reload then
         report_otf("loading %a, hash %a",filename,hash)
         --
         starttiming(otfreaders)
-        data = otfreaders.loadfont(filename,sub or 1) -- we can pass the number instead (if it comes from a name search)
-        --
-        -- if featurefiles then
-        --     for i=1,#featurefiles do
-        --         load_featurefile(data,featurefiles[i].name)
-        --     end
-        -- end
-        --
-        --
+        data = otfreaders.loadfont(filename,sub or 1,instance) -- we can pass the number instead (if it comes from a name search)
         if data then
-            --
             local resources = data.resources
             local svgshapes = resources.svgshapes
             if svgshapes then
@@ -206,7 +144,6 @@ function otf.load(filename,sub,featurefile) -- second argument (format) is gone 
                     }
                 end
             end
-            --
             otfreaders.compact(data)
             otfreaders.rehash(data,"unicodes")
             otfreaders.addunicodetable(data)
@@ -550,7 +487,8 @@ local function otftotfm(specification)
         local subindex = specification.subindex
         local filename = specification.filename
         local features = specification.features.normal
-        local rawdata  = otf.load(filename,sub,features and features.featurefile)
+        local instance = specification.instance or features.axis
+        local rawdata  = otf.load(filename,sub,instance)
         if rawdata and next(rawdata) then
             local descriptions = rawdata.descriptions
             rawdata.lookuphash = { } -- to be done

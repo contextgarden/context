@@ -571,7 +571,7 @@ function metapost.flush(result,flusher,askedfig)
                                                 result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
                                             elseif objecttype == "outline" then
                                                 if both then
-                                                    result[#result+1] = evenodd and "h B*" or "h B" -- f* = eo
+                                                    result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo
                                                 else
                                                     result[#result+1] = open and "S" or "h S"
                                                 end

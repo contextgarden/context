@@ -48,6 +48,9 @@ do
         if not md5.hex then function md5.hex(str) if str then return lpegmatch(bytestohex,md5sum(str)) end end end
         if not md5.dec then function md5.dec(str) if str then return lpegmatch(bytestodec,md5sum(str)) end end end
 
+        md5.sumhexa = md5.hex
+        md5.sumHEXA = md5.HEX
+
     end
 
 end

@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['font-syn'] = {
 
 local next, tonumber, type, tostring = next, tonumber, type, tostring
 local sub, gsub, match, find, lower, upper = string.sub, string.gsub, string.match, string.find, string.lower, string.upper
-local concat, sort = table.concat, table.sort
+local concat, sort, fastcopy = table.concat, table.sort, table.fastcopy
 local serialize, sortedhash = table.serialize, table.sortedhash
 local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
@@ -623,6 +623,8 @@ local function check_name(data,result,filename,modification,suffix,subfont)
     local pfmwidth   = result.pfmwidth    or 0
     local pfmweight  = result.pfmweight   or 0
     --
+    local instancenames = result.instancenames
+    --
     specifications[#specifications+1] = {
         filename       = filename, -- unresolved
         cleanfilename  = cleanfilename,
@@ -650,6 +652,7 @@ local function check_name(data,result,filename,modification,suffix,subfont)
         maxsize        = maxsize      ~=    0 and maxsize      or nil,
         designsize     = designsize   ~=    0 and designsize   or nil,
         modification   = modification ~=    0 and modification or nil,
+        instancenames  = instancenames or nil,
     }
 end
 
@@ -806,6 +809,7 @@ local function collecthashes()
             local format         = specification.format
             local fullname       = specification.fullname
             local fontname       = specification.fontname
+         -- local rawname        = specification.rawname
          -- local compatiblename = specification.compatiblename
          -- local cfffullname    = specification.cfffullname
             local familyname     = specification.familyname or specification.family
@@ -814,6 +818,7 @@ local function collecthashes()
             local weight         = specification.weight
             local mapping        = mappings[format]
             local fallback       = fallbacks[format]
+            local instancenames  = specification.instancenames
             if fullname and not mapping[fullname] then
                 mapping[fullname] = index
                 nofmappings       = nofmappings + 1
@@ -821,6 +826,14 @@ local function collecthashes()
             if fontname and not mapping[fontname] then
                 mapping[fontname] = index
                 nofmappings       = nofmappings + 1
+            end
+            if instancenames then
+                for i=1,#instancenames do
+                    local instance = fullname .. instancenames[i]
+                    mapping[instance] = index
+                    nofmappings       = nofmappings + 1
+
+                end
             end
          -- if compatiblename and not mapping[compatiblename] then
          --     mapping[compatiblename] = index
@@ -1365,6 +1378,23 @@ end
 
 -- we could cache a lookup .. maybe some day ... (only when auto loaded!)
 
+local function checkinstance(found,askedname)
+    local instancenames = found.instancenames
+    if instancenames then
+        local fullname = found.fullname
+        for i=1,#instancenames do
+            local instancename = instancenames[i]
+            if fullname .. instancename == askedname then
+                local f = fastcopy(found)
+                f.instances = nil
+                f.instance  = instancename
+                return f
+            end
+        end
+    end
+    return found
+end
+
 local function foundname(name,sub) -- sub is not used currently
     local data             = names.data
     local mappings         = data.mappings
@@ -1382,7 +1412,7 @@ local function foundname(name,sub) -- sub is not used currently
             if trace_names then
                 report_names("resolved via direct name match: %a",name)
             end
-            return found
+            return checkinstance(found,name)
         end
     end
     for i=1,#list do
@@ -1392,7 +1422,7 @@ local function foundname(name,sub) -- sub is not used currently
             if trace_names then
                 report_names("resolved via fuzzy name match: %a onto %a",name,fname)
             end
-            return found
+            return checkinstance(found,name)
         end
     end
     for i=1,#list do
@@ -1402,7 +1432,7 @@ local function foundname(name,sub) -- sub is not used currently
             if trace_names then
                 report_names("resolved via direct fallback match: %a",name)
             end
-            return found
+            return checkinstance(found,name)
         end
     end
     for i=1,#list do
@@ -1412,7 +1442,7 @@ local function foundname(name,sub) -- sub is not used currently
             if trace_names then
                 report_names("resolved via fuzzy fallback match: %a onto %a",name,fname)
             end
-            return found
+            return checkinstance(found,name)
         end
     end
     if trace_names then
@@ -1435,7 +1465,7 @@ end
 function names.resolve(askedname,sub)
     local found = names.resolvedspecification(askedname,sub)
     if found then
-        return found.filename, found.subfont and found.rawname, found.subfont
+        return found.filename, found.subfont and found.rawname, found.subfont, found.instance
     end
 end
 

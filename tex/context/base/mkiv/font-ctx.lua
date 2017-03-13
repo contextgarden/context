@@ -1441,14 +1441,19 @@ end
 
 local designsizes = constructors.designsizes
 
+-- called quite often when in mp labels
+-- otf.normalizedaxis
+
 function constructors.hashinstance(specification,force)
-    local hash, size, fallbacks = specification.hash, specification.size, specification.fallbacks
+    local hash      = specification.hash
+    local size      = specification.size
+    local fallbacks = specification.fallbacks
     if force or not hash then
         hash = constructors.hashfeatures(specification)
         specification.hash = hash
     end
     if size < 1000 and designsizes[hash] then
-        size = math.round(constructors.scaled(size,designsizes[hash]))
+        size = round(constructors.scaled(size,designsizes[hash]))
         specification.size = size
     end
     if fallbacks then
@@ -1511,9 +1516,6 @@ function definers.resolve(specification) -- overload function in font-con.lua
     --
     return specification
 end
-
-
-
 
 -- soon to be obsolete:
 

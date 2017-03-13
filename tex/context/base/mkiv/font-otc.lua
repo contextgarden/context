@@ -318,9 +318,18 @@ local function addfeature(data,feature,specifications)
         return coverage
     end
 
+    local function resetspacekerns()
+        -- a bit of a hack, this nil setting but it forces a
+        -- rehash of the resources needed .. the feature itself
+        -- should be a kern (at least for now)
+        data.properties.hasspacekerns = true
+        data.resources .spacekerns    = nil
+    end
+
     local function prepare_kern(list,featuretype)
         local coverage = { }
         local cover    = coveractions[featuretype]
+        local isspace  = false
         for code, replacement in next, list do
             local unicode     = tounicode(code)
             local description = descriptions[unicode]
@@ -330,17 +339,26 @@ local function addfeature(data,feature,specifications)
                     local u = tounicode(k)
                     if u then
                         r[u] = v
+                        if u == 32 then
+                            isspace = true
+                        end
                     end
                 end
                 if next(r) then
                     cover(coverage,unicode,r)
                     done = done + 1
+                    if unicode == 32 then
+                        isspace = true
+                    end
                 else
                     skip = skip + 1
                 end
             else
                 skip = skip + 1
             end
+        end
+        if isspace then
+            resetspacekerns()
         end
         return coverage
     end
@@ -358,17 +376,26 @@ local function addfeature(data,feature,specifications)
                         local u = tounicode(k)
                         if u then
                             r[u] = v
+                            if u == 32 then
+                                isspace = true
+                            end
                         end
                     end
                     if next(r) then
                         cover(coverage,unicode,r)
                         done = done + 1
+                        if unicode == 32 then
+                            isspace = true
+                        end
                     else
                         skip = skip + 1
                     end
                 else
                     skip = skip + 1
                 end
+            end
+            if isspace then
+                resetspacekerns()
             end
         else
             report_otf("unknown cover type %a",featuretype)

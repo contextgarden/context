@@ -1202,6 +1202,7 @@ function readers.pack(data)
         local sublookups = resources.sublookups
         local features   = resources.features
         local palettes   = resources.colorpalettes
+        local variable   = resources.variabledata
 
         local chardata     = characters and characters.data
         local descriptions = data.descriptions or data.glyphs
@@ -1377,6 +1378,53 @@ function readers.pack(data)
 
             end
 
+            if variable then
+
+                -- todo: segments
+
+                local instances = variable.instances
+                if instances then
+                    for i=1,#instances do
+                        local v = instances[i].values
+                        for j=1,#v do
+                            v[j] = pack_normal(v[j])
+                        end
+                    end
+                end
+
+                local function packdeltas(main)
+                    if main then
+                        local deltas = main.deltas
+                        if deltas then
+                            for i=1,#deltas do
+                                local di = deltas[i]
+                                local d  = di.deltas
+                                local r  = di.regions
+                                for j=1,#d do
+                                    d[j] = pack_indexed(d[j])
+                                end
+                                di.regions = pack_indexed(di.regions)
+                            end
+                        end
+                        local regions = main.regions
+                        if regions then
+                            for i=1,#regions do
+                                local r = regions[i]
+                                for j=1,#r do
+                                    r[j] = pack_normal(r[j])
+                                end
+                            end
+                        end
+                    end
+                end
+
+                packdeltas(variable.global)
+                packdeltas(variable.horizontal)
+                packdeltas(variable.vertical)
+                packdeltas(variable.metrics)
+
+            end
+
             if not success(1,pass) then
                 return
             end
@@ -1453,10 +1501,23 @@ function readers.pack(data)
                 if sublookups then
                     packthem(sublookups)
                 end
-                -- features
-                if not success(2,pass) then
-                 -- return
+                if variable then
+                    local function unpackdeltas(main)
+                        if main then
+                            local regions = main.regions
+                            if regions then
+                                main.regions = pack_normal(regions)
+                            end
+                        end
+                    end
+                    unpackdeltas(variable.global)
+                    unpackdeltas(variable.horizontal)
+                    unpackdeltas(variable.vertical)
+                    unpackdeltas(variable.metrics)
                 end
+             -- if not success(2,pass) then
+             --  -- return
+             -- end
             end
 
             for pass=1,2 do
@@ -1525,6 +1586,7 @@ function readers.unpack(data)
             local sublookups   = resources.sublookups
             local features     = resources.features
             local palettes     = resources.colorpalettes
+            local variable     = resources.variabledata
             local unpacked     = { }
             setmetatable(unpacked,unpacked_mt)
             for unicode, description in next, descriptions do
@@ -1808,6 +1870,70 @@ function readers.unpack(data)
                         end
                     end
                 end
+            end
+
+            if variable then
+
+                -- todo: segments
+
+                local instances = variable.instances
+                if instances then
+                    for i=1,#instances do
+                        local v = instances[i].values
+                        for j=1,#v do
+                            local tv = tables[v[j]]
+                            if tv then
+                                v[j] = tv
+                            end
+                        end
+                    end
+                end
+
+                local function unpackdeltas(main)
+                    if main then
+                        local deltas = main.deltas
+                        if deltas then
+                            for i=1,#deltas do
+                                local di = deltas[i]
+                                local d  = di.deltas
+                                local r  = di.regions
+                                for j=1,#d do
+                                    local tv = tables[d[j]]
+                                    if tv then
+                                        d[j] = tv
+                                    end
+                                end
+                                local tv = di.regions
+                                if tv then
+                                    di.regions = tv
+                                end
+                            end
+                        end
+                        local regions = main.regions
+                        if regions then
+                            local tv = tables[regions]
+                            if tv then
+                                main.regions = tv
+                                regions = tv
+                            end
+                            for i=1,#regions do
+                                local r = regions[i]
+                                for j=1,#r do
+                                    local tv = tables[r[j]]
+                                    if tv then
+                                        r[j] = tv
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+
+                unpackdeltas(variable.global)
+                unpackdeltas(variable.horizontal)
+                unpackdeltas(variable.vertical)
+                unpackdeltas(variable.metrics)
+
             end
 
             data.tables = nil

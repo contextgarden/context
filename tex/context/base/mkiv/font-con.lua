@@ -10,7 +10,8 @@ if not modules then modules = { } end modules ['font-con'] = {
 
 local next, tostring, rawget = next, tostring, rawget
 local format, match, lower, gsub, find = string.format, string.match, string.lower, string.gsub, string.find
-local sort, insert, concat, sortedkeys, serialize, fastcopy = table.sort, table.insert, table.concat, table.sortedkeys, table.serialize, table.fastcopy
+local sort, insert, concat = table.sort, table.insert, table.concat
+local sortedkeys, sortedhash, serialize, fastcopy = table.sortedkeys, table.sortedhash, table.serialize, table.fastcopy
 local derivetable = table.derive
 local ioflush = io.flush
 
@@ -902,6 +903,7 @@ function constructors.finalize(tfmdata)
             identity      = tfmdata.identity      or "horizontal",
         }
     end
+
     if not tfmdata.resources then
         tfmdata.resources = { }
     end
@@ -963,48 +965,27 @@ constructors.hashmethods = hashmethods
 function constructors.hashfeatures(specification) -- will be overloaded
     local features = specification.features
     if features then
-        local t, tn = { }, 0
-        for category, list in next, features do
+        local t, n = { }, 0
+-- inspect(features)
+--         for category, list in next, features do
+        for category, list in sortedhash(features) do
             if next(list) then
                 local hasher = hashmethods[category]
                 if hasher then
                     local hash = hasher(list)
                     if hash then
-                        tn = tn + 1
-                        t[tn] = category .. ":" .. hash
+                        n = n + 1
+                        t[n] = category .. ":" .. hash
                     end
                 end
             end
         end
-        if tn > 0 then
+        if n > 0 then
             return concat(t," & ")
         end
     end
     return "unknown"
 end
-
--- hashmethods.normal = function(list)
---     local s = { }
---     local n = 0
---     for k, v in next, list do
---         if not k then
---             -- no need to add to hash
---         elseif k == "number" or k == "features" then
---             -- no need to add to hash (maybe we need a skip list)
---         else
---             n = n + 1
---             s[n] = k
---         end
---     end
---     if n > 0 then
---         sort(s)
---         for i=1,n do
---             local k = s[i]
---             s[i] = k .. '=' .. tostring(list[k])
---         end
---         return concat(s,"+")
---     end
--- end
 
 hashmethods.normal = function(list)
     local s = { }

@@ -116,6 +116,7 @@ function files.readcardinal2(f)
     local a, b = byte(f:read(2),1,2)
     return 0x100 * a + b
 end
+
 function files.readcardinal2le(f)
     local b, a = byte(f:read(2),1,2)
     return 0x100 * a + b
@@ -123,27 +124,17 @@ end
 
 function files.readinteger2(f)
     local a, b = byte(f:read(2),1,2)
-    local n = 0x100 * a + b
-    if n >= 0x8000 then
-     -- return n - 0xFFFF - 1
-        return n - 0x10000
+    if a >= 0x80 then
+        return 0x100 * a + b - 0x10000
     else
-        return n
+        return 0x100 * a + b
     end
 end
-    function files.readinteger2(f)
-        local a, b = byte(f:read(2),1,2)
-        if a >= 0x80 then
-            return 0x100 * a + b - 0x10000
-        else
-            return 0x100 * a + b
-        end
-    end
+
 function files.readinteger2le(f)
     local b, a = byte(f:read(2),1,2)
     local n = 0x100 * a + b
     if n >= 0x8000 then
-     -- return n - 0xFFFF - 1
         return n - 0x10000
     else
         return n
@@ -154,6 +145,7 @@ function files.readcardinal3(f)
     local a, b, c = byte(f:read(3),1,3)
     return 0x10000 * a + 0x100 * b + c
 end
+
 function files.readcardinal3le(f)
     local c, b, a = byte(f:read(3),1,3)
     return 0x10000 * a + 0x100 * b + c
@@ -163,17 +155,16 @@ function files.readinteger3(f)
     local a, b, c = byte(f:read(3),1,3)
     local n = 0x10000 * a + 0x100 * b + c
     if n >= 0x80000 then
-     -- return n - 0xFFFFFF - 1
         return n - 0x1000000
     else
         return n
     end
 end
+
 function files.readinteger3le(f)
     local c, b, a = byte(f:read(3),1,3)
     local n = 0x10000 * a + 0x100 * b + c
     if n >= 0x80000 then
-     -- return n - 0xFFFFFF - 1
         return n - 0x1000000
     else
         return n
@@ -184,21 +175,12 @@ function files.readcardinal4(f)
     local a, b, c, d = byte(f:read(4),1,4)
     return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
 end
+
 function files.readcardinal4le(f)
     local d, c, b, a = byte(f:read(4),1,4)
     return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
 end
 
--- function files.readinteger4(f)
---     local a, b, c, d = byte(f:read(4),1,4)
---     local n = 0x1000000 * a + 0x10000 * b + 0x100 * c + d
---     if n >= 0x8000000 then
---      -- return n - 0xFFFFFFFF - 1
---         return n - 0x100000000
---     else
---         return n
---     end
--- end
 function files.readinteger4(f)
     local a, b, c, d = byte(f:read(4),1,4)
     if a >= 0x80 then
@@ -207,11 +189,11 @@ function files.readinteger4(f)
         return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
     end
 end
+
 function files.readinteger4le(f)
     local d, c, b, a = byte(f:read(4),1,4)
     local n = 0x1000000 * a + 0x10000 * b + 0x100 * c + d
     if n >= 0x8000000 then
-     -- return n - 0xFFFFFFFF - 1
         return n - 0x100000000
     else
         return n
@@ -227,6 +209,8 @@ function files.readfixed2(f)
     end
 end
 
+-- (real) (n>>16) + ((n&0xffff)/65536.0))
+
 function files.readfixed4(f)
     local a, b, c, d = byte(f:read(4),1,4)
     if a >= 0x80 then
@@ -234,7 +218,6 @@ function files.readfixed4(f)
     else
         return (0x1000000 * a + 0x10000 * b + 0x100 * c + d)/65536.0
     end
-
 end
 
 if extract then
@@ -242,10 +225,17 @@ if extract then
     local extract = bit32.extract
     local band    = bit32.band
 
+    -- (real) ((n<<16)>>(16+14)) + ((n&0x3fff)/16384.0))
+
     function files.read2dot14(f)
         local a, b = byte(f:read(2),1,2)
-        local n = 0x100 * a + b
-        return extract(n,14,2) + (band(n,0x3FFF) / 16384.0)
+        if a >= 0x80 then
+            local n = -(0x100 * a + b)
+            return - (extract(n,14,2) + (band(n,0x3FFF) / 16384.0))
+        else
+            local n =   0x100 * a + b
+            return   (extract(n,14,2) + (band(n,0x3FFF) / 16384.0))
+        end
     end
 
 end

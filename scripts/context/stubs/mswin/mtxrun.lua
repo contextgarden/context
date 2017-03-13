@@ -737,7 +737,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 37644, stripped down to: 20029
+-- original size: 37748, stripped down to: 20111
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -829,6 +829,7 @@ patterns.nonwhitespace=nonwhitespace
 local stripper=spacer^0*C((spacer^0*nonspacer^1)^0)   
 local fullstripper=whitespace^0*C((whitespace^0*nonwhitespace^1)^0)
 local collapser=Cs(spacer^0/""*nonspacer^0*((spacer^0/" "*nonspacer^1)^0))
+local nospacer=Cs((whitespace^1/""+nonwhitespace^1)^0)
 local b_collapser=Cs(whitespace^0/""*(nonwhitespace^1+whitespace^1/" ")^0)
 local e_collapser=Cs((whitespace^1*P(-1)/""+nonwhitespace^1+whitespace^1/" ")^0)
 local m_collapser=Cs((nonwhitespace^1+whitespace^1/" ")^0)
@@ -838,6 +839,7 @@ local m_stripper=Cs((nonspacer^1+spacer^1/" ")^0)
 patterns.stripper=stripper
 patterns.fullstripper=fullstripper
 patterns.collapser=collapser
+patterns.nospacer=nospacer
 patterns.b_collapser=b_collapser
 patterns.m_collapser=m_collapser
 patterns.e_collapser=e_collapser
@@ -1543,7 +1545,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 6296, stripped down to: 3225
+-- original size: 6419, stripped down to: 3339
 
 if not modules then modules={} end modules ['l-string']={
   version=1.001,
@@ -1581,6 +1583,7 @@ end
 local stripper=patterns.stripper
 local fullstripper=patterns.fullstripper
 local collapser=patterns.collapser
+local nospacer=patterns.nospacer
 local longtostring=patterns.longtostring
 function string.strip(str)
   return str and lpegmatch(stripper,str) or ""
@@ -1590,6 +1593,9 @@ function string.fullstrip(str)
 end
 function string.collapsespaces(str)
   return str and lpegmatch(collapser,str) or ""
+end
+function string.nospaces(str)
+  return str and lpegmatch(nospacer,str) or ""
 end
 function string.longtostring(str)
   return str and lpegmatch(longtostring,str) or ""
@@ -4111,7 +4117,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-md5"] = package.loaded["l-md5"] or true
 
--- original size: 3248, stripped down to: 2266
+-- original size: 3309, stripped down to: 2314
 
 if not modules then modules={} end modules ['l-md5']={
   version=1.001,
@@ -4141,6 +4147,8 @@ do
     if not md5.HEX then function md5.HEX(str) if str then return lpegmatch(bytestoHEX,md5sum(str)) end end end
     if not md5.hex then function md5.hex(str) if str then return lpegmatch(bytestohex,md5sum(str)) end end end
     if not md5.dec then function md5.dec(str) if str then return lpegmatch(bytestodec,md5sum(str)) end end end
+    md5.sumhexa=md5.hex
+    md5.sumHEXA=md5.HEX
   end
 end
 function file.needsupdating(oldname,newname,threshold) 
@@ -7021,7 +7029,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 7427, stripped down to: 5702
+-- original size: 7038, stripped down to: 5659
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -7122,21 +7130,12 @@ function files.readcardinal2le(f)
 end
 function files.readinteger2(f)
   local a,b=byte(f:read(2),1,2)
-  local n=0x100*a+b
-  if n>=0x8000 then
-    return n-0x10000
+  if a>=0x80 then
+    return 0x100*a+b-0x10000
   else
-    return n
+    return 0x100*a+b
   end
 end
-  function files.readinteger2(f)
-    local a,b=byte(f:read(2),1,2)
-    if a>=0x80 then
-      return 0x100*a+b-0x10000
-    else
-      return 0x100*a+b
-    end
-  end
 function files.readinteger2le(f)
   local b,a=byte(f:read(2),1,2)
   local n=0x100*a+b
@@ -7218,8 +7217,13 @@ if extract then
   local band=bit32.band
   function files.read2dot14(f)
     local a,b=byte(f:read(2),1,2)
-    local n=0x100*a+b
-    return extract(n,14,2)+(band(n,0x3FFF)/16384.0)
+    if a>=0x80 then
+      local n=-(0x100*a+b)
+      return-(extract(n,14,2)+(band(n,0x3FFF)/16384.0))
+    else
+      local n=0x100*a+b
+      return  (extract(n,14,2)+(band(n,0x3FFF)/16384.0))
+    end
   end
 end
 function files.skipshort(f,n)
@@ -20228,8 +20232,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 836086
--- stripped bytes    : 304336
+-- original bytes    : 835985
+-- stripped bytes    : 304034
 
 -- end library merge
 

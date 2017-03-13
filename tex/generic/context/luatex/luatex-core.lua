@@ -5,7 +5,7 @@
 --     copyright = 'LuaTeX Development Team',
 -- }
 
-LUATEXCOREVERSION = 1.001
+LUATEXCOREVERSION = 1.002
 
 -- This file overloads some Lua functions. The readline variants provide the same
 -- functionality as LuaTeX <= 1.04 and doing it this way permits us to keep the
@@ -24,7 +24,6 @@ local fio_recordfilename  = fio.recordfilename
 
 local mt                  = getmetatable(io.stderr)
 local mt_lines            = mt.lines
-
 local saferoption         = status.safer_option
 local shellescape         = status.shell_escape     -- 0 (disabled) 1 (restricted) 2 (everything)
 local kpseused            = status.kpse_used        -- 0 1
@@ -98,45 +97,68 @@ if kpseused == 1 then
     io.open  = luatex_io_open
     io.popen = luatex_io_popen
 
-    if saferoption then
+end
 
-        os.execute = nil
-        os.spawn   = nil
-        os.exec    = nil
-        os.setenv  = nil
-        os.tempdir = nil
+if saferoption == 1 then
 
-        io.popen   = nil
-        io.open    = nil
+    os.execute = nil
+    os.spawn   = nil
+    os.exec    = nil
+    os.setenv  = nil
+    os.tempdir = nil
 
-        os.rename  = nil
-        os.remove  = nil
+    io.popen   = nil
+    io.open    = nil
 
-        io.tmpfile = nil
-        io.output  = nil
+    os.rename  = nil
+    os.remove  = nil
 
-        lfs.chdir  = nil
-        lfs.lock   = nil
-        lfs.touch  = nil
-        lfs.rmdir  = nil
-        lfs.mkdir  = nil
+    io.tmpfile = nil
+    io.output  = nil
 
-        io.saved_popen = nil
-        io.saved_open  = luatex_io_open_readonly
+    lfs.chdir  = nil
+    lfs.lock   = nil
+    lfs.touch  = nil
+    lfs.rmdir  = nil
+    lfs.mkdir  = nil
 
-    end
+    io.saved_popen = nil
+    io.saved_open  = luatex_io_open_readonly
 
-    if saferoption or shellescape ~= 2 then
-        local ffi = require('ffi')
-        for k, v in next, ffi do
-            if k ~= 'gc' then
-                ffi[k] = nil
-            end
-            ffi = nil
+end
+
+if saferoption == 1 or shellescape ~= 2 then
+
+    ffi = require('ffi')
+    for k, v in next, ffi do
+        if k ~= 'gc' then
+            ffi[k] = nil
         end
     end
+    ffi = nil
+end
 
-    -- os.[execute|os.spawn|os.exec] already are shellescape aware)
+-- os.[execute|os.spawn|os.exec] already are shellescape aware)
+
+
+if md5 then
+
+    local sum    = md5.sum
+    local gsub   = string.gsub
+    local format = string.format
+    local byte   = string.byte
+
+    function md5.sumhexa(k)
+        return (gsub(sum(k), ".", function(c)
+            return format("%02x",byte(c))
+        end))
+    end
+
+    function md5.sumHEXA(k)
+        return (gsub(sum(k), ".", function(c)
+            return format("%02X",byte(c))
+        end))
+    end
 
 end
 
@@ -152,10 +174,17 @@ if utilities and utilities.merger and utilities.merger.compact then
     local d = gsub(data,'\r\n','\n')      -- be nice for unix
     local s = utilities.merger.compact(d) -- no comments and less spaces
 
+    t[#t+1] = '/* generated from and by luatex-core.lua */'
+    t[#t+1] = ''
  -- t[#t+1] = format('/*\n\n%s\n\n*/',d)
+ -- t[#t+1] = ''
+    t[#t+1] = '#include "lua.h"'
+    t[#t+1] = '#include "lauxlib.h"'
+    t[#t+1] = ''
+    t[#t+1] = 'int load_luatex_core_lua (lua_State * L);'
+    t[#t+1] = ''
     t[#t+1] = 'int load_luatex_core_lua (lua_State * L)'
     t[#t+1] = '{'
-    t[#t+1] = '  /* generated from and by luatex-core.lua */'
     t[#t+1] = '  static unsigned char luatex_core_lua[] = {'
     for c in gmatch(d,'.') do
         if n == 16 then

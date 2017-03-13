@@ -184,11 +184,23 @@ end
 function resolvers.name(specification)
     local resolve = fonts.names.resolve
     if resolve then
-        local resolved, sub, subindex = resolve(specification.name,specification.sub,specification) -- we pass specification for overloaded versions
+        local resolved, sub, subindex, instance = resolve(specification.name,specification.sub,specification) -- we pass specification for overloaded versions
         if resolved then
             specification.resolved = resolved
             specification.sub      = sub
             specification.subindex = subindex
+            -- new, needed for experiments
+            if instance then
+                specification.instance = instance
+                local features = specification.features
+                local normal   = features and features.normal
+                if not normal then
+                    normal = { }
+                    specification.features = normal
+                end
+                normal.instance = instance
+            end
+            --
             local suffix = lower(suffixonly(resolved))
             if fonts.formats[suffix] then
                 specification.forced     = suffix
@@ -296,6 +308,7 @@ end
 
 function definers.loadfont(specification)
     local hash = constructors.hashinstance(specification)
+    -- todo: also hash by instance / factors
     local tfmdata = loadedfonts[hash] -- hashes by size !
     if not tfmdata then
         local forced = specification.forced or ""

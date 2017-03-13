@@ -209,7 +209,7 @@ do
                     }
                 },
             }
-            fonts.handlers.otf.readers.parsecharstrings(data,glyphs,true,true)
+            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,true)
         else
             lpegmatch(p_filternames,binary)
         end

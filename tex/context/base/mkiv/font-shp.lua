@@ -6,17 +6,20 @@ if not modules then modules = { } end modules ['font-shp'] = {
     license   = "see context related readme files"
 }
 
+local tonumber = tonumber
 local concat = table.concat
-local load, tonumber = load, tonumber
+local formatters = string.formatters
 
-local otf         = fonts.handlers.otf
-local afm         = fonts.handlers.afm
+local otf          = fonts.handlers.otf
+local afm          = fonts.handlers.afm
 
-local hashes      = fonts.hashes
-local identifiers = hashes.identifiers
+local hashes       = fonts.hashes
+local identifiers  = hashes.identifiers
 
-local version     = 0.006
-local cache       = containers.define("fonts", "shapes", version, true)
+local version      = 0.007
+local cache        = containers.define("fonts", "shapes", version, true)
+
+local report       = logs.reporter("fonts","shapes")
 
 -- shapes (can be come a separate file at some point)
 
@@ -128,7 +131,19 @@ end
 
 -- todo: loaders per format
 
-local function load(filename,sub)
+local readers   = otf.readers
+local cleanname = readers.helpers.cleanname
+
+local function makehash(filename,sub,instance)
+    local name = cleanname(file.basename(filename))
+    if instance then
+        return formatters["%s-%s-%s"](name,sub or 0,cleanname(instance))
+    else
+        return formatters["%s-%s"]   (name,sub or 0)
+    end
+end
+
+local function loadoutlines(filename,sub,instance)
     local base = file.basename(filename)
     local name = file.removesuffix(base)
     local kind = file.suffix(filename)
@@ -140,13 +155,10 @@ local function load(filename,sub)
     -- fonts.formats
 
     if size > 0 and (kind == "otf" or kind == "ttf" or kind == "tcc") then
-        local hash = containers.cleanname(base) -- including suffix
-        if sub then
-            hash = hash .. "-" .. sub
-        end
+        local hash = makehash(filename,sub,instance)
         data = containers.read(cache,hash)
         if not data or data.time ~= time or data.size  ~= size then
-            data = otf.readers.loadshapes(filename,sub)
+            data = readers.loadshapes(filename,sub,instance)
             if data then
                 data.size   = size
                 data.format = data.format or (kind == "otf" and "opentype") or "truetype"
@@ -185,9 +197,112 @@ local function load(filename,sub)
     return data
 end
 
+local loadedshapes = { }
+
+local function loadoutlinedata(fontdata)
+    local properties = fontdata.properties
+    local filename   = properties.filename
+    local subindex   = fontdata.subindex
+    local instance   = properties.instance
+    local hash       = makehash(filename,subindex,instance)
+    local loaded     = loadedshapes[hash]
+    if not loaded then
+        loaded = loadoutlines(filename,subindex,instance)
+        loadedshapes[hash] = loaded
+    end
+    return loaded
+end
+
 hashes.shapes = table.setmetatableindex(function(t,k)
-    local d = identifiers[k]
-    local v = load(d.properties.filename,d.subindex)
-    t[k] = v
-    return v
+    return loadoutlinedata(identifiers[k])
 end)
+
+otf.loadoutlinedata = loadoutlinedata
+
+-- experimental code, for me only ... unsupported
+
+local f_c = string.formatters["%F %F %F %F %F %F c"]
+local f_l = string.formatters["%F %F l"]
+local f_m = string.formatters["%F %F m"]
+
+local function addvariableshapes(tfmdata,key,value)
+    if value then
+        local shapes = otf.loadoutlinedata(tfmdata)
+        if not shapes then
+            return
+        end
+        local glyphs = shapes.glyphs
+        if not glyphs then
+            return
+        end
+        local characters = tfmdata.characters
+        local parameters = tfmdata.parameters
+        local hfactor    = parameters.hfactor * (7200/7227)
+        local factor     = hfactor / 65536
+        local getactualtext = otf.getactualtext
+        for unicode, char in next, characters do
+            if not char.commands then
+                local shape = glyphs[char.index]
+                if shape then
+                    local segments = shape.segments
+                    if segments then
+                        local t = { }
+                        local n = #segments
+                        local bt, et = getactualtext(char.tounicode or char.unicode or unicode)
+                        for i=1,n do
+                            local s = segments[i]
+                            local m = #s
+                            local w = s[m]
+                            if w == "c" then
+                                t[i] = f_c(s[1]*factor,s[2]*factor,s[3]*factor,s[4]*factor,s[5]*factor,s[6]*factor)
+                            elseif w == "l" then
+                                t[i] = f_l(s[1]*factor,s[2]*factor)
+                            elseif w == "m" then
+                                t[i] = f_m(s[1]*factor,s[2]*factor)
+                            else
+                                t[i] = ""
+                            end
+                        end
+--                         local boundingbox = shape.boundingbox
+--                         char.height =   boundingbox[4] * hfactor
+--                         char.depth  = - boundingbox[2] * hfactor
+--                         if shape.width then
+--                             char.width = shape.width * hfactor
+--                         end
+                     -- -- not ok: color etc but a temp hack anyway
+                     -- if false then
+                     --     t[n+1] = "h f" -- B*
+                     --     char.commands = {
+                     --         { "special", "pdf:direct:" .. bt },
+                     --         { "down", char.depth },
+                     --         {
+                     --             "image",  {
+                     --                 stream = concat(t,"\n"),
+                     --                 bbox   = shape.boundingbox,
+                     --             }
+                     --         },
+                     --         { "special",  "pdf:direct" .. et },
+                     --     }
+                     -- else
+                            t[0]   = bt
+                            t[n+1] = "h f" -- B*
+                            t[n+2] = et
+                            char.commands = {
+                                { "special",  "pdf:" .. concat(t,"\n",0,n+2) }
+                            }
+                     -- end
+                    end
+                end
+            end
+        end
+    end
+end
+
+otf.features.register {
+    name        = "variableshapes", -- enforced for now
+    description = "variable shapes",
+    manipulators = {
+        base = addvariableshapes,
+        node = addvariableshapes,
+    }
+}
