@@ -466,8 +466,8 @@ local skips = { [0] =
 local function readvariation(f,offset)
     local p = getposition(f)
     setposition(f,offset)
-    local inner  = readushort(f)
     local outer  = readushort(f)
+    local inner  = readushort(f)
     local format = readushort(f)
     setposition(f,p)
     if format == 0x8000 then
@@ -504,7 +504,7 @@ local function readposition(f,format,mainoffset,getdelta)
             if d > 0 then
                 local outer, inner = readvariation(f,mainoffset+d)
                 if outer then
-                    h = h + getdelta(inner,outer)
+                    h = h + getdelta(outer,inner)
                 end
             end
         else
@@ -542,25 +542,25 @@ local function readposition(f,format,mainoffset,getdelta)
             if X > 0 then
                 local outer, inner = readvariation(f,mainoffset+X)
                 if outer then
-                    x = x + getdelta(inner,outer)
+                    x = x + getdelta(outer,inner)
                 end
             end
             if Y > 0 then
                 local outer, inner = readvariation(f,mainoffset+Y)
                 if outer then
-                    y = y + getdelta(inner,outer)
+                    y = y + getdelta(outer,inner)
                 end
             end
             if H > 0 then
                 local outer, inner = readvariation(f,mainoffset+H)
                 if outer then
-                    h = h + getdelta(inner,outer)
+                    h = h + getdelta(outer,inner)
                 end
             end
             if V > 0 then
                 local outer, inner = readvariation(f,mainoffset+V)
                 if outer then
-                    v = v + getdelta(inner,outer)
+                    v = v + getdelta(outer,inner)
                 end
             end
         end
@@ -2289,8 +2289,8 @@ end)
 
 helpers.normalizedaxishash = hash
 
-local cleanname = containers and containers.cleanname or function(name)
-    return (gsub(lower(name),"[^%a%d]",""))
+local cleanname = fonts.names and fonts.names.cleanname or function(name)
+    return name and (gsub(lower(name),"[^%a%d]","")) or nil
 end
 
 helpers.cleanname = cleanname
@@ -2303,12 +2303,20 @@ local function axistofactors(str)
     return lpegmatch(pattern,str)
 end
 
+-- contradicting spec ... (signs) so i'll check it and fix it once we have
+-- proper fonts
+
 local function getaxisscale(segments,minimum,default,maximum,user)
     --
     -- returns the right values cf example in standard
     --
     if not minimum or not default or not maximum then
         return false
+    end
+    if user < minimum then
+        user = minimum
+    elseif user > maximum then
+        user = maximum
     end
     if user < default then
         default = - (default - user) / (default - minimum)
@@ -2341,8 +2349,10 @@ local function getaxisscale(segments,minimum,default,maximum,user)
     end
 end
 
-local function getfactors(data,instance)
-    if type(instance) ~= "string" or instance == "" then
+local function getfactors(data,instancespec)
+    if instancespec == true then
+        -- take default
+    elseif type(instancespec) ~= "string" or instancespec == "" then
         return
     end
     local variabledata = data.variabledata
@@ -2354,11 +2364,15 @@ local function getfactors(data,instance)
     local segments  = variabledata.segments
     if instances and axis then
         local values
-        for i=1,#instances do
-            local instance = instances[i]
-            if cleanname(instance.subfamily) == instance then
-                values = instance.values
-                break
+        if instancespec == true then
+            values = instances[1].values
+        else
+            for i=1,#instances do
+                local instance = instances[i]
+                if cleanname(instance.subfamily) == instancespec then
+                    values = instance.values
+                    break
+                end
             end
         end
         if values then
@@ -2369,7 +2383,7 @@ local function getfactors(data,instance)
             end
             return factors
         end
-        local values = axistofactors(hash[instance] or instance)
+        local values = axistofactors(hash[instancespec] or instancespec)
         if values then
             local factors = { }
             for i=1,#axis do
@@ -2402,11 +2416,11 @@ local function getscales(regions,factors)
                 -- * 1
             elseif f < start or f > stop then
                 -- * 0
---                     s = 0
+        --                     s = 0
                 break
         -- something is wrong: swapped signs here
             elseif f < peak then
-                s = - s * (f - start) / (peak - start)
+                s = s * (f - start) / (peak - start)
             elseif f > peak then
                 s = s * (stop - f) / (stop - peak)
             else
@@ -2541,6 +2555,7 @@ function readers.gdef(f,fontdata,specification)
                     return 0
                 end
             end
+
         end
     end
 end

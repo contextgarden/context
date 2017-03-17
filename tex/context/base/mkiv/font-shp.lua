@@ -17,9 +17,8 @@ local hashes       = fonts.hashes
 local identifiers  = hashes.identifiers
 
 local version      = 0.007
-local cache        = containers.define("fonts", "shapes", version, true)
-
-local report       = logs.reporter("fonts","shapes")
+local shapescache  = containers.define("fonts", "shapes",  version, true)
+local streamscache = containers.define("fonts", "streams", version, true)
 
 -- shapes (can be come a separate file at some point)
 
@@ -143,7 +142,7 @@ local function makehash(filename,sub,instance)
     end
 end
 
-local function loadoutlines(filename,sub,instance)
+local function loadoutlines(cache,filename,sub,instance)
     local base = file.basename(filename)
     local name = file.removesuffix(base)
     local kind = file.suffix(filename)
@@ -197,9 +196,55 @@ local function loadoutlines(filename,sub,instance)
     return data
 end
 
-local loadedshapes = { }
+local function loadstreams(cache,filename,sub,instance)
+    local base = file.basename(filename)
+    local name = file.removesuffix(base)
+    local kind = file.suffix(filename)
+    local attr = lfs.attributes(filename)
+    local size = attr and attr.size or 0
+    local time = attr and attr.modification or 0
+    local sub  = tonumber(sub)
 
-local function loadoutlinedata(fontdata)
+    -- fonts.formats
+
+    if size > 0 and (kind == "otf" or kind == "ttf" or kind == "tcc") then
+        local hash = makehash(filename,sub,instance)
+        data = containers.read(cache,hash)
+        if not data or data.time ~= time or data.size  ~= size then
+            data = readers.loadshapes(filename,sub,instance,true)
+            if data then
+                local glyphs  = data.glyphs
+                local streams = { }
+                if glyphs then
+                    for i=0,#glyphs do
+                        streams[i] = glyphs[i].stream or ""
+                    end
+                end
+                data.streams = streams
+                data.glyphs  = nil
+                data.size    = size
+                data.format  = data.format or (kind == "otf" and "opentype") or "truetype"
+                data.time    = time
+                containers.write(cache,hash,data)
+                data = containers.read(cache,hash) -- frees old mem
+            end
+        end
+    else
+        data = {
+            filename = filename,
+            size     = 0,
+            time     = time,
+            format   = "unknown",
+            glyphs   = { }
+        }
+    end
+    return data
+end
+
+local loadedshapes  = { }
+local loadedstreams = { }
+
+local function loadoutlinedata(fontdata,streams)
     local properties = fontdata.properties
     local filename   = properties.filename
     local subindex   = fontdata.subindex
@@ -207,23 +252,76 @@ local function loadoutlinedata(fontdata)
     local hash       = makehash(filename,subindex,instance)
     local loaded     = loadedshapes[hash]
     if not loaded then
-        loaded = loadoutlines(filename,subindex,instance)
+        loaded = loadoutlines(shapescache,filename,subindex,instance)
         loadedshapes[hash] = loaded
     end
     return loaded
 end
 
 hashes.shapes = table.setmetatableindex(function(t,k)
-    return loadoutlinedata(identifiers[k])
+    local f = identifiers[k]
+    if f then
+        return loadoutlinedata(f)
+    end
 end)
 
-otf.loadoutlinedata = loadoutlinedata
+local function loadstreamdata(fontdata,streams)
+    local properties = fontdata.properties
+    local filename   = properties.filename
+    local subindex   = fontdata.subindex
+    local instance   = properties.instance
+    local hash       = makehash(filename,subindex,instance)
+    local loaded     = loadedstreams[hash]
+    if not loaded then
+        loaded = loadstreams(streamscache,filename,subindex,instance)
+        loadedstreams[hash] = loaded
+    end
+    return loaded
+end
+
+hashes.streams = table.setmetatableindex(function(t,k)
+    local f = identifiers[k]
+    if f then
+        return loadstreamdata(f,true)
+    end
+end)
+
+otf.loadoutlinedata = loadoutlinedata -- not public
+otf.loadstreamdata  = loadstreamdata  -- not public
+otf.loadshapes      = loadshapes
 
 -- experimental code, for me only ... unsupported
 
 local f_c = string.formatters["%F %F %F %F %F %F c"]
 local f_l = string.formatters["%F %F l"]
 local f_m = string.formatters["%F %F m"]
+
+local function segmentstopdf(segments,factor,bt,et)
+    local t = { }
+    local n = #segments
+    for i=1,n do
+        local s = segments[i]
+        local m = #s
+        local w = s[m]
+        if w == "c" then
+            t[i] = f_c(s[1]*factor,s[2]*factor,s[3]*factor,s[4]*factor,s[5]*factor,s[6]*factor)
+        elseif w == "l" then
+            t[i] = f_l(s[1]*factor,s[2]*factor)
+        elseif w == "m" then
+            t[i] = f_m(s[1]*factor,s[2]*factor)
+        else
+            t[i] = ""
+        end
+    end
+    t[n+1] = "h f" -- B*
+    if bt and et then
+        t[0]   = bt
+        t[n+2] = et
+        return concat(t,"\n",0,n+2)
+    else
+        return concat(t,"\n")
+    end
+end
 
 local function addvariableshapes(tfmdata,key,value)
     if value then
@@ -246,51 +344,11 @@ local function addvariableshapes(tfmdata,key,value)
                 if shape then
                     local segments = shape.segments
                     if segments then
-                        local t = { }
-                        local n = #segments
+                     -- we need inline in order to support color
                         local bt, et = getactualtext(char.tounicode or char.unicode or unicode)
-                        for i=1,n do
-                            local s = segments[i]
-                            local m = #s
-                            local w = s[m]
-                            if w == "c" then
-                                t[i] = f_c(s[1]*factor,s[2]*factor,s[3]*factor,s[4]*factor,s[5]*factor,s[6]*factor)
-                            elseif w == "l" then
-                                t[i] = f_l(s[1]*factor,s[2]*factor)
-                            elseif w == "m" then
-                                t[i] = f_m(s[1]*factor,s[2]*factor)
-                            else
-                                t[i] = ""
-                            end
-                        end
---                         local boundingbox = shape.boundingbox
---                         char.height =   boundingbox[4] * hfactor
---                         char.depth  = - boundingbox[2] * hfactor
---                         if shape.width then
---                             char.width = shape.width * hfactor
---                         end
-                     -- -- not ok: color etc but a temp hack anyway
-                     -- if false then
-                     --     t[n+1] = "h f" -- B*
-                     --     char.commands = {
-                     --         { "special", "pdf:direct:" .. bt },
-                     --         { "down", char.depth },
-                     --         {
-                     --             "image",  {
-                     --                 stream = concat(t,"\n"),
-                     --                 bbox   = shape.boundingbox,
-                     --             }
-                     --         },
-                     --         { "special",  "pdf:direct" .. et },
-                     --     }
-                     -- else
-                            t[0]   = bt
-                            t[n+1] = "h f" -- B*
-                            t[n+2] = et
-                            char.commands = {
-                                { "special",  "pdf:" .. concat(t,"\n",0,n+2) }
-                            }
-                     -- end
+                        char.commands = {
+                            { "special",  "pdf:" .. segmentstopdf(segments,factor,bt,et) }
+                        }
                     end
                 end
             end
@@ -306,3 +364,28 @@ otf.features.register {
         node = addvariableshapes,
     }
 }
+
+-- In the end it is easier to just provide the new charstring (cff) and points (ttdf). First
+-- of all we already have the right information so there is no need to patch the already complex
+-- backend code (we only need to make sure the cff is valid). Also, I prototyped support for
+-- these fonts using (converted to) normal postscript shapes, a functionality that was already
+-- present for a while for metafun. This solution even permits us to come up with usage of such
+-- fonts in unexpected ways. It also opens the road to shapes generated with metafun includes
+-- as real cff (or ttf) shapes instead of virtual in-line shapes.
+--
+-- This is probably a prelude to writing a complete backend font inclusion plugin in lua. After
+-- all I already have most info. For this we just need to pass a list of used glyphs (or analyze
+-- them ourselves).
+
+local streams = fonts.hashes.streams
+
+callback.register("glyph_stream_provider",function(id,index,mode)
+    if id > 0 then
+        local streams = streams[id].streams
+     -- print(id,index,streams[index])
+        if streams then
+            return streams[index] or ""
+        end
+    end
+    return ""
+ end)

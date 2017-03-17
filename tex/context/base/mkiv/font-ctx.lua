@@ -181,13 +181,38 @@ do
     local shares = { }
     local hashes = { }
 
+local nofinstances = 0
+local instances    = table.setmetatableindex(function(t,k)
+    nofinstances = nofinstances + 1
+    t[k] = nofinstances
+    return nofinstances
+end)
+
     function constructors.trytosharefont(target,tfmdata)
         constructors.noffontsloaded = constructors.noffontsloaded + 1
         if constructors.sharefonts then
-            local fonthash   = target.specification.hash
+            local fonthash = target.specification.hash
             if fonthash then
                 local properties = target.properties
                 local fullname   = target.fullname
+                -- new, for the moment here
+local instance = properties.instance
+if instance then
+    local format = tfmdata.properties.format
+    target.fullname = fullname
+    if format == "opentype" then
+        target.streamprovider = 1
+    elseif format == "truetype" then
+        target.streamprovider = 2
+    else
+        target.streamprovider = 0
+    end
+    if target.streamprovider > 0 then
+        fullname = fullname .. ":" .. instances[instance]
+    end
+    target.fullname = fullname
+end
+                --
                 local sharedname = hashes[fonthash]
                 if sharedname then
                     -- this is ok for context as we know that only features can mess with font definitions
@@ -205,6 +230,10 @@ do
                     local characters = target.characters
                     local n = 1
                     local t = { target.psname }
+if instance then
+    n = n + 1
+    t[n] = instance
+end
                     local u = sortedkeys(characters)
                     for i=1,#u do
                         local k = u[i]

@@ -903,7 +903,6 @@ function constructors.finalize(tfmdata)
             identity      = tfmdata.identity      or "horizontal",
         }
     end
-
     if not tfmdata.resources then
         tfmdata.resources = { }
     end

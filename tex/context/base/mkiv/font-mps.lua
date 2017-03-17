@@ -307,8 +307,12 @@ function metapost.output(kind,font,char,advance,shift,ex)
                         xfactor = xfactor * wfactor
                     end
                     local paths = topaths(glyf,xfactor,yfactor)
-                    local code  = f_code(kind,#paths,advance,shift,paths)
-                    return code, character.width * fc * wfactor
+                    if paths then
+                        local code = f_code(kind,#paths,advance,shift,paths)
+                        return code, character.width * fc * wfactor
+                    else
+                        return "", 0
+                    end
                 end
             end
         end

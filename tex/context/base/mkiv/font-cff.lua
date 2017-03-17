@@ -20,9 +20,14 @@ if not modules then modules = { } end modules ['font-cff'] = {
 -- because that reflects the original. But it might make more sense to use a single array
 -- per segment. For pdf a simple concat works ok, but for other purposes a operator first
 -- flush is nicer.
+--
+-- In retrospect I could have looked into the backend code of LuaTeX but it never
+-- occurred to me that parsing charstrings was needed there (which has to to
+-- with merging subroutines and flattening, not so much with calculations.) On
+-- the other hand, we can now feed back cff2 stuff.
 
 local next, type, tonumber = next, type, tonumber
-local byte, gmatch = string.byte, string.gmatch
+local byte, char, gmatch = string.byte, string.char, string.gmatch
 local concat, remove = table.concat, table.remove
 local floor, abs, round, ceil, min, max = math.floor, math.abs, math.round, math.ceil, math.min, math.max
 local P, C, R, S, C, Cs, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct
@@ -142,7 +147,7 @@ local function readheader(f)
         size   = readbyte(f), -- headersize
     }
     if major == 1 then
-        header.osize = readbyte(f)   -- for offsets to start
+        header.dsize = readbyte(f)   -- list of dict offsets
     elseif major == 2 then
         header.dsize = readushort(f) -- topdict size
     else
@@ -171,7 +176,12 @@ local function readlengths(f,longcount)
     local previous = read(f)
     for i=1,count do
         local offset = read(f)
-        lengths[i] = offset - previous
+        local length = offset - previous
+        if length < 0 then
+            report("bad offset: %i",length)
+            length = 0
+        end
+        lengths[i] = length
         previous = offset
     end
     return lengths
@@ -713,6 +723,7 @@ do
         if trace_charstrings then
             showstate("moveto")
         end
+        top = 0 -- forgotten
         xymoveto()
     end
 
@@ -1321,9 +1332,9 @@ do
                 for i=1,nofregions do
                     local region = current[i]
                     local s = 1
-                    for i=1,#axis do
-                        local f = axis[i]
-                        local r = region[i]
+                    for j=1,#axis do
+                        local f = axis[j]
+                        local r = region[j]
                         local start = r.start
                         local peak  = r.peak
                         local stop  = r.stop
@@ -1338,7 +1349,7 @@ do
                             s = 0
                             break
                         elseif f < peak then
-                            s = - s * (f - start) / (peak - start)
+                            s = s * (f - start) / (peak - start)
                         elseif f > peak then
                             s = s * (stop - f) / (stop - peak)
                         else
@@ -1351,7 +1362,6 @@ do
         end
         reginit = n
     end
-
 
     local function setvsindex()
         local vsindex = stack[top]
@@ -1404,6 +1414,8 @@ do
                     d = d + nofregions
                 end
             end
+        else
+            -- error
         end
     end
 
@@ -1427,7 +1439,7 @@ do
         hsbw,         -- 13 -- hsbw (type 1 cff)
         unsupported,  -- 14 -- endchar,
         setvsindex,   -- 15 -- cff2
-        blend,        -- 16 -- cff2 blend
+        blend,        -- 16 -- cff2
         unsupported,  -- 17
         getstem,      -- 18 -- hstemhm
         getmask,      -- 19 -- hintmask
@@ -1463,6 +1475,92 @@ do
         [037] = flex1,
     }
 
+    local c_endchar = char(14)
+
+    local passon  do
+
+        -- todo: round in blend
+        -- todo: delay this hash
+
+        local rshift = bit32.rshift
+        local band = bit32.band
+        local round = math.round
+
+        local encode = table.setmetatableindex(function(t,i)
+            for i=-2048,-1130 do
+                t[i] = char(28,band(rshift(i,8),0xFF),band(i,0xFF))
+            end
+            for i=-1131,-108 do
+                local v = 0xFB00 - i - 108
+                t[i] = char(band(rshift(v,8),0xFF),band(v,0xFF))
+            end
+            for i=-107,107 do
+                t[i] = char(i + 139)
+            end
+            for i=108,1131 do
+                local v = 0xF700 + i - 108
+                t[i] = char(band(rshift(v,8),0xFF),band(v,0xFF))
+            end
+            for i=1132,2048 do
+                t[i] = char(28,band(rshift(i,8),0xFF),band(i,0xFF))
+            end
+            return t[i]
+        end)
+
+        local function setvsindex()
+            local vsindex = stack[top]
+            updateregions(vsindex)
+            top = top - 1
+        end
+
+        local function blend()
+            local n = stack[top]
+            top = top - 1
+            if not axis then
+                -- fatal error
+            elseif n == 1 then
+                top = top - nofregions
+                local v = stack[top]
+                for r=1,nofregions do
+                    v = v + stack[top+r] * factors[r]
+                end
+                stack[top] = round(v)
+            else
+                top = top - nofregions * n
+                local d = top
+                local k = top - n
+                for i=1,n do
+                    k = k + 1
+                    local v = stack[k]
+                    for r=1,nofregions do
+                        v = v + stack[d+r] * factors[r]
+                    end
+                    stack[k] = round(v)
+                    d = d + nofregions
+                end
+            end
+        end
+
+        passon = function(operation)
+            if operation == 15 then
+                setvsindex()
+            elseif operation == 16 then
+                blend()
+            else
+                for i=1,top do
+                    r = r + 1
+                    result[r] = encode[stack[i]]
+                end
+                r = r + 1
+                result[r] = char(operation) -- maybe use a hash
+                top = 0
+            end
+        end
+
+    end
+
+    -- end of experiment
+
     local process
 
     local function call(scope,list,bias) -- ,process)
@@ -1488,6 +1586,8 @@ do
     end
 
     -- precompiling and reuse is much slower than redoing the calls
+
+    local justpass = false
 
     process = function(tab)
         local i = 1
@@ -1574,6 +1674,9 @@ do
                     end
                     top = 0
                 end
+                i = i + 1
+            elseif justpass then
+                passon(t)
                 i = i + 1
             else
                 local a = actions[t]
@@ -1685,8 +1788,17 @@ do
         end
 
         local glyph = glyphs[index] -- can be autodefined in otr
-        if glyph then
-            glyph.segments    = doshapes ~= false and result or nil
+        if justpass then
+            r = r + 1
+            result[r] = c_endchar
+            local stream = concat(result)
+            if glyph then
+                glyph.stream  = stream
+            else
+                glyphs[index] = { stream = stream }
+            end
+        elseif glyph then
+            glyph.segments    = keepcurve ~= false and result or nil
             glyph.boundingbox = boundingbox
             if not glyph.width then
                 glyph.width = width
@@ -1695,19 +1807,19 @@ do
                 glyph.name = charset[index]
             end
          -- glyph.sidebearing = 0 -- todo
-        elseif doshapes then
+        elseif keepcurve then
             glyphs[index] = {
                 segments    = result,
                 boundingbox = boundingbox,
                 width       = width,
-                name        = charset[index],
+                name        = charset and charset[index] or nil,
              -- sidebearing = 0,
             }
         else
             glyphs[index] = {
                 boundingbox = boundingbox,
                 width       = width,
-                name        = charset[index],
+                name        = charset and charset[index] or nil,
             }
         end
 
@@ -1718,10 +1830,11 @@ do
 
     end
 
-    startparsing = function(fontdata,data)
-        reginit = false
-        axis    = false
-        regions = data.regions
+    startparsing = function(fontdata,data,streams)
+        reginit  = false
+        axis     = false
+        regions  = data.regions
+        justpass = streams == true
         if regions then
             regions = { regions } -- needs checking
             axis = data.factors or false
@@ -1749,7 +1862,7 @@ do
         return privatedata.nominalwidthx or 0, privatedata.defaultwidthx or 0
     end
 
-    parsecharstrings = function(fontdata,data,glphs,doshapes,tversion)
+    parsecharstrings = function(fontdata,data,glphs,doshapes,tversion,streams)
 
         local dictionary  = data.dictionaries[1]
         local charstrings = dictionary.charstrings
@@ -1766,10 +1879,14 @@ do
         globalbias,   localbias    = setbias(globals,locals)
         nominalwidth, defaultwidth = setwidths(dictionary.private)
 
+        startparsing(fontdata,data,streams)
+
         for index=1,#charstrings do
             processshape(charstrings[index],index-1)
             charstrings[index] = nil -- free memory (what if used more often?)
         end
+
+        stopparsing(fontdata,data)
 
         return glyphs
     end
@@ -1812,8 +1929,7 @@ local function readcharsets(f,data,dictionary)
     local strings       = data.strings
     local nofglyphs     = data.nofglyphs
     local charsetoffset = dictionary.charset
-
-    if charsetoffset ~= 0 then
+    if charsetoffset and charsetoffset ~= 0 then
         setposition(f,header.offset+charsetoffset)
         local format       = readbyte(f)
         local charset      = { [0] = ".notdef" }
@@ -1839,6 +1955,9 @@ local function readcharsets(f,data,dictionary)
         else
             report("cff parser: unsupported charset format %a",format)
         end
+    else
+        dictionary.nocharset = true
+        dictionary.charset   = nil
     end
 end
 
@@ -1880,9 +1999,11 @@ local function readcharstrings(f,data,what)
     local header       = data.header
     local dictionaries = data.dictionaries
     local dictionary   = dictionaries[1]
-    local type         = dictionary.charstringtype
+    local stringtype   = dictionary.charstringtype
     local offset       = dictionary.charstrings
-    if type == 2 then
+    if type(offset) ~= "number" then
+        -- weird
+    elseif stringtype == 2 then
         setposition(f,header.offset+offset)
         -- could be a metatable .. delayed loading
         local charstrings = readlengths(f,what=="cff2")
@@ -1893,7 +2014,7 @@ local function readcharstrings(f,data,what)
         data.nofglyphs         = nofglyphs
         dictionary.charstrings = charstrings
     else
-        report("unsupported charstr type %i",type)
+        report("unsupported charstr type %i",stringtype)
         data.nofglyphs         = 0
         dictionary.charstrings = { }
     end
@@ -1917,7 +2038,7 @@ end
 
 readers.parsecharstrings = parsecharstrings -- used in font-onr.lua (type 1)
 
-local function readnoselect(f,fontdata,data,glyphs,doshapes,version)
+local function readnoselect(f,fontdata,data,glyphs,doshapes,version,streams)
     local dictionaries = data.dictionaries
     local dictionary   = dictionaries[1]
     readglobals(f,data)
@@ -1929,12 +2050,12 @@ local function readnoselect(f,fontdata,data,glyphs,doshapes,version)
     readprivates(f,data)
     parseprivates(data,data.dictionaries)
     readlocals(f,data,dictionary)
-    startparsing(fontdata,data)
-    parsecharstrings(fontdata,data,glyphs,doshapes,version)
+    startparsing(fontdata,data,streams)
+    parsecharstrings(fontdata,data,glyphs,doshapes,version,streams)
     stopparsing(fontdata,data)
 end
 
-local function readfdselect(f,fontdata,data,glyphs,doshapes,version)
+local function readfdselect(f,fontdata,data,glyphs,doshapes,version,streams)
     local header       = data.header
     local dictionaries = data.dictionaries
     local dictionary   = dictionaries[1]
@@ -1981,6 +2102,7 @@ local function readfdselect(f,fontdata,data,glyphs,doshapes,version)
     else
         -- unsupported format
     end
+    -- hm, always
     if maxindex >= 0 then
         local cidarray = cid.fdarray
         setposition(f,header.offset+cidarray)
@@ -1994,7 +2116,7 @@ local function readfdselect(f,fontdata,data,glyphs,doshapes,version)
         for i=1,#dictionaries do
             readlocals(f,data,dictionaries[i])
         end
-        startparsing(fontdata,data)
+        startparsing(fontdata,data,streams)
         for i=1,#charstrings do
             parsecharstring(fontdata,data,dictionaries[fdindex[i]+1],charstrings[i],glyphs,i,doshapes,version)
             charstrings[i] = nil
@@ -2097,10 +2219,48 @@ function readers.cff2(f,fontdata,specification)
         local cid = data.dictionaries[1].cid
         local all = specification.shapes or false
         if cid and cid.fdselect then
-            readfdselect(f,fontdata,data,glyphs,all,"cff2")
+            readfdselect(f,fontdata,data,glyphs,all,"cff2",specification.streams)
         else
-            readnoselect(f,fontdata,data,glyphs,all,"cff2")
+            readnoselect(f,fontdata,data,glyphs,all,"cff2",specification.streams)
         end
         cleanup(data,dictionaries)
+    end
+end
+
+-- temporary helper needed for checking backend patches
+
+function readers.cffcheck(filename)
+    local f = io.open(filename,"rb")
+    if f then
+        local fontdata = {
+            glyphs = { },
+        }
+        local header = readheader(f)
+        if header.major ~= 1 then
+            report("only version %s is supported for table %a",1,"cff")
+            return
+        end
+        local names        = readfontnames(f)
+        local dictionaries = readtopdictionaries(f)
+        local strings      = readstrings(f)
+        local glyphs       = { }
+        local data = {
+            header       = header,
+            names        = names,
+            dictionaries = dictionaries,
+            strings      = strings,
+            glyphs       = glyphs,
+            nofglyphs    = 4,
+        }
+        --
+        parsedictionaries(data,dictionaries,"cff")
+        --
+        local cid = data.dictionaries[1].cid
+        if cid and cid.fdselect then
+            readfdselect(f,fontdata,data,glyphs,false)
+        else
+            readnoselect(f,fontdata,data,glyphs,false)
+        end
+        return data
     end
 end

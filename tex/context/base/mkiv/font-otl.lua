@@ -52,7 +52,7 @@ local report_otf          = logs.reporter("fonts","otf loading")
 local fonts               = fonts
 local otf                 = fonts.handlers.otf
 
-otf.version               = 3.027 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version               = 3.028 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                 = containers.define("fonts", "otl", otf.version, true)
 otf.svgcache              = containers.define("fonts", "svg", otf.version, true)
 otf.pdfcache              = containers.define("fonts", "pdf", otf.version, true)
@@ -487,7 +487,7 @@ local function otftotfm(specification)
         local subindex = specification.subindex
         local filename = specification.filename
         local features = specification.features.normal
-        local instance = specification.instance or features.axis
+        local instance = specification.instance or (features and features.axis)
         local rawdata  = otf.load(filename,sub,instance)
         if rawdata and next(rawdata) then
             local descriptions = rawdata.descriptions

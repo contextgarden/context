@@ -33,8 +33,10 @@ if not modules then modules = { } end modules ['font-ttf'] = {
 --    delta  = (1-factor)*left + factor * right
 
 local next, type, unpack = next, type, unpack
-local bittest, band = bit32.btest, bit32.band
+local bittest, band, rshift = bit32.btest, bit32.band, bit32.rshift
 local sqrt, round = math.sqrt, math.round
+local char = string.char
+local concat = table.concat
 
 local report        = logs.reporter("otf reader","ttf")
 
@@ -506,6 +508,79 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
     end
 end
 
+-- optimize for zero
+
+local function toushort(n)
+    return char(band(rshift(n,8),0xFF),band(n,0xFF))
+end
+
+local function toshort(n)
+    if n < 0 then
+        n = n + 0x10000
+    end
+    return char(band(rshift(n,8),0xFF),band(n,0xFF))
+end
+
+local function repackpoints(glyphs,shapes)
+    local noboundingbox = { 0, 0, 0, 0 }
+    for index=1,#glyphs do
+        local shape = shapes[index]
+        if shape then
+            local glyph     = glyphs[index]
+            local contours  = shape.contours
+            local points    = shape.points
+            if points and contours then
+                local nofcontours = #contours
+                local nofpoints   = #points
+                local result      = { }
+                local r           = 0
+                local boundingbox = glyph.boundingbox or noboundingbox
+                if nofcontours > 0 then
+                    local currentx = 0
+                    local currenty = 0
+                    local flags    = { }
+                    local xpoints  = { }
+                    local ypoints  = { }
+                    for i=1,nofpoints do
+                        local pt   = points[i]
+                        local px   = pt[1]
+                        local py   = pt[2]
+                        local fl   = pt[3] and 0x01 or 0x00
+                        xpoints[i] = toshort(round(px - currentx))
+                        ypoints[i] = toshort(round(py - currenty))
+                        flags[i]   = char(fl)
+                        currentx   = px
+                        currenty   = py
+                    end
+                    r = r + 1 result[r] = toshort(nofcontours)
+                    r = r + 1 result[r] = toshort(boundingbox[1]) -- xmin
+                    r = r + 1 result[r] = toshort(boundingbox[2]) -- ymin
+                    r = r + 1 result[r] = toshort(boundingbox[3]) -- xmax
+                    r = r + 1 result[r] = toshort(boundingbox[4]) -- ymax
+                    for i=1,nofcontours do
+                        r = r + 1 result[r] = toshort(contours[i]-1)
+                    end
+                    r = r + 1 result[r] = toshort(0) -- no instructions
+                    r = r + 1 result[r] = concat(flags)
+                    r = r + 1 result[r] = concat(xpoints)
+                    r = r + 1 result[r] = concat(ypoints)
+                    glyph.stream = concat(result)
+                elseif nofcontours < 0 then
+                    -- composite
+                else
+                    r = r + 1 result[r] = toshort(0) -- no contours
+                    r = r + 1 result[r] = toshort(0) -- xmin
+                    r = r + 1 result[r] = toshort(0) -- ymin
+                    r = r + 1 result[r] = toshort(0) -- xmax
+                    r = r + 1 result[r] = toshort(0) -- ymax
+                    r = r + 1 result[r] = toshort(0) -- no instructions
+                    glyph.stream = concat(result)
+                end
+            end
+        end
+    end
+end
+
 -- end of converter
 
 local function readglyph(f,nofcontours) -- read deltas here, saves space
@@ -750,11 +825,15 @@ function readers.glyf(f,fontdata,specification) -- part goes to cff module
             end
             if loadshapes then
                 if readers.gvar then
-                    readers.gvar(f,fontdata,specification,glyphs,shapes) -- return reader function
+                    readers.gvar(f,fontdata,specification,glyphs,shapes)
                 end
                 mergecomposites(glyphs,shapes)
                 if specification.instance then
-                    contours2outlines_shaped(glyphs,shapes,loadshapes) -- use reader function
+if specification.streams then
+    repackpoints(glyphs,shapes)
+else
+                    contours2outlines_shaped(glyphs,shapes,loadshapes)
+end
                 elseif specification.loadshapes then
                     contours2outlines_normal(glyphs,shapes)
                 end
@@ -850,7 +929,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
     if not instance then
         return
     end
-    local factors = instance.factors
+    local factors = specification.factors
     if not factors then
         return
     end
@@ -983,7 +1062,8 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
                                 s = 0
                                 break
                             elseif f < peak then
-                                s = - s * (f - start) / (peak - start)
+--                                 s = - s * (f - start) / (peak - start)
+                                s = s * (f - start) / (peak - start)
                             elseif f > peak then
                                 s = s * (stop - f) / (stop - peak)
                             else

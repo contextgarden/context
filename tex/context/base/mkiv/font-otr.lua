@@ -1991,7 +1991,7 @@ local function loadtables(f,specification,offset)
         }
     end
     fontdata.foundtables = sortedkeys(tables)
-    if tables.cff then
+    if tables.cff or tables.cff2 then
         fontdata.format = "opentype"
     else
         fontdata.format = "truetype"
@@ -2045,13 +2045,25 @@ local function readdata(f,offset,specification)
     readtable("avar",f,fontdata,specification)
     readtable("fvar",f,fontdata,specification)
 
-    if helpers.getfactors and not specification.factors then
-        local instance = specification.instance
-        if instance then
-            local factors = helpers.getfactors(fontdata,instance)
-            specification.factors = factors
-            fontdata.factors  = factors
-            fontdata.instance = instance
+    if helpers.getfactors then
+        if not specification.factors then
+            local instance = specification.instance
+            if instance then
+                local factors = helpers.getfactors(fontdata,instance)
+                specification.factors = factors
+                fontdata.factors  = factors
+                fontdata.instance = instance
+                report("user instance: %s, factors: % t",instance,factors)
+            end
+        end
+        if not fontdata.factors then
+            if fontdata.variabledata then
+                local factors = helpers.getfactors(fontdata,true)
+                specification.factors = factors
+                fontdata.factors  = factors
+                fontdata.instance = instance
+                report("font instance: %s, factors: % t",instance,factors)
+            end
         end
     end
 
@@ -2216,10 +2228,11 @@ end
 
 -- we need even less, but we can have a 'detail' variant
 
-function readers.loadshapes(filename,n,instance)
+function readers.loadshapes(filename,n,instance,streams)
     local fontdata = loadfont {
         filename = filename,
         shapes   = true,
+        streams  = streams,
         variable = true,
         subfont  = n,
         instance = instance,
