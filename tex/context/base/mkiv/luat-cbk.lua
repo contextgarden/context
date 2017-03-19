@@ -81,11 +81,15 @@ if not list then -- otherwise counters get reset
 
     list = utilities.storage.allocate(list_callbacks())
 
+    local supported = { }
+
     for k in next, list do
-        list[k] = 0
+        list[k]      = 0
+        supported[k] = true
     end
 
-    callbacks.list = list
+    callbacks.list      = list
+    callbacks.supported = supported
 
 end
 

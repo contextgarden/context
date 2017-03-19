@@ -9,11 +9,14 @@ if not modules then modules = { } end modules ['s-fonts-variable'] = {
 moduledata.fonts          = moduledata.fonts          or { }
 moduledata.fonts.variable = moduledata.fonts.variable or { }
 
-local format = string.format
+local format      = string.format
+local stripstring = string.nospaces
+local lower       = string.lower
+local rep         = string.rep
 
 local context = context
 local NC, NR, HL = context.NC, context.NR, context.HL
-local bold, monobold, formattedmono = context.bold, context.monobold, context.formatted.mono
+local bold, monobold, mono, formattedmono = context.bold, context.monobold, context.mono, context.formatted.mono
 
 function moduledata.fonts.variable.showvariations(specification)
 
@@ -119,13 +122,18 @@ function moduledata.fonts.variable.showvariations(specification)
         end
     context.stopsubject()
 
+    local collected = { }
+
     context.startsubject { title = "instances" }
         if instances and #list > 0 then
-            context.starttabulate { "||" .. string.rep("c|",#list) }
+            context.starttabulate { "||" .. rep("c|",#list) .. "|" }
                 NC()
                 for i=1,#list do
                     NC() monobold(list[i])
                 end
+                NC()
+                local fullname = lower(stripstring(fontdata.shared.rawdata.metadata.fullname))
+                formattedmono("%s*",fullname)
                 NC() NR()
                 HL()
                 for k=1,#instances do
@@ -140,6 +148,10 @@ function moduledata.fonts.variable.showvariations(specification)
                     for i=1,#list do
                         NC() context(hash[list[i]])
                     end
+                    NC()
+                    local instance = lower(stripstring(i.subfamily))
+                    mono(instance)
+                    collected[#collected+1] = fullname .. instance
                     NC() NR()
                 end
             context.stoptabulate()
@@ -148,37 +160,57 @@ function moduledata.fonts.variable.showvariations(specification)
         end
     context.stopsubject()
 
-    local regions = variabledata.global and variabledata.global.regions
+    for i=1,#collected do
 
-    context.startsubject { title = "regions" }
-        if regions then
-            context.starttabulate { "|r|c|r|r|r|" }
-            NC() bold("n")
-            NC() bold("axis")
-            NC() bold("start")
-            NC() bold("peak")
-            NC() bold("stop")
-            NC() NR()
-            HL()
-            local designaxis = designaxis or axis
-            for i=1,#regions do
-                local axis = regions[i]
-                for j=1,#axis do
-                    local a = axis[j]
-                    NC() monobold(i)
-                    NC() monobold(designaxis[j].tag)
-                    NC() context("%0.3f",a.start)
-                    NC() context("%0.3f",a.peak)
-                    NC() context("%0.3f",a.stop)
-                    NC() NR()
-                    i = nil
-                end
-            end
-            context.stoptabulate()
-        else
-            context("no regions defined, incomplete \\type{gdef} table")
-        end
-    context.stopsubject()
+        local instance = collected[i]
+        context.startsubject { title = instance }
+            context.start()
+            context.definedfont { "name:" .. instance .. "*default" }
+            context.input("zapf.tex")
+            context.par()
+            context.stop()
+        context.stopsubject()
+    end
+
+ -- local function showregions(tag)
+ --
+ --     local regions = variabledata[tag]
+ --
+ --     context.startsubject { title = tag }
+ --         if regions then
+ --             context.starttabulate { "|r|c|r|r|r|" }
+ --             NC() bold("n")
+ --             NC() bold("axis")
+ --             NC() bold("start")
+ --             NC() bold("peak")
+ --             NC() bold("stop")
+ --             NC() NR()
+ --             HL()
+ --             local designaxis = designaxis or axis
+ --             for i=1,#regions do
+ --                 local axis = regions[i]
+ --                 for j=1,#axis do
+ --                     local a = axis[j]
+ --                     NC() monobold(i)
+ --                     NC() monobold(designaxis[j].tag)
+ --                     NC() context("%0.3f",a.start)
+ --                     NC() context("%0.3f",a.peak)
+ --                     NC() context("%0.3f",a.stop)
+ --                     NC() NR()
+ --                     i = nil
+ --                 end
+ --             end
+ --             context.stoptabulate()
+ --         else
+ --             context("no %s defined",tag)
+ --         end
+ --     context.stopsubject()
+ --
+ -- end
+ --
+ -- showregions("gregions")
+ -- showregions("mregions")
+ -- showregions("hregions")
 
     context.stoptitle()
 

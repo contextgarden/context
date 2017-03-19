@@ -1097,7 +1097,9 @@ function otffeatures.normalize(features)
                 h.script = rawget(verbosescripts,v) or (scripts[v] and v) or "dflt" -- auto adds
             elseif k == "axis" then
                 h[k] = normalizedaxis(value)
--- h.variableshapes = true -- for the moment
+if not callbacks.supported.glyph_stream_provider then
+    h.variableshapes = true -- for the moment
+end
             else
                 local uk = usedfeatures[key]
                 local uv = uk[value]

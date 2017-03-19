@@ -195,11 +195,12 @@ end)
             if fonthash then
                 local properties = target.properties
                 local fullname   = target.fullname
+                local fontname   = target.fontname
+                local psname     = target.psname
                 -- new, for the moment here
 local instance = properties.instance
 if instance then
     local format = tfmdata.properties.format
-    target.fullname = fullname
     if format == "opentype" then
         target.streamprovider = 1
     elseif format == "truetype" then
@@ -208,9 +209,22 @@ if instance then
         target.streamprovider = 0
     end
     if target.streamprovider > 0 then
-        fullname = fullname .. ":" .. instances[instance]
+        if fullname then
+            fullname = fullname .. ":" .. instances[instance]
+            target.fullname = fullname
+        end
+        if fontname then
+            fontname = fontname .. ":" .. instances[instance]
+            target.fontname = fontname
+        end
+        if psname then
+            -- this one is used for the funny prefix in font names in pdf
+            -- so it has ot be kind of unique in order to avoid subset prefix
+            -- clashes being reported
+            psname = psname   .. ":" .. instances[instance]
+            target.psname = psname
+        end
     end
-    target.fullname = fullname
 end
                 --
                 local sharedname = hashes[fonthash]
@@ -226,7 +240,9 @@ end
                     constructors.nofsharedhashes = constructors.nofsharedhashes + 1
                 else
                     -- the one takes more time (in the worst case of many cjk fonts) but it also saves
-                    -- embedding time
+                    -- embedding time .. haha, this is interesting: when i got a clash on subset tag
+                    -- collision i saw in the source that these tags are also using a hash like below
+                    -- so maybe we should have an option to pass it from lua
                     local characters = target.characters
                     local n = 1
                     local t = { target.psname }

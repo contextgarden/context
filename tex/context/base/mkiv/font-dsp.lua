@@ -284,7 +284,188 @@ end)
 -- resource (it looks like they are). Anyway, we play safe and use a
 -- share.
 
-local function readvariationdata(f,storeoffset) -- store
+-- values can be anything the min/max permits so we can either think of
+-- real values of a fraction along the axis (probably easier)
+
+-- wght:400,wdth:100,ital:1
+
+-- local names = table.setmetatableindex ( {
+--     weight = "wght",
+--     width  = "wdth",
+--     italic = "ital",
+-- }, "self")
+
+local pattern = lpeg.Cf (
+    lpeg.Ct("") *
+    lpeg.Cg (
+      --(lpeg.R("az")^1/names) * lpeg.S(" :") *
+        lpeg.C(lpeg.R("az")^1) * lpeg.S(" :=") *
+        (lpeg.patterns.number/tonumber) * lpeg.S(" ,")^0
+    )^1, rawset
+)
+
+local hash = table.setmetatableindex(function(t,k)
+    local v = lpegmatch(pattern,k)
+    local t = { }
+    for k, v in sortedhash(v) do
+        t[#t+1] = k .. "=" .. v
+    end
+    v = concat(t,",")
+    t[k] = v
+    return v
+end)
+
+helpers.normalizedaxishash = hash
+
+local cleanname = fonts.names and fonts.names.cleanname or function(name)
+    return name and (gsub(lower(name),"[^%a%d]","")) or nil
+end
+
+helpers.cleanname = cleanname
+
+function helpers.normalizedaxis(str)
+    return hash[str] or str
+end
+
+local function axistofactors(str)
+    return lpegmatch(pattern,str)
+end
+
+-- contradicting spec ... (signs) so i'll check it and fix it once we have
+-- proper fonts
+
+local function getaxisscale(segments,minimum,default,maximum,user)
+    --
+    -- returns the right values cf example in standard
+    --
+    if not minimum or not default or not maximum then
+        return false
+    end
+    if user < minimum then
+        user = minimum
+    elseif user > maximum then
+        user = maximum
+    end
+    if user < default then
+        default = - (default - user) / (default - minimum)
+    elseif user > default then
+        default = (user - default) / (maximum - default)
+    else
+        default = 0
+    end
+    if not segments then
+        return default
+    end
+    local e
+    for i=1,#segments do
+        local s = segments[i]
+        if s[1] >= default then
+            if s[2] == default then
+                return default
+            else
+                e = i
+                break
+            end
+        end
+    end
+    if e then
+        local b = segments[e-1]
+        local e = segments[e]
+        return b[2] + (e[2] - b[2]) * (default - b[1]) / (e[1] - b[1])
+    else
+        return false
+    end
+end
+
+local function getfactors(data,instancespec)
+    if instancespec == true then
+        -- take default
+    elseif type(instancespec) ~= "string" or instancespec == "" then
+        return
+    end
+    local variabledata = data.variabledata
+    if not variabledata then
+        return
+    end
+    local instances = variabledata.instances
+    local axis      = variabledata.axis
+    local segments  = variabledata.segments
+    if instances and axis then
+        local values
+        if instancespec == true then
+            values = instances[1].values
+        else
+            for i=1,#instances do
+                local instance = instances[i]
+                if cleanname(instance.subfamily) == instancespec then
+                    values = instance.values
+                    break
+                end
+            end
+        end
+        if values then
+            local factors = { }
+            for i=1,#axis do
+                local a = axis[i]
+                factors[i] = getaxisscale(segments,a.minimum,a.default,a.maximum,values[i].value)
+            end
+            return factors
+        end
+        local values = axistofactors(hash[instancespec] or instancespec)
+        if values then
+            local factors = { }
+            for i=1,#axis do
+                local a = axis[i]
+                local d = a.default
+                factors[i] = getaxisscale(segments,a.minimum,d,a.maximum,values[a.name or a.tag] or d)
+            end
+            return factors
+        end
+    end
+end
+
+local function getscales(regions,factors)
+    local scales = { }
+    for i=1,#regions do
+        local region = regions[i]
+        local s = 1
+        for j=1,#region do
+            local axis  = region[j]
+            local f     = factors[j]
+            local start = axis.start
+            local peak  = axis.peak
+            local stop  = axis.stop
+            -- get rid of these tests, false flag
+            if start > peak or peak > stop then
+                -- * 1
+            elseif start < 0 and stop > 0 and peak ~= 0 then
+                -- * 1
+            elseif peak == 0 then
+                -- * 1
+            elseif f < start or f > stop then
+                -- * 0
+                s = 0
+                break
+            elseif f < peak then
+             -- s = - s * (f - start) / (peak - start)
+                s = s * (f - start) / (peak - start)
+            elseif f > peak then
+                s = s * (stop - f) / (stop - peak)
+            else
+                -- * 1
+            end
+        end
+        scales[i] = s
+    end
+    return scales
+end
+
+helpers.getaxisscale  = getaxisscale
+helpers.getfactors    = getfactors
+helpers.getscales     = getscales
+helpers.axistofactors = axistofactors
+
+local function readvariationdata(f,storeoffset,factors) -- store
     setposition(f,storeoffset)
     -- header
     local format       = readushort(f)
@@ -311,31 +492,34 @@ local function readvariationdata(f,storeoffset) -- store
         regions[i] = t
     end
     -- deltas
-    for i=1,nofdeltadata do
-        setposition(f,storeoffset+deltadata[i])
-        local nofdeltasets = readushort(f)
-        local nofshorts    = readushort(f)
-        local nofregions   = readushort(f)
-        local regions      = { }
-        local deltas       = { }
-        for i=1,nofregions do
-            regions[i] = readushort(f)
-        end
-        -- we could test before and save a for
-        for i=1,nofdeltasets do
-            local t = { } -- newtable
-            for i=1,nofshorts do
-                t[i] = readshort(f)
+    if factors then
+        for i=1,nofdeltadata do
+            setposition(f,storeoffset+deltadata[i])
+            local nofdeltasets = readushort(f)
+            local nofshorts    = readushort(f)
+            local nofregions   = readushort(f)
+            local usedregions  = { }
+            local deltas       = { }
+            for i=1,nofregions do
+                usedregions[i] = regions[readushort(f)+1]
             end
-            for i=nofshorts+1,nofregions do
-                t[i] = readinteger(f)
+            -- we could test before and save a for
+            for i=1,nofdeltasets do
+                local t = { } -- newtable
+                for i=1,nofshorts do
+                    t[i] = readshort(f)
+                end
+                for i=nofshorts+1,nofregions do
+                    t[i] = readinteger(f)
+                end
+                deltas[i] = t
             end
-            deltas[i] = t
+            deltadata[i] = {
+                regions = usedregions,
+                deltas  = deltas,
+                scales  = factors and getscales(usedregions,factors) or nil,
+            }
         end
-        deltadata[i] = {
-            regions = regions,
-            deltas  = deltas,
-        }
     end
     return regions, deltadata
 end
@@ -1202,8 +1386,6 @@ local function readpairsets(f,tableoffset,sets,format1,format2,mainoffset,getdel
             for i=1,n do
                 reused[i] = {
                     readushort(f), -- second glyph id
---                     readposition(f,format1,mainoffset,getdelta),
---                     readposition(f,format2,mainoffset,getdelta),
                     readposition(f,format1,offset,getdelta),
                     readposition(f,format2,offset,getdelta),
                 }
@@ -2254,189 +2436,6 @@ do
 
 end
 
---
-
--- values can be anything the min/max permits so we can either think of
--- real values of a fraction along the axis (probably easier)
-
--- wght:400,wdth:100,ital:1
-
--- local names = table.setmetatableindex ( {
---     weight = "wght",
---     width  = "wdth",
---     italic = "ital",
--- }, "self")
-
-local pattern = lpeg.Cf (
-    lpeg.Ct("") *
-    lpeg.Cg (
-      --(lpeg.R("az")^1/names) * lpeg.S(" :") *
-        lpeg.C(lpeg.R("az")^1) * lpeg.S(" :=") *
-        (lpeg.patterns.number/tonumber) * lpeg.S(" ,")^0
-    )^1, rawset
-)
-
-local hash = table.setmetatableindex(function(t,k)
-    local v = lpegmatch(pattern,k)
-    local t = { }
-    for k, v in sortedhash(v) do
-        t[#t+1] = k .. "=" .. v
-    end
-    v = concat(t,",")
-    t[k] = v
-    return v
-end)
-
-helpers.normalizedaxishash = hash
-
-local cleanname = fonts.names and fonts.names.cleanname or function(name)
-    return name and (gsub(lower(name),"[^%a%d]","")) or nil
-end
-
-helpers.cleanname = cleanname
-
-function helpers.normalizedaxis(str)
-    return hash[str] or str
-end
-
-local function axistofactors(str)
-    return lpegmatch(pattern,str)
-end
-
--- contradicting spec ... (signs) so i'll check it and fix it once we have
--- proper fonts
-
-local function getaxisscale(segments,minimum,default,maximum,user)
-    --
-    -- returns the right values cf example in standard
-    --
-    if not minimum or not default or not maximum then
-        return false
-    end
-    if user < minimum then
-        user = minimum
-    elseif user > maximum then
-        user = maximum
-    end
-    if user < default then
-        default = - (default - user) / (default - minimum)
-    elseif user > default then
-        default = (user - default) / (maximum - default)
-    else
-        default = 0
-    end
-    if not segments then
-        return default
-    end
-    local e
-    for i=1,#segments do
-        local s = segments[i]
-        if s[1] >= default then
-            if s[2] == default then
-                return default
-            else
-                e = i
-                break
-            end
-        end
-    end
-    if e then
-        local b = segments[e-1]
-        local e = segments[e]
-        return b[2] + (e[2] - b[2]) * (default - b[1]) / (e[1] - b[1])
-    else
-        return false
-    end
-end
-
-local function getfactors(data,instancespec)
-    if instancespec == true then
-        -- take default
-    elseif type(instancespec) ~= "string" or instancespec == "" then
-        return
-    end
-    local variabledata = data.variabledata
-    if not variabledata then
-        return
-    end
-    local instances = variabledata.instances
-    local axis      = variabledata.axis
-    local segments  = variabledata.segments
-    if instances and axis then
-        local values
-        if instancespec == true then
-            values = instances[1].values
-        else
-            for i=1,#instances do
-                local instance = instances[i]
-                if cleanname(instance.subfamily) == instancespec then
-                    values = instance.values
-                    break
-                end
-            end
-        end
-        if values then
-            local factors = { }
-            for i=1,#axis do
-                local a = axis[i]
-                factors[i] = getaxisscale(segments,a.minimum,a.default,a.maximum,values[i].value)
-            end
-            return factors
-        end
-        local values = axistofactors(hash[instancespec] or instancespec)
-        if values then
-            local factors = { }
-            for i=1,#axis do
-                local a = axis[i]
-                local d = a.default
-                factors[i] = getaxisscale(segments,a.minimum,d,a.maximum,values[a.name or a.tag] or d)
-            end
-            return factors
-        end
-    end
-end
-
-local function getscales(regions,factors)
-    local scales = { }
-    for i=1,#regions do
-        local region = regions[i]
-        local s = 1
-        for j=1,#region do
-            local axis  = region[j]
-            local f     = factors[j]
-            local start = axis.start
-            local peak  = axis.peak
-            local stop  = axis.stop
-            -- get rid of these tests, false flag
-            if start > peak or peak > stop then
-                -- * 1
-            elseif start < 0 and stop > 0 and peak ~= 0 then
-                -- * 1
-            elseif peak == 0 then
-                -- * 1
-            elseif f < start or f > stop then
-                -- * 0
-        --                     s = 0
-                break
-        -- something is wrong: swapped signs here
-            elseif f < peak then
-                s = s * (f - start) / (peak - start)
-            elseif f > peak then
-                s = s * (stop - f) / (stop - peak)
-            else
-                -- * 1
-            end
-        end
-        scales[i] = s
-    end
-    return scales
-end
-
-helpers.getaxisscale  = getaxisscale
-helpers.getfactors    = getfactors
-helpers.getscales     = getscales
-helpers.axistofactors = axistofactors
-
 function readers.gdef(f,fontdata,specification)
     if not specification.glyphs then
         return
@@ -2531,23 +2530,25 @@ function readers.gdef(f,fontdata,specification)
 
         if (specification.variable or factors) and varsetsoffset and varsetsoffset > tableoffset then
 
-            local regions, deltas = readvariationdata(f,varsetsoffset)
+            local regions, deltas = readvariationdata(f,varsetsoffset,factors)
 
-         -- setvariabledata(fontdata,"global", {
-         --     regions = regions,
-         --     deltas  = deltas,
-         -- })
+         -- setvariabledata(fontdata,"gregions",regions)
 
             if factors then
-                local scales = getscales(regions,factors)
                 fontdata.temporary.getdelta = function(outer,inner)
                     local delta = deltas[outer+1]
                     if delta then
                         local d = delta.deltas[inner+1]
                         if d then
+                            local scales = delta.scales
                             local dd = 0
                             for i=1,#scales do
-                                dd = dd + scales[i] * d[i]
+                                local di = d[i]
+                                if di then
+                                    dd = dd + scales[i] * di
+                                else
+                                    break
+                                end
                             end
                             return round(dd)
                         end
@@ -3253,7 +3254,7 @@ function readers.hvar(f,fontdata,specification)
     local outerindex = { } -- size is mapcount
 
     if variationoffset > 0 then
-        regions, deltas = readvariationdata(f,variationoffset)
+        regions, deltas = readvariationdata(f,variationoffset,factors)
     end
 
     if not regions then
@@ -3268,22 +3269,52 @@ function readers.hvar(f,fontdata,specification)
         -- reservedFlags          = 0xFFC0
         --
         -- outerIndex = entry >>       ((entryFormat & innerIndexBitCountMask) + 1)
-        -- innerIndex = entry & ((1 << ((entryFormat & innerIndexBitCountMask) + 1)) – 1)
+        -- innerIndex = entry & ((1 << ((entryFormat & innerIndexBitCountMask) + 1)) - 1)
         --
         setposition(f,advanceoffset)
-        local format      = readushort(f) -- todo: check
-        local mapcount    = readushort(f)
-        local entrysize   = rshift(band(format,0x0030),4) + 1
-        local outershift  = band(format,0x000F) + 1 -- n of inner bits
-        local innermask   = lshift(1,outershift) - 1
-        local readinteger = read_integer[entrysize] -- 1 upto 4 bytes
+        local format       = readushort(f) -- todo: check
+        local mapcount     = readushort(f)
+        local entrysize    = rshift(band(format,0x0030),4) + 1
+        local nofinnerbits = band(format,0x000F) + 1 -- n of inner bits
+        local innermask    = lshift(1,nofinnerbits) - 1
+        local readcardinal = read_cardinal[entrysize] -- 1 upto 4 bytes
         for i=0,mapcount-1 do
-            local mapdata = readinteger(f)
-            outerindex[i] = rshift(mapdata,outershift)
-            innerindex[i] = band  (mapdata,innermask)
+            local mapdata = readcardinal(f)
+            outerindex[i] = rshift(mapdata,nofinnerbits)
+            innerindex[i] = band(mapdata,innermask)
         end
-        -- todo: if all outers zero than no need for outer
-        -- if glyph index > last then last is used
+        -- use last entry when no match i
+        local glyphs = fontdata.glyphs
+        for i=0,fontdata.nofglyphs-1 do
+            local glyph = glyphs[i]
+            local width = glyph.width
+            if width then
+                local outer = outerindex[i] or 0
+                local inner = innerindex[i] or i
+                if outer and inner then -- not needed
+                    local delta = deltas[outer+1]
+                    if delta then
+                        local d = delta.deltas[inner+1]
+                        if d then
+                            local scales = delta.scales
+                            local deltaw = 0
+                            for i=1,#scales do
+                                local di = d[i]
+                                if di then
+                                    deltaw = deltaw + scales[i] * di
+                                else
+                                    break -- can't happen
+                                end
+                            end
+-- report("index: %i, outer: %i, inner: %i, deltas: %|t, scales: %|t, width: %i, delta %i",
+--     i,outer,inner,d,scales,width,round(deltaw))
+                            glyph.width = width + round(deltaw)
+                        end
+                    end
+                end
+            end
+        end
+
     end
 
  -- if lsboffset > 0 then
@@ -3294,34 +3325,8 @@ function readers.hvar(f,fontdata,specification)
  --     -- we don't use right side bearings
  -- end
 
-    local glyphs = fontdata.glyphs
-    local scales = getscales(regions,factors)
+ -- setvariabledata(fontdata,"hregions",regions)
 
-    for i=1,fontdata.nofglyphs do
-        local glyph = glyphs[i]
-        local outer = outerindex[i] -- maybe zero based, temp anyway
-        local inner = innerindex[i]
-        if outer and inner then
-            local delta = deltas[outer+1]
-            if delta then
-                local d = delta.deltas[inner+1]
-                if d then
-                    local dd = 0
-                    for i=1,#scales do
-                        dd = dd + scales[i] * d[i]
-                    end
-                    glyph.width = glyph.width + round(dd)
-                end
-            end
-        end
-    end
-
- -- setvariabledata(fontdata,"horizontal",{
- --     regions    = regions,
- --     deltas     = deltas,
- --     innerindex = innerindex,
- --     outerindex = outerindex,
- -- })
 end
 
 function readers.vvar(f,fontdata,specification)
@@ -3341,15 +3346,9 @@ function readers.mvar(f,fontdata,specification)
         local nofrecords    = readushort(f)
         local offsettostore = tableoffset + readushort(f)
         local dimensions    = { }
-        --
-        local factors = specification.factors
-        --
+        local factors       = specification.factors
         if factors then
-
-            local regions, deltas = readvariationdata(f,offsettostore)
-
-            local scales = getscales(regions,factors)
-
+            local regions, deltas = readvariationdata(f,offsettostore,factors)
             for i=1,nofrecords do
                 local tag = readtag(f)
                 if variabletags[tag] then
@@ -3359,6 +3358,7 @@ function readers.mvar(f,fontdata,specification)
                     if delta then
                         local d = delta.deltas[inner+1]
                         if d then
+                            local scales = delta.scales
                             local dd = 0
                             for i=1,#scales do
                                 dd = dd + scales[i] * d[i]
@@ -3372,13 +3372,7 @@ function readers.mvar(f,fontdata,specification)
                     skipbytes(recordsize-8)
                 end
             end
-
         end
-        --
-     -- setvariabledata(fontdata,"metrics",{
-     --     dimensions = dimensions,
-     --     regions    = regions,
-     --     deltas     = deltas,
-     -- })
+     -- setvariabledata(fontdata,"mregions",regions)
     end
 end

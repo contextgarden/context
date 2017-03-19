@@ -193,12 +193,19 @@ function resolvers.name(specification)
             if instance then
                 specification.instance = instance
                 local features = specification.features
-                local normal   = features and features.normal
+                if not features then
+                    features = { }
+                    specification.features = features
+                end
+                local normal = features.normal
                 if not normal then
                     normal = { }
-                    specification.features = normal
+                    features.normal = normal
                 end
                 normal.instance = instance
+if not callbacks.supported.glyph_stream_provider then
+    normal.variableshapes = true -- for the moment
+end
             end
             --
             local suffix = lower(suffixonly(resolved))

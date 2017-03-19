@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/17/17 19:11:32
+-- merge date  : 03/19/17 19:53:27
 
 do -- begin closure to overcome local limits and interference
 
@@ -9360,11 +9360,15 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,inst
     end
     if instancenames then
       local variabledata=fontdata.variabledata
-      local instances=variabledata and variabledata.instances
-      if instances then
-        instancenames={}
-        for i=1,#instances do
-          instancenames[i]=lower(stripstring(instances[i].subfamily))
+      if variabledata then
+        local instances=variabledata and variabledata.instances
+        if instances then
+          instancenames={}
+          for i=1,#instances do
+            instancenames[i]=lower(stripstring(instances[i].subfamily))
+          end
+        else
+          instancenames=nil
         end
       else
         instancenames=nil
@@ -9515,7 +9519,7 @@ local function readdata(f,offset,specification)
   if helpers.getfactors then
     if not specification.factors then
       local instance=specification.instance
-      if instance then
+      if type(instance)=="string" then
         local factors=helpers.getfactors(fontdata,instance)
         specification.factors=factors
         fontdata.factors=factors
@@ -11626,7 +11630,7 @@ function readers.cff2(f,fontdata,specification)
     }
     parsedictionaries(data,dictionaries,"cff2")
     local storeoffset=dictionaries[1].vstore+data.header.offset+2 
-    local regions,deltas=readers.helpers.readvariationdata(f,storeoffset)
+    local regions,deltas=readers.helpers.readvariationdata(f,storeoffset,factors)
     data.regions=regions
     data.deltas=deltas
     data.factors=specification.factors
@@ -11782,15 +11786,16 @@ local function curveto(m_x,m_y,l_x,l_y,r_x,r_y)
 end
 local function applyaxis(glyph,shape,points,deltas)
   if points then
+    local nofpoints=#points
     for i=1,#deltas do
       local deltaset=deltas[i]
       local xvalues=deltaset.xvalues
       local yvalues=deltaset.yvalues
       local dpoints=deltaset.points
       local factor=deltaset.factor
-      local nofpoints=#points
       if dpoints then
-        for i=1,#dpoints do
+        local nofdpoints=#dpoints
+        for i=1,nofdpoints do
           local d=dpoints[i]
           local p=points[d]
           if p then
@@ -11806,6 +11811,7 @@ local function applyaxis(glyph,shape,points,deltas)
                 p[2]=p[2]+factor*y
               end
             end
+          elseif width then
           end
         end
       else
@@ -11956,7 +11962,9 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
         local nofcontours=#contours
         local segments=keepcurve and {} or nil
         local nofsegments=0
-        glyph.segments=segments
+        if keepcurve then
+          glyph.segments=segments
+        end
         if nofcontours>0 then
           local xmin,ymin,xmax,ymax,done=0,0,0,0,false
           local px,py=0,0 
@@ -12113,6 +12121,8 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
     end
   end
 end
+local c_zero=char(0)
+local s_zero=char(0,0)
 local function toushort(n)
   return char(band(rshift(n,8),0xFF),band(n,0xFF))
 end
@@ -12124,59 +12134,106 @@ local function toshort(n)
 end
 local function repackpoints(glyphs,shapes)
   local noboundingbox={ 0,0,0,0 }
+  local result={} 
   for index=1,#glyphs do
     local shape=shapes[index]
     if shape then
+      local r=0
       local glyph=glyphs[index]
-      local contours=shape.contours
-      local points=shape.points
-      if points and contours then
+      if false then
+      else
+        local contours=shape.contours
         local nofcontours=#contours
-        local nofpoints=#points
-        local result={}
-        local r=0
         local boundingbox=glyph.boundingbox or noboundingbox
+        r=r+1 result[r]=toshort(nofcontours)
+        r=r+1 result[r]=toshort(boundingbox[1]) 
+        r=r+1 result[r]=toshort(boundingbox[2]) 
+        r=r+1 result[r]=toshort(boundingbox[3]) 
+        r=r+1 result[r]=toshort(boundingbox[4]) 
         if nofcontours>0 then
+          for i=1,nofcontours do
+            r=r+1 result[r]=toshort(contours[i]-1)
+          end
+          r=r+1 result[r]=s_zero 
+          local points=shape.points
           local currentx=0
           local currenty=0
-          local flags={}
           local xpoints={}
           local ypoints={}
-          for i=1,nofpoints do
+          local x=0
+          local y=0
+          local lastflag=nil
+          local nofflags=0
+          for i=1,#points do
             local pt=points[i]
             local px=pt[1]
             local py=pt[2]
             local fl=pt[3] and 0x01 or 0x00
-            xpoints[i]=toshort(round(px-currentx))
-            ypoints[i]=toshort(round(py-currenty))
-            flags[i]=char(fl)
+            if px==currentx then
+              fl=fl+0x10
+            else
+              local dx=round(px-currentx)
+              if dx<-255 or dx>255 then
+                x=x+1 xpoints[x]=toshort(dx)
+              elseif dx<0 then
+                fl=fl+0x02
+                x=x+1 xpoints[x]=char(-dx)
+              elseif dx>0 then
+                fl=fl+0x12
+                x=x+1 xpoints[x]=char(dx)
+              else
+                fl=fl+0x02
+                x=x+1 xpoints[x]=c_zero
+              end
+            end
+            if py==currenty then
+              fl=fl+0x20
+            else
+              local dy=round(py-currenty)
+              if dy<-255 or dy>255 then
+                y=y+1 ypoints[y]=toshort(dy)
+              elseif dy<0 then
+                fl=fl+0x04
+                y=y+1 ypoints[y]=char(-dy)
+              elseif dy>0 then
+                fl=fl+0x24
+                y=y+1 ypoints[y]=char(dy)
+              else
+                fl=fl+0x04
+                y=y+1 ypoints[y]=c_zero
+              end
+            end
             currentx=px
             currenty=py
+            if lastflag==fl then
+              nofflags=nofflags+1
+            else 
+              if nofflags==1 then
+                r=r+1 result[r]=char(lastflag)
+              elseif nofflags==2 then
+                r=r+1 result[r]=char(lastflag,lastflag)
+              elseif nofflags>2 then
+                lastflag=lastflag+0x08
+                r=r+1 result[r]=char(lastflag,nofflags-1)
+              end
+              nofflags=1
+              lastflag=fl
+            end
           end
-          r=r+1 result[r]=toshort(nofcontours)
-          r=r+1 result[r]=toshort(boundingbox[1]) 
-          r=r+1 result[r]=toshort(boundingbox[2]) 
-          r=r+1 result[r]=toshort(boundingbox[3]) 
-          r=r+1 result[r]=toshort(boundingbox[4]) 
-          for i=1,nofcontours do
-            r=r+1 result[r]=toshort(contours[i]-1)
+          if nofflags==1 then
+            r=r+1 result[r]=char(lastflag)
+          elseif nofflags==2 then
+            r=r+1 result[r]=char(lastflag,lastflag)
+          elseif nofflags>2 then
+            lastflag=lastflag+0x08
+            r=r+1 result[r]=char(lastflag,nofflags-1)
           end
-          r=r+1 result[r]=toshort(0) 
-          r=r+1 result[r]=concat(flags)
           r=r+1 result[r]=concat(xpoints)
           r=r+1 result[r]=concat(ypoints)
-          glyph.stream=concat(result)
-        elseif nofcontours<0 then
-        else
-          r=r+1 result[r]=toshort(0) 
-          r=r+1 result[r]=toshort(0) 
-          r=r+1 result[r]=toshort(0) 
-          r=r+1 result[r]=toshort(0) 
-          r=r+1 result[r]=toshort(0) 
-          r=r+1 result[r]=toshort(0) 
-          glyph.stream=concat(result)
         end
       end
+      glyph.stream=concat(result,"",1,r)
+    else
     end
   end
 end
@@ -12195,7 +12252,7 @@ local function readglyph(f,nofcontours)
   while i<=nofpoints do
     local flag=readbyte(f)
     flags[i]=flag
-    if bittest(flag,0x0008) then
+    if bittest(flag,0x08) then
       for j=1,readbyte(f) do
         i=i+1
         flags[i]=flag
@@ -12206,8 +12263,8 @@ local function readglyph(f,nofcontours)
   local x=0
   for i=1,nofpoints do
     local flag=flags[i]
-    local short=bittest(flag,0x0002)
-    local same=bittest(flag,0x0010)
+    local short=bittest(flag,0x02)
+    local same=bittest(flag,0x10)
     if short then
       if same then
         x=x+readbyte(f)
@@ -12218,13 +12275,13 @@ local function readglyph(f,nofcontours)
     else
       x=x+readshort(f)
     end
-    points[i]={ x,y,bittest(flag,0x0001) }
+    points[i]={ x,y,bittest(flag,0x01) }
   end
   local y=0
   for i=1,nofpoints do
     local flag=flags[i]
-    local short=bittest(flag,0x0004)
-    local same=bittest(flag,0x0020)
+    local short=bittest(flag,0x04)
+    local same=bittest(flag,0x20)
     if short then
       if same then
         y=y+readbyte(f)
@@ -12396,11 +12453,11 @@ function readers.glyf(f,fontdata,specification)
         end
         mergecomposites(glyphs,shapes)
         if specification.instance then
-if specification.streams then
-  repackpoints(glyphs,shapes)
-else
-          contours2outlines_shaped(glyphs,shapes,loadshapes)
-end
+          if specification.streams then
+            repackpoints(glyphs,shapes)
+          else
+            contours2outlines_shaped(glyphs,shapes,specification.shapes)
+          end
         elseif specification.loadshapes then
           contours2outlines_normal(glyphs,shapes)
         end
@@ -12762,7 +12819,149 @@ local lookupflags=setmetatableindex(function(t,k)
   t[k]=v
   return v
 end)
-local function readvariationdata(f,storeoffset) 
+local pattern=lpeg.Cf (
+  lpeg.Ct("")*lpeg.Cg (
+    lpeg.C(lpeg.R("az")^1)*lpeg.S(" :=")*(lpeg.patterns.number/tonumber)*lpeg.S(" ,")^0
+  )^1,rawset
+)
+local hash=table.setmetatableindex(function(t,k)
+  local v=lpegmatch(pattern,k)
+  local t={}
+  for k,v in sortedhash(v) do
+    t[#t+1]=k.."="..v
+  end
+  v=concat(t,",")
+  t[k]=v
+  return v
+end)
+helpers.normalizedaxishash=hash
+local cleanname=fonts.names and fonts.names.cleanname or function(name)
+  return name and (gsub(lower(name),"[^%a%d]","")) or nil
+end
+helpers.cleanname=cleanname
+function helpers.normalizedaxis(str)
+  return hash[str] or str
+end
+local function axistofactors(str)
+  return lpegmatch(pattern,str)
+end
+local function getaxisscale(segments,minimum,default,maximum,user)
+  if not minimum or not default or not maximum then
+    return false
+  end
+  if user<minimum then
+    user=minimum
+  elseif user>maximum then
+    user=maximum
+  end
+  if user<default then
+    default=- (default-user)/(default-minimum)
+  elseif user>default then
+    default=(user-default)/(maximum-default)
+  else
+    default=0
+  end
+  if not segments then
+    return default
+  end
+  local e
+  for i=1,#segments do
+    local s=segments[i]
+    if s[1]>=default then
+      if s[2]==default then
+        return default
+      else
+        e=i
+        break
+      end
+    end
+  end
+  if e then
+    local b=segments[e-1]
+    local e=segments[e]
+    return b[2]+(e[2]-b[2])*(default-b[1])/(e[1]-b[1])
+  else
+    return false
+  end
+end
+local function getfactors(data,instancespec)
+  if instancespec==true then
+  elseif type(instancespec)~="string" or instancespec=="" then
+    return
+  end
+  local variabledata=data.variabledata
+  if not variabledata then
+    return
+  end
+  local instances=variabledata.instances
+  local axis=variabledata.axis
+  local segments=variabledata.segments
+  if instances and axis then
+    local values
+    if instancespec==true then
+      values=instances[1].values
+    else
+      for i=1,#instances do
+        local instance=instances[i]
+        if cleanname(instance.subfamily)==instancespec then
+          values=instance.values
+          break
+        end
+      end
+    end
+    if values then
+      local factors={}
+      for i=1,#axis do
+        local a=axis[i]
+        factors[i]=getaxisscale(segments,a.minimum,a.default,a.maximum,values[i].value)
+      end
+      return factors
+    end
+    local values=axistofactors(hash[instancespec] or instancespec)
+    if values then
+      local factors={}
+      for i=1,#axis do
+        local a=axis[i]
+        local d=a.default
+        factors[i]=getaxisscale(segments,a.minimum,d,a.maximum,values[a.name or a.tag] or d)
+      end
+      return factors
+    end
+  end
+end
+local function getscales(regions,factors)
+  local scales={}
+  for i=1,#regions do
+    local region=regions[i]
+    local s=1
+    for j=1,#region do
+      local axis=region[j]
+      local f=factors[j]
+      local start=axis.start
+      local peak=axis.peak
+      local stop=axis.stop
+      if start>peak or peak>stop then
+      elseif start<0 and stop>0 and peak~=0 then
+      elseif peak==0 then
+      elseif f<start or f>stop then
+        s=0
+        break
+      elseif f<peak then
+        s=s*(f-start)/(peak-start)
+      elseif f>peak then
+        s=s*(stop-f)/(stop-peak)
+      else
+      end
+    end
+    scales[i]=s
+  end
+  return scales
+end
+helpers.getaxisscale=getaxisscale
+helpers.getfactors=getfactors
+helpers.getscales=getscales
+helpers.axistofactors=axistofactors
+local function readvariationdata(f,storeoffset,factors) 
   setposition(f,storeoffset)
   local format=readushort(f)
   local regionoffset=storeoffset+readulong(f)
@@ -12786,30 +12985,33 @@ local function readvariationdata(f,storeoffset)
     end
     regions[i]=t
   end
-  for i=1,nofdeltadata do
-    setposition(f,storeoffset+deltadata[i])
-    local nofdeltasets=readushort(f)
-    local nofshorts=readushort(f)
-    local nofregions=readushort(f)
-    local regions={}
-    local deltas={}
-    for i=1,nofregions do
-      regions[i]=readushort(f)
-    end
-    for i=1,nofdeltasets do
-      local t={} 
-      for i=1,nofshorts do
-        t[i]=readshort(f)
+  if factors then
+    for i=1,nofdeltadata do
+      setposition(f,storeoffset+deltadata[i])
+      local nofdeltasets=readushort(f)
+      local nofshorts=readushort(f)
+      local nofregions=readushort(f)
+      local usedregions={}
+      local deltas={}
+      for i=1,nofregions do
+        usedregions[i]=regions[readushort(f)+1]
       end
-      for i=nofshorts+1,nofregions do
-        t[i]=readinteger(f)
+      for i=1,nofdeltasets do
+        local t={} 
+        for i=1,nofshorts do
+          t[i]=readshort(f)
+        end
+        for i=nofshorts+1,nofregions do
+          t[i]=readinteger(f)
+        end
+        deltas[i]=t
       end
-      deltas[i]=t
+      deltadata[i]={
+        regions=usedregions,
+        deltas=deltas,
+        scales=factors and getscales(usedregions,factors) or nil,
+      }
     end
-    deltadata[i]={
-      regions=regions,
-      deltas=deltas,
-    }
   end
   return regions,deltadata
 end
@@ -14521,147 +14723,6 @@ do
     end
   end
 end
-local pattern=lpeg.Cf (
-  lpeg.Ct("")*lpeg.Cg (
-    lpeg.C(lpeg.R("az")^1)*lpeg.S(" :=")*(lpeg.patterns.number/tonumber)*lpeg.S(" ,")^0
-  )^1,rawset
-)
-local hash=table.setmetatableindex(function(t,k)
-  local v=lpegmatch(pattern,k)
-  local t={}
-  for k,v in sortedhash(v) do
-    t[#t+1]=k.."="..v
-  end
-  v=concat(t,",")
-  t[k]=v
-  return v
-end)
-helpers.normalizedaxishash=hash
-local cleanname=fonts.names and fonts.names.cleanname or function(name)
-  return name and (gsub(lower(name),"[^%a%d]","")) or nil
-end
-helpers.cleanname=cleanname
-function helpers.normalizedaxis(str)
-  return hash[str] or str
-end
-local function axistofactors(str)
-  return lpegmatch(pattern,str)
-end
-local function getaxisscale(segments,minimum,default,maximum,user)
-  if not minimum or not default or not maximum then
-    return false
-  end
-  if user<minimum then
-    user=minimum
-  elseif user>maximum then
-    user=maximum
-  end
-  if user<default then
-    default=- (default-user)/(default-minimum)
-  elseif user>default then
-    default=(user-default)/(maximum-default)
-  else
-    default=0
-  end
-  if not segments then
-    return default
-  end
-  local e
-  for i=1,#segments do
-    local s=segments[i]
-    if s[1]>=default then
-      if s[2]==default then
-        return default
-      else
-        e=i
-        break
-      end
-    end
-  end
-  if e then
-    local b=segments[e-1]
-    local e=segments[e]
-    return b[2]+(e[2]-b[2])*(default-b[1])/(e[1]-b[1])
-  else
-    return false
-  end
-end
-local function getfactors(data,instancespec)
-  if instancespec==true then
-  elseif type(instancespec)~="string" or instancespec=="" then
-    return
-  end
-  local variabledata=data.variabledata
-  if not variabledata then
-    return
-  end
-  local instances=variabledata.instances
-  local axis=variabledata.axis
-  local segments=variabledata.segments
-  if instances and axis then
-    local values
-    if instancespec==true then
-      values=instances[1].values
-    else
-      for i=1,#instances do
-        local instance=instances[i]
-        if cleanname(instance.subfamily)==instancespec then
-          values=instance.values
-          break
-        end
-      end
-    end
-    if values then
-      local factors={}
-      for i=1,#axis do
-        local a=axis[i]
-        factors[i]=getaxisscale(segments,a.minimum,a.default,a.maximum,values[i].value)
-      end
-      return factors
-    end
-    local values=axistofactors(hash[instancespec] or instancespec)
-    if values then
-      local factors={}
-      for i=1,#axis do
-        local a=axis[i]
-        local d=a.default
-        factors[i]=getaxisscale(segments,a.minimum,d,a.maximum,values[a.name or a.tag] or d)
-      end
-      return factors
-    end
-  end
-end
-local function getscales(regions,factors)
-  local scales={}
-  for i=1,#regions do
-    local region=regions[i]
-    local s=1
-    for j=1,#region do
-      local axis=region[j]
-      local f=factors[j]
-      local start=axis.start
-      local peak=axis.peak
-      local stop=axis.stop
-      if start>peak or peak>stop then
-      elseif start<0 and stop>0 and peak~=0 then
-      elseif peak==0 then
-      elseif f<start or f>stop then
-        break
-      elseif f<peak then
-        s=s*(f-start)/(peak-start)
-      elseif f>peak then
-        s=s*(stop-f)/(stop-peak)
-      else
-      end
-    end
-    scales[i]=s
-  end
-  return scales
-end
-helpers.getaxisscale=getaxisscale
-helpers.getfactors=getfactors
-helpers.getscales=getscales
-helpers.axistofactors=axistofactors
 function readers.gdef(f,fontdata,specification)
   if not specification.glyphs then
     return
@@ -14750,17 +14811,22 @@ function readers.gdef(f,fontdata,specification)
     end
     local factors=specification.factors
     if (specification.variable or factors) and varsetsoffset and varsetsoffset>tableoffset then
-      local regions,deltas=readvariationdata(f,varsetsoffset)
+      local regions,deltas=readvariationdata(f,varsetsoffset,factors)
       if factors then
-        local scales=getscales(regions,factors)
         fontdata.temporary.getdelta=function(outer,inner)
           local delta=deltas[outer+1]
           if delta then
             local d=delta.deltas[inner+1]
             if d then
+              local scales=delta.scales
               local dd=0
               for i=1,#scales do
-                dd=dd+scales[i]*d[i]
+                local di=d[i]
+                if di then
+                  dd=dd+scales[i]*di
+                else
+                  break
+                end
               end
               return round(dd)
             end
@@ -15375,7 +15441,7 @@ function readers.hvar(f,fontdata,specification)
   local innerindex={} 
   local outerindex={} 
   if variationoffset>0 then
-    regions,deltas=readvariationdata(f,variationoffset)
+    regions,deltas=readvariationdata(f,variationoffset,factors)
   end
   if not regions then
     return
@@ -15385,31 +15451,39 @@ function readers.hvar(f,fontdata,specification)
     local format=readushort(f) 
     local mapcount=readushort(f)
     local entrysize=rshift(band(format,0x0030),4)+1
-    local outershift=band(format,0x000F)+1 
-    local innermask=lshift(1,outershift)-1
-    local readinteger=read_integer[entrysize] 
+    local nofinnerbits=band(format,0x000F)+1 
+    local innermask=lshift(1,nofinnerbits)-1
+    local readcardinal=read_cardinal[entrysize] 
     for i=0,mapcount-1 do
-      local mapdata=readinteger(f)
-      outerindex[i]=rshift(mapdata,outershift)
-      innerindex[i]=band (mapdata,innermask)
+      local mapdata=readcardinal(f)
+      outerindex[i]=rshift(mapdata,nofinnerbits)
+      innerindex[i]=band(mapdata,innermask)
     end
-  end
-  local glyphs=fontdata.glyphs
-  local scales=getscales(regions,factors)
-  for i=1,fontdata.nofglyphs do
-    local glyph=glyphs[i]
-    local outer=outerindex[i] 
-    local inner=innerindex[i]
-    if outer and inner then
-      local delta=deltas[outer+1]
-      if delta then
-        local d=delta.deltas[inner+1]
-        if d then
-          local dd=0
-          for i=1,#scales do
-            dd=dd+scales[i]*d[i]
+    local glyphs=fontdata.glyphs
+    for i=0,fontdata.nofglyphs-1 do
+      local glyph=glyphs[i]
+      local width=glyph.width
+      if width then
+        local outer=outerindex[i] or 0
+        local inner=innerindex[i] or i
+        if outer and inner then 
+          local delta=deltas[outer+1]
+          if delta then
+            local d=delta.deltas[inner+1]
+            if d then
+              local scales=delta.scales
+              local deltaw=0
+              for i=1,#scales do
+                local di=d[i]
+                if di then
+                  deltaw=deltaw+scales[i]*di
+                else
+                  break 
+                end
+              end
+              glyph.width=width+round(deltaw)
+            end
           end
-          glyph.width=glyph.width+round(dd)
         end
       end
     end
@@ -15431,8 +15505,7 @@ function readers.mvar(f,fontdata,specification)
     local dimensions={}
     local factors=specification.factors
     if factors then
-      local regions,deltas=readvariationdata(f,offsettostore)
-      local scales=getscales(regions,factors)
+      local regions,deltas=readvariationdata(f,offsettostore,factors)
       for i=1,nofrecords do
         local tag=readtag(f)
         if variabletags[tag] then
@@ -15442,6 +15515,7 @@ function readers.mvar(f,fontdata,specification)
           if delta then
             local d=delta.deltas[inner+1]
             if d then
+              local scales=delta.scales
               local dd=0
               for i=1,#scales do
                 dd=dd+scales[i]*d[i]
@@ -28664,12 +28738,19 @@ function resolvers.name(specification)
       if instance then
         specification.instance=instance
         local features=specification.features
-        local normal=features and features.normal
+        if not features then
+          features={}
+          specification.features=features
+        end
+        local normal=features.normal
         if not normal then
           normal={}
-          specification.features=normal
+          features.normal=normal
         end
         normal.instance=instance
+if not callbacks.supported.glyph_stream_provider then
+  normal.variableshapes=true 
+end
       end
       local suffix=lower(suffixonly(resolved))
       if fonts.formats[suffix] then

@@ -1141,6 +1141,7 @@ readers.hmtx = function(f,fontdata,specification)
          --     glyph.lsb = leftsidebearing
          -- end
         end
+        -- hm, there can be a lsb here
     end
 end
 
@@ -1875,11 +1876,15 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,inst
         end
         if instancenames then
             local variabledata = fontdata.variabledata
-            local instances    = variabledata and variabledata.instances
-            if instances then
-                instancenames = { }
-                for i=1,#instances do
-                    instancenames[i] = lower(stripstring(instances[i].subfamily))
+            if variabledata then
+                local instances = variabledata and variabledata.instances
+                if instances then
+                    instancenames = { }
+                    for i=1,#instances do
+                        instancenames[i] = lower(stripstring(instances[i].subfamily))
+                    end
+                else
+                    instancenames = nil
                 end
             else
                 instancenames = nil
@@ -2048,7 +2053,7 @@ local function readdata(f,offset,specification)
     if helpers.getfactors then
         if not specification.factors then
             local instance = specification.instance
-            if instance then
+            if type(instance) == "string" then
                 local factors = helpers.getfactors(fontdata,instance)
                 specification.factors = factors
                 fontdata.factors  = factors

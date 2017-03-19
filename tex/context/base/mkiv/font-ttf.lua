@@ -144,20 +144,35 @@ end
 
 -- We could omit the operator which saves some 10%:
 --
--- #2=lineto  #4=quadratic  #6=cubic #3=moveto (with "m")
+--   #2=lineto  #4=quadratic  #6=cubic #3=moveto (with "m")
+--
+-- This is tricky ... something to do with phantom points .. however, the hvar
+-- and vvar tables should take care of the width .. the test font doesn't have
+-- those so here we go then (we need a flag for hvar).
+--
+--    h-advance left-side-bearing v-advance top-side-bearing
+--
+-- We had two loops (going backward) but can do it in one loop .. but maybe we
+-- should only accept fonts with proper hvar tables.
 
 local function applyaxis(glyph,shape,points,deltas)
     if points then
+        local nofpoints = #points
+-- local h = nofpoints + 2 -- weird, the example font seems to have left first
+-- ----- l = nofpoints + 2
+-- ----- v = nofpoints + 3
+-- ----- t = nofpoints + 4
+-- local width = glyph.width
         for i=1,#deltas do
-            local deltaset  = deltas[i]
-            local xvalues   = deltaset.xvalues
-            local yvalues   = deltaset.yvalues
-            local dpoints   = deltaset.points
-            local factor    = deltaset.factor
-            local nofpoints = #points
+            local deltaset = deltas[i]
+            local xvalues  = deltaset.xvalues
+            local yvalues  = deltaset.yvalues
+            local dpoints  = deltaset.points
+            local factor   = deltaset.factor
             if dpoints then
                 -- todo: interpolate
-                for i=1,#dpoints do
+                local nofdpoints = #dpoints
+                for i=1,nofdpoints do
                     local d = dpoints[i]
                     local p = points[d]
                     if p then
@@ -173,9 +188,21 @@ local function applyaxis(glyph,shape,points,deltas)
                                 p[2] = p[2] + factor * y
                             end
                         end
+                    elseif width then
+-- weird one-off and bad values
+--
+-- if d == h then
+-- print("index",d)
+-- inspect(dpoints)
+-- inspect(xvalues)
+--     local x = xvalues[i]
+--     if x then
+-- print("phantom h advance",width,factor*x)
+--         width = width + factor * x
+--     end
+-- end
                     end
                 end
-                -- width
             else
                 for i=1,nofpoints do
                     local p = points[i]
@@ -192,17 +219,10 @@ local function applyaxis(glyph,shape,points,deltas)
                         end
                     end
                 end
-                -- how do we know if there are 4 phantom points (so 2?)
-                -- nofpoints-3 : right (advance)
-                -- nofpoints-2 : top
-                -- nofpoints-1 : bottom
-                -- nofpoints   : left
---                 local p = points[nofpoints-3]
---                 if p then
---                     glyph.width = p[1]
---                 end
+-- todo : phantom point hadvance
             end
         end
+-- glyph.width = width
     end
 end
 
@@ -344,7 +364,9 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
                 local nofcontours = #contours
                 local segments    = keepcurve and { } or nil
                 local nofsegments = 0
-                glyph.segments    = segments
+                if keepcurve then
+                    glyph.segments = segments
+                end
                 if nofcontours > 0 then
                     local xmin, ymin, xmax, ymax, done = 0, 0, 0, 0, false
                     local px, py = 0, 0 -- we could use these in calculations which saves a copy
@@ -510,6 +532,9 @@ end
 
 -- optimize for zero
 
+local c_zero = char(0)
+local s_zero = char(0,0)
+
 local function toushort(n)
     return char(band(rshift(n,8),0xFF),band(n,0xFF))
 end
@@ -521,62 +546,112 @@ local function toshort(n)
     return char(band(rshift(n,8),0xFF),band(n,0xFF))
 end
 
+-- todo: we can reuse result, xpoints and ypoints
+
 local function repackpoints(glyphs,shapes)
     local noboundingbox = { 0, 0, 0, 0 }
+    local result        = { } -- reused
     for index=1,#glyphs do
         local shape = shapes[index]
         if shape then
-            local glyph     = glyphs[index]
-            local contours  = shape.contours
-            local points    = shape.points
-            if points and contours then
+            local r     = 0
+            local glyph = glyphs[index]
+            if false then -- shape.type == "composite"
+                -- we merged them
+            else
+                local contours    = shape.contours
                 local nofcontours = #contours
-                local nofpoints   = #points
-                local result      = { }
-                local r           = 0
                 local boundingbox = glyph.boundingbox or noboundingbox
+                r = r + 1 result[r] = toshort(nofcontours)
+                r = r + 1 result[r] = toshort(boundingbox[1]) -- xmin
+                r = r + 1 result[r] = toshort(boundingbox[2]) -- ymin
+                r = r + 1 result[r] = toshort(boundingbox[3]) -- xmax
+                r = r + 1 result[r] = toshort(boundingbox[4]) -- ymax
                 if nofcontours > 0 then
-                    local currentx = 0
-                    local currenty = 0
-                    local flags    = { }
-                    local xpoints  = { }
-                    local ypoints  = { }
-                    for i=1,nofpoints do
-                        local pt   = points[i]
-                        local px   = pt[1]
-                        local py   = pt[2]
-                        local fl   = pt[3] and 0x01 or 0x00
-                        xpoints[i] = toshort(round(px - currentx))
-                        ypoints[i] = toshort(round(py - currenty))
-                        flags[i]   = char(fl)
-                        currentx   = px
-                        currenty   = py
-                    end
-                    r = r + 1 result[r] = toshort(nofcontours)
-                    r = r + 1 result[r] = toshort(boundingbox[1]) -- xmin
-                    r = r + 1 result[r] = toshort(boundingbox[2]) -- ymin
-                    r = r + 1 result[r] = toshort(boundingbox[3]) -- xmax
-                    r = r + 1 result[r] = toshort(boundingbox[4]) -- ymax
                     for i=1,nofcontours do
                         r = r + 1 result[r] = toshort(contours[i]-1)
                     end
-                    r = r + 1 result[r] = toshort(0) -- no instructions
-                    r = r + 1 result[r] = concat(flags)
+                    r = r + 1 result[r] = s_zero -- no instructions
+                    local points   = shape.points
+                    local currentx = 0
+                    local currenty = 0
+                    local xpoints  = { }
+                    local ypoints  = { }
+                    local x        = 0
+                    local y        = 0
+                    local lastflag = nil
+                    local nofflags = 0
+                    for i=1,#points do
+                        local pt = points[i]
+                        local px = pt[1]
+                        local py = pt[2]
+                        local fl = pt[3] and 0x01 or 0x00
+                        if px == currentx then
+                            fl = fl + 0x10
+                        else
+                            local dx = round(px - currentx)
+                            if dx < -255 or dx > 255 then
+                                x = x + 1 xpoints[x] = toshort(dx)
+                            elseif dx < 0 then
+                                fl = fl + 0x02
+                                x = x + 1 xpoints[x] = char(-dx)
+                            elseif dx > 0 then
+                                fl = fl + 0x12
+                                x = x + 1 xpoints[x] = char(dx)
+                            else
+                                fl = fl + 0x02
+                                x = x + 1 xpoints[x] = c_zero
+                            end
+                        end
+                        if py == currenty then
+                            fl = fl + 0x20
+                        else
+                            local dy = round(py - currenty)
+                            if dy < -255 or dy > 255 then
+                                y = y + 1 ypoints[y] = toshort(dy)
+                            elseif dy < 0 then
+                                fl = fl + 0x04
+                                y = y + 1 ypoints[y] = char(-dy)
+                            elseif dy > 0 then
+                                fl = fl + 0x24
+                                y = y + 1 ypoints[y] = char(dy)
+                            else
+                                fl = fl + 0x04
+                                y = y + 1 ypoints[y] = c_zero
+                            end
+                        end
+                        currentx = px
+                        currenty = py
+                        if lastflag == fl then
+                            nofflags = nofflags + 1
+                        else -- if > 255
+                            if nofflags == 1 then
+                                r = r + 1 result[r] = char(lastflag)
+                            elseif nofflags == 2 then
+                                r = r + 1 result[r] = char(lastflag,lastflag)
+                            elseif nofflags > 2 then
+                                lastflag = lastflag + 0x08
+                                r = r + 1 result[r] = char(lastflag,nofflags-1)
+                            end
+                            nofflags = 1
+                            lastflag = fl
+                        end
+                    end
+                    if nofflags == 1 then
+                        r = r + 1 result[r] = char(lastflag)
+                    elseif nofflags == 2 then
+                        r = r + 1 result[r] = char(lastflag,lastflag)
+                    elseif nofflags > 2 then
+                        lastflag = lastflag + 0x08
+                        r = r + 1 result[r] = char(lastflag,nofflags-1)
+                    end
                     r = r + 1 result[r] = concat(xpoints)
                     r = r + 1 result[r] = concat(ypoints)
-                    glyph.stream = concat(result)
-                elseif nofcontours < 0 then
-                    -- composite
-                else
-                    r = r + 1 result[r] = toshort(0) -- no contours
-                    r = r + 1 result[r] = toshort(0) -- xmin
-                    r = r + 1 result[r] = toshort(0) -- ymin
-                    r = r + 1 result[r] = toshort(0) -- xmax
-                    r = r + 1 result[r] = toshort(0) -- ymax
-                    r = r + 1 result[r] = toshort(0) -- no instructions
-                    glyph.stream = concat(result)
                 end
             end
+            glyph.stream = concat(result,"",1,r)
+        else
+            -- fatal
         end
     end
 end
@@ -600,7 +675,7 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
     while i <= nofpoints do
         local flag = readbyte(f)
         flags[i] = flag
-        if bittest(flag,0x0008) then
+        if bittest(flag,0x08) then
             for j=1,readbyte(f) do
                 i = i + 1
                 flags[i] = flag
@@ -613,8 +688,8 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
     local x = 0
     for i=1,nofpoints do
         local flag  = flags[i]
-        local short = bittest(flag,0x0002)
-        local same  = bittest(flag,0x0010)
+        local short = bittest(flag,0x02)
+        local same  = bittest(flag,0x10)
         if short then
             if same then
                 x = x + readbyte(f)
@@ -626,13 +701,13 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
         else
             x = x + readshort(f)
         end
-        points[i] = { x, y, bittest(flag,0x0001) }
+        points[i] = { x, y, bittest(flag,0x01) }
     end
     local y = 0
     for i=1,nofpoints do
         local flag  = flags[i]
-        local short = bittest(flag,0x0004)
-        local same  = bittest(flag,0x0020)
+        local short = bittest(flag,0x04)
+        local same  = bittest(flag,0x20)
         if short then
             if same then
                 y = y + readbyte(f)
@@ -829,11 +904,11 @@ function readers.glyf(f,fontdata,specification) -- part goes to cff module
                 end
                 mergecomposites(glyphs,shapes)
                 if specification.instance then
-if specification.streams then
-    repackpoints(glyphs,shapes)
-else
-                    contours2outlines_shaped(glyphs,shapes,loadshapes)
-end
+                    if specification.streams then
+                        repackpoints(glyphs,shapes)
+                    else
+                        contours2outlines_shaped(glyphs,shapes,specification.shapes)
+                    end
                 elseif specification.loadshapes then
                     contours2outlines_normal(glyphs,shapes)
                 end

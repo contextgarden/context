@@ -113,7 +113,7 @@ local function showglyphshape(specification)
     local tfmdata = fontdata[id]
     local charnum = tonumber(specification.character)
     if not charnum then
-        charnum = fonts.helpers.nametoslot(n)
+        charnum = fonts.helpers.nametoslot(specification.character)
     end
     local characters   = tfmdata.characters
     local descriptions = tfmdata.descriptions

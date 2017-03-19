@@ -2210,7 +2210,7 @@ function readers.cff2(f,fontdata,specification)
         parsedictionaries(data,dictionaries,"cff2")
         --
         local storeoffset = dictionaries[1].vstore + data.header.offset + 2 -- cff has a preceding size field
-        local regions, deltas = readers.helpers.readvariationdata(f,storeoffset)
+        local regions, deltas = readers.helpers.readvariationdata(f,storeoffset,factors)
         --
         data.regions  = regions
         data.deltas   = deltas
