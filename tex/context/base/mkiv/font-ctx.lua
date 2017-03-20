@@ -64,6 +64,8 @@ local hashes              = fonts.hashes
 local currentfont         = font.current
 local definefont          = font.define
 
+local cleanname           = names.cleanname
+
 local encodings           = fonts.encodings
 ----- aglunicodes         = encodings.agl.unicodes
 local aglunicodes         = nil -- delayed loading
@@ -197,35 +199,35 @@ end)
                 local fullname   = target.fullname
                 local fontname   = target.fontname
                 local psname     = target.psname
-                -- new, for the moment here
-local instance = properties.instance
-if instance then
-    local format = tfmdata.properties.format
-    if format == "opentype" then
-        target.streamprovider = 1
-    elseif format == "truetype" then
-        target.streamprovider = 2
-    else
-        target.streamprovider = 0
-    end
-    if target.streamprovider > 0 then
-        if fullname then
-            fullname = fullname .. ":" .. instances[instance]
-            target.fullname = fullname
-        end
-        if fontname then
-            fontname = fontname .. ":" .. instances[instance]
-            target.fontname = fontname
-        end
-        if psname then
-            -- this one is used for the funny prefix in font names in pdf
-            -- so it has ot be kind of unique in order to avoid subset prefix
-            -- clashes being reported
-            psname = psname   .. ":" .. instances[instance]
-            target.psname = psname
-        end
-    end
-end
+                -- for the moment here:
+                local instance = properties.instance
+                if instance then
+                    local format = tfmdata.properties.format
+                    if format == "opentype" then
+                        target.streamprovider = 1
+                    elseif format == "truetype" then
+                        target.streamprovider = 2
+                    else
+                        target.streamprovider = 0
+                    end
+                    if target.streamprovider > 0 then
+                        if fullname then
+                            fullname = fullname .. ":" .. instances[instance]
+                            target.fullname = fullname
+                        end
+                        if fontname then
+                            fontname = fontname .. ":" .. instances[instance]
+                            target.fontname = fontname
+                        end
+                        if psname then
+                            -- this one is used for the funny prefix in font names in pdf
+                            -- so it has ot be kind of unique in order to avoid subset prefix
+                            -- clashes being reported
+                            psname = psname   .. ":" .. instances[instance]
+                            target.psname = psname
+                        end
+                    end
+                end
                 --
                 local sharedname = hashes[fonthash]
                 if sharedname then
@@ -246,10 +248,12 @@ end
                     local characters = target.characters
                     local n = 1
                     local t = { target.psname }
-if instance then
-    n = n + 1
-    t[n] = instance
-end
+                    -- for the moment here:
+                    if instance then
+                        n = n + 1
+                        t[n] = instance
+                    end
+                    --
                     local u = sortedkeys(characters)
                     for i=1,#u do
                         local k = u[i]
@@ -2349,99 +2353,105 @@ end
 
 -- make a closure (200 limit):
 
-local trace_analyzing    = false  trackers.register("otf.analyzing", function(v) trace_analyzing = v end)
+do
 
-local analyzers          = fonts.analyzers
-local methods            = analyzers.methods
+    local trace_analyzing = false  trackers.register("otf.analyzing", function(v) trace_analyzing = v end)
 
-local unsetvalue         = attributes.unsetvalue
+    local analyzers       = fonts.analyzers
+    local methods         = analyzers.methods
 
-local traverse_id        = nuts.traverse_id
+    local unsetvalue      = attributes.unsetvalue
 
-local a_color            = attributes.private('color')
-local a_colormodel       = attributes.private('colormodel')
-local a_state            = attributes.private('state')
-local m_color            = attributes.list[a_color] or { }
+    local traverse_id     = nuts.traverse_id
 
-local glyph_code         = nodes.nodecodes.glyph
+    local a_color         = attributes.private('color')
+    local a_colormodel    = attributes.private('colormodel')
+    local a_state         = attributes.private('state')
+    local m_color         = attributes.list[a_color] or { }
 
-local states             = analyzers.states
+    local glyph_code      = nodes.nodecodes.glyph
 
-local colornames = {
-    [states.init] = "font:1",
-    [states.medi] = "font:2",
-    [states.fina] = "font:3",
-    [states.isol] = "font:4",
-    [states.mark] = "font:5",
-    [states.rest] = "font:6",
-    [states.rphf] = "font:1",
-    [states.half] = "font:2",
-    [states.pref] = "font:3",
-    [states.blwf] = "font:4",
-    [states.pstf] = "font:5",
-}
+    local states          = analyzers.states
 
-local function markstates(head)
-    if head then
-        head = tonut(head)
-        local model = getattr(head,a_colormodel) or 1
-        for glyph in traverse_id(glyph_code,head) do
-            local a = getprop(glyph,a_state)
-            if a then
-                local name = colornames[a]
-                if name then
-                    local color = m_color[name]
-                    if color then
-                        setattr(glyph,a_colormodel,model)
-                        setattr(glyph,a_color,color)
+    local colornames = {
+        [states.init] = "font:1",
+        [states.medi] = "font:2",
+        [states.fina] = "font:3",
+        [states.isol] = "font:4",
+        [states.mark] = "font:5",
+        [states.rest] = "font:6",
+        [states.rphf] = "font:1",
+        [states.half] = "font:2",
+        [states.pref] = "font:3",
+        [states.blwf] = "font:4",
+        [states.pstf] = "font:5",
+    }
+
+    local function markstates(head)
+        if head then
+            head = tonut(head)
+            local model = getattr(head,a_colormodel) or 1
+            for glyph in traverse_id(glyph_code,head) do
+                local a = getprop(glyph,a_state)
+                if a then
+                    local name = colornames[a]
+                    if name then
+                        local color = m_color[name]
+                        if color then
+                            setattr(glyph,a_colormodel,model)
+                            setattr(glyph,a_color,color)
+                        end
                     end
                 end
             end
         end
     end
-end
 
-local function analyzeprocessor(head,font,attr)
-    local tfmdata = fontdata[font]
-    local script, language = otf.scriptandlanguage(tfmdata,attr)
-    local action = methods[script]
-    if not action then
-        return head, false
-    end
-    if type(action) == "function" then
-        local head, done = action(head,font,attr)
-        if done and trace_analyzing then
-            markstates(head)
+    local function analyzeprocessor(head,font,attr)
+        local tfmdata = fontdata[font]
+        local script, language = otf.scriptandlanguage(tfmdata,attr)
+        local action = methods[script]
+        if not action then
+            return head, false
         end
-        return head, done
-    end
-    action = action[language]
-    if action then
-        local head, done = action(head,font,attr)
-        if done and trace_analyzing then
-            markstates(head)
+        if type(action) == "function" then
+            local head, done = action(head,font,attr)
+            if done and trace_analyzing then
+                markstates(head)
+            end
+            return head, done
         end
-        return head, done
-    else
-        return head, false
+        action = action[language]
+        if action then
+            local head, done = action(head,font,attr)
+            if done and trace_analyzing then
+                markstates(head)
+            end
+            return head, done
+        else
+            return head, false
+        end
     end
-end
 
-registerotffeature { -- adapts
-    name       = "analyze",
-    processors = {
-        node     = analyzeprocessor,
+    registerotffeature { -- adapts
+        name       = "analyze",
+        processors = {
+            node     = analyzeprocessor,
+        }
     }
-}
 
-function methods.nocolor(head,font,attr)
-    for n in traverse_id(glyph_code,head) do
-        if not font or getfont(n) == font then
-            setattr(n,a_color,unsetvalue)
+
+    function methods.nocolor(head,font,attr)
+        for n in traverse_id(glyph_code,head) do
+            if not font or getfont(n) == font then
+                setattr(n,a_color,unsetvalue)
+            end
         end
+        return head, true
     end
-    return head, true
+
 end
+
 
 local function purefontname(name)
     if type(name) == "number" then
@@ -2459,6 +2469,7 @@ implement {
 }
 
 local list = storage.shared.bodyfontsizes or { }
+
 storage.shared.bodyfontsizes = list
 
 implement {
@@ -2495,7 +2506,7 @@ implement {
 
 implement {
     name      = "cleanfontname",
-    actions   = { names.cleanname, context },
+    actions   = { cleanname, context },
     arguments = "string"
 }
 
@@ -2697,6 +2708,61 @@ do
         actions   = function(s)
          -- context(match(s,"[^* ]+") or s)
             context(lpegmatch(pattern,s) or s)
+        end
+    }
+
+end
+
+do
+
+    local function getinstancespec(id)
+        local data      = fontdata[id or true]
+        local shared    = data.shared
+        local resources = shared and shared.rawdata.resources
+        if resources then
+            local instancespec = data.properties.instance
+            if instancespec then
+                local variabledata = resources.variabledata
+                if variabledata then
+                    local instances = variabledata.instances
+                    if instances then
+                        for i=1,#instances do
+                            local instance = instances[i]
+                            if cleanname(instance.subfamily)== instancespec then
+                                local values = table.copy(instance.values)
+                                local axis = variabledata.axis
+                                for i=1,#values do
+                                    for j=1,#axis do
+                                        if values[i].axis == axis[j].tag then
+                                            values[i].name = axis[j].name
+                                            break
+                                        end
+                                    end
+                                end
+                                return values
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    helpers.getinstancespec = getinstancespec
+
+    implement {
+        name      = "currentfontinstancespec",
+        actions   = function()
+            local t = getinstancespec() -- current font
+            if t then
+                for i=1,#t do
+                    if i > 1 then
+                        context.space()
+                    end
+                    local ti = t[i]
+                    context("%s=%s",ti.name,ti.value)
+                end
+            end
         end
     }
 

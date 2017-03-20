@@ -1,0 +1,406 @@
+%D \module
+%D   [      file=m-fonts-plugins,
+%D        version=2016.10.10,
+%D          title=\CONTEXT\ Fonts,
+%D       subtitle=Font Engine Plugins,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D See source code for comments. I wrote this a follow up on a presentation by
+%D Kai Eigner, left it for a while, and sort of finalized it the last quarter of
+%D 2016. As I don't use this module, apart from maybe testing something, it is
+%D not guaranteed to work. Also, plugins can interfere with other functionality
+%D in \CONTEXT\ so don't expect too much support. The two modules mentioned
+%D below should work in the generic loader too. It's anyhow an illustration of
+%D how \type {ffi} can work be used in a practical application.
+
+\registerctxluafile{font-txt}{1.001} % generic text handler
+\registerctxluafile{font-phb}{1.001} % harfbuzz plugin
+
+\startluacode
+
+    local function processlist(data)
+        local list    = data.list
+        local timings = data.results
+        for i=1,#list do
+            local name = list[i]
+            local data = timings[name]
+            local none = data["context none"] or 0
+            local node = data["context node"] or 0
+            if node > 0.1 then
+                context.starttabulate { "|l|c|c|c|c|c|" }
+                    context.NC() context.bold(name)
+                    context.NC() context([[$t$]])
+                    context.NC() context([[$t - t_{\hbox{\tx none}}$]])
+                    context.NC() context([[$t - t_{\hbox{\tx node}}$]])
+                    context.NC() context([[$t / t_{\hbox{\tx node}}$]])
+                    context.NC() context([[$\frac{t - t_{\hbox{\txx none}}}{t_{\hbox{\txx node}} - t_{\hbox{\txx none}}}$]])
+                    context.NC() context.NR()
+                    context.TL()
+                    for k, v in table.sortedhash(data) do
+                        context.NC() context(k)
+                        context.NC() context("%0.2f",v)
+                        context.NC() context("%0.2f",v - none)
+                        context.NC() context("%0.2f",v - node)
+                        context.NC() context("%0.2f",v / node)
+                        context.NC() if node ~= none then context("%0.2f",(v-none) / (node-none)) end
+                        context.NC() context.NR()
+                    end
+                context.stoptabulate()
+            end
+        end
+    end
+
+    moduledata.plugins = {
+        processlist = processlist,
+    }
+
+\stopluacode
+
+\continueifinputfile{m-fonts-plugins.mkiv}
+
+\usemodule[art-01]
+
+\starttext
+
+\edef\tufte{\cldloadfile{tufte.tex}}
+\edef\khatt{\cldloadfile{khatt-ar.tex}}
+
+\startbuffer[latin-definitions]
+\definefont[TestA][Serif*test]
+\definefont[TestB][SerifItalic*test]
+\definefont[TestC][SerifBold*test]
+\stopbuffer
+
+\startbuffer[latin-text]
+\TestA \tufte \par
+\TestB \tufte \par
+\TestC \tufte \par
+\dorecurse {10} {%
+    \TestA Fluffy Test Font A
+    \TestB Fluffy Test Font B
+    \TestC Fluffy Test Font C
+}\par
+\stopbuffer
+
+\startbuffer[arabic-definitions]
+\definedfont[Arabic*test at 14pt]
+\setupinterlinespace[line=18pt]
+\setupalign[r2l]
+\stopbuffer
+
+\startbuffer[arabic-text]
+\dorecurse {10} {
+    \khatt\space
+    \khatt\space
+    \khatt
+    \blank
+}
+\stopbuffer
+
+\startbuffer[mixed-definitions]
+\definefont[TestL][Serif*test]
+\definefont[TestA][Arabic*test at 14pt]
+\setupinterlinespace[line=18pt]
+\setupalign[r2l]
+\stopbuffer
+
+\startbuffer[mixed-text]
+\dorecurse {2} {
+    {\TestA\khatt\space\khatt\space\khatt}
+    {\TestL\lefttoright\tufte}
+    \blank
+    \dorecurse{10}{%
+        {\TestA وَ قَرْمِطْ بَيْنَ الْحُرُوفِ؛ فَإِنَّ}
+        {\TestL\lefttoright A snippet text that makes no sense.}
+    }
+}
+\stopbuffer
+
+\definefontfeature
+  [test-none]
+  [mode=none]
+
+\definefontfeature
+  [test-base]
+  [mode=base,
+   liga=yes,
+   kern=yes]
+
+\definefontfeature
+  [test-node]
+  [mode=node,
+   script=auto,
+   autoscript=position,
+   autolanguage=position,
+   ccmp=yes,
+   liga=yes,
+ % rlig=yes,
+ % hlig=yes,
+ % dlig=yes,
+   clig=yes,
+   kern=yes,
+   mark=yes,
+   mkmk=yes,
+   curs=yes]
+
+\definefontfeature
+  [test-text]
+  [mode=plug,
+   features=text]
+
+\definefontfeature
+  [test-native]
+  [mode=plug,
+   features=harfbuzz,
+  %liga=yes,
+  %kern=yes,
+   shaper=native]
+
+\definefontfeature
+  [test-uniscribe]
+  [mode=plug,
+   features=harfbuzz,
+  %liga=yes,
+  %kern=yes,
+   shaper=uniscribe]
+
+\definefontfeature
+  [test-binary]
+  [mode=plug,
+   features=harfbuzz,
+  %liga=yes,
+  %kern=yes,
+   shaper=uniscribe,
+   method=binary]
+
+\definefontfeature
+  [arabic-node]
+  [arabic]
+
+\definefontfeature
+  [arabic-native]
+  [mode=plug,
+   features=harfbuzz,
+ % method=binary,
+   script=arab,language=dflt,
+%    ccmp=yes,
+%    init=yes,medi=yes,fina=yes,isol=yes,
+%    liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes,
+%    mark=yes,mkmk=yes,kern=yes,curs=yes,
+   shaper=native]
+
+\definefontfeature
+  [arabic-uniscribe]
+  [mode=plug,
+   features=harfbuzz,
+   script=arab,language=dflt,ccmp=yes,
+   init=yes,medi=yes,fina=yes,isol=yes,
+   liga=yes,dlig=yes,rlig=yes,clig=yes,calt=yes,
+   mark=yes,mkmk=yes,kern=yes,curs=yes,
+   shaper=uniscribe]
+
+\starttexdefinition RunLatinTest #1#2#3#4#5
+    \start
+        \dontcomplain
+        \definefontfeature[test][test-#4]
+        \writestatus{warning}{#1 #3 #4 (1 initial run)}
+        \page
+        \startluacode
+            collectgarbage("collect")
+        \stopluacode
+        \title{#1 #3 #4}
+        \start
+            \getbuffer[#5-definitions]
+            \showfontkerns
+            \showmakeup[discretionary]
+            \enabletrackers[fonts.plugins.hb.colors]%
+            \testfeatureonce{1}{
+                \getbuffer[#5-text]
+            }
+        \stop
+        \page
+        \startluacode
+            collectgarbage("collect")
+        \stopluacode
+        \ifnum#2>1\relax
+            \writestatus{warning}{#1 #3 #4 (#2 timing runs)}
+            \start
+                \getbuffer[#5-definitions]
+                \testfeatureonce{#2}{
+                    \setbox\scratchbox\hbox{\getbuffer[#5-text]}
+                }
+            \stop
+            \writestatus{warning}{done}
+        \fi
+        \startluacode
+            document.collected_timings.timings["#5"].results["#1"]["#3 #4"] = \elapsedtime\space
+            collectgarbage("collect")
+        \stopluacode
+    \stop
+\stoptexdefinition
+
+\starttexdefinition RunArabicTest #1#2#3#4#5
+    \start
+        \dontcomplain
+        \definefontsynonym[Arabic][#1]
+        \definefontfeature[test][arabic-#4]
+        \writestatus{warning}{#1 #3 #4 #5 (1 initial run)}
+        \page
+        \startluacode
+            collectgarbage("collect")
+        \stopluacode
+        \title{#1 #3 #4}
+        \start
+            \getbuffer[#5-definitions]
+            \enabletrackers[fonts.plugins.hb.colors]%
+            \testfeatureonce{1}{
+                \setupalign[flushleft] % easier to compare
+                \getbuffer[#5-text]
+            }
+            \par
+        \stop
+        \page
+        \ifnum#2>1\relax
+            \writestatus{warning}{#1 #3 #4 #5 (#2 timing runs)}
+            \start
+                \getbuffer[#5-definitions]
+                \testfeatureonce{#2}{
+                    \setbox\scratchbox\hbox{\getbuffer[#5-text]}
+                }
+            \stop
+            \writestatus{warning}{done}
+        \fi
+        \startluacode
+            document.collected_timings.timings["#5"].results["#1"]["#3 #4"] = \elapsedtime\space
+            collectgarbage("collect")
+        \stopluacode
+    \stop
+\stoptexdefinition
+
+\startluacode
+    local processlist = moduledata.plugins.processlist
+
+    local data = {
+        timings = { },
+        engine  = jit and "luajittex" or "luatex",
+    }
+
+    document.collected_timings = data
+
+    -- LATIN
+
+    local list = {
+       "modern",
+       "pagella",
+       "dejavu",
+       "cambria",
+       "ebgaramond",
+       "lucidaot"
+    }
+
+    data.timings["latin"] = {
+        list    = list,
+        results = table.setmetatableindex("table"),
+    }
+
+    for i=1,#list do
+
+        local name = list[i]
+
+        context.setupbodyfont { name }
+        context.RunLatinTest (name, 100, "context",  "none",      "latin")
+        context.RunLatinTest (name, 100, "context",  "base",      "latin")
+        context.RunLatinTest (name, 100, "context",  "node",      "latin")
+        context.RunLatinTest (name, 100, "harfbuzz", "native",    "latin")
+     -- context.RunLatinTest (name, 100, "harfbuzz", "uniscribe", "latin")
+     -- context.RunLatinTest (name,   1, "context",  "text",      "latin")
+     -- context.RunLatinTest (name,   1, "harfbuzz", "binary",    "latin")
+
+    end
+
+    context(function()
+        context.page()
+        context.title((jit and "luajittex" or "luatex") .. " latin")
+        processlist(data.timings["latin"])
+        context.page()
+    end)
+
+    -- ARABIC
+
+    local list = {
+        "arabtype"
+    }
+
+    data.timings["arabic"] = {
+        list    = list,
+        results = table.setmetatableindex("table")
+    }
+
+    for i=1,#list do
+
+        local name = list[i]
+
+        context.setupbodyfont { name }
+        context.RunArabicTest (name, 100, "context",  "none",      "arabic")
+        context.RunArabicTest (name, 100, "context",  "base",      "arabic")
+        context.RunArabicTest (name, 100, "context",  "node",      "arabic")
+        context.RunArabicTest (name, 100, "harfbuzz", "native",    "arabic")
+     -- context.RunArabicTest (name, 100, "harfbuzz", "uniscribe", "arabic")
+     -- context.RunArabicTest (name,   1, "context",  "text",      "arabic")
+     -- context.RunArabicTest (name,   1, "harfbuzz", "binary",    "arabic")
+
+    end
+
+    context(function()
+        context.page()
+        context.title((jit and "luajittex" or "luatex") .. " arabic")
+        processlist(data.timings["arabic"])
+        context.page()
+    end)
+
+    -- MIXED
+
+    local list = {
+        "arabtype"
+    }
+
+    data.timings["mixed"] = {
+        list    = list,
+        results = table.setmetatableindex("table")
+    }
+
+    for i=1,#list do
+
+        local name = list[i]
+
+        context.setupbodyfont { name }
+        context.RunArabicTest (name, 100, "context",  "none",      "mixed")
+        context.RunArabicTest (name, 100, "context",  "base",      "mixed")
+        context.RunArabicTest (name, 100, "context",  "node",      "mixed")
+        context.RunArabicTest (name, 100, "harfbuzz", "native",    "mixed")
+     -- context.RunArabicTest (name, 100, "harfbuzz", "uniscribe", "mixed")
+     -- context.RunArabicTest (name,   1, "context",  "text",      "mixed")
+     -- context.RunArabicTest (name,   1, "harfbuzz", "binary",    "mixed")
+
+    end
+
+    context(function()
+        context.page()
+        context.title((jit and "luajittex" or "luatex") .. " mixed")
+        processlist(data.timings["mixed"])
+        context.page()
+    end)
+
+    context(function()
+        table.save("m-fonts-plugins-timings-" .. (jit and "luajittex" or "luatex") .. ".lua",data)
+    end)
+
+\stopluacode
+
+\stoptext

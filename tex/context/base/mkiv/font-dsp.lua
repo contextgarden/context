@@ -146,29 +146,41 @@ local chaindirections = {
     reversechainedcontextsingle = -1,
 }
 
+local function setmetrics(data,where,tag,d)
+    local w = data[where]
+    if w then
+        local v = w[tag]
+        if v then
+            -- it looks like some fonts set the value and not the delta
+         -- report("adding %s to %s.%s value %s",d,where,tag,v)
+            w[tag] = v + d
+        end
+    end
+end
+
 local variabletags = {
-    hasc = "", -- horizontal ascender         OS/2.sTypoAscender
-    hdsc = "", -- horizontal descender        OS/2.sTypoDescender
- -- hlgp = "", -- horizontal line gap         OS/2.sTypoLineGap
- -- hcla = "", -- horizontal clipping ascent  OS/2.usWinAscent
- -- hcld = "", -- horizontal clipping descent OS/2.usWinDescent
-    vasc = "", -- vertical ascender           vhea.ascent
-    vdsc = "", -- vertical descender          vhea.descent
-    vlgp = "", -- vertical line gap           vhea.lineGap
-    xhgt = "", -- x height                    OS/2.sxHeight
-    cpht = "", -- cap height                  OS/2.sCapHeight
- -- sbxs = "", -- subscript em x size         OS/2.ySubscriptXSize
- -- sbys = "", -- subscript em y size         OS/2.ySubscriptYSize
- -- sbxo = "", -- subscript em x offset       OS/2.ySubscriptXOffset
- -- sbyo = "", -- subscript em y offset       OS/2.ySubscriptYOffset
- -- spxs = "", -- superscript em x size       OS/2.ySuperscriptXSize
- -- spys = "", -- superscript em y size       OS/2.ySuperscriptYSize
- -- spxo = "", -- superscript em x offset     OS/2.ySuperscriptXOffset
- -- spyo = "", -- superscript em y offset     OS/2.ySuperscriptYOffset
- -- strs = "", -- strikeout size              OS/2.yStrikeoutSize
- -- stro = "", -- strikeout offset            OS/2.yStrikeoutPosition
- -- unds = "", -- underline size              post.underlineThickness
- -- undo = "", -- underline offset            post.underlinePosition
+    hasc = function(data,d) setmetrics(data,"windowsmetrics","typoascender",d) end,
+    hdsc = function(data,d) setmetrics(data,"windowsmetrics","typodescender",d) end,
+    hlgp = function(data,d) setmetrics(data,"windowsmetrics","typolinegap",d) end,
+    hcla = function(data,d) setmetrics(data,"windowsmetrics","winascent",d) end,
+    hcld = function(data,d) setmetrics(data,"windowsmetrics","windescent",d) end,
+    vasc = function(data,d) setmetrics(data,"vhea not done","ascent",d) end,
+    vdsc = function(data,d) setmetrics(data,"vhea not done","descent",d) end,
+    vlgp = function(data,d) setmetrics(data,"vhea not done","linegap",d) end,
+    xhgt = function(data,d) setmetrics(data,"windowsmetrics","xheight",d) end,
+    cpht = function(data,d) setmetrics(data,"windowsmetrics","capheight",d) end,
+    sbxs = function(data,d) setmetrics(data,"windowsmetrics","subscriptxsize",d) end,
+    sbys = function(data,d) setmetrics(data,"windowsmetrics","subscriptysize",d) end,
+    sbxo = function(data,d) setmetrics(data,"windowsmetrics","subscriptxoffset",d) end,
+    sbyo = function(data,d) setmetrics(data,"windowsmetrics","subscriptyoffset",d) end,
+    spxs = function(data,d) setmetrics(data,"windowsmetrics","superscriptxsize",d) end,
+    spys = function(data,d) setmetrics(data,"windowsmetrics","superscriptysize",d) end,
+    spxo = function(data,d) setmetrics(data,"windowsmetrics","superscriptxoffset",d) end,
+    spyo = function(data,d) setmetrics(data,"windowsmetrics","superscriptyoffset",d) end,
+    strs = function(data,d) setmetrics(data,"windowsmetrics","strikeoutsize",d) end,
+    stro = function(data,d) setmetrics(data,"windowsmetrics","strikeoutpos",d) end,
+    unds = function(data,d) setmetrics(data,"postscript","underlineposition",d) end,
+    undo = function(data,d) setmetrics(data,"postscript","underlinethickness",d) end,
 }
 
 local read_cardinal = {
@@ -393,7 +405,17 @@ local function getfactors(data,instancespec)
     if instances and axis then
         local values
         if instancespec == true then
-            values = instances[1].values
+            -- first instance:
+         -- values = instances[1].values
+            -- axis defaults:
+            values = { }
+            for i=1,#axis do
+                values[i] = {
+                 -- axis  = axis[i].tag,
+                    value = axis[i].default,
+                }
+            end
+
         else
             for i=1,#instances do
                 local instance = instances[i]
@@ -466,6 +488,7 @@ helpers.getscales     = getscales
 helpers.axistofactors = axistofactors
 
 local function readvariationdata(f,storeoffset,factors) -- store
+    local position = getposition(f)
     setposition(f,storeoffset)
     -- header
     local format       = readushort(f)
@@ -521,6 +544,7 @@ local function readvariationdata(f,storeoffset,factors) -- store
             }
         end
     end
+    setposition(f,position)
     return regions, deltadata
 end
 
@@ -3335,8 +3359,6 @@ function readers.vvar(f,fontdata,specification)
     end
 end
 
--- no font seen with this table
-
 function readers.mvar(f,fontdata,specification)
     local tableoffset = gotodatatable(f,fontdata,"mvar",specification.variable)
     if tableoffset then
@@ -3351,7 +3373,8 @@ function readers.mvar(f,fontdata,specification)
             local regions, deltas = readvariationdata(f,offsettostore,factors)
             for i=1,nofrecords do
                 local tag = readtag(f)
-                if variabletags[tag] then
+                local var = variabletags[tag]
+                if var then
                     local outer = readushort(f)
                     local inner = readushort(f)
                     local delta = deltas[outer+1]
@@ -3363,6 +3386,7 @@ function readers.mvar(f,fontdata,specification)
                             for i=1,#scales do
                                 dd = dd + scales[i] * d[i]
                             end
+                            var(fontdata,round(dd))
                         end
                     end
                 else

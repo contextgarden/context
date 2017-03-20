@@ -49,6 +49,53 @@ function moduledata.fonts.variable.showvariations(specification)
 
     context.starttitle { title = fontdata.shared.rawdata.metadata.fullname }
 
+    local parameters = fontdata.parameters
+
+    context.startsubject { title = "parameters" }
+        if parameters then
+            context.starttabulate { "|||" }
+                NC() monobold("ascender")  NC() context("%p",parameters.ascender)     NC() NR()
+                NC() monobold("descender") NC() context("%p",parameters.descender)    NC() NR()
+                NC() monobold("emwidth")   NC() context("%p",parameters.em)           NC() NR()
+                NC() monobold("exheight")  NC() context("%p",parameters.ex)           NC() NR()
+                NC() monobold("size")      NC() context("%p",parameters.size)         NC() NR()
+                NC() monobold("slant")     NC() context("%s",parameters.slant)        NC() NR()
+                NC() monobold("space")     NC() context("%p",parameters.space)        NC() NR()
+                NC() monobold("shrink")    NC() context("%p",parameters.spaceshrink)  NC() NR()
+                NC() monobold("stretch")   NC() context("%p",parameters.spacestretch) NC() NR()
+                NC() monobold("units")     NC() context("%s",parameters.units)        NC() NR()
+            context.stoptabulate()
+        else
+            context("no parameters")
+        end
+    context.stopsubject()
+
+    local features = fontdata.shared.rawdata.resources.features
+
+    context.startsubject { title = "features" }
+        if features then
+            local function f(g)
+                if g then
+                    local t = table.sortedkeys(g)
+                    local n = 0
+                    for i=1,#t do
+                        if #t[i] <= 4 then
+                            n = n + 1
+                            t[n] = t[i]
+                        end
+                    end
+                    return table.concat(t," ",1,n)
+                end
+            end
+            context.starttabulate { "||p|" }
+                NC() monobold("gpos")  NC() mono(f(features.gpos)) NC() NR()
+                NC() monobold("gsub")  NC() mono(f(features.gsub)) NC() NR()
+            context.stoptabulate()
+        else
+            context("no features")
+        end
+    context.stopsubject()
+
     local designaxis = variabledata.designaxis
 
     context.startsubject { title = "design axis" }

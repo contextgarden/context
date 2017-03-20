@@ -264,7 +264,7 @@ local function add_empty(spacing, namespace, tag)
         tg = tag,
         at = at,
         dt = { },
-        ni = nil, -- preset slot
+        ni = nt, -- set slot, needed for css filtering
         __p__ = top
     }
     dt[nt] = t
@@ -287,7 +287,7 @@ local function add_begin(spacing, namespace, tag)
         tg = tag,
         at = at,
         dt = { },
-        ni = nil, -- preset slot
+        ni = nil, -- preset slot, needed for css filtering
         __p__ = stack[level]
     }
     setmetatable(top, mt)
@@ -316,6 +316,7 @@ local function add_end(spacing, namespace, tag)
     dt = top.dt
     nt = #dt + 1
     dt[nt] = toclose
+    toclose.ni = nt -- update slot, needed for css filtering
     if toclose.at.xmlns then
         remove(xmlns)
     end
@@ -325,7 +326,7 @@ end
 --
 -- will be an option: dataonly
 --
--- if #text == 0 or lpegmatch(spaceonly,text) then
+-- if #text == 0 or     lpegmatch(spaceonly,text) then
 --     return
 -- end
 

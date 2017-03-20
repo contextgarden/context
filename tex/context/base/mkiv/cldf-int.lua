@@ -26,7 +26,7 @@ local trace_define   = false  trackers.register("context.define", function(v) tr
 
 interfaces = interfaces or { }
 
-_clmh_ = utilities.parsers.settings_to_array
+_clmh_ = utilities.parsers.settings_to_hash
 _clma_ = utilities.parsers.settings_to_array
 
 local starters, stoppers, macros, stack = { }, { }, { }, { }
@@ -65,6 +65,8 @@ _clmn_ = tonumber
 
 local estart = interfaces.elements.start
 local estop  = interfaces.elements.stop
+
+-- this is a bit old definition ... needs to be modernized
 
 function interfaces.definecommand(name,specification) -- name is optional
     if type(name) == "table" then

@@ -2026,10 +2026,20 @@ local function readtable(tag,f,fontdata,specification,...)
     end
 end
 
+local variablefonts_supported = context and true or false
+
 local function readdata(f,offset,specification)
+
     local fontdata = loadtables(f,specification,offset)
+
     if specification.glyphs then
         prepareglyps(fontdata)
+    end
+
+    if not variablefonts_supported then
+        specification.instance = nil
+        specification.variable = nil
+        specification.factors  = nil
     end
 
     fontdata.temporary = { }
@@ -2050,7 +2060,8 @@ local function readdata(f,offset,specification)
     readtable("avar",f,fontdata,specification)
     readtable("fvar",f,fontdata,specification)
 
-    if helpers.getfactors then
+    if variablefonts_supported then
+
         if not specification.factors then
             local instance = specification.instance
             if type(instance) == "string" then
@@ -2070,11 +2081,8 @@ local function readdata(f,offset,specification)
                 report("font instance: %s, factors: % t",instance,factors)
             end
         end
-    end
 
-    -- old order:
-    --
-    -- name OS/2 head maxp hhea hmtx post cff cmap loca glyf kern gdef gsub gpos math
+    end
 
     readtable("os/2",f,fontdata,specification)
     readtable("head",f,fontdata,specification)
@@ -2094,6 +2102,7 @@ local function readdata(f,offset,specification)
 
     readtable("cff" ,f,fontdata,specification)
     readtable("cff2",f,fontdata,specification)
+
     readtable("cmap",f,fontdata,specification)
     readtable("loca",f,fontdata,specification) -- maybe load it in glyf
     readtable("glyf",f,fontdata,specification) -- loads gvar

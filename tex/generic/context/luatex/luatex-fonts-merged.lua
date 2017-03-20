@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/19/17 19:53:27
+-- merge date  : 03/20/17 17:33:01
 
 do -- begin closure to overcome local limits and interference
 
@@ -9497,10 +9497,16 @@ local function readtable(tag,f,fontdata,specification,...)
     reader(f,fontdata,specification,...)
   end
 end
+local variablefonts_supported=context and true or false
 local function readdata(f,offset,specification)
   local fontdata=loadtables(f,specification,offset)
   if specification.glyphs then
     prepareglyps(fontdata)
+  end
+  if not variablefonts_supported then
+    specification.instance=nil
+    specification.variable=nil
+    specification.factors=nil
   end
   fontdata.temporary={}
   readtable("name",f,fontdata,specification)
@@ -9516,7 +9522,7 @@ local function readdata(f,offset,specification)
   readtable("stat",f,fontdata,specification)
   readtable("avar",f,fontdata,specification)
   readtable("fvar",f,fontdata,specification)
-  if helpers.getfactors then
+  if variablefonts_supported then
     if not specification.factors then
       local instance=specification.instance
       if type(instance)=="string" then
@@ -12767,14 +12773,38 @@ local chaindirections={
   chainedcontext=1,
   reversechainedcontextsingle=-1,
 }
+local function setmetrics(data,where,tag,d)
+  local w=data[where]
+  if w then
+    local v=w[tag]
+    if v then
+      w[tag]=v+d
+    end
+  end
+end
 local variabletags={
-  hasc="",
-  hdsc="",
-  vasc="",
-  vdsc="",
-  vlgp="",
-  xhgt="",
-  cpht="",
+  hasc=function(data,d) setmetrics(data,"windowsmetrics","typoascender",d) end,
+  hdsc=function(data,d) setmetrics(data,"windowsmetrics","typodescender",d) end,
+  hlgp=function(data,d) setmetrics(data,"windowsmetrics","typolinegap",d) end,
+  hcla=function(data,d) setmetrics(data,"windowsmetrics","winascent",d) end,
+  hcld=function(data,d) setmetrics(data,"windowsmetrics","windescent",d) end,
+  vasc=function(data,d) setmetrics(data,"vhea not done","ascent",d) end,
+  vdsc=function(data,d) setmetrics(data,"vhea not done","descent",d) end,
+  vlgp=function(data,d) setmetrics(data,"vhea not done","linegap",d) end,
+  xhgt=function(data,d) setmetrics(data,"windowsmetrics","xheight",d) end,
+  cpht=function(data,d) setmetrics(data,"windowsmetrics","capheight",d) end,
+  sbxs=function(data,d) setmetrics(data,"windowsmetrics","subscriptxsize",d) end,
+  sbys=function(data,d) setmetrics(data,"windowsmetrics","subscriptysize",d) end,
+  sbxo=function(data,d) setmetrics(data,"windowsmetrics","subscriptxoffset",d) end,
+  sbyo=function(data,d) setmetrics(data,"windowsmetrics","subscriptyoffset",d) end,
+  spxs=function(data,d) setmetrics(data,"windowsmetrics","superscriptxsize",d) end,
+  spys=function(data,d) setmetrics(data,"windowsmetrics","superscriptysize",d) end,
+  spxo=function(data,d) setmetrics(data,"windowsmetrics","superscriptxoffset",d) end,
+  spyo=function(data,d) setmetrics(data,"windowsmetrics","superscriptyoffset",d) end,
+  strs=function(data,d) setmetrics(data,"windowsmetrics","strikeoutsize",d) end,
+  stro=function(data,d) setmetrics(data,"windowsmetrics","strikeoutpos",d) end,
+  unds=function(data,d) setmetrics(data,"postscript","underlineposition",d) end,
+  undo=function(data,d) setmetrics(data,"postscript","underlinethickness",d) end,
 }
 local read_cardinal={
   streamreader.readcardinal1,
@@ -12899,7 +12929,12 @@ local function getfactors(data,instancespec)
   if instances and axis then
     local values
     if instancespec==true then
-      values=instances[1].values
+      values={}
+      for i=1,#axis do
+        values[i]={
+          value=axis[i].default,
+        }
+      end
     else
       for i=1,#instances do
         local instance=instances[i]
@@ -12962,6 +12997,7 @@ helpers.getfactors=getfactors
 helpers.getscales=getscales
 helpers.axistofactors=axistofactors
 local function readvariationdata(f,storeoffset,factors) 
+  local position=getposition(f)
   setposition(f,storeoffset)
   local format=readushort(f)
   local regionoffset=storeoffset+readulong(f)
@@ -13013,6 +13049,7 @@ local function readvariationdata(f,storeoffset,factors)
       }
     end
   end
+  setposition(f,position)
   return regions,deltadata
 end
 helpers.readvariationdata=readvariationdata
@@ -15508,7 +15545,8 @@ function readers.mvar(f,fontdata,specification)
       local regions,deltas=readvariationdata(f,offsettostore,factors)
       for i=1,nofrecords do
         local tag=readtag(f)
-        if variabletags[tag] then
+        local var=variabletags[tag]
+        if var then
           local outer=readushort(f)
           local inner=readushort(f)
           local delta=deltas[outer+1]
@@ -15520,6 +15558,7 @@ function readers.mvar(f,fontdata,specification)
               for i=1,#scales do
                 dd=dd+scales[i]*d[i]
               end
+              var(fontdata,round(dd))
             end
           end
         else

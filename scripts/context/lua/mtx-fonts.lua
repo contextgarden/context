@@ -265,6 +265,11 @@ local function showfeatures(tag,specification)
     indeed("subfont   : %s",subfont(specification.subfont))
     indeed("fweight   : %s",fontweight(specification.fontweight))
     -- maybe more
+    local instancenames = specification.instancenames
+    if instancenames then
+        report()
+        indeed("instances : % t",instancenames)
+    end
     local features = fonts.helpers.getfeatures(specification.filename,not getargument("nosave"))
     if features then
         for what, v in table.sortedhash(features) do

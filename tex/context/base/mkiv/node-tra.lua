@@ -437,12 +437,12 @@ dimenfactors[""] = dimenfactors.pt
 
 local function numbertodimen(d,unit,fmt)
     if not d or d == 0 then
-        if not unit or unit == "pt" then
-            return "0pt"
-        elseif fmt then
-            return formatters[fmt](0,unit)
-        else
+        if fmt then
+            return formatters[fmt](0,unit or "pt")
+        elseif unit then
             return 0 .. unit
+        else
+            return "0pt"
         end
     elseif fmt then
         if not unit then
