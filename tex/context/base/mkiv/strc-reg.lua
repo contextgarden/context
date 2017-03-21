@@ -1073,6 +1073,8 @@ local function collapsepages(pages)
     return #pages
 end
 
+-- todo: create an intermediate structure and flush that
+
 function registers.flush(data,options,prefixspec,pagespec)
     local compress         = options.compress
     local collapse_singles = compress == v_yes

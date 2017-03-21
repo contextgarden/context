@@ -50,7 +50,7 @@ just hook those into the replacer code that we reun beforehand.</p>
 have language etc properties that then can be used.</p>
 ]]--
 
-local gsub, rep, sub, sort, concat, tohash, format = string.gsub, string.rep, string.sub, table.sort, table.concat, table.tohash, string.format
+local gsub, find, rep, sub, sort, concat, tohash, format = string.gsub, string.find, string.rep, string.sub, table.sort, table.concat, table.tohash, string.format
 local utfbyte, utfchar, utfcharacters, utfvalues = utf.byte, utf.char, utf.characters, utf.values
 local next, type, tonumber, rawget, rawset = next, type, tonumber, rawget, rawset
 local P, Cs, R, S, lpegmatch = lpeg.P, lpeg.Cs, lpeg.R, lpeg.S, lpeg.match
@@ -557,7 +557,10 @@ function splitters.utf(str,checked) -- we could append m and u but this is clean
         -- todo make an lpeg for this
         for k=1,#replacements do
             local v = replacements[k]
-            str = gsub(str,v[1],v[2])
+            local s = v[1]
+            if find(str,s) then
+                str = gsub(str,s,v[2])
+            end
         end
     end
     local m_case, z_case, p_case, m_mapping, z_mapping, p_mapping, char, byte, n = { }, { }, { }, { }, { }, { }, { }, { }, 0

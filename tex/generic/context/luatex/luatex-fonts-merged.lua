@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/20/17 17:33:01
+-- merge date  : 03/21/17 14:21:12
 
 do -- begin closure to overcome local limits and interference
 
@@ -11784,11 +11784,10 @@ local function readnothing(f,nofcontours)
   }
 end
 local function curveto(m_x,m_y,l_x,l_y,r_x,r_y) 
-  return {
+  return
     l_x+2/3*(m_x-l_x),l_y+2/3*(m_y-l_y),
     r_x+2/3*(m_x-r_x),r_y+2/3*(m_y-r_y),
-    r_x,r_y,"c" 
-  }
+    r_x,r_y,"c"
 end
 local function applyaxis(glyph,shape,points,deltas)
   if points then
@@ -11840,8 +11839,8 @@ local function applyaxis(glyph,shape,points,deltas)
     end
   end
 end
+local quadratic=false
 local function contours2outlines_normal(glyphs,shapes) 
-  local quadratic=true
   for index=1,#glyphs do
     local shape=shapes[index]
     if shape then
@@ -11914,7 +11913,7 @@ local function contours2outlines_normal(glyphs,shapes)
                     if quadratic then
                       segments[nofsegments]={ x1,y1,x2,y2,"q" } 
                     else
-                      x1,x2,x2,y2,px,py=curveto(x1,x2,px,py,x2,y2)
+                      x1,y1,x2,y2,px,py=curveto(x1,y1,px,py,x2,y2)
                       segments[nofsegments]={ x1,y1,x2,y2,px,py,"c" } 
                     end
                     control_pt=false
@@ -11925,7 +11924,7 @@ local function contours2outlines_normal(glyphs,shapes)
                     if quadratic then
                       segments[nofsegments]={ x1,y1,x2,y2,"q" } 
                     else
-                      x1,x2,x2,y2,px,py=curveto(x1,x2,px,py,x2,y2)
+                      x1,y1,x2,y2,px,py=curveto(x1,y1,px,py,x2,y2)
                       segments[nofsegments]={ x1,y1,x2,y2,px,py,"c" } 
                     end
                     control_pt=current_pt
@@ -11935,16 +11934,16 @@ local function contours2outlines_normal(glyphs,shapes)
                 if first_pt==last_pt then
                 else
                   nofsegments=nofsegments+1
+                  local x2,y2=first_pt[1],first_pt[2]
                   if not control_pt then
-                    segments[nofsegments]={ first_pt[1],first_pt[2],"l" } 
+                    segments[nofsegments]={ x2,y2,"l" } 
                   elseif quadratic then
                     local x1,y1=control_pt[1],control_pt[2]
-                    segments[nofsegments]={ x1,y1,first_pt[1],first_pt[2],"q" } 
+                    segments[nofsegments]={ x1,y1,x2,y2,"q" } 
                   else
                     local x1,y1=control_pt[1],control_pt[2]
-                    local x2,y2=first_pt[1],first_pt[2]
-                    x1,x2,x2,y2,px,py=curveto(x1,x2,px,py,x2,y2)
-                    segments[nofsegments]={ x1,y1,y2,y2,px,py,"c" }
+                    x1,y1,x2,y2,px,py=curveto(x1,y1,px,py,x2,y2)
+                    segments[nofsegments]={ x1,y1,x2,y2,px,py,"c" }
                   end
                 end
               end
@@ -11957,7 +11956,6 @@ local function contours2outlines_normal(glyphs,shapes)
   end
 end
 local function contours2outlines_shaped(glyphs,shapes,keepcurve)
-  local quadratic=true
   for index=1,#glyphs do
     local shape=shapes[index]
     if shape then
@@ -12048,7 +12046,7 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
                         segments[nofsegments]={ x1,y1,x2,y2,"q" } 
                       end
                     else
-                      x1,x2,x2,y2,px,py=curveto(x1,x2,px,py,x2,y2)
+                      x1,y1,x2,y2,px,py=curveto(x1,y1,px,py,x2,y2)
                       if x1<xmin then xmin=x1 elseif x1>xmax then xmax=x1 end
                       if y1<ymin then ymin=y1 elseif y1>ymax then ymax=y1 end
                       if x2<xmin then xmin=x2 elseif x2>xmax then xmax=x2 end
@@ -12072,7 +12070,7 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
                         segments[nofsegments]={ x1,y1,x2,y2,"q" } 
                       end
                     else
-                      x1,x2,x2,y2,px,py=curveto(x1,x2,px,py,x2,y2)
+                      x1,y1,x2,y2,px,py=curveto(x1,y1,px,py,x2,y2)
                       if x1<xmin then xmin=x1 elseif x1>xmax then xmax=x1 end
                       if y1<ymin then ymin=y1 elseif y1>ymax then ymax=y1 end
                       if x2<xmin then xmin=x2 elseif x2>xmax then xmax=x2 end
@@ -12094,27 +12092,26 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
                     nofsegments=nofsegments+1
                     segments[nofsegments]={ first_pt[1],first_pt[2],"l" } 
                   end
-                elseif quadratic then
-                  local x1,y1=control_pt[1],control_pt[2]
-                  if x1<xmin then xmin=x1 elseif x1>xmax then xmax=x1 end
-                  if y1<ymin then ymin=y1 elseif y1>ymax then ymax=y1 end
-                  if keepcurve then
-                    nofsegments=nofsegments+1
-                    segments[nofsegments]={ x1,y1,first_pt[1],first_pt[2],"q" } 
-                  end
                 else
                   local x1,y1=control_pt[1],control_pt[2]
                   local x2,y2=first_pt[1],first_pt[2]
-                  x1,x2,x2,y2,px,py=curveto(x1,x2,px,py,x2,y2)
                   if x1<xmin then xmin=x1 elseif x1>xmax then xmax=x1 end
                   if y1<ymin then ymin=y1 elseif y1>ymax then ymax=y1 end
-                  if x2<xmin then xmin=x2 elseif x2>xmax then xmax=x2 end
-                  if y2<ymin then ymin=y2 elseif y2>ymax then ymax=y2 end
-                  if px<xmin then xmin=px elseif px>xmax then xmax=px end
-                  if py<ymin then ymin=py elseif py>ymax then ymax=py end
-                  if keepcurve then
-                    nofsegments=nofsegments+1
-                    segments[nofsegments]={ x1,y1,y2,y2,px,py,"c" } 
+                  if quadratic then
+                    if keepcurve then
+                      nofsegments=nofsegments+1
+                      segments[nofsegments]={ x1,y1,x2,y2,"q" } 
+                    end
+                  else
+                    x1,y1,x2,y2,px,py=curveto(x1,y1,px,py,x2,y2)
+                    if x2<xmin then xmin=x2 elseif x2>xmax then xmax=x2 end
+                    if y2<ymin then ymin=y2 elseif y2>ymax then ymax=y2 end
+                    if px<xmin then xmin=px elseif px>xmax then xmax=px end
+                    if py<ymin then ymin=py elseif py>ymax then ymax=py end
+                    if keepcurve then
+                      nofsegments=nofsegments+1
+                      segments[nofsegments]={ x1,y1,x2,y2,px,py,"c" } 
+                    end
                   end
                 end
               end

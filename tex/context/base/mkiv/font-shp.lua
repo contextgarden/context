@@ -298,26 +298,41 @@ local f_m = string.formatters["%F %F m"]
 
 local function segmentstopdf(segments,factor,bt,et)
     local t = { }
+    local m = 0
     local n = #segments
+    local d = false
     for i=1,n do
         local s = segments[i]
-        local m = #s
-        local w = s[m]
+        local w = s[#s]
         if w == "c" then
-            t[i] = f_c(s[1]*factor,s[2]*factor,s[3]*factor,s[4]*factor,s[5]*factor,s[6]*factor)
+            m = m + 1
+            t[m] = f_c(s[1]*factor,s[2]*factor,s[3]*factor,s[4]*factor,s[5]*factor,s[6]*factor)
         elseif w == "l" then
-            t[i] = f_l(s[1]*factor,s[2]*factor)
+            m = m + 1
+            t[m] = f_l(s[1]*factor,s[2]*factor)
         elseif w == "m" then
-            t[i] = f_m(s[1]*factor,s[2]*factor)
-        else
-            t[i] = ""
+            m = m + 1
+            t[m] = f_m(s[1]*factor,s[2]*factor)
+        elseif w == "q" then
+            local p = segments[i-1]
+            local n = #p
+            local l_x, l_y = factor*p[n-2], factor*p[n-1]
+            local m_x, m_y = factor*s[1], factor*s[2]
+            local r_x, r_y = factor*s[3], factor*s[4]
+            m = m + 1
+            t[m] = f_c (
+                l_x + 2/3 * (m_x-l_x), l_y + 2/3 * (m_y-l_y),
+                r_x + 2/3 * (m_x-r_x), r_y + 2/3 * (m_y-r_y),
+                r_x, r_y
+            )
         end
     end
-    t[n+1] = "h f" -- B*
+    m = m + 1
+    t[m] = "h f" -- B*
     if bt and et then
         t[0]   = bt
-        t[n+2] = et
-        return concat(t,"\n",0,n+2)
+        t[m+1] = et
+        return concat(t,"\n",0,m+1)
     else
         return concat(t,"\n")
     end
@@ -379,13 +394,17 @@ otf.features.register {
 
 local streams = fonts.hashes.streams
 
-callback.register("glyph_stream_provider",function(id,index,mode)
-    if id > 0 then
-        local streams = streams[id].streams
-     -- print(id,index,streams[index])
-        if streams then
-            return streams[index] or ""
+if callbacks.supported.glyph_stream_provider then
+
+    callback.register("glyph_stream_provider",function(id,index,mode)
+        if id > 0 then
+            local streams = streams[id].streams
+         -- print(id,index,streams[index])
+            if streams then
+                return streams[index] or ""
+            end
         end
-    end
-    return ""
- end)
+        return ""
+     end)
+
+end
