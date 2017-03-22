@@ -227,10 +227,8 @@ local localpar_code      = nodecodes.localpar
 local discretionary_code = disccodes.discretionary
 local ligature_code      = glyphcodes.ligature
 
-local privateattribute   = attributes.private
-
-local a_state            = privateattribute('state')
-local a_noligature       = privateattribute("noligature")
+local a_state            = attributes.private('state')
+local a_noligature       = attributes.private("noligature")
 
 local injections         = nodes.injections
 local setmark            = injections.setmark
@@ -1278,9 +1276,17 @@ as less as needed but that would also make the code even more messy.</p>
 
 -- this is messy: do we need this disc checking also in alternaties?
 
+local function reportzerosteps(dataset,sequence)
+    logwarning("%s: no steps",cref(dataset,sequence))
+end
+
 local function reportmoresteps(dataset,sequence)
     logwarning("%s: more than 1 step",cref(dataset,sequence))
 end
+
+-- local function reportbadsteps(dataset,sequence)
+--     logwarning("%s: bad step, no proper return values",cref(dataset,sequence))
+-- end
 
 function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,chainindex)
     local steps    = currentlookup.steps
@@ -1288,31 +1294,35 @@ function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,c
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    local current = start
-    local mapping = steps[1].coverage
-    while current do
-        local currentchar = ischar(current)
-        if currentchar then
-            local replacement = mapping[currentchar]
-            if not replacement or replacement == "" then
-                if trace_bugs then
-                    logwarning("%s: no single for %s",cref(dataset,sequence,chainindex),gref(currentchar))
+    if nofsteps == 0 then
+        reportzerosteps(dataset,sequence)
+    else
+        local current = start
+        local mapping = steps[1].coverage
+        while current do
+            local currentchar = ischar(current)
+            if currentchar then
+                local replacement = mapping[currentchar]
+                if not replacement or replacement == "" then
+                    if trace_bugs then
+                        logwarning("%s: no single for %s",cref(dataset,sequence,chainindex),gref(currentchar))
+                    end
+                else
+                    if trace_singles then
+                        logprocess("%s: replacing single %s by %s",cref(dataset,sequence,chainindex),gref(currentchar),gref(replacement))
+                    end
+                    resetinjection(current)
+                    setchar(current,replacement)
                 end
+                return head, start, true
+            elseif currentchar == false then
+                -- can't happen
+                break
+            elseif current == stop then
+                break
             else
-                if trace_singles then
-                    logprocess("%s: replacing single %s by %s",cref(dataset,sequence,chainindex),gref(currentchar),gref(replacement))
-                end
-                resetinjection(current)
-                setchar(current,replacement)
+                current = getnext(current)
             end
-            return head, start, true
-        elseif currentchar == false then
-            -- can't happen
-            break
-        elseif current == stop then
-            break
-        else
-            current = getnext(current)
         end
     end
     return head, start, false
@@ -1328,17 +1338,21 @@ function chainprocs.gsub_multiple(head,start,stop,dataset,sequence,currentlookup
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    local startchar   = getchar(start)
-    local replacement = steps[1].coverage[startchar]
-    if not replacement or replacement == "" then
-        if trace_bugs then
-            logwarning("%s: no multiple for %s",cref(dataset,sequence),gref(startchar))
-        end
+    if nofsteps == 0 then
+        reportzerosteps(dataset,sequence)
     else
-        if trace_multiples then
-            logprocess("%s: replacing %s by multiple characters %s",cref(dataset,sequence),gref(startchar),gref(replacement))
+        local startchar   = getchar(start)
+        local replacement = steps[1].coverage[startchar]
+        if not replacement or replacement == "" then
+            if trace_bugs then
+                logwarning("%s: no multiple for %s",cref(dataset,sequence),gref(startchar))
+            end
+        else
+            if trace_multiples then
+                logprocess("%s: replacing %s by multiple characters %s",cref(dataset,sequence),gref(startchar),gref(replacement))
+            end
+            return multiple_glyphs(head,start,replacement,sequence.flags[1],dataset[1])
         end
-        return multiple_glyphs(head,start,replacement,sequence.flags[1],dataset[1])
     end
     return head, start, false
 end
@@ -1361,37 +1375,41 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    local kind    = dataset[4]
-    local what    = dataset[1]
-    local value   = what == true and tfmdata.shared.features[kind] or what -- todo: optimize in ctx
-    local current = start
-    local mapping = steps[1].coverage
-    while current do
-        local currentchar = ischar(current)
-        if currentchar then
-            local alternatives = mapping[currentchar]
-            if alternatives then
-                local choice, comment = get_alternative_glyph(current,alternatives,value)
-                if choice then
-                    if trace_alternatives then
-                        logprocess("%s: replacing %s by alternative %a to %s, %s",cref(dataset,sequence),gref(char),choice,gref(choice),comment)
-                    end
-                    resetinjection(start)
-                    setchar(start,choice)
-                else
-                    if trace_alternatives then
-                        logwarning("%s: no variant %a for %s, %s",cref(dataset,sequence),value,gref(char),comment)
+    if nofsteps == 0 then
+        reportzerosteps(dataset,sequence)
+    else
+        local kind    = dataset[4]
+        local what    = dataset[1]
+        local value   = what == true and tfmdata.shared.features[kind] or what -- todo: optimize in ctx
+        local current = start
+        local mapping = steps[1].coverage
+        while current do
+            local currentchar = ischar(current)
+            if currentchar then
+                local alternatives = mapping[currentchar]
+                if alternatives then
+                    local choice, comment = get_alternative_glyph(current,alternatives,value)
+                    if choice then
+                        if trace_alternatives then
+                            logprocess("%s: replacing %s by alternative %a to %s, %s",cref(dataset,sequence),gref(char),choice,gref(choice),comment)
+                        end
+                        resetinjection(start)
+                        setchar(start,choice)
+                    else
+                        if trace_alternatives then
+                            logwarning("%s: no variant %a for %s, %s",cref(dataset,sequence),value,gref(char),comment)
+                        end
                     end
                 end
+                return head, start, true
+            elseif currentchar == false then
+                -- can't happen
+                break
+            elseif current == stop then
+                break
+            else
+                current = getnext(current)
             end
-            return head, start, true
-        elseif currentchar == false then
-            -- can't happen
-            break
-        elseif current == stop then
-            break
-        else
-            current = getnext(current)
         end
     end
     return head, start, false
@@ -1409,74 +1427,78 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    local startchar = getchar(start)
-    local ligatures = steps[1].coverage[startchar]
-    if not ligatures then
-        if trace_bugs then
-            logwarning("%s: no ligatures starting with %s",cref(dataset,sequence,chainindex),gref(startchar))
-        end
+    if nofsteps == 0 then
+        reportzerosteps(dataset,sequence)
     else
-        local current         = getnext(start)
-        local discfound       = false
-        local last            = stop
-        local nofreplacements = 1
-        local skipmark        = currentlookup.flags[1] -- sequence.flags?
-        while current do
-            -- todo: ischar ... can there really be disc nodes here?
-            local id = getid(current)
-            if id == disc_code then
-                if not discfound then
-                    discfound = current
-                end
-                if current == stop then
-                    break -- okay? or before the disc
-                else
-                    current = getnext(current)
-                end
-            else
-                local schar = getchar(current)
-                if skipmark and marks[schar] then -- marks
-                    -- if current == stop then -- maybe add this
-                    --     break
-                    -- else
-                        current = getnext(current)
-                    -- end
-                else
-                    local lg = ligatures[schar]
-                    if lg then
-                        ligatures       = lg
-                        last            = current
-                        nofreplacements = nofreplacements + 1
-                        if current == stop then
-                            break
-                        else
-                            current = getnext(current)
-                        end
+        local startchar = getchar(start)
+        local ligatures = steps[1].coverage[startchar]
+        if not ligatures then
+            if trace_bugs then
+                logwarning("%s: no ligatures starting with %s",cref(dataset,sequence,chainindex),gref(startchar))
+            end
+        else
+            local current         = getnext(start)
+            local discfound       = false
+            local last            = stop
+            local nofreplacements = 1
+            local skipmark        = currentlookup.flags[1] -- sequence.flags?
+            while current do
+                -- todo: ischar ... can there really be disc nodes here?
+                local id = getid(current)
+                if id == disc_code then
+                    if not discfound then
+                        discfound = current
+                    end
+                    if current == stop then
+                        break -- okay? or before the disc
                     else
-                        break
+                        current = getnext(current)
+                    end
+                else
+                    local schar = getchar(current)
+                    if skipmark and marks[schar] then -- marks
+                        -- if current == stop then -- maybe add this
+                        --     break
+                        -- else
+                            current = getnext(current)
+                        -- end
+                    else
+                        local lg = ligatures[schar]
+                        if lg then
+                            ligatures       = lg
+                            last            = current
+                            nofreplacements = nofreplacements + 1
+                            if current == stop then
+                                break
+                            else
+                                current = getnext(current)
+                            end
+                        else
+                            break
+                        end
                     end
                 end
             end
-        end
-        local ligature = ligatures.ligature
-        if ligature then
-            if chainindex then
-                stop = last
-            end
-            if trace_ligatures then
-                if start == stop then
-                    logprocess("%s: replacing character %s by ligature %s case 3",cref(dataset,sequence,chainindex),gref(startchar),gref(ligature))
-                else
-                    logprocess("%s: replacing character %s upto %s by ligature %s case 4",cref(dataset,sequence,chainindex),gref(startchar),gref(getchar(stop)),gref(ligature))
+            local ligature = ligatures.ligature
+            if ligature then
+                if chainindex then
+                    stop = last
                 end
-            end
-            head, start = toligature(head,start,stop,ligature,dataset,sequence,skipmark,discfound)
-            return head, start, true, nofreplacements, discfound
-        elseif trace_bugs then
-            if start == stop then
-                logwarning("%s: replacing character %s by ligature fails",cref(dataset,sequence,chainindex),gref(startchar))
-            else
-                logwarning("%s: replacing character %s upto %s by ligature fails",cref(dataset,sequence,chainindex),gref(startchar),gref(getchar(stop)))
+                if trace_ligatures then
+                    if start == stop then
+                        logprocess("%s: replacing character %s by ligature %s case 3",cref(dataset,sequence,chainindex),gref(startchar),gref(ligature))
+                    else
+                        logprocess("%s: replacing character %s upto %s by ligature %s case 4",cref(dataset,sequence,chainindex),gref(startchar),gref(getchar(stop)),gref(ligature))
+                    end
+                end
+                head, start = toligature(head,start,stop,ligature,dataset,sequence,skipmark,discfound)
+                return head, start, true, nofreplacements, discfound
+            elseif trace_bugs then
+                if start == stop then
+                    logwarning("%s: replacing character %s by ligature fails",cref(dataset,sequence,chainindex),gref(startchar))
+                else
+                    logwarning("%s: replacing character %s upto %s by ligature fails",cref(dataset,sequence,chainindex),gref(startchar),gref(getchar(stop)))
+                end
             end
         end
     end
@@ -1489,20 +1511,24 @@ function chainprocs.gpos_single(head,start,stop,dataset,sequence,currentlookup,r
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    local startchar = getchar(start)
-    local step      = steps[1]
-    local kerns     = step.coverage[startchar]
-    if not kerns then
-        -- skip
-    elseif step.format == "pair" then
-        local dx, dy, w, h = setpair(start,factor,rlmode,sequence.flags[4],kerns) -- currentlookup.flags ?
-        if trace_kerns then
-            logprocess("%s: shifting single %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),dx,dy,w,h)
-        end
-    else -- needs checking .. maybe no kerns format for single
-        local k = setkern(start,factor,rlmode,kerns,injection)
-        if trace_kerns then
-            logprocess("%s: shifting single %s by %p",cref(dataset,sequence),gref(startchar),k)
+    if nofsteps == 0 then
+        reportzerosteps(dataset,sequence)
+    else
+        local startchar = getchar(start)
+        local step      = steps[1]
+        local kerns     = step.coverage[startchar]
+        if not kerns then
+            -- skip
+        elseif step.format == "pair" then
+            local dx, dy, w, h = setpair(start,factor,rlmode,sequence.flags[4],kerns) -- currentlookup.flags ?
+            if trace_kerns then
+                logprocess("%s: shifting single %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),dx,dy,w,h)
+            end
+        else -- needs checking .. maybe no kerns format for single
+            local k = setkern(start,factor,rlmode,kerns,injection)
+            if trace_kerns then
+                logprocess("%s: shifting single %s by %p",cref(dataset,sequence),gref(startchar),k)
+            end
         end
     end
     return head, start, false
@@ -1514,60 +1540,64 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    local snext = getnext(start)
-    if snext then
-        local startchar = getchar(start)
-        local step      = steps[1]
-        local kerns     = step.coverage[startchar] -- always 1 step
-        if kerns then
-            local prev = start
-            while snext do
-                local nextchar = ischar(snext,currentfont)
-                if not nextchar then
-                    break
-                end
-                local krn = kerns[nextchar]
-                if not krn and marks[nextchar] then
-                    prev = snext
-                    snext = getnext(snext)
-                elseif not krn then
-                    break
-                elseif step.format == "pair" then
-                    local a, b = krn[1], krn[2]
-                    if optimizekerns then
-                        -- this permits a mixed table, but we could also decide to optimize this
-                        -- in the loader and use format 'kern'
-                        if not b and a[1] == 0 and a[2] == 0 and a[4] == 0 then
-                            local k = setkern(snext,factor,rlmode,a[3],"injections")
-                            if trace_kerns then
-                                logprocess("%s: shifting single %s by %p",cref(dataset,sequence),gref(startchar),k)
+    if nofsteps == 0 then
+        reportzerosteps(dataset,sequence)
+    else
+        local snext = getnext(start)
+        if snext then
+            local startchar = getchar(start)
+            local step      = steps[1]
+            local kerns     = step.coverage[startchar] -- always 1 step
+            if kerns then
+                local prev = start
+                while snext do
+                    local nextchar = ischar(snext,currentfont)
+                    if not nextchar then
+                        break
+                    end
+                    local krn = kerns[nextchar]
+                    if not krn and marks[nextchar] then
+                        prev = snext
+                        snext = getnext(snext)
+                    elseif not krn then
+                        break
+                    elseif step.format == "pair" then
+                        local a, b = krn[1], krn[2]
+                        if optimizekerns then
+                            -- this permits a mixed table, but we could also decide to optimize this
+                            -- in the loader and use format 'kern'
+                            if not b and a[1] == 0 and a[2] == 0 and a[4] == 0 then
+                                local k = setkern(snext,factor,rlmode,a[3],"injections")
+                                if trace_kerns then
+                                    logprocess("%s: shifting single %s by %p",cref(dataset,sequence),gref(startchar),k)
+                                end
+                                return head, start, true
                             end
-                            return head, start, true
                         end
-                    end
-                    if a and #a > 0 then
-                        local startchar = getchar(start)
-                        local x, y, w, h = setpair(start,factor,rlmode,sequence.flags[4],a,"injections") -- currentlookups flags?
+                        if a and #a > 0 then
+                            local startchar = getchar(start)
+                            local x, y, w, h = setpair(start,factor,rlmode,sequence.flags[4],a,"injections") -- currentlookups flags?
+                            if trace_kerns then
+                                logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
+                            end
+                        end
+                        if b and #b > 0 then
+                            local startchar = getchar(start)
+                            local x, y, w, h = setpair(snext,factor,rlmode,sequence.flags[4],b,"injections")
+                            if trace_kerns then
+                                logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
+                            end
+                        end
+                        return head, start, true
+                    elseif krn ~= 0 then
+                        local k = setkern(snext,factor,rlmode,krn)
                         if trace_kerns then
-                            logprocess("%s: shifting first of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
+                            logprocess("%s: inserting kern %s between %s and %s",cref(dataset,sequence),k,gref(getchar(prev)),gref(nextchar))
                         end
+                        return head, start, true
+                    else
+                        break
                     end
-                    if b and #b > 0 then
-                        local startchar = getchar(start)
-                        local x, y, w, h = setpair(snext,factor,rlmode,sequence.flags[4],b,"injections")
-                        if trace_kerns then
-                            logprocess("%s: shifting second of pair %s and %s by (%p,%p) and correction (%p,%p)",cref(dataset,sequence),gref(startchar),gref(nextchar),x,y,w,h)
-                        end
-                    end
-                    return head, start, true
-                elseif krn ~= 0 then
-                    local k = setkern(snext,factor,rlmode,krn)
-                    if trace_kerns then
-                        logprocess("%s: inserting kern %s between %s and %s",cref(dataset,sequence),k,gref(getchar(prev)),gref(nextchar))
-                    end
-                    return head, start, true
-                else
-                    break
                 end
             end
         end
@@ -1581,60 +1611,64 @@ function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlooku
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    local markchar = getchar(start)
-    if marks[markchar] then
-        local markanchors = steps[1].coverage[markchar] -- always 1 step
-        if markanchors then
-            local base = getprev(start) -- [glyph] [start=mark]
-            if base then
-                local basechar = ischar(base,currentfont)
-                if basechar then
-                    if marks[basechar] then
-                        while base do
-                            base = getprev(base)
-                            if base then
-                                local basechar = ischar(base,currentfont)
-                                if basechar then
-                                    if not marks[basechar] then
-                                        break
+    if nofsteps == 0 then
+        reportzerosteps(dataset,sequence)
+    else
+        local markchar = getchar(start)
+        if marks[markchar] then
+            local markanchors = steps[1].coverage[markchar] -- always 1 step
+            if markanchors then
+                local base = getprev(start) -- [glyph] [start=mark]
+                if base then
+                    local basechar = ischar(base,currentfont)
+                    if basechar then
+                        if marks[basechar] then
+                            while base do
+                                base = getprev(base)
+                                if base then
+                                    local basechar = ischar(base,currentfont)
+                                    if basechar then
+                                        if not marks[basechar] then
+                                            break
+                                        end
+                                    else
+                                        if trace_bugs then
+                                            logwarning("%s: no base for mark %s, case %i",pref(dataset,sequence),gref(markchar),1)
+                                        end
+                                        return head, start, false
                                     end
                                 else
                                     if trace_bugs then
-                                        logwarning("%s: no base for mark %s, case %i",pref(dataset,sequence),gref(markchar),1)
+                                        logwarning("%s: no base for mark %s, case %i",pref(dataset,sequence),gref(markchar),2)
                                     end
                                     return head, start, false
                                 end
-                            else
-                                if trace_bugs then
-                                    logwarning("%s: no base for mark %s, case %i",pref(dataset,sequence),gref(markchar),2)
+                            end
+                        end
+                        local ba = markanchors[1][basechar]
+                        if ba then
+                            local ma = markanchors[2]
+                            if ma then
+                                local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
+                                if trace_marks then
+                                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
+                                        cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
                                 end
-                                return head, start, false
+                                return head, start, true
                             end
                         end
-                    end
-                    local ba = markanchors[1][basechar]
-                    if ba then
-                        local ma = markanchors[2]
-                        if ma then
-                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
-                            if trace_marks then
-                                logprocess("%s, anchor %s, bound %s: anchoring mark %s to basechar %s => (%p,%p)",
-                                    cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
-                            end
-                            return head, start, true
-                        end
+                    elseif trace_bugs then
+                        logwarning("%s: prev node is no char, case %i",cref(dataset,sequence),1)
                     end
                 elseif trace_bugs then
-                    logwarning("%s: prev node is no char, case %i",cref(dataset,sequence),1)
+                    logwarning("%s: prev node is no char, case %i",cref(dataset,sequence),2)
                 end
             elseif trace_bugs then
-                logwarning("%s: prev node is no char, case %i",cref(dataset,sequence),2)
+                logwarning("%s: mark %s has no anchors",cref(dataset,sequence),gref(markchar))
             end
         elseif trace_bugs then
-            logwarning("%s: mark %s has no anchors",cref(dataset,sequence),gref(markchar))
+            logwarning("%s: mark %s is no mark",cref(dataset,sequence),gref(markchar))
         end
-    elseif trace_bugs then
-        logwarning("%s: mark %s is no mark",cref(dataset,sequence),gref(markchar))
     end
     return head, start, false
 end
@@ -1645,64 +1679,68 @@ function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentl
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    local markchar = getchar(start)
-    if marks[markchar] then
-        local markanchors = steps[1].coverage[markchar] -- always 1 step
-        if markanchors then
-            local base = getprev(start) -- [glyph] [optional marks] [start=mark]
-            if base then
-                local basechar = ischar(base,currentfont)
-                if basechar then
-                    if marks[basechar] then
-                        while base do
-                            base = getprev(base)
-                            if base then
-                                local basechar = ischar(base,currentfont)
-                                if basechar then
-                                    if not marks[basechar] then
-                                        break
+    if nofsteps == 0 then
+        reportzerosteps(dataset,sequence)
+    else
+        local markchar = getchar(start)
+        if marks[markchar] then
+            local markanchors = steps[1].coverage[markchar] -- always 1 step
+            if markanchors then
+                local base = getprev(start) -- [glyph] [optional marks] [start=mark]
+                if base then
+                    local basechar = ischar(base,currentfont)
+                    if basechar then
+                        if marks[basechar] then
+                            while base do
+                                base = getprev(base)
+                                if base then
+                                    local basechar = ischar(base,currentfont)
+                                    if basechar then
+                                        if not marks[basechar] then
+                                            break
+                                        end
+                                    else
+                                        if trace_bugs then
+                                            logwarning("%s: no base for mark %s, case %i",cref(dataset,sequence),markchar,1)
+                                        end
+                                        return head, start, false
                                     end
                                 else
                                     if trace_bugs then
-                                        logwarning("%s: no base for mark %s, case %i",cref(dataset,sequence),markchar,1)
+                                        logwarning("%s: no base for mark %s, case %i",cref(dataset,sequence),markchar,2)
                                     end
                                     return head, start, false
                                 end
-                            else
-                                if trace_bugs then
-                                    logwarning("%s: no base for mark %s, case %i",cref(dataset,sequence),markchar,2)
-                                end
-                                return head, start, false
                             end
                         end
-                    end
-                    local ba = markanchors[1][basechar]
-                    if ba then
-                        local ma = markanchors[2]
-                        if ma then
-                            local index = getligaindex(start)
-                            ba = ba[index]
-                            if ba then
-                                local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
-                                if trace_marks then
-                                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
-                                        cref(dataset,sequence),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
+                        local ba = markanchors[1][basechar]
+                        if ba then
+                            local ma = markanchors[2]
+                            if ma then
+                                local index = getligaindex(start)
+                                ba = ba[index]
+                                if ba then
+                                    local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],false,checkmarks)
+                                    if trace_marks then
+                                        logprocess("%s, anchor %s, bound %s: anchoring mark %s to baselig %s at index %s => (%p,%p)",
+                                            cref(dataset,sequence),anchor,a or bound,gref(markchar),gref(basechar),index,dx,dy)
+                                    end
+                                    return head, start, true
                                 end
-                                return head, start, true
                             end
                         end
+                    elseif trace_bugs then
+                        logwarning("%s, prev node is no char, case %i",cref(dataset,sequence),1)
                     end
                 elseif trace_bugs then
-                    logwarning("%s, prev node is no char, case %i",cref(dataset,sequence),1)
+                    logwarning("%s, prev node is no char, case %i",cref(dataset,sequence),2)
                 end
             elseif trace_bugs then
-                logwarning("%s, prev node is no char, case %i",cref(dataset,sequence),2)
+                logwarning("%s, mark %s has no anchors",cref(dataset,sequence),gref(markchar))
             end
         elseif trace_bugs then
-            logwarning("%s, mark %s has no anchors",cref(dataset,sequence),gref(markchar))
+            logwarning("%s, mark %s is no mark",cref(dataset,sequence),gref(markchar))
         end
-    elseif trace_bugs then
-        logwarning("%s, mark %s is no mark",cref(dataset,sequence),gref(markchar))
     end
     return head, start, false
 end
@@ -1713,48 +1751,52 @@ function chainprocs.gpos_mark2mark(head,start,stop,dataset,sequence,currentlooku
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    local markchar = getchar(start)
-    if marks[markchar] then
-        local markanchors = steps[1].coverage[markchar] -- always 1 step
-        if markanchors then
-            local base = getprev(start) -- [glyph] [basemark] [start=mark]
-            local slc = getligaindex(start)
-            if slc then -- a rather messy loop ... needs checking with husayni
-                while base do
-                    local blc = getligaindex(base)
-                    if blc and blc ~= slc then
-                        base = getprev(base)
-                    else
-                        break
-                    end
-                end
-            end
-            if base then -- subtype test can go
-                local basechar = ischar(base,currentfont)
-                if basechar then
-                    local ba = markanchors[1][basechar]
-                    if ba then
-                        local ma = markanchors[2]
-                        if ma then
-                            local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true,checkmarks)
-                            if trace_marks then
-                                logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
-                                    cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
-                            end
-                            return head, start, true
+    if nofsteps == 0 then
+        reportzerosteps(dataset,sequence)
+    else
+        local markchar = getchar(start)
+        if marks[markchar] then
+            local markanchors = steps[1].coverage[markchar] -- always 1 step
+            if markanchors then
+                local base = getprev(start) -- [glyph] [basemark] [start=mark]
+                local slc = getligaindex(start)
+                if slc then -- a rather messy loop ... needs checking with husayni
+                    while base do
+                        local blc = getligaindex(base)
+                        if blc and blc ~= slc then
+                            base = getprev(base)
+                        else
+                            break
                         end
                     end
+                end
+                if base then -- subtype test can go
+                    local basechar = ischar(base,currentfont)
+                    if basechar then
+                        local ba = markanchors[1][basechar]
+                        if ba then
+                            local ma = markanchors[2]
+                            if ma then
+                                local dx, dy, bound = setmark(start,base,factor,rlmode,ba,ma,characters[basechar],true,checkmarks)
+                                if trace_marks then
+                                    logprocess("%s, anchor %s, bound %s: anchoring mark %s to basemark %s => (%p,%p)",
+                                        cref(dataset,sequence),anchor,bound,gref(markchar),gref(basechar),dx,dy)
+                                end
+                                return head, start, true
+                            end
+                        end
+                    elseif trace_bugs then
+                        logwarning("%s: prev node is no mark, case %i",cref(dataset,sequence),1)
+                    end
                 elseif trace_bugs then
-                    logwarning("%s: prev node is no mark, case %i",cref(dataset,sequence),1)
+                    logwarning("%s: prev node is no mark, case %i",cref(dataset,sequence),2)
                 end
             elseif trace_bugs then
-                logwarning("%s: prev node is no mark, case %i",cref(dataset,sequence),2)
+                logwarning("%s: mark %s has no anchors",cref(dataset,sequence),gref(markchar))
             end
         elseif trace_bugs then
-            logwarning("%s: mark %s has no anchors",cref(dataset,sequence),gref(markchar))
+            logwarning("%s: mark %s is no mark",cref(dataset,sequence),gref(markchar))
         end
-    elseif trace_bugs then
-        logwarning("%s: mark %s is no mark",cref(dataset,sequence),gref(markchar))
     end
     return head, start, false
 end
@@ -1765,45 +1807,49 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
     if nofsteps > 1 then
         reportmoresteps(dataset,sequence)
     end
-    local startchar   = getchar(start)
-    local exitanchors = steps[1].coverage[startchar] -- always 1 step
-    if exitanchors then
-        if marks[startchar] then
-            if trace_cursive then
-                logprocess("%s: ignoring cursive for mark %s",pref(dataset,sequence),gref(startchar))
-            end
-        else
-            local nxt = getnext(start)
-            while nxt do
-                local nextchar = ischar(nxt,currentfont)
-                if not nextchar then
-                    break
-                elseif marks[nextchar] then
-                    -- should not happen (maybe warning)
-                    nxt = getnext(nxt)
-                else
-                    local exit = exitanchors[3]
-                    if exit then
-                        local entry = exitanchors[1][nextchar]
-                        if entry then
-                            entry = entry[2]
+    if nofsteps == 0 then
+        reportzerosteps(dataset,sequence)
+    else
+        local startchar   = getchar(start)
+        local exitanchors = steps[1].coverage[startchar] -- always 1 step
+        if exitanchors then
+            if marks[startchar] then
+                if trace_cursive then
+                    logprocess("%s: ignoring cursive for mark %s",pref(dataset,sequence),gref(startchar))
+                end
+            else
+                local nxt = getnext(start)
+                while nxt do
+                    local nextchar = ischar(nxt,currentfont)
+                    if not nextchar then
+                        break
+                    elseif marks[nextchar] then
+                        -- should not happen (maybe warning)
+                        nxt = getnext(nxt)
+                    else
+                        local exit = exitanchors[3]
+                        if exit then
+                            local entry = exitanchors[1][nextchar]
                             if entry then
-                                local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
-                                if trace_cursive then
-                                    logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
+                                entry = entry[2]
+                                if entry then
+                                    local dx, dy, bound = setcursive(start,nxt,factor,rlmode,exit,entry,characters[startchar],characters[nextchar])
+                                    if trace_cursive then
+                                        logprocess("%s: moving %s to %s cursive (%p,%p) using anchor %s and bound %s in %s mode",pref(dataset,sequence),gref(startchar),gref(nextchar),dx,dy,anchor,bound,mref(rlmode))
+                                    end
+                                    return head, start, true
                                 end
-                                return head, start, true
                             end
+                        elseif trace_bugs then
+                            onetimemessage(currentfont,startchar,"no entry anchors",report_fonts)
                         end
-                    elseif trace_bugs then
-                        onetimemessage(currentfont,startchar,"no entry anchors",report_fonts)
+                        break
                     end
-                    break
                 end
             end
+        elseif trace_cursive and trace_details then
+            logprocess("%s, cursive %s is already done",pref(dataset,sequence),gref(getchar(start)),alreadydone)
         end
-    elseif trace_cursive and trace_details then
-        logprocess("%s, cursive %s is already done",pref(dataset,sequence),gref(getchar(start)),alreadydone)
     end
     return head, start, false
 end
@@ -2793,6 +2839,24 @@ chainprocs.gsub_contextchain        = chained_contextchain
 chainprocs.gsub_reversecontextchain = chained_contextchain
 chainprocs.gpos_contextchain        = chained_contextchain
 chainprocs.gpos_context             = chained_contextchain
+
+-- experiment (needs no handler in font-otc so not now):
+--
+-- function otf.registerchainproc(name,f)
+--  -- chainprocs[name] = f
+--     chainprocs[name] = function(head,start,stop,dataset,sequence,currentlookup,rlmode)
+--         local done = currentlookup.nofsteps > 0
+--         if not done then
+--             reportzerosteps(dataset,sequence)
+--         else
+--             head, start, done = f(head,start,stop,dataset,sequence,currentlookup,rlmode)
+--             if not head or not start then
+--                 reportbadsteps(dataset,sequence)
+--             end
+--         end
+--         return head, start, done
+--     end
+-- end
 
 local missing = setmetatableindex("table")
 

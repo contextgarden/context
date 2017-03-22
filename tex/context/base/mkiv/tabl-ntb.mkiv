@@ -1313,7 +1313,8 @@
    \dostoptagged}
 
 \unexpanded\def\tabl_ntb_span#1%
-  {\dorecurse{#1}
+  {\hskip\tabl_ntb_get_dis\c_tabl_ntb_col
+   \dorecurse{#1}
      {\hskip\tabl_ntb_get_wid\c_tabl_ntb_col\relax
       \global\advance\c_tabl_ntb_col\plusone}}
 

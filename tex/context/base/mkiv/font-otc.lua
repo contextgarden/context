@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['font-otc'] = {
 local format, insert, sortedkeys, tohash = string.format, table.insert, table.sortedkeys, table.tohash
 local type, next = type, next
 local lpegmatch = lpeg.match
-local utfbyte, utflen = utf.byte, utf.len
+local utfbyte, utflen, utfsplit = utf.byte, utf.len, utf.split
+local settings_to_array = utilities.parsers.settings_to_array
 
 -- we assume that the other otf stuff is loaded already
 
@@ -231,7 +232,7 @@ local function addfeature(data,feature,specifications)
                 local r = { }
                 for i=1,#replacement do
                     local u = tounicode(replacement[i])
-                    r[i] = descriptions[u] and u or unicode
+                    r[i] = (nocheck or descriptions[u]) and u or unicode
                 end
                 cover(coverage,unicode,r)
                 done = done + 1
@@ -260,7 +261,7 @@ local function addfeature(data,feature,specifications)
                 local r, n = { }, 0
                 for i=1,#replacement do
                     local u = tounicode(replacement[i])
-                    if descriptions[u] then
+                    if nocheck or descriptions[u] then
                         n = n + 1
                         r[n] = u
                     end
@@ -300,7 +301,7 @@ local function addfeature(data,feature,specifications)
                 for i=1,#ligature do
                     local l = ligature[i]
                     local u = tounicode(l)
-                    if descriptions[u] then
+                    if nocheck or descriptions[u] then
                         ligature[i] = u
                     else
                         present = false
@@ -443,14 +444,21 @@ local function addfeature(data,feature,specifications)
                 local subtype = nil
                 if lookups and sublookups then
                     for k, v in next, lookups do
-                        local lookup = sublookups[v]
-                        if lookup then
-                            lookups[k] = lookup
-                            if not subtype then
-                                subtype = lookup.type
+                        local t = type(v)
+                        if t == "table" then
+                            -- already ok
+                        elseif t == "number" then
+                            local lookup = sublookups[v]
+                            if lookup then
+                                lookups[k] = lookup
+                                if not subtype then
+                                    subtype = lookup.type
+                                end
+                            else
+                                lookups[k] = false -- new
                             end
                         else
-                            -- already expanded
+                            lookups[k] = false -- new
                         end
                     end
                 end
@@ -531,7 +539,7 @@ local function addfeature(data,feature,specifications)
                 if f then
                     for k in next, f do
                         if k == position then
-                            index = i
+                                index = i
                             break
                         end
                     end
@@ -580,6 +588,7 @@ local function addfeature(data,feature,specifications)
             local featuretype   = normalized[specification.type or "substitution"] or "substitution"
             local featureflags  = specification.flags or noflags
             local nocheck       = specification.nocheck
+            local futuresteps   = specification.futuresteps
             local featureorder  = specification.order or { feature }
             local featurechain  = (featuretype == "chainsubstitution" or featuretype == "chainposition") and 1 or 0
             local nofsteps      = 0
@@ -622,6 +631,7 @@ local function addfeature(data,feature,specifications)
                     s[i] = {
                         [stepkey] = steps,
                         nofsteps  = nofsteps,
+                        flags     = featureflags,
                         type      = types[featuretype],
                     }
                 end
@@ -736,11 +746,16 @@ function otf.addfeature(name,specification)
     specification, name = validspecification(specification,name)
     if name and specification then
         local slot = knownfeatures[name]
-        if slot then
-            -- we overload one .. should be option
-        else
+        if not slot then
+            -- we have a new one
             slot = #extrafeatures + 1
             knownfeatures[name] = slot
+        elseif specification.overload == false then
+            -- we add an extre one
+            slot = #extrafeatures + 1
+            knownfeatures[name] = slot
+        else
+            -- we overload a previous one
         end
         specification.name  = name -- to be sure
         extrafeatures[slot] = specification
@@ -978,3 +993,93 @@ registerotffeature {
 --         a = { b = -500 },
 --     }
 -- }
+
+-- This is a quick and dirty hack.
+
+local lookups = { }
+local protect = { }
+local revert  = { }
+local zwj     = { 0x200C }
+
+otf.addfeature {
+    name    = "blockligatures",
+    type    = "chainsubstitution",
+    nocheck = true, -- because there is no 0x200C in the font
+    prepend = true, -- make sure we do it early
+    future  = true, -- avoid nilling due to no steps yet
+    lookups = {
+        {
+            type = "multiple",
+            data = lookups,
+        },
+    },
+    data = {
+        rules = protect,
+    }
+}
+
+otf.addfeature {
+    name     = "blockligatures",
+    type     = "chainsubstitution",
+    nocheck  = true,  -- because there is no 0x200C in the font
+    append   = true,  -- this is done late
+    overload = false, -- we don't want to overload the previous definition
+    lookups  = {
+        {
+            type = "ligature",
+            data = lookups,
+        },
+    },
+    data = {
+        rules = revert,
+    }
+}
+
+registerotffeature {
+    name        = 'blockligatures',
+    description = 'block certain ligatures',
+}
+
+local function blockligatures(str)
+
+    local t = settings_to_array(str)
+
+    for i=1,#t do
+        local ti = utfsplit(t[i])
+        if #ti > 1 then
+            local one = ti[1]
+            local two = ti[2]
+            lookups[one] = { one, 0x200C }
+            local one = { one }
+            local two = { two }
+            local new = #protect + 1
+            protect[new] = {
+                current = { one, two },
+                lookups = { 1 }, -- not shared !
+            }
+            revert[new] = {
+                current = { one, zwj },
+                after   = { two },
+                lookups = { 1 }, -- not shared !
+            }
+        end
+    end
+
+end
+
+-- blockligatures("\0\0")
+
+otf.helpers.blockligatures = blockligatures
+
+-- blockligatures("fi,ff")
+-- blockligatures("fl")
+
+if context then
+
+    interfaces.implement {
+        name      = "blockligatures",
+        arguments = "string",
+        actions   = blockligatures,
+    }
+
+end

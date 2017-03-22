@@ -391,4 +391,22 @@
    0%
    \endgroup}
 
+% not nice but maybe handy
+
+% \starttyping
+% \blockligatures[fi,ff] \blockligatures[fl]
+%
+% \definefontfeature[default:b][default][blockligatures=yes]
+%
+% \setupbodyfont[pagella] \showfontkerns
+%
+% \definedfont[Serif*default:b]
+%
+% \startTEXpage[offset=1em]
+%     fi ff fl
+% \stopTEXpage
+% \stoptyping
+
+\unexpanded\def\blockligatures[#1]{\clf_blockligatures{#1}}
+
 \protect \endinput

@@ -2357,6 +2357,51 @@ fall back to a guess.
 
 \stopsection
 
+\startsection[title=Ligatures]
+
+Not all fonts provide ligature control (normally related to languages), so here is a
+trick.
+
+\starttyping
+\blockligatures[fi,ff]
+\blockligatures[fl]
+
+\definefontfeature
+  [default]
+  [default]
+  [blockligatures=yes]
+
+\setupbodyfont[pagella]
+
+...
+\stoptyping
+
+This way it works globally. Of course you can also bind it to a font instance:
+
+\startbuffer
+\blockligatures[fi,fl]
+
+\definefontfeature
+  [default:blockligs]
+  [default]
+  [blockligatures=yes]
+
+\definefont[DemoBlockY][Serif*default:blockligs at 20pt]
+\definefont[DemoBlockN][Serif*default           at 20pt]
+
+Here we have no ligatures: {\DemoBlockY fi ff fl}, while here we get
+them: {\DemoBlockN fi ff fl}. Of course it also depends on the font.
+\stopbuffer
+
+\typebuffer \start \showfontkerns \getbuffer \par \stop
+
+There is one limitation: you need to specify the blocked ligatures before a font
+gets defined and because we share resources it even has to happen before the
+first font gets loaded. So, the \type {\blockligatures} commands go before
+setting up the body font. This is no real problem because it's a hack anyway.
+
+\stopsection
+
 \startsection[title=Collections]
 
     {\em Todo.}

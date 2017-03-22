@@ -31,9 +31,13 @@ function moduledata.fonts.variable.showvariations(specification)
 
     local id, fontdata = fonts.definers.define {
         name = fontfile,
-        size = fontsize,
+     -- size = fontsize,
         cs   = fontname,
     }
+
+    if not fontdata then
+        context("no font with name %a found",fontname)
+    end
 
     local resources = fontdata.resources
 
