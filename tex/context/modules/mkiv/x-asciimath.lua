@@ -1274,6 +1274,15 @@ local function collapse_bars(t)
         i = i + 1
     end
     if l then
+        -- problem: we can have a proper nesting
+local d = false
+for i=1,m do
+    if find(t[i],"\\left") then
+        d = true
+        break
+    end
+end
+if not d then
         local tt = { s_lnothing } -- space fools final checker
         local tm  = 1
         for i=1,m do
@@ -1290,6 +1299,7 @@ local function collapse_bars(t)
         tt[tm] = s_rnothing -- space fools final checker
         m = tm
         t = tt
+end
     elseif m < n then
         for i=n,m+1,-1 do
             t[i] = nil
@@ -1739,7 +1749,7 @@ collapse = function(t,level)
     -- steps
     t = collapse_matrices   (t) if trace_detail then show_state(t,level,"matrices")      end
     t = collapse_bars       (t) if trace_detail then show_state(t,level,"bars")          end
-t = collapse_stupids     (t) if trace_detail then show_state(t,level,"stupids")         end
+    t = collapse_stupids    (t) if trace_detail then show_state(t,level,"stupids")         end
     t = collapse_pairs      (t) if trace_detail then show_state(t,level,"pairs")         end
     t = collapse_parentheses(t) if trace_detail then show_state(t,level,"parentheses")   end
     t = collapse_signs      (t) if trace_detail then show_state(t,level,"signs")         end

@@ -162,11 +162,13 @@ categories.standard = {
 categories.book = {
     sets = {
         author     = { "author", "editor", "publisher", "title" },
+        ineditor   = { "editor" },
         editionset = generic.editionset,
         doi        = generic.doi,
     },
     required = { "author" },
     optional = {
+        "ineditor",
         "withauthor", "translator",
         "year", "month", "day",
         "subtitle", "type",  "file",
@@ -181,6 +183,7 @@ categories.book = {
 categories.inbook = {
     sets = {
         author     = { "author", "editor", "publisher", "title", },
+        ineditor   = { "editor" },
         editionset = generic.editionset,
         doi        = generic.doi,
     },
@@ -189,6 +192,7 @@ categories.inbook = {
         "year" ,
     },
     optional = {
+        "ineditor",
         "withauthor", "translator",
         "subtitle", "type", "file",
         "booktitle", "subbooktitle",
@@ -206,6 +210,7 @@ categories.inbook = {
 categories.incollection = {
     sets = {
         author     = { "author", "editor", "publisher", "title", },
+        ineditor   = { "editor" },
         editionset = generic.editionset,
         doi        = generic.doi,
     },
@@ -215,6 +220,7 @@ categories.incollection = {
         "year",
     },
     optional = {
+        "ineditor",
         "withauthor", "translator",
         "subtitle", "type", "file",
         "subbooktitle",
@@ -450,7 +456,7 @@ categories.electronic = {
 categories.film = {
     sets = {
         doi = generic.doi,
-        author = { "producer", "director", },
+        author = { "author", "producer", "director", },
     },
     required = {
         "author",

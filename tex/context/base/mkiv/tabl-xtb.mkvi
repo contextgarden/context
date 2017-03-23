@@ -245,6 +245,8 @@
      \d_tabl_x_textwidth\p_textwidth
    \fi}
 
+\newtoks\everypreparextable
+
 \unexpanded\def\tabl_x_prepare#settings% assumes \iffirstargument to be set
   {\advance\c_tabl_x_nesting\plusone
    \dostarttaggedchained\t!table\empty\??xtable
@@ -252,6 +254,7 @@
      \tabl_x_set_checked{#settings}%
    \fi
    \tabl_x_check_textwidth
+   \the\everypreparextable
    }% else whitespace mess
 
 \def\tabl_x_get_buffer
@@ -806,5 +809,27 @@
 \unexpanded\def\stopxrow
   {\tabl_x_stop_row
    \endgroup}
+
+%D A bonus, not advertised but some like it this way:
+
+\unexpanded\def\tabl_x_nc
+  {\startxrow
+   \let\NC\tabl_x_nc_next
+   \let\NR\tabl_x_nr
+   \startxcell}
+
+\unexpanded\def\tabl_x_nc_next
+  {\stopxcell
+   \startxcell}
+
+\unexpanded\def\tabl_x_nr
+  {\stopxcell
+   \stopxrow
+   \let\NC\tabl_x_nc}
+
+\appendtoks
+   \let\NC\tabl_x_nc
+   \let\NR\tabl_x_nr
+\to \everypreparextable
 
 \protect \endinput

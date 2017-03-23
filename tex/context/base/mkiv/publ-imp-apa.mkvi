@@ -83,6 +83,11 @@
   [apa:\s!list:author]
 
 \definebtx
+  [apa:\s!list:ineditor]
+  [apa:\s!list:editor]
+  [\c!authorconversion=normalshort]
+
+\definebtx
   [apa:\s!list:translator]
   [apa:\s!list:author]
   [\c!authorconversion=normalshort]
@@ -196,7 +201,16 @@
   [apa:\s!list:title]
 
 \definebtx
+  [apa:\s!list:booktitle:inbook]
+  [apa:\s!list:title]
+
+\definebtx
   [apa:\s!list:title:inbook]
+  [apa:\s!list:title]
+  [\c!style=] % booktitle is set in italics
+
+\definebtx
+  [apa:\s!list:booktitle:incollection]
   [apa:\s!list:title]
 
 \definebtx
@@ -209,9 +223,17 @@
   [apa:\s!list:title]
 
 \definebtx
+  [apa:\s!list:booktitle:inproceedings]
+  [apa:\s!list:title]
+
+\definebtx
   [apa:\s!list:title:inproceedings]
   [apa:\s!list:title]
   [\c!style=] % booktitle is set in italics
+
+\definebtx
+  [apa:\s!list:booktitle:conference]
+  [apa:\s!list:title]
 
 \definebtx
   [apa:\s!list:title:conference]
@@ -488,7 +510,7 @@
 
 \setupbtxlabeltext
   [en]
-  [apa:number={no.},
+  [apa:number={No.},
    apa:edition={ed.},
    apa:Editor={Ed.},
    apa:Editors={Eds.},
@@ -497,6 +519,8 @@
    apa:nd={n.d.},     % no date
    apa:supplement={Suppl.},           % Supplement (not used?)
    apa:MotionPicture={Motion picture},
+   apa:Writer=Writer,
+   apa:Writers=Writers,
    apa:Producer=Producer,
    apa:Producers=Producers,
    apa:Director=Director,
@@ -505,11 +529,11 @@
    apa:Author=Author,
    apa:Translator={Trans.},           % Translator(s)
    apa:Advanced={Advanced online publication},
-   apa:Retrieved={Available from}]    % {Retrieved from},
+   apa:Retrieved={Retrieved from}] % {Available from}]
 
 \setupbtxlabeltext
   [nl]
-  [apa:number={nr.},
+  [apa:number={Nr.},
    apa:edition={ed.}, % editie
    apa:Editor=Editor, % Ed./Eds.
    apa:Editors=Editors,
@@ -518,6 +542,8 @@
    apa:nd={g.d.}      % geen datum
    apa:supplement=Supplement,
    apa:MotionPicture=Film, % ?
+   apa:Writer=Scenarioschrijver, % ?
+   apa:Writers=Schrijvers, % ?
    apa:Producer=Producent,   % ?
    apa:Producers=Producents, % ?
    apa:Director=Directeur,
@@ -526,11 +552,11 @@
    apa:Author=Auteur,
    apa:Translator=Vertaler,
    apa:Advanced={Geavanceerde online publicatie},
-   apa:Retrieved={Beschikbaar vanaf}]    % {Ontvangen van},
+   apa:Retrieved={Ontvangen van}] % {Beschikbaar vanaf}]
 
 \setupbtxlabeltext
   [fr]
-  [apa:number={n\high{o}},
+  [apa:number={N\high{o}},
    apa:edition={édition},
    apa:Editor=Éditeur,
    apa:Editors=Éditeurs,
@@ -539,6 +565,8 @@
    apa:nd={s.d.}      % sans date
    apa:supplement=Supplément,
    apa:MotionPicture={Film cinématographique},
+   apa:Writer=Scénariste,
+   apa:Writers=Scénaristes,
    apa:Producer=Producteur,
    apa:Producers=Producteurs,
    apa:Director=Réalisateur,
@@ -547,11 +575,11 @@
    apa:Author=Auteur,
    apa:Translator=Traducteur,
    apa:Advanced={Publication en ligne anticipée},
-   apa:Retrieved={Disponible à}]      % {Téléchargé de},
+   apa:Retrieved={Téléchargé de}] % {Disponible à}]
 
 \setupbtxlabeltext
   [de]
-  [apa:number={nr.},
+  [apa:number={Nr.},
    apa:edition=Auf\/lage,
    apa:Editor=Herausgeber, % Hrsg./Hg.
    apa:Editors=Herausgeber,
@@ -560,6 +588,8 @@
    apa:nd={o.D.},          % ohne Datum (mostly: o.J. / ohne Jahr)
    apa:supplement={Beilage},          % Supplement
    apa:MotionPicture=Kinofilm, % ?
+   apa:Writer=Drehbuchautor,   % ?
+   apa:Writers=Schriftsteller, % ?
    apa:Producer=Producer,      % ?
    apa:Producers=Produzenten,  % ?
    apa:Director=Director,      % ?
@@ -574,7 +604,7 @@
 
 \setupbtxlabeltext
   [it]
-  [apa:number={nº},
+  [apa:number={Nº},
    apa:edition={ed.}, % edizione
    apa:Editor={A cura di},
    apa:Editors={A cura di},
@@ -583,6 +613,8 @@
    apa:nd={s.d.},     % senza data
    apa:supplement={Supplemento},
    apa:MotionPicture=Film, % ?
+   apa:Writer=Sceneggiatore, % ?
+   apa:Writers=Scrittori, % ?
    apa:Producer=Produttore,
    apa:Producers=Produttori,
    apa:Director=Direttore,
@@ -595,7 +627,7 @@
 
 \setupbtxlabeltext
   [es]
-  [apa:number={nº},
+  [apa:number={Nº},
    apa:edition={ed.}, % edición
    apa:Editor=Editor, % Ed./Eds.
    apa:Editors=Editores,
@@ -604,6 +636,8 @@
    apa:nd={s.f.},     % sin fecha
    apa:supplement=Suplemento,
    apa:MotionPicture=Cinematográfica,
+   apa:Writer=Guionista, % ?
+   apa:Writers=Escritores, % ?
    apa:Producer=Productor,
    apa:Producers=Productores,
    apa:Director=Director,
@@ -612,7 +646,7 @@
    apa:Author=Autor,
    apa:Translator=Traductor,
    apa:Advanced={Publicación en línea avanzada},
-   apa:Retrieved={Disponible desde}]    % {Obtenido de},
+   apa:Retrieved={Obtenido de}] % {Disponible desde}]
 
 % cite setups
 
@@ -706,7 +740,7 @@
             \begingroup
                 \language[\mainbtxlanguage]
                 \btxleftbracket
-                \btxusecommand [apa:\s!list:title:\currentbtxcategory] {
+                \btxusecommand [apa:\s!list:#title:\currentbtxcategory] {
                     \btxflush{#title:\mainbtxlanguage}
                 }
                 \btxrightbracket
@@ -716,10 +750,10 @@
 \stoptexdefinition
 
 \starttexdefinition unexpanded btx:apa:composed-title #title
-    \btxstartstyleandcolor[apa:\s!list:title:\currentbtxcategory]
+    \btxstartstyleandcolor[apa:\s!list:#title:\currentbtxcategory]
         \begingroup
             \language[\currentbtxlanguage]
-            \btxusecommand [apa:\s!list:title:\currentbtxcategory] {
+            \btxusecommand [apa:\s!list:#title:\currentbtxcategory] {
                 \btxflush{#title}
                 \btxdoif {sub#title} {
                     \btxcolon
@@ -747,6 +781,22 @@
         \texdefinition{btx:apa:composed-title}{title}
     }
     \btxdoif {title} {
+        % A book might have an editor AND an author
+        \doif {\currentbtxcategory} {book} {
+            \doifnot {\btxfoundname{author}} {editor} {
+                \btxdoif {ineditor} { % ineditor authorconversion
+                    \btxleftparenthesis
+                    \btxflush{ineditor}
+                    \btxcomma
+                    \btxsingularorplural {ineditor} {
+                        \btxlabeltext{apa:Editor}
+                    } {
+                        \btxlabeltext{apa:Editors}
+                    }
+                    \btxrightparenthesis
+                }
+            }
+        }
         \btxdoif {translator} {
             \btxleftparenthesis
                 \btxflush{translator}
@@ -794,6 +844,7 @@
 \starttexdefinition unexpanded btx:apa:author-or-editor #author
     \btxdoifelse {#author} {
         \btxflush{#author}
+        % use \processaction [] [] here?
         \doifelse {\btxfoundname{#author}} {editor} {
             \btxleftparenthesis
             \btxsingularorplural {editor} {
@@ -802,16 +853,40 @@
                 \btxlabeltext{apa:Editors}
             }
             \btxrightparenthesis
-        } {
-            \doifelse {\btxfoundname{#author}} {producer} {
-                \btxleftparenthesis
-                \btxsingularorplural {producer} {
-                    \btxlabeltext{apa:Producer}
+        } {\doif {\btxfoundname{#author}} {ineditor} {
+            \btxleftparenthesis
+            \btxsingularorplural {ineditor} {
+                \btxlabeltext{apa:Editor}
+            } {
+                \btxlabeltext{apa:Editors}
+            }
+            \btxrightparenthesis
+        } }
+        \doif {\currentbtxcategory} {film} {
+            \btxleftparenthesis
+            \doifelse {\btxfoundname{#author}} {director} {
+                \btxsingularorplural {director} {
+                    \btxlabeltext{apa:Director}
                 } {
-                    \btxlabeltext{apa:Producers}
+                    \btxlabeltext{apa:Directors}
                 }
-                \btxrightparenthesis
+            } {
+                \doif {\btxfoundname{#author}} {author} {
+                    \btxsingularorplural {author} {
+                        \btxlabeltext{apa:Writer}
+                    } {
+                        \btxlabeltext{apa:Writers}
+                    }
+                }
+                \doif {\btxfoundname{#author}} {producer} {
+                    \btxsingularorplural {producer} {
+                        \btxlabeltext{apa:Producer}
+                    } {
+                        \btxlabeltext{apa:Producers}
+                    }
+                }
                 \btxdoif {director} {
+                    \btxrightparenthesis
                     \removeunwantedspaces
                     \btxparameter{\c!separator:names:3}
                     \btxflush{director}
@@ -821,19 +896,9 @@
                     } {
                         \btxlabeltext{apa:Directors}
                     }
-                    \btxrightparenthesis
-                }
-            } {
-                \doif {\btxfoundname{#author}} {director} {
-                    \btxleftparenthesis
-                    \btxsingularorplural {director} {
-                        \btxlabeltext{apa:Director}
-                    } {
-                        \btxlabeltext{apa:Directors}
-                    }
-                    \btxrightparenthesis
                 }
             }
+            \btxrightparenthesis
         }
         \btxdoif {withauthor} {
             \btxleftparenthesis
@@ -877,7 +942,7 @@
         \btxlabeltext{In}
         \doifnot {\btxfoundname{author}} {editor} {
             \btxspace
-            \texdefinition{btx:apa:author-or-editor} {editor}
+            \texdefinition{btx:apa:author-or-editor} {ineditor}
         }
         \btxspace
         \texdefinition{btx:apa:composed-title}{booktitle}

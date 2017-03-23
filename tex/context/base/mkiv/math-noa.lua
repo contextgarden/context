@@ -186,6 +186,13 @@ local left_fence_code      = fencecodes.left
 local middle_fence_code    = fencecodes.middle
 local right_fence_code     = fencecodes.right
 
+-- local mathclasses          = mathematics.classes
+-- local fenceclasses         = {
+--     [left_fence_code]   = mathclasses.open,
+--     [middle_fence_code] = mathclasses.middle,
+--     [right_fence_code]  = mathclasses.close,
+-- }
+
 -- this initial stuff is tricky as we can have removed and new nodes with the same address
 -- the only way out is a free-per-page list of nodes (not bad anyway)
 
@@ -711,6 +718,8 @@ function handlers.resize(head,style,penalties)
     return true
 end
 
+-- still not perfect:
+
 local a_autofence     = privateattribute("mathautofence")
 local autofences      = { }
 processors.autofences = autofences
@@ -732,6 +741,7 @@ local function makefence(what,char)
     end
     setsubtype(f,what)
     setfield(f,"delim",d)
+    setfield(f,"class",-1) -- tex itself does this, so not fenceclasses[what]
     return f
 end
 
@@ -831,19 +841,22 @@ local function processfences(pointer,n,parent)
                     local open = remove(stack)
                     if open then
                         if trace_fences then
-                            report_fences("%2i: handling %s, stack depth %i",n,"both",#stack)
+                            report_fences("%2i: handling %s, stack depth %i",n,"both",#stack+1)
                         end
                         current = convert_both(open,current,middle)
                     elseif current == start then
                         -- skip
                     else
                         if trace_fences then
-                            report_fences("%2i: handling %s, stack depth %i",n,"close",#stack)
+                            report_fences("%2i: handling %s, stack depth %i",n,"close",#stack+1)
                         end
                         current = convert_close(current,initial,middle)
                         if not parent then
                             initial = current
                         end
+                    end
+                    if trace_fences then
+                        report_fences("%2i: popping close from stack",n)
                     end
                 elseif a == 3 then
                     if trace_fences then

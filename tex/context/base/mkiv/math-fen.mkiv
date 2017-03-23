@@ -43,7 +43,8 @@
    \c!middle=,
    \c!mathstyle=,
    \c!color=,
-   \c!command=]
+   \c!command=,
+   \c!factor=] % == auto == none
 
 \appendtoks
     \edef\p_command{\mathfenceparameter\c!command}%
@@ -56,40 +57,65 @@
 
 \newconditional\c_math_fenced_mirror \settrue\c_math_fenced_mirror
 
-\def\math_fenced_left  {\edef\p_left
-                          {\ifconditional\c_math_fenced_mirror
-                             \ifconditional\c_math_right_to_left
-                               \mathfenceparameter\c!right
-                             \else
-                               \mathfenceparameter\c!left
-                             \fi
-                           \else
-                             \mathfenceparameter\c!left
-                           \fi}%
-                        \math_fenced_color_push
-                        \normalleft\ifx\p_left\empty.\else\Udelimiter\plusfour\fam\p_left\relax\fi
-                        \math_fenced_color_pop}
+\unexpanded\def\math_fenced_inject#1#2#3#4%
+  {\ifx#1\empty
+     #2.%
+   \else
+     \edef\p_factor{\mathfenceparameter\c!factor}%
+     \ifx\p_factor\empty
+       #2%
+     \else\ifx\p_factor\v!none
+       #2%
+     \else\ifx\p_factor\v!auto
+       #2%
+     \else
+       \scratchdimen\dimexpr\p_factor\bodyfontsize/2\relax
+       #3\s!height\scratchdimen\s!depth\scratchdimen\s!axis
+     \fi\fi\fi
+     \Udelimiter#4\fam#1\relax
+   \fi}
 
-\def\math_fenced_middle{\edef\p_middle{\mathfenceparameter\c!middle}%
-                        \mskip\thinmuskip
-                        \math_fenced_color_push
-                        \normalmiddle\ifx\p_middle\empty.\else\Udelimiter\plusfour\fam\p_middle\relax\fi
-                        \math_fenced_color_pop
-                        \mskip\thinmuskip}
+\def\math_fenced_left
+  {\edef\p_left
+     {\ifconditional\c_math_fenced_mirror
+        \ifconditional\c_math_right_to_left
+          \mathfenceparameter\c!right
+        \else
+          \mathfenceparameter\c!left
+        \fi
+      \else
+        \mathfenceparameter\c!left
+      \fi}%
+   \math_fenced_color_push
+ % \normalleft\ifx\p_left\empty.\else\Udelimiter\plusfour\fam\p_left\relax\fi
+   \math_fenced_inject\p_left\normalleft\Uleft\plusfour
+   \math_fenced_color_pop}
 
-\def\math_fenced_right {\edef\p_right
-                          {\ifconditional\c_math_fenced_mirror
-                             \ifconditional\c_math_right_to_left
-                               \mathfenceparameter\c!left
-                             \else
-                               \mathfenceparameter\c!right
-                             \fi
-                           \else
-                             \mathfenceparameter\c!right
-                           \fi}%
-                        \math_fenced_color_push
-                        \normalright\ifx\p_right\empty.\else\Udelimiter\plusfive\fam\p_right\relax\fi
-                        \math_fenced_color_pop}
+\def\math_fenced_middle
+  {\edef\p_middle
+     {\mathfenceparameter\c!middle}%
+   \mskip\thinmuskip
+   \math_fenced_color_push
+ % \normalmiddle\ifx\p_middle\empty.\else\Udelimiter\plusfour\fam\p_middle\relax\fi
+   \math_fenced_inject\p_middle\normalmiddle\Umiddle\plusfour
+   \math_fenced_color_pop
+   \mskip\thinmuskip}
+
+\def\math_fenced_right
+  {\edef\p_right
+     {\ifconditional\c_math_fenced_mirror
+        \ifconditional\c_math_right_to_left
+          \mathfenceparameter\c!left
+        \else
+          \mathfenceparameter\c!right
+        \fi
+      \else
+        \mathfenceparameter\c!right
+      \fi}%
+   \math_fenced_color_push
+ % \normalright \ifx\p_right\empty.\else\Udelimiter\plusfive\fam\p_right\relax\fi
+   \math_fenced_inject\p_right\normalright\Uright\plusfive
+   \math_fenced_color_pop}
 
 \def\math_fenced_color_do_push{\pushcolor[\p_math_fenced_color]}
 \let\math_fenced_color_do_pop  \popcolor
@@ -102,11 +128,8 @@
 
 \newcount\c_math_fenced_nesting
 
-\unexpanded\def\math_fenced_fenced_start#1%
-  {\advance\c_math_fenced_nesting\plusone
-   \begingroup
-   \edef\currentmathfence{#1}%
-   \startusemathstyleparameter\mathfenceparameter
+\unexpanded\def\math_fenced_fenced_common
+  {\startusemathstyleparameter\mathfenceparameter
    \let\fence\math_fenced_middle
    \edef\p_math_fenced_color{\mathfenceparameter\c!color}%
    \ifx\p_math_fenced_color\empty
@@ -115,7 +138,13 @@
    \else
      \let\math_fenced_color_push\math_fenced_color_do_push
      \let\math_fenced_color_pop \math_fenced_color_do_pop
-   \fi
+   \fi}
+
+\unexpanded\def\math_fenced_fenced_start#1%
+  {\advance\c_math_fenced_nesting\plusone
+   \begingroup
+   \edef\currentmathfence{#1}%
+   \math_fenced_fenced_common
    \math_fenced_left}
 
 \unexpanded\def\math_fenced_fenced_stop#1%
@@ -125,8 +154,16 @@
    \endgroup
    \advance\c_math_fenced_nesting\minusone}
 
-\unexpanded\def\math_fenced_fenced[#1]#2%
-  {\math_fenced_fenced_start{#1}%
+\unexpanded\def\math_fenced_fenced[#1]%
+  {\advance\c_math_fenced_nesting\plusone
+   \begingroup
+   \edef\currentmathfence{#1}%
+   \dosingleempty\math_fenced_fenced_indeed}
+
+\unexpanded\def\math_fenced_fenced_indeed[#1]#2%
+  {\iffirstargument\setupcurrentmathfence[#1]\fi
+   \math_fenced_fenced_common
+   \math_fenced_left
    #2%
    \math_fenced_right
    \stopusemathstyleparameter

@@ -1217,7 +1217,12 @@ do
         end
     end
 
-    local pagessplitter = lpeg.splitat(P("-")^1)
+    local pagessplitter = lpeg.splitat((
+        P("-") + -- hyphen
+        P("—") + -- U+2014
+        P("–") + -- U+2013
+        P("‒")   -- U+2012
+    )^1)
 
     casters.range = function(str)
         local first, last = lpegmatch(pagessplitter,str)
