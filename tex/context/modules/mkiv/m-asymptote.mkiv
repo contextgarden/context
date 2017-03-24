@@ -1,0 +1,130 @@
+%D \module
+%D   [       file=m-asymptote,
+%D        version=2017.03.24,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Asymptote,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \enabletrackers[sandbox,buffers.run]
+
+%D Currently asymptote assumes \MKII\ but better is to only support \MKIV. A problem
+%D is that asymptote has this hard coded while for \CONTEXT\ it's better to stick to
+%D something simple:
+%D
+%D \starttyping
+%D \starttext
+%D
+%D \startasymptotepage
+%D     some label
+%D \stopasymptotepage
+%D
+%D \startasymptotepage
+%D     some label
+%D \stopasymptotepage
+%D
+%D \stoptext
+%D \stoptyping
+%D
+%D Which is then run with:
+%D
+%D \starttyping
+%D context --nonstopmode --purge somefile.tex
+%D \stoptyping
+%D
+%D Another issue is that prc output only works when we use pdflatex as \TEX\ engine
+%D but I might miss some magic flag here.
+%D
+%D For some reason \type {//} comments don't work, maybe because of some newline
+%D issue so one should use \type {/* ... */} instead.
+
+\registerctxluafile{m-asymptote}{}
+
+\unprotect
+
+\unexpanded\def\asymptote
+  {\dodoubleempty\module_asymptote}
+
+\unexpanded\def\module_asymptote[#1][#2]%
+  {\iffirstargument
+     \edef\lasttypesetbuffer{\ctxlua{moduledata.asympote.process("asymptote:#1")}}%
+     \externalfigure
+       [\lasttypesetbuffer]%
+       [\c!controls=\lasttypesetbuffer,#2]%
+   \fi}
+
+\unexpanded\def\startasymptote[#1]%
+  {\begingroup
+   \dostartbuffer[asymptote:#1][startasymptote][stopasymptote]}
+
+\unexpanded\def\stopasymptote
+  {\endgroup}
+
+\definefittingpage
+  [asymptotepage]
+  [\c!align=\v!normal]
+
+\protect
+
+\continueifinputfile{m-asymptote.mkiv}
+
+\starttext
+
+\startasymptote[demo]
+/* settings.inlineimage=true; */
+/* settings.embed=true; */
+/* settings.toolbar=false; */
+
+import graph3;
+import palette;
+
+size(6cm,6cm);
+size3(5cm,0);
+
+currentprojection=orthographic(3,-6,12);
+currentlight=light(8,10,2);
+
+real g(pair z) {return 1-z.x^2-z.y^2;}
+real f(pair z) {return -2z.x+2;}
+
+real x(real t) {return t;}
+real y(real t) {return 0;}
+real z(real t) {return 1-t^2;}
+real a(real t) {return 1;}
+real b(real t) {return t;}
+real c(real t) {return -t^2;}
+
+path3 p=graph(x,y,z,-2,2,operator ..);
+path3 o=graph(a,b,c,-2,2,operator ..);
+
+surface r=surface(f,(0,-1),(2,1),nx=3,Spline);
+surface s=surface(g,(-2,-2),(2,2),nx=5,Spline);
+
+path3 q=(-2,-2,-7)--(2,-2,-7)--(2,2,-7)--(-2,2,-7)--cycle;
+
+draw(q);
+
+draw(p,blue+thick(),Arrow3);
+draw(o,blue+thick(),Arrow3);
+
+draw(s,lightgray+opacity(0.8),nolight,meshpen=black+thick());
+draw(r,lightgray+opacity(0.8),nolight,meshpen=black+thick());
+
+draw((1,0,0)--(2,0,-2),black,Arrow3);
+draw((1,0,0)--(1,1,0),black,Arrow3);
+\stopasymptote
+
+% \typebuffer[asymptote:demo]
+
+\asymptote[demo][width=4cm,frame=on]
+
+\startasymptotepage
+    test
+\stopasymptotepage
+
+\stoptext

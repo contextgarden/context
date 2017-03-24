@@ -14,6 +14,9 @@ local P, Cs, patterns, lpegmatch = lpeg.P, lpeg.Cs, lpeg.patterns, lpeg.match
 local utfchar  = utf.char
 local nameonly = file.nameonly
 local totable  = string.totable
+local md5hex = md5.hex
+local isfile = lfs.isfile
+local savedata = io.savedata
 
 local trace_run         = false  trackers.register("buffers.run",       function(v) trace_run       = v end)
 local trace_grab        = false  trackers.register("buffers.grab",      function(v) trace_grab      = v end)
@@ -61,6 +64,9 @@ local catcodenumbers    = catcodes.numbers
 
 local ctxcatcodes       = catcodenumbers.ctxcatcodes
 local txtcatcodes       = catcodenumbers.txtcatcodes
+
+local setdata           = job.datasets.setdata
+local getdata           = job.datasets.getdata
 
 buffers       = buffers or { }
 local buffers = buffers
@@ -486,6 +492,7 @@ implement {
 
 local oldhashes = nil
 local newhashes = nil
+local getrunner = sandbox.getrunner
 
 local runner = sandbox.registerrunner {
     name     = "run buffer",
@@ -498,22 +505,45 @@ local runner = sandbox.registerrunner {
     }
 }
 
-local function runbuffer(name,encapsulate)
+local function runbuffer(name,encapsulate,runnername,suffix,extra)
+    if not runnername or runnername == "" then
+        runnername = "run buffer"
+    end
+    if not suffix or suffix == "" then
+        suffix = "pdf"
+    end
+    local runner = getrunner(runnername)
+    if not runner then
+        report_typeset("unknown runner %a",runnername)
+        return
+    end
     if not oldhashes then
-        oldhashes = job.datasets.getdata("typeset buffers","hashes") or { }
-        for hash, n in next, oldhashes do
-            local tag  = formatters["%s-t-b-%s"](tex.jobname,hash)
-            registertempfile(addsuffix(tag,"tmp")) -- to be sure
-            registertempfile(addsuffix(tag,"pdf"))
-        end
+        oldhashes = getdata("typeset buffers","hashes") or { }
+    end
+    if not newhashes then
         newhashes = {
-            version = environment.version,
+            version = environment.version
         }
-        job.datasets.setdata {
+        setdata {
             name = "typeset buffers",
             tag  = "hashes",
             data = newhashes,
         }
+    end
+    local old = oldhashes[suffix]
+    local new = newhashes[suffix]
+    if not old then
+        old = { }
+        oldhashes[suffix] = old
+        for hash, n in next, old do
+            local tag = formatters["%s-t-b-%s"](tex.jobname,hash)
+            registertempfile(addsuffix(tag,"tmp")) -- to be sure
+            registertempfile(addsuffix(tag,suffix))
+        end
+    end
+    if not new then
+        new = { }
+        newhashes[suffix] = new
     end
     local names   = getnames(name)
     local content = collectcontent(names,nil) or ""
@@ -524,23 +554,23 @@ local function runbuffer(name,encapsulate)
         content = formatters["\\starttext\n%s\n\\stoptext\n"](content)
     end
     --
-    local hash = md5.hex(content)
+    local hash = md5hex(content)
     local tag  = formatters["%s-t-b-%s"](nameonly(tex.jobname),hash) -- make sure we run on the local path
     --
     local filename   = addsuffix(tag,"tmp")
-    local resultname = addsuffix(tag,"pdf")
+    local resultname = addsuffix(tag .. (extra or ""),suffix)
     --
-    if newhashes[hash] then
+    if new[hash] then
         -- done
-    elseif not oldhashes[hash] or oldhashes.version ~= newhashes.version or not lfs.isfile(resultname) then
+    elseif not old[hash] or oldhashes.version ~= newhashes.version or not isfile(resultname) then
         if trace_run then
             report_typeset("changes in %a, processing forced",name)
         end
-        io.savedata(filename,content)
+        savedata(filename,content)
         report_typeset("processing saved buffer %a\n",filename)
         runner { filename = filename }
     end
-    newhashes[hash] = (newhashes[hash] or 0) + 1
+    new[hash] = (new[hash] or 0) + 1
     report_typeset("no changes in %a, processing skipped",name)
     registertempfile(filename)
     registertempfile(resultname,nil,true)
@@ -575,15 +605,23 @@ local function gettexbuffer(name)
     end
 end
 
+buffers.run = runbuffer
+
 implement { name = "getbufferctxlua", actions = loadcontent,   arguments = "string" }
 implement { name = "getbuffer",       actions = getbuffer,     arguments = "string" }
 implement { name = "getbuffermkvi",   actions = getbuffermkvi, arguments = "string" }
 implement { name = "gettexbuffer",    actions = gettexbuffer,  arguments = "string" }
 
 implement {
-    name      = "runbuffer",
+    name      = "typesetbuffer",
     actions   = { runbuffer, context },
     arguments = { "string", true }
+}
+
+implement {
+    name      = "runbuffer",
+    actions   = { runbuffer, context },
+    arguments = { "string", false, "string" }
 }
 
 implement {
@@ -623,4 +661,4 @@ do
         stopcollecting()
     end
 
-    end
+end

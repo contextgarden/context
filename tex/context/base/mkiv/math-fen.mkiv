@@ -44,7 +44,7 @@
    \c!mathstyle=,
    \c!color=,
    \c!command=,
-   \c!factor=] % == auto == none
+   \c!factor=\v!auto]
 
 \appendtoks
     \edef\p_command{\mathfenceparameter\c!command}%
@@ -64,9 +64,10 @@
      \edef\p_factor{\mathfenceparameter\c!factor}%
      \ifx\p_factor\empty
        #2%
-     \else\ifx\p_factor\v!none
-       #2%
      \else\ifx\p_factor\v!auto
+       #2%
+     \else\ifx\p_factor\v!none
+       #3\s!height\zeropoint\s!depth\zeropoint\s!axis
        #2%
      \else
        \scratchdimen\dimexpr\p_factor\bodyfontsize/2\relax

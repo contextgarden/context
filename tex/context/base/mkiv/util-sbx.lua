@@ -369,6 +369,9 @@ local runners = {
     resultof = function(...)
         local command = validcommand(...)
         if command then
+            if trace then
+                report("resultof: %s",command)
+            end
             local handle = iopopen(command,"r") -- already has flush
             if handle then
                 local result = handle:read("*all") or ""
@@ -380,12 +383,18 @@ local runners = {
     execute = function(...)
         local command = validcommand(...)
         if command then
+            if trace then
+                report("execute: %s",command)
+            end
             return osexecute(command)
         end
     end,
     pipeto = function(...)
         local command = validcommand(...)
         if command then
+            if trace then
+                report("pipeto: %s",command)
+            end
             return iopopen(command,"w") -- already has flush
         end
     end,
@@ -445,6 +454,10 @@ function sandbox.registerrunner(specification)
         validrunners[name] = nil
         report("invalid method for runner %a",name)
     end
+end
+
+function sandbox.getrunner(name)
+    return name and validrunners[name]
 end
 
 local function suspicious(str)

@@ -1265,7 +1265,7 @@ local persistent_runfiles = {
 }
 
 local special_runfiles = {
-    "-mpgraph", "-mprun", "-temp-"
+    "%-mpgraph", "%-mprun", "%-temp%-"
 }
 
 local function purge_file(dfile,cfile)

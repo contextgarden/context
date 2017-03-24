@@ -53,13 +53,20 @@
    \fi\fi}
 
 \def\grph_buffers_typeset_indeed[#1][#2]% we could use the via files
-  {\doifnot{#1}{*}{\xdef\lasttypesetbuffer{\clf_runbuffer{#1}}}%
+  {\doifnot{#1}{*}{\xdef\lasttypesetbuffer{\clf_typesetbuffer{#1}}}%
    \ifcase\c_grph_buffers_mode
      % typesetonly
    \or
      \externalfigure[\lasttypesetbuffer][#2]%
    \fi
    \egroup}
+
+\unexpanded\def\runbuffer % for now
+  {\dotripleempty\grph_buffers_run_indeed}
+
+\def\grph_buffers_run_indeed[#1][#2]%
+  {\xdef\lasttypesetbuffer{\clf_runbuffer{#1}{#2}}}
+
 
 % For manuals and such:
 %

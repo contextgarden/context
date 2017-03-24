@@ -10240,7 +10240,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sbx"] = package.loaded["util-sbx"] or true
 
--- original size: 19968, stripped down to: 13570
+-- original size: 20309, stripped down to: 13848
 
 if not modules then modules={} end modules ['util-sbx']={
   version=1.001,
@@ -10533,6 +10533,9 @@ local runners={
   resultof=function(...)
     local command=validcommand(...)
     if command then
+      if trace then
+        report("resultof: %s",command)
+      end
       local handle=iopopen(command,"r") 
       if handle then
         local result=handle:read("*all") or ""
@@ -10544,12 +10547,18 @@ local runners={
   execute=function(...)
     local command=validcommand(...)
     if command then
+      if trace then
+        report("execute: %s",command)
+      end
       return osexecute(command)
     end
   end,
   pipeto=function(...)
     local command=validcommand(...)
     if command then
+      if trace then
+        report("pipeto: %s",command)
+      end
       return iopopen(command,"w") 
     end
   end,
@@ -10607,6 +10616,9 @@ function sandbox.registerrunner(specification)
     validrunners[name]=nil
     report("invalid method for runner %a",name)
   end
+end
+function sandbox.getrunner(name)
+  return name and validrunners[name]
 end
 local function suspicious(str)
   return (find(str,"[/\\]") or find(command,"%.%.")) and true or false
@@ -20236,8 +20248,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 836177
--- stripped bytes    : 304146
+-- original bytes    : 836518
+-- stripped bytes    : 304209
 
 -- end library merge
 
