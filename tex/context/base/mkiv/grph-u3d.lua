@@ -47,5 +47,8 @@ end
 
 figures.includers.u3d = figures.includers.nongeneric
 
+-- figures.checkers .prc = figures.checkers.u3d
+-- figures.includers.prc = figures.includers.nongeneric
+
 figures.registersuffix("u3d","u3d")
 figures.registersuffix("prc","u3d")

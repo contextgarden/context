@@ -200,6 +200,10 @@
                     <cd:constant type="margintext"/>
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
+                <cd:parameter name="location">
+                    <!-- optional margin location -->
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
                 <cd:parameter name="width">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>

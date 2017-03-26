@@ -490,8 +490,8 @@ implement {
 
 -- we can consider adding a size to avoid unlikely clashes
 
-local oldhashes = nil
-local newhashes = nil
+local olddata   = nil
+local newdata   = nil
 local getrunner = sandbox.getrunner
 
 local runner = sandbox.registerrunner {
@@ -505,31 +505,54 @@ local runner = sandbox.registerrunner {
     }
 }
 
-local function runbuffer(name,encapsulate,runnername,suffix,extra)
+local function runbuffer(name,encapsulate,runnername,suffixes)
     if not runnername or runnername == "" then
         runnername = "run buffer"
     end
-    if not suffix or suffix == "" then
-        suffix = "pdf"
+    local suffix = "pdf"
+    if type(suffixes) == "table" then
+        suffix = suffixes[1]
+    elseif type(suffixes) == "string" and suffixes ~= "" then
+        suffix   = suffixes
+        suffixes = { suffix }
+    else
+        suffixes = { suffix }
     end
     local runner = getrunner(runnername)
     if not runner then
         report_typeset("unknown runner %a",runnername)
         return
     end
-    if not oldhashes then
-        oldhashes = getdata("typeset buffers","hashes") or { }
+    if not olddata then
+        olddata = getdata("buffers","runners") or { }
+        local suffixes = olddata.suffixes
+        local hashes   = olddata.hashes
+        if hashes and suffixes then
+            for k, hash in next, hashes do
+                for h, v in next, hash do
+                    for s, v in next, suffixes do
+                        local tmp = addsuffix(h,s)
+                     -- report_typeset("mark for deletion: %s",tmp)
+                        registertempfile(tmp)
+                    end
+                end
+            end
+        end
     end
-    if not newhashes then
-        newhashes = {
-            version = environment.version
+    if not newdata then
+        newdata = {
+            version  = environment.version,
+            suffixes = { },
+            hashes   = { },
         }
         setdata {
-            name = "typeset buffers",
-            tag  = "hashes",
-            data = newhashes,
+            name = "buffers",
+            tag  = "runners",
+            data = newdata,
         }
     end
+    local oldhashes = olddata.hashes or { }
+    local newhashes = newdata.hashes or { }
     local old = oldhashes[suffix]
     local new = newhashes[suffix]
     if not old then
@@ -537,8 +560,9 @@ local function runbuffer(name,encapsulate,runnername,suffix,extra)
         oldhashes[suffix] = old
         for hash, n in next, old do
             local tag = formatters["%s-t-b-%s"](tex.jobname,hash)
-            registertempfile(addsuffix(tag,"tmp")) -- to be sure
-            registertempfile(addsuffix(tag,suffix))
+            local tmp = addsuffix(tag,"tmp")
+         -- report_typeset("mark for deletion: %s",tmp)
+            registertempfile(tmp) -- to be sure
         end
     end
     if not new then
@@ -558,11 +582,11 @@ local function runbuffer(name,encapsulate,runnername,suffix,extra)
     local tag  = formatters["%s-t-b-%s"](nameonly(tex.jobname),hash) -- make sure we run on the local path
     --
     local filename   = addsuffix(tag,"tmp")
-    local resultname = addsuffix(tag .. (extra or ""),suffix)
+    local resultname = addsuffix(tag,suffix)
     --
-    if new[hash] then
+    if new[tag] then
         -- done
-    elseif not old[hash] or oldhashes.version ~= newhashes.version or not isfile(resultname) then
+    elseif not old[tag] or olddata.version ~= newdata.version or not isfile(resultname) then
         if trace_run then
             report_typeset("changes in %a, processing forced",name)
         end
@@ -570,12 +594,19 @@ local function runbuffer(name,encapsulate,runnername,suffix,extra)
         report_typeset("processing saved buffer %a\n",filename)
         runner { filename = filename }
     end
-    new[hash] = (new[hash] or 0) + 1
+    new[tag] = (new[tag] or 0) + 1
     report_typeset("no changes in %a, processing skipped",name)
     registertempfile(filename)
-    registertempfile(resultname,nil,true)
+ -- report_typeset("mark for persistence: %s",filename)
+    for i=1,#suffixes do
+        local suffix = suffixes[i]
+        newdata.suffixes[suffix] = true
+        local tmp = addsuffix(tag,suffix)
+     -- report_typeset("mark for persistance: %s",tmp)
+        registertempfile(tmp,nil,true)
+    end
     --
-    return resultname
+    return resultname -- first result
 end
 
 local function getbuffer(name)

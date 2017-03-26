@@ -37,11 +37,8 @@
 %D context --nonstopmode --purge somefile.tex
 %D \stoptyping
 %D
-%D Another issue is that prc output only works when we use pdflatex as \TEX\ engine
-%D but I might miss some magic flag here.
-%D
-%D For some reason \type {//} comments don't work, maybe because of some newline
-%D issue so one should use \type {/* ... */} instead.
+%D For the moment add "settings.prc=true;" to a graphic that is meant to produce that
+%D format. See end of file for some examples.
 
 \registerctxluafile{m-asymptote}{}
 
@@ -52,10 +49,13 @@
 
 \unexpanded\def\module_asymptote[#1][#2]%
   {\iffirstargument
-     \edef\lasttypesetbuffer{\ctxlua{moduledata.asympote.process("asymptote:#1")}}%
+     \begingroup
+     \getdummyparameters[#2]%
+     \edef\lasttypesetbuffer{\ctxlua{moduledata.asympote.process("asymptote:#1","\dummyparameter\c!type")}}%
      \externalfigure
        [\lasttypesetbuffer]%
        [\c!controls=\lasttypesetbuffer,#2]%
+     \endgroup
    \fi}
 
 \unexpanded\def\startasymptote[#1]%
@@ -75,10 +75,8 @@
 
 \starttext
 
-\startasymptote[demo]
-/* settings.inlineimage=true; */
-/* settings.embed=true; */
-/* settings.toolbar=false; */
+\startasymptote[demo-1]
+settings.prc=true;
 
 import graph3;
 import palette;
@@ -119,12 +117,27 @@ draw((1,0,0)--(2,0,-2),black,Arrow3);
 draw((1,0,0)--(1,1,0),black,Arrow3);
 \stopasymptote
 
-% \typebuffer[asymptote:demo]
+\startasymptote[demo-2]
+size(6cm,6cm);
 
-\asymptote[demo][width=4cm,frame=on]
+fill((1cm,2cm)--(3cm,3cm)--(4cm,0cm)--cycle);
+\stopasymptote
 
-\startasymptotepage
-    test
-\stopasymptotepage
+% see end of grph-inc.mkiv for some more options:
+
+\startluaparameterset[demo-1]
+    toolbar = true,
+    tree = false,
+    view = 'ortho'
+\stopluaparameterset
+
+\asymptote[demo-1][type=prc,width=5cm,height=5cm,frame=on,display=yes,controls=yes]
+\asymptote[demo-2][type=pdf,width=8cm,frame=on]
+
+% \typebuffer[asymptote:demo-1]
+
+% \startasymptotepage
+%     test
+% \stopasymptotepage
 
 \stoptext

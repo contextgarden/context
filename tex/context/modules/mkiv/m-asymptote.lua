@@ -14,25 +14,35 @@ local replacesuffix = file.replacesuffix
 moduledata.asymptote = { }
 
 sandbox.registerrunner {
-    name     = "asymptote",
+    name     = "asymptote prc",
     program  = "asy",
     method   = "execute",
-    template = '-noV -config="" -tex=pdflatex -outformat="prc" "%filename%"',
- -- template = '-noV -config="" -tex=context -outformat="prc" "%filename%"',
-    checkers = {
-        filename = "readable",
-    }
+    template = '-noV -config="" -tex=context -outformat="prc" "%filename%"',
+    checkers = { filename = "readable" },
 }
 
-function moduledata.asympote.process(name)
-    local result = buffers.run( -- experimental
-        name,        -- name of the buffer
-        false,       -- no wrapping
-        "asymptote", -- name of the process
-        "prc"        -- suffix of result
-    )
-    parametersets[name] = {
-        js = replacesuffix(result,"js")
-    }
-    context(result)
+sandbox.registerrunner {
+    name     = "asymptote pdf",
+    program  = "asy",
+    method   = "execute",
+    template = '-noV -config="" -tex=context -outformat="pdf" "%filename%"',
+    checkers = { filename = "readable" },
+}
+
+function moduledata.asympote.process(name,type)
+    if type == "prc" then
+        local result = buffers.run(name,false,"asymptote prc","prc")
+        local jsdata = { js = replacesuffix(result,"js") }
+        local parset = parametersets[name]
+        if parset then
+            -- so we can overload at the tex end
+            setmetatableindex(parset,jsdata)
+        else
+            parametersets[name] = jsdata
+        end
+        context(result)
+    else
+        local result = buffers.run(name,false,"asymptote pdf","pdf")
+        context(result)
+    end
 end

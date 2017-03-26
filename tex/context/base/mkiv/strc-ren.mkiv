@@ -688,23 +688,57 @@
   [\c!alternative=\v!vertical,
    \c!renderingsetup=\??headrenderings:\v!inmargin]
 
+% \startsetups[\??headrenderings:\v!inmargin]
+%     \vbox {
+%         \headsetupspacing
+%         \begstrut % use one \strut here!
+%         \dontleavehmode % in case there is no strut, else side effects with llap
+%         \ifconditional\headshownumber
+%             \llap {
+%                 \signalrightpage
+%                 \hbox {
+%                     \hfill
+%                     \headnumbercontent
+%                     \doifelserightpage{
+%                         \scratchdistance\leftmargindistance
+%                     } {
+%                         \scratchdistance\rightmargindistance
+%                     }
+%                     \hskip\dimexpr\d_strc_rendering_local_leftoffset+\scratchdistance\relax
+%                 }
+%             }
+%         \else
+%             \fakeheadnumbercontent % will also be done in the other ones (force consistency with numbered)
+%         \fi
+%         \headtextcontent
+%     }
+% \stopsetups
+
 \startsetups[\??headrenderings:\v!inmargin]
     \vbox {
         \headsetupspacing
-        \begstrut % use one \strut here!
         \dontleavehmode % in case there is no strut, else side effects with llap
+        \begstrut % use one \strut here!
         \ifconditional\headshownumber
-            \llap {
-                \signalrightpage
-                \hbox {
-                    \hfill
+            \doifelsesomething {\headparameter\c!location} {
+                % kind of new
+                \margindata [\headparameter\c!location] {
                     \headnumbercontent
-                    \doifelserightpage{
-                        \scratchdistance\leftmargindistance
-                    } {
-                        \scratchdistance\rightmargindistance
+                }
+            } {
+                % normal backward compatible variant
+                \llap {
+                    \signalrightpage
+                    \hbox {
+                        \hfill
+                        \headnumbercontent
+                        \doifelserightpage{
+                            \scratchdistance\leftmargindistance
+                        } {
+                            \scratchdistance\rightmargindistance
+                        }
+                        \hskip\dimexpr\d_strc_rendering_local_leftoffset+\scratchdistance\relax
                     }
-                    \hskip\dimexpr\d_strc_rendering_local_leftoffset+\scratchdistance\relax
                 }
             }
         \else
