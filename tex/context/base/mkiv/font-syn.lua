@@ -804,6 +804,7 @@ local function collecthashes()
     local noffallbacks   = 0
     if specifications then
         -- maybe multiple passes (for the compatible and cffnames so that they have less preference)
+        local conflicts = setmetatableindex("table")
         for index=1,#specifications do
             local specification  = specifications[index]
             local format         = specification.format
@@ -832,7 +833,6 @@ local function collecthashes()
                     local instance = fullname .. instancenames[i]
                     mapping[instance] = index
                     nofmappings       = nofmappings + 1
-
                 end
             end
          -- if compatiblename and not mapping[compatiblename] then
@@ -865,9 +865,21 @@ local function collecthashes()
                         noffallbacks        = noffallbacks + 1
                     end
                 end
+                -- dangerous ... first match takes slot
                 if not mapping[familyname] and not fallback[familyname] then
                     fallback[familyname] = index
                     noffallbacks         = noffallbacks + 1
+                end
+                local conflict = conflicts[format]
+                conflict[familyname] = (conflict[familyname] or 0) + 1
+            end
+        end
+        for format, conflict in next, conflicts do
+            local fallback = fallbacks[format]
+            for familyname, n in next, conflict do
+                if n > 1 then
+                    fallback[familyname] = nil
+                    noffallbacks = noffallbacks - n
                 end
             end
         end

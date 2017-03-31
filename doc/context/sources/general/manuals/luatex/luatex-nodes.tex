@@ -1709,6 +1709,13 @@ tail node.
     node.slide(<node> n)
 \stopfunctioncall
 
+After some callbacks automatic sliding takes place. This feature can be turned
+off with \type {node.fix_node_lists(false)} but you better make sure then that
+you don't mess up lists. In most cases \TEX\ itself only uses \type {next}
+pointers but your other callbacks might expect proper \type {prev} pointers too.
+Future versions of \LUATEX\ can add more checking but this will not influence
+usage.
+
 \subsubsection{\type {node.check_discretionary} and \type {node.check_discretionaries}}
 
 When you fool around with disc nodes you need to be aware of the fact that they

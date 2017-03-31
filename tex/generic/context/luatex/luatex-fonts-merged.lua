@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/26/17 16:15:15
+-- merge date  : 03/31/17 19:41:25
 
 do -- begin closure to overcome local limits and interference
 
@@ -25920,8 +25920,7 @@ local function initializecolr(tfmdata,kind,value)
             local w=character.width or 0
             local s=#colorlist
             local t={
-              { "special","pdf:page:q" },
-              { "special","pdf:raw:"..b }
+              { "special","pdf:direct:q "..b },
             }
             local n=#t
             for i=1,s do
@@ -25932,8 +25931,7 @@ local function initializecolr(tfmdata,kind,value)
                 n=n+1 t[n]={ "right",-w }
               end
             end
-            n=n+1 t[n]={ "special","pdf:page:"..e }
-            n=n+1 t[n]={ "special","pdf:raw:Q" }
+            n=n+1 t[n]={ "special","pdf:direct:"..e.." Q"}
             character.commands=t
           end
         end

@@ -1245,19 +1245,19 @@ vardef properties(text t) =
     image(draw unitcircle t)
 enddef ;
 
-if metapostversion < 1.770  :
-
-    def withproperties expr p =
-        if colormodel p = 3 :
-            withcolor greypart p
-        elseif colormodel p = 5 :
-            withcolor (redpart p,greenpart p,bluepart p)
-        elseif colormodel p = 7 :
-            withcolor (cyanpart p,magentapart p,yellowpart p,blackpart p)
-        fi
-    enddef ;
-
-else :
+% if metapostversion < 1.770  :
+%
+%     def withproperties expr p =
+%         if colormodel p = 3 :
+%             withcolor greypart p
+%         elseif colormodel p = 5 :
+%             withcolor (redpart p,greenpart p,bluepart p)
+%         elseif colormodel p = 7 :
+%             withcolor (cyanpart p,magentapart p,yellowpart p,blackpart p)
+%         fi
+%     enddef ;
+%
+% else :
 
     def withproperties expr p =
         if colormodel p = 3 :
@@ -1271,7 +1271,7 @@ else :
         withpostscript postscriptpart p
     enddef ;
 
-fi ;
+% fi ;
 
 % Experimental:
 

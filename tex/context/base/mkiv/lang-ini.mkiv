@@ -499,16 +499,6 @@
    \fi
    \lang_basics_synchronize_min_max}
 
-% \unexpanded\def\nohyphens % % % % % not clever, we still hyphenate but supress application
-%   {\ifx\dohyphens\relax
-%      \unexpanded\edef\dohyphens
-%        {\hyphenpenalty  \the\hyphenpenalty
-%         \exhyphenpenalty\the\exhyphenpenalty
-%         \relax}%
-%    \fi
-%    \hyphenpenalty  \plustenthousand
-%    \exhyphenpenalty\plustenthousand}
-
 \unexpanded\def\nohyphens % nicer for url's
   {\ifx\dohyphens\relax
      \unexpanded\edef\dohyphens

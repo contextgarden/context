@@ -66,8 +66,8 @@ def stop expr s =
     gobble readstring
 enddef ;
 
-warningcheck     :=1 ;
-tracinglostchars :=1 ;
+warningcheck     := 1 ;
+tracinglostchars := 1 ;
 
 def interact = % sets up to make "show" commands stop
     hide (

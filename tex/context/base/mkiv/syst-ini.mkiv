@@ -1165,16 +1165,20 @@
 
 %D For now:
 
-\ifdefined\protrusionboundary \else \let\protrusionboundary\boundary   \fi
-\ifdefined\wordboundary       \else \let\wordboundary      \noboundary \fi
+\ifdefined\protrusionboundary     \else \let\protrusionboundary\boundary   \fi
+\ifdefined\wordboundary           \else \let\wordboundary      \noboundary \fi
 
-\ifdefined\mathrulesfam       \else \newcount\mathrulesfam             \fi
-\ifdefined\mathrulesmode      \else \newcount\mathrulesmode            \fi
-\ifdefined\mathsurroundmode   \else \newcount\mathsurroundmode         \fi
-\ifdefined\mathitalicsmode    \else \newcount\mathitalicsmode          \fi
+\ifdefined\mathrulesfam           \else \newcount\mathrulesfam     \fi
+\ifdefined\mathrulesmode          \else \newcount\mathrulesmode    \fi
+\ifdefined\mathsurroundmode       \else \newcount\mathsurroundmode \fi
+\ifdefined\mathitalicsmode        \else \newcount\mathitalicsmode  \fi
 
 \ifdefined\hyphenpenaltymode      \else \newcount\hyphenpenaltymode      \fi
 \ifdefined\automatichyphenpenalty \else \newcount\automatichyphenpenalty \fi
+\ifdefined\automatichyphenmode    \else \newcount\automatichyphenmode    \fi
 \ifdefined\explicithyphenpenalty  \else \newcount\explicithyphenpenalty  \fi
+
+\ifdefined\explicitdiscretionary  \else \let\explicitdiscretionary  \-                   \fi
+\ifdefined\automaticdiscretionary \else \def\automaticdiscretionary{\Uchar\exhyphenchar} \fi
 
 \protect \endinput

@@ -141,6 +141,7 @@ local pattern =
   )^1)
 
 function strings.tabtospace(str,tab)
+    -- no real gain in first checking if a \t is there
     return lpegmatch(pattern,str,1,tab or 7)
 end
 

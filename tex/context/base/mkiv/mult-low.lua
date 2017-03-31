@@ -424,5 +424,7 @@ return {
         "naturalhbox", "naturalvbox", "naturalhpack", "naturalvpack",
         --
         "frule",
+        --
+        "compoundhyphenpenalty",
     }
 }

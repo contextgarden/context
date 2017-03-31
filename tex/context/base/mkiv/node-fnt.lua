@@ -139,7 +139,12 @@ fonts.hashes.processes   = fontprocesses
 local ligaturing = nuts.ligaturing
 local kerning    = nuts.kerning
 
-local expanders
+-- -- -- this will go away
+
+local disccodes        = nodes.disccodes
+local explicit_code    = disccodes.explicit
+local automatic_code   = disccodes.automatic
+local expanders        = nil
 
 function fonts.setdiscexpansion(v)
     if v == nil or v == true then
@@ -156,6 +161,8 @@ function fonts.getdiscexpansion()
 end
 
 fonts.setdiscexpansion(true)
+
+-- -- -- till here
 
 local function start_trace(head)
     run = run + 1
@@ -358,9 +365,10 @@ function handlers.characters(head,groupcode,size,packtype,direction)
         -- basefont is not supported in disc only runs ... it would mean a lot of
         -- ranges .. we could try to run basemode as a separate processor run but
         -- not for now (we can consider it when the new node code is tested
-
         for d in traverse_id(disc_code,nuthead) do
-            -- we could use first_glyph, only doing replace is good enough
+            -- we could use first_glyph, only doing replace is good enough because
+            -- pre and post are normally used for hyphens and these come from fonts
+            -- that part of the hyphenated word
             local _, _, r = getdisc(d)
             if r then
                 local prevfont = nil
@@ -407,9 +415,7 @@ function handlers.characters(head,groupcode,size,packtype,direction)
                 end
             elseif expanders then
                 local subtype = getsubtype(d)
-                if subtype == discretionary_code then
-                    -- already done when replace
-                else
+                if subtype == automatic_code or subtype == explicit_code then
                     expanders[subtype](d)
                     e = e + 1
                 end

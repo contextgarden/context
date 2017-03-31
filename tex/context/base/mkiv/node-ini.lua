@@ -410,3 +410,11 @@ if not nodecodes.dir then
     report_codes("use a newer version of luatex")
     os.exit()
 end
+
+-- We don't need this sanitize-after-callback in ConTeXt and by disabling it we
+-- also have a way to check if LuaTeX itself does the right thing.
+
+if node.fix_node_lists then
+    node.fix_node_lists(false)
+end
+

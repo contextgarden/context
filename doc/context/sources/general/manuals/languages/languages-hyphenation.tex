@@ -384,8 +384,8 @@ whatever-whatever \par
 \typebuffer[demo]
 
 These lines will hyphenate differently and in traditional \TEX\ you need to
-insert penalties and|/|or glue to get around it. In the \LUA\ variant we can
-enable that limitation.
+insert penalties and|/|or glue to get around it unless you instruct \LUATEX\ to
+be more. In the \LUA\ variant we can enable that limitation.
 
 \startbuffer
 \definehyphenationfeatures
@@ -445,7 +445,7 @@ extensions as mentioned. However, you can plug in your own code, given that it
 does return a proper hyphenation result. One reason for providing this plug is
 that there are users who want to play with hyphenators based  on a different
 logic. In \CONTEXT\ we already have some methods to deal with languages that
-(for instance) have no spaces but split on words or syllabes. A more tight
+(for instance) have no spaces but split on words or syllables. A more tight
 integration with the hyphenator can have advantages so I will explore these
 options when there is demand.
 

@@ -37,6 +37,22 @@
 
 \definesystemattribute[hyphenation][public]
 
+%D After a decade of playing with these things in \LUATEX|/|\MKIV\ it's time to
+%D finish the way we deal with discretionaries. Apart from the fact that they play a
+%D role in hyphenation they also need to be dealt with in fonts. Flattening, cleanup
+%D and such are now more or less default in \CONTEXT\ so we can simplify some of the
+%D code. We also use the new penalty mechanism.
+
+\newcount\compoundhyphenpenalty
+
+\automatichyphenmode    \plusone
+\hyphenpenaltymode      \plusfour
+
+\hyphenpenalty          50 % hyphenator
+\automatichyphenpenalty 50 % -
+\explicithyphenpenalty  50 % \-
+\compoundhyphenpenalty  50
+
 %D This command can change! At some point we will keep the setting with the
 %D paragraph and then the \type {\par} can go.
 
@@ -50,7 +66,6 @@
 %    \disabledirectives[hyphenators.rightwordsmin]%
 %    \enabledirectives[hyphenators.method]%
 %    \endgroup}
-
 
 % \exhyphenchar    \hyphenasciicode
 % \preexhyphenchar \lessthanasciicode
@@ -123,7 +138,9 @@
         leftchar     \numexpr\dummyparameter\s!lefthyphenchar\relax
         rightchar    \numexpr\dummyparameter\s!righthyphenchar\relax
         alternative  {\dummyparameter\c!alternative}%
-        rightedge    {\dummyparameter\c!rightedge}%
+rightedge    {\dummyparameter\c!rightedge}%
+% autohyphen   {\dummyparameter\c!autohyphen}
+% hyphenonly   {\dummyparameter\c!hyphenonly}
       }%
    \relax
    \endgroup}

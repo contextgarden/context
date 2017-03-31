@@ -275,6 +275,8 @@
    \fi
    \ifx\dohyphens\relax % was 2.5 in old implementation using scratch registers
      \hyphenpenalty\dimexpr2.8\hsize/\dimexpr#1\relax\relax % 50 in raggedright/raggedleft
+  %\else
+     % no need to do something as we're in \nohyphens
    \fi}
 
 \unexpanded\def\spac_align_set_tolerant

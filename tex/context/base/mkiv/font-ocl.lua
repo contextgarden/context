@@ -140,8 +140,10 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                             -- are somewhat inefficient as each glyph gets the font set. It's a
                             -- side effect of the fact that a font is handled when a character gets
                             -- flushed.
-                            { "special", "pdf:page:q" },
-                            { "special", "pdf:raw:" .. b }
+                         -- { "special", "pdf:page:q" },
+                         -- { "special", "pdf:raw:" .. b }
+                            -- This seems to be okay too:
+                            { "special", "pdf:direct:q " .. b },
                         }
                         local n = #t
                         for i=1,s do
@@ -152,8 +154,10 @@ local function initializecolr(tfmdata,kind,value) -- hm, always value
                                 n = n + 1 t[n] = { "right", -w }
                             end
                         end
-                        n = n + 1 t[n] = { "special", "pdf:page:" .. e }
-                        n = n + 1 t[n] = { "special", "pdf:raw:Q" }
+                     -- n = n + 1 t[n] = { "special", "pdf:page:" .. e }
+                     -- n = n + 1 t[n] = { "special", "pdf:raw:Q" }
+                        -- This seems to be okay too:
+                        n = n + 1 t[n] = { "special", "pdf:direct:" .. e .. " Q"}
                         character.commands = t
                     end
                 end

@@ -13,6 +13,8 @@ local givenfiles  = environment.files
 local suffix, addsuffix, removesuffix, replacesuffix = file.suffix, file.addsuffix, file.removesuffix, file.replacesuffix
 local nameonly, basename, joinpath, collapsepath = file.nameonly, file.basename, file.join, file.collapsepath
 local lower = string.lower
+local concat = table.concat
+local write_nl = texio.write_nl
 
 local otfversion  = 2.826
 local otlversion  = 3.028
@@ -228,14 +230,6 @@ function scripts.fonts.reload()
     end
 end
 
-local function subfont(sf)
-    if sf then
-        return string.format("index: % 2s", sf)
-    else
-        return ""
-    end
-end
-
 local function fontweight(fw)
     if fw then
         return string.format("conflict: %s", fw)
@@ -262,7 +256,7 @@ local function showfeatures(tag,specification)
     indeed("style     : %s",specification.style or "<nostyle>")
     indeed("width     : %s",specification.width or "<nowidth>")
     indeed("variant   : %s",specification.variant or "<novariant>")
-    indeed("subfont   : %s",subfont(specification.subfont))
+    indeed("subfont   : %s",specification.subfont or "")
     indeed("fweight   : %s",fontweight(specification.fontweight))
     -- maybe more
     local instancenames = specification.instancenames
@@ -290,7 +284,7 @@ local function showfeatures(tag,specification)
                         else
                             done = true
                         end
-                        report("% -8s % -8s % -8s",f,s,table.concat(table.sortedkeys(ss), " ")) -- todo: padd 4
+                        report("% -8s % -8s % -8s",f,s,concat(table.sortedkeys(ss), " ")) -- todo: padd 4
                     end
                 end
             end
@@ -330,13 +324,15 @@ local function list_specifications(t,info)
                     entry.variant       or "<novariant>",
                     entry.fontname,
                     entry.filename,
-                    subfont(entry.subfont),
+                    entry.subfont or "",
                     fontweight(entry.fontweight),
                 }
             end
+            table.insert(s,1,{"familyname","weight","style","width","variant","fontname","filename","subfont","fontweight"})
+            table.insert(s,2,{"","","","","","","","",""})
             utilities.formatters.formatcolumns(s)
             for k=1,#s do
-                texio.write_nl(s[k])
+                write_nl(s[k])
             end
         end
     end
@@ -344,7 +340,7 @@ end
 
 local function list_matches(t,info)
     if t then
-        local s, w = table.sortedkeys(t), { 0, 0, 0 }
+        local s, w = table.sortedkeys(t), { 0, 0, 0, 0 }
         if info then
             for k=1,#s do
                 local v = s[k]
@@ -356,14 +352,18 @@ local function list_matches(t,info)
                 local entry = t[v]
                 s[k] = {
                     v,
+                    entry.familyname,
                     entry.fontname,
                     entry.filename,
-                    subfont(entry.subfont)
+                    entry.subfont or "",
+                    concat(entry.instancenames or { }, " "),
                 }
             end
+            table.insert(s,1,{"identifier","familyname","fontname","filename","subfont","instances"})
+            table.insert(s,2,{"","","","","","",""})
             utilities.formatters.formatcolumns(s)
             for k=1,#s do
-                texio.write_nl(s[k])
+                write_nl(s[k])
             end
         end
     end

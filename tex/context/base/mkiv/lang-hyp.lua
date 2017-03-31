@@ -6,14 +6,6 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
     license   = "see context related readme files"
 }
 
--- todo: hyphenate over range if needed
--- todo: check boundary nodes
-
--- setattr: helper for full attr
-
--- to be considered: reset dictionary.hyphenated when a pattern is added
--- or maybe an explicit reset of the cache
-
 -- In an automated workflow hypenation of long titles can be somewhat problematic
 -- especially when demands conflict. For that reason I played a bit with a Lua based
 -- variant of the traditional hyphenation machinery. This mechanism has been extended
@@ -24,7 +16,11 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
 -- Being the result of two days experimenting the following implementation is probably
 -- not completely okay yet. If there is demand I might add some more features and plugs.
 -- The performance is quite okay but can probably improved a bit, although this is not
--- the most critital code.
+-- the most critital code. For instance, on a metafun manual run the overhead is about
+-- 0.3 seconds on 19 seconds which is not that bad.
+--
+-- In the procecess of wrapping up (for the ctx conference proceedings) I cleaned up
+-- and extended the code a bit. It can be used in production.
 --
 -- . a l g o r i t h m .
 --    4l1g4
@@ -45,12 +41,12 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
 --
 -- ab1cd/ef=gh,2,2 : acd - efd (pattern/replacement,start,length
 --
--- In the procecess of wrapping up (for the ctx conference proceedings) I cleaned up
--- and extended the code a bit.
-
--- todo: hjcodes (<32 == length) if i really want it
-
--- start:
+-- todo  : support hjcodes (<32 == length) like luatex does now (no need/demand so far)
+-- maybe : support hyphenation over range (can alsready be done using attributes/language)
+-- maybe : reset dictionary.hyphenated when a pattern is added and/or forced reset option
+-- todo  : check subtypes (because they have subtle meanings in the line breaking)
+--
+-- word start (in tex engine):
 --
 -- boundary  : yes when wordboundary
 -- hlist     : when hyphenationbounds 1 or 3
@@ -63,7 +59,7 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
 -- glyph     : exhyphenchar (one only) : yes (so no -- ---)
 -- otherwise : yes
 --
--- end:
+-- word end (in tex engine):
 --
 -- boundary  : yes
 -- glyph     : yes when different language
@@ -77,8 +73,6 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
 -- whatsit   : when hyphenationbounds 2 or 3
 -- ins       : when hyphenationbounds 2 or 3
 -- adjust    : when hyphenationbounds 2 or 3
-
--- todo: maybe subtypes (because they have subtle meanings in the line breaking)
 
 local type, rawset, tonumber, next = type, rawset, tonumber, next
 
@@ -318,15 +312,14 @@ function traditional.lasttrace()
     return steps
 end
 
--- We could reuse the w table but as we cache the resolved words
--- there is not much gain in that complication.
+-- We could reuse the w table but as we cache the resolved words there is not much gain in
+-- that complication.
 --
--- Beware: word can be a table and when n is passed to we can
--- assume reuse so we need to honor that n then.
-
--- todo: a fast variant for tex ... less lookups (we could check is
--- dictionary has changed) ... although due to caching the already
--- done words, we don't do much here
+-- Beware: word can be a table and when n is passed to we can assume reuse so we need to
+-- honor that n then.
+--
+-- todo: a fast variant for tex ... less lookups (we could check is dictionary has changed)
+-- ... although due to caching the already done words, we don't do much here
 
 local function hyphenate(dictionary,word,n) -- odd is okay
     nofwords = nofwords + 1
@@ -399,7 +392,6 @@ local function hyphenate(dictionary,word,n) -- odd is okay
     local specials = dictionary.specials
     local patterns = dictionary.patterns
     --
--- inspect(specials)
     local spec
     for i=1,l do
         for j=i,l do
@@ -410,15 +402,14 @@ local function hyphenate(dictionary,word,n) -- odd is okay
                 if not done then
                     done = { }
                     spec = nil
-                    -- the string that we resolve has explicit fences (.) so
-                    -- done starts at the first fence and runs upto the last
-                    -- one so we need one slot less
+                    -- the string that we resolve has explicit fences (.) so done starts at
+                    -- the first fence and runs upto the last one so we need one slot less
                     for i=1,l do
                         done[i] = 0
                     end
                 end
-                -- we run over the pattern that always has a (zero) value for
-                -- each character plus one more as we look at both sides
+                -- we run over the pattern that always has a (zero) value for each character
+                -- plus one more as we look at both sides
                 for k=1,#m do
                     local new = m[k]
                     if not new then
@@ -524,8 +515,8 @@ function traditional.injecthyphens(dictionary,word,specification)
         return word
     end
 
-    -- the following code is similar to code later on but here we have
-    -- strings while there we have hyphen specs
+    -- the following code is similar to code later on but here we have strings while there
+    -- we have hyphen specs
 
     local word      = lpegmatch(p_split,word)
     local size      = #word
@@ -636,7 +627,7 @@ if context then
     local discretionary_code = disccodes.discretionary
     local explicit_code      = disccodes.explicit
     local automatic_code     = disccodes.automatic
-    ----- regular_code       = disccodes.regular
+    local regular_code       = disccodes.regular
 
     local nuts               = nodes.nuts
     local tonut              = nodes.tonut
@@ -658,13 +649,18 @@ if context then
     local getattrlist        = nuts.getattrlist
     local setattrlist        = nuts.setattrlist
     local isglyph            = nuts.isglyph
+    local ischar             = nuts.ischar
 
     local setchar            = nuts.setchar
     local setdisc            = nuts.setdisc
+    local setlink            = nuts.setlink
+    local setprev            = nuts.setprev
+    local setnext            = nuts.setnext
 
     local insert_before      = nuts.insert_before
     local insert_after       = nuts.insert_after
     local copy_node          = nuts.copy
+    local copy_list          = nuts.copy_list
     local remove_node        = nuts.remove
     local end_of_math        = nuts.end_of_math
     local node_tail          = nuts.tail
@@ -690,8 +686,9 @@ if context then
 
     local a_hyphenation      = attributes.private("hyphenation")
 
-    local expand_explicit    = languages.expanders[explicit_code]
-    local expand_automatic   = languages.expanders[automatic_code]
+    local expanders          = languages.expanders -- gone in 1.005
+    local expand_explicit    = expanders and expanders[explicit_code]
+    local expand_automatic   = expanders and expanders[automatic_code]
 
     local interwordpenalty   = 5000
 
@@ -699,11 +696,12 @@ if context then
         return dictionaries[language]
     end
 
-    setmetatableindex(dictionaries,function(t,k) -- for the moment we use an independent data structure
+    -- for the moment we use an independent data structure
+
+    setmetatableindex(dictionaries,function(t,k)
         if type(k) == "string" then
-            -- this will force a load if not yet loaded (we need a nicer way)
-            -- for the moment that will do (nneeded for examples that register
-            -- a pattern specification
+            -- this will force a load if not yet loaded (we need a nicer way) for the moment
+            -- that will do (nneeded for examples that register a pattern specification
             languages.getnumber(k)
         end
         local specification = languages.getdata(k)
@@ -778,11 +776,10 @@ if context then
     -- with less characters than either of them! This could be an option but such a narrow
     -- hsize doesn't make sense anyway.
 
-    -- We assume that featuresets are defined global ... local definitions
-    -- (also mid paragraph) make not much sense anyway. For the moment we
-    -- assume no predefined sets so we don't need to store them. Nor do we
-    -- need to hash them in order to save space ... no sane user will define
-    -- many of them.
+    -- We assume that featuresets are defined global ... local definitions (also mid paragraph)
+    -- make not much sense anyway. For the moment we assume no predefined sets so we don't need
+    -- to store them. Nor do we need to hash them in order to save space ... no sane user will
+    -- define many of them.
 
     local featuresets       = hyphenators.featuresets or { }
     hyphenators.featuresets = featuresets
@@ -804,7 +801,8 @@ if context then
         return noffeaturesets
     end
 
-    local function makeset(...) -- a bit overkill, supporting variants but who cares
+    local function makeset(...)
+        -- a bit overkill, supporting variants but who cares
         local set = { }
         for i=1,select("#",...) do
             local list = select(i,...)
@@ -844,9 +842,34 @@ if context then
         return set
     end
 
+    -- category pd (tex also sees --- and -- as hyphens but do we really want that
+
     local defaulthyphens = {
-        [0x2D] = true, -- hyphen
-        [0xAD] = true, -- soft hyphen
+        [0x002D] = true,   -- HYPHEN-MINUS
+        [0x00AD] = 0x002D, -- SOFT HYPHEN (active in ConTeXt)
+     -- [0x058A] = true,   -- ARMENIAN HYPHEN
+     -- [0x1400] = true,   -- CANADIAN SYLLABICS HYPHEN
+     -- [0x1806] = true,   -- MONGOLIAN TODO SOFT HYPHEN
+        [0x2010] = true,   -- HYPHEN
+     -- [0x2011] = true,   -- NON-BREAKING HYPHEN
+     -- [0x2012] = true,   -- FIGURE DASH
+        [0x2013] = true,   -- EN DASH
+        [0x2014] = true,   -- EM DASH
+     -- [0x2015] = true,   -- HORIZONTAL BAR
+     -- [0x2027] = true,   -- HYPHENATION POINT
+     -- [0x2E17] = true,   -- DOUBLE OBLIQUE HYPHEN
+     -- [0x2E1A] = true,   -- HYPHEN WITH DIAERESIS
+     -- [0x2E3A] = true,   -- TWO-EM DASH
+     -- [0x2E3B] = true,   -- THREE-EM DASH
+     -- [0x2E40] = true,   -- DOUBLE HYPHEN
+     -- [0x301C] = true,   -- WAVE DASH
+     -- [0x3030] = true,   -- WAVY DASH
+     -- [0x30A0] = true,   -- KATAKANA-HIRAGANA DOUBLE HYPHEN
+     -- [0xFE31] = true,   -- PRESENTATION FORM FOR VERTICAL EM DASH
+     -- [0xFE32] = true,   -- PRESENTATION FORM FOR VERTICAL EN DASH
+     -- [0xFE58] = true,   -- SMALL EM DASH
+     -- [0xFE63] = true,   -- SMALL HYPHEN-MINUS
+     -- [0xFF0D] = true,   -- FULLWIDTH HYPHEN-MINUS
     }
 
     local defaultjoiners = {
@@ -868,13 +891,15 @@ if context then
         local charmin      = tonumber(featureset.charmin) -- luatex now also has hyphenationmin
         local leftcharmin  = tonumber(featureset.leftcharmin)
         local rightcharmin = tonumber(featureset.rightcharmin)
-        local rightedge    = featureset.rightedge
         local leftchar     = somehyphenchar(featureset.leftchar)
         local rightchar    = somehyphenchar(featureset.rightchar)
         local rightchars   = featureset.rightchars
+local rightedge    = featureset.rightedge
+local autohyphen   = v_yes -- featureset.autohyphen -- insert disc
+local hyphenonly   = v_yes -- featureset.hyphenonly -- don't hyphenate around
         rightchars  = rightchars  == v_word and true           or tonumber(rightchars)
-        joinerchars = joinerchars == v_yes  and defaultjoiners or joinerchars
-        hyphenchars = hyphenchars == v_yes  and defaulthyphens or hyphenchars
+        joinerchars = joinerchars == v_yes  and defaultjoiners or joinerchars -- table
+        hyphenchars = hyphenchars == v_yes  and defaulthyphens or hyphenchars -- table
         -- not yet ok: extrachars have to be ignored  so it cannot be all)
         featureset.extrachars   = makeset(joinerchars or "",extrachars or "")
         featureset.hyphenchars  = makeset(hyphenchars or "")
@@ -886,8 +911,9 @@ if context then
         featureset.rightchars   = rightchars
         featureset.leftchar     = leftchar
         featureset.rightchar    = rightchar
-        featureset.strict       = rightedge == 'tex'
-        --
+     -- featureset.strict       = rightedge  == "tex"
+featureset.autohyphen   = autohyphen == v_yes
+featureset.hyphenonly   = hyphenonly == v_yes
         return register(name,featureset)
     end
 
@@ -959,10 +985,9 @@ if context then
         arguments = { "string",  "string" }
     }
 
-    -- This is a relative large function with local variables and local
-    -- functions. A previous implementation had the functions outside but
-    -- this is cleaner and as efficient. The test runs 100 times over
-    -- tufte.tex, knuth.tex, zapf.tex, ward.tex and darwin.tex in lower
+    -- This is a relative large function with local variables and local functions. A previous
+    -- implementation had the functions outside but this is cleaner and as efficient. The test
+    -- runs 100 times over tufte.tex, knuth.tex, zapf.tex, ward.tex and darwin.tex in lower
     -- and uppercase with a 1mm hsize.
     --
     --         language=0     language>0     4 | 3 * slower
@@ -970,79 +995,89 @@ if context then
     -- tex     2.34 | 1.30    2.55 | 1.45    0.21 | 0.15
     -- lua     2.42 | 1.38    3.30 | 1.84    0.88 | 0.46
     --
-    -- Of course we have extra overhead (virtual Lua machine) but also we
-    -- check attributes and support specific local options). The test puts
-    -- the typeset text in boxes and discards it. If we also flush the
-    -- runtime is 4.31|2.56 and 4.99|2.94 seconds so the relative difference
-    -- is (somehow) smaller. The test has 536 pages. There is a little bit
-    -- of extra overhead because we store the patterns in a different way.
+    -- Of course we have extra overhead (virtual Lua machine) but also we check attributes and
+    -- support specific local options). The test puts the typeset text in boxes and discards
+    -- it. If we also flush the runtime is 4.31|2.56 and 4.99|2.94 seconds so the relative
+    -- difference is (somehow) smaller. The test has 536 pages. There is a little bit of extra
+    -- overhead because we store the patterns in a different way.
     --
-    -- As usual I will look for speedups. Some 0.01 seconds could be gained
-    -- by sharing patterns which is not impressive but it does save some
-    -- 3M memory on this test. (Some optimizations already brought the 3.30
-    -- seconds down to 3.14 but it all depends on aggressive caching.)
+    -- As usual I will look for speedups. Some 0.01 seconds could be gained by sharing patterns
+    -- which is not impressive but it does save some 3M memory on this test. (Some optimizations
+    -- already brought the 3.30 seconds down to 3.14 but it all depends on aggressive caching.)
 
-    -- As we kick in the hyphenator before fonts get handled, we don't look
-    -- at implicit (font) kerns or ligatures.
+    -- As we kick in the hyphenator before fonts get handled, we don't look at implicit (font)
+    -- kerns or ligatures.
 
     local starttiming = statistics.starttiming
     local stoptiming  = statistics.stoptiming
 
-    local strictids   = {
-        [nodecodes.hlist]  = true,
-        [nodecodes.vlist]  = true,
-        [nodecodes.rule]   = true,
-        [nodecodes.disc]   = true,
-        [nodecodes.accent] = true,
-        [nodecodes.math]   = true,
-    }
+ -- local strictids = {
+ --     [nodecodes.hlist]   = true,
+ --     [nodecodes.vlist]   = true,
+ --     [nodecodes.rule]    = true,
+ --     [nodecodes.dir]     = true,
+ --     [nodecodes.whatsit] = true,
+ --     [nodecodes.ins]     = true,
+ --     [nodecodes.adjust]  = true,
+ --
+ --     [nodecodes.math]    = true,
+ --     [nodecodes.disc]    = true,
+ --
+ --     [nodecodes.accent]  = true, -- never used in context
+ -- }
 
- -- local gf = getfield local gt = setmetatableindex("number") getfield = function(n,f)   gt[f] = gt[f] + 1 return gf(n,f)   end languages.GETFIELD = gt
+    -- a lot of overhead when only one char
 
     function traditional.hyphenate(head)
 
-        local first         = tonut(head)
-        local tail          = nil
-        local last          = nil
-        local current       = first
-        local dictionary    = nil
-        local instance      = nil
-        local characters    = nil
-        local unicodes      = nil
-        local exhyphenchar  = tex.exhyphenchar
-        local extrachars    = nil
-        local hyphenchars   = nil
-        local language      = nil
-        local start         = nil
-        local stop          = nil
-        local word          = { } -- we reuse this table
-        local size          = 0
-        local leftchar      = false
-        local rightchar     = false -- utfbyte("-")
-        local leftexchar    = false
-        local rightexchar   = false -- utfbyte("-")
-        local leftmin       = 0
-        local rightmin      = 0
-        local charmin       = 1
-        local leftcharmin   = nil
-        local rightcharmin  = nil
-        ----- leftwordmin   = nil
-        local rightwordmin  = nil
-        local rightchars    = nil
-        local leftchar      = nil
-        local rightchar     = nil
-        local attr          = nil
-        local lastwordlast  = nil
-        local hyphenated    = hyphenate
-        local strict        = nil
-        local hyphenpenalty = tex.hyphenpenalty
+        local first           = tonut(head)
+
+
+        local tail            = nil
+        local last            = nil
+        local current         = first
+        local dictionary      = nil
+        local instance        = nil
+        local characters      = nil
+        local unicodes        = nil
+        local exhyphenchar    = tex.exhyphenchar
+        local extrachars      = nil
+        local hyphenchars     = nil
+        local language        = nil
+        local start           = nil
+        local stop            = nil
+        local word            = { } -- we reuse this table
+        local size            = 0
+        local leftchar        = false
+        local rightchar       = false -- utfbyte("-")
+        local leftexchar      = false
+        local rightexchar     = false -- utfbyte("-")
+        local leftmin         = 0
+        local rightmin        = 0
+        local charmin         = 1
+        local leftcharmin     = nil
+        local rightcharmin    = nil
+        ----- leftwordmin     = nil
+        local rightwordmin    = nil
+        local rightchars      = nil
+        local leftchar        = nil
+        local rightchar       = nil
+        local attr            = nil
+        local lastwordlast    = nil
+        local hyphenated      = hyphenate
+        ----- strict          = nil
+        local exhyphenpenalty = tex.exhyphenpenalty
+        local hyphenpenalty   = tex.hyphenpenalty
+        local autohyphen      = false
+        local hyphenonly      = false
 
         -- We cannot use an 'enabled' boolean (false when no characters or extras) because we
         -- can have plugins that set a characters metatable and so) ... it doesn't save much
         -- anyway. Using (unicodes and unicodes[code]) and a nil table when no characters also
         -- doesn't save much. So there not that much to gain for languages that don't hyphenate.
         --
-        -- enabled = (unicodes and (next(unicodes) or getmetatable(unicodes))) or (extrachars and next(extrachars))
+        -- enabled = (unicodes and (next(unicodes) or getmetatable(unicodes)))
+        --        or (extrachars and next(extrachars))
         --
         -- This can be used to not add characters i.e. keep size 0 but then we need to check for
         -- attributes that change it, which costs time too. Not much to gain there.
@@ -1071,8 +1106,10 @@ if context then
                 rightcharmin = f.rightcharmin
                 leftchar     = f.leftchar
                 rightchar    = f.rightchar
-                strict       = f.strict and strictids
+             -- strict       = f.strict and strictids
                 rightchars   = f.rightchars
+                autohyphen   = f.autohyphen
+                hyphenonly   = f.hyphenonly
                 if rightwordmin and rightwordmin > 0 and lastwordlast ~= rightwordmin then
                     -- so we can change mid paragraph but it's kind of unpredictable then
                     if not tail then
@@ -1117,7 +1154,9 @@ if context then
                 rightcharmin = false
                 leftchar     = false
                 rightchar    = false
-                strict       = false
+             -- strict       = false
+                autohyphen   = false
+                hyphenonly   = false
             end
 
             return a
@@ -1130,12 +1169,11 @@ if context then
             local rsize    = 0
             local position = 1
 
-            -- todo: remember last dics and don't go back to before that (plus
-            -- message) .. for simplicity we also assume that we don't start
-            -- with a dics node
+            -- todo: remember last dics and don't go back to before that (plus message) ...
+            -- for simplicity we also assume that we don't start with a dics node
             --
-            -- there can be a conflict: if we backtrack then we can end up in
-            -- another disc and get out of sync (dup chars and so)
+            -- there can be a conflict: if we backtrack then we can end up in another disc
+            -- and get out of sync (dup chars and so)
 
             while position <= size do
                 if position >= leftmin and position <= rightmin then
@@ -1237,8 +1275,7 @@ if context then
                 return head
             end
 
-            local current = start
-
+            local current  = start
             local attrnode = start -- will be different, just the first char
 
             for i=1,rsize do
@@ -1253,7 +1290,7 @@ if context then
                     if leftchar then
                         post = serialize(true,leftchar)
                     end
-                    setdisc(disc,pre,post,nil,discretionary_code,hyphenpenalty)
+                    setdisc(disc,pre,post,nil,regular_code,hyphenpenalty)
                     if attrnode then
                         setattrlist(disc,attrnode)
                     end
@@ -1287,7 +1324,8 @@ if context then
                             replace = nil
                         end
                     end
-                    setdisc(disc,pre,post,replace,discretionary_code,hyphenpenalty)
+                    -- maybe regular code
+                    setdisc(disc,pre,post,replace,regular_code,hyphenpenalty)
                     if attrnode then
                         setattrlist(disc,attrnode)
                     end
@@ -1327,10 +1365,31 @@ if context then
                 end
                 pre = copy_node(glyph)
                 setchar(pre,rightchar and rightchar > 0 and rightchar or code)
-                setdisc(disc,pre,post,replace,discretionary_code,hyphenpenalty)
+                setdisc(disc,pre,post,replace,automatic_code,hyphenpenalty) -- ex ?
                 if attrnode then
                     setattrlist(disc,attrnode)
                 end
+            end
+            return current
+        end
+
+        local function injectseries(current,last,next,attrnode)
+            local disc  = new_disc()
+            local start = current
+            first, current = insert_before(first,current,disc)
+            setprev(start)
+            setnext(last)
+            if next then
+                setlink(current,next)
+            else
+                setnext(current)
+            end
+            local pre     = copy_list(start)
+            local post    = nil
+            local replace = start
+            setdisc(disc,pre,post,replace,automatic_code,hyphenpenalty) -- ex ?
+            if attrnode then
+                setattrlist(disc,attrnode)
             end
             return current
         end
@@ -1340,71 +1399,23 @@ if context then
             attr = synchronizefeatureset(a)
         end
 
-        -- The first attribute in a word determines the way a word gets hyphenated
-        -- and if relevant, other properties are also set then. We could optimize for
-        -- silly one-char cases but it has no priority as the code is still not that
-        -- much slower than the native hyphenator and this variant also provides room
-        -- for extensions.
+        -- The first attribute in a word determines the way a word gets hyphenated and if
+        -- relevant, other properties are also set then. We could optimize for silly one-char
+        -- cases but it has no priority as the code is still not that much slower than the
+        -- native hyphenator and this variant also provides room for extensions.
+
+        local skipping = false
 
         while current and current ~= last do -- and current
             local code, id = isglyph(current)
             if code then
-                local lang = getlang(current)
-                if lang ~= language then
-                    if dictionary and size > charmin and leftmin + rightmin <= size then
-                        -- only german has many words starting with an uppercase character
-                        if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
-                            -- skip
-                        else
-                            local hyphens = hyphenated(dictionary,word,size)
-                            if hyphens then
-                                flush(hyphens)
-                            end
-                        end
-                    end
-                    language = lang
-                    if language > 0 then
-                        --
-                        dictionary = dictionaries[language]
-                        instance   = dictionary.instance
-                        characters = dictionary.characters
-                        unicodes   = dictionary.unicodes
-                        --
-                        local a = getattr(current,a_hyphenation)
-                        attr        = synchronizefeatureset(a)
-                        leftchar    = leftchar     or (instance and posthyphenchar  (instance)) -- we can make this more
-                        rightchar   = rightchar    or (instance and prehyphenchar   (instance)) -- efficient if needed
-                        leftexchar  =                 (instance and preexhyphenchar (instance))
-                        rightexchar =                 (instance and postexhyphenchar(instance))
-                        leftmin     = leftcharmin  or getfield(current,"left")
-                        rightmin    = rightcharmin or getfield(current,"right")
-                        if not leftchar or leftchar < 0 then
-                            leftchar = false
-                        end
-                        if not rightchar or rightchar < 0 then
-                            rightchar = false
-                        end
-                        --
-                        local char = unicodes[code] or (extrachars and extrachars[code])
-                        if char then
-                            word[1] = char
-                            size    = 1
-                            start   = current
-                        else
-                            size = 0
-                        end
-                    else
-                        size = 0
-                    end
-                elseif language <= 0 then
-                    --
-                elseif size > 0 then
-                    local char = unicodes[code] or (extrachars and extrachars[code])
-                    if char then
-                        size = size + 1
-                        word[size] = char
-                    elseif dictionary then
-                        if size > charmin and leftmin + rightmin <= size then
+                if skipping then
+                    current = getnext(current)
+                else
+                    local lang = getlang(current)
+                    if lang ~= language then
+                        if dictionary and size > charmin and leftmin + rightmin <= size then
+                            -- only german has many words starting with an uppercase character
                             if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
                                 -- skip
                             else
@@ -1414,67 +1425,151 @@ if context then
                                 end
                             end
                         end
-                        size = 0
-                        -- maybe also a strict mode here: no hyphenation before hyphenchars and skip
-                        -- the next set (but then, strict is an option)
-                        if code == exhyphenchar then
-                            current = inject(leftexchar,rightexchar,code,current)
-                        elseif hyphenchars and hyphenchars[code] then
-                            current = inject(leftchar,rightchar,code,current)
+                        language = lang
+                        if language > 0 then
+                            --
+                            dictionary = dictionaries[language]
+                            instance   = dictionary.instance
+                            characters = dictionary.characters
+                            unicodes   = dictionary.unicodes
+                            --
+                            local a = getattr(current,a_hyphenation)
+                            attr        = synchronizefeatureset(a)
+                            leftchar    = leftchar     or (instance and posthyphenchar  (instance)) -- we can make this more
+                            rightchar   = rightchar    or (instance and prehyphenchar   (instance)) -- efficient if needed
+                            leftexchar  =                 (instance and preexhyphenchar (instance))
+                            rightexchar =                 (instance and postexhyphenchar(instance))
+                            leftmin     = leftcharmin  or getfield(current,"left")
+                            rightmin    = rightcharmin or getfield(current,"right")
+                            if not leftchar or leftchar < 0 then
+                                leftchar = false
+                            end
+                            if not rightchar or rightchar < 0 then
+                                rightchar = false
+                            end
+                            --
+                            local char = unicodes[code] or (extrachars and extrachars[code])
+                            if char then
+                                word[1] = char
+                                size    = 1
+                                start   = current
+                            else
+                                size = 0
+                            end
+                        else
+                            size = 0
                         end
-                    end
-                else
-                    local a = getattr(current,a_hyphenation)
-                    if a ~= attr then
-                        attr        = synchronizefeatureset(a) -- influences extrachars
-                        leftchar    = leftchar     or (instance and posthyphenchar  (instance)) -- we can make this more
-                        rightchar   = rightchar    or (instance and prehyphenchar   (instance)) -- efficient if needed
-                        leftexchar  =                 (instance and preexhyphenchar (instance))
-                        rightexchar =                 (instance and postexhyphenchar(instance))
-                        leftmin     = leftcharmin  or getfield(current,"left")
-                        rightmin    = rightcharmin or getfield(current,"right")
-                        if not leftchar or leftchar < 0 then
-                            leftchar = false
+                    elseif language <= 0 then
+                        --
+                    elseif size > 0 then
+                        local char = unicodes[code] or (extrachars and extrachars[code])
+                        if char then
+                            size = size + 1
+                            word[size] = char
+                        elseif dictionary then
+                            if not hyphenonly or code ~= exhyphenchar then
+                                if size > charmin and leftmin + rightmin <= size then
+                                    if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
+                                        -- skip
+                                    else
+                                        local hyphens = hyphenated(dictionary,word,size)
+                                        if hyphens then
+                                            flush(hyphens)
+                                        end
+                                    end
+                                end
+                            end
+                            size = 0
+                            if code == exhyphenchar then -- normally the -
+                                local next = getnext(current)
+                                local last = current
+                                local font = getfont(current)
+                                while next and ischar(next,font) == code do
+                                    last = next
+                                    next = getnext(next)
+                                end
+                                if not autohyphen then
+                                    current = last
+                                elseif current == last then
+                                    current = inject(leftexchar,rightexchar,code,current)
+                                else
+                                    current = injectseries(current,last,next,current)
+                                end
+                                if hyphenonly then
+                                    skipping = true
+                                end
+                            elseif hyphenchars then
+                                local char = hyphenchars[code]
+                                if char == true then
+                                    char = code
+                                end
+                                if char then
+                                    current = inject(leftchar and char or nil,rightchar and char or nil,char,current)
+                                end
+                            end
                         end
-                        if not rightchar or rightchar < 0 then
-                            rightchar = false
-                        end
-                    end
-                    --
-                    local char = unicodes[code] or (extrachars and extrachars[code])
-                    if char then
-                        word[1] = char
-                        size    = 1
-                        start   = current
-                    end
-                end
-                stop    = current
-                current = getnext(current)
-            else
-                if id == disc_code then
-                    local subtype = getsubtype(current)
-                    if subtype == discretionary_code then -- \discretionary
-                        size = 0
-                        current = getnext(current)
-                    elseif subtype == explicit_code then -- \- => only here
-                        size = 0
-                        expand_explicit(current)
-                        current = getnext(current)
-                    elseif subtype == automatic_code then -- - => only here
-                        size = 0
-                        expand_automatic(current)
-                        current = getnext(current)
                     else
-                        -- automatic (-) : the hyphenator turns an exhyphen into glyph+disc
-                        -- first         : done by the hyphenator
-                        -- second        : done by the hyphenator
-                        -- regular       : done by the hyphenator
-                        size = 0
-                        current = getnext(current)
+                        local a = getattr(current,a_hyphenation)
+                        if a ~= attr then
+                            attr        = synchronizefeatureset(a) -- influences extrachars
+                            leftchar    = leftchar     or (instance and posthyphenchar  (instance)) -- we can make this more
+                            rightchar   = rightchar    or (instance and prehyphenchar   (instance)) -- efficient if needed
+                            leftexchar  =                 (instance and preexhyphenchar (instance))
+                            rightexchar =                 (instance and postexhyphenchar(instance))
+                            leftmin     = leftcharmin  or getfield(current,"left")
+                            rightmin    = rightcharmin or getfield(current,"right")
+                            if not leftchar or leftchar < 0 then
+                                leftchar = false
+                            end
+                            if not rightchar or rightchar < 0 then
+                                rightchar = false
+                            end
+                        end
+                        --
+                        local char = unicodes[code] or (extrachars and extrachars[code])
+                        if char then
+                            word[1] = char
+                            size    = 1
+                            start   = current
+                        end
                     end
-                elseif strict and strict[id] then
-                    current = id == math_code and getnext(end_of_math(current)) or getnext(current)
-                    size = 0
+                    stop    = current
+                    current = getnext(current)
+                end
+            else
+                if skipping then
+                    skipping = false
+                end
+                if id == disc_code then
+                    if expanded then
+                        -- pre 1.005
+                        local subtype = getsubtype(current)
+                        if subtype == discretionary_code then -- \discretionary
+                            size = 0
+                        elseif subtype == explicit_code then -- \- => only here
+                            -- automatic (-) : the old parser makes negative char entries
+                            size = 0
+                            expand_explicit(current)
+                        elseif subtype == automatic_code then -- - => only here
+                            -- automatic (-) : the old hyphenator turns an exhyphen into glyph+disc
+                            size = 0
+                            expand_automatic(current)
+                        else
+                            -- first         : done by the hyphenator
+                            -- second        : done by the hyphenator
+                            -- regular       : done by the hyphenator
+                            size = 0
+                        end
+                    else
+                        size = 0
+                    end
+                    current = getnext(current)
+                    if hyphenonly then
+                        skipping = true
+                    end
+             -- elseif strict and strict[id] then
+             --     current = id == math_code and getnext(end_of_math(current)) or getnext(current)
+             --     size = 0
                 else
                     current = id == math_code and getnext(end_of_math(current)) or getnext(current)
                 end
@@ -1493,8 +1588,8 @@ if context then
                 end
             end
         end
-        -- we can have quit due to last so we need to flush the last seen word, we could move this in
-        -- the loop and test for current but ... messy
+        -- we can have quit due to last so we need to flush the last seen word, we could move
+        -- this in the loop and test for current but ... messy
         if dictionary and size > charmin and leftmin + rightmin <= size then
             if categories[word[1]] == "lu" and getfield(start,"uchyph") < 0 then
                 -- skip
@@ -1547,18 +1642,27 @@ if context then
         return head, done
     end
 
-    local function expanded(head)
+    local expanded = function (head)
         local done = hyphenate(head)
-        if done then
-            for d in traverse_id(disc_code,tonut(head)) do
-                local s = getsubtype(d)
-                if s ~= discretionary_code then
-                    expanders[s](d,template)
-                    done = true
+        return head, done
+    end
+
+    if LUATEXVERSION< 1.005 then
+
+        expanded = function(head)
+            local done = hyphenate(head)
+            if done then
+                for d in traverse_id(disc_code,tonut(head)) do
+                    local s = getsubtype(d)
+                    if s ~= discretionary_code then
+                        expanders[s](d,template)
+                        done = true
+                    end
                 end
             end
+            return head, done
         end
-        return head, done
+
     end
 
     local getcount = tex.getcount
@@ -1587,7 +1691,7 @@ if context then
 
     methods.tex         = original
     methods.original    = original
-    methods.expanded    = expanded
+    methods.expanded    = expanded -- obsolete starting with 1.005
     methods.traditional = languages.hyphenators.traditional.hyphenate
     methods.none        = false -- function(head) return head, false end
 
@@ -1679,54 +1783,54 @@ if context then
 
 else
 
---     traditional.loadpatterns("nl","lang-nl")
---     traditional.loadpatterns("de","lang-de")
---     traditional.loadpatterns("us","lang-us")
+    -- traditional.loadpatterns("nl","lang-nl")
+    -- traditional.loadpatterns("de","lang-de")
+    -- traditional.loadpatterns("us","lang-us")
 
---     traditional.registerpattern("nl","e1ë",      { start = 1, length = 2, before = "e",  after = "e"  } )
---     traditional.registerpattern("nl","oo7ë",     { start = 2, length = 3, before = "o",  after = "e"  } )
---     traditional.registerpattern("de","qqxc9xkqq",{ start = 3, length = 4, before = "ab", after = "cd" } )
+    -- traditional.registerpattern("nl","e1ë",      { start = 1, length = 2, before = "e",  after = "e"  } )
+    -- traditional.registerpattern("nl","oo7ë",     { start = 2, length = 3, before = "o",  after = "e"  } )
+    -- traditional.registerpattern("de","qqxc9xkqq",{ start = 3, length = 4, before = "ab", after = "cd" } )
 
---     local specification = {
---         leftcharmin     = 2,
---         rightcharmin    = 2,
---         leftchar        = "<",
---         rightchar       = ">",
---     }
+    -- local specification = {
+    --     leftcharmin     = 2,
+    --     rightcharmin    = 2,
+    --     leftchar        = "<",
+    --     rightchar       = ">",
+    -- }
 
---     print("reëel",       traditional.injecthyphens(dictionaries.nl,"reëel",       specification),"r{e>}{<e}{eë}el")
---     print("reeëel",      traditional.injecthyphens(dictionaries.nl,"reeëel",      specification),"re{e>}{<e}{eë}el")
---     print("rooëel",      traditional.injecthyphens(dictionaries.nl,"rooëel",      specification),"r{o>}{<e}{ooë}el")
+    -- print("reëel",       traditional.injecthyphens(dictionaries.nl,"reëel",       specification),"r{e>}{<e}{eë}el")
+    -- print("reeëel",      traditional.injecthyphens(dictionaries.nl,"reeëel",      specification),"re{e>}{<e}{eë}el")
+    -- print("rooëel",      traditional.injecthyphens(dictionaries.nl,"rooëel",      specification),"r{o>}{<e}{ooë}el")
 
---     print(   "qxcxkq",   traditional.injecthyphens(dictionaries.de,   "qxcxkq",   specification),"")
---     print(  "qqxcxkqq",  traditional.injecthyphens(dictionaries.de,  "qqxcxkqq",  specification),"")
---     print( "qqqxcxkqqq", traditional.injecthyphens(dictionaries.de, "qqqxcxkqqq", specification),"")
---     print("qqqqxcxkqqqq",traditional.injecthyphens(dictionaries.de,"qqqqxcxkqqqq",specification),"")
+    -- print(   "qxcxkq",   traditional.injecthyphens(dictionaries.de,   "qxcxkq",   specification),"")
+    -- print(  "qqxcxkqq",  traditional.injecthyphens(dictionaries.de,  "qqxcxkqq",  specification),"")
+    -- print( "qqqxcxkqqq", traditional.injecthyphens(dictionaries.de, "qqqxcxkqqq", specification),"")
+    -- print("qqqqxcxkqqqq",traditional.injecthyphens(dictionaries.de,"qqqqxcxkqqqq",specification),"")
 
---     print("kunstmatig",       traditional.injecthyphens(dictionaries.nl,"kunstmatig",       specification),"")
---     print("kunststofmatig",   traditional.injecthyphens(dictionaries.nl,"kunststofmatig",   specification),"")
---     print("kunst[stof]matig", traditional.injecthyphens(dictionaries.nl,"kunst[stof]matig", specification),"")
+    -- print("kunstmatig",       traditional.injecthyphens(dictionaries.nl,"kunstmatig",       specification),"")
+    -- print("kunststofmatig",   traditional.injecthyphens(dictionaries.nl,"kunststofmatig",   specification),"")
+    -- print("kunst[stof]matig", traditional.injecthyphens(dictionaries.nl,"kunst[stof]matig", specification),"")
 
---     traditional.loadpatterns("us","lang-us")
+    -- traditional.loadpatterns("us","lang-us")
 
---     local specification = {
---         leftcharmin     = 2,
---         rightcharmin    = 2,
---         leftchar        = false,
---         rightchar       = false,
---     }
+    -- local specification = {
+    --     leftcharmin     = 2,
+    --     rightcharmin    = 2,
+    --     leftchar        = false,
+    --     rightchar       = false,
+    -- }
 
---     trace_steps = true
+    -- trace_steps = true
 
---     print("components",    traditional.injecthyphens(dictionaries.us,"components", specification),"")
---     print("single",        traditional.injecthyphens(dictionaries.us,"single",     specification),"sin-gle")
---     print("everyday",      traditional.injecthyphens(dictionaries.us,"everyday",   specification),"every-day")
---     print("associate",     traditional.injecthyphens(dictionaries.us,"associate",     specification),"as-so-ciate")
---     print("philanthropic", traditional.injecthyphens(dictionaries.us,"philanthropic", specification),"phil-an-thropic")
---     print("projects",      traditional.injecthyphens(dictionaries.us,"projects",      specification),"projects")
---     print("Associate",     traditional.injecthyphens(dictionaries.us,"Associate",     specification),"As-so-ciate")
---     print("Philanthropic", traditional.injecthyphens(dictionaries.us,"Philanthropic", specification),"Phil-an-thropic")
---     print("Projects",      traditional.injecthyphens(dictionaries.us,"Projects",      specification),"Projects")
+    -- print("components",    traditional.injecthyphens(dictionaries.us,"components", specification),"")
+    -- print("single",        traditional.injecthyphens(dictionaries.us,"single",     specification),"sin-gle")
+    -- print("everyday",      traditional.injecthyphens(dictionaries.us,"everyday",   specification),"every-day")
+    -- print("associate",     traditional.injecthyphens(dictionaries.us,"associate",     specification),"as-so-ciate")
+    -- print("philanthropic", traditional.injecthyphens(dictionaries.us,"philanthropic", specification),"phil-an-thropic")
+    -- print("projects",      traditional.injecthyphens(dictionaries.us,"projects",      specification),"projects")
+    -- print("Associate",     traditional.injecthyphens(dictionaries.us,"Associate",     specification),"As-so-ciate")
+    -- print("Philanthropic", traditional.injecthyphens(dictionaries.us,"Philanthropic", specification),"Phil-an-thropic")
+    -- print("Projects",      traditional.injecthyphens(dictionaries.us,"Projects",      specification),"Projects")
 
 end
 
