@@ -1792,13 +1792,23 @@ lexers.inform      = context.inform
 
 do
 
-    local floor = math and math.floor
-    local char  = string.char
+    local floor    = math and math.floor
+    local char     = string.char
+    local format   = format
+    local tonumber = tonumber
 
     if not floor then
 
-        floor = function(n)
-            return tonumber(format("%d",n))
+        if tonumber(string.match(_VERSION,"%d%.%d")) < 5.3 then
+            floor = function(n)
+                return tonumber(format("%d",n))
+            end
+        else
+            -- 5.3 has a mixed number system and format %d doesn't work with
+            -- floats any longer ... no fun
+            floor = function(n)
+                return (n - n % 1)
+            end
         end
 
         math = math or { }
