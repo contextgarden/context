@@ -380,6 +380,8 @@ end
 --     flushers[editor](collected)
 -- end
 
+-- we could instead load context-en.xml
+
 function scripts.interface.editor(editor,split,forcedinterfaces)
     local interfaces= forcedinterfaces or environment.files
     if #interfaces == 0 then
@@ -421,11 +423,29 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
             return io.loaddata(fullname)
         end
     end)
+    -- resolve definitions
+    local definitions = { }
+    for e in xml.collected(xmlroot,"cd:interface/cd:define") do
+        definitions[e.at.name] = e.dt
+    end
+    local function resolve(root)
+        for e in xml.collected(root,"*") do
+            if e.tg == "resolve" then
+                local resolved = definitions[e.at.name or ""]
+                if resolved then
+                    e.__p__.dt[e.ni] = resolved
+                    resolve(resolved)
+                end
+            end
+        end
+    end
+    resolve(xmlroot)
     --
     for i=1,#interfaces do
         local interface      = interfaces[i]
         local i_commands     = { }
         local i_environments = { }
+        local i_instances    = { }
         local start = elements.start[interface] or elements.start.en
         local stop  = elements.stop [interface] or elements.stop .en
         for e in xml.collected(xmlroot,"cd:interface/cd:command") do
@@ -435,8 +455,14 @@ function scripts.interface.editor(editor,split,forcedinterfaces)
             if name ~= "" then
                 local c = commands[name]
                 local n = c and (c[interface] or c.en) or name
+-- for e in xml.collected(e,"/instances") do
+--     print(n,e)
+-- end
                 if at.generated == "yes" then
                     -- skip (for now)
+-- if at.variant == "instance" then
+--     i_instances = n
+-- end
                 elseif type ~= "environment" then
                     i_commands[#i_commands+1] = n
                 elseif split then

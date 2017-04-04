@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/02/17 19:51:22
+-- merge date  : 04/04/17 16:29:38
 
 do -- begin closure to overcome local limits and interference
 
@@ -27319,16 +27319,15 @@ function readers.loadfont(afmname,pfbname)
   local data=read(resolvers.findfile(afmname),fullparser)
   if data then
     if not pfbname or pfbname=="" then
-      pfbname=file.replacesuffix(file.nameonly(afmname),"pfb")
-      pfbname=resolvers.findfile(pfbname)
+      pfbname=resolvers.findfile(file.replacesuffix(file.nameonly(afmname),"pfb"))
     end
     if pfbname and pfbname~="" then
       data.resources.filename=resolvers.unresolve(pfbname)
       get_indexes(data,pfbname)
-    elseif trace_loading then
+      return data
+    else 
       report_afm("no pfb file for %a",afmname)
     end
-    return data
   end
 end
 function readers.loadshapes(filename)

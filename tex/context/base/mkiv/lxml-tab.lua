@@ -34,7 +34,7 @@ local xml = xml
 --~ local xml = xml
 
 local concat, remove, insert = table.concat, table.remove, table.insert
-local type, next, setmetatable, getmetatable, tonumber, rawset = type, next, setmetatable, getmetatable, tonumber, rawset
+local type, next, setmetatable, getmetatable, tonumber, rawset, select = type, next, setmetatable, getmetatable, tonumber, rawset, select
 local lower, find, match, gsub = string.lower, string.find, string.match, string.gsub
 local sort = table.sort
 local utfchar = utf.char
@@ -1353,7 +1353,9 @@ and then handle the lot.</p>
 
 local f_attribute = formatters['%s=%q']
 
--- we could reuse ats
+-- we could reuse ats .. for high performance we could also
+-- have a multiple handle calls instead of multiple arguments
+-- but it's not that critical
 
 local function verbose_element(e,handlers,escape) -- options
     local handle = handlers.handle
@@ -1516,7 +1518,7 @@ local function newhandlers(settings)
         for k,v in next, settings do
             if type(v) == "table" then
                 local tk = t[k] if not tk then tk = { } t[k] = tk end
-                for kk,vv in next, v do
+                for kk, vv in next, v do
                     tk[kk] = vv
                 end
             else
@@ -1616,19 +1618,43 @@ function xml.save(root,name)
     serialize(root,xmlfilehandler,name)
 end
 
-local result
+-- local result
+--
+-- local xmlstringhandler = newhandlers {
+--     name       = "string",
+--     initialize = function()
+--         result = { }
+--         return result
+--     end,
+--     finalize   = function()
+--         return concat(result)
+--     end,
+--     handle     = function(...)
+--         result[#result+1] = concat { ... }
+--     end,
+-- }
+
+local result, r, threshold = { }, 0, 512
 
 local xmlstringhandler = newhandlers {
     name       = "string",
     initialize = function()
-        result = { }
+        r = 0
         return result
     end,
     finalize   = function()
-        return concat(result)
+        local done = concat(result,"",1,r)
+        r = 0
+        if r > threshold then
+            result = { }
+        end
+        return done
     end,
     handle     = function(...)
-        result[#result+1] = concat { ... }
+        for i=1,select("#",...) do
+            r = r + 1
+            result[r] = select(i,...)
+        end
     end,
 }
 

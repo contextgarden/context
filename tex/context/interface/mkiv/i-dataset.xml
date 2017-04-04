@@ -16,7 +16,7 @@
 
     <cd:command name="setupdataset" file="core-dat.mkiv">
         <cd:arguments>
-            <cd:resolve name="keyword-name-optional-list"/>
+            <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
                 <cd:parameter name="delay">
                     <cd:constant type="yes"/>

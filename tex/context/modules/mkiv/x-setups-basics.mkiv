@@ -177,6 +177,13 @@
 
     local find, gsub = string.find, string.gsub
 
+    local xmlcollected   = xml.collected
+    local xmlcount       = xml.count
+    local xmlfirst       = xml.first
+
+    local lxmlgetid      = lxml.getid
+    local lxmlflush      = lxml.flush
+
     local context        = context
 
     local setupvarword   = context.formatted.setupvarword
@@ -194,11 +201,11 @@
     setups.definitions = definitions
 
     function xml.functions.setups_define(id)
-        local x = lxml.getid(id)
-        for c in xml.collected(x,"cd:interface/cd:define") do
+        local x = lxmlgetid(id)
+        for c in xmlcollected(x,"cd:interface/cd:define") do
             definitions[c.at.name] = c
         end
-        for c in xml.collected(x,"cd:interface/cd:interface") do
+        for c in xmlcollected(x,"cd:interface/cd:interface") do
             c.at.file = c.__f__
             c.at["xmlns:cd"] = nil
          -- c.dt[#c.dt+1] = "    "
@@ -214,14 +221,15 @@
             local elements   = interfaces.complete.elements
 
             local function replace(pattern,attribute,one,two,three)
-                for e in xml.collected(x,pattern) do
-                    local t = e.at[attribute]
+                for e in xmlcollected(x,pattern) do
+                    local a = e.at
+                    local t = a[attribute]
                     if t then
                         local c = one[t] or (two and two[t]) or (three and three[t])
                         if c then
                             local v = c[interface]
                             if v then
-                                e.at[attribute] = v
+                                a[attribute] = v
                             end
                         end
                     end
@@ -238,20 +246,74 @@
             replace('cd:variable',  'type',    variables)
             replace('cd:inherit',   'name',    commands, elements)
 
-            replace('cd:instances/cd:constant',  'value',    variables)
+            replace('cd:instances/cd:constant', 'value', variables)
         end
 
         if tex.modes["setups:save"] and environment.currentrun == 1 then
-            local s = tostring(x)
-            s = gsub(s,"\n*%s*(</cd:interface>)%s+(<cd:interface)",  "\n\n    %1\n\n    %2")
-            s = gsub(s,"\n*%s*(</cd:interface>)%s+(</cd:interface>)","\n\n    %1\n\n    %2")
-            io.savedata("context-"..interface..".xml",s)
+            --
+            -- the reload is a hack .. we could make a handler instead
+            --
+            local filename = "context-" .. interface .. ".xml"
+            local xmlroot  = x
+            local xmlblob  = tostring(xmlroot)
+            io.savedata(filename,xmlblob)
+            xmlroot = xml.load(filename)
+            --
+            local definitions = { }
+            for e in xml.collected(xmlroot,"cd:interface/cd:define") do
+                definitions[e.at.name] = e.dt
+            end
+            local function resolve(root)
+                for e in xmlcollected(root,"*") do
+                    if e.tg == "resolve" then
+                        local name = e.at.name or ""
+                        local resolved = definitions[name]
+                        if resolved then
+                            e.__p__.dt[e.ni] = resolved
+                            resolve(resolved)
+                         -- logs.report("setups","resolved: %a",name)
+                        else
+                            logs.report("setups","unable to resolve: %a",name)
+                        end
+                    end
+                end
+            end
+            resolve(xmlroot)
+            for e in xml.collected(xmlroot,"cd:interface/cd:define") do
+                e.__p__.dt[e.ni] = ""
+            end
+            xml.delete(xmlroot,"/cd:interface/cd:interface/cd:interface/..")
+            --
+            xmlblob = xml.tostring(xmlroot)
+            io.savedata(filename,xmlblob)
+            xmlroot = xml.load(filename)
+            --
+            local spacer = utilities.strings.newrepeater(" ")
+            local function simplify(dt,n)
+                local nt, nn = { }, 0
+                for i=1,#dt do
+                    local d = dt[i]
+                    if d.special then
+                        --
+                    elseif type(d) ~= "string" then
+                        d.dt = simplify(d.dt,n+1)
+                        nn = nn + 1 nt[nn] = "\n" .. spacer[n]
+                        nn = nn + 1 nt[nn] = d
+                        nn = nn + 1 nt[nn] = "\n" .. spacer[n-1]
+                    end
+                end
+                return nn == 0 and "" or nt
+            end
+            xmlroot.dt = simplify(xmlroot.dt,0)
+            --
+            xmlblob = "<?xml version='1.0'?>\n<!-- expanded and compacted i-context.xml -->\n" .. xml.tostring(xmlroot)
+            xmlblob = gsub(xmlblob,"\n *\n","\n")
+            io.savedata(filename,xmlblob)
         end
-
     end
 
     function moduledata.setups.resolved(name)
-        lxml.flush(definitions[name])
+        lxmlflush(definitions[name])
     end
 
     function xml.finalizers.s_count(collected)
@@ -261,7 +323,7 @@
             local tg = c.tg
             if tg == "resolve" then
                 local d = definitions[c.at.name]
-                n = n + xml.count(d,"/*")
+                n = n + xmlcount(d,"/*")
             elseif tg == "delimiter" then
                 -- skip
             else
@@ -273,15 +335,15 @@
 
     local function getinstances(id)
         local t = { }
-        local x = lxml.getid(id)
-        local r = xml.first(x,"/instances/resolve")
+        local x = lxmlgetid(id)
+        local r = xmlfirst(x,"/instances/resolve")
         if r then
             local x = setups.definitions[r.at.name]
-            for c in xml.collected(x,"constant") do
+            for c in xmlcollected(x,"constant") do
                 t[#t+1] = c.at.value
             end
         else
-            for c in xml.collected(x,"/instances/constant") do
+            for c in xmlcollected(x,"/instances/constant") do
                 t[#t+1] = c.at.value
             end
         end

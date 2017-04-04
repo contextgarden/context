@@ -89,6 +89,32 @@
         </cd:keywords>
     </cd:define>
 
+    <!-- @WS: These were unresolved. Shouldn't they become text? -->
+
+    <cd:define name="argument-content">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:content/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-content-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:content/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-content-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:content/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-content-list-optional">
+        <cd:keywords delimiters="braces" list="yes" optional="yes">
+            <cd:content/>
+        </cd:keywords>
+    </cd:define>
+
     <!--        *   -->
     <!-- \... {...} -->
     <!--            -->

@@ -1428,12 +1428,14 @@
    \fi
    \ifcase\c_strc_floats_rotation
      \doifnotinset\v!margin\floatlocation % brr, really needed! see wm
-       {\postcenterfloatbox\d_strc_floats_content}%
+       {\postcenterfloatbox\d_strc_floats_content
+        \strc_floats_mark_pag_as_free}%
+       % mark as free not done here
    \else
      \global\setbox\floatbox\vpack
        {\rotate[\c!rotation=\number\c_strc_floats_rotation]{\box\floatbox}}%
+     \strc_floats_mark_pag_as_free
    \fi
-   \strc_floats_mark_pag_as_free
    \egroup}
 
 \def\strc_floats_prepare_no_caption

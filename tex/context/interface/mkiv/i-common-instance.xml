@@ -10,4 +10,131 @@
         <cd:constant value="graphic"/>
     </cd:define>
 
+    <cd:define name="instance-itemgroup">
+        <cd:constant value="itemize"/>
+    </cd:define>
+
+    <cd:define name="instance-labeltext">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-labelclass">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-lines">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-combinedlist">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-low">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-high">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-makeup">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-margindata">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-mathalignment">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-mathcases">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-mathmatrix">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-mixedcolumns">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-note">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-linenote">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-pairedbox">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-register">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-script">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-section">
+        <cd:constant value="chapter"/>
+        <cd:constant value="section"/>
+        <cd:constant value="subsection"/>
+        <cd:constant value="subsubsection"/>
+        <cd:constant value="subsubsubsection"/>
+        <cd:constant value="subsubsubsubsection"/>
+        <cd:constant value="title"/>
+        <cd:constant value="subject"/>
+        <cd:constant value="subsubject"/>
+        <cd:constant value="subsubsubject"/>
+        <cd:constant value="subsubsubsubject"/>
+        <cd:constant value="subsubsubsubsubject"/>
+    </cd:define>
+
+    <cd:define name="instance-sectionblock">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-shift">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-sort">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-sortlist">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-synonym">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-synonymlist">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-tabulate">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-tooltip">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-unit">
+        <!-- tode -->
+    </cd:define>
+
+    <cd:define name="instance-typing">
+        <!-- tode -->
+    </cd:define>
+
 </cd:interface>

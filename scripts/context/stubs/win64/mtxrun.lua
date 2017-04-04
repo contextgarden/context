@@ -11264,7 +11264,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 56300, stripped down to: 35539
+-- original size: 57003, stripped down to: 35696
 
 if not modules then modules={} end modules ['lxml-tab']={
   version=1.001,
@@ -11279,7 +11279,7 @@ if lpeg.setmaxstack then lpeg.setmaxstack(1000) end
 xml=xml or {}
 local xml=xml
 local concat,remove,insert=table.concat,table.remove,table.insert
-local type,next,setmetatable,getmetatable,tonumber,rawset=type,next,setmetatable,getmetatable,tonumber,rawset
+local type,next,setmetatable,getmetatable,tonumber,rawset,select=type,next,setmetatable,getmetatable,tonumber,rawset,select
 local lower,find,match,gsub=string.lower,string.find,string.match,string.gsub
 local sort=table.sort
 local utfchar=utf.char
@@ -12459,18 +12459,26 @@ local xmlfilehandler=newhandlers {
 function xml.save(root,name)
   serialize(root,xmlfilehandler,name)
 end
-local result
+local result,r,threshold={},0,512
 local xmlstringhandler=newhandlers {
   name="string",
   initialize=function()
-    result={}
+    r=0
     return result
   end,
   finalize=function()
-    return concat(result)
+    local done=concat(result,"",1,r)
+    r=0
+    if r>threshold then
+      result={}
+    end
+    return done
   end,
   handle=function(...)
-    result[#result+1]=concat {... }
+    for i=1,select("#",...) do
+      r=r+1
+      result[r]=select(i,...)
+    end
   end,
 }
 local function xmltostring(root) 
@@ -20248,8 +20256,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 836573
--- stripped bytes    : 304264
+-- original bytes    : 837276
+-- stripped bytes    : 304810
 
 -- end library merge
 

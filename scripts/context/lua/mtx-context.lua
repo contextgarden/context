@@ -614,6 +614,12 @@ function scripts.context.run(ctxdata,filename)
     for i=1,#filelist do
         --
         local filename = filelist[i]
+
+        if filename == "" then
+            report("warning: bad filename")
+            break
+        end
+
         local basename = filebasename(filename) -- use splitter
         local pathname = filepathpart(filename)
         --

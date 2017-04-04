@@ -77,6 +77,10 @@ local sort, concat = table.sort, table.concat
 
 local crlf = "\n"
 
+if not trace then
+    trace = print
+end
+
 function traceln(str)
     trace(str .. crlf)
     io.flush()
@@ -234,22 +238,41 @@ end
 
 do
 
-    print("loading scite-ctx.lua definition file\n")
-    print("-  see scite-ctx.properties for configuring info\n")
-    print("-  ctx.spellcheck.wordpath set to " .. props['ctx.spellcheck.wordpath'])
-    if find(lower(props['ctx.spellcheck.wordpath']),"ctxspellpath") then
-        if os.getenv('ctxspellpath') then
-            print("-  ctxspellpath set to " .. os.getenv('CTXSPELLPATH'))
-        else
-            print("-  'ctxspellpath is not set")
+    local wordpath = props['ctx.spellcheck.wordpath']
+
+    if wordpath and wordpath ~= "" then
+        print("loading scite-ctx.lua definition file\n")
+        print("-  see scite-ctx.properties for configuring info\n")
+        print("-  ctx.spellcheck.wordpath set to " .. wordpath)
+        if find(lower(wordpath),"ctxspellpath") then
+            if os.getenv('ctxspellpath') then
+                print("-  ctxspellpath set to " .. os.getenv('CTXSPELLPATH'))
+            else
+                print("-  'ctxspellpath is not set")
+            end
+            print("-  ctx.spellcheck.wordpath expands to " .. expand(wordpath))
         end
-        print("-  ctx.spellcheck.wordpath expands to " .. expand(props['ctx.spellcheck.wordpath']))
+    else
+        print("-  'ctxspellpath is not set")
     end
-    print("\n-  ctx.wraptext.length is set to " .. props['ctx.wraptext.length'])
-    if props['ctx.helpinfo'] ~= '' then
+
+    local wraplength = props['ctx.wraptext.length']
+
+    if wraplength and wraplength ~= "" then
+        print("\n-  ctx.wraptext.length is set to " .. wraplength)
+    else
+        print("\n-  ctx.wraptext.length is not set")
+    end
+
+    local helpinfo = props['ctx.helpinfo']
+
+    if helpinfo and helpinfo ~= "" then
         print("\n-  key bindings:\n")
-        print((gsub(strip(props['ctx.helpinfo']),"%s*|%s*","\n")))
+        print((gsub(strip(helpinfo),"%s*|%s*","\n")))
+    else
+        print("\n-  no extra key bindings")
     end
+
     print("\n-  recognized first lines:\n")
     print("xml   <?xml version='1.0' language='nl'")
     print("tex   % language=nl")

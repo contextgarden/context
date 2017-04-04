@@ -75,7 +75,7 @@
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
-    </cd:command>        
+    </cd:command>
 
     <cd:command name="type" file="buff-ver.mkiv">
         <cd:arguments>
@@ -149,7 +149,7 @@
 
     <cd:command name="setuptyping" file="buff-ver.mkiv">
         <cd:arguments>
-            <cd:resolve name="keyword-name-optional-list"/>
+            <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
                 <cd:parameter name="oddmargin">
                     <cd:constant type="cd:dimension"/>

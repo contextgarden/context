@@ -463,17 +463,17 @@ function readers.loadfont(afmname,pfbname)
     local data = read(resolvers.findfile(afmname),fullparser)
     if data then
         if not pfbname or pfbname == "" then
-            pfbname = file.replacesuffix(file.nameonly(afmname),"pfb")
-            pfbname = resolvers.findfile(pfbname)
+            pfbname = resolvers.findfile(file.replacesuffix(file.nameonly(afmname),"pfb"))
         end
         if pfbname and pfbname ~= "" then
             data.resources.filename = resolvers.unresolve(pfbname)
             get_indexes(data,pfbname)
-        elseif trace_loading then
+            return data
+        else -- if trace_loading then
             report_afm("no pfb file for %a",afmname)
-         -- data.resources.filename = "unset" -- better than loading the afm file
+            -- better than loading the afm file: data.resources.filename = rawname
+            -- but that will still crash the backend so we just return nothing now
         end
-        return data
     end
 end
 
