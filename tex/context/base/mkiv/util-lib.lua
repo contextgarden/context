@@ -246,7 +246,10 @@ do
             local trace_swiglib = trace_swiglib or package.helpers.trace
             library = locate(required,version,trace_swiglib,report_swiglib,function(name,base)
                 pushdir(pathpart(name))
-                local opener  = "luaopen_" .. base
+                local opener = "luaopen_" .. base
+                if trace_swiglib then
+                    report_swiglib("opening: %a with %a",name,opener)
+                end
                 local library, message = loadlib(name,opener)
                 local libtype = type(library)
                 if libtype == "function" then
@@ -367,8 +370,8 @@ end
 trackers.enable("resolvers.ffilib")
 trackers.enable("resolvers.swiglib")
 
-local gm = require("swiglib.gmwand.core")
-local gm = swiglib("gmwand.core")
+local gm = require("swiglib.graphicsmagick.core")
+local gm = swiglib("graphicsmagick.core")
 local sq = swiglib("mysql.core")
 local sq = swiglib("mysql.core","5.6")
 

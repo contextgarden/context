@@ -2206,7 +2206,7 @@ do
                                                     derived   = true,          -- handy for tracing
                                                     steps     = d.steps,
                                                     nofsteps  = d.nofsteps,
-                                                    type      = d.lookuptype,
+                                                    type      = d.lookuptype or "gsub_single", -- todo: check type
                                                     markclass = d.markclass or nil,
                                                     flags     = d.flags,
                                                  -- chain     = d.chain,

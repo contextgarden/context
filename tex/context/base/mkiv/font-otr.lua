@@ -91,8 +91,8 @@ handlers.otf            = otf
 local readers           = otf.readers or { }
 otf.readers             = readers
 
------ streamreader      = utilities.streams -- faster on big files
-local streamreader      = utilities.files   -- faster on identify
+----- streamreader      = utilities.streams -- faster on big files (not true any longer)
+local streamreader      = utilities.files   -- faster on identify (also uses less memory)
 local streamwriter      = utilities.files
 
 readers.streamreader    = streamreader

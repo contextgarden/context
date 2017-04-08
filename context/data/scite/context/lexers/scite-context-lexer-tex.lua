@@ -31,7 +31,7 @@ local P, R, S, V, C, Cmt, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.V, lpeg.C, l
 local type, next = type, next
 local find, match, lower, upper = string.find, string.match, string.lower, string.upper
 
-local lexer        = require("lexer")
+local lexer        = require("scite-context-lexer")
 local context      = lexer.context
 local patterns     = context.patterns
 local inform       = context.inform

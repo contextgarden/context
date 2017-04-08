@@ -9,9 +9,9 @@ if not modules then modules = { } end modules ['util-lib-imp-gm'] = {
 local graphicmagick     = utilities.graphicmagick or { }
 utilities.graphicmagick = graphicmagick
 
-local report_gm = logs.reporter("swiglib gm")
+local report_gm = logs.reporter("swiglib graphicsmagick")
 
-local gm = swiglib("gmwand.core")
+local gm = swiglib("graphicsmagick.core")
 
 if gm then
     report_gm("library loaded")

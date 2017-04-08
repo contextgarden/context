@@ -355,7 +355,7 @@ local function list_matches(t,info)
                     entry.familyname,
                     entry.fontname,
                     entry.filename,
-                    entry.subfont or "",
+                    tostring(entry.subfont or ""),
                     concat(entry.instancenames or { }, " "),
                 }
             end

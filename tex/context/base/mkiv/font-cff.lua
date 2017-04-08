@@ -982,6 +982,43 @@ do
         top = 0
     end
 
+--     local function xxcurveto(swap)
+--         local last = top % 4 ~= 0 and stack[top]
+--         if last then
+--             top = top - 1
+--         end
+--         for i=1,top,4 do
+--             local ax, ay, bx, by
+--             if swap then
+--                 ax = x  + stack[i]
+--                 ay = y
+--                 bx = ax + stack[i+1]
+--                 by = ay + stack[i+2]
+--                 y  = by + stack[i+3]
+--                 if last and i+3 == top then
+--                     x = bx + last
+--                 else
+--                     x = bx
+--                 end
+--                 swap = false
+--             else
+--                 ax = x
+--                 ay = y  + stack[i]
+--                 bx = ax + stack[i+1]
+--                 by = ay + stack[i+2]
+--                 x  = bx + stack[i+3]
+--                 if last and i+3 == top then
+--                     y = by + last
+--                 else
+--                     y = by
+--                 end
+--                 swap = true
+--             end
+--             xycurveto(ax,ay,bx,by,x,y)
+--         end
+--         top = 0
+--     end
+
     local function xxcurveto(swap)
         local last = top % 4 ~= 0 and stack[top]
         if last then
@@ -1018,6 +1055,7 @@ do
         end
         top = 0
     end
+
 
     local function hvcurveto()
         if trace_charstrings then
@@ -1595,28 +1633,25 @@ do
         while i <= n do
             local t = tab[i]
             if t >= 32 then
+                top = top + 1
                 if t <= 246 then
                     -- -107 .. +107
-                    top = top + 1
                     stack[top] = t - 139
                     i = i + 1
                 elseif t <= 250 then
                     -- +108 .. +1131
-                    top = top + 1
                  -- stack[top] = (t-247)*256 + tab[i+1] + 108
                  -- stack[top] = t*256 - 247*256 + tab[i+1] + 108
                     stack[top] = t*256 - 63124 + tab[i+1]
                     i = i + 2
                 elseif t <= 254 then
                     -- -1131 .. -108
-                    top = top + 1
                  -- stack[top] = -(t-251)*256 - tab[i+1] - 108
                  -- stack[top] = -t*256 + 251*256 - tab[i+1] - 108
                     stack[top] = -t*256 + 64148 - tab[i+1]
                     i = i + 2
                 else
                     local n = 0x100 * tab[i+1] + tab[i+2]
-                    top = top + 1
                     if n  >= 0x8000 then
                      -- stack[top] = n - 0xFFFF - 1 + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
                         stack[top] = n - 0x10000 + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
@@ -1683,15 +1718,17 @@ do
                 if a then
                     local s = a(t)
                     if s then
-                        i = i + s
+                        i = i + s + 1
+                    else
+                        i = i + 1
                     end
                 else
                     if trace_charstrings then
                         showvalue("<action>",t)
                     end
                     top = 0
+                    i = i + 1
                 end
-                i = i + 1
             end
         end
     end
@@ -1770,7 +1807,9 @@ do
             report("data : % t",tab)
         end
 
-        updateregions(vsindex)
+        if regions then
+            updateregions(vsindex)
+        end
 
         process(tab)
 

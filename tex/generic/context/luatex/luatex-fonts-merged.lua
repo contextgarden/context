@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/04/17 16:29:38
+-- merge date  : 04/08/17 12:09:31
 
 do -- begin closure to overcome local limits and interference
 
@@ -4374,11 +4374,10 @@ function files.readinteger2(f)
 end
 function files.readinteger2le(f)
   local b,a=byte(f:read(2),1,2)
-  local n=0x100*a+b
-  if n>=0x8000 then
-    return n-0x10000
+  if a>=0x80 then
+    return 0x100*a+b-0x10000
   else
-    return n
+    return 0x100*a+b
   end
 end
 function files.readcardinal3(f)
@@ -4391,20 +4390,18 @@ function files.readcardinal3le(f)
 end
 function files.readinteger3(f)
   local a,b,c=byte(f:read(3),1,3)
-  local n=0x10000*a+0x100*b+c
-  if n>=0x80000 then
-    return n-0x1000000
+  if a>=0x80 then
+    return 0x10000*a+0x100*b+c-0x1000000
   else
-    return n
+    return 0x10000*a+0x100*b+c
   end
 end
 function files.readinteger3le(f)
   local c,b,a=byte(f:read(3),1,3)
-  local n=0x10000*a+0x100*b+c
-  if n>=0x80000 then
-    return n-0x1000000
+  if a>=0x80 then
+    return 0x10000*a+0x100*b+c-0x1000000
   else
-    return n
+    return 0x10000*a+0x100*b+c
   end
 end
 function files.readcardinal4(f)
@@ -4425,11 +4422,10 @@ function files.readinteger4(f)
 end
 function files.readinteger4le(f)
   local d,c,b,a=byte(f:read(4),1,4)
-  local n=0x1000000*a+0x10000*b+0x100*c+d
-  if n>=0x8000000 then
-    return n-0x100000000
+  if a>=0x80 then
+    return 0x1000000*a+0x10000*b+0x100*c+d-0x100000000
   else
-    return n
+    return 0x1000000*a+0x10000*b+0x100*c+d
   end
 end
 function files.readfixed2(f)
@@ -11140,21 +11136,18 @@ do
     while i<=n do
       local t=tab[i]
       if t>=32 then
+        top=top+1
         if t<=246 then
-          top=top+1
           stack[top]=t-139
           i=i+1
         elseif t<=250 then
-          top=top+1
           stack[top]=t*256-63124+tab[i+1]
           i=i+2
         elseif t<=254 then
-          top=top+1
           stack[top]=-t*256+64148-tab[i+1]
           i=i+2
         else
           local n=0x100*tab[i+1]+tab[i+2]
-          top=top+1
           if n>=0x8000 then
             stack[top]=n-0x10000+(0x100*tab[i+3]+tab[i+4])/0xFFFF
           else
@@ -11217,15 +11210,17 @@ do
         if a then
           local s=a(t)
           if s then
-            i=i+s
+            i=i+s+1
+          else
+            i=i+1
           end
         else
           if trace_charstrings then
             showvalue("<action>",t)
           end
           top=0
+          i=i+1
         end
-        i=i+1
       end
     end
   end
@@ -11259,7 +11254,9 @@ do
       report("glyph: %i",index)
       report("data : % t",tab)
     end
-    updateregions(vsindex)
+    if regions then
+      updateregions(vsindex)
+    end
     process(tab)
     local boundingbox={
       round(xmin),
@@ -14525,7 +14522,7 @@ do
                           derived=true,
                           steps=d.steps,
                           nofsteps=d.nofsteps,
-                          type=d.lookuptype,
+                          type=d.lookuptype or "gsub_single",
                           markclass=d.markclass or nil,
                           flags=d.flags,
                         }

@@ -5666,7 +5666,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 36449, stripped down to: 20179
+-- original size: 36148, stripped down to: 20179
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -7029,7 +7029,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 7038, stripped down to: 5659
+-- original size: 7039, stripped down to: 5672
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -7138,11 +7138,10 @@ function files.readinteger2(f)
 end
 function files.readinteger2le(f)
   local b,a=byte(f:read(2),1,2)
-  local n=0x100*a+b
-  if n>=0x8000 then
-    return n-0x10000
+  if a>=0x80 then
+    return 0x100*a+b-0x10000
   else
-    return n
+    return 0x100*a+b
   end
 end
 function files.readcardinal3(f)
@@ -7155,20 +7154,18 @@ function files.readcardinal3le(f)
 end
 function files.readinteger3(f)
   local a,b,c=byte(f:read(3),1,3)
-  local n=0x10000*a+0x100*b+c
-  if n>=0x80000 then
-    return n-0x1000000
+  if a>=0x80 then
+    return 0x10000*a+0x100*b+c-0x1000000
   else
-    return n
+    return 0x10000*a+0x100*b+c
   end
 end
 function files.readinteger3le(f)
   local c,b,a=byte(f:read(3),1,3)
-  local n=0x10000*a+0x100*b+c
-  if n>=0x80000 then
-    return n-0x1000000
+  if a>=0x80 then
+    return 0x10000*a+0x100*b+c-0x1000000
   else
-    return n
+    return 0x10000*a+0x100*b+c
   end
 end
 function files.readcardinal4(f)
@@ -7189,11 +7186,10 @@ function files.readinteger4(f)
 end
 function files.readinteger4le(f)
   local d,c,b,a=byte(f:read(4),1,4)
-  local n=0x1000000*a+0x10000*b+0x100*c+d
-  if n>=0x8000000 then
-    return n-0x100000000
+  if a>=0x80 then
+    return 0x1000000*a+0x10000*b+0x100*c+d-0x100000000
   else
-    return n
+    return 0x1000000*a+0x10000*b+0x100*c+d
   end
 end
 function files.readfixed2(f)
@@ -7291,7 +7287,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 4330, stripped down to: 3316
+-- original size: 8697, stripped down to: 6981
 
 if not modules then modules={} end modules ['util-sac']={
   version=1.001,
@@ -7399,16 +7395,33 @@ function streams.readcardinal2(f)
   local a,b=byte(f[1],i,j)
   return 0x100*a+b
 end
+function streams.readcardinal2LE(f)
+  local i=f[2]
+  local j=i+1
+  f[2]=j+1
+  local b,a=byte(f[1],i,j)
+  return 0x100*a+b
+end
 function streams.readinteger2(f)
   local i=f[2]
   local j=i+1
   f[2]=j+1
   local a,b=byte(f[1],i,j)
-  local n=0x100*a+b
-  if n>=0x8000 then
-    return n-0x10000
+  if a>=0x80 then
+    return 0x100*a+b-0x10000
   else
-    return n
+    return 0x100*a+b
+  end
+end
+function streams.readinteger2le(f)
+  local i=f[2]
+  local j=i+1
+  f[2]=j+1
+  local b,a=byte(f[1],i,j)
+  if a>=0x80 then
+    return 0x100*a+b-0x10000
+  else
+    return 0x100*a+b
   end
 end
 function streams.readcardinal3(f)
@@ -7417,6 +7430,35 @@ function streams.readcardinal3(f)
   f[2]=j+1
   local a,b,c=byte(f[1],i,j)
   return 0x10000*a+0x100*b+c
+end
+function streams.readcardinal3le(f)
+  local i=f[2]
+  local j=i+2
+  f[2]=j+1
+  local c,b,a=byte(f[1],i,j)
+  return 0x10000*a+0x100*b+c
+end
+function streams.readinteger3(f)
+  local i=f[2]
+  local j=i+3
+  f[2]=j+1
+  local a,b,c=byte(f[1],i,j)
+  if a>=0x80 then
+    return 0x10000*a+0x100*b+c-0x1000000
+  else
+    return 0x10000*a+0x100*b+c
+  end
+end
+function streams.readinteger3le(f)
+  local i=f[2]
+  local j=i+3
+  f[2]=j+1
+  local c,b,a=byte(f[1],i,j)
+  if a>=0x80 then
+    return 0x10000*a+0x100*b+c-0x1000000
+  else
+    return 0x10000*a+0x100*b+c
+  end
 end
 function streams.readcardinal4(f)
   local i=f[2]
@@ -7430,11 +7472,21 @@ function streams.readinteger4(f)
   local j=i+3
   f[2]=j+1
   local a,b,c,d=byte(f[1],i,j)
-  local n=0x1000000*a+0x10000*b+0x100*c+d
-  if n>=0x8000000 then
-    return n-0x100000000
+  if a>=0x80 then
+    return 0x1000000*a+0x10000*b+0x100*c+d-0x100000000
   else
-    return n
+    return 0x1000000*a+0x10000*b+0x100*c+d
+  end
+end
+function streams.readinteger4le(f)
+  local i=f[2]
+  local j=i+3
+  f[2]=j+1
+  local d,c,b,a=byte(f[1],i,j)
+  if a>=0x80 then
+    return 0x1000000*a+0x10000*b+0x100*c+d-0x100000000
+  else
+    return 0x1000000*a+0x10000*b+0x100*c+d
   end
 end
 function streams.readfixed4(f)
@@ -7442,11 +7494,21 @@ function streams.readfixed4(f)
   local j=i+3
   f[2]=j+1
   local a,b,c,d=byte(f[1],i,j)
-  local n=0x100*a+b
-  if n>=0x8000 then
-    return n-0x10000+(0x100*c+d)/0xFFFF
+  if a>=0x80 then
+    return (0x1000000*a+0x10000*b+0x100*c+d-0x100000000)/65536.0
   else
-    return n+(0x100*c+d)/0xFFFF
+    return (0x1000000*a+0x10000*b+0x100*c+d)/65536.0
+  end
+end
+function streams.readfixed2(f)
+  local i=f[2]
+  local j=i+1
+  f[2]=j+1
+  local a,b=byte(f[1],i,j)
+  if a>=0x80 then
+    return (0x100*a+b-0x10000)/256.0
+  else
+    return (0x100*a+b)/256.0
   end
 end
 if extract then
@@ -7457,8 +7519,13 @@ if extract then
     local j=i+1
     f[2]=j+1
     local a,b=byte(f[1],i,j)
-    local n=0x100*a+b
-    return extract(n,14,2)+(band(n,0x3FFF)/16384.0)
+    if a>=0x80 then
+      local n=-(0x100*a+b)
+      return-(extract(n,14,2)+(band(n,0x3FFF)/16384.0))
+    else
+      local n=0x100*a+b
+      return  (extract(n,14,2)+(band(n,0x3FFF)/16384.0))
+    end
   end
 end
 function streams.skipshort(f,n)
@@ -7466,6 +7533,102 @@ function streams.skipshort(f,n)
 end
 function streams.skiplong(f,n)
   f[2]=f[2]+4*(n or 1)
+end
+if sio and sio.readcardinal2 then
+  local readcardinal1=sio.readcardinal1
+  local readcardinal2=sio.readcardinal2
+  local readcardinal3=sio.readcardinal3
+  local readcardinal4=sio.readcardinal4
+  local readinteger1=sio.readinteger1
+  local readinteger2=sio.readinteger2
+  local readinteger3=sio.readinteger3
+  local readinteger4=sio.readinteger4
+  local readfixed2=sio.readfixed2
+  local readfixed4=sio.readfixed4
+  local read2dot14=sio.read2dot14
+  local readbytes=sio.readbytes
+  local readbytetable=sio.readbytetable
+  function streams.readcardinal1(f)
+    local i=f[2]
+    f[2]=i+1
+    return readcardinal1(f[1],i)
+  end
+  function streams.readcardinal2(f)
+    local i=f[2]
+    f[2]=i+2
+    return readcardinal2(f[1],i)
+  end
+  function streams.readcardinal3(f)
+    local i=f[2]
+    f[2]=i+3
+    return readcardinal3(f[1],i)
+  end
+  function streams.readcardinal4(f)
+    local i=f[2]
+    f[2]=i+4
+    return readcardinal4(f[1],i)
+  end
+  function streams.readinteger1(f)
+    local i=f[2]
+    f[2]=i+1
+    return readinteger1(f[1],i)
+  end
+  function streams.readinteger2(f)
+    local i=f[2]
+    f[2]=i+2
+    return readinteger2(f[1],i)
+  end
+  function streams.readinteger3(f)
+    local i=f[2]
+    f[2]=i+3
+    return readinteger3(f[1],i)
+  end
+  function streams.readinteger4(f)
+    local i=f[2]
+    f[2]=i+4
+    return readinteger4(f[1],i)
+  end
+  function streams.readfixed2(f)
+    local i=f[2]
+    f[2]=i+2
+    return readfixed2(f[1],i)
+  end
+  function streams.readfixed4(f)
+    local i=f[2]
+    f[2]=i+4
+    return readfixed4(f[1],i)
+  end
+  function streams.read2dot4(f)
+    local i=f[2]
+    f[2]=i+2
+    return read2dot4(f[1],i)
+  end
+  function streams.readbytes(f,n)
+    local i=f[2]
+    local s=f[3]
+    local p=i+n
+    if p>s then
+      f[2]=s+1
+    else
+      f[2]=p
+    end
+    return readbytes(f[1],i,n)
+  end
+  function streams.readbytetable(f,n)
+    local i=f[2]
+    local s=f[3]
+    local p=i+n
+    if p>s then
+      f[2]=s+1
+    else
+      f[2]=p
+    end
+    return readbytetable(f[1],i,n)
+  end
+  streams.readbyte=streams.readcardinal1
+  streams.readsignedbyte=streams.readinteger1
+  streams.readcardinal=streams.readcardinal1
+  streams.readinteger=streams.readinteger1
 end
 
 
@@ -19668,7 +19831,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 13452, stripped down to: 7398
+-- original size: 13595, stripped down to: 7500
 
 if not modules then modules={} end modules ['util-lib']={
   version=1.001,
@@ -19834,6 +19997,9 @@ do
       library=locate(required,version,trace_swiglib,report_swiglib,function(name,base)
         pushdir(pathpart(name))
         local opener="luaopen_"..base
+        if trace_swiglib then
+          report_swiglib("opening: %a with %a",name,opener)
+        end
         local library,message=loadlib(name,opener)
         local libtype=type(library)
         if libtype=="function" then
@@ -20256,8 +20422,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 837276
--- stripped bytes    : 304810
+-- original bytes    : 841486
+-- stripped bytes    : 305240
 
 -- end library merge
 

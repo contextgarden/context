@@ -13,7 +13,7 @@ local P, R, S, C, Cmt, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cmt, lpeg.Cp
 local match, find = string.match, string.find
 local setmetatable = setmetatable
 
-local lexer       = require("lexer")
+local lexer       = require("scite-context-lexer")
 local context     = lexer.context
 local patterns    = context.patterns
 
@@ -25,7 +25,7 @@ local lualexer    = lexer.new("lua","scite-context-lexer-lua")
 local whitespace  = lualexer.whitespace
 
 local stringlexer = lexer.load("scite-context-lexer-lua-longstring")
-local labellexer  = lexer.load("scite-context-lexer-lua-labelstring")
+----- labellexer  = lexer.load("scite-context-lexer-lua-labelstring")
 
 local directives  = { } -- communication channel
 

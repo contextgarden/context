@@ -12,9 +12,9 @@ local formatters = string.formatters
 local ghostscript     = utilities.ghostscript or { }
 utilities.ghostscript = ghostscript
 
-local report_gs = logs.reporter("swiglib gs")
+local report_gs = logs.reporter("swiglib ghostscript")
 
-local gs      = swiglib("gs.core")
+local gs      = swiglib("ghostscript.core")
 local helpers = swiglib("helpers.core")
 
 if gs then
